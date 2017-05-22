@@ -19,32 +19,25 @@ const (
 	canaryUtil = "canary-util"
 )
 
-type esOptions struct {
-	operatorTag    string
-	elasticDumpTag string
-}
-
-type pgOptions struct {
-	postgresUtilTag string
-}
-
-type commonOptions struct {
+type Options struct {
 	masterURL        string
 	kubeconfigPath   string
 	governingService string
+	// For elasticsearch operator
+	esOperatorTag  string
+	elasticDumpTag string
+	// For postgres operator
+	postgresUtilTag string
 }
 
 func NewCmdRun() *cobra.Command {
-
-	es := &esOptions{}
-	pg := &pgOptions{}
-	common := &commonOptions{}
+	opt := &Options{}
 
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run kubedb operator in Kubernetes",
 		Run: func(cmd *cobra.Command, args []string) {
-			run(common, es, pg)
+			run(opt)
 		},
 	}
 
@@ -53,18 +46,18 @@ func NewCmdRun() *cobra.Command {
 		operatorVersion = canary
 	}
 
-	cmd.Flags().StringVar(&common.masterURL, "master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
-	cmd.Flags().StringVar(&common.kubeconfigPath, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
-	cmd.Flags().StringVar(&es.operatorTag, "es.operator", operatorVersion, "Tag of elasticsearch opearator")
-	cmd.Flags().StringVar(&es.elasticDumpTag, "es.elasticdump", canary, "Tag of elasticdump")
-	cmd.Flags().StringVar(&pg.postgresUtilTag, "pg.postgres-util", canaryUtil, "Tag of postgres util")
-	cmd.Flags().StringVar(&common.governingService, "governing-service", "k8sdb", "Governing service for database statefulset")
+	cmd.Flags().StringVar(&opt.masterURL, "master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
+	cmd.Flags().StringVar(&opt.kubeconfigPath, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
+	cmd.Flags().StringVar(&opt.esOperatorTag, "es.operator", operatorVersion, "Tag of elasticsearch opearator")
+	cmd.Flags().StringVar(&opt.elasticDumpTag, "es.elasticdump", canary, "Tag of elasticdump")
+	cmd.Flags().StringVar(&opt.postgresUtilTag, "pg.postgres-util", canaryUtil, "Tag of postgres util")
+	cmd.Flags().StringVar(&opt.governingService, "governing-service", "k8sdb", "Governing service for database statefulset")
 
 	return cmd
 }
 
-func run(common *commonOptions, es *esOptions, pg *pgOptions) {
-	config, err := clientcmd.BuildConfigFromFlags(common.masterURL, common.kubeconfigPath)
+func run(opt *Options) {
+	config, err := clientcmd.BuildConfigFromFlags(opt.masterURL, opt.kubeconfigPath)
 	if err != nil {
 		fmt.Printf("Could not get kubernetes config: %s", err)
 		panic(err)
@@ -73,11 +66,11 @@ func run(common *commonOptions, es *esOptions, pg *pgOptions) {
 
 	fmt.Println("Starting operator...")
 
-	go pgCtrl.New(config, pg.postgresUtilTag, common.governingService).RunAndHold()
+	go pgCtrl.New(config, opt.postgresUtilTag, opt.governingService).RunAndHold()
 	// Need to wait for sometime to run another controller.
 	// Or multiple controller will try to create common TPR simultaneously which gives error
 	time.Sleep(time.Second * 30)
-	go esCtrl.New(config, es.operatorTag, es.elasticDumpTag, common.governingService).RunAndHold()
+	go esCtrl.New(config, opt.esOperatorTag, opt.elasticDumpTag, opt.governingService).RunAndHold()
 
 	hold.Hold()
 }
