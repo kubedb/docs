@@ -5,6 +5,7 @@ import (
 	"log"
 
 	v "github.com/appscode/go/version"
+	"github.com/k8sdb/operator/pkg/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -47,6 +48,8 @@ func main() {
 		},
 	}
 	rootCmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
+
+	rootCmd.AddCommand(cmd.NewCmdRun())
 
 	rootCmd.AddCommand(v.NewCmdVersion())
 	if err := rootCmd.Execute(); err != nil {

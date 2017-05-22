@@ -6,3 +6,4 @@ import:
 - package: github.com/k8sdb/postgres
   version: master
 - package: github.com/spf13/cobra
+  version: master
