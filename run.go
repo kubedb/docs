@@ -6,6 +6,7 @@ import (
 
 	"github.com/appscode/go/hold"
 	"github.com/appscode/go/runtime"
+	"github.com/appscode/go/strings"
 	"github.com/appscode/go/version"
 	esCtrl "github.com/k8sdb/elasticsearch/pkg/controller"
 	pgCtrl "github.com/k8sdb/postgres/pkg/controller"
@@ -31,7 +32,12 @@ type Options struct {
 }
 
 func NewCmdRun() *cobra.Command {
-	var opt Options
+	opt := Options{
+		esOperatorTag:    strings.Val(version.Version.Version, "canary"),
+		elasticDumpTag:   "canary",
+		postgresUtilTag:  "canary-util",
+		governingService: "k8sdb",
+	}
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run kubedb operator in Kubernetes",
@@ -40,17 +46,12 @@ func NewCmdRun() *cobra.Command {
 		},
 	}
 
-	operatorVersion := version.Version.Version
-	if operatorVersion == "" {
-		operatorVersion = canary
-	}
-
 	cmd.Flags().StringVar(&opt.masterURL, "master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	cmd.Flags().StringVar(&opt.kubeconfigPath, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
-	cmd.Flags().StringVar(&opt.esOperatorTag, "es.operator", operatorVersion, "Tag of elasticsearch opearator")
-	cmd.Flags().StringVar(&opt.elasticDumpTag, "es.elasticdump", canary, "Tag of elasticdump")
-	cmd.Flags().StringVar(&opt.postgresUtilTag, "pg.postgres-util", canaryUtil, "Tag of postgres util")
-	cmd.Flags().StringVar(&opt.governingService, "governing-service", "k8sdb", "Governing service for database statefulset")
+	cmd.Flags().StringVar(&opt.esOperatorTag, "es.operator", opt.esOperatorTag, "Tag of elasticsearch opearator")
+	cmd.Flags().StringVar(&opt.elasticDumpTag, "es.elasticdump", opt.elasticDumpTag, "Tag of elasticdump")
+	cmd.Flags().StringVar(&opt.postgresUtilTag, "pg.postgres-util", opt.postgresUtilTag, "Tag of postgres util")
+	cmd.Flags().StringVar(&opt.governingService, "governing-service", opt.governingService, "Governing service for database statefulset")
 
 	return cmd
 }
