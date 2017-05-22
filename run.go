@@ -1,7 +1,8 @@
-package cmd
+package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/appscode/go/hold"
 	"github.com/appscode/go/runtime"
@@ -10,7 +11,6 @@ import (
 	pgCtrl "github.com/k8sdb/postgres/pkg/controller"
 	"github.com/spf13/cobra"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
-	"time"
 )
 
 const (
