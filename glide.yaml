@@ -1,0 +1,8 @@
+package: github.com/k8sdb/operator
+import:
+- package: github.com/appscode/go
+- package: github.com/k8sdb/elasticsearch
+  version: master
+- package: github.com/k8sdb/postgres
+  version: master
+- package: github.com/spf13/cobra
