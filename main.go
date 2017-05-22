@@ -6,14 +6,17 @@ import (
 
 	v "github.com/appscode/go/version"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 func main() {
 	rootCmd := &cobra.Command{
 		Use:   "operator [command]",
 		Short: `KubeDB operator by AppsCode`,
-		Run: func(c *cobra.Command, args []string) {
-			c.Help()
+		PersistentPreRun: func(c *cobra.Command, args []string) {
+			c.Flags().VisitAll(func(flag *pflag.Flag) {
+				log.Printf("FLAG: --%s=%q", flag.Name, flag.Value)
+			})
 		},
 	}
 	rootCmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)

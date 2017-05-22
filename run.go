@@ -31,8 +31,7 @@ type Options struct {
 }
 
 func NewCmdRun() *cobra.Command {
-	opt := &Options{}
-
+	var opt Options
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run kubedb operator in Kubernetes",
@@ -56,7 +55,7 @@ func NewCmdRun() *cobra.Command {
 	return cmd
 }
 
-func run(opt *Options) {
+func run(opt Options) {
 	config, err := clientcmd.BuildConfigFromFlags(opt.masterURL, opt.kubeconfigPath)
 	if err != nil {
 		fmt.Printf("Could not get kubernetes config: %s", err)
