@@ -12,12 +12,12 @@ func (c *Controller) validateElastic(elastic *tapi.Elastic) error {
 		return fmt.Errorf(`Object 'Version' is missing in '%v'`, elastic.Spec)
 	}
 
-	if err := amc.CheckDockerImageVersion(imageElasticsearch, elastic.Spec.Version); err != nil {
-		return fmt.Errorf(`Image %v:%v not found`, imageElasticsearch, elastic.Spec.Version)
+	if err := amc.CheckDockerImageVersion(ImageElasticsearch, elastic.Spec.Version); err != nil {
+		return fmt.Errorf(`Image %v:%v not found`, ImageElasticsearch, elastic.Spec.Version)
 	}
 
-	if err := amc.CheckDockerImageVersion(imageOperatorElasticsearch, c.operatorTag); err != nil {
-		return fmt.Errorf(`Image %v:%v not found`, imageOperatorElasticsearch, c.operatorTag)
+	if err := amc.CheckDockerImageVersion(ImageOperatorElasticsearch, c.operatorTag); err != nil {
+		return fmt.Errorf(`Image %v:%v not found`, ImageOperatorElasticsearch, c.operatorTag)
 	}
 
 	if elastic.Spec.Storage != nil {

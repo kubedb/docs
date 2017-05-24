@@ -16,8 +16,8 @@ import (
 
 const (
 	annotationDatabaseVersion  = "elastic.k8sdb.com/version"
-	imageElasticsearch         = "k8sdb/elasticsearch"
-	imageOperatorElasticsearch = "k8sdb/k8s-es"
+	ImageElasticsearch         = "k8sdb/elasticsearch"
+	ImageOperatorElasticsearch = "k8sdb/k8s-es"
 	// Duration in Minute
 	// Check whether pod under StatefulSet is running or not
 	// Continue checking for this duration until failure
@@ -131,8 +131,8 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*kapps.StatefulSe
 	}
 	podLabels[amc.LabelDatabaseName] = elastic.Name
 
-	dockerImage := fmt.Sprintf("%v:%v", imageElasticsearch, elastic.Spec.Version)
-	initContainerImage := fmt.Sprintf("%v:%v", imageOperatorElasticsearch, c.operatorTag)
+	dockerImage := fmt.Sprintf("%v:%v", ImageElasticsearch, elastic.Spec.Version)
+	initContainerImage := fmt.Sprintf("%v:%v", ImageOperatorElasticsearch, c.operatorTag)
 
 	// SatatefulSet for Elastic database
 	statefulSetName := getStatefulSetName(elastic.Name)

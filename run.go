@@ -8,16 +8,16 @@ import (
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/go/strings"
 	"github.com/appscode/go/version"
+	"github.com/appscode/log"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
+	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	esCtrl "github.com/k8sdb/elasticsearch/pkg/controller"
 	pgCtrl "github.com/k8sdb/postgres/pkg/controller"
 	"github.com/spf13/cobra"
+	cgcmd "k8s.io/client-go/tools/clientcmd"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
-)
-
-const (
-	// Default tag
-	canary     = "canary"
-	canaryUtil = "canary-util"
 )
 
 type Options struct {
@@ -57,20 +57,48 @@ func NewCmdRun() *cobra.Command {
 }
 
 func run(opt Options) {
+	// Check elasticsearch operator docker image tag
+	if err := amc.CheckDockerImageVersion(esCtrl.ImageOperatorElasticsearch, opt.esOperatorTag); err != nil {
+		log.Fatalf(`Image %v:%v not found.`, esCtrl.ImageOperatorElasticsearch, opt.esOperatorTag)
+	}
+
+	// Check elasticdump docker image tag
+	if err := amc.CheckDockerImageVersion(esCtrl.ImageElasticDump, opt.elasticDumpTag); err != nil {
+		log.Fatalf(`Image %v:%v not found.`, esCtrl.ImageElasticDump, opt.elasticDumpTag)
+	}
+
+	// Check postgres docker image tag
+	if err := amc.CheckDockerImageVersion(pgCtrl.ImagePostgres, opt.postgresUtilTag); err != nil {
+		log.Fatalf(`Image %v:%v not found.`, pgCtrl.ImagePostgres, opt.postgresUtilTag)
+	}
+
 	config, err := clientcmd.BuildConfigFromFlags(opt.masterURL, opt.kubeconfigPath)
 	if err != nil {
-		fmt.Printf("Could not get kubernetes config: %s", err)
-		panic(err)
+		log.Fatalf("Could not get kubernetes config: %s", err)
 	}
-	defer runtime.HandleCrash()
+
+	client := clientset.NewForConfigOrDie(config)
+	extClient := tcs.NewExtensionsForConfigOrDie(config)
+
+	cgConfig, err := cgcmd.BuildConfigFromFlags(opt.masterURL, opt.kubeconfigPath)
+	if err != nil {
+		log.Fatalf("Could not get kubernetes config: %s", err)
+	}
+
+	promClient, err := pcm.NewForConfig(cgConfig)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	fmt.Println("Starting operator...")
 
-	go pgCtrl.New(config, opt.postgresUtilTag, opt.governingService).RunAndHold()
+	defer runtime.HandleCrash()
+
+	go pgCtrl.New(client, extClient, promClient, opt.postgresUtilTag, opt.governingService).RunAndHold()
 	// Need to wait for sometime to run another controller.
 	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 30)
-	go esCtrl.New(config, opt.esOperatorTag, opt.elasticDumpTag, opt.governingService).RunAndHold()
+	time.Sleep(time.Second * 10)
+	go esCtrl.New(client, extClient, promClient, opt.esOperatorTag, opt.elasticDumpTag, opt.governingService).RunAndHold()
 
 	hold.Hold()
 }

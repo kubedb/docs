@@ -6,7 +6,9 @@ import (
 
 	"github.com/appscode/go/hold"
 	"github.com/appscode/log"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	tapi "github.com/k8sdb/apimachinery/api"
+	tcs "github.com/k8sdb/apimachinery/client/clientset"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	kapi "k8s.io/kubernetes/pkg/api"
@@ -14,8 +16,8 @@ import (
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/cache"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/record"
-	rest "k8s.io/kubernetes/pkg/client/restclient"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/util/wait"
@@ -26,6 +28,8 @@ type Controller struct {
 	*amc.Controller
 	// Cron Controller
 	cronController amc.CronControllerInterface
+	// Prometheus client
+	promClient *pcm.MonitoringV1alpha1Client
 	// Event Recorder
 	eventRecorder record.EventRecorder
 	// Tag of elasticsearch opearator
@@ -41,12 +45,22 @@ type Controller struct {
 var _ amc.Snapshotter = &Controller{}
 var _ amc.Deleter = &Controller{}
 
-func New(cfg *rest.Config, operatorTag, elasticDumpTag, governingService string) *Controller {
-	c := amc.NewController(cfg)
+func New(
+	client clientset.Interface,
+	extClient tcs.ExtensionInterface,
+	promClient *pcm.MonitoringV1alpha1Client,
+	operatorTag string,
+	elasticDumpTag string,
+	governingService string,
+) *Controller {
 	return &Controller{
-		Controller:       c,
-		cronController:   amc.NewCronController(c.Client, c.ExtClient),
-		eventRecorder:    eventer.NewEventRecorder(c.Client, "Elastic Controller"),
+		Controller: &amc.Controller{
+			Client:    client,
+			ExtClient: extClient,
+		},
+		cronController:   amc.NewCronController(client, extClient),
+		promClient:       promClient,
+		eventRecorder:    eventer.NewEventRecorder(client, "Elastic Controller"),
 		operatorTag:      operatorTag,
 		elasticDumpTag:   elasticDumpTag,
 		governingService: governingService,
