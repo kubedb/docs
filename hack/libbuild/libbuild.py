@@ -5,6 +5,7 @@ from __future__ import absolute_import
 
 import datetime
 import fnmatch
+import glob
 import io
 import json
 import os
@@ -255,6 +256,10 @@ def ungroup_go_imports(*paths):
             for dir, _, files in os.walk(p):
                 for f in fnmatch.filter(files, '*.go'):
                     _ungroup_go_imports(dir + '/' + f)
+        else:
+            for f in glob.glob(p):
+                print('Ungrouping imports of file: ' + f)
+                _ungroup_go_imports(f)
 
 
 BEGIN_IMPORT_REGEX = ur'import \(\s*'
