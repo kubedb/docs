@@ -10,7 +10,7 @@ BIN=$GOPATH/bin
 ROOT=$GOPATH
 REPO_ROOT=$GOPATH/src/github.com/k8sdb/operator
 
-source "$REPO_ROOT/hack/libbuild/common/k8sdb_image.sh"
+source "$REPO_ROOT/hack/libbuild/common/kubedb_image.sh"
 
 APPSCODE_ENV=${APPSCODE_ENV:-dev}
 IMG=operator
@@ -53,7 +53,7 @@ COPY operator /operator
 USER nobody:nobody
 ENTRYPOINT ["/operator"]
 EOL
-    local cmd="docker build -t k8sdb/$IMG:$TAG ."
+    local cmd="docker build -t kubedb/$IMG:$TAG ."
     echo $cmd; $cmd
 
     rm operator Dockerfile

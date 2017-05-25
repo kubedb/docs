@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	annotationDatabaseVersion  = "elastic.k8sdb.com/version"
-	ImageElasticsearch         = "k8sdb/elasticsearch"
-	ImageOperatorElasticsearch = "k8sdb/k8s-es"
+	annotationDatabaseVersion  = "elastic.kubedb.com/version"
+	ImageElasticsearch         = "kubedb/elasticsearch"
+	ImageOperatorElasticsearch = "kubedb/es-operator"
 	// Duration in Minute
 	// Check whether pod under StatefulSet is running or not
 	// Continue checking for this duration until failure

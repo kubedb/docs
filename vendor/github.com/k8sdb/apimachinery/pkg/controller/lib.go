@@ -126,7 +126,7 @@ func (c *Controller) CheckBucketAccess(snapshotSpec tapi.SnapshotStorageSpec, na
 	}
 
 	r := bytes.NewReader([]byte("CheckBucketAccess"))
-	item, err := container.Put(".k8sdb", r, r.Size(), nil)
+	item, err := container.Put(".kubedb", r, r.Size(), nil)
 	if err != nil {
 		return err
 	}

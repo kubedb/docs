@@ -1,5 +1,5 @@
 hash: eac05cdfb691d25b72fd6b0c02e14cafb9decb330eb8fdbda1e124e12abeb6fa
-updated: 2017-05-25T11:22:18.24170908+06:00
+updated: 2017-05-25T02:30:16.549911779-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -141,7 +141,7 @@ imports:
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/k8sdb/apimachinery
-  version: 8632ec665ac8fc6ffcdc623ade4684f8db7ddd79
+  version: 608377308b38a2726e96e4229b6bcf9aea4dc84f
   subpackages:
   - api
   - api/install
@@ -149,11 +149,11 @@ imports:
   - pkg/controller
   - pkg/eventer
 - name: github.com/k8sdb/elasticsearch
-  version: 6959e14b628b605fc2bba26d0b3972fb75a279e6
+  version: 1a5db07d4ab92a8b709b3e69188089612a46093a
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/postgres
-  version: 9f1b1d4458e2381db201b27cf26090b16ceac04c
+  version: b2ef627462b6d2035c310f2db5ca88896862d366
   subpackages:
   - pkg/controller
 - name: github.com/mailru/easyjson
@@ -324,7 +324,7 @@ imports:
   - tools/metrics
   - transport
 - name: k8s.io/kubernetes
-  version: f07eea23494be1e7c11a8e2cf51bd96d1ec9fdf1
+  version: 8eb75a5810cba92ccad845ca360cf924f2385881
   subpackages:
   - pkg/api
   - pkg/api/errors

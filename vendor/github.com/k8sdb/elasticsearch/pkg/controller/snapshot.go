@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	ImageElasticDump        = "k8sdb/elasticdump"
+	ImageElasticDump        = "kubedb/elasticdump"
 	SnapshotProcess_Backup  = "backup"
 	snapshotType_DumpBackup = "dump-backup"
 	storageSecretMountPath  = "/var/credentials/"

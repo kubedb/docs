@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	annotationDatabaseVersion = "postgres.k8sdb.com/version"
-	ImagePostgres             = "k8sdb/postgres"
+	annotationDatabaseVersion = "postgres.kubedb.com/version"
+	ImagePostgres             = "kubedb/postgres"
 	modeBasic                 = "basic"
 	// Duration in Minute
 	// Check whether pod under StatefulSet is running or not

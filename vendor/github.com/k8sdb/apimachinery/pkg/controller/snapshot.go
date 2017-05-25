@@ -44,8 +44,8 @@ type SnapshotController struct {
 }
 
 const (
-	LabelJobType        = "job.k8sdb.com/type"
-	LabelSnapshotStatus = "snapshot.k8sdb.com/status"
+	LabelJobType        = "job.kubedb.com/type"
+	LabelSnapshotStatus = "snapshot.kubedb.com/status"
 )
 
 // NewSnapshotController creates a new SnapshotController
