@@ -104,8 +104,10 @@ func (c *Controller) watchPostgres() {
 				if postgres.Status.CreationTime == nil {
 					if err := c.create(postgres); err != nil {
 						log.Errorln(err)
+						c.pushFailureEvent(postgres, err.Error())
 					}
 				}
+
 			},
 			DeleteFunc: func(obj interface{}) {
 				if err := c.pause(obj.(*tapi.Postgres)); err != nil {
@@ -207,5 +209,36 @@ func (c *Controller) ensureThirdPartyResource() {
 
 	if _, err := c.Client.Extensions().ThirdPartyResources().Create(thirdPartyResource); err != nil {
 		log.Fatalln(err)
+	}
+}
+
+func (c *Controller) pushFailureEvent(postgres *tapi.Postgres, reason string) {
+	c.eventRecorder.Eventf(
+		postgres,
+		kapi.EventTypeWarning,
+		eventer.EventReasonFailedToStart,
+		`Fail to be ready Postgres: "%v". Reason: %v`,
+		postgres.Name,
+		reason,
+	)
+
+	var err error
+	if postgres, err = c.ExtClient.Postgreses(postgres.Namespace).Get(postgres.Name); err != nil {
+		log.Errorln(err)
+		return
+	}
+
+	postgres.Status.Phase = tapi.DatabasePhaseFailed
+	postgres.Status.Reason = reason
+	if _, err := c.ExtClient.Postgreses(postgres.Namespace).Update(postgres); err != nil {
+		c.eventRecorder.Eventf(
+			postgres,
+			kapi.EventTypeWarning,
+			eventer.EventReasonFailedToUpdate,
+			`Fail to update Postgres: "%v". Reason: %v`,
+			postgres.Name,
+			err,
+		)
+		log.Errorln(err)
 	}
 }

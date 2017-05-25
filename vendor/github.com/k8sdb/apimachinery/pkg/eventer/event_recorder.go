@@ -26,6 +26,7 @@ const (
 	EventReasonInitializing         string = "Initializing"
 	EventReasonInvalid              string = "Invalid"
 	EventReasonInvalidUpdate        string = "InvalidUpdate"
+	EventReasonResuming             string = "Resuming"
 	EventReasonSnapshotFailed       string = "SnapshotFailed"
 	EventReasonStarting             string = "Starting"
 	EventReasonSuccessfulCreate     string = "SuccessfulCreate"

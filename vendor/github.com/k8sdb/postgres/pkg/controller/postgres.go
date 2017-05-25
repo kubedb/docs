@@ -33,30 +33,11 @@ func (c *Controller) create(postgres *tapi.Postgres) error {
 			postgres.Name,
 			err,
 		)
-		return err
+		log.Errorln(err)
 	}
 
 	if err := c.validatePostgres(postgres); err != nil {
 		c.eventRecorder.Event(postgres, kapi.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
-
-		var _err error
-		if postgres, _err = c.ExtClient.Postgreses(postgres.Namespace).Get(postgres.Name); _err != nil {
-			return _err
-		}
-
-		postgres.Status.Phase = tapi.DatabasePhaseFailed
-		postgres.Status.Reason = err.Error()
-		if _, err := c.ExtClient.Postgreses(postgres.Namespace).Update(postgres); err != nil {
-			c.eventRecorder.Eventf(
-				postgres,
-				kapi.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				`Fail to update Postgres: "%v". Reason: %v`,
-				postgres.Name,
-				err,
-			)
-			log.Errorln(err)
-		}
 		return err
 	}
 	// Event for successful validation
@@ -68,7 +49,6 @@ func (c *Controller) create(postgres *tapi.Postgres) error {
 	)
 
 	// Check if DormantDatabase exists or not
-	resuming := false
 	dormantDb, err := c.ExtClient.DormantDatabases(postgres.Namespace).Get(postgres.Name)
 	if err != nil {
 		if !k8serr.IsNotFound(err) {
@@ -89,31 +69,15 @@ func (c *Controller) create(postgres *tapi.Postgres) error {
 			message = fmt.Sprintf(`Invalid Postgres: "%v". Exists DormantDatabase "%v" of different Kind`,
 				postgres.Name, dormantDb.Name)
 		} else {
-			if dormantDb.Status.Phase == tapi.DormantDatabasePhaseResuming {
-				resuming = true
-			} else {
-				message = fmt.Sprintf(`Resume from DormantDatabase: "%v"`, dormantDb.Name)
-			}
+			message = fmt.Sprintf(`Resume from DormantDatabase: "%v"`, dormantDb.Name)
 		}
-		if !resuming {
-			if postgres, err = c.ExtClient.Postgreses(postgres.Namespace).Get(postgres.Name); err != nil {
-				return err
-			}
-			// Set status to Failed
-			postgres.Status.Phase = tapi.DatabasePhaseFailed
-			postgres.Status.Reason = message
-			if _, err := c.ExtClient.Postgreses(postgres.Namespace).Update(postgres); err != nil {
-				c.eventRecorder.Eventf(
-					postgres,
-					kapi.EventTypeWarning,
-					eventer.EventReasonFailedToUpdate,
-					`Fail to update Postgres: "%v". Reason: %v`, postgres.Name, err,
-				)
-				log.Errorln(err)
-			}
-			c.eventRecorder.Event(postgres, kapi.EventTypeWarning, eventer.EventReasonFailedToCreate, message)
-			return errors.New(message)
-		}
+		c.eventRecorder.Event(
+			postgres,
+			kapi.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			message,
+		)
+		return errors.New(message)
 	}
 
 	// Event for notification that kubernetes objects are creating
@@ -192,7 +156,7 @@ func (c *Controller) create(postgres *tapi.Postgres) error {
 				postgres.Name,
 				err,
 			)
-			return err
+			log.Errorln(err)
 		}
 
 		if err := c.initialize(postgres); err != nil {
@@ -204,28 +168,6 @@ func (c *Controller) create(postgres *tapi.Postgres) error {
 				err,
 			)
 		}
-	}
-
-	if resuming {
-		// Delete DormantDatabase instance
-		if err := c.ExtClient.DormantDatabases(dormantDb.Namespace).Delete(dormantDb.Name); err != nil {
-			c.eventRecorder.Eventf(
-				postgres,
-				kapi.EventTypeWarning,
-				eventer.EventReasonFailedToDelete,
-				`Failed to pause DormantDatabase: "%v". Reason: %v`,
-				dormantDb.Name,
-				err,
-			)
-			log.Errorln(err)
-		}
-		c.eventRecorder.Eventf(
-			postgres,
-			kapi.EventTypeNormal,
-			eventer.EventReasonSuccessfulResume,
-			`Successfully resumed Database: "%v"`,
-			dormantDb.Name,
-		)
 	}
 
 	if postgres, err = c.ExtClient.Postgreses(postgres.Namespace).Get(postgres.Name); err != nil {

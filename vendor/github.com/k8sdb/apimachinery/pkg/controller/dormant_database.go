@@ -262,7 +262,8 @@ func (c *DormantDbController) create(dormantDb *tapi.DormantDatabase) error {
 }
 
 func (c *DormantDbController) delete(dormantDb *tapi.DormantDatabase) error {
-	if dormantDb.Status.Phase != tapi.DormantDatabasePhaseWipedOut {
+	phase := dormantDb.Status.Phase
+	if phase != tapi.DormantDatabasePhaseResuming && phase != tapi.DormantDatabasePhaseWipedOut {
 		c.eventRecorder.Eventf(
 			dormantDb,
 			kapi.EventTypeWarning,
@@ -272,18 +273,7 @@ func (c *DormantDbController) delete(dormantDb *tapi.DormantDatabase) error {
 			tapi.DormantDatabasePhaseWipedOut,
 		)
 
-		_dormantDb := &tapi.DormantDatabase{
-			ObjectMeta: kapi.ObjectMeta{
-				Name:        dormantDb.Name,
-				Namespace:   dormantDb.Namespace,
-				Labels:      dormantDb.Labels,
-				Annotations: dormantDb.Annotations,
-			},
-			Spec:   dormantDb.Spec,
-			Status: dormantDb.Status,
-		}
-
-		if _, err := c.extClient.DormantDatabases(_dormantDb.Namespace).Create(_dormantDb); err != nil {
+		if err := c.reCreateDormantDatabase(dormantDb); err != nil {
 			c.eventRecorder.Eventf(
 				dormantDb,
 				kapi.EventTypeWarning,
@@ -308,7 +298,7 @@ func (c *DormantDbController) update(oldDormantDb, updatedDormantDb *tapi.Dorman
 			return c.resume(updatedDormantDb)
 		} else {
 			message := "Failed to resume Database. " +
-				"Only DormantDatabase of \"Deleted\" Phase can be resumed"
+				"Only DormantDatabase of \"Paused\" Phase can be resumed"
 			c.eventRecorder.Event(
 				updatedDormantDb,
 				kapi.EventTypeWarning,
@@ -419,6 +409,13 @@ func (c *DormantDbController) wipeOut(dormantDb *tapi.DormantDatabase) error {
 }
 
 func (c *DormantDbController) resume(dormantDb *tapi.DormantDatabase) error {
+	c.eventRecorder.Event(
+		dormantDb,
+		kapi.EventTypeNormal,
+		eventer.EventReasonResuming,
+		"Resuming DormantDatabase",
+	)
+
 	// Check if DB TPR object exists
 	found, err := c.deleter.Exists(&dormantDb.ObjectMeta)
 	if err != nil {
@@ -426,14 +423,14 @@ func (c *DormantDbController) resume(dormantDb *tapi.DormantDatabase) error {
 			dormantDb,
 			kapi.EventTypeWarning,
 			eventer.EventReasonFailedToResume,
-			"Failed to resume Database. Reason: %v",
+			"Failed to resume DormantDatabase. Reason: %v",
 			err,
 		)
 		return err
 	}
 
 	if found {
-		message := "Failed to resume Database. One Database TPR object exists with same name"
+		message := "Failed to resume DormantDatabase. One Database TPR object exists with same name"
 		c.eventRecorder.Event(
 			dormantDb,
 			kapi.EventTypeWarning,
@@ -447,8 +444,9 @@ func (c *DormantDbController) resume(dormantDb *tapi.DormantDatabase) error {
 		return err
 	}
 
-	dormantDb.Status.Phase = tapi.DormantDatabasePhaseResuming
-	if _, err = c.extClient.DormantDatabases(dormantDb.Namespace).Update(dormantDb); err != nil {
+	_dormantDb := dormantDb
+	_dormantDb.Status.Phase = tapi.DormantDatabasePhaseResuming
+	if _, err = c.extClient.DormantDatabases(_dormantDb.Namespace).Update(_dormantDb); err != nil {
 		c.eventRecorder.Eventf(
 			dormantDb,
 			kapi.EventTypeWarning,
@@ -459,7 +457,30 @@ func (c *DormantDbController) resume(dormantDb *tapi.DormantDatabase) error {
 		return err
 	}
 
+	if err = c.extClient.DormantDatabases(dormantDb.Namespace).Delete(dormantDb.Name); err != nil {
+		c.eventRecorder.Eventf(
+			dormantDb,
+			kapi.EventTypeWarning,
+			eventer.EventReasonFailedToDelete,
+			"Failed to delete DormantDatabase. Reason: %v",
+			err,
+		)
+		return err
+	}
+
 	if err = c.deleter.ResumeDatabase(dormantDb); err != nil {
+		if err := c.reCreateDormantDatabase(dormantDb); err != nil {
+			c.eventRecorder.Eventf(
+				dormantDb,
+				kapi.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				`Failed to recreate DormantDatabase: "%v". Reason: %v`,
+				dormantDb.Name,
+				err,
+			)
+			return err
+		}
+
 		c.eventRecorder.Eventf(
 			dormantDb,
 			kapi.EventTypeWarning,
@@ -467,23 +488,24 @@ func (c *DormantDbController) resume(dormantDb *tapi.DormantDatabase) error {
 			"Failed to resume Database. Reason: %v",
 			err,
 		)
+		return err
+	}
+	return nil
+}
 
-		if dormantDb, err = c.extClient.DormantDatabases(dormantDb.Namespace).Get(dormantDb.Name); err != nil {
-			return err
-		}
+func (c *DormantDbController) reCreateDormantDatabase(dormantDb *tapi.DormantDatabase) error {
+	_dormantDb := &tapi.DormantDatabase{
+		ObjectMeta: kapi.ObjectMeta{
+			Name:        dormantDb.Name,
+			Namespace:   dormantDb.Namespace,
+			Labels:      dormantDb.Labels,
+			Annotations: dormantDb.Annotations,
+		},
+		Spec:   dormantDb.Spec,
+		Status: dormantDb.Status,
+	}
 
-		dormantDb.Status.Phase = tapi.DormantDatabasePhasePaused
-		if _, err = c.extClient.DormantDatabases(dormantDb.Namespace).Update(dormantDb); err != nil {
-			c.eventRecorder.Eventf(
-				dormantDb,
-				kapi.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				"Failed to update DormantDatabase. Reason: %v",
-				err,
-			)
-			log.Errorln(err)
-		}
-
+	if _, err := c.extClient.DormantDatabases(_dormantDb.Namespace).Create(_dormantDb); err != nil {
 		return err
 	}
 

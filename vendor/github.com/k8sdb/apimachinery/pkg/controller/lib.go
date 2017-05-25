@@ -278,6 +278,11 @@ func (c *Controller) CheckDatabaseRestoreJob(
 		log.Debugln("Checking for Job ", job.Name)
 		job, err = c.Client.Batch().Jobs(job.Namespace).Get(job.Name)
 		if err != nil {
+			if k8serr.IsNotFound(err) {
+				time.Sleep(sleepDuration)
+				now = time.Now()
+				continue
+			}
 			recorder.Eventf(
 				runtimeObj,
 				kapi.EventTypeWarning,
@@ -300,6 +305,10 @@ func (c *Controller) CheckDatabaseRestoreJob(
 
 		time.Sleep(sleepDuration)
 		now = time.Now()
+	}
+
+	if err != nil {
+		return false
 	}
 
 	podList, err := c.Client.Core().Pods(job.Namespace).List(

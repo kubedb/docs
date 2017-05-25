@@ -108,6 +108,7 @@ func (c *Controller) watchElastic() {
 				if elastic.Status.CreationTime == nil {
 					if err := c.create(elastic); err != nil {
 						log.Errorln(err)
+						c.pushFailureEvent(elastic, err.Error())
 					}
 				}
 			},
@@ -212,5 +213,36 @@ func (c *Controller) ensureThirdPartyResource() {
 
 	if _, err := c.Client.Extensions().ThirdPartyResources().Create(thirdPartyResource); err != nil {
 		log.Fatalln(err)
+	}
+}
+
+func (c *Controller) pushFailureEvent(elastic *tapi.Elastic, reason string) {
+	c.eventRecorder.Eventf(
+		elastic,
+		kapi.EventTypeWarning,
+		eventer.EventReasonFailedToStart,
+		`Fail to be ready Elastic: "%v". Reason: %v`,
+		elastic.Name,
+		reason,
+	)
+
+	var err error
+	if elastic, err = c.ExtClient.Elastics(elastic.Namespace).Get(elastic.Name); err != nil {
+		log.Errorln(err)
+		return
+	}
+
+	elastic.Status.Phase = tapi.DatabasePhaseFailed
+	elastic.Status.Reason = reason
+	if _, err := c.ExtClient.Elastics(elastic.Namespace).Update(elastic); err != nil {
+		c.eventRecorder.Eventf(
+			elastic,
+			kapi.EventTypeWarning,
+			eventer.EventReasonFailedToUpdate,
+			`Fail to update Postgres: "%v". Reason: %v`,
+			elastic.Name,
+			err,
+		)
+		log.Errorln(err)
 	}
 }

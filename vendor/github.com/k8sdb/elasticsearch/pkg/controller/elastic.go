@@ -16,10 +16,14 @@ import (
 )
 
 func (c *Controller) create(elastic *tapi.Elastic) error {
+	var err error
+	if elastic, err = c.ExtClient.Elastics(elastic.Namespace).Get(elastic.Name); err != nil {
+		return err
+	}
+
 	t := unversioned.Now()
 	elastic.Status.CreationTime = &t
 	elastic.Status.Phase = tapi.DatabasePhaseCreating
-	var err error
 	if _, err = c.ExtClient.Elastics(elastic.Namespace).Update(elastic); err != nil {
 		c.eventRecorder.Eventf(
 			elastic,
@@ -29,30 +33,11 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 			elastic.Name,
 			err,
 		)
-		return err
+		log.Errorln(err)
 	}
 
 	if err := c.validateElastic(elastic); err != nil {
 		c.eventRecorder.Event(elastic, kapi.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
-
-		var _err error
-		if elastic, _err = c.ExtClient.Elastics(elastic.Namespace).Get(elastic.Name); _err != nil {
-			return _err
-		}
-
-		elastic.Status.Phase = tapi.DatabasePhaseFailed
-		elastic.Status.Reason = err.Error()
-		if _, err := c.ExtClient.Elastics(elastic.Namespace).Update(elastic); err != nil {
-			c.eventRecorder.Eventf(
-				elastic,
-				kapi.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				`Fail to update Elastic: "%v". Reason: %v`,
-				elastic.Name,
-				err,
-			)
-			log.Errorln(err)
-		}
 		return err
 	}
 	// Event for successful validation
@@ -64,7 +49,6 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 	)
 
 	// Check if DormantDatabase exists or not
-	resuming := false
 	dormantDb, err := c.ExtClient.DormantDatabases(elastic.Namespace).Get(elastic.Name)
 	if err != nil {
 		if !k8serr.IsNotFound(err) {
@@ -80,44 +64,20 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 		}
 	} else {
 		var message string
-
 		if dormantDb.Labels[amc.LabelDatabaseKind] != tapi.ResourceKindElastic {
 			message = fmt.Sprintf(`Invalid Elastic: "%v". Exists DormantDatabase "%v" of different Kind`,
 				elastic.Name, dormantDb.Name)
 		} else {
-			if dormantDb.Status.Phase == tapi.DormantDatabasePhaseResuming {
-				resuming = true
-			} else {
-				message = fmt.Sprintf(`Recover from DormantDatabase: "%v"`, dormantDb.Name)
-			}
+			message = fmt.Sprintf(`Recover from DormantDatabase: "%v"`, dormantDb.Name)
 		}
-		if !resuming {
-			if elastic, err = c.ExtClient.Elastics(elastic.Namespace).Get(elastic.Name); err != nil {
-				return err
-			}
 
-			// Set status to Failed
-			elastic.Status.Phase = tapi.DatabasePhaseFailed
-			elastic.Status.Reason = message
-			if _, err := c.ExtClient.Elastics(elastic.Namespace).Update(elastic); err != nil {
-				c.eventRecorder.Eventf(
-					elastic,
-					kapi.EventTypeWarning,
-					eventer.EventReasonFailedToUpdate,
-					`Fail to update Elastic: "%v". Reason: %v`,
-					elastic.Name,
-					err,
-				)
-				log.Errorln(err)
-			}
-			c.eventRecorder.Event(
-				elastic,
-				kapi.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				message,
-			)
-			return errors.New(message)
-		}
+		c.eventRecorder.Event(
+			elastic,
+			kapi.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			message,
+		)
+		return errors.New(message)
 	}
 
 	// Event for notification that kubernetes objects are creating
@@ -203,7 +163,7 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 				elastic.Name,
 				err,
 			)
-			return err
+			log.Errorln(err)
 		}
 
 		if err := c.initialize(elastic); err != nil {
@@ -215,28 +175,6 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 				err,
 			)
 		}
-	}
-
-	if resuming {
-		// Delete DormantDatabase instance
-		if err := c.ExtClient.DormantDatabases(dormantDb.Namespace).Delete(dormantDb.Name); err != nil {
-			c.eventRecorder.Eventf(
-				elastic,
-				kapi.EventTypeWarning,
-				eventer.EventReasonFailedToDelete,
-				`Failed to pause DormantDatabase: "%v". Reason: %v`,
-				dormantDb.Name,
-				err,
-			)
-			log.Errorln(err)
-		}
-		c.eventRecorder.Eventf(
-			elastic,
-			kapi.EventTypeNormal,
-			eventer.EventReasonSuccessfulResume,
-			`Successfully resumed DormantDatabase: "%v"`,
-			dormantDb.Name,
-		)
 	}
 
 	if elastic, err = c.ExtClient.Elastics(elastic.Namespace).Get(elastic.Name); err != nil {
@@ -395,7 +333,7 @@ func (c *Controller) update(oldElastic, updatedElastic *tapi.Elastic) error {
 				statefulSetName,
 				err,
 			)
-			return err
+			log.Errorln(err)
 		}
 	}
 
