@@ -7,3 +7,18 @@ import:
   version: master
 - package: github.com/spf13/cobra
   version: master
+- package: github.com/heroku/docker-registry-client
+  version: 95467b6cacee2a06f112a3cf7e47a70fad6000cf
+- package: github.com/Sirupsen/logrus
+  version: v0.10.0
+- package: k8s.io/kubernetes
+  version: ~1.5.0
+- package: k8s.io/client-go
+  version: e121606b0d09b2e1c467183ee46217fa85a6b672
+- package: github.com/appscode/pat
+- package: github.com/golang/protobuf
+  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
+- package: github.com/lib/pq
+- package: github.com/prometheus/client_golang
+  version: v0.8.0
+- package: github.com/prometheus/common

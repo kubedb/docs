@@ -2,18 +2,21 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 	"time"
 
-	"github.com/appscode/go/hold"
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/go/strings"
 	"github.com/appscode/go/version"
 	"github.com/appscode/log"
+	"github.com/appscode/pat"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	tcs "github.com/k8sdb/apimachinery/client/clientset"
-	amc "github.com/k8sdb/apimachinery/pkg/controller"
+	"github.com/k8sdb/apimachinery/pkg/docker"
 	esCtrl "github.com/k8sdb/elasticsearch/pkg/controller"
 	pgCtrl "github.com/k8sdb/postgres/pkg/controller"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	cgcmd "k8s.io/client-go/tools/clientcmd"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
@@ -29,6 +32,7 @@ type Options struct {
 	elasticDumpTag string
 	// For postgres operator
 	postgresUtilTag string
+	address         string
 }
 
 func NewCmdRun() *cobra.Command {
@@ -52,23 +56,24 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&opt.elasticDumpTag, "es.elasticdump", opt.elasticDumpTag, "Tag of elasticdump")
 	cmd.Flags().StringVar(&opt.postgresUtilTag, "pg.postgres-util", opt.postgresUtilTag, "Tag of postgres util")
 	cmd.Flags().StringVar(&opt.governingService, "governing-service", opt.governingService, "Governing service for database statefulset")
+	cmd.Flags().StringVar(&opt.address, "address", ":8080", "Address to listen on for web interface and telemetry.")
 
 	return cmd
 }
 
 func run(opt Options) {
 	// Check elasticsearch operator docker image tag
-	if err := amc.CheckDockerImageVersion(esCtrl.ImageOperatorElasticsearch, opt.esOperatorTag); err != nil {
+	if err := docker.CheckDockerImageVersion(esCtrl.ImageOperatorElasticsearch, opt.esOperatorTag); err != nil {
 		log.Fatalf(`Image %v:%v not found.`, esCtrl.ImageOperatorElasticsearch, opt.esOperatorTag)
 	}
 
 	// Check elasticdump docker image tag
-	if err := amc.CheckDockerImageVersion(esCtrl.ImageElasticDump, opt.elasticDumpTag); err != nil {
+	if err := docker.CheckDockerImageVersion(esCtrl.ImageElasticDump, opt.elasticDumpTag); err != nil {
 		log.Fatalf(`Image %v:%v not found.`, esCtrl.ImageElasticDump, opt.elasticDumpTag)
 	}
 
 	// Check postgres docker image tag
-	if err := amc.CheckDockerImageVersion(pgCtrl.ImagePostgres, opt.postgresUtilTag); err != nil {
+	if err := docker.CheckDockerImageVersion(pgCtrl.ImagePostgres, opt.postgresUtilTag); err != nil {
 		log.Fatalf(`Image %v:%v not found.`, pgCtrl.ImagePostgres, opt.postgresUtilTag)
 	}
 
@@ -94,11 +99,16 @@ func run(opt Options) {
 
 	defer runtime.HandleCrash()
 
-	go pgCtrl.New(client, extClient, promClient, opt.postgresUtilTag, opt.governingService).RunAndHold()
+	pgCtrl.New(client, extClient, promClient, opt.postgresUtilTag, opt.governingService, opt.address).Run()
 	// Need to wait for sometime to run another controller.
 	// Or multiple controller will try to create common TPR simultaneously which gives error
 	time.Sleep(time.Second * 10)
-	go esCtrl.New(client, extClient, promClient, opt.esOperatorTag, opt.elasticDumpTag, opt.governingService).RunAndHold()
+	esCtrl.New(client, extClient, promClient, opt.esOperatorTag, opt.elasticDumpTag, opt.governingService, opt.address).Run()
 
-	hold.Hold()
+	m := pat.New()
+	http.Handle("/metrics", promhttp.Handler())
+	http.Handle("/", m)
+
+	log.Infof("Starting Server: %s", opt.address)
+	log.Fatal(http.ListenAndServe(opt.address, m))
 }
