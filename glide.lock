@@ -1,5 +1,5 @@
 hash: b37c23cdbc89bc1fda839dda9cf2e1cd8f73026582ffa50acee778ca96227527
-updated: 2017-05-26T01:46:27.256290646-07:00
+updated: 2017-05-26T07:13:48.478060236-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -157,12 +157,13 @@ imports:
   - pkg/controller
   - pkg/docker
   - pkg/eventer
+  - pkg/monitor
 - name: github.com/k8sdb/elasticsearch
-  version: 2a368be249aff8b1012e27d349727ccf76fb3f11
+  version: 6a20ad187b281c1cd8ce32644a1959dcf1f56f30
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/postgres
-  version: a3437eb042582ab67764238c257f0c13b5ae0dab
+  version: 87ae19ee37d92a5fd429444e17fe7ff7d47f52e9
   subpackages:
   - pkg/controller
 - name: github.com/lib/pq

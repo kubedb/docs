@@ -11,9 +11,9 @@ import (
 
 func (c *Controller) runHTTPServer() {
 	m := pat.New()
-	http.Handle("/metrics", promhttp.Handler())
+	m.Get("/metrics", promhttp.Handler())
 	http.Handle("/", m)
 
-	log.Infof("Starting Server: %s", c.address)
-	log.Fatal(http.ListenAndServe(c.address, m))
+	log.Infof("Starting Server: %s", c.opt.Address)
+	log.Fatal(http.ListenAndServe(c.opt.Address, nil))
 }

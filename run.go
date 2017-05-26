@@ -2,12 +2,15 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/appscode/go/runtime"
-	"github.com/appscode/go/strings"
+	stringz "github.com/appscode/go/strings"
 	"github.com/appscode/go/version"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
@@ -19,75 +22,78 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	cgcmd "k8s.io/client-go/tools/clientcmd"
+	kapi "k8s.io/kubernetes/pkg/api"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 )
 
-type Options struct {
-	masterURL        string
-	kubeconfigPath   string
-	governingService string
-	// For elasticsearch operator
-	esOperatorTag  string
-	elasticDumpTag string
-	// For postgres operator
-	postgresUtilTag string
-	address         string
-}
+var (
+	masterURL         string
+	kubeconfigPath    string
+	governingService  string = "kubedb"
+	esOperatorTag     string = stringz.Val(version.Version.Version, "canary")
+	elasticDumpTag    string = "canary"
+	postgresUtilTag   string = "canary-util"
+	address           string = ":8080"
+	exporterNamespace string = namespace()
+	exporterTag       string
+)
 
 func NewCmdRun() *cobra.Command {
-	opt := Options{
-		esOperatorTag:    strings.Val(version.Version.Version, "canary"),
-		elasticDumpTag:   "canary",
-		postgresUtilTag:  "canary-util",
-		governingService: "kubedb",
-	}
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run kubedb operator in Kubernetes",
 		Run: func(cmd *cobra.Command, args []string) {
-			run(opt)
+			run()
 		},
 	}
 
-	cmd.Flags().StringVar(&opt.masterURL, "master", "", "The address of the Kubernetes API server (overrides any value in kubeconfig)")
-	cmd.Flags().StringVar(&opt.kubeconfigPath, "kubeconfig", "", "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
-	cmd.Flags().StringVar(&opt.esOperatorTag, "es.operator", opt.esOperatorTag, "Tag of elasticsearch opearator")
-	cmd.Flags().StringVar(&opt.elasticDumpTag, "es.elasticdump", opt.elasticDumpTag, "Tag of elasticdump")
-	cmd.Flags().StringVar(&opt.postgresUtilTag, "pg.postgres-util", opt.postgresUtilTag, "Tag of postgres util")
-	cmd.Flags().StringVar(&opt.governingService, "governing-service", opt.governingService, "Governing service for database statefulset")
-	cmd.Flags().StringVar(&opt.address, "address", ":8080", "Address to listen on for web interface and telemetry.")
+	// operator flags
+	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
+	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
+	cmd.Flags().StringVar(&governingService, "governing-service", governingService, "Governing service for database statefulset")
+	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
+
+	// postgres flags
+	cmd.Flags().StringVar(&postgresUtilTag, "postgres.util-tag", postgresUtilTag, "Tag of postgres util")
+
+	// elasticdump flags
+	cmd.Flags().StringVar(&elasticDumpTag, "elasticdump.tag", elasticDumpTag, "Tag of elasticdump")
+
+	// exporter tags
+	cmd.Flags().StringVar(&exporterNamespace, "exporter.namespace", exporterNamespace, "Namespace for monitoring exporter")
+	cmd.Flags().StringVar(&exporterTag, "exporter.tag", exporterTag, "Tag of monitoring exporter")
 
 	return cmd
 }
 
-func run(opt Options) {
+func run() {
 	// Check elasticsearch operator docker image tag
-	if err := docker.CheckDockerImageVersion(esCtrl.ImageOperatorElasticsearch, opt.esOperatorTag); err != nil {
-		log.Fatalf(`Image %v:%v not found.`, esCtrl.ImageOperatorElasticsearch, opt.esOperatorTag)
+	if err := docker.CheckDockerImageVersion(docker.ImageElasticOperator, esOperatorTag); err != nil {
+		log.Fatalf(`Image %v:%v not found.`, docker.ImageElasticOperator, esOperatorTag)
 	}
 
 	// Check elasticdump docker image tag
-	if err := docker.CheckDockerImageVersion(esCtrl.ImageElasticDump, opt.elasticDumpTag); err != nil {
-		log.Fatalf(`Image %v:%v not found.`, esCtrl.ImageElasticDump, opt.elasticDumpTag)
+	if err := docker.CheckDockerImageVersion(docker.ImageElasticdump, elasticDumpTag); err != nil {
+		log.Fatalf(`Image %v:%v not found.`, docker.ImageElasticdump, elasticDumpTag)
 	}
 
 	// Check postgres docker image tag
-	if err := docker.CheckDockerImageVersion(pgCtrl.ImagePostgres, opt.postgresUtilTag); err != nil {
-		log.Fatalf(`Image %v:%v not found.`, pgCtrl.ImagePostgres, opt.postgresUtilTag)
+	if err := docker.CheckDockerImageVersion(docker.ImagePostgres, postgresUtilTag); err != nil {
+		log.Fatalf(`Image %v:%v not found.`, docker.ImagePostgres, postgresUtilTag)
 	}
 
-	config, err := clientcmd.BuildConfigFromFlags(opt.masterURL, opt.kubeconfigPath)
+	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
-		log.Fatalf("Could not get kubernetes config: %s", err)
+		log.Fatalf("Could not get Kubernetes config: %s", err)
 	}
 
 	client := clientset.NewForConfigOrDie(config)
 	extClient := tcs.NewExtensionsForConfigOrDie(config)
 
-	cgConfig, err := cgcmd.BuildConfigFromFlags(opt.masterURL, opt.kubeconfigPath)
+	cgConfig, err := cgcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
-		log.Fatalf("Could not get kubernetes config: %s", err)
+		log.Fatalf("Could not get Kubernetes config: %s", err)
 	}
 
 	promClient, err := pcm.NewForConfig(cgConfig)
@@ -99,16 +105,39 @@ func run(opt Options) {
 
 	defer runtime.HandleCrash()
 
-	pgCtrl.New(client, extClient, promClient, opt.postgresUtilTag, opt.governingService, opt.address).Run()
+	pgCtrl.New(client, extClient, promClient, pgCtrl.Options{
+		GoverningService:  governingService,
+		PostgresUtilTag:   postgresUtilTag,
+		ExporterNamespace: exporterNamespace,
+		ExporterTag:       exporterTag,
+	}).Run()
 	// Need to wait for sometime to run another controller.
 	// Or multiple controller will try to create common TPR simultaneously which gives error
 	time.Sleep(time.Second * 10)
-	esCtrl.New(client, extClient, promClient, opt.esOperatorTag, opt.elasticDumpTag, opt.governingService, opt.address).Run()
+	esCtrl.New(client, extClient, promClient, esCtrl.Options{
+		GoverningService:  governingService,
+		ElasticDumpTag:    elasticDumpTag,
+		OperatorTag:       esOperatorTag,
+		ExporterNamespace: exporterNamespace,
+		ExporterTag:       exporterTag,
+	}).Run()
 
 	m := pat.New()
-	http.Handle("/metrics", promhttp.Handler())
+	m.Get("/metrics", promhttp.Handler())
 	http.Handle("/", m)
 
-	log.Infof("Starting Server: %s", opt.address)
-	log.Fatal(http.ListenAndServe(opt.address, m))
+	log.Infof("Starting Server: %s", address)
+	log.Fatal(http.ListenAndServe(address, nil))
+}
+
+func namespace() string {
+	if ns := os.Getenv("OPERATOR_NAMESPACE"); ns != "" {
+		return ns
+	}
+	if data, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
+		if ns := strings.TrimSpace(string(data)); len(ns) > 0 {
+			return ns
+		}
+	}
+	return kapi.NamespaceDefault
 }

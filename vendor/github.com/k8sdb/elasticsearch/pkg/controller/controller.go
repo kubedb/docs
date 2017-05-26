@@ -24,6 +24,21 @@ import (
 	"k8s.io/kubernetes/pkg/watch"
 )
 
+type Options struct {
+	// Tag of elasticdump
+	ElasticDumpTag string
+	// Tag of elasticsearch operator
+	OperatorTag string
+	// Exporter namespace
+	ExporterNamespace string
+	// Tag of Exporter
+	ExporterTag string
+	// Governing service
+	GoverningService string
+	// Address to listen on for web interface and telemetry.
+	Address string
+}
+
 type Controller struct {
 	*amc.Controller
 	// Cron Controller
@@ -32,14 +47,8 @@ type Controller struct {
 	promClient *pcm.MonitoringV1alpha1Client
 	// Event Recorder
 	eventRecorder record.EventRecorder
-	// Tag of elasticsearch opearator
-	operatorTag string
-	// Tag of elasticdump
-	elasticDumpTag string
-	// Governing service
-	governingService string
-	// Address to listen on for web interface and telemetry.
-	address string
+	// Flag data
+	opt Options
 	// sync time to sync the list.
 	syncPeriod time.Duration
 }
@@ -51,24 +60,18 @@ func New(
 	client clientset.Interface,
 	extClient tcs.ExtensionInterface,
 	promClient *pcm.MonitoringV1alpha1Client,
-	operatorTag string,
-	elasticDumpTag string,
-	governingService string,
-	address string,
+	opt Options,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
 			Client:    client,
 			ExtClient: extClient,
 		},
-		cronController:   amc.NewCronController(client, extClient),
-		promClient:       promClient,
-		eventRecorder:    eventer.NewEventRecorder(client, "Elastic Controller"),
-		operatorTag:      operatorTag,
-		elasticDumpTag:   elasticDumpTag,
-		governingService: governingService,
-		address:          address,
-		syncPeriod:       time.Minute * 2,
+		cronController: amc.NewCronController(client, extClient),
+		promClient:     promClient,
+		eventRecorder:  eventer.NewEventRecorder(client, "Elastic operator"),
+		opt:            opt,
+		syncPeriod:     time.Minute * 2,
 	}
 }
 
@@ -215,6 +218,7 @@ func (c *Controller) ensureThirdPartyResource() {
 		ObjectMeta: kapi.ObjectMeta{
 			Name: resourceName,
 		},
+		Description: "Elasticsearch Database in Kubernetes by appscode.com",
 		Versions: []extensions.APIVersion{
 			{
 				Name: tapi.V1beta1SchemeGroupVersion.Version,
