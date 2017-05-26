@@ -36,7 +36,7 @@ func NewCmdRun() *cobra.Command {
 		esOperatorTag:    strings.Val(version.Version.Version, "canary"),
 		elasticDumpTag:   "canary",
 		postgresUtilTag:  "canary-util",
-		governingService: "k8sdb",
+		governingService: "kubedb",
 	}
 	cmd := &cobra.Command{
 		Use:   "run",
