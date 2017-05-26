@@ -89,7 +89,7 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 	)
 
 	// create Governing Service
-	governingService := c.governingService
+	governingService := c.opt.GoverningService
 	if err := c.CreateGoverningService(governingService, elastic.Namespace); err != nil {
 		c.eventRecorder.Eventf(
 			elastic,
@@ -208,6 +208,26 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 			log.Errorln(err)
 		}
 	}
+
+	if elastic.Spec.Monitor != nil {
+		if err := c.addMonitor(elastic); err != nil {
+			c.eventRecorder.Eventf(
+				elastic,
+				kapi.EventTypeWarning,
+				eventer.EventReasonFailedToAddMonitor,
+				"Failed to add monitoring system. Reason: %v",
+				err,
+			)
+			log.Errorln(err)
+			return nil
+		}
+		c.eventRecorder.Event(
+			elastic,
+			kapi.EventTypeNormal,
+			eventer.EventReasonSuccessfulMonitorAdd,
+			"Successfully added monitoring system.",
+		)
+	}
 	return nil
 }
 
@@ -305,6 +325,26 @@ func (c *Controller) pause(elastic *tapi.Elastic) error {
 	)
 
 	c.cronController.StopBackupScheduling(elastic.ObjectMeta)
+
+	if elastic.Spec.Monitor != nil {
+		if err := c.deleteMonitor(elastic); err != nil {
+			c.eventRecorder.Eventf(
+				elastic,
+				kapi.EventTypeWarning,
+				eventer.EventReasonFailedToDeleteMonitor,
+				"Failed to delete monitoring system. Reason: %v",
+				err,
+			)
+			log.Errorln(err)
+			return nil
+		}
+		c.eventRecorder.Event(
+			elastic,
+			kapi.EventTypeNormal,
+			eventer.EventReasonSuccessfulMonitorDelete,
+			"Successfully deleted monitoring system.",
+		)
+	}
 	return nil
 }
 
@@ -376,5 +416,26 @@ func (c *Controller) update(oldElastic, updatedElastic *tapi.Elastic) error {
 			c.cronController.StopBackupScheduling(updatedElastic.ObjectMeta)
 		}
 	}
+
+	if !reflect.DeepEqual(oldElastic.Spec.Monitor, updatedElastic.Spec.Monitor) {
+		if err := c.updateMonitor(oldElastic, updatedElastic); err != nil {
+			c.eventRecorder.Eventf(
+				updatedElastic,
+				kapi.EventTypeWarning,
+				eventer.EventReasonFailedToUpdateMonitor,
+				"Failed to update monitoring system. Reason: %v",
+				err,
+			)
+			log.Errorln(err)
+			return nil
+		}
+		c.eventRecorder.Event(
+			updatedElastic,
+			kapi.EventTypeNormal,
+			eventer.EventReasonSuccessfulMonitorUpdate,
+			"Successfully updated monitoring system.",
+		)
+	}
+
 	return nil
 }

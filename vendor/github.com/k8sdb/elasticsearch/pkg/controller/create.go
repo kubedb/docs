@@ -7,6 +7,7 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
+	"github.com/k8sdb/apimachinery/pkg/docker"
 	kapi "k8s.io/kubernetes/pkg/api"
 	k8serr "k8s.io/kubernetes/pkg/api/errors"
 	kapps "k8s.io/kubernetes/pkg/apis/apps"
@@ -15,9 +16,7 @@ import (
 )
 
 const (
-	annotationDatabaseVersion  = "elastic.kubedb.com/version"
-	ImageElasticsearch         = "kubedb/elasticsearch"
-	ImageOperatorElasticsearch = "kubedb/es-operator"
+	annotationDatabaseVersion = "elastic.kubedb.com/version"
 	// Duration in Minute
 	// Check whether pod under StatefulSet is running or not
 	// Continue checking for this duration until failure
@@ -131,8 +130,8 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*kapps.StatefulSe
 	}
 	podLabels[amc.LabelDatabaseName] = elastic.Name
 
-	dockerImage := fmt.Sprintf("%v:%v", ImageElasticsearch, elastic.Spec.Version)
-	initContainerImage := fmt.Sprintf("%v:%v", ImageOperatorElasticsearch, c.operatorTag)
+	dockerImage := fmt.Sprintf("%v:%v", docker.ImageElasticsearch, elastic.Spec.Version)
+	initContainerImage := fmt.Sprintf("%v:%v", docker.ImageElasticOperator, c.opt.OperatorTag)
 
 	// SatatefulSet for Elastic database
 	statefulSetName := getStatefulSetName(elastic.Name)
@@ -145,7 +144,7 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*kapps.StatefulSe
 		},
 		Spec: kapps.StatefulSetSpec{
 			Replicas:    elastic.Spec.Replicas,
-			ServiceName: c.governingService,
+			ServiceName: c.opt.GoverningService,
 			Template: kapi.PodTemplateSpec{
 				ObjectMeta: kapi.ObjectMeta{
 					Labels:      podLabels,
@@ -355,7 +354,7 @@ func (c *Controller) createRestoreJob(elastic *tapi.Elastic, snapshot *tapi.Snap
 					Containers: []kapi.Container{
 						{
 							Name:  SnapshotProcess_Restore,
-							Image: ImageElasticDump + ":" + c.elasticDumpTag,
+							Image: docker.ImageElasticdump + ":" + c.opt.ElasticDumpTag,
 							Args: []string{
 								fmt.Sprintf(`--process=%s`, SnapshotProcess_Restore),
 								fmt.Sprintf(`--host=%s`, databaseName),

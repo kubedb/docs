@@ -7,6 +7,7 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
+	"github.com/k8sdb/apimachinery/pkg/docker"
 	kapi "k8s.io/kubernetes/pkg/api"
 	k8serr "k8s.io/kubernetes/pkg/api/errors"
 	kapps "k8s.io/kubernetes/pkg/apis/apps"
@@ -16,7 +17,6 @@ import (
 
 const (
 	annotationDatabaseVersion = "postgres.kubedb.com/version"
-	ImagePostgres             = "kubedb/postgres"
 	modeBasic                 = "basic"
 	// Duration in Minute
 	// Check whether pod under StatefulSet is running or not
@@ -126,7 +126,7 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*kapps.Stateful
 	}
 	podLabels[amc.LabelDatabaseName] = postgres.Name
 
-	dockerImage := fmt.Sprintf("%v:%v", ImagePostgres, postgres.Spec.Version)
+	dockerImage := fmt.Sprintf("%v:%v", docker.ImagePostgres, postgres.Spec.Version)
 
 	// SatatefulSet for Postgres database
 	statefulSetName := getStatefulSetName(postgres.Name)
@@ -141,7 +141,7 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*kapps.Stateful
 		},
 		Spec: kapps.StatefulSetSpec{
 			Replicas:    replicas,
-			ServiceName: c.governingService,
+			ServiceName: c.opt.GoverningService,
 			Template: kapi.PodTemplateSpec{
 				ObjectMeta: kapi.ObjectMeta{
 					Labels:      podLabels,
@@ -406,7 +406,7 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 					Containers: []kapi.Container{
 						{
 							Name:  SnapshotProcess_Restore,
-							Image: ImagePostgres + ":" + c.postgresUtilTag,
+							Image: docker.ImagePostgres + ":" + c.opt.PostgresUtilTag,
 							Args: []string{
 								fmt.Sprintf(`--process=%s`, SnapshotProcess_Restore),
 								fmt.Sprintf(`--host=%s`, databaseName),
