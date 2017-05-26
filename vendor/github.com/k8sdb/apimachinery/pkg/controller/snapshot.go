@@ -96,6 +96,7 @@ func (c *SnapshotController) ensureThirdPartyResource() {
 		ObjectMeta: kapi.ObjectMeta{
 			Name: resourceName,
 		},
+		Description: "Snapshot of kubedb databases",
 		Versions: []extensions.APIVersion{
 			{
 				Name: tapi.V1beta1SchemeGroupVersion.Version,

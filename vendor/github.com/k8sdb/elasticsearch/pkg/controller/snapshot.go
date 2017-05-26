@@ -7,6 +7,7 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
+	"github.com/k8sdb/apimachinery/pkg/docker"
 	kapi "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	kbatch "k8s.io/kubernetes/pkg/apis/batch"
@@ -28,7 +29,7 @@ func (c *Controller) ValidateSnapshot(snapshot *tapi.Snapshot) error {
 		return fmt.Errorf(`Object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
 	}
 
-	if err := amc.CheckDockerImageVersion(ImageElasticDump, c.elasticDumpTag); err != nil {
+	if err := docker.CheckDockerImageVersion(ImageElasticDump, c.elasticDumpTag); err != nil {
 		return fmt.Errorf(`Image %v:%v not found`, ImageElasticDump, c.elasticDumpTag)
 	}
 

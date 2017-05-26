@@ -36,6 +36,8 @@ type Controller struct {
 	postgresUtilTag string
 	// Governing service
 	governingService string
+	// Address to listen on for web interface and telemetry.
+	address string
 	// sync time to sync the list.
 	syncPeriod time.Duration
 }
@@ -48,7 +50,7 @@ func New(
 	extClient tcs.ExtensionInterface,
 	promClient *pcm.MonitoringV1alpha1Client,
 	postgresUtilTag,
-	governingService string,
+	governingService, address string,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
@@ -60,12 +62,12 @@ func New(
 		eventRecorder:    eventer.NewEventRecorder(client, "Postgres Controller"),
 		postgresUtilTag:  postgresUtilTag,
 		governingService: governingService,
+		address:          address,
 		syncPeriod:       time.Minute * 2,
 	}
 }
 
-// Blocks caller. Intended to be called as a Go routine.
-func (c *Controller) RunAndHold() {
+func (c *Controller) Run() {
 	// Ensure Postgres TPR
 	c.ensureThirdPartyResource()
 
@@ -80,6 +82,14 @@ func (c *Controller) RunAndHold() {
 	go c.watchSnapshot()
 	// Watch DormantDatabase with labelSelector only for Postgres
 	go c.watchDormantDatabase()
+}
+
+// Blocks caller. Intended to be called as a Go routine.
+func (c *Controller) RunAndHold() {
+	c.Run()
+
+	// Run HTTP server to expose metrics, audit endpoint & debug profiles.
+	go c.runHTTPServer()
 	// hold
 	hold.Hold()
 }

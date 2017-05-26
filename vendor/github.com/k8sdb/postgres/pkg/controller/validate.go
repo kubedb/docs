@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	tapi "github.com/k8sdb/apimachinery/api"
-	amc "github.com/k8sdb/apimachinery/pkg/controller"
+	"github.com/k8sdb/apimachinery/pkg/docker"
 )
 
 func (c *Controller) validatePostgres(postgres *tapi.Postgres) error {
@@ -12,7 +12,7 @@ func (c *Controller) validatePostgres(postgres *tapi.Postgres) error {
 		return fmt.Errorf(`Object 'Version' is missing in '%v'`, postgres.Spec)
 	}
 
-	if err := amc.CheckDockerImageVersion(ImagePostgres, postgres.Spec.Version); err != nil {
+	if err := docker.CheckDockerImageVersion(ImagePostgres, postgres.Spec.Version); err != nil {
 		return fmt.Errorf(`Image %v:%v not found`, ImagePostgres, postgres.Spec.Version)
 	}
 

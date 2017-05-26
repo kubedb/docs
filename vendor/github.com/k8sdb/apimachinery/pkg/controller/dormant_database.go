@@ -92,6 +92,7 @@ func (c *DormantDbController) ensureThirdPartyResource() {
 		ObjectMeta: kapi.ObjectMeta{
 			Name: resourceName,
 		},
+		Description: "Kubedb dormant databases",
 		Versions: []extensions.APIVersion{
 			{
 				Name: tapi.V1beta1SchemeGroupVersion.Version,
