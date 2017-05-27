@@ -1,5 +1,5 @@
-hash: b37c23cdbc89bc1fda839dda9cf2e1cd8f73026582ffa50acee778ca96227527
-updated: 2017-05-26T07:13:48.478060236-07:00
+hash: 701d3927120929f38a75872145cf36596c80752b7707f103ca3ec0860070bb36
+updated: 2017-05-27T02:29:01.566443085-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -56,7 +56,7 @@ imports:
 - name: github.com/blang/semver
   version: 31b736133b98f26d5e078ec9eb591666edfd091f
 - name: github.com/coreos/go-oidc
-  version: 5644a2f50e2d2d5ba0b474bc5bc55fea1925936d
+  version: be73733bb8cc830d0205609b95d125215f8e9c70
   subpackages:
   - http
   - jose
@@ -70,7 +70,9 @@ imports:
   - httputil
   - timeutil
 - name: github.com/coreos/prometheus-operator
-  version: 6eaca3f4ce6cd9d7384097ac484b0178a95bfc56
+  version: 77ed82f3c040007cea3015404637ac78cb1f968a
+  repo: https://github.com/appscode/prometheus-operator.git
+  vcs: git
   subpackages:
   - pkg/client/monitoring/v1alpha1
 - name: github.com/davecgh/go-spew
@@ -90,7 +92,7 @@ imports:
 - name: github.com/docker/libtrust
   version: aabc10ec26b754e797f9028f4589c5b7bd90dc20
 - name: github.com/emicklei/go-restful
-  version: 89ef8af493ab468a45a42bb0d89a06fccdd2fb22
+  version: 09691a3b6378b740595c1002f40c34dd5f218a22
   subpackages:
   - log
   - swagger
@@ -122,7 +124,7 @@ imports:
   subpackages:
   - proto
 - name: github.com/google/gofuzz
-  version: bbcb9da2d746f8bdbd6a936686a0a6067ada0ec5
+  version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/gorilla/context
   version: 215affda49addc4c8ef7e2534915df2c8c35c6cd
 - name: github.com/gorilla/mux
@@ -149,7 +151,7 @@ imports:
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/k8sdb/apimachinery
-  version: 1b710fa293cac69e288891e6a9917726c0245380
+  version: 02b95ae0c68592352ecb8da9f53424495b5330a7
   subpackages:
   - api
   - api/install
@@ -159,11 +161,11 @@ imports:
   - pkg/eventer
   - pkg/monitor
 - name: github.com/k8sdb/elasticsearch
-  version: 6a20ad187b281c1cd8ce32644a1959dcf1f56f30
+  version: 9bd449c1659e68d596fef2a0677e1a5a82cbea41
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/postgres
-  version: 87ae19ee37d92a5fd429444e17fe7ff7d47f52e9
+  version: 9379bf9ee7926c52c0a065d4b117997b196c6725
   subpackages:
   - pkg/controller
 - name: github.com/lib/pq
@@ -218,11 +220,11 @@ imports:
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 - name: github.com/ugorji/go
-  version: f1f1a805ed361a0e078bb537e4ea78cd37dcf065
+  version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:
   - codec
 - name: golang.org/x/crypto
-  version: 1f22c0103821b9390939b6776727195525381532
+  version: d172538b2cfce0c13cee31e647d0367aa8cd2486
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
@@ -292,29 +294,24 @@ imports:
   version: be2e0b0deed5a68ffee390b4583a13aff8321535
 - name: gopkg.in/yaml.v2
   version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
-- name: k8s.io/client-go
-  version: e121606b0d09b2e1c467183ee46217fa85a6b672
+- name: k8s.io/apimachinery
+  version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
   subpackages:
-  - dynamic
-  - pkg/api
   - pkg/api/errors
   - pkg/api/meta
-  - pkg/api/meta/metatypes
   - pkg/api/resource
-  - pkg/api/unversioned
-  - pkg/api/v1
-  - pkg/api/validation/path
-  - pkg/apis/autoscaling
-  - pkg/apis/batch
-  - pkg/apis/certificates
-  - pkg/apis/extensions
-  - pkg/auth/user
+  - pkg/apimachinery
+  - pkg/apimachinery/announced
+  - pkg/apimachinery/registered
+  - pkg/apis/meta/v1
+  - pkg/apis/meta/v1/unstructured
   - pkg/conversion
   - pkg/conversion/queryparams
   - pkg/fields
-  - pkg/genericapiserver/openapi/common
   - pkg/labels
+  - pkg/openapi
   - pkg/runtime
+  - pkg/runtime/schema
   - pkg/runtime/serializer
   - pkg/runtime/serializer/json
   - pkg/runtime/serializer/protobuf
@@ -322,33 +319,34 @@ imports:
   - pkg/runtime/serializer/streaming
   - pkg/runtime/serializer/versioning
   - pkg/selection
-  - pkg/third_party/forked/golang/reflect
   - pkg/types
-  - pkg/util
-  - pkg/util/cert
-  - pkg/util/clock
   - pkg/util/errors
-  - pkg/util/flowcontrol
   - pkg/util/framer
-  - pkg/util/homedir
-  - pkg/util/integer
   - pkg/util/intstr
   - pkg/util/json
-  - pkg/util/labels
   - pkg/util/net
-  - pkg/util/parsers
   - pkg/util/rand
   - pkg/util/runtime
   - pkg/util/sets
-  - pkg/util/uuid
   - pkg/util/validation
   - pkg/util/validation/field
   - pkg/util/wait
   - pkg/util/yaml
   - pkg/version
   - pkg/watch
-  - pkg/watch/versioned
+  - third_party/forked/golang/reflect
+- name: k8s.io/client-go
+  version: 3627aeb7d4f6ade38f995d2c923e459146493c7e
+  subpackages:
+  - dynamic
+  - pkg/api
+  - pkg/api/v1
+  - pkg/apis/extensions
+  - pkg/util
+  - pkg/util/parsers
+  - pkg/version
   - rest
+  - rest/watch
   - tools/auth
   - tools/clientcmd
   - tools/clientcmd/api
@@ -356,6 +354,11 @@ imports:
   - tools/clientcmd/api/v1
   - tools/metrics
   - transport
+  - util/cert
+  - util/clock
+  - util/flowcontrol
+  - util/homedir
+  - util/integer
 - name: k8s.io/kubernetes
   version: 8eb75a5810cba92ccad845ca360cf924f2385881
   subpackages:

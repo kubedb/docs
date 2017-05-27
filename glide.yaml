@@ -13,8 +13,16 @@ import:
   version: v0.10.0
 - package: k8s.io/kubernetes
   version: ~1.5.0
+- package: github.com/coreos/prometheus-operator
+  repo: https://github.com/appscode/prometheus-operator.git
+  vcs: git
+  version: off-car-exporter
+- package: github.com/gogo/protobuf/proto
+  version: e18d7aa8f8c624c915db340349aad4c49b10d173
+- package: k8s.io/apimachinery/pkg/api/errors
+  version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
 - package: k8s.io/client-go
-  version: e121606b0d09b2e1c467183ee46217fa85a6b672
+  version: v3.0.0-beta.0
 - package: github.com/appscode/pat
 - package: github.com/golang/protobuf
   version: 8ee79997227bf9b34611aee7946ae64735e6fd93
