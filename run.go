@@ -29,11 +29,11 @@ var (
 	masterURL         string
 	kubeconfigPath    string
 	governingService  string = "kubedb"
-	esOperatorTag     string = "canary"
-	elasticDumpTag    string = "canary"
+	esOperatorTag     string = "1.0.0"
+	elasticDumpTag    string = "2.4.2"
 	address           string = ":8080"
 	exporterNamespace string = namespace()
-	exporterTag       string
+	exporterTag       string = "1.0.0"
 )
 
 func NewCmdRun() *cobra.Command {
