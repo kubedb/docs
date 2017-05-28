@@ -10,8 +10,6 @@ import (
 	"time"
 
 	"github.com/appscode/go/runtime"
-	stringz "github.com/appscode/go/strings"
-	"github.com/appscode/go/version"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
@@ -31,9 +29,8 @@ var (
 	masterURL         string
 	kubeconfigPath    string
 	governingService  string = "kubedb"
-	esOperatorTag     string = stringz.Val(version.Version.Version, "canary")
+	esOperatorTag     string = "canary"
 	elasticDumpTag    string = "canary"
-	postgresUtilTag   string = "canary-util"
 	address           string = ":8080"
 	exporterNamespace string = namespace()
 	exporterTag       string
@@ -54,8 +51,8 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&governingService, "governing-service", governingService, "Governing service for database statefulset")
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
 
-	// postgres flags
-	cmd.Flags().StringVar(&postgresUtilTag, "postgres.util-tag", postgresUtilTag, "Tag of postgres util")
+	// elasticsearch flags
+	cmd.Flags().StringVar(&esOperatorTag, "elasticsearch.operator-tag", esOperatorTag, "Tag of kubedb/es-operator used for discovery")
 
 	// elasticdump flags
 	cmd.Flags().StringVar(&elasticDumpTag, "elasticdump.tag", elasticDumpTag, "Tag of elasticdump")
@@ -76,11 +73,6 @@ func run() {
 	// Check elasticdump docker image tag
 	if err := docker.CheckDockerImageVersion(docker.ImageElasticdump, elasticDumpTag); err != nil {
 		log.Fatalf(`Image %v:%v not found.`, docker.ImageElasticdump, elasticDumpTag)
-	}
-
-	// Check postgres docker image tag
-	if err := docker.CheckDockerImageVersion(docker.ImagePostgres, postgresUtilTag); err != nil {
-		log.Fatalf(`Image %v:%v not found.`, docker.ImagePostgres, postgresUtilTag)
 	}
 
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
@@ -107,7 +99,6 @@ func run() {
 
 	pgCtrl.New(client, extClient, promClient, pgCtrl.Options{
 		GoverningService:  governingService,
-		PostgresUtilTag:   postgresUtilTag,
 		ExporterNamespace: exporterNamespace,
 		ExporterTag:       exporterTag,
 	}).Run()

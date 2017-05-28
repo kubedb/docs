@@ -25,8 +25,6 @@ import (
 )
 
 type Options struct {
-	// Tag of postgres util
-	PostgresUtilTag string
 	// Exporter namespace
 	ExporterNamespace string
 	// Tag of Exporter

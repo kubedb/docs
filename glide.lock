@@ -1,5 +1,5 @@
 hash: 701d3927120929f38a75872145cf36596c80752b7707f103ca3ec0860070bb36
-updated: 2017-05-27T02:29:01.566443085-07:00
+updated: 2017-05-28T14:19:06.918017824-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -70,7 +70,7 @@ imports:
   - httputil
   - timeutil
 - name: github.com/coreos/prometheus-operator
-  version: 77ed82f3c040007cea3015404637ac78cb1f968a
+  version: 6d45d8c65343a5e6cbe23e7ef17aafbd64b29f03
   repo: https://github.com/appscode/prometheus-operator.git
   vcs: git
   subpackages:
@@ -97,7 +97,7 @@ imports:
   - log
   - swagger
 - name: github.com/ghodss/yaml
-  version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
+  version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/go-ini/ini
   version: 2e44421e256d82ebbf3d4d4fcabe8930b905eff3
 - name: github.com/go-openapi/jsonpointer
@@ -165,7 +165,7 @@ imports:
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/postgres
-  version: 9379bf9ee7926c52c0a065d4b117997b196c6725
+  version: 8bddbe315cb26f81926206b1dd3ad199745d2101
   subpackages:
   - pkg/controller
 - name: github.com/lib/pq
@@ -216,7 +216,7 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: 4b6ea7319e214d98c938f12692336f7ca9348d6b
 - name: github.com/spf13/cobra
-  version: ca57f0f5dba473a8a58765d16d7e811fb8027add
+  version: e606913c4ee45fec232e67e70105fb6c866b95d9
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 - name: github.com/ugorji/go
