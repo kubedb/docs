@@ -14,6 +14,7 @@ import (
 	"github.com/appscode/pat"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	"github.com/k8sdb/apimachinery/pkg/analytics"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	esCtrl "github.com/k8sdb/elasticsearch/pkg/controller"
 	pgCtrl "github.com/k8sdb/postgres/pkg/controller"
@@ -99,6 +100,11 @@ func run() {
 
 	fmt.Println("Starting operator...")
 
+	if enableAnalytics {
+		analytics.Enable()
+	}
+	analytics.SendEvent(docker.ImageOperator, "started", Version)
+
 	defer runtime.HandleCrash()
 
 	pgCtrl.New(client, extClient, promClient, pgCtrl.Options{
@@ -107,6 +113,7 @@ func run() {
 		ExporterTag:       exporterTag,
 		EnableAnalytics:   enableAnalytics,
 	}).Run()
+
 	// Need to wait for sometime to run another controller.
 	// Or multiple controller will try to create common TPR simultaneously which gives error
 	time.Sleep(time.Second * 10)
