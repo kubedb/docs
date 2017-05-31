@@ -12,8 +12,9 @@ func (c *Controller) validatePostgres(postgres *tapi.Postgres) error {
 		return fmt.Errorf(`Object 'Version' is missing in '%v'`, postgres.Spec)
 	}
 
-	if err := docker.CheckDockerImageVersion(docker.ImagePostgres, postgres.Spec.Version); err != nil {
-		return fmt.Errorf(`Image %v:%v not found`, docker.ImagePostgres, postgres.Spec.Version)
+	version := fmt.Sprintf("%v-db", postgres.Spec.Version)
+	if err := docker.CheckDockerImageVersion(docker.ImagePostgres, version); err != nil {
+		return fmt.Errorf(`Image %v:%v not found`, docker.ImagePostgres, version)
 	}
 
 	if postgres.Spec.Storage != nil {

@@ -9,6 +9,7 @@ import (
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	tapi "github.com/k8sdb/apimachinery/api"
 	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	"github.com/k8sdb/apimachinery/pkg/analytics"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	kapi "k8s.io/kubernetes/pkg/api"
@@ -33,6 +34,8 @@ type Options struct {
 	GoverningService string
 	// Address to listen on for web interface and telemetry.
 	Address string
+	// Enable analytics
+	EnableAnalytics bool
 }
 
 type Controller struct {
@@ -90,6 +93,11 @@ func (c *Controller) Run() {
 
 // Blocks caller. Intended to be called as a Go routine.
 func (c *Controller) RunAndHold() {
+	// Enable analytics
+	if c.opt.EnableAnalytics {
+		analytics.Enable()
+	}
+
 	c.Run()
 
 	// Run HTTP server to expose metrics, audit endpoint & debug profiles.
@@ -117,15 +125,21 @@ func (c *Controller) watchPostgres() {
 				postgres := obj.(*tapi.Postgres)
 				if postgres.Status.CreationTime == nil {
 					if err := c.create(postgres); err != nil {
+						postgresFailedToCreate()
 						log.Errorln(err)
 						c.pushFailureEvent(postgres, err.Error())
+					} else {
+						postgresSuccessfullyCreated()
 					}
 				}
 
 			},
 			DeleteFunc: func(obj interface{}) {
 				if err := c.pause(obj.(*tapi.Postgres)); err != nil {
+					postgresFailedToDelete()
 					log.Errorln(err)
+				} else {
+					postgresSuccessfullyDeleted()
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
@@ -256,4 +270,20 @@ func (c *Controller) pushFailureEvent(postgres *tapi.Postgres, reason string) {
 		)
 		log.Errorln(err)
 	}
+}
+
+func postgresSuccessfullyCreated() {
+	analytics.SendEvent(tapi.ResourceNamePostgres, "created", "success")
+}
+
+func postgresFailedToCreate() {
+	analytics.SendEvent(tapi.ResourceNamePostgres, "created", "failure")
+}
+
+func postgresSuccessfullyDeleted() {
+	analytics.SendEvent(tapi.ResourceNamePostgres, "deleted", "success")
+}
+
+func postgresFailedToDelete() {
+	analytics.SendEvent(tapi.ResourceNamePostgres, "deleted", "failure")
 }

@@ -34,6 +34,7 @@ var (
 	address           string = ":8080"
 	exporterNamespace string = namespace()
 	exporterTag       string = "1.0.0"
+	enableAnalytics   bool   = true
 )
 
 func NewCmdRun() *cobra.Command {
@@ -60,6 +61,9 @@ func NewCmdRun() *cobra.Command {
 	// exporter tags
 	cmd.Flags().StringVar(&exporterNamespace, "exporter.namespace", exporterNamespace, "Namespace for monitoring exporter")
 	cmd.Flags().StringVar(&exporterTag, "exporter.tag", exporterTag, "Tag of monitoring exporter")
+
+	// Analytics flags
+	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
 
 	return cmd
 }
@@ -101,6 +105,7 @@ func run() {
 		GoverningService:  governingService,
 		ExporterNamespace: exporterNamespace,
 		ExporterTag:       exporterTag,
+		EnableAnalytics:   enableAnalytics,
 	}).Run()
 	// Need to wait for sometime to run another controller.
 	// Or multiple controller will try to create common TPR simultaneously which gives error
@@ -111,6 +116,7 @@ func run() {
 		OperatorTag:       esOperatorTag,
 		ExporterNamespace: exporterNamespace,
 		ExporterTag:       exporterTag,
+		EnableAnalytics:   enableAnalytics,
 	}).Run()
 
 	m := pat.New()

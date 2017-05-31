@@ -8,6 +8,7 @@ import (
 	"github.com/appscode/log"
 	tapi "github.com/k8sdb/apimachinery/api"
 	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	"github.com/k8sdb/apimachinery/pkg/analytics"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	kapi "k8s.io/kubernetes/pkg/api"
 	k8serr "k8s.io/kubernetes/pkg/api/errors"
@@ -117,14 +118,20 @@ func (c *SnapshotController) watch() {
 				snapshot := obj.(*tapi.Snapshot)
 				if snapshot.Status.StartTime == nil {
 					if err := c.create(snapshot); err != nil {
+						snapshotFailedToCreate()
 						log.Errorln(err)
+					} else {
+						snapshotSuccessfullyCreated()
 					}
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
 				snapshot := obj.(*tapi.Snapshot)
 				if err := c.delete(snapshot); err != nil {
+					snapshotFailedToDelete()
 					log.Errorln(err)
+				} else {
+					snapshotSuccessfullyDeleted()
 				}
 			},
 		},
@@ -416,4 +423,20 @@ func (c *SnapshotController) checkSnapshotJob(snapshot *tapi.Snapshot, jobName s
 		log.Errorln(err)
 	}
 	return nil
+}
+
+func snapshotSuccessfullyCreated() {
+	analytics.SendEvent(tapi.ResourceNameSnapshot, "created", "success")
+}
+
+func snapshotFailedToCreate() {
+	analytics.SendEvent(tapi.ResourceNameSnapshot, "created", "failure")
+}
+
+func snapshotSuccessfullyDeleted() {
+	analytics.SendEvent(tapi.ResourceNameSnapshot, "deleted", "success")
+}
+
+func snapshotFailedToDelete() {
+	analytics.SendEvent(tapi.ResourceNameSnapshot, "deleted", "failure")
 }
