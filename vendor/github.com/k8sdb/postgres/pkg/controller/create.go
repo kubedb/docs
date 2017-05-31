@@ -118,7 +118,7 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*kapps.Stateful
 	for key, val := range postgres.Annotations {
 		annotations[key] = val
 	}
-	annotations[annotationDatabaseVersion] = postgres.Spec.Version
+	annotations[annotationDatabaseVersion] = string(postgres.Spec.Version)
 
 	podLabels := make(map[string]string)
 	for key, val := range labels {

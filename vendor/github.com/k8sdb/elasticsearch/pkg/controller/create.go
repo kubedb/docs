@@ -122,7 +122,7 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*kapps.StatefulSe
 	for key, val := range elastic.Annotations {
 		annotations[key] = val
 	}
-	annotations[annotationDatabaseVersion] = elastic.Spec.Version
+	annotations[annotationDatabaseVersion] = string(elastic.Spec.Version)
 
 	podLabels := make(map[string]string)
 	for key, val := range labels {

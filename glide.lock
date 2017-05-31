@@ -1,5 +1,5 @@
 hash: 0af10a4b19298eadbc7cc8f61e01b62f895981403982488cb3d3c2a16231c34d
-updated: 2017-05-31T05:39:17.803928505-07:00
+updated: 2017-05-31T15:44:51.454594901-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -9,9 +9,10 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: 04abd631dc552c01c9448db0763611932590cbc4
+  version: 5eabd32a8a0fe824b5e12c37dc53a0afea8507c9
   subpackages:
   - crypto/rand
+  - encoding/json/types
   - hold
   - runtime
   - version
@@ -152,7 +153,7 @@ imports:
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/k8sdb/apimachinery
-  version: 876cbe2166fbf793d72996e0e4d4f96e5e257fc7
+  version: 8c85cd38db3cb92b63cc6b4e1ae84573af9a0026
   subpackages:
   - api
   - api/install
@@ -163,15 +164,15 @@ imports:
   - pkg/eventer
   - pkg/monitor
 - name: github.com/k8sdb/elasticsearch
-  version: b59f19d8ccb307e57c140c7b61984cfdbac6ba84
+  version: 3db49b60e733216171b7336dec8a98e920f35d51
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/postgres
-  version: 106e0b12fc4c0cea95ddd90421f69e2dc9c7eb9c
+  version: 1aef6ca8fc8d0e1302f27065113d2a75410c6f8d
   subpackages:
   - pkg/controller
 - name: github.com/lib/pq
-  version: 50761b0867bd1d9d069276790bcd4a3bccf2324a
+  version: 69552e54d2a9d4c6a2438926a774930f7bc398ec
 - name: github.com/mailru/easyjson
   version: d5b7844b561a7bc640052f1b935f7b800330d7e0
   subpackages:
