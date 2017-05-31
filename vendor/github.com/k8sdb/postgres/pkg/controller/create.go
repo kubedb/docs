@@ -126,8 +126,6 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*kapps.Stateful
 	}
 	podLabels[amc.LabelDatabaseName] = postgres.Name
 
-	dockerImage := fmt.Sprintf("%v:%v", docker.ImagePostgres, postgres.Spec.Version)
-
 	// SatatefulSet for Postgres database
 	statefulSetName := getStatefulSetName(postgres.Name)
 
@@ -151,7 +149,7 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*kapps.Stateful
 					Containers: []kapi.Container{
 						{
 							Name:            tapi.ResourceNamePostgres,
-							Image:           dockerImage,
+							Image:           fmt.Sprintf("%s:%s-db", docker.ImagePostgres, postgres.Spec.Version),
 							ImagePullPolicy: kapi.PullIfNotPresent,
 							Ports: []kapi.ContainerPort{
 								{
