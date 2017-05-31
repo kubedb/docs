@@ -30,11 +30,11 @@ var (
 	masterURL         string
 	kubeconfigPath    string
 	governingService  string = "kubedb"
-	esOperatorTag     string = "1.0.0"
+	esOperatorTag     string = "0.1.0"
 	elasticDumpTag    string = "2.4.2"
 	address           string = ":8080"
 	exporterNamespace string = namespace()
-	exporterTag       string = "1.0.0"
+	exporterTag       string = "0.1.0"
 	enableAnalytics   bool   = true
 )
 

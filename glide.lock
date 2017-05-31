@@ -1,5 +1,5 @@
-hash: 701d3927120929f38a75872145cf36596c80752b7707f103ca3ec0860070bb36
-updated: 2017-05-31T15:28:58.72075837+06:00
+hash: 0af10a4b19298eadbc7cc8f61e01b62f895981403982488cb3d3c2a16231c34d
+updated: 2017-05-31T05:39:17.803928505-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -163,11 +163,11 @@ imports:
   - pkg/eventer
   - pkg/monitor
 - name: github.com/k8sdb/elasticsearch
-  version: fc9a386ed14bd20da7e59952e46366ddf21044aa
+  version: b59f19d8ccb307e57c140c7b61984cfdbac6ba84
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/postgres
-  version: 7f17ac5e3a41d4f702bddad0c9d277151a41bbcb
+  version: 106e0b12fc4c0cea95ddd90421f69e2dc9c7eb9c
   subpackages:
   - pkg/controller
 - name: github.com/lib/pq
@@ -362,7 +362,7 @@ imports:
   - util/homedir
   - util/integer
 - name: k8s.io/kubernetes
-  version: f07eea23494be1e7c11a8e2cf51bd96d1ec9fdf1
+  version: 8eb75a5810cba92ccad845ca360cf924f2385881
   subpackages:
   - pkg/api
   - pkg/api/errors
