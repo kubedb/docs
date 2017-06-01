@@ -48,6 +48,71 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 		"Successfully validate Elastic",
 	)
 
+	// Check DormantDatabase
+	if err := c.findDormantDatabase(elastic); err != nil {
+		return err
+	}
+
+	// Event for notification that kubernetes objects are creating
+	c.eventRecorder.Event(elastic, kapi.EventTypeNormal, eventer.EventReasonCreating, "Creating Kubernetes objects")
+
+	// create Governing Service
+	governingService := c.opt.GoverningService
+	if err := c.CreateGoverningService(governingService, elastic.Namespace); err != nil {
+		c.eventRecorder.Eventf(
+			elastic,
+			kapi.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			`Failed to create ServiceAccount: "%v". Reason: %v`,
+			governingService,
+			err,
+		)
+		return err
+	}
+
+	// ensure database Service
+	if err := c.ensureService(elastic); err != nil {
+		return err
+	}
+
+	// ensure database StatefulSet
+	if err := c.ensureStatefulSet(elastic); err != nil {
+		return err
+	}
+
+	c.eventRecorder.Event(
+		elastic,
+		kapi.EventTypeNormal,
+		eventer.EventReasonSuccessfulCreate,
+		"Successfully created Elastic",
+	)
+
+	// Ensure Schedule backup
+	c.ensureBackupScheduler(elastic)
+
+	if elastic.Spec.Monitor != nil {
+		if err := c.addMonitor(elastic); err != nil {
+			c.eventRecorder.Eventf(
+				elastic,
+				kapi.EventTypeWarning,
+				eventer.EventReasonFailedToAddMonitor,
+				"Failed to add monitoring system. Reason: %v",
+				err,
+			)
+			log.Errorln(err)
+			return nil
+		}
+		c.eventRecorder.Event(
+			elastic,
+			kapi.EventTypeNormal,
+			eventer.EventReasonSuccessfulMonitorAdd,
+			"Successfully added monitoring system.",
+		)
+	}
+	return nil
+}
+
+func (c *Controller) findDormantDatabase(elastic *tapi.Elastic) error {
 	// Check if DormantDatabase exists or not
 	dormantDb, err := c.ExtClient.DormantDatabases(elastic.Namespace).Get(elastic.Name)
 	if err != nil {
@@ -70,7 +135,6 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 		} else {
 			message = fmt.Sprintf(`Recover from DormantDatabase: "%v"`, dormantDb.Name)
 		}
-
 		c.eventRecorder.Event(
 			elastic,
 			kapi.EventTypeWarning,
@@ -79,27 +143,17 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 		)
 		return errors.New(message)
 	}
+	return nil
+}
 
-	// Event for notification that kubernetes objects are creating
-	c.eventRecorder.Event(
-		elastic,
-		kapi.EventTypeNormal,
-		eventer.EventReasonCreating,
-		"Creating Kubernetes objects",
-	)
-
-	// create Governing Service
-	governingService := c.opt.GoverningService
-	if err := c.CreateGoverningService(governingService, elastic.Namespace); err != nil {
-		c.eventRecorder.Eventf(
-			elastic,
-			kapi.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			`Failed to create ServiceAccount: "%v". Reason: %v`,
-			governingService,
-			err,
-		)
+func (c *Controller) ensureService(elastic *tapi.Elastic) error {
+	// Check if service name exists
+	found, err := c.findService(elastic.Name, elastic.Namespace)
+	if err != nil {
 		return err
+	}
+	if found {
+		return nil
 	}
 
 	// create database Service
@@ -112,6 +166,17 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 			err,
 		)
 		return err
+	}
+	return nil
+}
+
+func (c *Controller) ensureStatefulSet(elastic *tapi.Elastic) error {
+	found, err := c.findStatefulSet(elastic)
+	if err != nil {
+		return err
+	}
+	if found {
+		return nil
 	}
 
 	// Create statefulSet for Elastic database
@@ -187,13 +252,17 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 			elastic,
 			kapi.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
-			`Fail to update Elastic: "%v". Reason: %v`,
+			`Failed to update Elastic: "%v". Reason: %v`,
 			elastic.Name,
 			err,
 		)
 		log.Errorln(err)
 	}
 
+	return nil
+}
+
+func (c *Controller) ensureBackupScheduler(elastic *tapi.Elastic) {
 	// Setup Schedule backup
 	if elastic.Spec.BackupSchedule != nil {
 		err := c.cronController.ScheduleBackup(elastic, elastic.ObjectMeta, elastic.Spec.BackupSchedule)
@@ -207,28 +276,9 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 			)
 			log.Errorln(err)
 		}
+	} else {
+		c.cronController.StopBackupScheduling(elastic.ObjectMeta)
 	}
-
-	if elastic.Spec.Monitor != nil {
-		if err := c.addMonitor(elastic); err != nil {
-			c.eventRecorder.Eventf(
-				elastic,
-				kapi.EventTypeWarning,
-				eventer.EventReasonFailedToAddMonitor,
-				"Failed to add monitoring system. Reason: %v",
-				err,
-			)
-			log.Errorln(err)
-			return nil
-		}
-		c.eventRecorder.Event(
-			elastic,
-			kapi.EventTypeNormal,
-			eventer.EventReasonSuccessfulMonitorAdd,
-			"Successfully added monitoring system.",
-		)
-	}
-	return nil
 }
 
 const (
@@ -349,6 +399,31 @@ func (c *Controller) pause(elastic *tapi.Elastic) error {
 }
 
 func (c *Controller) update(oldElastic, updatedElastic *tapi.Elastic) error {
+
+	if err := c.validateElastic(updatedElastic); err != nil {
+		c.eventRecorder.Event(updatedElastic, kapi.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
+		return err
+	}
+	// Event for successful validation
+	c.eventRecorder.Event(
+		updatedElastic,
+		kapi.EventTypeNormal,
+		eventer.EventReasonSuccessfulValidate,
+		"Successfully validate Elastic",
+	)
+
+	// Check DormantDatabase
+	if err := c.findDormantDatabase(updatedElastic); err != nil {
+		return err
+	}
+
+	if err := c.ensureService(updatedElastic); err != nil {
+		return err
+	}
+	if err := c.ensureStatefulSet(updatedElastic); err != nil {
+		return err
+	}
+
 	if (updatedElastic.Spec.Replicas != oldElastic.Spec.Replicas) && updatedElastic.Spec.Replicas >= 0 {
 		statefulSetName := getStatefulSetName(updatedElastic.Name)
 		statefulSet, err := c.Client.Apps().StatefulSets(updatedElastic.Namespace).Get(statefulSetName)
@@ -377,44 +452,8 @@ func (c *Controller) update(oldElastic, updatedElastic *tapi.Elastic) error {
 		}
 	}
 
-	if !reflect.DeepEqual(oldElastic.Spec.BackupSchedule, updatedElastic.Spec.BackupSchedule) {
-		backupScheduleSpec := updatedElastic.Spec.BackupSchedule
-		if backupScheduleSpec != nil {
-			if err := c.ValidateBackupSchedule(backupScheduleSpec); err != nil {
-				c.eventRecorder.Event(
-					updatedElastic,
-					kapi.EventTypeNormal,
-					eventer.EventReasonInvalid,
-					err.Error(),
-				)
-				return err
-			}
-
-			if err := c.CheckBucketAccess(
-				backupScheduleSpec.SnapshotStorageSpec, updatedElastic.Namespace); err != nil {
-				c.eventRecorder.Event(
-					updatedElastic,
-					kapi.EventTypeNormal,
-					eventer.EventReasonInvalid,
-					err.Error(),
-				)
-				return err
-			}
-
-			if err := c.cronController.ScheduleBackup(
-				updatedElastic, updatedElastic.ObjectMeta, updatedElastic.Spec.BackupSchedule); err != nil {
-				c.eventRecorder.Eventf(
-					updatedElastic,
-					kapi.EventTypeWarning,
-					eventer.EventReasonFailedToSchedule,
-					`Failed to schedule snapshot. Reason: %v`,
-					err,
-				)
-				log.Errorln(err)
-			}
-		} else {
-			c.cronController.StopBackupScheduling(updatedElastic.ObjectMeta)
-		}
+	if !reflect.DeepEqual(updatedElastic.Spec.BackupSchedule, oldElastic.Spec.BackupSchedule) {
+		c.ensureBackupScheduler(updatedElastic)
 	}
 
 	if !reflect.DeepEqual(oldElastic.Spec.Monitor, updatedElastic.Spec.Monitor) {

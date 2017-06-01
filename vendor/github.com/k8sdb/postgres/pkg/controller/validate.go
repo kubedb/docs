@@ -24,6 +24,13 @@ func (c *Controller) validatePostgres(postgres *tapi.Postgres) error {
 		}
 	}
 
+	databaseSecret := postgres.Spec.DatabaseSecret
+	if databaseSecret != nil {
+		if _, err := c.Client.Core().Secrets(postgres.Namespace).Get(databaseSecret.SecretName); err != nil {
+			return err
+		}
+	}
+
 	backupScheduleSpec := postgres.Spec.BackupSchedule
 	if postgres.Spec.BackupSchedule != nil {
 		if err := c.ValidateBackupSchedule(backupScheduleSpec); err != nil {

@@ -1,5 +1,5 @@
 hash: 0af10a4b19298eadbc7cc8f61e01b62f895981403982488cb3d3c2a16231c34d
-updated: 2017-05-31T15:44:51.454594901-07:00
+updated: 2017-06-01T08:21:04.782555561-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -164,15 +164,15 @@ imports:
   - pkg/eventer
   - pkg/monitor
 - name: github.com/k8sdb/elasticsearch
-  version: 3db49b60e733216171b7336dec8a98e920f35d51
+  version: ca77f4582d282b4bd12c322b0753e855d338a8d1
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/postgres
-  version: 1aef6ca8fc8d0e1302f27065113d2a75410c6f8d
+  version: baf91383ea12fabf9b92110b0c909dc39d7523f9
   subpackages:
   - pkg/controller
 - name: github.com/lib/pq
-  version: 69552e54d2a9d4c6a2438926a774930f7bc398ec
+  version: 50761b0867bd1d9d069276790bcd4a3bccf2324a
 - name: github.com/mailru/easyjson
   version: d5b7844b561a7bc640052f1b935f7b800330d7e0
   subpackages:

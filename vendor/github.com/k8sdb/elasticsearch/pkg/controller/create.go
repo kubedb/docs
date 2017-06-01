@@ -23,7 +23,7 @@ const (
 	durationCheckStatefulSet = time.Minute * 30
 )
 
-func (c *Controller) checkService(name, namespace string) (bool, error) {
+func (c *Controller) findService(name, namespace string) (bool, error) {
 	service, err := c.Client.Core().Services(namespace).Get(name)
 	if err != nil {
 		if k8serr.IsNotFound(err) {
@@ -41,15 +41,6 @@ func (c *Controller) checkService(name, namespace string) (bool, error) {
 }
 
 func (c *Controller) createService(name, namespace string) error {
-	// Check if service name exists
-	found, err := c.checkService(name, namespace)
-	if err != nil {
-		return err
-	}
-	if found {
-		return nil
-	}
-
 	label := map[string]string{
 		amc.LabelDatabaseName: name,
 	}
@@ -82,34 +73,26 @@ func (c *Controller) createService(name, namespace string) error {
 	return nil
 }
 
-func (c *Controller) checkStatefulSet(elastic *tapi.Elastic) (*kapps.StatefulSet, error) {
+func (c *Controller) findStatefulSet(elastic *tapi.Elastic) (bool, error) {
 	// SatatefulSet for Postgres database
 	statefulSetName := getStatefulSetName(elastic.Name)
 	statefulSet, err := c.Client.Apps().StatefulSets(elastic.Namespace).Get(statefulSetName)
 	if err != nil {
 		if k8serr.IsNotFound(err) {
-			return nil, nil
+			return false, nil
 		} else {
-			return nil, err
+			return false, err
 		}
 	}
 
 	if statefulSet.Labels[amc.LabelDatabaseKind] != tapi.ResourceKindElastic {
-		return nil, fmt.Errorf(`Intended statefulSet "%v" already exists`, statefulSetName)
+		return false, fmt.Errorf(`Intended statefulSet "%v" already exists`, statefulSetName)
 	}
 
-	return statefulSet, nil
+	return true, nil
 }
 
 func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*kapps.StatefulSet, error) {
-	_statefulSet, err := c.checkStatefulSet(elastic)
-	if err != nil {
-		return nil, err
-	}
-	if _statefulSet != nil {
-		return _statefulSet, nil
-	}
-
 	// Set labels
 	labels := make(map[string]string)
 	for key, val := range elastic.Labels {
