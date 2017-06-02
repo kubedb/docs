@@ -208,7 +208,7 @@ func (c *Controller) ensureStatefulSet(elastic *tapi.Elastic) error {
 				elastic,
 				kapi.EventTypeNormal,
 				eventer.EventReasonSuccessfulCreate,
-				"Successfully created Elastic",
+				"Successfully created StatefulSet",
 			)
 		}
 	}

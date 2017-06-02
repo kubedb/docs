@@ -1,5 +1,5 @@
-hash: 0af10a4b19298eadbc7cc8f61e01b62f895981403982488cb3d3c2a16231c34d
-updated: 2017-06-01T08:21:04.782555561-07:00
+hash: 701d3927120929f38a75872145cf36596c80752b7707f103ca3ec0860070bb36
+updated: 2017-06-02T12:27:46.343692464-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -153,7 +153,7 @@ imports:
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/k8sdb/apimachinery
-  version: 8c85cd38db3cb92b63cc6b4e1ae84573af9a0026
+  version: 073e55ab24d2b0454e6eba63137a8359f5c4cc07
   subpackages:
   - api
   - api/install
@@ -164,11 +164,11 @@ imports:
   - pkg/eventer
   - pkg/monitor
 - name: github.com/k8sdb/elasticsearch
-  version: ca77f4582d282b4bd12c322b0753e855d338a8d1
+  version: ec759ac177362712a5fefab13a6028312aeab77b
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/postgres
-  version: baf91383ea12fabf9b92110b0c909dc39d7523f9
+  version: efc3f9dc21f82dfbfb6d8726e0da29d176bc697f
   subpackages:
   - pkg/controller
 - name: github.com/lib/pq

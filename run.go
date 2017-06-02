@@ -86,7 +86,7 @@ func run() {
 	}
 
 	client := clientset.NewForConfigOrDie(config)
-	extClient := tcs.NewExtensionsForConfigOrDie(config)
+	extClient := tcs.NewForConfigOrDie(config)
 
 	cgConfig, err := cgcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
