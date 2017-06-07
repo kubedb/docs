@@ -33,9 +33,11 @@ var (
 	esOperatorTag     string = "0.1.0"
 	elasticDumpTag    string = "2.4.2"
 	address           string = ":8080"
-	exporterNamespace string = namespace()
-	exporterTag       string = "0.1.0"
+	operatorNamespace string = namespace()
 	enableAnalytics   bool   = true
+
+	kubeClient clientset.Interface
+	dbClient   tcs.ExtensionInterface
 )
 
 func NewCmdRun() *cobra.Command {
@@ -59,10 +61,6 @@ func NewCmdRun() *cobra.Command {
 	// elasticdump flags
 	cmd.Flags().StringVar(&elasticDumpTag, "elasticdump.tag", elasticDumpTag, "Tag of elasticdump")
 
-	// exporter tags
-	cmd.Flags().StringVar(&exporterNamespace, "exporter.namespace", exporterNamespace, "Namespace for monitoring exporter")
-	cmd.Flags().StringVar(&exporterTag, "exporter.tag", exporterTag, "Tag of monitoring exporter")
-
 	// Analytics flags
 	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
 
@@ -85,8 +83,8 @@ func run() {
 		log.Fatalf("Could not get Kubernetes config: %s", err)
 	}
 
-	client := clientset.NewForConfigOrDie(config)
-	extClient := tcs.NewForConfigOrDie(config)
+	kubeClient := clientset.NewForConfigOrDie(config)
+	dbClient := tcs.NewForConfigOrDie(config)
 
 	cgConfig, err := cgcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
@@ -107,27 +105,29 @@ func run() {
 
 	defer runtime.HandleCrash()
 
-	pgCtrl.New(client, extClient, promClient, pgCtrl.Options{
+	pgCtrl.New(kubeClient, dbClient, promClient, pgCtrl.Options{
 		GoverningService:  governingService,
-		ExporterNamespace: exporterNamespace,
-		ExporterTag:       exporterTag,
+		OperatorNamespace: operatorNamespace,
 		EnableAnalytics:   enableAnalytics,
 	}).Run()
 
 	// Need to wait for sometime to run another controller.
 	// Or multiple controller will try to create common TPR simultaneously which gives error
 	time.Sleep(time.Second * 10)
-	esCtrl.New(client, extClient, promClient, esCtrl.Options{
+	esCtrl.New(kubeClient, dbClient, promClient, esCtrl.Options{
 		GoverningService:  governingService,
 		ElasticDumpTag:    elasticDumpTag,
 		OperatorTag:       esOperatorTag,
-		ExporterNamespace: exporterNamespace,
-		ExporterTag:       exporterTag,
+		OperatorNamespace: operatorNamespace,
 		EnableAnalytics:   enableAnalytics,
 	}).Run()
 
 	m := pat.New()
 	m.Get("/metrics", promhttp.Handler())
+	pattern := fmt.Sprintf("/kubedb.com/v1beta1/namespaces/%s/%s/%s/pods/%s/metrics", ParamNamespace, ParamType, ParamName, ParamPodIP)
+	log.Infoln("URL pattern:", pattern)
+	m.Get(pattern, http.HandlerFunc(ExportMetrics))
+	m.Del(pattern, http.HandlerFunc(DeleteRegistry))
 	http.Handle("/", m)
 
 	log.Infof("Starting Server: %s", address)
