@@ -8,20 +8,14 @@ import (
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/pat"
 	tapi "github.com/k8sdb/apimachinery/api"
-	tcs "github.com/k8sdb/apimachinery/client/clientset"
-	"github.com/k8sdb/apimachinery/pkg/analytics"
-	"github.com/k8sdb/apimachinery/pkg/docker"
 	ese "github.com/k8sdb/elasticsearch_exporter/exporter"
 	pge "github.com/k8sdb/postgres_exporter/exporter"
 	"github.com/orcaman/concurrent-map"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
-	"github.com/spf13/cobra"
 	"gopkg.in/ini.v1"
 	kerr "k8s.io/kubernetes/pkg/api/errors"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 )
 
 const (
@@ -33,8 +27,6 @@ const (
 
 var (
 	registerers = cmap.New() // URL.path => *prometheus.Registry
-	kubeClient  clientset.Interface
-	dbClient    tcs.ExtensionInterface
 )
 
 func DeleteRegistry(w http.ResponseWriter, r *http.Request) {

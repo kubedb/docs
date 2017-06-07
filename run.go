@@ -8,27 +8,7 @@ import (
 	"os"
 	"strings"
 	"time"
-	"fmt"
-	"net/http"
-	"time"
 
-	"github.com/appscode/go/runtime"
-	"github.com/appscode/pat"
-	tapi "github.com/k8sdb/apimachinery/api"
-	tcs "github.com/k8sdb/apimachinery/client/clientset"
-	"github.com/k8sdb/apimachinery/pkg/analytics"
-	"github.com/k8sdb/apimachinery/pkg/docker"
-	ese "github.com/k8sdb/elasticsearch_exporter/exporter"
-	pge "github.com/k8sdb/postgres_exporter/exporter"
-	"github.com/orcaman/concurrent-map"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/log"
-	"github.com/spf13/cobra"
-	"gopkg.in/ini.v1"
-	kerr "k8s.io/kubernetes/pkg/api/errors"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
@@ -53,9 +33,11 @@ var (
 	esOperatorTag     string = "0.1.0"
 	elasticDumpTag    string = "2.4.2"
 	address           string = ":8080"
-	exporterNamespace string = namespace()
-	exporterTag       string = "0.1.0"
+	operatorNamespace string = namespace()
 	enableAnalytics   bool   = true
+
+	kubeClient clientset.Interface
+	dbClient   tcs.ExtensionInterface
 )
 
 func NewCmdRun() *cobra.Command {
@@ -101,8 +83,8 @@ func run() {
 		log.Fatalf("Could not get Kubernetes config: %s", err)
 	}
 
-	client := clientset.NewForConfigOrDie(config)
-	extClient := tcs.NewForConfigOrDie(config)
+	kubeClient := clientset.NewForConfigOrDie(config)
+	dbClient := tcs.NewForConfigOrDie(config)
 
 	cgConfig, err := cgcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
@@ -123,29 +105,22 @@ func run() {
 
 	defer runtime.HandleCrash()
 
-	pgCtrl.New(client, extClient, promClient, pgCtrl.Options{
+	pgCtrl.New(kubeClient, dbClient, promClient, pgCtrl.Options{
 		GoverningService:  governingService,
-		OperatorNamespace: exporterNamespace,
+		OperatorNamespace: operatorNamespace,
 		EnableAnalytics:   enableAnalytics,
 	}).Run()
 
 	// Need to wait for sometime to run another controller.
 	// Or multiple controller will try to create common TPR simultaneously which gives error
 	time.Sleep(time.Second * 10)
-	esCtrl.New(client, extClient, promClient, esCtrl.Options{
+	esCtrl.New(kubeClient, dbClient, promClient, esCtrl.Options{
 		GoverningService:  governingService,
 		ElasticDumpTag:    elasticDumpTag,
 		OperatorTag:       esOperatorTag,
-		OperatorNamespace: exporterNamespace,
+		OperatorNamespace: operatorNamespace,
 		EnableAnalytics:   enableAnalytics,
 	}).Run()
-
-	config, err := clientcmd.BuildConfigFromFlags(opt.masterURL, opt.kubeconfigPath)
-	if err != nil {
-		log.Fatal("Failed to connect to Kubernetes", err)
-	}
-	kubeClient = clientset.NewForConfigOrDie(config)
-	dbClient = tcs.NewForConfigOrDie(config)
 
 	m := pat.New()
 	m.Get("/metrics", promhttp.Handler())
@@ -155,9 +130,8 @@ func run() {
 	m.Del(pattern, http.HandlerFunc(DeleteRegistry))
 	http.Handle("/", m)
 
-	log.Infof("Starting Server: %s", opt.address)
-	analytics.SendEvent(docker.ImageExporter, "started", Version)
-	log.Fatal(http.ListenAndServe(opt.address, nil))
+	log.Infof("Starting Server: %s", address)
+	log.Fatal(http.ListenAndServe(address, nil))
 }
 
 func namespace() string {
