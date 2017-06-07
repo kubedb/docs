@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	tapi "github.com/k8sdb/apimachinery/api"
-	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/monitor"
 )
 
@@ -16,8 +15,7 @@ func (c *Controller) newMonitorController(elastic *tapi.Elastic) (monitor.Monito
 	}
 
 	if monitorSpec.Prometheus != nil {
-		image := fmt.Sprintf("%v:%v", docker.ImageExporter, c.opt.ExporterTag)
-		return monitor.NewPrometheusController(c.Client, c.promClient, c.opt.ExporterNamespace, image), nil
+		return monitor.NewPrometheusController(c.Client, c.promClient, c.opt.OperatorNamespace), nil
 	}
 
 	return nil, fmt.Errorf("Monitoring controller not found for %v", monitorSpec)

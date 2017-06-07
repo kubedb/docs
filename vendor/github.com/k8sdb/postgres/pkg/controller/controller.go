@@ -26,10 +26,8 @@ import (
 )
 
 type Options struct {
-	// Exporter namespace
-	ExporterNamespace string
-	// Tag of Exporter
-	ExporterTag string
+	// Operator namespace
+	OperatorNamespace string
 	// Governing service
 	GoverningService string
 	// Address to listen on for web interface and telemetry.

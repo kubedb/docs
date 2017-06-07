@@ -10,39 +10,24 @@ import (
 	_ "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	tapi "github.com/k8sdb/apimachinery/api"
+	"github.com/k8sdb/apimachinery/pkg/docker"
 	cgerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kapi "k8s.io/kubernetes/pkg/api"
-	kerr "k8s.io/kubernetes/pkg/api/errors"
-	uv "k8s.io/kubernetes/pkg/api/unversioned"
-	kepi "k8s.io/kubernetes/pkg/apis/extensions"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/util/intstr"
 )
-
-const (
-	exporterName = "kubedb-exporter"
-	portName     = "exporter"
-	portNumber   = 8080
-)
-
-var exporterLabel = map[string]string{
-	"app": exporterName,
-}
 
 type PrometheusController struct {
-	kubeClient          clientset.Interface
-	promClient          *v1alpha1.MonitoringV1alpha1Client
-	exporterNamespace   string
-	exporterDockerImage string
+	kubeClient        clientset.Interface
+	promClient        *v1alpha1.MonitoringV1alpha1Client
+	operatorNamespace string
 }
 
-func NewPrometheusController(kubeClient clientset.Interface, promClient *v1alpha1.MonitoringV1alpha1Client, exporterNamespace, exporterDockerImage string) Monitor {
+func NewPrometheusController(kubeClient clientset.Interface, promClient *v1alpha1.MonitoringV1alpha1Client, operatorNamespace string) Monitor {
 	return &PrometheusController{
-		kubeClient:          kubeClient,
-		promClient:          promClient,
-		exporterNamespace:   exporterNamespace,
-		exporterDockerImage: exporterDockerImage,
+		kubeClient:        kubeClient,
+		promClient:        promClient,
+		operatorNamespace: operatorNamespace,
 	}
 }
 
@@ -50,20 +35,12 @@ func (c *PrometheusController) AddMonitor(meta kapi.ObjectMeta, spec *tapi.Monit
 	if !c.SupportsCoreOSOperator() {
 		return errors.New("Cluster does not support CoreOS Prometheus operator")
 	}
-	err := c.ensureExporter(meta)
-	if err != nil {
-		return err
-	}
 	return c.ensureServiceMonitor(meta, spec, spec)
 }
 
 func (c *PrometheusController) UpdateMonitor(meta kapi.ObjectMeta, old, new *tapi.MonitorSpec) error {
 	if !c.SupportsCoreOSOperator() {
 		return errors.New("Cluster does not support CoreOS Prometheus operator")
-	}
-	err := c.ensureExporter(meta)
-	if err != nil {
-		return err
 	}
 	return c.ensureServiceMonitor(meta, old, new)
 }
@@ -88,94 +65,6 @@ func (c *PrometheusController) SupportsCoreOSOperator() bool {
 		return false
 	}
 	return true
-}
-
-func (c *PrometheusController) ensureExporter(meta kapi.ObjectMeta) error {
-	if err := c.ensureExporterPods(); err != nil {
-		return err
-	}
-	if err := c.ensureExporterService(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c *PrometheusController) ensureExporterPods() error {
-	if _, err := c.kubeClient.Extensions().Deployments(c.exporterNamespace).Get(exporterName); !kerr.IsNotFound(err) {
-		return err
-	}
-	d := &kepi.Deployment{
-		ObjectMeta: kapi.ObjectMeta{
-			Name:      exporterName,
-			Namespace: c.exporterNamespace,
-			Labels:    exporterLabel,
-		},
-		Spec: kepi.DeploymentSpec{
-			Selector: &uv.LabelSelector{
-				MatchLabels: exporterLabel,
-			},
-			Replicas: 1,
-			Template: kapi.PodTemplateSpec{
-				ObjectMeta: kapi.ObjectMeta{
-					Labels: exporterLabel,
-				},
-				Spec: kapi.PodSpec{
-					Containers: []kapi.Container{
-						{
-							Name: "exporter",
-							Args: []string{
-								"run",
-								fmt.Sprintf("--address=:%d", portNumber),
-								"--v=3",
-							},
-							Image:           c.exporterDockerImage,
-							ImagePullPolicy: kapi.PullIfNotPresent,
-							Ports: []kapi.ContainerPort{
-								{
-									Name:          portName,
-									Protocol:      kapi.ProtocolTCP,
-									ContainerPort: portNumber,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	if _, err := c.kubeClient.Extensions().Deployments(c.exporterNamespace).Create(d); !kerr.IsAlreadyExists(err) {
-		return err
-	}
-	return nil
-}
-
-func (c *PrometheusController) ensureExporterService() error {
-	if _, err := c.kubeClient.Core().Services(c.exporterNamespace).Get(exporterName); !kerr.IsNotFound(err) {
-		return err
-	}
-	svc := &kapi.Service{
-		ObjectMeta: kapi.ObjectMeta{
-			Name:      exporterName,
-			Namespace: c.exporterNamespace,
-			Labels:    exporterLabel,
-		},
-		Spec: kapi.ServiceSpec{
-			Type: kapi.ServiceTypeClusterIP,
-			Ports: []kapi.ServicePort{
-				{
-					Name:       portName,
-					Port:       portNumber,
-					Protocol:   kapi.ProtocolTCP,
-					TargetPort: intstr.FromString(portName),
-				},
-			},
-			Selector: exporterLabel,
-		},
-	}
-	if _, err := c.kubeClient.Core().Services(c.exporterNamespace).Create(svc); !kerr.IsAlreadyExists(err) {
-		return err
-	}
-	return nil
 }
 
 func (c *PrometheusController) ensureServiceMonitor(meta kapi.ObjectMeta, old, new *tapi.MonitorSpec) error {
@@ -230,7 +119,7 @@ func (c *PrometheusController) createServiceMonitor(meta kapi.ObjectMeta, spec *
 			},
 			Endpoints: []prom.Endpoint{
 				{
-					Address:  fmt.Sprintf("%s.%s.svc:%d", exporterName, c.exporterNamespace, portNumber),
+					Address:  fmt.Sprintf("%s.%s.svc:%d", docker.OperatorName, c.operatorNamespace, docker.OperatorPortNumber),
 					Port:     svc.Spec.Ports[0].Name,
 					Interval: spec.Prometheus.Interval,
 					Path:     fmt.Sprintf("/kubedb.com/v1beta1/namespaces/%s/%s/%s/pods/${__meta_kubernetes_pod_ip}/metrics", meta.Namespace, getTypeFromSelfLink(meta.SelfLink), meta.Name),

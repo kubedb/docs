@@ -8,7 +8,27 @@ import (
 	"os"
 	"strings"
 	"time"
+	"fmt"
+	"net/http"
+	"time"
 
+	"github.com/appscode/go/runtime"
+	"github.com/appscode/pat"
+	tapi "github.com/k8sdb/apimachinery/api"
+	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	"github.com/k8sdb/apimachinery/pkg/analytics"
+	"github.com/k8sdb/apimachinery/pkg/docker"
+	ese "github.com/k8sdb/elasticsearch_exporter/exporter"
+	pge "github.com/k8sdb/postgres_exporter/exporter"
+	"github.com/orcaman/concurrent-map"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/common/log"
+	"github.com/spf13/cobra"
+	"gopkg.in/ini.v1"
+	kerr "k8s.io/kubernetes/pkg/api/errors"
+	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
+	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
@@ -59,10 +79,6 @@ func NewCmdRun() *cobra.Command {
 	// elasticdump flags
 	cmd.Flags().StringVar(&elasticDumpTag, "elasticdump.tag", elasticDumpTag, "Tag of elasticdump")
 
-	// exporter tags
-	cmd.Flags().StringVar(&exporterNamespace, "exporter.namespace", exporterNamespace, "Namespace for monitoring exporter")
-	cmd.Flags().StringVar(&exporterTag, "exporter.tag", exporterTag, "Tag of monitoring exporter")
-
 	// Analytics flags
 	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
 
@@ -109,8 +125,7 @@ func run() {
 
 	pgCtrl.New(client, extClient, promClient, pgCtrl.Options{
 		GoverningService:  governingService,
-		ExporterNamespace: exporterNamespace,
-		ExporterTag:       exporterTag,
+		OperatorNamespace: exporterNamespace,
 		EnableAnalytics:   enableAnalytics,
 	}).Run()
 
@@ -121,17 +136,28 @@ func run() {
 		GoverningService:  governingService,
 		ElasticDumpTag:    elasticDumpTag,
 		OperatorTag:       esOperatorTag,
-		ExporterNamespace: exporterNamespace,
-		ExporterTag:       exporterTag,
+		OperatorNamespace: exporterNamespace,
 		EnableAnalytics:   enableAnalytics,
 	}).Run()
 
+	config, err := clientcmd.BuildConfigFromFlags(opt.masterURL, opt.kubeconfigPath)
+	if err != nil {
+		log.Fatal("Failed to connect to Kubernetes", err)
+	}
+	kubeClient = clientset.NewForConfigOrDie(config)
+	dbClient = tcs.NewForConfigOrDie(config)
+
 	m := pat.New()
 	m.Get("/metrics", promhttp.Handler())
+	pattern := fmt.Sprintf("/kubedb.com/v1beta1/namespaces/%s/%s/%s/pods/%s/metrics", ParamNamespace, ParamType, ParamName, ParamPodIP)
+	log.Infoln("URL pattern:", pattern)
+	m.Get(pattern, http.HandlerFunc(ExportMetrics))
+	m.Del(pattern, http.HandlerFunc(DeleteRegistry))
 	http.Handle("/", m)
 
-	log.Infof("Starting Server: %s", address)
-	log.Fatal(http.ListenAndServe(address, nil))
+	log.Infof("Starting Server: %s", opt.address)
+	analytics.SendEvent(docker.ImageExporter, "started", Version)
+	log.Fatal(http.ListenAndServe(opt.address, nil))
 }
 
 func namespace() string {
