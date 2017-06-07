@@ -5,11 +5,13 @@ import (
 	"log"
 
 	v "github.com/appscode/go/version"
+	logs "github.com/appscode/log/golog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
 func main() {
+	defer logs.FlushLogs()
 	rootCmd := &cobra.Command{
 		Use:   "operator [command]",
 		Short: `KubeDB operator by AppsCode`,
@@ -20,6 +22,9 @@ func main() {
 		},
 	}
 	rootCmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
+	// ref: https://github.com/kubernetes/kubernetes/issues/17162#issuecomment-225596212
+	flag.CommandLine.Parse([]string{})
+	logs.InitLogs()
 
 	rootCmd.AddCommand(NewCmdRun())
 	rootCmd.AddCommand(v.NewCmdVersion())

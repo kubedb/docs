@@ -1,5 +1,5 @@
 hash: cb25bee5cea4716281804d8c290146a22e650ffb378f18ae84db49fc4fcb7d0f
-updated: 2017-06-07T11:44:40.587260092-07:00
+updated: 2017-06-07T13:00:53.321750165-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -19,6 +19,8 @@ imports:
   - wait
 - name: github.com/appscode/log
   version: 68e0e42e42c01371f3950571fc87c2298a51dd8f
+  subpackages:
+  - golog
 - name: github.com/appscode/pat
   version: 48ff78925b7955367d8a048fc2b5cec8efadf8d3
 - name: github.com/aws/aws-sdk-go
@@ -97,7 +99,7 @@ imports:
   - log
   - swagger
 - name: github.com/ghodss/yaml
-  version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
+  version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/go-ini/ini
   version: 2e44421e256d82ebbf3d4d4fcabe8930b905eff3
 - name: github.com/go-openapi/jsonpointer
@@ -164,7 +166,7 @@ imports:
   - pkg/eventer
   - pkg/monitor
 - name: github.com/k8sdb/elasticsearch
-  version: d5e098afe2f28c0279efcd3b8ec74c68ef347935
+  version: 92d69839e5bb58f8a03a2ba9d2c0db54ec2f32c6
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/elasticsearch_exporter
@@ -172,7 +174,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/k8sdb/postgres
-  version: bd96ed75dfffe600cc5152ad8b6d177e4249e597
+  version: 4497858f17e839fd0026b04a65c997626a8ec5d3
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/postgres_exporter
