@@ -24,5 +24,5 @@ If you fix a bug or developed a new feature feel free to submit a PR.
 ### Adding Dependency
 If your patch Depends on new packagees, add that to vendor with glide.
 
-### Building Voyager
+### Building Operator
 Read [build instruction](../developer-guide/build.md) to build operators.
