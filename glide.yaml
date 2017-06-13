@@ -3,17 +3,28 @@ import:
 - package: github.com/appscode/go
 - package: github.com/appscode/pat
 - package: github.com/k8sdb/apimachinery
-  version: master
+  version: release-0.1
 - package: github.com/k8sdb/elasticsearch
-  version: master
+  version: release-0.1
 - package: github.com/k8sdb/postgres
-  version: master
+  version: release-0.1
 - package: github.com/k8sdb/elasticsearch_exporter
   version: master
 - package: github.com/k8sdb/postgres_exporter
   version: master
 - package: github.com/orcaman/concurrent-map
   version: master
+- package: github.com/graymeta/stow
+  repo: https://github.com/appscode/stow.git
+  version: master
+  vcs: git
+- package: google.golang.org/api/storage/v1
+  version: master
+- package: cloud.google.com/go
+  version: v0.2.0
+- package: github.com/Azure/azure-sdk-for-go
+  vcs: git
+  version: v7.0.1-beta
 - package: github.com/spf13/cobra
   version: master
 - package: github.com/heroku/docker-registry-client

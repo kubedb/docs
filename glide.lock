@@ -1,5 +1,5 @@
-hash: cb25bee5cea4716281804d8c290146a22e650ffb378f18ae84db49fc4fcb7d0f
-updated: 2017-06-13T12:10:22.888373858+06:00
+hash: 7d3a0daedbc7edcd1c927f508c2661dafe4a87d95e16b2a409d6afa01d99d47b
+updated: 2017-06-13T14:24:39.527738736-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -51,6 +51,9 @@ imports:
   - private/waiter
   - service/s3
   - service/sts
+- name: github.com/Azure/azure-sdk-for-go
+  version: 0984e0641ae43b89283223034574d6465be93bf4
+  vcs: git
 - name: github.com/beorn7/perks
   version: 3ac7bf7a47d159a033b107610db8a1b6575507a4
   subpackages:
@@ -132,7 +135,9 @@ imports:
 - name: github.com/gorilla/mux
   version: 8096f47503459bcc74d1f4c487b7e6e42e5746b5
 - name: github.com/graymeta/stow
-  version: d5dd9e1c978bc9a265e29b281589ebdc50276ed7
+  version: d4b253dd4995360ae103b6460bbadeaa7fb3cdb4
+  repo: https://github.com/appscode/stow.git
+  vcs: git
   subpackages:
   - google
   - s3
@@ -166,7 +171,7 @@ imports:
   - pkg/eventer
   - pkg/monitor
 - name: github.com/k8sdb/elasticsearch
-  version: 6fe37a92fccfc8d55fd949c539541f5c77f60687
+  version: 788736246c7913fc3ceb2a38cdcc67caa61d4550
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/elasticsearch_exporter
@@ -174,7 +179,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/k8sdb/postgres
-  version: 84aff805b9083bca3b6366c86483e42c3314bde2
+  version: c09a44ccb090bcc9b83843fab9fab0c38df56d81
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/postgres_exporter
@@ -278,12 +283,8 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: a69f0f19d246419bb931b0ac8f4f8d3f3e6d4feb
+  version: 324744a33f1f37e63dd1695cfb3ec9a3e4a1cb05
   subpackages:
-  - cloudmonitoring/v2beta2
-  - compute/v1
-  - container/v1
-  - dns/v1
   - gensupport
   - googleapi
   - googleapi/internal/uritemplates
@@ -303,7 +304,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
-  version: 6e4869b434bd001f6983749881c7ead3545887d8
+  version: 36da989cdc560b989d8f195aec46214d33665d20
 - name: gopkg.in/mgo.v2
   version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
   subpackages:
@@ -379,7 +380,7 @@ imports:
   - util/homedir
   - util/integer
 - name: k8s.io/kubernetes
-  version: f07eea23494be1e7c11a8e2cf51bd96d1ec9fdf1
+  version: 8eb75a5810cba92ccad845ca360cf924f2385881
   subpackages:
   - pkg/api
   - pkg/api/errors
