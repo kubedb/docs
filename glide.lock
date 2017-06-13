@@ -1,5 +1,5 @@
 hash: cb25bee5cea4716281804d8c290146a22e650ffb378f18ae84db49fc4fcb7d0f
-updated: 2017-06-07T13:00:53.321750165-07:00
+updated: 2017-06-13T12:10:22.888373858+06:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -99,7 +99,7 @@ imports:
   - log
   - swagger
 - name: github.com/ghodss/yaml
-  version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
+  version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
   version: 2e44421e256d82ebbf3d4d4fcabe8930b905eff3
 - name: github.com/go-openapi/jsonpointer
@@ -132,7 +132,7 @@ imports:
 - name: github.com/gorilla/mux
   version: 8096f47503459bcc74d1f4c487b7e6e42e5746b5
 - name: github.com/graymeta/stow
-  version: 0f16e170afc5e1b89434469a3b52a81f792c9038
+  version: d5dd9e1c978bc9a265e29b281589ebdc50276ed7
   subpackages:
   - google
   - s3
@@ -155,7 +155,7 @@ imports:
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/k8sdb/apimachinery
-  version: 401cafad3f98c6ef2cbd44785d3bcdde7eedc061
+  version: aea7f4da55c4e8982331952809a54e01bdca43e6
   subpackages:
   - api
   - api/install
@@ -166,7 +166,7 @@ imports:
   - pkg/eventer
   - pkg/monitor
 - name: github.com/k8sdb/elasticsearch
-  version: 92d69839e5bb58f8a03a2ba9d2c0db54ec2f32c6
+  version: 6fe37a92fccfc8d55fd949c539541f5c77f60687
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/elasticsearch_exporter
@@ -174,7 +174,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/k8sdb/postgres
-  version: 4497858f17e839fd0026b04a65c997626a8ec5d3
+  version: 84aff805b9083bca3b6366c86483e42c3314bde2
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/postgres_exporter
@@ -233,7 +233,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
 - name: github.com/spf13/cobra
-  version: 99ff9334bda26384b5ef4a4aaa4d444d29bdde73
+  version: b4dbd37a01839e0653eec12aa4bbb2a2ce7b2a37
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 - name: github.com/ugorji/go
@@ -379,7 +379,7 @@ imports:
   - util/homedir
   - util/integer
 - name: k8s.io/kubernetes
-  version: 8eb75a5810cba92ccad845ca360cf924f2385881
+  version: f07eea23494be1e7c11a8e2cf51bd96d1ec9fdf1
   subpackages:
   - pkg/api
   - pkg/api/errors
