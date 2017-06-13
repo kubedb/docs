@@ -15,6 +15,7 @@ import (
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	tcs "github.com/k8sdb/apimachinery/client/clientset"
 	"github.com/k8sdb/apimachinery/pkg/analytics"
+	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	esCtrl "github.com/k8sdb/elasticsearch/pkg/controller"
 	pgCtrl "github.com/k8sdb/postgres/pkg/controller"
@@ -96,6 +97,12 @@ func run() {
 		log.Fatalln(err)
 	}
 
+	cronController := amc.NewCronController(kubeClient, dbClient)
+	// Start Cron
+	cronController.StartCron()
+	// Stop Cron
+	defer cronController.StopCron()
+
 	fmt.Println("Starting operator...")
 
 	if enableAnalytics {
@@ -105,7 +112,7 @@ func run() {
 
 	defer runtime.HandleCrash()
 
-	pgCtrl.New(kubeClient, dbClient, promClient, pgCtrl.Options{
+	pgCtrl.New(kubeClient, dbClient, promClient, cronController, pgCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
 		EnableAnalytics:   enableAnalytics,
@@ -114,7 +121,7 @@ func run() {
 	// Need to wait for sometime to run another controller.
 	// Or multiple controller will try to create common TPR simultaneously which gives error
 	time.Sleep(time.Second * 10)
-	esCtrl.New(kubeClient, dbClient, promClient, esCtrl.Options{
+	esCtrl.New(kubeClient, dbClient, promClient, cronController, esCtrl.Options{
 		GoverningService:  governingService,
 		ElasticDumpTag:    elasticDumpTag,
 		OperatorTag:       esOperatorTag,

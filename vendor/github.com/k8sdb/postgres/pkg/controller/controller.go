@@ -38,10 +38,10 @@ type Options struct {
 
 type Controller struct {
 	*amc.Controller
-	// Cron Controller
-	cronController amc.CronControllerInterface
 	// Prometheus client
 	promClient *pcm.MonitoringV1alpha1Client
+	// Cron Controller
+	cronController amc.CronControllerInterface
 	// Event Recorder
 	eventRecorder record.EventRecorder
 	// Flag data
@@ -57,6 +57,7 @@ func New(
 	client clientset.Interface,
 	extClient tcs.ExtensionInterface,
 	promClient *pcm.MonitoringV1alpha1Client,
+	cronController amc.CronControllerInterface,
 	opt Options,
 ) *Controller {
 	return &Controller{
@@ -64,8 +65,8 @@ func New(
 			Client:    client,
 			ExtClient: extClient,
 		},
-		cronController: amc.NewCronController(client, extClient),
 		promClient:     promClient,
+		cronController: cronController,
 		eventRecorder:  eventer.NewEventRecorder(client, "Postgres operator"),
 		opt:            opt,
 		syncPeriod:     time.Minute * 2,
@@ -78,8 +79,6 @@ func (c *Controller) Run() {
 
 	// Start Cron
 	c.cronController.StartCron()
-	// Stop Cron
-	defer c.cronController.StopCron()
 
 	// Watch Postgres TPR objects
 	go c.watchPostgres()

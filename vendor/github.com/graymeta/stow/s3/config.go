@@ -36,6 +36,10 @@ const (
 	// ConfigEndpoint is optional config value for changing s3 endpoint
 	// used for e.g. minio.io
 	ConfigEndpoint = "endpoint"
+
+	// ConfigDisableSSL is optional config value for disabling SSL support on custom endpoints
+	// Its default value is "false", to disable SSL set it to "true".
+	ConfigDisableSSL = "disable_ssl"
 )
 
 func init() {
@@ -61,11 +65,6 @@ func init() {
 			if !ok {
 				return nil, errors.New("missing Secret Key")
 			}
-		}
-
-		_, ok = config.Config(ConfigRegion)
-		if !ok {
-			return nil, errors.New("missing Region")
 		}
 
 		// Create a new client (s3 session)
@@ -96,19 +95,21 @@ func newS3Client(config stow.Config) (*s3.S3, error) {
 	accessKeyID, _ := config.Config(ConfigAccessKeyID)
 	secretKey, _ := config.Config(ConfigSecretKey)
 	//	token, _ := config.Config(ConfigToken)
-	region, _ := config.Config(ConfigRegion)
 
 	if authType == "" {
 		authType = "accesskey"
 	}
 
 	awsConfig := aws.NewConfig().
-		WithRegion(region).
 		WithHTTPClient(http.DefaultClient).
 		WithMaxRetries(aws.UseServiceDefaultRetries).
 		WithLogger(aws.NewDefaultLogger()).
 		WithLogLevel(aws.LogOff).
 		WithSleepDelay(time.Sleep)
+
+	if region, ok := config.Config(ConfigRegion); ok {
+		awsConfig.WithRegion(region)
+	}
 
 	if authType == "accesskey" {
 		awsConfig.WithCredentials(credentials.NewStaticCredentials(accessKeyID, secretKey, ""))
@@ -117,8 +118,12 @@ func newS3Client(config stow.Config) (*s3.S3, error) {
 	endpoint, ok := config.Config(ConfigEndpoint)
 	if ok {
 		awsConfig.WithEndpoint(endpoint).
-			WithDisableSSL(true).
 			WithS3ForcePathStyle(true)
+	}
+
+	disableSSL, ok := config.Config(ConfigDisableSSL)
+	if ok && disableSSL == "true" {
+		awsConfig.WithDisableSSL(true)
 	}
 
 	sess := session.New(awsConfig)

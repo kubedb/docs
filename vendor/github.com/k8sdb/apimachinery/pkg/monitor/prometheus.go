@@ -69,7 +69,7 @@ func (c *PrometheusController) SupportsCoreOSOperator() bool {
 
 func (c *PrometheusController) ensureServiceMonitor(meta kapi.ObjectMeta, old, new *tapi.MonitorSpec) error {
 	name := getServiceMonitorName(meta)
-	if new == nil || old.Prometheus.Namespace != new.Prometheus.Namespace {
+	if old != nil && (new == nil || old.Prometheus.Namespace != new.Prometheus.Namespace) {
 		err := c.promClient.ServiceMonitors(old.Prometheus.Namespace).Delete(name, nil)
 		if err != nil && !cgerr.IsNotFound(err) {
 			return err
@@ -85,8 +85,22 @@ func (c *PrometheusController) ensureServiceMonitor(meta kapi.ObjectMeta, old, n
 	} else if err != nil {
 		return err
 	}
-	if old != nil &&
-		(!reflect.DeepEqual(old.Prometheus.Labels, new.Prometheus.Labels) || old.Prometheus.Interval != new.Prometheus.Interval) {
+
+	update := false
+	if !reflect.DeepEqual(actual.Labels, new.Prometheus.Labels) {
+		update = true
+	}
+
+	if !update {
+		for _, e := range actual.Spec.Endpoints {
+			if e.Interval != new.Prometheus.Interval {
+				update = true
+				break
+			}
+		}
+	}
+
+	if update {
 		actual.Labels = new.Prometheus.Labels
 		for i := range actual.Spec.Endpoints {
 			actual.Spec.Endpoints[i].Interval = new.Prometheus.Interval
@@ -94,6 +108,7 @@ func (c *PrometheusController) ensureServiceMonitor(meta kapi.ObjectMeta, old, n
 		_, err := c.promClient.ServiceMonitors(new.Prometheus.Namespace).Update(actual)
 		return err
 	}
+
 	return nil
 }
 
