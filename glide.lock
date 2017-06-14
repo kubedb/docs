@@ -1,5 +1,5 @@
 hash: 7d3a0daedbc7edcd1c927f508c2661dafe4a87d95e16b2a409d6afa01d99d47b
-updated: 2017-06-13T18:31:24.47103032-07:00
+updated: 2017-06-13T18:37:14.586633511-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -182,7 +182,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/k8sdb/postgres
-  version: c09a44ccb090bcc9b83843fab9fab0c38df56d81
+  version: fcacd498f090aebec778c788f33eef2a6819f54e
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/postgres_exporter

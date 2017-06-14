@@ -208,7 +208,7 @@ func (c *Controller) watchDormantDatabase() {
 func (c *Controller) ensureThirdPartyResource() {
 	log.Infoln("Ensuring ThirdPartyResource...")
 
-	resourceName := tapi.ResourceNamePostgres + "." + tapi.V1beta1SchemeGroupVersion.Group
+	resourceName := tapi.ResourceNamePostgres + "." + tapi.V1alpha1SchemeGroupVersion.Group
 	if _, err := c.Client.Extensions().ThirdPartyResources().Get(resourceName); err != nil {
 		if !k8serr.IsNotFound(err) {
 			log.Fatalln(err)
@@ -228,7 +228,7 @@ func (c *Controller) ensureThirdPartyResource() {
 		Description: "Postgres Database in Kubernetes by appscode.com",
 		Versions: []extensions.APIVersion{
 			{
-				Name: tapi.V1beta1SchemeGroupVersion.Version,
+				Name: tapi.V1alpha1SchemeGroupVersion.Version,
 			},
 		},
 	}
