@@ -211,7 +211,7 @@ func (c *Controller) watchDormantDatabase() {
 func (c *Controller) ensureThirdPartyResource() {
 	log.Infoln("Ensuring ThirdPartyResource...")
 
-	resourceName := tapi.ResourceNameElastic + "." + tapi.V1beta1SchemeGroupVersion.Group
+	resourceName := tapi.ResourceNameElastic + "." + tapi.V1alpha1SchemeGroupVersion.Group
 
 	if _, err := c.Client.Extensions().ThirdPartyResources().Get(resourceName); err != nil {
 		if !k8serr.IsNotFound(err) {
@@ -232,7 +232,7 @@ func (c *Controller) ensureThirdPartyResource() {
 		Description: "Elasticsearch Database in Kubernetes by appscode.com",
 		Versions: []extensions.APIVersion{
 			{
-				Name: tapi.V1beta1SchemeGroupVersion.Version,
+				Name: tapi.V1alpha1SchemeGroupVersion.Version,
 			},
 		},
 	}

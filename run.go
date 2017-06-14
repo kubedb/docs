@@ -131,7 +131,7 @@ func run() {
 
 	m := pat.New()
 	m.Get("/metrics", promhttp.Handler())
-	pattern := fmt.Sprintf("/kubedb.com/v1beta1/namespaces/%s/%s/%s/pods/%s/metrics", ParamNamespace, ParamType, ParamName, ParamPodIP)
+	pattern := fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/pods/%s/metrics", ParamNamespace, ParamType, ParamName, ParamPodIP)
 	log.Infoln("URL pattern:", pattern)
 	m.Get(pattern, http.HandlerFunc(ExportMetrics))
 	m.Del(pattern, http.HandlerFunc(DeleteRegistry))

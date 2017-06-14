@@ -137,7 +137,7 @@ func (c *PrometheusController) createServiceMonitor(meta kapi.ObjectMeta, spec *
 					Address:  fmt.Sprintf("%s.%s.svc:%d", docker.OperatorName, c.operatorNamespace, docker.OperatorPortNumber),
 					Port:     svc.Spec.Ports[0].Name,
 					Interval: spec.Prometheus.Interval,
-					Path:     fmt.Sprintf("/kubedb.com/v1beta1/namespaces/%s/%s/%s/pods/${__meta_kubernetes_pod_ip}/metrics", meta.Namespace, getTypeFromSelfLink(meta.SelfLink), meta.Name),
+					Path:     fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/pods/${__meta_kubernetes_pod_ip}/metrics", meta.Namespace, getTypeFromSelfLink(meta.SelfLink), meta.Name),
 				},
 			},
 			Selector: metav1.LabelSelector{
