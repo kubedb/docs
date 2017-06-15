@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/pat"
 	tapi "github.com/k8sdb/apimachinery/api"
@@ -15,7 +14,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 	"gopkg.in/ini.v1"
-	kerr "k8s.io/kubernetes/pkg/api/errors"
+kerr "k8s.io/apimachinery/pkg/api/errors"
 )
 
 const (
