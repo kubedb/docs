@@ -12,17 +12,17 @@ import (
 	"github.com/k8sdb/apimachinery/pkg/analytics"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
-	kapi "k8s.io/kubernetes/pkg/api"
-	k8serr "k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/client/cache"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/client/record"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/util/wait"
-	"k8s.io/kubernetes/pkg/watch"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/watch"
+	clientset "k8s.io/client-go/kubernetes"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/record"
 )
 
 type Options struct {
@@ -109,11 +109,11 @@ func (c *Controller) RunAndHold() {
 
 func (c *Controller) watchElastic() {
 	lw := &cache.ListWatch{
-		ListFunc: func(opts kapi.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.Elastics(kapi.NamespaceAll).List(kapi.ListOptions{})
+		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
+			return c.ExtClient.Elastics(apiv1.NamespaceAll).List(metav1.ListOptions{})
 		},
-		WatchFunc: func(options kapi.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.Elastics(kapi.NamespaceAll).Watch(kapi.ListOptions{})
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return c.ExtClient.Elastics(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
 
@@ -168,16 +168,16 @@ func (c *Controller) watchSnapshot() {
 	}
 	// Watch with label selector
 	lw := &cache.ListWatch{
-		ListFunc: func(opts kapi.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.Snapshots(kapi.NamespaceAll).List(
-				kapi.ListOptions{
-					LabelSelector: labels.SelectorFromSet(labels.Set(labelMap)),
+		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
+			return c.ExtClient.Snapshots(apiv1.NamespaceAll).List(
+				metav1.ListOptions{
+					LabelSelector: labels.SelectorFromSet(labelMap).String(),
 				})
 		},
-		WatchFunc: func(options kapi.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.Snapshots(kapi.NamespaceAll).Watch(
-				kapi.ListOptions{
-					LabelSelector: labels.SelectorFromSet(labels.Set(labelMap)),
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return c.ExtClient.Snapshots(apiv1.NamespaceAll).Watch(
+				metav1.ListOptions{
+					LabelSelector: labels.SelectorFromSet(labelMap).String(),
 				})
 		},
 	}
@@ -191,16 +191,16 @@ func (c *Controller) watchDormantDatabase() {
 	}
 	// Watch with label selector
 	lw := &cache.ListWatch{
-		ListFunc: func(opts kapi.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.DormantDatabases(kapi.NamespaceAll).List(
-				kapi.ListOptions{
-					LabelSelector: labels.SelectorFromSet(labels.Set(labelMap)),
+		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
+			return c.ExtClient.DormantDatabases(apiv1.NamespaceAll).List(
+				metav1.ListOptions{
+					LabelSelector: labels.SelectorFromSet(labelMap).String(),
 				})
 		},
-		WatchFunc: func(options kapi.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.DormantDatabases(kapi.NamespaceAll).Watch(
-				kapi.ListOptions{
-					LabelSelector: labels.SelectorFromSet(labels.Set(labelMap)),
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return c.ExtClient.DormantDatabases(apiv1.NamespaceAll).Watch(
+				metav1.ListOptions{
+					LabelSelector: labels.SelectorFromSet(labelMap).String(),
 				})
 		},
 	}
@@ -213,8 +213,8 @@ func (c *Controller) ensureThirdPartyResource() {
 
 	resourceName := tapi.ResourceNameElastic + "." + tapi.V1alpha1SchemeGroupVersion.Group
 
-	if _, err := c.Client.Extensions().ThirdPartyResources().Get(resourceName); err != nil {
-		if !k8serr.IsNotFound(err) {
+	if _, err := c.Client.ExtensionsV1beta1().ThirdPartyResources().Get(resourceName, metav1.GetOptions{}); err != nil {
+		if !kerr.IsNotFound(err) {
 			log.Fatalln(err)
 		}
 	} else {
@@ -222,11 +222,11 @@ func (c *Controller) ensureThirdPartyResource() {
 	}
 
 	thirdPartyResource := &extensions.ThirdPartyResource{
-		TypeMeta: unversioned.TypeMeta{
+		TypeMeta: metav1.TypeMeta{
 			APIVersion: "extensions/v1beta1",
 			Kind:       "ThirdPartyResource",
 		},
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: resourceName,
 		},
 		Description: "Elasticsearch Database in Kubernetes by appscode.com",
@@ -245,7 +245,7 @@ func (c *Controller) ensureThirdPartyResource() {
 func (c *Controller) pushFailureEvent(elastic *tapi.Elastic, reason string) {
 	c.eventRecorder.Eventf(
 		elastic,
-		kapi.EventTypeWarning,
+		apiv1.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready Elastic: "%v". Reason: %v`,
 		elastic.Name,
@@ -263,7 +263,7 @@ func (c *Controller) pushFailureEvent(elastic *tapi.Elastic, reason string) {
 	if _, err := c.ExtClient.Elastics(elastic.Namespace).Update(elastic); err != nil {
 		c.eventRecorder.Eventf(
 			elastic,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			`Fail to update Postgres: "%v". Reason: %v`,
 			elastic.Name,

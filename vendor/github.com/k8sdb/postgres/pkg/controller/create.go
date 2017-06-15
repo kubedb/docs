@@ -8,11 +8,12 @@ import (
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
-	kapi "k8s.io/kubernetes/pkg/api"
-	k8serr "k8s.io/kubernetes/pkg/api/errors"
-	kapps "k8s.io/kubernetes/pkg/apis/apps"
-	kbatch "k8s.io/kubernetes/pkg/apis/batch"
-	"k8s.io/kubernetes/pkg/util/intstr"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
+	batch "k8s.io/client-go/pkg/apis/batch/v1"
 )
 
 const (
@@ -25,9 +26,9 @@ const (
 )
 
 func (c *Controller) findService(name, namespace string) (bool, error) {
-	service, err := c.Client.Core().Services(namespace).Get(name)
+	service, err := c.Client.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
-		if k8serr.IsNotFound(err) {
+		if kerr.IsNotFound(err) {
 			return false, nil
 		} else {
 			return false, err
@@ -45,13 +46,13 @@ func (c *Controller) createService(name, namespace string) error {
 	label := map[string]string{
 		amc.LabelDatabaseName: name,
 	}
-	service := &kapi.Service{
-		ObjectMeta: kapi.ObjectMeta{
+	service := &apiv1.Service{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:   name,
 			Labels: label,
 		},
-		Spec: kapi.ServiceSpec{
-			Ports: []kapi.ServicePort{
+		Spec: apiv1.ServiceSpec{
+			Ports: []apiv1.ServicePort{
 				{
 					Name:       "port",
 					Port:       5432,
@@ -62,7 +63,7 @@ func (c *Controller) createService(name, namespace string) error {
 		},
 	}
 
-	if _, err := c.Client.Core().Services(namespace).Create(service); err != nil {
+	if _, err := c.Client.CoreV1().Services(namespace).Create(service); err != nil {
 		return err
 	}
 
@@ -72,9 +73,9 @@ func (c *Controller) createService(name, namespace string) error {
 func (c *Controller) findStatefulSet(postgres *tapi.Postgres) (bool, error) {
 	// SatatefulSet for Postgres database
 	statefulSetName := getStatefulSetName(postgres.Name)
-	statefulSet, err := c.Client.Apps().StatefulSets(postgres.Namespace).Get(statefulSetName)
+	statefulSet, err := c.Client.AppsV1beta1().StatefulSets(postgres.Namespace).Get(statefulSetName, metav1.GetOptions{})
 	if err != nil {
-		if k8serr.IsNotFound(err) {
+		if kerr.IsNotFound(err) {
 			return false, nil
 		} else {
 			return false, err
@@ -88,7 +89,7 @@ func (c *Controller) findStatefulSet(postgres *tapi.Postgres) (bool, error) {
 	return true, nil
 }
 
-func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*kapps.StatefulSet, error) {
+func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulSet, error) {
 	// Set labels
 	labels := make(map[string]string)
 	for key, val := range postgres.Labels {
@@ -113,34 +114,34 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*kapps.Stateful
 	statefulSetName := getStatefulSetName(postgres.Name)
 
 	replicas := int32(1)
-	statefulSet := &kapps.StatefulSet{
-		ObjectMeta: kapi.ObjectMeta{
+	statefulSet := &apps.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:        statefulSetName,
 			Namespace:   postgres.Namespace,
 			Labels:      labels,
 			Annotations: annotations,
 		},
-		Spec: kapps.StatefulSetSpec{
-			Replicas:    replicas,
+		Spec: apps.StatefulSetSpec{
+			Replicas:    &replicas,
 			ServiceName: c.opt.GoverningService,
-			Template: kapi.PodTemplateSpec{
-				ObjectMeta: kapi.ObjectMeta{
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
 					Labels:      podLabels,
 					Annotations: annotations,
 				},
-				Spec: kapi.PodSpec{
-					Containers: []kapi.Container{
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
 						{
 							Name:            tapi.ResourceNamePostgres,
 							Image:           fmt.Sprintf("%s:%s-db", docker.ImagePostgres, postgres.Spec.Version),
-							ImagePullPolicy: kapi.PullIfNotPresent,
-							Ports: []kapi.ContainerPort{
+							ImagePullPolicy: apiv1.PullIfNotPresent,
+							Ports: []apiv1.ContainerPort{
 								{
 									Name:          "port",
 									ContainerPort: 5432,
 								},
 							},
-							VolumeMounts: []kapi.VolumeMount{
+							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "secret",
 									MountPath: "/srv/" + tapi.ResourceNamePostgres + "/secrets",
@@ -186,7 +187,7 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*kapps.Stateful
 		addInitialScript(statefulSet, postgres.Spec.Init.ScriptSource)
 	}
 
-	if _, err := c.Client.Apps().StatefulSets(statefulSet.Namespace).Create(statefulSet); err != nil {
+	if _, err := c.Client.AppsV1beta1().StatefulSets(statefulSet.Namespace).Create(statefulSet); err != nil {
 		return nil, err
 	}
 
@@ -194,9 +195,9 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*kapps.Stateful
 }
 
 func (c *Controller) findSecret(namespace, secretName string) (bool, error) {
-	secret, err := c.Client.Core().Secrets(namespace).Get(secretName)
+	secret, err := c.Client.CoreV1().Secrets(namespace).Get(secretName, metav1.GetOptions{})
 	if err != nil {
-		if k8serr.IsNotFound(err) {
+		if kerr.IsNotFound(err) {
 			return false, nil
 		} else {
 			return false, err
@@ -209,7 +210,7 @@ func (c *Controller) findSecret(namespace, secretName string) (bool, error) {
 	return true, nil
 }
 
-func (c *Controller) createDatabaseSecret(postgres *tapi.Postgres) (*kapi.SecretVolumeSource, error) {
+func (c *Controller) createDatabaseSecret(postgres *tapi.Postgres) (*apiv1.SecretVolumeSource, error) {
 	authSecretName := postgres.Name + "-admin-auth"
 
 	found, err := c.findSecret(postgres.Namespace, authSecretName)
@@ -222,31 +223,31 @@ func (c *Controller) createDatabaseSecret(postgres *tapi.Postgres) (*kapi.Secret
 		data := map[string][]byte{
 			".admin": []byte(POSTGRES_PASSWORD),
 		}
-		secret := &kapi.Secret{
-			ObjectMeta: kapi.ObjectMeta{
+		secret := &apiv1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: authSecretName,
 				Labels: map[string]string{
 					amc.LabelDatabaseKind: tapi.ResourceKindPostgres,
 				},
 			},
-			Type: kapi.SecretTypeOpaque,
+			Type: apiv1.SecretTypeOpaque,
 			Data: data,
 		}
-		if _, err := c.Client.Core().Secrets(postgres.Namespace).Create(secret); err != nil {
+		if _, err := c.Client.CoreV1().Secrets(postgres.Namespace).Create(secret); err != nil {
 			return nil, err
 		}
 	}
 
-	return &kapi.SecretVolumeSource{
+	return &apiv1.SecretVolumeSource{
 		SecretName: authSecretName,
 	}, nil
 }
 
-func addSecretVolume(statefulSet *kapps.StatefulSet, secretVolume *kapi.SecretVolumeSource) error {
+func addSecretVolume(statefulSet *apps.StatefulSet, secretVolume *apiv1.SecretVolumeSource) error {
 	statefulSet.Spec.Template.Spec.Volumes = append(statefulSet.Spec.Template.Spec.Volumes,
-		kapi.Volume{
+		apiv1.Volume{
 			Name: "secret",
-			VolumeSource: kapi.VolumeSource{
+			VolumeSource: apiv1.VolumeSource{
 				Secret: secretVolume,
 			},
 		},
@@ -254,14 +255,14 @@ func addSecretVolume(statefulSet *kapps.StatefulSet, secretVolume *kapi.SecretVo
 	return nil
 }
 
-func addDataVolume(statefulSet *kapps.StatefulSet, storage *tapi.StorageSpec) {
+func addDataVolume(statefulSet *apps.StatefulSet, storage *tapi.StorageSpec) {
 	if storage != nil {
 		// volume claim templates
 		// Dynamically attach volume
 		storageClassName := storage.Class
-		statefulSet.Spec.VolumeClaimTemplates = []kapi.PersistentVolumeClaim{
+		statefulSet.Spec.VolumeClaimTemplates = []apiv1.PersistentVolumeClaim{
 			{
-				ObjectMeta: kapi.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "data",
 					Annotations: map[string]string{
 						"volume.beta.kubernetes.io/storage-class": storageClassName,
@@ -274,19 +275,19 @@ func addDataVolume(statefulSet *kapps.StatefulSet, storage *tapi.StorageSpec) {
 		// Attach Empty directory
 		statefulSet.Spec.Template.Spec.Volumes = append(
 			statefulSet.Spec.Template.Spec.Volumes,
-			kapi.Volume{
+			apiv1.Volume{
 				Name: "data",
-				VolumeSource: kapi.VolumeSource{
-					EmptyDir: &kapi.EmptyDirVolumeSource{},
+				VolumeSource: apiv1.VolumeSource{
+					EmptyDir: &apiv1.EmptyDirVolumeSource{},
 				},
 			},
 		)
 	}
 }
 
-func addInitialScript(statefulSet *kapps.StatefulSet, script *tapi.ScriptSourceSpec) {
+func addInitialScript(statefulSet *apps.StatefulSet, script *tapi.ScriptSourceSpec) {
 	statefulSet.Spec.Template.Spec.Containers[0].VolumeMounts = append(statefulSet.Spec.Template.Spec.Containers[0].VolumeMounts,
-		kapi.VolumeMount{
+		apiv1.VolumeMount{
 			Name:      "initial-script",
 			MountPath: "/var/db-script",
 		},
@@ -297,7 +298,7 @@ func addInitialScript(statefulSet *kapps.StatefulSet, script *tapi.ScriptSourceS
 	}
 
 	statefulSet.Spec.Template.Spec.Volumes = append(statefulSet.Spec.Template.Spec.Volumes,
-		kapi.Volume{
+		apiv1.Volume{
 			Name:         "initial-script",
 			VolumeSource: script.VolumeSource,
 		},
@@ -306,7 +307,7 @@ func addInitialScript(statefulSet *kapps.StatefulSet, script *tapi.ScriptSourceS
 
 func (c *Controller) createDormantDatabase(postgres *tapi.Postgres) (*tapi.DormantDatabase, error) {
 	dormantDb := &tapi.DormantDatabase{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      postgres.Name,
 			Namespace: postgres.Namespace,
 			Labels: map[string]string{
@@ -315,7 +316,7 @@ func (c *Controller) createDormantDatabase(postgres *tapi.Postgres) (*tapi.Dorma
 		},
 		Spec: tapi.DormantDatabaseSpec{
 			Origin: tapi.Origin{
-				ObjectMeta: kapi.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:        postgres.Name,
 					Namespace:   postgres.Namespace,
 					Labels:      postgres.Labels,
@@ -332,7 +333,7 @@ func (c *Controller) createDormantDatabase(postgres *tapi.Postgres) (*tapi.Dorma
 
 func (c *Controller) reCreatePostgres(postgres *tapi.Postgres) error {
 	_postgres := &tapi.Postgres{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:        postgres.Name,
 			Namespace:   postgres.Namespace,
 			Labels:      postgres.Labels,
@@ -354,8 +355,7 @@ const (
 	snapshotType_DumpRestore = "dump-restore"
 )
 
-func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Snapshot) (*kbatch.Job, error) {
-
+func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Snapshot) (*batch.Job, error) {
 	databaseName := postgres.Name
 	jobName := rand.WithUniqSuffix(databaseName)
 	jobLabel := map[string]string{
@@ -373,18 +373,18 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 	// Folder name inside Cloud bucket where backup will be uploaded
 	folderName := fmt.Sprintf("%v/%v/%v", amc.DatabaseNamePrefix, snapshot.Namespace, snapshot.Spec.DatabaseName)
 
-	job := &kbatch.Job{
-		ObjectMeta: kapi.ObjectMeta{
+	job := &batch.Job{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:   jobName,
 			Labels: jobLabel,
 		},
-		Spec: kbatch.JobSpec{
-			Template: kapi.PodTemplateSpec{
-				ObjectMeta: kapi.ObjectMeta{
+		Spec: batch.JobSpec{
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
 					Labels: jobLabel,
 				},
-				Spec: kapi.PodSpec{
-					Containers: []kapi.Container{
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
 						{
 							Name:  SnapshotProcess_Restore,
 							Image: fmt.Sprintf("%s:%s-util", docker.ImagePostgres, postgres.Spec.Version),
@@ -395,7 +395,7 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 							},
-							VolumeMounts: []kapi.VolumeMount{
+							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "secret",
 									MountPath: "/srv/" + tapi.ResourceNamePostgres + "/secrets",
@@ -411,18 +411,18 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 							},
 						},
 					},
-					Volumes: []kapi.Volume{
+					Volumes: []apiv1.Volume{
 						{
 							Name: "secret",
-							VolumeSource: kapi.VolumeSource{
-								Secret: &kapi.SecretVolumeSource{
+							VolumeSource: apiv1.VolumeSource{
+								Secret: &apiv1.SecretVolumeSource{
 									SecretName: postgres.Spec.DatabaseSecret.SecretName,
 								},
 							},
 						},
 						{
 							Name: "cloud",
-							VolumeSource: kapi.VolumeSource{
+							VolumeSource: apiv1.VolumeSource{
 								Secret: backupSpec.StorageSecret,
 							},
 						},
@@ -431,13 +431,13 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 							VolumeSource: persistentVolume.VolumeSource,
 						},
 					},
-					RestartPolicy: kapi.RestartPolicyNever,
+					RestartPolicy: apiv1.RestartPolicyNever,
 				},
 			},
 		},
 	}
 
-	return c.Client.Batch().Jobs(postgres.Namespace).Create(job)
+	return c.Client.BatchV1().Jobs(postgres.Namespace).Create(job)
 }
 
 func getStatefulSetName(databaseName string) string {

@@ -8,11 +8,12 @@ import (
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
-	kapi "k8s.io/kubernetes/pkg/api"
-	k8serr "k8s.io/kubernetes/pkg/api/errors"
-	kapps "k8s.io/kubernetes/pkg/apis/apps"
-	kbatch "k8s.io/kubernetes/pkg/apis/batch"
-	"k8s.io/kubernetes/pkg/util/intstr"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
+	batch "k8s.io/client-go/pkg/apis/batch/v1"
 )
 
 const (
@@ -24,9 +25,9 @@ const (
 )
 
 func (c *Controller) findService(name, namespace string) (bool, error) {
-	service, err := c.Client.Core().Services(namespace).Get(name)
+	service, err := c.Client.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
-		if k8serr.IsNotFound(err) {
+		if kerr.IsNotFound(err) {
 			return false, nil
 		} else {
 			return false, err
@@ -44,13 +45,13 @@ func (c *Controller) createService(name, namespace string) error {
 	label := map[string]string{
 		amc.LabelDatabaseName: name,
 	}
-	service := &kapi.Service{
-		ObjectMeta: kapi.ObjectMeta{
+	service := &apiv1.Service{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:   name,
 			Labels: label,
 		},
-		Spec: kapi.ServiceSpec{
-			Ports: []kapi.ServicePort{
+		Spec: apiv1.ServiceSpec{
+			Ports: []apiv1.ServicePort{
 				{
 					Name:       "api",
 					Port:       9200,
@@ -66,7 +67,7 @@ func (c *Controller) createService(name, namespace string) error {
 		},
 	}
 
-	if _, err := c.Client.Core().Services(namespace).Create(service); err != nil {
+	if _, err := c.Client.CoreV1().Services(namespace).Create(service); err != nil {
 		return err
 	}
 
@@ -76,9 +77,9 @@ func (c *Controller) createService(name, namespace string) error {
 func (c *Controller) findStatefulSet(elastic *tapi.Elastic) (bool, error) {
 	// SatatefulSet for Postgres database
 	statefulSetName := getStatefulSetName(elastic.Name)
-	statefulSet, err := c.Client.Apps().StatefulSets(elastic.Namespace).Get(statefulSetName)
+	statefulSet, err := c.Client.AppsV1beta1().StatefulSets(elastic.Namespace).Get(statefulSetName, metav1.GetOptions{})
 	if err != nil {
-		if k8serr.IsNotFound(err) {
+		if kerr.IsNotFound(err) {
 			return false, nil
 		} else {
 			return false, err
@@ -92,7 +93,7 @@ func (c *Controller) findStatefulSet(elastic *tapi.Elastic) (bool, error) {
 	return true, nil
 }
 
-func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*kapps.StatefulSet, error) {
+func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*apps.StatefulSet, error) {
 	// Set labels
 	labels := make(map[string]string)
 	for key, val := range elastic.Labels {
@@ -118,28 +119,28 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*kapps.StatefulSe
 
 	// SatatefulSet for Elastic database
 	statefulSetName := getStatefulSetName(elastic.Name)
-	statefulSet := &kapps.StatefulSet{
-		ObjectMeta: kapi.ObjectMeta{
+	statefulSet := &apps.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:        statefulSetName,
 			Namespace:   elastic.Namespace,
 			Labels:      labels,
 			Annotations: annotations,
 		},
-		Spec: kapps.StatefulSetSpec{
-			Replicas:    elastic.Spec.Replicas,
+		Spec: apps.StatefulSetSpec{
+			Replicas:    &elastic.Spec.Replicas,
 			ServiceName: c.opt.GoverningService,
-			Template: kapi.PodTemplateSpec{
-				ObjectMeta: kapi.ObjectMeta{
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
 					Labels:      podLabels,
 					Annotations: annotations,
 				},
-				Spec: kapi.PodSpec{
-					Containers: []kapi.Container{
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
 						{
 							Name:            tapi.ResourceNameElastic,
 							Image:           dockerImage,
-							ImagePullPolicy: kapi.PullIfNotPresent,
-							Ports: []kapi.ContainerPort{
+							ImagePullPolicy: apiv1.PullIfNotPresent,
+							Ports: []apiv1.ContainerPort{
 								{
 									Name:          "api",
 									ContainerPort: 9200,
@@ -149,7 +150,7 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*kapps.StatefulSe
 									ContainerPort: 9300,
 								},
 							},
-							VolumeMounts: []kapi.VolumeMount{
+							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "discovery",
 									MountPath: "/tmp/discovery",
@@ -159,7 +160,7 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*kapps.StatefulSe
 									MountPath: "/var/pv",
 								},
 							},
-							Env: []kapi.EnvVar{
+							Env: []apiv1.EnvVar{
 								{
 									Name:  "CLUSTER_NAME",
 									Value: elastic.Name,
@@ -171,28 +172,28 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*kapps.StatefulSe
 							},
 						},
 					},
-					InitContainers: []kapi.Container{
+					InitContainers: []apiv1.Container{
 						{
 							Name:            "discover",
 							Image:           initContainerImage,
-							ImagePullPolicy: kapi.PullIfNotPresent,
+							ImagePullPolicy: apiv1.PullIfNotPresent,
 							Args: []string{
 								"discover",
 								fmt.Sprintf("--service=%v", elastic.Name),
 								fmt.Sprintf("--namespace=%v", elastic.Namespace),
 							},
-							Env: []kapi.EnvVar{
+							Env: []apiv1.EnvVar{
 								{
 									Name: "POD_NAME",
-									ValueFrom: &kapi.EnvVarSource{
-										FieldRef: &kapi.ObjectFieldSelector{
+									ValueFrom: &apiv1.EnvVarSource{
+										FieldRef: &apiv1.ObjectFieldSelector{
 											APIVersion: "v1",
 											FieldPath:  "metadata.name",
 										},
 									},
 								},
 							},
-							VolumeMounts: []kapi.VolumeMount{
+							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "discovery",
 									MountPath: "/tmp/discovery",
@@ -201,11 +202,11 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*kapps.StatefulSe
 						},
 					},
 					NodeSelector: elastic.Spec.NodeSelector,
-					Volumes: []kapi.Volume{
+					Volumes: []apiv1.Volume{
 						{
 							Name: "discovery",
-							VolumeSource: kapi.VolumeSource{
-								EmptyDir: &kapi.EmptyDirVolumeSource{},
+							VolumeSource: apiv1.VolumeSource{
+								EmptyDir: &apiv1.EmptyDirVolumeSource{},
 							},
 						},
 					},
@@ -217,21 +218,21 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*kapps.StatefulSe
 	// Add Data volume for StatefulSet
 	addDataVolume(statefulSet, elastic.Spec.Storage)
 
-	if _, err := c.Client.Apps().StatefulSets(statefulSet.Namespace).Create(statefulSet); err != nil {
+	if _, err := c.Client.AppsV1beta1().StatefulSets(statefulSet.Namespace).Create(statefulSet); err != nil {
 		return nil, err
 	}
 
 	return statefulSet, nil
 }
 
-func addDataVolume(statefulSet *kapps.StatefulSet, storage *tapi.StorageSpec) {
+func addDataVolume(statefulSet *apps.StatefulSet, storage *tapi.StorageSpec) {
 	if storage != nil {
 		// volume claim templates
 		// Dynamically attach volume
 		storageClassName := storage.Class
-		statefulSet.Spec.VolumeClaimTemplates = []kapi.PersistentVolumeClaim{
+		statefulSet.Spec.VolumeClaimTemplates = []apiv1.PersistentVolumeClaim{
 			{
-				ObjectMeta: kapi.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "data",
 					Annotations: map[string]string{
 						"volume.beta.kubernetes.io/storage-class": storageClassName,
@@ -244,10 +245,10 @@ func addDataVolume(statefulSet *kapps.StatefulSet, storage *tapi.StorageSpec) {
 		// Attach Empty directory
 		statefulSet.Spec.Template.Spec.Volumes = append(
 			statefulSet.Spec.Template.Spec.Volumes,
-			kapi.Volume{
+			apiv1.Volume{
 				Name: "data",
-				VolumeSource: kapi.VolumeSource{
-					EmptyDir: &kapi.EmptyDirVolumeSource{},
+				VolumeSource: apiv1.VolumeSource{
+					EmptyDir: &apiv1.EmptyDirVolumeSource{},
 				},
 			},
 		)
@@ -256,7 +257,7 @@ func addDataVolume(statefulSet *kapps.StatefulSet, storage *tapi.StorageSpec) {
 
 func (c *Controller) createDormantDatabase(elastic *tapi.Elastic) (*tapi.DormantDatabase, error) {
 	dormantDb := &tapi.DormantDatabase{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      elastic.Name,
 			Namespace: elastic.Namespace,
 			Labels: map[string]string{
@@ -265,7 +266,7 @@ func (c *Controller) createDormantDatabase(elastic *tapi.Elastic) (*tapi.Dormant
 		},
 		Spec: tapi.DormantDatabaseSpec{
 			Origin: tapi.Origin{
-				ObjectMeta: kapi.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:        elastic.Name,
 					Namespace:   elastic.Namespace,
 					Labels:      elastic.Labels,
@@ -282,7 +283,7 @@ func (c *Controller) createDormantDatabase(elastic *tapi.Elastic) (*tapi.Dormant
 
 func (c *Controller) reCreateElastic(elastic *tapi.Elastic) error {
 	_elastic := &tapi.Elastic{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:        elastic.Name,
 			Namespace:   elastic.Namespace,
 			Labels:      elastic.Labels,
@@ -304,8 +305,7 @@ const (
 	snapshotType_DumpRestore = "dump-restore"
 )
 
-func (c *Controller) createRestoreJob(elastic *tapi.Elastic, snapshot *tapi.Snapshot) (*kbatch.Job, error) {
-
+func (c *Controller) createRestoreJob(elastic *tapi.Elastic, snapshot *tapi.Snapshot) (*batch.Job, error) {
 	databaseName := elastic.Name
 	jobName := rand.WithUniqSuffix(databaseName)
 	jobLabel := map[string]string{
@@ -323,18 +323,18 @@ func (c *Controller) createRestoreJob(elastic *tapi.Elastic, snapshot *tapi.Snap
 	// Folder name inside Cloud bucket where backup will be uploaded
 	folderName := fmt.Sprintf("%v/%v/%v", amc.DatabaseNamePrefix, snapshot.Namespace, snapshot.Spec.DatabaseName)
 
-	job := &kbatch.Job{
-		ObjectMeta: kapi.ObjectMeta{
+	job := &batch.Job{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:   jobName,
 			Labels: jobLabel,
 		},
-		Spec: kbatch.JobSpec{
-			Template: kapi.PodTemplateSpec{
-				ObjectMeta: kapi.ObjectMeta{
+		Spec: batch.JobSpec{
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
 					Labels: jobLabel,
 				},
-				Spec: kapi.PodSpec{
-					Containers: []kapi.Container{
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
 						{
 							Name:  SnapshotProcess_Restore,
 							Image: docker.ImageElasticdump + ":" + c.opt.ElasticDumpTag,
@@ -345,7 +345,7 @@ func (c *Controller) createRestoreJob(elastic *tapi.Elastic, snapshot *tapi.Snap
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 							},
-							VolumeMounts: []kapi.VolumeMount{
+							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "cloud",
 									MountPath: storageSecretMountPath,
@@ -357,10 +357,10 @@ func (c *Controller) createRestoreJob(elastic *tapi.Elastic, snapshot *tapi.Snap
 							},
 						},
 					},
-					Volumes: []kapi.Volume{
+					Volumes: []apiv1.Volume{
 						{
 							Name: "cloud",
-							VolumeSource: kapi.VolumeSource{
+							VolumeSource: apiv1.VolumeSource{
 								Secret: backupSpec.StorageSecret,
 							},
 						},
@@ -369,13 +369,13 @@ func (c *Controller) createRestoreJob(elastic *tapi.Elastic, snapshot *tapi.Snap
 							VolumeSource: persistentVolume.VolumeSource,
 						},
 					},
-					RestartPolicy: kapi.RestartPolicyNever,
+					RestartPolicy: apiv1.RestartPolicyNever,
 				},
 			},
 		},
 	}
 
-	return c.Client.Batch().Jobs(elastic.Namespace).Create(job)
+	return c.Client.BatchV1().Jobs(elastic.Namespace).Create(job)
 }
 
 func getStatefulSetName(databaseName string) string {
