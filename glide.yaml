@@ -31,15 +31,13 @@ import:
   version: 95467b6cacee2a06f112a3cf7e47a70fad6000cf
 - package: github.com/Sirupsen/logrus
   version: v0.10.0
-- package: k8s.io/kubernetes
-  version: ~1.5.0
 - package: github.com/coreos/prometheus-operator
   repo: https://github.com/appscode/prometheus-operator.git
   vcs: git
   version: off-car-exporter
 - package: github.com/gogo/protobuf/proto
   version: e18d7aa8f8c624c915db340349aad4c49b10d173
-- package: k8s.io/apimachinery/pkg/api/errors
+- package: k8s.io/apimachinery
   version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
 - package: k8s.io/client-go
   version: v3.0.0-beta.0

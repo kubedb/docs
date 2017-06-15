@@ -10,9 +10,9 @@ import (
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
-	kapi "k8s.io/kubernetes/pkg/api"
-	k8serr "k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func (c *Controller) create(postgres *tapi.Postgres) error {
@@ -21,13 +21,13 @@ func (c *Controller) create(postgres *tapi.Postgres) error {
 		return err
 	}
 
-	t := unversioned.Now()
+	t := metav1.Now()
 	postgres.Status.CreationTime = &t
 	postgres.Status.Phase = tapi.DatabasePhaseCreating
 	if _, err = c.ExtClient.Postgreses(postgres.Namespace).Update(postgres); err != nil {
 		c.eventRecorder.Eventf(
 			postgres,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			`Fail to update Postgres: "%v". Reason: %v`,
 			postgres.Name,
@@ -37,13 +37,13 @@ func (c *Controller) create(postgres *tapi.Postgres) error {
 	}
 
 	if err := c.validatePostgres(postgres); err != nil {
-		c.eventRecorder.Event(postgres, kapi.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
+		c.eventRecorder.Event(postgres, apiv1.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
 		return err
 	}
 	// Event for successful validation
 	c.eventRecorder.Event(
 		postgres,
-		kapi.EventTypeNormal,
+		apiv1.EventTypeNormal,
 		eventer.EventReasonSuccessfulValidate,
 		"Successfully validate Postgres",
 	)
@@ -54,14 +54,14 @@ func (c *Controller) create(postgres *tapi.Postgres) error {
 	}
 
 	// Event for notification that kubernetes objects are creating
-	c.eventRecorder.Event(postgres, kapi.EventTypeNormal, eventer.EventReasonCreating, "Creating Kubernetes objects")
+	c.eventRecorder.Event(postgres, apiv1.EventTypeNormal, eventer.EventReasonCreating, "Creating Kubernetes objects")
 
 	// create Governing Service
 	governingService := c.opt.GoverningService
 	if err := c.CreateGoverningService(governingService, postgres.Namespace); err != nil {
 		c.eventRecorder.Eventf(
 			postgres,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			`Failed to create Service: "%v". Reason: %v`,
 			governingService,
@@ -82,7 +82,7 @@ func (c *Controller) create(postgres *tapi.Postgres) error {
 
 	c.eventRecorder.Event(
 		postgres,
-		kapi.EventTypeNormal,
+		apiv1.EventTypeNormal,
 		eventer.EventReasonSuccessfulCreate,
 		"Successfully created Postgres",
 	)
@@ -94,7 +94,7 @@ func (c *Controller) create(postgres *tapi.Postgres) error {
 		if err := c.addMonitor(postgres); err != nil {
 			c.eventRecorder.Eventf(
 				postgres,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToCreate,
 				"Failed to add monitoring system. Reason: %v",
 				err,
@@ -104,7 +104,7 @@ func (c *Controller) create(postgres *tapi.Postgres) error {
 		}
 		c.eventRecorder.Event(
 			postgres,
-			kapi.EventTypeNormal,
+			apiv1.EventTypeNormal,
 			eventer.EventReasonSuccessfulCreate,
 			"Successfully added monitoring system.",
 		)
@@ -116,10 +116,10 @@ func (c *Controller) findDormantDatabase(postgres *tapi.Postgres) error {
 	// Check if DormantDatabase exists or not
 	dormantDb, err := c.ExtClient.DormantDatabases(postgres.Namespace).Get(postgres.Name)
 	if err != nil {
-		if !k8serr.IsNotFound(err) {
+		if !kerr.IsNotFound(err) {
 			c.eventRecorder.Eventf(
 				postgres,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToGet,
 				`Fail to get DormantDatabase: "%v". Reason: %v`,
 				postgres.Name,
@@ -137,7 +137,7 @@ func (c *Controller) findDormantDatabase(postgres *tapi.Postgres) error {
 		}
 		c.eventRecorder.Event(
 			postgres,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			message,
 		)
@@ -160,7 +160,7 @@ func (c *Controller) ensureService(postgres *tapi.Postgres) error {
 	if err := c.createService(postgres.Name, postgres.Namespace); err != nil {
 		c.eventRecorder.Eventf(
 			postgres,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to create Service. Reason: %v",
 			err,
@@ -184,7 +184,7 @@ func (c *Controller) ensureStatefulSet(postgres *tapi.Postgres) error {
 	if err != nil {
 		c.eventRecorder.Eventf(
 			postgres,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to create StatefulSet. Reason: %v",
 			err,
@@ -196,7 +196,7 @@ func (c *Controller) ensureStatefulSet(postgres *tapi.Postgres) error {
 	if err := c.CheckStatefulSetPodStatus(statefulSet, durationCheckStatefulSet); err != nil {
 		c.eventRecorder.Eventf(
 			postgres,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToStart,
 			`Failed to create StatefulSet. Reason: %v`,
 			err,
@@ -205,7 +205,7 @@ func (c *Controller) ensureStatefulSet(postgres *tapi.Postgres) error {
 	} else {
 		c.eventRecorder.Event(
 			postgres,
-			kapi.EventTypeNormal,
+			apiv1.EventTypeNormal,
 			eventer.EventReasonSuccessfulCreate,
 			"Successfully created StatefulSet",
 		)
@@ -220,7 +220,7 @@ func (c *Controller) ensureStatefulSet(postgres *tapi.Postgres) error {
 		if _, err = c.ExtClient.Postgreses(postgres.Namespace).Update(postgres); err != nil {
 			c.eventRecorder.Eventf(
 				postgres,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToUpdate,
 				`Fail to update Postgres: "%v". Reason: %v`,
 				postgres.Name,
@@ -232,7 +232,7 @@ func (c *Controller) ensureStatefulSet(postgres *tapi.Postgres) error {
 		if err := c.initialize(postgres); err != nil {
 			c.eventRecorder.Eventf(
 				postgres,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToInitialize,
 				"Failed to initialize. Reason: %v",
 				err,
@@ -248,7 +248,7 @@ func (c *Controller) ensureStatefulSet(postgres *tapi.Postgres) error {
 	if _, err = c.ExtClient.Postgreses(postgres.Namespace).Update(postgres); err != nil {
 		c.eventRecorder.Eventf(
 			postgres,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			`Failed to update Postgres: "%v". Reason: %v`,
 			postgres.Name,
@@ -267,7 +267,7 @@ func (c *Controller) ensureBackupScheduler(postgres *tapi.Postgres) {
 		if err != nil {
 			c.eventRecorder.Eventf(
 				postgres,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToSchedule,
 				"Failed to schedule snapshot. Reason: %v",
 				err,
@@ -288,7 +288,7 @@ func (c *Controller) initialize(postgres *tapi.Postgres) error {
 	// Event for notification that kubernetes objects are creating
 	c.eventRecorder.Eventf(
 		postgres,
-		kapi.EventTypeNormal,
+		apiv1.EventTypeNormal,
 		eventer.EventReasonInitializing,
 		`Initializing from Snapshot: "%v"`,
 		snapshotSource.Name,
@@ -312,14 +312,14 @@ func (c *Controller) initialize(postgres *tapi.Postgres) error {
 	if jobSuccess {
 		c.eventRecorder.Event(
 			postgres,
-			kapi.EventTypeNormal,
+			apiv1.EventTypeNormal,
 			eventer.EventReasonSuccessfulInitialize,
 			"Successfully completed initialization",
 		)
 	} else {
 		c.eventRecorder.Event(
 			postgres,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToInitialize,
 			"Failed to complete initialization",
 		)
@@ -328,12 +328,12 @@ func (c *Controller) initialize(postgres *tapi.Postgres) error {
 }
 
 func (c *Controller) pause(postgres *tapi.Postgres) error {
-	c.eventRecorder.Event(postgres, kapi.EventTypeNormal, eventer.EventReasonPausing, "Pausing Postgres")
+	c.eventRecorder.Event(postgres, apiv1.EventTypeNormal, eventer.EventReasonPausing, "Pausing Postgres")
 
 	if postgres.Spec.DoNotPause {
 		c.eventRecorder.Eventf(
 			postgres,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToPause,
 			`Postgres "%v" is locked.`,
 			postgres.Name,
@@ -342,7 +342,7 @@ func (c *Controller) pause(postgres *tapi.Postgres) error {
 		if err := c.reCreatePostgres(postgres); err != nil {
 			c.eventRecorder.Eventf(
 				postgres,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToCreate,
 				`Failed to recreate Postgres: "%v". Reason: %v`,
 				postgres.Name,
@@ -356,7 +356,7 @@ func (c *Controller) pause(postgres *tapi.Postgres) error {
 	if _, err := c.createDormantDatabase(postgres); err != nil {
 		c.eventRecorder.Eventf(
 			postgres,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			`Failed to create DormantDatabase: "%v". Reason: %v`,
 			postgres.Name,
@@ -366,7 +366,7 @@ func (c *Controller) pause(postgres *tapi.Postgres) error {
 	}
 	c.eventRecorder.Eventf(
 		postgres,
-		kapi.EventTypeNormal,
+		apiv1.EventTypeNormal,
 		eventer.EventReasonSuccessfulCreate,
 		`Successfully created DormantDatabase: "%v"`,
 		postgres.Name,
@@ -378,7 +378,7 @@ func (c *Controller) pause(postgres *tapi.Postgres) error {
 		if err := c.deleteMonitor(postgres); err != nil {
 			c.eventRecorder.Eventf(
 				postgres,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToDelete,
 				"Failed to delete monitoring system. Reason: %v",
 				err,
@@ -388,7 +388,7 @@ func (c *Controller) pause(postgres *tapi.Postgres) error {
 		}
 		c.eventRecorder.Event(
 			postgres,
-			kapi.EventTypeNormal,
+			apiv1.EventTypeNormal,
 			eventer.EventReasonSuccessfulMonitorDelete,
 			"Successfully deleted monitoring system.",
 		)
@@ -399,13 +399,13 @@ func (c *Controller) pause(postgres *tapi.Postgres) error {
 func (c *Controller) update(oldPostgres, updatedPostgres *tapi.Postgres) error {
 
 	if err := c.validatePostgres(updatedPostgres); err != nil {
-		c.eventRecorder.Event(updatedPostgres, kapi.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
+		c.eventRecorder.Event(updatedPostgres, apiv1.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
 		return err
 	}
 	// Event for successful validation
 	c.eventRecorder.Event(
 		updatedPostgres,
-		kapi.EventTypeNormal,
+		apiv1.EventTypeNormal,
 		eventer.EventReasonSuccessfulValidate,
 		"Successfully validate Postgres",
 	)
@@ -430,7 +430,7 @@ func (c *Controller) update(oldPostgres, updatedPostgres *tapi.Postgres) error {
 		if err := c.updateMonitor(oldPostgres, updatedPostgres); err != nil {
 			c.eventRecorder.Eventf(
 				updatedPostgres,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToUpdate,
 				"Failed to update monitoring system. Reason: %v",
 				err,
@@ -440,7 +440,7 @@ func (c *Controller) update(oldPostgres, updatedPostgres *tapi.Postgres) error {
 		}
 		c.eventRecorder.Event(
 			updatedPostgres,
-			kapi.EventTypeNormal,
+			apiv1.EventTypeNormal,
 			eventer.EventReasonSuccessfulMonitorUpdate,
 			"Successfully updated monitoring system.",
 		)

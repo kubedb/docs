@@ -8,11 +8,11 @@ import (
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
-	kapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	kbatch "k8s.io/kubernetes/pkg/apis/batch"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/runtime"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	batch "k8s.io/client-go/pkg/apis/batch/v1"
 )
 
 const (
@@ -34,8 +34,8 @@ func (c *Controller) ValidateSnapshot(snapshot *tapi.Snapshot) error {
 		amc.LabelSnapshotStatus: string(tapi.SnapshotPhaseRunning),
 	}
 
-	snapshotList, err := c.ExtClient.Snapshots(snapshot.Namespace).List(kapi.ListOptions{
-		LabelSelector: labels.SelectorFromSet(labels.Set(labelMap)),
+	snapshotList, err := c.ExtClient.Snapshots(snapshot.Namespace).List(metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(labelMap).String(),
 	})
 	if err != nil {
 		return err
@@ -46,7 +46,7 @@ func (c *Controller) ValidateSnapshot(snapshot *tapi.Snapshot) error {
 			return err
 		}
 
-		t := unversioned.Now()
+		t := metav1.Now()
 		snapshot.Status.StartTime = &t
 		snapshot.Status.CompletionTime = &t
 		snapshot.Status.Phase = tapi.SnapshotPhaseFailed
@@ -72,7 +72,7 @@ func (c *Controller) GetDatabase(snapshot *tapi.Snapshot) (runtime.Object, error
 	return c.ExtClient.Postgreses(snapshot.Namespace).Get(snapshot.Spec.DatabaseName)
 }
 
-func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*kbatch.Job, error) {
+func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error) {
 	databaseName := snapshot.Spec.DatabaseName
 	jobName := rand.WithUniqSuffix(databaseName)
 	jobLabel := map[string]string{
@@ -95,18 +95,18 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*kbatch.Job, error
 	// Folder name inside Cloud bucket where backup will be uploaded
 	folderName := fmt.Sprintf("%v/%v/%v", amc.DatabaseNamePrefix, snapshot.Namespace, snapshot.Spec.DatabaseName)
 
-	job := &kbatch.Job{
-		ObjectMeta: kapi.ObjectMeta{
+	job := &batch.Job{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:   jobName,
 			Labels: jobLabel,
 		},
-		Spec: kbatch.JobSpec{
-			Template: kapi.PodTemplateSpec{
-				ObjectMeta: kapi.ObjectMeta{
+		Spec: batch.JobSpec{
+			Template: apiv1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
 					Labels: jobLabel,
 				},
-				Spec: kapi.PodSpec{
-					Containers: []kapi.Container{
+				Spec: apiv1.PodSpec{
+					Containers: []apiv1.Container{
 						{
 							Name:  SnapshotProcess_Backup,
 							Image: fmt.Sprintf("%s:%s-util", docker.ImagePostgres, postgres.Spec.Version),
@@ -117,7 +117,7 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*kbatch.Job, error
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 							},
-							VolumeMounts: []kapi.VolumeMount{
+							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "secret",
 									MountPath: "/srv/" + tapi.ResourceNamePostgres + "/secrets",
@@ -133,18 +133,18 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*kbatch.Job, error
 							},
 						},
 					},
-					Volumes: []kapi.Volume{
+					Volumes: []apiv1.Volume{
 						{
 							Name: "secret",
-							VolumeSource: kapi.VolumeSource{
-								Secret: &kapi.SecretVolumeSource{
+							VolumeSource: apiv1.VolumeSource{
+								Secret: &apiv1.SecretVolumeSource{
 									SecretName: postgres.Spec.DatabaseSecret.SecretName,
 								},
 							},
 						},
 						{
 							Name: "cloud",
-							VolumeSource: kapi.VolumeSource{
+							VolumeSource: apiv1.VolumeSource{
 								Secret: backupSpec.StorageSecret,
 							},
 						},
@@ -153,7 +153,7 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*kbatch.Job, error
 							VolumeSource: persistentVolume.VolumeSource,
 						},
 					},
-					RestartPolicy: kapi.RestartPolicyNever,
+					RestartPolicy: apiv1.RestartPolicyNever,
 				},
 			},
 		},
@@ -165,13 +165,13 @@ func (c *Controller) WipeOutSnapshot(snapshot *tapi.Snapshot) error {
 	return c.DeleteSnapshotData(snapshot)
 }
 
-func (c *Controller) getVolumeForSnapshot(storage *tapi.StorageSpec, jobName, namespace string) (*kapi.Volume, error) {
-	volume := &kapi.Volume{
+func (c *Controller) getVolumeForSnapshot(storage *tapi.StorageSpec, jobName, namespace string) (*apiv1.Volume, error) {
+	volume := &apiv1.Volume{
 		Name: "util-volume",
 	}
 	if storage != nil {
-		claim := &kapi.PersistentVolumeClaim{
-			ObjectMeta: kapi.ObjectMeta{
+		claim := &apiv1.PersistentVolumeClaim{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      jobName,
 				Namespace: namespace,
 				Annotations: map[string]string{
@@ -185,11 +185,11 @@ func (c *Controller) getVolumeForSnapshot(storage *tapi.StorageSpec, jobName, na
 			return nil, err
 		}
 
-		volume.PersistentVolumeClaim = &kapi.PersistentVolumeClaimVolumeSource{
+		volume.PersistentVolumeClaim = &apiv1.PersistentVolumeClaimVolumeSource{
 			ClaimName: claim.Name,
 		}
 	} else {
-		volume.EmptyDir = &kapi.EmptyDirVolumeSource{}
+		volume.EmptyDir = &apiv1.EmptyDirVolumeSource{}
 	}
 	return volume, nil
 }

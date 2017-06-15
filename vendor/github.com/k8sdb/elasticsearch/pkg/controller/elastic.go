@@ -10,9 +10,9 @@ import (
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
-	kapi "k8s.io/kubernetes/pkg/api"
-	k8serr "k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func (c *Controller) create(elastic *tapi.Elastic) error {
@@ -21,13 +21,13 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 		return err
 	}
 
-	t := unversioned.Now()
+	t := metav1.Now()
 	elastic.Status.CreationTime = &t
 	elastic.Status.Phase = tapi.DatabasePhaseCreating
 	if _, err = c.ExtClient.Elastics(elastic.Namespace).Update(elastic); err != nil {
 		c.eventRecorder.Eventf(
 			elastic,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			`Fail to update Elastic: "%v". Reason: %v`,
 			elastic.Name,
@@ -37,13 +37,13 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 	}
 
 	if err := c.validateElastic(elastic); err != nil {
-		c.eventRecorder.Event(elastic, kapi.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
+		c.eventRecorder.Event(elastic, apiv1.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
 		return err
 	}
 	// Event for successful validation
 	c.eventRecorder.Event(
 		elastic,
-		kapi.EventTypeNormal,
+		apiv1.EventTypeNormal,
 		eventer.EventReasonSuccessfulValidate,
 		"Successfully validate Elastic",
 	)
@@ -54,14 +54,14 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 	}
 
 	// Event for notification that kubernetes objects are creating
-	c.eventRecorder.Event(elastic, kapi.EventTypeNormal, eventer.EventReasonCreating, "Creating Kubernetes objects")
+	c.eventRecorder.Event(elastic, apiv1.EventTypeNormal, eventer.EventReasonCreating, "Creating Kubernetes objects")
 
 	// create Governing Service
 	governingService := c.opt.GoverningService
 	if err := c.CreateGoverningService(governingService, elastic.Namespace); err != nil {
 		c.eventRecorder.Eventf(
 			elastic,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			`Failed to create ServiceAccount: "%v". Reason: %v`,
 			governingService,
@@ -82,7 +82,7 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 
 	c.eventRecorder.Event(
 		elastic,
-		kapi.EventTypeNormal,
+		apiv1.EventTypeNormal,
 		eventer.EventReasonSuccessfulCreate,
 		"Successfully created Elastic",
 	)
@@ -94,7 +94,7 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 		if err := c.addMonitor(elastic); err != nil {
 			c.eventRecorder.Eventf(
 				elastic,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToAddMonitor,
 				"Failed to add monitoring system. Reason: %v",
 				err,
@@ -104,7 +104,7 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 		}
 		c.eventRecorder.Event(
 			elastic,
-			kapi.EventTypeNormal,
+			apiv1.EventTypeNormal,
 			eventer.EventReasonSuccessfulMonitorAdd,
 			"Successfully added monitoring system.",
 		)
@@ -116,10 +116,10 @@ func (c *Controller) findDormantDatabase(elastic *tapi.Elastic) error {
 	// Check if DormantDatabase exists or not
 	dormantDb, err := c.ExtClient.DormantDatabases(elastic.Namespace).Get(elastic.Name)
 	if err != nil {
-		if !k8serr.IsNotFound(err) {
+		if !kerr.IsNotFound(err) {
 			c.eventRecorder.Eventf(
 				elastic,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToGet,
 				`Fail to get DormantDatabase: "%v". Reason: %v`,
 				elastic.Name,
@@ -137,7 +137,7 @@ func (c *Controller) findDormantDatabase(elastic *tapi.Elastic) error {
 		}
 		c.eventRecorder.Event(
 			elastic,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			message,
 		)
@@ -160,7 +160,7 @@ func (c *Controller) ensureService(elastic *tapi.Elastic) error {
 	if err := c.createService(elastic.Name, elastic.Namespace); err != nil {
 		c.eventRecorder.Eventf(
 			elastic,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to create Service. Reason: %v",
 			err,
@@ -184,7 +184,7 @@ func (c *Controller) ensureStatefulSet(elastic *tapi.Elastic) error {
 	if err != nil {
 		c.eventRecorder.Eventf(
 			elastic,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to create StatefulSet. Reason: %v",
 			err,
@@ -197,7 +197,7 @@ func (c *Controller) ensureStatefulSet(elastic *tapi.Elastic) error {
 		if err := c.CheckStatefulSetPodStatus(statefulSet, durationCheckStatefulSet); err != nil {
 			c.eventRecorder.Eventf(
 				elastic,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToStart,
 				"Failed to create StatefulSet. Reason: %v",
 				err,
@@ -206,7 +206,7 @@ func (c *Controller) ensureStatefulSet(elastic *tapi.Elastic) error {
 		} else {
 			c.eventRecorder.Event(
 				elastic,
-				kapi.EventTypeNormal,
+				apiv1.EventTypeNormal,
 				eventer.EventReasonSuccessfulCreate,
 				"Successfully created StatefulSet",
 			)
@@ -222,7 +222,7 @@ func (c *Controller) ensureStatefulSet(elastic *tapi.Elastic) error {
 		if _, err = c.ExtClient.Elastics(elastic.Namespace).Update(elastic); err != nil {
 			c.eventRecorder.Eventf(
 				elastic,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToUpdate,
 				`Fail to update Elastic: "%v". Reason: %v`,
 				elastic.Name,
@@ -234,7 +234,7 @@ func (c *Controller) ensureStatefulSet(elastic *tapi.Elastic) error {
 		if err := c.initialize(elastic); err != nil {
 			c.eventRecorder.Eventf(
 				elastic,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToInitialize,
 				"Failed to initialize. Reason: %v",
 				err,
@@ -250,7 +250,7 @@ func (c *Controller) ensureStatefulSet(elastic *tapi.Elastic) error {
 	if _, err = c.ExtClient.Elastics(elastic.Namespace).Update(elastic); err != nil {
 		c.eventRecorder.Eventf(
 			elastic,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			`Failed to update Elastic: "%v". Reason: %v`,
 			elastic.Name,
@@ -269,7 +269,7 @@ func (c *Controller) ensureBackupScheduler(elastic *tapi.Elastic) {
 		if err != nil {
 			c.eventRecorder.Eventf(
 				elastic,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToSchedule,
 				"Failed to schedule snapshot. Reason: %v",
 				err,
@@ -290,7 +290,7 @@ func (c *Controller) initialize(elastic *tapi.Elastic) error {
 	// Event for notification that kubernetes objects are creating
 	c.eventRecorder.Eventf(
 		elastic,
-		kapi.EventTypeNormal,
+		apiv1.EventTypeNormal,
 		eventer.EventReasonInitializing,
 		`Initializing from Snapshot: "%v"`,
 		snapshotSource.Name,
@@ -314,14 +314,14 @@ func (c *Controller) initialize(elastic *tapi.Elastic) error {
 	if jobSuccess {
 		c.eventRecorder.Event(
 			elastic,
-			kapi.EventTypeNormal,
+			apiv1.EventTypeNormal,
 			eventer.EventReasonSuccessfulInitialize,
 			"Successfully completed initialization",
 		)
 	} else {
 		c.eventRecorder.Event(
 			elastic,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToInitialize,
 			"Failed to complete initialization",
 		)
@@ -330,12 +330,12 @@ func (c *Controller) initialize(elastic *tapi.Elastic) error {
 }
 
 func (c *Controller) pause(elastic *tapi.Elastic) error {
-	c.eventRecorder.Event(elastic, kapi.EventTypeNormal, eventer.EventReasonPausing, "Pausing Elastic")
+	c.eventRecorder.Event(elastic, apiv1.EventTypeNormal, eventer.EventReasonPausing, "Pausing Elastic")
 
 	if elastic.Spec.DoNotPause {
 		c.eventRecorder.Eventf(
 			elastic,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToPause,
 			`Elastic "%v" is locked.`,
 			elastic.Name,
@@ -344,7 +344,7 @@ func (c *Controller) pause(elastic *tapi.Elastic) error {
 		if err := c.reCreateElastic(elastic); err != nil {
 			c.eventRecorder.Eventf(
 				elastic,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToCreate,
 				`Failed to recreate Elastic: "%v". Reason: %v`,
 				elastic.Name,
@@ -358,7 +358,7 @@ func (c *Controller) pause(elastic *tapi.Elastic) error {
 	if _, err := c.createDormantDatabase(elastic); err != nil {
 		c.eventRecorder.Eventf(
 			elastic,
-			kapi.EventTypeWarning,
+			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			`Failed to create DormantDatabase: "%v". Reason: %v`,
 			elastic.Name,
@@ -368,7 +368,7 @@ func (c *Controller) pause(elastic *tapi.Elastic) error {
 	}
 	c.eventRecorder.Eventf(
 		elastic,
-		kapi.EventTypeNormal,
+		apiv1.EventTypeNormal,
 		eventer.EventReasonSuccessfulCreate,
 		`Successfully created DormantDatabase: "%v"`,
 		elastic.Name,
@@ -380,7 +380,7 @@ func (c *Controller) pause(elastic *tapi.Elastic) error {
 		if err := c.deleteMonitor(elastic); err != nil {
 			c.eventRecorder.Eventf(
 				elastic,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToDeleteMonitor,
 				"Failed to delete monitoring system. Reason: %v",
 				err,
@@ -390,7 +390,7 @@ func (c *Controller) pause(elastic *tapi.Elastic) error {
 		}
 		c.eventRecorder.Event(
 			elastic,
-			kapi.EventTypeNormal,
+			apiv1.EventTypeNormal,
 			eventer.EventReasonSuccessfulMonitorDelete,
 			"Successfully deleted monitoring system.",
 		)
@@ -401,13 +401,13 @@ func (c *Controller) pause(elastic *tapi.Elastic) error {
 func (c *Controller) update(oldElastic, updatedElastic *tapi.Elastic) error {
 
 	if err := c.validateElastic(updatedElastic); err != nil {
-		c.eventRecorder.Event(updatedElastic, kapi.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
+		c.eventRecorder.Event(updatedElastic, apiv1.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
 		return err
 	}
 	// Event for successful validation
 	c.eventRecorder.Event(
 		updatedElastic,
-		kapi.EventTypeNormal,
+		apiv1.EventTypeNormal,
 		eventer.EventReasonSuccessfulValidate,
 		"Successfully validate Elastic",
 	)
@@ -426,11 +426,11 @@ func (c *Controller) update(oldElastic, updatedElastic *tapi.Elastic) error {
 
 	if (updatedElastic.Spec.Replicas != oldElastic.Spec.Replicas) && updatedElastic.Spec.Replicas >= 0 {
 		statefulSetName := getStatefulSetName(updatedElastic.Name)
-		statefulSet, err := c.Client.Apps().StatefulSets(updatedElastic.Namespace).Get(statefulSetName)
+		statefulSet, err := c.Client.AppsV1beta1().StatefulSets(updatedElastic.Namespace).Get(statefulSetName, metav1.GetOptions{})
 		if err != nil {
 			c.eventRecorder.Eventf(
 				updatedElastic,
-				kapi.EventTypeNormal,
+				apiv1.EventTypeNormal,
 				eventer.EventReasonFailedToGet,
 				`Failed to get StatefulSet: "%v". Reason: %v`,
 				statefulSetName,
@@ -438,11 +438,11 @@ func (c *Controller) update(oldElastic, updatedElastic *tapi.Elastic) error {
 			)
 			return err
 		}
-		statefulSet.Spec.Replicas = updatedElastic.Spec.Replicas
-		if _, err := c.Client.Apps().StatefulSets(statefulSet.Namespace).Update(statefulSet); err != nil {
+		statefulSet.Spec.Replicas = &updatedElastic.Spec.Replicas
+		if _, err := c.Client.AppsV1beta1().StatefulSets(statefulSet.Namespace).Update(statefulSet); err != nil {
 			c.eventRecorder.Eventf(
 				updatedElastic,
-				kapi.EventTypeNormal,
+				apiv1.EventTypeNormal,
 				eventer.EventReasonFailedToUpdate,
 				`Failed to update StatefulSet: "%v". Reason: %v`,
 				statefulSetName,
@@ -460,7 +460,7 @@ func (c *Controller) update(oldElastic, updatedElastic *tapi.Elastic) error {
 		if err := c.updateMonitor(oldElastic, updatedElastic); err != nil {
 			c.eventRecorder.Eventf(
 				updatedElastic,
-				kapi.EventTypeWarning,
+				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToUpdateMonitor,
 				"Failed to update monitoring system. Reason: %v",
 				err,
@@ -470,7 +470,7 @@ func (c *Controller) update(oldElastic, updatedElastic *tapi.Elastic) error {
 		}
 		c.eventRecorder.Event(
 			updatedElastic,
-			kapi.EventTypeNormal,
+			apiv1.EventTypeNormal,
 			eventer.EventReasonSuccessfulMonitorUpdate,
 			"Successfully updated monitoring system.",
 		)

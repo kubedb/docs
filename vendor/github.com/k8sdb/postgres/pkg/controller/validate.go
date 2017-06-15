@@ -5,6 +5,7 @@ import (
 
 	tapi "github.com/k8sdb/apimachinery/api"
 	"github.com/k8sdb/apimachinery/pkg/docker"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (c *Controller) validatePostgres(postgres *tapi.Postgres) error {
@@ -26,7 +27,7 @@ func (c *Controller) validatePostgres(postgres *tapi.Postgres) error {
 
 	databaseSecret := postgres.Spec.DatabaseSecret
 	if databaseSecret != nil {
-		if _, err := c.Client.Core().Secrets(postgres.Namespace).Get(databaseSecret.SecretName); err != nil {
+		if _, err := c.Client.CoreV1().Secrets(postgres.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
 			return err
 		}
 	}

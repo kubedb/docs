@@ -4,14 +4,14 @@ import (
 	"github.com/appscode/log"
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
-	kapi "k8s.io/kubernetes/pkg/api"
-	k8serr "k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/labels"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
-func (c *Controller) Exists(om *kapi.ObjectMeta) (bool, error) {
+func (c *Controller) Exists(om *metav1.ObjectMeta) (bool, error) {
 	if _, err := c.ExtClient.Postgreses(om.Namespace).Get(om.Name); err != nil {
-		if !k8serr.IsNotFound(err) {
+		if !kerr.IsNotFound(err) {
 			return false, err
 		}
 		return false, nil
@@ -68,7 +68,7 @@ func (c *Controller) deleteSecret(dormantDb *tapi.DormantDatabase) error {
 	var secretFound bool = false
 	dormantDatabaseSecret := dormantDb.Spec.Origin.Spec.Postgres.DatabaseSecret
 
-	postgresList, err := c.ExtClient.Postgreses(dormantDb.Namespace).List(kapi.ListOptions{})
+	postgresList, err := c.ExtClient.Postgreses(dormantDb.Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -87,12 +87,9 @@ func (c *Controller) deleteSecret(dormantDb *tapi.DormantDatabase) error {
 		labelMap := map[string]string{
 			amc.LabelDatabaseKind: tapi.ResourceKindPostgres,
 		}
-
-		labelSelector := labels.SelectorFromSet(labelMap)
-
 		dormantDatabaseList, err := c.ExtClient.DormantDatabases(dormantDb.Namespace).List(
-			kapi.ListOptions{
-				LabelSelector: labelSelector,
+			metav1.ListOptions{
+				LabelSelector: labels.SelectorFromSet(labelMap).String(),
 			},
 		)
 		if err != nil {
@@ -127,7 +124,7 @@ func (c *Controller) ResumeDatabase(dormantDb *tapi.DormantDatabase) error {
 	origin := dormantDb.Spec.Origin
 	objectMeta := origin.ObjectMeta
 	postgres := &tapi.Postgres{
-		ObjectMeta: kapi.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:        objectMeta.Name,
 			Namespace:   objectMeta.Namespace,
 			Labels:      objectMeta.Labels,
