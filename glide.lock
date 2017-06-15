@@ -1,5 +1,5 @@
-hash: 20a521074891fd768604230355081f8c3035089b34db8c21ee0a0f201aab0831
-updated: 2017-06-14T18:45:01.128132776-07:00
+hash: 020e1e9dc1f1e031c51444da9ffe7a2a54136c83e417e031f5dec883f5e5a188
+updated: 2017-06-14T18:48:52.361379214-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -430,6 +430,4 @@ imports:
   - util/flowcontrol
   - util/homedir
   - util/integer
-- name: k8s.io/kubernetes
-  version: 8eb75a5810cba92ccad845ca360cf924f2385881
 testImports: []
