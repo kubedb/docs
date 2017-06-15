@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"time"
+
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
@@ -20,10 +21,10 @@ import (
 	pgCtrl "github.com/k8sdb/postgres/pkg/controller"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
+	clientset "k8s.io/client-go/kubernetes"
+	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/tools/clientcmd"
 	cgcmd "k8s.io/client-go/tools/clientcmd"
-apiv1 "k8s.io/client-go/pkg/api/v1"
-clientset "k8s.io/client-go/kubernetes"
-"k8s.io/client-go/tools/clientcmd"
 )
 
 var (

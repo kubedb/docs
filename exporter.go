@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/pat"
 	tapi "github.com/k8sdb/apimachinery/api"
@@ -14,7 +16,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
 	"gopkg.in/ini.v1"
-kerr "k8s.io/apimachinery/pkg/api/errors"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 )
 
 const (
@@ -129,7 +131,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func getPostgresURL(db *tapi.Postgres, podIP string) (string, error) {
-	secret, err := kubeClient.Core().Secrets(db.Namespace).Get(db.Spec.DatabaseSecret.SecretName)
+	secret, err := kubeClient.CoreV1().Secrets(db.Namespace).Get(db.Spec.DatabaseSecret.SecretName, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
