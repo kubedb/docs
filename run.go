@@ -48,6 +48,9 @@ func NewCmdRun() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			run()
 		},
+		PostRun: func(cmd *cobra.Command, args []string) {
+			analytics.SendEvent("operator", "stopped", Version)
+		},
 	}
 
 	// operator flags
@@ -108,7 +111,7 @@ func run() {
 	if enableAnalytics {
 		analytics.Enable()
 	}
-	analytics.SendEvent(docker.ImageOperator, "started", Version)
+	analytics.SendEvent("operator", "started", Version)
 
 	defer runtime.HandleCrash()
 
@@ -131,7 +134,7 @@ func run() {
 
 	m := pat.New()
 	m.Get("/metrics", promhttp.Handler())
-	pattern := fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/pods/%s/metrics", ParamNamespace, ParamType, ParamName, ParamPodIP)
+	pattern := fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/metrics", PathParamNamespace, PathParamType, PathParamName)
 	log.Infoln("URL pattern:", pattern)
 	m.Get(pattern, http.HandlerFunc(ExportMetrics))
 	m.Del(pattern, http.HandlerFunc(DeleteRegistry))
