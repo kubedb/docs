@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/appscode/go/runtime"
+	stringz "github.com/appscode/go/strings"
+	v "github.com/appscode/go/version"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
@@ -31,6 +33,7 @@ var (
 	masterURL         string
 	kubeconfigPath    string
 	governingService  string = "kubedb"
+	exporterTag       string = stringz.Val(v.Version.Version, "canary")
 	esOperatorTag     string = "0.1.0"
 	elasticDumpTag    string = "2.4.2"
 	address           string = ":8080"
@@ -57,6 +60,7 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	cmd.Flags().StringVar(&governingService, "governing-service", governingService, "Governing service for database statefulset")
+	cmd.Flags().StringVar(&exporterTag, "exporter-tag", exporterTag, "Tag of kubedb/operator used as exporter")
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
 
 	// elasticsearch flags
@@ -118,6 +122,7 @@ func run() {
 	pgCtrl.New(kubeClient, dbClient, promClient, cronController, pgCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
+		ExporterTag:       exporterTag,
 		EnableAnalytics:   enableAnalytics,
 	}).Run()
 
@@ -126,8 +131,9 @@ func run() {
 	time.Sleep(time.Second * 10)
 	esCtrl.New(kubeClient, dbClient, promClient, cronController, esCtrl.Options{
 		GoverningService:  governingService,
+		ExporterTag:       exporterTag,
 		ElasticDumpTag:    elasticDumpTag,
-		OperatorTag:       esOperatorTag,
+		DiscoveryTag:      esOperatorTag,
 		OperatorNamespace: operatorNamespace,
 		EnableAnalytics:   enableAnalytics,
 	}).Run()
