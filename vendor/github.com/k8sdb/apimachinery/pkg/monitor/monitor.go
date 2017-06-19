@@ -5,6 +5,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	AgentCoreosPrometheus = "coreos-prometheus-operator"
+	DefaultExporterPort   = 56790
+)
+
 type Monitor interface {
 	AddMonitor(meta metav1.ObjectMeta, spec *tapi.MonitorSpec) error
 	UpdateMonitor(meta metav1.ObjectMeta, old, new *tapi.MonitorSpec) error

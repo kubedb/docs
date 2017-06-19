@@ -8,6 +8,7 @@ import (
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
+	"github.com/k8sdb/apimachinery/pkg/monitor"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -213,6 +214,29 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*apps.StatefulSet
 				},
 			},
 		},
+	}
+
+	if elastic.Spec.Monitor != nil &&
+		elastic.Spec.Monitor.Agent == monitor.AgentCoreosPrometheus &&
+		elastic.Spec.Monitor.Prometheus != nil {
+		exporter := apiv1.Container{
+			Name: "exporter",
+			Args: []string{
+				"exporter",
+				fmt.Sprintf("--address=:%d", elastic.Spec.Monitor.Prometheus.TargetPort.IntVal),
+				"--v=3",
+			},
+			Image:           docker.ImageOperator + ":" + c.opt.OperatorTag,
+			ImagePullPolicy: apiv1.PullIfNotPresent,
+			Ports: []apiv1.ContainerPort{
+				{
+					Name:          "http",
+					Protocol:      apiv1.ProtocolTCP,
+					ContainerPort: elastic.Spec.Monitor.Prometheus.TargetPort.IntVal,
+				},
+			},
+		}
+		statefulSet.Spec.Template.Spec.Containers = append(statefulSet.Spec.Template.Spec.Containers, exporter)
 	}
 
 	// Add Data volume for StatefulSet
