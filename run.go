@@ -118,6 +118,7 @@ func run() {
 	pgCtrl.New(kubeClient, dbClient, promClient, cronController, pgCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
+		OperatorTag:       esOperatorTag,
 		EnableAnalytics:   enableAnalytics,
 	}).Run()
 
