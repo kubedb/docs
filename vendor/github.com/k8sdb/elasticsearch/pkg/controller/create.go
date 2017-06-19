@@ -116,7 +116,7 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*apps.StatefulSet
 	podLabels[amc.LabelDatabaseName] = elastic.Name
 
 	dockerImage := fmt.Sprintf("%v:%v", docker.ImageElasticsearch, elastic.Spec.Version)
-	initContainerImage := fmt.Sprintf("%v:%v", docker.ImageElasticOperator, c.opt.OperatorTag)
+	initContainerImage := fmt.Sprintf("%v:%v", docker.ImageElasticOperator, c.opt.DiscoveryTag)
 
 	// SatatefulSet for Elastic database
 	statefulSetName := getStatefulSetName(elastic.Name)
@@ -226,7 +226,7 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*apps.StatefulSet
 				fmt.Sprintf("--address=:%d", elastic.Spec.Monitor.Prometheus.TargetPort.IntVal),
 				"--v=3",
 			},
-			Image:           docker.ImageOperator + ":" + c.opt.OperatorTag,
+			Image:           docker.ImageOperator + ":" + c.opt.ExporterTag,
 			ImagePullPolicy: apiv1.PullIfNotPresent,
 			Ports: []apiv1.ContainerPort{
 				{
