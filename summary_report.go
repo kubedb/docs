@@ -38,8 +38,8 @@ func ExportSummaryReport(w http.ResponseWriter, r *http.Request) {
 
 	switch kubedbType {
 	case tapi.ResourceTypePostgres:
-		dbname := r.URL.Query().Get("dbname")
-		pg.GetSummaryReport(kubeClient, dbClient, namespace, kubedbName, dbname, w)
+		index := r.URL.Query().Get("index")
+		pg.GetSummaryReport(kubeClient, dbClient, namespace, kubedbName, index, w)
 	case tapi.ResourceTypeElastic:
 		return
 	default:
