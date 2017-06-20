@@ -16,8 +16,8 @@ func (c *Controller) validateElastic(elastic *tapi.Elastic) error {
 		return fmt.Errorf(`Image %v:%v not found`, docker.ImageElasticsearch, elastic.Spec.Version)
 	}
 
-	if err := docker.CheckDockerImageVersion(docker.ImageElasticOperator, c.opt.OperatorTag); err != nil {
-		return fmt.Errorf(`Image %v:%v not found`, docker.ImageElasticOperator, c.opt.OperatorTag)
+	if err := docker.CheckDockerImageVersion(docker.ImageElasticOperator, c.opt.DiscoveryTag); err != nil {
+		return fmt.Errorf(`Image %v:%v not found`, docker.ImageElasticOperator, c.opt.DiscoveryTag)
 	}
 
 	if elastic.Spec.Storage != nil {

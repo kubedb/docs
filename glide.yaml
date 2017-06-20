@@ -1,7 +1,14 @@
 package: github.com/k8sdb/operator
 import:
 - package: github.com/appscode/go
+- package: github.com/appscode/log
 - package: github.com/appscode/pat
+- package: github.com/coreos/prometheus-operator
+  version: v0.10.1
+- package: github.com/graymeta/stow
+  repo: https://github.com/appscode/stow.git
+  version: master
+  vcs: git
 - package: github.com/k8sdb/apimachinery
   version: master
 - package: github.com/k8sdb/elasticsearch
@@ -13,43 +20,18 @@ import:
 - package: github.com/k8sdb/postgres_exporter
   version: master
 - package: github.com/orcaman/concurrent-map
-  version: master
-- package: github.com/graymeta/stow
-  repo: https://github.com/appscode/stow.git
-  version: master
-  vcs: git
-- package: google.golang.org/api/storage/v1
-  version: master
-- package: cloud.google.com/go
-  version: v0.2.0
-- package: github.com/Azure/azure-sdk-for-go
-  vcs: git
-  version: v7.0.1-beta
+- package: github.com/prometheus/client_golang
+  version: v0.8.0
+- package: github.com/prometheus/common
+  version: 13ba4ddd0caa9c28ca7b7bffe1dfa9ed8d5ef207
 - package: github.com/spf13/cobra
-  version: master
-- package: github.com/heroku/docker-registry-client
-  version: 95467b6cacee2a06f112a3cf7e47a70fad6000cf
-- package: github.com/Sirupsen/logrus
-  version: v0.10.0
-- package: github.com/coreos/prometheus-operator
-  repo: https://github.com/appscode/prometheus-operator.git
-  vcs: git
-  version: off-car-exporter
-- package: github.com/gogo/protobuf/proto
-  version: e18d7aa8f8c624c915db340349aad4c49b10d173
+- package: github.com/spf13/pflag
+- package: gopkg.in/ini.v1
+  version: v1.28.0
 - package: k8s.io/apimachinery
   version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
 - package: k8s.io/client-go
   version: v3.0.0-beta.0
-- package: github.com/appscode/pat
-- package: github.com/golang/protobuf
-  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
-- package: github.com/lib/pq
-- package: github.com/prometheus/client_golang
-  version: v0.8.0
-- package: github.com/prometheus/common
-- package: github.com/sirupsen/logrus
-  version: v0.11.5
-- package: github.com/ghodss/yaml
-- package: gopkg.in/yaml.v2
-  version: v2
+testImport:
+- package: github.com/stretchr/testify
+  version: v1.1.4

@@ -19,20 +19,20 @@ func ExportSummaryReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	namespace := params.Get(ParamNamespace)
+	namespace := params.Get(PathParamNamespace)
 	if namespace == "" {
-		http.Error(w, "Missing parameter "+ParamNamespace, http.StatusBadRequest)
+		http.Error(w, "Missing parameter "+PathParamNamespace, http.StatusBadRequest)
 		return
 	}
 
-	kubedbType := params.Get(ParamType)
+	kubedbType := params.Get(PathParamType)
 	if kubedbType == "" {
-		http.Error(w, "Missing parameter "+ParamType, http.StatusBadRequest)
+		http.Error(w, "Missing parameter "+PathParamType, http.StatusBadRequest)
 		return
 	}
-	kubedbName := params.Get(ParamName)
+	kubedbName := params.Get(PathParamName)
 	if kubedbName == "" {
-		http.Error(w, "Missing parameter "+ParamName, http.StatusBadRequest)
+		http.Error(w, "Missing parameter "+PathParamName, http.StatusBadRequest)
 		return
 	}
 

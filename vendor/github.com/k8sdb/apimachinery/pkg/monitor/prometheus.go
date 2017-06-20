@@ -10,7 +10,6 @@ import (
 	_ "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	tapi "github.com/k8sdb/apimachinery/api"
-	"github.com/k8sdb/apimachinery/pkg/docker"
 	cgerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
@@ -18,11 +17,11 @@ import (
 
 type PrometheusController struct {
 	kubeClient        clientset.Interface
-	promClient        *v1alpha1.MonitoringV1alpha1Client
+	promClient        v1alpha1.MonitoringV1alpha1Interface
 	operatorNamespace string
 }
 
-func NewPrometheusController(kubeClient clientset.Interface, promClient *v1alpha1.MonitoringV1alpha1Client, operatorNamespace string) Monitor {
+func NewPrometheusController(kubeClient clientset.Interface, promClient v1alpha1.MonitoringV1alpha1Interface, operatorNamespace string) Monitor {
 	return &PrometheusController{
 		kubeClient:        kubeClient,
 		promClient:        promClient,
@@ -133,10 +132,9 @@ func (c *PrometheusController) createServiceMonitor(meta metav1.ObjectMeta, spec
 			},
 			Endpoints: []prom.Endpoint{
 				{
-					Address:  fmt.Sprintf("%s.%s.svc:%d", docker.OperatorName, c.operatorNamespace, docker.OperatorPortNumber),
-					Port:     svc.Spec.Ports[0].Name,
-					Interval: spec.Prometheus.Interval,
-					Path:     fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/pods/${__meta_kubernetes_pod_ip}/metrics", meta.Namespace, getTypeFromSelfLink(meta.SelfLink), meta.Name),
+					TargetPort: spec.Prometheus.TargetPort,
+					Interval:   spec.Prometheus.Interval,
+					Path:       fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/metrics", meta.Namespace, getTypeFromSelfLink(meta.SelfLink), meta.Name),
 				},
 			},
 			Selector: metav1.LabelSelector{
