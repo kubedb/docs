@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-hash: 23d4aa7797fabded1a7f6e7f5a0133d70258ccb7d5120c4b5f9a5b1937560546
-updated: 2017-06-16T14:03:29.634814564+06:00
-=======
-hash: 37ae793dee145b79116471e5328e17f27a644c87eb8c8c525f1c7077bda77460
-updated: 2017-06-19T05:45:47.815913598-07:00
->>>>>>> 2cd7257dfca6478ab8cd11cfe5fdaf33f10a33b9
+hash: fe94bbf5a0114f4a334b384c49e2fa603bd18bb1ed17918cab302ecaede62025
+updated: 2017-06-20T10:44:12.531740921+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -18,6 +13,7 @@ imports:
   - encoding/json/types
   - hold
   - runtime
+  - strings
   - version
   - wait
 - name: github.com/appscode/log
@@ -154,11 +150,7 @@ imports:
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/k8sdb/apimachinery
-<<<<<<< HEAD
-  version: bcd2da9ca0416e20b6305129a6eb6cfb808b69a3
-=======
-  version: 4a95beb548163d84854428c02be140724f482dc8
->>>>>>> 2cd7257dfca6478ab8cd11cfe5fdaf33f10a33b9
+  version: d62217f181ffdc68c48a8dbbc0fef9422c23eb4f
   subpackages:
   - api
   - api/install
@@ -169,7 +161,7 @@ imports:
   - pkg/eventer
   - pkg/monitor
 - name: github.com/k8sdb/elasticsearch
-  version: 4b2ec367f2f479eb5088ed9d1ed7569af91dc726
+  version: cffc960df8d07088c320f74785745dc2304fd99f
   subpackages:
   - pkg/controller
 - name: github.com/k8sdb/elasticsearch_exporter
@@ -177,15 +169,10 @@ imports:
   subpackages:
   - exporter
 - name: github.com/k8sdb/postgres
-<<<<<<< HEAD
-  version: 89772951bb1052fc32902b7b0d747ab57007e85b
-=======
-  version: 30ff670961ff6ee0fa623fdfd1c62be1efd75c5a
->>>>>>> 2cd7257dfca6478ab8cd11cfe5fdaf33f10a33b9
+  version: 78b127a4800cb5e2bbab5446114b2b26d899c27c
   subpackages:
   - pkg/audit/summary
-  - pkg/audit/summary/client
-  - pkg/audit/summary/lib
+  - pkg/audit/type
   - pkg/controller
 - name: github.com/k8sdb/postgres_exporter
   version: 3bfb2c759ff21c3da466c31d2731fb11cc9c4667
@@ -240,7 +227,7 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: 4b6ea7319e214d98c938f12692336f7ca9348d6b
 - name: github.com/spf13/cobra
-  version: b4dbd37a01839e0653eec12aa4bbb2a2ce7b2a37
+  version: 99b5d838ca16c25cc4944e323684f8415e8b10ba
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 - name: github.com/ugorji/go
