@@ -101,6 +101,9 @@ const (
 	errorUndefinedColumn  = "undefined_column"
 	errorDatatypeMismatch = "datatype_mismatch"
 	invalidData           = -1
+	TotalRow              = "total_row"
+	MaxID                 = "max_id"
+	NextID                = "next_id"
 )
 
 func getDataFromTable(session *xorm.Session, schemaName, tableName string) (*types.TableInfo, error) {
@@ -118,7 +121,7 @@ func getDataFromTable(session *xorm.Session, schemaName, tableName string) (*typ
 				return &types.TableInfo{}, err
 			}
 
-			if totalRow, err = strconv.ParseInt(string(dataRows[0]["total_row"]), 10, 64); err != nil {
+			if totalRow, err = strconv.ParseInt(string(dataRows[0][TotalRow]), 10, 64); err != nil {
 				return &types.TableInfo{}, err
 			}
 			maxID = invalidData
@@ -134,11 +137,11 @@ func getDataFromTable(session *xorm.Session, schemaName, tableName string) (*typ
 			maxID = invalidData
 			nextID = invalidData
 		} else {
-			if totalRow, err = strconv.ParseInt(string(dataRows[0]["total_row"]), 10, 64); err != nil {
+			if totalRow, err = strconv.ParseInt(string(dataRows[0][TotalRow]), 10, 64); err != nil {
 				return &types.TableInfo{}, err
 			}
 
-			if maxID, err = strconv.ParseInt(string(dataRows[0]["max_id"]), 10, 64); err != nil {
+			if maxID, err = strconv.ParseInt(string(dataRows[0][MaxID]), 10, 64); err != nil {
 				return &types.TableInfo{}, err
 			}
 
@@ -149,7 +152,7 @@ func getDataFromTable(session *xorm.Session, schemaName, tableName string) (*typ
 			if len(dataRows) == 0 {
 				nextID = invalidData
 			} else {
-				if nextID, err = strconv.ParseInt(string(dataRows[0]["next_id"]), 10, 64); err != nil {
+				if nextID, err = strconv.ParseInt(string(dataRows[0][NextID]), 10, 64); err != nil {
 					return &types.TableInfo{}, err
 				}
 			}
