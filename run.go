@@ -141,13 +141,14 @@ func run() {
 	m := pat.New()
 	// For go metrics
 	m.Get("/metrics", promhttp.Handler())
-	pattern := fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/metrics", PathParamNamespace, PathParamType, PathParamName)
-	log.Infoln("URL pattern:", pattern)
-	m.Get(pattern, http.HandlerFunc(ExportMetrics))
-	m.Del(pattern, http.HandlerFunc(DeleteRegistry))
-	// For database audit
-	auditPattern := fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/summary_report", PathParamNamespace, PathParamType, PathParamName)
-	log.Infoln("audit URL pattern:", pattern)
+	metricsPattern := fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/metrics", PathParamNamespace, PathParamType, PathParamName)
+	log.Infoln("Metrics URL pattern:", metricsPattern)
+	m.Get(metricsPattern, http.HandlerFunc(ExportMetrics))
+	m.Del(metricsPattern, http.HandlerFunc(DeleteRegistry))
+
+	// For database summary report
+	auditPattern := fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/report", PathParamNamespace, PathParamType, PathParamName)
+	log.Infoln("Report URL pattern:", auditPattern)
 	m.Get(auditPattern, http.HandlerFunc(ExportSummaryReport))
 
 	http.Handle("/", m)
