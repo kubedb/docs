@@ -1,5 +1,5 @@
 hash: bc16060e7c929bfa7dccb8247373c0d85cc6e710d8384f421e914a1e045c5edc
-updated: 2017-06-21T14:31:05.552423402+06:00
+updated: 2017-06-21T15:03:46.425602043+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -161,18 +161,18 @@ imports:
   - pkg/eventer
   - pkg/monitor
 - name: github.com/k8sdb/elasticsearch
-  version: ad4d533e54b1906c42f727f3a9f81531e178aa58
+  version: 1ab681cb1599a7219325380b3d958188228654e9
   subpackages:
-  - pkg/audit/summary
+  - pkg/audit/report
   - pkg/controller
 - name: github.com/k8sdb/elasticsearch_exporter
   version: 727acebd5ea48fb5a1bd3b764c3416f89df01a04
   subpackages:
   - exporter
 - name: github.com/k8sdb/postgres
-  version: f2d34bf6e7fca7fbb41129cdcad86148d4249efc
+  version: 9d9211c808c61ee58e3a80480233e48b214fec1a
   subpackages:
-  - pkg/audit/summary
+  - pkg/audit/report
   - pkg/controller
 - name: github.com/k8sdb/postgres_exporter
   version: 3bfb2c759ff21c3da466c31d2731fb11cc9c4667

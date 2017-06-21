@@ -1,4 +1,4 @@
-package summary
+package report
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 	clientset "k8s.io/client-go/kubernetes"
 )
 
-func GetSummaryReport(
+func ExportReport(
 	kubeClient clientset.Interface,
 	dbClient tcs.ExtensionInterface,
 	namespace string,
@@ -64,7 +64,7 @@ func GetSummaryReport(
 
 	completionTime := metav1.Now()
 
-	report := &tapi.Report{
+	r := &tapi.Report{
 		TypeMeta:   elastic.TypeMeta,
 		ObjectMeta: elastic.ObjectMeta,
 		Summary: tapi.ReportSummary{
@@ -75,11 +75,11 @@ func GetSummaryReport(
 			CompletionTime: &completionTime,
 		},
 	}
-	report.ResourceVersion = ""
-	report.SelfLink = ""
-	report.UID = ""
+	r.ResourceVersion = ""
+	r.SelfLink = ""
+	r.UID = ""
 
-	data, err := json.MarshalIndent(report, "", "  ")
+	data, err := json.MarshalIndent(r, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
