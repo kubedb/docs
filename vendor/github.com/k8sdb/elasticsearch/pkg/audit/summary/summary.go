@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"net/http"
 
+	tapi "github.com/k8sdb/apimachinery/api"
 	tcs "github.com/k8sdb/apimachinery/client/clientset"
-	"github.com/k8sdb/elasticsearch/pkg/audit/type"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 )
 
@@ -19,8 +20,10 @@ func GetSummaryReport(
 	index string,
 	w http.ResponseWriter,
 ) {
+	startTime := metav1.Now()
 
-	if _, err := dbClient.Elastics(namespace).Get(kubedbName); err != nil {
+	elastic, err := dbClient.Elastics(namespace).Get(kubedbName)
+	if err != nil {
 		if kerr.IsNotFound(err) {
 			http.Error(w, fmt.Sprintf(`Elastic "%v" not found`, kubedbName), http.StatusNotFound)
 		} else {
@@ -49,17 +52,34 @@ func GetSummaryReport(
 		indices = append(indices, index)
 	}
 
-	infos := make(map[string]*types.IndexInfo)
+	esSummary := make(map[string]*tapi.ElasticSummary)
 	for _, index := range indices {
 		info, err := getDataFromIndex(client, index)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		infos[index] = info
+		esSummary[index] = info
 	}
 
-	data, err := json.MarshalIndent(infos, "", "  ")
+	completionTime := metav1.Now()
+
+	report := &tapi.Report{
+		TypeMeta:   elastic.TypeMeta,
+		ObjectMeta: elastic.ObjectMeta,
+		Summary: tapi.ReportSummary{
+			Elastic: esSummary,
+		},
+		Status: tapi.ReportStatus{
+			StartTime:      &startTime,
+			CompletionTime: &completionTime,
+		},
+	}
+	report.ResourceVersion = ""
+	report.SelfLink = ""
+	report.UID = ""
+
+	data, err := json.MarshalIndent(report, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

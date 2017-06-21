@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/go-ini/ini"
+	tapi "github.com/k8sdb/apimachinery/api"
 	tcs "github.com/k8sdb/apimachinery/client/clientset"
-	"github.com/k8sdb/postgres/pkg/audit/type"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
@@ -21,6 +21,8 @@ func GetSummaryReport(
 	dbname string,
 	w http.ResponseWriter,
 ) {
+	startTime := metav1.Now()
+
 	postgres, err := dbClient.Postgreses(namespace).Get(kubedbName)
 	if err != nil {
 		if kerr.IsNotFound(err) {
@@ -82,23 +84,40 @@ func GetSummaryReport(
 		databases = append(databases, dbname)
 	}
 
-	dbs := make(map[string]*types.DBInfo)
+	pgSummary := make(map[string]*tapi.PostgresSummary)
 	for _, db := range databases {
 		engine, err := newXormEngine(username, password, host, port, db)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		dbInfo, err := dumpDBInfo(engine)
+		info, err := getDataFromDB(engine)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		dbs[db] = dbInfo
+		pgSummary[db] = info
 	}
 
-	data, err := json.MarshalIndent(dbs, "", "  ")
+	completionTime := metav1.Now()
+
+	report := &tapi.Report{
+		TypeMeta:   postgres.TypeMeta,
+		ObjectMeta: postgres.ObjectMeta,
+		Summary: tapi.ReportSummary{
+			Postgres: pgSummary,
+		},
+		Status: tapi.ReportStatus{
+			StartTime:      &startTime,
+			CompletionTime: &completionTime,
+		},
+	}
+	report.ResourceVersion = ""
+	report.SelfLink = ""
+	report.UID = ""
+
+	data, err := json.MarshalIndent(report, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

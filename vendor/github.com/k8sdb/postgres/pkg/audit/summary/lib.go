@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-xorm/core"
 	"github.com/go-xorm/xorm"
-	"github.com/k8sdb/postgres/pkg/audit/type"
+	tapi "github.com/k8sdb/apimachinery/api"
 	pg "github.com/lib/pq"
 )
 
@@ -47,7 +47,7 @@ func getAllDatabase(engine *xorm.Engine) ([]string, error) {
 	return databases, nil
 }
 
-func dumpDBInfo(engine *xorm.Engine) (*types.DBInfo, error) {
+func getDataFromDB(engine *xorm.Engine) (*tapi.PostgresSummary, error) {
 	defer engine.Close()
 	engine.ShowSQL(true)
 	session := engine.NewSession()
@@ -58,7 +58,7 @@ func dumpDBInfo(engine *xorm.Engine) (*types.DBInfo, error) {
 		return nil, err
 	}
 
-	schemaList := make(map[string]*types.SchemaInfo, 0)
+	schemaList := make(map[string]*tapi.PostgresSchemaInfo, 0)
 	for _, row := range schemaRowSlice {
 		schemaName := string(row["schema_name"])
 		schemaInfo, err := getDataFromSchema(session, schemaName)
@@ -68,19 +68,19 @@ func dumpDBInfo(engine *xorm.Engine) (*types.DBInfo, error) {
 		schemaList[schemaName] = schemaInfo
 	}
 
-	return &types.DBInfo{
+	return &tapi.PostgresSummary{
 		Schema: schemaList,
 	}, nil
 }
 
-func getDataFromSchema(session *xorm.Session, schemaName string) (*types.SchemaInfo, error) {
+func getDataFromSchema(session *xorm.Session, schemaName string) (*tapi.PostgresSchemaInfo, error) {
 	tableRowSlice, err := session.Query("SELECT tablename FROM pg_tables where schemaname=$1", schemaName)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	schemaInfo := &types.SchemaInfo{
-		Table: make(map[string]*types.TableInfo),
+	schemaInfo := &tapi.PostgresSchemaInfo{
+		Table: make(map[string]*tapi.PostgresTableInfo),
 	}
 
 	for _, row := range tableRowSlice {
@@ -106,7 +106,7 @@ const (
 	NextID                = "next_id"
 )
 
-func getDataFromTable(session *xorm.Session, schemaName, tableName string) (*types.TableInfo, error) {
+func getDataFromTable(session *xorm.Session, schemaName, tableName string) (*tapi.PostgresTableInfo, error) {
 	table := fmt.Sprintf(`"%v".%v`, schemaName, tableName)
 	dataRows, err := session.Query(fmt.Sprintf(`SELECT count(*) as total_row, coalesce(max(id),0) as max_id FROM %v`, table))
 
@@ -118,17 +118,17 @@ func getDataFromTable(session *xorm.Session, schemaName, tableName string) (*typ
 		if errorName == errorUndefinedColumn || errorName == errorDatatypeMismatch {
 			dataRows, err = session.Query(fmt.Sprintf("SELECT count(*) as total_row FROM %v", table))
 			if err != nil {
-				return &types.TableInfo{}, err
+				return &tapi.PostgresTableInfo{}, err
 			}
 
 			if totalRow, err = strconv.ParseInt(string(dataRows[0][TotalRow]), 10, 64); err != nil {
-				return &types.TableInfo{}, err
+				return &tapi.PostgresTableInfo{}, err
 			}
 			maxID = invalidData
 			nextID = invalidData
 
 		} else {
-			return &types.TableInfo{}, err
+			return &tapi.PostgresTableInfo{}, err
 		}
 	} else {
 		if len(dataRows) == 0 {
@@ -138,28 +138,28 @@ func getDataFromTable(session *xorm.Session, schemaName, tableName string) (*typ
 			nextID = invalidData
 		} else {
 			if totalRow, err = strconv.ParseInt(string(dataRows[0][TotalRow]), 10, 64); err != nil {
-				return &types.TableInfo{}, err
+				return &tapi.PostgresTableInfo{}, err
 			}
 
 			if maxID, err = strconv.ParseInt(string(dataRows[0][MaxID]), 10, 64); err != nil {
-				return &types.TableInfo{}, err
+				return &tapi.PostgresTableInfo{}, err
 			}
 
 			dataRows, err = session.Query(fmt.Sprintf(`select (last_value+1) as next_id from %v_id_seq`, table))
 			if err != nil {
-				return &types.TableInfo{}, err
+				return &tapi.PostgresTableInfo{}, err
 			}
 			if len(dataRows) == 0 {
 				nextID = invalidData
 			} else {
 				if nextID, err = strconv.ParseInt(string(dataRows[0][NextID]), 10, 64); err != nil {
-					return &types.TableInfo{}, err
+					return &tapi.PostgresTableInfo{}, err
 				}
 			}
 		}
 	}
 
-	return &types.TableInfo{
+	return &tapi.PostgresTableInfo{
 		TotalRow: totalRow,
 		MaxID:    maxID,
 		NextID:   nextID,
