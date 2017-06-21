@@ -13,9 +13,9 @@ import:
   version: master
 - package: github.com/k8sdb/elasticsearch
   version: master
-- package: github.com/k8sdb/elasticsearch_exporter
-  version: master
 - package: github.com/k8sdb/postgres
+  version: master
+- package: github.com/k8sdb/elasticsearch_exporter
   version: master
 - package: github.com/k8sdb/postgres_exporter
   version: master

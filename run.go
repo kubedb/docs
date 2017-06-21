@@ -91,8 +91,8 @@ func run() {
 		log.Fatalf("Could not get Kubernetes config: %s", err)
 	}
 
-	kubeClient := clientset.NewForConfigOrDie(config)
-	dbClient := tcs.NewForConfigOrDie(config)
+	kubeClient = clientset.NewForConfigOrDie(config)
+	dbClient = tcs.NewForConfigOrDie(config)
 
 	cgConfig, err := cgcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
@@ -139,13 +139,19 @@ func run() {
 	}).Run()
 
 	m := pat.New()
+	// For go metrics
 	m.Get("/metrics", promhttp.Handler())
-	pattern := fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/metrics", PathParamNamespace, PathParamType, PathParamName)
-	log.Infoln("URL pattern:", pattern)
-	m.Get(pattern, http.HandlerFunc(ExportMetrics))
-	m.Del(pattern, http.HandlerFunc(DeleteRegistry))
-	http.Handle("/", m)
+	metricsPattern := fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/metrics", PathParamNamespace, PathParamType, PathParamName)
+	log.Infoln("Metrics URL pattern:", metricsPattern)
+	m.Get(metricsPattern, http.HandlerFunc(ExportMetrics))
+	m.Del(metricsPattern, http.HandlerFunc(DeleteRegistry))
 
+	// For database summary report
+	auditPattern := fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/report", PathParamNamespace, PathParamType, PathParamName)
+	log.Infoln("Report URL pattern:", auditPattern)
+	m.Get(auditPattern, http.HandlerFunc(ExportSummaryReport))
+
+	http.Handle("/", m)
 	log.Infof("Starting Server: %s", address)
 	log.Fatal(http.ListenAndServe(address, nil))
 }
