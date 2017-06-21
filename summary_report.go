@@ -7,7 +7,8 @@ import (
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/pat"
 	tapi "github.com/k8sdb/apimachinery/api"
-	pg "github.com/k8sdb/postgres/pkg/audit/summary"
+	esaudit "github.com/k8sdb/elasticsearch/pkg/audit/summary"
+	pgaudit "github.com/k8sdb/postgres/pkg/audit/summary"
 )
 
 func ExportSummaryReport(w http.ResponseWriter, r *http.Request) {
@@ -36,11 +37,13 @@ func ExportSummaryReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	index := r.URL.Query().Get("index")
+
 	switch kubedbType {
 	case tapi.ResourceTypePostgres:
-		index := r.URL.Query().Get("index")
-		pg.GetSummaryReport(kubeClient, dbClient, namespace, kubedbName, index, w)
+		pgaudit.GetSummaryReport(kubeClient, dbClient, namespace, kubedbName, index, w)
 	case tapi.ResourceTypeElastic:
+		esaudit.GetSummaryReport(kubeClient, dbClient, namespace, kubedbName, index, w)
 		return
 	default:
 		http.Error(w, fmt.Sprintf(`Invalid kubedb type "%v"`, kubedbType), http.StatusBadRequest)

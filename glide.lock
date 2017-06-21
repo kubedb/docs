@@ -1,5 +1,5 @@
-hash: fe94bbf5a0114f4a334b384c49e2fa603bd18bb1ed17918cab302ecaede62025
-updated: 2017-06-20T12:33:25.422077342+06:00
+hash: bc16060e7c929bfa7dccb8247373c0d85cc6e710d8384f421e914a1e045c5edc
+updated: 2017-06-21T12:07:08.028470504+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -161,15 +161,17 @@ imports:
   - pkg/eventer
   - pkg/monitor
 - name: github.com/k8sdb/elasticsearch
-  version: cffc960df8d07088c320f74785745dc2304fd99f
+  version: 4ab422772bb2c89cfdcbcb97acf5bfede0c1e690
   subpackages:
+  - pkg/audit/summary
+  - pkg/audit/type
   - pkg/controller
 - name: github.com/k8sdb/elasticsearch_exporter
   version: 727acebd5ea48fb5a1bd3b764c3416f89df01a04
   subpackages:
   - exporter
 - name: github.com/k8sdb/postgres
-  version: 01a3e5dea2aca40c2ff195c383ba1145d636ebf5
+  version: ad067edb258de0e433cacd3efd054b669c5a90b5
   subpackages:
   - pkg/audit/summary
   - pkg/audit/type
@@ -302,6 +304,11 @@ imports:
   subpackages:
   - bson
   - internal/json
+- name: gopkg.in/olivere/elastic.v3
+  version: eaecbad7a83e6b60f131825553e5eb7fd5a50b41
+  subpackages:
+  - backoff
+  - uritemplates
 - name: gopkg.in/robfig/cron.v2
   version: be2e0b0deed5a68ffee390b4583a13aff8321535
 - name: gopkg.in/yaml.v2
