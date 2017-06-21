@@ -47,40 +47,19 @@ func NewTable(name string, t reflect.Type) *Table {
 	}
 }
 
-func (table *Table) columnsByName(name string) []*Column {
-
-	n := len(name)
-
-	for k := range table.columnsMap {
-		if len(k) != n {
-			continue
-		}
-		if strings.EqualFold(k, name) {
-			return table.columnsMap[k]
-		}
-	}
-	return nil
-}
-
 func (table *Table) GetColumn(name string) *Column {
-
-	cols := table.columnsByName(name)
-
-	if cols != nil {
-		return cols[0]
+	if c, ok := table.columnsMap[strings.ToLower(name)]; ok {
+		return c[0]
 	}
-
 	return nil
 }
 
 func (table *Table) GetColumnIdx(name string, idx int) *Column {
-
-	cols := table.columnsByName(name)
-
-	if cols != nil && idx < len(cols) {
-		return cols[idx]
+	if c, ok := table.columnsMap[strings.ToLower(name)]; ok {
+		if idx < len(c) {
+			return c[idx]
+		}
 	}
-
 	return nil
 }
 

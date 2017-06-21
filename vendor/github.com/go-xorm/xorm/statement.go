@@ -39,7 +39,7 @@ type Statement struct {
 	Engine          *Engine
 	Start           int
 	LimitN          int
-	IdParam         *core.PK
+	idParam         *core.PK
 	OrderStr        string
 	JoinStr         string
 	joinArgs        []interface{}
@@ -75,7 +75,7 @@ type Statement struct {
 	cond            builder.Cond
 }
 
-// Init reset all the statment's fields
+// Init reset all the statement's fields
 func (statement *Statement) Init() {
 	statement.RefTable = nil
 	statement.Start = 0
@@ -91,7 +91,7 @@ func (statement *Statement) Init() {
 	statement.columnMap = make(map[string]bool)
 	statement.AltTableName = ""
 	statement.tableName = ""
-	statement.IdParam = nil
+	statement.idParam = nil
 	statement.RawSQL = ""
 	statement.RawParams = make([]interface{}, 0)
 	statement.UseCache = true
@@ -147,12 +147,12 @@ func (statement *Statement) SQL(query interface{}, args ...interface{}) *Stateme
 	return statement
 }
 
-// Where add Where statment
+// Where add Where statement
 func (statement *Statement) Where(query interface{}, args ...interface{}) *Statement {
 	return statement.And(query, args...)
 }
 
-// And add Where & and statment
+// And add Where & and statement
 func (statement *Statement) And(query interface{}, args ...interface{}) *Statement {
 	switch query.(type) {
 	case string:
@@ -173,7 +173,7 @@ func (statement *Statement) And(query interface{}, args ...interface{}) *Stateme
 	return statement
 }
 
-// Or add Where & Or statment
+// Or add Where & Or statement
 func (statement *Statement) Or(query interface{}, args ...interface{}) *Statement {
 	switch query.(type) {
 	case string:
@@ -193,31 +193,28 @@ func (statement *Statement) Or(query interface{}, args ...interface{}) *Statemen
 	return statement
 }
 
-// In generate "Where column IN (?) " statment
+// In generate "Where column IN (?) " statement
 func (statement *Statement) In(column string, args ...interface{}) *Statement {
-	if len(args) == 0 {
-		return statement
-	}
-
-	in := builder.In(column, args...)
+	in := builder.In(statement.Engine.Quote(column), args...)
 	statement.cond = statement.cond.And(in)
 	return statement
 }
 
-// NotIn generate "Where column NOT IN (?) " statment
+// NotIn generate "Where column NOT IN (?) " statement
 func (statement *Statement) NotIn(column string, args ...interface{}) *Statement {
-	if len(args) == 0 {
-		return statement
-	}
-
-	in := builder.NotIn(column, args...)
-	statement.cond = statement.cond.And(in)
+	notIn := builder.NotIn(statement.Engine.Quote(column), args...)
+	statement.cond = statement.cond.And(notIn)
 	return statement
 }
 
-func (statement *Statement) setRefValue(v reflect.Value) {
-	statement.RefTable = statement.Engine.autoMapType(reflect.Indirect(v))
+func (statement *Statement) setRefValue(v reflect.Value) error {
+	var err error
+	statement.RefTable, err = statement.Engine.autoMapType(reflect.Indirect(v))
+	if err != nil {
+		return err
+	}
 	statement.tableName = statement.Engine.tbName(v)
+	return nil
 }
 
 // Table tempororily set table name, the parameter could be a string or a pointer of struct
@@ -227,7 +224,12 @@ func (statement *Statement) Table(tableNameOrBean interface{}) *Statement {
 	if t.Kind() == reflect.String {
 		statement.AltTableName = tableNameOrBean.(string)
 	} else if t.Kind() == reflect.Struct {
-		statement.RefTable = statement.Engine.autoMapType(v)
+		var err error
+		statement.RefTable, err = statement.Engine.autoMapType(v)
+		if err != nil {
+			statement.Engine.logger.Error(err)
+			return statement
+		}
 		statement.AltTableName = statement.Engine.tbName(v)
 	}
 	return statement
@@ -418,7 +420,11 @@ func buildUpdates(engine *Engine, table *core.Table, bean interface{},
 				if fieldValue == reflect.Zero(fieldType) {
 					continue
 				}
-				if fieldValue.IsNil() || !fieldValue.IsValid() || fieldValue.Len() == 0 {
+				if fieldType.Kind() == reflect.Array {
+					if isArrayValueZero(fieldValue) {
+						continue
+					}
+				} else if fieldValue.IsNil() || !fieldValue.IsValid() || fieldValue.Len() == 0 {
 					continue
 				}
 			}
@@ -433,13 +439,16 @@ func buildUpdates(engine *Engine, table *core.Table, bean interface{},
 			} else if col.SQLType.IsBlob() {
 				var bytes []byte
 				var err error
-				if (fieldType.Kind() == reflect.Array || fieldType.Kind() == reflect.Slice) &&
+				if fieldType.Kind() == reflect.Slice &&
 					fieldType.Elem().Kind() == reflect.Uint8 {
 					if fieldValue.Len() > 0 {
 						val = fieldValue.Bytes()
 					} else {
 						continue
 					}
+				} else if fieldType.Kind() == reflect.Array &&
+					fieldType.Elem().Kind() == reflect.Uint8 {
+					val = fieldValue.Slice(0, 0).Interface()
 				} else {
 					bytes, err = json.Marshal(fieldValue.Interface())
 					if err != nil {
@@ -651,7 +660,9 @@ func buildConds(engine *Engine, table *core.Table, bean interface{},
 					}
 				}
 			}
-		case reflect.Array, reflect.Slice, reflect.Map:
+		case reflect.Array:
+			continue
+		case reflect.Slice, reflect.Map:
 			if fieldValue == reflect.Zero(fieldType) {
 				continue
 			}
@@ -706,14 +717,7 @@ func (statement *Statement) TableName() string {
 	return statement.tableName
 }
 
-// Id generate "where id = ? " statment or for composite key "where key1 = ? and key2 = ?"
-//
-// Deprecated: use ID instead
-func (statement *Statement) Id(id interface{}) *Statement {
-	return statement.ID(id)
-}
-
-// ID generate "where id = ? " statment or for composite key "where key1 = ? and key2 = ?"
+// ID generate "where id = ? " statement or for composite key "where key1 = ? and key2 = ?"
 func (statement *Statement) ID(id interface{}) *Statement {
 	idValue := reflect.ValueOf(id)
 	idType := reflect.TypeOf(idValue.Interface())
@@ -721,27 +725,27 @@ func (statement *Statement) ID(id interface{}) *Statement {
 	switch idType {
 	case ptrPkType:
 		if pkPtr, ok := (id).(*core.PK); ok {
-			statement.IdParam = pkPtr
+			statement.idParam = pkPtr
 			return statement
 		}
 	case pkType:
 		if pk, ok := (id).(core.PK); ok {
-			statement.IdParam = &pk
+			statement.idParam = &pk
 			return statement
 		}
 	}
 
 	switch idType.Kind() {
 	case reflect.String:
-		statement.IdParam = &core.PK{idValue.Convert(reflect.TypeOf("")).Interface()}
+		statement.idParam = &core.PK{idValue.Convert(reflect.TypeOf("")).Interface()}
 		return statement
 	}
 
-	statement.IdParam = &core.PK{id}
+	statement.idParam = &core.PK{id}
 	return statement
 }
 
-// Incr Generate  "Update ... Set column = column + arg" statment
+// Incr Generate  "Update ... Set column = column + arg" statement
 func (statement *Statement) Incr(column string, arg ...interface{}) *Statement {
 	k := strings.ToLower(column)
 	if len(arg) > 0 {
@@ -752,7 +756,7 @@ func (statement *Statement) Incr(column string, arg ...interface{}) *Statement {
 	return statement
 }
 
-// Decr Generate  "Update ... Set column = column - arg" statment
+// Decr Generate  "Update ... Set column = column - arg" statement
 func (statement *Statement) Decr(column string, arg ...interface{}) *Statement {
 	k := strings.ToLower(column)
 	if len(arg) > 0 {
@@ -763,24 +767,24 @@ func (statement *Statement) Decr(column string, arg ...interface{}) *Statement {
 	return statement
 }
 
-// SetExpr Generate  "Update ... Set column = {expression}" statment
+// SetExpr Generate  "Update ... Set column = {expression}" statement
 func (statement *Statement) SetExpr(column string, expression string) *Statement {
 	k := strings.ToLower(column)
 	statement.exprColumns[k] = exprParam{column, expression}
 	return statement
 }
 
-// Generate  "Update ... Set column = column + arg" statment
+// Generate  "Update ... Set column = column + arg" statement
 func (statement *Statement) getInc() map[string]incrParam {
 	return statement.incrColumns
 }
 
-// Generate  "Update ... Set column = column - arg" statment
+// Generate  "Update ... Set column = column - arg" statement
 func (statement *Statement) getDec() map[string]decrParam {
 	return statement.decrColumns
 }
 
-// Generate  "Update ... Set column = {expression}" statment
+// Generate  "Update ... Set column = {expression}" statement
 func (statement *Statement) getExpr() map[string]exprParam {
 	return statement.exprColumns
 }
@@ -996,13 +1000,14 @@ func (statement *Statement) Unscoped() *Statement {
 }
 
 func (statement *Statement) genColumnStr() string {
-
 	var buf bytes.Buffer
+	if statement.RefTable == nil {
+		return ""
+	}
 
 	columns := statement.RefTable.Columns()
 
 	for _, col := range columns {
-
 		if statement.OmitStr != "" {
 			if _, ok := getFlagForColumn(statement.columnMap, col); ok {
 				continue
@@ -1119,7 +1124,11 @@ func (statement *Statement) genConds(bean interface{}) (string, []interface{}, e
 }
 
 func (statement *Statement) genGetSQL(bean interface{}) (string, []interface{}) {
-	statement.setRefValue(rValue(bean))
+	v := rValue(bean)
+	isStruct := v.Kind() == reflect.Struct
+	if isStruct {
+		statement.setRefValue(v)
+	}
 
 	var columnStr = statement.ColumnStr
 	if len(statement.selectStr) > 0 {
@@ -1138,14 +1147,22 @@ func (statement *Statement) genGetSQL(bean interface{}) (string, []interface{}) 
 			if len(columnStr) == 0 {
 				if len(statement.GroupByStr) > 0 {
 					columnStr = statement.Engine.Quote(strings.Replace(statement.GroupByStr, ",", statement.Engine.Quote(","), -1))
-				} else {
-					columnStr = "*"
 				}
 			}
 		}
 	}
 
-	condSQL, condArgs, _ := statement.genConds(bean)
+	if len(columnStr) == 0 {
+		columnStr = "*"
+	}
+
+	var condSQL string
+	var condArgs []interface{}
+	if isStruct {
+		condSQL, condArgs, _ = statement.genConds(bean)
+	} else {
+		condSQL, condArgs, _ = builder.ToSQL(statement.cond)
+	}
 
 	return statement.genSelectSQL(columnStr, condSQL), append(statement.joinArgs, condArgs...)
 }
@@ -1171,7 +1188,7 @@ func (statement *Statement) genSumSQL(bean interface{}, columns ...string) (stri
 
 	var sumStrs = make([]string, 0, len(columns))
 	for _, colName := range columns {
-		sumStrs = append(sumStrs, fmt.Sprintf("COALESCE(sum(%s),0)", colName))
+		sumStrs = append(sumStrs, fmt.Sprintf("COALESCE(sum(%s),0)", statement.Engine.Quote(colName)))
 	}
 
 	condSQL, condArgs, _ := statement.genConds(bean)
@@ -1181,7 +1198,7 @@ func (statement *Statement) genSumSQL(bean interface{}, columns ...string) (stri
 
 func (statement *Statement) genSelectSQL(columnStr, condSQL string) (a string) {
 	var distinct string
-	if statement.IsDistinct {
+	if statement.IsDistinct && !strings.HasPrefix(columnStr, "count") {
 		distinct = "DISTINCT "
 	}
 
@@ -1288,14 +1305,14 @@ func (statement *Statement) genSelectSQL(columnStr, condSQL string) (a string) {
 }
 
 func (statement *Statement) processIDParam() {
-	if statement.IdParam == nil {
+	if statement.idParam == nil {
 		return
 	}
 
 	for i, col := range statement.RefTable.PKColumns() {
 		var colName = statement.colName(col, statement.TableName())
-		if i < len(*(statement.IdParam)) {
-			statement.cond = statement.cond.And(builder.Eq{colName: (*(statement.IdParam))[i]})
+		if i < len(*(statement.idParam)) {
+			statement.cond = statement.cond.And(builder.Eq{colName: (*(statement.idParam))[i]})
 		} else {
 			statement.cond = statement.cond.And(builder.Eq{colName: ""})
 		}

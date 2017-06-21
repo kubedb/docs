@@ -44,9 +44,11 @@ type Engine struct {
 	DatabaseTZ *time.Location // The timezone of the database
 
 	disableGlobalCache bool
+
+	tagHandlers map[string]tagHandler
 }
 
-// ShowSQL show SQL statment or not on logger if log level is great than INFO
+// ShowSQL show SQL statement or not on logger if log level is great than INFO
 func (engine *Engine) ShowSQL(show ...bool) {
 	engine.logger.ShowSQL(show...)
 	if len(show) == 0 {
@@ -56,7 +58,7 @@ func (engine *Engine) ShowSQL(show ...bool) {
 	}
 }
 
-// ShowExecTime show SQL statment and execute time or not on logger if log level is great than INFO
+// ShowExecTime show SQL statement and execute time or not on logger if log level is great than INFO
 func (engine *Engine) ShowExecTime(show ...bool) {
 	if len(show) == 0 {
 		engine.showExecTime = true
@@ -117,7 +119,7 @@ func (engine *Engine) SupportInsertMany() bool {
 	return engine.dialect.SupportInsertMany()
 }
 
-// QuoteStr Engine's database use which charactor as quote.
+// QuoteStr Engine's database use which character as quote.
 // mysql, sqlite use ` and postgres use "
 func (engine *Engine) QuoteStr() string {
 	return engine.dialect.QuoteStr()
@@ -215,10 +217,15 @@ func (engine *Engine) NoCascade() *Session {
 }
 
 // MapCacher Set a table use a special cacher
-func (engine *Engine) MapCacher(bean interface{}, cacher core.Cacher) {
+func (engine *Engine) MapCacher(bean interface{}, cacher core.Cacher) error {
 	v := rValue(bean)
-	tb := engine.autoMapType(v)
+	tb, err := engine.autoMapType(v)
+	if err != nil {
+		return err
+	}
+
 	tb.Cacher = cacher
+	return nil
 }
 
 // NewDB provides an interface to operate database directly
@@ -260,9 +267,9 @@ func (engine *Engine) Ping() error {
 func (engine *Engine) logSQL(sqlStr string, sqlArgs ...interface{}) {
 	if engine.showSQL && !engine.showExecTime {
 		if len(sqlArgs) > 0 {
-			engine.logger.Infof("[sql] %v [args] %v", sqlStr, sqlArgs)
+			engine.logger.Infof("[SQL] %v %v", sqlStr, sqlArgs)
 		} else {
-			engine.logger.Infof("[sql] %v", sqlStr)
+			engine.logger.Infof("[SQL] %v", sqlStr)
 		}
 	}
 }
@@ -273,9 +280,9 @@ func (engine *Engine) logSQLQueryTime(sqlStr string, args []interface{}, executi
 		stmt, res, err := executionBlock()
 		execDuration := time.Since(b4ExecTime)
 		if len(args) > 0 {
-			engine.logger.Infof("[sql] %s [args] %v - took: %v", sqlStr, args, execDuration)
+			engine.logger.Infof("[SQL] %s %v - took: %v", sqlStr, args, execDuration)
 		} else {
-			engine.logger.Infof("[sql] %s - took: %v", sqlStr, execDuration)
+			engine.logger.Infof("[SQL] %s - took: %v", sqlStr, execDuration)
 		}
 		return stmt, res, err
 	}
@@ -305,7 +312,7 @@ func (engine *Engine) Sql(querystring string, args ...interface{}) *Session {
 	return engine.SQL(querystring, args...)
 }
 
-// SQL method let's you manualy write raw SQL and operate
+// SQL method let's you manually write raw SQL and operate
 // For example:
 //
 //         engine.SQL("select * from user").Find(&users)
@@ -348,8 +355,6 @@ func (engine *Engine) DBMetas() ([]*core.Table, error) {
 		for _, name := range colSeq {
 			table.AddColumn(cols[name])
 		}
-		//table.Columns = cols
-		//table.ColumnsSeq = colSeq
 		indexes, err := engine.dialect.GetIndexes(table.Name)
 		if err != nil {
 			return nil, err
@@ -361,7 +366,7 @@ func (engine *Engine) DBMetas() ([]*core.Table, error) {
 				if col := table.GetColumn(name); col != nil {
 					col.Indexes[index.Name] = index.Type
 				} else {
-					return nil, fmt.Errorf("Unknown col %s in indexe %v of table %v, columns %v", name, index.Name, table.Name, table.ColumnsSeq())
+					return nil, fmt.Errorf("Unknown col %s in index %v of table %v, columns %v", name, index.Name, table.Name, table.ColumnsSeq())
 				}
 			}
 		}
@@ -370,18 +375,22 @@ func (engine *Engine) DBMetas() ([]*core.Table, error) {
 }
 
 // DumpAllToFile dump database all table structs and data to a file
-func (engine *Engine) DumpAllToFile(fp string) error {
+func (engine *Engine) DumpAllToFile(fp string, tp ...core.DbType) error {
 	f, err := os.Create(fp)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	return engine.DumpAll(f)
+	return engine.DumpAll(f, tp...)
 }
 
 // DumpAll dump database all table structs and data to w
-func (engine *Engine) DumpAll(w io.Writer) error {
-	return engine.dumpAll(w, engine.dialect.DBType())
+func (engine *Engine) DumpAll(w io.Writer, tp ...core.DbType) error {
+	tables, err := engine.DBMetas()
+	if err != nil {
+		return err
+	}
+	return engine.DumpTables(tables, w, tp...)
 }
 
 // DumpTablesToFile dump specified tables to SQL file.
@@ -397,6 +406,138 @@ func (engine *Engine) DumpTablesToFile(tables []*core.Table, fp string, tp ...co
 // DumpTables dump specify tables to io.Writer
 func (engine *Engine) DumpTables(tables []*core.Table, w io.Writer, tp ...core.DbType) error {
 	return engine.dumpTables(tables, w, tp...)
+}
+
+// dumpTables dump database all table structs and data to w with specify db type
+func (engine *Engine) dumpTables(tables []*core.Table, w io.Writer, tp ...core.DbType) error {
+	var dialect core.Dialect
+	var distDBName string
+	if len(tp) == 0 {
+		dialect = engine.dialect
+		distDBName = string(engine.dialect.DBType())
+	} else {
+		dialect = core.QueryDialect(tp[0])
+		if dialect == nil {
+			return errors.New("Unsupported database type")
+		}
+		dialect.Init(nil, engine.dialect.URI(), "", "")
+		distDBName = string(tp[0])
+	}
+
+	_, err := io.WriteString(w, fmt.Sprintf("/*Generated by xorm v%s %s, from %s to %s*/\n\n",
+		Version, time.Now().In(engine.TZLocation).Format("2006-01-02 15:04:05"), engine.dialect.DBType(), strings.ToUpper(distDBName)))
+	if err != nil {
+		return err
+	}
+
+	for i, table := range tables {
+		if i > 0 {
+			_, err = io.WriteString(w, "\n")
+			if err != nil {
+				return err
+			}
+		}
+		_, err = io.WriteString(w, dialect.CreateTableSql(table, "", table.StoreEngine, "")+";\n")
+		if err != nil {
+			return err
+		}
+		for _, index := range table.Indexes {
+			_, err = io.WriteString(w, dialect.CreateIndexSql(table.Name, index)+";\n")
+			if err != nil {
+				return err
+			}
+		}
+
+		cols := table.ColumnsSeq()
+		colNames := dialect.Quote(strings.Join(cols, dialect.Quote(", ")))
+
+		rows, err := engine.DB().Query("SELECT " + colNames + " FROM " + engine.Quote(table.Name))
+		if err != nil {
+			return err
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			dest := make([]interface{}, len(cols))
+			err = rows.ScanSlice(&dest)
+			if err != nil {
+				return err
+			}
+
+			_, err = io.WriteString(w, "INSERT INTO "+dialect.Quote(table.Name)+" ("+colNames+") VALUES (")
+			if err != nil {
+				return err
+			}
+
+			var temp string
+			for i, d := range dest {
+				col := table.GetColumn(cols[i])
+				if col == nil {
+					return errors.New("unknow column error")
+				}
+
+				if d == nil {
+					temp += ", NULL"
+				} else if col.SQLType.IsText() || col.SQLType.IsTime() {
+					var v = fmt.Sprintf("%s", d)
+					if strings.HasSuffix(v, " +0000 UTC") {
+						temp += fmt.Sprintf(", '%s'", v[0:len(v)-len(" +0000 UTC")])
+					} else {
+						temp += ", '" + strings.Replace(v, "'", "''", -1) + "'"
+					}
+				} else if col.SQLType.IsBlob() {
+					if reflect.TypeOf(d).Kind() == reflect.Slice {
+						temp += fmt.Sprintf(", %s", dialect.FormatBytes(d.([]byte)))
+					} else if reflect.TypeOf(d).Kind() == reflect.String {
+						temp += fmt.Sprintf(", '%s'", d.(string))
+					}
+				} else if col.SQLType.IsNumeric() {
+					switch reflect.TypeOf(d).Kind() {
+					case reflect.Slice:
+						temp += fmt.Sprintf(", %s", string(d.([]byte)))
+					case reflect.Int16, reflect.Int8, reflect.Int32, reflect.Int64, reflect.Int:
+						if col.SQLType.Name == core.Bool {
+							temp += fmt.Sprintf(", %v", strconv.FormatBool(reflect.ValueOf(d).Int() > 0))
+						} else {
+							temp += fmt.Sprintf(", %v", d)
+						}
+					case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+						if col.SQLType.Name == core.Bool {
+							temp += fmt.Sprintf(", %v", strconv.FormatBool(reflect.ValueOf(d).Uint() > 0))
+						} else {
+							temp += fmt.Sprintf(", %v", d)
+						}
+					default:
+						temp += fmt.Sprintf(", %v", d)
+					}
+				} else {
+					s := fmt.Sprintf("%v", d)
+					if strings.Contains(s, ":") || strings.Contains(s, "-") {
+						if strings.HasSuffix(s, " +0000 UTC") {
+							temp += fmt.Sprintf(", '%s'", s[0:len(s)-len(" +0000 UTC")])
+						} else {
+							temp += fmt.Sprintf(", '%s'", s)
+						}
+					} else {
+						temp += fmt.Sprintf(", %s", s)
+					}
+				}
+			}
+			_, err = io.WriteString(w, temp[2:]+");\n")
+			if err != nil {
+				return err
+			}
+		}
+
+		// FIXME: Hack for postgres
+		if string(dialect.DBType()) == core.POSTGRES && table.AutoIncrColumn() != nil {
+			_, err = io.WriteString(w, "SELECT setval('table_id_seq', COALESCE((SELECT MAX("+table.AutoIncrColumn().Name+") FROM "+dialect.Quote(table.Name)+"), 1), false);\n")
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (engine *Engine) tableName(beanOrTableName interface{}) (string, error) {
@@ -426,221 +567,6 @@ func (engine *Engine) tbName(v reflect.Value) string {
 	return engine.TableMapper.Obj2Table(reflect.Indirect(v).Type().Name())
 }
 
-// DumpAll dump database all table structs and data to w with specify db type
-func (engine *Engine) dumpAll(w io.Writer, tp ...core.DbType) error {
-	tables, err := engine.DBMetas()
-	if err != nil {
-		return err
-	}
-
-	var dialect core.Dialect
-	if len(tp) == 0 {
-		dialect = engine.dialect
-	} else {
-		dialect = core.QueryDialect(tp[0])
-		if dialect == nil {
-			return errors.New("Unsupported database type")
-		}
-		dialect.Init(nil, engine.dialect.URI(), "", "")
-	}
-
-	_, err = io.WriteString(w, fmt.Sprintf("/*Generated by xorm v%s %s*/\n\n",
-		Version, time.Now().In(engine.TZLocation).Format("2006-01-02 15:04:05")))
-	if err != nil {
-		return err
-	}
-
-	for i, table := range tables {
-		if i > 0 {
-			_, err = io.WriteString(w, "\n")
-			if err != nil {
-				return err
-			}
-		}
-		_, err = io.WriteString(w, dialect.CreateTableSql(table, "", table.StoreEngine, "")+";\n")
-		if err != nil {
-			return err
-		}
-		for _, index := range table.Indexes {
-			_, err = io.WriteString(w, dialect.CreateIndexSql(table.Name, index)+";\n")
-			if err != nil {
-				return err
-			}
-		}
-
-		rows, err := engine.DB().Query("SELECT * FROM " + engine.Quote(table.Name))
-		if err != nil {
-			return err
-		}
-		defer rows.Close()
-
-		cols, err := rows.Columns()
-		if err != nil {
-			return err
-		}
-		if len(cols) == 0 {
-			continue
-		}
-		for rows.Next() {
-			dest := make([]interface{}, len(cols))
-			err = rows.ScanSlice(&dest)
-			if err != nil {
-				return err
-			}
-
-			_, err = io.WriteString(w, "INSERT INTO "+dialect.Quote(table.Name)+" ("+dialect.Quote(strings.Join(cols, dialect.Quote(", ")))+") VALUES (")
-			if err != nil {
-				return err
-			}
-
-			var temp string
-			for i, d := range dest {
-				col := table.GetColumn(cols[i])
-				if d == nil {
-					temp += ", NULL"
-				} else if col.SQLType.IsText() || col.SQLType.IsTime() {
-					var v = fmt.Sprintf("%s", d)
-					temp += ", '" + strings.Replace(v, "'", "''", -1) + "'"
-				} else if col.SQLType.IsBlob() {
-					if reflect.TypeOf(d).Kind() == reflect.Slice {
-						temp += fmt.Sprintf(", %s", dialect.FormatBytes(d.([]byte)))
-					} else if reflect.TypeOf(d).Kind() == reflect.String {
-						temp += fmt.Sprintf(", '%s'", d.(string))
-					}
-				} else if col.SQLType.IsNumeric() {
-					switch reflect.TypeOf(d).Kind() {
-					case reflect.Slice:
-						temp += fmt.Sprintf(", %s", string(d.([]byte)))
-					default:
-						temp += fmt.Sprintf(", %v", d)
-					}
-				} else {
-					s := fmt.Sprintf("%v", d)
-					if strings.Contains(s, ":") || strings.Contains(s, "-") {
-						temp += fmt.Sprintf(", '%s'", s)
-					} else {
-						temp += fmt.Sprintf(", %s", s)
-					}
-				}
-			}
-			_, err = io.WriteString(w, temp[2:]+");\n")
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-// DumpAll dump database all table structs and data to w with specify db type
-func (engine *Engine) dumpTables(tables []*core.Table, w io.Writer, tp ...core.DbType) error {
-	var dialect core.Dialect
-	if len(tp) == 0 {
-		dialect = engine.dialect
-	} else {
-		dialect = core.QueryDialect(tp[0])
-		if dialect == nil {
-			return errors.New("Unsupported database type")
-		}
-		dialect.Init(nil, engine.dialect.URI(), "", "")
-	}
-
-	_, err := io.WriteString(w, fmt.Sprintf("/*Generated by xorm v%s %s, from %s to %s*/\n\n",
-		Version, time.Now().In(engine.TZLocation).Format("2006-01-02 15:04:05"), engine.dialect.DBType(), dialect.DBType()))
-	if err != nil {
-		return err
-	}
-
-	for i, table := range tables {
-		if i > 0 {
-			_, err = io.WriteString(w, "\n")
-			if err != nil {
-				return err
-			}
-		}
-		_, err = io.WriteString(w, dialect.CreateTableSql(table, "", table.StoreEngine, "")+";\n")
-		if err != nil {
-			return err
-		}
-		for _, index := range table.Indexes {
-			_, err = io.WriteString(w, dialect.CreateIndexSql(table.Name, index)+";\n")
-			if err != nil {
-				return err
-			}
-		}
-
-		rows, err := engine.DB().Query("SELECT * FROM " + engine.Quote(table.Name))
-		if err != nil {
-			return err
-		}
-		defer rows.Close()
-
-		cols, err := rows.Columns()
-		if err != nil {
-			return err
-		}
-		if len(cols) == 0 {
-			continue
-		}
-		for rows.Next() {
-			dest := make([]interface{}, len(cols))
-			err = rows.ScanSlice(&dest)
-			if err != nil {
-				return err
-			}
-
-			_, err = io.WriteString(w, "INSERT INTO "+dialect.Quote(table.Name)+" ("+dialect.Quote(strings.Join(cols, dialect.Quote(", ")))+") VALUES (")
-			if err != nil {
-				return err
-			}
-
-			var temp string
-			for i, d := range dest {
-				col := table.GetColumn(cols[i])
-				if d == nil {
-					temp += ", NULL"
-				} else if col.SQLType.IsText() || col.SQLType.IsTime() {
-					var v = fmt.Sprintf("%s", d)
-					if strings.HasSuffix(v, " +0000 UTC") {
-						temp += fmt.Sprintf(", '%s'", v[0:len(v)-len(" +0000 UTC")])
-					} else {
-						temp += ", '" + strings.Replace(v, "'", "''", -1) + "'"
-					}
-				} else if col.SQLType.IsBlob() {
-					if reflect.TypeOf(d).Kind() == reflect.Slice {
-						temp += fmt.Sprintf(", %s", dialect.FormatBytes(d.([]byte)))
-					} else if reflect.TypeOf(d).Kind() == reflect.String {
-						temp += fmt.Sprintf(", '%s'", d.(string))
-					}
-				} else if col.SQLType.IsNumeric() {
-					switch reflect.TypeOf(d).Kind() {
-					case reflect.Slice:
-						temp += fmt.Sprintf(", %s", string(d.([]byte)))
-					default:
-						temp += fmt.Sprintf(", %v", d)
-					}
-				} else {
-					s := fmt.Sprintf("%v", d)
-					if strings.Contains(s, ":") || strings.Contains(s, "-") {
-						if strings.HasSuffix(s, " +0000 UTC") {
-							temp += fmt.Sprintf(", '%s'", s[0:len(s)-len(" +0000 UTC")])
-						} else {
-							temp += fmt.Sprintf(", '%s'", s)
-						}
-					} else {
-						temp += fmt.Sprintf(", %s", s)
-					}
-				}
-			}
-			_, err = io.WriteString(w, temp[2:]+");\n")
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 // Cascade use cascade or not
 func (engine *Engine) Cascade(trueOrFalse ...bool) *Session {
 	session := engine.NewSession()
@@ -662,7 +588,7 @@ func (engine *Engine) Id(id interface{}) *Session {
 	return session.Id(id)
 }
 
-// ID mehtod provoide a condition as (id) = ?
+// ID method provoide a condition as (id) = ?
 func (engine *Engine) ID(id interface{}) *Session {
 	session := engine.NewSession()
 	session.IsAutoClose = true
@@ -713,7 +639,7 @@ func (engine *Engine) Select(str string) *Session {
 	return session.Select(str)
 }
 
-// Cols only use the paramters as select or update columns
+// Cols only use the parameters as select or update columns
 func (engine *Engine) Cols(columns ...string) *Session {
 	session := engine.NewSession()
 	session.IsAutoClose = true
@@ -737,15 +663,15 @@ func (engine *Engine) MustCols(columns ...string) *Session {
 // UseBool xorm automatically retrieve condition according struct, but
 // if struct has bool field, it will ignore them. So use UseBool
 // to tell system to do not ignore them.
-// If no paramters, it will use all the bool field of struct, or
-// it will use paramters's columns
+// If no parameters, it will use all the bool field of struct, or
+// it will use parameters's columns
 func (engine *Engine) UseBool(columns ...string) *Session {
 	session := engine.NewSession()
 	session.IsAutoClose = true
 	return session.UseBool(columns...)
 }
 
-// Omit only not use the paramters as select or update columns
+// Omit only not use the parameters as select or update columns
 func (engine *Engine) Omit(columns ...string) *Session {
 	session := engine.NewSession()
 	session.IsAutoClose = true
@@ -855,13 +781,18 @@ func (engine *Engine) Having(conditions string) *Session {
 	return session.Having(conditions)
 }
 
-func (engine *Engine) autoMapType(v reflect.Value) *core.Table {
+func (engine *Engine) autoMapType(v reflect.Value) (*core.Table, error) {
 	t := v.Type()
 	engine.mutex.Lock()
 	defer engine.mutex.Unlock()
 	table, ok := engine.Tables[t]
 	if !ok {
-		table = engine.mapType(v)
+		var err error
+		table, err = engine.mapType(v)
+		if err != nil {
+			return nil, err
+		}
+
 		engine.Tables[t] = table
 		if engine.Cacher != nil {
 			if v.CanAddr() {
@@ -871,12 +802,11 @@ func (engine *Engine) autoMapType(v reflect.Value) *core.Table {
 			}
 		}
 	}
-	return table
+	return table, nil
 }
 
 // GobRegister register one struct to gob for cache use
 func (engine *Engine) GobRegister(v interface{}) *Engine {
-	//fmt.Printf("Type: %[1]T => Data: %[1]#v\n", v)
 	gob.Register(v)
 	return engine
 }
@@ -887,10 +817,19 @@ type Table struct {
 	Name string
 }
 
+// IsValid if table is valid
+func (t *Table) IsValid() bool {
+	return t.Table != nil && len(t.Name) > 0
+}
+
 // TableInfo get table info according to bean's content
 func (engine *Engine) TableInfo(bean interface{}) *Table {
 	v := rValue(bean)
-	return &Table{engine.autoMapType(v), engine.tbName(v)}
+	tb, err := engine.autoMapType(v)
+	if err != nil {
+		engine.logger.Error(err)
+	}
+	return &Table{tb, engine.tbName(v)}
 }
 
 func addIndex(indexName string, table *core.Table, col *core.Column, indexType int) {
@@ -923,7 +862,7 @@ var (
 	tpTableName = reflect.TypeOf((*TableName)(nil)).Elem()
 )
 
-func (engine *Engine) mapType(v reflect.Value) *core.Table {
+func (engine *Engine) mapType(v reflect.Value) (*core.Table, error) {
 	t := v.Type()
 	table := engine.newTable()
 	if tb, ok := v.Interface().(TableName); ok {
@@ -942,7 +881,6 @@ func (engine *Engine) mapType(v reflect.Value) *core.Table {
 	table.Type = t
 
 	var idFieldColName string
-	var err error
 	var hasCacheTag, hasNoCacheTag bool
 
 	for i := 0; i < t.NumField(); i++ {
@@ -962,186 +900,95 @@ func (engine *Engine) mapType(v reflect.Value) *core.Table {
 				if tags[0] == "-" {
 					continue
 				}
+
+				var ctx = tagContext{
+					table:      table,
+					col:        col,
+					fieldValue: fieldValue,
+					indexNames: make(map[string]int),
+					engine:     engine,
+				}
+
 				if strings.ToUpper(tags[0]) == "EXTENDS" {
-					switch fieldValue.Kind() {
-					case reflect.Ptr:
-						f := fieldValue.Type().Elem()
-						if f.Kind() == reflect.Struct {
-							fieldPtr := fieldValue
-							fieldValue = fieldValue.Elem()
-							if !fieldValue.IsValid() || fieldPtr.IsNil() {
-								fieldValue = reflect.New(f).Elem()
-							}
-						}
-						fallthrough
-					case reflect.Struct:
-						parentTable := engine.mapType(fieldValue)
-						for _, col := range parentTable.Columns() {
-							col.FieldName = fmt.Sprintf("%v.%v", t.Field(i).Name, col.FieldName)
-							table.AddColumn(col)
-							for indexName, indexType := range col.Indexes {
-								addIndex(indexName, table, col, indexType)
-							}
-						}
-						continue
-					default:
-						//TODO: warning
+					if err := ExtendsTagHandler(&ctx); err != nil {
+						return nil, err
 					}
+					continue
 				}
 
-				indexNames := make(map[string]int)
-				var isIndex, isUnique bool
-				var preKey string
 				for j, key := range tags {
+					if ctx.ignoreNext {
+						ctx.ignoreNext = false
+						continue
+					}
+
 					k := strings.ToUpper(key)
-					switch {
-					case k == "<-":
-						col.MapType = core.ONLYFROMDB
-					case k == "->":
-						col.MapType = core.ONLYTODB
-					case k == "PK":
-						col.IsPrimaryKey = true
-						col.Nullable = false
-					case k == "NULL":
-						if j == 0 {
-							col.Nullable = true
-						} else {
-							col.Nullable = (strings.ToUpper(tags[j-1]) != "NOT")
-						}
-					// TODO: for postgres how add autoincr?
-					/*case strings.HasPrefix(k, "AUTOINCR(") && strings.HasSuffix(k, ")"):
-					col.IsAutoIncrement = true
+					ctx.tagName = k
+					ctx.params = []string{}
 
-					autoStart := k[len("AUTOINCR")+1 : len(k)-1]
-					autoStartInt, err := strconv.Atoi(autoStart)
-					if err != nil {
-						engine.LogError(err)
+					pStart := strings.Index(k, "(")
+					if pStart == 0 {
+						return nil, errors.New("( could not be the first charactor")
 					}
-					col.AutoIncrStart = autoStartInt*/
-					case k == "AUTOINCR":
-						col.IsAutoIncrement = true
-						//col.AutoIncrStart = 1
-					case k == "DEFAULT":
-						col.Default = tags[j+1]
-					case k == "CREATED":
-						col.IsCreated = true
-					case k == "VERSION":
-						col.IsVersion = true
-						col.Default = "1"
-					case k == "UTC":
-						col.TimeZone = time.UTC
-					case k == "LOCAL":
-						col.TimeZone = time.Local
-					case strings.HasPrefix(k, "LOCALE(") && strings.HasSuffix(k, ")"):
-						location := k[len("LOCALE")+1 : len(k)-1]
-						col.TimeZone, err = time.LoadLocation(location)
-						if err != nil {
-							engine.logger.Error(err)
+					if pStart > -1 {
+						if !strings.HasSuffix(k, ")") {
+							return nil, errors.New("cannot match ) charactor")
 						}
-					case k == "UPDATED":
-						col.IsUpdated = true
-					case k == "DELETED":
-						col.IsDeleted = true
-					case strings.HasPrefix(k, "INDEX(") && strings.HasSuffix(k, ")"):
-						indexName := k[len("INDEX")+1 : len(k)-1]
-						indexNames[indexName] = core.IndexType
-					case k == "INDEX":
-						isIndex = true
-					case strings.HasPrefix(k, "UNIQUE(") && strings.HasSuffix(k, ")"):
-						indexName := k[len("UNIQUE")+1 : len(k)-1]
-						indexNames[indexName] = core.UniqueType
-					case k == "UNIQUE":
-						isUnique = true
-					case k == "NOTNULL":
-						col.Nullable = false
-					case k == "CACHE":
-						if !hasCacheTag {
-							hasCacheTag = true
-						}
-					case k == "NOCACHE":
-						if !hasNoCacheTag {
-							hasNoCacheTag = true
-						}
-					case k == "NOT":
-					default:
-						if strings.HasPrefix(k, "'") && strings.HasSuffix(k, "'") {
-							if preKey != "DEFAULT" {
-								col.Name = key[1 : len(key)-1]
-							}
-						} else if strings.Contains(k, "(") && strings.HasSuffix(k, ")") {
-							fs := strings.Split(k, "(")
 
-							if _, ok := core.SqlTypes[fs[0]]; !ok {
-								preKey = k
-								continue
-							}
-							col.SQLType = core.SQLType{Name: fs[0]}
-							if fs[0] == core.Enum && fs[1][0] == '\'' { //enum
-								options := strings.Split(fs[1][0:len(fs[1])-1], ",")
-								col.EnumOptions = make(map[string]int)
-								for k, v := range options {
-									v = strings.TrimSpace(v)
-									v = strings.Trim(v, "'")
-									col.EnumOptions[v] = k
-								}
-							} else if fs[0] == core.Set && fs[1][0] == '\'' { //set
-								options := strings.Split(fs[1][0:len(fs[1])-1], ",")
-								col.SetOptions = make(map[string]int)
-								for k, v := range options {
-									v = strings.TrimSpace(v)
-									v = strings.Trim(v, "'")
-									col.SetOptions[v] = k
-								}
-							} else {
-								fs2 := strings.Split(fs[1][0:len(fs[1])-1], ",")
-								if len(fs2) == 2 {
-									col.Length, err = strconv.Atoi(fs2[0])
-									if err != nil {
-										engine.logger.Error(err)
-									}
-									col.Length2, err = strconv.Atoi(fs2[1])
-									if err != nil {
-										engine.logger.Error(err)
-									}
-								} else if len(fs2) == 1 {
-									col.Length, err = strconv.Atoi(fs2[0])
-									if err != nil {
-										engine.logger.Error(err)
-									}
-								}
-							}
-						} else {
-							if _, ok := core.SqlTypes[k]; ok {
-								col.SQLType = core.SQLType{Name: k}
-							} else if key != col.Default {
-								col.Name = key
-							}
-						}
-						engine.dialect.SqlType(col)
+						ctx.tagName = k[:pStart]
+						ctx.params = strings.Split(key[pStart+1:len(k)-1], ",")
 					}
-					preKey = k
+
+					if j > 0 {
+						ctx.preTag = strings.ToUpper(tags[j-1])
+					}
+					if j < len(tags)-1 {
+						ctx.nextTag = strings.ToUpper(tags[j+1])
+					} else {
+						ctx.nextTag = ""
+					}
+
+					if h, ok := engine.tagHandlers[ctx.tagName]; ok {
+						if err := h(&ctx); err != nil {
+							return nil, err
+						}
+					} else {
+						if strings.HasPrefix(key, "'") && strings.HasSuffix(key, "'") {
+							col.Name = key[1 : len(key)-1]
+						} else {
+							col.Name = key
+						}
+					}
+
+					if ctx.hasCacheTag {
+						hasCacheTag = true
+					}
+					if ctx.hasNoCacheTag {
+						hasNoCacheTag = true
+					}
 				}
+
 				if col.SQLType.Name == "" {
 					col.SQLType = core.Type2SQLType(fieldType)
 				}
+				engine.dialect.SqlType(col)
 				if col.Length == 0 {
 					col.Length = col.SQLType.DefaultLength
 				}
 				if col.Length2 == 0 {
 					col.Length2 = col.SQLType.DefaultLength2
 				}
-
 				if col.Name == "" {
 					col.Name = engine.ColumnMapper.Obj2Table(t.Field(i).Name)
 				}
 
-				if isUnique {
-					indexNames[col.Name] = core.UniqueType
-				} else if isIndex {
-					indexNames[col.Name] = core.IndexType
+				if ctx.isUnique {
+					ctx.indexNames[col.Name] = core.UniqueType
+				} else if ctx.isIndex {
+					ctx.indexNames[col.Name] = core.IndexType
 				}
 
-				for indexName, indexType := range indexNames {
+				for indexName, indexType := range ctx.indexNames {
 					addIndex(indexName, table, col, indexType)
 				}
 			}
@@ -1195,7 +1042,7 @@ func (engine *Engine) mapType(v reflect.Value) *core.Table {
 		table.Cacher = nil
 	}
 
-	return table
+	return table, nil
 }
 
 // IsTableEmpty if a table has any reocrd
@@ -1233,8 +1080,21 @@ func (engine *Engine) IdOfV(rv reflect.Value) core.PK {
 
 // IDOfV get id from one value of struct
 func (engine *Engine) IDOfV(rv reflect.Value) core.PK {
+	pk, err := engine.idOfV(rv)
+	if err != nil {
+		engine.logger.Error(err)
+		return nil
+	}
+	return pk
+}
+
+func (engine *Engine) idOfV(rv reflect.Value) (core.PK, error) {
 	v := reflect.Indirect(rv)
-	table := engine.autoMapType(v)
+	table, err := engine.autoMapType(v)
+	if err != nil {
+		return nil, err
+	}
+
 	pk := make([]interface{}, len(table.PrimaryKeys))
 	for i, col := range table.PKColumns() {
 		pkField := v.FieldByName(col.FieldName)
@@ -1247,7 +1107,7 @@ func (engine *Engine) IDOfV(rv reflect.Value) core.PK {
 			pk[i] = pkField.Uint()
 		}
 	}
-	return core.PK(pk)
+	return core.PK(pk), nil
 }
 
 // CreateIndexes create indexes
@@ -1268,13 +1128,6 @@ func (engine *Engine) getCacher2(table *core.Table) core.Cacher {
 	return table.Cacher
 }
 
-func (engine *Engine) getCacher(v reflect.Value) core.Cacher {
-	if table := engine.autoMapType(v); table != nil {
-		return table.Cacher
-	}
-	return engine.Cacher
-}
-
 // ClearCacheBean if enabled cache, clear the cache bean
 func (engine *Engine) ClearCacheBean(bean interface{}, id string) error {
 	v := rValue(bean)
@@ -1283,7 +1136,10 @@ func (engine *Engine) ClearCacheBean(bean interface{}, id string) error {
 		return errors.New("error params")
 	}
 	tableName := engine.tbName(v)
-	table := engine.autoMapType(v)
+	table, err := engine.autoMapType(v)
+	if err != nil {
+		return err
+	}
 	cacher := table.Cacher
 	if cacher == nil {
 		cacher = engine.Cacher
@@ -1304,7 +1160,11 @@ func (engine *Engine) ClearCache(beans ...interface{}) error {
 			return errors.New("error params")
 		}
 		tableName := engine.tbName(v)
-		table := engine.autoMapType(v)
+		table, err := engine.autoMapType(v)
+		if err != nil {
+			return err
+		}
+
 		cacher := table.Cacher
 		if cacher == nil {
 			cacher = engine.Cacher
@@ -1324,7 +1184,10 @@ func (engine *Engine) Sync(beans ...interface{}) error {
 	for _, bean := range beans {
 		v := rValue(bean)
 		tableName := engine.tbName(v)
-		table := engine.autoMapType(v)
+		table, err := engine.autoMapType(v)
+		if err != nil {
+			return err
+		}
 
 		s := engine.NewSession()
 		defer s.Close()
@@ -1360,8 +1223,10 @@ func (engine *Engine) Sync(beans ...interface{}) error {
 				}
 				if !isExist {
 					session := engine.NewSession()
-					session.Statement.setRefValue(v)
 					defer session.Close()
+					if err := session.Statement.setRefValue(v); err != nil {
+						return err
+					}
 					err = session.addColumn(col.Name)
 					if err != nil {
 						return err
@@ -1371,8 +1236,10 @@ func (engine *Engine) Sync(beans ...interface{}) error {
 
 			for name, index := range table.Indexes {
 				session := engine.NewSession()
-				session.Statement.setRefValue(v)
 				defer session.Close()
+				if err := session.Statement.setRefValue(v); err != nil {
+					return err
+				}
 				if index.Type == core.UniqueType {
 					//isExist, err := session.isIndexExist(table.Name, name, true)
 					isExist, err := session.isIndexExist2(tableName, index.Cols, true)
@@ -1381,8 +1248,11 @@ func (engine *Engine) Sync(beans ...interface{}) error {
 					}
 					if !isExist {
 						session := engine.NewSession()
-						session.Statement.setRefValue(v)
 						defer session.Close()
+						if err := session.Statement.setRefValue(v); err != nil {
+							return err
+						}
+
 						err = session.addUnique(tableName, name)
 						if err != nil {
 							return err
@@ -1395,8 +1265,11 @@ func (engine *Engine) Sync(beans ...interface{}) error {
 					}
 					if !isExist {
 						session := engine.NewSession()
-						session.Statement.setRefValue(v)
 						defer session.Close()
+						if err := session.Statement.setRefValue(v); err != nil {
+							return err
+						}
+
 						err = session.addIndex(tableName, name)
 						if err != nil {
 							return err
@@ -1505,6 +1378,13 @@ func (engine *Engine) Query(sql string, paramStr ...interface{}) (resultsSlice [
 	session := engine.NewSession()
 	defer session.Close()
 	return session.Query(sql, paramStr...)
+}
+
+// QueryString runs a raw sql and return records as []map[string]string
+func (engine *Engine) QueryString(sqlStr string, args ...interface{}) ([]map[string]string, error) {
+	session := engine.NewSession()
+	defer session.Close()
+	return session.QueryString(sqlStr, args...)
 }
 
 // Insert one or more records
@@ -1688,6 +1568,8 @@ func (engine *Engine) formatTime(tz *time.Location, sqlTypeName string, t time.T
 		return t
 	}
 	if tz != nil {
+		t = t.In(tz)
+	} else {
 		t = engine.TZTime(t)
 	}
 	switch sqlTypeName {
