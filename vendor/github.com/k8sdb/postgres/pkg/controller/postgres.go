@@ -157,7 +157,7 @@ func (c *Controller) ensureService(postgres *tapi.Postgres) error {
 	}
 
 	// create database Service
-	if err := c.createService(postgres.Name, postgres.Namespace); err != nil {
+	if err := c.createService(postgres); err != nil {
 		c.eventRecorder.Eventf(
 			postgres,
 			apiv1.EventTypeWarning,

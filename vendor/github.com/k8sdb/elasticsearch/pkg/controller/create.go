@@ -8,7 +8,6 @@ import (
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
-	"github.com/k8sdb/apimachinery/pkg/monitor"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -42,33 +41,42 @@ func (c *Controller) findService(name, namespace string) (bool, error) {
 	return true, nil
 }
 
-func (c *Controller) createService(name, namespace string) error {
+func (c *Controller) createService(elastic *tapi.Elastic) error {
 	label := map[string]string{
-		amc.LabelDatabaseName: name,
+		amc.LabelDatabaseName: elastic.Name,
 	}
-	service := &apiv1.Service{
+	svc := &apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   name,
+			Name:   elastic.Name,
 			Labels: label,
 		},
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{
 				{
-					Name:       "api",
+					Name:       "db",
 					Port:       9200,
-					TargetPort: intstr.FromString("api"),
+					TargetPort: intstr.FromString("db"),
 				},
 				{
-					Name:       "tcp",
+					Name:       "cluster",
 					Port:       9300,
-					TargetPort: intstr.FromString("tcp"),
+					TargetPort: intstr.FromString("cluster"),
 				},
 			},
 			Selector: label,
 		},
 	}
+	if elastic.Spec.Monitor != nil &&
+		elastic.Spec.Monitor.Agent == tapi.AgentCoreosPrometheus &&
+		elastic.Spec.Monitor.Prometheus != nil {
+		svc.Spec.Ports = append(svc.Spec.Ports, apiv1.ServicePort{
+			Name:       tapi.PrometheusExporterPortName,
+			Port:       tapi.PrometheusExporterPortNumber,
+			TargetPort: intstr.FromString(tapi.PrometheusExporterPortName),
+		})
+	}
 
-	if _, err := c.Client.CoreV1().Services(namespace).Create(service); err != nil {
+	if _, err := c.Client.CoreV1().Services(elastic.Namespace).Create(svc); err != nil {
 		return err
 	}
 
@@ -143,11 +151,11 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*apps.StatefulSet
 							ImagePullPolicy: apiv1.PullIfNotPresent,
 							Ports: []apiv1.ContainerPort{
 								{
-									Name:          "api",
+									Name:          "db",
 									ContainerPort: 9200,
 								},
 								{
-									Name:          "tcp",
+									Name:          "cluster",
 									ContainerPort: 9300,
 								},
 							},
@@ -217,22 +225,22 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*apps.StatefulSet
 	}
 
 	if elastic.Spec.Monitor != nil &&
-		elastic.Spec.Monitor.Agent == monitor.AgentCoreosPrometheus &&
+		elastic.Spec.Monitor.Agent == tapi.AgentCoreosPrometheus &&
 		elastic.Spec.Monitor.Prometheus != nil {
 		exporter := apiv1.Container{
 			Name: "exporter",
 			Args: []string{
 				"export",
-				fmt.Sprintf("--address=:%d", elastic.Spec.Monitor.Prometheus.TargetPort.IntValue()),
+				fmt.Sprintf("--address=:%d", tapi.PrometheusExporterPortNumber),
 				"--v=3",
 			},
 			Image:           docker.ImageOperator + ":" + c.opt.ExporterTag,
 			ImagePullPolicy: apiv1.PullIfNotPresent,
 			Ports: []apiv1.ContainerPort{
 				{
-					Name:          "http",
+					Name:          tapi.PrometheusExporterPortName,
 					Protocol:      apiv1.ProtocolTCP,
-					ContainerPort: int32(elastic.Spec.Monitor.Prometheus.TargetPort.IntValue()),
+					ContainerPort: int32(tapi.PrometheusExporterPortNumber),
 				},
 			},
 		}

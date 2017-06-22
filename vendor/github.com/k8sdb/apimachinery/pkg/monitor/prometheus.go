@@ -132,9 +132,9 @@ func (c *PrometheusController) createServiceMonitor(meta metav1.ObjectMeta, spec
 			},
 			Endpoints: []prom.Endpoint{
 				{
-					TargetPort: spec.Prometheus.TargetPort,
-					Interval:   spec.Prometheus.Interval,
-					Path:       fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/metrics", meta.Namespace, getTypeFromSelfLink(meta.SelfLink), meta.Name),
+					Port:     tapi.PrometheusExporterPortName,
+					Interval: spec.Prometheus.Interval,
+					Path:     fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/metrics", meta.Namespace, getTypeFromSelfLink(meta.SelfLink), meta.Name),
 				},
 			},
 			Selector: metav1.LabelSelector{

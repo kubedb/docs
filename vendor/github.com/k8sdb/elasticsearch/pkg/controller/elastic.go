@@ -157,7 +157,7 @@ func (c *Controller) ensureService(elastic *tapi.Elastic) error {
 	}
 
 	// create database Service
-	if err := c.createService(elastic.Name, elastic.Namespace); err != nil {
+	if err := c.createService(elastic); err != nil {
 		c.eventRecorder.Eventf(
 			elastic,
 			apiv1.EventTypeWarning,

@@ -1,7 +1,6 @@
 package api
 
 import (
-	"k8s.io/apimachinery/pkg/util/intstr"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
@@ -42,14 +41,11 @@ type SnapshotStorageSpec struct {
 
 type MonitorSpec struct {
 	// Valid values: coreos-prometheus-operator
-	Agent      string          `json:"agent,omitempty"` 
+	Agent      string          `json:"agent,omitempty"`
 	Prometheus *PrometheusSpec `json:"prometheus,omitempty"`
 }
 
 type PrometheusSpec struct {
-	// Name or number of the target port of the endpoint. Mutually exclusive with port.
-	TargetPort intstr.IntOrString `json:"targetPort,omitempty"`
-
 	// Namespace of Prometheus. Service monitors will be created in this namespace.
 	Namespace string `json:"namespace,omitempty"`
 	// Labels are key value pairs that is used to select Prometheus instance via ServiceMonitor labels.

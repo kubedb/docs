@@ -8,7 +8,6 @@ import (
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
-	"github.com/k8sdb/apimachinery/pkg/monitor"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -43,28 +42,37 @@ func (c *Controller) findService(name, namespace string) (bool, error) {
 	return true, nil
 }
 
-func (c *Controller) createService(name, namespace string) error {
+func (c *Controller) createService(postgres *tapi.Postgres) error {
 	label := map[string]string{
-		amc.LabelDatabaseName: name,
+		amc.LabelDatabaseName: postgres.Name,
 	}
-	service := &apiv1.Service{
+	svc := &apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   name,
+			Name:   postgres.Name,
 			Labels: label,
 		},
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{
 				{
-					Name:       "port",
+					Name:       "db",
 					Port:       5432,
-					TargetPort: intstr.FromString("port"),
+					TargetPort: intstr.FromString("db"),
 				},
 			},
 			Selector: label,
 		},
 	}
+	if postgres.Spec.Monitor != nil &&
+		postgres.Spec.Monitor.Agent == tapi.AgentCoreosPrometheus &&
+		postgres.Spec.Monitor.Prometheus != nil {
+		svc.Spec.Ports = append(svc.Spec.Ports, apiv1.ServicePort{
+			Name:       tapi.PrometheusExporterPortName,
+			Port:       tapi.PrometheusExporterPortNumber,
+			TargetPort: intstr.FromString(tapi.PrometheusExporterPortName),
+		})
+	}
 
-	if _, err := c.Client.CoreV1().Services(namespace).Create(service); err != nil {
+	if _, err := c.Client.CoreV1().Services(postgres.Namespace).Create(svc); err != nil {
 		return err
 	}
 
@@ -138,7 +146,7 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulS
 							ImagePullPolicy: apiv1.PullIfNotPresent,
 							Ports: []apiv1.ContainerPort{
 								{
-									Name:          "port",
+									Name:          "db",
 									ContainerPort: 5432,
 								},
 							},
@@ -162,22 +170,22 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulS
 	}
 
 	if postgres.Spec.Monitor != nil &&
-		postgres.Spec.Monitor.Agent == monitor.AgentCoreosPrometheus &&
+		postgres.Spec.Monitor.Agent == tapi.AgentCoreosPrometheus &&
 		postgres.Spec.Monitor.Prometheus != nil {
 		exporter := apiv1.Container{
 			Name: "exporter",
 			Args: []string{
 				"export",
-				fmt.Sprintf("--address=:%d", postgres.Spec.Monitor.Prometheus.TargetPort.IntValue()),
+				fmt.Sprintf("--address=:%d", tapi.PrometheusExporterPortNumber),
 				"--v=3",
 			},
 			Image:           docker.ImageOperator + ":" + c.opt.ExporterTag,
 			ImagePullPolicy: apiv1.PullIfNotPresent,
 			Ports: []apiv1.ContainerPort{
 				{
-					Name:          "http",
+					Name:          tapi.PrometheusExporterPortName,
 					Protocol:      apiv1.ProtocolTCP,
-					ContainerPort: int32(postgres.Spec.Monitor.Prometheus.TargetPort.IntValue()),
+					ContainerPort: int32(tapi.PrometheusExporterPortNumber),
 				},
 			},
 		}
