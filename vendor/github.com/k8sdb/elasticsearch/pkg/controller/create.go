@@ -222,8 +222,8 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*apps.StatefulSet
 		exporter := apiv1.Container{
 			Name: "exporter",
 			Args: []string{
-				"exporter",
-				fmt.Sprintf("--address=:%d", elastic.Spec.Monitor.Prometheus.TargetPort.IntVal),
+				"export",
+				fmt.Sprintf("--address=:%d", elastic.Spec.Monitor.Prometheus.TargetPort.IntValue()),
 				"--v=3",
 			},
 			Image:           docker.ImageOperator + ":" + c.opt.ExporterTag,
@@ -232,7 +232,7 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*apps.StatefulSet
 				{
 					Name:          "http",
 					Protocol:      apiv1.ProtocolTCP,
-					ContainerPort: elastic.Spec.Monitor.Prometheus.TargetPort.IntVal,
+					ContainerPort: int32(elastic.Spec.Monitor.Prometheus.TargetPort.IntValue()),
 				},
 			},
 		}

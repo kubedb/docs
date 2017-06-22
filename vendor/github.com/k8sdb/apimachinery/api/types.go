@@ -41,7 +41,8 @@ type SnapshotStorageSpec struct {
 }
 
 type MonitorSpec struct {
-	Agent      string          `json:"agent,omitempty"`
+	// Valid values: coreos-prometheus-operator
+	Agent      string          `json:"agent,omitempty"` 
 	Prometheus *PrometheusSpec `json:"prometheus,omitempty"`
 }
 
