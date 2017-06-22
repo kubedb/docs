@@ -7,9 +7,12 @@ import (
 
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
+	tcs "github.com/k8sdb/apimachinery/client/clientset"
 	"github.com/k8sdb/apimachinery/pkg/analytics"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
+	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 func NewCmdExport() *cobra.Command {
@@ -42,6 +45,14 @@ func export() {
 		analytics.Enable()
 	}
 	analytics.SendEvent("exporter", "started", Version)
+
+	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
+	if err != nil {
+		log.Fatalf("Could not get Kubernetes config: %s", err)
+	}
+
+	kubeClient = clientset.NewForConfigOrDie(config)
+	dbClient = tcs.NewForConfigOrDie(config)
 
 	m := pat.New()
 	m.Get("/metrics", promhttp.Handler())
