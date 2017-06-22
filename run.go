@@ -11,7 +11,6 @@ import (
 
 	"github.com/appscode/go/runtime"
 	stringz "github.com/appscode/go/strings"
-	v "github.com/appscode/go/version"
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
