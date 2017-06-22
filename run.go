@@ -33,7 +33,7 @@ var (
 	kubeconfigPath    string
 	governingService  string = "kubedb"
 	exporterTag       string = stringz.Val(Version, "canary")
-	esOperatorTag     string = "0.1.0"
+	esOperatorTag     string = "0.2.0"
 	elasticDumpTag    string = "2.4.2"
 	address           string = ":8080"
 	operatorNamespace string = namespace()
