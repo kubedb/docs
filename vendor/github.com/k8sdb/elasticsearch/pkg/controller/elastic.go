@@ -9,7 +9,9 @@ import (
 	"github.com/appscode/log"
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
+	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
+	"github.com/k8sdb/elasticsearch/pkg/validator"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -36,10 +38,15 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 		log.Errorln(err)
 	}
 
-	if err := c.validateElastic(elastic); err != nil {
+	if err := validator.ValidateElastic(c.Client, elastic); err != nil {
 		c.eventRecorder.Event(elastic, apiv1.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
 		return err
 	}
+	// Validate DiscoveryTag
+	if err := docker.CheckDockerImageVersion(docker.ImageElasticOperator, c.opt.DiscoveryTag); err != nil {
+		return fmt.Errorf(`Image %v:%v not found`, docker.ImageElasticOperator, c.opt.DiscoveryTag)
+	}
+
 	// Event for successful validation
 	c.eventRecorder.Event(
 		elastic,
@@ -400,7 +407,7 @@ func (c *Controller) pause(elastic *tapi.Elastic) error {
 
 func (c *Controller) update(oldElastic, updatedElastic *tapi.Elastic) error {
 
-	if err := c.validateElastic(updatedElastic); err != nil {
+	if err := validator.ValidateElastic(c.Client, updatedElastic); err != nil {
 		c.eventRecorder.Event(updatedElastic, apiv1.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
 		return err
 	}

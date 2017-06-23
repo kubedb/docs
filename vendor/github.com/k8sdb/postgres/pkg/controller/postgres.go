@@ -10,6 +10,7 @@ import (
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
+	"github.com/k8sdb/postgres/pkg/validator"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -36,7 +37,7 @@ func (c *Controller) create(postgres *tapi.Postgres) error {
 		log.Errorln(err)
 	}
 
-	if err := c.validatePostgres(postgres); err != nil {
+	if err := validator.ValidatePostgres(c.Client, postgres); err != nil {
 		c.eventRecorder.Event(postgres, apiv1.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
 		return err
 	}
@@ -398,7 +399,7 @@ func (c *Controller) pause(postgres *tapi.Postgres) error {
 
 func (c *Controller) update(oldPostgres, updatedPostgres *tapi.Postgres) error {
 
-	if err := c.validatePostgres(updatedPostgres); err != nil {
+	if err := validator.ValidatePostgres(c.Client, updatedPostgres); err != nil {
 		c.eventRecorder.Event(updatedPostgres, apiv1.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
 		return err
 	}
