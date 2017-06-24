@@ -29,15 +29,16 @@ import (
 )
 
 var (
-	masterURL         string
-	kubeconfigPath    string
-	governingService  string = "kubedb"
-	exporterTag       string = stringz.Val(Version, "canary")
-	esOperatorTag     string = "0.2.0"
-	elasticDumpTag    string = "2.4.2"
-	address           string = ":8080"
-	operatorNamespace string = namespace()
-	enableAnalytics   bool   = true
+	masterURL              string
+	kubeconfigPath         string
+	governingService       string = "kubedb"
+	exporterTag            string = stringz.Val(Version, "canary")
+	esOperatorTag          string = "0.2.0"
+	elasticDumpTag         string = "2.4.2"
+	address                string = ":8080"
+	operatorNamespace      string = namespace()
+	operatorServiceAccount string = stringz.Val(os.Getenv("OPERATOR_SERVICE_ACCOUNT"), "default")
+	enableAnalytics        bool   = true
 
 	kubeClient clientset.Interface
 	dbClient   tcs.ExtensionInterface
@@ -59,6 +60,7 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	cmd.Flags().StringVar(&governingService, "governing-service", governingService, "Governing service for database statefulset")
+	cmd.Flags().StringVar(&operatorServiceAccount, "operator-service-account", operatorServiceAccount, "Service account name used to run operator")
 	cmd.Flags().StringVar(&exporterTag, "exporter-tag", exporterTag, "Tag of kubedb/operator used as exporter")
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
 
@@ -119,22 +121,24 @@ func run() {
 	defer runtime.HandleCrash()
 
 	pgCtrl.New(kubeClient, dbClient, promClient, cronController, pgCtrl.Options{
-		GoverningService:  governingService,
-		OperatorNamespace: operatorNamespace,
-		ExporterTag:       exporterTag,
-		EnableAnalytics:   enableAnalytics,
+		GoverningService:       governingService,
+		OperatorNamespace:      operatorNamespace,
+		OperatorServiceAccount: operatorServiceAccount,
+		ExporterTag:            exporterTag,
+		EnableAnalytics:        enableAnalytics,
 	}).Run()
 
 	// Need to wait for sometime to run another controller.
 	// Or multiple controller will try to create common TPR simultaneously which gives error
 	time.Sleep(time.Second * 10)
 	esCtrl.New(kubeClient, dbClient, promClient, cronController, esCtrl.Options{
-		GoverningService:  governingService,
-		ExporterTag:       exporterTag,
-		ElasticDumpTag:    elasticDumpTag,
-		DiscoveryTag:      esOperatorTag,
-		OperatorNamespace: operatorNamespace,
-		EnableAnalytics:   enableAnalytics,
+		GoverningService:       governingService,
+		ExporterTag:            exporterTag,
+		ElasticDumpTag:         elasticDumpTag,
+		DiscoveryTag:           esOperatorTag,
+		OperatorNamespace:      operatorNamespace,
+		OperatorServiceAccount: operatorServiceAccount,
+		EnableAnalytics:        enableAnalytics,
 	}).Run()
 
 	m := pat.New()
