@@ -27,7 +27,8 @@ import (
 
 type Options struct {
 	// Operator namespace
-	OperatorNamespace string
+	OperatorNamespace      string
+	OperatorServiceAccount string
 	// Exporter tag
 	ExporterTag string
 	// Governing service

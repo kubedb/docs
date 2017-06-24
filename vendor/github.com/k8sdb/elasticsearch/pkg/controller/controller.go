@@ -31,8 +31,9 @@ type Options struct {
 	// Tag of elasticsearch operator
 	DiscoveryTag string
 	// Exporter namespace
-	OperatorNamespace string
-	ExporterTag       string
+	OperatorNamespace      string
+	OperatorServiceAccount string
+	ExporterTag            string
 	// Governing service
 	GoverningService string
 	// Address to listen on for web interface and telemetry.
