@@ -1,5 +1,5 @@
 hash: 53d4c4ee34e03599d6311d1a56e2403bb8c501effa74300a73db935930a806ad
-updated: 2017-06-24T07:57:08.593527339-07:00
+updated: 2017-06-30T07:24:35.118763413-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -90,6 +90,13 @@ imports:
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
   version: d3de07a94d22b4a0972deb4b96d790c2c0ce8333
+- name: github.com/go-kit/kit
+  version: 9917269ff0e9fc93df46474b411ea1716195a61b
+  subpackages:
+  - log
+  - log/level
+- name: github.com/go-logfmt/logfmt
+  version: 390ab7935ee28ec6b286364bba9b4dd6410cb3d5
 - name: github.com/go-openapi/jsonpointer
   version: 46af16f9f7b149af66e5d1bd010e3574dc06de98
 - name: github.com/go-openapi/jsonreference
@@ -98,6 +105,8 @@ imports:
   version: 6aced65f8501fe1217321abf0749d354824ba2ff
 - name: github.com/go-openapi/swag
   version: 1d0bd113de87027671077d3c71eb3ac5d7dbba72
+- name: github.com/go-stack/stack
+  version: 7a2f19628aabfe68f0766b59e74d6315f8347d22
 - name: github.com/go-xorm/builder
   version: db75972580de4a7c6c20fff5b16a924c3de3fa12
 - name: github.com/go-xorm/core
@@ -168,9 +177,9 @@ imports:
   - pkg/controller
   - pkg/validator
 - name: github.com/k8sdb/elasticsearch_exporter
-  version: 5dfb6415ea1a4a71200c9e627fbee71aaff4e28b
+  version: 50066ade5cd2b8551ed63451dc56ff050ee05730
   subpackages:
-  - exporter
+  - collector
 - name: github.com/k8sdb/postgres
   version: 4f3b6881e32f658e4dc23dbe589f1d587354fab1
   subpackages:
@@ -181,8 +190,10 @@ imports:
   version: 185154b1f51cf51db76823d501f620008715f00b
   subpackages:
   - exporter
+- name: github.com/kr/logfmt
+  version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
-  version: 50761b0867bd1d9d069276790bcd4a3bccf2324a
+  version: 69552e54d2a9d4c6a2438926a774930f7bc398ec
   subpackages:
   - oid
 - name: github.com/mailru/easyjson
@@ -230,7 +241,7 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: 4b6ea7319e214d98c938f12692336f7ca9348d6b
 - name: github.com/spf13/cobra
-  version: d638dcb7c7c1c9b62f3a6297a17834980d245dc7
+  version: 8c6fa02d2225de0f9bdcb7ca912556f68d172d8c
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 - name: github.com/ugorji/go
@@ -278,7 +289,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: 1ba364a3bb616587dfd46d5009edefdfd7896ed9
+  version: e6586c9293b9d514c7f5d5076731ec977cff1be6
   subpackages:
   - gensupport
   - googleapi

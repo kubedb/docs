@@ -3,17 +3,20 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
+	"os"
 	"time"
 
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/pat"
+	"github.com/go-kit/kit/log"
 	tapi "github.com/k8sdb/apimachinery/api"
-	ese "github.com/k8sdb/elasticsearch_exporter/exporter"
+	ese "github.com/k8sdb/elasticsearch_exporter/collector"
 	pge "github.com/k8sdb/postgres_exporter/exporter"
 	"github.com/orcaman/concurrent-map"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/log"
+	plog "github.com/prometheus/common/log"
 	"gopkg.in/ini.v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -76,7 +79,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				r2, _ := registerers.Get(r.URL.Path)
 				reg = r2.(*prometheus.Registry)
 			} else {
-				log.Infof("Configuring exporter for PostgreSQL %s in namespace %s", dbName, namespace)
+				plog.Infof("Configuring exporter for PostgreSQL %s in namespace %s", dbName, namespace)
 				db, err := dbClient.Postgreses(namespace).Get(dbName)
 				if kerr.IsNotFound(err) {
 					http.NotFound(w, r)
@@ -96,6 +99,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
 		return
 	case tapi.ResourceTypeElastic:
+		logger := log.NewLogfmtLogger(log.NewSyncWriter(os.Stdout))
 		var reg *prometheus.Registry
 		if val, ok := registerers.Get(r.URL.Path); ok {
 			reg = val.(*prometheus.Registry)
@@ -105,7 +109,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				r2, _ := registerers.Get(r.URL.Path)
 				reg = r2.(*prometheus.Registry)
 			} else {
-				log.Infof("Configuring exporter for Elasticsearch %s in namespace %s", dbName, namespace)
+				plog.Infof("Configuring exporter for Elasticsearch %s in namespace %s", dbName, namespace)
 				_, err := dbClient.Elastics(namespace).Get(dbName)
 				if kerr.IsNotFound(err) {
 					http.NotFound(w, r)
@@ -114,13 +118,18 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
+
 				esURI := fmt.Sprintf("http://%s:9200", podIP)
-				nodesStatsURI := esURI + "/_nodes/_local/stats"
-				clusterHealthURI := esURI + "/_cluster/health"
+				esURL, err := url.Parse(esURI)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
 				esTimeout := 5 * time.Second
 				esAllNodes := false
-				exporter := ese.NewExporter(nodesStatsURI, clusterHealthURI, esTimeout, esAllNodes, nil)
-				reg.MustRegister(exporter)
+				httpClient := &http.Client{Timeout: esTimeout}
+				reg.MustRegister(ese.NewClusterHealth(logger, httpClient, esURL))
+				reg.MustRegister(ese.NewNodes(logger, httpClient, *esURL, esAllNodes))
 			}
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
