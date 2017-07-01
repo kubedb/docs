@@ -230,8 +230,11 @@ func (c *Controller) ensureThirdPartyResource() {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: resourceName,
+			Labels: map[string]string{
+				"app": "kubedb",
+			},
 		},
-		Description: "Elasticsearch Database in Kubernetes by appscode.com",
+		Description: "Elasticsearch Database by KubeDB",
 		Versions: []extensions.APIVersion{
 			{
 				Name: tapi.V1alpha1SchemeGroupVersion.Version,
@@ -239,7 +242,7 @@ func (c *Controller) ensureThirdPartyResource() {
 		},
 	}
 
-	if _, err := c.Client.Extensions().ThirdPartyResources().Create(thirdPartyResource); err != nil {
+	if _, err := c.Client.ExtensionsV1beta1().ThirdPartyResources().Create(thirdPartyResource); err != nil {
 		log.Fatalln(err)
 	}
 }

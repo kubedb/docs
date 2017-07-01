@@ -227,8 +227,11 @@ func (c *Controller) ensureThirdPartyResource() {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: resourceName,
+			Labels: map[string]string{
+				"app": "kubedb",
+			},
 		},
-		Description: "Postgres Database in Kubernetes by appscode.com",
+		Description: "Postgres Database by KubeDB",
 		Versions: []extensions.APIVersion{
 			{
 				Name: tapi.V1alpha1SchemeGroupVersion.Version,

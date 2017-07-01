@@ -96,8 +96,11 @@ func (c *SnapshotController) ensureThirdPartyResource() {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: resourceName,
+			Labels: map[string]string{
+				"app": "kubedb",
+			},
 		},
-		Description: "Snapshot of kubedb databases",
+		Description: "Snapshot of KubeDB databases",
 		Versions: []extensions.APIVersion{
 			{
 				Name: tapi.V1alpha1SchemeGroupVersion.Version,
