@@ -8,6 +8,7 @@ import (
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
+	"github.com/k8sdb/apimachinery/pkg/storage"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -390,12 +391,16 @@ const (
 
 func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Snapshot) (*batch.Job, error) {
 	databaseName := postgres.Name
-	jobName := rand.WithUniqSuffix(databaseName)
+	jobName := snapshot.Name
 	jobLabel := map[string]string{
 		amc.LabelDatabaseName: databaseName,
 		amc.LabelJobType:      SnapshotProcess_Restore,
 	}
 	backupSpec := snapshot.Spec.SnapshotStorageSpec
+	bucket, err := storage.GetContainer(backupSpec)
+	if err != nil {
+		return nil, err
+	}
 
 	// Get PersistentVolume object for Backup Util pod.
 	persistentVolume, err := c.getVolumeForSnapshot(postgres.Spec.Storage, jobName, postgres.Namespace)
@@ -424,7 +429,7 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 							Args: []string{
 								fmt.Sprintf(`--process=%s`, SnapshotProcess_Restore),
 								fmt.Sprintf(`--host=%s`, databaseName),
-								fmt.Sprintf(`--bucket=%s`, backupSpec.BucketName),
+								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 							},
@@ -434,12 +439,13 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 									MountPath: "/srv/" + tapi.ResourceNamePostgres + "/secrets",
 								},
 								{
-									Name:      "cloud",
-									MountPath: storageSecretMountPath,
-								},
-								{
 									Name:      persistentVolume.Name,
 									MountPath: "/var/" + snapshotType_DumpRestore + "/",
+								},
+								{
+									Name:      "osmconfig",
+									MountPath: storage.SecretMountPath,
+									ReadOnly:  true,
 								},
 							},
 						},
@@ -454,14 +460,16 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 							},
 						},
 						{
-							Name: "cloud",
-							VolumeSource: apiv1.VolumeSource{
-								Secret: backupSpec.StorageSecret,
-							},
-						},
-						{
 							Name:         persistentVolume.Name,
 							VolumeSource: persistentVolume.VolumeSource,
+						},
+						{
+							Name: "osmconfig",
+							VolumeSource: apiv1.VolumeSource{
+								Secret: &apiv1.SecretVolumeSource{
+									SecretName: snapshot.Name,
+								},
+							},
 						},
 					},
 					RestartPolicy:      apiv1.RestartPolicyNever,
@@ -470,7 +478,13 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 			},
 		},
 	}
-
+	if snapshot.Spec.SnapshotStorageSpec.Local != nil {
+		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, apiv1.VolumeMount{
+			Name:      "localstore",
+			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.Path,
+		})
+		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, snapshot.Spec.SnapshotStorageSpec.Local.Volume)
+	}
 	return c.Client.BatchV1().Jobs(postgres.Namespace).Create(job)
 }
 

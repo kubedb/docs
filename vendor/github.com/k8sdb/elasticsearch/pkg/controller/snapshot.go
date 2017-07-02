@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/appscode/go/crypto/rand"
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
+	"github.com/k8sdb/apimachinery/pkg/storage"
 	amv "github.com/k8sdb/apimachinery/pkg/validator"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -71,13 +71,16 @@ func (c *Controller) GetDatabase(snapshot *tapi.Snapshot) (runtime.Object, error
 
 func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error) {
 	databaseName := snapshot.Spec.DatabaseName
-	jobName := rand.WithUniqSuffix(databaseName)
+	jobName := snapshot.Name
 	jobLabel := map[string]string{
 		amc.LabelDatabaseName: databaseName,
 		amc.LabelJobType:      SnapshotProcess_Backup,
 	}
 	backupSpec := snapshot.Spec.SnapshotStorageSpec
-
+	bucket, err := storage.GetContainer(backupSpec)
+	if err != nil {
+		return nil, err
+	}
 	elastic, err := c.ExtClient.Elastics(snapshot.Namespace).Get(databaseName)
 	if err != nil {
 		return nil, err
@@ -109,32 +112,35 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error)
 							Args: []string{
 								fmt.Sprintf(`--process=%s`, SnapshotProcess_Backup),
 								fmt.Sprintf(`--host=%s`, databaseName),
-								fmt.Sprintf(`--bucket=%s`, backupSpec.BucketName),
+								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 							},
 							VolumeMounts: []apiv1.VolumeMount{
 								{
-									Name:      "cloud",
-									MountPath: storageSecretMountPath,
-								},
-								{
 									Name:      persistentVolume.Name,
 									MountPath: "/var/" + snapshotType_DumpBackup + "/",
+								},
+								{
+									Name:      "osmconfig",
+									MountPath: storage.SecretMountPath,
+									ReadOnly:  true,
 								},
 							},
 						},
 					},
 					Volumes: []apiv1.Volume{
 						{
-							Name: "cloud",
-							VolumeSource: apiv1.VolumeSource{
-								Secret: backupSpec.StorageSecret,
-							},
-						},
-						{
 							Name:         persistentVolume.Name,
 							VolumeSource: persistentVolume.VolumeSource,
+						},
+						{
+							Name: "osmconfig",
+							VolumeSource: apiv1.VolumeSource{
+								Secret: &apiv1.SecretVolumeSource{
+									SecretName: snapshot.Name,
+								},
+							},
 						},
 					},
 					RestartPolicy:      apiv1.RestartPolicyNever,
@@ -142,6 +148,13 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error)
 				},
 			},
 		},
+	}
+	if snapshot.Spec.SnapshotStorageSpec.Local != nil {
+		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, apiv1.VolumeMount{
+			Name:      "localstore",
+			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.Path,
+		})
+		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, snapshot.Spec.SnapshotStorageSpec.Local.Volume)
 	}
 	return job, nil
 }

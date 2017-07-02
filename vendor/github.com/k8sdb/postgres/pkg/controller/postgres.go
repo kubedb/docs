@@ -10,6 +10,7 @@ import (
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
+	"github.com/k8sdb/apimachinery/pkg/storage"
 	"github.com/k8sdb/postgres/pkg/validator"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -300,6 +301,15 @@ func (c *Controller) initialize(postgres *tapi.Postgres) error {
 		namespace = postgres.Namespace
 	}
 	snapshot, err := c.ExtClient.Snapshots(namespace).Get(snapshotSource.Name)
+	if err != nil {
+		return err
+	}
+
+	secret, err := storage.NewOSMSecret(c.Client, snapshot, snapshot.Namespace)
+	if err != nil {
+		return err
+	}
+	_, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
 	if err != nil {
 		return err
 	}

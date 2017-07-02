@@ -11,6 +11,7 @@ import (
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
+	"github.com/k8sdb/apimachinery/pkg/storage"
 	"github.com/k8sdb/elasticsearch/pkg/validator"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -308,6 +309,15 @@ func (c *Controller) initialize(elastic *tapi.Elastic) error {
 		namespace = elastic.Namespace
 	}
 	snapshot, err := c.ExtClient.Snapshots(namespace).Get(snapshotSource.Name)
+	if err != nil {
+		return err
+	}
+
+	secret, err := storage.NewOSMSecret(c.Client, snapshot, snapshot.Namespace)
+	if err != nil {
+		return err
+	}
+	_, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
 	if err != nil {
 		return err
 	}

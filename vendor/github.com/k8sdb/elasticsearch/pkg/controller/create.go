@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/appscode/go/crypto/rand"
 	tapi "github.com/k8sdb/apimachinery/api"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
+	"github.com/k8sdb/apimachinery/pkg/storage"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -340,12 +340,16 @@ const (
 
 func (c *Controller) createRestoreJob(elastic *tapi.Elastic, snapshot *tapi.Snapshot) (*batch.Job, error) {
 	databaseName := elastic.Name
-	jobName := rand.WithUniqSuffix(databaseName)
+	jobName := snapshot.Name
 	jobLabel := map[string]string{
 		amc.LabelDatabaseName: databaseName,
 		amc.LabelJobType:      SnapshotProcess_Restore,
 	}
 	backupSpec := snapshot.Spec.SnapshotStorageSpec
+	bucket, err := storage.GetContainer(backupSpec)
+	if err != nil {
+		return nil, err
+	}
 
 	// Get PersistentVolume object for Backup Util pod.
 	persistentVolume, err := c.getVolumeForSnapshot(elastic.Spec.Storage, jobName, elastic.Namespace)
@@ -374,32 +378,35 @@ func (c *Controller) createRestoreJob(elastic *tapi.Elastic, snapshot *tapi.Snap
 							Args: []string{
 								fmt.Sprintf(`--process=%s`, SnapshotProcess_Restore),
 								fmt.Sprintf(`--host=%s`, databaseName),
-								fmt.Sprintf(`--bucket=%s`, backupSpec.BucketName),
+								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 							},
 							VolumeMounts: []apiv1.VolumeMount{
 								{
-									Name:      "cloud",
-									MountPath: storageSecretMountPath,
-								},
-								{
 									Name:      persistentVolume.Name,
 									MountPath: "/var/" + snapshotType_DumpRestore + "/",
+								},
+								{
+									Name:      "osmconfig",
+									MountPath: storage.SecretMountPath,
+									ReadOnly:  true,
 								},
 							},
 						},
 					},
 					Volumes: []apiv1.Volume{
 						{
-							Name: "cloud",
-							VolumeSource: apiv1.VolumeSource{
-								Secret: backupSpec.StorageSecret,
-							},
-						},
-						{
 							Name:         persistentVolume.Name,
 							VolumeSource: persistentVolume.VolumeSource,
+						},
+						{
+							Name: "osmconfig",
+							VolumeSource: apiv1.VolumeSource{
+								Secret: &apiv1.SecretVolumeSource{
+									SecretName: snapshot.Name,
+								},
+							},
 						},
 					},
 					RestartPolicy:      apiv1.RestartPolicyNever,
@@ -408,7 +415,13 @@ func (c *Controller) createRestoreJob(elastic *tapi.Elastic, snapshot *tapi.Snap
 			},
 		},
 	}
-
+	if snapshot.Spec.SnapshotStorageSpec.Local != nil {
+		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, apiv1.VolumeMount{
+			Name:      "localstore",
+			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.Path,
+		})
+		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, snapshot.Spec.SnapshotStorageSpec.Local.Volume)
+	}
 	return c.Client.BatchV1().Jobs(elastic.Namespace).Create(job)
 }
 
