@@ -1,11 +1,11 @@
 # operator
-Unified Operator
+KubeDB Operator
 
 ## Using KubeDB
-Want to learn how to use KubeDB? Please start [here](https://github.com/k8sdb/cli/tree/master/docs/user-guide).
+Want to learn how to use KubeDB? Please start [here](https://github.com/k8sdb/cli/blob/master/docs/tutorial.md).
 
 ## Contribution guidelines
-Want to help improve KubeDB? Please start [here](https://github.com/k8sdb/cli/tree/master/docs/contribution).
+Want to help improve KubeDB? Please start [here](https://github.com/k8sdb/cli/blob/master/CONTRIBUTING.md).
 
 ## Support
 If you have any questions, you can reach out to us.
