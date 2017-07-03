@@ -313,7 +313,7 @@ func (c *Controller) initialize(elastic *tapi.Elastic) error {
 		return err
 	}
 
-	secret, err := storage.NewOSMSecret(c.Client, snapshot, snapshot.Namespace)
+	secret, err := storage.NewOSMSecret(c.Client, snapshot)
 	if err != nil {
 		return err
 	}

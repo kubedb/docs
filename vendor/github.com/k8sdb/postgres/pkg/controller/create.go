@@ -480,7 +480,7 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 	}
 	if snapshot.Spec.SnapshotStorageSpec.Local != nil {
 		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, apiv1.VolumeMount{
-			Name:      "localstore",
+			Name:      snapshot.Spec.SnapshotStorageSpec.Local.Volume.Name,
 			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.Path,
 		})
 		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, snapshot.Spec.SnapshotStorageSpec.Local.Volume)

@@ -305,7 +305,7 @@ func (c *Controller) initialize(postgres *tapi.Postgres) error {
 		return err
 	}
 
-	secret, err := storage.NewOSMSecret(c.Client, snapshot, snapshot.Namespace)
+	secret, err := storage.NewOSMSecret(c.Client, snapshot)
 	if err != nil {
 		return err
 	}
