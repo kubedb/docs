@@ -129,7 +129,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				esAllNodes := false
 				httpClient := &http.Client{Timeout: esTimeout}
 				reg.MustRegister(ese.NewClusterHealth(logger, httpClient, esURL))
-				reg.MustRegister(ese.NewNodes(logger, httpClient, *esURL, esAllNodes))
+				reg.MustRegister(ese.NewNodes(logger, httpClient, esURL, esAllNodes))
 			}
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
