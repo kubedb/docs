@@ -116,6 +116,7 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error)
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 							},
+							Resources: snapshot.Spec.Resources,
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      persistentVolume.Name,

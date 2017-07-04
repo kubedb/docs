@@ -151,6 +151,7 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulS
 									ContainerPort: 5432,
 								},
 							},
+							Resources: postgres.Spec.Resources,
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "secret",
@@ -433,6 +434,7 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 							},
+							Resources: snapshot.Spec.Resources,
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "secret",
