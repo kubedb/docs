@@ -137,7 +137,6 @@ func (c *Controller) ensureRBACStuff(namespace string) error {
 		if !kerr.IsNotFound(err) {
 			return err
 		}
-
 		roleBinding := &rbac.ClusterRoleBinding{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
@@ -146,11 +145,9 @@ func (c *Controller) ensureRBACStuff(namespace string) error {
 			RoleRef:  roleBindingRef,
 			Subjects: roleBindingSubjects,
 		}
-
 		if _, err := c.Client.RbacV1beta1().ClusterRoleBindings().Create(roleBinding); err != nil {
 			return err
 		}
-
 	} else {
 		roleBinding.RoleRef = roleBindingRef
 		roleBinding.Subjects = roleBindingSubjects
@@ -158,7 +155,7 @@ func (c *Controller) ensureRBACStuff(namespace string) error {
 			return err
 		}
 	}
-
+	
 	return nil
 }
 
@@ -222,6 +219,7 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulS
 									ContainerPort: 5432,
 								},
 							},
+							Resources: postgres.Spec.Resources,
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "secret",
@@ -504,6 +502,7 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 							},
+							Resources: snapshot.Spec.Resources,
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "secret",
