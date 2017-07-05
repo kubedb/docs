@@ -27,8 +27,7 @@ import (
 
 type Options struct {
 	// Operator namespace
-	OperatorNamespace      string
-	OperatorServiceAccount string
+	OperatorNamespace string
 	// Exporter tag
 	ExporterTag string
 	// Governing service
@@ -37,6 +36,8 @@ type Options struct {
 	Address string
 	// Enable analytics
 	EnableAnalytics bool
+	// Use ClusterRole for database workloads
+	ClusterRole string
 }
 
 type Controller struct {

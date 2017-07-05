@@ -159,6 +159,7 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*apps.StatefulSet
 									ContainerPort: 9300,
 								},
 							},
+							Resources: elastic.Spec.Resources,
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      "discovery",
@@ -382,6 +383,7 @@ func (c *Controller) createRestoreJob(elastic *tapi.Elastic, snapshot *tapi.Snap
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 							},
+							Resources: snapshot.Spec.Resources,
 							VolumeMounts: []apiv1.VolumeMount{
 								{
 									Name:      persistentVolume.Name,

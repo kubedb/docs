@@ -227,6 +227,7 @@ func (s *snapshotInvoker) createSnapshot(snapshotName string) error {
 		Spec: tapi.SnapshotSpec{
 			DatabaseName:        s.om.Name,
 			SnapshotStorageSpec: s.spec.SnapshotStorageSpec,
+			Resources: s.spec.Resources,
 		},
 	}
 

@@ -30,6 +30,8 @@ type SnapshotSourceSpec struct {
 type BackupScheduleSpec struct {
 	CronExpression      string `json:"cronExpression,omitempty"`
 	SnapshotStorageSpec `json:",inline,omitempty"`
+	// Compute Resources required by the sidecar container.
+	Resources apiv1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 const (
