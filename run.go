@@ -38,7 +38,7 @@ var (
 	address           string = ":8080"
 	operatorNamespace string = namespace()
 	enableAnalytics   bool   = true
-	clusterRole       string = "default"
+	enableRbac        bool   = false
 
 	kubeClient clientset.Interface
 	dbClient   tcs.ExtensionInterface
@@ -62,7 +62,7 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&governingService, "governing-service", governingService, "Governing service for database statefulset")
 	cmd.Flags().StringVar(&exporterTag, "exporter-tag", exporterTag, "Tag of kubedb/operator used as exporter")
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
-	cmd.Flags().StringVar(&clusterRole, "cluster-role", clusterRole, "ClusterRole for RBAC used in database workloads")
+	cmd.Flags().BoolVar(&enableRbac, "rbac", enableRbac, "Enable RBAC for database workloads")
 	// elasticsearch flags
 	cmd.Flags().StringVar(&esOperatorTag, "elasticsearch.operator-tag", esOperatorTag, "Tag of kubedb/es-operator used for discovery")
 
@@ -124,7 +124,7 @@ func run() {
 		OperatorNamespace: operatorNamespace,
 		ExporterTag:       exporterTag,
 		EnableAnalytics:   enableAnalytics,
-		ClusterRole:       clusterRole,
+		EnableRbac:        enableRbac,
 	}).Run()
 
 	// Need to wait for sometime to run another controller.

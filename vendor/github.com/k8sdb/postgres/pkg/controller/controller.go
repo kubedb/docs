@@ -36,8 +36,8 @@ type Options struct {
 	Address string
 	// Enable analytics
 	EnableAnalytics bool
-	// Use ClusterRole for database workloads
-	ClusterRole string
+	// Enable RBAC for database workloads
+	EnableRbac bool
 }
 
 type Controller struct {

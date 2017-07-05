@@ -1,5 +1,5 @@
 hash: 75202d573082e594dce8895a85140dd928d527b69b690a864e86074dda07e470
-updated: 2017-07-05T14:52:57.89743699+06:00
+updated: 2017-07-05T17:20:02.991030008+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -189,7 +189,7 @@ imports:
   subpackages:
   - collector
 - name: github.com/k8sdb/postgres
-  version: fae2565d083dd0daaede97131c5ec2509ccb6855
+  version: dd9315597b0229738cbe8138960c86825d1b0741
   subpackages:
   - pkg/audit/report
   - pkg/controller
