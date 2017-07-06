@@ -12,7 +12,7 @@ import:
 - package: github.com/k8sdb/apimachinery
   version: master
 - package: github.com/k8sdb/elasticsearch
-  version: master
+  version: rbac
 - package: github.com/k8sdb/postgres
   version: rbac
 - package: github.com/k8sdb/elasticsearch_exporter

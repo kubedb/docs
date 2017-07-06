@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/appscode/go/crypto/rand"
+	"github.com/appscode/go/types"
 	tapi "github.com/k8sdb/apimachinery/api"
-	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -18,16 +18,16 @@ import (
 )
 
 const (
-	annotationDatabaseVersion = "postgres.kubedb.com/version"
-	modeBasic                 = "basic"
+	modeBasic = "basic"
 	// Duration in Minute
 	// Check whether pod under StatefulSet is running or not
 	// Continue checking for this duration until failure
 	durationCheckStatefulSet = time.Minute * 30
 )
 
-func (c *Controller) findService(name, namespace string) (bool, error) {
-	service, err := c.Client.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
+func (c *Controller) findService(postgres *tapi.Postgres) (bool, error) {
+	name := postgres.OffshootName()
+	service, err := c.Client.CoreV1().Services(postgres.Namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return false, nil
@@ -36,7 +36,7 @@ func (c *Controller) findService(name, namespace string) (bool, error) {
 		}
 	}
 
-	if service.Spec.Selector[amc.LabelDatabaseName] != name {
+	if service.Spec.Selector[tapi.LabelDatabaseName] != name {
 		return false, fmt.Errorf(`Intended service "%v" already exists`, name)
 	}
 
@@ -44,13 +44,10 @@ func (c *Controller) findService(name, namespace string) (bool, error) {
 }
 
 func (c *Controller) createService(postgres *tapi.Postgres) error {
-	label := map[string]string{
-		amc.LabelDatabaseName: postgres.Name,
-	}
 	svc := &apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   postgres.Name,
-			Labels: label,
+			Name:   postgres.OffshootName(),
+			Labels: postgres.OffshootLabels(),
 		},
 		Spec: apiv1.ServiceSpec{
 			Ports: []apiv1.ServicePort{
@@ -60,7 +57,7 @@ func (c *Controller) createService(postgres *tapi.Postgres) error {
 					TargetPort: intstr.FromString("db"),
 				},
 			},
-			Selector: label,
+			Selector: postgres.OffshootLabels(),
 		},
 	}
 	if postgres.Spec.Monitor != nil &&
@@ -82,8 +79,7 @@ func (c *Controller) createService(postgres *tapi.Postgres) error {
 
 func (c *Controller) findStatefulSet(postgres *tapi.Postgres) (bool, error) {
 	// SatatefulSet for Postgres database
-	statefulSetName := getStatefulSetName(postgres.Name)
-	statefulSet, err := c.Client.AppsV1beta1().StatefulSets(postgres.Namespace).Get(statefulSetName, metav1.GetOptions{})
+	statefulSet, err := c.Client.AppsV1beta1().StatefulSets(postgres.Namespace).Get(postgres.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return false, nil
@@ -92,52 +88,28 @@ func (c *Controller) findStatefulSet(postgres *tapi.Postgres) (bool, error) {
 		}
 	}
 
-	if statefulSet.Labels[amc.LabelDatabaseKind] != tapi.ResourceKindPostgres {
-		return false, fmt.Errorf(`Intended statefulSet "%v" already exists`, statefulSetName)
+	if statefulSet.Labels[tapi.LabelDatabaseKind] != tapi.ResourceKindPostgres {
+		return false, fmt.Errorf(`Intended statefulSet "%v" already exists`, postgres.OffshootName())
 	}
 
 	return true, nil
 }
 
 func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulSet, error) {
-	// Set labels
-	labels := make(map[string]string)
-	for key, val := range postgres.Labels {
-		labels[key] = val
-	}
-	labels[amc.LabelDatabaseKind] = tapi.ResourceKindPostgres
-
-	// Set Annotations
-	annotations := make(map[string]string)
-	for key, val := range postgres.Annotations {
-		annotations[key] = val
-	}
-	annotations[annotationDatabaseVersion] = string(postgres.Spec.Version)
-
-	podLabels := make(map[string]string)
-	for key, val := range labels {
-		podLabels[key] = val
-	}
-	podLabels[amc.LabelDatabaseName] = postgres.Name
-
 	// SatatefulSet for Postgres database
-	statefulSetName := getStatefulSetName(postgres.Name)
-
-	replicas := int32(1)
 	statefulSet := &apps.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        statefulSetName,
+			Name:        postgres.OffshootName(),
 			Namespace:   postgres.Namespace,
-			Labels:      labels,
-			Annotations: annotations,
+			Labels:      postgres.StatefulSetLabels(),
+			Annotations: postgres.StatefulSetAnnotations(),
 		},
 		Spec: apps.StatefulSetSpec{
-			Replicas:    &replicas,
+			Replicas:    types.Int32P(1),
 			ServiceName: c.opt.GoverningService,
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels:      podLabels,
-					Annotations: annotations,
+					Labels: postgres.OffshootLabels(),
 				},
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
@@ -237,7 +209,7 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulS
 	return statefulSet, nil
 }
 
-func (c *Controller) findSecret(namespace, secretName string) (bool, error) {
+func (c *Controller) findSecret(secretName, namespace string) (bool, error) {
 	secret, err := c.Client.CoreV1().Secrets(namespace).Get(secretName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
@@ -256,7 +228,7 @@ func (c *Controller) findSecret(namespace, secretName string) (bool, error) {
 func (c *Controller) createDatabaseSecret(postgres *tapi.Postgres) (*apiv1.SecretVolumeSource, error) {
 	authSecretName := postgres.Name + "-admin-auth"
 
-	found, err := c.findSecret(postgres.Namespace, authSecretName)
+	found, err := c.findSecret(authSecretName, postgres.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -270,7 +242,7 @@ func (c *Controller) createDatabaseSecret(postgres *tapi.Postgres) (*apiv1.Secre
 			ObjectMeta: metav1.ObjectMeta{
 				Name: authSecretName,
 				Labels: map[string]string{
-					amc.LabelDatabaseKind: tapi.ResourceKindPostgres,
+					tapi.LabelDatabaseKind: tapi.ResourceKindPostgres,
 				},
 			},
 			Type: apiv1.SecretTypeOpaque,
@@ -354,7 +326,7 @@ func (c *Controller) createDormantDatabase(postgres *tapi.Postgres) (*tapi.Dorma
 			Name:      postgres.Name,
 			Namespace: postgres.Namespace,
 			Labels: map[string]string{
-				amc.LabelDatabaseKind: tapi.ResourceKindPostgres,
+				tapi.LabelDatabaseKind: tapi.ResourceKindPostgres,
 			},
 		},
 		Spec: tapi.DormantDatabaseSpec{
@@ -400,13 +372,13 @@ const (
 
 func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Snapshot) (*batch.Job, error) {
 	databaseName := postgres.Name
-	jobName := snapshot.Name
+	jobName := snapshot.OffshootName()
 	jobLabel := map[string]string{
-		amc.LabelDatabaseName: databaseName,
-		amc.LabelJobType:      SnapshotProcess_Restore,
+		tapi.LabelDatabaseName: databaseName,
+		tapi.LabelJobType:      SnapshotProcess_Restore,
 	}
 	backupSpec := snapshot.Spec.SnapshotStorageSpec
-	bucket, err := storage.GetContainer(backupSpec)
+	bucket, err := backupSpec.Container()
 	if err != nil {
 		return nil, err
 	}
@@ -418,7 +390,7 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 	}
 
 	// Folder name inside Cloud bucket where backup will be uploaded
-	folderName := fmt.Sprintf("%v/%v/%v", amc.DatabaseNamePrefix, snapshot.Namespace, snapshot.Spec.DatabaseName)
+	folderName, _ := snapshot.Location()
 
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -495,8 +467,4 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, snapshot.Spec.SnapshotStorageSpec.Local.Volume)
 	}
 	return c.Client.BatchV1().Jobs(postgres.Namespace).Create(job)
-}
-
-func getStatefulSetName(databaseName string) string {
-	return fmt.Sprintf("%v-%v", databaseName, tapi.ResourceCodePostgres)
 }

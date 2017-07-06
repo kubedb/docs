@@ -3,7 +3,6 @@ package controller
 import (
 	"github.com/appscode/log"
 	tapi "github.com/k8sdb/apimachinery/api"
-	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -27,8 +26,18 @@ func (c *Controller) PauseDatabase(dormantDb *tapi.DormantDatabase) error {
 		return err
 	}
 
-	statefulSetName := getStatefulSetName(dormantDb.Name)
-	if err := c.DeleteStatefulSet(statefulSetName, dormantDb.Namespace); err != nil {
+	if err := c.DeleteStatefulSet(dormantDb.OffshootName(), dormantDb.Namespace); err != nil {
+		log.Errorln(err)
+		return err
+	}
+
+	postgres := &tapi.Postgres{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      dormantDb.OffshootName(),
+			Namespace: dormantDb.Namespace,
+		},
+	}
+	if err := c.deleteRBACStuff(postgres); err != nil {
 		log.Errorln(err)
 		return err
 	}
@@ -37,8 +46,8 @@ func (c *Controller) PauseDatabase(dormantDb *tapi.DormantDatabase) error {
 
 func (c *Controller) WipeOutDatabase(dormantDb *tapi.DormantDatabase) error {
 	labelMap := map[string]string{
-		amc.LabelDatabaseName: dormantDb.Name,
-		amc.LabelDatabaseKind: tapi.ResourceKindPostgres,
+		tapi.LabelDatabaseName: dormantDb.Name,
+		tapi.LabelDatabaseKind: tapi.ResourceKindPostgres,
 	}
 
 	labelSelector := labels.SelectorFromSet(labelMap)
@@ -85,7 +94,7 @@ func (c *Controller) deleteSecret(dormantDb *tapi.DormantDatabase) error {
 
 	if !secretFound {
 		labelMap := map[string]string{
-			amc.LabelDatabaseKind: tapi.ResourceKindPostgres,
+			tapi.LabelDatabaseKind: tapi.ResourceKindPostgres,
 		}
 		dormantDatabaseList, err := c.ExtClient.DormantDatabases(dormantDb.Namespace).List(
 			metav1.ListOptions{

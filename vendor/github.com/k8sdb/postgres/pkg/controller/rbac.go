@@ -10,7 +10,7 @@ import (
 
 func (c *Controller) deleteRole(postgres *tapi.Postgres) error {
 	// Delete existing Roles
-	if err := c.Client.RbacV1beta1().Roles(postgres.Namespace).Delete(postgres.Name, nil); err != nil {
+	if err := c.Client.RbacV1beta1().Roles(postgres.Namespace).Delete(postgres.OffshootName(), nil); err != nil {
 		if !kerr.IsNotFound(err) {
 			return err
 		}
@@ -22,7 +22,7 @@ func (c *Controller) createRole(postgres *tapi.Postgres) error {
 	// Create new Roles
 	role := &rbac.Role{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      postgres.Name,
+			Name:      postgres.OffshootName(),
 			Namespace: postgres.Namespace,
 		},
 		Rules: []rbac.PolicyRule{
@@ -49,7 +49,7 @@ func (c *Controller) createRole(postgres *tapi.Postgres) error {
 
 func (c *Controller) deleteServiceAccount(postgres *tapi.Postgres) error {
 	// Delete existing ServiceAccount
-	if err := c.Client.CoreV1().ServiceAccounts(postgres.Namespace).Delete(postgres.Name, nil); err != nil {
+	if err := c.Client.CoreV1().ServiceAccounts(postgres.Namespace).Delete(postgres.OffshootName(), nil); err != nil {
 		if !kerr.IsNotFound(err) {
 			return err
 		}
@@ -61,7 +61,7 @@ func (c *Controller) createServiceAccount(postgres *tapi.Postgres) error {
 	// Create new ServiceAccount
 	sa := &apiv1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      postgres.Name,
+			Name:      postgres.OffshootName(),
 			Namespace: postgres.Namespace,
 		},
 	}
@@ -74,7 +74,7 @@ func (c *Controller) createServiceAccount(postgres *tapi.Postgres) error {
 
 func (c *Controller) deleteRoleBinding(postgres *tapi.Postgres) error {
 	// Delete existing RoleBindings
-	if err := c.Client.RbacV1beta1().RoleBindings(postgres.Namespace).Delete(postgres.Name, nil); err != nil {
+	if err := c.Client.RbacV1beta1().RoleBindings(postgres.Namespace).Delete(postgres.OffshootName(), nil); err != nil {
 		if !kerr.IsNotFound(err) {
 			return err
 		}
@@ -86,18 +86,18 @@ func (c *Controller) createRoleBinding(postgres *tapi.Postgres) error {
 	// Create new RoleBindings
 	roleBinding := &rbac.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      postgres.Name,
+			Name:      postgres.OffshootName(),
 			Namespace: postgres.Namespace,
 		},
 		RoleRef: rbac.RoleRef{
 			APIGroup: rbac.GroupName,
 			Kind:     "Role",
-			Name:     postgres.Name,
+			Name:     postgres.OffshootName(),
 		},
 		Subjects: []rbac.Subject{
 			{
 				Kind:      rbac.ServiceAccountKind,
-				Name:      postgres.Name,
+				Name:      postgres.OffshootName(),
 				Namespace: postgres.Namespace,
 			},
 		},
@@ -131,6 +131,25 @@ func (c *Controller) createRBACStuff(postgres *tapi.Postgres) error {
 		if !kerr.IsAlreadyExists(err) {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (c *Controller) deleteRBACStuff(postgres *tapi.Postgres) error {
+	// Delete Existing Role
+	if err := c.deleteRole(postgres); err != nil {
+		return err
+	}
+
+	// Delete ServiceAccount
+	if err := c.deleteServiceAccount(postgres); err != nil {
+		return err
+	}
+
+	// Delete New RoleBinding
+	if err := c.deleteRoleBinding(postgres); err != nil {
+		return err
 	}
 
 	return nil
