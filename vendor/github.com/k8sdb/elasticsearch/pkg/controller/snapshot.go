@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	tapi "github.com/k8sdb/apimachinery/api"
-	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	amv "github.com/k8sdb/apimachinery/pkg/validator"
@@ -34,9 +33,9 @@ func (c *Controller) ValidateSnapshot(snapshot *tapi.Snapshot) error {
 	}
 
 	labelMap := map[string]string{
-		amc.LabelDatabaseKind:   tapi.ResourceKindElastic,
-		amc.LabelDatabaseName:   snapshot.Spec.DatabaseName,
-		amc.LabelSnapshotStatus: string(tapi.DatabasePhaseRunning),
+		tapi.LabelDatabaseKind:   tapi.ResourceKindElastic,
+		tapi.LabelDatabaseName:   snapshot.Spec.DatabaseName,
+		tapi.LabelSnapshotStatus: string(tapi.DatabasePhaseRunning),
 	}
 
 	snapshotList, err := c.ExtClient.Snapshots(snapshot.Namespace).List(metav1.ListOptions{
@@ -71,13 +70,13 @@ func (c *Controller) GetDatabase(snapshot *tapi.Snapshot) (runtime.Object, error
 
 func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error) {
 	databaseName := snapshot.Spec.DatabaseName
-	jobName := snapshot.Name
+	jobName := snapshot.OffshootName()
 	jobLabel := map[string]string{
-		amc.LabelDatabaseName: databaseName,
-		amc.LabelJobType:      SnapshotProcess_Backup,
+		tapi.LabelDatabaseName: databaseName,
+		tapi.LabelJobType:      SnapshotProcess_Backup,
 	}
 	backupSpec := snapshot.Spec.SnapshotStorageSpec
-	bucket, err := storage.GetContainer(backupSpec)
+	bucket, err := backupSpec.Container()
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +92,7 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error)
 	}
 
 	// Folder name inside Cloud bucket where backup will be uploaded
-	folderName := fmt.Sprintf("%v/%v/%v", amc.DatabaseNamePrefix, snapshot.Namespace, snapshot.Spec.DatabaseName)
+	folderName, _ := snapshot.Location()
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   jobName,
@@ -144,8 +143,7 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error)
 							},
 						},
 					},
-					RestartPolicy:      apiv1.RestartPolicyNever,
-					ServiceAccountName: c.opt.OperatorServiceAccount,
+					RestartPolicy: apiv1.RestartPolicyNever,
 				},
 			},
 		},

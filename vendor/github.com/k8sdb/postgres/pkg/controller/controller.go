@@ -27,8 +27,7 @@ import (
 
 type Options struct {
 	// Operator namespace
-	OperatorNamespace      string
-	OperatorServiceAccount string
+	OperatorNamespace string
 	// Exporter tag
 	ExporterTag string
 	// Governing service
@@ -37,6 +36,8 @@ type Options struct {
 	Address string
 	// Enable analytics
 	EnableAnalytics bool
+	// Enable RBAC for database workloads
+	EnableRbac bool
 }
 
 type Controller struct {
@@ -164,7 +165,7 @@ func (c *Controller) watchPostgres() {
 
 func (c *Controller) watchSnapshot() {
 	labelMap := map[string]string{
-		amc.LabelDatabaseKind: tapi.ResourceKindPostgres,
+		tapi.LabelDatabaseKind: tapi.ResourceKindPostgres,
 	}
 	// Watch with label selector
 	lw := &cache.ListWatch{
@@ -187,7 +188,7 @@ func (c *Controller) watchSnapshot() {
 
 func (c *Controller) watchDormantDatabase() {
 	labelMap := map[string]string{
-		amc.LabelDatabaseKind: tapi.ResourceKindPostgres,
+		tapi.LabelDatabaseKind: tapi.ResourceKindPostgres,
 	}
 	// Watch with label selector
 	lw := &cache.ListWatch{
@@ -228,7 +229,7 @@ func (c *Controller) ensureThirdPartyResource() {
 		ObjectMeta: metav1.ObjectMeta{
 			Name: resourceName,
 			Labels: map[string]string{
-				"app": "kubedb",
+				"app": tapi.DatabaseNamePrefix,
 			},
 		},
 		Description: "Postgres Database by KubeDB",

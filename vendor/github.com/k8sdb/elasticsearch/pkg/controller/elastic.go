@@ -8,7 +8,6 @@ import (
 
 	"github.com/appscode/log"
 	tapi "github.com/k8sdb/apimachinery/api"
-	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	"github.com/k8sdb/apimachinery/pkg/storage"
@@ -137,7 +136,7 @@ func (c *Controller) findDormantDatabase(elastic *tapi.Elastic) error {
 		}
 	} else {
 		var message string
-		if dormantDb.Labels[amc.LabelDatabaseKind] != tapi.ResourceKindElastic {
+		if dormantDb.Labels[tapi.LabelDatabaseKind] != tapi.ResourceKindElastic {
 			message = fmt.Sprintf(`Invalid Elastic: "%v". Exists DormantDatabase "%v" of different Kind`,
 				elastic.Name, dormantDb.Name)
 		} else {
@@ -156,7 +155,7 @@ func (c *Controller) findDormantDatabase(elastic *tapi.Elastic) error {
 
 func (c *Controller) ensureService(elastic *tapi.Elastic) error {
 	// Check if service name exists
-	found, err := c.findService(elastic.Name, elastic.Namespace)
+	found, err := c.findService(elastic)
 	if err != nil {
 		return err
 	}
@@ -442,7 +441,7 @@ func (c *Controller) update(oldElastic, updatedElastic *tapi.Elastic) error {
 	}
 
 	if (updatedElastic.Spec.Replicas != oldElastic.Spec.Replicas) && updatedElastic.Spec.Replicas >= 0 {
-		statefulSetName := getStatefulSetName(updatedElastic.Name)
+		statefulSetName := updatedElastic.OffshootName()
 		statefulSet, err := c.Client.AppsV1beta1().StatefulSets(updatedElastic.Namespace).Get(statefulSetName, metav1.GetOptions{})
 		if err != nil {
 			c.eventRecorder.Eventf(

@@ -8,7 +8,6 @@ import (
 
 	"github.com/appscode/log"
 	tapi "github.com/k8sdb/apimachinery/api"
-	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	"github.com/k8sdb/postgres/pkg/validator"
@@ -131,7 +130,7 @@ func (c *Controller) findDormantDatabase(postgres *tapi.Postgres) error {
 		}
 	} else {
 		var message string
-		if dormantDb.Labels[amc.LabelDatabaseKind] != tapi.ResourceKindPostgres {
+		if dormantDb.Labels[tapi.LabelDatabaseKind] != tapi.ResourceKindPostgres {
 			message = fmt.Sprintf(`Invalid Postgres: "%v". Exists DormantDatabase "%v" of different Kind`,
 				postgres.Name, dormantDb.Name)
 		} else {
@@ -150,7 +149,7 @@ func (c *Controller) findDormantDatabase(postgres *tapi.Postgres) error {
 
 func (c *Controller) ensureService(postgres *tapi.Postgres) error {
 	// Check if service name exists
-	found, err := c.findService(postgres.Name, postgres.Namespace)
+	found, err := c.findService(postgres)
 	if err != nil {
 		return err
 	}
