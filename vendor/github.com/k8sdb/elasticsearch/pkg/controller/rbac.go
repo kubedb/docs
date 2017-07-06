@@ -32,6 +32,11 @@ func (c *Controller) createRole(elastic *tapi.Elastic) error {
 				ResourceNames: []string{elastic.Name},
 				Verbs:         []string{"get"},
 			},
+			{
+				APIGroups: []string{apiv1.GroupName},
+				Resources: []string{"services", "endpoints"},
+				Verbs:     []string{"get"},
+			},
 		},
 	}
 	if _, err := c.Client.RbacV1beta1().Roles(role.Namespace).Create(role); err != nil {

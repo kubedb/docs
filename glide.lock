@@ -1,5 +1,5 @@
-hash: d26ff02770fd239f06d57de9ee2d0b50702a9b9ad5c421f0f2acf05c29f80c2c
-updated: 2017-07-06T11:47:32.521490469+06:00
+hash: fe7b7a36ef4845c759632e6782bd2040d5bc83a250591cd1ac6611c86778fa1c
+updated: 2017-07-06T02:31:06.364668316-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -180,7 +180,7 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/k8sdb/elasticsearch
-  version: 5c4a788594c8c6d3ccf2c9338a63046b5d3ec5e0
+  version: d03bd1c3a66c536ecec9ea1fa5690250ac1b5c83
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -190,7 +190,7 @@ imports:
   subpackages:
   - collector
 - name: github.com/k8sdb/postgres
-  version: 6e0e503067e8d6cc008cb12314eac5eb24d7f2dd
+  version: d77da96a19f5e019510cc5664272b61688f919b1
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -202,7 +202,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
-  version: 50761b0867bd1d9d069276790bcd4a3bccf2324a
+  version: 69552e54d2a9d4c6a2438926a774930f7bc398ec
   subpackages:
   - oid
 - name: github.com/mailru/easyjson
