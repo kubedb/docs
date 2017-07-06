@@ -137,6 +137,7 @@ func run() {
 		DiscoveryTag:      esOperatorTag,
 		OperatorNamespace: operatorNamespace,
 		EnableAnalytics:   enableAnalytics,
+		EnableRbac:        enableRbac,
 	}).Run()
 
 	m := pat.New()
