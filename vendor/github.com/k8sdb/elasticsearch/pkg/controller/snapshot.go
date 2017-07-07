@@ -61,7 +61,7 @@ func (c *Controller) ValidateSnapshot(snapshot *tapi.Snapshot) error {
 		return errors.New("One Snapshot is already Running")
 	}
 
-	return amv.ValidateSnapshot(c.Client, snapshot)
+	return amv.ValidateSnapshotSpec(c.Client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)
 }
 
 func (c *Controller) GetDatabase(snapshot *tapi.Snapshot) (runtime.Object, error) {
@@ -150,10 +150,13 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error)
 	}
 	if snapshot.Spec.SnapshotStorageSpec.Local != nil {
 		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, apiv1.VolumeMount{
-			Name:      snapshot.Spec.SnapshotStorageSpec.Local.Volume.Name,
+			Name:      "local",
 			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.Path,
 		})
-		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, snapshot.Spec.SnapshotStorageSpec.Local.Volume)
+		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, apiv1.Volume{
+			Name:         "local",
+			VolumeSource: snapshot.Spec.SnapshotStorageSpec.Local.VolumeSource,
+		})
 	}
 	return job, nil
 }

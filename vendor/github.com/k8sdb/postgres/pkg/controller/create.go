@@ -461,10 +461,14 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 	}
 	if snapshot.Spec.SnapshotStorageSpec.Local != nil {
 		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, apiv1.VolumeMount{
-			Name:      snapshot.Spec.SnapshotStorageSpec.Local.Volume.Name,
+			Name:      "local",
 			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.Path,
 		})
-		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, snapshot.Spec.SnapshotStorageSpec.Local.Volume)
+		volume := apiv1.Volume{
+			Name:         "local",
+			VolumeSource: snapshot.Spec.SnapshotStorageSpec.Local.VolumeSource,
+		}
+		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, volume)
 	}
 	return c.Client.BatchV1().Jobs(postgres.Namespace).Create(job)
 }
