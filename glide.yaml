@@ -10,11 +10,11 @@ import:
   version: master
   vcs: git
 - package: github.com/k8sdb/apimachinery
-  version: master
+  version: release-0.3
 - package: github.com/k8sdb/elasticsearch
-  version: master
+  version: release-0.3
 - package: github.com/k8sdb/postgres
-  version: master
+  version: release-0.3
 - package: github.com/k8sdb/elasticsearch_exporter
   version: master
 - package: github.com/k8sdb/postgres_exporter

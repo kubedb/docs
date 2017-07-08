@@ -1,5 +1,5 @@
-hash: fe7b7a36ef4845c759632e6782bd2040d5bc83a250591cd1ac6611c86778fa1c
-updated: 2017-07-07T10:28:20.261691753+06:00
+hash: d42fdbfabfb8e5ab8b9a143f62e7de262ae4cfc8763bc68070e6fad2ad223dd9
+updated: 2017-07-07T22:35:21.836500408-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -167,7 +167,7 @@ imports:
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/k8sdb/apimachinery
-  version: 5917fc8d1a327a444b7aeb0174a52b4dda9d33db
+  version: 9077c836cdd9913a61b2e9e38b5ab0c081f390f0
   subpackages:
   - api
   - api/install
@@ -180,17 +180,17 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/k8sdb/elasticsearch
-  version: 5b70c117b44ceea3e8dc6bb8b7d929f0642f0e61
+  version: ddbeb7ade94690086282b19f5d8e8e3bb1974b99
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/validator
 - name: github.com/k8sdb/elasticsearch_exporter
-  version: 6a86fb79e31390ceaf35f7aad6a2d157a02af2aa
+  version: 9a22ff7b675e020919ee0be66530e47f9a908c6b
   subpackages:
   - collector
 - name: github.com/k8sdb/postgres
-  version: e35afe4991856b68a00b33a91cb22f2769cf6fcc
+  version: a970f2ced83cbff936614b53c7ca840e8ed9bcd4
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -202,7 +202,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
-  version: 50761b0867bd1d9d069276790bcd4a3bccf2324a
+  version: 69552e54d2a9d4c6a2438926a774930f7bc398ec
   subpackages:
   - oid
 - name: github.com/mailru/easyjson
@@ -300,7 +300,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: e6586c9293b9d514c7f5d5076731ec977cff1be6
+  version: bb4e0b1b53539118e8d3a704d31cb69a81a9c140
   subpackages:
   - gensupport
   - googleapi
