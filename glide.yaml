@@ -9,12 +9,16 @@ import:
   repo: https://github.com/appscode/stow.git
   version: master
   vcs: git
+- package: gopkg.in/robfig/cron.v2
+  repo: https://github.com/appscode/cron.git
+  version: v2
+  vcs: git
 - package: github.com/k8sdb/apimachinery
   version: release-0.3
 - package: github.com/k8sdb/elasticsearch
-  version: release-0.3
+  version: 0.3.1
 - package: github.com/k8sdb/postgres
-  version: release-0.3
+  version: 0.3.1
 - package: github.com/k8sdb/elasticsearch_exporter
   version: master
 - package: github.com/k8sdb/postgres_exporter
