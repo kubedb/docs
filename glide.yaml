@@ -14,11 +14,11 @@ import:
   version: v2
   vcs: git
 - package: github.com/k8sdb/apimachinery
-  version: release-0.3
+  version: master
 - package: github.com/k8sdb/elasticsearch
-  version: 0.3.1
+  version: master
 - package: github.com/k8sdb/postgres
-  version: 0.3.1
+  version: master
 - package: github.com/k8sdb/elasticsearch_exporter
   version: master
 - package: github.com/k8sdb/postgres_exporter
