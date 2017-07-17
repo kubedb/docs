@@ -46,8 +46,11 @@ BUILD_METADATA = libbuild.metadata(libbuild.REPO_ROOT)
 libbuild.BIN_MATRIX = {
     'operator': {
         'type': 'go',
-        'release': False,
-        'go_version': True
+        'go_version': True,
+        'use_cgo': False,
+        'distro': {
+            'alpine': ['amd64']
+        }
     }
 }
 libbuild.BUCKET_MATRIX = {
