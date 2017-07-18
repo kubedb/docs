@@ -22,7 +22,7 @@ const (
 	durationCheckStatefulSet = time.Minute * 30
 )
 
-func (c *Controller) findService(elastic *tapi.Elastic) (bool, error) {
+func (c *Controller) findService(elastic *tapi.Elasticsearch) (bool, error) {
 	name := elastic.OffshootName()
 	service, err := c.Client.CoreV1().Services(elastic.Namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
@@ -40,7 +40,7 @@ func (c *Controller) findService(elastic *tapi.Elastic) (bool, error) {
 	return true, nil
 }
 
-func (c *Controller) createService(elastic *tapi.Elastic) error {
+func (c *Controller) createService(elastic *tapi.Elasticsearch) error {
 	svc := &apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   elastic.Name,
@@ -79,7 +79,7 @@ func (c *Controller) createService(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) findStatefulSet(elastic *tapi.Elastic) (bool, error) {
+func (c *Controller) findStatefulSet(elastic *tapi.Elasticsearch) (bool, error) {
 	// SatatefulSet for Postgres database
 	statefulSet, err := c.Client.AppsV1beta1().StatefulSets(elastic.Namespace).Get(elastic.OffshootName(), metav1.GetOptions{})
 	if err != nil {
@@ -90,18 +90,18 @@ func (c *Controller) findStatefulSet(elastic *tapi.Elastic) (bool, error) {
 		}
 	}
 
-	if statefulSet.Labels[tapi.LabelDatabaseKind] != tapi.ResourceKindElastic {
+	if statefulSet.Labels[tapi.LabelDatabaseKind] != tapi.ResourceKindElasticsearch {
 		return false, fmt.Errorf(`Intended statefulSet "%v" already exists`, elastic.OffshootName())
 	}
 
 	return true, nil
 }
 
-func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*apps.StatefulSet, error) {
+func (c *Controller) createStatefulSet(elastic *tapi.Elasticsearch) (*apps.StatefulSet, error) {
 	dockerImage := fmt.Sprintf("%v:%v", docker.ImageElasticsearch, elastic.Spec.Version)
 	initContainerImage := fmt.Sprintf("%v:%v", docker.ImageElasticOperator, c.opt.DiscoveryTag)
 
-	// SatatefulSet for Elastic database
+	// SatatefulSet for Elasticsearch database
 	statefulSet := &apps.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        elastic.OffshootName(),
@@ -119,7 +119,7 @@ func (c *Controller) createStatefulSet(elastic *tapi.Elastic) (*apps.StatefulSet
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
 						{
-							Name:            tapi.ResourceNameElastic,
+							Name:            tapi.ResourceNameElasticsearch,
 							Image:           dockerImage,
 							ImagePullPolicy: apiv1.PullIfNotPresent,
 							Ports: []apiv1.ContainerPort{
@@ -270,13 +270,13 @@ func addDataVolume(statefulSet *apps.StatefulSet, storage *tapi.StorageSpec) {
 	}
 }
 
-func (c *Controller) createDormantDatabase(elastic *tapi.Elastic) (*tapi.DormantDatabase, error) {
+func (c *Controller) createDormantDatabase(elastic *tapi.Elasticsearch) (*tapi.DormantDatabase, error) {
 	dormantDb := &tapi.DormantDatabase{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      elastic.Name,
 			Namespace: elastic.Namespace,
 			Labels: map[string]string{
-				tapi.LabelDatabaseKind: tapi.ResourceKindElastic,
+				tapi.LabelDatabaseKind: tapi.ResourceKindElasticsearch,
 			},
 		},
 		Spec: tapi.DormantDatabaseSpec{
@@ -288,7 +288,7 @@ func (c *Controller) createDormantDatabase(elastic *tapi.Elastic) (*tapi.Dormant
 					Annotations: elastic.Annotations,
 				},
 				Spec: tapi.OriginSpec{
-					Elastic: &elastic.Spec,
+					Elasticsearch: &elastic.Spec,
 				},
 			},
 		},
@@ -296,8 +296,8 @@ func (c *Controller) createDormantDatabase(elastic *tapi.Elastic) (*tapi.Dormant
 	return c.ExtClient.DormantDatabases(dormantDb.Namespace).Create(dormantDb)
 }
 
-func (c *Controller) reCreateElastic(elastic *tapi.Elastic) error {
-	_elastic := &tapi.Elastic{
+func (c *Controller) reCreateElastic(elastic *tapi.Elasticsearch) error {
+	_elastic := &tapi.Elasticsearch{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        elastic.Name,
 			Namespace:   elastic.Namespace,
@@ -308,7 +308,7 @@ func (c *Controller) reCreateElastic(elastic *tapi.Elastic) error {
 		Status: elastic.Status,
 	}
 
-	if _, err := c.ExtClient.Elastics(_elastic.Namespace).Create(_elastic); err != nil {
+	if _, err := c.ExtClient.Elasticsearches(_elastic.Namespace).Create(_elastic); err != nil {
 		return err
 	}
 
@@ -320,7 +320,7 @@ const (
 	snapshotType_DumpRestore = "dump-restore"
 )
 
-func (c *Controller) createRestoreJob(elastic *tapi.Elastic, snapshot *tapi.Snapshot) (*batch.Job, error) {
+func (c *Controller) createRestoreJob(elastic *tapi.Elasticsearch, snapshot *tapi.Snapshot) (*batch.Job, error) {
 	databaseName := elastic.Name
 	jobName := snapshot.OffshootName()
 	jobLabel := map[string]string{

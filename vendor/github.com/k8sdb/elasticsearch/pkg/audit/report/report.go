@@ -22,10 +22,10 @@ func ExportReport(
 ) {
 	startTime := metav1.Now()
 
-	elastic, err := dbClient.Elastics(namespace).Get(kubedbName)
+	elastic, err := dbClient.Elasticsearches(namespace).Get(kubedbName)
 	if err != nil {
 		if kerr.IsNotFound(err) {
-			http.Error(w, fmt.Sprintf(`Elastic "%v" not found`, kubedbName), http.StatusNotFound)
+			http.Error(w, fmt.Sprintf(`Elasticsearch "%v" not found`, kubedbName), http.StatusNotFound)
 		} else {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
@@ -52,7 +52,7 @@ func ExportReport(
 		indices = append(indices, index)
 	}
 
-	esSummary := make(map[string]*tapi.ElasticSummary)
+	esSummary := make(map[string]*tapi.ElasticsearchSummary)
 	for _, index := range indices {
 		info, err := getDataFromIndex(client, index)
 		if err != nil {
@@ -68,7 +68,7 @@ func ExportReport(
 		TypeMeta:   elastic.TypeMeta,
 		ObjectMeta: elastic.ObjectMeta,
 		Summary: tapi.ReportSummary{
-			Elastic: esSummary,
+			Elasticsearch: esSummary,
 		},
 		Status: tapi.ReportStatus{
 			StartTime:      &startTime,

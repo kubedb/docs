@@ -33,7 +33,7 @@ func (c *Controller) ValidateSnapshot(snapshot *tapi.Snapshot) error {
 	}
 
 	labelMap := map[string]string{
-		tapi.LabelDatabaseKind:   tapi.ResourceKindElastic,
+		tapi.LabelDatabaseKind:   tapi.ResourceKindElasticsearch,
 		tapi.LabelDatabaseName:   snapshot.Spec.DatabaseName,
 		tapi.LabelSnapshotStatus: string(tapi.DatabasePhaseRunning),
 	}
@@ -65,7 +65,7 @@ func (c *Controller) ValidateSnapshot(snapshot *tapi.Snapshot) error {
 }
 
 func (c *Controller) GetDatabase(snapshot *tapi.Snapshot) (runtime.Object, error) {
-	return c.ExtClient.Elastics(snapshot.Namespace).Get(snapshot.Spec.DatabaseName)
+	return c.ExtClient.Elasticsearches(snapshot.Namespace).Get(snapshot.Spec.DatabaseName)
 }
 
 func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error) {
@@ -80,7 +80,7 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error)
 	if err != nil {
 		return nil, err
 	}
-	elastic, err := c.ExtClient.Elastics(snapshot.Namespace).Get(databaseName)
+	elastic, err := c.ExtClient.Elasticsearches(snapshot.Namespace).Get(databaseName)
 	if err != nil {
 		return nil, err
 	}

@@ -9,7 +9,7 @@ import (
 )
 
 func (c *Controller) Exists(om *metav1.ObjectMeta) (bool, error) {
-	if _, err := c.ExtClient.Elastics(om.Namespace).Get(om.Name); err != nil {
+	if _, err := c.ExtClient.Elasticsearches(om.Namespace).Get(om.Name); err != nil {
 		if !kerr.IsNotFound(err) {
 			return false, err
 		}
@@ -31,7 +31,7 @@ func (c *Controller) PauseDatabase(dormantDb *tapi.DormantDatabase) error {
 		return err
 	}
 
-	elastic := &tapi.Elastic{
+	elastic := &tapi.Elasticsearch{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      dormantDb.OffshootName(),
 			Namespace: dormantDb.Namespace,
@@ -47,7 +47,7 @@ func (c *Controller) PauseDatabase(dormantDb *tapi.DormantDatabase) error {
 func (c *Controller) WipeOutDatabase(dormantDb *tapi.DormantDatabase) error {
 	labelMap := map[string]string{
 		tapi.LabelDatabaseName: dormantDb.Name,
-		tapi.LabelDatabaseKind: tapi.ResourceKindElastic,
+		tapi.LabelDatabaseKind: tapi.ResourceKindElasticsearch,
 	}
 
 	labelSelector := labels.SelectorFromSet(labelMap)
@@ -67,15 +67,15 @@ func (c *Controller) WipeOutDatabase(dormantDb *tapi.DormantDatabase) error {
 func (c *Controller) ResumeDatabase(dormantDb *tapi.DormantDatabase) error {
 	origin := dormantDb.Spec.Origin
 	objectMeta := origin.ObjectMeta
-	elastic := &tapi.Elastic{
+	elastic := &tapi.Elasticsearch{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        objectMeta.Name,
 			Namespace:   objectMeta.Namespace,
 			Labels:      objectMeta.Labels,
 			Annotations: objectMeta.Annotations,
 		},
-		Spec: *origin.Spec.Elastic,
+		Spec: *origin.Spec.Elasticsearch,
 	}
-	_, err := c.ExtClient.Elastics(elastic.Namespace).Create(elastic)
+	_, err := c.ExtClient.Elasticsearches(elastic.Namespace).Create(elastic)
 	return err
 }

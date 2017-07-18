@@ -17,21 +17,21 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func (c *Controller) create(elastic *tapi.Elastic) error {
+func (c *Controller) create(elastic *tapi.Elasticsearch) error {
 	var err error
-	if elastic, err = c.ExtClient.Elastics(elastic.Namespace).Get(elastic.Name); err != nil {
+	if elastic, err = c.ExtClient.Elasticsearches(elastic.Namespace).Get(elastic.Name); err != nil {
 		return err
 	}
 
 	t := metav1.Now()
 	elastic.Status.CreationTime = &t
 	elastic.Status.Phase = tapi.DatabasePhaseCreating
-	if _, err = c.ExtClient.Elastics(elastic.Namespace).Update(elastic); err != nil {
+	if _, err = c.ExtClient.Elasticsearches(elastic.Namespace).Update(elastic); err != nil {
 		c.eventRecorder.Eventf(
 			elastic,
 			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
-			`Fail to update Elastic: "%v". Reason: %v`,
+			`Fail to update Elasticsearch: "%v". Reason: %v`,
 			elastic.Name,
 			err,
 		)
@@ -52,7 +52,7 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 		elastic,
 		apiv1.EventTypeNormal,
 		eventer.EventReasonSuccessfulValidate,
-		"Successfully validate Elastic",
+		"Successfully validate Elasticsearch",
 	)
 
 	// Check DormantDatabase
@@ -91,7 +91,7 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 		elastic,
 		apiv1.EventTypeNormal,
 		eventer.EventReasonSuccessfulCreate,
-		"Successfully created Elastic",
+		"Successfully created Elasticsearch",
 	)
 
 	// Ensure Schedule backup
@@ -119,7 +119,7 @@ func (c *Controller) create(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) findDormantDatabase(elastic *tapi.Elastic) error {
+func (c *Controller) findDormantDatabase(elastic *tapi.Elasticsearch) error {
 	// Check if DormantDatabase exists or not
 	dormantDb, err := c.ExtClient.DormantDatabases(elastic.Namespace).Get(elastic.Name)
 	if err != nil {
@@ -136,8 +136,8 @@ func (c *Controller) findDormantDatabase(elastic *tapi.Elastic) error {
 		}
 	} else {
 		var message string
-		if dormantDb.Labels[tapi.LabelDatabaseKind] != tapi.ResourceKindElastic {
-			message = fmt.Sprintf(`Invalid Elastic: "%v". Exists DormantDatabase "%v" of different Kind`,
+		if dormantDb.Labels[tapi.LabelDatabaseKind] != tapi.ResourceKindElasticsearch {
+			message = fmt.Sprintf(`Invalid Elasticsearch: "%v". Exists DormantDatabase "%v" of different Kind`,
 				elastic.Name, dormantDb.Name)
 		} else {
 			message = fmt.Sprintf(`Recover from DormantDatabase: "%v"`, dormantDb.Name)
@@ -153,7 +153,7 @@ func (c *Controller) findDormantDatabase(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) ensureService(elastic *tapi.Elastic) error {
+func (c *Controller) ensureService(elastic *tapi.Elasticsearch) error {
 	// Check if service name exists
 	found, err := c.findService(elastic)
 	if err != nil {
@@ -177,7 +177,7 @@ func (c *Controller) ensureService(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) ensureStatefulSet(elastic *tapi.Elastic) error {
+func (c *Controller) ensureStatefulSet(elastic *tapi.Elasticsearch) error {
 	found, err := c.findStatefulSet(elastic)
 	if err != nil {
 		return err
@@ -186,7 +186,7 @@ func (c *Controller) ensureStatefulSet(elastic *tapi.Elastic) error {
 		return nil
 	}
 
-	// Create statefulSet for Elastic database
+	// Create statefulSet for Elasticsearch database
 	statefulSet, err := c.createStatefulSet(elastic)
 	if err != nil {
 		c.eventRecorder.Eventf(
@@ -221,17 +221,17 @@ func (c *Controller) ensureStatefulSet(elastic *tapi.Elastic) error {
 	}
 
 	if elastic.Spec.Init != nil && elastic.Spec.Init.SnapshotSource != nil {
-		if elastic, err = c.ExtClient.Elastics(elastic.Namespace).Get(elastic.Name); err != nil {
+		if elastic, err = c.ExtClient.Elasticsearches(elastic.Namespace).Get(elastic.Name); err != nil {
 			return err
 		}
 
 		elastic.Status.Phase = tapi.DatabasePhaseInitializing
-		if _, err = c.ExtClient.Elastics(elastic.Namespace).Update(elastic); err != nil {
+		if _, err = c.ExtClient.Elasticsearches(elastic.Namespace).Update(elastic); err != nil {
 			c.eventRecorder.Eventf(
 				elastic,
 				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToUpdate,
-				`Fail to update Elastic: "%v". Reason: %v`,
+				`Fail to update Elasticsearch: "%v". Reason: %v`,
 				elastic.Name,
 				err,
 			)
@@ -249,17 +249,17 @@ func (c *Controller) ensureStatefulSet(elastic *tapi.Elastic) error {
 		}
 	}
 
-	if elastic, err = c.ExtClient.Elastics(elastic.Namespace).Get(elastic.Name); err != nil {
+	if elastic, err = c.ExtClient.Elasticsearches(elastic.Namespace).Get(elastic.Name); err != nil {
 		return err
 	}
 
 	elastic.Status.Phase = tapi.DatabasePhaseRunning
-	if _, err = c.ExtClient.Elastics(elastic.Namespace).Update(elastic); err != nil {
+	if _, err = c.ExtClient.Elasticsearches(elastic.Namespace).Update(elastic); err != nil {
 		c.eventRecorder.Eventf(
 			elastic,
 			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
-			`Failed to update Elastic: "%v". Reason: %v`,
+			`Failed to update Elasticsearch: "%v". Reason: %v`,
 			elastic.Name,
 			err,
 		)
@@ -269,7 +269,7 @@ func (c *Controller) ensureStatefulSet(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) ensureBackupScheduler(elastic *tapi.Elastic) {
+func (c *Controller) ensureBackupScheduler(elastic *tapi.Elasticsearch) {
 	// Setup Schedule backup
 	if elastic.Spec.BackupSchedule != nil {
 		err := c.cronController.ScheduleBackup(elastic, elastic.ObjectMeta, elastic.Spec.BackupSchedule)
@@ -292,7 +292,7 @@ const (
 	durationCheckRestoreJob = time.Minute * 30
 )
 
-func (c *Controller) initialize(elastic *tapi.Elastic) error {
+func (c *Controller) initialize(elastic *tapi.Elasticsearch) error {
 	snapshotSource := elastic.Spec.Init.SnapshotSource
 	// Event for notification that kubernetes objects are creating
 	c.eventRecorder.Eventf(
@@ -345,15 +345,15 @@ func (c *Controller) initialize(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) pause(elastic *tapi.Elastic) error {
-	c.eventRecorder.Event(elastic, apiv1.EventTypeNormal, eventer.EventReasonPausing, "Pausing Elastic")
+func (c *Controller) pause(elastic *tapi.Elasticsearch) error {
+	c.eventRecorder.Event(elastic, apiv1.EventTypeNormal, eventer.EventReasonPausing, "Pausing Elasticsearch")
 
 	if elastic.Spec.DoNotPause {
 		c.eventRecorder.Eventf(
 			elastic,
 			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToPause,
-			`Elastic "%v" is locked.`,
+			`Elasticsearch "%v" is locked.`,
 			elastic.Name,
 		)
 
@@ -362,7 +362,7 @@ func (c *Controller) pause(elastic *tapi.Elastic) error {
 				elastic,
 				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToCreate,
-				`Failed to recreate Elastic: "%v". Reason: %v`,
+				`Failed to recreate Elasticsearch: "%v". Reason: %v`,
 				elastic.Name,
 				err,
 			)
@@ -414,7 +414,7 @@ func (c *Controller) pause(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) update(oldElastic, updatedElastic *tapi.Elastic) error {
+func (c *Controller) update(oldElastic, updatedElastic *tapi.Elasticsearch) error {
 
 	if err := validator.ValidateElastic(c.Client, updatedElastic); err != nil {
 		c.eventRecorder.Event(updatedElastic, apiv1.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
@@ -425,7 +425,7 @@ func (c *Controller) update(oldElastic, updatedElastic *tapi.Elastic) error {
 		updatedElastic,
 		apiv1.EventTypeNormal,
 		eventer.EventReasonSuccessfulValidate,
-		"Successfully validate Elastic",
+		"Successfully validate Elasticsearch",
 	)
 
 	// Check DormantDatabase

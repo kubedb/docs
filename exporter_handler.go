@@ -98,7 +98,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
 		return
-	case tapi.ResourceTypeElastic:
+	case tapi.ResourceTypeElasticsearch:
 		logger := log.NewLogfmtLogger(log.NewSyncWriter(os.Stdout))
 		var reg *prometheus.Registry
 		if val, ok := registerers.Get(r.URL.Path); ok {
@@ -110,7 +110,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg = r2.(*prometheus.Registry)
 			} else {
 				plog.Infof("Configuring exporter for Elasticsearch %s in namespace %s", dbName, namespace)
-				_, err := dbClient.Elastics(namespace).Get(dbName)
+				_, err := dbClient.Elasticsearches(namespace).Get(dbName)
 				if kerr.IsNotFound(err) {
 					http.NotFound(w, r)
 					return

@@ -154,7 +154,7 @@ func (c *SnapshotController) create(snapshot *tapi.Snapshot) error {
 			snapshot,
 			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
-			`Fail to update Elastic: "%v". Reason: %v`,
+			`Fail to update Elasticsearch: "%v". Reason: %v`,
 			snapshot.Name,
 			err,
 		)

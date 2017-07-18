@@ -8,7 +8,7 @@ import (
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
 )
 
-func (c *Controller) deleteRole(elastic *tapi.Elastic) error {
+func (c *Controller) deleteRole(elastic *tapi.Elasticsearch) error {
 	// Delete existing Roles
 	if err := c.Client.RbacV1beta1().Roles(elastic.Namespace).Delete(elastic.OffshootName(), nil); err != nil {
 		if !kerr.IsNotFound(err) {
@@ -18,7 +18,7 @@ func (c *Controller) deleteRole(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) createRole(elastic *tapi.Elastic) error {
+func (c *Controller) createRole(elastic *tapi.Elasticsearch) error {
 	// Create new Roles
 	role := &rbac.Role{
 		ObjectMeta: metav1.ObjectMeta{
@@ -28,7 +28,7 @@ func (c *Controller) createRole(elastic *tapi.Elastic) error {
 		Rules: []rbac.PolicyRule{
 			{
 				APIGroups:     []string{tapi.GroupName},
-				Resources:     []string{tapi.ResourceTypeElastic},
+				Resources:     []string{tapi.ResourceTypeElasticsearch},
 				ResourceNames: []string{elastic.Name},
 				Verbs:         []string{"get"},
 			},
@@ -46,7 +46,7 @@ func (c *Controller) createRole(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) deleteServiceAccount(elastic *tapi.Elastic) error {
+func (c *Controller) deleteServiceAccount(elastic *tapi.Elasticsearch) error {
 	// Delete existing ServiceAccount
 	if err := c.Client.CoreV1().ServiceAccounts(elastic.Namespace).Delete(elastic.OffshootName(), nil); err != nil {
 		if !kerr.IsNotFound(err) {
@@ -56,7 +56,7 @@ func (c *Controller) deleteServiceAccount(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) createServiceAccount(elastic *tapi.Elastic) error {
+func (c *Controller) createServiceAccount(elastic *tapi.Elasticsearch) error {
 	// Create new ServiceAccount
 	sa := &apiv1.ServiceAccount{
 		ObjectMeta: metav1.ObjectMeta{
@@ -71,7 +71,7 @@ func (c *Controller) createServiceAccount(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) deleteRoleBinding(elastic *tapi.Elastic) error {
+func (c *Controller) deleteRoleBinding(elastic *tapi.Elasticsearch) error {
 	// Delete existing RoleBindings
 	if err := c.Client.RbacV1beta1().RoleBindings(elastic.Namespace).Delete(elastic.OffshootName(), nil); err != nil {
 		if !kerr.IsNotFound(err) {
@@ -81,7 +81,7 @@ func (c *Controller) deleteRoleBinding(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) createRoleBinding(elastic *tapi.Elastic) error {
+func (c *Controller) createRoleBinding(elastic *tapi.Elasticsearch) error {
 	// Create new RoleBindings
 	roleBinding := &rbac.RoleBinding{
 		ObjectMeta: metav1.ObjectMeta{
@@ -108,7 +108,7 @@ func (c *Controller) createRoleBinding(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) createRBACStuff(elastic *tapi.Elastic) error {
+func (c *Controller) createRBACStuff(elastic *tapi.Elasticsearch) error {
 	// Delete Existing Role
 	if err := c.deleteRole(elastic); err != nil {
 		return err
@@ -135,7 +135,7 @@ func (c *Controller) createRBACStuff(elastic *tapi.Elastic) error {
 	return nil
 }
 
-func (c *Controller) deleteRBACStuff(elastic *tapi.Elastic) error {
+func (c *Controller) deleteRBACStuff(elastic *tapi.Elasticsearch) error {
 	// Delete Existing Role
 	if err := c.deleteRole(elastic); err != nil {
 		return err

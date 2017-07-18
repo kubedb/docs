@@ -42,7 +42,7 @@ func ExportSummaryReport(w http.ResponseWriter, r *http.Request) {
 	switch kubedbType {
 	case tapi.ResourceTypePostgres:
 		pgaudit.ExportReport(kubeClient, dbClient, namespace, kubedbName, index, w)
-	case tapi.ResourceTypeElastic:
+	case tapi.ResourceTypeElasticsearch:
 		esaudit.ExportReport(kubeClient, dbClient, namespace, kubedbName, index, w)
 	default:
 		http.Error(w, fmt.Sprintf(`Invalid kubedb type "%v"`, kubedbType), http.StatusBadRequest)

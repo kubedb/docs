@@ -75,24 +75,24 @@ func New(
 		},
 		promClient:     promClient,
 		cronController: cronController,
-		eventRecorder:  eventer.NewEventRecorder(client, "Elastic operator"),
+		eventRecorder:  eventer.NewEventRecorder(client, "Elasticsearch operator"),
 		opt:            opt,
 		syncPeriod:     time.Minute * 2,
 	}
 }
 
 func (c *Controller) Run() {
-	// Ensure Elastic TPR
+	// Ensure Elasticsearch TPR
 	c.ensureThirdPartyResource()
 
 	// Start Cron
 	c.cronController.StartCron()
 
-	// Watch Elastic TPR objects
+	// Watch Elasticsearch TPR objects
 	go c.watchElastic()
-	// Watch Snapshot with labelSelector only for Elastic
+	// Watch Snapshot with labelSelector only for Elasticsearch
 	go c.watchSnapshot()
-	// Watch DormantDatabase with labelSelector only for Elastic
+	// Watch DormantDatabase with labelSelector only for Elasticsearch
 	go c.watchDormantDatabase()
 }
 
@@ -114,20 +114,20 @@ func (c *Controller) RunAndHold() {
 func (c *Controller) watchElastic() {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.Elastics(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return c.ExtClient.Elasticsearches(apiv1.NamespaceAll).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.Elastics(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return c.ExtClient.Elasticsearches(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
 
 	_, cacheController := cache.NewInformer(
 		lw,
-		&tapi.Elastic{},
+		&tapi.Elasticsearch{},
 		c.syncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				elastic := obj.(*tapi.Elastic)
+				elastic := obj.(*tapi.Elasticsearch)
 				if elastic.Status.CreationTime == nil {
 					if err := c.create(elastic); err != nil {
 						elasticFailedToCreate()
@@ -139,7 +139,7 @@ func (c *Controller) watchElastic() {
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
-				if err := c.pause(obj.(*tapi.Elastic)); err != nil {
+				if err := c.pause(obj.(*tapi.Elasticsearch)); err != nil {
 					elasticFailedToDelete()
 					log.Errorln(err)
 				} else {
@@ -147,11 +147,11 @@ func (c *Controller) watchElastic() {
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
-				oldObj, ok := old.(*tapi.Elastic)
+				oldObj, ok := old.(*tapi.Elasticsearch)
 				if !ok {
 					return
 				}
-				newObj, ok := new.(*tapi.Elastic)
+				newObj, ok := new.(*tapi.Elasticsearch)
 				if !ok {
 					return
 				}
@@ -168,7 +168,7 @@ func (c *Controller) watchElastic() {
 
 func (c *Controller) watchSnapshot() {
 	labelMap := map[string]string{
-		tapi.LabelDatabaseKind: tapi.ResourceKindElastic,
+		tapi.LabelDatabaseKind: tapi.ResourceKindElasticsearch,
 	}
 	// Watch with label selector
 	lw := &cache.ListWatch{
@@ -191,7 +191,7 @@ func (c *Controller) watchSnapshot() {
 
 func (c *Controller) watchDormantDatabase() {
 	labelMap := map[string]string{
-		tapi.LabelDatabaseKind: tapi.ResourceKindElastic,
+		tapi.LabelDatabaseKind: tapi.ResourceKindElasticsearch,
 	}
 	// Watch with label selector
 	lw := &cache.ListWatch{
@@ -215,7 +215,7 @@ func (c *Controller) watchDormantDatabase() {
 func (c *Controller) ensureThirdPartyResource() {
 	log.Infoln("Ensuring ThirdPartyResource...")
 
-	resourceName := tapi.ResourceNameElastic + "." + tapi.V1alpha1SchemeGroupVersion.Group
+	resourceName := tapi.ResourceNameElasticsearch + "." + tapi.V1alpha1SchemeGroupVersion.Group
 
 	if _, err := c.Client.ExtensionsV1beta1().ThirdPartyResources().Get(resourceName, metav1.GetOptions{}); err != nil {
 		if !kerr.IsNotFound(err) {
@@ -249,25 +249,25 @@ func (c *Controller) ensureThirdPartyResource() {
 	}
 }
 
-func (c *Controller) pushFailureEvent(elastic *tapi.Elastic, reason string) {
+func (c *Controller) pushFailureEvent(elastic *tapi.Elasticsearch, reason string) {
 	c.eventRecorder.Eventf(
 		elastic,
 		apiv1.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
-		`Fail to be ready Elastic: "%v". Reason: %v`,
+		`Fail to be ready Elasticsearch: "%v". Reason: %v`,
 		elastic.Name,
 		reason,
 	)
 
 	var err error
-	if elastic, err = c.ExtClient.Elastics(elastic.Namespace).Get(elastic.Name); err != nil {
+	if elastic, err = c.ExtClient.Elasticsearches(elastic.Namespace).Get(elastic.Name); err != nil {
 		log.Errorln(err)
 		return
 	}
 
 	elastic.Status.Phase = tapi.DatabasePhaseFailed
 	elastic.Status.Reason = reason
-	if _, err := c.ExtClient.Elastics(elastic.Namespace).Update(elastic); err != nil {
+	if _, err := c.ExtClient.Elasticsearches(elastic.Namespace).Update(elastic); err != nil {
 		c.eventRecorder.Eventf(
 			elastic,
 			apiv1.EventTypeWarning,
@@ -281,17 +281,17 @@ func (c *Controller) pushFailureEvent(elastic *tapi.Elastic, reason string) {
 }
 
 func elasticSuccessfullyCreated() {
-	analytics.SendEvent(tapi.ResourceNameElastic, "created", "success")
+	analytics.SendEvent(tapi.ResourceNameElasticsearch, "created", "success")
 }
 
 func elasticFailedToCreate() {
-	analytics.SendEvent(tapi.ResourceNameElastic, "created", "failure")
+	analytics.SendEvent(tapi.ResourceNameElasticsearch, "created", "failure")
 }
 
 func elasticSuccessfullyDeleted() {
-	analytics.SendEvent(tapi.ResourceNameElastic, "deleted", "success")
+	analytics.SendEvent(tapi.ResourceNameElasticsearch, "deleted", "success")
 }
 
 func elasticFailedToDelete() {
-	analytics.SendEvent(tapi.ResourceNameElastic, "deleted", "failure")
+	analytics.SendEvent(tapi.ResourceNameElasticsearch, "deleted", "failure")
 }
