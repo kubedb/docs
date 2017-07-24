@@ -1,5 +1,5 @@
-hash: c555c94b8bbeb42cb2367c537c44c8d126cac2f4c637eb8c344754d6c1447f6a
-updated: 2017-07-24T11:54:04.246191192+06:00
+hash: a73738d0683b8edcda308cb9a474e21857f5e6f26e6833777807c75327893514
+updated: 2017-07-24T01:00:04.084435579-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -112,7 +112,7 @@ imports:
 - name: github.com/go-openapi/swag
   version: 1d0bd113de87027671077d3c71eb3ac5d7dbba72
 - name: github.com/go-stack/stack
-  version: 817915b46b97fd7bb80e8ab6b69f01a53ac3eebf
+  version: 7a2f19628aabfe68f0766b59e74d6315f8347d22
 - name: github.com/go-xorm/builder
   version: db75972580de4a7c6c20fff5b16a924c3de3fa12
 - name: github.com/go-xorm/core
@@ -167,7 +167,7 @@ imports:
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/k8sdb/apimachinery
-  version: 9779c37a5e2482199bd64a3557f21f2d3f980761
+  version: bf1f68184d0f6038aebe303fc09f48c9dd54245b
   subpackages:
   - api
   - api/install
@@ -180,7 +180,7 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/k8sdb/elasticsearch
-  version: 44c28fb6df17fca314d5c2bfe668a62f807fb865
+  version: 05ab3eaffce67b74493cc85da874f956b297b0ee
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -190,7 +190,7 @@ imports:
   subpackages:
   - collector
 - name: github.com/k8sdb/postgres
-  version: 80883e4a7a88de23c9e8af6475f7797560dc8d6b
+  version: 48ce3c1cd6df21f1c97607d0838f70c4c256cad0
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -202,7 +202,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/lib/pq
-  version: 50761b0867bd1d9d069276790bcd4a3bccf2324a
+  version: 69552e54d2a9d4c6a2438926a774930f7bc398ec
   subpackages:
   - oid
 - name: github.com/mailru/easyjson
@@ -252,7 +252,7 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: 4b6ea7319e214d98c938f12692336f7ca9348d6b
 - name: github.com/spf13/cobra
-  version: f20b4e9c32bb3e9d44773ca208db814f24dcd21b
+  version: 90fc11bbc0a789c29272c21b5ff9e93db183f8dc
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 - name: github.com/ugorji/go
@@ -337,7 +337,7 @@ imports:
   repo: https://github.com/appscode/cron.git
   vcs: git
 - name: gopkg.in/yaml.v2
-  version: 1be3d31502d6eabc0dd7ce5b0daab022e14a5538
+  version: 25c4ec802a7d637f88d584ab26798e94ad14c13b
 - name: k8s.io/apimachinery
   version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
   subpackages:
