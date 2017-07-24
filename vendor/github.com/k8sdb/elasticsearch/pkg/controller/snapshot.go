@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/appscode/log"
 	tapi "github.com/k8sdb/apimachinery/api"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/storage"
@@ -165,23 +166,30 @@ func (c *Controller) WipeOutSnapshot(snapshot *tapi.Snapshot) error {
 	return c.DeleteSnapshotData(snapshot)
 }
 
-func (c *Controller) getVolumeForSnapshot(storage *tapi.StorageSpec, jobName, namespace string) (*apiv1.Volume, error) {
+func (c *Controller) getVolumeForSnapshot(pvcSpec *apiv1.PersistentVolumeClaimSpec, jobName, namespace string) (*apiv1.Volume, error) {
 	volume := &apiv1.Volume{
 		Name: "util-volume",
 	}
-	if storage != nil {
+	if pvcSpec != nil {
+		if len(pvcSpec.AccessModes) == 0 {
+			pvcSpec.AccessModes = []apiv1.PersistentVolumeAccessMode{
+				apiv1.ReadWriteOnce,
+			}
+			log.Infof(`Using "%v" as AccessModes in "%v"`, apiv1.ReadWriteOnce, *pvcSpec)
+		}
+
 		claim := &apiv1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      jobName,
 				Namespace: namespace,
 				Annotations: map[string]string{
-					"volume.beta.kubernetes.io/storage-class": storage.Class,
+					"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
 				},
 			},
-			Spec: storage.PersistentVolumeClaimSpec,
+			Spec: *pvcSpec,
 		}
 
-		if _, err := c.Client.Core().PersistentVolumeClaims(claim.Namespace).Create(claim); err != nil {
+		if _, err := c.Client.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(claim); err != nil {
 			return nil, err
 		}
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/types"
+	"github.com/appscode/log"
 	tapi "github.com/k8sdb/apimachinery/api"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/storage"
@@ -270,20 +271,25 @@ func addSecretVolume(statefulSet *apps.StatefulSet, secretVolume *apiv1.SecretVo
 	return nil
 }
 
-func addDataVolume(statefulSet *apps.StatefulSet, storage *tapi.StorageSpec) {
-	if storage != nil {
+func addDataVolume(statefulSet *apps.StatefulSet, pvcSpec *apiv1.PersistentVolumeClaimSpec) {
+	if pvcSpec != nil {
+		if len(pvcSpec.AccessModes) == 0 {
+			pvcSpec.AccessModes = []apiv1.PersistentVolumeAccessMode{
+				apiv1.ReadWriteOnce,
+			}
+			log.Infof(`Using "%v" as AccessModes in "%v"`, apiv1.ReadWriteOnce, *pvcSpec)
+		}
 		// volume claim templates
 		// Dynamically attach volume
-		storageClassName := storage.Class
 		statefulSet.Spec.VolumeClaimTemplates = []apiv1.PersistentVolumeClaim{
 			{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "data",
 					Annotations: map[string]string{
-						"volume.beta.kubernetes.io/storage-class": storageClassName,
+						"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
 					},
 				},
-				Spec: storage.PersistentVolumeClaimSpec,
+				Spec: *pvcSpec,
 			},
 		}
 	} else {
