@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"errors"
+
 	"github.com/appscode/log"
 	tapi "github.com/k8sdb/apimachinery/api"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -67,6 +69,11 @@ func (c *Controller) WipeOutDatabase(dormantDb *tapi.DormantDatabase) error {
 func (c *Controller) ResumeDatabase(dormantDb *tapi.DormantDatabase) error {
 	origin := dormantDb.Spec.Origin
 	objectMeta := origin.ObjectMeta
+
+	if origin.Spec.Postgres.Init != nil {
+		return errors.New("Do not support InitSpec in spec.origin.postgres")
+	}
+
 	elastic := &tapi.Elasticsearch{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        objectMeta.Name,
@@ -76,6 +83,15 @@ func (c *Controller) ResumeDatabase(dormantDb *tapi.DormantDatabase) error {
 		},
 		Spec: *origin.Spec.Elasticsearch,
 	}
+
+	if elastic.Annotations == nil {
+		elastic.Annotations = make(map[string]string)
+	}
+
+	for key, val := range dormantDb.Annotations {
+		elastic.Annotations[key] = val
+	}
+
 	_, err := c.ExtClient.Elasticsearches(elastic.Namespace).Create(elastic)
 	return err
 }

@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/appscode/log"
@@ -10,7 +9,6 @@ import (
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	amv "github.com/k8sdb/apimachinery/pkg/validator"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	batch "k8s.io/client-go/pkg/apis/batch/v1"
@@ -33,40 +31,19 @@ func (c *Controller) ValidateSnapshot(snapshot *tapi.Snapshot) error {
 		return fmt.Errorf(`Image %v:%v not found`, docker.ImageElasticdump, c.opt.ElasticDumpTag)
 	}
 
-	labelMap := map[string]string{
-		tapi.LabelDatabaseKind:   tapi.ResourceKindElasticsearch,
-		tapi.LabelDatabaseName:   snapshot.Spec.DatabaseName,
-		tapi.LabelSnapshotStatus: string(tapi.DatabasePhaseRunning),
-	}
-
-	snapshotList, err := c.ExtClient.Snapshots(snapshot.Namespace).List(metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(labelMap).String(),
-	})
-	if err != nil {
+	if _, err := c.ExtClient.Elasticsearches(snapshot.Namespace).Get(databaseName); err != nil {
 		return err
-	}
-
-	if len(snapshotList.Items) > 0 {
-		if snapshot, err = c.ExtClient.Snapshots(snapshot.Namespace).Get(snapshot.Name); err != nil {
-			return err
-		}
-
-		t := metav1.Now()
-		snapshot.Status.StartTime = &t
-		snapshot.Status.CompletionTime = &t
-		snapshot.Status.Phase = tapi.SnapshotPhaseFailed
-		snapshot.Status.Reason = "One Snapshot is already Running"
-		if _, err := c.ExtClient.Snapshots(snapshot.Namespace).Update(snapshot); err != nil {
-			return err
-		}
-		return errors.New("One Snapshot is already Running")
 	}
 
 	return amv.ValidateSnapshotSpec(c.Client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)
 }
 
 func (c *Controller) GetDatabase(snapshot *tapi.Snapshot) (runtime.Object, error) {
-	return c.ExtClient.Elasticsearches(snapshot.Namespace).Get(snapshot.Spec.DatabaseName)
+	elasticsearch, err := c.ExtClient.Elasticsearches(snapshot.Namespace).Get(snapshot.Spec.DatabaseName)
+	if err != nil {
+		return nil, err
+	}
+	return elasticsearch, nil
 }
 
 func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error) {

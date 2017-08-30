@@ -4,7 +4,7 @@ import:
 - package: github.com/appscode/log
 - package: github.com/appscode/pat
 - package: github.com/coreos/prometheus-operator
-  version: v0.10.1
+  version: v0.12.0
 - package: github.com/graymeta/stow
   repo: https://github.com/appscode/stow.git
   vcs: git
@@ -14,18 +14,18 @@ import:
   vcs: git
   version: v2
 - package: github.com/k8sdb/apimachinery
-  version: master
+  version: crd
 - package: github.com/k8sdb/elasticsearch
-  version: master
+  version: crd
 - package: github.com/k8sdb/postgres
-  version: master
+  version: crd
 - package: github.com/k8sdb/elasticsearch_exporter
   version: master
 - package: github.com/k8sdb/postgres_exporter
   version: master
 - package: github.com/orcaman/concurrent-map
 - package: github.com/prometheus/client_golang
-  version: v0.8.0
+  version: e7e903064f5e9eb5da98208bae10b475d4db0f8c
 - package: github.com/prometheus/common
   version: 13ba4ddd0caa9c28ca7b7bffe1dfa9ed8d5ef207
 - package: github.com/spf13/cobra
@@ -35,9 +35,11 @@ import:
 - package: gopkg.in/ini.v1
   version: v1.28.0
 - package: k8s.io/apimachinery
-  version: 75b8dd260ef0469d96d578705a87cffd0e09dab8
+  version: 1fd2e63a9a370677308a42f24fd40c86438afddf
 - package: k8s.io/client-go
-  version: v3.0.0-beta.0
+  version: v4.0.0
+- package: k8s.io/apiextensions-apiserver
+  version: 5fa44608f6b9b2180a2fd1ecb52e651fd0397794
 testImport:
 - package: github.com/stretchr/testify
   version: v1.1.4

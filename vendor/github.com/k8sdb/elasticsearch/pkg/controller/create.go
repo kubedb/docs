@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -81,7 +82,7 @@ func (c *Controller) createService(elastic *tapi.Elasticsearch) error {
 }
 
 func (c *Controller) findStatefulSet(elastic *tapi.Elasticsearch) (bool, error) {
-	// SatatefulSet for Postgres database
+	// SatatefulSet for Elasticsearch database
 	statefulSet, err := c.Client.AppsV1beta1().StatefulSets(elastic.Namespace).Get(elastic.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
@@ -299,6 +300,15 @@ func (c *Controller) createDormantDatabase(elastic *tapi.Elasticsearch) (*tapi.D
 			},
 		},
 	}
+
+	initSpec, _ := json.Marshal(elastic.Spec.Init)
+	if initSpec != nil {
+		dormantDb.Annotations = map[string]string{
+			tapi.ElasticsearchInitSpec: string(initSpec),
+		}
+	}
+	dormantDb.Spec.Origin.Spec.Elasticsearch.Init = nil
+
 	return c.ExtClient.DormantDatabases(dormantDb.Namespace).Create(dormantDb)
 }
 

@@ -11,17 +11,18 @@ import (
 	tcs "github.com/k8sdb/apimachinery/client/clientset"
 	"github.com/k8sdb/apimachinery/pkg/analytics"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
+	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
 
 type Deleter interface {
-	// Check Database TPR
+	// Check Database CRD
 	Exists(*metav1.ObjectMeta) (bool, error)
 	// Pause operation
 	PauseDatabase(*tapi.DormantDatabase) error
@@ -34,6 +35,8 @@ type Deleter interface {
 type DormantDbController struct {
 	// Kubernetes client
 	client clientset.Interface
+	// Api Extension Client
+	apiExtKubeClient apiextensionsclient.Interface
 	// ThirdPartyExtension client
 	extClient tcs.ExtensionInterface
 	// Deleter interface
@@ -49,6 +52,7 @@ type DormantDbController struct {
 // NewDormantDbController creates a new DormantDatabase Controller
 func NewDormantDbController(
 	client clientset.Interface,
+	apiExtKubeClient apiextensionsclient.Interface,
 	extClient tcs.ExtensionInterface,
 	deleter Deleter,
 	lw *cache.ListWatch,
@@ -56,54 +60,55 @@ func NewDormantDbController(
 ) *DormantDbController {
 	// return new DormantDatabase Controller
 	return &DormantDbController{
-		client:        client,
-		extClient:     extClient,
-		deleter:       deleter,
-		lw:            lw,
-		eventRecorder: eventer.NewEventRecorder(client, "DormantDatabase Controller"),
-		syncPeriod:    syncPeriod,
+		client:           client,
+		apiExtKubeClient: apiExtKubeClient,
+		extClient:        extClient,
+		deleter:          deleter,
+		lw:               lw,
+		eventRecorder:    eventer.NewEventRecorder(client, "DormantDatabase Controller"),
+		syncPeriod:       syncPeriod,
 	}
 }
 
 func (c *DormantDbController) Run() {
-	// Ensure DormantDatabase TPR
-	c.ensureThirdPartyResource()
+	// Ensure DormantDatabase CRD
+	c.ensureCustomResourceDefinition()
 	// Watch DormantDatabase with provided ListerWatcher
 	c.watch()
 }
 
-// Ensure DormantDatabase ThirdPartyResource
-func (c *DormantDbController) ensureThirdPartyResource() {
-	log.Infoln("Ensuring DormantDatabase ThirdPartyResource")
+// Ensure DormantDatabase CustomResourceDefinition
+func (c *DormantDbController) ensureCustomResourceDefinition() {
+	log.Infoln("Ensuring DormantDatabase CustomResourceDefinition")
 
-	resourceName := tapi.ResourceNameDormantDatabase + "." + tapi.V1alpha1SchemeGroupVersion.Group
+	resourceName := tapi.ResourceTypeDormantDatabase + "." + tapi.V1alpha1SchemeGroupVersion.Group
 	var err error
-	if _, err = c.client.ExtensionsV1beta1().ThirdPartyResources().Get(resourceName, metav1.GetOptions{}); err == nil {
+	if _, err = c.apiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err == nil {
 		return
 	}
 	if !kerr.IsNotFound(err) {
 		log.Fatalln(err)
 	}
 
-	thirdPartyResource := &extensions.ThirdPartyResource{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "extensions/v1beta1",
-			Kind:       "ThirdPartyResource",
-		},
+	crd := &extensionsobj.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: resourceName,
 			Labels: map[string]string{
 				"app": "kubedb",
 			},
 		},
-		Description: "Dormant KubeDB databases",
-		Versions: []extensions.APIVersion{
-			{
-				Name: tapi.V1alpha1SchemeGroupVersion.Version,
+		Spec: extensionsobj.CustomResourceDefinitionSpec{
+			Group:   tapi.V1alpha1SchemeGroupVersion.Group,
+			Version: tapi.V1alpha1SchemeGroupVersion.Version,
+			Scope:   extensionsobj.NamespaceScoped,
+			Names: extensionsobj.CustomResourceDefinitionNames{
+				Plural: tapi.ResourceTypeDormantDatabase,
+				Kind:   tapi.ResourceKindDormantDatabase,
 			},
 		},
 	}
-	if _, err := c.client.ExtensionsV1beta1().ThirdPartyResources().Create(thirdPartyResource); err != nil {
+
+	if _, err = c.apiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd); err != nil {
 		log.Fatalln(err)
 	}
 }
@@ -155,23 +160,13 @@ func (c *DormantDbController) watch() {
 }
 
 func (c *DormantDbController) create(dormantDb *tapi.DormantDatabase) error {
-
-	var err error
-	if dormantDb, err = c.extClient.DormantDatabases(dormantDb.Namespace).Get(dormantDb.Name); err != nil {
-		return err
-	}
-
-	// Set DormantDatabase Phase: Deleting
-	t := metav1.Now()
-	dormantDb.Status.CreationTime = &t
-	if _, err := c.extClient.DormantDatabases(dormantDb.Namespace).Update(dormantDb); err != nil {
-		c.eventRecorder.Eventf(
-			dormantDb,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			"Failed to update DormantDatabase. Reason: %v",
-			err,
-		)
+	err := c.UpdateDormantDatabase(dormantDb.ObjectMeta, func(in tapi.DormantDatabase) tapi.DormantDatabase {
+		t := metav1.Now()
+		in.Status.CreationTime = &t
+		return in
+	})
+	if err != nil {
+		c.eventRecorder.Eventf(dormantDb, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
 	}
 
@@ -211,21 +206,12 @@ func (c *DormantDbController) create(dormantDb *tapi.DormantDatabase) error {
 		return errors.New(message)
 	}
 
-	if dormantDb, err = c.extClient.DormantDatabases(dormantDb.Namespace).Get(dormantDb.Name); err != nil {
-		return err
-	}
-
-	// Set DormantDatabase Phase: Deleting
-	t = metav1.Now()
-	dormantDb.Status.Phase = tapi.DormantDatabasePhasePausing
-	if _, err = c.extClient.DormantDatabases(dormantDb.Namespace).Update(dormantDb); err != nil {
-		c.eventRecorder.Eventf(
-			dormantDb,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			"Failed to update DormantDatabase. Reason: %v",
-			err,
-		)
+	err = c.UpdateDormantDatabase(dormantDb.ObjectMeta, func(in tapi.DormantDatabase) tapi.DormantDatabase {
+		in.Status.Phase = tapi.DormantDatabasePhasePausing
+		return in
+	})
+	if err != nil {
+		c.eventRecorder.Eventf(dormantDb, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
 	}
 
@@ -250,22 +236,14 @@ func (c *DormantDbController) create(dormantDb *tapi.DormantDatabase) error {
 		"Successfully paused Database workload",
 	)
 
-	if dormantDb, err = c.extClient.DormantDatabases(dormantDb.Namespace).Get(dormantDb.Name); err != nil {
-		return err
-	}
-
-	// Set DormantDatabase Phase: Paused
-	t = metav1.Now()
-	dormantDb.Status.PausingTime = &t
-	dormantDb.Status.Phase = tapi.DormantDatabasePhasePaused
-	if _, err = c.extClient.DormantDatabases(dormantDb.Namespace).Update(dormantDb); err != nil {
-		c.eventRecorder.Eventf(
-			dormantDb,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			"Failed to update DormantDatabase. Reason: %v",
-			err,
-		)
+	err = c.UpdateDormantDatabase(dormantDb.ObjectMeta, func(in tapi.DormantDatabase) tapi.DormantDatabase {
+		t := metav1.Now()
+		in.Status.PausingTime = &t
+		in.Status.Phase = tapi.DormantDatabasePhasePaused
+		return in
+	})
+	if err != nil {
+		c.eventRecorder.Eventf(dormantDb, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
 	}
 
@@ -358,22 +336,12 @@ func (c *DormantDbController) wipeOut(dormantDb *tapi.DormantDatabase) error {
 		return errors.New(message)
 	}
 
-	if dormantDb, err = c.extClient.DormantDatabases(dormantDb.Namespace).Get(dormantDb.Name); err != nil {
-		return err
-	}
-
-	// Set DormantDatabase Phase: Wiping out
-	t := metav1.Now()
-	dormantDb.Status.Phase = tapi.DormantDatabasePhaseWipingOut
-
-	if _, err := c.extClient.DormantDatabases(dormantDb.Namespace).Update(dormantDb); err != nil {
-		c.eventRecorder.Eventf(
-			dormantDb,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			"Failed to update DormantDatabase. Reason: %v",
-			err,
-		)
+	err = c.UpdateDormantDatabase(dormantDb.ObjectMeta, func(in tapi.DormantDatabase) tapi.DormantDatabase {
+		in.Status.Phase = tapi.DormantDatabasePhaseWipingOut
+		return in
+	})
+	if err != nil {
+		c.eventRecorder.Eventf(dormantDb, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
 	}
 
@@ -397,22 +365,14 @@ func (c *DormantDbController) wipeOut(dormantDb *tapi.DormantDatabase) error {
 		"Successfully wiped out Database workload",
 	)
 
-	if dormantDb, err = c.extClient.DormantDatabases(dormantDb.Namespace).Get(dormantDb.Name); err != nil {
-		return err
-	}
-
-	// Set DormantDatabase Phase: Deleted
-	t = metav1.Now()
-	dormantDb.Status.WipeOutTime = &t
-	dormantDb.Status.Phase = tapi.DormantDatabasePhaseWipedOut
-	if _, err = c.extClient.DormantDatabases(dormantDb.Namespace).Update(dormantDb); err != nil {
-		c.eventRecorder.Eventf(
-			dormantDb,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			"Failed to update DormantDatabase. Reason: %v",
-			err,
-		)
+	err = c.UpdateDormantDatabase(dormantDb.ObjectMeta, func(in tapi.DormantDatabase) tapi.DormantDatabase {
+		t := metav1.Now()
+		in.Status.WipeOutTime = &t
+		in.Status.Phase = tapi.DormantDatabasePhaseWipedOut
+		return in
+	})
+	if err != nil {
+		c.eventRecorder.Eventf(dormantDb, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
 	}
 
@@ -451,20 +411,12 @@ func (c *DormantDbController) resume(dormantDb *tapi.DormantDatabase) error {
 		return errors.New(message)
 	}
 
-	if dormantDb, err = c.extClient.DormantDatabases(dormantDb.Namespace).Get(dormantDb.Name); err != nil {
-		return err
-	}
-
-	_dormantDb := dormantDb
-	_dormantDb.Status.Phase = tapi.DormantDatabasePhaseResuming
-	if _, err = c.extClient.DormantDatabases(_dormantDb.Namespace).Update(_dormantDb); err != nil {
-		c.eventRecorder.Eventf(
-			dormantDb,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			"Failed to update DormantDatabase. Reason: %v",
-			err,
-		)
+	err = c.UpdateDormantDatabase(dormantDb.ObjectMeta, func(in tapi.DormantDatabase) tapi.DormantDatabase {
+		in.Status.Phase = tapi.DormantDatabasePhaseResuming
+		return in
+	})
+	if err != nil {
+		c.eventRecorder.Eventf(dormantDb, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
 	}
 

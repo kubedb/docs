@@ -18,24 +18,15 @@ import (
 )
 
 func (c *Controller) create(elastic *tapi.Elasticsearch) error {
-	var err error
-	if elastic, err = c.ExtClient.Elasticsearches(elastic.Namespace).Get(elastic.Name); err != nil {
+	_, err := c.UpdateElasticsearch(elastic.ObjectMeta, func(in tapi.Elasticsearch) tapi.Elasticsearch {
+		t := metav1.Now()
+		in.Status.CreationTime = &t
+		in.Status.Phase = tapi.DatabasePhaseCreating
+		return in
+	})
+	if err != nil {
+		c.eventRecorder.Eventf(elastic, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
-	}
-
-	t := metav1.Now()
-	elastic.Status.CreationTime = &t
-	elastic.Status.Phase = tapi.DatabasePhaseCreating
-	if _, err = c.ExtClient.Elasticsearches(elastic.Namespace).Update(elastic); err != nil {
-		c.eventRecorder.Eventf(
-			elastic,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			`Fail to update Elasticsearch: "%v". Reason: %v`,
-			elastic.Name,
-			err,
-		)
-		log.Errorln(err)
 	}
 
 	if err := validator.ValidateElastic(c.Client, elastic); err != nil {
@@ -221,21 +212,13 @@ func (c *Controller) ensureStatefulSet(elastic *tapi.Elasticsearch) error {
 	}
 
 	if elastic.Spec.Init != nil && elastic.Spec.Init.SnapshotSource != nil {
-		if elastic, err = c.ExtClient.Elasticsearches(elastic.Namespace).Get(elastic.Name); err != nil {
+		_, err := c.UpdateElasticsearch(elastic.ObjectMeta, func(in tapi.Elasticsearch) tapi.Elasticsearch {
+			in.Status.Phase = tapi.DatabasePhaseInitializing
+			return in
+		})
+		if err != nil {
+			c.eventRecorder.Eventf(elastic, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 			return err
-		}
-
-		elastic.Status.Phase = tapi.DatabasePhaseInitializing
-		if _, err = c.ExtClient.Elasticsearches(elastic.Namespace).Update(elastic); err != nil {
-			c.eventRecorder.Eventf(
-				elastic,
-				apiv1.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				`Fail to update Elasticsearch: "%v". Reason: %v`,
-				elastic.Name,
-				err,
-			)
-			log.Errorln(err)
 		}
 
 		if err := c.initialize(elastic); err != nil {
@@ -249,21 +232,13 @@ func (c *Controller) ensureStatefulSet(elastic *tapi.Elasticsearch) error {
 		}
 	}
 
-	if elastic, err = c.ExtClient.Elasticsearches(elastic.Namespace).Get(elastic.Name); err != nil {
+	_, err = c.UpdateElasticsearch(elastic.ObjectMeta, func(in tapi.Elasticsearch) tapi.Elasticsearch {
+		in.Status.Phase = tapi.DatabasePhaseRunning
+		return in
+	})
+	if err != nil {
+		c.eventRecorder.Eventf(elastic, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
-	}
-
-	elastic.Status.Phase = tapi.DatabasePhaseRunning
-	if _, err = c.ExtClient.Elasticsearches(elastic.Namespace).Update(elastic); err != nil {
-		c.eventRecorder.Eventf(
-			elastic,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			`Failed to update Elasticsearch: "%v". Reason: %v`,
-			elastic.Name,
-			err,
-		)
-		log.Errorln(err)
 	}
 
 	return nil

@@ -17,24 +17,15 @@ import (
 )
 
 func (c *Controller) create(postgres *tapi.Postgres) error {
-	var err error
-	if postgres, err = c.ExtClient.Postgreses(postgres.Namespace).Get(postgres.Name); err != nil {
+	_, err := c.UpdatePostgres(postgres.ObjectMeta, func(in tapi.Postgres) tapi.Postgres {
+		t := metav1.Now()
+		in.Status.CreationTime = &t
+		in.Status.Phase = tapi.DatabasePhaseCreating
+		return in
+	})
+	if err != nil {
+		c.eventRecorder.Eventf(postgres, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
-	}
-
-	t := metav1.Now()
-	postgres.Status.CreationTime = &t
-	postgres.Status.Phase = tapi.DatabasePhaseCreating
-	if _, err = c.ExtClient.Postgreses(postgres.Namespace).Update(postgres); err != nil {
-		c.eventRecorder.Eventf(
-			postgres,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			`Fail to update Postgres: "%v". Reason: %v`,
-			postgres.Name,
-			err,
-		)
-		log.Errorln(err)
 	}
 
 	if err := validator.ValidatePostgres(c.Client, postgres); err != nil {
@@ -213,21 +204,13 @@ func (c *Controller) ensureStatefulSet(postgres *tapi.Postgres) error {
 	}
 
 	if postgres.Spec.Init != nil && postgres.Spec.Init.SnapshotSource != nil {
-		if postgres, err = c.ExtClient.Postgreses(postgres.Namespace).Get(postgres.Name); err != nil {
+		_, err := c.UpdatePostgres(postgres.ObjectMeta, func(in tapi.Postgres) tapi.Postgres {
+			in.Status.Phase = tapi.DatabasePhaseInitializing
+			return in
+		})
+		if err != nil {
+			c.eventRecorder.Eventf(postgres, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 			return err
-		}
-
-		postgres.Status.Phase = tapi.DatabasePhaseInitializing
-		if _, err = c.ExtClient.Postgreses(postgres.Namespace).Update(postgres); err != nil {
-			c.eventRecorder.Eventf(
-				postgres,
-				apiv1.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				`Fail to update Postgres: "%v". Reason: %v`,
-				postgres.Name,
-				err,
-			)
-			log.Errorln(err)
 		}
 
 		if err := c.initialize(postgres); err != nil {
@@ -241,23 +224,14 @@ func (c *Controller) ensureStatefulSet(postgres *tapi.Postgres) error {
 		}
 	}
 
-	if postgres, err = c.ExtClient.Postgreses(postgres.Namespace).Get(postgres.Name); err != nil {
+	_, err = c.UpdatePostgres(postgres.ObjectMeta, func(in tapi.Postgres) tapi.Postgres {
+		in.Status.Phase = tapi.DatabasePhaseRunning
+		return in
+	})
+	if err != nil {
+		c.eventRecorder.Eventf(postgres, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
 	}
-
-	postgres.Status.Phase = tapi.DatabasePhaseRunning
-	if _, err = c.ExtClient.Postgreses(postgres.Namespace).Update(postgres); err != nil {
-		c.eventRecorder.Eventf(
-			postgres,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			`Failed to update Postgres: "%v". Reason: %v`,
-			postgres.Name,
-			err,
-		)
-		log.Errorln(err)
-	}
-
 	return nil
 }
 

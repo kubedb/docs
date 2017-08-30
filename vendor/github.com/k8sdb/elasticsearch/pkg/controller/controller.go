@@ -12,6 +12,8 @@ import (
 	"github.com/k8sdb/apimachinery/pkg/analytics"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
+	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -20,7 +22,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
@@ -46,6 +47,8 @@ type Options struct {
 
 type Controller struct {
 	*amc.Controller
+	// Api Extension Client
+	ApiExtKubeClient apiextensionsclient.Interface
 	// Prometheus client
 	promClient *pcm.MonitoringV1alpha1Client
 	// Cron Controller
@@ -63,6 +66,7 @@ var _ amc.Deleter = &Controller{}
 
 func New(
 	client clientset.Interface,
+	apiExtKubeClient apiextensionsclient.Interface,
 	extClient tcs.ExtensionInterface,
 	promClient *pcm.MonitoringV1alpha1Client,
 	cronController amc.CronControllerInterface,
@@ -73,17 +77,18 @@ func New(
 			Client:    client,
 			ExtClient: extClient,
 		},
-		promClient:     promClient,
-		cronController: cronController,
-		eventRecorder:  eventer.NewEventRecorder(client, "Elasticsearch operator"),
-		opt:            opt,
-		syncPeriod:     time.Minute * 2,
+		ApiExtKubeClient: apiExtKubeClient,
+		promClient:       promClient,
+		cronController:   cronController,
+		eventRecorder:    eventer.NewEventRecorder(client, "Elasticsearch operator"),
+		opt:              opt,
+		syncPeriod:       time.Minute * 2,
 	}
 }
 
 func (c *Controller) Run() {
-	// Ensure Elasticsearch TPR
-	c.ensureThirdPartyResource()
+	// Ensure Elasticsearch CRD
+	c.ensureCustomResourceDefinition()
 
 	// Start Cron
 	c.cronController.StartCron()
@@ -186,7 +191,7 @@ func (c *Controller) watchSnapshot() {
 		},
 	}
 
-	amc.NewSnapshotController(c.Client, c.ExtClient, c, lw, c.syncPeriod).Run()
+	amc.NewSnapshotController(c.Client, c.ApiExtKubeClient, c.ExtClient, c, lw, c.syncPeriod).Run()
 }
 
 func (c *Controller) watchDormantDatabase() {
@@ -209,15 +214,14 @@ func (c *Controller) watchDormantDatabase() {
 		},
 	}
 
-	amc.NewDormantDbController(c.Client, c.ExtClient, c, lw, c.syncPeriod).Run()
+	amc.NewDormantDbController(c.Client, c.ApiExtKubeClient, c.ExtClient, c, lw, c.syncPeriod).Run()
 }
 
-func (c *Controller) ensureThirdPartyResource() {
-	log.Infoln("Ensuring ThirdPartyResource...")
+func (c *Controller) ensureCustomResourceDefinition() {
+	log.Infoln("Ensuring CustomResourceDefinition...")
 
-	resourceName := tapi.ResourceNameElasticsearch + "." + tapi.V1alpha1SchemeGroupVersion.Group
-
-	if _, err := c.Client.ExtensionsV1beta1().ThirdPartyResources().Get(resourceName, metav1.GetOptions{}); err != nil {
+	resourceName := tapi.ResourceTypeElasticsearch + "." + tapi.V1alpha1SchemeGroupVersion.Group
+	if _, err := c.ApiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err != nil {
 		if !kerr.IsNotFound(err) {
 			log.Fatalln(err)
 		}
@@ -225,26 +229,25 @@ func (c *Controller) ensureThirdPartyResource() {
 		return
 	}
 
-	thirdPartyResource := &extensions.ThirdPartyResource{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "extensions/v1beta1",
-			Kind:       "ThirdPartyResource",
-		},
+	crd := &extensionsobj.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: resourceName,
 			Labels: map[string]string{
-				"app": tapi.DatabaseNamePrefix,
+				"app": "kubedb",
 			},
 		},
-		Description: "Elasticsearch Database by KubeDB",
-		Versions: []extensions.APIVersion{
-			{
-				Name: tapi.V1alpha1SchemeGroupVersion.Version,
+		Spec: extensionsobj.CustomResourceDefinitionSpec{
+			Group:   tapi.V1alpha1SchemeGroupVersion.Group,
+			Version: tapi.V1alpha1SchemeGroupVersion.Version,
+			Scope:   extensionsobj.NamespaceScoped,
+			Names: extensionsobj.CustomResourceDefinitionNames{
+				Plural: tapi.ResourceTypeElasticsearch,
+				Kind:   tapi.ResourceKindElasticsearch,
 			},
 		},
 	}
 
-	if _, err := c.Client.ExtensionsV1beta1().ThirdPartyResources().Create(thirdPartyResource); err != nil {
+	if _, err := c.ApiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd); err != nil {
 		log.Fatalln(err)
 	}
 }
@@ -265,19 +268,15 @@ func (c *Controller) pushFailureEvent(elastic *tapi.Elasticsearch, reason string
 		return
 	}
 
-	elastic.Status.Phase = tapi.DatabasePhaseFailed
-	elastic.Status.Reason = reason
-	if _, err := c.ExtClient.Elasticsearches(elastic.Namespace).Update(elastic); err != nil {
-		c.eventRecorder.Eventf(
-			elastic,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			`Fail to update Postgres: "%v". Reason: %v`,
-			elastic.Name,
-			err,
-		)
-		log.Errorln(err)
+	_, err = c.UpdateElasticsearch(elastic.ObjectMeta, func(in tapi.Elasticsearch) tapi.Elasticsearch {
+		in.Status.Phase = tapi.DatabasePhaseFailed
+		in.Status.Reason = reason
+		return in
+	})
+	if err != nil {
+		c.eventRecorder.Eventf(elastic, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 	}
+
 }
 
 func elasticSuccessfullyCreated() {
