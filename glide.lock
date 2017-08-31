@@ -1,5 +1,5 @@
 hash: d86024219407d325861b861c727a77a046161671162962804b296e5cdb192efe
-updated: 2017-08-31T10:15:36.571722681+06:00
+updated: 2017-08-31T13:54:47.054120126+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -188,7 +188,7 @@ imports:
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/k8sdb/apimachinery
-  version: 5c6c7ad12dbb22a058d58edc99fd567b45666e4d
+  version: ee12145f287ba94e4ea5344bd387e8ca420591ab
   subpackages:
   - api
   - api/install
@@ -202,7 +202,7 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/k8sdb/elasticsearch
-  version: 1cbb73a637e70439dfc95131845bd70cf1a196fa
+  version: b89b53cf971948a0a762b2a402a1670fbef7daec
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -212,7 +212,7 @@ imports:
   subpackages:
   - collector
 - name: github.com/k8sdb/postgres
-  version: 33d54726f0640712f39191e090418413abafa7c5
+  version: da2195ec5541cff78759a5fe1d268991b9e74925
   subpackages:
   - pkg/audit/report
   - pkg/controller
