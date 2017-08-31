@@ -103,8 +103,9 @@ func (c *SnapshotController) ensureCustomResourceDefinition() {
 			Version: tapi.V1alpha1SchemeGroupVersion.Version,
 			Scope:   extensionsobj.NamespaceScoped,
 			Names: extensionsobj.CustomResourceDefinitionNames{
-				Plural: tapi.ResourceTypeSnapshot,
-				Kind:   tapi.ResourceKindSnapshot,
+				Plural:     tapi.ResourceTypeSnapshot,
+				Kind:       tapi.ResourceKindSnapshot,
+				ShortNames: []string{tapi.ResourceCodeSnapshot},
 			},
 		},
 	}

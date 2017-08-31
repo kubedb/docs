@@ -241,8 +241,9 @@ func (c *Controller) ensureCustomResourceDefinition() {
 			Version: tapi.V1alpha1SchemeGroupVersion.Version,
 			Scope:   extensionsobj.NamespaceScoped,
 			Names: extensionsobj.CustomResourceDefinitionNames{
-				Plural: tapi.ResourceTypeElasticsearch,
-				Kind:   tapi.ResourceKindElasticsearch,
+				Plural:     tapi.ResourceTypeElasticsearch,
+				Kind:       tapi.ResourceKindElasticsearch,
+				ShortNames: []string{tapi.ResourceCodeElasticsearch},
 			},
 		},
 	}

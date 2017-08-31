@@ -102,8 +102,9 @@ func (c *DormantDbController) ensureCustomResourceDefinition() {
 			Version: tapi.V1alpha1SchemeGroupVersion.Version,
 			Scope:   extensionsobj.NamespaceScoped,
 			Names: extensionsobj.CustomResourceDefinitionNames{
-				Plural: tapi.ResourceTypeDormantDatabase,
-				Kind:   tapi.ResourceKindDormantDatabase,
+				Plural:     tapi.ResourceTypeDormantDatabase,
+				Kind:       tapi.ResourceKindDormantDatabase,
+				ShortNames: []string{tapi.ResourceCodeDormantDatabase},
 			},
 		},
 	}

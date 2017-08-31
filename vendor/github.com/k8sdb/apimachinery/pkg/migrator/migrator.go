@@ -153,9 +153,9 @@ func (m *migrator) createCRD(runtime aci.RuntimeObject) error {
 			Version: aci.V1alpha1SchemeGroupVersion.Version,
 			Scope:   extensionsobj.NamespaceScoped,
 			Names: extensionsobj.CustomResourceDefinitionNames{
-				Plural:   runtime.ResourceType(),
-				Singular: runtime.ResourceCode(),
-				Kind:     runtime.ResourceKind(),
+				Plural:     runtime.ResourceType(),
+				ShortNames: []string{runtime.ResourceCode()},
+				Kind:       runtime.ResourceKind(),
 			},
 		},
 	}

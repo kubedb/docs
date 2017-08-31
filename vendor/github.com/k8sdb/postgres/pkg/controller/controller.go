@@ -240,6 +240,7 @@ func (c *Controller) ensureCustomResourceDefinition() {
 			Names: extensionsobj.CustomResourceDefinitionNames{
 				Plural: tapi.ResourceTypePostgres,
 				Kind:   tapi.ResourceKindPostgres,
+				ShortNames: []string{tapi.ResourceCodePostgres},
 			},
 		},
 	}
