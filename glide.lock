@@ -1,5 +1,5 @@
 hash: fb35b24b9f0a4dff30091764625e65fb2b4ca563e6eec7fca1b16742b3ba76a8
-updated: 2017-09-19T03:08:39.587553248-07:00
+updated: 2017-09-19T07:06:58.603521294-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -9,10 +9,12 @@ imports:
 - name: github.com/appscode/go
   version: d1fbd14e5c6e78557c12f6d2c9c282b3c0d0c612
   subpackages:
+  - context
   - crypto/rand
   - encoding/json/types
   - encoding/yaml
   - hold
+  - log
   - runtime
   - strings
   - types
@@ -22,7 +24,9 @@ imports:
   version: 1f75c33d081d0e7e1073ed9e8a5774e5c8c93e86
   subpackages:
   - apps/v1beta1
+  - core/v1
   - kubedb/v1alpha1
+  - rbac/v1beta1
 - name: github.com/appscode/log
   version: 68e0e42e42c01371f3950571fc87c2298a51dd8f
   subpackages:
@@ -84,6 +88,10 @@ imports:
   version: f5284c9eddc956775e06f854a9bffc6bfece3d9c
   subpackages:
   - pkg/client/monitoring/v1alpha1
+- name: github.com/cpuguy83/go-md2man
+  version: 71acacd42f85e5e82f70a55327789582a5200a90
+  subpackages:
+  - md2man
 - name: github.com/davecgh/go-spew
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
@@ -195,13 +203,12 @@ imports:
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/k8sdb/apimachinery
-  version: 3bf07e0bd369f73a3e38a2f8bca1b32cc1d8e96b
+  version: 50bd8fb16dc2de3417dc72681747003fb499f983
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
   - client/scheme
   - client/typed/kubedb/v1alpha1
-  - pkg/analytics
   - pkg/controller
   - pkg/docker
   - pkg/eventer
@@ -210,7 +217,7 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/k8sdb/elasticsearch
-  version: 4254c79ccfcdfaab1bbc90c1f2dab701b198ccc5
+  version: 14559a95f702e07224dff798259e5aa8b09f20a9
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -220,7 +227,7 @@ imports:
   subpackages:
   - collector
 - name: github.com/k8sdb/postgres
-  version: d9f7a3b4a329853eda999ce663b6620ad997446c
+  version: 53495b7a89a09ea0667e12915c7919386a68d565
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -281,12 +288,18 @@ imports:
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
+- name: github.com/russross/blackfriday
+  version: 300106c228d52c8941d4b3de6054a6062a86dda3
 - name: github.com/satori/uuid
   version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
+- name: github.com/shurcooL/sanitized_anchor_name
+  version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/Sirupsen/logrus
   version: 4b6ea7319e214d98c938f12692336f7ca9348d6b
 - name: github.com/spf13/cobra
   version: b78744579491c1ceeaaa3b40205e56b0591b93a3
+  subpackages:
+  - doc
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 - name: github.com/ugorji/go

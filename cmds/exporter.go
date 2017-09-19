@@ -1,14 +1,13 @@
-package main
+package cmds
 
 import (
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	"github.com/appscode/pat"
 	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
-	"github.com/k8sdb/apimachinery/pkg/analytics"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	clientset "k8s.io/client-go/kubernetes"
@@ -22,9 +21,6 @@ func NewCmdExport() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			export()
 		},
-		PostRun: func(cmd *cobra.Command, args []string) {
-			analytics.SendEvent("exporter", "stopped", Version)
-		},
 	}
 
 	// operator flags
@@ -32,19 +28,11 @@ func NewCmdExport() *cobra.Command {
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
 
-	// Analytics flags
-	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
-
 	return cmd
 }
 
 func export() {
 	fmt.Println("Starting exporter...")
-
-	if enableAnalytics {
-		analytics.Enable()
-	}
-	analytics.SendEvent("exporter", "started", Version)
 
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {

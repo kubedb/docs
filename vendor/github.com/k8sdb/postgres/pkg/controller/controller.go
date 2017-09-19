@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/appscode/go/hold"
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
+	kutildb "github.com/appscode/kutil/kubedb/v1alpha1"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
-	"github.com/k8sdb/apimachinery/pkg/analytics"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -35,8 +35,6 @@ type Options struct {
 	GoverningService string
 	// Address to listen on for web interface and telemetry.
 	Address string
-	// Enable analytics
-	EnableAnalytics bool
 	// Enable RBAC for database workloads
 	EnableRbac bool
 }
@@ -99,11 +97,6 @@ func (c *Controller) Run() {
 
 // Blocks caller. Intended to be called as a Go routine.
 func (c *Controller) RunAndHold() {
-	// Enable analytics
-	if c.opt.EnableAnalytics {
-		analytics.Enable()
-	}
-
 	c.Run()
 
 	// Run HTTP server to expose metrics, audit endpoint & debug profiles.
@@ -131,21 +124,15 @@ func (c *Controller) watchPostgres() {
 				postgres := obj.(*tapi.Postgres)
 				if postgres.Status.CreationTime == nil {
 					if err := c.create(postgres); err != nil {
-						postgresFailedToCreate()
 						log.Errorln(err)
 						c.pushFailureEvent(postgres, err.Error())
-					} else {
-						postgresSuccessfullyCreated()
 					}
 				}
 
 			},
 			DeleteFunc: func(obj interface{}) {
 				if err := c.pause(obj.(*tapi.Postgres)); err != nil {
-					postgresFailedToDelete()
 					log.Errorln(err)
-				} else {
-					postgresSuccessfullyDeleted()
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
@@ -260,29 +247,12 @@ func (c *Controller) pushFailureEvent(postgres *tapi.Postgres, reason string) {
 		reason,
 	)
 
-	_, err := c.UpdatePostgres(postgres.ObjectMeta, func(in tapi.Postgres) tapi.Postgres {
+	_, err := kutildb.TryPatchPostgres(c.ExtClient, postgres.ObjectMeta, func(in *tapi.Postgres) *tapi.Postgres {
 		in.Status.Phase = tapi.DatabasePhaseFailed
 		in.Status.Reason = reason
 		return in
 	})
-
 	if err != nil {
 		c.recorder.Eventf(postgres.ObjectReference(), apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 	}
-}
-
-func postgresSuccessfullyCreated() {
-	analytics.SendEvent(tapi.ResourceNamePostgres, "created", "success")
-}
-
-func postgresFailedToCreate() {
-	analytics.SendEvent(tapi.ResourceNamePostgres, "created", "failure")
-}
-
-func postgresSuccessfullyDeleted() {
-	analytics.SendEvent(tapi.ResourceNamePostgres, "deleted", "success")
-}
-
-func postgresFailedToDelete() {
-	analytics.SendEvent(tapi.ResourceNamePostgres, "deleted", "failure")
 }

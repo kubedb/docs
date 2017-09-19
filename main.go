@@ -1,36 +1,16 @@
 package main
 
 import (
-	"flag"
 	"log"
 
-	v "github.com/appscode/go/version"
 	logs "github.com/appscode/log/golog"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
+	"github.com/k8sdb/operator/cmds"
 )
 
 func main() {
-	defer logs.FlushLogs()
-	rootCmd := &cobra.Command{
-		Use:   "operator [command]",
-		Short: `KubeDB operator by AppsCode`,
-		PersistentPreRun: func(c *cobra.Command, args []string) {
-			c.Flags().VisitAll(func(flag *pflag.Flag) {
-				log.Printf("FLAG: --%s=%q", flag.Name, flag.Value)
-			})
-		},
-	}
-	rootCmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
-	// ref: https://github.com/kubernetes/kubernetes/issues/17162#issuecomment-225596212
-	flag.CommandLine.Parse([]string{})
 	logs.InitLogs()
-
-	rootCmd.AddCommand(NewCmdRun())
-	rootCmd.AddCommand(NewCmdExport())
-	rootCmd.AddCommand(v.NewCmdVersion())
-
-	if err := rootCmd.Execute(); err != nil {
+	defer logs.FlushLogs()
+	if err := cmds.NewRootCmd(Version).Execute(); err != nil {
 		log.Fatal(err)
 	}
 }

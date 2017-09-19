@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	"github.com/hashicorp/go-version"
 	aci "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	aci_v1alpha1 "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"

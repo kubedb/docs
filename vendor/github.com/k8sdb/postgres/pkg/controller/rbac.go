@@ -1,6 +1,8 @@
 package controller
 
 import (
+	kutilcore "github.com/appscode/kutil/core/v1"
+	kutilrbac "github.com/appscode/kutil/rbac/v1beta1"
 	"github.com/k8sdb/apimachinery/apis/kubedb"
 	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -21,31 +23,31 @@ func (c *Controller) deleteRole(postgres *tapi.Postgres) error {
 
 func (c *Controller) createRole(postgres *tapi.Postgres) error {
 	// Create new Roles
-	role := &rbac.Role{
-		ObjectMeta: metav1.ObjectMeta{
+	_, err := kutilrbac.EnsureRole(
+		c.Client,
+		metav1.ObjectMeta{
 			Name:      postgres.OffshootName(),
 			Namespace: postgres.Namespace,
 		},
-		Rules: []rbac.PolicyRule{
-			{
-				APIGroups:     []string{kubedb.GroupName},
-				Resources:     []string{tapi.ResourceTypePostgres},
-				ResourceNames: []string{postgres.Name},
-				Verbs:         []string{"get"},
-			},
-			{
-				APIGroups:     []string{apiv1.GroupName},
-				Resources:     []string{"secrets"},
-				ResourceNames: []string{postgres.Spec.DatabaseSecret.SecretName},
-				Verbs:         []string{"get"},
-			},
+		func(in *rbac.Role) *rbac.Role {
+			in.Rules = []rbac.PolicyRule{
+				{
+					APIGroups:     []string{kubedb.GroupName},
+					Resources:     []string{tapi.ResourceTypePostgres},
+					ResourceNames: []string{postgres.Name},
+					Verbs:         []string{"get"},
+				},
+				{
+					APIGroups:     []string{apiv1.GroupName},
+					Resources:     []string{"secrets"},
+					ResourceNames: []string{postgres.Spec.DatabaseSecret.SecretName},
+					Verbs:         []string{"get"},
+				},
+			}
+			return in
 		},
-	}
-	if _, err := c.Client.RbacV1beta1().Roles(role.Namespace).Create(role); err != nil {
-		return err
-	}
-
-	return nil
+	)
+	return err
 }
 
 func (c *Controller) deleteServiceAccount(postgres *tapi.Postgres) error {
@@ -60,17 +62,17 @@ func (c *Controller) deleteServiceAccount(postgres *tapi.Postgres) error {
 
 func (c *Controller) createServiceAccount(postgres *tapi.Postgres) error {
 	// Create new ServiceAccount
-	sa := &apiv1.ServiceAccount{
-		ObjectMeta: metav1.ObjectMeta{
+	_, err := kutilcore.EnsureServiceAccount(
+		c.Client,
+		metav1.ObjectMeta{
 			Name:      postgres.OffshootName(),
 			Namespace: postgres.Namespace,
 		},
-	}
-	if _, err := c.Client.CoreV1().ServiceAccounts(sa.Namespace).Create(sa); err != nil {
-		return err
-	}
-
-	return nil
+		func(in *apiv1.ServiceAccount) *apiv1.ServiceAccount {
+			return in
+		},
+	)
+	return err
 }
 
 func (c *Controller) deleteRoleBinding(postgres *tapi.Postgres) error {
@@ -84,30 +86,30 @@ func (c *Controller) deleteRoleBinding(postgres *tapi.Postgres) error {
 }
 
 func (c *Controller) createRoleBinding(postgres *tapi.Postgres) error {
-	// Create new RoleBindings
-	roleBinding := &rbac.RoleBinding{
-		ObjectMeta: metav1.ObjectMeta{
+	// Ensure new RoleBindings
+	_, err := kutilrbac.EnsureRoleBinding(
+		c.Client,
+		metav1.ObjectMeta{
 			Name:      postgres.OffshootName(),
 			Namespace: postgres.Namespace,
 		},
-		RoleRef: rbac.RoleRef{
-			APIGroup: rbac.GroupName,
-			Kind:     "Role",
-			Name:     postgres.OffshootName(),
+		func(in *rbac.RoleBinding) *rbac.RoleBinding {
+			in.RoleRef = rbac.RoleRef{
+				APIGroup: rbac.GroupName,
+				Kind:     "Role",
+				Name:     postgres.OffshootName(),
+			}
+			in.Subjects = []rbac.Subject{
+				{
+					Kind:      rbac.ServiceAccountKind,
+					Name:      postgres.OffshootName(),
+					Namespace: postgres.Namespace,
+				},
+			}
+			return in
 		},
-		Subjects: []rbac.Subject{
-			{
-				Kind:      rbac.ServiceAccountKind,
-				Name:      postgres.OffshootName(),
-				Namespace: postgres.Namespace,
-			},
-		},
-	}
-	if _, err := c.Client.RbacV1beta1().RoleBindings(roleBinding.Namespace).Create(roleBinding); err != nil {
-		return err
-	}
-
-	return nil
+	)
+	return err
 }
 
 func (c *Controller) createRBACStuff(postgres *tapi.Postgres) error {

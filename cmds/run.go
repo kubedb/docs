@@ -1,4 +1,4 @@
-package main
+package cmds
 
 import (
 	"fmt"
@@ -9,14 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/appscode/go/log"
 	"github.com/appscode/go/runtime"
-	stringz "github.com/appscode/go/strings"
-	"github.com/appscode/log"
 	"github.com/appscode/pat"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
-	"github.com/k8sdb/apimachinery/pkg/analytics"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/migrator"
@@ -31,31 +29,12 @@ import (
 	cgcmd "k8s.io/client-go/tools/clientcmd"
 )
 
-var (
-	masterURL         string
-	kubeconfigPath    string
-	governingService  string = "kubedb"
-	exporterTag       string = stringz.Val(Version, "canary")
-	esOperatorTag     string = "0.6.0"
-	elasticDumpTag    string = "2.4.2"
-	address           string = ":8080"
-	operatorNamespace string = namespace()
-	enableAnalytics   bool   = true
-	enableRbac        bool   = false
-
-	kubeClient clientset.Interface
-	dbClient   tcs.KubedbV1alpha1Interface
-)
-
 func NewCmdRun() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "Run kubedb operator in Kubernetes",
 		Run: func(cmd *cobra.Command, args []string) {
 			run()
-		},
-		PostRun: func(cmd *cobra.Command, args []string) {
-			analytics.SendEvent("operator", "stopped", Version)
 		},
 	}
 
@@ -71,9 +50,6 @@ func NewCmdRun() *cobra.Command {
 
 	// elasticdump flags
 	cmd.Flags().StringVar(&elasticDumpTag, "elasticdump.tag", elasticDumpTag, "Tag of elasticdump")
-
-	// Analytics flags
-	cmd.Flags().BoolVar(&enableAnalytics, "analytics", enableAnalytics, "Send analytical event to Google Analytics")
 
 	return cmd
 }
@@ -116,11 +92,6 @@ func run() {
 
 	fmt.Println("Starting operator...")
 
-	if enableAnalytics {
-		analytics.Enable()
-	}
-	analytics.SendEvent("operator", "started", Version)
-
 	tprMigrator := migrator.NewMigrator(kubeClient, apiExtKubeClient, dbClient)
 	err = tprMigrator.RunMigration(
 		&tapi.Postgres{},
@@ -138,7 +109,6 @@ func run() {
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
 		ExporterTag:       exporterTag,
-		EnableAnalytics:   enableAnalytics,
 		EnableRbac:        enableRbac,
 	}).Run()
 
@@ -151,7 +121,6 @@ func run() {
 		ElasticDumpTag:    elasticDumpTag,
 		DiscoveryTag:      esOperatorTag,
 		OperatorNamespace: operatorNamespace,
-		EnableAnalytics:   enableAnalytics,
 		EnableRbac:        enableRbac,
 	}).Run()
 
