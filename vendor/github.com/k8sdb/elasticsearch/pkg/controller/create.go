@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/appscode/log"
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -324,7 +324,7 @@ func (c *Controller) reCreateElastic(elastic *tapi.Elasticsearch) error {
 		Status: elastic.Status,
 	}
 
-	if _, err := c.ExtClient.Elasticsearches(_elastic.Namespace).Create(_elastic); err != nil {
+	if _, err := c.ExtClient.Elasticsearchs(_elastic.Namespace).Create(_elastic); err != nil {
 		return err
 	}
 

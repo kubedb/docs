@@ -7,8 +7,8 @@ import (
 	"github.com/appscode/go/hold"
 	"github.com/appscode/log"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	tapi "github.com/k8sdb/apimachinery/api"
-	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/analytics"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
@@ -54,7 +54,7 @@ type Controller struct {
 	// Cron Controller
 	cronController amc.CronControllerInterface
 	// Event Recorder
-	eventRecorder record.EventRecorder
+	recorder record.EventRecorder
 	// Flag data
 	opt Options
 	// sync time to sync the list.
@@ -67,7 +67,7 @@ var _ amc.Deleter = &Controller{}
 func New(
 	client clientset.Interface,
 	apiExtKubeClient apiextensionsclient.Interface,
-	extClient tcs.ExtensionInterface,
+	extClient tcs.KubedbV1alpha1Interface,
 	promClient *pcm.MonitoringV1alpha1Client,
 	cronController amc.CronControllerInterface,
 	opt Options,
@@ -80,7 +80,7 @@ func New(
 		ApiExtKubeClient: apiExtKubeClient,
 		promClient:       promClient,
 		cronController:   cronController,
-		eventRecorder:    eventer.NewEventRecorder(client, "Elasticsearch operator"),
+		recorder:         eventer.NewEventRecorder(client, "Elasticsearch operator"),
 		opt:              opt,
 		syncPeriod:       time.Minute * 2,
 	}
@@ -119,10 +119,10 @@ func (c *Controller) RunAndHold() {
 func (c *Controller) watchElastic() {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.Elasticsearches(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return c.ExtClient.Elasticsearchs(apiv1.NamespaceAll).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.Elasticsearches(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return c.ExtClient.Elasticsearchs(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
 
@@ -220,7 +220,7 @@ func (c *Controller) watchDormantDatabase() {
 func (c *Controller) ensureCustomResourceDefinition() {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 
-	resourceName := tapi.ResourceTypeElasticsearch + "." + tapi.V1alpha1SchemeGroupVersion.Group
+	resourceName := tapi.ResourceTypeElasticsearch + "." + tapi.SchemeGroupVersion.Group
 	if _, err := c.ApiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err != nil {
 		if !kerr.IsNotFound(err) {
 			log.Fatalln(err)
@@ -237,8 +237,8 @@ func (c *Controller) ensureCustomResourceDefinition() {
 			},
 		},
 		Spec: extensionsobj.CustomResourceDefinitionSpec{
-			Group:   tapi.V1alpha1SchemeGroupVersion.Group,
-			Version: tapi.V1alpha1SchemeGroupVersion.Version,
+			Group:   tapi.SchemeGroupVersion.Group,
+			Version: tapi.SchemeGroupVersion.Version,
 			Scope:   extensionsobj.NamespaceScoped,
 			Names: extensionsobj.CustomResourceDefinitionNames{
 				Plural:     tapi.ResourceTypeElasticsearch,
@@ -254,8 +254,8 @@ func (c *Controller) ensureCustomResourceDefinition() {
 }
 
 func (c *Controller) pushFailureEvent(elastic *tapi.Elasticsearch, reason string) {
-	c.eventRecorder.Eventf(
-		elastic,
+	c.recorder.Eventf(
+		elastic.ObjectReference(),
 		apiv1.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready Elasticsearch: "%v". Reason: %v`,
@@ -264,7 +264,7 @@ func (c *Controller) pushFailureEvent(elastic *tapi.Elasticsearch, reason string
 	)
 
 	var err error
-	if elastic, err = c.ExtClient.Elasticsearches(elastic.Namespace).Get(elastic.Name); err != nil {
+	if elastic, err = c.ExtClient.Elasticsearchs(elastic.Namespace).Get(elastic.Name, metav1.GetOptions{}); err != nil {
 		log.Errorln(err)
 		return
 	}
@@ -275,7 +275,7 @@ func (c *Controller) pushFailureEvent(elastic *tapi.Elasticsearch, reason string
 		return in
 	})
 	if err != nil {
-		c.eventRecorder.Eventf(elastic, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+		c.recorder.Eventf(elastic.ObjectReference(), apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 	}
 
 }

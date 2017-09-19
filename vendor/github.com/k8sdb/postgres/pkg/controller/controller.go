@@ -7,8 +7,8 @@ import (
 	"github.com/appscode/go/hold"
 	"github.com/appscode/log"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	tapi "github.com/k8sdb/apimachinery/api"
-	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/analytics"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
@@ -50,7 +50,7 @@ type Controller struct {
 	// Cron Controller
 	cronController amc.CronControllerInterface
 	// Event Recorder
-	eventRecorder record.EventRecorder
+	recorder record.EventRecorder
 	// Flag data
 	opt Options
 	// sync time to sync the list.
@@ -63,7 +63,7 @@ var _ amc.Deleter = &Controller{}
 func New(
 	client clientset.Interface,
 	apiExtKubeClient apiextensionsclient.Interface,
-	extClient tcs.ExtensionInterface,
+	extClient tcs.KubedbV1alpha1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	cronController amc.CronControllerInterface,
 	opt Options,
@@ -76,7 +76,7 @@ func New(
 		ApiExtKubeClient: apiExtKubeClient,
 		promClient:       promClient,
 		cronController:   cronController,
-		eventRecorder:    eventer.NewEventRecorder(client, "Postgres operator"),
+		recorder:         eventer.NewEventRecorder(client, "Postgres operator"),
 		opt:              opt,
 		syncPeriod:       time.Minute * 2,
 	}
@@ -217,7 +217,7 @@ func (c *Controller) watchDormantDatabase() {
 func (c *Controller) ensureCustomResourceDefinition() {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 
-	resourceName := tapi.ResourceTypePostgres + "." + tapi.V1alpha1SchemeGroupVersion.Group
+	resourceName := tapi.ResourceTypePostgres + "." + tapi.SchemeGroupVersion.Group
 	if _, err := c.ApiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err != nil {
 		if !kerr.IsNotFound(err) {
 			log.Fatalln(err)
@@ -234,12 +234,12 @@ func (c *Controller) ensureCustomResourceDefinition() {
 			},
 		},
 		Spec: extensionsobj.CustomResourceDefinitionSpec{
-			Group:   tapi.V1alpha1SchemeGroupVersion.Group,
-			Version: tapi.V1alpha1SchemeGroupVersion.Version,
+			Group:   tapi.SchemeGroupVersion.Group,
+			Version: tapi.SchemeGroupVersion.Version,
 			Scope:   extensionsobj.NamespaceScoped,
 			Names: extensionsobj.CustomResourceDefinitionNames{
-				Plural: tapi.ResourceTypePostgres,
-				Kind:   tapi.ResourceKindPostgres,
+				Plural:     tapi.ResourceTypePostgres,
+				Kind:       tapi.ResourceKindPostgres,
 				ShortNames: []string{tapi.ResourceCodePostgres},
 			},
 		},
@@ -251,8 +251,8 @@ func (c *Controller) ensureCustomResourceDefinition() {
 }
 
 func (c *Controller) pushFailureEvent(postgres *tapi.Postgres, reason string) {
-	c.eventRecorder.Eventf(
-		postgres,
+	c.recorder.Eventf(
+		postgres.ObjectReference(),
 		apiv1.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready Postgres: "%v". Reason: %v`,
@@ -267,7 +267,7 @@ func (c *Controller) pushFailureEvent(postgres *tapi.Postgres, reason string) {
 	})
 
 	if err != nil {
-		c.eventRecorder.Eventf(postgres, apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+		c.recorder.Eventf(postgres.ObjectReference(), apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 	}
 }
 

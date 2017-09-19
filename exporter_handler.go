@@ -10,7 +10,7 @@ import (
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/pat"
 	"github.com/go-kit/kit/log"
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	ese "github.com/k8sdb/elasticsearch_exporter/collector"
 	pge "github.com/k8sdb/postgres_exporter/exporter"
 	"github.com/orcaman/concurrent-map"
@@ -80,7 +80,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg = r2.(*prometheus.Registry)
 			} else {
 				plog.Infof("Configuring exporter for PostgreSQL %s in namespace %s", dbName, namespace)
-				db, err := dbClient.Postgreses(namespace).Get(dbName)
+				db, err := dbClient.Postgreses(namespace).Get(dbName, metav1.GetOptions{})
 				if kerr.IsNotFound(err) {
 					http.NotFound(w, r)
 					return
@@ -110,7 +110,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg = r2.(*prometheus.Registry)
 			} else {
 				plog.Infof("Configuring exporter for Elasticsearch %s in namespace %s", dbName, namespace)
-				_, err := dbClient.Elasticsearches(namespace).Get(dbName)
+				_, err := dbClient.Elasticsearchs(namespace).Get(dbName, metav1.GetOptions{})
 				if kerr.IsNotFound(err) {
 					http.NotFound(w, r)
 					return

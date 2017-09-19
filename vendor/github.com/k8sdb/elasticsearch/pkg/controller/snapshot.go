@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/appscode/log"
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	amv "github.com/k8sdb/apimachinery/pkg/validator"
@@ -31,7 +31,7 @@ func (c *Controller) ValidateSnapshot(snapshot *tapi.Snapshot) error {
 		return fmt.Errorf(`Image %v:%v not found`, docker.ImageElasticdump, c.opt.ElasticDumpTag)
 	}
 
-	if _, err := c.ExtClient.Elasticsearches(snapshot.Namespace).Get(databaseName); err != nil {
+	if _, err := c.ExtClient.Elasticsearchs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -39,7 +39,7 @@ func (c *Controller) ValidateSnapshot(snapshot *tapi.Snapshot) error {
 }
 
 func (c *Controller) GetDatabase(snapshot *tapi.Snapshot) (runtime.Object, error) {
-	elasticsearch, err := c.ExtClient.Elasticsearches(snapshot.Namespace).Get(snapshot.Spec.DatabaseName)
+	elasticsearch, err := c.ExtClient.Elasticsearchs(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error)
 	if err != nil {
 		return nil, err
 	}
-	elastic, err := c.ExtClient.Elasticsearches(snapshot.Namespace).Get(databaseName)
+	elastic, err := c.ExtClient.Elasticsearchs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

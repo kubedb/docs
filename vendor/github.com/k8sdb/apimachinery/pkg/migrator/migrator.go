@@ -7,8 +7,9 @@ import (
 
 	"github.com/appscode/log"
 	"github.com/hashicorp/go-version"
-	aci "github.com/k8sdb/apimachinery/api"
-	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	aci "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	aci_v1alpha1 "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -27,12 +28,12 @@ type migrationState struct {
 type migrator struct {
 	kubeClient       clientset.Interface
 	apiExtKubeClient apiextensionsclient.Interface
-	extClient        tcs.ExtensionInterface
+	extClient        tcs.KubedbV1alpha1Interface
 
 	migrationState *migrationState
 }
 
-func NewMigrator(kubeClient clientset.Interface, apiExtKubeClient apiextensionsclient.Interface, extClient tcs.ExtensionInterface) *migrator {
+func NewMigrator(kubeClient clientset.Interface, apiExtKubeClient apiextensionsclient.Interface, extClient tcs.KubedbV1alpha1Interface) *migrator {
 	return &migrator{
 		migrationState:   &migrationState{},
 		kubeClient:       kubeClient,
@@ -57,7 +58,7 @@ func (m *migrator) isMigrationNeeded(runtimeObjs ...aci.RuntimeObject) (bool, er
 	if mv == 7 {
 		for _, runtime := range runtimeObjs {
 			_, err := m.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(
-				runtime.ResourceName()+"."+aci.V1alpha1SchemeGroupVersion.Group,
+				runtime.ResourceName()+"."+aci_v1alpha1.SchemeGroupVersion.Group,
 				metav1.GetOptions{},
 			)
 			if err != nil {
@@ -116,7 +117,7 @@ func (m *migrator) deleteTPRs(runtimeObjs ...aci.RuntimeObject) error {
 	tprClient := m.kubeClient.ExtensionsV1beta1().ThirdPartyResources()
 
 	deleteTPR := func(runtime aci.RuntimeObject) error {
-		name := runtime.ResourceName() + "." + aci.V1alpha1SchemeGroupVersion.Group
+		name := runtime.ResourceName() + "." + aci_v1alpha1.SchemeGroupVersion.Group
 		if err := tprClient.Delete(name, &metav1.DeleteOptions{}); err != nil && !kerr.IsNotFound(err) {
 			return fmt.Errorf(`Failed to delete TPR "%s"`, name)
 		}
@@ -143,14 +144,14 @@ func (m *migrator) createCRDs(runtimeObjs ...aci.RuntimeObject) error {
 func (m *migrator) createCRD(runtime aci.RuntimeObject) error {
 	crd := &extensionsobj.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: runtime.ResourceType() + "." + aci.V1alpha1SchemeGroupVersion.Group,
+			Name: runtime.ResourceType() + "." + aci_v1alpha1.SchemeGroupVersion.Group,
 			Labels: map[string]string{
 				"app": "kubedb",
 			},
 		},
 		Spec: extensionsobj.CustomResourceDefinitionSpec{
-			Group:   aci.V1alpha1SchemeGroupVersion.Group,
-			Version: aci.V1alpha1SchemeGroupVersion.Version,
+			Group:   aci_v1alpha1.SchemeGroupVersion.Group,
+			Version: aci_v1alpha1.SchemeGroupVersion.Version,
 			Scope:   extensionsobj.NamespaceScoped,
 			Names: extensionsobj.CustomResourceDefinitionNames{
 				Plural:     runtime.ResourceType(),
@@ -243,7 +244,7 @@ func (m *migrator) deleteCRDs(runtimeObjs ...aci.RuntimeObject) error {
 	crdClient := m.apiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions()
 
 	deleteCRD := func(runtime aci.RuntimeObject) error {
-		name := runtime.ResourceType() + "." + aci.V1alpha1SchemeGroupVersion.Group
+		name := runtime.ResourceType() + "." + aci_v1alpha1.SchemeGroupVersion.Group
 		if err := crdClient.Delete(name, &metav1.DeleteOptions{}); err != nil && !kerr.IsNotFound(err) {
 			return fmt.Errorf(`Failed to delete CRD "%s""`, name)
 		}
@@ -268,7 +269,7 @@ func (m *migrator) CreateTPRs(runtimeObjs ...aci.RuntimeObject) error {
 }
 
 func (m *migrator) createTPR(runtime aci.RuntimeObject) error {
-	name := runtime.ResourceName() + "." + aci.V1alpha1SchemeGroupVersion.Group
+	name := runtime.ResourceName() + "." + aci_v1alpha1.SchemeGroupVersion.Group
 	_, err := m.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(name, metav1.GetOptions{})
 	if !kerr.IsNotFound(err) {
 		return err
@@ -288,7 +289,7 @@ func (m *migrator) createTPR(runtime aci.RuntimeObject) error {
 		Description: "Searchlight by AppsCode - Alerts for Kubernetes",
 		Versions: []extensions.APIVersion{
 			{
-				Name: aci.V1alpha1SchemeGroupVersion.Version,
+				Name: aci_v1alpha1.SchemeGroupVersion.Version,
 			},
 		},
 	}

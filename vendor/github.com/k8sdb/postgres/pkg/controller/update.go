@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/appscode/log"
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -20,7 +20,7 @@ func (c *Controller) UpdatePostgres(
 ) (*tapi.Postgres, error) {
 	attempt := 0
 	for ; attempt < maxAttempts; attempt = attempt + 1 {
-		cur, err := c.ExtClient.Postgreses(meta.Namespace).Get(meta.Name)
+		cur, err := c.ExtClient.Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}

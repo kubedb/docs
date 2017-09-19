@@ -1,7 +1,8 @@
 package controller
 
 import (
-	tapi "github.com/k8sdb/apimachinery/api"
+	"github.com/k8sdb/apimachinery/apis/kubedb"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -27,7 +28,7 @@ func (c *Controller) createRole(elastic *tapi.Elasticsearch) error {
 		},
 		Rules: []rbac.PolicyRule{
 			{
-				APIGroups:     []string{tapi.GroupName},
+				APIGroups:     []string{kubedb.GroupName},
 				Resources:     []string{tapi.ResourceTypeElasticsearch},
 				ResourceNames: []string{elastic.Name},
 				Verbs:         []string{"get"},

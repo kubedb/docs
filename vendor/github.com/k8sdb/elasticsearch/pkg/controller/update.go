@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/appscode/log"
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -20,13 +20,13 @@ func (c *Controller) UpdateElasticsearch(
 ) (*tapi.Elasticsearch, error) {
 	attempt := 0
 	for ; attempt < maxAttempts; attempt = attempt + 1 {
-		cur, err := c.ExtClient.Elasticsearches(meta.Namespace).Get(meta.Name)
+		cur, err := c.ExtClient.Elasticsearchs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}
 
 		modified := transformer(*cur)
-		if elasticsearch, err := c.ExtClient.Elasticsearches(cur.Namespace).Update(&modified); err == nil {
+		if elasticsearch, err := c.ExtClient.Elasticsearchs(cur.Namespace).Update(&modified); err == nil {
 			return elasticsearch, nil
 		}
 

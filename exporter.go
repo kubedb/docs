@@ -7,7 +7,7 @@ import (
 
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
-	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/analytics"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"

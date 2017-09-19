@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/appscode/log"
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	amv "github.com/k8sdb/apimachinery/pkg/validator"
@@ -23,10 +23,10 @@ func (c *Controller) ValidateSnapshot(snapshot *tapi.Snapshot) error {
 	// Database name can't empty
 	databaseName := snapshot.Spec.DatabaseName
 	if databaseName == "" {
-		return fmt.Errorf(`Object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
+		return fmt.Errorf(`object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
 	}
 
-	if _, err := c.ExtClient.Postgreses(snapshot.Namespace).Get(databaseName); err != nil {
+	if _, err := c.ExtClient.Postgreses(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -34,7 +34,7 @@ func (c *Controller) ValidateSnapshot(snapshot *tapi.Snapshot) error {
 }
 
 func (c *Controller) GetDatabase(snapshot *tapi.Snapshot) (runtime.Object, error) {
-	postgres, err := c.ExtClient.Postgreses(snapshot.Namespace).Get(snapshot.Spec.DatabaseName)
+	postgres, err := c.ExtClient.Postgreses(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error)
 	if err != nil {
 		return nil, err
 	}
-	postgres, err := c.ExtClient.Postgreses(snapshot.Namespace).Get(databaseName)
+	postgres, err := c.ExtClient.Postgreses(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

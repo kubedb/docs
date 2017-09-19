@@ -3,7 +3,7 @@ package controller
 import (
 	"fmt"
 
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/monitor"
 )
 

@@ -14,8 +14,8 @@ import (
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	tapi "github.com/k8sdb/apimachinery/api"
-	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/analytics"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
@@ -44,7 +44,7 @@ var (
 	enableRbac        bool   = false
 
 	kubeClient clientset.Interface
-	dbClient   tcs.ExtensionInterface
+	dbClient   tcs.KubedbV1alpha1Interface
 )
 
 func NewCmdRun() *cobra.Command {

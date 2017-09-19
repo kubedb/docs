@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/go-ini/ini"
-	tapi "github.com/k8sdb/apimachinery/api"
-	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
@@ -15,7 +15,7 @@ import (
 
 func ExportReport(
 	kubeClient clientset.Interface,
-	dbClient tcs.ExtensionInterface,
+	dbClient tcs.KubedbV1alpha1Interface,
 	namespace string,
 	kubedbName string,
 	dbname string,
@@ -23,7 +23,7 @@ func ExportReport(
 ) {
 	startTime := metav1.Now()
 
-	postgres, err := dbClient.Postgreses(namespace).Get(kubedbName)
+	postgres, err := dbClient.Postgreses(namespace).Get(kubedbName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			http.Error(w, fmt.Sprintf(`Postgres "%v" not found`, kubedbName), http.StatusNotFound)

@@ -4,14 +4,14 @@ import (
 	"errors"
 
 	"github.com/appscode/log"
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
 func (c *Controller) Exists(om *metav1.ObjectMeta) (bool, error) {
-	if _, err := c.ExtClient.Postgreses(om.Namespace).Get(om.Name); err != nil {
+	if _, err := c.ExtClient.Postgreses(om.Namespace).Get(om.Name, metav1.GetOptions{}); err != nil {
 		if !kerr.IsNotFound(err) {
 			return false, err
 		}
@@ -136,7 +136,7 @@ func (c *Controller) ResumeDatabase(dormantDb *tapi.DormantDatabase) error {
 	objectMeta := origin.ObjectMeta
 
 	if origin.Spec.Postgres.Init != nil {
-		return errors.New("Do not support InitSpec in spec.origin.postgres")
+		return errors.New("do not support InitSpec in spec.origin.postgres")
 	}
 
 	postgres := &tapi.Postgres{

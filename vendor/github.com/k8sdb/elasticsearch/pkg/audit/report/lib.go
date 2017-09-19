@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	elastic "gopkg.in/olivere/elastic.v3"
 )
 

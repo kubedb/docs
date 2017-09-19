@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/appscode/log"
-	tapi "github.com/k8sdb/apimachinery/api"
-	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	cmap "github.com/orcaman/concurrent-map"
 	"gopkg.in/robfig/cron.v2"
@@ -30,7 +30,7 @@ type CronControllerInterface interface {
 
 type cronController struct {
 	// ThirdPartyExtension client
-	extClient tcs.ExtensionInterface
+	extClient tcs.KubedbV1alpha1Interface
 	// For Internal Cron Job
 	cron *cron.Cron
 	// Store Cron Job EntryID for further use
@@ -45,7 +45,7 @@ type cronController struct {
  NewCronController returns CronControllerInterface.
  Need to call StartCron() method to start Cron.
 */
-func NewCronController(client clientset.Interface, extClient tcs.ExtensionInterface) CronControllerInterface {
+func NewCronController(client clientset.Interface, extClient tcs.KubedbV1alpha1Interface) CronControllerInterface {
 	return &cronController{
 		extClient:     extClient,
 		cron:          cron.New(),
@@ -113,7 +113,7 @@ func (c *cronController) StopCron() {
 }
 
 type snapshotInvoker struct {
-	extClient     tcs.ExtensionInterface
+	extClient     tcs.KubedbV1alpha1Interface
 	runtimeObject runtime.Object
 	om            metav1.ObjectMeta
 	spec          *tapi.BackupScheduleSpec
@@ -132,7 +132,7 @@ func (s *snapshotInvoker) validateScheduler(checkDuration time.Duration) error {
 	then := time.Now()
 	now := time.Now()
 	for now.Sub(then) < checkDuration {
-		snapshot, err := s.extClient.Snapshots(s.om.Namespace).Get(snapshotName)
+		snapshot, err := s.extClient.Snapshots(s.om.Namespace).Get(snapshotName, metav1.GetOptions{})
 		if err != nil {
 			if kerr.IsNotFound(err) {
 				time.Sleep(sleepDuration)
@@ -177,7 +177,7 @@ func (s *snapshotInvoker) createScheduledSnapshot() {
 	})
 	if err != nil {
 		s.eventRecorder.Eventf(
-			s.runtimeObject,
+			tapi.ObjectReferenceFor(s.runtimeObject),
 			apiv1.EventTypeWarning,
 			eventer.EventReasonFailedToList,
 			"Failed to list Snapshots. Reason: %v",
@@ -189,7 +189,7 @@ func (s *snapshotInvoker) createScheduledSnapshot() {
 
 	if len(snapshotList.Items) > 0 {
 		s.eventRecorder.Event(
-			s.runtimeObject,
+			tapi.ObjectReferenceFor(s.runtimeObject),
 			apiv1.EventTypeNormal,
 			eventer.EventReasonIgnoredSnapshot,
 			"Skipping scheduled Backup. One is still active.",
