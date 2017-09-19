@@ -5,13 +5,12 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/appscode/go/log"
 	"github.com/appscode/go/wait"
 	kutildb "github.com/appscode/kutil/kubedb/v1alpha1"
-	"github.com/appscode/log"
 	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	tapi_v1alpha1 "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
-	"github.com/k8sdb/apimachinery/pkg/analytics"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -125,19 +124,13 @@ func (c *DormantDbController) watch() {
 				dormantDb := obj.(*tapi.DormantDatabase)
 				if dormantDb.Status.CreationTime == nil {
 					if err := c.create(dormantDb); err != nil {
-						dormantDbFailedToCreate()
 						log.Errorln(err)
-					} else {
-						dormantDbSuccessfullyCreated()
 					}
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
 				if err := c.delete(obj.(*tapi.DormantDatabase)); err != nil {
-					dormantDbFailedToDelete()
 					log.Errorln(err)
-				} else {
-					dormantDbSuccessfullyDeleted()
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
@@ -476,20 +469,4 @@ func (c *DormantDbController) reCreateDormantDatabase(dormantDb *tapi.DormantDat
 	}
 
 	return nil
-}
-
-func dormantDbSuccessfullyCreated() {
-	analytics.SendEvent(tapi.ResourceNameDormantDatabase, "created", "success")
-}
-
-func dormantDbFailedToCreate() {
-	analytics.SendEvent(tapi.ResourceNameDormantDatabase, "created", "failure")
-}
-
-func dormantDbSuccessfullyDeleted() {
-	analytics.SendEvent(tapi.ResourceNameDormantDatabase, "deleted", "success")
-}
-
-func dormantDbFailedToDelete() {
-	analytics.SendEvent(tapi.ResourceNameDormantDatabase, "deleted", "failure")
 }

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	kutilapps "github.com/appscode/kutil/apps/v1beta1"
-	"github.com/appscode/log"
 	"github.com/graymeta/stow"
 	_ "github.com/graymeta/stow/azure"
 	_ "github.com/graymeta/stow/google"

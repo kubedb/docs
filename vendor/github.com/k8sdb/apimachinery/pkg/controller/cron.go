@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/eventer"

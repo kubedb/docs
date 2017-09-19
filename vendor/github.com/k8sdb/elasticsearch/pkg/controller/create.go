@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
 	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/storage"

@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/appscode/go/hold"
-	"github.com/appscode/log"
+	"github.com/appscode/go/log"
+	kutildb "github.com/appscode/kutil/kubedb/v1alpha1"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
-	"github.com/k8sdb/apimachinery/pkg/analytics"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -39,8 +39,6 @@ type Options struct {
 	GoverningService string
 	// Address to listen on for web interface and telemetry.
 	Address string
-	// Enable analytics
-	EnableAnalytics bool
 	// Enable RBAC for database workloads
 	EnableRbac bool
 }
@@ -103,11 +101,6 @@ func (c *Controller) Run() {
 
 // Blocks caller. Intended to be called as a Go routine.
 func (c *Controller) RunAndHold() {
-	// Enable analytics
-	if c.opt.EnableAnalytics {
-		analytics.Enable()
-	}
-
 	c.Run()
 
 	// Run HTTP server to expose metrics, audit endpoint & debug profiles.
@@ -135,20 +128,14 @@ func (c *Controller) watchElastic() {
 				elastic := obj.(*tapi.Elasticsearch)
 				if elastic.Status.CreationTime == nil {
 					if err := c.create(elastic); err != nil {
-						elasticFailedToCreate()
 						log.Errorln(err)
 						c.pushFailureEvent(elastic, err.Error())
-					} else {
-						elasticSuccessfullyCreated()
 					}
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
 				if err := c.pause(obj.(*tapi.Elasticsearch)); err != nil {
-					elasticFailedToDelete()
 					log.Errorln(err)
-				} else {
-					elasticSuccessfullyDeleted()
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
@@ -269,7 +256,7 @@ func (c *Controller) pushFailureEvent(elastic *tapi.Elasticsearch, reason string
 		return
 	}
 
-	_, err = c.UpdateElasticsearch(elastic.ObjectMeta, func(in tapi.Elasticsearch) tapi.Elasticsearch {
+	_, err = kutildb.TryPatchElasticsearch(c.ExtClient, elastic.ObjectMeta, func(in *tapi.Elasticsearch) *tapi.Elasticsearch {
 		in.Status.Phase = tapi.DatabasePhaseFailed
 		in.Status.Reason = reason
 		return in
@@ -278,20 +265,4 @@ func (c *Controller) pushFailureEvent(elastic *tapi.Elasticsearch, reason string
 		c.recorder.Eventf(elastic.ObjectReference(), apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 	}
 
-}
-
-func elasticSuccessfullyCreated() {
-	analytics.SendEvent(tapi.ResourceNameElasticsearch, "created", "success")
-}
-
-func elasticFailedToCreate() {
-	analytics.SendEvent(tapi.ResourceNameElasticsearch, "created", "failure")
-}
-
-func elasticSuccessfullyDeleted() {
-	analytics.SendEvent(tapi.ResourceNameElasticsearch, "deleted", "success")
-}
-
-func elasticFailedToDelete() {
-	analytics.SendEvent(tapi.ResourceNameElasticsearch, "deleted", "failure")
 }

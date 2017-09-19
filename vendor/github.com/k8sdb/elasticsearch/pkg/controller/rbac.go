@@ -1,6 +1,8 @@
 package controller
 
 import (
+	kutilcore "github.com/appscode/kutil/core/v1"
+	kutilrbac "github.com/appscode/kutil/rbac/v1beta1"
 	"github.com/k8sdb/apimachinery/apis/kubedb"
 	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -21,30 +23,30 @@ func (c *Controller) deleteRole(elastic *tapi.Elasticsearch) error {
 
 func (c *Controller) createRole(elastic *tapi.Elasticsearch) error {
 	// Create new Roles
-	role := &rbac.Role{
-		ObjectMeta: metav1.ObjectMeta{
+	_, err := kutilrbac.EnsureRole(
+		c.Client,
+		metav1.ObjectMeta{
 			Name:      elastic.Name,
 			Namespace: elastic.Namespace,
 		},
-		Rules: []rbac.PolicyRule{
-			{
-				APIGroups:     []string{kubedb.GroupName},
-				Resources:     []string{tapi.ResourceTypeElasticsearch},
-				ResourceNames: []string{elastic.Name},
-				Verbs:         []string{"get"},
-			},
-			{
-				APIGroups: []string{apiv1.GroupName},
-				Resources: []string{"services", "endpoints"},
-				Verbs:     []string{"get"},
-			},
+		func(in *rbac.Role) *rbac.Role {
+			in.Rules = []rbac.PolicyRule{
+				{
+					APIGroups:     []string{kubedb.GroupName},
+					Resources:     []string{tapi.ResourceTypeElasticsearch},
+					ResourceNames: []string{elastic.Name},
+					Verbs:         []string{"get"},
+				},
+				{
+					APIGroups: []string{apiv1.GroupName},
+					Resources: []string{"services", "endpoints"},
+					Verbs:     []string{"get"},
+				},
+			}
+			return in
 		},
-	}
-	if _, err := c.Client.RbacV1beta1().Roles(role.Namespace).Create(role); err != nil {
-		return err
-	}
-
-	return nil
+	)
+	return err
 }
 
 func (c *Controller) deleteServiceAccount(elastic *tapi.Elasticsearch) error {
@@ -59,17 +61,17 @@ func (c *Controller) deleteServiceAccount(elastic *tapi.Elasticsearch) error {
 
 func (c *Controller) createServiceAccount(elastic *tapi.Elasticsearch) error {
 	// Create new ServiceAccount
-	sa := &apiv1.ServiceAccount{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      elastic.Name,
+	_, err := kutilcore.EnsureServiceAccount(
+		c.Client,
+		metav1.ObjectMeta{
+			Name:      elastic.OffshootName(),
 			Namespace: elastic.Namespace,
 		},
-	}
-	if _, err := c.Client.CoreV1().ServiceAccounts(sa.Namespace).Create(sa); err != nil {
-		return err
-	}
-
-	return nil
+		func(in *apiv1.ServiceAccount) *apiv1.ServiceAccount {
+			return in
+		},
+	)
+	return err
 }
 
 func (c *Controller) deleteRoleBinding(elastic *tapi.Elasticsearch) error {
@@ -83,30 +85,30 @@ func (c *Controller) deleteRoleBinding(elastic *tapi.Elasticsearch) error {
 }
 
 func (c *Controller) createRoleBinding(elastic *tapi.Elasticsearch) error {
-	// Create new RoleBindings
-	roleBinding := &rbac.RoleBinding{
-		ObjectMeta: metav1.ObjectMeta{
+	// Ensure new RoleBindings
+	_, err := kutilrbac.EnsureRoleBinding(
+		c.Client,
+		metav1.ObjectMeta{
 			Name:      elastic.Name,
 			Namespace: elastic.Namespace,
 		},
-		RoleRef: rbac.RoleRef{
-			APIGroup: rbac.GroupName,
-			Kind:     "Role",
-			Name:     elastic.Name,
+		func(in *rbac.RoleBinding) *rbac.RoleBinding {
+			in.RoleRef = rbac.RoleRef{
+				APIGroup: rbac.GroupName,
+				Kind:     "Role",
+				Name:     elastic.Name,
+			}
+			in.Subjects = []rbac.Subject{
+				{
+					Kind:      rbac.ServiceAccountKind,
+					Name:      elastic.Name,
+					Namespace: elastic.Namespace,
+				},
+			}
+			return in
 		},
-		Subjects: []rbac.Subject{
-			{
-				Kind:      rbac.ServiceAccountKind,
-				Name:      elastic.Name,
-				Namespace: elastic.Namespace,
-			},
-		},
-	}
-	if _, err := c.Client.RbacV1beta1().RoleBindings(roleBinding.Namespace).Create(roleBinding); err != nil {
-		return err
-	}
-
-	return nil
+	)
+	return err
 }
 
 func (c *Controller) createRBACStuff(elastic *tapi.Elasticsearch) error {
