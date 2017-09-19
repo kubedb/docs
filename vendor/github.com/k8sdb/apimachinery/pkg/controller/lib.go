@@ -5,18 +5,21 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/appscode/go/types"
+	kutilapps "github.com/appscode/kutil/apps/v1beta1"
 	"github.com/appscode/log"
 	"github.com/graymeta/stow"
 	_ "github.com/graymeta/stow/azure"
 	_ "github.com/graymeta/stow/google"
 	_ "github.com/graymeta/stow/s3"
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
 	batch "k8s.io/client-go/pkg/apis/batch/v1"
@@ -131,7 +134,7 @@ func (c *Controller) DeleteSnapshots(namespace string, selector labels.Selector)
 	}
 
 	for _, snapshot := range snapshotList.Items {
-		if err := c.ExtClient.Snapshots(snapshot.Namespace).Delete(snapshot.Name); err != nil {
+		if err := c.ExtClient.Snapshots(snapshot.Namespace).Delete(snapshot.Name, &metav1.DeleteOptions{}); err != nil {
 			return err
 		}
 	}
@@ -159,7 +162,7 @@ func (c *Controller) CheckDatabaseRestoreJob(
 				continue
 			}
 			recorder.Eventf(
-				runtimeObj,
+				tapi.ObjectReferenceFor(runtimeObj),
 				apiv1.EventTypeWarning,
 				eventer.EventReasonFailedToList,
 				"Failed to get Job. Reason: %v",
@@ -186,56 +189,11 @@ func (c *Controller) CheckDatabaseRestoreJob(
 		return false
 	}
 
-	r, err := metav1.LabelSelectorAsSelector(job.Spec.Selector)
-	if err != nil {
-		return false
-	}
-	err = c.Client.CoreV1().Pods(job.Namespace).DeleteCollection(&metav1.DeleteOptions{}, metav1.ListOptions{
-		LabelSelector: r.String(),
-	})
-	if err != nil {
-		recorder.Eventf(
-			runtimeObj,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToList,
-			"Failed to list Pods. Reason: %v",
-			err,
-		)
-		log.Errorln(err)
-		return jobSuccess
-	}
+	deleteJobResources(c.Client, recorder, runtimeObj, job)
 
 	err = c.Client.CoreV1().Secrets(job.Namespace).Delete(job.Name, &metav1.DeleteOptions{})
-	if err != nil {
+	if err != nil && !kerr.IsNotFound(err) {
 		return false
-	}
-
-	for _, volume := range job.Spec.Template.Spec.Volumes {
-		claim := volume.PersistentVolumeClaim
-		if claim != nil {
-			err := c.Client.CoreV1().PersistentVolumeClaims(job.Namespace).Delete(claim.ClaimName, nil)
-			if err != nil {
-				recorder.Eventf(
-					runtimeObj,
-					apiv1.EventTypeWarning,
-					eventer.EventReasonFailedToDelete,
-					"Failed to delete PersistentVolumeClaim. Reason: %v",
-					err,
-				)
-				log.Errorln(err)
-			}
-		}
-	}
-
-	if err := c.Client.BatchV1().Jobs(job.Namespace).Delete(job.Name, nil); err != nil {
-		recorder.Eventf(
-			runtimeObj,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToDelete,
-			"Failed to delete Job. Reason: %v",
-			err,
-		)
-		log.Errorln(err)
 	}
 
 	return jobSuccess
@@ -305,9 +263,11 @@ func (c *Controller) DeleteStatefulSet(name, namespace string) error {
 	}
 
 	// Update StatefulSet
-	replicas := int32(0)
-	statefulSet.Spec.Replicas = &replicas
-	if _, err := c.Client.AppsV1beta1().StatefulSets(statefulSet.Namespace).Update(statefulSet); err != nil {
+	_, err = kutilapps.TryPatchStatefulSet(c.Client, statefulSet.ObjectMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
+		in.Spec.Replicas = types.Int32P(0)
+		return in
+	})
+	if err != nil {
 		return err
 	}
 
@@ -348,4 +308,60 @@ func (c *Controller) DeleteSecret(name, namespace string) error {
 	}
 
 	return c.Client.CoreV1().Secrets(namespace).Delete(name, nil)
+}
+
+func deleteJobResources(
+	client clientset.Interface,
+	recorder record.EventRecorder,
+	runtimeObj runtime.Object,
+	job *batch.Job,
+) {
+	if err := client.BatchV1().Jobs(job.Namespace).Delete(job.Name, nil); err != nil && !kerr.IsNotFound(err) {
+		recorder.Eventf(
+			tapi.ObjectReferenceFor(runtimeObj),
+			apiv1.EventTypeWarning,
+			eventer.EventReasonFailedToDelete,
+			"Failed to delete Job. Reason: %v",
+			err,
+		)
+		log.Errorln(err)
+	}
+
+	r, err := metav1.LabelSelectorAsSelector(job.Spec.Selector)
+	if err != nil {
+		log.Errorln(err)
+	} else {
+		err = client.CoreV1().Pods(job.Namespace).DeleteCollection(&metav1.DeleteOptions{}, metav1.ListOptions{
+			LabelSelector: r.String(),
+		})
+		if err != nil {
+			recorder.Eventf(
+				tapi.ObjectReferenceFor(runtimeObj),
+				apiv1.EventTypeWarning,
+				eventer.EventReasonFailedToDelete,
+				"Failed to delete Pods. Reason: %v",
+				err,
+			)
+			log.Errorln(err)
+		}
+	}
+
+	for _, volume := range job.Spec.Template.Spec.Volumes {
+		claim := volume.PersistentVolumeClaim
+		if claim != nil {
+			err := client.CoreV1().PersistentVolumeClaims(job.Namespace).Delete(claim.ClaimName, nil)
+			if err != nil && !kerr.IsNotFound(err) {
+				recorder.Eventf(
+					tapi.ObjectReferenceFor(runtimeObj),
+					apiv1.EventTypeWarning,
+					eventer.EventReasonFailedToDelete,
+					"Failed to delete PersistentVolumeClaim. Reason: %v",
+					err,
+				)
+				log.Errorln(err)
+			}
+		}
+	}
+
+	return
 }

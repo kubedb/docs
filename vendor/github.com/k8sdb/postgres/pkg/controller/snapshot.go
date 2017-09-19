@@ -1,16 +1,14 @@
 package controller
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/appscode/log"
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	amv "github.com/k8sdb/apimachinery/pkg/validator"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	batch "k8s.io/client-go/pkg/apis/batch/v1"
@@ -25,43 +23,23 @@ func (c *Controller) ValidateSnapshot(snapshot *tapi.Snapshot) error {
 	// Database name can't empty
 	databaseName := snapshot.Spec.DatabaseName
 	if databaseName == "" {
-		return fmt.Errorf(`Object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
+		return fmt.Errorf(`object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
 	}
 
-	labelMap := map[string]string{
-		tapi.LabelDatabaseKind:   tapi.ResourceKindPostgres,
-		tapi.LabelDatabaseName:   snapshot.Spec.DatabaseName,
-		tapi.LabelSnapshotStatus: string(tapi.SnapshotPhaseRunning),
-	}
-
-	snapshotList, err := c.ExtClient.Snapshots(snapshot.Namespace).List(metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(labelMap).String(),
-	})
-	if err != nil {
+	if _, err := c.ExtClient.Postgreses(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
 		return err
-	}
-
-	if len(snapshotList.Items) > 0 {
-		if snapshot, err = c.ExtClient.Snapshots(snapshot.Namespace).Get(snapshot.Name); err != nil {
-			return err
-		}
-
-		t := metav1.Now()
-		snapshot.Status.StartTime = &t
-		snapshot.Status.CompletionTime = &t
-		snapshot.Status.Phase = tapi.SnapshotPhaseFailed
-		snapshot.Status.Reason = "One Snapshot is already Running"
-		if _, err := c.ExtClient.Snapshots(snapshot.Namespace).Update(snapshot); err != nil {
-			return err
-		}
-		return errors.New("One Snapshot is already Running")
 	}
 
 	return amv.ValidateSnapshotSpec(c.Client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)
 }
 
 func (c *Controller) GetDatabase(snapshot *tapi.Snapshot) (runtime.Object, error) {
-	return c.ExtClient.Postgreses(snapshot.Namespace).Get(snapshot.Spec.DatabaseName)
+	postgres, err := c.ExtClient.Postgreses(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return postgres, nil
 }
 
 func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error) {
@@ -76,7 +54,7 @@ func (c *Controller) GetSnapshotter(snapshot *tapi.Snapshot) (*batch.Job, error)
 	if err != nil {
 		return nil, err
 	}
-	postgres, err := c.ExtClient.Postgreses(snapshot.Namespace).Get(databaseName)
+	postgres, err := c.ExtClient.Postgreses(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

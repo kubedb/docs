@@ -1,14 +1,16 @@
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/types"
 	"github.com/appscode/log"
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/docker"
+	"github.com/k8sdb/apimachinery/pkg/eventer"
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -172,13 +174,13 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulS
 		if err != nil {
 			return nil, err
 		}
-		if postgres, err = c.ExtClient.Postgreses(postgres.Namespace).Get(postgres.Name); err != nil {
-			return nil, err
-		}
 
-		postgres.Spec.DatabaseSecret = secretVolumeSource
-
-		if _, err := c.ExtClient.Postgreses(postgres.Namespace).Update(postgres); err != nil {
+		postgres, err = c.UpdatePostgres(postgres.ObjectMeta, func(in tapi.Postgres) tapi.Postgres {
+			in.Spec.DatabaseSecret = secretVolumeSource
+			return in
+		})
+		if err != nil {
+			c.recorder.Eventf(postgres.ObjectReference(), apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 			return nil, err
 		}
 	}
@@ -349,6 +351,15 @@ func (c *Controller) createDormantDatabase(postgres *tapi.Postgres) (*tapi.Dorma
 			},
 		},
 	}
+
+	initSpec, _ := json.Marshal(postgres.Spec.Init)
+	if initSpec != nil {
+		dormantDb.Annotations = map[string]string{
+			tapi.PostgresInitSpec: string(initSpec),
+		}
+	}
+	dormantDb.Spec.Origin.Spec.Postgres.Init = nil
+
 	return c.ExtClient.DormantDatabases(dormantDb.Namespace).Create(dormantDb)
 }
 

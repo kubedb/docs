@@ -6,7 +6,7 @@ import (
 
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/pat"
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	esaudit "github.com/k8sdb/elasticsearch/pkg/audit/report"
 	pgaudit "github.com/k8sdb/postgres/pkg/audit/report"
 )

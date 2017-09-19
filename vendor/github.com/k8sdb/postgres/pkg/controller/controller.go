@@ -7,11 +7,13 @@ import (
 	"github.com/appscode/go/hold"
 	"github.com/appscode/log"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	tapi "github.com/k8sdb/apimachinery/api"
-	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/analytics"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
+	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -20,7 +22,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
-	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
@@ -42,12 +43,14 @@ type Options struct {
 
 type Controller struct {
 	*amc.Controller
+	// Api Extension Client
+	ApiExtKubeClient apiextensionsclient.Interface
 	// Prometheus client
 	promClient pcm.MonitoringV1alpha1Interface
 	// Cron Controller
 	cronController amc.CronControllerInterface
 	// Event Recorder
-	eventRecorder record.EventRecorder
+	recorder record.EventRecorder
 	// Flag data
 	opt Options
 	// sync time to sync the list.
@@ -59,7 +62,8 @@ var _ amc.Deleter = &Controller{}
 
 func New(
 	client clientset.Interface,
-	extClient tcs.ExtensionInterface,
+	apiExtKubeClient apiextensionsclient.Interface,
+	extClient tcs.KubedbV1alpha1Interface,
 	promClient pcm.MonitoringV1alpha1Interface,
 	cronController amc.CronControllerInterface,
 	opt Options,
@@ -69,17 +73,18 @@ func New(
 			Client:    client,
 			ExtClient: extClient,
 		},
-		promClient:     promClient,
-		cronController: cronController,
-		eventRecorder:  eventer.NewEventRecorder(client, "Postgres operator"),
-		opt:            opt,
-		syncPeriod:     time.Minute * 2,
+		ApiExtKubeClient: apiExtKubeClient,
+		promClient:       promClient,
+		cronController:   cronController,
+		recorder:         eventer.NewEventRecorder(client, "Postgres operator"),
+		opt:              opt,
+		syncPeriod:       time.Minute * 2,
 	}
 }
 
 func (c *Controller) Run() {
-	// Ensure Postgres TPR
-	c.ensureThirdPartyResource()
+	// Ensure Postgres CRD
+	c.ensureCustomResourceDefinition()
 
 	// Start Cron
 	c.cronController.StartCron()
@@ -183,7 +188,7 @@ func (c *Controller) watchSnapshot() {
 		},
 	}
 
-	amc.NewSnapshotController(c.Client, c.ExtClient, c, lw, c.syncPeriod).Run()
+	amc.NewSnapshotController(c.Client, c.ApiExtKubeClient, c.ExtClient, c, lw, c.syncPeriod).Run()
 }
 
 func (c *Controller) watchDormantDatabase() {
@@ -206,14 +211,14 @@ func (c *Controller) watchDormantDatabase() {
 		},
 	}
 
-	amc.NewDormantDbController(c.Client, c.ExtClient, c, lw, c.syncPeriod).Run()
+	amc.NewDormantDbController(c.Client, c.ApiExtKubeClient, c.ExtClient, c, lw, c.syncPeriod).Run()
 }
 
-func (c *Controller) ensureThirdPartyResource() {
-	log.Infoln("Ensuring ThirdPartyResource...")
+func (c *Controller) ensureCustomResourceDefinition() {
+	log.Infoln("Ensuring CustomResourceDefinition...")
 
-	resourceName := tapi.ResourceNamePostgres + "." + tapi.V1alpha1SchemeGroupVersion.Group
-	if _, err := c.Client.ExtensionsV1beta1().ThirdPartyResources().Get(resourceName, metav1.GetOptions{}); err != nil {
+	resourceName := tapi.ResourceTypePostgres + "." + tapi.SchemeGroupVersion.Group
+	if _, err := c.ApiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err != nil {
 		if !kerr.IsNotFound(err) {
 			log.Fatalln(err)
 		}
@@ -221,33 +226,33 @@ func (c *Controller) ensureThirdPartyResource() {
 		return
 	}
 
-	thirdPartyResource := &extensions.ThirdPartyResource{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "extensions/v1beta1",
-			Kind:       "ThirdPartyResource",
-		},
+	crd := &extensionsobj.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: resourceName,
 			Labels: map[string]string{
-				"app": tapi.DatabaseNamePrefix,
+				"app": "kubedb",
 			},
 		},
-		Description: "Postgres Database by KubeDB",
-		Versions: []extensions.APIVersion{
-			{
-				Name: tapi.V1alpha1SchemeGroupVersion.Version,
+		Spec: extensionsobj.CustomResourceDefinitionSpec{
+			Group:   tapi.SchemeGroupVersion.Group,
+			Version: tapi.SchemeGroupVersion.Version,
+			Scope:   extensionsobj.NamespaceScoped,
+			Names: extensionsobj.CustomResourceDefinitionNames{
+				Plural:     tapi.ResourceTypePostgres,
+				Kind:       tapi.ResourceKindPostgres,
+				ShortNames: []string{tapi.ResourceCodePostgres},
 			},
 		},
 	}
 
-	if _, err := c.Client.Extensions().ThirdPartyResources().Create(thirdPartyResource); err != nil {
+	if _, err := c.ApiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd); err != nil {
 		log.Fatalln(err)
 	}
 }
 
 func (c *Controller) pushFailureEvent(postgres *tapi.Postgres, reason string) {
-	c.eventRecorder.Eventf(
-		postgres,
+	c.recorder.Eventf(
+		postgres.ObjectReference(),
 		apiv1.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready Postgres: "%v". Reason: %v`,
@@ -255,24 +260,14 @@ func (c *Controller) pushFailureEvent(postgres *tapi.Postgres, reason string) {
 		reason,
 	)
 
-	var err error
-	if postgres, err = c.ExtClient.Postgreses(postgres.Namespace).Get(postgres.Name); err != nil {
-		log.Errorln(err)
-		return
-	}
+	_, err := c.UpdatePostgres(postgres.ObjectMeta, func(in tapi.Postgres) tapi.Postgres {
+		in.Status.Phase = tapi.DatabasePhaseFailed
+		in.Status.Reason = reason
+		return in
+	})
 
-	postgres.Status.Phase = tapi.DatabasePhaseFailed
-	postgres.Status.Reason = reason
-	if _, err := c.ExtClient.Postgreses(postgres.Namespace).Update(postgres); err != nil {
-		c.eventRecorder.Eventf(
-			postgres,
-			apiv1.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			`Fail to update Postgres: "%v". Reason: %v`,
-			postgres.Name,
-			err,
-		)
-		log.Errorln(err)
+	if err != nil {
+		c.recorder.Eventf(postgres.ObjectReference(), apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 	}
 }
 

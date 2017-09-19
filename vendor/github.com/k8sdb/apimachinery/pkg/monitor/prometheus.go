@@ -6,10 +6,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	_ "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	cgerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
@@ -17,13 +16,15 @@ import (
 
 type PrometheusController struct {
 	kubeClient        clientset.Interface
-	promClient        v1alpha1.MonitoringV1alpha1Interface
+	apiExtKubeClient  apiextensionsclient.Interface
+	promClient        prom.MonitoringV1alpha1Interface
 	operatorNamespace string
 }
 
-func NewPrometheusController(kubeClient clientset.Interface, promClient v1alpha1.MonitoringV1alpha1Interface, operatorNamespace string) Monitor {
+func NewPrometheusController(kubeClient clientset.Interface, apiExtKubeClient apiextensionsclient.Interface, promClient prom.MonitoringV1alpha1Interface, operatorNamespace string) Monitor {
 	return &PrometheusController{
 		kubeClient:        kubeClient,
+		apiExtKubeClient:  apiExtKubeClient,
 		promClient:        promClient,
 		operatorNamespace: operatorNamespace,
 	}
@@ -54,11 +55,11 @@ func (c *PrometheusController) DeleteMonitor(meta metav1.ObjectMeta, spec *tapi.
 }
 
 func (c *PrometheusController) SupportsCoreOSOperator() bool {
-	_, err := c.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("prometheus."+prom.TPRGroup, metav1.GetOptions{})
+	_, err := c.apiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(prom.PrometheusName+"."+prom.Group, metav1.GetOptions{})
 	if err != nil {
 		return false
 	}
-	_, err = c.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get("service-monitor."+prom.TPRGroup, metav1.GetOptions{})
+	_, err = c.apiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(prom.ServiceMonitorName+"."+prom.Group, metav1.GetOptions{})
 	if err != nil {
 		return false
 	}
@@ -77,7 +78,7 @@ func (c *PrometheusController) ensureServiceMonitor(meta metav1.ObjectMeta, old,
 		}
 	}
 
-	actual, err := c.promClient.ServiceMonitors(new.Prometheus.Namespace).Get(name)
+	actual, err := c.promClient.ServiceMonitors(new.Prometheus.Namespace).Get(name, metav1.GetOptions{})
 	if cgerr.IsNotFound(err) {
 		return c.createServiceMonitor(meta, new)
 	} else if err != nil {

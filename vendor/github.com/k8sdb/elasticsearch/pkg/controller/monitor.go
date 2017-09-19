@@ -3,7 +3,7 @@ package controller
 import (
 	"fmt"
 
-	tapi "github.com/k8sdb/apimachinery/api"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/monitor"
 )
 
@@ -15,7 +15,7 @@ func (c *Controller) newMonitorController(elastic *tapi.Elasticsearch) (monitor.
 	}
 
 	if monitorSpec.Prometheus != nil {
-		return monitor.NewPrometheusController(c.Client, c.promClient, c.opt.OperatorNamespace), nil
+		return monitor.NewPrometheusController(c.Client, c.ApiExtKubeClient, c.promClient, c.opt.OperatorNamespace), nil
 	}
 
 	return nil, fmt.Errorf("Monitoring controller not found for %v", monitorSpec)

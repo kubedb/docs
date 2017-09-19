@@ -14,14 +14,17 @@ import (
 	"github.com/appscode/log"
 	"github.com/appscode/pat"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/analytics"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
+	"github.com/k8sdb/apimachinery/pkg/migrator"
 	esCtrl "github.com/k8sdb/elasticsearch/pkg/controller"
 	pgCtrl "github.com/k8sdb/postgres/pkg/controller"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/tools/clientcmd"
@@ -41,7 +44,7 @@ var (
 	enableRbac        bool   = false
 
 	kubeClient clientset.Interface
-	dbClient   tcs.ExtensionInterface
+	dbClient   tcs.KubedbV1alpha1Interface
 )
 
 func NewCmdRun() *cobra.Command {
@@ -92,6 +95,7 @@ func run() {
 	}
 
 	kubeClient = clientset.NewForConfigOrDie(config)
+	apiExtKubeClient := apiextensionsclient.NewForConfigOrDie(config)
 	dbClient = tcs.NewForConfigOrDie(config)
 
 	cgConfig, err := cgcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
@@ -117,9 +121,20 @@ func run() {
 	}
 	analytics.SendEvent("operator", "started", Version)
 
+	tprMigrator := migrator.NewMigrator(kubeClient, apiExtKubeClient, dbClient)
+	err = tprMigrator.RunMigration(
+		&tapi.Postgres{},
+		&tapi.Elasticsearch{},
+		&tapi.Snapshot{},
+		&tapi.DormantDatabase{},
+	)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
 	defer runtime.HandleCrash()
 
-	pgCtrl.New(kubeClient, dbClient, promClient, cronController, pgCtrl.Options{
+	pgCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, pgCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
 		ExporterTag:       exporterTag,
@@ -130,7 +145,7 @@ func run() {
 	// Need to wait for sometime to run another controller.
 	// Or multiple controller will try to create common TPR simultaneously which gives error
 	time.Sleep(time.Second * 10)
-	esCtrl.New(kubeClient, dbClient, promClient, cronController, esCtrl.Options{
+	esCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
 		GoverningService:  governingService,
 		ExporterTag:       exporterTag,
 		ElasticDumpTag:    elasticDumpTag,
