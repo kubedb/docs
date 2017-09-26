@@ -122,6 +122,7 @@ func (c *DormantDbController) watch() {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				dormantDb := obj.(*tapi.DormantDatabase)
+				kutildb.AssignTypeKind(dormantDb)
 				if dormantDb.Status.CreationTime == nil {
 					if err := c.create(dormantDb); err != nil {
 						log.Errorln(err)
@@ -129,7 +130,9 @@ func (c *DormantDbController) watch() {
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
-				if err := c.delete(obj.(*tapi.DormantDatabase)); err != nil {
+				dormantDb := obj.(*tapi.DormantDatabase)
+				kutildb.AssignTypeKind(dormantDb)
+				if err := c.delete(dormantDb); err != nil {
 					log.Errorln(err)
 				}
 			},
@@ -144,6 +147,8 @@ func (c *DormantDbController) watch() {
 				}
 				// TODO: Find appropriate checking
 				// Only allow if Spec varies
+				kutildb.AssignTypeKind(oldDormantDb)
+				kutildb.AssignTypeKind(newDormantDb)
 				if !reflect.DeepEqual(oldDormantDb.Spec, newDormantDb.Spec) {
 					if err := c.update(oldDormantDb, newDormantDb); err != nil {
 						log.Errorln(err)

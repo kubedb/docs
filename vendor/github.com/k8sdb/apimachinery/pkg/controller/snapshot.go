@@ -123,6 +123,7 @@ func (c *SnapshotController) watch() {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				snapshot := obj.(*tapi.Snapshot)
+				kutildb.AssignTypeKind(snapshot)
 				if snapshot.Status.StartTime == nil {
 					if err := c.create(snapshot); err != nil {
 						log.Errorln(err)
@@ -131,6 +132,7 @@ func (c *SnapshotController) watch() {
 			},
 			DeleteFunc: func(obj interface{}) {
 				snapshot := obj.(*tapi.Snapshot)
+				kutildb.AssignTypeKind(snapshot)
 				if err := c.delete(snapshot); err != nil {
 					log.Errorln(err)
 				}
