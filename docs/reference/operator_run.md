@@ -16,7 +16,7 @@ operator run [flags]
 ```
       --address string                      Address to listen on for web interface and telemetry. (default ":8080")
       --elasticdump.tag string              Tag of elasticdump (default "2.4.2")
-      --elasticsearch.operator-tag string   Tag of kubedb/es-operator used for discovery (default "0.6.0")
+      --elasticsearch.operator-tag string   Tag of kubedb/es-operator used for discovery (default "0.7.0")
       --exporter-tag string                 Tag of kubedb/operator used as exporter (default "canary")
       --governing-service string            Governing service for database statefulset (default "kubedb")
   -h, --help                                help for run
