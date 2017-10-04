@@ -1,5 +1,5 @@
-hash: b49eed70b73c05dad40ffc2bdc018e59649d62e98ed4c5e804348a2e41afe7d4
-updated: 2017-09-26T06:32:29.340845213-07:00
+hash: 5e93cc755244cbfc1354e93c54eb62b80ead9868c093491f0523b18483d91433
+updated: 2017-10-04T03:58:23.670102416-07:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -21,7 +21,7 @@ imports:
   - version
   - wait
 - name: github.com/appscode/kutil
-  version: 81416f2ec1a1e6009abf8455e083c5a5b0fda763
+  version: 9c54837494cd68da396b0a9cb7afebb55366f554
   subpackages:
   - apps/v1beta1
   - core/v1
@@ -205,7 +205,7 @@ imports:
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/k8sdb/apimachinery
-  version: 1ece8bca55eb5055292bd661dc0f2b0505f9055a
+  version: 0e3d121b918e01522c0809be27d642b6d9b986bc
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -219,7 +219,7 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/k8sdb/elasticsearch
-  version: 80ece724ad240b95aa17e1f9742afa46db31fffe
+  version: 7cdad4658fb6190eefbda2a028afbeab3c1aa381
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -229,7 +229,7 @@ imports:
   subpackages:
   - collector
 - name: github.com/k8sdb/postgres
-  version: aea5bd852349de3dcd3d6205382fe780deb9d06f
+  version: 092ef007d992ce50152667652a213989bd6b427e
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -299,7 +299,7 @@ imports:
 - name: github.com/Sirupsen/logrus
   version: 4b6ea7319e214d98c938f12692336f7ca9348d6b
 - name: github.com/spf13/cobra
-  version: b78744579491c1ceeaaa3b40205e56b0591b93a3
+  version: 0dacccfbaabc71b872087c1719c5380d3e185173
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -354,7 +354,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: cec5cc05d57604ba2d2eaaf5381d3248fac4814d
+  version: 406e6cffe51212e465c56554f243c115595e135a
   subpackages:
   - gensupport
   - googleapi

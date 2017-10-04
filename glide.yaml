@@ -16,13 +16,13 @@ import:
 - package: github.com/go-kit/kit
   version: v0.5.0
 - package: github.com/k8sdb/apimachinery
-  version: master
+  version: release-0.7
 - package: github.com/k8sdb/elasticsearch
-  version: master
+  version: 0.7.1
 - package: github.com/k8sdb/elasticsearch_exporter
   version: master
 - package: github.com/k8sdb/postgres
-  version: master
+  version: 0.7.1
 - package: github.com/k8sdb/postgres_exporter
   version: master
 - package: github.com/orcaman/concurrent-map
