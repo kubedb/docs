@@ -23,7 +23,7 @@ var (
 	kubeconfigPath    string
 	governingService  string = "kubedb"
 	exporterTag       string
-	esOperatorTag     string = "0.7.0"
+	esOperatorTag     string = "0.7.1"
 	elasticDumpTag    string = "2.4.2"
 	address           string = ":8080"
 	operatorNamespace string = namespace()
