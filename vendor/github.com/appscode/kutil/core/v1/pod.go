@@ -7,30 +7,33 @@ import (
 
 	"github.com/appscode/kutil"
 	"github.com/golang/glog"
+	apiv1 "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
-	clientset "k8s.io/client-go/kubernetes"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
-func EnsurePod(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Pod) *apiv1.Pod) (*apiv1.Pod, error) {
-	return CreateOrPatchPod(c, meta, transform)
-}
-
-func CreateOrPatchPod(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Pod) *apiv1.Pod) (*apiv1.Pod, error) {
+func CreateOrPatchPod(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Pod) *apiv1.Pod) (*apiv1.Pod, error) {
 	cur, err := c.CoreV1().Pods(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.CoreV1().Pods(meta.Namespace).Create(transform(&apiv1.Pod{ObjectMeta: meta}))
+		glog.V(3).Infof("Creating Pod %s/%s.", meta.Namespace, meta.Name)
+		return c.CoreV1().Pods(meta.Namespace).Create(transform(&apiv1.Pod{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Pod",
+				APIVersion: apiv1.SchemeGroupVersion.String(),
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}
 	return PatchPod(c, cur, transform)
 }
 
-func PatchPod(c clientset.Interface, cur *apiv1.Pod, transform func(*apiv1.Pod) *apiv1.Pod) (*apiv1.Pod, error) {
+func PatchPod(c kubernetes.Interface, cur *apiv1.Pod, transform func(*apiv1.Pod) *apiv1.Pod) (*apiv1.Pod, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, err
@@ -48,11 +51,11 @@ func PatchPod(c clientset.Interface, cur *apiv1.Pod, transform func(*apiv1.Pod) 
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
-	glog.V(5).Infof("Patching Pod %s@%s.", cur.Name, cur.Namespace)
+	glog.V(3).Infof("Patching Pod %s/%s with %s", cur.Namespace, cur.Name, string(patch))
 	return c.CoreV1().Pods(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 }
 
-func TryPatchPod(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Pod) *apiv1.Pod) (result *apiv1.Pod, err error) {
+func TryPatchPod(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Pod) *apiv1.Pod) (result *apiv1.Pod, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -63,17 +66,17 @@ func TryPatchPod(c clientset.Interface, meta metav1.ObjectMeta, transform func(*
 			result, e2 = PatchPod(c, cur, transform)
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to patch Pod %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		glog.Errorf("Attempt %d failed to patch Pod %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to patch Pod %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to patch Pod %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }
 
-func TryUpdatePod(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Pod) *apiv1.Pod) (result *apiv1.Pod, err error) {
+func TryUpdatePod(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Pod) *apiv1.Pod) (result *apiv1.Pod, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -84,12 +87,12 @@ func TryUpdatePod(c clientset.Interface, meta metav1.ObjectMeta, transform func(
 			result, e2 = c.CoreV1().Pods(cur.Namespace).Update(transform(cur))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update Pod %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		glog.Errorf("Attempt %d failed to update Pod %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to update Pod %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to update Pod %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }
@@ -113,7 +116,7 @@ func PodRunningAndReady(pod apiv1.Pod) (bool, error) {
 	return false, nil
 }
 
-func RestartPods(kubeClient clientset.Interface, namespace string, selector *metav1.LabelSelector) error {
+func RestartPods(kubeClient kubernetes.Interface, namespace string, selector *metav1.LabelSelector) error {
 	r, err := metav1.LabelSelectorAsSelector(selector)
 	if err != nil {
 		return err

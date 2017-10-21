@@ -5,10 +5,10 @@ import (
 	kutilrbac "github.com/appscode/kutil/rbac/v1beta1"
 	"github.com/k8sdb/apimachinery/apis/kubedb"
 	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	apiv1 "k8s.io/api/core/v1"
+	rbac "k8s.io/api/rbac/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
-	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
 )
 
 func (c *Controller) deleteRole(elastic *tapi.Elasticsearch) error {
@@ -23,7 +23,7 @@ func (c *Controller) deleteRole(elastic *tapi.Elasticsearch) error {
 
 func (c *Controller) createRole(elastic *tapi.Elasticsearch) error {
 	// Create new Roles
-	_, err := kutilrbac.EnsureRole(
+	_, err := kutilrbac.CreateOrPatchRole(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      elastic.Name,
@@ -61,7 +61,7 @@ func (c *Controller) deleteServiceAccount(elastic *tapi.Elasticsearch) error {
 
 func (c *Controller) createServiceAccount(elastic *tapi.Elasticsearch) error {
 	// Create new ServiceAccount
-	_, err := kutilcore.EnsureServiceAccount(
+	_, err := kutilcore.CreateOrPatchServiceAccount(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      elastic.OffshootName(),
@@ -86,7 +86,7 @@ func (c *Controller) deleteRoleBinding(elastic *tapi.Elasticsearch) error {
 
 func (c *Controller) createRoleBinding(elastic *tapi.Elasticsearch) error {
 	// Ensure new RoleBindings
-	_, err := kutilrbac.EnsureRoleBinding(
+	_, err := kutilrbac.CreateOrPatchRoleBinding(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      elastic.Name,

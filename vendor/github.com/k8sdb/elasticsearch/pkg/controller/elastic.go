@@ -8,15 +8,15 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
-	kutildb "github.com/appscode/kutil/kubedb/v1alpha1"
 	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	kutildb "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1/util"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	"github.com/k8sdb/elasticsearch/pkg/validator"
+	apiv1 "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
 func (c *Controller) create(elastic *tapi.Elasticsearch) error {

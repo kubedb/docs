@@ -10,6 +10,7 @@ import (
 	aci "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	aci_v1alpha1 "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
+	extensions "k8s.io/api/extensions/v1beta1"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -17,7 +18,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
-	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
 type migrationState struct {
