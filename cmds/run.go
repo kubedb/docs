@@ -22,7 +22,7 @@ import (
 	pgCtrl "github.com/k8sdb/postgres/pkg/controller"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -151,5 +151,5 @@ func namespace() string {
 			return ns
 		}
 	}
-	return apiv1.NamespaceDefault
+	return core.NamespaceDefault
 }
