@@ -5,10 +5,10 @@ import (
 	kutilrbac "github.com/appscode/kutil/rbac/v1beta1"
 	"github.com/k8sdb/apimachinery/apis/kubedb"
 	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	apiv1 "k8s.io/api/core/v1"
+	rbac "k8s.io/api/rbac/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiv1 "k8s.io/client-go/pkg/api/v1"
-	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
 )
 
 func (c *Controller) deleteRole(postgres *tapi.Postgres) error {
@@ -23,7 +23,7 @@ func (c *Controller) deleteRole(postgres *tapi.Postgres) error {
 
 func (c *Controller) createRole(postgres *tapi.Postgres) error {
 	// Create new Roles
-	_, err := kutilrbac.EnsureRole(
+	_, err := kutilrbac.CreateOrPatchRole(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      postgres.OffshootName(),
@@ -62,7 +62,7 @@ func (c *Controller) deleteServiceAccount(postgres *tapi.Postgres) error {
 
 func (c *Controller) createServiceAccount(postgres *tapi.Postgres) error {
 	// Create new ServiceAccount
-	_, err := kutilcore.EnsureServiceAccount(
+	_, err := kutilcore.CreateOrPatchServiceAccount(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      postgres.OffshootName(),
@@ -87,7 +87,7 @@ func (c *Controller) deleteRoleBinding(postgres *tapi.Postgres) error {
 
 func (c *Controller) createRoleBinding(postgres *tapi.Postgres) error {
 	// Ensure new RoleBindings
-	_, err := kutilrbac.EnsureRoleBinding(
+	_, err := kutilrbac.CreateOrPatchRoleBinding(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      postgres.OffshootName(),
