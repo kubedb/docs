@@ -10,7 +10,7 @@ import (
 	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -39,7 +39,7 @@ func export() {
 		log.Fatalf("Could not get Kubernetes config: %s", err)
 	}
 
-	kubeClient = clientset.NewForConfigOrDie(config)
+	kubeClient = kubernetes.NewForConfigOrDie(config)
 	dbClient = tcs.NewForConfigOrDie(config)
 
 	m := pat.New()

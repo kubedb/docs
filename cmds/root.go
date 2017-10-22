@@ -11,7 +11,7 @@ import (
 	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -29,7 +29,7 @@ var (
 	operatorNamespace string = namespace()
 	enableRbac        bool   = false
 
-	kubeClient clientset.Interface
+	kubeClient kubernetes.Interface
 	dbClient   tcs.KubedbV1alpha1Interface
 )
 

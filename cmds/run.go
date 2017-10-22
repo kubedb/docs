@@ -24,7 +24,7 @@ import (
 	"github.com/spf13/cobra"
 	core "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	cgcmd "k8s.io/client-go/tools/clientcmd"
 )
@@ -70,7 +70,7 @@ func run() {
 		log.Fatalf("Could not get Kubernetes config: %s", err)
 	}
 
-	kubeClient = clientset.NewForConfigOrDie(config)
+	kubeClient = kubernetes.NewForConfigOrDie(config)
 	apiExtKubeClient := apiextensionsclient.NewForConfigOrDie(config)
 	dbClient = tcs.NewForConfigOrDie(config)
 
