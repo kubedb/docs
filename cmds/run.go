@@ -12,8 +12,8 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/pat"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
@@ -23,7 +23,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	core "k8s.io/api/core/v1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	cgcmd "k8s.io/client-go/tools/clientcmd"
@@ -71,7 +71,7 @@ func run() {
 	}
 
 	kubeClient = kubernetes.NewForConfigOrDie(config)
-	apiExtKubeClient := apiextensionsclient.NewForConfigOrDie(config)
+	apiExtKubeClient := ecs.NewForConfigOrDie(config)
 	dbClient = tcs.NewForConfigOrDie(config)
 
 	cgConfig, err := cgcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
@@ -94,10 +94,10 @@ func run() {
 
 	tprMigrator := migrator.NewMigrator(kubeClient, apiExtKubeClient, dbClient)
 	err = tprMigrator.RunMigration(
-		&tapi.Postgres{},
-		&tapi.Elasticsearch{},
-		&tapi.Snapshot{},
-		&tapi.DormantDatabase{},
+		&api.Postgres{},
+		&api.Elasticsearch{},
+		&api.Snapshot{},
+		&api.DormantDatabase{},
 	)
 	if err != nil {
 		log.Fatalln(err)

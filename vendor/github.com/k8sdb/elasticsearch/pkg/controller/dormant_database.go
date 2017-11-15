@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/appscode/go/log"
-	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -21,7 +21,7 @@ func (c *Controller) Exists(om *metav1.ObjectMeta) (bool, error) {
 	return true, nil
 }
 
-func (c *Controller) PauseDatabase(dormantDb *tapi.DormantDatabase) error {
+func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
 	// Delete Service
 	if err := c.DeleteService(dormantDb.Name, dormantDb.Namespace); err != nil {
 		log.Errorln(err)
@@ -33,7 +33,7 @@ func (c *Controller) PauseDatabase(dormantDb *tapi.DormantDatabase) error {
 		return err
 	}
 
-	elastic := &tapi.Elasticsearch{
+	elastic := &api.Elasticsearch{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      dormantDb.OffshootName(),
 			Namespace: dormantDb.Namespace,
@@ -46,10 +46,10 @@ func (c *Controller) PauseDatabase(dormantDb *tapi.DormantDatabase) error {
 	return nil
 }
 
-func (c *Controller) WipeOutDatabase(dormantDb *tapi.DormantDatabase) error {
+func (c *Controller) WipeOutDatabase(dormantDb *api.DormantDatabase) error {
 	labelMap := map[string]string{
-		tapi.LabelDatabaseName: dormantDb.Name,
-		tapi.LabelDatabaseKind: tapi.ResourceKindElasticsearch,
+		api.LabelDatabaseName: dormantDb.Name,
+		api.LabelDatabaseKind: api.ResourceKindElasticsearch,
 	}
 
 	labelSelector := labels.SelectorFromSet(labelMap)
@@ -66,7 +66,7 @@ func (c *Controller) WipeOutDatabase(dormantDb *tapi.DormantDatabase) error {
 	return nil
 }
 
-func (c *Controller) ResumeDatabase(dormantDb *tapi.DormantDatabase) error {
+func (c *Controller) ResumeDatabase(dormantDb *api.DormantDatabase) error {
 	origin := dormantDb.Spec.Origin
 	objectMeta := origin.ObjectMeta
 
@@ -74,7 +74,7 @@ func (c *Controller) ResumeDatabase(dormantDb *tapi.DormantDatabase) error {
 		return errors.New("Do not support InitSpec in spec.origin.elasticsearch")
 	}
 
-	elastic := &tapi.Elasticsearch{
+	elastic := &api.Elasticsearch{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        objectMeta.Name,
 			Namespace:   objectMeta.Namespace,

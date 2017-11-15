@@ -4,14 +4,14 @@ import (
 	kutilcore "github.com/appscode/kutil/core/v1"
 	kutilrbac "github.com/appscode/kutil/rbac/v1beta1"
 	"github.com/k8sdb/apimachinery/apis/kubedb"
-	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	apiv1 "k8s.io/api/core/v1"
+	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (c *Controller) deleteRole(elastic *tapi.Elasticsearch) error {
+func (c *Controller) deleteRole(elastic *api.Elasticsearch) error {
 	// Delete existing Roles
 	if err := c.Client.RbacV1beta1().Roles(elastic.Namespace).Delete(elastic.OffshootName(), nil); err != nil {
 		if !kerr.IsNotFound(err) {
@@ -21,7 +21,7 @@ func (c *Controller) deleteRole(elastic *tapi.Elasticsearch) error {
 	return nil
 }
 
-func (c *Controller) createRole(elastic *tapi.Elasticsearch) error {
+func (c *Controller) createRole(elastic *api.Elasticsearch) error {
 	// Create new Roles
 	_, err := kutilrbac.CreateOrPatchRole(
 		c.Client,
@@ -33,12 +33,12 @@ func (c *Controller) createRole(elastic *tapi.Elasticsearch) error {
 			in.Rules = []rbac.PolicyRule{
 				{
 					APIGroups:     []string{kubedb.GroupName},
-					Resources:     []string{tapi.ResourceTypeElasticsearch},
+					Resources:     []string{api.ResourceTypeElasticsearch},
 					ResourceNames: []string{elastic.Name},
 					Verbs:         []string{"get"},
 				},
 				{
-					APIGroups: []string{apiv1.GroupName},
+					APIGroups: []string{core.GroupName},
 					Resources: []string{"services", "endpoints"},
 					Verbs:     []string{"get"},
 				},
@@ -49,7 +49,7 @@ func (c *Controller) createRole(elastic *tapi.Elasticsearch) error {
 	return err
 }
 
-func (c *Controller) deleteServiceAccount(elastic *tapi.Elasticsearch) error {
+func (c *Controller) deleteServiceAccount(elastic *api.Elasticsearch) error {
 	// Delete existing ServiceAccount
 	if err := c.Client.CoreV1().ServiceAccounts(elastic.Namespace).Delete(elastic.OffshootName(), nil); err != nil {
 		if !kerr.IsNotFound(err) {
@@ -59,7 +59,7 @@ func (c *Controller) deleteServiceAccount(elastic *tapi.Elasticsearch) error {
 	return nil
 }
 
-func (c *Controller) createServiceAccount(elastic *tapi.Elasticsearch) error {
+func (c *Controller) createServiceAccount(elastic *api.Elasticsearch) error {
 	// Create new ServiceAccount
 	_, err := kutilcore.CreateOrPatchServiceAccount(
 		c.Client,
@@ -67,14 +67,14 @@ func (c *Controller) createServiceAccount(elastic *tapi.Elasticsearch) error {
 			Name:      elastic.OffshootName(),
 			Namespace: elastic.Namespace,
 		},
-		func(in *apiv1.ServiceAccount) *apiv1.ServiceAccount {
+		func(in *core.ServiceAccount) *core.ServiceAccount {
 			return in
 		},
 	)
 	return err
 }
 
-func (c *Controller) deleteRoleBinding(elastic *tapi.Elasticsearch) error {
+func (c *Controller) deleteRoleBinding(elastic *api.Elasticsearch) error {
 	// Delete existing RoleBindings
 	if err := c.Client.RbacV1beta1().RoleBindings(elastic.Namespace).Delete(elastic.OffshootName(), nil); err != nil {
 		if !kerr.IsNotFound(err) {
@@ -84,7 +84,7 @@ func (c *Controller) deleteRoleBinding(elastic *tapi.Elasticsearch) error {
 	return nil
 }
 
-func (c *Controller) createRoleBinding(elastic *tapi.Elasticsearch) error {
+func (c *Controller) createRoleBinding(elastic *api.Elasticsearch) error {
 	// Ensure new RoleBindings
 	_, err := kutilrbac.CreateOrPatchRoleBinding(
 		c.Client,
@@ -111,7 +111,7 @@ func (c *Controller) createRoleBinding(elastic *tapi.Elasticsearch) error {
 	return err
 }
 
-func (c *Controller) createRBACStuff(elastic *tapi.Elasticsearch) error {
+func (c *Controller) createRBACStuff(elastic *api.Elasticsearch) error {
 	// Delete Existing Role
 	if err := c.deleteRole(elastic); err != nil {
 		return err
@@ -138,7 +138,7 @@ func (c *Controller) createRBACStuff(elastic *tapi.Elasticsearch) error {
 	return nil
 }
 
-func (c *Controller) deleteRBACStuff(elastic *tapi.Elasticsearch) error {
+func (c *Controller) deleteRBACStuff(elastic *api.Elasticsearch) error {
 	// Delete Existing Role
 	if err := c.deleteRole(elastic); err != nil {
 		return err

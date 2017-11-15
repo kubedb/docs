@@ -9,11 +9,11 @@ import (
 	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 )
 
 func ExportReport(
-	kubeClient clientset.Interface,
+	kubeClient kubernetes.Interface,
 	dbClient tcs.KubedbV1alpha1Interface,
 	namespace string,
 	kubedbName string,
