@@ -7,17 +7,16 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/hashicorp/go-version"
-	aci "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	aci_v1alpha1 "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
+	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	cs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	extensions "k8s.io/api/extensions/v1beta1"
-	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 )
 
 type migrationState struct {
@@ -26,14 +25,14 @@ type migrationState struct {
 }
 
 type migrator struct {
-	kubeClient       clientset.Interface
-	apiExtKubeClient apiextensionsclient.Interface
-	extClient        tcs.KubedbV1alpha1Interface
+	kubeClient       kubernetes.Interface
+	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface
+	extClient        cs.KubedbV1alpha1Interface
 
 	migrationState *migrationState
 }
 
-func NewMigrator(kubeClient clientset.Interface, apiExtKubeClient apiextensionsclient.Interface, extClient tcs.KubedbV1alpha1Interface) *migrator {
+func NewMigrator(kubeClient kubernetes.Interface, apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface, extClient cs.KubedbV1alpha1Interface) *migrator {
 	return &migrator{
 		migrationState:   &migrationState{},
 		kubeClient:       kubeClient,
@@ -42,7 +41,7 @@ func NewMigrator(kubeClient clientset.Interface, apiExtKubeClient apiextensionsc
 	}
 }
 
-func (m *migrator) isMigrationNeeded(runtimeObjs ...aci.RuntimeObject) (bool, error) {
+func (m *migrator) isMigrationNeeded(runtimeObjs ...api.ResourceInfo) (bool, error) {
 	v, err := m.kubeClient.Discovery().ServerVersion()
 	if err != nil {
 		return false, err
@@ -58,7 +57,7 @@ func (m *migrator) isMigrationNeeded(runtimeObjs ...aci.RuntimeObject) (bool, er
 	if mv == 7 {
 		for _, runtime := range runtimeObjs {
 			_, err := m.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(
-				runtime.ResourceName()+"."+aci_v1alpha1.SchemeGroupVersion.Group,
+				runtime.ResourceName()+"."+api.SchemeGroupVersion.Group,
 				metav1.GetOptions{},
 			)
 			if err != nil {
@@ -73,7 +72,7 @@ func (m *migrator) isMigrationNeeded(runtimeObjs ...aci.RuntimeObject) (bool, er
 	return false, nil
 }
 
-func (m *migrator) RunMigration(runtimeObjs ...aci.RuntimeObject) error {
+func (m *migrator) RunMigration(runtimeObjs ...api.ResourceInfo) error {
 	needed, err := m.isMigrationNeeded(runtimeObjs...)
 	if err != nil {
 		return err
@@ -88,7 +87,7 @@ func (m *migrator) RunMigration(runtimeObjs ...aci.RuntimeObject) error {
 	return nil
 }
 
-func (m *migrator) migrateTPR2CRD(runtimeObjs ...aci.RuntimeObject) error {
+func (m *migrator) migrateTPR2CRD(runtimeObjs ...api.ResourceInfo) error {
 	log.Debugln("Performing TPR to CRD migration.")
 
 	log.Debugln("Deleting TPRs.")
@@ -113,11 +112,11 @@ func (m *migrator) migrateTPR2CRD(runtimeObjs ...aci.RuntimeObject) error {
 	return nil
 }
 
-func (m *migrator) deleteTPRs(runtimeObjs ...aci.RuntimeObject) error {
+func (m *migrator) deleteTPRs(runtimeObjs ...api.ResourceInfo) error {
 	tprClient := m.kubeClient.ExtensionsV1beta1().ThirdPartyResources()
 
-	deleteTPR := func(runtime aci.RuntimeObject) error {
-		name := runtime.ResourceName() + "." + aci_v1alpha1.SchemeGroupVersion.Group
+	deleteTPR := func(runtime api.ResourceInfo) error {
+		name := runtime.ResourceName() + "." + api.SchemeGroupVersion.Group
 		if err := tprClient.Delete(name, &metav1.DeleteOptions{}); err != nil && !kerr.IsNotFound(err) {
 			return fmt.Errorf(`Failed to delete TPR "%s"`, name)
 		}
@@ -132,7 +131,7 @@ func (m *migrator) deleteTPRs(runtimeObjs ...aci.RuntimeObject) error {
 	return nil
 }
 
-func (m *migrator) createCRDs(runtimeObjs ...aci.RuntimeObject) error {
+func (m *migrator) createCRDs(runtimeObjs ...api.ResourceInfo) error {
 	for _, runtime := range runtimeObjs {
 		if err := m.createCRD(runtime); err != nil {
 			return err
@@ -141,19 +140,19 @@ func (m *migrator) createCRDs(runtimeObjs ...aci.RuntimeObject) error {
 	return nil
 }
 
-func (m *migrator) createCRD(runtime aci.RuntimeObject) error {
-	crd := &extensionsobj.CustomResourceDefinition{
+func (m *migrator) createCRD(runtime api.ResourceInfo) error {
+	crd := &crd_api.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: runtime.ResourceType() + "." + aci_v1alpha1.SchemeGroupVersion.Group,
+			Name: runtime.ResourceType() + "." + api.SchemeGroupVersion.Group,
 			Labels: map[string]string{
 				"app": "kubedb",
 			},
 		},
-		Spec: extensionsobj.CustomResourceDefinitionSpec{
-			Group:   aci_v1alpha1.SchemeGroupVersion.Group,
-			Version: aci_v1alpha1.SchemeGroupVersion.Version,
-			Scope:   extensionsobj.NamespaceScoped,
-			Names: extensionsobj.CustomResourceDefinitionNames{
+		Spec: crd_api.CustomResourceDefinitionSpec{
+			Group:   api.SchemeGroupVersion.Group,
+			Version: api.SchemeGroupVersion.Version,
+			Scope:   crd_api.NamespaceScoped,
+			Names: crd_api.CustomResourceDefinitionNames{
 				Plural:     runtime.ResourceType(),
 				ShortNames: []string{runtime.ResourceCode()},
 				Kind:       runtime.ResourceKind(),
@@ -161,7 +160,7 @@ func (m *migrator) createCRD(runtime aci.RuntimeObject) error {
 		},
 	}
 
-	crdClient := m.apiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions()
+	crdClient := m.apiExtKubeClient.CustomResourceDefinitions()
 
 	if _, err := crdClient.Create(crd); err != nil && !kerr.IsAlreadyExists(err) {
 		return fmt.Errorf(`Failed to create CRD "%v"`, crd.Spec.Names.Kind)
@@ -174,12 +173,12 @@ func (m *migrator) createCRD(runtime aci.RuntimeObject) error {
 		}
 		for _, cond := range crdEst.Status.Conditions {
 			switch cond.Type {
-			case extensionsobj.Established:
-				if cond.Status == extensionsobj.ConditionTrue {
+			case crd_api.Established:
+				if cond.Status == crd_api.ConditionTrue {
 					return true, nil
 				}
-			case extensionsobj.NamesAccepted:
-				if cond.Status == extensionsobj.ConditionFalse {
+			case crd_api.NamesAccepted:
+				if cond.Status == crd_api.ConditionFalse {
 					fmt.Printf("Name conflict. Reason: %v\n", cond.Reason)
 				}
 			}
@@ -196,7 +195,7 @@ func (m *migrator) waitForCRDsReady(expectedCRD int) error {
 	}
 
 	return wait.Poll(3*time.Second, 10*time.Minute, func() (bool, error) {
-		crdList, err := m.apiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().List(metav1.ListOptions{
+		crdList, err := m.apiExtKubeClient.CustomResourceDefinitions().List(metav1.ListOptions{
 			LabelSelector: labels.SelectorFromSet(labelMap).String(),
 		})
 		if err != nil {
@@ -211,7 +210,7 @@ func (m *migrator) waitForCRDsReady(expectedCRD int) error {
 	})
 }
 
-func (m *migrator) rollback(runtimeObjs ...aci.RuntimeObject) error {
+func (m *migrator) rollback(runtimeObjs ...api.ResourceInfo) error {
 	log.Debugln("Rolling back migration.")
 
 	ms := m.migrationState
@@ -240,11 +239,11 @@ func (m *migrator) rollback(runtimeObjs ...aci.RuntimeObject) error {
 	return nil
 }
 
-func (m *migrator) deleteCRDs(runtimeObjs ...aci.RuntimeObject) error {
-	crdClient := m.apiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions()
+func (m *migrator) deleteCRDs(runtimeObjs ...api.ResourceInfo) error {
+	crdClient := m.apiExtKubeClient.CustomResourceDefinitions()
 
-	deleteCRD := func(runtime aci.RuntimeObject) error {
-		name := runtime.ResourceType() + "." + aci_v1alpha1.SchemeGroupVersion.Group
+	deleteCRD := func(runtime api.ResourceInfo) error {
+		name := runtime.ResourceType() + "." + api.SchemeGroupVersion.Group
 		if err := crdClient.Delete(name, &metav1.DeleteOptions{}); err != nil && !kerr.IsNotFound(err) {
 			return fmt.Errorf(`Failed to delete CRD "%s""`, name)
 		}
@@ -259,7 +258,7 @@ func (m *migrator) deleteCRDs(runtimeObjs ...aci.RuntimeObject) error {
 	return nil
 }
 
-func (m *migrator) CreateTPRs(runtimeObjs ...aci.RuntimeObject) error {
+func (m *migrator) CreateTPRs(runtimeObjs ...api.ResourceInfo) error {
 	for _, runtime := range runtimeObjs {
 		if err := m.createTPR(runtime); err != nil {
 			return err
@@ -268,8 +267,8 @@ func (m *migrator) CreateTPRs(runtimeObjs ...aci.RuntimeObject) error {
 	return nil
 }
 
-func (m *migrator) createTPR(runtime aci.RuntimeObject) error {
-	name := runtime.ResourceName() + "." + aci_v1alpha1.SchemeGroupVersion.Group
+func (m *migrator) createTPR(runtime api.ResourceInfo) error {
+	name := runtime.ResourceName() + "." + api.SchemeGroupVersion.Group
 	_, err := m.kubeClient.ExtensionsV1beta1().ThirdPartyResources().Get(name, metav1.GetOptions{})
 	if !kerr.IsNotFound(err) {
 		return err
@@ -289,7 +288,7 @@ func (m *migrator) createTPR(runtime aci.RuntimeObject) error {
 		Description: "Searchlight by AppsCode - Alerts for Kubernetes",
 		Versions: []extensions.APIVersion{
 			{
-				Name: aci_v1alpha1.SchemeGroupVersion.Version,
+				Name: api.SchemeGroupVersion.Version,
 			},
 		},
 	}

@@ -6,22 +6,22 @@ import (
 
 	"github.com/appscode/go/hold"
 	"github.com/appscode/go/log"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	cs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	kutildb "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1/util"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
-	apiv1 "k8s.io/api/core/v1"
-	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	core "k8s.io/api/core/v1"
+	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
@@ -46,9 +46,9 @@ type Options struct {
 type Controller struct {
 	*amc.Controller
 	// Api Extension Client
-	ApiExtKubeClient apiextensionsclient.Interface
+	ApiExtKubeClient crd_cs.ApiextensionsV1beta1Interface
 	// Prometheus client
-	promClient *pcm.MonitoringV1alpha1Client
+	promClient pcm.MonitoringV1Interface
 	// Cron Controller
 	cronController amc.CronControllerInterface
 	// Event Recorder
@@ -63,10 +63,10 @@ var _ amc.Snapshotter = &Controller{}
 var _ amc.Deleter = &Controller{}
 
 func New(
-	client clientset.Interface,
-	apiExtKubeClient apiextensionsclient.Interface,
-	extClient tcs.KubedbV1alpha1Interface,
-	promClient *pcm.MonitoringV1alpha1Client,
+	client kubernetes.Interface,
+	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
+	extClient cs.KubedbV1alpha1Interface,
+	promClient pcm.MonitoringV1Interface,
 	cronController amc.CronControllerInterface,
 	opt Options,
 ) *Controller {
@@ -112,20 +112,20 @@ func (c *Controller) RunAndHold() {
 func (c *Controller) watchElastic() {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.Elasticsearchs(apiv1.NamespaceAll).List(metav1.ListOptions{})
+			return c.ExtClient.Elasticsearchs(core.NamespaceAll).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.Elasticsearchs(apiv1.NamespaceAll).Watch(metav1.ListOptions{})
+			return c.ExtClient.Elasticsearchs(core.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
 
 	_, cacheController := cache.NewInformer(
 		lw,
-		&tapi.Elasticsearch{},
+		&api.Elasticsearch{},
 		c.syncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				elastic := obj.(*tapi.Elasticsearch)
+				elastic := obj.(*api.Elasticsearch)
 				if elastic.Status.CreationTime == nil {
 					if err := c.create(elastic); err != nil {
 						log.Errorln(err)
@@ -134,16 +134,16 @@ func (c *Controller) watchElastic() {
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
-				if err := c.pause(obj.(*tapi.Elasticsearch)); err != nil {
+				if err := c.pause(obj.(*api.Elasticsearch)); err != nil {
 					log.Errorln(err)
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
-				oldObj, ok := old.(*tapi.Elasticsearch)
+				oldObj, ok := old.(*api.Elasticsearch)
 				if !ok {
 					return
 				}
-				newObj, ok := new.(*tapi.Elasticsearch)
+				newObj, ok := new.(*api.Elasticsearch)
 				if !ok {
 					return
 				}
@@ -160,18 +160,18 @@ func (c *Controller) watchElastic() {
 
 func (c *Controller) watchSnapshot() {
 	labelMap := map[string]string{
-		tapi.LabelDatabaseKind: tapi.ResourceKindElasticsearch,
+		api.LabelDatabaseKind: api.ResourceKindElasticsearch,
 	}
 	// Watch with label selector
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.Snapshots(apiv1.NamespaceAll).List(
+			return c.ExtClient.Snapshots(core.NamespaceAll).List(
 				metav1.ListOptions{
 					LabelSelector: labels.SelectorFromSet(labelMap).String(),
 				})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.Snapshots(apiv1.NamespaceAll).Watch(
+			return c.ExtClient.Snapshots(core.NamespaceAll).Watch(
 				metav1.ListOptions{
 					LabelSelector: labels.SelectorFromSet(labelMap).String(),
 				})
@@ -183,18 +183,18 @@ func (c *Controller) watchSnapshot() {
 
 func (c *Controller) watchDormantDatabase() {
 	labelMap := map[string]string{
-		tapi.LabelDatabaseKind: tapi.ResourceKindElasticsearch,
+		api.LabelDatabaseKind: api.ResourceKindElasticsearch,
 	}
 	// Watch with label selector
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.DormantDatabases(apiv1.NamespaceAll).List(
+			return c.ExtClient.DormantDatabases(core.NamespaceAll).List(
 				metav1.ListOptions{
 					LabelSelector: labels.SelectorFromSet(labelMap).String(),
 				})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.DormantDatabases(apiv1.NamespaceAll).Watch(
+			return c.ExtClient.DormantDatabases(core.NamespaceAll).Watch(
 				metav1.ListOptions{
 					LabelSelector: labels.SelectorFromSet(labelMap).String(),
 				})
@@ -207,8 +207,8 @@ func (c *Controller) watchDormantDatabase() {
 func (c *Controller) ensureCustomResourceDefinition() {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 
-	resourceName := tapi.ResourceTypeElasticsearch + "." + tapi.SchemeGroupVersion.Group
-	if _, err := c.ApiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err != nil {
+	resourceName := api.ResourceTypeElasticsearch + "." + api.SchemeGroupVersion.Group
+	if _, err := c.ApiExtKubeClient.CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err != nil {
 		if !kerr.IsNotFound(err) {
 			log.Fatalln(err)
 		}
@@ -216,34 +216,34 @@ func (c *Controller) ensureCustomResourceDefinition() {
 		return
 	}
 
-	crd := &extensionsobj.CustomResourceDefinition{
+	crd := &crd_api.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: resourceName,
 			Labels: map[string]string{
 				"app": "kubedb",
 			},
 		},
-		Spec: extensionsobj.CustomResourceDefinitionSpec{
-			Group:   tapi.SchemeGroupVersion.Group,
-			Version: tapi.SchemeGroupVersion.Version,
-			Scope:   extensionsobj.NamespaceScoped,
-			Names: extensionsobj.CustomResourceDefinitionNames{
-				Plural:     tapi.ResourceTypeElasticsearch,
-				Kind:       tapi.ResourceKindElasticsearch,
-				ShortNames: []string{tapi.ResourceCodeElasticsearch},
+		Spec: crd_api.CustomResourceDefinitionSpec{
+			Group:   api.SchemeGroupVersion.Group,
+			Version: api.SchemeGroupVersion.Version,
+			Scope:   crd_api.NamespaceScoped,
+			Names: crd_api.CustomResourceDefinitionNames{
+				Plural:     api.ResourceTypeElasticsearch,
+				Kind:       api.ResourceKindElasticsearch,
+				ShortNames: []string{api.ResourceCodeElasticsearch},
 			},
 		},
 	}
 
-	if _, err := c.ApiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd); err != nil {
+	if _, err := c.ApiExtKubeClient.CustomResourceDefinitions().Create(crd); err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func (c *Controller) pushFailureEvent(elastic *tapi.Elasticsearch, reason string) {
+func (c *Controller) pushFailureEvent(elastic *api.Elasticsearch, reason string) {
 	c.recorder.Eventf(
 		elastic.ObjectReference(),
-		apiv1.EventTypeWarning,
+		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready Elasticsearch: "%v". Reason: %v`,
 		elastic.Name,
@@ -256,13 +256,13 @@ func (c *Controller) pushFailureEvent(elastic *tapi.Elasticsearch, reason string
 		return
 	}
 
-	_, err = kutildb.TryPatchElasticsearch(c.ExtClient, elastic.ObjectMeta, func(in *tapi.Elasticsearch) *tapi.Elasticsearch {
-		in.Status.Phase = tapi.DatabasePhaseFailed
+	_, err = kutildb.TryPatchElasticsearch(c.ExtClient, elastic.ObjectMeta, func(in *api.Elasticsearch) *api.Elasticsearch {
+		in.Status.Phase = api.DatabasePhaseFailed
 		in.Status.Reason = reason
 		return in
 	})
 	if err != nil {
-		c.recorder.Eventf(elastic.ObjectReference(), apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+		c.recorder.Eventf(elastic.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 	}
 
 }

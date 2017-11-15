@@ -2,39 +2,39 @@ package v1beta1
 
 import (
 	"errors"
-	"fmt"
-	"reflect"
 
-	"github.com/appscode/kutil"
-	rbacv1beta1 "k8s.io/api/rbac/v1beta1"
+	"github.com/appscode/kutil/meta"
+	"github.com/kubernetes/apimachinery/pkg/conversion"
+	rbac "k8s.io/api/rbac/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func GetGroupVersionKind(v interface{}) schema.GroupVersionKind {
-	return rbacv1beta1.SchemeGroupVersion.WithKind(kutil.GetKind(v))
+	return rbac.SchemeGroupVersion.WithKind(meta.GetKind(v))
 }
 
 func AssignTypeKind(v interface{}) error {
-	if reflect.ValueOf(v).Kind() != reflect.Ptr {
-		return fmt.Errorf("%v must be a pointer", v)
+	_, err := conversion.EnforcePtr(v)
+	if err != nil {
+		return err
 	}
 
 	switch u := v.(type) {
-	case *rbacv1beta1.Role:
-		u.APIVersion = rbacv1beta1.SchemeGroupVersion.String()
-		u.Kind = kutil.GetKind(v)
+	case *rbac.Role:
+		u.APIVersion = rbac.SchemeGroupVersion.String()
+		u.Kind = meta.GetKind(v)
 		return nil
-	case *rbacv1beta1.RoleBinding:
-		u.APIVersion = rbacv1beta1.SchemeGroupVersion.String()
-		u.Kind = kutil.GetKind(v)
+	case *rbac.RoleBinding:
+		u.APIVersion = rbac.SchemeGroupVersion.String()
+		u.Kind = meta.GetKind(v)
 		return nil
-	case *rbacv1beta1.ClusterRole:
-		u.APIVersion = rbacv1beta1.SchemeGroupVersion.String()
-		u.Kind = kutil.GetKind(v)
+	case *rbac.ClusterRole:
+		u.APIVersion = rbac.SchemeGroupVersion.String()
+		u.Kind = meta.GetKind(v)
 		return nil
-	case *rbacv1beta1.ClusterRoleBinding:
-		u.APIVersion = rbacv1beta1.SchemeGroupVersion.String()
-		u.Kind = kutil.GetKind(v)
+	case *rbac.ClusterRoleBinding:
+		u.APIVersion = rbac.SchemeGroupVersion.String()
+		u.Kind = meta.GetKind(v)
 		return nil
 	}
 	return errors.New("unknown api object type")

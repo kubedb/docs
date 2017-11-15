@@ -3,11 +3,12 @@ package controller
 import (
 	"fmt"
 
-	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/k8sdb/apimachinery/pkg/monitor"
+	"github.com/appscode/kutil/tools/monitoring/agents"
+	mona "github.com/appscode/kutil/tools/monitoring/api"
+	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 )
 
-func (c *Controller) newMonitorController(postgres *tapi.Postgres) (monitor.Monitor, error) {
+func (c *Controller) newMonitorController(postgres *api.Postgres) (mona.Agent, error) {
 	monitorSpec := postgres.Spec.Monitor
 
 	if monitorSpec == nil {
@@ -15,38 +16,38 @@ func (c *Controller) newMonitorController(postgres *tapi.Postgres) (monitor.Moni
 	}
 
 	if monitorSpec.Prometheus != nil {
-		return monitor.NewPrometheusController(c.Client, c.ApiExtKubeClient, c.promClient, c.opt.OperatorNamespace), nil
+		return agents.New(monitorSpec.Agent, c.Client, c.ApiExtKubeClient, c.promClient), nil
 	}
 
-	return nil, fmt.Errorf("Monitoring controller not found for %v", monitorSpec)
+	return nil, fmt.Errorf("monitoring controller not found for %v", monitorSpec)
 }
 
-func (c *Controller) addMonitor(postgres *tapi.Postgres) error {
-	ctrl, err := c.newMonitorController(postgres)
+func (c *Controller) addMonitor(postgres *api.Postgres) error {
+	agent, err := c.newMonitorController(postgres)
 	if err != nil {
 		return err
 	}
-	return ctrl.AddMonitor(postgres.ObjectMeta, postgres.Spec.Monitor)
+	return agent.Add(postgres.StatsAccessor(), postgres.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(postgres *tapi.Postgres) error {
-	ctrl, err := c.newMonitorController(postgres)
+func (c *Controller) deleteMonitor(postgres *api.Postgres) error {
+	agent, err := c.newMonitorController(postgres)
 	if err != nil {
 		return err
 	}
-	return ctrl.DeleteMonitor(postgres.ObjectMeta, postgres.Spec.Monitor)
+	return agent.Delete(postgres.StatsAccessor(), postgres.Spec.Monitor)
 }
 
-func (c *Controller) updateMonitor(oldPostgres, updatedPostgres *tapi.Postgres) error {
+func (c *Controller) updateMonitor(oldPostgres, updatedPostgres *api.Postgres) error {
 	var err error
-	var ctrl monitor.Monitor
+	var agent mona.Agent
 	if updatedPostgres.Spec.Monitor == nil {
-		ctrl, err = c.newMonitorController(oldPostgres)
+		agent, err = c.newMonitorController(oldPostgres)
 	} else {
-		ctrl, err = c.newMonitorController(updatedPostgres)
+		agent, err = c.newMonitorController(updatedPostgres)
 	}
 	if err != nil {
 		return err
 	}
-	return ctrl.UpdateMonitor(updatedPostgres.ObjectMeta, oldPostgres.Spec.Monitor, updatedPostgres.Spec.Monitor)
+	return agent.Update(updatedPostgres.StatsAccessor(), oldPostgres.Spec.Monitor, updatedPostgres.Spec.Monitor)
 }

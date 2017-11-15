@@ -6,22 +6,22 @@ import (
 
 	"github.com/appscode/go/hold"
 	"github.com/appscode/go/log"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1alpha1"
-	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	cs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	kutildb "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1/util"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
-	apiv1 "k8s.io/api/core/v1"
-	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	core "k8s.io/api/core/v1"
+	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 )
@@ -42,9 +42,9 @@ type Options struct {
 type Controller struct {
 	*amc.Controller
 	// Api Extension Client
-	ApiExtKubeClient apiextensionsclient.Interface
+	ApiExtKubeClient crd_cs.ApiextensionsV1beta1Interface
 	// Prometheus client
-	promClient pcm.MonitoringV1alpha1Interface
+	promClient pcm.MonitoringV1Interface
 	// Cron Controller
 	cronController amc.CronControllerInterface
 	// Event Recorder
@@ -59,10 +59,10 @@ var _ amc.Snapshotter = &Controller{}
 var _ amc.Deleter = &Controller{}
 
 func New(
-	client clientset.Interface,
-	apiExtKubeClient apiextensionsclient.Interface,
-	extClient tcs.KubedbV1alpha1Interface,
-	promClient pcm.MonitoringV1alpha1Interface,
+	client kubernetes.Interface,
+	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
+	extClient cs.KubedbV1alpha1Interface,
+	promClient pcm.MonitoringV1Interface,
 	cronController amc.CronControllerInterface,
 	opt Options,
 ) *Controller {
@@ -117,11 +117,11 @@ func (c *Controller) watchPostgres() {
 
 	_, cacheController := cache.NewInformer(
 		lw,
-		&tapi.Postgres{},
+		&api.Postgres{},
 		c.syncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				postgres := obj.(*tapi.Postgres)
+				postgres := obj.(*api.Postgres)
 				kutildb.AssignTypeKind(postgres)
 
 				if postgres.Status.CreationTime == nil {
@@ -133,18 +133,18 @@ func (c *Controller) watchPostgres() {
 
 			},
 			DeleteFunc: func(obj interface{}) {
-				postgres := obj.(*tapi.Postgres)
+				postgres := obj.(*api.Postgres)
 				kutildb.AssignTypeKind(postgres)
 				if err := c.pause(postgres); err != nil {
 					log.Errorln(err)
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
-				oldObj, ok := old.(*tapi.Postgres)
+				oldObj, ok := old.(*api.Postgres)
 				if !ok {
 					return
 				}
-				newObj, ok := new.(*tapi.Postgres)
+				newObj, ok := new.(*api.Postgres)
 				if !ok {
 					return
 				}
@@ -163,7 +163,7 @@ func (c *Controller) watchPostgres() {
 
 func (c *Controller) watchSnapshot() {
 	labelMap := map[string]string{
-		tapi.LabelDatabaseKind: tapi.ResourceKindPostgres,
+		api.LabelDatabaseKind: api.ResourceKindPostgres,
 	}
 	// Watch with label selector
 	lw := &cache.ListWatch{
@@ -186,7 +186,7 @@ func (c *Controller) watchSnapshot() {
 
 func (c *Controller) watchDormantDatabase() {
 	labelMap := map[string]string{
-		tapi.LabelDatabaseKind: tapi.ResourceKindPostgres,
+		api.LabelDatabaseKind: api.ResourceKindPostgres,
 	}
 	// Watch with label selector
 	lw := &cache.ListWatch{
@@ -210,8 +210,8 @@ func (c *Controller) watchDormantDatabase() {
 func (c *Controller) ensureCustomResourceDefinition() {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 
-	resourceName := tapi.ResourceTypePostgres + "." + tapi.SchemeGroupVersion.Group
-	if _, err := c.ApiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err != nil {
+	resourceName := api.ResourceTypePostgres + "." + api.SchemeGroupVersion.Group
+	if _, err := c.ApiExtKubeClient.CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err != nil {
 		if !kerr.IsNotFound(err) {
 			log.Fatalln(err)
 		}
@@ -219,46 +219,46 @@ func (c *Controller) ensureCustomResourceDefinition() {
 		return
 	}
 
-	crd := &extensionsobj.CustomResourceDefinition{
+	crd := &crd_api.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: resourceName,
 			Labels: map[string]string{
 				"app": "kubedb",
 			},
 		},
-		Spec: extensionsobj.CustomResourceDefinitionSpec{
-			Group:   tapi.SchemeGroupVersion.Group,
-			Version: tapi.SchemeGroupVersion.Version,
-			Scope:   extensionsobj.NamespaceScoped,
-			Names: extensionsobj.CustomResourceDefinitionNames{
-				Plural:     tapi.ResourceTypePostgres,
-				Kind:       tapi.ResourceKindPostgres,
-				ShortNames: []string{tapi.ResourceCodePostgres},
+		Spec: crd_api.CustomResourceDefinitionSpec{
+			Group:   api.SchemeGroupVersion.Group,
+			Version: api.SchemeGroupVersion.Version,
+			Scope:   crd_api.NamespaceScoped,
+			Names: crd_api.CustomResourceDefinitionNames{
+				Plural:     api.ResourceTypePostgres,
+				Kind:       api.ResourceKindPostgres,
+				ShortNames: []string{api.ResourceCodePostgres},
 			},
 		},
 	}
 
-	if _, err := c.ApiExtKubeClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd); err != nil {
+	if _, err := c.ApiExtKubeClient.CustomResourceDefinitions().Create(crd); err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func (c *Controller) pushFailureEvent(postgres *tapi.Postgres, reason string) {
+func (c *Controller) pushFailureEvent(postgres *api.Postgres, reason string) {
 	c.recorder.Eventf(
 		postgres.ObjectReference(),
-		apiv1.EventTypeWarning,
+		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready Postgres: "%v". Reason: %v`,
 		postgres.Name,
 		reason,
 	)
 
-	_, err := kutildb.TryPatchPostgres(c.ExtClient, postgres.ObjectMeta, func(in *tapi.Postgres) *tapi.Postgres {
-		in.Status.Phase = tapi.DatabasePhaseFailed
+	_, err := kutildb.TryPatchPostgres(c.ExtClient, postgres.ObjectMeta, func(in *api.Postgres) *api.Postgres {
+		in.Status.Phase = api.DatabasePhaseFailed
 		in.Status.Reason = reason
 		return in
 	})
 	if err != nil {
-		c.recorder.Eventf(postgres.ObjectReference(), apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+		c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 	}
 }

@@ -15,7 +15,7 @@ import (
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	apps "k8s.io/api/apps/v1beta1"
 	batch "k8s.io/api/batch/v1"
-	apiv1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -41,20 +41,20 @@ func (c *Controller) findService(postgres *tapi.Postgres) (bool, error) {
 	}
 
 	if service.Spec.Selector[tapi.LabelDatabaseName] != name {
-		return false, fmt.Errorf(`Intended service "%v" already exists`, name)
+		return false, fmt.Errorf(`intended service "%v" already exists`, name)
 	}
 
 	return true, nil
 }
 
 func (c *Controller) createService(postgres *tapi.Postgres) error {
-	svc := &apiv1.Service{
+	svc := &core.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   postgres.OffshootName(),
 			Labels: postgres.OffshootLabels(),
 		},
-		Spec: apiv1.ServiceSpec{
-			Ports: []apiv1.ServicePort{
+		Spec: core.ServiceSpec{
+			Ports: []core.ServicePort{
 				{
 					Name:       "db",
 					Port:       5432,
@@ -67,7 +67,7 @@ func (c *Controller) createService(postgres *tapi.Postgres) error {
 	if postgres.Spec.Monitor != nil &&
 		postgres.Spec.Monitor.Agent == tapi.AgentCoreosPrometheus &&
 		postgres.Spec.Monitor.Prometheus != nil {
-		svc.Spec.Ports = append(svc.Spec.Ports, apiv1.ServicePort{
+		svc.Spec.Ports = append(svc.Spec.Ports, core.ServicePort{
 			Name:       tapi.PrometheusExporterPortName,
 			Port:       tapi.PrometheusExporterPortNumber,
 			TargetPort: intstr.FromString(tapi.PrometheusExporterPortName),
@@ -93,7 +93,7 @@ func (c *Controller) findStatefulSet(postgres *tapi.Postgres) (bool, error) {
 	}
 
 	if statefulSet.Labels[tapi.LabelDatabaseKind] != tapi.ResourceKindPostgres {
-		return false, fmt.Errorf(`Intended statefulSet "%v" already exists`, postgres.OffshootName())
+		return false, fmt.Errorf(`intended statefulSet "%v" already exists`, postgres.OffshootName())
 	}
 
 	return true, nil
@@ -111,24 +111,24 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulS
 		Spec: apps.StatefulSetSpec{
 			Replicas:    types.Int32P(1),
 			ServiceName: c.opt.GoverningService,
-			Template: apiv1.PodTemplateSpec{
+			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: postgres.OffshootLabels(),
 				},
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
+				Spec: core.PodSpec{
+					Containers: []core.Container{
 						{
 							Name:            tapi.ResourceNamePostgres,
 							Image:           fmt.Sprintf("%s:%s-db", docker.ImagePostgres, postgres.Spec.Version),
-							ImagePullPolicy: apiv1.PullIfNotPresent,
-							Ports: []apiv1.ContainerPort{
+							ImagePullPolicy: core.PullIfNotPresent,
+							Ports: []core.ContainerPort{
 								{
 									Name:          "db",
 									ContainerPort: 5432,
 								},
 							},
 							Resources: postgres.Spec.Resources,
-							VolumeMounts: []apiv1.VolumeMount{
+							VolumeMounts: []core.VolumeMount{
 								{
 									Name:      "secret",
 									MountPath: "/srv/" + tapi.ResourceNamePostgres + "/secrets",
@@ -153,7 +153,7 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulS
 	if postgres.Spec.Monitor != nil &&
 		postgres.Spec.Monitor.Agent == tapi.AgentCoreosPrometheus &&
 		postgres.Spec.Monitor.Prometheus != nil {
-		exporter := apiv1.Container{
+		exporter := core.Container{
 			Name: "exporter",
 			Args: []string{
 				"export",
@@ -161,11 +161,11 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulS
 				"--v=3",
 			},
 			Image:           docker.ImageOperator + ":" + c.opt.ExporterTag,
-			ImagePullPolicy: apiv1.PullIfNotPresent,
-			Ports: []apiv1.ContainerPort{
+			ImagePullPolicy: core.PullIfNotPresent,
+			Ports: []core.ContainerPort{
 				{
 					Name:          tapi.PrometheusExporterPortName,
-					Protocol:      apiv1.ProtocolTCP,
+					Protocol:      core.ProtocolTCP,
 					ContainerPort: int32(tapi.PrometheusExporterPortNumber),
 				},
 			},
@@ -184,7 +184,7 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulS
 			return in
 		})
 		if err != nil {
-			c.recorder.Eventf(postgres.ObjectReference(), apiv1.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+			c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 			return nil, err
 		}
 		postgres = _postgres
@@ -233,7 +233,7 @@ func (c *Controller) findSecret(secretName, namespace string) (bool, error) {
 	return true, nil
 }
 
-func (c *Controller) createDatabaseSecret(postgres *tapi.Postgres) (*apiv1.SecretVolumeSource, error) {
+func (c *Controller) createDatabaseSecret(postgres *tapi.Postgres) (*core.SecretVolumeSource, error) {
 	authSecretName := postgres.Name + "-admin-auth"
 
 	found, err := c.findSecret(authSecretName, postgres.Namespace)
@@ -246,14 +246,14 @@ func (c *Controller) createDatabaseSecret(postgres *tapi.Postgres) (*apiv1.Secre
 		data := map[string][]byte{
 			".admin": []byte(POSTGRES_PASSWORD),
 		}
-		secret := &apiv1.Secret{
+		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: authSecretName,
 				Labels: map[string]string{
 					tapi.LabelDatabaseKind: tapi.ResourceKindPostgres,
 				},
 			},
-			Type: apiv1.SecretTypeOpaque,
+			Type: core.SecretTypeOpaque,
 			Data: data,
 		}
 		if _, err := c.Client.CoreV1().Secrets(postgres.Namespace).Create(secret); err != nil {
@@ -261,16 +261,16 @@ func (c *Controller) createDatabaseSecret(postgres *tapi.Postgres) (*apiv1.Secre
 		}
 	}
 
-	return &apiv1.SecretVolumeSource{
+	return &core.SecretVolumeSource{
 		SecretName: authSecretName,
 	}, nil
 }
 
-func addSecretVolume(statefulSet *apps.StatefulSet, secretVolume *apiv1.SecretVolumeSource) error {
+func addSecretVolume(statefulSet *apps.StatefulSet, secretVolume *core.SecretVolumeSource) error {
 	statefulSet.Spec.Template.Spec.Volumes = append(statefulSet.Spec.Template.Spec.Volumes,
-		apiv1.Volume{
+		core.Volume{
 			Name: "secret",
-			VolumeSource: apiv1.VolumeSource{
+			VolumeSource: core.VolumeSource{
 				Secret: secretVolume,
 			},
 		},
@@ -278,17 +278,17 @@ func addSecretVolume(statefulSet *apps.StatefulSet, secretVolume *apiv1.SecretVo
 	return nil
 }
 
-func addDataVolume(statefulSet *apps.StatefulSet, pvcSpec *apiv1.PersistentVolumeClaimSpec) {
+func addDataVolume(statefulSet *apps.StatefulSet, pvcSpec *core.PersistentVolumeClaimSpec) {
 	if pvcSpec != nil {
 		if len(pvcSpec.AccessModes) == 0 {
-			pvcSpec.AccessModes = []apiv1.PersistentVolumeAccessMode{
-				apiv1.ReadWriteOnce,
+			pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
+				core.ReadWriteOnce,
 			}
-			log.Infof(`Using "%v" as AccessModes in "%v"`, apiv1.ReadWriteOnce, *pvcSpec)
+			log.Infof(`Using "%v" as AccessModes in "%v"`, core.ReadWriteOnce, *pvcSpec)
 		}
 		// volume claim templates
 		// Dynamically attach volume
-		statefulSet.Spec.VolumeClaimTemplates = []apiv1.PersistentVolumeClaim{
+		statefulSet.Spec.VolumeClaimTemplates = []core.PersistentVolumeClaim{
 			{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: "data",
@@ -303,10 +303,10 @@ func addDataVolume(statefulSet *apps.StatefulSet, pvcSpec *apiv1.PersistentVolum
 		// Attach Empty directory
 		statefulSet.Spec.Template.Spec.Volumes = append(
 			statefulSet.Spec.Template.Spec.Volumes,
-			apiv1.Volume{
+			core.Volume{
 				Name: "data",
-				VolumeSource: apiv1.VolumeSource{
-					EmptyDir: &apiv1.EmptyDirVolumeSource{},
+				VolumeSource: core.VolumeSource{
+					EmptyDir: &core.EmptyDirVolumeSource{},
 				},
 			},
 		)
@@ -315,7 +315,7 @@ func addDataVolume(statefulSet *apps.StatefulSet, pvcSpec *apiv1.PersistentVolum
 
 func addInitialScript(statefulSet *apps.StatefulSet, script *tapi.ScriptSourceSpec) {
 	statefulSet.Spec.Template.Spec.Containers[0].VolumeMounts = append(statefulSet.Spec.Template.Spec.Containers[0].VolumeMounts,
-		apiv1.VolumeMount{
+		core.VolumeMount{
 			Name:      "initial-script",
 			MountPath: "/var/db-script",
 		},
@@ -326,7 +326,7 @@ func addInitialScript(statefulSet *apps.StatefulSet, script *tapi.ScriptSourceSp
 	}
 
 	statefulSet.Spec.Template.Spec.Volumes = append(statefulSet.Spec.Template.Spec.Volumes,
-		apiv1.Volume{
+		core.Volume{
 			Name:         "initial-script",
 			VolumeSource: script.VolumeSource,
 		},
@@ -420,12 +420,12 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 			Labels: jobLabel,
 		},
 		Spec: batch.JobSpec{
-			Template: apiv1.PodTemplateSpec{
+			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: jobLabel,
 				},
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{
+				Spec: core.PodSpec{
+					Containers: []core.Container{
 						{
 							Name:  SnapshotProcess_Restore,
 							Image: fmt.Sprintf("%s:%s-util", docker.ImagePostgres, postgres.Spec.Version),
@@ -437,7 +437,7 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 							},
 							Resources: snapshot.Spec.Resources,
-							VolumeMounts: []apiv1.VolumeMount{
+							VolumeMounts: []core.VolumeMount{
 								{
 									Name:      "secret",
 									MountPath: "/srv/" + tapi.ResourceNamePostgres + "/secrets",
@@ -454,11 +454,11 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 							},
 						},
 					},
-					Volumes: []apiv1.Volume{
+					Volumes: []core.Volume{
 						{
 							Name: "secret",
-							VolumeSource: apiv1.VolumeSource{
-								Secret: &apiv1.SecretVolumeSource{
+							VolumeSource: core.VolumeSource{
+								Secret: &core.SecretVolumeSource{
 									SecretName: postgres.Spec.DatabaseSecret.SecretName,
 								},
 							},
@@ -469,24 +469,24 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 						},
 						{
 							Name: "osmconfig",
-							VolumeSource: apiv1.VolumeSource{
-								Secret: &apiv1.SecretVolumeSource{
+							VolumeSource: core.VolumeSource{
+								Secret: &core.SecretVolumeSource{
 									SecretName: snapshot.Name,
 								},
 							},
 						},
 					},
-					RestartPolicy: apiv1.RestartPolicyNever,
+					RestartPolicy: core.RestartPolicyNever,
 				},
 			},
 		},
 	}
 	if snapshot.Spec.SnapshotStorageSpec.Local != nil {
-		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, apiv1.VolumeMount{
+		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, core.VolumeMount{
 			Name:      "local",
 			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.Path,
 		})
-		volume := apiv1.Volume{
+		volume := core.Volume{
 			Name:         "local",
 			VolumeSource: snapshot.Spec.SnapshotStorageSpec.Local.VolumeSource,
 		}

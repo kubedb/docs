@@ -3,11 +3,12 @@ package controller
 import (
 	"fmt"
 
-	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/k8sdb/apimachinery/pkg/monitor"
+	"github.com/appscode/kutil/tools/monitoring/agents"
+	mona "github.com/appscode/kutil/tools/monitoring/api"
+	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 )
 
-func (c *Controller) newMonitorController(elastic *tapi.Elasticsearch) (monitor.Monitor, error) {
+func (c *Controller) newMonitorController(elastic *api.Elasticsearch) (mona.Agent, error) {
 	monitorSpec := elastic.Spec.Monitor
 
 	if monitorSpec == nil {
@@ -15,38 +16,38 @@ func (c *Controller) newMonitorController(elastic *tapi.Elasticsearch) (monitor.
 	}
 
 	if monitorSpec.Prometheus != nil {
-		return monitor.NewPrometheusController(c.Client, c.ApiExtKubeClient, c.promClient, c.opt.OperatorNamespace), nil
+		return agents.New(monitorSpec.Agent, c.Client, c.ApiExtKubeClient, c.promClient), nil
 	}
 
-	return nil, fmt.Errorf("Monitoring controller not found for %v", monitorSpec)
+	return nil, fmt.Errorf("monitoring controller not found for %v", monitorSpec)
 }
 
-func (c *Controller) addMonitor(elastic *tapi.Elasticsearch) error {
-	ctrl, err := c.newMonitorController(elastic)
+func (c *Controller) addMonitor(elastic *api.Elasticsearch) error {
+	agent, err := c.newMonitorController(elastic)
 	if err != nil {
 		return err
 	}
-	return ctrl.AddMonitor(elastic.ObjectMeta, elastic.Spec.Monitor)
+	return agent.Add(elastic.StatsAccessor(), elastic.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(elastic *tapi.Elasticsearch) error {
-	ctrl, err := c.newMonitorController(elastic)
+func (c *Controller) deleteMonitor(elastic *api.Elasticsearch) error {
+	agent, err := c.newMonitorController(elastic)
 	if err != nil {
 		return err
 	}
-	return ctrl.DeleteMonitor(elastic.ObjectMeta, elastic.Spec.Monitor)
+	return agent.Delete(elastic.StatsAccessor(), elastic.Spec.Monitor)
 }
 
-func (c *Controller) updateMonitor(oldElastic, updatedElastic *tapi.Elasticsearch) error {
+func (c *Controller) updateMonitor(oldElastic, updatedElastic *api.Elasticsearch) error {
 	var err error
-	var ctrl monitor.Monitor
+	var agent mona.Agent
 	if updatedElastic.Spec.Monitor == nil {
-		ctrl, err = c.newMonitorController(oldElastic)
+		agent, err = c.newMonitorController(oldElastic)
 	} else {
-		ctrl, err = c.newMonitorController(updatedElastic)
+		agent, err = c.newMonitorController(updatedElastic)
 	}
 	if err != nil {
 		return err
 	}
-	return ctrl.UpdateMonitor(updatedElastic.ObjectMeta, oldElastic.Spec.Monitor, updatedElastic.Spec.Monitor)
+	return agent.Update(updatedElastic.StatsAccessor(), oldElastic.Spec.Monitor, updatedElastic.Spec.Monitor)
 }
