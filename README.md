@@ -15,7 +15,8 @@ Want to learn how to use KubeDB? Please start [here](https://github.com/k8sdb/cl
 Want to help improve KubeDB? Please start [here](https://github.com/k8sdb/cli/blob/master/CONTRIBUTING.md).
 
 ## Support
-If you have any questions, you can reach out to us.
-* [Slack](https://slack.appscode.com)
-* [Twitter](https://twitter.com/AppsCodeHQ)
-* [Website](https://appscode.com)
+If you have any questions, talk to us on the [Kubernetes Slack team](http://slack.kubernetes.io/) channel `#kubedb`.
+
+If you have found a bug with KubeDB or want to request for new features, please file issues on Github.
+ - For CLI issues, file a bug under [k8sdb/cli](https://github.com/k8sdb/cli) repository.
+ - For Backend operator issues, file a bug under [k8sdb/operator](https://github.com/k8sdb/operator) repository.
