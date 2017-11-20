@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
-	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
+	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	cs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
-	cmap "github.com/orcaman/concurrent-map"
+	"github.com/orcaman/concurrent-map"
 	"gopkg.in/robfig/cron.v2"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -23,14 +23,14 @@ import (
 
 type CronControllerInterface interface {
 	StartCron()
-	ScheduleBackup(runtime.Object, metav1.ObjectMeta, *tapi.BackupScheduleSpec) error
+	ScheduleBackup(runtime.Object, metav1.ObjectMeta, *api.BackupScheduleSpec) error
 	StopBackupScheduling(metav1.ObjectMeta)
 	StopCron()
 }
 
 type cronController struct {
 	// ThirdPartyExtension client
-	extClient tcs.KubedbV1alpha1Interface
+	extClient cs.KubedbV1alpha1Interface
 	// For Internal Cron Job
 	cron *cron.Cron
 	// Store Cron Job EntryID for further use
@@ -45,7 +45,7 @@ type cronController struct {
  NewCronController returns CronControllerInterface.
  Need to call StartCron() method to start Cron.
 */
-func NewCronController(client kubernetes.Interface, extClient tcs.KubedbV1alpha1Interface) CronControllerInterface {
+func NewCronController(client kubernetes.Interface, extClient cs.KubedbV1alpha1Interface) CronControllerInterface {
 	return &cronController{
 		extClient:     extClient,
 		cron:          cron.New(),
@@ -66,7 +66,7 @@ func (c *cronController) ScheduleBackup(
 	// ObjectMeta of Database TPR object
 	om metav1.ObjectMeta,
 	// BackupScheduleSpec
-	spec *tapi.BackupScheduleSpec,
+	spec *api.BackupScheduleSpec,
 ) error {
 	// cronEntry name
 	cronEntryName := fmt.Sprintf("%v@%v", om.Name, om.Namespace)
@@ -113,10 +113,10 @@ func (c *cronController) StopCron() {
 }
 
 type snapshotInvoker struct {
-	extClient     tcs.KubedbV1alpha1Interface
+	extClient     cs.KubedbV1alpha1Interface
 	runtimeObject runtime.Object
 	om            metav1.ObjectMeta
-	spec          *tapi.BackupScheduleSpec
+	spec          *api.BackupScheduleSpec
 	eventRecorder record.EventRecorder
 }
 
@@ -143,11 +143,11 @@ func (s *snapshotInvoker) validateScheduler(checkDuration time.Duration) error {
 			}
 		}
 
-		if snapshot.Status.Phase == tapi.SnapshotPhaseSuccessed {
+		if snapshot.Status.Phase == api.SnapshotPhaseSuccessed {
 			snapshotSuccess = true
 			break
 		}
-		if snapshot.Status.Phase == tapi.SnapshotPhaseFailed {
+		if snapshot.Status.Phase == api.SnapshotPhaseFailed {
 			break
 		}
 
@@ -167,9 +167,9 @@ func (s *snapshotInvoker) createScheduledSnapshot() {
 	name := s.om.Name
 
 	labelMap := map[string]string{
-		tapi.LabelDatabaseKind:   kind,
-		tapi.LabelDatabaseName:   name,
-		tapi.LabelSnapshotStatus: string(tapi.SnapshotPhaseRunning),
+		api.LabelDatabaseKind:   kind,
+		api.LabelDatabaseName:   name,
+		api.LabelSnapshotStatus: string(api.SnapshotPhaseRunning),
 	}
 
 	snapshotList, err := s.extClient.Snapshots(s.om.Namespace).List(metav1.ListOptions{
@@ -177,7 +177,7 @@ func (s *snapshotInvoker) createScheduledSnapshot() {
 	})
 	if err != nil {
 		s.eventRecorder.Eventf(
-			tapi.ObjectReferenceFor(s.runtimeObject),
+			api.ObjectReferenceFor(s.runtimeObject),
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToList,
 			"Failed to list Snapshots. Reason: %v",
@@ -189,7 +189,7 @@ func (s *snapshotInvoker) createScheduledSnapshot() {
 
 	if len(snapshotList.Items) > 0 {
 		s.eventRecorder.Event(
-			tapi.ObjectReferenceFor(s.runtimeObject),
+			api.ObjectReferenceFor(s.runtimeObject),
 			core.EventTypeNormal,
 			eventer.EventReasonIgnoredSnapshot,
 			"Skipping scheduled Backup. One is still active.",
@@ -200,8 +200,8 @@ func (s *snapshotInvoker) createScheduledSnapshot() {
 
 	// Set label. Elastic controller will detect this using label selector
 	labelMap = map[string]string{
-		tapi.LabelDatabaseKind: kind,
-		tapi.LabelDatabaseName: name,
+		api.LabelDatabaseKind: kind,
+		api.LabelDatabaseName: name,
 	}
 
 	now := time.Now().UTC()
@@ -214,17 +214,17 @@ func (s *snapshotInvoker) createScheduledSnapshot() {
 
 func (s *snapshotInvoker) createSnapshot(snapshotName string) error {
 	labelMap := map[string]string{
-		tapi.LabelDatabaseKind: s.runtimeObject.GetObjectKind().GroupVersionKind().Kind,
-		tapi.LabelDatabaseName: s.om.Name,
+		api.LabelDatabaseKind: s.runtimeObject.GetObjectKind().GroupVersionKind().Kind,
+		api.LabelDatabaseName: s.om.Name,
 	}
 
-	snapshot := &tapi.Snapshot{
+	snapshot := &api.Snapshot{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      snapshotName,
 			Namespace: s.om.Namespace,
 			Labels:    labelMap,
 		},
-		Spec: tapi.SnapshotSpec{
+		Spec: api.SnapshotSpec{
 			DatabaseName:        s.om.Name,
 			SnapshotStorageSpec: s.spec.SnapshotStorageSpec,
 			Resources:           s.spec.Resources,

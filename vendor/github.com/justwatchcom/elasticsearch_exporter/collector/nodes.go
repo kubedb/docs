@@ -12,19 +12,66 @@ import (
 )
 
 var (
-	defaultNodeLabels       = []string{"cluster", "host", "name"}
+	defaultNodeLabels       = []string{"cluster", "host", "name", "es_master_node", "es_data_node", "es_ingest_node", "es_client_node"}
 	defaultThreadPoolLabels = append(defaultNodeLabels, "type")
 	defaultBreakerLabels    = append(defaultNodeLabels, "breaker")
 	defaultFilesystemLabels = append(defaultNodeLabels, "mount", "path")
+	defaultCacheLabels      = append(defaultNodeLabels, "cache")
 
 	defaultNodeLabelValues = func(cluster string, node NodeStatsNodeResponse) []string {
-		return []string{cluster, node.Host, node.Name}
+		// default settings (2.x) and map, which roles to consider
+		roles := map[string]bool{
+			"master": true,
+			"data":   true,
+			"ingest": false,
+		}
+		isClientNode := "true"
+		// assumption: a 5.x node has at least one role, otherwise it's a 1.7 or 2.x node
+		if len(node.Roles) > 0 {
+			for _, role := range node.Roles {
+				// set every absent role to false
+				if _, ok := roles[role]; !ok {
+					roles[role] = false
+				} else {
+					// if present in the roles field, set to true
+					roles[role] = true
+				}
+			}
+		} else {
+			for role, setting := range node.Attributes {
+				if _, ok := roles[role]; ok {
+					if setting == "false" {
+						roles[role] = false
+					} else {
+						roles[role] = true
+					}
+				}
+			}
+		}
+		if len(node.Http) == 0 {
+			isClientNode = "false"
+		}
+		return []string{
+			cluster,
+			node.Host,
+			node.Name,
+			fmt.Sprintf("%t", roles["master"]),
+			fmt.Sprintf("%t", roles["data"]),
+			fmt.Sprintf("%t", roles["ingest"]),
+			isClientNode,
+		}
 	}
 	defaultThreadPoolLabelValues = func(cluster string, node NodeStatsNodeResponse, pool string) []string {
 		return append(defaultNodeLabelValues(cluster, node), pool)
 	}
 	defaultFilesystemLabelValues = func(cluster string, node NodeStatsNodeResponse, mount string, path string) []string {
 		return append(defaultNodeLabelValues(cluster, node), mount, path)
+	}
+	defaultCacheHitLabelValues = func(cluster string, node NodeStatsNodeResponse) []string {
+		return append(defaultNodeLabelValues(cluster, node), "hit")
+	}
+	defaultCacheMissLabelValues = func(cluster string, node NodeStatsNodeResponse) []string {
+		return append(defaultNodeLabelValues(cluster, node), "miss")
 	}
 )
 
@@ -69,6 +116,9 @@ type Nodes struct {
 	url    *url.URL
 	all    bool
 
+	up                              prometheus.Gauge
+	totalScrapes, jsonParseFailures prometheus.Counter
+
 	nodeMetrics         []*nodeMetric
 	gcCollectionMetrics []*gcCollectionMetric
 	breakerMetrics      []*breakerMetric
@@ -82,6 +132,19 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 		client: client,
 		url:    url,
 		all:    all,
+
+		up: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: prometheus.BuildFQName(namespace, "node_stats", "up"),
+			Help: "Was the last scrape of the ElasticSearch nodes endpoint successful.",
+		}),
+		totalScrapes: prometheus.NewCounter(prometheus.CounterOpts{
+			Name: prometheus.BuildFQName(namespace, "node_stats", "total_scrapes"),
+			Help: "Current total ElasticSearch node scrapes.",
+		}),
+		jsonParseFailures: prometheus.NewCounter(prometheus.CounterOpts{
+			Name: prometheus.BuildFQName(namespace, "node_stats", "json_parse_failures"),
+			Help: "Number of errors while parsing JSON.",
+		}),
 
 		nodeMetrics: []*nodeMetric{
 			{
@@ -157,6 +220,66 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 				Labels: defaultNodeLabelValues,
 			},
 			{
+				Type: prometheus.CounterValue,
+				Desc: prometheus.NewDesc(
+					prometheus.BuildFQName(namespace, "indices", "query_cache_total"),
+					"Query cache total count",
+					defaultNodeLabels, nil,
+				),
+				Value: func(node NodeStatsNodeResponse) float64 {
+					return float64(node.Indices.QueryCache.TotalCount)
+				},
+				Labels: defaultNodeLabelValues,
+			},
+			{
+				Type: prometheus.GaugeValue,
+				Desc: prometheus.NewDesc(
+					prometheus.BuildFQName(namespace, "indices", "query_cache_cache_size"),
+					"Query cache cache size",
+					defaultNodeLabels, nil,
+				),
+				Value: func(node NodeStatsNodeResponse) float64 {
+					return float64(node.Indices.QueryCache.CacheSize)
+				},
+				Labels: defaultNodeLabelValues,
+			},
+			{
+				Type: prometheus.GaugeValue,
+				Desc: prometheus.NewDesc(
+					prometheus.BuildFQName(namespace, "indices", "query_cache_cache_count"),
+					"Query cache cache count",
+					defaultNodeLabels, nil,
+				),
+				Value: func(node NodeStatsNodeResponse) float64 {
+					return float64(node.Indices.QueryCache.CacheCount)
+				},
+				Labels: defaultNodeLabelValues,
+			},
+			{
+				Type: prometheus.CounterValue,
+				Desc: prometheus.NewDesc(
+					prometheus.BuildFQName(namespace, "indices", "query_cache_count"),
+					"Query cache count",
+					defaultCacheLabels, nil,
+				),
+				Value: func(node NodeStatsNodeResponse) float64 {
+					return float64(node.Indices.QueryCache.HitCount)
+				},
+				Labels: defaultCacheHitLabelValues,
+			},
+			{
+				Type: prometheus.CounterValue,
+				Desc: prometheus.NewDesc(
+					prometheus.BuildFQName(namespace, "indices", "query_cache_count"),
+					"Query cache count",
+					defaultCacheLabels, nil,
+				),
+				Value: func(node NodeStatsNodeResponse) float64 {
+					return float64(node.Indices.QueryCache.MissCount)
+				},
+				Labels: defaultCacheMissLabelValues,
+			},
+			{
 				Type: prometheus.GaugeValue,
 				Desc: prometheus.NewDesc(
 					prometheus.BuildFQName(namespace, "indices", "request_cache_memory_size_bytes"),
@@ -179,6 +302,30 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					return float64(node.Indices.RequestCache.Evictions)
 				},
 				Labels: defaultNodeLabelValues,
+			},
+			{
+				Type: prometheus.CounterValue,
+				Desc: prometheus.NewDesc(
+					prometheus.BuildFQName(namespace, "indices", "request_cache_count"),
+					"Request cache count",
+					defaultCacheLabels, nil,
+				),
+				Value: func(node NodeStatsNodeResponse) float64 {
+					return float64(node.Indices.RequestCache.HitCount)
+				},
+				Labels: defaultCacheHitLabelValues,
+			},
+			{
+				Type: prometheus.CounterValue,
+				Desc: prometheus.NewDesc(
+					prometheus.BuildFQName(namespace, "indices", "request_cache_count"),
+					"Request cache count",
+					defaultCacheLabels, nil,
+				),
+				Value: func(node NodeStatsNodeResponse) float64 {
+					return float64(node.Indices.RequestCache.MissCount)
+				},
+				Labels: defaultCacheMissLabelValues,
 			},
 			{
 				Type: prometheus.CounterValue,
@@ -212,7 +359,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					defaultNodeLabels, nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Indices.Get.Time / 1000)
+					return float64(node.Indices.Get.Time) / 1000
 				},
 				Labels: defaultNodeLabelValues,
 			},
@@ -236,7 +383,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					defaultNodeLabels, nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Indices.Get.MissingTime / 1000)
+					return float64(node.Indices.Get.MissingTime) / 1000
 				},
 				Labels: defaultNodeLabelValues,
 			},
@@ -260,7 +407,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					defaultNodeLabels, nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Indices.Get.ExistsTime / 1000)
+					return float64(node.Indices.Get.ExistsTime) / 1000
 				},
 				Labels: defaultNodeLabelValues,
 			},
@@ -284,7 +431,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					defaultNodeLabels, nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Indices.Refresh.TotalTime / 1000)
+					return float64(node.Indices.Refresh.TotalTime) / 1000
 				},
 				Labels: defaultNodeLabelValues,
 			},
@@ -308,7 +455,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					defaultNodeLabels, nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Indices.Search.QueryTime / 1000)
+					return float64(node.Indices.Search.QueryTime) / 1000
 				},
 				Labels: defaultNodeLabelValues,
 			},
@@ -332,7 +479,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					defaultNodeLabels, nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Indices.Search.FetchTime / 1000)
+					return float64(node.Indices.Search.FetchTime) / 1000
 				},
 				Labels: defaultNodeLabelValues,
 			},
@@ -380,7 +527,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					defaultNodeLabels, nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return 0
+					return float64(node.Indices.Store.Size)
 				},
 				Labels: defaultNodeLabelValues,
 			},
@@ -392,7 +539,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					defaultNodeLabels, nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Indices.Store.ThrottleTime / 1000)
+					return float64(node.Indices.Store.ThrottleTime) / 1000
 				},
 				Labels: defaultNodeLabelValues,
 			},
@@ -440,7 +587,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					defaultNodeLabels, nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Indices.Flush.Time / 1000)
+					return float64(node.Indices.Flush.Time) / 1000
 				},
 				Labels: defaultNodeLabelValues,
 			},
@@ -448,11 +595,11 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 				Type: prometheus.CounterValue,
 				Desc: prometheus.NewDesc(
 					prometheus.BuildFQName(namespace, "indices_indexing", "index_time_seconds_total"),
-					"Total index calls",
+					"Cumulative index time in seconds",
 					defaultNodeLabels, nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Indices.Indexing.IndexTime / 1000)
+					return float64(node.Indices.Indexing.IndexTime) / 1000
 				},
 				Labels: defaultNodeLabelValues,
 			},
@@ -460,7 +607,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 				Type: prometheus.CounterValue,
 				Desc: prometheus.NewDesc(
 					prometheus.BuildFQName(namespace, "indices_indexing", "index_total"),
-					"Cumulative index time in seconds",
+					"Total index calls",
 					defaultNodeLabels, nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
@@ -476,7 +623,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					defaultNodeLabels, nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Indices.Indexing.DeleteTime / 1000)
+					return float64(node.Indices.Indexing.DeleteTime) / 1000
 				},
 				Labels: defaultNodeLabelValues,
 			},
@@ -536,7 +683,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					defaultNodeLabels, nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Indices.Merges.TotalTime / 1000)
+					return float64(node.Indices.Merges.TotalTime) / 1000
 				},
 				Labels: defaultNodeLabelValues,
 			},
@@ -678,7 +825,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					append(defaultNodeLabels, "type"), nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Process.CPU.Total / 1000)
+					return float64(node.Process.CPU.Total) / 1000
 				},
 				Labels: func(cluster string, node NodeStatsNodeResponse) []string {
 					return append(defaultNodeLabelValues(cluster, node), "total")
@@ -692,7 +839,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					append(defaultNodeLabels, "type"), nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Process.CPU.Sys / 1000)
+					return float64(node.Process.CPU.Sys) / 1000
 				},
 				Labels: func(cluster string, node NodeStatsNodeResponse) []string {
 					return append(defaultNodeLabelValues(cluster, node), "sys")
@@ -706,7 +853,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					append(defaultNodeLabels, "type"), nil,
 				),
 				Value: func(node NodeStatsNodeResponse) float64 {
-					return float64(node.Process.CPU.User / 1000)
+					return float64(node.Process.CPU.User) / 1000
 				},
 				Labels: func(cluster string, node NodeStatsNodeResponse) []string {
 					return append(defaultNodeLabelValues(cluster, node), "user")
@@ -784,7 +931,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 					append(defaultNodeLabels, "gc"), nil,
 				),
 				Value: func(gcStats NodeStatsJVMGCCollectorResponse) float64 {
-					return float64(gcStats.CollectionTime / 1000)
+					return float64(gcStats.CollectionTime) / 1000
 				},
 				Labels: func(cluster string, node NodeStatsNodeResponse, collector string) []string {
 					return append(defaultNodeLabelValues(cluster, node), collector)
@@ -821,7 +968,7 @@ func NewNodes(logger log.Logger, client *http.Client, url *url.URL, all bool) *N
 				},
 			},
 			{
-				Type: prometheus.GaugeValue,
+				Type: prometheus.CounterValue,
 				Desc: prometheus.NewDesc(
 					prometheus.BuildFQName(namespace, "breakers", "tripped"),
 					"tripped for breaker",
@@ -963,6 +1110,9 @@ func (c *Nodes) Describe(ch chan<- *prometheus.Desc) {
 	for _, metric := range c.filesystemMetrics {
 		ch <- metric.Desc
 	}
+	ch <- c.up.Desc()
+	ch <- c.totalScrapes.Desc()
+	ch <- c.jsonParseFailures.Desc()
 }
 
 func (c *Nodes) fetchAndDecodeNodeStats() (nodeStatsResponse, error) {
@@ -976,29 +1126,39 @@ func (c *Nodes) fetchAndDecodeNodeStats() (nodeStatsResponse, error) {
 
 	res, err := c.client.Get(u.String())
 	if err != nil {
-		return nsr, fmt.Errorf("failed to get node stats from %s: %s", u.String(), err)
+		return nsr, fmt.Errorf("failed to get cluster health from %s://%s:%s/%s: %s",
+			u.Scheme, u.Hostname(), u.Port(), u.Path, err)
 	}
 	defer res.Body.Close()
-
 	if res.StatusCode != http.StatusOK {
-		return nsr, fmt.Errorf("HTTP Request %s failed with code %d", u.String(), res.StatusCode)
+		return nsr, fmt.Errorf("HTTP Request failed with code %d", res.StatusCode)
 	}
 
 	if err := json.NewDecoder(res.Body).Decode(&nsr); err != nil {
+		c.jsonParseFailures.Inc()
 		return nsr, err
 	}
 	return nsr, nil
 }
 
 func (c *Nodes) Collect(ch chan<- prometheus.Metric) {
+	c.totalScrapes.Inc()
+	defer func() {
+		ch <- c.up
+		ch <- c.totalScrapes
+		ch <- c.jsonParseFailures
+	}()
+
 	nodeStatsResponse, err := c.fetchAndDecodeNodeStats()
 	if err != nil {
+		c.up.Set(0)
 		level.Warn(c.logger).Log(
 			"msg", "failed to fetch and decode node stats",
 			"err", err,
 		)
 		return
 	}
+	c.up.Set(1)
 
 	for _, node := range nodeStatsResponse.Nodes {
 		for _, metric := range c.nodeMetrics {

@@ -3,7 +3,7 @@ package controller
 import (
 	"time"
 
-	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
+	cs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -11,7 +11,7 @@ type Controller struct {
 	// Kubernetes client
 	Client kubernetes.Interface
 	// ThirdPartyExtension client
-	ExtClient tcs.KubedbV1alpha1Interface
+	ExtClient cs.KubedbV1alpha1Interface
 }
 
 const (

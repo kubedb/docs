@@ -8,8 +8,8 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/wait"
 	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
-	kutildb "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1/util"
+	cs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
+	"github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1/util"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	core "k8s.io/api/core/v1"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -38,7 +38,7 @@ type DormantDbController struct {
 	// Api Extension Client
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface
 	// ThirdPartyExtension client
-	extClient tcs.KubedbV1alpha1Interface
+	extClient cs.KubedbV1alpha1Interface
 	// Deleter interface
 	deleter Deleter
 	// ListerWatcher
@@ -53,7 +53,7 @@ type DormantDbController struct {
 func NewDormantDbController(
 	client kubernetes.Interface,
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
-	extClient tcs.KubedbV1alpha1Interface,
+	extClient cs.KubedbV1alpha1Interface,
 	deleter Deleter,
 	lw *cache.ListWatch,
 	syncPeriod time.Duration,
@@ -121,7 +121,7 @@ func (c *DormantDbController) watch() {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				dormantDb := obj.(*api.DormantDatabase)
-				kutildb.AssignTypeKind(dormantDb)
+				util.AssignTypeKind(dormantDb)
 				if dormantDb.Status.CreationTime == nil {
 					if err := c.create(dormantDb); err != nil {
 						log.Errorln(err)
@@ -130,7 +130,7 @@ func (c *DormantDbController) watch() {
 			},
 			DeleteFunc: func(obj interface{}) {
 				dormantDb := obj.(*api.DormantDatabase)
-				kutildb.AssignTypeKind(dormantDb)
+				util.AssignTypeKind(dormantDb)
 				if err := c.delete(dormantDb); err != nil {
 					log.Errorln(err)
 				}
@@ -146,8 +146,8 @@ func (c *DormantDbController) watch() {
 				}
 				// TODO: Find appropriate checking
 				// Only allow if Spec varies
-				kutildb.AssignTypeKind(oldDormantDb)
-				kutildb.AssignTypeKind(newDormantDb)
+				util.AssignTypeKind(oldDormantDb)
+				util.AssignTypeKind(newDormantDb)
 				if !reflect.DeepEqual(oldDormantDb.Spec, newDormantDb.Spec) {
 					if err := c.update(oldDormantDb, newDormantDb); err != nil {
 						log.Errorln(err)
@@ -160,7 +160,7 @@ func (c *DormantDbController) watch() {
 }
 
 func (c *DormantDbController) create(dormantDb *api.DormantDatabase) error {
-	_, err := kutildb.TryPatchDormantDatabase(c.extClient, dormantDb.ObjectMeta, func(in *api.DormantDatabase) *api.DormantDatabase {
+	_, err := util.TryPatchDormantDatabase(c.extClient, dormantDb.ObjectMeta, func(in *api.DormantDatabase) *api.DormantDatabase {
 		t := metav1.Now()
 		in.Status.CreationTime = &t
 		return in
@@ -206,7 +206,7 @@ func (c *DormantDbController) create(dormantDb *api.DormantDatabase) error {
 		return errors.New(message)
 	}
 
-	_, err = kutildb.TryPatchDormantDatabase(c.extClient, dormantDb.ObjectMeta, func(in *api.DormantDatabase) *api.DormantDatabase {
+	_, err = util.TryPatchDormantDatabase(c.extClient, dormantDb.ObjectMeta, func(in *api.DormantDatabase) *api.DormantDatabase {
 		in.Status.Phase = api.DormantDatabasePhasePausing
 		return in
 	})
@@ -236,7 +236,7 @@ func (c *DormantDbController) create(dormantDb *api.DormantDatabase) error {
 		"Successfully paused Database workload",
 	)
 
-	_, err = kutildb.TryPatchDormantDatabase(c.extClient, dormantDb.ObjectMeta, func(in *api.DormantDatabase) *api.DormantDatabase {
+	_, err = util.TryPatchDormantDatabase(c.extClient, dormantDb.ObjectMeta, func(in *api.DormantDatabase) *api.DormantDatabase {
 		t := metav1.Now()
 		in.Status.PausingTime = &t
 		in.Status.Phase = api.DormantDatabasePhasePaused
@@ -336,7 +336,7 @@ func (c *DormantDbController) wipeOut(dormantDb *api.DormantDatabase) error {
 		return errors.New(message)
 	}
 
-	_, err = kutildb.TryPatchDormantDatabase(c.extClient, dormantDb.ObjectMeta, func(in *api.DormantDatabase) *api.DormantDatabase {
+	_, err = util.TryPatchDormantDatabase(c.extClient, dormantDb.ObjectMeta, func(in *api.DormantDatabase) *api.DormantDatabase {
 		in.Status.Phase = api.DormantDatabasePhaseWipingOut
 		return in
 	})
@@ -365,7 +365,7 @@ func (c *DormantDbController) wipeOut(dormantDb *api.DormantDatabase) error {
 		"Successfully wiped out Database workload",
 	)
 
-	_, err = kutildb.TryPatchDormantDatabase(c.extClient, dormantDb.ObjectMeta, func(in *api.DormantDatabase) *api.DormantDatabase {
+	_, err = util.TryPatchDormantDatabase(c.extClient, dormantDb.ObjectMeta, func(in *api.DormantDatabase) *api.DormantDatabase {
 		t := metav1.Now()
 		in.Status.WipeOutTime = &t
 		in.Status.Phase = api.DormantDatabasePhaseWipedOut
@@ -411,7 +411,7 @@ func (c *DormantDbController) resume(dormantDb *api.DormantDatabase) error {
 		return errors.New(message)
 	}
 
-	_, err = kutildb.TryPatchDormantDatabase(c.extClient, dormantDb.ObjectMeta, func(in *api.DormantDatabase) *api.DormantDatabase {
+	_, err = util.TryPatchDormantDatabase(c.extClient, dormantDb.ObjectMeta, func(in *api.DormantDatabase) *api.DormantDatabase {
 		in.Status.Phase = api.DormantDatabasePhaseResuming
 		return in
 	})
