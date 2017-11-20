@@ -7,12 +7,12 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	kutilapps "github.com/appscode/kutil/apps/v1beta1"
+	apps_util "github.com/appscode/kutil/apps/v1beta1"
 	"github.com/graymeta/stow"
 	_ "github.com/graymeta/stow/azure"
 	_ "github.com/graymeta/stow/google"
 	_ "github.com/graymeta/stow/s3"
-	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	apps "k8s.io/api/apps/v1beta1"
@@ -83,7 +83,7 @@ func (c *Controller) DeletePersistentVolumeClaims(namespace string, selector lab
 	return nil
 }
 
-func (c *Controller) DeleteSnapshotData(snapshot *tapi.Snapshot) error {
+func (c *Controller) DeleteSnapshotData(snapshot *api.Snapshot) error {
 	cfg, err := storage.NewOSMContext(c.Client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)
 	if err != nil {
 		return err
@@ -162,7 +162,7 @@ func (c *Controller) CheckDatabaseRestoreJob(
 				continue
 			}
 			recorder.Eventf(
-				tapi.ObjectReferenceFor(runtimeObj),
+				api.ObjectReferenceFor(runtimeObj),
 				core.EventTypeWarning,
 				eventer.EventReasonFailedToList,
 				"Failed to get Job. Reason: %v",
@@ -245,7 +245,7 @@ func (c *Controller) DeleteService(name, namespace string) error {
 		}
 	}
 
-	if service.Spec.Selector[tapi.LabelDatabaseName] != name {
+	if service.Spec.Selector[api.LabelDatabaseName] != name {
 		return nil
 	}
 
@@ -263,7 +263,7 @@ func (c *Controller) DeleteStatefulSet(name, namespace string) error {
 	}
 
 	// Update StatefulSet
-	_, err = kutilapps.TryPatchStatefulSet(c.Client, statefulSet.ObjectMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
+	_, err = apps_util.TryPatchStatefulSet(c.Client, statefulSet.ObjectMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Spec.Replicas = types.Int32P(0)
 		return in
 	})
@@ -318,7 +318,7 @@ func deleteJobResources(
 ) {
 	if err := client.BatchV1().Jobs(job.Namespace).Delete(job.Name, nil); err != nil && !kerr.IsNotFound(err) {
 		recorder.Eventf(
-			tapi.ObjectReferenceFor(runtimeObj),
+			api.ObjectReferenceFor(runtimeObj),
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToDelete,
 			"Failed to delete Job. Reason: %v",
@@ -336,7 +336,7 @@ func deleteJobResources(
 		})
 		if err != nil {
 			recorder.Eventf(
-				tapi.ObjectReferenceFor(runtimeObj),
+				api.ObjectReferenceFor(runtimeObj),
 				core.EventTypeWarning,
 				eventer.EventReasonFailedToDelete,
 				"Failed to delete Pods. Reason: %v",
@@ -352,7 +352,7 @@ func deleteJobResources(
 			err := client.CoreV1().PersistentVolumeClaims(job.Namespace).Delete(claim.ClaimName, nil)
 			if err != nil && !kerr.IsNotFound(err) {
 				recorder.Eventf(
-					tapi.ObjectReferenceFor(runtimeObj),
+					api.ObjectReferenceFor(runtimeObj),
 					core.EventTypeWarning,
 					eventer.EventReasonFailedToDelete,
 					"Failed to delete PersistentVolumeClaim. Reason: %v",
