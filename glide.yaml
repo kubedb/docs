@@ -58,3 +58,13 @@ import:
   repo: https://github.com/appscode/kubernetes.git
   version: v1.8.3
   vcs: git
+- package: github.com/dcu/mongodb_exporter
+  version: master
+- package: github.com/prometheus/mysqld_exporter
+  version: master
+- package: github.com/oliver006/redis_exporter
+  version: master
+- package: github.com/prometheus/memcached_exporter
+  repo: https://github.com/k8sdb/memcached_exporter.git
+  version: master
+  vcs: git
