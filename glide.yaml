@@ -25,8 +25,10 @@ import:
   version: master
 - package: github.com/k8sdb/postgres
   version: master
-- package: github.com/k8sdb/postgres_exporter
+- package: github.com/wrouesnel/postgres_exporter
+  repo: https://github.com/k8sdb/postgres_exporter.git
   version: master
+  vcs: git
 - package: github.com/orcaman/concurrent-map
 - package: github.com/prometheus/client_golang
   version: v0.8.0
