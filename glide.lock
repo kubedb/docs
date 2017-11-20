@@ -1,5 +1,5 @@
-hash: e3f2ffeeaf3b2feb5fb77d4f8406fc3eb6a71762eff39e89412bcd84d7ca9c8e
-updated: 2017-11-19T19:44:00.06093167-08:00
+hash: e8ab2fe98501996ca1c96d8d8b4e58a47fd945a25d2a51fc74edf8e78024a0d8
+updated: 2017-11-19T22:45:14.053203618-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -162,7 +162,7 @@ imports:
   subpackages:
   - lru
 - name: github.com/golang/protobuf
-  version: 8ee79997227bf9b34611aee7946ae64735e6fd93
+  version: 4bd1920723d7b7c925de087aa32e2187708897f7
   subpackages:
   - jsonpb
   - proto
@@ -258,10 +258,6 @@ imports:
   - pkg/audit/report
   - pkg/controller
   - pkg/validator
-- name: github.com/k8sdb/postgres_exporter
-  version: 185154b1f51cf51db76823d501f620008715f00b
-  subpackages:
-  - exporter
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubernetes/apimachinery
@@ -336,6 +332,12 @@ imports:
   - doc
 - name: github.com/spf13/pflag
   version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
+- name: github.com/wrouesnel/postgres_exporter
+  version: 2a98d1c51e81c280486704b813f971b738fd53d2
+  repo: https://github.com/k8sdb/postgres_exporter.git
+  vcs: git
+  subpackages:
+  - exporter
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:

@@ -11,12 +11,12 @@ import (
 	"github.com/appscode/pat"
 	"github.com/go-kit/kit/log"
 	ese "github.com/justwatchcom/elasticsearch_exporter/collector"
-	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	pge "github.com/k8sdb/postgres_exporter/exporter"
+	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/orcaman/concurrent-map"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	plog "github.com/prometheus/common/log"
+	pge "github.com/wrouesnel/postgres_exporter/exporter"
 	"gopkg.in/ini.v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -69,7 +69,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch dbType {
-	case tapi.ResourceTypePostgres:
+	case api.ResourceTypePostgres:
 		var reg *prometheus.Registry
 		if val, ok := registerers.Get(r.URL.Path); ok {
 			reg = val.(*prometheus.Registry)
@@ -98,7 +98,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
 		return
-	case tapi.ResourceTypeElasticsearch:
+	case api.ResourceTypeElasticsearch:
 		logger := log.NewLogfmtLogger(log.NewSyncWriter(os.Stdout))
 		var reg *prometheus.Registry
 		if val, ok := registerers.Get(r.URL.Path); ok {
@@ -138,7 +138,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
-func getPostgresURL(db *tapi.Postgres, podIP string) (string, error) {
+func getPostgresURL(db *api.Postgres, podIP string) (string, error) {
 	secret, err := kubeClient.CoreV1().Secrets(db.Namespace).Get(db.Spec.DatabaseSecret.SecretName, metav1.GetOptions{})
 	if err != nil {
 		return "", err
