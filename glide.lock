@@ -1,5 +1,5 @@
 hash: 05b9815fc9284ad9061c62e40634a994a8fdefdbf2abc68e8f7c824b4195bde7
-updated: 2017-11-27T11:51:44.517582017+06:00
+updated: 2017-11-27T18:04:25.913336102+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -41,7 +41,7 @@ imports:
 - name: github.com/appscode/mergo
   version: e3000cb3d28c72b837601cac94debd91032d19fe
 - name: github.com/appscode/osm
-  version: 7b0b6f4f329d8d1ed786020d7e7ad865c61f8e7f
+  version: b3ed1c7835d33f312616b260a949589cf33311ee
   subpackages:
   - context
 - name: github.com/appscode/pat
@@ -247,11 +247,11 @@ imports:
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/justwatchcom/elasticsearch_exporter
-  version: bdf7fff90fbeb8cf812600e94fd88d46355305fd
+  version: 762afe19b2d1abe9e3c19bd887ea2b2f003d419b
   subpackages:
   - collector
 - name: github.com/k8sdb/apimachinery
-  version: cfc4501f0cc8140732c27ce48d9c0dbb40bbc96a
+  version: ea36019dfff7e45544fd9ad53debd47fcee0ac5c
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -268,8 +268,6 @@ imports:
   version: 378c27f9b1e552b1cadd2bfbe704bcdb46a3f0e7
   subpackages:
   - pkg/audit/report
-  - pkg/controller
-  - pkg/validator
 - name: github.com/k8sdb/memcached
   version: b0437720939e31245b09dad5a6adc95a96e0dea8
   subpackages:

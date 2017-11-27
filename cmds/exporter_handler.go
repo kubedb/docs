@@ -163,7 +163,9 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-				reg.MustRegister(mse.New(conn, ""))
+				reg.MustRegister(mse.New(conn, mse.Collect{
+					GlobalStatus: true,
+				}))
 			}
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
@@ -206,7 +208,7 @@ func getMySQLURL(db *api.MySQL, podIP string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println("cfg",cfg)
+	fmt.Println("cfg", cfg)
 	//section, err := cfg
 	//if err != nil {
 	//	return "", err
@@ -219,6 +221,6 @@ func getMySQLURL(db *api.MySQL, podIP string) (string, error) {
 	//if k, err := section.GetKey("POSTGRES_PASSWORD"); err == nil {
 	//	password = k.Value()
 	//}
-//	conn := fmt.Sprintf("postgres://%s:%s@%s:5432", user, password, podIP)
+	//	conn := fmt.Sprintf("postgres://%s:%s@%s:5432", user, password, podIP)
 	return "", nil
 }
