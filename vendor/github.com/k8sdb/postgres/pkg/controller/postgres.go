@@ -353,7 +353,7 @@ func (c *Controller) initialize(postgres *tapi.Postgres) error {
 		return err
 	}
 
-	jobSuccess := c.CheckDatabaseRestoreJob(job, postgres, c.recorder, durationCheckRestoreJob)
+	jobSuccess := c.CheckDatabaseRestoreJob(snapshot,job, postgres, c.recorder, durationCheckRestoreJob)
 	if jobSuccess {
 		c.recorder.Event(
 			postgres.ObjectReference(),

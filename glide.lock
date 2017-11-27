@@ -1,5 +1,5 @@
-hash: 3a29276f7584dc12b412f9dc1c9cccc98ba2cb1ec5d68c7125765532e22dc38c
-updated: 2017-11-19T23:29:18.551784493-08:00
+hash: 05b9815fc9284ad9061c62e40634a994a8fdefdbf2abc68e8f7c824b4195bde7
+updated: 2017-11-27T11:51:44.517582017+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -13,7 +13,7 @@ imports:
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/appscode/go
-  version: 1cd97c853ad364376f9c792106deb0bfd197bca0
+  version: 85b510edd14fe8d6beb2ad365afd3c5b3afc8c49
   subpackages:
   - context
   - crypto/rand
@@ -92,7 +92,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/blang/semver
-  version: b38d23b8782a487059e8fc8773e9a5b228a77cb6
+  version: 2ee87856327ba09384cabd113bc6b5d174e9ec0f
 - name: github.com/coreos/prometheus-operator
   version: cbdd1b519796673cd02d53b0e21999acbcbfe6e4
   repo: https://github.com/appscode/prometheus-operator.git
@@ -193,7 +193,7 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/google/uuid
-  version: 8c31c18f31ede9fc8eae72290a7e7a8064e9b3e3
+  version: e367a344cbe8e08149f9951115dc299ebd42b919
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
@@ -251,7 +251,7 @@ imports:
   subpackages:
   - collector
 - name: github.com/k8sdb/apimachinery
-  version: 7fab3faf958855d232fffe6c4051715855584ba5
+  version: cfc4501f0cc8140732c27ce48d9c0dbb40bbc96a
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -270,10 +270,30 @@ imports:
   - pkg/audit/report
   - pkg/controller
   - pkg/validator
+- name: github.com/k8sdb/memcached
+  version: b0437720939e31245b09dad5a6adc95a96e0dea8
+  subpackages:
+  - pkg/controller
+  - pkg/validator
+- name: github.com/k8sdb/mongodb
+  version: 0ed1203813d858c1a5af8a39951c9e0c63070d60
+  subpackages:
+  - pkg/controller
+  - pkg/validator
+- name: github.com/k8sdb/mysql
+  version: a7595613671dfe05060f1430a102ebcad496cd84
+  subpackages:
+  - pkg/controller
+  - pkg/validator
 - name: github.com/k8sdb/postgres
-  version: 360db51ff8edb64c38799482fd3413722b347392
+  version: 45137f3723943902a343cf6befb71345aa6d52f6
   subpackages:
   - pkg/audit/report
+  - pkg/controller
+  - pkg/validator
+- name: github.com/k8sdb/redis
+  version: 919d4931b2fc02482b5e4bdfe0caa94884be0a7f
+  subpackages:
   - pkg/controller
   - pkg/validator
 - name: github.com/kr/logfmt
@@ -283,7 +303,7 @@ imports:
   subpackages:
   - pkg/conversion
 - name: github.com/lib/pq
-  version: 8c6ee72f3e6bcb1542298dd5f76cb74af9742cec
+  version: 83612a56d3dd153a94a629cd64925371c9adad78
   subpackages:
   - oid
 - name: github.com/mailru/easyjson
@@ -305,13 +325,13 @@ imports:
 - name: github.com/ncw/swift
   version: c95c6e5c2d1a3d37fc44c8c6dc9e231c7500667d
 - name: github.com/oliver006/redis_exporter
-  version: 46833dcea8756cbed281e035232bc8d54ba121bb
+  version: 78e6e67db275f53ce63c3260518ecad2b3b89085
   subpackages:
   - exporter
 - name: github.com/opencontainers/go-digest
   version: a6d0ee40d4207ea02364bd3b9e8e77b9159ba1eb
 - name: github.com/orcaman/concurrent-map
-  version: d4c23bd0e01134806215ffe65ba3fd22ec6721f7
+  version: 2ae17bc4c860c83513ee50feb9746f3e50d7515d
 - name: github.com/peterbourgon/diskv
   version: 5f041e8faa004a95c88a202771f4cc3e991971e6
 - name: github.com/pkg/errors
@@ -346,6 +366,10 @@ imports:
   version: 65c1f6f8f0fc1e2185eb9863a3bc751496404259
   subpackages:
   - xfs
+- name: github.com/prometheus/prometheus
+  version: 2c2702e22bebdb86061d005853cf22bcdf425ddb
+  subpackages:
+  - util/strutil
 - name: github.com/PuerkitoBio/purell
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
@@ -363,7 +387,7 @@ imports:
   subpackages:
   - memcache
 - name: github.com/spf13/cobra
-  version: 19e54c4a2b8a78c9d54b2bed61b1a6c5e1bfcf6f
+  version: 1be1d2841c773c01bee8289f55f7463b6e2c2539
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -416,14 +440,14 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: 790790d1b4a7d6b0d03d3725f980eedf80dc2707
+  version: b804618854e387dc7fdd9e50496183ddcbb4b120
   subpackages:
   - gensupport
   - googleapi
   - googleapi/internal/uritemplates
   - storage/v1
 - name: google.golang.org/appengine
-  version: 9d8544a6b2c7df9cff240fcf92d7b2f59bc13416
+  version: 4f7eeb5305a4ba1966344836ba4af9996b7b4e05
   subpackages:
   - cloudsql
   - internal
@@ -449,7 +473,7 @@ imports:
   - internal/sasl
   - internal/scram
 - name: gopkg.in/olivere/elastic.v3
-  version: 060365a7e27c56c938b234824ef7f9a3a7834b99
+  version: eaecbad7a83e6b60f131825553e5eb7fd5a50b41
   subpackages:
   - backoff
   - uritemplates
@@ -458,7 +482,7 @@ imports:
   repo: https://github.com/appscode/cron.git
   vcs: git
 - name: gopkg.in/yaml.v2
-  version: 287cf08546ab5e7e37d55a84f7ed3fd1db036de5
+  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/api
   version: 4df58c811fe2e65feb879227b2b245e4dc26e7ad
   subpackages:

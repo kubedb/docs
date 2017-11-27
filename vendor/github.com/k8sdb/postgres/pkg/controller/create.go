@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -173,10 +174,22 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulS
 		statefulSet.Spec.Template.Spec.Containers = append(statefulSet.Spec.Template.Spec.Containers, exporter)
 	}
 
+	var secretVolumeSource *core.SecretVolumeSource
 	if postgres.Spec.DatabaseSecret == nil {
-		secretVolumeSource, err := c.createDatabaseSecret(postgres)
-		if err != nil {
-			return nil, err
+		// Use old db-secret to restore a snapshot
+		if postgres.Spec.Init != nil &&
+			postgres.Spec.Init.SnapshotSource != nil {
+			secretVolume, err := c.findRestoreSecret(postgres)
+			if err != nil {
+				return nil, err
+			}
+			secretVolumeSource = secretVolume
+		} else {
+			secretVolume, err := c.createDatabaseSecret(postgres)
+			if err != nil {
+				return nil, err
+			}
+			secretVolumeSource = secretVolume
 		}
 
 		_postgres, err := kutildb.TryPatchPostgres(c.ExtClient, postgres.ObjectMeta, func(in *tapi.Postgres) *tapi.Postgres {
@@ -187,7 +200,7 @@ func (c *Controller) createStatefulSet(postgres *tapi.Postgres) (*apps.StatefulS
 			c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 			return nil, err
 		}
-		postgres = _postgres
+		postgres.Spec = _postgres.Spec //ref: https://stackoverflow.com/questions/34493586/why-struct-i-pass-does-not-change
 	}
 
 	// Add secretVolume for authentication
@@ -231,6 +244,27 @@ func (c *Controller) findSecret(secretName, namespace string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (c *Controller) findRestoreSecret(postgres *tapi.Postgres) (*core.SecretVolumeSource, error) {
+	snapshot, err := c.ExtClient.Snapshots(postgres.Namespace).Get(postgres.Spec.Init.SnapshotSource.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	srcPostgres, err := c.ExtClient.Postgreses(postgres.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	exists, err := c.findSecret(srcPostgres.Spec.DatabaseSecret.SecretName, postgres.Namespace)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		return nil, errors.New(srcPostgres.Spec.DatabaseSecret.SecretName + " secret not found")
+	}
+	return &core.SecretVolumeSource{
+		SecretName: srcPostgres.Spec.DatabaseSecret.SecretName,
+	}, nil
 }
 
 func (c *Controller) createDatabaseSecret(postgres *tapi.Postgres) (*core.SecretVolumeSource, error) {
@@ -358,7 +392,7 @@ func (c *Controller) createDormantDatabase(postgres *tapi.Postgres) (*tapi.Dorma
 	}
 
 	initSpec, _ := json.Marshal(postgres.Spec.Init)
-	if initSpec != nil {
+	if postgres.Spec.Init != nil {
 		dormantDb.Annotations = map[string]string{
 			tapi.PostgresInitSpec: string(initSpec),
 		}
@@ -471,7 +505,7 @@ func (c *Controller) createRestoreJob(postgres *tapi.Postgres, snapshot *tapi.Sn
 							Name: "osmconfig",
 							VolumeSource: core.VolumeSource{
 								Secret: &core.SecretVolumeSource{
-									SecretName: snapshot.Name,
+									SecretName: snapshot.OSMSecretName(),
 								},
 							},
 						},

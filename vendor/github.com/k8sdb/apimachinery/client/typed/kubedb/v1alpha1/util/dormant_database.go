@@ -15,11 +15,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func EnsureDormantDatabase(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *api.DormantDatabase) *api.DormantDatabase) (*api.DormantDatabase, error) {
+func EnsureDormantDatabase(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.DormantDatabase) *api.DormantDatabase) (*api.DormantDatabase, error) {
 	return CreateOrPatchDormantDatabase(c, meta, transform)
 }
 
-func CreateOrPatchDormantDatabase(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *api.DormantDatabase) *api.DormantDatabase) (*api.DormantDatabase, error) {
+func CreateOrPatchDormantDatabase(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.DormantDatabase) *api.DormantDatabase) (*api.DormantDatabase, error) {
 	cur, err := c.DormantDatabases(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating DormantDatabase %s/%s.", meta.Namespace, meta.Name)

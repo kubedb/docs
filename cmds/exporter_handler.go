@@ -19,7 +19,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	plog "github.com/prometheus/common/log"
 	_ "github.com/prometheus/memcached_exporter/exporter"
-	_ "github.com/prometheus/mysqld_exporter/collector"
+	mse "github.com/prometheus/mysqld_exporter/collector"
 	pge "github.com/wrouesnel/postgres_exporter/exporter"
 	"gopkg.in/ini.v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -138,6 +138,36 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
 		return
+	case api.ResourceKindMySQL:
+		var reg *prometheus.Registry
+		if val, ok := registerers.Get(r.URL.Path); ok {
+			reg = val.(*prometheus.Registry)
+		} else {
+			reg = prometheus.NewRegistry()
+			if absent := registerers.SetIfAbsent(r.URL.Path, reg); !absent {
+				r2, _ := registerers.Get(r.URL.Path)
+				reg = r2.(*prometheus.Registry)
+			} else {
+				plog.Infof("Configuring exporter for MySQL %s in namespace %s", dbName, namespace)
+				db, err := dbClient.MySQLs(namespace).Get(dbName, metav1.GetOptions{})
+				if kerr.IsNotFound(err) {
+					http.NotFound(w, r)
+					return
+				} else if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				conn, err := getMySQLURL(db, podIP)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				reg.MustRegister(mse.New(conn, ""))
+			}
+		}
+		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
+		return
 	}
 	http.NotFound(w, r)
 }
@@ -165,4 +195,30 @@ func getPostgresURL(db *api.Postgres, podIP string) (string, error) {
 	}
 	conn := fmt.Sprintf("postgres://%s:%s@%s:5432", user, password, podIP)
 	return conn, nil
+}
+
+func getMySQLURL(db *api.MySQL, podIP string) (string, error) {
+	secret, err := kubeClient.CoreV1().Secrets(db.Namespace).Get(db.Spec.DatabaseSecret.SecretName, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	cfg, err := ini.Load(secret.Data[".admin"])
+	if err != nil {
+		return "", err
+	}
+	fmt.Println("cfg",cfg)
+	//section, err := cfg
+	//if err != nil {
+	//	return "", err
+	//}
+	//user := "postgres"
+	//if k, err := section.GetKey("POSTGRES_USER"); err == nil {
+	//	user = k.Value()
+	//}
+	//var password string
+	//if k, err := section.GetKey("POSTGRES_PASSWORD"); err == nil {
+	//	password = k.Value()
+	//}
+//	conn := fmt.Sprintf("postgres://%s:%s@%s:5432", user, password, podIP)
+	return "", nil
 }

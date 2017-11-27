@@ -15,11 +15,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func EnsureSnapshot(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *api.Snapshot) *api.Snapshot) (*api.Snapshot, error) {
+func EnsureSnapshot(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Snapshot) *api.Snapshot) (*api.Snapshot, error) {
 	return CreateOrPatchSnapshot(c, meta, transform)
 }
 
-func CreateOrPatchSnapshot(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *api.Snapshot) *api.Snapshot) (*api.Snapshot, error) {
+func CreateOrPatchSnapshot(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Snapshot) *api.Snapshot) (*api.Snapshot, error) {
 	cur, err := c.Snapshots(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Snapshot %s/%s.", meta.Namespace, meta.Name)

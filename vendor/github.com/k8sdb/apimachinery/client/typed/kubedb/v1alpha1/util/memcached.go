@@ -15,7 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func CreateOrPatchMemcached(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *api.Memcached) *api.Memcached) (*api.Memcached, error) {
+func CreateOrPatchMemcached(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Memcached) *api.Memcached) (*api.Memcached, error) {
 	cur, err := c.Memcacheds(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Memcached %s/%s.", meta.Namespace, meta.Name)

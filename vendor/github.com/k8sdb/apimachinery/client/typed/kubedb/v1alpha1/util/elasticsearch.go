@@ -15,11 +15,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func EnsureElasticsearch(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *api.Elasticsearch) *api.Elasticsearch) (*api.Elasticsearch, error) {
+func EnsureElasticsearch(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Elasticsearch) *api.Elasticsearch) (*api.Elasticsearch, error) {
 	return CreateOrPatchElasticsearch(c, meta, transform)
 }
 
-func CreateOrPatchElasticsearch(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *api.Elasticsearch) *api.Elasticsearch) (*api.Elasticsearch, error) {
+func CreateOrPatchElasticsearch(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Elasticsearch) *api.Elasticsearch) (*api.Elasticsearch, error) {
 	cur, err := c.Elasticsearchs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Elasticsearch %s/%s.", meta.Namespace, meta.Name)
