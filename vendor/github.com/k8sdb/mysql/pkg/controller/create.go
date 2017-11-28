@@ -180,7 +180,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, err
 			c.recorder.Eventf(mysql.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 			return nil, err
 		}
-		mysql.Spec = _mysql.Spec
+		mysql.Spec.DatabaseSecret = _mysql.Spec.DatabaseSecret
 	}
 
 	//Set root user password from Secret

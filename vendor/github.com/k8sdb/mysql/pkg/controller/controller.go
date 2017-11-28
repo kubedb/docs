@@ -124,9 +124,10 @@ func (c *Controller) watchMySQL() {
 				mysql := obj.(*api.MySQL)
 				util.AssignTypeKind(mysql)
 				if mysql.Spec.Monitor != nil &&
-					mysql.Spec.Monitor.Prometheus != nil &&
-					&mysql.Spec.Monitor.Prometheus.Port == nil{
-					mysql.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
+					mysql.Spec.Monitor.Prometheus != nil {
+					if mysql.Spec.Monitor.Prometheus.Port == 0 {
+						mysql.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
+					}
 				}
 				if mysql.Status.CreationTime == nil {
 					if err := c.create(mysql); err != nil {

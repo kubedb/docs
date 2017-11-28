@@ -1,5 +1,5 @@
 hash: 80fbc16a52895f6a56eb093a98eeff48fec4f1d84415d2f5664a4617ad8e947f
-updated: 2017-11-28T14:25:25.441063836+06:00
+updated: 2017-11-28T16:00:54.343203347+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -269,7 +269,7 @@ imports:
   subpackages:
   - pkg/audit/report
 - name: github.com/k8sdb/mysql
-  version: f566a24db8827a310c14da20a63d0a74d043d764
+  version: 757ca535284dec5403402248d3e6aa519dd33650
   subpackages:
   - pkg/controller
   - pkg/validator
