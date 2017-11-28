@@ -1,5 +1,5 @@
-hash: 80fbc16a52895f6a56eb093a98eeff48fec4f1d84415d2f5664a4617ad8e947f
-updated: 2017-11-28T16:00:54.343203347+06:00
+hash: 9041babbdb875f862052c82ae07302e071b196dc41d25e4c7695ec4989ee5de9
+updated: 2017-11-28T18:59:58.833600205+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -269,7 +269,7 @@ imports:
   subpackages:
   - pkg/audit/report
 - name: github.com/k8sdb/mysql
-  version: 757ca535284dec5403402248d3e6aa519dd33650
+  version: 2d4d5c445fb2d0a458345ad22e72067215787a35
   subpackages:
   - pkg/controller
   - pkg/validator

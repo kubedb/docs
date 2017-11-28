@@ -61,7 +61,7 @@ import:
 - package: github.com/dcu/mongodb_exporter
   version: master
 - package: github.com/k8sdb/mysql
-  version: monitorPort
+  version: master
 - package: github.com/prometheus/mysqld_exporter
   version: master
 - package: github.com/oliver006/redis_exporter

@@ -68,7 +68,7 @@ func (c *Controller) createService(mysql *api.MySQL) error {
 		mysql.Spec.Monitor.Prometheus != nil {
 		svc.Spec.Ports = append(svc.Spec.Ports, core.ServicePort{
 			Name:       api.PrometheusExporterPortName,
-			Port:       api.PrometheusExporterPortNumber,
+			Port:       mysql.Spec.Monitor.Prometheus.Port,
 			TargetPort: intstr.FromString(api.PrometheusExporterPortName),
 		})
 	}
@@ -150,7 +150,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, err
 			Name: "exporter",
 			Args: []string{
 				"export",
-				fmt.Sprintf("--address=:%d", api.PrometheusExporterPortNumber),
+				fmt.Sprintf("--address=:%d", mysql.Spec.Monitor.Prometheus.Port),
 				"--v=3",
 			},
 			Image:           docker.ImageOperator + ":" + c.opt.ExporterTag,
@@ -159,7 +159,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, err
 				{
 					Name:          api.PrometheusExporterPortName,
 					Protocol:      core.ProtocolTCP,
-					ContainerPort: int32(api.PrometheusExporterPortNumber),
+					ContainerPort: mysql.Spec.Monitor.Prometheus.Port,
 				},
 			},
 		}

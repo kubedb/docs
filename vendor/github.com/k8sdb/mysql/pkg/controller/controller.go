@@ -123,12 +123,7 @@ func (c *Controller) watchMySQL() {
 			AddFunc: func(obj interface{}) {
 				mysql := obj.(*api.MySQL)
 				util.AssignTypeKind(mysql)
-				if mysql.Spec.Monitor != nil &&
-					mysql.Spec.Monitor.Prometheus != nil {
-					if mysql.Spec.Monitor.Prometheus.Port == 0 {
-						mysql.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
-					}
-				}
+				setMonitoringPort(mysql)
 				if mysql.Status.CreationTime == nil {
 					if err := c.create(mysql); err != nil {
 						log.Errorln(err)
@@ -139,6 +134,7 @@ func (c *Controller) watchMySQL() {
 			DeleteFunc: func(obj interface{}) {
 				mysql := obj.(*api.MySQL)
 				util.AssignTypeKind(mysql)
+				setMonitoringPort(mysql)
 				if err := c.pause(mysql); err != nil {
 					log.Errorln(err)
 				}
@@ -154,6 +150,8 @@ func (c *Controller) watchMySQL() {
 				}
 				util.AssignTypeKind(oldObj)
 				util.AssignTypeKind(newObj)
+				setMonitoringPort(oldObj)
+				setMonitoringPort(newObj)
 				if !reflect.DeepEqual(oldObj.Spec, newObj.Spec) {
 					if err := c.update(oldObj, newObj); err != nil {
 						log.Errorln(err)
@@ -163,6 +161,15 @@ func (c *Controller) watchMySQL() {
 		},
 	)
 	cacheController.Run(wait.NeverStop)
+}
+
+func setMonitoringPort(mysql *api.MySQL) {
+	if mysql.Spec.Monitor != nil &&
+		mysql.Spec.Monitor.Prometheus != nil {
+		if mysql.Spec.Monitor.Prometheus.Port == 0 {
+			mysql.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
+		}
+	}
 }
 
 func (c *Controller) watchDatabaseSnapshot() {
