@@ -93,6 +93,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				conn, err := getPostgresURL(db, podIP)
+				fmt.Println("====================conn pg:",conn)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -138,7 +139,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
 		return
-	case api.ResourceKindMySQL:
+	case api.ResourceTypeMySQL:
 		var reg *prometheus.Registry
 		if val, ok := registerers.Get(r.URL.Path); ok {
 			reg = val.(*prometheus.Registry)
@@ -158,6 +159,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				conn, err := getMySQLURL(db, podIP)
+				fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>conn ms:",conn)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -204,23 +206,9 @@ func getMySQLURL(db *api.MySQL, podIP string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	cfg, err := ini.Load(secret.Data[".admin"])
-	if err != nil {
-		return "", err
-	}
-	fmt.Println("cfg", cfg)
-	//section, err := cfg
-	//if err != nil {
-	//	return "", err
-	//}
-	//user := "postgres"
-	//if k, err := section.GetKey("POSTGRES_USER"); err == nil {
-	//	user = k.Value()
-	//}
-	//var password string
-	//if k, err := section.GetKey("POSTGRES_PASSWORD"); err == nil {
-	//	password = k.Value()
-	//}
-	//	conn := fmt.Sprintf("postgres://%s:%s@%s:5432", user, password, podIP)
-	return "", nil
+	password := string(secret.Data[".admin"])
+
+	user := "root"
+	conn := fmt.Sprintf("%s:%s@(%s:3306)/", user, password, podIP)
+	return conn, nil
 }

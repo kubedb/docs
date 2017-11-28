@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 
+	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/appscode/kutil/tools/monitoring/api"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
@@ -124,8 +125,8 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 	}
 	var portName string
 	for _, p := range svc.Spec.Ports {
-		if p.Port == spec.Prometheus.Port {
-			portName = p.Name
+		if p.Port == tapi.PrometheusExporterPortNumber {
+			portName = tapi.PrometheusExporterPortName
 		}
 	}
 	if portName == "" {
