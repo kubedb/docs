@@ -1,5 +1,5 @@
 hash: 80fbc16a52895f6a56eb093a98eeff48fec4f1d84415d2f5664a4617ad8e947f
-updated: 2017-11-28T14:14:52.822696011+06:00
+updated: 2017-11-28T14:25:25.441063836+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -268,16 +268,6 @@ imports:
   version: 378c27f9b1e552b1cadd2bfbe704bcdb46a3f0e7
   subpackages:
   - pkg/audit/report
-- name: github.com/k8sdb/memcached
-  version: b0437720939e31245b09dad5a6adc95a96e0dea8
-  subpackages:
-  - pkg/controller
-  - pkg/validator
-- name: github.com/k8sdb/mongodb
-  version: 0ed1203813d858c1a5af8a39951c9e0c63070d60
-  subpackages:
-  - pkg/controller
-  - pkg/validator
 - name: github.com/k8sdb/mysql
   version: f566a24db8827a310c14da20a63d0a74d043d764
   subpackages:
@@ -287,11 +277,6 @@ imports:
   version: 45137f3723943902a343cf6befb71345aa6d52f6
   subpackages:
   - pkg/audit/report
-  - pkg/controller
-  - pkg/validator
-- name: github.com/k8sdb/redis
-  version: 919d4931b2fc02482b5e4bdfe0caa94884be0a7f
-  subpackages:
   - pkg/controller
   - pkg/validator
 - name: github.com/kr/logfmt

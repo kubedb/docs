@@ -93,7 +93,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				conn, err := getPostgresURL(db, podIP)
-				fmt.Println("====================conn pg:",conn)
+				fmt.Println("====================conn pg:", conn)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -159,7 +159,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				conn, err := getMySQLURL(db, podIP)
-				fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>conn ms:",conn)
+				fmt.Println(">>>>>>>>>>>>>>>>>>>>>>>>conn ms:", conn)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
