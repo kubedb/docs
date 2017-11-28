@@ -138,39 +138,6 @@ func run() {
 		EnableRbac:        enableRbac,
 	}).Run()
 
-	// Need to wait for sometime to run another controller.
-	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 10)
-	//mongodb controller
-	mgCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, mgCtrl.Options{
-		GoverningService:  governingService,
-		OperatorNamespace: operatorNamespace,
-		ExporterTag:       exporterTag,
-		EnableRbac:        enableRbac,
-	}).Run()
-
-	// Need to wait for sometime to run another controller.
-	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 10)
-	//redis controller
-	rdCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, rdCtrl.Options{
-		GoverningService:  governingService,
-		OperatorNamespace: operatorNamespace,
-		ExporterTag:       exporterTag,
-		EnableRbac:        enableRbac,
-	}).Run()
-
-	// Need to wait for sometime to run another controller.
-	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 10)
-	//memcached controller
-	memCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, memCtrl.Options{
-		GoverningService:  governingService,
-		OperatorNamespace: operatorNamespace,
-		ExporterTag:       exporterTag,
-		EnableRbac:        enableRbac,
-	}).Run()
-
 	m := pat.New()
 	// For go metrics
 	m.Get("/metrics", promhttp.Handler())

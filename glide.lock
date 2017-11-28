@@ -1,5 +1,5 @@
-hash: 05b9815fc9284ad9061c62e40634a994a8fdefdbf2abc68e8f7c824b4195bde7
-updated: 2017-11-27T18:04:25.913336102+06:00
+hash: 80fbc16a52895f6a56eb093a98eeff48fec4f1d84415d2f5664a4617ad8e947f
+updated: 2017-11-28T14:14:52.822696011+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -279,7 +279,7 @@ imports:
   - pkg/controller
   - pkg/validator
 - name: github.com/k8sdb/mysql
-  version: a7595613671dfe05060f1430a102ebcad496cd84
+  version: f566a24db8827a310c14da20a63d0a74d043d764
   subpackages:
   - pkg/controller
   - pkg/validator
@@ -365,7 +365,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 2c2702e22bebdb86061d005853cf22bcdf425ddb
+  version: b3ff5f6b0ee4cef9923d3ec534abfa862486a579
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
