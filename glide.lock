@@ -1,5 +1,5 @@
-hash: bd30ae4517915970523de66274834d66af56882ad1ed7e185cfd414925883fd1
-updated: 2017-11-29T12:05:51.986163787+06:00
+hash: 8b08a2a9dcfbd07d5246da72a5f9b053e1ded58724880cde21276c328533fac1
+updated: 2017-11-29T15:57:43.839853771+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -125,7 +125,7 @@ imports:
   - reference
   - uuid
 - name: github.com/docker/libtrust
-  version: 9cbd2a1374f46905c68a4eb3694a130610adc62a
+  version: aabc10ec26b754e797f9028f4589c5b7bd90dc20
 - name: github.com/emicklei/go-restful
   version: ff4f55a206334ef123e4f79bbf348980da81ca46
   subpackages:
@@ -201,9 +201,9 @@ imports:
   - compiler
   - extensions
 - name: github.com/gorilla/context
-  version: 215affda49addc4c8ef7e2534915df2c8c35c6cd
+  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
-  version: 8096f47503459bcc74d1f4c487b7e6e42e5746b5
+  version: 0a192a193177452756c362c20087ddafcf6829c4
 - name: github.com/graymeta/stow
   version: 6f2b8867a3fb15cca5507da1d552b55cfe5d07a7
   repo: https://github.com/appscode/stow.git
@@ -227,9 +227,7 @@ imports:
   subpackages:
   - simplelru
 - name: github.com/heroku/docker-registry-client
-  version: 63418fd485f793ab9a21e44f9a7511bb649cc9af
-  repo: https://github.com/appscode/docker-registry-client.git
-  vcs: git
+  version: fd2fe803496897db70c236ee244f41487ea92ec2
   subpackages:
   - registry
 - name: github.com/howeyc/gopass
@@ -251,7 +249,7 @@ imports:
   subpackages:
   - collector
 - name: github.com/k8sdb/apimachinery
-  version: ea36019dfff7e45544fd9ad53debd47fcee0ac5c
+  version: ea4180af93e786fb3b6b830786a3b5da2d264eed
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -282,6 +280,11 @@ imports:
   version: 45137f3723943902a343cf6befb71345aa6d52f6
   subpackages:
   - pkg/audit/report
+  - pkg/controller
+  - pkg/validator
+- name: github.com/k8sdb/redis
+  version: 7c9b0d623c958d90904e09887be9699978f195aa
+  subpackages:
   - pkg/controller
   - pkg/validator
 - name: github.com/kr/logfmt
@@ -317,7 +320,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/opencontainers/go-digest
-  version: a6d0ee40d4207ea02364bd3b9e8e77b9159ba1eb
+  version: 279bed98673dd5bef374d3b6e4b09e2af76183bf
 - name: github.com/orcaman/concurrent-map
   version: 2ae17bc4c860c83513ee50feb9746f3e50d7515d
 - name: github.com/peterbourgon/diskv

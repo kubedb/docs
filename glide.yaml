@@ -66,6 +66,8 @@ import:
   version: master
 - package: github.com/prometheus/mysqld_exporter
   version: master
+- package: github.com/k8sdb/redis
+  version: monitorPort
 - package: github.com/oliver006/redis_exporter
   version: master
 - package: github.com/prometheus/memcached_exporter
