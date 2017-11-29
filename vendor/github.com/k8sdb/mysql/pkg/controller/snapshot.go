@@ -5,7 +5,6 @@ import (
 
 	"github.com/appscode/go/log"
 	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/storage"
 	amv "github.com/k8sdb/apimachinery/pkg/validator"
 	batch "k8s.io/api/batch/v1"
@@ -17,21 +16,16 @@ import (
 const (
 	SnapshotProcess_Backup  = "backup"
 	snapshotType_DumpBackup = "dump-backup"
-	storageSecretMountPath  = "/var/credentials/"
 )
 
 func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
 	// Database name can't empty
 	databaseName := snapshot.Spec.DatabaseName
 	if databaseName == "" {
-		return fmt.Errorf(`Object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
+		return fmt.Errorf(`object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
 	}
 
-	if err := docker.CheckDockerImageVersion(docker.ImageElasticdump, c.opt.ElasticDumpTag); err != nil {
-		return fmt.Errorf(`Image %v:%v not found`, docker.ImageElasticdump, c.opt.ElasticDumpTag)
-	}
-
-	if _, err := c.ExtClient.Elasticsearchs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
+	if _, err := c.ExtClient.MySQLs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -39,11 +33,12 @@ func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
 }
 
 func (c *Controller) GetDatabase(snapshot *api.Snapshot) (runtime.Object, error) {
-	elasticsearch, err := c.ExtClient.Elasticsearchs(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
+	mysql, err := c.ExtClient.MySQLs(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
-	return elasticsearch, nil
+
+	return mysql, nil
 }
 
 func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) {
@@ -58,19 +53,20 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 	if err != nil {
 		return nil, err
 	}
-	elastic, err := c.ExtClient.Elasticsearchs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
+	mysql, err := c.ExtClient.MySQLs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	// Get PersistentVolume object for Backup Util pod.
-	persistentVolume, err := c.getVolumeForSnapshot(elastic.Spec.Storage, jobName, snapshot.Namespace)
+	persistentVolume, err := c.getVolumeForSnapshot(mysql.Spec.Storage, jobName, snapshot.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
 	// Folder name inside Cloud bucket where backup will be uploaded
 	folderName, _ := snapshot.Location()
+
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   jobName,
@@ -84,8 +80,9 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 				Spec: core.PodSpec{
 					Containers: []core.Container{
 						{
-							Name:  SnapshotProcess_Backup,
-							Image: docker.ImageElasticdump + ":" + c.opt.ElasticDumpTag,
+							Name: SnapshotProcess_Backup,
+							//Image: fmt.Sprintf("%s:%s-util", docker.ImageMySQL, mysql.Spec.Version), //todo
+							Image: fmt.Sprintf("kubedb/mysql:8.0-util"),
 							Args: []string{
 								fmt.Sprintf(`--process=%s`, SnapshotProcess_Backup),
 								fmt.Sprintf(`--host=%s`, databaseName),
@@ -96,18 +93,30 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 							Resources: snapshot.Spec.Resources,
 							VolumeMounts: []core.VolumeMount{
 								{
+									Name:      "secret",
+									MountPath: "/srv/" + api.ResourceNameMySQL + "/secrets",
+								},
+								{
 									Name:      persistentVolume.Name,
 									MountPath: "/var/" + snapshotType_DumpBackup + "/",
 								},
 								{
 									Name:      "osmconfig",
-									MountPath: storage.SecretMountPath,
 									ReadOnly:  true,
+									MountPath: storage.SecretMountPath,
 								},
 							},
 						},
 					},
 					Volumes: []core.Volume{
+						{
+							Name: "secret",
+							VolumeSource: core.VolumeSource{
+								Secret: &core.SecretVolumeSource{
+									SecretName: mysql.Spec.DatabaseSecret.SecretName,
+								},
+							},
+						},
 						{
 							Name:         persistentVolume.Name,
 							VolumeSource: persistentVolume.VolumeSource,
@@ -116,7 +125,7 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 							Name: "osmconfig",
 							VolumeSource: core.VolumeSource{
 								Secret: &core.SecretVolumeSource{
-									SecretName: snapshot.Name,
+									SecretName: snapshot.OSMSecretName(),
 								},
 							},
 						},

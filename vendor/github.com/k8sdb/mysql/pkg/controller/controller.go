@@ -9,7 +9,7 @@ import (
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
-	kutildb "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1/util"
+	"github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1/util"
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/eventer"
 	core "k8s.io/api/core/v1"
@@ -27,11 +27,7 @@ import (
 )
 
 type Options struct {
-	// Tag of elasticdump
-	ElasticDumpTag string
-	// Tag of elasticsearch operator
-	DiscoveryTag string
-	// Exporter namespace
+	// Operator namespace
 	OperatorNamespace string
 	// Exporter tag
 	ExporterTag string
@@ -78,25 +74,25 @@ func New(
 		ApiExtKubeClient: apiExtKubeClient,
 		promClient:       promClient,
 		cronController:   cronController,
-		recorder:         eventer.NewEventRecorder(client, "Elasticsearch operator"),
+		recorder:         eventer.NewEventRecorder(client, "mysql operator"),
 		opt:              opt,
 		syncPeriod:       time.Minute * 2,
 	}
 }
 
 func (c *Controller) Run() {
-	// Ensure Elasticsearch CRD
+	// Ensure MySQL CRD
 	c.ensureCustomResourceDefinition()
 
 	// Start Cron
 	c.cronController.StartCron()
 
-	// Watch Elasticsearch TPR objects
-	go c.watchElastic()
-	// Watch Snapshot with labelSelector only for Elasticsearch
-	go c.watchSnapshot()
-	// Watch DormantDatabase with labelSelector only for Elasticsearch
-	go c.watchDormantDatabase()
+	// Watch x  TPR objects
+	go c.watchMySQL()
+	// Watch DatabaseSnapshot with labelSelector only for MySQL
+	go c.watchDatabaseSnapshot()
+	// Watch DeletedDatabase with labelSelector only for MySQL
+	go c.watchDeletedDatabase()
 }
 
 // Blocks caller. Intended to be called as a Go routine.
@@ -109,44 +105,53 @@ func (c *Controller) RunAndHold() {
 	hold.Hold()
 }
 
-func (c *Controller) watchElastic() {
+func (c *Controller) watchMySQL() {
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.Elasticsearchs(core.NamespaceAll).List(metav1.ListOptions{})
+			return c.ExtClient.MySQLs(metav1.NamespaceAll).List(metav1.ListOptions{})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.Elasticsearchs(core.NamespaceAll).Watch(metav1.ListOptions{})
+			return c.ExtClient.MySQLs(metav1.NamespaceAll).Watch(metav1.ListOptions{})
 		},
 	}
 
 	_, cacheController := cache.NewInformer(
 		lw,
-		&api.Elasticsearch{},
+		&api.MySQL{},
 		c.syncPeriod,
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
-				elastic := obj.(*api.Elasticsearch)
-				if elastic.Status.CreationTime == nil {
-					if err := c.create(elastic); err != nil {
+				mysql := obj.(*api.MySQL)
+				util.AssignTypeKind(mysql)
+				setMonitoringPort(mysql)
+				if mysql.Status.CreationTime == nil {
+					if err := c.create(mysql); err != nil {
 						log.Errorln(err)
-						c.pushFailureEvent(elastic, err.Error())
+						c.pushFailureEvent(mysql, err.Error())
 					}
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
-				if err := c.pause(obj.(*api.Elasticsearch)); err != nil {
+				mysql := obj.(*api.MySQL)
+				util.AssignTypeKind(mysql)
+				setMonitoringPort(mysql)
+				if err := c.pause(mysql); err != nil {
 					log.Errorln(err)
 				}
 			},
 			UpdateFunc: func(old, new interface{}) {
-				oldObj, ok := old.(*api.Elasticsearch)
+				oldObj, ok := old.(*api.MySQL)
 				if !ok {
 					return
 				}
-				newObj, ok := new.(*api.Elasticsearch)
+				newObj, ok := new.(*api.MySQL)
 				if !ok {
 					return
 				}
+				util.AssignTypeKind(oldObj)
+				util.AssignTypeKind(newObj)
+				setMonitoringPort(oldObj)
+				setMonitoringPort(newObj)
 				if !reflect.DeepEqual(oldObj.Spec, newObj.Spec) {
 					if err := c.update(oldObj, newObj); err != nil {
 						log.Errorln(err)
@@ -158,20 +163,29 @@ func (c *Controller) watchElastic() {
 	cacheController.Run(wait.NeverStop)
 }
 
-func (c *Controller) watchSnapshot() {
+func setMonitoringPort(mysql *api.MySQL) {
+	if mysql.Spec.Monitor != nil &&
+		mysql.Spec.Monitor.Prometheus != nil {
+		if mysql.Spec.Monitor.Prometheus.Port == 0 {
+			mysql.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
+		}
+	}
+}
+
+func (c *Controller) watchDatabaseSnapshot() {
 	labelMap := map[string]string{
-		api.LabelDatabaseKind: api.ResourceKindElasticsearch,
+		api.LabelDatabaseKind: api.ResourceKindMySQL,
 	}
 	// Watch with label selector
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.Snapshots(core.NamespaceAll).List(
+			return c.ExtClient.Snapshots(metav1.NamespaceAll).List(
 				metav1.ListOptions{
 					LabelSelector: labels.SelectorFromSet(labelMap).String(),
 				})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.Snapshots(core.NamespaceAll).Watch(
+			return c.ExtClient.Snapshots(metav1.NamespaceAll).Watch(
 				metav1.ListOptions{
 					LabelSelector: labels.SelectorFromSet(labelMap).String(),
 				})
@@ -181,20 +195,20 @@ func (c *Controller) watchSnapshot() {
 	amc.NewSnapshotController(c.Client, c.ApiExtKubeClient, c.ExtClient, c, lw, c.syncPeriod).Run()
 }
 
-func (c *Controller) watchDormantDatabase() {
+func (c *Controller) watchDeletedDatabase() {
 	labelMap := map[string]string{
-		api.LabelDatabaseKind: api.ResourceKindElasticsearch,
+		api.LabelDatabaseKind: api.ResourceKindMySQL,
 	}
 	// Watch with label selector
 	lw := &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.DormantDatabases(core.NamespaceAll).List(
+			return c.ExtClient.DormantDatabases(metav1.NamespaceAll).List(
 				metav1.ListOptions{
 					LabelSelector: labels.SelectorFromSet(labelMap).String(),
 				})
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.DormantDatabases(core.NamespaceAll).Watch(
+			return c.ExtClient.DormantDatabases(metav1.NamespaceAll).Watch(
 				metav1.ListOptions{
 					LabelSelector: labels.SelectorFromSet(labelMap).String(),
 				})
@@ -207,7 +221,7 @@ func (c *Controller) watchDormantDatabase() {
 func (c *Controller) ensureCustomResourceDefinition() {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 
-	resourceName := api.ResourceTypeElasticsearch + "." + api.SchemeGroupVersion.Group
+	resourceName := api.ResourceTypeMySQL + "." + api.SchemeGroupVersion.Group
 	if _, err := c.ApiExtKubeClient.CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err != nil {
 		if !kerr.IsNotFound(err) {
 			log.Fatalln(err)
@@ -228,9 +242,9 @@ func (c *Controller) ensureCustomResourceDefinition() {
 			Version: api.SchemeGroupVersion.Version,
 			Scope:   crd_api.NamespaceScoped,
 			Names: crd_api.CustomResourceDefinitionNames{
-				Plural:     api.ResourceTypeElasticsearch,
-				Kind:       api.ResourceKindElasticsearch,
-				ShortNames: []string{api.ResourceCodeElasticsearch},
+				Plural:     api.ResourceTypeMySQL,
+				Kind:       api.ResourceKindMySQL,
+				ShortNames: []string{api.ResourceCodeMySQL},
 			},
 		},
 	}
@@ -240,29 +254,22 @@ func (c *Controller) ensureCustomResourceDefinition() {
 	}
 }
 
-func (c *Controller) pushFailureEvent(elastic *api.Elasticsearch, reason string) {
+func (c *Controller) pushFailureEvent(mysql *api.MySQL, reason string) {
 	c.recorder.Eventf(
-		elastic.ObjectReference(),
+		mysql.ObjectReference(),
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
-		`Fail to be ready Elasticsearch: "%v". Reason: %v`,
-		elastic.Name,
+		`Fail to be ready MySQL: "%v". Reason: %v`,
+		mysql.Name,
 		reason,
 	)
 
-	var err error
-	if elastic, err = c.ExtClient.Elasticsearchs(elastic.Namespace).Get(elastic.Name, metav1.GetOptions{}); err != nil {
-		log.Errorln(err)
-		return
-	}
-
-	_, err = kutildb.TryPatchElasticsearch(c.ExtClient, elastic.ObjectMeta, func(in *api.Elasticsearch) *api.Elasticsearch {
+	_, err := util.TryPatchMySQL(c.ExtClient, mysql.ObjectMeta, func(in *api.MySQL) *api.MySQL {
 		in.Status.Phase = api.DatabasePhaseFailed
 		in.Status.Reason = reason
 		return in
 	})
 	if err != nil {
-		c.recorder.Eventf(elastic.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+		c.recorder.Eventf(mysql.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 	}
-
 }

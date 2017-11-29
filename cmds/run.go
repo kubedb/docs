@@ -18,8 +18,8 @@ import (
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/migrator"
-	esCtrl "github.com/k8sdb/elasticsearch/pkg/controller"
 	pgCtrl "github.com/k8sdb/postgres/pkg/controller"
+	msCtrl "github.com/k8sdb/mysql/pkg/controller"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	core "k8s.io/api/core/v1"
@@ -112,15 +112,26 @@ func run() {
 		EnableRbac:        enableRbac,
 	}).Run()
 
+	//// Need to wait for sometime to run another controller.
+	//// Or multiple controller will try to create common TPR simultaneously which gives error
+	//time.Sleep(time.Second * 10)
+	//esCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
+	//	GoverningService:  governingService,
+	//	ExporterTag:       exporterTag,
+	//	ElasticDumpTag:    elasticDumpTag,
+	//	DiscoveryTag:      esOperatorTag,
+	//	OperatorNamespace: operatorNamespace,
+	//	EnableRbac:        enableRbac,
+	//}).Run()
+
 	// Need to wait for sometime to run another controller.
 	// Or multiple controller will try to create common TPR simultaneously which gives error
 	time.Sleep(time.Second * 10)
-	esCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
+	// mysql controller
+	msCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, msCtrl.Options{
 		GoverningService:  governingService,
-		ExporterTag:       exporterTag,
-		ElasticDumpTag:    elasticDumpTag,
-		DiscoveryTag:      esOperatorTag,
 		OperatorNamespace: operatorNamespace,
+		ExporterTag:       exporterTag,
 		EnableRbac:        enableRbac,
 	}).Run()
 

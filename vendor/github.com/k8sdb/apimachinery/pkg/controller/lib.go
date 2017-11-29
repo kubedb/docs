@@ -142,6 +142,7 @@ func (c *Controller) DeleteSnapshots(namespace string, selector labels.Selector)
 }
 
 func (c *Controller) CheckDatabaseRestoreJob(
+	snapshot *api.Snapshot,
 	job *batch.Job,
 	runtimeObj runtime.Object,
 	recorder record.EventRecorder,
@@ -191,7 +192,7 @@ func (c *Controller) CheckDatabaseRestoreJob(
 
 	deleteJobResources(c.Client, recorder, runtimeObj, job)
 
-	err = c.Client.CoreV1().Secrets(job.Namespace).Delete(job.Name, &metav1.DeleteOptions{})
+	err = c.Client.CoreV1().Secrets(job.Namespace).Delete(snapshot.OSMSecretName(), &metav1.DeleteOptions{})
 	if err != nil && !kerr.IsNotFound(err) {
 		return false
 	}

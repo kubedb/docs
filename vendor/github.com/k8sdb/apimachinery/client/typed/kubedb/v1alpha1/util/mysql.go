@@ -15,7 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func CreateOrPatchMySQL(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *api.MySQL) *api.MySQL) (*api.MySQL, error) {
+func CreateOrPatchMySQL(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.MySQL) *api.MySQL) (*api.MySQL, error) {
 	cur, err := c.MySQLs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating MySQL %s/%s.", meta.Namespace, meta.Name)

@@ -15,11 +15,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func EnsurePostgres(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *api.Postgres) *api.Postgres) (*api.Postgres, error) {
+func EnsurePostgres(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Postgres) *api.Postgres) (*api.Postgres, error) {
 	return CreateOrPatchPostgres(c, meta, transform)
 }
 
-func CreateOrPatchPostgres(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *api.Postgres) *api.Postgres) (*api.Postgres, error) {
+func CreateOrPatchPostgres(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Postgres) *api.Postgres) (*api.Postgres, error) {
 	cur, err := c.Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Postgres %s/%s.", meta.Namespace, meta.Name)
