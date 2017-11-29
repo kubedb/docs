@@ -9,7 +9,7 @@ import (
 
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/pat"
-	_ "github.com/dcu/mongodb_exporter/collector"
+	mgoe "github.com/dcu/mongodb_exporter/collector"
 	"github.com/go-kit/kit/log"
 	ese "github.com/justwatchcom/elasticsearch_exporter/collector"
 	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
@@ -170,6 +170,38 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
 		return
+	case api.ResourceTypeMongoDB:
+		var reg *prometheus.Registry
+		if val, ok := registerers.Get(r.URL.Path); ok {
+			reg = val.(*prometheus.Registry)
+		} else {
+			reg = prometheus.NewRegistry()
+			if absent := registerers.SetIfAbsent(r.URL.Path, reg); !absent {
+				r2, _ := registerers.Get(r.URL.Path)
+				reg = r2.(*prometheus.Registry)
+			} else {
+				plog.Infof("Configuring exporter for MySQL %s in namespace %s", dbName, namespace)
+				db, err := dbClient.MongoDBs(namespace).Get(dbName, metav1.GetOptions{})
+				if kerr.IsNotFound(err) {
+					http.NotFound(w, r)
+					return
+				} else if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				conn, err := getMongoDBURL(db, podIP)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+
+				reg.MustRegister(mgoe.NewMongodbCollector(mgoe.MongodbCollectorOpts{
+					URI: conn,
+				}))
+			}
+		}
+		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
+		return
 	}
 	http.NotFound(w, r)
 }
@@ -208,5 +240,17 @@ func getMySQLURL(db *api.MySQL, podIP string) (string, error) {
 
 	user := "root"
 	conn := fmt.Sprintf("%s:%s@(%s:3306)/", user, password, podIP)
+	return conn, nil
+}
+
+func getMongoDBURL(db *api.MongoDB, podIP string) (string, error) {
+	secret, err := kubeClient.CoreV1().Secrets(db.Namespace).Get(db.Spec.DatabaseSecret.SecretName, metav1.GetOptions{})
+	if err != nil {
+		return "", err
+	}
+	password := string(secret.Data[".admin"])
+
+	user := "root"
+	conn := fmt.Sprintf("mongodb://%s:%s@%s:27017", user, password, podIP)
 	return conn, nil
 }

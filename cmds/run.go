@@ -18,8 +18,9 @@ import (
 	amc "github.com/k8sdb/apimachinery/pkg/controller"
 	"github.com/k8sdb/apimachinery/pkg/docker"
 	"github.com/k8sdb/apimachinery/pkg/migrator"
-	pgCtrl "github.com/k8sdb/postgres/pkg/controller"
+	mgoCtrl "github.com/k8sdb/mongodb/pkg/controller"
 	msCtrl "github.com/k8sdb/mysql/pkg/controller"
+	pgCtrl "github.com/k8sdb/postgres/pkg/controller"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	core "k8s.io/api/core/v1"
@@ -129,6 +130,17 @@ func run() {
 	time.Sleep(time.Second * 10)
 	// mysql controller
 	msCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, msCtrl.Options{
+		GoverningService:  governingService,
+		OperatorNamespace: operatorNamespace,
+		ExporterTag:       exporterTag,
+		EnableRbac:        enableRbac,
+	}).Run()
+
+	// Need to wait for sometime to run another controller.
+	// Or multiple controller will try to create common TPR simultaneously which gives error
+	time.Sleep(time.Second * 10)
+	// mongodb controller
+	mgoCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, mgoCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
 		ExporterTag:       exporterTag,
