@@ -255,7 +255,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				conn := fmt.Sprintf("%s:11211", podIP)
-				reg.MustRegister(memEx.NewExporter(conn,0))
+				reg.MustRegister(memEx.NewExporter(conn,0)) //timeout: if zero,then default timeout will be used
 			}
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
