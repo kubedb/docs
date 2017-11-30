@@ -1,5 +1,5 @@
-hash: 8b08a2a9dcfbd07d5246da72a5f9b053e1ded58724880cde21276c328533fac1
-updated: 2017-11-29T15:57:43.839853771+06:00
+hash: fcc45bd11818eaee639679a26c279c80ab353fc6d1c59b8f5e96a465651bfe98
+updated: 2017-11-30T14:12:41.964959008+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -108,7 +108,7 @@ imports:
   subpackages:
   - spew
 - name: github.com/dcu/mongodb_exporter
-  version: 21fe4ed80fdf5e759175273ebedf22024806cef0
+  version: b07e363c316a314309f0f9e9745f20ace1e80275
   subpackages:
   - collector
   - shared
@@ -283,7 +283,7 @@ imports:
   - pkg/controller
   - pkg/validator
 - name: github.com/k8sdb/redis
-  version: 7c9b0d623c958d90904e09887be9699978f195aa
+  version: 1a608fca03e79a6bf6bbe2ab4579e0349e59bd40
   subpackages:
   - pkg/controller
   - pkg/validator
@@ -431,7 +431,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: 2956fb848dcbe36c78c2a55f421ec8a4187aa94e
+  version: 88d8826ad7655f8bdc7328b1ec3774f3851c3a44
   subpackages:
   - gensupport
   - googleapi
