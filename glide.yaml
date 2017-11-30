@@ -70,6 +70,8 @@ import:
   version: master
 - package: github.com/oliver006/redis_exporter
   version: master
+- package: github.com/k8sdb/memcached
+  version: master
 - package: github.com/prometheus/memcached_exporter
   repo: https://github.com/k8sdb/memcached_exporter.git
   version: master
