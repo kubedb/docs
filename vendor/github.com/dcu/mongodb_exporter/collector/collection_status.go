@@ -46,11 +46,11 @@ var (
 
 type CollectionStatus struct {
 	Name        string `bson:"ns"`
-	Count       int32  `bson:"count"`
-	Size        int32  `bson:"size"`
-	AvgSize     int32  `bson:"avgObjSize"`
-	StorageSize int32  `bson:"storageSize"`
-	IndexSize   int32  `bson:"totalIndexSize"`
+	Count       int    `bson:"count"`
+	Size        int    `bson:"size"`
+	AvgSize     int    `bson:"avgObjSize"`
+	StorageSize int    `bson:"storageSize"`
+	IndexSize   int    `bson:"totalIndexSize"`
 }
 
 func (collStatus *CollectionStatus) Export(ch chan<- prometheus.Metric) {

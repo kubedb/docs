@@ -13,7 +13,7 @@ import (
 	"github.com/go-kit/kit/log"
 	ese "github.com/justwatchcom/elasticsearch_exporter/collector"
 	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	_ "github.com/oliver006/redis_exporter/exporter"
+	rde "github.com/oliver006/redis_exporter/exporter"
 	"github.com/orcaman/concurrent-map"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -180,7 +180,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				r2, _ := registerers.Get(r.URL.Path)
 				reg = r2.(*prometheus.Registry)
 			} else {
-				plog.Infof("Configuring exporter for MySQL %s in namespace %s", dbName, namespace)
+				plog.Infof("Configuring exporter for MongoDB %s in namespace %s", dbName, namespace)
 				db, err := dbClient.MongoDBs(namespace).Get(dbName, metav1.GetOptions{})
 				if kerr.IsNotFound(err) {
 					http.NotFound(w, r)
@@ -198,6 +198,39 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg.MustRegister(mgoe.NewMongodbCollector(mgoe.MongodbCollectorOpts{
 					URI: conn,
 				}))
+			}
+		}
+		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
+		return
+	case api.ResourceTypeRedis:
+		var reg *prometheus.Registry
+		if val, ok := registerers.Get(r.URL.Path); ok {
+			reg = val.(*prometheus.Registry)
+		} else {
+			reg = prometheus.NewRegistry()
+			if absent := registerers.SetIfAbsent(r.URL.Path, reg); !absent {
+				r2, _ := registerers.Get(r.URL.Path)
+				reg = r2.(*prometheus.Registry)
+			} else {
+				plog.Infof("Configuring exporter for Redis %s in namespace %s", dbName, namespace)
+				_, err := dbClient.Redises(namespace).Get(dbName, metav1.GetOptions{})
+				if kerr.IsNotFound(err) {
+					http.NotFound(w, r)
+					return
+				} else if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				conn := fmt.Sprintf("redis://%s:6379", podIP)
+				exp, err := rde.NewRedisExporter(
+					rde.RedisHost{Addrs: []string{conn},Aliases: []string{""}},
+					"",
+					"")
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				reg.MustRegister(exp)
 			}
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
