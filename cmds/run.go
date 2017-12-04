@@ -13,16 +13,17 @@ import (
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/pat"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
-	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
-	amc "github.com/k8sdb/apimachinery/pkg/controller"
-	"github.com/k8sdb/apimachinery/pkg/docker"
-	"github.com/k8sdb/apimachinery/pkg/migrator"
-	mgoCtrl "github.com/k8sdb/mongodb/pkg/controller"
-	msCtrl "github.com/k8sdb/mysql/pkg/controller"
-	pgCtrl "github.com/k8sdb/postgres/pkg/controller"
-	rdCtrl "github.com/k8sdb/redis/pkg/controller"
-	memCtrl "github.com/k8sdb/memcached/pkg/controller"
+	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	tcs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
+	amc "github.com/kubedb/apimachinery/pkg/controller"
+	"github.com/kubedb/apimachinery/pkg/docker"
+	"github.com/kubedb/apimachinery/pkg/migrator"
+	esCtrl "github.com/kubedb/elasticsearch/pkg/controller"
+	memCtrl "github.com/kubedb/memcached/pkg/controller"
+	mgoCtrl "github.com/kubedb/mongodb/pkg/controller"
+	msCtrl "github.com/kubedb/mysql/pkg/controller"
+	pgCtrl "github.com/kubedb/postgres/pkg/controller"
+	rdCtrl "github.com/kubedb/redis/pkg/controller"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	core "k8s.io/api/core/v1"
@@ -48,9 +49,6 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&exporterTag, "exporter-tag", exporterTag, "Tag of kubedb/operator used as exporter")
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
 	cmd.Flags().BoolVar(&enableRbac, "rbac", enableRbac, "Enable RBAC for database workloads")
-	// elasticsearch flags
-	cmd.Flags().StringVar(&esOperatorTag, "elasticsearch.operator-tag", esOperatorTag, "Tag of kubedb/es-operator used for discovery")
-
 	// elasticdump flags
 	cmd.Flags().StringVar(&elasticDumpTag, "elasticdump.tag", elasticDumpTag, "Tag of elasticdump")
 
@@ -58,11 +56,6 @@ func NewCmdRun() *cobra.Command {
 }
 
 func run() {
-	// Check elasticsearch operator docker image tag
-	if err := docker.CheckDockerImageVersion(docker.ImageElasticOperator, esOperatorTag); err != nil {
-		log.Fatalf(`Image %v:%v not found.`, docker.ImageElasticOperator, esOperatorTag)
-	}
-
 	// Check elasticdump docker image tag
 	if err := docker.CheckDockerImageVersion(docker.ImageElasticdump, elasticDumpTag); err != nil {
 		log.Fatalf(`Image %v:%v not found.`, docker.ImageElasticdump, elasticDumpTag)
@@ -115,17 +108,16 @@ func run() {
 		EnableRbac:        enableRbac,
 	}).Run()
 
-	//// Need to wait for sometime to run another controller.
-	//// Or multiple controller will try to create common TPR simultaneously which gives error
-	//time.Sleep(time.Second * 10)
-	//esCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
-	//	GoverningService:  governingService,
-	//	ExporterTag:       exporterTag,
-	//	ElasticDumpTag:    elasticDumpTag,
-	//	DiscoveryTag:      esOperatorTag,
-	//	OperatorNamespace: operatorNamespace,
-	//	EnableRbac:        enableRbac,
-	//}).Run()
+	// Need to wait for sometime to run another controller.
+	// Or multiple controller will try to create common TPR simultaneously which gives error
+	time.Sleep(time.Second * 10)
+	esCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
+		GoverningService:  governingService,
+		ExporterTag:       exporterTag,
+		ElasticDumpTag:    elasticDumpTag,
+		OperatorNamespace: operatorNamespace,
+		EnableRbac:        enableRbac,
+	}).Run()
 
 	// Need to wait for sometime to run another controller.
 	// Or multiple controller will try to create common TPR simultaneously which gives error

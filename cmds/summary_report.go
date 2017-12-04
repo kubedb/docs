@@ -6,9 +6,9 @@ import (
 
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/pat"
-	tapi "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
-	esaudit "github.com/k8sdb/elasticsearch/pkg/audit/report"
-	pgaudit "github.com/k8sdb/postgres/pkg/audit/report"
+	tapi "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	esaudit "github.com/kubedb/elasticsearch/pkg/audit/report"
+	pgaudit "github.com/kubedb/postgres/pkg/audit/report"
 )
 
 func ExportSummaryReport(w http.ResponseWriter, r *http.Request) {

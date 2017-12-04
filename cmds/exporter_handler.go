@@ -9,18 +9,18 @@ import (
 
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/pat"
+	mgoe "github.com/dcu/mongodb_exporter/collector"
 	"github.com/go-kit/kit/log"
-	api "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	ese "github.com/justwatchcom/elasticsearch_exporter/collector"
+	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	rde "github.com/oliver006/redis_exporter/exporter"
 	"github.com/orcaman/concurrent-map"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	plog "github.com/prometheus/common/log"
-	ese "github.com/justwatchcom/elasticsearch_exporter/collector"
-	pge "github.com/wrouesnel/postgres_exporter/exporter"
-	mse "github.com/prometheus/mysqld_exporter/collector"
-	mgoe "github.com/dcu/mongodb_exporter/collector"
-	rde "github.com/oliver006/redis_exporter/exporter"
 	memEx "github.com/prometheus/memcached_exporter/exporter"
+	mse "github.com/prometheus/mysqld_exporter/collector"
+	pge "github.com/wrouesnel/postgres_exporter/exporter"
 	"gopkg.in/ini.v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -223,7 +223,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				}
 				conn := fmt.Sprintf("redis://%s:6379", podIP)
 				exp, err := rde.NewRedisExporter(
-					rde.RedisHost{Addrs: []string{conn},Aliases: []string{""}},
+					rde.RedisHost{Addrs: []string{conn}, Aliases: []string{""}},
 					"",
 					"")
 				if err != nil {
@@ -255,7 +255,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				conn := fmt.Sprintf("%s:11211", podIP)
-				reg.MustRegister(memEx.NewExporter(conn,0)) //timeout: if zero,then default timeout will be used
+				reg.MustRegister(memEx.NewExporter(conn, 0)) //timeout: if zero,then default timeout will be used
 			}
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)

@@ -8,7 +8,7 @@ import (
 	stringz "github.com/appscode/go/strings"
 	v "github.com/appscode/go/version"
 	"github.com/jpillora/go-ogle-analytics"
-	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
+	tcs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/kubernetes"
@@ -23,7 +23,6 @@ var (
 	kubeconfigPath    string
 	governingService  string = "kubedb"
 	exporterTag       string
-	esOperatorTag     string = "0.7.1"
 	elasticDumpTag    string = "2.4.2"
 	address           string = ":8080"
 	operatorNamespace string = namespace()
