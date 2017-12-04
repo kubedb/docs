@@ -1,4 +1,4 @@
-package: github.com/k8sdb/operator
+package: github.com/kubedb/operator
 import:
 - package: github.com/appscode/go
 - package: github.com/appscode/go/log
@@ -17,16 +17,16 @@ import:
   version: v2
 - package: github.com/go-kit/kit
   version: v0.5.0
-- package: github.com/k8sdb/apimachinery
+- package: github.com/kubedb/apimachinery
   version: master
-- package: github.com/k8sdb/elasticsearch
+- package: github.com/kubedb/elasticsearch
   version: master
 - package: github.com/justwatchcom/elasticsearch_exporter
   version: master
-- package: github.com/k8sdb/postgres
+- package: github.com/kubedb/postgres
   version: master
 - package: github.com/wrouesnel/postgres_exporter
-  repo: https://github.com/k8sdb/postgres_exporter.git
+  repo: https://github.com/kubedb/postgres_exporter.git
   version: master
   vcs: git
 - package: github.com/orcaman/concurrent-map
@@ -58,21 +58,21 @@ import:
   repo: https://github.com/appscode/kubernetes.git
   version: v1.8.3
   vcs: git
-- package: github.com/k8sdb/mongodb
+- package: github.com/kubedb/mongodb
   version: master
 - package: github.com/dcu/mongodb_exporter
   version: master
-- package: github.com/k8sdb/mysql
+- package: github.com/kubedb/mysql
   version: master
 - package: github.com/prometheus/mysqld_exporter
   version: master
-- package: github.com/k8sdb/redis
+- package: github.com/kubedb/redis
   version: master
 - package: github.com/oliver006/redis_exporter
   version: master
-- package: github.com/k8sdb/memcached
+- package: github.com/kubedb/memcached
   version: master
 - package: github.com/prometheus/memcached_exporter
-  repo: https://github.com/k8sdb/memcached_exporter.git
+  repo: https://github.com/kubedb/memcached_exporter.git
   version: master
   vcs: git

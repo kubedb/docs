@@ -41,7 +41,7 @@ from collections import OrderedDict
 from os.path import expandvars
 
 
-libbuild.REPO_ROOT = expandvars('$GOPATH') + '/src/github.com/k8sdb/operator'
+libbuild.REPO_ROOT = expandvars('$GOPATH') + '/src/github.com/kubedb/operator'
 BUILD_METADATA = libbuild.metadata(libbuild.REPO_ROOT)
 libbuild.BIN_MATRIX = {
     'operator': {
