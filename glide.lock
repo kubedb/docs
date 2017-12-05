@@ -1,5 +1,5 @@
-hash: 8f6827d37a78b32f9d8ad63ce4604d1805e2a053a2f852b8780a31db4ad7d4e5
-updated: 2017-12-05T08:02:12.773218579-08:00
+hash: 6c11fdafb70d5b616b35016f723dfde0d392ed4196618641a629b66a503e869e
+updated: 2017-12-05T08:11:24.76741472-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -221,7 +221,9 @@ imports:
   subpackages:
   - diskcache
 - name: github.com/hashicorp/go-version
-  version: 4fe82ae3040f80a03d04d2cccb5606a626b8e1ee
+  version: ac737305c16432f4c660c6fc68cdcda4b5a0b5ae
+  repo: https://github.com/appscode/go-version.git
+  vcs: git
 - name: github.com/hashicorp/golang-lru
   version: a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4
   subpackages:
@@ -405,10 +407,15 @@ imports:
   subpackages:
   - context
   - context/ctxhttp
+  - html
+  - html/atom
   - http2
   - http2/hpack
   - idna
+  - internal/timeseries
   - lex/httplex
+  - trace
+  - websocket
 - name: golang.org/x/oauth2
   version: a6bd8cefa1811bd24b86f8902872e4e8225f74c4
   subpackages:

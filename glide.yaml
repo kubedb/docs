@@ -76,3 +76,7 @@ import:
   repo: https://github.com/kubedb/memcached_exporter.git
   version: master
   vcs: git
+- package: github.com/hashicorp/go-version
+  repo: https://github.com/appscode/go-version.git
+  vcs: git
+  version: master

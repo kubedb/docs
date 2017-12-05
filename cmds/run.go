@@ -2,13 +2,9 @@ package cmds
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
-	"strings"
 
-	"github.com/appscode/go/hold"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/runtime"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
@@ -27,7 +23,6 @@ import (
 	rdCtrl "github.com/kubedb/redis/pkg/controller"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
-	core "k8s.io/api/core/v1"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"

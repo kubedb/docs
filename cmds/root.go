@@ -7,15 +7,14 @@ import (
 
 	stringz "github.com/appscode/go/strings"
 	v "github.com/appscode/go/version"
+	"github.com/appscode/kutil/meta"
 	"github.com/jpillora/go-ogle-analytics"
+	"github.com/kubedb/apimachinery/client/scheme"
 	tcs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/kubernetes"
-	"github.com/kubedb/apimachinery/client/scheme"
-	"github.com/appscode/kutil/meta"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 )
 
 const (
