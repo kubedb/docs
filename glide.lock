@@ -1,5 +1,5 @@
 hash: 8f6827d37a78b32f9d8ad63ce4604d1805e2a053a2f852b8780a31db4ad7d4e5
-updated: 2017-12-04T12:33:04.298150187-08:00
+updated: 2017-12-05T08:02:12.773218579-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -29,8 +29,9 @@ imports:
   - version
   - wait
 - name: github.com/appscode/kutil
-  version: 34b061c221ca2ce46f8ae1ec03a28cd5ab112742
+  version: e0c1936a0ec86173f8278752bef81964b4ffbea5
   subpackages:
+  - apiextensions/v1beta1
   - apps/v1beta1
   - core/v1
   - meta
@@ -220,9 +221,7 @@ imports:
   subpackages:
   - diskcache
 - name: github.com/hashicorp/go-version
-  version: ac737305c16432f4c660c6fc68cdcda4b5a0b5ae
-  repo: https://github.com/appscode/go-version.git
-  vcs: git
+  version: 4fe82ae3040f80a03d04d2cccb5606a626b8e1ee
 - name: github.com/hashicorp/golang-lru
   version: a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4
   subpackages:
@@ -252,7 +251,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: dafad78de7aa37b475fd2ab9be78f3e2fea5a8f2
+  version: 1a9aeb5cc35842f0960641b92f28d3a51f5848a1
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -266,34 +265,34 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 247e2fbe9eabb47ca3cf482a4f2091ec84a8e350
+  version: 47a345980e4052653d57a7ffae82555ef30d90ad
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/validator
 - name: github.com/kubedb/memcached
-  version: 0ba00033078cb0bebbcd433afb8d64f807a358ac
+  version: 598baf0edec902a6c68e0c50f0c07cca74377a77
   subpackages:
   - pkg/controller
   - pkg/validator
 - name: github.com/kubedb/mongodb
-  version: ad6ec6dbf03902436d739f02e7f05c1a0d5b7b64
+  version: 19e24ffbdf21bd4abb0cf98c75d1ea990d8dc2e1
   subpackages:
   - pkg/controller
   - pkg/validator
 - name: github.com/kubedb/mysql
-  version: 6fffa71312db5d0c56fd0da14945dca4c49f64cd
+  version: ca11f68380891eb7899a0f2765a43f04efea2f86
   subpackages:
   - pkg/controller
   - pkg/validator
 - name: github.com/kubedb/postgres
-  version: 992cddb195349c1cbf6907908f6214e54844fd13
+  version: 5c68ecaf74abeae72895f90dd5457b94a4ff77ea
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/validator
 - name: github.com/kubedb/redis
-  version: ca18531ad8edfc5baf229546932a942ca679da1c
+  version: 53ebaf03d7f06512915cec6e6c676b3cbae0ab98
   subpackages:
   - pkg/controller
   - pkg/validator
@@ -334,7 +333,7 @@ imports:
 - name: github.com/peterbourgon/diskv
   version: 5f041e8faa004a95c88a202771f4cc3e991971e6
 - name: github.com/pkg/errors
-  version: 645ef00459ed84a119197bfb8d8205042c6df63d
+  version: a22138067af1c4942683050411a841ade67fe1eb
 - name: github.com/prometheus/client_golang
   version: c5b7fccd204277076155f10851dad72b76a49317
   subpackages:
@@ -362,9 +361,7 @@ imports:
   subpackages:
   - collector
 - name: github.com/prometheus/procfs
-  version: 65c1f6f8f0fc1e2185eb9863a3bc751496404259
-  subpackages:
-  - xfs
+  version: 454a56f35412459b5e684fd5ec0f9211b94f002a
 - name: github.com/prometheus/prometheus
   version: 30b4439bbd795fee4703b8f5015da6bf13fee0ac
   subpackages:

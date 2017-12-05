@@ -6,6 +6,7 @@ import (
 
 	"github.com/appscode/go/hold"
 	"github.com/appscode/go/log"
+	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
@@ -13,9 +14,8 @@ import (
 	amc "github.com/kubedb/apimachinery/pkg/controller"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	core "k8s.io/api/core/v1"
-	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -80,12 +80,19 @@ func New(
 	}
 }
 
+// Ensuring Custom Resource Definitions
+func (c *Controller) Setup() error {
+	log.Infoln("Ensuring CustomResourceDefinition...")
+	crds := []*crd_api.CustomResourceDefinition{
+		api.Redis{}.CustomResourceDefinition(),
+		api.DormantDatabase{}.CustomResourceDefinition(),
+	}
+	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
+}
+
 // Blocks caller. Intended to be called as a Go routine.
 func (c *Controller) Run() {
-	// Ensure TPR
-	c.ensureCustomResourceDefinition()
-
-	// Watch x  TPR objects
+	// Watch Redis CRD objects
 	go c.watchRedis()
 	// Watch DeletedDatabase with labelSelector only for Redis
 	go c.watchDeletedDatabase()
@@ -189,42 +196,6 @@ func (c *Controller) watchDeletedDatabase() {
 	}
 
 	amc.NewDormantDbController(c.Client, c.ApiExtKubeClient, c.ExtClient, c, lw, c.syncPeriod).Run()
-}
-
-func (c *Controller) ensureCustomResourceDefinition() {
-	log.Infoln("Ensuring CustomResourceDefinition...")
-
-	resourceName := api.ResourceTypeRedis + "." + api.SchemeGroupVersion.Group
-	if _, err := c.ApiExtKubeClient.CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err != nil {
-		if !kerr.IsNotFound(err) {
-			log.Fatalln(err)
-		}
-	} else {
-		return
-	}
-
-	crd := &extensionsobj.CustomResourceDefinition{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: resourceName,
-			Labels: map[string]string{
-				"app": "kubedb",
-			},
-		},
-		Spec: extensionsobj.CustomResourceDefinitionSpec{
-			Group:   api.SchemeGroupVersion.Group,
-			Version: api.SchemeGroupVersion.Version,
-			Scope:   extensionsobj.NamespaceScoped,
-			Names: extensionsobj.CustomResourceDefinitionNames{
-				Plural:     api.ResourceTypeRedis,
-				Kind:       api.ResourceKindRedis,
-				ShortNames: []string{api.ResourceCodeRedis},
-			},
-		},
-	}
-
-	if _, err := c.ApiExtKubeClient.CustomResourceDefinitions().Create(crd); err != nil {
-		log.Fatalln(err)
-	}
 }
 
 func (c *Controller) pushFailureEvent(redis *api.Redis, reason string) {

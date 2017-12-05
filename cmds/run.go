@@ -7,10 +7,11 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"strings"
-	"time"
 
+	"github.com/appscode/go/hold"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/runtime"
+	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	"github.com/appscode/pat"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -27,6 +28,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	core "k8s.io/api/core/v1"
+	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -98,9 +100,15 @@ func run() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 	defer runtime.HandleCrash()
 
+	// Register CRDs
+	err = setup(apiExtKubeClient)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// Postgres controller
 	pgCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, pgCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
@@ -108,9 +116,7 @@ func run() {
 		EnableRbac:        enableRbac,
 	}).Run()
 
-	// Need to wait for sometime to run another controller.
-	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 10)
+	// Elasticsearch controller
 	esCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
 		GoverningService:  governingService,
 		ExporterTag:       exporterTag,
@@ -119,10 +125,7 @@ func run() {
 		EnableRbac:        enableRbac,
 	}).Run()
 
-	// Need to wait for sometime to run another controller.
-	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 10)
-	// mysql controller
+	// MySQL controller
 	msCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, msCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
@@ -130,10 +133,7 @@ func run() {
 		EnableRbac:        enableRbac,
 	}).Run()
 
-	// Need to wait for sometime to run another controller.
-	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 10)
-	// mongodb controller
+	// MongoDB controller
 	mgoCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, mgoCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
@@ -141,10 +141,7 @@ func run() {
 		EnableRbac:        enableRbac,
 	}).Run()
 
-	// Need to wait for sometime to run another controller.
-	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 10)
-	// redis controller
+	// Redis controller
 	rdCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, rdCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
@@ -152,10 +149,7 @@ func run() {
 		EnableRbac:        enableRbac,
 	}).Run()
 
-	// Need to wait for sometime to run another controller.
-	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 10)
-	// redis controller
+	// Memcached controller
 	memCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, memCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
@@ -181,14 +175,18 @@ func run() {
 	log.Fatal(http.ListenAndServe(address, nil))
 }
 
-func namespace() string {
-	if ns := os.Getenv("OPERATOR_NAMESPACE"); ns != "" {
-		return ns
+// Ensure Custom Resource definitions
+func setup(client ecs.ApiextensionsV1beta1Interface) error {
+	log.Infoln("Ensuring CustomResourceDefinition...")
+	crds := []*crd_api.CustomResourceDefinition{
+		api.Elasticsearch{}.CustomResourceDefinition(),
+		api.Postgres{}.CustomResourceDefinition(),
+		api.MySQL{}.CustomResourceDefinition(),
+		api.MongoDB{}.CustomResourceDefinition(),
+		api.Redis{}.CustomResourceDefinition(),
+		api.Memcached{}.CustomResourceDefinition(),
+		api.DormantDatabase{}.CustomResourceDefinition(),
+		api.Snapshot{}.CustomResourceDefinition(),
 	}
-	if data, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
-		if ns := strings.TrimSpace(string(data)); len(ns) > 0 {
-			return ns
-		}
-	}
-	return core.NamespaceDefault
+	return apiext_util.RegisterCRDs(client, crds)
 }

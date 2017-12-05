@@ -6,6 +6,7 @@ import (
 
 	"github.com/appscode/go/hold"
 	"github.com/appscode/go/log"
+	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
@@ -15,7 +16,6 @@ import (
 	core "k8s.io/api/core/v1"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -82,10 +82,18 @@ func New(
 	}
 }
 
-func (c *Controller) Run() {
-	// Ensure Elasticsearch CRD
-	c.ensureCustomResourceDefinition()
+// Ensuring Custom Resources Definitions
+func (c *Controller) Setup() error {
+	log.Infoln("Ensuring CustomResourceDefinition...")
+	crds := []*crd_api.CustomResourceDefinition{
+		api.Elasticsearch{}.CustomResourceDefinition(),
+		api.DormantDatabase{}.CustomResourceDefinition(),
+		api.Snapshot{}.CustomResourceDefinition(),
+	}
+	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
+}
 
+func (c *Controller) Run() {
 	// Start Cron
 	c.cronController.StartCron()
 
@@ -205,42 +213,6 @@ func (c *Controller) watchDormantDatabase() {
 	}
 
 	amc.NewDormantDbController(c.Client, c.ApiExtKubeClient, c.ExtClient, c, lw, c.syncPeriod).Run()
-}
-
-func (c *Controller) ensureCustomResourceDefinition() {
-	log.Infoln("Ensuring CustomResourceDefinition...")
-
-	resourceName := api.ResourceTypeElasticsearch + "." + api.SchemeGroupVersion.Group
-	if _, err := c.ApiExtKubeClient.CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err != nil {
-		if !kerr.IsNotFound(err) {
-			log.Fatalln(err)
-		}
-	} else {
-		return
-	}
-
-	crd := &crd_api.CustomResourceDefinition{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: resourceName,
-			Labels: map[string]string{
-				"app": "kubedb",
-			},
-		},
-		Spec: crd_api.CustomResourceDefinitionSpec{
-			Group:   api.SchemeGroupVersion.Group,
-			Version: api.SchemeGroupVersion.Version,
-			Scope:   crd_api.NamespaceScoped,
-			Names: crd_api.CustomResourceDefinitionNames{
-				Plural:     api.ResourceTypeElasticsearch,
-				Kind:       api.ResourceKindElasticsearch,
-				ShortNames: []string{api.ResourceCodeElasticsearch},
-			},
-		},
-	}
-
-	if _, err := c.ApiExtKubeClient.CustomResourceDefinitions().Create(crd); err != nil {
-		log.Fatalln(err)
-	}
 }
 
 func (c *Controller) pushFailureEvent(elasticsearch *api.Elasticsearch, reason string) {

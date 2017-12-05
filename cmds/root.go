@@ -11,7 +11,11 @@ import (
 	tcs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/kubernetes"
+	"github.com/kubedb/apimachinery/client/scheme"
+	"github.com/appscode/kutil/meta"
 )
 
 const (
@@ -25,7 +29,7 @@ var (
 	exporterTag       string
 	elasticDumpTag    string = "2.4.2"
 	address           string = ":8080"
-	operatorNamespace string = namespace()
+	operatorNamespace string = meta.Namespace()
 	enableRbac        bool   = false
 
 	kubeClient kubernetes.Interface
@@ -50,6 +54,7 @@ func NewRootCmd(version string) *cobra.Command {
 					client.Send(ga.NewEvent("kubedb-operator", strings.Join(parts[1:], "/")).Label(version))
 				}
 			}
+			scheme.AddToScheme(clientsetscheme.Scheme)
 		},
 	}
 	rootCmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)

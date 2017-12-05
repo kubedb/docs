@@ -7,6 +7,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/wait"
+	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
@@ -14,7 +15,6 @@ import (
 	core "k8s.io/api/core/v1"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
@@ -70,48 +70,16 @@ func NewDormantDbController(
 	}
 }
 
-func (c *DormantDbController) Run() {
-	// Ensure DormantDatabase CRD
-	c.ensureCustomResourceDefinition()
-	// Watch DormantDatabase with provided ListerWatcher
-	c.watch()
+func (c *DormantDbController) Setup() error {
+	crds := []*crd_api.CustomResourceDefinition{
+		api.DormantDatabase{}.CustomResourceDefinition(),
+	}
+	return apiext_util.RegisterCRDs(c.apiExtKubeClient, crds)
 }
 
-// Ensure DormantDatabase CustomResourceDefinition
-func (c *DormantDbController) ensureCustomResourceDefinition() {
-	log.Infoln("Ensuring DormantDatabase CustomResourceDefinition")
-
-	resourceName := api.ResourceTypeDormantDatabase + "." + api.SchemeGroupVersion.Group
-	var err error
-	if _, err = c.apiExtKubeClient.CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err == nil {
-		return
-	}
-	if !kerr.IsNotFound(err) {
-		log.Fatalln(err)
-	}
-
-	crd := &crd_api.CustomResourceDefinition{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: resourceName,
-			Labels: map[string]string{
-				"app": "kubedb",
-			},
-		},
-		Spec: crd_api.CustomResourceDefinitionSpec{
-			Group:   api.SchemeGroupVersion.Group,
-			Version: api.SchemeGroupVersion.Version,
-			Scope:   crd_api.NamespaceScoped,
-			Names: crd_api.CustomResourceDefinitionNames{
-				Plural:     api.ResourceTypeDormantDatabase,
-				Kind:       api.ResourceKindDormantDatabase,
-				ShortNames: []string{api.ResourceCodeDormantDatabase},
-			},
-		},
-	}
-
-	if _, err = c.apiExtKubeClient.CustomResourceDefinitions().Create(crd); err != nil {
-		log.Fatalln(err)
-	}
+func (c *DormantDbController) Run() {
+	// Watch DormantDatabase with provided ListerWatcher
+	c.watch()
 }
 
 func (c *DormantDbController) watch() {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/appscode/go/hold"
 	"github.com/appscode/go/log"
+	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
@@ -13,9 +14,8 @@ import (
 	amc "github.com/kubedb/apimachinery/pkg/controller"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	core "k8s.io/api/core/v1"
-	apiext_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apiext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -79,12 +79,17 @@ func New(
 	}
 }
 
-// Blocks caller. Intended to be called as a Go routine.
-func (c *Controller) Run() {
-	// Ensure TPR
-	c.ensureCustomResourceDefinition()
+func (c *Controller) Setup() error {
+	log.Infoln("Ensuring CustomResourceDefinition...")
+	crds := []*crd_api.CustomResourceDefinition{
+		api.Memcached{}.CustomResourceDefinition(),
+		api.DormantDatabase{}.CustomResourceDefinition(),
+	}
+	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
+}
 
-	// Watch x  TPR objects
+func (c *Controller) Run() {
+	// Watch Memcached TPR objects
 	go c.watchMemcached()
 	// Watch DeletedDatabase with labelSelector only for Memcached
 	go c.watchDeletedDatabase()
@@ -188,42 +193,6 @@ func (c *Controller) watchDeletedDatabase() {
 	}
 
 	amc.NewDormantDbController(c.Client, c.ApiExtKubeClient, c.ExtClient, c, lw, c.syncPeriod).Run()
-}
-
-func (c *Controller) ensureCustomResourceDefinition() {
-	log.Infoln("Ensuring CustomResourceDefinition...")
-
-	resourceName := api.ResourceTypeMemcached + "." + api.SchemeGroupVersion.Group
-	if _, err := c.ApiExtKubeClient.CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err != nil {
-		if !kerr.IsNotFound(err) {
-			log.Fatalln(err)
-		}
-	} else {
-		return
-	}
-
-	crd := &apiext_api.CustomResourceDefinition{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: resourceName,
-			Labels: map[string]string{
-				"app": "kubedb",
-			},
-		},
-		Spec: apiext_api.CustomResourceDefinitionSpec{
-			Group:   api.SchemeGroupVersion.Group,
-			Version: api.SchemeGroupVersion.Version,
-			Scope:   apiext_api.NamespaceScoped,
-			Names: apiext_api.CustomResourceDefinitionNames{
-				Plural:     api.ResourceTypeMemcached,
-				Kind:       api.ResourceKindMemcached,
-				ShortNames: []string{api.ResourceCodeMemcached},
-			},
-		},
-	}
-
-	if _, err := c.ApiExtKubeClient.CustomResourceDefinitions().Create(crd); err != nil {
-		log.Fatalln(err)
-	}
 }
 
 func (c *Controller) pushFailureEvent(memcached *api.Memcached, reason string) {
