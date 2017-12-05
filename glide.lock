@@ -1,5 +1,5 @@
-hash: 676ae474214b876e5de4885ea0f8eba71089986e5fe2cfea3dd012a276b3c07b
-updated: 2017-12-05T15:50:08.17078813+06:00
+hash: 1025ce14c9727401270ebacb64f642bea838614faa3fb4fa59fb22679d700fa9
+updated: 2017-12-05T18:53:36.323646652+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -253,7 +253,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: ce3de6dffa7c7af9f166ce44b5bfb631f560f87c
+  version: 1a9aeb5cc35842f0960641b92f28d3a51f5848a1
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -267,34 +267,34 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: c7e8bddde23287732bd59a18fd1b9d488f50ac61
+  version: 47a345980e4052653d57a7ffae82555ef30d90ad
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/validator
 - name: github.com/kubedb/memcached
-  version: 3fa541c5bffae3b184df8e1ae60fb36653c13cca
+  version: 598baf0edec902a6c68e0c50f0c07cca74377a77
   subpackages:
   - pkg/controller
   - pkg/validator
 - name: github.com/kubedb/mongodb
-  version: 93f549bd5d2d1ef50f48c9390effa0e593280903
+  version: 19e24ffbdf21bd4abb0cf98c75d1ea990d8dc2e1
   subpackages:
   - pkg/controller
   - pkg/validator
 - name: github.com/kubedb/mysql
-  version: 98f3ca309aea1442e026b3c2f059003821befff2
+  version: ca11f68380891eb7899a0f2765a43f04efea2f86
   subpackages:
   - pkg/controller
   - pkg/validator
 - name: github.com/kubedb/postgres
-  version: 3ee3af3ac4b179164af19e2971678459c3274869
+  version: 58fc6b6da3623bfb19aafedd2940b7fb9ca20389
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/validator
 - name: github.com/kubedb/redis
-  version: 737e5b7a972479a8204ab7181f20aa40b9c2b3f5
+  version: f3e2b9e8a5fa44c799e25d02e7cd3a66bcfb18f1
   subpackages:
   - pkg/controller
   - pkg/validator

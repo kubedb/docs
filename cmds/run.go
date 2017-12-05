@@ -33,6 +33,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	cgcmd "k8s.io/client-go/tools/clientcmd"
+	"github.com/appscode/go/hold"
 )
 
 func NewCmdRun() *cobra.Command {
@@ -107,7 +108,11 @@ func run() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	fmt.Println(1)
+	hold.Hold()
+	fmt.Println(2)
 
+	// Postgres controller
 	pgCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, pgCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
@@ -115,9 +120,7 @@ func run() {
 		EnableRbac:        enableRbac,
 	}).Run()
 
-	// Need to wait for sometime to run another controller.
-	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 10)
+	// Elasticsearch controller
 	esCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
 		GoverningService:  governingService,
 		ExporterTag:       exporterTag,
@@ -126,10 +129,7 @@ func run() {
 		EnableRbac:        enableRbac,
 	}).Run()
 
-	// Need to wait for sometime to run another controller.
-	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 10)
-	// mysql controller
+	// MySQL controller
 	msCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, msCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
@@ -137,10 +137,7 @@ func run() {
 		EnableRbac:        enableRbac,
 	}).Run()
 
-	// Need to wait for sometime to run another controller.
-	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 10)
-	// mongodb controller
+	// MongoDB controller
 	mgoCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, mgoCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
@@ -148,10 +145,7 @@ func run() {
 		EnableRbac:        enableRbac,
 	}).Run()
 
-	// Need to wait for sometime to run another controller.
-	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 10)
-	// redis controller
+	// Redis controller
 	rdCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, rdCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
@@ -159,10 +153,7 @@ func run() {
 		EnableRbac:        enableRbac,
 	}).Run()
 
-	// Need to wait for sometime to run another controller.
-	// Or multiple controller will try to create common TPR simultaneously which gives error
-	time.Sleep(time.Second * 10)
-	// redis controller
+	// Memcached controller
 	memCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, memCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
@@ -192,8 +183,12 @@ func run() {
 func Setup(client ecs.ApiextensionsV1beta1Interface) error {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 	crds := []*crd_api.CustomResourceDefinition{
-		api.Memcached{}.CustomResourceDefinition(),
+		api.Elasticsearch{}.CustomResourceDefinition(),
+		api.Postgres{}.CustomResourceDefinition(),
 		api.MySQL{}.CustomResourceDefinition(),
+		api.MongoDB{}.CustomResourceDefinition(),
+		api.Redis{}.CustomResourceDefinition(),
+		api.Memcached{}.CustomResourceDefinition(),
 		api.DormantDatabase{}.CustomResourceDefinition(),
 		api.Snapshot{}.CustomResourceDefinition(),
 	}

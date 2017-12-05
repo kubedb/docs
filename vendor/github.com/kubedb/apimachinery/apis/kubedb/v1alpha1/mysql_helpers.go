@@ -6,7 +6,7 @@ import (
 
 	"github.com/appscode/kutil/tools/monitoring/api"
 	core "k8s.io/api/core/v1"
-	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -91,21 +91,21 @@ func (m *MySQL) StatsAccessor() api.StatsAccessor {
 	return m
 }
 
-func (m MySQL) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
+func (m MySQL) CustomResourceDefinition() *crd_api.CustomResourceDefinition {
 	resourceName := ResourceTypeMySQL + "." + SchemeGroupVersion.Group
 
-	return &apiextensions.CustomResourceDefinition{
+	return &crd_api.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: resourceName,
 			Labels: map[string]string{
 				"app": "kubedb",
 			},
 		},
-		Spec: apiextensions.CustomResourceDefinitionSpec{
+		Spec: crd_api.CustomResourceDefinitionSpec{
 			Group:   SchemeGroupVersion.Group,
 			Version: SchemeGroupVersion.Version,
-			Scope:   apiextensions.NamespaceScoped,
-			Names: apiextensions.CustomResourceDefinitionNames{
+			Scope:   crd_api.NamespaceScoped,
+			Names: crd_api.CustomResourceDefinitionNames{
 				Plural:     ResourceTypeMySQL,
 				Kind:       ResourceKindMySQL,
 				ShortNames: []string{ResourceCodeMySQL},

@@ -89,8 +89,7 @@ func (c *Controller) Setup() error {
 }
 
 func (c *Controller) Run() {
-
-	// Watch x  TPR objects
+	// Watch Memcached TPR objects
 	go c.watchMemcached()
 	// Watch DeletedDatabase with labelSelector only for Memcached
 	go c.watchDeletedDatabase()

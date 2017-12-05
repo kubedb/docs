@@ -7,6 +7,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/wait"
+	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
@@ -18,7 +19,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 )
 
 type Deleter interface {
@@ -70,18 +70,17 @@ func NewDormantDbController(
 	}
 }
 
-func (c *DormantDbController) Setup() error  {
+func (c *DormantDbController) Setup() error {
 	crds := []*crd_api.CustomResourceDefinition{
 		api.DormantDatabase{}.CustomResourceDefinition(),
 	}
-	return apiext_util.RegisterCRDs(c.apiExtKubeClient,crds)
+	return apiext_util.RegisterCRDs(c.apiExtKubeClient, crds)
 }
 
 func (c *DormantDbController) Run() {
 	// Watch DormantDatabase with provided ListerWatcher
 	c.watch()
 }
-
 
 func (c *DormantDbController) watch() {
 	_, cacheController := cache.NewInformer(c.lw,
