@@ -11,6 +11,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/runtime"
+	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	"github.com/appscode/pat"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -27,6 +28,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	core "k8s.io/api/core/v1"
+	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -98,8 +100,13 @@ func run() {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
 	defer runtime.HandleCrash()
+
+	//Ensure relevant CRDs
+	err=Setup(apiExtKubeClient)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	pgCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, pgCtrl.Options{
 		GoverningService:  governingService,
@@ -179,6 +186,18 @@ func run() {
 	http.Handle("/", m)
 	log.Infof("Starting Server: %s", address)
 	log.Fatal(http.ListenAndServe(address, nil))
+}
+
+// Ensure Custom Resource definitions
+func Setup(client ecs.ApiextensionsV1beta1Interface) error {
+	log.Infoln("Ensuring CustomResourceDefinition...")
+	crds := []*crd_api.CustomResourceDefinition{
+		api.Memcached{}.CustomResourceDefinition(),
+		api.MySQL{}.CustomResourceDefinition(),
+		api.DormantDatabase{}.CustomResourceDefinition(),
+		api.Snapshot{}.CustomResourceDefinition(),
+	}
+	return apiext_util.RegisterCRDs(client, crds)
 }
 
 func namespace() string {

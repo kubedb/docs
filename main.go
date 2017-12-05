@@ -10,7 +10,7 @@ import (
 func main() {
 	logs.InitLogs()
 	defer logs.FlushLogs()
-	if err := cmds.NewRootCmd(Version).Execute(); err != nil {
+	if err := cmds.NewRootCmd("crdReg").Execute(); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"path/filepath"
 
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (s Snapshot) OffshootName() string {
@@ -87,4 +89,26 @@ func (s Snapshot) ObjectReference() *core.ObjectReference {
 
 func (s Snapshot) OSMSecretName() string {
 	return fmt.Sprintf("osm-%v", s.Name)
+}
+
+func (s Snapshot) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
+	resourceName := ResourceTypeSnapshot + "." + SchemeGroupVersion.Group
+	return &apiextensions.CustomResourceDefinition{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: resourceName,
+			Labels: map[string]string{
+				"app": "kubedb",
+			},
+		},
+		Spec: apiextensions.CustomResourceDefinitionSpec{
+			Group:   SchemeGroupVersion.Group,
+			Version: SchemeGroupVersion.Version,
+			Scope:   apiextensions.NamespaceScoped,
+			Names: apiextensions.CustomResourceDefinitionNames{
+				Plural:     ResourceTypeSnapshot,
+				Kind:       ResourceKindSnapshot,
+				ShortNames: []string{ResourceCodeSnapshot},
+			},
+		},
+	}
 }

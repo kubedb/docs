@@ -23,6 +23,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 )
 
 type Snapshotter interface {
@@ -71,48 +72,16 @@ func NewSnapshotController(
 	}
 }
 
-func (c *SnapshotController) Run() {
-	// Ensure DormantDatabase TPR
-	c.ensureCustomResourceDefinition()
-	// Watch DormantDatabase with provided ListerWatcher
-	c.watch()
+func (c *SnapshotController) Setup() error  {
+	crds := []*crd_api.CustomResourceDefinition{
+		api.Snapshot{}.CustomResourceDefinition(),
+	}
+	return apiext_util.RegisterCRDs(c.apiExtKubeClient,crds)
 }
 
-// Ensure Snapshot CustomResourceDefinition
-func (c *SnapshotController) ensureCustomResourceDefinition() {
-	log.Infoln("Ensuring DormantDatabase CustomResourceDefinition")
-
-	resourceName := api.ResourceTypeSnapshot + "." + api.SchemeGroupVersion.Group
-	var err error
-	if _, err = c.apiExtKubeClient.CustomResourceDefinitions().Get(resourceName, metav1.GetOptions{}); err == nil {
-		return
-	}
-	if !kerr.IsNotFound(err) {
-		log.Fatalln(err)
-	}
-
-	crd := &crd_api.CustomResourceDefinition{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: resourceName,
-			Labels: map[string]string{
-				"app": "kubedb",
-			},
-		},
-		Spec: crd_api.CustomResourceDefinitionSpec{
-			Group:   api.SchemeGroupVersion.Group,
-			Version: api.SchemeGroupVersion.Version,
-			Scope:   crd_api.NamespaceScoped,
-			Names: crd_api.CustomResourceDefinitionNames{
-				Plural:     api.ResourceTypeSnapshot,
-				Kind:       api.ResourceKindSnapshot,
-				ShortNames: []string{api.ResourceCodeSnapshot},
-			},
-		},
-	}
-
-	if _, err = c.apiExtKubeClient.CustomResourceDefinitions().Create(crd); err != nil {
-		log.Fatalln(err)
-	}
+func (c *SnapshotController) Run() {
+	// Watch DormantDatabase with provided ListerWatcher
+	c.watch()
 }
 
 func (c *SnapshotController) watch() {
