@@ -7,8 +7,8 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"strings"
-	"time"
 
+	"github.com/appscode/go/hold"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/runtime"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
@@ -33,7 +33,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	cgcmd "k8s.io/client-go/tools/clientcmd"
-	"github.com/appscode/go/hold"
 )
 
 func NewCmdRun() *cobra.Command {
@@ -104,7 +103,7 @@ func run() {
 	defer runtime.HandleCrash()
 
 	//Ensure relevant CRDs
-	err=Setup(apiExtKubeClient)
+	err = Setup(apiExtKubeClient)
 	if err != nil {
 		log.Fatalln(err)
 	}
