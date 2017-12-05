@@ -24,7 +24,7 @@ import:
 - package: github.com/justwatchcom/elasticsearch_exporter
   version: master
 - package: github.com/kubedb/postgres
-  version: crdReg
+  version: master
 - package: github.com/wrouesnel/postgres_exporter
   repo: https://github.com/kubedb/postgres_exporter.git
   version: master
@@ -67,7 +67,7 @@ import:
 - package: github.com/prometheus/mysqld_exporter
   version: master
 - package: github.com/kubedb/redis
-  version: crdReg
+  version: master
 - package: github.com/oliver006/redis_exporter
   version: master
 - package: github.com/kubedb/memcached

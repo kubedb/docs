@@ -102,14 +102,11 @@ func run() {
 	}
 	defer runtime.HandleCrash()
 
-	//Ensure relevant CRDs
-	err = Setup(apiExtKubeClient)
+	// Register CRDs
+	err = setup(apiExtKubeClient)
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(1)
-	hold.Hold()
-	fmt.Println(2)
 
 	// Postgres controller
 	pgCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, pgCtrl.Options{
@@ -179,7 +176,7 @@ func run() {
 }
 
 // Ensure Custom Resource definitions
-func Setup(client ecs.ApiextensionsV1beta1Interface) error {
+func setup(client ecs.ApiextensionsV1beta1Interface) error {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 	crds := []*crd_api.CustomResourceDefinition{
 		api.Elasticsearch{}.CustomResourceDefinition(),
@@ -192,16 +189,4 @@ func Setup(client ecs.ApiextensionsV1beta1Interface) error {
 		api.Snapshot{}.CustomResourceDefinition(),
 	}
 	return apiext_util.RegisterCRDs(client, crds)
-}
-
-func namespace() string {
-	if ns := os.Getenv("OPERATOR_NAMESPACE"); ns != "" {
-		return ns
-	}
-	if data, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace"); err == nil {
-		if ns := strings.TrimSpace(string(data)); len(ns) > 0 {
-			return ns
-		}
-	}
-	return core.NamespaceDefault
 }
