@@ -24,6 +24,11 @@ func (c *Controller) ensureCertSecret(elasticsearch *api.Elasticsearch) error {
 			return err
 		}
 		es, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+			// This will ignore processing all kind of Update while creating
+			if in.Annotations == nil {
+				in.Annotations = make(map[string]string)
+			}
+			in.Annotations["kubedb.com/ignore"] = "set"
 			in.Spec.CertificateSecret = certSecretVolumeSource
 			return in
 		})
@@ -44,6 +49,11 @@ func (c *Controller) ensureDatabaseSecret(elasticsearch *api.Elasticsearch) erro
 			return err
 		}
 		es, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+			// This will ignore processing all kind of Update while creating
+			if in.Annotations == nil {
+				in.Annotations = make(map[string]string)
+			}
+			in.Annotations["kubedb.com/ignore"] = "set"
 			in.Spec.DatabaseSecret = databaseSecretVolume
 			return in
 		})

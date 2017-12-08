@@ -132,9 +132,8 @@ func (c *Controller) watchElastic() {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				elastic := obj.(*api.Elasticsearch)
-				kutildb.AssignTypeKind(elastic)
 				if elastic.Status.CreationTime == nil {
-					if err := c.create(elastic); err != nil {
+					if err := c.create(elastic.DeepCopy()); err != nil {
 						log.Errorln(err)
 						c.pushFailureEvent(elastic, err.Error())
 					}
@@ -142,8 +141,7 @@ func (c *Controller) watchElastic() {
 			},
 			DeleteFunc: func(obj interface{}) {
 				elastic := obj.(*api.Elasticsearch)
-				kutildb.AssignTypeKind(elastic)
-				if err := c.pause(elastic); err != nil {
+				if err := c.pause(elastic.DeepCopy()); err != nil {
 					log.Errorln(err)
 				}
 			},
@@ -156,10 +154,8 @@ func (c *Controller) watchElastic() {
 				if !ok {
 					return
 				}
-				kutildb.AssignTypeKind(oldObj)
-				kutildb.AssignTypeKind(newObj)
 				if !reflect.DeepEqual(oldObj.Spec, newObj.Spec) {
-					if err := c.update(oldObj, newObj); err != nil {
+					if err := c.update(oldObj, newObj.DeepCopy()); err != nil {
 						log.Errorln(err)
 					}
 				}

@@ -3,6 +3,7 @@ package controller
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/appscode/go/log"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -23,8 +24,18 @@ func (c *Controller) Exists(om *metav1.ObjectMeta) (bool, error) {
 }
 
 func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
+	postgres := &api.Postgres{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      dormantDb.OffshootName(),
+			Namespace: dormantDb.Namespace,
+		},
+	}
 	// Delete Service
-	if err := c.DeleteService(dormantDb.Name, dormantDb.Namespace); err != nil {
+	if err := c.DeleteService(postgres.OffshootName(), dormantDb.Namespace); err != nil {
+		log.Errorln(err)
+		return err
+	}
+	if err := c.DeleteService(postgres.PrimaryName(), dormantDb.Namespace); err != nil {
 		log.Errorln(err)
 		return err
 	}
@@ -34,16 +45,17 @@ func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
 		return err
 	}
 
-	postgres := &api.Postgres{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      dormantDb.OffshootName(),
-			Namespace: dormantDb.Namespace,
-		},
-	}
 	if err := c.deleteRBACStuff(postgres); err != nil {
 		log.Errorln(err)
 		return err
 	}
+
+	configMapName := fmt.Sprintf("%v-leader-lock", dormantDb.OffshootName())
+	if err := c.Client.CoreV1().ConfigMaps(dormantDb.Namespace).Delete(configMapName, nil); !kerr.IsNotFound(err) {
+		log.Errorln(err)
+		return err
+	}
+
 	return nil
 }
 

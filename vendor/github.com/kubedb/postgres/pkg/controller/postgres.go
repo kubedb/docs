@@ -76,13 +76,6 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		return err
 	}
 
-	pg, err = c.ExtClient.Postgreses(postgres.Namespace).Get(postgres.Name, metav1.GetOptions{})
-	if err != nil {
-		c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToGet, err.Error())
-		return err
-	}
-	*postgres = *pg
-
 	if postgres.Spec.Init != nil && postgres.Spec.Init.SnapshotSource != nil {
 		pg, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
 			in.Status.Phase = api.DatabasePhaseInitializing
@@ -122,7 +115,6 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		"Successfully created Postgres",
 	)
 
-	kutildb.AssignTypeKind(postgres)
 	// Ensure Schedule backup
 	c.ensureBackupScheduler(postgres)
 
@@ -213,10 +205,19 @@ func (c *Controller) matchDormantDatabase(postgres *api.Postgres) (bool, error) 
 		return sendEvent("Postgres spec mismatches with OriginSpec in DormantDatabases")
 	}
 
-	//TODO: Use Annotation Key
-	postgres.Annotations = map[string]string{
-		"kubedb.com/ignore": "",
+	pg, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
+		// This will ignore processing all kind of Update while creating
+		if in.Annotations == nil {
+			in.Annotations = make(map[string]string)
+		}
+		in.Annotations["kubedb.com/ignore"] = "set"
+		return in
+	})
+	if err != nil {
+		c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+		return sendEvent(err.Error())
 	}
+	*postgres = *pg
 
 	if err := c.ExtClient.Postgreses(postgres.Namespace).Delete(postgres.Name, &metav1.DeleteOptions{}); err != nil {
 		return sendEvent(`failed to resume Postgres "%v" from DormantDatabase "%v". Error: %v`, postgres.Name, postgres.Name, err)
@@ -235,7 +236,9 @@ func (c *Controller) matchDormantDatabase(postgres *api.Postgres) (bool, error) 
 }
 
 func (c *Controller) ensurePostgresNode(postgres *api.Postgres) error {
-	c.ensureDatabaseSecret(postgres)
+	if err := c.ensureDatabaseSecret(postgres); err != nil {
+		return err
+	}
 
 	if c.opt.EnableRbac {
 		// Ensure ClusterRoles for database statefulsets
@@ -244,17 +247,11 @@ func (c *Controller) ensurePostgresNode(postgres *api.Postgres) error {
 		}
 	}
 
-	pg, err := c.ExtClient.Postgreses(postgres.Namespace).Get(postgres.OffshootName(), metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	*postgres = *pg
-
 	if err := c.ensureCombinedNode(postgres); err != nil {
 		return err
 	}
 
-	_, err = kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
+	pg, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
 		in.Status.Phase = api.DatabasePhaseRunning
 		return in
 	})
@@ -262,11 +259,13 @@ func (c *Controller) ensurePostgresNode(postgres *api.Postgres) error {
 		c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
 	}
+	*postgres = *pg
 
 	return nil
 }
 
 func (c *Controller) ensureBackupScheduler(postgres *api.Postgres) {
+	kutildb.AssignTypeKind(postgres)
 	// Setup Schedule backup
 	if postgres.Spec.BackupSchedule != nil {
 		err := c.cronController.ScheduleBackup(postgres, postgres.ObjectMeta, postgres.Spec.BackupSchedule)
@@ -420,6 +419,15 @@ func (c *Controller) pause(postgres *api.Postgres) error {
 }
 
 func (c *Controller) update(oldPostgres, updatedPostgres *api.Postgres) error {
+	if updatedPostgres.Annotations != nil {
+		if _, found := updatedPostgres.Annotations["kubedb.com/ignore"]; found {
+			kutildb.PatchPostgres(c.ExtClient, updatedPostgres, func(in *api.Postgres) *api.Postgres {
+				delete(in.Annotations, "kubedb.com/ignore")
+				return in
+			})
+			return nil
+		}
+	}
 
 	if err := validator.ValidatePostgres(c.Client, updatedPostgres); err != nil {
 		c.recorder.Event(updatedPostgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
@@ -442,7 +450,6 @@ func (c *Controller) update(oldPostgres, updatedPostgres *api.Postgres) error {
 	}
 
 	if !reflect.DeepEqual(updatedPostgres.Spec.BackupSchedule, oldPostgres.Spec.BackupSchedule) {
-		kutildb.AssignTypeKind(updatedPostgres)
 		c.ensureBackupScheduler(updatedPostgres)
 	}
 

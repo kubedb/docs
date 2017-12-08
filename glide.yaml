@@ -18,13 +18,13 @@ import:
 - package: github.com/go-kit/kit
   version: v0.5.0
 - package: github.com/kubedb/apimachinery
-  version: master
+  version: snapshot_type
 - package: github.com/kubedb/elasticsearch
-  version: master
+  version: update
 - package: github.com/justwatchcom/elasticsearch_exporter
   version: master
 - package: github.com/kubedb/postgres
-  version: master
+  version: snap_pointer
 - package: github.com/wrouesnel/postgres_exporter
   repo: https://github.com/kubedb/postgres_exporter.git
   version: master
@@ -43,7 +43,7 @@ import:
 - package: gopkg.in/ini.v1
   version: v1.28.2
 - package: github.com/appscode/kutil
-  version: release-5.0
+  version: master
 - package: k8s.io/api
   version: release-1.8
 - package: k8s.io/apimachinery

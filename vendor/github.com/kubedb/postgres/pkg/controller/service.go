@@ -82,7 +82,6 @@ func (c *Controller) createService(postgres *api.Postgres) error {
 			Labels: postgres.OffshootLabels(),
 		},
 		Spec: core.ServiceSpec{
-			Type: core.ServiceTypeLoadBalancer,
 			Ports: []core.ServicePort{
 				{
 					Name:       "api",
@@ -118,7 +117,6 @@ func (c *Controller) createPrimaryService(postgres *api.Postgres) error {
 			Labels: postgres.OffshootLabels(),
 		},
 		Spec: core.ServiceSpec{
-			Type: core.ServiceTypeLoadBalancer,
 			Ports: []core.ServicePort{
 				{
 					Name:       "api",

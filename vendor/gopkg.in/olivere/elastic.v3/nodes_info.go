@@ -5,12 +5,11 @@
 package elastic
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
 	"time"
-
-	"golang.org/x/net/context"
 
 	"gopkg.in/olivere/elastic.v3/uritemplates"
 )
@@ -169,7 +168,7 @@ type NodesInfoNode struct {
 	Process *NodesInfoNodeProcess `json:"process"`
 
 	// JVM information, e.g. VM version.
-	JVM *NodesInfoNodeProcess `json:"jvm"`
+	JVM *NodesInfoNodeJVM `json:"jvm"`
 
 	// ThreadPool information.
 	ThreadPool *NodesInfoNodeThreadPool `json:"thread_pool"`

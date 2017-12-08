@@ -57,9 +57,13 @@ func (c *Controller) ensureStatefulSet(
 
 		in = upsertMonitoringContainer(in, postgres, c.opt.ExporterTag)
 		in = upsertDatabaseSecret(in, postgres.Spec.DatabaseSecret.SecretName)
-		if postgres.Spec.Archiver.Storage != nil {
-			in = upsertArchiveSecret(in, postgres.Spec.Archiver.Storage.StorageSecretName)
+		if postgres.Spec.Archiver != nil {
+			archiverStorage := postgres.Spec.Archiver.Storage
+			if archiverStorage != nil {
+				in = upsertArchiveSecret(in, archiverStorage.StorageSecretName)
+			}
 		}
+
 		if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
 			in = upsertInitWalSecret(in, postgres.Spec.Init.PostgresWAL.StorageSecretName)
 		}
@@ -128,20 +132,22 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres) error {
 		},
 	}
 
-	archiver := postgres.Spec.Archiver.Storage
-	if archiver != nil {
-		envList = append(envList,
-			[]core.EnvVar{
-				{
-					Name:  "ARCHIVE",
-					Value: "wal-g",
-				},
-				{
-					Name:  "ARCHIVE_S3_PREFIX",
-					Value: fmt.Sprintf("s3://%v/%v", archiver.S3.Bucket, archiver.S3.Prefix),
-				},
-			}...,
-		)
+	if postgres.Spec.Archiver != nil {
+		archiverStorage := postgres.Spec.Archiver.Storage
+		if archiverStorage != nil {
+			envList = append(envList,
+				[]core.EnvVar{
+					{
+						Name:  "ARCHIVE",
+						Value: "wal-g",
+					},
+					{
+						Name:  "ARCHIVE_S3_PREFIX",
+						Value: fmt.Sprintf("s3://%v/%v", archiverStorage.S3.Bucket, archiverStorage.S3.Prefix),
+					},
+				}...,
+			)
+		}
 	}
 
 	if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
@@ -193,7 +199,7 @@ func upsertContainer(statefulSet *apps.StatefulSet, postgres *api.Postgres) *app
 	container := core.Container{
 		Name:            api.ResourceNamePostgres,
 		Image:           fmt.Sprintf("%v:%v-db", docker.ImagePostgres, postgres.Spec.Version),
-		ImagePullPolicy: core.PullAlways,
+		ImagePullPolicy: core.PullIfNotPresent,
 		SecurityContext: &core.SecurityContext{
 			Privileged: types.BoolP(false),
 			Capabilities: &core.Capabilities{
@@ -441,6 +447,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *ap
 				statefulSet.Spec.Template.Spec.Volumes = volumes
 				return statefulSet
 			}
+			break
 		}
 	}
 	return statefulSet
