@@ -71,7 +71,7 @@ type PostgresSpec struct {
 }
 
 type PostgresArchiverSpec struct {
-	Storage *SnapshotStorageSpec `json:"archive,omitempty"`
+	Storage *SnapshotStorageSpec `json:"storage,omitempty"`
 	// wal_keep_segments
 }
 

@@ -313,7 +313,7 @@ func (c *Controller) initialize(postgres *api.Postgres) error {
 		return err
 	}
 	_, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
-	if err != nil {
+	if err != nil && !kerr.IsAlreadyExists(err) {
 		return err
 	}
 

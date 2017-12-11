@@ -1,5 +1,5 @@
-hash: 1c850eba0857ee28640263d64ba1d348ebe94862c663749293e62af38c45cc47
-updated: 2017-12-08T13:10:52.485870852+06:00
+hash: 321d00dcc4ce256bb2554e91aafd4b04cab7f7422bed9498649e25ea0085d1f4
+updated: 2017-12-11T12:20:33.801004081+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -253,7 +253,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 93df6d01a63901de6994b036937400d3606e5558
+  version: 29d9015df0562fa64b3fd149542bec4317733432
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -267,7 +267,7 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: fa6437ad9a45bdc789d665dd373a63730696b69c
+  version: fc0fdfd0ab192d5efa21cbba7fd8469289dacee3
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -288,7 +288,7 @@ imports:
   - pkg/controller
   - pkg/validator
 - name: github.com/kubedb/postgres
-  version: f18c58322fee13bc382c3985448662b985cbab1b
+  version: aef1124eda977afc39158e3a576efb0c12ae285c
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -367,7 +367,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: e0d917e2f51ba08c2a98da84336de5a2273136c1
+  version: 838fc5a4d15b35cc1c8713092108ca30577b9e1f
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -447,7 +447,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: fb1d4474b70b485b7facc09bff19c312dec8b7be
+  version: ba22d24b46e8ea8b6dea3b8782695cece79574d4
   subpackages:
   - gensupport
   - googleapi
