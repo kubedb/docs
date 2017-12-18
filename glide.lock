@@ -1,5 +1,5 @@
-hash: 6c11fdafb70d5b616b35016f723dfde0d392ed4196618641a629b66a503e869e
-updated: 2017-12-05T08:11:24.76741472-08:00
+hash: f781fd101a97c073fed3b30b196edb376f15eb03e3dd856d84d8eb1043f4f94d
+updated: 2017-12-18T17:42:26.400227854-05:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -13,14 +13,16 @@ imports:
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/appscode/go
-  version: 85b510edd14fe8d6beb2ad365afd3c5b3afc8c49
+  version: cb650d0b1a3c04a86595cf2a31fa704dbf1bc42a
   subpackages:
+  - analytics
   - context
   - crypto/rand
   - encoding/json/types
   - encoding/yaml
   - hold
-  - io
+  - homedir
+  - ioutil
   - log
   - log/golog
   - runtime
@@ -29,13 +31,14 @@ imports:
   - version
   - wait
 - name: github.com/appscode/kutil
-  version: e0c1936a0ec86173f8278752bef81964b4ffbea5
+  version: 582273a0791d4d99ab1345d9e4867bec460aaf5a
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
   - core/v1
   - meta
   - rbac/v1beta1
+  - tools/analytics
   - tools/monitoring/agents
   - tools/monitoring/agents/coreosprometheusoperator
   - tools/monitoring/agents/prometheusbuiltin
@@ -43,7 +46,7 @@ imports:
 - name: github.com/appscode/mergo
   version: e3000cb3d28c72b837601cac94debd91032d19fe
 - name: github.com/appscode/osm
-  version: b3ed1c7835d33f312616b260a949589cf33311ee
+  version: ec3d9489c057fa228cd223c929622f3d341a4e8e
   subpackages:
   - context
 - name: github.com/appscode/pat
@@ -247,13 +250,13 @@ imports:
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/justwatchcom/elasticsearch_exporter
-  version: 762afe19b2d1abe9e3c19bd887ea2b2f003d419b
+  version: ec453d38aa87627c75e3dd2ad2d06b696ffc28a1
   subpackages:
   - collector
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 1a9aeb5cc35842f0960641b92f28d3a51f5848a1
+  version: 30878870d62af296af35878361b833b3df6bdabb
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -267,7 +270,7 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 47a345980e4052653d57a7ffae82555ef30d90ad
+  version: d39b20c3ea8038f48f64c157ee86a8bc74bf1c43
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -288,7 +291,7 @@ imports:
   - pkg/controller
   - pkg/validator
 - name: github.com/kubedb/postgres
-  version: 5c68ecaf74abeae72895f90dd5457b94a4ff77ea
+  version: 38b79130cd5750bcbb873a2d5b61c011ab7a7762
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -299,7 +302,7 @@ imports:
   - pkg/controller
   - pkg/validator
 - name: github.com/kubernetes/apimachinery
-  version: 18a564baac720819100827c16fdebcadb05b2d0d
+  version: e7ad5e783d5cc59c1aa137f0b13c51baee6ee7c1
   subpackages:
   - pkg/conversion
 - name: github.com/lib/pq
@@ -323,9 +326,9 @@ imports:
   - idgen
   - signal
 - name: github.com/ncw/swift
-  version: c95c6e5c2d1a3d37fc44c8c6dc9e231c7500667d
+  version: 067578e41c8dd06bf557d02a92a77bd35e97c05a
 - name: github.com/oliver006/redis_exporter
-  version: 80071da45f4c5c810e263a75bf359cd5df562595
+  version: a0d9e4c704b4d35cd08544d395038f417716a03a
   subpackages:
   - exporter
 - name: github.com/opencontainers/go-digest
@@ -335,7 +338,7 @@ imports:
 - name: github.com/peterbourgon/diskv
   version: 5f041e8faa004a95c88a202771f4cc3e991971e6
 - name: github.com/pkg/errors
-  version: a22138067af1c4942683050411a841ade67fe1eb
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/prometheus/client_golang
   version: c5b7fccd204277076155f10851dad72b76a49317
   subpackages:
@@ -363,9 +366,11 @@ imports:
   subpackages:
   - collector
 - name: github.com/prometheus/procfs
-  version: 454a56f35412459b5e684fd5ec0f9211b94f002a
+  version: 65c1f6f8f0fc1e2185eb9863a3bc751496404259
+  subpackages:
+  - xfs
 - name: github.com/prometheus/prometheus
-  version: 30b4439bbd795fee4703b8f5015da6bf13fee0ac
+  version: a8cce41882e5d94f876d93c1b7c29d37a32f58eb
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -385,7 +390,7 @@ imports:
   subpackages:
   - memcache
 - name: github.com/spf13/cobra
-  version: de2d9c4eca8f3c1de17d48b096b6504e0296f003
+  version: ccaecb155a2177302cb56cae929251a256d0f646
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -445,7 +450,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: 8cfdc57a0663729cc2811afefb5b7cd3d901e97c
+  version: 03a4a4fe3d2c5fb0d1a116cf20784fffa259a3d4
   subpackages:
   - gensupport
   - googleapi
@@ -465,7 +470,7 @@ imports:
   - internal/urlfetch
   - urlfetch
 - name: gopkg.in/alecthomas/kingpin.v2
-  version: 1087e65c9441605df944fb12c33f0fe7072d18ca
+  version: 947dcec5ba9c011838740e680966fd7087a71d0d
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/ini.v1
@@ -478,7 +483,7 @@ imports:
   - internal/sasl
   - internal/scram
 - name: gopkg.in/olivere/elastic.v3
-  version: eaecbad7a83e6b60f131825553e5eb7fd5a50b41
+  version: 060365a7e27c56c938b234824ef7f9a3a7834b99
   subpackages:
   - backoff
   - uritemplates
@@ -489,7 +494,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/api
-  version: 4df58c811fe2e65feb879227b2b245e4dc26e7ad
+  version: 9b9dca205a15b6ce9ef10091f05d60a13fdcf418
   subpackages:
   - admissionregistration/v1alpha1
   - apps/v1beta1
@@ -516,7 +521,7 @@ imports:
   - storage/v1
   - storage/v1beta1
 - name: k8s.io/apiextensions-apiserver
-  version: 5bc0d8f05a92b3a09bcf1a9db442a29c0b7a514d
+  version: 996a70a27a0dcf53642ca52601b9107cb2ad810a
   subpackages:
   - pkg/apis/apiextensions
   - pkg/apis/apiextensions/v1beta1

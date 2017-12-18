@@ -1,7 +1,7 @@
 package: github.com/kubedb/operator
 import:
 - package: github.com/appscode/go
-- package: github.com/appscode/go/log
+  version: master
 - package: github.com/appscode/pat
 - package: github.com/coreos/prometheus-operator
   repo: https://github.com/appscode/prometheus-operator.git

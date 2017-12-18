@@ -489,11 +489,13 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, elasticsearch *api.Elastics
 				volumeClaim := core.PersistentVolumeClaim{
 					ObjectMeta: metav1.ObjectMeta{
 						Name: "data",
-						Annotations: map[string]string{
-							"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
-						},
 					},
 					Spec: *pvcSpec,
+				}
+				if pvcSpec.StorageClassName != nil {
+					volumeClaim.Annotations = map[string]string{
+						"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+					}
 				}
 				volumeClaims := statefulSet.Spec.VolumeClaimTemplates
 				volumeClaims = core_util.UpsertVolumeClaim(volumeClaims, volumeClaim)
@@ -521,6 +523,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, elasticsearch *api.Elastics
 				return statefulSet
 
 			}
+			break
 		}
 	}
 	return statefulSet

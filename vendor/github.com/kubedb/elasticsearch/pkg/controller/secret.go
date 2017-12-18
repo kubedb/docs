@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/appscode/go/crypto/rand"
-	"github.com/appscode/go/io"
+	"github.com/appscode/go/ioutil"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	kutildb "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -24,6 +24,11 @@ func (c *Controller) ensureCertSecret(elasticsearch *api.Elasticsearch) error {
 			return err
 		}
 		es, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+			// This will ignore processing all kind of Update while creating
+			if in.Annotations == nil {
+				in.Annotations = make(map[string]string)
+			}
+			in.Annotations["kubedb.com/ignore"] = "set"
 			in.Spec.CertificateSecret = certSecretVolumeSource
 			return in
 		})
@@ -44,6 +49,11 @@ func (c *Controller) ensureDatabaseSecret(elasticsearch *api.Elasticsearch) erro
 			return err
 		}
 		es, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+			// This will ignore processing all kind of Update while creating
+			if in.Annotations == nil {
+				in.Annotations = make(map[string]string)
+			}
+			in.Annotations["kubedb.com/ignore"] = "set"
 			in.Spec.DatabaseSecret = databaseSecretVolume
 			return in
 		})
@@ -107,24 +117,24 @@ func (c *Controller) createCertSecret(elasticsearch *api.Elasticsearch) (*core.S
 		return nil, err
 	}
 
-	truststore, err := io.ReadFile(fmt.Sprintf("%s/truststore.jks", certPath))
+	truststore, err := ioutil.ReadFile(fmt.Sprintf("%s/truststore.jks", certPath))
 	if err != nil {
 		return nil, err
 	}
-	keyStore, err := io.ReadFile(fmt.Sprintf("%s/keystore.jks", certPath))
+	keyStore, err := ioutil.ReadFile(fmt.Sprintf("%s/keystore.jks", certPath))
 	if err != nil {
 		return nil, err
 	}
-	sgadmin, err := io.ReadFile(fmt.Sprintf("%s/sgadmin.jks", certPath))
+	sgadmin, err := ioutil.ReadFile(fmt.Sprintf("%s/sgadmin.jks", certPath))
 	if err != nil {
 		return nil, err
 	}
 
-	clientKey, err := io.ReadFile(fmt.Sprintf("%s/client-key.pem", certPath))
+	clientKey, err := ioutil.ReadFile(fmt.Sprintf("%s/client-key.pem", certPath))
 	if err != nil {
 		return nil, err
 	}
-	clientCert, err := io.ReadFile(fmt.Sprintf("%s/client.pem", certPath))
+	clientCert, err := ioutil.ReadFile(fmt.Sprintf("%s/client.pem", certPath))
 	if err != nil {
 		return nil, err
 	}

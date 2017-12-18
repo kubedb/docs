@@ -4,7 +4,6 @@ KubeDB operator by AppsCode
 
 ### Synopsis
 
-
 KubeDB operator by AppsCode
 
 ### Options
@@ -24,6 +23,7 @@ KubeDB operator by AppsCode
 ```
 
 ### SEE ALSO
+
 * [operator export](operator_export.md)	 - Export Prometheus metrics for HAProxy
 * [operator run](operator_run.md)	 - Run kubedb operator in Kubernetes
 * [operator version](operator_version.md)	 - Prints binary version number.

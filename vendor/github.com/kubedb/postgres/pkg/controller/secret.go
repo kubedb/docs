@@ -19,7 +19,12 @@ func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
 		if databaseSecretVolume, err = c.createDatabaseSecret(postgres); err != nil {
 			return err
 		}
-		_, err = kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
+		pg, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
+			// This will ignore processing all kind of Update while creating
+			if in.Annotations == nil {
+				in.Annotations = make(map[string]string)
+			}
+			in.Annotations["kubedb.com/ignore"] = "set"
 			in.Spec.DatabaseSecret = databaseSecretVolume
 			return in
 		})
@@ -27,6 +32,7 @@ func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
 			c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 			return err
 		}
+		*postgres = *pg
 	}
 	return nil
 }

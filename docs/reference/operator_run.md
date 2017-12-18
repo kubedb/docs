@@ -4,7 +4,6 @@ Run kubedb operator in Kubernetes
 
 ### Synopsis
 
-
 Run kubedb operator in Kubernetes
 
 ```
@@ -14,15 +13,14 @@ operator run [flags]
 ### Options
 
 ```
-      --address string                      Address to listen on for web interface and telemetry. (default ":8080")
-      --elasticdump.tag string              Tag of elasticdump (default "2.4.2")
-      --elasticsearch.operator-tag string   Tag of kubedb/es-operator used for discovery (default "0.7.1")
-      --exporter-tag string                 Tag of kubedb/operator used as exporter (default "canary")
-      --governing-service string            Governing service for database statefulset (default "kubedb")
-  -h, --help                                help for run
-      --kubeconfig string                   Path to kubeconfig file with authorization information (the master location is set by the master flag).
-      --master string                       The address of the Kubernetes API server (overrides any value in kubeconfig)
-      --rbac                                Enable RBAC for database workloads
+      --address string             Address to listen on for web interface and telemetry. (default ":8080")
+      --elasticdump.tag string     Tag of elasticdump (default "2.4.2")
+      --exporter-tag string        Tag of kubedb/operator used as exporter (default "canary")
+      --governing-service string   Governing service for database statefulset (default "kubedb")
+  -h, --help                       help for run
+      --kubeconfig string          Path to kubeconfig file with authorization information (the master location is set by the master flag).
+      --master string              The address of the Kubernetes API server (overrides any value in kubeconfig)
+      --rbac                       Enable RBAC for database workloads
 ```
 
 ### Options inherited from parent commands
@@ -41,5 +39,6 @@ operator run [flags]
 ```
 
 ### SEE ALSO
+
 * [operator](operator.md)	 - KubeDB operator by AppsCode
 

@@ -8,6 +8,7 @@ import (
 	stringz "github.com/appscode/go/strings"
 	v "github.com/appscode/go/version"
 	"github.com/appscode/kutil/meta"
+	"github.com/appscode/kutil/tools/analytics"
 	"github.com/jpillora/go-ogle-analytics"
 	"github.com/kubedb/apimachinery/client/scheme"
 	tcs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
@@ -49,6 +50,7 @@ func NewRootCmd(version string) *cobra.Command {
 			})
 			if enableAnalytics && gaTrackingCode != "" {
 				if client, err := ga.NewClient(gaTrackingCode); err == nil {
+					client.ClientID(analytics.ClientID())
 					parts := strings.Split(c.CommandPath(), " ")
 					client.Send(ga.NewEvent("kubedb-operator", strings.Join(parts[1:], "/")).Label(version))
 				}
