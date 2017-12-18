@@ -4,7 +4,6 @@ Export Prometheus metrics for HAProxy
 
 ### Synopsis
 
-
 Export Prometheus metrics for HAProxy
 
 ```
@@ -36,5 +35,6 @@ operator export [flags]
 ```
 
 ### SEE ALSO
+
 * [operator](operator.md)	 - KubeDB operator by AppsCode
 

@@ -34,15 +34,7 @@ func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
 		return fmt.Errorf(`image %v:%v not found`, docker.ImagePostgres, version)
 	}
 
-	if snapshot.Spec.Type == api.SnapshotTypePostgresDumpAll {
-		return amv.ValidateSnapshotSpec(c.Client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)
-	} else if snapshot.Spec.Type == api.SnapshotTypePostgresBaseBackup {
-		if snapshot.Spec.S3 != nil {
-			return amv.ValidateSnapshotSpec(c.Client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)
-		}
-	}
-
-	return nil
+	return amv.ValidateSnapshotSpec(c.Client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)
 }
 
 func (c *Controller) GetDatabase(snapshot *api.Snapshot) (runtime.Object, error) {
@@ -78,11 +70,13 @@ func (c *Controller) getVolumeForSnapshot(pvcSpec *core.PersistentVolumeClaimSpe
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      jobName,
 				Namespace: namespace,
-				Annotations: map[string]string{
-					"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
-				},
 			},
 			Spec: *pvcSpec,
+		}
+		if pvcSpec.StorageClassName != nil {
+			claim.Annotations = map[string]string{
+				"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+			}
 		}
 
 		if _, err := c.Client.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(claim); err != nil {

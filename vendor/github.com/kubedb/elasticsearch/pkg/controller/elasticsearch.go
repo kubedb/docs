@@ -76,17 +76,6 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return err
 	}
 
-	es, err = c.ExtClient.Elasticsearchs(elasticsearch.Namespace).Get(elasticsearch.Name, metav1.GetOptions{})
-	if err != nil {
-		c.recorder.Eventf(elasticsearch.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToGet, err.Error())
-		return err
-	}
-	*elasticsearch = *es
-
-	kutildb.AssignTypeKind(elasticsearch)
-
-	// Running
-
 	if elasticsearch.Spec.Init != nil && elasticsearch.Spec.Init.SnapshotSource != nil {
 		es, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
 			in.Status.Phase = api.DatabasePhaseInitializing
@@ -222,10 +211,19 @@ func (c *Controller) matchDormantDatabase(elasticsearch *api.Elasticsearch) (boo
 		return sendEvent("Elasticsearch spec mismatches with OriginSpec in DormantDatabases")
 	}
 
-	//TODO: Use Annotation Key
-	elasticsearch.Annotations = map[string]string{
-		"kubedb.com/ignore": "",
+	es, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+		// This will ignore processing all kind of Update while creating
+		if in.Annotations == nil {
+			in.Annotations = make(map[string]string)
+		}
+		in.Annotations["kubedb.com/ignore"] = "set"
+		return in
+	})
+	if err != nil {
+		c.recorder.Eventf(elasticsearch.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+		return sendEvent(err.Error())
 	}
+	*elasticsearch = *es
 
 	if err := c.ExtClient.Elasticsearchs(elasticsearch.Namespace).Delete(elasticsearch.Name, &metav1.DeleteOptions{}); err != nil {
 		return sendEvent(`failed to resume Elasticsearch "%v" from DormantDatabase "%v". Error: %v`, elasticsearch.Name, elasticsearch.Name, err)
@@ -245,8 +243,12 @@ func (c *Controller) matchDormantDatabase(elasticsearch *api.Elasticsearch) (boo
 
 func (c *Controller) ensureElasticsearchNode(elasticsearch *api.Elasticsearch) error {
 
-	c.ensureCertSecret(elasticsearch)
-	c.ensureDatabaseSecret(elasticsearch)
+	if err := c.ensureCertSecret(elasticsearch); err != nil {
+		return err
+	}
+	if err := c.ensureDatabaseSecret(elasticsearch); err != nil {
+		return err
+	}
 
 	if c.opt.EnableRbac {
 		// Ensure ClusterRoles for database statefulsets
@@ -254,12 +256,6 @@ func (c *Controller) ensureElasticsearchNode(elasticsearch *api.Elasticsearch) e
 			return err
 		}
 	}
-
-	es, err := c.ExtClient.Elasticsearchs(elasticsearch.Namespace).Get(elasticsearch.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	*elasticsearch = *es
 
 	topology := elasticsearch.Spec.Topology
 	if topology != nil {
@@ -283,7 +279,7 @@ func (c *Controller) ensureElasticsearchNode(elasticsearch *api.Elasticsearch) e
 	// TODO: find better way
 	time.Sleep(time.Second * 30)
 
-	es, err = kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+	es, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
 		in.Status.Phase = api.DatabasePhaseRunning
 		return in
 	})
@@ -297,6 +293,7 @@ func (c *Controller) ensureElasticsearchNode(elasticsearch *api.Elasticsearch) e
 }
 
 func (c *Controller) ensureBackupScheduler(elasticsearch *api.Elasticsearch) {
+	kutildb.AssignTypeKind(elasticsearch)
 	// Setup Schedule backup
 	if elasticsearch.Spec.BackupSchedule != nil {
 		err := c.cronController.ScheduleBackup(elasticsearch, elasticsearch.ObjectMeta, elasticsearch.Spec.BackupSchedule)
@@ -450,6 +447,15 @@ func (c *Controller) pause(elasticsearch *api.Elasticsearch) error {
 }
 
 func (c *Controller) update(oldElasticsearch, updatedElasticsearch *api.Elasticsearch) error {
+	if updatedElasticsearch.Annotations != nil {
+		if _, found := updatedElasticsearch.Annotations["kubedb.com/ignore"]; found {
+			kutildb.PatchElasticsearch(c.ExtClient, updatedElasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+				delete(in.Annotations, "kubedb.com/ignore")
+				return in
+			})
+			return nil
+		}
+	}
 
 	if err := validator.ValidateElasticsearch(c.Client, updatedElasticsearch); err != nil {
 		c.recorder.Event(updatedElasticsearch, core.EventTypeWarning, eventer.EventReasonInvalid, err.Error())

@@ -130,10 +130,8 @@ func (c *Controller) watchPostgres() {
 		cache.ResourceEventHandlerFuncs{
 			AddFunc: func(obj interface{}) {
 				postgres := obj.(*api.Postgres)
-				kutildb.AssignTypeKind(postgres)
-
 				if postgres.Status.CreationTime == nil {
-					if err := c.create(postgres); err != nil {
+					if err := c.create(postgres.DeepCopy()); err != nil {
 						log.Errorln(err)
 						c.pushFailureEvent(postgres, err.Error())
 					}
@@ -142,8 +140,7 @@ func (c *Controller) watchPostgres() {
 			},
 			DeleteFunc: func(obj interface{}) {
 				postgres := obj.(*api.Postgres)
-				kutildb.AssignTypeKind(postgres)
-				if err := c.pause(postgres); err != nil {
+				if err := c.pause(postgres.DeepCopy()); err != nil {
 					log.Errorln(err)
 				}
 			},
@@ -156,10 +153,8 @@ func (c *Controller) watchPostgres() {
 				if !ok {
 					return
 				}
-				kutildb.AssignTypeKind(oldObj)
-				kutildb.AssignTypeKind(newObj)
 				if !reflect.DeepEqual(oldObj.Spec, newObj.Spec) {
-					if err := c.update(oldObj, newObj); err != nil {
+					if err := c.update(oldObj, newObj.DeepCopy()); err != nil {
 						log.Errorln(err)
 					}
 				}

@@ -24,8 +24,18 @@ func (c *Controller) Exists(om *metav1.ObjectMeta) (bool, error) {
 }
 
 func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
+	elasticsearch := &api.Elasticsearch{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      dormantDb.OffshootName(),
+			Namespace: dormantDb.Namespace,
+		},
+	}
 	// Delete Service
-	if err := c.DeleteService(dormantDb.Name, dormantDb.Namespace); err != nil {
+	if err := c.DeleteService(elasticsearch.OffshootName(), dormantDb.Namespace); err != nil {
+		log.Errorln(err)
+		return err
+	}
+	if err := c.DeleteService(elasticsearch.MasterServiceName(), dormantDb.Namespace); err != nil {
 		log.Errorln(err)
 		return err
 	}
@@ -61,12 +71,6 @@ func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
 		}
 	}
 
-	elasticsearch := &api.Elasticsearch{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      dormantDb.OffshootName(),
-			Namespace: dormantDb.Namespace,
-		},
-	}
 	if err := c.deleteRBACStuff(elasticsearch); err != nil {
 		return err
 	}
