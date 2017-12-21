@@ -192,9 +192,6 @@ func (ix *Reindexer) Do() (*ReindexerResponse, error) {
 		scanner = scanner.Size(ix.size)
 	}
 	cursor, err := scanner.Do()
-	if err != nil {
-		return nil, err
-	}
 
 	bulk := ix.targetClient.Bulk()
 

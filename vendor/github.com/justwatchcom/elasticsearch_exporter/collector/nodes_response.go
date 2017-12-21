@@ -59,11 +59,19 @@ type NodeStatsJVMBufferPoolResponse struct {
 }
 
 type NodeStatsJVMMemResponse struct {
-	HeapCommitted    int64 `json:"heap_committed_in_bytes"`
-	HeapUsed         int64 `json:"heap_used_in_bytes"`
-	HeapMax          int64 `json:"heap_max_in_bytes"`
-	NonHeapCommitted int64 `json:"non_heap_committed_in_bytes"`
-	NonHeapUsed      int64 `json:"non_heap_used_in_bytes"`
+	HeapCommitted    int64                                  `json:"heap_committed_in_bytes"`
+	HeapUsed         int64                                  `json:"heap_used_in_bytes"`
+	HeapMax          int64                                  `json:"heap_max_in_bytes"`
+	NonHeapCommitted int64                                  `json:"non_heap_committed_in_bytes"`
+	NonHeapUsed      int64                                  `json:"non_heap_used_in_bytes"`
+	Pools            map[string]NodeStatsJVMMemPoolResponse `json:"pools"`
+}
+
+type NodeStatsJVMMemPoolResponse struct {
+	Used     int64 `json:"used_in_bytes"`
+	Max      int64 `json:"max_in_bytes"`
+	PeakUsed int64 `json:"peak_used_in_bytes"`
+	PeakMax  int64 `json:"peak_max_in_bytes"`
 }
 
 type NodeStatsNetworkResponse struct {
@@ -224,10 +232,17 @@ type NodeStatsOSSwapResponse struct {
 }
 
 type NodeStatsOSCPUResponse struct {
-	Sys   int64 `json:"sys"`
-	User  int64 `json:"user"`
-	Idle  int64 `json:"idle"`
-	Steal int64 `json:"stolen"`
+	Sys     int64                      `json:"sys"`
+	User    int64                      `json:"user"`
+	Idle    int64                      `json:"idle"`
+	Steal   int64                      `json:"stolen"`
+	LoadAvg NodeStatsOSCPULoadResponse `json:"load_average"`
+}
+
+type NodeStatsOSCPULoadResponse struct {
+	Load1  float64 `json:"1m"`
+	Load5  float64 `json:"5m"`
+	Load15 float64 `json:"15m"`
 }
 
 // NodeStatsProcessResponse is a representation of a process statistics, memory consumption, cpu usage, open file descriptors

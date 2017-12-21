@@ -6,10 +6,11 @@ package elastic
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 	"net/url"
+
+	"golang.org/x/net/context"
 
 	"gopkg.in/olivere/elastic.v3/uritemplates"
 )
@@ -274,7 +275,7 @@ type BulkResponseItem struct {
 	Index   string        `json:"_index,omitempty"`
 	Type    string        `json:"_type,omitempty"`
 	Id      string        `json:"_id,omitempty"`
-	Version int64         `json:"_version,omitempty"`
+	Version int           `json:"_version,omitempty"`
 	Status  int           `json:"status,omitempty"`
 	Found   bool          `json:"found,omitempty"`
 	Error   *ErrorDetails `json:"error,omitempty"`

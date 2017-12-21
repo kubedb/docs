@@ -29,7 +29,6 @@ type BulkUpdateRequest struct {
 	refresh         *bool
 	upsert          interface{}
 	docAsUpsert     *bool
-	detectNoop      *bool
 	doc             interface{}
 	ttl             int64
 	timestamp       string
@@ -139,15 +138,6 @@ func (r *BulkUpdateRequest) DocAsUpsert(docAsUpsert bool) *BulkUpdateRequest {
 	return r
 }
 
-// DetectNoop specifies whether changes that don't affect the document
-// should be ignored (true) or unignored (false). This is enabled by default
-// in Elasticsearch.
-func (r *BulkUpdateRequest) DetectNoop(detectNoop bool) *BulkUpdateRequest {
-	r.detectNoop = &detectNoop
-	r.source = nil
-	return r
-}
-
 // Upsert specifies the document to use for upserts. It will be used for
 // create if the original document does not exist.
 func (r *BulkUpdateRequest) Upsert(doc interface{}) *BulkUpdateRequest {
@@ -205,7 +195,7 @@ func (r *BulkUpdateRequest) getSourceAsString(data interface{}) (string, error) 
 // split into an action-and-meta-data line and an (optional) source line.
 // See https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
 // for details.
-func (r *BulkUpdateRequest) Source() ([]string, error) {
+func (r BulkUpdateRequest) Source() ([]string, error) {
 	// { "update" : { "_index" : "test", "_type" : "type1", "_id" : "1", ... } }
 	// { "doc" : { "field1" : "value1", ... } }
 	// or
@@ -265,9 +255,6 @@ func (r *BulkUpdateRequest) Source() ([]string, error) {
 	source := make(map[string]interface{})
 	if r.docAsUpsert != nil {
 		source["doc_as_upsert"] = *r.docAsUpsert
-	}
-	if r.detectNoop != nil {
-		source["detect_noop"] = *r.detectNoop
 	}
 	if r.upsert != nil {
 		source["upsert"] = r.upsert

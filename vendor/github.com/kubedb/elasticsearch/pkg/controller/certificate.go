@@ -14,7 +14,7 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/appscode/go/io"
+	"github.com/appscode/go/ioutil"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"k8s.io/client-go/util/cert"
 )
@@ -37,7 +37,7 @@ func createCaCertificate(certPath string) (*rsa.PrivateKey, *x509.Certificate, e
 		return nil, nil, errors.New("Failed to generate CA certificate")
 	}
 	caCertByte := cert.EncodeCertPEM(caCert)
-	if !io.WriteString(fmt.Sprintf("%s/ca.pem", certPath), string(caCertByte)) {
+	if !ioutil.WriteString(fmt.Sprintf("%s/ca.pem", certPath), string(caCertByte)) {
 		return nil, nil, errors.New("Failed to write CA certificate")
 	}
 
@@ -88,11 +88,11 @@ func createNodeCertificate(certPath string, elasticsearch *api.Elasticsearch, ca
 	}
 
 	nodeKeyByte := cert.EncodePrivateKeyPEM(nodeKey)
-	if !io.WriteString(fmt.Sprintf("%s/node-key.pem", certPath), string(nodeKeyByte)) {
+	if !ioutil.WriteString(fmt.Sprintf("%s/node-key.pem", certPath), string(nodeKeyByte)) {
 		return errors.New("Failed to write key for node certificate")
 	}
 	nodeCertByte := cert.EncodeCertPEM(nodeCert)
-	if !io.WriteString(fmt.Sprintf("%s/node.pem", certPath), string(nodeCertByte)) {
+	if !ioutil.WriteString(fmt.Sprintf("%s/node.pem", certPath), string(nodeCertByte)) {
 		return errors.New("Failed to write node certificate")
 	}
 
@@ -153,11 +153,11 @@ func createAdminCertificate(certPath string, caKey *rsa.PrivateKey, caCert *x509
 	}
 
 	sgAdminKeyByte := cert.EncodePrivateKeyPEM(sgAdminKey)
-	if !io.WriteString(fmt.Sprintf("%s/sgadmin-key.pem", certPath), string(sgAdminKeyByte)) {
+	if !ioutil.WriteString(fmt.Sprintf("%s/sgadmin-key.pem", certPath), string(sgAdminKeyByte)) {
 		return errors.New("Failed to write key for sgadmin certificate")
 	}
 	sgAdminCertByte := cert.EncodeCertPEM(sgAdminCert)
-	if !io.WriteString(fmt.Sprintf("%s/sgadmin.pem", certPath), string(sgAdminCertByte)) {
+	if !ioutil.WriteString(fmt.Sprintf("%s/sgadmin.pem", certPath), string(sgAdminCertByte)) {
 		return errors.New("Failed to write sgadmin certificate")
 	}
 
@@ -214,11 +214,11 @@ func createClientCertificate(certPath string, caKey *rsa.PrivateKey, caCert *x50
 	}
 
 	clientKeyByte := cert.EncodePrivateKeyPEM(clientKey)
-	if !io.WriteString(fmt.Sprintf("%s/client-key.pem", certPath), string(clientKeyByte)) {
+	if !ioutil.WriteString(fmt.Sprintf("%s/client-key.pem", certPath), string(clientKeyByte)) {
 		return errors.New("Failed to write key for client certificate")
 	}
 	clientCertByte := cert.EncodeCertPEM(clientCert)
-	if !io.WriteString(fmt.Sprintf("%s/client.pem", certPath), string(clientCertByte)) {
+	if !ioutil.WriteString(fmt.Sprintf("%s/client.pem", certPath), string(clientCertByte)) {
 		return errors.New("Failed to write client certificate")
 	}
 

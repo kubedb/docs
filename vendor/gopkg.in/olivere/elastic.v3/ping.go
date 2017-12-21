@@ -5,10 +5,12 @@
 package elastic
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
+
+	"golang.org/x/net/context"
+	"golang.org/x/net/context/ctxhttp"
 )
 
 // PingService checks if an Elasticsearch server on a given URL is alive.
@@ -119,7 +121,7 @@ func (s *PingService) DoC(ctx context.Context) (*PingResult, int, error) {
 	if ctx == nil {
 		res, err = s.client.c.Do((*http.Request)(req))
 	} else {
-		res, err = s.client.c.Do((*http.Request)(req).WithContext(ctx))
+		res, err = ctxhttp.Do(ctx, s.client.c, (*http.Request)(req))
 	}
 	if err != nil {
 		return nil, 0, err

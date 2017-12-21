@@ -71,6 +71,11 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		return err
 	}
 
+	configMapName := fmt.Sprintf("%v-leader-lock", postgres.OffshootName())
+	if err := c.deleteConfigMap(configMapName, postgres.Namespace); err != nil {
+		return err
+	}
+
 	// ensure database StatefulSet
 	if err := c.ensurePostgresNode(postgres); err != nil {
 		return err

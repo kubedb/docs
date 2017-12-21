@@ -51,8 +51,7 @@ func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
 	}
 
 	configMapName := fmt.Sprintf("%v-leader-lock", dormantDb.OffshootName())
-	if err := c.Client.CoreV1().ConfigMaps(dormantDb.Namespace).Delete(configMapName, nil); !kerr.IsNotFound(err) {
-		log.Errorln(err)
+	if err := c.deleteConfigMap(configMapName, dormantDb.Namespace); err != nil {
 		return err
 	}
 

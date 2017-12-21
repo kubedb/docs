@@ -1,4 +1,4 @@
-// Copyright 2012-present Oliver Eilhard. All rights reserved.
+// Copyright 2012-2015 Oliver Eilhard. All rights reserved.
 // Use of this source code is governed by a MIT-license.
 // See http://olivere.mit-license.org/license.txt for details.
 
@@ -13,7 +13,6 @@ package elastic
 // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html
 type FunctionScoreQuery struct {
 	query      Query
-	filter     Query
 	boost      *float64
 	maxBoost   *float64
 	scoreMode  string
@@ -26,18 +25,15 @@ type FunctionScoreQuery struct {
 
 // NewFunctionScoreQuery creates and initializes a new function score query.
 func NewFunctionScoreQuery() *FunctionScoreQuery {
-	return &FunctionScoreQuery{}
+	return &FunctionScoreQuery{
+		filters:    make([]Query, 0),
+		scoreFuncs: make([]ScoreFunction, 0),
+	}
 }
 
 // Query sets the query for the function score query.
 func (q *FunctionScoreQuery) Query(query Query) *FunctionScoreQuery {
 	q.query = query
-	return q
-}
-
-// Filter sets the filter for the function score query.
-func (q *FunctionScoreQuery) Filter(filter Query) *FunctionScoreQuery {
-	q.filter = filter
 	return q
 }
 
@@ -102,14 +98,6 @@ func (q *FunctionScoreQuery) Source() (interface{}, error) {
 			return nil, err
 		}
 		query["query"] = src
-	}
-
-	if q.filter != nil {
-		src, err := q.filter.Source()
-		if err != nil {
-			return nil, err
-		}
-		query["filter"] = src
 	}
 
 	if len(q.filters) == 1 && q.filters[0] == nil {
