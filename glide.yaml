@@ -43,7 +43,7 @@ import:
 - package: gopkg.in/ini.v1
   version: v1.28.2
 - package: github.com/appscode/kutil
-  version: release-5.0
+  version: master
 - package: k8s.io/api
   version: release-1.8
 - package: k8s.io/apimachinery

@@ -1,5 +1,5 @@
-hash: f781fd101a97c073fed3b30b196edb376f15eb03e3dd856d84d8eb1043f4f94d
-updated: 2017-12-18T17:42:26.400227854-05:00
+hash: 37c78398acaa830b4b0fb92755c5796f873a51cf4672a5cacec4160f22a2676c
+updated: 2017-12-20T19:15:57.448564719-05:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -31,7 +31,7 @@ imports:
   - version
   - wait
 - name: github.com/appscode/kutil
-  version: 582273a0791d4d99ab1345d9e4867bec460aaf5a
+  version: 02e786c35ddd6db375126ab23e1b4307246be21d
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
@@ -302,7 +302,7 @@ imports:
   - pkg/controller
   - pkg/validator
 - name: github.com/kubernetes/apimachinery
-  version: e7ad5e783d5cc59c1aa137f0b13c51baee6ee7c1
+  version: 20bbfef868144faf29af69ddb2f01646ead5c1a1
   subpackages:
   - pkg/conversion
 - name: github.com/lib/pq
@@ -370,7 +370,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: a8cce41882e5d94f876d93c1b7c29d37a32f58eb
+  version: 2881d73ed801bc66b9454ac0cebe9fbd45ecc3cf
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -450,7 +450,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: 03a4a4fe3d2c5fb0d1a116cf20784fffa259a3d4
+  version: c0dae069ee96c9261a04c81efd9e0f1e55f565ac
   subpackages:
   - gensupport
   - googleapi
@@ -483,7 +483,7 @@ imports:
   - internal/sasl
   - internal/scram
 - name: gopkg.in/olivere/elastic.v3
-  version: 060365a7e27c56c938b234824ef7f9a3a7834b99
+  version: eaecbad7a83e6b60f131825553e5eb7fd5a50b41
   subpackages:
   - backoff
   - uritemplates
