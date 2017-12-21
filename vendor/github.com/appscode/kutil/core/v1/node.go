@@ -2,7 +2,6 @@ package v1
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/appscode/kutil"
@@ -97,23 +96,15 @@ func TryUpdateNode(c kubernetes.Interface, meta metav1.ObjectMeta, transform fun
 	return
 }
 
-// NodeRunningAndReady returns whether a node is running.
-func NodeRunningAndReady(node core.Node) (bool, error) {
-	switch node.Status.Phase {
-	case core.NodePending:
-		return false, errors.New("node pending")
-	case core.NodeTerminated:
-		return false, errors.New("node terminated")
-	case core.NodeRunning:
-		for _, cond := range node.Status.Conditions {
-			if cond.Type != core.NodeReady {
-				continue
-			}
-			return cond.Status == core.ConditionTrue, nil
+// NodeReady returns whether a node is ready.
+func NodeReady(node core.Node) bool {
+	for _, cond := range node.Status.Conditions {
+		if cond.Type != core.NodeReady {
+			continue
 		}
-		return false, errors.New("node ready condition not found")
+		return cond.Status == core.ConditionTrue
 	}
-	return false, nil
+	return false
 }
 
 // IsMaster returns whether a node is a master.

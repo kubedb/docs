@@ -1,5 +1,5 @@
-hash: 321d00dcc4ce256bb2554e91aafd4b04cab7f7422bed9498649e25ea0085d1f4
-updated: 2017-12-20T18:58:26.703315738-05:00
+hash: 37c78398acaa830b4b0fb92755c5796f873a51cf4672a5cacec4160f22a2676c
+updated: 2017-12-20T19:15:57.448564719-05:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -15,11 +15,13 @@ imports:
 - name: github.com/appscode/go
   version: cb650d0b1a3c04a86595cf2a31fa704dbf1bc42a
   subpackages:
+  - analytics
   - context
   - crypto/rand
   - encoding/json/types
   - encoding/yaml
   - hold
+  - homedir
   - ioutil
   - log
   - log/golog
@@ -29,13 +31,14 @@ imports:
   - version
   - wait
 - name: github.com/appscode/kutil
-  version: 582273a0791d4d99ab1345d9e4867bec460aaf5a
+  version: 02e786c35ddd6db375126ab23e1b4307246be21d
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
   - core/v1
   - meta
   - rbac/v1beta1
+  - tools/analytics
   - tools/monitoring/agents
   - tools/monitoring/agents/coreosprometheusoperator
   - tools/monitoring/agents/prometheusbuiltin
@@ -447,7 +450,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: 6b7ad74b94d9a82bba8cc567eafc779770be4bed
+  version: c0dae069ee96c9261a04c81efd9e0f1e55f565ac
   subpackages:
   - gensupport
   - googleapi
