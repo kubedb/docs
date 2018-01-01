@@ -137,7 +137,7 @@ func run() {
 	}).Run()
 
 	// Redis controller
-	rdCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, rdCtrl.Options{
+	rdCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, rdCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
 		ExporterTag:       exporterTag,
@@ -145,7 +145,7 @@ func run() {
 	}).Run()
 
 	// Memcached controller
-	memCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, memCtrl.Options{
+	memCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, memCtrl.Options{
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
 		ExporterTag:       exporterTag,
