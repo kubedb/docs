@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/log"
+	apps_util "github.com/appscode/kutil/apps/v1beta1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,14 +14,15 @@ import (
 )
 
 func (c *Controller) Exists(om *metav1.ObjectMeta) (bool, error) {
-	if _, err := c.ExtClient.Elasticsearchs(om.Namespace).Get(om.Name, metav1.GetOptions{}); err != nil {
+	elasticsearch, err := c.ExtClient.Elasticsearchs(om.Namespace).Get(om.Name, metav1.GetOptions{})
+	if err != nil {
 		if !kerr.IsNotFound(err) {
 			return false, err
 		}
 		return false, nil
 	}
 
-	return true, nil
+	return elasticsearch.DeletionTimestamp == nil, nil
 }
 
 func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
@@ -31,42 +33,75 @@ func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
 		},
 	}
 	// Delete Service
-	if err := c.DeleteService(elasticsearch.OffshootName(), dormantDb.Namespace); err != nil {
+	if err := c.deleteService(elasticsearch.OffshootName(), dormantDb.Namespace); err != nil {
 		log.Errorln(err)
 		return err
 	}
-	if err := c.DeleteService(elasticsearch.MasterServiceName(), dormantDb.Namespace); err != nil {
+	if err := c.deleteService(elasticsearch.MasterServiceName(), dormantDb.Namespace); err != nil {
 		log.Errorln(err)
 		return err
 	}
 
 	topology := dormantDb.Spec.Origin.Spec.Elasticsearch.Topology
 	if topology != nil {
-		clientName := dormantDb.OffshootName()
-		if topology.Client.Prefix != "" {
-			clientName = fmt.Sprintf("%v-%v", topology.Client.Prefix, clientName)
-		}
-		if err := c.DeleteStatefulSet(clientName, dormantDb.Namespace); err != nil {
-			return err
+
+		deleteStatefulSet := func(err chan<- error) error {
+			clientName := dormantDb.OffshootName()
+			if topology.Client.Prefix != "" {
+				clientName = fmt.Sprintf("%v-%v", topology.Client.Prefix, clientName)
+			}
+			go func() {
+				err2 := apps_util.DeleteStatefulSet(c.Client, metav1.ObjectMeta{
+					Name:      clientName,
+					Namespace: dormantDb.Namespace,
+				})
+				err <- err2
+			}()
+
+			masterName := dormantDb.OffshootName()
+			if topology.Master.Prefix != "" {
+				masterName = fmt.Sprintf("%v-%v", topology.Master.Prefix, masterName)
+			}
+			go func() {
+				err2 := apps_util.DeleteStatefulSet(c.Client, metav1.ObjectMeta{
+					Name:      masterName,
+					Namespace: dormantDb.Namespace,
+				})
+				err <- err2
+			}()
+
+			dataName := dormantDb.OffshootName()
+			if topology.Data.Prefix != "" {
+				dataName = fmt.Sprintf("%v-%v", topology.Data.Prefix, dataName)
+			}
+			go func() {
+				err2 := apps_util.DeleteStatefulSet(c.Client, metav1.ObjectMeta{
+					Name:      dataName,
+					Namespace: dormantDb.Namespace,
+				})
+				err <- err2
+			}()
+
+			return nil
 		}
 
-		masterName := dormantDb.OffshootName()
-		if topology.Master.Prefix != "" {
-			masterName = fmt.Sprintf("%v-%v", topology.Master.Prefix, masterName)
-		}
-		if err := c.DeleteStatefulSet(masterName, dormantDb.Namespace); err != nil {
-			return err
+		errors := make(chan error, 3)
+
+		go deleteStatefulSet(errors)
+
+		for i := 1; i <= 3; i++ {
+			err := <-errors
+			if err != nil {
+				return err
+			}
 		}
 
-		dataName := dormantDb.OffshootName()
-		if topology.Data.Prefix != "" {
-			dataName = fmt.Sprintf("%v-%v", topology.Data.Prefix, dataName)
-		}
-		if err := c.DeleteStatefulSet(dataName, dormantDb.Namespace); err != nil {
-			return err
-		}
 	} else {
-		if err := c.DeleteStatefulSet(dormantDb.OffshootName(), dormantDb.Namespace); err != nil {
+		err := apps_util.DeleteStatefulSet(c.Client, metav1.ObjectMeta{
+			Name:      dormantDb.OffshootName(),
+			Namespace: dormantDb.Namespace,
+		})
+		if err != nil {
 			return err
 		}
 	}
@@ -92,6 +127,19 @@ func (c *Controller) WipeOutDatabase(dormantDb *api.DormantDatabase) error {
 	if err := c.DeletePersistentVolumeClaims(dormantDb.Namespace, labelSelector); err != nil {
 		return err
 	}
+
+	if dormantDb.Spec.Origin.Spec.Elasticsearch.DatabaseSecret != nil {
+		if err := c.deleteSecret(dormantDb, dormantDb.Spec.Origin.Spec.Elasticsearch.DatabaseSecret); err != nil {
+			return err
+		}
+	}
+
+	if dormantDb.Spec.Origin.Spec.Elasticsearch.CertificateSecret != nil {
+		if err := c.deleteSecret(dormantDb, dormantDb.Spec.Origin.Spec.Elasticsearch.CertificateSecret); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -143,7 +191,7 @@ func (c *Controller) createDormantDatabase(elasticsearch *api.Elasticsearch) (*a
 					Annotations: elasticsearch.Annotations,
 				},
 				Spec: api.OriginSpec{
-					Elasticsearch: &elasticsearch.Spec,
+					Elasticsearch: &(elasticsearch.Spec),
 				},
 			},
 		},

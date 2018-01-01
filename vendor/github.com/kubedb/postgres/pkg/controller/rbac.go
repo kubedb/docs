@@ -23,7 +23,7 @@ func (c *Controller) deleteRole(postgres *api.Postgres) error {
 
 func (c *Controller) ensureRole(postgres *api.Postgres) error {
 	// Create new Roles
-	_, err := rbac_util.CreateOrPatchRole(
+	_, _, err := rbac_util.CreateOrPatchRole(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      postgres.OffshootName(),
@@ -62,7 +62,7 @@ func (c *Controller) deleteServiceAccount(postgres *api.Postgres) error {
 
 func (c *Controller) createServiceAccount(postgres *api.Postgres) error {
 	// Create new ServiceAccount
-	_, err := core_util.CreateOrPatchServiceAccount(
+	_, _, err := core_util.CreateOrPatchServiceAccount(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      postgres.OffshootName(),
@@ -87,7 +87,7 @@ func (c *Controller) deleteRoleBinding(postgres *api.Postgres) error {
 
 func (c *Controller) createRoleBinding(postgres *api.Postgres) error {
 	// Ensure new RoleBindings
-	_, err := rbac_util.CreateOrPatchRoleBinding(
+	_, _, err := rbac_util.CreateOrPatchRoleBinding(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      postgres.OffshootName(),

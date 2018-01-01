@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
+	"github.com/appscode/kutil"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	kutildb "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -18,39 +19,46 @@ import (
 )
 
 func (c *Controller) create(postgres *api.Postgres) error {
-	pg, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
-		t := metav1.Now()
-		in.Status.CreationTime = &t
-		in.Status.Phase = api.DatabasePhaseCreating
-		return in
-	})
-	if err != nil {
-		c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
-		return err
+	if err := validator.ValidatePostgres(c.Client, postgres, c.opt.Docker); err != nil {
+		c.recorder.Event(
+			postgres.ObjectReference(),
+			core.EventTypeWarning,
+			eventer.EventReasonInvalid,
+			err.Error(),
+		)
+		return nil // user error so just record error and don't retry.
 	}
-	*postgres = *pg
 
-	if err := validator.ValidatePostgres(c.Client, postgres); err != nil {
-		c.recorder.Event(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
+	if postgres.Status.CreationTime == nil {
+		es, _, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
+			t := metav1.Now()
+			in.Status.CreationTime = &t
+			in.Status.Phase = api.DatabasePhaseCreating
+			return in
+		})
+		if err != nil {
+			c.recorder.Eventf(
+				postgres.ObjectReference(),
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
+			)
+			return err
+		}
+		postgres.Status = es.Status
+	}
+
+	// Dynamic Defaulting
+	// Assign Default Monitoring Port
+	if err := c.setMonitoringPort(postgres); err != nil {
 		return err
 	}
-	// Event for successful validation
-	c.recorder.Event(
-		postgres.ObjectReference(),
-		core.EventTypeNormal,
-		eventer.EventReasonSuccessfulValidate,
-		"Successfully validate Postgres",
-	)
 
 	// Check DormantDatabase
-	// return True (as matched) only if Postgres matched with DormantDatabase
-	// If matched, It will be resumed
-	if matched, err := c.matchDormantDatabase(postgres); err != nil || matched {
+	// It can be used as resumed
+	if err := c.matchDormantDatabase(postgres); err != nil {
 		return err
 	}
-
-	// Event for notification that kubernetes objects are creating
-	c.recorder.Event(postgres.ObjectReference(), core.EventTypeNormal, eventer.EventReasonCreating, "Creating Kubernetes objects")
 
 	// create Governing Service
 	governingService := c.opt.GoverningService
@@ -59,7 +67,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 			postgres.ObjectReference(),
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
-			`Failed to create Service: "%v". Reason: %v`,
+			`Failed to create ServiceAccount: "%v". Reason: %v`,
 			governingService,
 			err,
 		)
@@ -67,22 +75,35 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	// ensure database Service
-	if err := c.ensureService(postgres); err != nil {
-		return err
-	}
-
-	configMapName := fmt.Sprintf("%v-leader-lock", postgres.OffshootName())
-	if err := c.deleteConfigMap(configMapName, postgres.Namespace); err != nil {
+	vt1, err := c.ensureService(postgres)
+	if err != nil {
 		return err
 	}
 
 	// ensure database StatefulSet
-	if err := c.ensurePostgresNode(postgres); err != nil {
+	vt2, err := c.ensurePostgresNode(postgres)
+	if err != nil {
 		return err
 	}
 
-	if postgres.Spec.Init != nil && postgres.Spec.Init.SnapshotSource != nil {
-		pg, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
+	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
+		c.recorder.Event(
+			postgres.ObjectReference(),
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully created Postgres",
+		)
+	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
+		c.recorder.Event(
+			postgres.ObjectReference(),
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully patched Postgres",
+		)
+	}
+
+	if vt2 == kutil.VerbCreated && postgres.Spec.Init != nil && postgres.Spec.Init.SnapshotSource != nil {
+		pg, _, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
 			in.Status.Phase = api.DatabasePhaseInitializing
 			return in
 		})
@@ -90,7 +111,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 			c.recorder.Eventf(postgres, core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 			return err
 		}
-		*postgres = *pg
+		postgres.Status = pg.Status
 
 		if err := c.initialize(postgres); err != nil {
 			c.recorder.Eventf(
@@ -102,7 +123,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 			)
 		}
 
-		pg, err = kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
+		pg, _, err = kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
 			in.Status.Phase = api.DatabasePhaseRunning
 			return in
 		})
@@ -110,42 +131,51 @@ func (c *Controller) create(postgres *api.Postgres) error {
 			c.recorder.Eventf(postgres, core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 			return err
 		}
-		*postgres = *pg
+		postgres.Status = pg.Status
 	}
-
-	c.recorder.Event(
-		postgres.ObjectReference(),
-		core.EventTypeNormal,
-		eventer.EventReasonSuccessfulCreate,
-		"Successfully created Postgres",
-	)
 
 	// Ensure Schedule backup
 	c.ensureBackupScheduler(postgres)
 
-	if postgres.Spec.Monitor != nil {
-		if err := c.addMonitor(postgres); err != nil {
-			c.recorder.Eventf(
-				postgres.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				"Failed to add monitoring system. Reason: %v",
-				err,
-			)
-			log.Errorln(err)
-			return nil
-		}
-		c.recorder.Event(
+	if err := c.manageMonitor(postgres); err != nil {
+		c.recorder.Eventf(
 			postgres.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessfulCreate,
-			"Successfully added monitoring system.",
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			"Failed to manage monitoring system. Reason: %v",
+			err,
 		)
+		log.Errorln(err)
+		return nil
 	}
 	return nil
 }
 
-func (c *Controller) matchDormantDatabase(postgres *api.Postgres) (bool, error) {
+func (c *Controller) setMonitoringPort(postgres *api.Postgres) error {
+	if postgres.Spec.Monitor != nil &&
+		postgres.Spec.Monitor.Prometheus != nil {
+		if postgres.Spec.Monitor.Prometheus.Port == 0 {
+			es, _, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
+				in.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
+				return in
+			})
+
+			if err != nil {
+				c.recorder.Eventf(
+					postgres.ObjectReference(),
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToUpdate,
+					err.Error(),
+				)
+				return err
+			}
+			postgres.Spec.Monitor = es.Spec.Monitor
+		}
+	}
+	return nil
+}
+
+func (c *Controller) matchDormantDatabase(postgres *api.Postgres) error {
 	// Check if DormantDatabase exists or not
 	dormantDb, err := c.ExtClient.DormantDatabases(postgres.Namespace).Get(postgres.Name, metav1.GetOptions{})
 	if err != nil {
@@ -158,12 +188,12 @@ func (c *Controller) matchDormantDatabase(postgres *api.Postgres) (bool, error) 
 				postgres.Name,
 				err,
 			)
-			return false, err
+			return err
 		}
-		return false, nil
+		return nil
 	}
 
-	var sendEvent = func(message string, args ...interface{}) (bool, error) {
+	var sendEvent = func(message string, args ...interface{}) error {
 		c.recorder.Eventf(
 			postgres.ObjectReference(),
 			core.EventTypeWarning,
@@ -171,13 +201,13 @@ func (c *Controller) matchDormantDatabase(postgres *api.Postgres) (bool, error) 
 			message,
 			args,
 		)
-		return false, fmt.Errorf(message, args)
+		return fmt.Errorf(message, args)
 	}
 
 	// Check DatabaseKind
 	if dormantDb.Labels[api.LabelDatabaseKind] != api.ResourceKindPostgres {
-		return sendEvent(`Invalid Postgres: "%v". Exists DormantDatabase "%v" of different Kind`,
-			postgres.Name, dormantDb.Name)
+		return sendEvent(fmt.Sprintf(`Invalid Postgres: "%v". Exists DormantDatabase "%v" of different Kind`,
+			postgres.Name, dormantDb.Name))
 	}
 
 	// Check InitSpec
@@ -210,63 +240,39 @@ func (c *Controller) matchDormantDatabase(postgres *api.Postgres) (bool, error) 
 		return sendEvent("Postgres spec mismatches with OriginSpec in DormantDatabases")
 	}
 
-	pg, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
-		// This will ignore processing all kind of Update while creating
-		if in.Annotations == nil {
-			in.Annotations = make(map[string]string)
-		}
-		in.Annotations["kubedb.com/ignore"] = "set"
-		return in
-	})
-	if err != nil {
-		c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
-		return sendEvent(err.Error())
-	}
-	*postgres = *pg
-
-	if err := c.ExtClient.Postgreses(postgres.Namespace).Delete(postgres.Name, &metav1.DeleteOptions{}); err != nil {
-		return sendEvent(`failed to resume Postgres "%v" from DormantDatabase "%v". Error: %v`, postgres.Name, postgres.Name, err)
-	}
-
-	_, err = kutildb.PatchDormantDatabase(c.ExtClient, dormantDb, func(in *api.DormantDatabase) *api.DormantDatabase {
-		in.Spec.Resume = true
-		return in
-	})
-	if err != nil {
-		c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
-		return sendEvent(err.Error())
-	}
-
-	return true, nil
+	return kutildb.DeleteDormantDatabase(c.ExtClient, dormantDb.ObjectMeta)
 }
 
-func (c *Controller) ensurePostgresNode(postgres *api.Postgres) error {
-	if err := c.ensureDatabaseSecret(postgres); err != nil {
-		return err
+func (c *Controller) ensurePostgresNode(postgres *api.Postgres) (kutil.VerbType, error) {
+	var err error
+
+	if err = c.ensureDatabaseSecret(postgres); err != nil {
+		return kutil.VerbUnchanged, err
 	}
 
 	if c.opt.EnableRbac {
 		// Ensure ClusterRoles for database statefulsets
 		if err := c.ensureRBACStuff(postgres); err != nil {
-			return err
+			return kutil.VerbUnchanged, err
 		}
 	}
 
-	if err := c.ensureCombinedNode(postgres); err != nil {
-		return err
+	vt, err := c.ensureCombinedNode(postgres)
+	if err != nil {
+		return kutil.VerbUnchanged, err
 	}
 
-	pg, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
+	pg, _, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
 		in.Status.Phase = api.DatabasePhaseRunning
 		return in
 	})
 	if err != nil {
 		c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
-		return err
+		return kutil.VerbUnchanged, err
 	}
-	*postgres = *pg
+	postgres.Status = pg.Status
 
-	return nil
+	return vt, nil
 }
 
 func (c *Controller) ensureBackupScheduler(postgres *api.Postgres) {
@@ -347,38 +353,33 @@ func (c *Controller) initialize(postgres *api.Postgres) error {
 }
 
 func (c *Controller) pause(postgres *api.Postgres) error {
-	if postgres.Annotations != nil {
-		if val, found := postgres.Annotations["kubedb.com/ignore"]; found {
-			//TODO: Add Event Reason "Ignored"
-			c.recorder.Event(postgres.ObjectReference(), core.EventTypeNormal, "Ignored", val)
-			return nil
-		}
-	}
 
 	c.recorder.Event(postgres.ObjectReference(), core.EventTypeNormal, eventer.EventReasonPausing, "Pausing Postgres")
 
-	if postgres.Spec.DoNotPause {
-		c.recorder.Eventf(
-			postgres.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToPause,
-			`Postgres "%v" is locked.`,
-			postgres.Name,
-		)
-
-		if err := c.reCreatePostgres(postgres); err != nil {
+	/*
+		if postgres.Spec.DoNotPause {
 			c.recorder.Eventf(
 				postgres.ObjectReference(),
 				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				`Failed to recreate Postgres: "%v". Reason: %v`,
+				eventer.EventReasonFailedToPause,
+				`Postgres "%v" is locked.`,
 				postgres.Name,
-				err,
 			)
-			return err
+
+			if err := c.reCreatePostgres(postgres); err != nil {
+				c.recorder.Eventf(
+					postgres.ObjectReference(),
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToCreate,
+					`Failed to recreate Postgres: "%v". Reason: %v`,
+					postgres.Name,
+					err,
+				)
+				return err
+			}
+			return nil
 		}
-		return nil
-	}
+	*/
 
 	if _, err := c.createDormantDatabase(postgres); err != nil {
 		c.recorder.Eventf(
@@ -402,7 +403,7 @@ func (c *Controller) pause(postgres *api.Postgres) error {
 	c.cronController.StopBackupScheduling(postgres.ObjectMeta)
 
 	if postgres.Spec.Monitor != nil {
-		if err := c.deleteMonitor(postgres); err != nil {
+		if _, err := c.deleteMonitor(postgres); err != nil {
 			c.recorder.Eventf(
 				postgres.ObjectReference(),
 				core.EventTypeWarning,
@@ -413,74 +414,11 @@ func (c *Controller) pause(postgres *api.Postgres) error {
 			log.Errorln(err)
 			return nil
 		}
-		c.recorder.Event(
-			postgres.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessfulMonitorDelete,
-			"Successfully deleted monitoring system.",
-		)
 	}
 	return nil
 }
 
-func (c *Controller) update(oldPostgres, updatedPostgres *api.Postgres) error {
-	if updatedPostgres.Annotations != nil {
-		if _, found := updatedPostgres.Annotations["kubedb.com/ignore"]; found {
-			kutildb.PatchPostgres(c.ExtClient, updatedPostgres, func(in *api.Postgres) *api.Postgres {
-				delete(in.Annotations, "kubedb.com/ignore")
-				return in
-			})
-			return nil
-		}
-	}
-
-	if err := validator.ValidatePostgres(c.Client, updatedPostgres); err != nil {
-		c.recorder.Event(updatedPostgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonInvalid, err.Error())
-		return err
-	}
-	// Event for successful validation
-	c.recorder.Event(
-		updatedPostgres.ObjectReference(),
-		core.EventTypeNormal,
-		eventer.EventReasonSuccessfulValidate,
-		"Successfully validate Postgres",
-	)
-
-	if err := c.ensureService(updatedPostgres); err != nil {
-		return err
-	}
-
-	if err := c.ensurePostgresNode(updatedPostgres); err != nil {
-		return err
-	}
-
-	if !reflect.DeepEqual(updatedPostgres.Spec.BackupSchedule, oldPostgres.Spec.BackupSchedule) {
-		c.ensureBackupScheduler(updatedPostgres)
-	}
-
-	if !reflect.DeepEqual(oldPostgres.Spec.Monitor, updatedPostgres.Spec.Monitor) {
-		if err := c.updateMonitor(oldPostgres, updatedPostgres); err != nil {
-			c.recorder.Eventf(
-				updatedPostgres.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				"Failed to update monitoring system. Reason: %v",
-				err,
-			)
-			log.Errorln(err)
-			return nil
-		}
-		c.recorder.Event(
-			updatedPostgres.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessfulMonitorUpdate,
-			"Successfully updated monitoring system.",
-		)
-
-	}
-	return nil
-}
-
+/*
 func (c *Controller) reCreatePostgres(postgres *api.Postgres) error {
 	pg := &api.Postgres{
 		ObjectMeta: metav1.ObjectMeta{
@@ -499,3 +437,4 @@ func (c *Controller) reCreatePostgres(postgres *api.Postgres) error {
 
 	return nil
 }
+*/

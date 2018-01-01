@@ -1,0 +1,281 @@
+package controller
+
+import (
+	"fmt"
+
+	"github.com/appscode/go/log"
+	"github.com/appscode/go/types"
+	"github.com/appscode/kutil"
+	app_util "github.com/appscode/kutil/apps/v1beta1"
+	core_util "github.com/appscode/kutil/core/v1"
+	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
+	"github.com/kubedb/apimachinery/pkg/eventer"
+	apps "k8s.io/api/apps/v1beta1"
+	core "k8s.io/api/core/v1"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB) (kutil.VerbType, error) {
+	if err := c.checkStatefulSet(mongodb); err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	if err := c.ensureDatabaseSecret(mongodb); err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	// Create statefulSet for MongoDB database
+	statefulSet, vt, err := c.createStatefulSet(mongodb)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	// Check StatefulSet Pod status
+	if vt != kutil.VerbUnchanged {
+		if err := c.checkStatefulSetPodStatus(statefulSet); err != nil {
+			c.recorder.Eventf(
+				mongodb.ObjectReference(),
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToStart,
+				`Failed to CreateOrPatch StatefulSet. Reason: %v`,
+				err,
+			)
+			return kutil.VerbUnchanged, err
+		}
+		c.recorder.Eventf(
+			mongodb.ObjectReference(),
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %v StatefulSet",
+			vt,
+		)
+
+		ms, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
+			in.Status.Phase = api.DatabasePhaseRunning
+			return in
+		})
+		if err != nil {
+			c.recorder.Eventf(
+				mongodb,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
+			)
+			return kutil.VerbUnchanged, err
+		}
+		mongodb.Status = ms.Status
+	}
+	return vt, nil
+}
+
+func (c *Controller) checkStatefulSet(mongodb *api.MongoDB) error {
+	// SatatefulSet for MongoDB database
+	statefulSet, err := c.Client.AppsV1beta1().StatefulSets(mongodb.Namespace).Get(mongodb.OffshootName(), metav1.GetOptions{})
+	if err != nil {
+		if kerr.IsNotFound(err) {
+			return nil
+		} else {
+			return err
+		}
+	}
+
+	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindMongoDB {
+		return fmt.Errorf(`Intended statefulSet "%v" already exists`, mongodb.OffshootName())
+	}
+
+	return nil
+}
+
+func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet, kutil.VerbType, error) {
+	statefulSetMeta := metav1.ObjectMeta{
+		Name:      mongodb.OffshootName(),
+		Namespace: mongodb.Namespace,
+	}
+	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
+		in.Labels = core_util.UpsertMap(in.Labels, mongodb.StatefulSetLabels())
+		in.Annotations = core_util.UpsertMap(in.Annotations, mongodb.StatefulSetAnnotations())
+
+		in.Spec.Replicas = types.Int32P(1)
+		in.Spec.Template = core.PodTemplateSpec{
+			ObjectMeta: metav1.ObjectMeta{
+				Labels: in.ObjectMeta.Labels,
+			},
+		}
+
+		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
+			Name:            api.ResourceNameMongoDB,
+			Image:           c.opt.Docker.GetImageWithTag(mongodb),
+			ImagePullPolicy: core.PullIfNotPresent,
+			Ports: []core.ContainerPort{
+				{
+					Name:          "db",
+					ContainerPort: 27017,
+					Protocol:      core.ProtocolTCP,
+				},
+			},
+			Args: []string{
+				"--auth",
+			},
+			Resources: mongodb.Spec.Resources,
+		})
+		if mongodb.Spec.Monitor != nil &&
+			mongodb.Spec.Monitor.Agent == api.AgentCoreosPrometheus &&
+			mongodb.Spec.Monitor.Prometheus != nil {
+			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
+				Name: "exporter",
+				Args: []string{
+					"export",
+					fmt.Sprintf("--address=:%d", mongodb.Spec.Monitor.Prometheus.Port),
+					"--v=3",
+				},
+				Image:           c.opt.Docker.GetOperatorImageWithTag(mongodb),
+				ImagePullPolicy: core.PullIfNotPresent,
+				Ports: []core.ContainerPort{
+					{
+						Name:          api.PrometheusExporterPortName,
+						Protocol:      core.ProtocolTCP,
+						ContainerPort: mongodb.Spec.Monitor.Prometheus.Port,
+					},
+				},
+			})
+		}
+		// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
+		in = upsertEnv(in, mongodb)
+		in = upsertDataVolume(in, mongodb)
+		if mongodb.Spec.Init != nil && mongodb.Spec.Init.ScriptSource != nil {
+			in = upsertInitScript(in, mongodb.Spec.Init.ScriptSource.VolumeSource)
+		}
+
+		in.Spec.Template.Spec.NodeSelector = mongodb.Spec.NodeSelector
+		in.Spec.Template.Spec.Affinity = mongodb.Spec.Affinity
+		in.Spec.Template.Spec.SchedulerName = mongodb.Spec.SchedulerName
+		in.Spec.Template.Spec.Tolerations = mongodb.Spec.Tolerations
+		if c.opt.EnableRbac {
+			in.Spec.Template.Spec.ServiceAccountName = mongodb.Name
+		}
+
+		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
+
+		return in
+	})
+}
+
+func upsertDataVolume(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceNameMongoDB {
+			volumeMount := core.VolumeMount{
+				Name:      "data",
+				MountPath: "/data/db",
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+			pvcSpec := mongodb.Spec.Storage
+			if pvcSpec != nil {
+				if len(pvcSpec.AccessModes) == 0 {
+					pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
+						core.ReadWriteOnce,
+					}
+					log.Infof(`Using "%v" as AccessModes in mongodb.Spec.Storage`, core.ReadWriteOnce)
+				}
+
+				volumeClaim := core.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "data",
+					},
+					Spec: *pvcSpec,
+				}
+				if pvcSpec.StorageClassName != nil {
+					volumeClaim.Annotations = map[string]string{
+						"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+					}
+				}
+				volumeClaims := statefulSet.Spec.VolumeClaimTemplates
+				volumeClaims = core_util.UpsertVolumeClaim(volumeClaims, volumeClaim)
+				statefulSet.Spec.VolumeClaimTemplates = volumeClaims
+			} else {
+				volume := core.Volume{
+					Name: "data",
+					VolumeSource: core.VolumeSource{
+						EmptyDir: &core.EmptyDirVolumeSource{},
+					},
+				}
+				volumes := statefulSet.Spec.Template.Spec.Volumes
+				volumes = core_util.UpsertVolume(volumes, volume)
+				statefulSet.Spec.Template.Spec.Volumes = volumes
+				return statefulSet
+			}
+			break
+		}
+	}
+	return statefulSet
+}
+
+func upsertEnv(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
+	envList := []core.EnvVar{
+		{
+			Name:  "MONGO_INITDB_ROOT_USERNAME",
+			Value: "root",
+		},
+		{
+			Name: "MONGO_INITDB_ROOT_PASSWORD",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: mongodb.Spec.DatabaseSecret.SecretName,
+					},
+					Key: ".admin",
+				},
+			},
+		},
+	}
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceNameMongoDB {
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
+			return statefulSet
+		}
+	}
+	return statefulSet
+}
+
+func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *apps.StatefulSet {
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceNameMongoDB {
+			volumeMount := core.VolumeMount{
+				Name:      "initial-script",
+				MountPath: "/docker-entrypoint-initdb.d",
+			}
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.UpsertVolumeMount(
+				container.VolumeMounts,
+				volumeMount,
+			)
+
+			volume := core.Volume{
+				Name:         "initial-script",
+				VolumeSource: script,
+			}
+			statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+				statefulSet.Spec.Template.Spec.Volumes,
+				volume,
+			)
+			return statefulSet
+		}
+	}
+	return statefulSet
+}
+
+func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) error {
+	err := core_util.WaitUntilPodRunningBySelector(
+		c.Client,
+		statefulSet.Namespace,
+		statefulSet.Spec.Selector,
+		int(types.Int32(statefulSet.Spec.Replicas)),
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}

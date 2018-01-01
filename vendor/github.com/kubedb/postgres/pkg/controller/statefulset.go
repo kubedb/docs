@@ -6,10 +6,10 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
+	"github.com/appscode/kutil"
 	app_util "github.com/appscode/kutil/apps/v1beta1"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/pkg/docker"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	apps "k8s.io/api/apps/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -20,10 +20,10 @@ import (
 func (c *Controller) ensureStatefulSet(
 	postgres *api.Postgres,
 	envList []core.EnvVar,
-) error {
+) (kutil.VerbType, error) {
 
 	if err := c.checkStatefulSet(postgres); err != nil {
-		return err
+		return kutil.VerbUnchanged, err
 	}
 
 	statefulSetMeta := metav1.ObjectMeta{
@@ -32,11 +32,11 @@ func (c *Controller) ensureStatefulSet(
 	}
 
 	replicas := postgres.Spec.Replicas
-	if replicas < 0 {
-		replicas = 0
+	if replicas <= 0 {
+		replicas = 1
 	}
 
-	statefulSet, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
+	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in = upsertObjectMeta(in, postgres)
 
 		in.Spec.Replicas = types.Int32P(replicas)
@@ -47,7 +47,7 @@ func (c *Controller) ensureStatefulSet(
 			},
 		}
 
-		in = upsertContainer(in, postgres)
+		in = c.upsertContainer(in, postgres)
 		in = upsertEnv(in, postgres, envList)
 		in = upsertPort(in)
 
@@ -56,7 +56,7 @@ func (c *Controller) ensureStatefulSet(
 		in.Spec.Template.Spec.SchedulerName = postgres.Spec.SchedulerName
 		in.Spec.Template.Spec.Tolerations = postgres.Spec.Tolerations
 
-		in = upsertMonitoringContainer(in, postgres, c.opt.ExporterTag)
+		in = c.upsertMonitoringContainer(in, postgres)
 		in = upsertDatabaseSecret(in, postgres.Spec.DatabaseSecret.SecretName)
 		if postgres.Spec.Archiver != nil {
 			archiverStorage := postgres.Spec.Archiver.Storage
@@ -84,35 +84,48 @@ func (c *Controller) ensureStatefulSet(
 	})
 
 	if err != nil {
-		return err
+		return kutil.VerbUnchanged, err
 	}
 
-	if replicas > 0 {
+	if vt == kutil.VerbCreated || vt == kutil.VerbPatched {
 		// Check StatefulSet Pod status
-		if err := c.CheckStatefulSetPodStatus(statefulSet, durationCheckStatefulSet); err != nil {
+		if err := c.CheckStatefulSetPodStatus(statefulSet); err != nil {
 			c.recorder.Eventf(
 				postgres.ObjectReference(),
 				core.EventTypeWarning,
 				eventer.EventReasonFailedToStart,
-				"Failed to create StatefulSet. Reason: %v",
+				`Failed to be running after StatefulSet %v. Reason: %v`,
+				vt,
 				err,
 			)
-
-			return err
-		} else {
-			c.recorder.Event(
-				postgres.ObjectReference(),
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessfulCreate,
-				"Successfully created StatefulSet",
-			)
+			return kutil.VerbUnchanged, err
 		}
-	}
 
+		c.recorder.Eventf(
+			postgres.ObjectReference(),
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %v StatefulSet",
+			vt,
+		)
+	}
+	return vt, nil
+}
+
+func (c *Controller) CheckStatefulSetPodStatus(statefulSet *apps.StatefulSet) error {
+	err := core_util.WaitUntilPodRunningBySelector(
+		c.Client,
+		statefulSet.Namespace,
+		statefulSet.Spec.Selector,
+		int(types.Int32(statefulSet.Spec.Replicas)),
+	)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
-func (c *Controller) ensureCombinedNode(postgres *api.Postgres) error {
+func (c *Controller) ensureCombinedNode(postgres *api.Postgres) (kutil.VerbType, error) {
 	standby := postgres.Spec.Standby
 	streaming := postgres.Spec.Streaming
 	if standby == "" {
@@ -196,10 +209,10 @@ func upsertObjectMeta(statefulSet *apps.StatefulSet, postgres *api.Postgres) *ap
 	return statefulSet
 }
 
-func upsertContainer(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
+func (c *Controller) upsertContainer(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
 	container := core.Container{
 		Name:            api.ResourceNamePostgres,
-		Image:           fmt.Sprintf("%v:%v-db", docker.ImagePostgres, postgres.Spec.Version),
+		Image:           c.opt.Docker.GetImageWithTag(postgres),
 		ImagePullPolicy: core.PullIfNotPresent,
 		SecurityContext: &core.SecurityContext{
 			Privileged: types.BoolP(false),
@@ -266,7 +279,7 @@ func upsertPort(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 	return statefulSet
 }
 
-func upsertMonitoringContainer(statefulSet *apps.StatefulSet, postgres *api.Postgres, tag string) *apps.StatefulSet {
+func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
 	if postgres.Spec.Monitor != nil &&
 		postgres.Spec.Monitor.Agent == api.AgentCoreosPrometheus &&
 		postgres.Spec.Monitor.Prometheus != nil {
@@ -277,7 +290,7 @@ func upsertMonitoringContainer(statefulSet *apps.StatefulSet, postgres *api.Post
 				fmt.Sprintf("--address=:%d", api.PrometheusExporterPortNumber),
 				"--v=3",
 			},
-			Image:           docker.ImageOperator + ":" + tag,
+			Image:           c.opt.Docker.GetOperatorImageWithTag(postgres),
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
 				{

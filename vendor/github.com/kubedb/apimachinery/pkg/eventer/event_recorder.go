@@ -33,6 +33,7 @@ const (
 	EventReasonResuming                string = "Resuming"
 	EventReasonSnapshotFailed          string = "SnapshotFailed"
 	EventReasonStarting                string = "Starting"
+	EventReasonSuccessful              string = "Successful"
 	EventReasonSuccessfulCreate        string = "SuccessfulCreate"
 	EventReasonSuccessfulPause         string = "SuccessfulPause"
 	EventReasonSuccessfulMonitorAdd    string = "SuccessfulMonitorAdd"

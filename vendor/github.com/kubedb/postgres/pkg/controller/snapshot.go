@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	SnapshotProcess_Backup = "backup"
+	snapshotProcessBackup = "backup"
 )
 
 func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
@@ -29,9 +29,8 @@ func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
 		return err
 	}
 
-	version := fmt.Sprintf("%s-util", postgres.Spec.Version)
-	if err := docker.CheckDockerImageVersion(docker.ImagePostgres, version); err != nil {
-		return fmt.Errorf(`image %v:%v not found`, docker.ImagePostgres, version)
+	if err := docker.CheckDockerImageVersion(c.opt.Docker.GetToolsImage(postgres), string(postgres.Spec.Version)); err != nil {
+		return fmt.Errorf(`image %s not found`, c.opt.Docker.GetToolsImageWithTag(postgres))
 	}
 
 	return amv.ValidateSnapshotSpec(c.Client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)
@@ -51,6 +50,12 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 }
 
 func (c *Controller) WipeOutSnapshot(snapshot *api.Snapshot) error {
+	if snapshot.Spec.Local != nil {
+		local := snapshot.Spec.Local
+		if local.VolumeSource.EmptyDir != nil {
+			return nil
+		}
+	}
 	return c.DeleteSnapshotData(snapshot)
 }
 

@@ -29,16 +29,16 @@ func createCaCertificate(certPath string) (*rsa.PrivateKey, *x509.Certificate, e
 
 	caKey, err := cert.NewPrivateKey()
 	if err != nil {
-		return nil, nil, errors.New("Failed to generate key for CA certificate")
+		return nil, nil, errors.New("failed to generate key for CA certificate")
 	}
 
 	caCert, err := cert.NewSelfSignedCACert(cfg, caKey)
 	if err != nil {
-		return nil, nil, errors.New("Failed to generate CA certificate")
+		return nil, nil, errors.New("failed to generate CA certificate")
 	}
 	caCertByte := cert.EncodeCertPEM(caCert)
 	if !ioutil.WriteString(fmt.Sprintf("%s/ca.pem", certPath), string(caCertByte)) {
-		return nil, nil, errors.New("Failed to write CA certificate")
+		return nil, nil, errors.New("failed to write CA certificate")
 	}
 
 	_, err = exec.Command(
@@ -52,7 +52,7 @@ func createCaCertificate(certPath string) (*rsa.PrivateKey, *x509.Certificate, e
 		"-noprompt",
 	).Output()
 	if err != nil {
-		return nil, nil, fmt.Errorf("Failed to generate truststore.jks")
+		return nil, nil, fmt.Errorf("failed to generate truststore.jks")
 	}
 
 	return caKey, caCert, nil
@@ -80,20 +80,20 @@ func createNodeCertificate(certPath string, elasticsearch *api.Elasticsearch, ca
 
 	nodeKey, err := cert.NewPrivateKey()
 	if err != nil {
-		return errors.New("Failed to generate key for node certificate")
+		return errors.New("failed to generate key for node certificate")
 	}
 	nodeCert, err := NewSignedCert(cfg, nodeKey, caCert, caKey)
 	if err != nil {
-		return errors.New("Failed to sign node certificate")
+		return errors.New("failed to sign node certificate")
 	}
 
 	nodeKeyByte := cert.EncodePrivateKeyPEM(nodeKey)
 	if !ioutil.WriteString(fmt.Sprintf("%s/node-key.pem", certPath), string(nodeKeyByte)) {
-		return errors.New("Failed to write key for node certificate")
+		return errors.New("failed to write key for node certificate")
 	}
 	nodeCertByte := cert.EncodeCertPEM(nodeCert)
 	if !ioutil.WriteString(fmt.Sprintf("%s/node.pem", certPath), string(nodeCertByte)) {
-		return errors.New("Failed to write node certificate")
+		return errors.New("failed to write node certificate")
 	}
 
 	_, err = exec.Command(
@@ -107,7 +107,7 @@ func createNodeCertificate(certPath string, elasticsearch *api.Elasticsearch, ca
 		"-out", fmt.Sprintf("%s/node.pkcs12", certPath),
 	).Output()
 	if err != nil {
-		return errors.New("Failed to generate node.pkcs12")
+		return errors.New("failed to generate node.pkcs12")
 	}
 
 	_, err = exec.Command(
@@ -122,7 +122,7 @@ func createNodeCertificate(certPath string, elasticsearch *api.Elasticsearch, ca
 		"-destkeystore", fmt.Sprintf("%s/keystore.jks", certPath),
 	).Output()
 	if err != nil {
-		return errors.New("Failed to generate keystore.jks")
+		return errors.New("failed to generate keystore.jks")
 	}
 
 	return nil
@@ -145,20 +145,20 @@ func createAdminCertificate(certPath string, caKey *rsa.PrivateKey, caCert *x509
 
 	sgAdminKey, err := cert.NewPrivateKey()
 	if err != nil {
-		return errors.New("Failed to generate key for sgadmin certificate")
+		return errors.New("failed to generate key for sgadmin certificate")
 	}
 	sgAdminCert, err := cert.NewSignedCert(cfg, sgAdminKey, caCert, caKey)
 	if err != nil {
-		return errors.New("Failed to sign sgadmin certificate")
+		return errors.New("failed to sign sgadmin certificate")
 	}
 
 	sgAdminKeyByte := cert.EncodePrivateKeyPEM(sgAdminKey)
 	if !ioutil.WriteString(fmt.Sprintf("%s/sgadmin-key.pem", certPath), string(sgAdminKeyByte)) {
-		return errors.New("Failed to write key for sgadmin certificate")
+		return errors.New("failed to write key for sgadmin certificate")
 	}
 	sgAdminCertByte := cert.EncodeCertPEM(sgAdminCert)
 	if !ioutil.WriteString(fmt.Sprintf("%s/sgadmin.pem", certPath), string(sgAdminCertByte)) {
-		return errors.New("Failed to write sgadmin certificate")
+		return errors.New("failed to write sgadmin certificate")
 	}
 
 	_, err = exec.Command(
@@ -172,7 +172,7 @@ func createAdminCertificate(certPath string, caKey *rsa.PrivateKey, caCert *x509
 		"-out", fmt.Sprintf("%s/sgadmin.pkcs12", certPath),
 	).Output()
 	if err != nil {
-		return errors.New("Failed to generate sgadmin.pkcs12")
+		return errors.New("failed to generate sgadmin.pkcs12")
 	}
 
 	_, err = exec.Command(
@@ -188,7 +188,7 @@ func createAdminCertificate(certPath string, caKey *rsa.PrivateKey, caCert *x509
 	).Output()
 
 	if err != nil {
-		return errors.New("Failed to generate sgadmin-keystore.jks")
+		return errors.New("failed to generate sgadmin.jks")
 	}
 
 	return nil
@@ -206,20 +206,20 @@ func createClientCertificate(certPath string, caKey *rsa.PrivateKey, caCert *x50
 
 	clientKey, err := cert.NewPrivateKey()
 	if err != nil {
-		return errors.New("Failed to generate key for client certificate")
+		return errors.New("failed to generate key for client certificate")
 	}
 	clientCert, err := cert.NewSignedCert(cfg, clientKey, caCert, caKey)
 	if err != nil {
-		return errors.New("Failed to sign client certificate")
+		return errors.New("failed to sign client certificate")
 	}
 
 	clientKeyByte := cert.EncodePrivateKeyPEM(clientKey)
 	if !ioutil.WriteString(fmt.Sprintf("%s/client-key.pem", certPath), string(clientKeyByte)) {
-		return errors.New("Failed to write key for client certificate")
+		return errors.New("failed to write key for client certificate")
 	}
 	clientCertByte := cert.EncodeCertPEM(clientCert)
 	if !ioutil.WriteString(fmt.Sprintf("%s/client.pem", certPath), string(clientCertByte)) {
-		return errors.New("Failed to write client certificate")
+		return errors.New("failed to write client certificate")
 	}
 
 	return nil
@@ -295,6 +295,7 @@ func marshalSANs(dnsNames, emailAddresses []string, ipAddresses []net.IP) (derBy
 	// https://github.com/floragunncom/search-guard-docs/blob/master/tls_certificates_production.md#using-an-oid-value-as-san-entry
 	// https://github.com/floragunncom/search-guard-ssl/blob/a2d1e8e9b25a10ecaf1cb47e48cf04328af7d7fb/example-pki-scripts/gen_node_cert.sh#L55
 	// Adds AltName: OID: 1.2.3.4.5.5
+	// ref: https://stackoverflow.com/a/47917273/244009
 	rawValues = append(rawValues, asn1.RawValue{FullBytes: []byte{0x88, 0x05, 0x2A, 0x03, 0x04, 0x05, 0x05}})
 	return asn1.Marshal(rawValues)
 }

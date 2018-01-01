@@ -3,8 +3,9 @@ package controller
 import (
 	"fmt"
 
-	"github.com/appscode/kutil/tools/monitoring/agents"
-	mona "github.com/appscode/kutil/tools/monitoring/api"
+	"github.com/appscode/kube-mon/agents"
+	mona "github.com/appscode/kube-mon/api"
+	"github.com/appscode/kutil"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 )
 
@@ -22,32 +23,35 @@ func (c *Controller) newMonitorController(mongodb *api.MongoDB) (mona.Agent, err
 	return nil, fmt.Errorf("monitoring controller not found for %v", monitorSpec)
 }
 
-func (c *Controller) addMonitor(mongodb *api.MongoDB) error {
+func (c *Controller) addOrUpdateMonitor(mongodb *api.MongoDB) (kutil.VerbType, error) {
 	agent, err := c.newMonitorController(mongodb)
 	if err != nil {
-		return err
+		return kutil.VerbUnchanged, err
 	}
-	return agent.Add(mongodb.StatsAccessor(), mongodb.Spec.Monitor)
+	return agent.CreateOrUpdate(mongodb.StatsAccessor(), mongodb.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(mongodb *api.MongoDB) error {
+func (c *Controller) deleteMonitor(mongodb *api.MongoDB) (kutil.VerbType, error) {
 	agent, err := c.newMonitorController(mongodb)
 	if err != nil {
-		return err
+		return kutil.VerbUnchanged, err
 	}
-	return agent.Delete(mongodb.StatsAccessor(), mongodb.Spec.Monitor)
+	return agent.Delete(mongodb.StatsAccessor())
 }
 
-func (c *Controller) updateMonitor(oldMongoDB, updatedMongoDB *api.MongoDB) error {
-	var err error
-	var agent mona.Agent
-	if updatedMongoDB.Spec.Monitor == nil {
-		agent, err = c.newMonitorController(oldMongoDB)
+// todo: needs to set on status
+func (c *Controller) manageMonitor(mongodb *api.MongoDB) error {
+	if mongodb.Spec.Monitor != nil {
+		_, err := c.addOrUpdateMonitor(mongodb)
+		if err != nil {
+			return err
+		}
 	} else {
-		agent, err = c.newMonitorController(updatedMongoDB)
+		agent := agents.New(mona.AgentCoreOSPrometheus, c.Client, c.ApiExtKubeClient, c.promClient)
+		_, err := agent.CreateOrUpdate(mongodb.StatsAccessor(), mongodb.Spec.Monitor)
+		if err != nil {
+			return err
+		}
 	}
-	if err != nil {
-		return err
-	}
-	return agent.Update(updatedMongoDB.StatsAccessor(), oldMongoDB.Spec.Monitor, updatedMongoDB.Spec.Monitor)
+	return nil
 }

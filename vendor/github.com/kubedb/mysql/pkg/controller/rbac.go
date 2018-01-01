@@ -1,8 +1,8 @@
 package controller
 
 import (
-	kutilcore "github.com/appscode/kutil/core/v1"
-	kutilrbac "github.com/appscode/kutil/rbac/v1beta1"
+	core_util "github.com/appscode/kutil/core/v1"
+	rbac_util "github.com/appscode/kutil/rbac/v1beta1"
 	"github.com/kubedb/apimachinery/apis/kubedb"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	core "k8s.io/api/core/v1"
@@ -21,9 +21,9 @@ func (c *Controller) deleteRole(mysql *api.MySQL) error {
 	return nil
 }
 
-func (c *Controller) createRole(mysql *api.MySQL) error {
+func (c *Controller) ensureRole(mysql *api.MySQL) error {
 	// Create new Roles
-	_, err := kutilrbac.CreateOrPatchRole(
+	_, _, err := rbac_util.CreateOrPatchRole(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      mysql.OffshootName(),
@@ -38,7 +38,6 @@ func (c *Controller) createRole(mysql *api.MySQL) error {
 					Verbs:         []string{"get"},
 				},
 				{
-					// TODO. Use this if secret is necessary, Otherwise remove it
 					APIGroups:     []string{core.GroupName},
 					Resources:     []string{"secrets"},
 					ResourceNames: []string{mysql.Spec.DatabaseSecret.SecretName},
@@ -63,7 +62,7 @@ func (c *Controller) deleteServiceAccount(mysql *api.MySQL) error {
 
 func (c *Controller) createServiceAccount(mysql *api.MySQL) error {
 	// Create new ServiceAccount
-	_, err := kutilcore.CreateOrPatchServiceAccount(
+	_, _, err := core_util.CreateOrPatchServiceAccount(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      mysql.OffshootName(),
@@ -88,7 +87,7 @@ func (c *Controller) deleteRoleBinding(mysql *api.MySQL) error {
 
 func (c *Controller) createRoleBinding(mysql *api.MySQL) error {
 	// Ensure new RoleBindings
-	_, err := kutilrbac.CreateOrPatchRoleBinding(
+	_, _, err := rbac_util.CreateOrPatchRoleBinding(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      mysql.OffshootName(),
@@ -113,13 +112,9 @@ func (c *Controller) createRoleBinding(mysql *api.MySQL) error {
 	return err
 }
 
-func (c *Controller) createRBACStuff(mysql *api.MySQL) error {
-	// Delete Existing Role
-	if err := c.deleteRole(mysql); err != nil {
-		return err
-	}
+func (c *Controller) ensureRBACStuff(mysql *api.MySQL) error {
 	// Create New Role
-	if err := c.createRole(mysql); err != nil {
+	if err := c.ensureRole(mysql); err != nil {
 		return err
 	}
 
@@ -132,11 +127,8 @@ func (c *Controller) createRBACStuff(mysql *api.MySQL) error {
 
 	// Create New RoleBinding
 	if err := c.createRoleBinding(mysql); err != nil {
-		if !kerr.IsAlreadyExists(err) {
-			return err
-		}
+		return err
 	}
-
 	return nil
 }
 

@@ -1,11 +1,12 @@
 package report
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"gopkg.in/olivere/elastic.v3"
+	"gopkg.in/olivere/elastic.v5"
 )
 
 func newClient(host, port string) (*elastic.Client, error) {
@@ -26,7 +27,7 @@ func getDataFromIndex(client *elastic.Client, indexName string) (*api.Elasticsea
 	}
 
 	// Get analyzer
-	analyzerData, err := client.IndexGetSettings(indexName).Do()
+	analyzerData, err := client.IndexGetSettings(indexName).Do(context.Background())
 	if err != nil {
 		return &api.ElasticsearchSummary{}, err
 	}
@@ -41,7 +42,7 @@ func getDataFromIndex(client *elastic.Client, indexName string) (*api.Elasticsea
 	}
 
 	// get mappings
-	mappingData, err := client.GetMapping().Index(indexName).Do()
+	mappingData, err := client.GetMapping().Index(indexName).Do(context.Background())
 	if err != nil {
 		return &api.ElasticsearchSummary{}, err
 	}
@@ -60,7 +61,7 @@ func getDataFromIndex(client *elastic.Client, indexName string) (*api.Elasticsea
 		return &api.ElasticsearchSummary{}, err
 	}
 	for key := range esType.Mappings {
-		counts, err := client.Count(indexName).Type(key).Do()
+		counts, err := client.Count(indexName).Type(key).Do(context.Background())
 		if err != nil {
 			return &api.ElasticsearchSummary{}, err
 		}

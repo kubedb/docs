@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/log"
+	apps_util "github.com/appscode/kutil/apps/v1beta1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,14 +14,15 @@ import (
 )
 
 func (c *Controller) Exists(om *metav1.ObjectMeta) (bool, error) {
-	if _, err := c.ExtClient.Postgreses(om.Namespace).Get(om.Name, metav1.GetOptions{}); err != nil {
+	postgres, err := c.ExtClient.Postgreses(om.Namespace).Get(om.Name, metav1.GetOptions{})
+	if err != nil {
 		if !kerr.IsNotFound(err) {
 			return false, err
 		}
 		return false, nil
 	}
 
-	return true, nil
+	return postgres.DeletionTimestamp == nil, nil
 }
 
 func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
@@ -31,17 +33,20 @@ func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
 		},
 	}
 	// Delete Service
-	if err := c.DeleteService(postgres.OffshootName(), dormantDb.Namespace); err != nil {
+	if err := c.deleteService(postgres.OffshootName(), dormantDb.Namespace); err != nil {
 		log.Errorln(err)
 		return err
 	}
-	if err := c.DeleteService(postgres.PrimaryName(), dormantDb.Namespace); err != nil {
+	if err := c.deleteService(postgres.PrimaryName(), dormantDb.Namespace); err != nil {
 		log.Errorln(err)
 		return err
 	}
 
-	if err := c.DeleteStatefulSet(dormantDb.OffshootName(), dormantDb.Namespace); err != nil {
-		log.Errorln(err)
+	err := apps_util.DeleteStatefulSet(c.Client, metav1.ObjectMeta{
+		Name:      dormantDb.OffshootName(),
+		Namespace: dormantDb.Namespace,
+	})
+	if err != nil {
 		return err
 	}
 
@@ -67,79 +72,18 @@ func (c *Controller) WipeOutDatabase(dormantDb *api.DormantDatabase) error {
 	labelSelector := labels.SelectorFromSet(labelMap)
 
 	if err := c.DeleteSnapshots(dormantDb.Namespace, labelSelector); err != nil {
-		log.Errorln(err)
 		return err
 	}
 
 	if err := c.DeletePersistentVolumeClaims(dormantDb.Namespace, labelSelector); err != nil {
-		log.Errorln(err)
 		return err
 	}
 
 	if dormantDb.Spec.Origin.Spec.Postgres.DatabaseSecret != nil {
-		if err := c.deleteSecret(dormantDb); err != nil {
-			return err
-		}
-
-	}
-
-	return nil
-}
-
-func (c *Controller) deleteSecret(dormantDb *api.DormantDatabase) error {
-
-	var secretFound bool = false
-	dormantDatabaseSecret := dormantDb.Spec.Origin.Spec.Postgres.DatabaseSecret
-
-	postgresList, err := c.ExtClient.Postgreses(dormantDb.Namespace).List(metav1.ListOptions{})
-	if err != nil {
-		return err
-	}
-
-	for _, postgres := range postgresList.Items {
-		databaseSecret := postgres.Spec.DatabaseSecret
-		if databaseSecret != nil {
-			if databaseSecret.SecretName == dormantDatabaseSecret.SecretName {
-				secretFound = true
-				break
-			}
-		}
-	}
-
-	if !secretFound {
-		labelMap := map[string]string{
-			api.LabelDatabaseKind: api.ResourceKindPostgres,
-		}
-		dormantDatabaseList, err := c.ExtClient.DormantDatabases(dormantDb.Namespace).List(
-			metav1.ListOptions{
-				LabelSelector: labels.SelectorFromSet(labelMap).String(),
-			},
-		)
-		if err != nil {
-			return err
-		}
-
-		for _, ddb := range dormantDatabaseList.Items {
-			if ddb.Name == dormantDb.Name {
-				continue
-			}
-
-			databaseSecret := ddb.Spec.Origin.Spec.Postgres.DatabaseSecret
-			if databaseSecret != nil {
-				if databaseSecret.SecretName == dormantDatabaseSecret.SecretName {
-					secretFound = true
-					break
-				}
-			}
-		}
-	}
-
-	if !secretFound {
-		if err := c.DeleteSecret(dormantDatabaseSecret.SecretName, dormantDb.Namespace); err != nil {
+		if err := c.deleteSecret(dormantDb, dormantDb.Spec.Origin.Spec.Postgres.DatabaseSecret); err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
@@ -191,7 +135,7 @@ func (c *Controller) createDormantDatabase(postgres *api.Postgres) (*api.Dormant
 					Annotations: postgres.Annotations,
 				},
 				Spec: api.OriginSpec{
-					Postgres: &postgres.Spec,
+					Postgres: &(postgres.Spec),
 				},
 			},
 		},

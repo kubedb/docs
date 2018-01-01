@@ -1,13 +1,9 @@
 package controller
 
 import (
-	"errors"
-	"fmt"
 	"time"
 
 	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
-	apps_util "github.com/appscode/kutil/apps/v1beta1"
 	"github.com/graymeta/stow"
 	_ "github.com/graymeta/stow/azure"
 	_ "github.com/graymeta/stow/google"
@@ -15,55 +11,18 @@ import (
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"github.com/kubedb/apimachinery/pkg/storage"
-	apps "k8s.io/api/apps/v1beta1"
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 )
 
-func (c *Controller) CheckStatefulSetPodStatus(statefulSet *apps.StatefulSet, checkDuration time.Duration) error {
-	podName := fmt.Sprintf("%v-%v", statefulSet.Name, 0)
-
-	podReady := false
-	then := time.Now()
-	now := time.Now()
-	for now.Sub(then) < checkDuration {
-		pod, err := c.Client.CoreV1().Pods(statefulSet.Namespace).Get(podName, metav1.GetOptions{})
-		if err != nil {
-			if kerr.IsNotFound(err) {
-				_, err := c.Client.AppsV1beta1().StatefulSets(statefulSet.Namespace).Get(statefulSet.Name, metav1.GetOptions{})
-				if kerr.IsNotFound(err) {
-					break
-				}
-
-				time.Sleep(sleepDuration)
-				now = time.Now()
-				continue
-			} else {
-				return err
-			}
-		}
-		log.Debugf("Pod Phase: %v", pod.Status.Phase)
-
-		// If job is success
-		if pod.Status.Phase == core.PodRunning {
-			podReady = true
-			break
-		}
-
-		time.Sleep(sleepDuration)
-		now = time.Now()
-	}
-	if !podReady {
-		return errors.New("Database fails to be Ready")
-	}
-	return nil
-}
+const (
+	sleepDuration = time.Second * 10
+)
 
 func (c *Controller) DeletePersistentVolumeClaims(namespace string, selector labels.Selector) error {
 	pvcList, err := c.Client.CoreV1().PersistentVolumeClaims(namespace).List(
@@ -190,7 +149,7 @@ func (c *Controller) CheckDatabaseRestoreJob(
 		return false
 	}
 
-	deleteJobResources(c.Client, recorder, runtimeObj, job)
+	c.DeleteJobResources(recorder, runtimeObj, job)
 
 	err = c.Client.CoreV1().Secrets(job.Namespace).Delete(snapshot.OSMSecretName(), &metav1.DeleteOptions{})
 	if err != nil && !kerr.IsNotFound(err) {
@@ -236,88 +195,12 @@ func (c *Controller) CreateGoverningService(name, namespace string) error {
 	return err
 }
 
-func (c *Controller) DeleteService(name, namespace string) error {
-	service, err := c.Client.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			return nil
-		} else {
-			return err
-		}
-	}
-
-	if service.Spec.Selector[api.LabelDatabaseName] != name {
-		return nil
-	}
-
-	return c.Client.CoreV1().Services(namespace).Delete(name, nil)
-}
-
-func (c *Controller) DeleteStatefulSet(name, namespace string) error {
-	statefulSet, err := c.Client.AppsV1beta1().StatefulSets(namespace).Get(name, metav1.GetOptions{})
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			return nil
-		} else {
-			return err
-		}
-	}
-
-	// Update StatefulSet
-	_, err = apps_util.TryPatchStatefulSet(c.Client, statefulSet.ObjectMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
-		in.Spec.Replicas = types.Int32P(0)
-		return in
-	})
-	if err != nil {
-		return err
-	}
-
-	var checkSuccess bool = false
-	then := time.Now()
-	now := time.Now()
-	for now.Sub(then) < time.Minute*10 {
-		podList, err := c.Client.CoreV1().Pods(metav1.NamespaceAll).List(metav1.ListOptions{
-			LabelSelector: labels.Set(statefulSet.Spec.Selector.MatchLabels).AsSelector().String(),
-		})
-		if err != nil {
-			return err
-		}
-		if len(podList.Items) == 0 {
-			checkSuccess = true
-			break
-		}
-
-		time.Sleep(sleepDuration)
-		now = time.Now()
-	}
-
-	if !checkSuccess {
-		return errors.New("Fail to delete StatefulSet Pods")
-	}
-
-	// Delete StatefulSet
-	return c.Client.AppsV1beta1().StatefulSets(statefulSet.Namespace).Delete(statefulSet.Name, nil)
-}
-
-func (c *Controller) DeleteSecret(name, namespace string) error {
-	if _, err := c.Client.CoreV1().Secrets(namespace).Get(name, metav1.GetOptions{}); err != nil {
-		if kerr.IsNotFound(err) {
-			return nil
-		} else {
-			return err
-		}
-	}
-
-	return c.Client.CoreV1().Secrets(namespace).Delete(name, nil)
-}
-
-func deleteJobResources(
-	client kubernetes.Interface,
+func (c *Controller) DeleteJobResources(
 	recorder record.EventRecorder,
 	runtimeObj runtime.Object,
 	job *batch.Job,
 ) {
-	if err := client.BatchV1().Jobs(job.Namespace).Delete(job.Name, nil); err != nil && !kerr.IsNotFound(err) {
+	if err := c.Client.BatchV1().Jobs(job.Namespace).Delete(job.Name, nil); err != nil && !kerr.IsNotFound(err) {
 		recorder.Eventf(
 			api.ObjectReferenceFor(runtimeObj),
 			core.EventTypeWarning,
@@ -332,7 +215,7 @@ func deleteJobResources(
 	if err != nil {
 		log.Errorln(err)
 	} else {
-		err = client.CoreV1().Pods(job.Namespace).DeleteCollection(&metav1.DeleteOptions{}, metav1.ListOptions{
+		err = c.Client.CoreV1().Pods(job.Namespace).DeleteCollection(&metav1.DeleteOptions{}, metav1.ListOptions{
 			LabelSelector: r.String(),
 		})
 		if err != nil {
@@ -350,7 +233,7 @@ func deleteJobResources(
 	for _, volume := range job.Spec.Template.Spec.Volumes {
 		claim := volume.PersistentVolumeClaim
 		if claim != nil {
-			err := client.CoreV1().PersistentVolumeClaims(job.Namespace).Delete(claim.ClaimName, nil)
+			err := c.Client.CoreV1().PersistentVolumeClaims(job.Namespace).Delete(claim.ClaimName, nil)
 			if err != nil && !kerr.IsNotFound(err) {
 				recorder.Eventf(
 					api.ObjectReferenceFor(runtimeObj),

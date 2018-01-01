@@ -5,17 +5,12 @@ import (
 
 	"github.com/appscode/go/log"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/pkg/storage"
+	"github.com/kubedb/apimachinery/pkg/docker"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-)
-
-const (
-	SnapshotProcess_Backup  = "backup"
-	snapshotType_DumpBackup = "dump-backup"
 )
 
 func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
@@ -25,130 +20,37 @@ func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
 		return fmt.Errorf(`object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
 	}
 
-	if _, err := c.ExtClient.MongoDBs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
+	mysql, err := c.ExtClient.MongoDBs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
+	if err != nil {
 		return err
+	}
+
+	if err := docker.CheckDockerImageVersion(c.opt.Docker.GetToolsImage(mysql), string(mysql.Spec.Version)); err != nil {
+		return fmt.Errorf(`image %s not found`, c.opt.Docker.GetToolsImageWithTag(mysql))
 	}
 
 	return amv.ValidateSnapshotSpec(c.Client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)
 }
 
 func (c *Controller) GetDatabase(snapshot *api.Snapshot) (runtime.Object, error) {
-	mongodb, err := c.ExtClient.MongoDBs(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
+	mysql, err := c.ExtClient.MongoDBs(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
-
-	return mongodb, nil
+	return mysql, nil
 }
 
 func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) {
-	databaseName := snapshot.Spec.DatabaseName
-	jobName := snapshot.OffshootName()
-	jobLabel := map[string]string{
-		api.LabelDatabaseName: databaseName,
-		api.LabelJobType:      SnapshotProcess_Backup,
-	}
-	backupSpec := snapshot.Spec.SnapshotStorageSpec
-	bucket, err := backupSpec.Container()
-	if err != nil {
-		return nil, err
-	}
-	mongodb, err := c.ExtClient.MongoDBs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	// Get PersistentVolume object for Backup Util pod.
-	persistentVolume, err := c.getVolumeForSnapshot(mongodb.Spec.Storage, jobName, snapshot.Namespace)
-	if err != nil {
-		return nil, err
-	}
-
-	// Folder name inside Cloud bucket where backup will be uploaded
-	folderName, _ := snapshot.Location()
-
-	job := &batch.Job{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   jobName,
-			Labels: jobLabel,
-		},
-		Spec: batch.JobSpec{
-			Template: core.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: jobLabel,
-				},
-				Spec: core.PodSpec{
-					Containers: []core.Container{
-						{
-							Name: SnapshotProcess_Backup,
-							//Image: fmt.Sprintf("%s:%s-util", docker.ImageMongoDB, mongodb.Spec.Version), //todo
-							Image: fmt.Sprintf("kubedb/mongodb:3.4-util"),
-							Args: []string{
-								fmt.Sprintf(`--process=%s`, SnapshotProcess_Backup),
-								fmt.Sprintf(`--host=%s`, databaseName),
-								fmt.Sprintf(`--bucket=%s`, bucket),
-								fmt.Sprintf(`--folder=%s`, folderName),
-								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
-							},
-							Resources: snapshot.Spec.Resources,
-							VolumeMounts: []core.VolumeMount{
-								{
-									Name:      "secret",
-									MountPath: "/srv/" + api.ResourceNameMongoDB + "/secrets",
-								},
-								{
-									Name:      persistentVolume.Name,
-									MountPath: "/var/" + snapshotType_DumpBackup + "/",
-								},
-								{
-									Name:      "osmconfig",
-									ReadOnly:  true,
-									MountPath: storage.SecretMountPath,
-								},
-							},
-						},
-					},
-					Volumes: []core.Volume{
-						{
-							Name: "secret",
-							VolumeSource: core.VolumeSource{
-								Secret: &core.SecretVolumeSource{
-									SecretName: mongodb.Spec.DatabaseSecret.SecretName,
-								},
-							},
-						},
-						{
-							Name:         persistentVolume.Name,
-							VolumeSource: persistentVolume.VolumeSource,
-						},
-						{
-							Name: "osmconfig",
-							VolumeSource: core.VolumeSource{
-								Secret: &core.SecretVolumeSource{
-									SecretName: snapshot.OSMSecretName(),
-								},
-							},
-						},
-					},
-					RestartPolicy: core.RestartPolicyNever,
-				},
-			},
-		},
-	}
-	if snapshot.Spec.SnapshotStorageSpec.Local != nil {
-		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, core.VolumeMount{
-			Name:      "local",
-			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.Path,
-		})
-		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, core.Volume{
-			Name:         "local",
-			VolumeSource: snapshot.Spec.SnapshotStorageSpec.Local.VolumeSource,
-		})
-	}
-	return job, nil
+	return c.getSnapshotterJob(snapshot)
 }
 
 func (c *Controller) WipeOutSnapshot(snapshot *api.Snapshot) error {
+	if snapshot.Spec.Local != nil {
+		local := snapshot.Spec.Local
+		if local.VolumeSource.EmptyDir != nil {
+			return nil
+		}
+	}
 	return c.DeleteSnapshotData(snapshot)
 }
 
@@ -168,11 +70,13 @@ func (c *Controller) getVolumeForSnapshot(pvcSpec *core.PersistentVolumeClaimSpe
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      jobName,
 				Namespace: namespace,
-				Annotations: map[string]string{
-					"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
-				},
 			},
 			Spec: *pvcSpec,
+		}
+		if pvcSpec.StorageClassName != nil {
+			claim.Annotations = map[string]string{
+				"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+			}
 		}
 
 		if _, err := c.Client.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(claim); err != nil {

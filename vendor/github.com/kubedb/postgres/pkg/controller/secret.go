@@ -10,6 +10,7 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 )
 
 func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
@@ -19,12 +20,7 @@ func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
 		if databaseSecretVolume, err = c.createDatabaseSecret(postgres); err != nil {
 			return err
 		}
-		pg, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
-			// This will ignore processing all kind of Update while creating
-			if in.Annotations == nil {
-				in.Annotations = make(map[string]string)
-			}
-			in.Annotations["kubedb.com/ignore"] = "set"
+		pg, _, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
 			in.Spec.DatabaseSecret = databaseSecretVolume
 			return in
 		})
@@ -32,7 +28,7 @@ func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
 			c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 			return err
 		}
-		*postgres = *pg
+		postgres.Spec.DatabaseSecret = pg.Spec.DatabaseSecret
 	}
 	return nil
 }
@@ -93,4 +89,58 @@ func (c *Controller) createDatabaseSecret(postgres *api.Postgres) (*core.SecretV
 	return &core.SecretVolumeSource{
 		SecretName: secret.Name,
 	}, nil
+}
+
+func (c *Controller) deleteSecret(dormantDb *api.DormantDatabase, secretVolume *core.SecretVolumeSource) error {
+	secretFound := false
+	postgresList, err := c.ExtClient.Postgreses(dormantDb.Namespace).List(metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, postgres := range postgresList.Items {
+		databaseSecret := postgres.Spec.DatabaseSecret
+		if databaseSecret != nil {
+			if databaseSecret.SecretName == secretVolume.SecretName {
+				secretFound = true
+				break
+			}
+		}
+	}
+
+	if !secretFound {
+		labelMap := map[string]string{
+			api.LabelDatabaseKind: api.ResourceKindPostgres,
+		}
+		dormantDatabaseList, err := c.ExtClient.DormantDatabases(dormantDb.Namespace).List(
+			metav1.ListOptions{
+				LabelSelector: labels.SelectorFromSet(labelMap).String(),
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		for _, ddb := range dormantDatabaseList.Items {
+			if ddb.Name == dormantDb.Name {
+				continue
+			}
+
+			databaseSecret := ddb.Spec.Origin.Spec.Postgres.DatabaseSecret
+			if databaseSecret != nil {
+				if databaseSecret.SecretName == secretVolume.SecretName {
+					secretFound = true
+					break
+				}
+			}
+		}
+	}
+
+	if !secretFound {
+		if err := c.Client.CoreV1().Secrets(dormantDb.Namespace).Delete(secretVolume.SecretName, nil); !kerr.IsNotFound(err) {
+			return err
+		}
+	}
+
+	return nil
 }

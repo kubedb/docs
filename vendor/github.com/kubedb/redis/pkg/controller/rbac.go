@@ -1,8 +1,8 @@
 package controller
 
 import (
-	kutilcore "github.com/appscode/kutil/core/v1"
-	kutilrbac "github.com/appscode/kutil/rbac/v1beta1"
+	core_util "github.com/appscode/kutil/core/v1"
+	rbac_util "github.com/appscode/kutil/rbac/v1beta1"
 	"github.com/kubedb/apimachinery/apis/kubedb"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	core "k8s.io/api/core/v1"
@@ -21,9 +21,9 @@ func (c *Controller) deleteRole(redis *api.Redis) error {
 	return nil
 }
 
-func (c *Controller) createRole(redis *api.Redis) error {
+func (c *Controller) ensureRole(redis *api.Redis) error {
 	// Create new Roles
-	_, err := kutilrbac.CreateOrPatchRole(
+	_, _, err := rbac_util.CreateOrPatchRole(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      redis.OffshootName(),
@@ -54,9 +54,9 @@ func (c *Controller) deleteServiceAccount(redis *api.Redis) error {
 	return nil
 }
 
-func (c *Controller) createServiceAccount(redis *api.Redis) error {
+func (c *Controller) ensureServiceAccount(redis *api.Redis) error {
 	// Create new ServiceAccount
-	_, err := kutilcore.CreateOrPatchServiceAccount(
+	_, _, err := core_util.CreateOrPatchServiceAccount(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      redis.OffshootName(),
@@ -79,9 +79,9 @@ func (c *Controller) deleteRoleBinding(redis *api.Redis) error {
 	return nil
 }
 
-func (c *Controller) createRoleBinding(redis *api.Redis) error {
+func (c *Controller) ensureRoleBinding(redis *api.Redis) error {
 	// Ensure new RoleBindings
-	_, err := kutilrbac.CreateOrPatchRoleBinding(
+	_, _, err := rbac_util.CreateOrPatchRoleBinding(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      redis.OffshootName(),
@@ -106,28 +106,20 @@ func (c *Controller) createRoleBinding(redis *api.Redis) error {
 	return err
 }
 
-func (c *Controller) createRBACStuff(redis *api.Redis) error {
-	// Delete Existing Role
-	if err := c.deleteRole(redis); err != nil {
-		return err
-	}
+func (c *Controller) ensureRBACStuff(redis *api.Redis) error {
 	// Create New Role
-	if err := c.createRole(redis); err != nil {
+	if err := c.ensureRole(redis); err != nil {
 		return err
 	}
 
 	// Create New ServiceAccount
-	if err := c.createServiceAccount(redis); err != nil {
-		if !kerr.IsAlreadyExists(err) {
-			return err
-		}
+	if err := c.ensureServiceAccount(redis); err != nil {
+		return err
 	}
 
 	// Create New RoleBinding
-	if err := c.createRoleBinding(redis); err != nil {
-		if !kerr.IsAlreadyExists(err) {
-			return err
-		}
+	if err := c.ensureRoleBinding(redis); err != nil {
+		return err
 	}
 
 	return nil

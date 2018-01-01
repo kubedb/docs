@@ -3,8 +3,9 @@ package controller
 import (
 	"fmt"
 
-	"github.com/appscode/kutil/tools/monitoring/agents"
-	mona "github.com/appscode/kutil/tools/monitoring/api"
+	"github.com/appscode/kube-mon/agents"
+	mona "github.com/appscode/kube-mon/api"
+	"github.com/appscode/kutil"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 )
 
@@ -22,32 +23,35 @@ func (c *Controller) newMonitorController(postgres *api.Postgres) (mona.Agent, e
 	return nil, fmt.Errorf("monitoring controller not found for %v", monitorSpec)
 }
 
-func (c *Controller) addMonitor(postgres *api.Postgres) error {
+func (c *Controller) addOrUpdateMonitor(postgres *api.Postgres) (kutil.VerbType, error) {
 	agent, err := c.newMonitorController(postgres)
 	if err != nil {
-		return err
+		return kutil.VerbUnchanged, err
 	}
-	return agent.Add(postgres.StatsAccessor(), postgres.Spec.Monitor)
+	return agent.CreateOrUpdate(postgres.StatsAccessor(), postgres.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(postgres *api.Postgres) error {
+func (c *Controller) deleteMonitor(postgres *api.Postgres) (kutil.VerbType, error) {
 	agent, err := c.newMonitorController(postgres)
 	if err != nil {
-		return err
+		return kutil.VerbUnchanged, err
 	}
-	return agent.Delete(postgres.StatsAccessor(), postgres.Spec.Monitor)
+	return agent.Delete(postgres.StatsAccessor())
 }
 
-func (c *Controller) updateMonitor(oldPostgres, updatedPostgres *api.Postgres) error {
-	var err error
-	var agent mona.Agent
-	if updatedPostgres.Spec.Monitor == nil {
-		agent, err = c.newMonitorController(oldPostgres)
+// todo: needs to set on status
+func (c *Controller) manageMonitor(postgres *api.Postgres) error {
+	if postgres.Spec.Monitor != nil {
+		_, err := c.addOrUpdateMonitor(postgres)
+		if err != nil {
+			return err
+		}
 	} else {
-		agent, err = c.newMonitorController(updatedPostgres)
+		agent := agents.New(mona.AgentCoreOSPrometheus, c.Client, c.ApiExtKubeClient, c.promClient)
+		_, err := agent.CreateOrUpdate(postgres.StatsAccessor(), postgres.Spec.Monitor)
+		if err != nil {
+			return err
+		}
 	}
-	if err != nil {
-		return err
-	}
-	return agent.Update(updatedPostgres.StatsAccessor(), oldPostgres.Spec.Monitor, updatedPostgres.Spec.Monitor)
+	return nil
 }
