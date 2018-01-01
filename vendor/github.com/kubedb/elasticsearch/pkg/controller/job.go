@@ -2,11 +2,9 @@ package controller
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/appscode/go/crypto/rand"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/pkg/docker"
 	"github.com/kubedb/apimachinery/pkg/storage"
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
@@ -14,15 +12,8 @@ import (
 )
 
 const (
-	// Duration in Minute
-	// Check whether pod under StatefulSet is running or not
-	// Continue checking for this duration until failure
-	durationCheckStatefulSet = time.Minute * 30
-)
-
-const (
-	SnapshotProcess_Restore  = "restore"
-	snapshotType_DumpRestore = "dump-restore"
+	snapshotProcessRestore  = "restore"
+	snapshotTypeDumpRestore = "dump-restore"
 )
 
 func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot *api.Snapshot) (*batch.Job, error) {
@@ -30,7 +21,7 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 	jobName := rand.WithUniqSuffix(snapshot.OffshootName())
 	jobLabel := map[string]string{
 		api.LabelDatabaseName: databaseName,
-		api.LabelJobType:      SnapshotProcess_Restore,
+		api.LabelJobType:      snapshotProcessRestore,
 	}
 	backupSpec := snapshot.Spec.SnapshotStorageSpec
 	bucket, err := backupSpec.Container()
@@ -60,11 +51,11 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 				Spec: core.PodSpec{
 					Containers: []core.Container{
 						{
-							Name:            SnapshotProcess_Restore,
-							Image:           docker.ImageElasticdump + ":" + c.opt.ElasticDumpTag,
-							ImagePullPolicy: core.PullAlways,
+							Name:            snapshotProcessRestore,
+							Image:           c.opt.Docker.GetToolsImageWithTag(elasticsearch),
+							ImagePullPolicy: core.PullIfNotPresent,
 							Args: []string{
-								fmt.Sprintf(`--process=%s`, SnapshotProcess_Restore),
+								fmt.Sprintf(`--process=%s`, snapshotProcessRestore),
 								fmt.Sprintf(`--host=%s`, databaseName),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
@@ -91,7 +82,7 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 							VolumeMounts: []core.VolumeMount{
 								{
 									Name:      persistentVolume.Name,
-									MountPath: "/var/" + snapshotType_DumpRestore + "/",
+									MountPath: "/var/" + snapshotTypeDumpRestore + "/",
 								},
 								{
 									Name:      "osmconfig",
@@ -150,7 +141,8 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 	if snapshot.Spec.SnapshotStorageSpec.Local != nil {
 		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, core.VolumeMount{
 			Name:      "local",
-			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.Path,
+			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.MountPath,
+			SubPath:   snapshot.Spec.SnapshotStorageSpec.Local.SubPath,
 		})
 		volume := core.Volume{
 			Name:         "local",
@@ -166,7 +158,7 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 	jobName := rand.WithUniqSuffix(snapshot.OffshootName())
 	jobLabel := map[string]string{
 		api.LabelDatabaseName: databaseName,
-		api.LabelJobType:      SnapshotProcess_Backup,
+		api.LabelJobType:      snapshotProcessBackup,
 	}
 	backupSpec := snapshot.Spec.SnapshotStorageSpec
 	bucket, err := backupSpec.Container()
@@ -199,10 +191,10 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 				Spec: core.PodSpec{
 					Containers: []core.Container{
 						{
-							Name:  SnapshotProcess_Backup,
-							Image: docker.ImageElasticdump + ":" + c.opt.ElasticDumpTag,
+							Name:  snapshotProcessBackup,
+							Image: c.opt.Docker.GetToolsImageWithTag(elasticsearch),
 							Args: []string{
-								fmt.Sprintf(`--process=%s`, SnapshotProcess_Backup),
+								fmt.Sprintf(`--process=%s`, snapshotProcessBackup),
 								fmt.Sprintf(`--host=%s`, databaseName),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
@@ -229,7 +221,7 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 							VolumeMounts: []core.VolumeMount{
 								{
 									Name:      persistentVolume.Name,
-									MountPath: "/var/" + snapshotType_DumpBackup + "/",
+									MountPath: "/var/" + snapshotTypeDumpBackup + "/",
 								},
 								{
 									Name:      "osmconfig",
@@ -289,7 +281,8 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 	if snapshot.Spec.SnapshotStorageSpec.Local != nil {
 		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, core.VolumeMount{
 			Name:      "local",
-			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.Path,
+			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.MountPath,
+			SubPath:   snapshot.Spec.SnapshotStorageSpec.Local.SubPath,
 		})
 		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, core.Volume{
 			Name:         "local",

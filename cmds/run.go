@@ -12,15 +12,20 @@ import (
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	tcs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
-	amc "github.com/kubedb/apimachinery/pkg/controller"
-	"github.com/kubedb/apimachinery/pkg/docker"
+	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
 	"github.com/kubedb/apimachinery/pkg/migrator"
 	esCtrl "github.com/kubedb/elasticsearch/pkg/controller"
+	esDocker "github.com/kubedb/elasticsearch/pkg/docker"
 	memCtrl "github.com/kubedb/memcached/pkg/controller"
+	memDocker "github.com/kubedb/memcached/pkg/docker"
 	mgoCtrl "github.com/kubedb/mongodb/pkg/controller"
+	mgoDocker "github.com/kubedb/mongodb/pkg/docker"
 	msCtrl "github.com/kubedb/mysql/pkg/controller"
+	msDocker "github.com/kubedb/mysql/pkg/docker"
 	pgCtrl "github.com/kubedb/postgres/pkg/controller"
+	pgDocker "github.com/kubedb/postgres/pkg/docker"
 	rdCtrl "github.com/kubedb/redis/pkg/controller"
+	rdDocker "github.com/kubedb/redis/pkg/docker"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -43,21 +48,15 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&masterURL, "master", masterURL, "The address of the Kubernetes API server (overrides any value in kubeconfig)")
 	cmd.Flags().StringVar(&kubeconfigPath, "kubeconfig", kubeconfigPath, "Path to kubeconfig file with authorization information (the master location is set by the master flag).")
 	cmd.Flags().StringVar(&governingService, "governing-service", governingService, "Governing service for database statefulset")
+	cmd.Flags().StringVar(&registry, "docker-registry", registry, "User provided docker repository")
 	cmd.Flags().StringVar(&exporterTag, "exporter-tag", exporterTag, "Tag of kubedb/operator used as exporter")
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
 	cmd.Flags().BoolVar(&enableRbac, "rbac", enableRbac, "Enable RBAC for database workloads")
-	// elasticdump flags
-	cmd.Flags().StringVar(&elasticDumpTag, "elasticdump.tag", elasticDumpTag, "Tag of elasticdump")
 
 	return cmd
 }
 
 func run() {
-	// Check elasticdump docker image tag
-	if err := docker.CheckDockerImageVersion(docker.ImageElasticdump, elasticDumpTag); err != nil {
-		log.Fatalf(`Image %v:%v not found.`, docker.ImageElasticdump, elasticDumpTag)
-	}
-
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
 		log.Fatalf("Could not get Kubernetes config: %s", err)
@@ -77,7 +76,7 @@ func run() {
 		log.Fatalln(err)
 	}
 
-	cronController := amc.NewCronController(kubeClient, dbClient)
+	cronController := snapc.NewCronController(kubeClient, dbClient)
 	// Start Cron
 	cronController.StartCron()
 	// Stop Cron
@@ -105,50 +104,67 @@ func run() {
 
 	// Postgres controller
 	pgCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, pgCtrl.Options{
+		Docker: pgDocker.Docker{
+			Registry:    registry,
+			ExporterTag: exporterTag,
+		},
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
-		ExporterTag:       exporterTag,
 		EnableRbac:        enableRbac,
 	}).Run()
 
 	// Elasticsearch controller
 	esCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
+		Docker: esDocker.Docker{
+			Registry:    registry,
+			ExporterTag: exporterTag,
+		},
 		GoverningService:  governingService,
-		ExporterTag:       exporterTag,
-		ElasticDumpTag:    elasticDumpTag,
 		OperatorNamespace: operatorNamespace,
 		EnableRbac:        enableRbac,
 	}).Run()
 
 	// MySQL controller
 	msCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, msCtrl.Options{
+		Docker: msDocker.Docker{
+			Registry:    registry,
+			ExporterTag: exporterTag,
+		},
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
-		ExporterTag:       exporterTag,
 		EnableRbac:        enableRbac,
 	}).Run()
 
 	// MongoDB controller
 	mgoCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, mgoCtrl.Options{
+		Docker: mgoDocker.Docker{
+			Registry:    registry,
+			ExporterTag: exporterTag,
+		},
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
-		ExporterTag:       exporterTag,
 		EnableRbac:        enableRbac,
 	}).Run()
 
 	// Redis controller
-	rdCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, rdCtrl.Options{
+	rdCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, rdCtrl.Options{
+		Docker: rdDocker.Docker{
+			Registry:    registry,
+			ExporterTag: exporterTag,
+		},
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
-		ExporterTag:       exporterTag,
 		EnableRbac:        enableRbac,
 	}).Run()
 
 	// Memcached controller
-	memCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, memCtrl.Options{
+	memCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, memCtrl.Options{
+		Docker: memDocker.Docker{
+			Registry:    registry,
+			ExporterTag: exporterTag,
+		},
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
-		ExporterTag:       exporterTag,
 		EnableRbac:        enableRbac,
 	}).Run()
 

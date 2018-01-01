@@ -13,6 +13,7 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/util/cert"
 )
 
@@ -23,12 +24,7 @@ func (c *Controller) ensureCertSecret(elasticsearch *api.Elasticsearch) error {
 		if certSecretVolumeSource, err = c.createCertSecret(elasticsearch); err != nil {
 			return err
 		}
-		es, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
-			// This will ignore processing all kind of Update while creating
-			if in.Annotations == nil {
-				in.Annotations = make(map[string]string)
-			}
-			in.Annotations["kubedb.com/ignore"] = "set"
+		es, _, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
 			in.Spec.CertificateSecret = certSecretVolumeSource
 			return in
 		})
@@ -36,7 +32,7 @@ func (c *Controller) ensureCertSecret(elasticsearch *api.Elasticsearch) error {
 			c.recorder.Eventf(elasticsearch.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 			return err
 		}
-		*elasticsearch = *es
+		elasticsearch.Spec.CertificateSecret = es.Spec.CertificateSecret
 	}
 	return nil
 }
@@ -48,12 +44,7 @@ func (c *Controller) ensureDatabaseSecret(elasticsearch *api.Elasticsearch) erro
 		if databaseSecretVolume, err = c.createDatabaseSecret(elasticsearch); err != nil {
 			return err
 		}
-		es, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
-			// This will ignore processing all kind of Update while creating
-			if in.Annotations == nil {
-				in.Annotations = make(map[string]string)
-			}
-			in.Annotations["kubedb.com/ignore"] = "set"
+		es, _, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
 			in.Spec.DatabaseSecret = databaseSecretVolume
 			return in
 		})
@@ -61,7 +52,7 @@ func (c *Controller) ensureDatabaseSecret(elasticsearch *api.Elasticsearch) erro
 			c.recorder.Eventf(elasticsearch.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 			return err
 		}
-		*elasticsearch = *es
+		elasticsearch.Spec.DatabaseSecret = es.Spec.DatabaseSecret
 	}
 	return nil
 }
@@ -80,7 +71,7 @@ func (c *Controller) findCertSecret(elasticsearch *api.Elasticsearch) (*core.Sec
 
 	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindElasticsearch ||
 		secret.Labels[api.LabelDatabaseName] != elasticsearch.Name {
-		return nil, fmt.Errorf(`Intended secret "%v" already exists`, name)
+		return nil, fmt.Errorf(`intended secret "%v" already exists`, name)
 	}
 
 	return secret, nil
@@ -321,4 +312,57 @@ func (c *Controller) createDatabaseSecret(elasticsearch *api.Elasticsearch) (*co
 	return &core.SecretVolumeSource{
 		SecretName: secret.Name,
 	}, nil
+}
+
+func (c *Controller) deleteSecret(dormantDb *api.DormantDatabase, secretVolume *core.SecretVolumeSource) error {
+	secretFound := false
+	elasticsearchList, err := c.ExtClient.Elasticsearchs(dormantDb.Namespace).List(metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	for _, elasticsearch := range elasticsearchList.Items {
+		databaseSecret := elasticsearch.Spec.DatabaseSecret
+		if databaseSecret != nil {
+			if databaseSecret.SecretName == secretVolume.SecretName {
+				secretFound = true
+				break
+			}
+		}
+	}
+
+	if !secretFound {
+		labelMap := map[string]string{
+			api.LabelDatabaseKind: api.ResourceKindElasticsearch,
+		}
+		dormantDatabaseList, err := c.ExtClient.DormantDatabases(dormantDb.Namespace).List(
+			metav1.ListOptions{
+				LabelSelector: labels.SelectorFromSet(labelMap).String(),
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		for _, ddb := range dormantDatabaseList.Items {
+			if ddb.Name == dormantDb.Name {
+				continue
+			}
+
+			databaseSecret := ddb.Spec.Origin.Spec.Elasticsearch.DatabaseSecret
+			if databaseSecret != nil {
+				if databaseSecret.SecretName == secretVolume.SecretName {
+					secretFound = true
+					break
+				}
+			}
+		}
+	}
+
+	if !secretFound {
+		if err := c.Client.CoreV1().Secrets(dormantDb.Namespace).Delete(secretVolume.SecretName, nil); !kerr.IsNotFound(err) {
+			return err
+		}
+	}
+	return nil
 }

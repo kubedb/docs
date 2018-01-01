@@ -27,7 +27,7 @@ var (
 	kubeconfigPath    string
 	governingService  string = "kubedb"
 	exporterTag       string
-	elasticDumpTag    string = "2.4.2"
+	registry          string = "kubedb"
 	address           string = ":8080"
 	operatorNamespace string = meta.Namespace()
 	enableRbac        bool   = false

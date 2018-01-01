@@ -3,8 +3,9 @@ package controller
 import (
 	"fmt"
 
-	"github.com/appscode/kutil/tools/monitoring/agents"
-	mona "github.com/appscode/kutil/tools/monitoring/api"
+	"github.com/appscode/kube-mon/agents"
+	mona "github.com/appscode/kube-mon/api"
+	"github.com/appscode/kutil"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 )
 
@@ -22,32 +23,35 @@ func (c *Controller) newMonitorController(memcached *api.Memcached) (mona.Agent,
 	return nil, fmt.Errorf("monitoring controller not found for %v", monitorSpec)
 }
 
-func (c *Controller) addMonitor(memcached *api.Memcached) error {
+func (c *Controller) addOrUpdateMonitor(memcached *api.Memcached) (kutil.VerbType, error) {
 	agent, err := c.newMonitorController(memcached)
 	if err != nil {
-		return err
+		return kutil.VerbUnchanged, err
 	}
-	return agent.Add(memcached.StatsAccessor(), memcached.Spec.Monitor)
+	return agent.CreateOrUpdate(memcached.StatsAccessor(), memcached.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(memcached *api.Memcached) error {
+func (c *Controller) deleteMonitor(memcached *api.Memcached) (kutil.VerbType, error) {
 	agent, err := c.newMonitorController(memcached)
 	if err != nil {
-		return err
+		return kutil.VerbUnchanged, err
 	}
-	return agent.Delete(memcached.StatsAccessor(), memcached.Spec.Monitor)
+	return agent.Delete(memcached.StatsAccessor())
 }
 
-func (c *Controller) updateMonitor(oldMemcached, updatedMemcached *api.Memcached) error {
-	var err error
-	var agent mona.Agent
-	if updatedMemcached.Spec.Monitor == nil {
-		agent, err = c.newMonitorController(oldMemcached)
+// todo: needs to set on status
+func (c *Controller) manageMonitor(memcached *api.Memcached) error {
+	if memcached.Spec.Monitor != nil {
+		_, err := c.addOrUpdateMonitor(memcached)
+		if err != nil {
+			return err
+		}
 	} else {
-		agent, err = c.newMonitorController(updatedMemcached)
+		agent := agents.New(mona.AgentCoreOSPrometheus, c.Client, c.ApiExtKubeClient, c.promClient)
+		_, err := agent.CreateOrUpdate(memcached.StatsAccessor(), memcached.Spec.Monitor)
+		if err != nil {
+			return err
+		}
 	}
-	if err != nil {
-		return err
-	}
-	return agent.Update(updatedMemcached.StatsAccessor(), oldMemcached.Spec.Monitor, updatedMemcached.Spec.Monitor)
+	return nil
 }

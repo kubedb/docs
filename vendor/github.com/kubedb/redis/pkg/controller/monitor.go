@@ -3,8 +3,9 @@ package controller
 import (
 	"fmt"
 
-	"github.com/appscode/kutil/tools/monitoring/agents"
-	mona "github.com/appscode/kutil/tools/monitoring/api"
+	"github.com/appscode/kube-mon/agents"
+	mona "github.com/appscode/kube-mon/api"
+	"github.com/appscode/kutil"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 )
 
@@ -22,32 +23,35 @@ func (c *Controller) newMonitorController(redis *api.Redis) (mona.Agent, error) 
 	return nil, fmt.Errorf("monitoring controller not found for %v", monitorSpec)
 }
 
-func (c *Controller) addMonitor(redis *api.Redis) error {
+func (c *Controller) addOrUpdateMonitor(redis *api.Redis) (kutil.VerbType, error) {
 	agent, err := c.newMonitorController(redis)
 	if err != nil {
-		return err
+		return kutil.VerbUnchanged, err
 	}
-	return agent.Add(redis.StatsAccessor(), redis.Spec.Monitor)
+	return agent.CreateOrUpdate(redis.StatsAccessor(), redis.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(redis *api.Redis) error {
+func (c *Controller) deleteMonitor(redis *api.Redis) (kutil.VerbType, error) {
 	agent, err := c.newMonitorController(redis)
 	if err != nil {
-		return err
+		return kutil.VerbUnchanged, err
 	}
-	return agent.Delete(redis.StatsAccessor(), redis.Spec.Monitor)
+	return agent.Delete(redis.StatsAccessor())
 }
 
-func (c *Controller) updateMonitor(oldRedis, updatedRedis *api.Redis) error {
-	var err error
-	var agent mona.Agent
-	if updatedRedis.Spec.Monitor == nil {
-		agent, err = c.newMonitorController(oldRedis)
+// todo: needs to set on status
+func (c *Controller) manageMonitor(redis *api.Redis) error {
+	if redis.Spec.Monitor != nil {
+		_, err := c.addOrUpdateMonitor(redis)
+		if err != nil {
+			return err
+		}
 	} else {
-		agent, err = c.newMonitorController(updatedRedis)
+		agent := agents.New(mona.AgentCoreOSPrometheus, c.Client, c.ApiExtKubeClient, c.promClient)
+		_, err := agent.CreateOrUpdate(redis.StatsAccessor(), redis.Spec.Monitor)
+		if err != nil {
+			return err
+		}
 	}
-	if err != nil {
-		return err
-	}
-	return agent.Update(updatedRedis.StatsAccessor(), oldRedis.Spec.Monitor, updatedRedis.Spec.Monitor)
+	return nil
 }

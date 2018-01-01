@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"reflect"
 	"time"
 
 	"github.com/appscode/go/hold"
@@ -12,71 +11,78 @@ import (
 	cs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
 	kutildb "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
 	amc "github.com/kubedb/apimachinery/pkg/controller"
+	drmnc "github.com/kubedb/apimachinery/pkg/controller/dormant_database"
+	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
 	"github.com/kubedb/apimachinery/pkg/eventer"
+	"github.com/kubedb/postgres/pkg/docker"
 	core "k8s.io/api/core/v1"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/workqueue"
 )
 
 type Options struct {
+	Docker docker.Docker
 	// Operator namespace
 	OperatorNamespace string
-	// Exporter tag
-	ExporterTag string
 	// Governing service
 	GoverningService string
 	// Address to listen on for web interface and telemetry.
 	Address string
 	// Enable RBAC for database workloads
 	EnableRbac bool
+	//Max number requests for retries
+	MaxNumRequeues int
 }
 
 type Controller struct {
 	*amc.Controller
-	// Api Extension Client
-	ApiExtKubeClient crd_cs.ApiextensionsV1beta1Interface
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
 	// Cron Controller
-	cronController amc.CronControllerInterface
+	cronController snapc.CronControllerInterface
 	// Event Recorder
 	recorder record.EventRecorder
 	// Flag data
 	opt Options
 	// sync time to sync the list.
 	syncPeriod time.Duration
+
+	// Workqueue
+	indexer  cache.Indexer
+	queue    workqueue.RateLimitingInterface
+	informer cache.Controller
 }
 
-var _ amc.Snapshotter = &Controller{}
-var _ amc.Deleter = &Controller{}
+var _ snapc.Snapshotter = &Controller{}
+var _ drmnc.Deleter = &Controller{}
 
 func New(
 	client kubernetes.Interface,
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
 	extClient cs.KubedbV1alpha1Interface,
 	promClient pcm.MonitoringV1Interface,
-	cronController amc.CronControllerInterface,
+	cronController snapc.CronControllerInterface,
 	opt Options,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
-			Client:    client,
-			ExtClient: extClient,
+			Client:           client,
+			ExtClient:        extClient,
+			ApiExtKubeClient: apiExtKubeClient,
 		},
-		ApiExtKubeClient: apiExtKubeClient,
-		promClient:       promClient,
-		cronController:   cronController,
-		recorder:         eventer.NewEventRecorder(client, "Postgres operator"),
-		opt:              opt,
-		syncPeriod:       time.Minute * 2,
+		promClient:     promClient,
+		cronController: cronController,
+		recorder:       eventer.NewEventRecorder(client, "Postgres operator"),
+		opt:            opt,
+		syncPeriod:     time.Minute * 2,
 	}
 }
 
@@ -92,9 +98,6 @@ func (c *Controller) Setup() error {
 }
 
 func (c *Controller) Run() {
-	// Start Cron
-	c.cronController.StartCron()
-
 	// Watch Postgres TPR objects
 	go c.watchPostgres()
 	// Watch Snapshot with labelSelector only for Postgres
@@ -114,54 +117,13 @@ func (c *Controller) RunAndHold() {
 }
 
 func (c *Controller) watchPostgres() {
-	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.Postgreses(metav1.NamespaceAll).List(metav1.ListOptions{})
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.Postgreses(metav1.NamespaceAll).Watch(metav1.ListOptions{})
-		},
-	}
+	c.initWatcher()
 
-	_, cacheController := cache.NewInformer(
-		lw,
-		&api.Postgres{},
-		c.syncPeriod,
-		cache.ResourceEventHandlerFuncs{
-			AddFunc: func(obj interface{}) {
-				postgres := obj.(*api.Postgres)
-				if postgres.Status.CreationTime == nil {
-					if err := c.create(postgres.DeepCopy()); err != nil {
-						log.Errorln(err)
-						c.pushFailureEvent(postgres, err.Error())
-					}
-				}
+	stop := make(chan struct{})
+	defer close(stop)
 
-			},
-			DeleteFunc: func(obj interface{}) {
-				postgres := obj.(*api.Postgres)
-				if err := c.pause(postgres.DeepCopy()); err != nil {
-					log.Errorln(err)
-				}
-			},
-			UpdateFunc: func(old, new interface{}) {
-				oldObj, ok := old.(*api.Postgres)
-				if !ok {
-					return
-				}
-				newObj, ok := new.(*api.Postgres)
-				if !ok {
-					return
-				}
-				if !reflect.DeepEqual(oldObj.Spec, newObj.Spec) {
-					if err := c.update(oldObj, newObj.DeepCopy()); err != nil {
-						log.Errorln(err)
-					}
-				}
-			},
-		},
-	)
-	cacheController.Run(wait.NeverStop)
+	c.runWatcher(1, stop)
+	select {}
 }
 
 func (c *Controller) watchSnapshot() {
@@ -184,7 +146,7 @@ func (c *Controller) watchSnapshot() {
 		},
 	}
 
-	amc.NewSnapshotController(c.Client, c.ApiExtKubeClient, c.ExtClient, c, lw, c.syncPeriod).Run()
+	snapc.NewController(c.Controller, c, lw, c.syncPeriod).Run()
 }
 
 func (c *Controller) watchDormantDatabase() {
@@ -207,7 +169,7 @@ func (c *Controller) watchDormantDatabase() {
 		},
 	}
 
-	amc.NewDormantDbController(c.Client, c.ApiExtKubeClient, c.ExtClient, c, lw, c.syncPeriod).Run()
+	drmnc.NewController(c.Controller, c, lw, c.syncPeriod).Run()
 }
 
 func (c *Controller) pushFailureEvent(postgres *api.Postgres, reason string) {
@@ -220,7 +182,7 @@ func (c *Controller) pushFailureEvent(postgres *api.Postgres, reason string) {
 		reason,
 	)
 
-	pg, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
+	pg, _, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
 		in.Status.Phase = api.DatabasePhaseFailed
 		in.Status.Reason = reason
 		return in
@@ -228,5 +190,5 @@ func (c *Controller) pushFailureEvent(postgres *api.Postgres, reason string) {
 	if err != nil {
 		c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 	}
-	*postgres = *pg
+	postgres.Status = pg.Status
 }

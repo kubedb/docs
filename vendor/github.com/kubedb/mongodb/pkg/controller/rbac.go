@@ -1,8 +1,8 @@
 package controller
 
 import (
-	kutilcore "github.com/appscode/kutil/core/v1"
-	kutilrbac "github.com/appscode/kutil/rbac/v1beta1"
+	core_util "github.com/appscode/kutil/core/v1"
+	rbac_util "github.com/appscode/kutil/rbac/v1beta1"
 	"github.com/kubedb/apimachinery/apis/kubedb"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	core "k8s.io/api/core/v1"
@@ -21,9 +21,9 @@ func (c *Controller) deleteRole(mongodb *api.MongoDB) error {
 	return nil
 }
 
-func (c *Controller) createRole(mongodb *api.MongoDB) error {
+func (c *Controller) ensureRole(mongodb *api.MongoDB) error {
 	// Create new Roles
-	_, err := kutilrbac.CreateOrPatchRole(
+	_, _, err := rbac_util.CreateOrPatchRole(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      mongodb.OffshootName(),
@@ -38,7 +38,6 @@ func (c *Controller) createRole(mongodb *api.MongoDB) error {
 					Verbs:         []string{"get"},
 				},
 				{
-					// TODO. Use this if secret is necessary, Otherwise remove it
 					APIGroups:     []string{core.GroupName},
 					Resources:     []string{"secrets"},
 					ResourceNames: []string{mongodb.Spec.DatabaseSecret.SecretName},
@@ -63,7 +62,7 @@ func (c *Controller) deleteServiceAccount(mongodb *api.MongoDB) error {
 
 func (c *Controller) createServiceAccount(mongodb *api.MongoDB) error {
 	// Create new ServiceAccount
-	_, err := kutilcore.CreateOrPatchServiceAccount(
+	_, _, err := core_util.CreateOrPatchServiceAccount(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      mongodb.OffshootName(),
@@ -88,7 +87,7 @@ func (c *Controller) deleteRoleBinding(mongodb *api.MongoDB) error {
 
 func (c *Controller) createRoleBinding(mongodb *api.MongoDB) error {
 	// Ensure new RoleBindings
-	_, err := kutilrbac.CreateOrPatchRoleBinding(
+	_, _, err := rbac_util.CreateOrPatchRoleBinding(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      mongodb.OffshootName(),
@@ -113,13 +112,9 @@ func (c *Controller) createRoleBinding(mongodb *api.MongoDB) error {
 	return err
 }
 
-func (c *Controller) createRBACStuff(mongodb *api.MongoDB) error {
-	// Delete Existing Role
-	if err := c.deleteRole(mongodb); err != nil {
-		return err
-	}
+func (c *Controller) ensureRBACStuff(mongodb *api.MongoDB) error {
 	// Create New Role
-	if err := c.createRole(mongodb); err != nil {
+	if err := c.ensureRole(mongodb); err != nil {
 		return err
 	}
 
@@ -132,11 +127,8 @@ func (c *Controller) createRBACStuff(mongodb *api.MongoDB) error {
 
 	// Create New RoleBinding
 	if err := c.createRoleBinding(mongodb); err != nil {
-		if !kerr.IsAlreadyExists(err) {
-			return err
-		}
+		return err
 	}
-
 	return nil
 }
 

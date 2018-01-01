@@ -1,9 +1,11 @@
 package controller
 
 import (
+	"encoding/json"
 	"errors"
 
 	"github.com/appscode/go/log"
+	apps_util "github.com/appscode/kutil/apps/v1beta1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,34 +13,38 @@ import (
 )
 
 func (c *Controller) Exists(om *metav1.ObjectMeta) (bool, error) {
-	if _, err := c.ExtClient.MySQLs(om.Namespace).Get(om.Name, metav1.GetOptions{}); err != nil {
+	mysql, err := c.ExtClient.MySQLs(om.Namespace).Get(om.Name, metav1.GetOptions{})
+	if err != nil {
 		if !kerr.IsNotFound(err) {
 			return false, err
 		}
 		return false, nil
 	}
 
-	return true, nil
+	return mysql.DeletionTimestamp == nil, nil
 }
 
 func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
-	// Delete Service
-	if err := c.DeleteService(dormantDb.Name, dormantDb.Namespace); err != nil {
-		log.Errorln(err)
-		return err
-	}
-
-	if err := c.DeleteStatefulSet(dormantDb.OffshootName(), dormantDb.Namespace); err != nil {
-		log.Errorln(err)
-		return err
-	}
-
 	mysql := &api.MySQL{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      dormantDb.OffshootName(),
 			Namespace: dormantDb.Namespace,
 		},
 	}
+	// Delete Service
+	if err := c.deleteService(mysql.OffshootName(), dormantDb.Namespace); err != nil {
+		log.Errorln(err)
+		return err
+	}
+
+	if err := apps_util.DeleteStatefulSet(c.Client, metav1.ObjectMeta{
+		Name:      mysql.OffshootName(),
+		Namespace: dormantDb.Namespace,
+	}); err != nil {
+		log.Errorln(err)
+		return err
+	}
+
 	if err := c.deleteRBACStuff(mysql); err != nil {
 		log.Errorln(err)
 		return err
@@ -65,64 +71,7 @@ func (c *Controller) WipeOutDatabase(dormantDb *api.DormantDatabase) error {
 	}
 
 	if dormantDb.Spec.Origin.Spec.MySQL.DatabaseSecret != nil {
-		if err := c.deleteSecret(dormantDb); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (c *Controller) deleteSecret(dormantDb *api.DormantDatabase) error {
-	var secretFound bool = false
-
-	dormantDatabaseSecret := dormantDb.Spec.Origin.Spec.MySQL.DatabaseSecret
-
-	mysqlList, err := c.ExtClient.MySQLs(dormantDb.Namespace).List(metav1.ListOptions{})
-	if err != nil {
-		return err
-	}
-
-	for _, mysql := range mysqlList.Items {
-		databaseSecret := mysql.Spec.DatabaseSecret
-		if databaseSecret != nil {
-			if databaseSecret.SecretName == dormantDatabaseSecret.SecretName {
-				secretFound = true
-				break
-			}
-		}
-	}
-
-	if !secretFound {
-		labelMap := map[string]string{
-			api.LabelDatabaseKind: api.ResourceKindMySQL,
-		}
-		dormantDatabaseList, err := c.ExtClient.DormantDatabases(dormantDb.Namespace).List(
-			metav1.ListOptions{
-				LabelSelector: labels.SelectorFromSet(labelMap).String(),
-			},
-		)
-		if err != nil {
-			return err
-		}
-
-		for _, ddb := range dormantDatabaseList.Items {
-			if ddb.Name == dormantDb.Name {
-				continue
-			}
-
-			databaseSecret := ddb.Spec.Origin.Spec.MySQL.DatabaseSecret
-			if databaseSecret != nil {
-				if databaseSecret.SecretName == dormantDatabaseSecret.SecretName {
-					secretFound = true
-					break
-				}
-			}
-		}
-	}
-
-	if !secretFound {
-		if err := c.DeleteSecret(dormantDatabaseSecret.SecretName, dormantDb.Namespace); err != nil {
+		if err := c.deleteSecret(dormantDb, dormantDb.Spec.Origin.Spec.MySQL.DatabaseSecret); err != nil {
 			return err
 		}
 	}
@@ -158,4 +107,41 @@ func (c *Controller) ResumeDatabase(dormantDb *api.DormantDatabase) error {
 
 	_, err := c.ExtClient.MySQLs(mysql.Namespace).Create(mysql)
 	return err
+}
+
+func (c *Controller) createDormantDatabase(mysql *api.MySQL) (*api.DormantDatabase, error) {
+	dormantDb := &api.DormantDatabase{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      mysql.Name,
+			Namespace: mysql.Namespace,
+			Labels: map[string]string{
+				api.LabelDatabaseKind: api.ResourceKindMySQL,
+			},
+		},
+		Spec: api.DormantDatabaseSpec{
+			Origin: api.Origin{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        mysql.Name,
+					Namespace:   mysql.Namespace,
+					Labels:      mysql.Labels,
+					Annotations: mysql.Annotations,
+				},
+				Spec: api.OriginSpec{
+					MySQL: &mysql.Spec,
+				},
+			},
+		},
+	}
+
+	if mysql.Spec.Init != nil {
+		if initSpec, err := json.Marshal(mysql.Spec.Init); err == nil {
+			dormantDb.Annotations = map[string]string{
+				api.MySQLInitSpec: string(initSpec),
+			}
+		}
+	}
+
+	dormantDb.Spec.Origin.Spec.MySQL.Init = nil
+
+	return c.ExtClient.DormantDatabases(dormantDb.Namespace).Create(dormantDb)
 }

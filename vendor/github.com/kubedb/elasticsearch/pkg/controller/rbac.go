@@ -23,7 +23,7 @@ func (c *Controller) deleteRole(elastic *api.Elasticsearch) error {
 
 func (c *Controller) ensureRole(elastic *api.Elasticsearch) error {
 	// Create new Roles
-	_, err := kutilrbac.CreateOrPatchRole(
+	_, _, err := kutilrbac.CreateOrPatchRole(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      elastic.Name,
@@ -61,7 +61,7 @@ func (c *Controller) deleteServiceAccount(elastic *api.Elasticsearch) error {
 
 func (c *Controller) ensureServiceAccount(elastic *api.Elasticsearch) error {
 	// Create new ServiceAccount
-	_, err := kutilcore.CreateOrPatchServiceAccount(
+	_, _, err := kutilcore.CreateOrPatchServiceAccount(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      elastic.OffshootName(),
@@ -86,7 +86,7 @@ func (c *Controller) deleteRoleBinding(elastic *api.Elasticsearch) error {
 
 func (c *Controller) ensureRoleBinding(elastic *api.Elasticsearch) error {
 	// Ensure new RoleBindings
-	_, err := kutilrbac.CreateOrPatchRoleBinding(
+	_, _, err := kutilrbac.CreateOrPatchRoleBinding(
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      elastic.Name,
