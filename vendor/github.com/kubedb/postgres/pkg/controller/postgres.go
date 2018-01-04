@@ -19,7 +19,7 @@ import (
 )
 
 func (c *Controller) create(postgres *api.Postgres) error {
-	if err := validator.ValidatePostgres(c.Client, postgres, c.opt.Docker); err != nil {
+	if err := validator.ValidatePostgres(c.Client, postgres, &c.opt.Docker); err != nil {
 		c.recorder.Event(
 			postgres.ObjectReference(),
 			core.EventTypeWarning,
@@ -211,7 +211,7 @@ func (c *Controller) matchDormantDatabase(postgres *api.Postgres) error {
 	}
 
 	// Check InitSpec
-	initSpecAnnotationStr := dormantDb.Annotations[api.PostgresInitSpec]
+	initSpecAnnotationStr := dormantDb.Annotations[api.GenericInitSpec]
 	if initSpecAnnotationStr != "" {
 		var initSpecAnnotation *api.InitSpec
 		if err := json.Unmarshal([]byte(initSpecAnnotationStr), &initSpecAnnotation); err != nil {

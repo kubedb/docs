@@ -3,7 +3,6 @@ package controller
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/appscode/go/log"
 	apps_util "github.com/appscode/kutil/apps/v1beta1"
@@ -50,13 +49,13 @@ func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
 		return err
 	}
 
-	if err := c.deleteRBACStuff(postgres); err != nil {
-		log.Errorln(err)
-		return err
+	if c.opt.EnableRbac {
+		if err := c.deleteRBACStuff(postgres); err != nil {
+			return err
+		}
 	}
 
-	configMapName := fmt.Sprintf("%v-leader-lock", dormantDb.OffshootName())
-	if err := c.deleteConfigMap(configMapName, dormantDb.Namespace); err != nil {
+	if err := c.deleteLeaderLockConfigMap(dormantDb.ObjectMeta); err != nil {
 		return err
 	}
 
@@ -145,7 +144,7 @@ func (c *Controller) createDormantDatabase(postgres *api.Postgres) (*api.Dormant
 		initSpec, err := json.Marshal(postgres.Spec.Init)
 		if err == nil {
 			dormantDb.Annotations = map[string]string{
-				api.PostgresInitSpec: string(initSpec),
+				api.GenericInitSpec: string(initSpec),
 			}
 		}
 	}

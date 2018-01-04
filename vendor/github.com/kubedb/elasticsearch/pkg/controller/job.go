@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/crypto/rand"
+	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/storage"
 	batch "k8s.io/api/batch/v1"
@@ -77,6 +78,10 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 										},
 									},
 								},
+								{
+									Name:  analytics.Key,
+									Value: c.opt.AnalyticsClientID,
+								},
 							},
 							Resources: snapshot.Spec.Resources,
 							VolumeMounts: []core.VolumeMount{
@@ -97,6 +102,7 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 							},
 						},
 					},
+					ImagePullSecrets: elasticsearch.Spec.ImagePullSecrets,
 					Volumes: []core.Volume{
 						{
 							Name:         persistentVolume.Name,
@@ -216,6 +222,10 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 										},
 									},
 								},
+								{
+									Name:  analytics.Key,
+									Value: c.opt.AnalyticsClientID,
+								},
 							},
 							Resources: snapshot.Spec.Resources,
 							VolumeMounts: []core.VolumeMount{
@@ -236,6 +246,7 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 							},
 						},
 					},
+					ImagePullSecrets: elasticsearch.Spec.ImagePullSecrets,
 					Volumes: []core.Volume{
 						{
 							Name:         persistentVolume.Name,

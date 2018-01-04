@@ -16,7 +16,7 @@ import (
 )
 
 func (c *Controller) create(redis *api.Redis) error {
-	if err := validator.ValidateRedis(c.Client, redis, c.opt.Docker); err != nil {
+	if err := validator.ValidateRedis(c.Client, redis, &c.opt.Docker); err != nil {
 		log.Errorln(err)
 		c.recorder.Event(
 			redis.ObjectReference(),

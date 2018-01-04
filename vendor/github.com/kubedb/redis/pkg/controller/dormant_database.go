@@ -42,10 +42,6 @@ func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
 		return err
 	}
 
-	if err := c.deleteRBACStuff(redis); err != nil {
-		log.Errorln(err)
-		return err
-	}
 	return nil
 }
 
@@ -56,8 +52,6 @@ func (c *Controller) WipeOutDatabase(dormantDb *api.DormantDatabase) error {
 	}
 
 	labelSelector := labels.SelectorFromSet(labelMap)
-
-	log.Info("No snapshot for Redis.")
 
 	if err := c.DeletePersistentVolumeClaims(dormantDb.Namespace, labelSelector); err != nil {
 		log.Errorln(err)

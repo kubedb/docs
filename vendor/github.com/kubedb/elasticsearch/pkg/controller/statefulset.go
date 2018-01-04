@@ -58,6 +58,7 @@ func (c *Controller) ensureStatefulSet(
 		in.Spec.Template.Spec.Affinity = elasticsearch.Spec.Affinity
 		in.Spec.Template.Spec.SchedulerName = elasticsearch.Spec.SchedulerName
 		in.Spec.Template.Spec.Tolerations = elasticsearch.Spec.Tolerations
+		in.Spec.Template.Spec.ImagePullSecrets = elasticsearch.Spec.ImagePullSecrets
 
 		if isClient {
 			in = c.upsertMonitoringContainer(in, elasticsearch)
@@ -66,11 +67,6 @@ func (c *Controller) ensureStatefulSet(
 
 		in = upsertCertificate(in, elasticsearch.Spec.CertificateSecret.SecretName, isClient)
 		in = upsertDataVolume(in, elasticsearch)
-
-		if c.opt.EnableRbac {
-			in.Spec.Template.Spec.ServiceAccountName = elasticsearch.Name
-		}
-
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 
 		return in
@@ -284,9 +280,8 @@ func upsertInitContainer(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 
 func (c *Controller) upsertContainer(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch) *apps.StatefulSet {
 	container := core.Container{
-		Name:            api.ResourceNameElasticsearch,
-		Image:           c.opt.Docker.GetImageWithTag(elasticsearch),
-		ImagePullPolicy: core.PullIfNotPresent,
+		Name:  api.ResourceNameElasticsearch,
+		Image: c.opt.Docker.GetImageWithTag(elasticsearch),
 		SecurityContext: &core.SecurityContext{
 			Privileged: types.BoolP(false),
 			Capabilities: &core.Capabilities{

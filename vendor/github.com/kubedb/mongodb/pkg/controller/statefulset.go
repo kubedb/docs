@@ -105,9 +105,8 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 		}
 
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
-			Name:            api.ResourceNameMongoDB,
-			Image:           c.opt.Docker.GetImageWithTag(mongodb),
-			ImagePullPolicy: core.PullIfNotPresent,
+			Name:  api.ResourceNameMongoDB,
+			Image: c.opt.Docker.GetImageWithTag(mongodb),
 			Ports: []core.ContainerPort{
 				{
 					Name:          "db",
@@ -130,8 +129,7 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 					fmt.Sprintf("--address=:%d", mongodb.Spec.Monitor.Prometheus.Port),
 					"--v=3",
 				},
-				Image:           c.opt.Docker.GetOperatorImageWithTag(mongodb),
-				ImagePullPolicy: core.PullIfNotPresent,
+				Image: c.opt.Docker.GetOperatorImageWithTag(mongodb),
 				Ports: []core.ContainerPort{
 					{
 						Name:          api.PrometheusExporterPortName,
@@ -152,9 +150,7 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 		in.Spec.Template.Spec.Affinity = mongodb.Spec.Affinity
 		in.Spec.Template.Spec.SchedulerName = mongodb.Spec.SchedulerName
 		in.Spec.Template.Spec.Tolerations = mongodb.Spec.Tolerations
-		if c.opt.EnableRbac {
-			in.Spec.Template.Spec.ServiceAccountName = mongodb.Name
-		}
+		in.Spec.Template.Spec.ImagePullSecrets = mongodb.Spec.ImagePullSecrets
 
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 

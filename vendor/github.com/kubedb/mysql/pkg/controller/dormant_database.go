@@ -45,10 +45,6 @@ func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
 		return err
 	}
 
-	if err := c.deleteRBACStuff(mysql); err != nil {
-		log.Errorln(err)
-		return err
-	}
 	return nil
 }
 
@@ -136,7 +132,7 @@ func (c *Controller) createDormantDatabase(mysql *api.MySQL) (*api.DormantDataba
 	if mysql.Spec.Init != nil {
 		if initSpec, err := json.Marshal(mysql.Spec.Init); err == nil {
 			dormantDb.Annotations = map[string]string{
-				api.MySQLInitSpec: string(initSpec),
+				api.GenericInitSpec: string(initSpec),
 			}
 		}
 	}

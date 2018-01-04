@@ -20,7 +20,7 @@ import (
 )
 
 func (c *Controller) create(mysql *api.MySQL) error {
-	if err := validator.ValidateMySQL(c.Client, mysql, c.opt.Docker); err != nil {
+	if err := validator.ValidateMySQL(c.Client, mysql, &c.opt.Docker); err != nil {
 		c.recorder.Event(
 			mysql.ObjectReference(),
 			core.EventTypeWarning,
@@ -222,7 +222,7 @@ func (c *Controller) matchDormantDatabase(mysql *api.MySQL) error {
 	}
 
 	// Check InitSpec
-	initSpecAnnotationStr := dormantDb.Annotations[api.MySQLInitSpec]
+	initSpecAnnotationStr := dormantDb.Annotations[api.GenericInitSpec]
 	if initSpecAnnotationStr != "" {
 		var initSpecAnnotation *api.InitSpec
 		if err := json.Unmarshal([]byte(initSpecAnnotationStr), &initSpecAnnotation); err != nil {

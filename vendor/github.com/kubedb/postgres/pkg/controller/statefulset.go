@@ -55,6 +55,7 @@ func (c *Controller) ensureStatefulSet(
 		in.Spec.Template.Spec.Affinity = postgres.Spec.Affinity
 		in.Spec.Template.Spec.SchedulerName = postgres.Spec.SchedulerName
 		in.Spec.Template.Spec.Tolerations = postgres.Spec.Tolerations
+		in.Spec.Template.Spec.ImagePullSecrets = postgres.Spec.ImagePullSecrets
 
 		in = c.upsertMonitoringContainer(in, postgres)
 		in = upsertDatabaseSecret(in, postgres.Spec.DatabaseSecret.SecretName)
@@ -75,7 +76,7 @@ func (c *Controller) ensureStatefulSet(
 		in = upsertDataVolume(in, postgres)
 
 		if c.opt.EnableRbac {
-			in.Spec.Template.Spec.ServiceAccountName = postgres.Name
+			in.Spec.Template.Spec.ServiceAccountName = postgres.OffshootName()
 		}
 
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
@@ -211,9 +212,8 @@ func upsertObjectMeta(statefulSet *apps.StatefulSet, postgres *api.Postgres) *ap
 
 func (c *Controller) upsertContainer(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
 	container := core.Container{
-		Name:            api.ResourceNamePostgres,
-		Image:           c.opt.Docker.GetImageWithTag(postgres),
-		ImagePullPolicy: core.PullIfNotPresent,
+		Name:  api.ResourceNamePostgres,
+		Image: c.opt.Docker.GetImageWithTag(postgres),
 		SecurityContext: &core.SecurityContext{
 			Privileged: types.BoolP(false),
 			Capabilities: &core.Capabilities{

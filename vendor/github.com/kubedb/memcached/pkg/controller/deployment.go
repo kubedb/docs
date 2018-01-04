@@ -26,13 +26,6 @@ func (c *Controller) ensureDeployment(memcached *api.Memcached) (kutil.VerbType,
 		Namespace: memcached.Namespace,
 	}
 
-	if c.opt.EnableRbac {
-		// Ensure ClusterRoles for database deployment
-		if err := c.ensureRBACStuff(memcached); err != nil {
-			return kutil.VerbUnchanged, err
-		}
-	}
-
 	_, vt, err := app_util.CreateOrPatchDeployment(c.Client, deploymentMeta, func(in *apps.Deployment) *apps.Deployment {
 		in.Labels = core_util.UpsertMap(in.Labels, memcached.DeploymentLabels())
 		in.Annotations = core_util.UpsertMap(in.Annotations, memcached.DeploymentAnnotations())
@@ -83,9 +76,8 @@ func (c *Controller) ensureDeployment(memcached *api.Memcached) (kutil.VerbType,
 		in.Spec.Template.Spec.Affinity = memcached.Spec.Affinity
 		in.Spec.Template.Spec.SchedulerName = memcached.Spec.SchedulerName
 		in.Spec.Template.Spec.Tolerations = memcached.Spec.Tolerations
-		if c.opt.EnableRbac {
-			in.Spec.Template.Spec.ServiceAccountName = memcached.Name
-		}
+		in.Spec.Template.Spec.ImagePullSecrets = memcached.Spec.ImagePullSecrets
+
 		return in
 	})
 

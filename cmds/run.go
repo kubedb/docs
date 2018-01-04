@@ -110,6 +110,7 @@ func run() {
 		},
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
+		AnalyticsClientID: analyticsClientID,
 		EnableRbac:        enableRbac,
 	}).Run()
 
@@ -121,7 +122,7 @@ func run() {
 		},
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
-		EnableRbac:        enableRbac,
+		AnalyticsClientID: analyticsClientID,
 	}).Run()
 
 	// MySQL controller
@@ -132,7 +133,7 @@ func run() {
 		},
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
-		EnableRbac:        enableRbac,
+		AnalyticsClientID: analyticsClientID,
 	}).Run()
 
 	// MongoDB controller
@@ -143,7 +144,7 @@ func run() {
 		},
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
-		EnableRbac:        enableRbac,
+		AnalyticsClientID: analyticsClientID,
 	}).Run()
 
 	// Redis controller
@@ -154,7 +155,6 @@ func run() {
 		},
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
-		EnableRbac:        enableRbac,
 	}).Run()
 
 	// Memcached controller
@@ -165,7 +165,6 @@ func run() {
 		},
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
-		EnableRbac:        enableRbac,
 	}).Run()
 
 	m := pat.New()
