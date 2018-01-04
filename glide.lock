@@ -1,5 +1,5 @@
 hash: 37c78398acaa830b4b0fb92755c5796f873a51cf4672a5cacec4160f22a2676c
-updated: 2018-01-04T11:39:04.853026989+06:00
+updated: 2018-01-04T11:54:34.157348777+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -37,7 +37,7 @@ imports:
   - agents/prometheusbuiltin
   - api
 - name: github.com/appscode/kutil
-  version: c393406fbcc65765c04935bfe3a6770a51d61fbb
+  version: 4a8306c9183a0dbebfc98327238735a1fb015e6a
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
@@ -512,7 +512,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/api
-  version: 9b9dca205a15b6ce9ef10091f05d60a13fdcf418
+  version: 389dfa299845bcf399c16af89987e8775718ea48
   subpackages:
   - admissionregistration/v1alpha1
   - apps/v1beta1
@@ -539,7 +539,7 @@ imports:
   - storage/v1
   - storage/v1beta1
 - name: k8s.io/apiextensions-apiserver
-  version: 996a70a27a0dcf53642ca52601b9107cb2ad810a
+  version: d0becfa6529e20309bd6684f8486abc265cf0b59
   subpackages:
   - pkg/apis/apiextensions
   - pkg/apis/apiextensions/v1beta1
