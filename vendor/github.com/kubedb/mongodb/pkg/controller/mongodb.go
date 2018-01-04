@@ -20,7 +20,7 @@ import (
 )
 
 func (c *Controller) create(mongodb *api.MongoDB) error {
-	if err := validator.ValidateMongoDB(c.Client, mongodb, c.opt.Docker); err != nil {
+	if err := validator.ValidateMongoDB(c.Client, mongodb, &c.opt.Docker); err != nil {
 		c.recorder.Event(
 			mongodb.ObjectReference(),
 			core.EventTypeWarning,
@@ -222,7 +222,7 @@ func (c *Controller) matchDormantDatabase(mongodb *api.MongoDB) error {
 	}
 
 	// Check InitSpec
-	initSpecAnnotationStr := dormantDb.Annotations[api.MongoDBInitSpec]
+	initSpecAnnotationStr := dormantDb.Annotations[api.GenericInitSpec]
 	if initSpecAnnotationStr != "" {
 		var initSpecAnnotation *api.InitSpec
 		if err := json.Unmarshal([]byte(initSpecAnnotationStr), &initSpecAnnotation); err != nil {

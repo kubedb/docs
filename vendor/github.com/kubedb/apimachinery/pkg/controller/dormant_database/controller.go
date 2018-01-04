@@ -57,7 +57,7 @@ func NewController(
 		lw:             lw,
 		recorder:       eventer.NewEventRecorder(controller.Client, "DormantDatabase Controller"),
 		syncPeriod:     syncPeriod,
-		maxNumRequests: 5,
+		maxNumRequests: 2,
 	}
 }
 

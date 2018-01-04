@@ -27,13 +27,6 @@ func (c *Controller) ensureStatefulSet(redis *api.Redis) (kutil.VerbType, error)
 		Namespace: redis.Namespace,
 	}
 
-	if c.opt.EnableRbac {
-		// Ensure ClusterRoles for database deployment
-		if err := c.ensureRBACStuff(redis); err != nil {
-			return kutil.VerbUnchanged, err
-		}
-	}
-
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Labels = core_util.UpsertMap(in.Labels, redis.StatefulSetLabels())
 		in.Annotations = core_util.UpsertMap(in.Annotations, redis.StatefulSetAnnotations())
@@ -86,9 +79,7 @@ func (c *Controller) ensureStatefulSet(redis *api.Redis) (kutil.VerbType, error)
 		in.Spec.Template.Spec.Affinity = redis.Spec.Affinity
 		in.Spec.Template.Spec.SchedulerName = redis.Spec.SchedulerName
 		in.Spec.Template.Spec.Tolerations = redis.Spec.Tolerations
-		if c.opt.EnableRbac {
-			in.Spec.Template.Spec.ServiceAccountName = redis.Name
-		}
+		in.Spec.Template.Spec.ImagePullSecrets = redis.Spec.ImagePullSecrets
 
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 

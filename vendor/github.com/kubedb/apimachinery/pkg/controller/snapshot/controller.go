@@ -55,7 +55,7 @@ func NewController(
 		lw:             lw,
 		eventRecorder:  eventer.NewEventRecorder(controller.Client, "Snapshot Controller"),
 		syncPeriod:     syncPeriod,
-		maxNumRequests: 5,
+		maxNumRequests: 2,
 	}
 }
 

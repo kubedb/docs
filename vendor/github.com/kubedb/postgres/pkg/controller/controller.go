@@ -40,6 +40,8 @@ type Options struct {
 	EnableRbac bool
 	//Max number requests for retries
 	MaxNumRequeues int
+	// Analytics Client ID
+	AnalyticsClientID string
 }
 
 type Controller struct {

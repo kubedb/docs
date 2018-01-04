@@ -31,6 +31,7 @@ var (
 	address           string = ":8080"
 	operatorNamespace string = meta.Namespace()
 	enableRbac        bool   = false
+	analyticsClientID string = analytics.ClientID()
 
 	kubeClient kubernetes.Interface
 	dbClient   tcs.KubedbV1alpha1Interface
@@ -50,7 +51,7 @@ func NewRootCmd(version string) *cobra.Command {
 			})
 			if enableAnalytics && gaTrackingCode != "" {
 				if client, err := ga.NewClient(gaTrackingCode); err == nil {
-					client.ClientID(analytics.ClientID())
+					client.ClientID(analyticsClientID)
 					parts := strings.Split(c.CommandPath(), " ")
 					client.Send(ga.NewEvent("kubedb-operator", strings.Join(parts[1:], "/")).Label(version))
 				}

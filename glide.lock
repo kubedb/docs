@@ -1,5 +1,5 @@
 hash: 37c78398acaa830b4b0fb92755c5796f873a51cf4672a5cacec4160f22a2676c
-updated: 2017-12-31T19:27:30.244785774-05:00
+updated: 2018-01-04T11:54:34.157348777+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -13,7 +13,7 @@ imports:
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/appscode/go
-  version: f08cee5a2aa53a1ab6d30e4ae11e381d1b265f81
+  version: 9a3559e6132eda4069baad2c63689729f5d20ac4
   subpackages:
   - analytics
   - context
@@ -30,14 +30,14 @@ imports:
   - types
   - version
 - name: github.com/appscode/kube-mon
-  version: dd6884c63ee4615ca9ecdb7f0ca3e35c975bcca3
+  version: 7f7ea00b96f4fe39dbcc4fbe405768eae032ba2f
   subpackages:
   - agents
   - agents/coreosprometheusoperator
   - agents/prometheusbuiltin
   - api
 - name: github.com/appscode/kutil
-  version: a506fd42d3c4d688675c639c9c14c27b79275e73
+  version: 4a8306c9183a0dbebfc98327238735a1fb015e6a
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
@@ -48,7 +48,7 @@ imports:
 - name: github.com/appscode/mergo
   version: e3000cb3d28c72b837601cac94debd91032d19fe
 - name: github.com/appscode/osm
-  version: 8e933dfca7c6a2730d77a63282369d843b1db1f4
+  version: bd094241594e26fce6d54e17db21ff253df8cd22
   subpackages:
   - context
 - name: github.com/appscode/pat
@@ -181,7 +181,7 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: 44145f04b68cf362d9c4df2182967c2275eaefed
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/groupcache
   version: 02826c3e79038b59d737d3b1c0a1d937f71a4433
   subpackages:
@@ -198,7 +198,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 97a1ff3c48253a51c601f6e4420181273b6ca0ea
+  version: 97aa668b73e764ccdd786bc3ccd2edffe621150e
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -259,13 +259,13 @@ imports:
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/justwatchcom/elasticsearch_exporter
-  version: ec453d38aa87627c75e3dd2ad2d06b696ffc28a1
+  version: 912fa4741b804adb5256f99fd538b9cdab33756d
   subpackages:
   - collector
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 5aea7eccd748c923125d01100ba9051e7daf9052
+  version: c62e5c9ee18651a8183c708df55ec8abd6ee2083
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -281,45 +281,46 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: bd0d3ecbb6facd0660d1fcf1dddfd2b7b0448c81
+  version: 6a3ef3f234a4c7ee49aeeb7db20477a38cea07e7
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/memcached
-  version: 1d88f33a9722790b8837f276ede3d1f4e5a80ae6
+  version: 10a235eef4e63840ef84d98f6c88c79ab9cb7ced
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mongodb
-  version: f0bddd864e3303101840caa5352792fb5e321a2c
+  version: 275a6f71624465c1d8f283b19f4622254f3924b8
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mysql
-  version: c966efd5f9b980588a2df93465e817d33b43a1c5
+  version: 5451d16690bda4fdcf8e46d9f7b14dfc47ef9a40
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/postgres
-  version: 03d4cdc729f961f54bfc3b6a8173af0857dbb502
+  version: 82f02a98edb8d04b19d85472d5103c01c87fd064
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/docker
+  - pkg/leader_election
   - pkg/validator
 - name: github.com/kubedb/redis
-  version: 1dc0d5bf678d7a687b313033c13ae6bbc9a118e5
+  version: 795a544025837419a1b1bfce3072eab6b10488ab
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubernetes/apimachinery
-  version: bc1325710437b54535daa5d6877ca62df7bd76db
+  version: cc51b76607439c12d6bfa78aab2a81e46107b24f
   subpackages:
   - pkg/conversion
 - name: github.com/lib/pq
@@ -467,14 +468,14 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: 92c31202d4179425301c9ad5a63abd8df45a9674
+  version: 251495678c7835dbcdc35027844ab32f2fcee7a0
   subpackages:
   - gensupport
   - googleapi
   - googleapi/internal/uritemplates
   - storage/v1
 - name: google.golang.org/appengine
-  version: 4f7eeb5305a4ba1966344836ba4af9996b7b4e05
+  version: 5bee14b453b4c71be47ec1781b0fa61c2ea182db
   subpackages:
   - cloudsql
   - internal
@@ -511,7 +512,7 @@ imports:
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/api
-  version: 9b9dca205a15b6ce9ef10091f05d60a13fdcf418
+  version: 389dfa299845bcf399c16af89987e8775718ea48
   subpackages:
   - admissionregistration/v1alpha1
   - apps/v1beta1
@@ -538,7 +539,7 @@ imports:
   - storage/v1
   - storage/v1beta1
 - name: k8s.io/apiextensions-apiserver
-  version: 996a70a27a0dcf53642ca52601b9107cb2ad810a
+  version: d0becfa6529e20309bd6684f8486abc265cf0b59
   subpackages:
   - pkg/apis/apiextensions
   - pkg/apis/apiextensions/v1beta1
@@ -633,6 +634,8 @@ imports:
   - tools/clientcmd/api
   - tools/clientcmd/api/latest
   - tools/clientcmd/api/v1
+  - tools/leaderelection
+  - tools/leaderelection/resourcelock
   - tools/metrics
   - tools/pager
   - tools/record

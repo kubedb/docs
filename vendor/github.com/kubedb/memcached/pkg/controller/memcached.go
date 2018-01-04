@@ -16,7 +16,7 @@ import (
 )
 
 func (c *Controller) create(memcached *api.Memcached) error {
-	if err := validator.ValidateMemcached(c.Client, memcached, c.opt.Docker); err != nil {
+	if err := validator.ValidateMemcached(c.Client, memcached, &c.opt.Docker); err != nil {
 		c.recorder.Event(
 			memcached.ObjectReference(),
 			core.EventTypeWarning,
