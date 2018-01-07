@@ -1,5 +1,5 @@
-hash: 37c78398acaa830b4b0fb92755c5796f873a51cf4672a5cacec4160f22a2676c
-updated: 2018-01-04T11:54:34.157348777+06:00
+hash: 06e9d805fa54035be43ddf2b619d5a6e48bdb16c40404dca94745e9ec1333d86
+updated: 2018-01-06T18:48:02.677033746-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -13,7 +13,7 @@ imports:
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/appscode/go
-  version: 9a3559e6132eda4069baad2c63689729f5d20ac4
+  version: f08cee5a2aa53a1ab6d30e4ae11e381d1b265f81
   subpackages:
   - analytics
   - context
@@ -48,7 +48,7 @@ imports:
 - name: github.com/appscode/mergo
   version: e3000cb3d28c72b837601cac94debd91032d19fe
 - name: github.com/appscode/osm
-  version: bd094241594e26fce6d54e17db21ff253df8cd22
+  version: 8175dd853f6f3d4530b14018901c79140e305f3a
   subpackages:
   - context
 - name: github.com/appscode/pat
@@ -107,7 +107,7 @@ imports:
   subpackages:
   - pkg/client/monitoring/v1
 - name: github.com/cpuguy83/go-md2man
-  version: 71acacd42f85e5e82f70a55327789582a5200a90
+  version: 8d868be6e9bf9d5350910bab97a050e49887600f
   subpackages:
   - md2man
 - name: github.com/davecgh/go-spew
@@ -181,7 +181,7 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+  version: 44145f04b68cf362d9c4df2182967c2275eaefed
 - name: github.com/golang/groupcache
   version: 02826c3e79038b59d737d3b1c0a1d937f71a4433
   subpackages:
@@ -233,7 +233,7 @@ imports:
   subpackages:
   - diskcache
 - name: github.com/hashicorp/go-version
-  version: ac737305c16432f4c660c6fc68cdcda4b5a0b5ae
+  version: 1b1de86cf2ec13494b6814b48157884efaf71c54
   repo: https://github.com/appscode/go-version.git
   vcs: git
 - name: github.com/hashicorp/golang-lru
@@ -265,7 +265,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: c62e5c9ee18651a8183c708df55ec8abd6ee2083
+  version: 7604bdfdd4e2b6f1c301847c8d43ecd8e726dc9d
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -281,32 +281,32 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 6a3ef3f234a4c7ee49aeeb7db20477a38cea07e7
+  version: 02c95056e79e1b0d68c61ce872e7edf608ef030e
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/memcached
-  version: 10a235eef4e63840ef84d98f6c88c79ab9cb7ced
+  version: 72ac58c2530fdc791555f7b4a3a57491238e8543
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mongodb
-  version: 275a6f71624465c1d8f283b19f4622254f3924b8
+  version: a3947346193a6cc127254a853b8816c05c2ab83d
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mysql
-  version: 5451d16690bda4fdcf8e46d9f7b14dfc47ef9a40
+  version: 2f1e4b7d1c3e85daea6c7fe6a1612b3d2859f26d
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/postgres
-  version: 82f02a98edb8d04b19d85472d5103c01c87fd064
+  version: 67472b345441321ec30c48b79f1bcd8ddf5eb3aa
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -314,13 +314,13 @@ imports:
   - pkg/leader_election
   - pkg/validator
 - name: github.com/kubedb/redis
-  version: 795a544025837419a1b1bfce3072eab6b10488ab
+  version: 473d2107b6b507531d7ff5d33d9a1e1c6a4b5ffc
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubernetes/apimachinery
-  version: cc51b76607439c12d6bfa78aab2a81e46107b24f
+  version: 91d8586aac31d9086939d077ba556d2c7fb157b4
   subpackages:
   - pkg/conversion
 - name: github.com/lib/pq
@@ -380,7 +380,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/prometheus/mysqld_exporter
-  version: 811aec3a6c278f7299859db5747eec662093a44c
+  version: c52f281c2682aef2da8c743e92ee3d416d154d99
   subpackages:
   - collector
 - name: github.com/prometheus/procfs
@@ -468,14 +468,14 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: 251495678c7835dbcdc35027844ab32f2fcee7a0
+  version: b1c0f9b3aa8fac163224fab909402d49c6dce50a
   subpackages:
   - gensupport
   - googleapi
   - googleapi/internal/uritemplates
   - storage/v1
 - name: google.golang.org/appengine
-  version: 5bee14b453b4c71be47ec1781b0fa61c2ea182db
+  version: 4f7eeb5305a4ba1966344836ba4af9996b7b4e05
   subpackages:
   - cloudsql
   - internal
