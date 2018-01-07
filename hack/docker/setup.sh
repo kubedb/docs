@@ -44,7 +44,7 @@ build_docker() {
 FROM alpine
 
 RUN set -x \
-  && apk add --update --no-cache ca-certificates
+  && apk add --update --no-cache ca-certificates openssl openjdk8-jre-base
 
 COPY operator /usr/bin/operator
 
