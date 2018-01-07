@@ -1,19 +1,16 @@
 ---
 title: KubeDB Uninstall
 menu:
-  docs_0.7.2:
+  docs_0.8.0-beta.0:
     identifier: uninstall-kubedb
     name: Uninstall
-    parent: getting-started
-    weight: 30
-menu_name: docs_0.7.2
-section_menu_id: getting-started
-url: /docs/0.7.2/getting-started/uninstall/
-aliases:
-  - /docs/0.7.2/uninstall/
+    parent: setup
+    weight: 20
+menu_name: docs_0.8.0-beta.0
+section_menu_id: setup
 ---
 
-> New to KubeDB? Please start [here](/docs/tutorials/README.md).
+> New to KubeDB? Please start [here](/docs/guides/README.md).
 
 # Uninstall KubeDB
 Please follow the steps below to uninstall KubeDB:

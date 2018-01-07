@@ -1,26 +1,25 @@
 ---
 title: Elasticsearch
 menu:
-  docs_0.8.0:
-    identifier: tutorials-elasticsearch-readme
+  docs_0.8.0-beta.0:
+    identifier: guides-elasticsearch-overview
     name: Overview
-    parent: tutorials-elasticsearch
+    parent: guides-elasticsearch
     weight: 10
-menu_name: docs_0.8.0
-section_menu_id: tutorials
-url: /docs/0.8.0/tutorials/elasticsearch/
+menu_name: docs_0.8.0-beta.0
+section_menu_id: guides
 aliases:
-  - /docs/0.8.0/tutorials/elasticsearch/README/
+  - /docs/0.8.0-beta.0/guides/elasticsearch/
 ---
 
-> New to KubeDB? Please start [here](/docs/tutorials/README.md).
+> New to KubeDB? Please start [here](/docs/guides/README.md).
 
 # Running Elasticsearch
 This tutorial will show you how to use KubeDB to run an Elasticsearch database.
 
 ## Before You Begin
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [Minikube](https://github.com/kubernetes/minikube).
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
 ```console
@@ -69,7 +68,7 @@ Here,
  - `spec.doNotPause` tells KubeDB operator that if this CRD object is deleted, it should be automatically reverted. This should be set to `true` for production databases to avoid accidental deletion.
  - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If no storage spec is given, an `emptyDir` is used.
 
-KubeDB operator watches for `Elasticsearch` objects using Kubernetes api. When a `Elasticsearch` object is created, KubeDB operator will create a new StatefulSet and two ClusterIP Service with the matching name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present. If [RBAC is enabled](/docs/tutorials/rbac.md), a ClusterRole, ServiceAccount and ClusterRoleBinding with the matching tpr name will be created and used as the service account name for the corresponding StatefulSet.
+KubeDB operator watches for `Elasticsearch` objects using Kubernetes api. When a `Elasticsearch` object is created, KubeDB operator will create a new StatefulSet and two ClusterIP Service with the matching name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present. If [RBAC is enabled](/docs/guides/rbac.md), a ClusterRole, ServiceAccount and ClusterRoleBinding with the matching tpr name will be created and used as the service account name for the corresponding StatefulSet.
 
 
 ```console
@@ -600,13 +599,13 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 $ kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/uninstall.md).
 
 
 ## Next Steps
 - Learn about the details of Elasticsearch object [here](/docs/concepts/elasticsearch.md).
 - See the list of supported storage providers for snapshots [here](/docs/concepts/snapshot.md).
-- Thinking about monitoring your database? KubeDB works [out-of-the-box with Prometheus](/docs/tutorials/monitoring.md).
-- Learn how to use KubeDB in a [RBAC](/docs/tutorials/rbac.md) enabled cluster.
-- Wondering what features are coming next? Please visit [here](/ROADMAP.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/CONTRIBUTING.md).
+- Thinking about monitoring your database? KubeDB works [out-of-the-box with Prometheus](/docs/guides/monitoring.md).
+- Learn how to use KubeDB in a [RBAC](/docs/guides/rbac.md) enabled cluster.
+- Wondering what features are coming next? Please visit [here](/docs/roadmap.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

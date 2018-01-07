@@ -1,22 +1,22 @@
 ---
 title: CLI | KubeDB
 menu:
-  docs_0.8.0:
-    identifier: tutorials-cli
+  docs_0.8.0-beta.0:
+    identifier: guides-cli
     name: CLI
-    parent: tutorials
-    weight: 60
-menu_name: docs_0.8.0
-section_menu_id: tutorials
+    parent: guides
+    weight: 70
+menu_name: docs_0.8.0-beta.0
+section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/tutorials/README.md).
+> New to KubeDB? Please start [here](/docs/guides/README.md).
 
 # Manage KubeDB objects using CLIs
 
 ## KubeDB CLI
 KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used to deploy KubeDB operator in a cluster and manage all KubeDB objects.
-`kubedb` cli also performs various validations to improve ux. To install KubeDB cli on your workstation, follow the steps [here](/docs/install.md).
+`kubedb` cli also performs various validations to improve ux. To install KubeDB cli on your workstation, follow the steps [here](/docs/setup/install.md).
 
 ### How to Create objects
 
@@ -372,7 +372,7 @@ $ kubectl delete postgres <name>
 
 
 ## Next Steps
-- Learn how to use KubeDB to run a PostgreSQL database [here](/docs/tutorials/postgres/README.md).
-- Learn how to use KubeDB to run an Elasticsearch database [here](/docs/tutorials/elasticsearch/README.md).
-- Wondering what features are coming next? Please visit [here](/ROADMAP.md). 
-- Want to hack on KubeDB? Check our [contribution guidelines](/CONTRIBUTING.md).
+- Learn how to use KubeDB to run a PostgreSQL database [here](/docs/guides/postgres/overview.md).
+- Learn how to use KubeDB to run an Elasticsearch database [here](/docs/guides/elasticsearch/overview.md).
+- Wondering what features are coming next? Please visit [here](/docs/roadmap.md). 
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

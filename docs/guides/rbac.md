@@ -1,16 +1,16 @@
 ---
 title: RBAC
 menu:
-  docs_0.8.0:
-    identifier: tutorials-rbac
+  docs_0.8.0-beta.0:
+    identifier: guides-rbac
     name: RBAC
-    parent: tutorials
-    weight: 80
-menu_name: docs_0.8.0
-section_menu_id: tutorials
+    parent: guides
+    weight: 90
+menu_name: docs_0.8.0-beta.0
+section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/tutorials/README.md).
+> New to KubeDB? Please start [here](/docs/guides/README.md).
 
 # Using RBAC with KubeDB
 This tutorial will show you how to use KubeDB in a [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) enabled cluster.
@@ -43,7 +43,7 @@ $ kubectl patch deployment kube-dns -n kube-system -p '{"spec":{"template":{"spe
 $ kubectl get pods -n kube-system --watch
 ```
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
 ```
 $ kubedb init --rbac
 ```
@@ -283,11 +283,11 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 $ kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/uninstall.md).
 
 
 ## Next Steps
-- Learn how to use KubeDB to run a PostgreSQL database [here](/docs/tutorials/postgres/README.md).
-- Learn how to use KubeDB to run an Elasticsearch database [here](/docs/tutorials/elasticsearch/README.md).
-- Wondering what features are coming next? Please visit [here](/ROADMAP.md). 
-- Want to hack on KubeDB? Check our [contribution guidelines](/CONTRIBUTING.md).
+- Learn how to use KubeDB to run a PostgreSQL database [here](/docs/guides/postgres/overview.md).
+- Learn how to use KubeDB to run an Elasticsearch database [here](/docs/guides/elasticsearch/overview.md).
+- Wondering what features are coming next? Please visit [here](/docs/roadmap.md). 
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

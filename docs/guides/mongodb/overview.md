@@ -1,4 +1,18 @@
-> New to KubeDB? Please start [here](/docs/tutorials/README.md).
+---
+title: MongoDB
+menu:
+  docs_0.8.0-beta.0:
+    identifier: guides-mongodb-overview
+    name: Overview
+    parent: guides-mongodb
+    weight: 10
+menu_name: docs_0.8.0-beta.0
+section_menu_id: guides
+aliases:
+  - /docs/0.8.0-beta.0/guides/mongodb/
+---
+
+> New to KubeDB? Please start [here](/docs/guides/README.md).
 
 # Running MongoDB
 This tutorial will show you how to use KubeDB to run a MongoDB database.
@@ -6,7 +20,7 @@ This tutorial will show you how to use KubeDB to run a MongoDB database.
 ## Before You Begin
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [Minikube](https://github.com/kubernetes/minikube).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. This tutorial will also use a phpMyAdmin to connect and test MongoDB database, once it is running. Run the following command to prepare your cluster for this tutorial:
 
@@ -62,7 +76,7 @@ Here,
 
  - `spec.init.scriptSource` specifies a sql script source used to initialize the database after it is created. The sql scripts will be executed alphabatically. In this tutorial, a sample sql script from the git repository `https://github.com/kubedb/mongodb-init-scripts.git` is used to create a test database.
 
-KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a ClusterIP Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present. If [RBAC is enabled](/docs/tutorials/rbac.md), a ClusterRole, ServiceAccount and ClusterRoleBinding with the matching object name will be created and used as the service account name for the corresponding StatefulSet.
+KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a ClusterIP Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present. If [RBAC is enabled](/docs/guides/rbac.md), a ClusterRole, ServiceAccount and ClusterRoleBinding with the matching object name will be created and used as the service account name for the corresponding StatefulSet.
 
 ```console
 $ kubedb describe mg -n demo mgo1
@@ -701,13 +715,13 @@ $ kubectl delete ns demo
 namespace "demo" deleted
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/uninstall.md).
 
 
 ## Next Steps
 - Learn about the details of MongoDB object [here](/docs/concepts/mongodb.md).
 - See the list of supported storage providers for snapshots [here](/docs/concepts/snapshot.md).
-- Thinking about monitoring your database? KubeDB works [out-of-the-box with Prometheus](/docs/tutorials/monitoring.md).
-- Learn how to use KubeDB in a [RBAC](/docs/tutorials/rbac.md) enabled cluster.
-- Wondering what features are coming next? Please visit [here](/ROADMAP.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/CONTRIBUTING.md).
+- Thinking about monitoring your database? KubeDB works [out-of-the-box with Prometheus](/docs/guides/monitoring.md).
+- Learn how to use KubeDB in a [RBAC](/docs/guides/rbac.md) enabled cluster.
+- Wondering what features are coming next? Please visit [here](/docs/roadmap.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

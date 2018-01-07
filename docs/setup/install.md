@@ -1,20 +1,16 @@
-
 ---
-title: KubeDB Install
+title: Install
 menu:
-  docs_0.8.0:
+  docs_0.8.0-beta.0:
     identifier: install-kubedb
     name: Install
-    parent: getting-started
-    weight: 20
-menu_name: docs_0.8.0
-section_menu_id: getting-started
-url: /docs/0.8.0/getting-started/install/
-aliases:
-  - /docs/0.8.0/install/
+    parent: setup
+    weight: 10
+menu_name: docs_0.8.0-beta.0
+section_menu_id: setup
 ---
 
-> New to KubeDB? Please start [here](/docs/tutorials/README.md).
+> New to KubeDB? Please start [here](/docs/guides/README.md).
 
 # Installation Guide
 
@@ -23,12 +19,12 @@ KubeDB provides a CLI to work with database objects. Download pre-built binaries
 
 ```console
 # Linux amd 64-bit
-wget -O kubedb https://github.com/kubedb/cli/releases/download/0.8.0/kubedb-linux-amd64 \
+wget -O kubedb https://github.com/kubedb/cli/releases/download/0.8.0-beta.0/kubedb-linux-amd64 \
   && chmod +x kubedb \
   && sudo mv kubedb /usr/local/bin/
 
 # Mac 64-bit
-wget -O kubedb https://github.com/kubedb/cli/releases/download/0.8.0/kubedb-darwin-amd64 \
+wget -O kubedb https://github.com/kubedb/cli/releases/download/0.8.0-beta.0/kubedb-darwin-amd64 \
   && chmod +x kubedb \
   && sudo mv kubedb /usr/local/bin/
 ```
@@ -61,7 +57,7 @@ Successfully created operator deployment.
 Successfully created operator service.
 ```
 
-This will create a `kubedb-operator` ClusterRole, ClusterRoleBinding and ServiceAccount to run `KubeDB` operator pods. With RBAC enabled, a separate set of ClusterRole, ClusterRoleBinding and ServiceAccount will be created for each KubeDB database. To learn more, please visit [here](/docs/tutorials/rbac.md).
+This will create a `kubedb-operator` ClusterRole, ClusterRoleBinding and ServiceAccount to run `KubeDB` operator pods. With RBAC enabled, a separate set of ClusterRole, ClusterRoleBinding and ServiceAccount will be created for each KubeDB database. To learn more, please visit [here](/docs/guides/rbac.md).
 
 ## Verify installation
 To check if KubeDB operator pods have started, run the following command:
@@ -76,7 +72,7 @@ Now, to confirm CRD groups have been registered by the operator, run the followi
 $ kubectl get crd -l app=kubedb
 ```
 
-Now, you are ready to [create your first database](/docs/tutorials/README.md) using KubeDB.
+Now, you are ready to [create your first database](/docs/guides/README.md) using KubeDB.
 
 ## Upgrade KubeDB
 To upgrade KubeDB cli, just replace the old cli with the new version.
@@ -84,7 +80,7 @@ To upgrade KubeDB cli, just replace the old cli with the new version.
 `kubedb init` command can be used to upgrade operator. Re-run the `kubedb init` command with `--upgrade` flag to upgrade operator.
 
 ```console
-$ kubedb init --version='0.8.0' --upgrade
+$ kubedb init --version='0.8.0-beta.0' --upgrade
 
 Successfully upgraded operator deployment.
 ```

@@ -1,26 +1,25 @@
 ---
 title: Postgres
 menu:
-  docs_0.8.0:
-    identifier: tutorials-postgres-readme
+  docs_0.8.0-beta.0:
+    identifier: guides-postgres-readme
     name: Overview
-    parent: tutorials-postgres
+    parent: guides-postgres
     weight: 10
-menu_name: docs_0.8.0
-section_menu_id: tutorials
-url: /docs/0.8.0/tutorials/postgres/
+menu_name: docs_0.8.0-beta.0
+section_menu_id: guides
 aliases:
-  - /docs/0.8.0/tutorials/postgres/README/
+  - /docs/0.8.0-beta.0/guides/postgres/
 ---
 
-> New to KubeDB? Please start [here](/docs/tutorials/README.md).
+> New to KubeDB? Please start [here](/docs/guides/README.md).
 
 # Running PostgreSQL
 This tutorial will show you how to use KubeDB to run a PostgreSQL database.
 
 ## Before You Begin
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [Minikube](https://github.com/kubernetes/minikube).
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 This tutorial will also use a pgAdmin to connect and test PostgreSQL database, once it is running. Run the following command to prepare your cluster for this tutorial:
 
@@ -86,7 +85,7 @@ Here,
  - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If no storage spec is given, an `emptyDir` is used.
  - `spec.init.scriptSource` specifies scripts used to initialize the database after it is created. In this tutorial, `data.sql` script from the git repository `https://github.com/kubedb/postgres-init-scripts.git` is used to create a `dashboard` table in `data` schema.
 
-KubeDB operator watches for `Postgres` objects using Kubernetes api. When a `Postgres` object is created, KubeDB operator will create a new StatefulSet and two ClusterIP Service with the matching name. KubeDB operator will also create a governing service for StatefulSet with the name `kubedb`, if one is not already present. If [RBAC is enabled](/docs/tutorials/rbac.md), a ClusterRole, ServiceAccount and ClusterRoleBinding with the matching CRD object name will be created and used as the service account name for the corresponding StatefulSet.
+KubeDB operator watches for `Postgres` objects using Kubernetes api. When a `Postgres` object is created, KubeDB operator will create a new StatefulSet and two ClusterIP Service with the matching name. KubeDB operator will also create a governing service for StatefulSet with the name `kubedb`, if one is not already present. If [RBAC is enabled](/docs/guides/rbac.md), a ClusterRole, ServiceAccount and ClusterRoleBinding with the matching CRD object name will be created and used as the service account name for the corresponding StatefulSet.
 
 ```console
 $ kubedb describe pg -n demo p1
@@ -599,13 +598,13 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 $ kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/uninstall.md).
 
 
 ## Next Steps
 - Learn about the details of Postgres object [here](/docs/concepts/postgres.md).
 - See the list of supported storage providers for snapshots [here](/docs/concepts/snapshot.md).
-- Thinking about monitoring your database? KubeDB works [out-of-the-box with Prometheus](/docs/tutorials/monitoring.md).
-- Learn how to use KubeDB in a [RBAC](/docs/tutorials/rbac.md) enabled cluster.
-- Wondering what features are coming next? Please visit [here](/ROADMAP.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/CONTRIBUTING.md).
+- Thinking about monitoring your database? KubeDB works [out-of-the-box with Prometheus](/docs/guides/monitoring.md).
+- Learn how to use KubeDB in a [RBAC](/docs/guides/rbac.md) enabled cluster.
+- Wondering what features are coming next? Please visit [here](/docs/roadmap.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -1,14 +1,16 @@
 ---
 title: Release
 menu:
-  docs_0.8.0:
+  docs_0.8.0-beta.0:
     identifier: developer-guide-release
-    name: Release
+    name: Release Process
     parent: developer-guide
     weight: 20
-menu_name: docs_0.8.0
-section_menu_id: developer-guide
+menu_name: docs_0.8.0-beta.0
+section_menu_id: setup
 ---
+
+# Release Process
 
 ## apimachinery
 - Make sure `apimachinery` master builds and create a `release-*` branch.
