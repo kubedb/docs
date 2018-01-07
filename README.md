@@ -6,15 +6,17 @@
 KubeDB Operator
 
 ## Installation
-To install KubeDB, please follow the guide [here](https://github.com/kubedb/cli/blob/master/docs/install.md).
+To install KubeDB, please follow the guide [here](https://kubedb.com/docs/latest/setup/install/).
 
 ## Using KubeDB
-Want to learn how to use KubeDB? Please start [here](https://github.com/kubedb/cli/blob/master/docs/tutorials/README.md).
+Want to learn how to use KubeDB? Please start [here](https://kubedb.com/docs/latest/guides/).
 
 ## Contribution guidelines
-Want to help improve KubeDB? Please start [here](https://github.com/kubedb/cli/blob/master/CONTRIBUTING.md).
+Want to help improve KubeDB? Please start [here](https://kubedb.com/docs/latest/welcome/contributing/).
 
 ## Support
-If you have any questions, talk to us on the [Kubernetes Slack team](http://slack.kubernetes.io/) channel `#kubedb`.
+We use Slack for public discussions. To chit chat with us or the rest of the community, join us in the [Kubernetes Slack team](https://kubernetes.slack.com/messages/C8149MREV/) channel `#kubedb`. To sign up, use our [Slack inviter](http://slack.kubernetes.io/).
 
-If you have found a bug with KubeDB or want to request for new features, please file issues under [kubedb/project](https://github.com/kubedb/project/issues/new) repository.
+To receive product annoucements, please join our [mailing list](https://groups.google.com/forum/#!forum/kubedb) or follow us on [Twitter](https://twitter.com/KubeDB). Our mailing list is also used to share design docs shared via Google docs.
+
+If you have found a bug with KubeDB or want to request for new features, please [file an issue](https://github.com/kubedb/project/issues/new).
