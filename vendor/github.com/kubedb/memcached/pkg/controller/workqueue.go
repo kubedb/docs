@@ -85,7 +85,7 @@ func (c *Controller) runWatcher(threadiness int, stopCh chan struct{}) {
 
 	// Let the workers stop when we are done
 	defer c.queue.ShutDown()
-	log.Infof("Starting Memcached controller")
+	log.Infoln("Starting Memcached controller")
 
 	go c.informer.Run(stopCh)
 
@@ -100,7 +100,7 @@ func (c *Controller) runWatcher(threadiness int, stopCh chan struct{}) {
 	}
 
 	<-stopCh
-	log.Infof("Stopping Memcached controller")
+	log.Infoln("Stopping Memcached controller")
 
 }
 

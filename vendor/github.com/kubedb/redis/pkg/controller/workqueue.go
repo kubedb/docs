@@ -92,7 +92,7 @@ func (c *Controller) runWatcher(threadiness int, stopCh chan struct{}) {
 
 	// Let the workers stop when we are done
 	defer c.queue.ShutDown()
-	log.Infof("Starting Redis controller")
+	log.Infoln("Starting Redis controller")
 
 	go c.informer.Run(stopCh)
 
@@ -107,7 +107,7 @@ func (c *Controller) runWatcher(threadiness int, stopCh chan struct{}) {
 	}
 
 	<-stopCh
-	log.Infof("Stopping Redis controller")
+	log.Infoln("Stopping Redis controller")
 
 }
 

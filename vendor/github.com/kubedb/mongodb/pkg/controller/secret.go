@@ -13,6 +13,15 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
+const (
+	mongodbUser = "root"
+
+	KeyMongoDBUser     = "user"
+	KeyMongoDBPassword = "password"
+
+	ExporterSecretPath = "/etc/exporter/secrets"
+)
+
 func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 	if mongodb.Spec.DatabaseSecret == nil {
 		secretVolumeSource, err := c.createDatabaseSecret(mongodb)
@@ -53,11 +62,6 @@ func (c *Controller) createDatabaseSecret(mongodb *api.MongoDB) (*core.SecretVol
 		return nil, err
 	}
 	if sc == nil {
-		MONGO_PASSWORD := fmt.Sprintf("%s", rand.GeneratePassword())
-		data := map[string][]byte{
-			".admin": []byte(MONGO_PASSWORD),
-		}
-
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: authSecretName,
@@ -67,7 +71,10 @@ func (c *Controller) createDatabaseSecret(mongodb *api.MongoDB) (*core.SecretVol
 				},
 			},
 			Type: core.SecretTypeOpaque,
-			Data: data, // Add secret data
+			StringData: map[string]string{
+				KeyMongoDBUser:     mongodbUser,
+				KeyMongoDBPassword: rand.GeneratePassword(),
+			},
 		}
 		if _, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Create(secret); err != nil {
 			return nil, err

@@ -12,11 +12,9 @@ import (
 )
 
 const (
-	snapshotProcessRestore  = "restore"
-	snapshotTypeDumpRestore = "dump-restore"
-
+	snapshotDumpDir        = "/var/data"
+	snapshotProcessRestore = "restore"
 	snapshotProcessBackup  = "backup"
-	snapshotTypeDumpBackup = "dump-backup"
 )
 
 func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) (*batch.Job, error) {
@@ -57,8 +55,10 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 							Name:  snapshotProcessRestore,
 							Image: c.opt.Docker.GetToolsImageWithTag(mysql),
 							Args: []string{
-								fmt.Sprintf(`--process=%s`, snapshotProcessRestore),
+								snapshotProcessRestore,
 								fmt.Sprintf(`--host=%s`, databaseName),
+								fmt.Sprintf(`--user=%s`, mysqlUser),
+								fmt.Sprintf(`--data-dir=%s`, snapshotDumpDir),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
@@ -68,16 +68,23 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 									Name:  analytics.Key,
 									Value: c.opt.AnalyticsClientID,
 								},
+								{
+									Name: "DB_PASSWORD",
+									ValueFrom: &core.EnvVarSource{
+										SecretKeyRef: &core.SecretKeySelector{
+											LocalObjectReference: core.LocalObjectReference{
+												Name: mysql.Spec.DatabaseSecret.SecretName,
+											},
+											Key: KeyMySQLPassword,
+										},
+									},
+								},
 							},
 							Resources: snapshot.Spec.Resources,
 							VolumeMounts: []core.VolumeMount{
 								{
-									Name:      "secret",
-									MountPath: "/srv/" + api.ResourceNameMySQL + "/secrets",
-								},
-								{
 									Name:      persistentVolume.Name,
-									MountPath: "/var/" + snapshotTypeDumpRestore + "/",
+									MountPath: snapshotDumpDir,
 								},
 								{
 									Name:      "osmconfig",
@@ -89,14 +96,6 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 					},
 					ImagePullSecrets: mysql.Spec.ImagePullSecrets,
 					Volumes: []core.Volume{
-						{
-							Name: "secret",
-							VolumeSource: core.VolumeSource{
-								Secret: &core.SecretVolumeSource{
-									SecretName: mysql.Spec.DatabaseSecret.SecretName,
-								},
-							},
-						},
 						{
 							Name:         persistentVolume.Name,
 							VolumeSource: persistentVolume.VolumeSource,
@@ -171,8 +170,10 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 							Name:  snapshotProcessBackup,
 							Image: c.opt.Docker.GetToolsImageWithTag(mysql),
 							Args: []string{
-								fmt.Sprintf(`--process=%s`, snapshotProcessBackup),
+								snapshotProcessBackup,
 								fmt.Sprintf(`--host=%s`, databaseName),
+								fmt.Sprintf(`--user=%s`, mysqlUser),
+								fmt.Sprintf(`--data-dir=%s`, snapshotDumpDir),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
@@ -182,16 +183,23 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 									Name:  analytics.Key,
 									Value: c.opt.AnalyticsClientID,
 								},
+								{
+									Name: "DB_PASSWORD",
+									ValueFrom: &core.EnvVarSource{
+										SecretKeyRef: &core.SecretKeySelector{
+											LocalObjectReference: core.LocalObjectReference{
+												Name: mysql.Spec.DatabaseSecret.SecretName,
+											},
+											Key: KeyMySQLPassword,
+										},
+									},
+								},
 							},
 							Resources: snapshot.Spec.Resources,
 							VolumeMounts: []core.VolumeMount{
 								{
-									Name:      "secret",
-									MountPath: "/srv/" + api.ResourceNameMySQL + "/secrets",
-								},
-								{
 									Name:      persistentVolume.Name,
-									MountPath: "/var/" + snapshotTypeDumpBackup + "/",
+									MountPath: snapshotDumpDir,
 								},
 								{
 									Name:      "osmconfig",
@@ -203,14 +211,6 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 					},
 					ImagePullSecrets: mysql.Spec.ImagePullSecrets,
 					Volumes: []core.Volume{
-						{
-							Name: "secret",
-							VolumeSource: core.VolumeSource{
-								Secret: &core.SecretVolumeSource{
-									SecretName: mysql.Spec.DatabaseSecret.SecretName,
-								},
-							},
-						},
 						{
 							Name:         persistentVolume.Name,
 							VolumeSource: persistentVolume.VolumeSource,

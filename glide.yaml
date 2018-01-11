@@ -59,7 +59,7 @@ import:
   vcs: git
   version: v1.8.3
 - package: github.com/kubedb/mongodb
-  version: master
+  version: fix-key
 - package: github.com/dcu/mongodb_exporter
   version: master
 - package: github.com/kubedb/mysql

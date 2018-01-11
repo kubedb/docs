@@ -13,6 +13,13 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
+const (
+	mysqlUser = "root"
+
+	KeyMySQLUser     = "user"
+	KeyMySQLPassword = "password"
+)
+
 func (c *Controller) ensureDatabaseSecret(mysql *api.MySQL) error {
 	if mysql.Spec.DatabaseSecret == nil {
 		secretVolumeSource, err := c.createDatabaseSecret(mysql)
@@ -53,10 +60,6 @@ func (c *Controller) createDatabaseSecret(mysql *api.MySQL) (*core.SecretVolumeS
 		return nil, err
 	}
 	if sc == nil {
-		MYSQL_PASSWORD := fmt.Sprintf("%s", rand.GeneratePassword())
-		data := map[string][]byte{
-			".admin": []byte(MYSQL_PASSWORD),
-		}
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: authSecretName,
@@ -66,7 +69,10 @@ func (c *Controller) createDatabaseSecret(mysql *api.MySQL) (*core.SecretVolumeS
 				},
 			},
 			Type: core.SecretTypeOpaque,
-			Data: data, // Add secret data
+			StringData: map[string]string{
+				KeyMySQLUser:     mysqlUser,
+				KeyMySQLPassword: rand.GeneratePassword(),
+			},
 		}
 		if _, err := c.Client.CoreV1().Secrets(mysql.Namespace).Create(secret); err != nil {
 			return nil, err

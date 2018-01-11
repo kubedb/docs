@@ -13,6 +13,8 @@ import (
 	"github.com/go-kit/kit/log"
 	ese "github.com/justwatchcom/elasticsearch_exporter/collector"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	mgCtrl "github.com/kubedb/mongodb/pkg/controller"
+	msCtrl "github.com/kubedb/mysql/pkg/controller"
 	rde "github.com/oliver006/redis_exporter/exporter"
 	"github.com/orcaman/concurrent-map"
 	"github.com/prometheus/client_golang/prometheus"
@@ -24,6 +26,8 @@ import (
 	"gopkg.in/ini.v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"path/filepath"
+	"github.com/appscode/go/ioutil"
 )
 
 const (
@@ -294,21 +298,20 @@ func getMySQLURL(db *api.MySQL, podIP string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	password := string(secret.Data[".admin"])
+	user := string(secret.Data[msCtrl.KeyMySQLUser])
+	password := string(secret.Data[msCtrl.KeyMySQLPassword])
 
-	user := "root"
 	conn := fmt.Sprintf("%s:%s@(%s:3306)/", user, password, podIP)
 	return conn, nil
 }
 
 func getMongoDBURL(db *api.MongoDB, podIP string) (string, error) {
-	secret, err := kubeClient.CoreV1().Secrets(db.Namespace).Get(db.Spec.DatabaseSecret.SecretName, metav1.GetOptions{})
-	if err != nil {
+	if _, err := os.Stat(mgCtrl.ExporterSecretPath); err != nil {
 		return "", err
 	}
-	password := string(secret.Data[".admin"])
+	userData,_ := ioutil.ReadFile(filepath.Join(mgCtrl.ExporterSecretPath , mgCtrl.KeyMongoDBUser))
+	passwordData,_ := ioutil.ReadFile(filepath.Join(mgCtrl.ExporterSecretPath , mgCtrl.KeyMongoDBPassword))
 
-	user := "root"
-	conn := fmt.Sprintf("mongodb://%s:%s@%s:27017", user, password, podIP)
+	conn := fmt.Sprintf("mongodb://%s:%s@%s:27017", userData, passwordData, podIP)
 	return conn, nil
 }

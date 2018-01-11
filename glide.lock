@@ -1,5 +1,5 @@
-hash: 06e9d805fa54035be43ddf2b619d5a6e48bdb16c40404dca94745e9ec1333d86
-updated: 2018-01-06T18:48:02.677033746-08:00
+hash: 460de96b943d35ac8281a200c6f415f5674c51e20b0f7b0d90012fac3e747d4d
+updated: 2018-01-11T18:19:15.461541798+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -13,7 +13,7 @@ imports:
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/appscode/go
-  version: f08cee5a2aa53a1ab6d30e4ae11e381d1b265f81
+  version: 979b75cb554996ed0e5c2ba4a3538ca163a329b8
   subpackages:
   - analytics
   - context
@@ -26,18 +26,19 @@ imports:
   - log
   - log/golog
   - runtime
+  - sets
   - strings
   - types
   - version
 - name: github.com/appscode/kube-mon
-  version: 7f7ea00b96f4fe39dbcc4fbe405768eae032ba2f
+  version: bb1241cf66767ebcca781fef3bdd2c2769e11658
   subpackages:
   - agents
   - agents/coreosprometheusoperator
   - agents/prometheusbuiltin
   - api
 - name: github.com/appscode/kutil
-  version: 4a8306c9183a0dbebfc98327238735a1fb015e6a
+  version: 1246ec828f2f5024b54a1fe84ad4afaf3de0ed37
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
@@ -166,7 +167,7 @@ imports:
 - name: github.com/go-openapi/swag
   version: 1d0bd113de87027671077d3c71eb3ac5d7dbba72
 - name: github.com/go-sql-driver/mysql
-  version: 9181e3a86a19bacd63e68d43ae8b7b36320d8092
+  version: 4a0c3d73d8579f9fc535cf5e654a651cbd57dd6e
 - name: github.com/go-stack/stack
   version: 259ab82a6cad3992b4e21ff5cac294ccb06474bc
 - name: github.com/go-xorm/builder
@@ -181,7 +182,7 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: 44145f04b68cf362d9c4df2182967c2275eaefed
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/groupcache
   version: 02826c3e79038b59d737d3b1c0a1d937f71a4433
   subpackages:
@@ -207,7 +208,7 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/google/uuid
-  version: dec09d789f3dba190787f8b4454c7d3c936fed9e
+  version: e367a344cbe8e08149f9951115dc299ebd42b919
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
@@ -233,7 +234,7 @@ imports:
   subpackages:
   - diskcache
 - name: github.com/hashicorp/go-version
-  version: 1b1de86cf2ec13494b6814b48157884efaf71c54
+  version: 5b737306c678d7052849144de676800e5b0dc2c1
   repo: https://github.com/appscode/go-version.git
   vcs: git
 - name: github.com/hashicorp/golang-lru
@@ -259,13 +260,13 @@ imports:
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/justwatchcom/elasticsearch_exporter
-  version: 912fa4741b804adb5256f99fd538b9cdab33756d
+  version: 92dcbf391cb6250ec4b23c01de47bfe242a259e5
   subpackages:
   - collector
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 7604bdfdd4e2b6f1c301847c8d43ecd8e726dc9d
+  version: 92564a91c9eb0f49e4954132ac34a1b9e505ea69
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -281,32 +282,32 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 02c95056e79e1b0d68c61ce872e7edf608ef030e
+  version: f9a047939bae2c074903bcaa72488f45192730cc
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/memcached
-  version: 72ac58c2530fdc791555f7b4a3a57491238e8543
+  version: f53c2d0df7d570ef214b9f256ca1fa9dd9956d4b
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mongodb
-  version: a3947346193a6cc127254a853b8816c05c2ab83d
+  version: 1107cf00a0fed6805f896c21c0f3eb43bbcaa130
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mysql
-  version: 2f1e4b7d1c3e85daea6c7fe6a1612b3d2859f26d
+  version: 078098c818180d2867e5fb849bca93069d8ff2b2
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/postgres
-  version: 67472b345441321ec30c48b79f1bcd8ddf5eb3aa
+  version: f8f200f564d5b6e0afe36df02172fffe21034a77
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -314,13 +315,13 @@ imports:
   - pkg/leader_election
   - pkg/validator
 - name: github.com/kubedb/redis
-  version: 473d2107b6b507531d7ff5d33d9a1e1c6a4b5ffc
+  version: 9dbfb5ebaa6a9b56fcb58ca27bc5617c68877aa6
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubernetes/apimachinery
-  version: 91d8586aac31d9086939d077ba556d2c7fb157b4
+  version: d86399872a1f1082d33982f7f9b37a2ce7c2e307
   subpackages:
   - pkg/conversion
 - name: github.com/lib/pq
@@ -352,7 +353,7 @@ imports:
 - name: github.com/opencontainers/go-digest
   version: 279bed98673dd5bef374d3b6e4b09e2af76183bf
 - name: github.com/orcaman/concurrent-map
-  version: d4c23bd0e01134806215ffe65ba3fd22ec6721f7
+  version: 2ae17bc4c860c83513ee50feb9746f3e50d7515d
 - name: github.com/peterbourgon/diskv
   version: 5f041e8faa004a95c88a202771f4cc3e991971e6
 - name: github.com/pkg/errors
@@ -380,7 +381,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/prometheus/mysqld_exporter
-  version: c52f281c2682aef2da8c743e92ee3d416d154d99
+  version: da3c16fa8c08b17a0828aaa244920e2d7b739c5b
   subpackages:
   - collector
 - name: github.com/prometheus/procfs
@@ -388,7 +389,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: ec94df49d45baa8e680d81e732294eb04fff00de
+  version: 35a6ffbaf3e358c73172b4a575de2592cbeb062a
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -468,7 +469,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: b1c0f9b3aa8fac163224fab909402d49c6dce50a
+  version: d2c53ea20b719a26e291430d99eaaf6c9a8eb68c
   subpackages:
   - gensupport
   - googleapi
@@ -501,7 +502,7 @@ imports:
   - internal/sasl
   - internal/scram
 - name: gopkg.in/olivere/elastic.v5
-  version: b423d843ef937586f8ad3142ad4557836817080d
+  version: ef745defcdcc081f19c499930dc12c7a6cb638b4
   subpackages:
   - config
   - uritemplates

@@ -92,14 +92,14 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 			mongodb.ObjectReference(),
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
-			"Successfully created Elasticsearch",
+			"Successfully created MongoDB",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
 		c.recorder.Event(
 			mongodb.ObjectReference(),
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
-			"Successfully patched Elasticsearch",
+			"Successfully patched MongoDB",
 		)
 	}
 

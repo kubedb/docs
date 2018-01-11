@@ -85,7 +85,7 @@ func (c *Controller) runWatcher(threadiness int, stopCh chan struct{}) {
 
 	// Let the workers stop when we are done
 	defer c.queue.ShutDown()
-	log.Infof("Starting MongoDB controller")
+	log.Infoln("Starting MongoDB controller")
 
 	go c.informer.Run(stopCh)
 
@@ -100,7 +100,7 @@ func (c *Controller) runWatcher(threadiness int, stopCh chan struct{}) {
 	}
 
 	<-stopCh
-	log.Infof("Stopping MongoDB controller")
+	log.Infoln("Stopping MongoDB controller")
 
 }
 

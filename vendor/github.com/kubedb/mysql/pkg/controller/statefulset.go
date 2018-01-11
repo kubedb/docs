@@ -219,7 +219,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSe
 						LocalObjectReference: core.LocalObjectReference{
 							Name: mysql.Spec.DatabaseSecret.SecretName,
 						},
-						Key: ".admin",
+						Key: KeyMySQLPassword,
 					},
 				},
 			})
