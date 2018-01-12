@@ -136,7 +136,25 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 						ContainerPort: mysql.Spec.Monitor.Prometheus.Port,
 					},
 				},
+				VolumeMounts: []core.VolumeMount{
+					{
+						Name:      "db-secret",
+						MountPath: ExporterSecretPath,
+						ReadOnly:  true,
+					},
+				},
 			})
+			in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+				in.Spec.Template.Spec.Volumes,
+				core.Volume{
+					Name: "db-secret",
+					VolumeSource: core.VolumeSource{
+						Secret: &core.SecretVolumeSource{
+							SecretName: mysql.Spec.DatabaseSecret.SecretName,
+						},
+					},
+				},
+			)
 		}
 		// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
 		in = upsertEnv(in, mysql)

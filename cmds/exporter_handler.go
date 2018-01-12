@@ -5,8 +5,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"time"
 
+	"github.com/appscode/go/ioutil"
 	"github.com/appscode/go/runtime"
 	"github.com/appscode/pat"
 	mgoe "github.com/dcu/mongodb_exporter/collector"
@@ -26,8 +28,6 @@ import (
 	"gopkg.in/ini.v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"path/filepath"
-	"github.com/appscode/go/ioutil"
 )
 
 const (
@@ -294,14 +294,13 @@ func getPostgresURL(db *api.Postgres, podIP string) (string, error) {
 }
 
 func getMySQLURL(db *api.MySQL, podIP string) (string, error) {
-	secret, err := kubeClient.CoreV1().Secrets(db.Namespace).Get(db.Spec.DatabaseSecret.SecretName, metav1.GetOptions{})
-	if err != nil {
+	if _, err := os.Stat(msCtrl.ExporterSecretPath); err != nil {
 		return "", err
 	}
-	user := string(secret.Data[msCtrl.KeyMySQLUser])
-	password := string(secret.Data[msCtrl.KeyMySQLPassword])
+	userData, _ := ioutil.ReadFile(filepath.Join(msCtrl.ExporterSecretPath, msCtrl.KeyMySQLUser))
+	passwordData, _ := ioutil.ReadFile(filepath.Join(msCtrl.ExporterSecretPath, msCtrl.KeyMySQLPassword))
 
-	conn := fmt.Sprintf("%s:%s@(%s:3306)/", user, password, podIP)
+	conn := fmt.Sprintf("%s:%s@(%s:3306)/", userData, passwordData, podIP)
 	return conn, nil
 }
 
@@ -309,8 +308,8 @@ func getMongoDBURL(db *api.MongoDB, podIP string) (string, error) {
 	if _, err := os.Stat(mgCtrl.ExporterSecretPath); err != nil {
 		return "", err
 	}
-	userData,_ := ioutil.ReadFile(filepath.Join(mgCtrl.ExporterSecretPath , mgCtrl.KeyMongoDBUser))
-	passwordData,_ := ioutil.ReadFile(filepath.Join(mgCtrl.ExporterSecretPath , mgCtrl.KeyMongoDBPassword))
+	userData, _ := ioutil.ReadFile(filepath.Join(mgCtrl.ExporterSecretPath, mgCtrl.KeyMongoDBUser))
+	passwordData, _ := ioutil.ReadFile(filepath.Join(mgCtrl.ExporterSecretPath, mgCtrl.KeyMongoDBPassword))
 
 	conn := fmt.Sprintf("mongodb://%s:%s@%s:27017", userData, passwordData, podIP)
 	return conn, nil

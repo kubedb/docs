@@ -63,7 +63,7 @@ import:
 - package: github.com/dcu/mongodb_exporter
   version: master
 - package: github.com/kubedb/mysql
-  version: master
+  version: fix-exporter
 - package: github.com/prometheus/mysqld_exporter
   version: master
 - package: github.com/kubedb/redis

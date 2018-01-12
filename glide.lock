@@ -1,5 +1,5 @@
-hash: 460de96b943d35ac8281a200c6f415f5674c51e20b0f7b0d90012fac3e747d4d
-updated: 2018-01-11T18:19:15.461541798+06:00
+hash: 5bf45f6cab3d3eff06a9dffcb112bf890b220e102098cd217af9bd3b0ad09193
+updated: 2018-01-12T12:52:37.613599422+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -266,7 +266,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 92564a91c9eb0f49e4954132ac34a1b9e505ea69
+  version: 712463a1911f85de9304e43d634fafdacadb9371
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -301,7 +301,7 @@ imports:
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mysql
-  version: 078098c818180d2867e5fb849bca93069d8ff2b2
+  version: 4486df358d048b7de7d3aefb686083a4d0c4583c
   subpackages:
   - pkg/controller
   - pkg/docker
@@ -389,7 +389,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 35a6ffbaf3e358c73172b4a575de2592cbeb062a
+  version: 0471e64ad11ad8fadf063960bbe93bc715539afe
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -469,7 +469,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: d2c53ea20b719a26e291430d99eaaf6c9a8eb68c
+  version: 37df4fabefb044819e927f44b8487d4cd926d06c
   subpackages:
   - gensupport
   - googleapi

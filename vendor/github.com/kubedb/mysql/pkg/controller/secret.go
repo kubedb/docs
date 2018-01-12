@@ -18,6 +18,8 @@ const (
 
 	KeyMySQLUser     = "user"
 	KeyMySQLPassword = "password"
+
+	ExporterSecretPath = "/etc/exporter/secrets"
 )
 
 func (c *Controller) ensureDatabaseSecret(mysql *api.MySQL) error {
