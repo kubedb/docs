@@ -5,6 +5,7 @@ import (
 
 	"github.com/appscode/go/hold"
 	"github.com/appscode/go/log"
+	"github.com/appscode/go/log/golog"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -36,12 +37,14 @@ type Options struct {
 	GoverningService string
 	// Address to listen on for web interface and telemetry.
 	Address string
-	// Enable RBAC for database workloads
-	EnableRbac bool
 	//Max number requests for retries
 	MaxNumRequeues int
+	// Enable Analytics
+	EnableAnalytics bool
 	// Analytics Client ID
 	AnalyticsClientID string
+	// Logger Options
+	LoggerOptions golog.Options
 }
 
 type Controller struct {

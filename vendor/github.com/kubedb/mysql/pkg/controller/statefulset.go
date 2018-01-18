@@ -27,12 +27,6 @@ func (c *Controller) ensureStatefulSet(mysql *api.MySQL) (kutil.VerbType, error)
 		return kutil.VerbUnchanged, err
 	}
 
-	if c.opt.EnableRbac && mysql.GetMonitoringVendor() == mon_api.VendorPrometheus {
-		if err := c.ensureRBACStuff(mysql); err != nil {
-			return kutil.VerbUnchanged, err
-		}
-	}
-
 	// Create statefulSet for MySQL database
 	statefulSet, vt, err := c.createStatefulSet(mysql)
 	if err != nil {
@@ -127,13 +121,12 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		if mysql.GetMonitoringVendor() == mon_api.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
-				Args: []string{
+				Args: append([]string{
 					"export",
 					fmt.Sprintf("--address=:%d", mysql.Spec.Monitor.Prometheus.Port),
-					"--v=3",
-				},
-				Image:           c.opt.Docker.GetOperatorImageWithTag(mysql),
-				ImagePullPolicy: core.PullIfNotPresent,
+					fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
+				}, c.opt.LoggerOptions.ToFlags()...),
+				Image: c.opt.Docker.GetOperatorImageWithTag(mysql),
 				Ports: []core.ContainerPort{
 					{
 						Name:          api.PrometheusExporterPortName,
@@ -160,10 +153,6 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 					},
 				},
 			)
-
-			if c.opt.EnableRbac {
-				in.Spec.Template.Spec.ServiceAccountName = mysql.Name
-			}
 		}
 		// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
 		in = upsertEnv(in, mysql)

@@ -59,7 +59,7 @@ import:
   vcs: git
   version: v1.8.3
 - package: github.com/kubedb/mongodb
-  version: fix-key
+  version: master
 - package: github.com/dcu/mongodb_exporter
   version: master
 - package: github.com/kubedb/mysql
@@ -80,6 +80,3 @@ import:
   repo: https://github.com/appscode/go-version.git
   vcs: git
   version: master
-  #Temporary. Todo: delete
-- package: gopkg.in/olivere/elastic.v5
-  version: b423d843ef937586f8ad3142ad4557836817080d

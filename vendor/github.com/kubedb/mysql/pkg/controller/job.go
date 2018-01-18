@@ -62,6 +62,7 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
+								fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
 								{
@@ -177,6 +178,7 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
+								fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
 								{

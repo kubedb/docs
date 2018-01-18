@@ -182,7 +182,6 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				fmt.Println(">>>>>.conn: ", conn) //todo: delete
 				reg.MustRegister(mgoe.NewMongodbCollector(mgoe.MongodbCollectorOpts{
 					URI: conn,
 				}))
