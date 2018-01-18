@@ -1,5 +1,5 @@
 hash: d5dee5fcaf09eaf6bd2a98a1c88e439794dfb0424f7bab0082f28443914c7786
-updated: 2018-01-18T10:50:33.497204514+06:00
+updated: 2018-01-18T15:16:47.595853592+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -45,7 +45,6 @@ imports:
   - core/v1
   - meta
   - rbac/v1
-  - rbac/v1beta1
   - tools/analytics
 - name: github.com/appscode/mergo
   version: e3000cb3d28c72b837601cac94debd91032d19fe
@@ -286,15 +285,8 @@ imports:
   version: f9a047939bae2c074903bcaa72488f45192730cc
   subpackages:
   - pkg/audit/report
-  - pkg/controller
-  - pkg/docker
-  - pkg/validator
 - name: github.com/kubedb/memcached
   version: f53c2d0df7d570ef214b9f256ca1fa9dd9956d4b
-  subpackages:
-  - pkg/controller
-  - pkg/docker
-  - pkg/validator
 - name: github.com/kubedb/mongodb
   version: a105e4cff3754368f5b3ecde423a11abaf0dbc53
   subpackages:
@@ -311,16 +303,8 @@ imports:
   version: f8f200f564d5b6e0afe36df02172fffe21034a77
   subpackages:
   - pkg/audit/report
-  - pkg/controller
-  - pkg/docker
-  - pkg/leader_election
-  - pkg/validator
 - name: github.com/kubedb/redis
   version: 9dbfb5ebaa6a9b56fcb58ca27bc5617c68877aa6
-  subpackages:
-  - pkg/controller
-  - pkg/docker
-  - pkg/validator
 - name: github.com/kubernetes/apimachinery
   version: bc918d4f73e11cb3110730ec8e8ee02c58d6267c
   subpackages:
@@ -424,8 +408,6 @@ imports:
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:
-  - bcrypt
-  - blowfish
   - ssh/terminal
 - name: golang.org/x/net
   version: 1c05540f6879653db88113bc4a2b70aec4bd491f
@@ -636,8 +618,6 @@ imports:
   - tools/clientcmd/api
   - tools/clientcmd/api/latest
   - tools/clientcmd/api/v1
-  - tools/leaderelection
-  - tools/leaderelection/resourcelock
   - tools/metrics
   - tools/pager
   - tools/record

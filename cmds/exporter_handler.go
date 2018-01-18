@@ -153,15 +153,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg = r2.(*prometheus.Registry)
 			} else {
 				plog.Infof("Configuring exporter for MySQL %s in namespace %s", dbName, namespace)
-				db, err := dbClient.MySQLs(namespace).Get(dbName, metav1.GetOptions{})
-				if kerr.IsNotFound(err) {
-					http.NotFound(w, r)
-					return
-				} else if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				conn, err := getMySQLURL(db, podIP)
+				conn, err := getMySQLURL(podIP)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -185,20 +177,12 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg = r2.(*prometheus.Registry)
 			} else {
 				plog.Infof("Configuring exporter for MongoDB %s in namespace %s", dbName, namespace)
-				db, err := dbClient.MongoDBs(namespace).Get(dbName, metav1.GetOptions{})
-				if kerr.IsNotFound(err) {
-					http.NotFound(w, r)
-					return
-				} else if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				conn, err := getMongoDBURL(db, podIP)
+				conn, err := getMongoDBURL(podIP)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-
+				fmt.Println(">>>>>.conn: ", conn) //todo: delete
 				reg.MustRegister(mgoe.NewMongodbCollector(mgoe.MongodbCollectorOpts{
 					URI: conn,
 				}))
@@ -293,7 +277,7 @@ func getPostgresURL(db *api.Postgres, podIP string) (string, error) {
 	return conn, nil
 }
 
-func getMySQLURL(db *api.MySQL, podIP string) (string, error) {
+func getMySQLURL(podIP string) (string, error) {
 	if _, err := os.Stat(msCtrl.ExporterSecretPath); err != nil {
 		return "", err
 	}
@@ -304,7 +288,7 @@ func getMySQLURL(db *api.MySQL, podIP string) (string, error) {
 	return conn, nil
 }
 
-func getMongoDBURL(db *api.MongoDB, podIP string) (string, error) {
+func getMongoDBURL(podIP string) (string, error) {
 	if _, err := os.Stat(mgCtrl.ExporterSecretPath); err != nil {
 		return "", err
 	}

@@ -14,7 +14,7 @@ operator run [flags]
 
 ```
       --address string             Address to listen on for web interface and telemetry. (default ":8080")
-      --elasticdump.tag string     Tag of elasticdump (default "2.4.2")
+      --docker-registry string     User provided docker repository (default "kubedb")
       --exporter-tag string        Tag of kubedb/operator used as exporter (default "canary")
       --governing-service string   Governing service for database statefulset (default "kubedb")
   -h, --help                       help for run
@@ -33,7 +33,7 @@ operator run [flags]
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files
-      --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
+      --stderrthreshold severity         logs at or above this threshold go to stderr
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```

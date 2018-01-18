@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/appscode/go/log/golog"
 	stringz "github.com/appscode/go/strings"
 	v "github.com/appscode/go/version"
 	"github.com/appscode/kutil/meta"
@@ -31,14 +32,15 @@ var (
 	address           string = ":8080"
 	operatorNamespace string = meta.Namespace()
 	enableRbac        bool   = false
+	enableAnalytics   bool   = true
 	analyticsClientID string = analytics.ClientID()
+	loggerOptions     golog.Options
 
 	kubeClient kubernetes.Interface
 	dbClient   tcs.KubedbV1alpha1Interface
 )
 
 func NewRootCmd(version string) *cobra.Command {
-	enableAnalytics := true
 	exporterTag = stringz.Val(version, "canary")
 
 	var rootCmd = &cobra.Command{
@@ -57,6 +59,7 @@ func NewRootCmd(version string) *cobra.Command {
 				}
 			}
 			scheme.AddToScheme(clientsetscheme.Scheme)
+			loggerOptions = golog.ParseFlags(c.Flags())
 		},
 	}
 	rootCmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
