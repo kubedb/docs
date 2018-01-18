@@ -1,5 +1,5 @@
-hash: 5bf45f6cab3d3eff06a9dffcb112bf890b220e102098cd217af9bd3b0ad09193
-updated: 2018-01-12T12:52:37.613599422+06:00
+hash: d5dee5fcaf09eaf6bd2a98a1c88e439794dfb0424f7bab0082f28443914c7786
+updated: 2018-01-18T10:50:33.497204514+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -13,7 +13,7 @@ imports:
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/appscode/go
-  version: 979b75cb554996ed0e5c2ba4a3538ca163a329b8
+  version: 74ddf42f1ee8313728203a06092be9cb91d42f7c
   subpackages:
   - analytics
   - context
@@ -31,19 +31,20 @@ imports:
   - types
   - version
 - name: github.com/appscode/kube-mon
-  version: bb1241cf66767ebcca781fef3bdd2c2769e11658
+  version: bbf9306e9c161e411f0ddc5d946e67a3685530ee
   subpackages:
   - agents
   - agents/coreosprometheusoperator
   - agents/prometheusbuiltin
   - api
 - name: github.com/appscode/kutil
-  version: 1246ec828f2f5024b54a1fe84ad4afaf3de0ed37
+  version: de69f2e242cc9e4df5dcf41d0d314e5fce818154
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
   - core/v1
   - meta
+  - rbac/v1
   - rbac/v1beta1
   - tools/analytics
 - name: github.com/appscode/mergo
@@ -116,7 +117,7 @@ imports:
   subpackages:
   - spew
 - name: github.com/dcu/mongodb_exporter
-  version: b07e363c316a314309f0f9e9745f20ace1e80275
+  version: 498ffd64e985b6220ae9a7ada551f8d073948cb0
   subpackages:
   - collector
   - shared
@@ -167,11 +168,11 @@ imports:
 - name: github.com/go-openapi/swag
   version: 1d0bd113de87027671077d3c71eb3ac5d7dbba72
 - name: github.com/go-sql-driver/mysql
-  version: 4a0c3d73d8579f9fc535cf5e654a651cbd57dd6e
+  version: 2cc627ac8defc45d65066ae98f898166f580f9a4
 - name: github.com/go-stack/stack
   version: 259ab82a6cad3992b4e21ff5cac294ccb06474bc
 - name: github.com/go-xorm/builder
-  version: a4a881a4e552fcb5473f39e8b9f7d9f3457a7fb0
+  version: 488224409dd8aa2ce7a5baf8d10d55764a913738
 - name: github.com/go-xorm/core
   version: 5bf745d7d163f4380e6c2bba8c4afa60534dd087
 - name: github.com/go-xorm/xorm
@@ -234,7 +235,7 @@ imports:
   subpackages:
   - diskcache
 - name: github.com/hashicorp/go-version
-  version: 5b737306c678d7052849144de676800e5b0dc2c1
+  version: 53932f80ddea12bea96be074f9fb2dc545806aba
   repo: https://github.com/appscode/go-version.git
   vcs: git
 - name: github.com/hashicorp/golang-lru
@@ -266,7 +267,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 712463a1911f85de9304e43d634fafdacadb9371
+  version: 2d0777c52da98b5efaa6fbfcfd45dcbdabb2fa84
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -295,13 +296,13 @@ imports:
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mongodb
-  version: 1107cf00a0fed6805f896c21c0f3eb43bbcaa130
+  version: a105e4cff3754368f5b3ecde423a11abaf0dbc53
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mysql
-  version: 4486df358d048b7de7d3aefb686083a4d0c4583c
+  version: 7aa2d1d29e2f969c5fc2b70f5c1d5515d918a229
   subpackages:
   - pkg/controller
   - pkg/docker
@@ -321,11 +322,11 @@ imports:
   - pkg/docker
   - pkg/validator
 - name: github.com/kubernetes/apimachinery
-  version: d86399872a1f1082d33982f7f9b37a2ce7c2e307
+  version: bc918d4f73e11cb3110730ec8e8ee02c58d6267c
   subpackages:
   - pkg/conversion
 - name: github.com/lib/pq
-  version: 83612a56d3dd153a94a629cd64925371c9adad78
+  version: 27ea5d92de30060e7121ddd543fe14e9a327e0cc
   subpackages:
   - oid
 - name: github.com/mailru/easyjson
@@ -345,7 +346,7 @@ imports:
   - idgen
   - signal
 - name: github.com/ncw/swift
-  version: 067578e41c8dd06bf557d02a92a77bd35e97c05a
+  version: ae9f0ea1605b9aa6434ed5c731ca35d83ba67c55
 - name: github.com/oliver006/redis_exporter
   version: a0d9e4c704b4d35cd08544d395038f417716a03a
   subpackages:
@@ -381,7 +382,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/prometheus/mysqld_exporter
-  version: da3c16fa8c08b17a0828aaa244920e2d7b739c5b
+  version: 446651daf57fba19b221c172b683e4a70ebdf5a8
   subpackages:
   - collector
 - name: github.com/prometheus/procfs
@@ -389,7 +390,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 0471e64ad11ad8fadf063960bbe93bc715539afe
+  version: 85bef0d583ccea4824ca0e724d624056c2997024
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -409,7 +410,7 @@ imports:
   subpackages:
   - memcache
 - name: github.com/spf13/cobra
-  version: b95ab734e27d33e0d8fbabf71ca990568d4e2020
+  version: 0c34d16c3123764e413b9ed982ada58b1c3d53ea
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -469,7 +470,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: 37df4fabefb044819e927f44b8487d4cd926d06c
+  version: fa74edab4387514996aa08b9bc287882c18cb79a
   subpackages:
   - gensupport
   - googleapi
@@ -502,7 +503,7 @@ imports:
   - internal/sasl
   - internal/scram
 - name: gopkg.in/olivere/elastic.v5
-  version: ef745defcdcc081f19c499930dc12c7a6cb638b4
+  version: b423d843ef937586f8ad3142ad4557836817080d
   subpackages:
   - config
   - uritemplates

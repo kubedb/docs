@@ -14,18 +14,10 @@ import (
 	tcs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
 	"github.com/kubedb/apimachinery/pkg/migrator"
-	esCtrl "github.com/kubedb/elasticsearch/pkg/controller"
-	esDocker "github.com/kubedb/elasticsearch/pkg/docker"
-	memCtrl "github.com/kubedb/memcached/pkg/controller"
-	memDocker "github.com/kubedb/memcached/pkg/docker"
 	mgoCtrl "github.com/kubedb/mongodb/pkg/controller"
 	mgoDocker "github.com/kubedb/mongodb/pkg/docker"
 	msCtrl "github.com/kubedb/mysql/pkg/controller"
 	msDocker "github.com/kubedb/mysql/pkg/docker"
-	pgCtrl "github.com/kubedb/postgres/pkg/controller"
-	pgDocker "github.com/kubedb/postgres/pkg/docker"
-	rdCtrl "github.com/kubedb/redis/pkg/controller"
-	rdDocker "github.com/kubedb/redis/pkg/docker"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -102,28 +94,28 @@ func run() {
 		log.Fatalln(err)
 	}
 
-	// Postgres controller
-	pgCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, pgCtrl.Options{
-		Docker: pgDocker.Docker{
-			Registry:    registry,
-			ExporterTag: exporterTag,
-		},
-		GoverningService:  governingService,
-		OperatorNamespace: operatorNamespace,
-		AnalyticsClientID: analyticsClientID,
-		EnableRbac:        enableRbac,
-	}).Run()
+	//// Postgres controller
+	//pgCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, pgCtrl.Options{
+	//	Docker: pgDocker.Docker{
+	//		Registry:    registry,
+	//		ExporterTag: exporterTag,
+	//	},
+	//	GoverningService:  governingService,
+	//	OperatorNamespace: operatorNamespace,
+	//	AnalyticsClientID: analyticsClientID,
+	//	EnableRbac:        enableRbac,
+	//}).Run()
 
-	// Elasticsearch controller
-	esCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
-		Docker: esDocker.Docker{
-			Registry:    registry,
-			ExporterTag: exporterTag,
-		},
-		GoverningService:  governingService,
-		OperatorNamespace: operatorNamespace,
-		AnalyticsClientID: analyticsClientID,
-	}).Run()
+	//// Elasticsearch controller
+	//esCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
+	//	Docker: esDocker.Docker{
+	//		Registry:    registry,
+	//		ExporterTag: exporterTag,
+	//	},
+	//	GoverningService:  governingService,
+	//	OperatorNamespace: operatorNamespace,
+	//	AnalyticsClientID: analyticsClientID,
+	//}).Run()
 
 	// MySQL controller
 	msCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, msCtrl.Options{
@@ -147,25 +139,25 @@ func run() {
 		AnalyticsClientID: analyticsClientID,
 	}).Run()
 
-	// Redis controller
-	rdCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, rdCtrl.Options{
-		Docker: rdDocker.Docker{
-			Registry:    registry,
-			ExporterTag: exporterTag,
-		},
-		GoverningService:  governingService,
-		OperatorNamespace: operatorNamespace,
-	}).Run()
+	//// Redis controller
+	//rdCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, rdCtrl.Options{
+	//	Docker: rdDocker.Docker{
+	//		Registry:    registry,
+	//		ExporterTag: exporterTag,
+	//	},
+	//	GoverningService:  governingService,
+	//	OperatorNamespace: operatorNamespace,
+	//}).Run()
 
-	// Memcached controller
-	memCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, memCtrl.Options{
-		Docker: memDocker.Docker{
-			Registry:    registry,
-			ExporterTag: exporterTag,
-		},
-		GoverningService:  governingService,
-		OperatorNamespace: operatorNamespace,
-	}).Run()
+	//// Memcached controller
+	//memCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, memCtrl.Options{
+	//	Docker: memDocker.Docker{
+	//		Registry:    registry,
+	//		ExporterTag: exporterTag,
+	//	},
+	//	GoverningService:  governingService,
+	//	OperatorNamespace: operatorNamespace,
+	//}).Run()
 
 	m := pat.New()
 	// For go metrics

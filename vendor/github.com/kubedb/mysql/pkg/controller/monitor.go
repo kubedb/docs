@@ -71,11 +71,10 @@ func (c *Controller) setNewAgent(mysql *api.MySQL) error {
 func (c *Controller) manageMonitor(mysql *api.MySQL) error {
 	oldAgent := c.getOldAgent(mysql)
 	if mysql.Spec.Monitor != nil {
-		if oldAgent != nil {
-			if oldAgent.GetType() != mysql.Spec.Monitor.Agent {
-				if _, err := oldAgent.Delete(mysql.StatsAccessor()); err != nil {
-					log.Debugf("error in deleting Prometheus agent:", err)
-				}
+		if oldAgent != nil &&
+			oldAgent.GetType() != mysql.Spec.Monitor.Agent {
+			if _, err := oldAgent.Delete(mysql.StatsAccessor()); err != nil {
+				log.Errorf("error in deleting Prometheus agent:", err)
 			}
 		}
 		if _, err := c.addOrUpdateMonitor(mysql); err != nil {
@@ -84,7 +83,7 @@ func (c *Controller) manageMonitor(mysql *api.MySQL) error {
 		return c.setNewAgent(mysql)
 	} else if oldAgent != nil {
 		if _, err := oldAgent.Delete(mysql.StatsAccessor()); err != nil {
-			log.Debugf("error in deleting Prometheus agent:", err)
+			log.Errorf("error in deleting Prometheus agent:", err)
 		}
 	}
 	return nil

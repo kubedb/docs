@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
+	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
@@ -162,9 +163,14 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	return nil
 }
 
+// Assign Default Monitoring Port if MonitoringSpec Exists
+// and the AgentVendor is Prometheus.
 func (c *Controller) setMonitoringPort(mysql *api.MySQL) error {
 	if mysql.Spec.Monitor != nil &&
-		mysql.Spec.Monitor.Prometheus != nil {
+		mysql.GetMonitoringVendor() == mon_api.VendorPrometheus {
+		if mysql.Spec.Monitor.Prometheus == nil {
+			mysql.Spec.Monitor.Prometheus = &mon_api.PrometheusSpec{}
+		}
 		if mysql.Spec.Monitor.Prometheus.Port == 0 {
 			ms, _, err := util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
 				in.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber

@@ -26,8 +26,7 @@ import (
 // See https://www.elastic.co/guide/en/elasticsearch/reference/5.2/docs-bulk.html
 // for more details.
 type BulkService struct {
-	client  *Client
-	retrier Retrier
+	client *Client
 
 	index               string
 	typ                 string
@@ -56,13 +55,6 @@ func (s *BulkService) reset() {
 	s.requests = make([]BulkableRequest, 0)
 	s.sizeInBytes = 0
 	s.sizeInBytesCursor = 0
-}
-
-// Retrier allows to set specific retry logic for this BulkService.
-// If not specified, it will use the client's default retrier.
-func (s *BulkService) Retrier(retrier Retrier) *BulkService {
-	s.retrier = retrier
-	return s
 }
 
 // Index specifies the index to use for all batches. You may also leave
@@ -167,8 +159,7 @@ func (s *BulkService) NumberOfActions() int {
 }
 
 func (s *BulkService) bodyAsString() (string, error) {
-	// Pre-allocate to reduce allocs
-	buf := bytes.NewBuffer(make([]byte, 0, s.EstimatedSizeInBytes()))
+	var buf bytes.Buffer
 
 	for _, req := range s.requests {
 		source, err := req.Source()
@@ -243,14 +234,7 @@ func (s *BulkService) Do(ctx context.Context) (*BulkResponse, error) {
 	}
 
 	// Get response
-	res, err := s.client.PerformRequestWithOptions(ctx, PerformRequestOptions{
-		Method:      "POST",
-		Path:        path,
-		Params:      params,
-		Body:        body,
-		ContentType: "application/x-ndjson",
-		Retrier:     s.retrier,
-	})
+	res, err := s.client.PerformRequestWithContentType(ctx, "POST", path, params, body, "application/x-ndjson")
 	if err != nil {
 		return nil, err
 	}

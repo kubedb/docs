@@ -5,6 +5,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
+	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	app_util "github.com/appscode/kutil/apps/v1beta1"
 	core_util "github.com/appscode/kutil/core/v1"
@@ -24,6 +25,12 @@ func (c *Controller) ensureStatefulSet(mysql *api.MySQL) (kutil.VerbType, error)
 
 	if err := c.ensureDatabaseSecret(mysql); err != nil {
 		return kutil.VerbUnchanged, err
+	}
+
+	if c.opt.EnableRbac && mysql.GetMonitoringVendor() == mon_api.VendorPrometheus {
+		if err := c.ensureRBACStuff(mysql); err != nil {
+			return kutil.VerbUnchanged, err
+		}
 	}
 
 	// Create statefulSet for MySQL database
@@ -117,9 +124,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 			},
 			Resources: mysql.Spec.Resources,
 		})
-		if mysql.Spec.Monitor != nil &&
-			mysql.Spec.Monitor.Agent == api.AgentCoreosPrometheus &&
-			mysql.Spec.Monitor.Prometheus != nil {
+		if mysql.GetMonitoringVendor() == mon_api.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
 				Args: []string{
@@ -155,6 +160,10 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 					},
 				},
 			)
+
+			if c.opt.EnableRbac {
+				in.Spec.Template.Spec.ServiceAccountName = mysql.Name
+			}
 		}
 		// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
 		in = upsertEnv(in, mysql)

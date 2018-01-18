@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
+	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
@@ -162,9 +163,14 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	return nil
 }
 
+// Assign Default Monitoring Port if MonitoringSpec Exists
+// and the AgentVendor is Prometheus.
 func (c *Controller) setMonitoringPort(mongodb *api.MongoDB) error {
 	if mongodb.Spec.Monitor != nil &&
-		mongodb.Spec.Monitor.Prometheus != nil {
+		mongodb.GetMonitoringVendor() == mon_api.VendorPrometheus {
+		if mongodb.Spec.Monitor.Prometheus == nil {
+			mongodb.Spec.Monitor.Prometheus = &mon_api.PrometheusSpec{}
+		}
 		if mongodb.Spec.Monitor.Prometheus.Port == 0 {
 			mg, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
 				in.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber

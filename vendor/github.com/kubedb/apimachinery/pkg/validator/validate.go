@@ -82,8 +82,13 @@ func ValidateMonitorSpec(monitorSpec *mona.AgentSpec) error {
 	if monitorSpec.Agent == "" {
 		return fmt.Errorf(`object 'Agent' is missing in '%v'`, string(specData))
 	}
-	if monitorSpec.Prometheus != nil {
-		if monitorSpec.Agent != api.AgentCoreosPrometheus {
+
+	if monitorSpec.Agent.Vendor() == mona.VendorPrometheus {
+		if monitorSpec.Agent == mona.AgentCoreOSPrometheus {
+			if monitorSpec.Prometheus == nil {
+				return fmt.Errorf(`invalid 'Agent' in '%v'`, string(specData))
+			}
+		} else if monitorSpec.Agent != mona.AgentPrometheusBuiltin {
 			return fmt.Errorf(`invalid 'Agent' in '%v'`, string(specData))
 		}
 	}
