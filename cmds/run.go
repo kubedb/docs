@@ -15,14 +15,16 @@ import (
 	tcs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
 	"github.com/kubedb/apimachinery/pkg/migrator"
-	esCtrl "github.com/kubedb/elasticsearch/pkg/controller"
-	esDocker "github.com/kubedb/elasticsearch/pkg/docker"
+	//esCtrl "github.com/kubedb/elasticsearch/pkg/controller"
+	//esDocker "github.com/kubedb/elasticsearch/pkg/docker"
 	memCtrl "github.com/kubedb/memcached/pkg/controller"
 	memDocker "github.com/kubedb/memcached/pkg/docker"
 	mgoCtrl "github.com/kubedb/mongodb/pkg/controller"
 	mgoDocker "github.com/kubedb/mongodb/pkg/docker"
 	msCtrl "github.com/kubedb/mysql/pkg/controller"
 	msDocker "github.com/kubedb/mysql/pkg/docker"
+	//pgCtrl "github.com/kubedb/postgres/pkg/controller"
+	//pgDocker "github.com/kubedb/postgres/pkg/docker"
 	rdCtrl "github.com/kubedb/redis/pkg/controller"
 	rdDocker "github.com/kubedb/redis/pkg/docker"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -122,7 +124,7 @@ func run() {
 	//}).Run()
 
 	//// Elasticsearch controller
-	//esCtrl.New(config, kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
+	//esCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
 	//	Docker: esDocker.Docker{
 	//		Registry:    registry,
 	//		ExporterTag: exporterTag,
@@ -130,8 +132,6 @@ func run() {
 	//	GoverningService:  governingService,
 	//	OperatorNamespace: operatorNamespace,
 	//	AnalyticsClientID: analyticsClientID,
-	//	EnableAnalytics:   enableAnalytics,
-	//	LoggerOptions:     loggerOptions,
 	//}).Run()
 
 	// MySQL controller
