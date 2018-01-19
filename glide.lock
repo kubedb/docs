@@ -1,5 +1,5 @@
-hash: 25227b0cd7aef997d913e94ff031c002ec9a6661d184980b1ca2c95ce2e5b040
-updated: 2018-01-19T14:57:17.013274362+06:00
+hash: 4bf42a0b77042103b28868029a231f30c5bbda47ad45333900b34a5220e15676
+updated: 2018-01-19T16:43:58.321237107+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -44,7 +44,6 @@ imports:
   - apps/v1beta1
   - core/v1
   - meta
-  - rbac/v1beta1
   - tools/analytics
   - tools/portforward
 - name: github.com/appscode/mergo
@@ -313,12 +312,8 @@ imports:
   version: f8f200f564d5b6e0afe36df02172fffe21034a77
   subpackages:
   - pkg/audit/report
-  - pkg/controller
-  - pkg/docker
-  - pkg/leader_election
-  - pkg/validator
 - name: github.com/kubedb/redis
-  version: b8f97a4c0e64ce679b726e6d4883dbaa831a384e
+  version: 3d823c88edacb12b3eb48fbe6ac6944a112ecb89
   subpackages:
   - pkg/controller
   - pkg/docker
@@ -641,8 +636,6 @@ imports:
   - tools/clientcmd/api
   - tools/clientcmd/api/latest
   - tools/clientcmd/api/v1
-  - tools/leaderelection
-  - tools/leaderelection/resourcelock
   - tools/metrics
   - tools/pager
   - tools/portforward

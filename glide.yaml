@@ -65,7 +65,7 @@ import:
 - package: github.com/prometheus/mysqld_exporter
   version: master
 - package: github.com/kubedb/redis
-  version: fix-exporter
+  version: master
 - package: github.com/oliver006/redis_exporter
   version: master
 - package: github.com/kubedb/memcached
