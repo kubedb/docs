@@ -200,14 +200,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg = r2.(*prometheus.Registry)
 			} else {
 				plog.Infof("Configuring exporter for Redis %s in namespace %s", dbName, namespace)
-				_, err := dbClient.Redises(namespace).Get(dbName, metav1.GetOptions{})
-				if kerr.IsNotFound(err) {
-					http.NotFound(w, r)
-					return
-				} else if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
+
 				conn := fmt.Sprintf("redis://%s:6379", podIP)
 				exp, err := rde.NewRedisExporter(
 					rde.RedisHost{Addrs: []string{conn}, Aliases: []string{""}},
@@ -233,14 +226,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				reg = r2.(*prometheus.Registry)
 			} else {
 				plog.Infof("Configuring exporter for Redis %s in namespace %s", dbName, namespace)
-				_, err := dbClient.Memcacheds(namespace).Get(dbName, metav1.GetOptions{})
-				if kerr.IsNotFound(err) {
-					http.NotFound(w, r)
-					return
-				} else if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
+
 				conn := fmt.Sprintf("%s:11211", podIP)
 				reg.MustRegister(memEx.NewExporter(conn, 0)) //timeout: if zero,then default timeout will be used
 			}

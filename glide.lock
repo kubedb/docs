@@ -1,5 +1,5 @@
-hash: f781fd101a97c073fed3b30b196edb376f15eb03e3dd856d84d8eb1043f4f94d
-updated: 2018-01-18T18:25:27.245567781+06:00
+hash: 25227b0cd7aef997d913e94ff031c002ec9a6661d184980b1ca2c95ce2e5b040
+updated: 2018-01-19T14:57:17.013274362+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -31,7 +31,7 @@ imports:
   - types
   - version
 - name: github.com/appscode/kube-mon
-  version: bbf9306e9c161e411f0ddc5d946e67a3685530ee
+  version: fcafde645b3a37f2f99edd8c93abfa64c880df28
   subpackages:
   - agents
   - agents/coreosprometheusoperator
@@ -44,6 +44,7 @@ imports:
   - apps/v1beta1
   - core/v1
   - meta
+  - rbac/v1beta1
   - tools/analytics
   - tools/portforward
 - name: github.com/appscode/mergo
@@ -102,13 +103,11 @@ imports:
 - name: github.com/blang/semver
   version: 2ee87856327ba09384cabd113bc6b5d174e9ec0f
 - name: github.com/coreos/prometheus-operator
-  version: cbdd1b519796673cd02d53b0e21999acbcbfe6e4
-  repo: https://github.com/appscode/prometheus-operator.git
-  vcs: git
+  version: 0b87bfa150cf57bdc7b081d9b48ef48a9350b47b
   subpackages:
   - pkg/client/monitoring/v1
 - name: github.com/cpuguy83/go-md2man
-  version: 8d868be6e9bf9d5350910bab97a050e49887600f
+  version: 60a40f99d4dbd0209e78d6a3c6e9c0db6fbaea6e
   subpackages:
   - md2man
 - name: github.com/davecgh/go-spew
@@ -270,7 +269,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 2d0777c52da98b5efaa6fbfcfd45dcbdabb2fa84
+  version: 043c6cb04afd373ebe7d7c0866bbf81116ee2576
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -293,7 +292,11 @@ imports:
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/memcached
-  version: f53c2d0df7d570ef214b9f256ca1fa9dd9956d4b
+  version: 6f221cb669fa64e74d030ca948da884141ff048c
+  subpackages:
+  - pkg/controller
+  - pkg/docker
+  - pkg/validator
 - name: github.com/kubedb/mongodb
   version: 7e415df27253db0b2725b3b8c6cf1dd41804e478
   subpackages:
@@ -310,10 +313,18 @@ imports:
   version: f8f200f564d5b6e0afe36df02172fffe21034a77
   subpackages:
   - pkg/audit/report
+  - pkg/controller
+  - pkg/docker
+  - pkg/leader_election
+  - pkg/validator
 - name: github.com/kubedb/redis
-  version: 9dbfb5ebaa6a9b56fcb58ca27bc5617c68877aa6
+  version: b8f97a4c0e64ce679b726e6d4883dbaa831a384e
+  subpackages:
+  - pkg/controller
+  - pkg/docker
+  - pkg/validator
 - name: github.com/kubernetes/apimachinery
-  version: bc918d4f73e11cb3110730ec8e8ee02c58d6267c
+  version: baafc3365acf1aa0c6c9c9aa169340d9fc2d3c6c
   subpackages:
   - pkg/conversion
 - name: github.com/lib/pq
@@ -381,7 +392,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 85bef0d583ccea4824ca0e724d624056c2997024
+  version: 4b984d2378d4b2a655ac8c66b481e8db0947e1f5
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -461,7 +472,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: fa74edab4387514996aa08b9bc287882c18cb79a
+  version: db3b6348f7ea599ee2baacceab2d04633d3bb2eb
   subpackages:
   - gensupport
   - googleapi
@@ -630,6 +641,8 @@ imports:
   - tools/clientcmd/api
   - tools/clientcmd/api/latest
   - tools/clientcmd/api/v1
+  - tools/leaderelection
+  - tools/leaderelection/resourcelock
   - tools/metrics
   - tools/pager
   - tools/portforward

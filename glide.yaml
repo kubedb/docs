@@ -4,9 +4,7 @@ import:
   version: master
 - package: github.com/appscode/pat
 - package: github.com/coreos/prometheus-operator
-  repo: https://github.com/appscode/prometheus-operator.git
-  vcs: git
-  version: client-go-5
+  version: v0.16.0
 - package: github.com/graymeta/stow
   repo: https://github.com/appscode/stow.git
   vcs: git
@@ -67,7 +65,7 @@ import:
 - package: github.com/prometheus/mysqld_exporter
   version: master
 - package: github.com/kubedb/redis
-  version: master
+  version: fix-exporter
 - package: github.com/oliver006/redis_exporter
   version: master
 - package: github.com/kubedb/memcached
