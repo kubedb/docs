@@ -121,16 +121,18 @@ func run() {
 	//	EnableRbac:        enableRbac,
 	//}).Run()
 
-	// Elasticsearch controller
-	esCtrl.New(config, kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
-		Docker: esDocker.Docker{
-			Registry:    registry,
-			ExporterTag: exporterTag,
-		},
-		GoverningService:  governingService,
-		OperatorNamespace: operatorNamespace,
-		AnalyticsClientID: analyticsClientID,
-	}).Run()
+	//// Elasticsearch controller
+	//esCtrl.New(config, kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
+	//	Docker: esDocker.Docker{
+	//		Registry:    registry,
+	//		ExporterTag: exporterTag,
+	//	},
+	//	GoverningService:  governingService,
+	//	OperatorNamespace: operatorNamespace,
+	//	AnalyticsClientID: analyticsClientID,
+	//	EnableAnalytics:   enableAnalytics,
+	//	LoggerOptions:     loggerOptions,
+	//}).Run()
 
 	// MySQL controller
 	msCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, msCtrl.Options{
