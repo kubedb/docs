@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/appscode/go/log"
+	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
@@ -114,11 +115,16 @@ func (c *Controller) create(redis *api.Redis) error {
 	return nil
 }
 
+// Assign Default Monitoring Port if MonitoringSpec Exists
+// and the AgentVendor is Prometheus.
 func (c *Controller) setMonitoringPort(redis *api.Redis) error {
 	if redis.Spec.Monitor != nil &&
-		redis.Spec.Monitor.Prometheus != nil {
+		redis.GetMonitoringVendor() == mon_api.VendorPrometheus {
+		if redis.Spec.Monitor.Prometheus == nil {
+			redis.Spec.Monitor.Prometheus = &mon_api.PrometheusSpec{}
+		}
 		if redis.Spec.Monitor.Prometheus.Port == 0 {
-			mc, _, err := util.PatchRedis(c.ExtClient, redis, func(in *api.Redis) *api.Redis {
+			rd, _, err := util.PatchRedis(c.ExtClient, redis, func(in *api.Redis) *api.Redis {
 				in.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
 				return in
 			})
@@ -131,7 +137,7 @@ func (c *Controller) setMonitoringPort(redis *api.Redis) error {
 				)
 				return err
 			}
-			redis.Spec = mc.Spec
+			redis.Spec = rd.Spec
 		}
 	}
 	return nil

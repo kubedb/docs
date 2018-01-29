@@ -5,6 +5,7 @@ import (
 
 	"github.com/appscode/go/hold"
 	"github.com/appscode/go/log"
+	"github.com/appscode/go/log/golog"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -40,8 +41,12 @@ type Options struct {
 	EnableRbac bool
 	//Max number requests for retries
 	MaxNumRequeues int
-	// Analytics Client ID
+	// Enable Analytics
+	EnableAnalytics bool
+	// Analytics client ID
 	AnalyticsClientID string
+	// Logger Options
+	LoggerOptions golog.Options
 }
 
 type Controller struct {
@@ -63,8 +68,8 @@ type Controller struct {
 	informer cache.Controller
 }
 
-var _ snapc.Snapshotter = &Controller{}
-var _ drmnc.Deleter = &Controller{}
+var _ amc.Snapshotter = &Controller{}
+var _ amc.Deleter = &Controller{}
 
 func New(
 	client kubernetes.Interface,
@@ -124,7 +129,7 @@ func (c *Controller) watchPostgres() {
 	stop := make(chan struct{})
 	defer close(stop)
 
-	c.runWatcher(1, stop)
+	c.runWatcher(5, stop)
 	select {}
 }
 
@@ -132,23 +137,10 @@ func (c *Controller) watchSnapshot() {
 	labelMap := map[string]string{
 		api.LabelDatabaseKind: api.ResourceKindPostgres,
 	}
-	// Watch with label selector
-	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.Snapshots(metav1.NamespaceAll).List(
-				metav1.ListOptions{
-					LabelSelector: labels.SelectorFromSet(labelMap).String(),
-				})
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.Snapshots(metav1.NamespaceAll).Watch(
-				metav1.ListOptions{
-					LabelSelector: labels.SelectorFromSet(labelMap).String(),
-				})
-		},
+	listOptions := metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(labelMap).String(),
 	}
-
-	snapc.NewController(c.Controller, c, lw, c.syncPeriod).Run()
+	snapc.NewController(c.Controller, c, listOptions, c.syncPeriod).Run()
 }
 
 func (c *Controller) watchDormantDatabase() {

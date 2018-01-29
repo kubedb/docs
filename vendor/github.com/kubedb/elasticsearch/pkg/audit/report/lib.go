@@ -3,19 +3,10 @@ package report
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"gopkg.in/olivere/elastic.v5"
 )
-
-func newClient(host, port string) (*elastic.Client, error) {
-	return elastic.NewClient(
-		elastic.SetURL(fmt.Sprintf("http://%v:%v", host, port)),
-		elastic.SetMaxRetries(10),
-		elastic.SetSniff(false),
-	)
-}
 
 func getAllIndices(client *elastic.Client) ([]string, error) {
 	return client.IndexNames()

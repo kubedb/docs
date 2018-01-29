@@ -5,11 +5,11 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
+	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	app_util "github.com/appscode/kutil/apps/v1beta1"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	apps "k8s.io/api/apps/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -51,21 +51,6 @@ func (c *Controller) ensureStatefulSet(mysql *api.MySQL) (kutil.VerbType, error)
 			"Successfully %v StatefulSet",
 			vt,
 		)
-
-		ms, _, err := util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
-			in.Status.Phase = api.DatabasePhaseRunning
-			return in
-		})
-		if err != nil {
-			c.recorder.Eventf(
-				mysql,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-			return kutil.VerbUnchanged, err
-		}
-		mysql.Status = ms.Status
 	}
 	return vt, nil
 }
@@ -98,11 +83,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		in.Annotations = core_util.UpsertMap(in.Annotations, mysql.StatefulSetAnnotations())
 
 		in.Spec.Replicas = types.Int32P(1)
-		in.Spec.Template = core.PodTemplateSpec{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels: in.ObjectMeta.Labels,
-			},
-		}
+		in.Spec.Template.Labels = in.Labels
 
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 			Name:            api.ResourceNameMySQL,
@@ -117,18 +98,15 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 			},
 			Resources: mysql.Spec.Resources,
 		})
-		if mysql.Spec.Monitor != nil &&
-			mysql.Spec.Monitor.Agent == api.AgentCoreosPrometheus &&
-			mysql.Spec.Monitor.Prometheus != nil {
+		if mysql.GetMonitoringVendor() == mon_api.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
-				Args: []string{
+				Args: append([]string{
 					"export",
 					fmt.Sprintf("--address=:%d", mysql.Spec.Monitor.Prometheus.Port),
-					"--v=3",
-				},
-				Image:           c.opt.Docker.GetOperatorImageWithTag(mysql),
-				ImagePullPolicy: core.PullIfNotPresent,
+					fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
+				}, c.opt.LoggerOptions.ToFlags()...),
+				Image: c.opt.Docker.GetOperatorImageWithTag(mysql),
 				Ports: []core.ContainerPort{
 					{
 						Name:          api.PrometheusExporterPortName,
@@ -136,7 +114,25 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 						ContainerPort: mysql.Spec.Monitor.Prometheus.Port,
 					},
 				},
+				VolumeMounts: []core.VolumeMount{
+					{
+						Name:      "db-secret",
+						MountPath: ExporterSecretPath,
+						ReadOnly:  true,
+					},
+				},
 			})
+			in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+				in.Spec.Template.Spec.Volumes,
+				core.Volume{
+					Name: "db-secret",
+					VolumeSource: core.VolumeSource{
+						Secret: &core.SecretVolumeSource{
+							SecretName: mysql.Spec.DatabaseSecret.SecretName,
+						},
+					},
+				},
+			)
 		}
 		// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
 		in = upsertEnv(in, mysql)
@@ -147,9 +143,11 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 
 		in.Spec.Template.Spec.NodeSelector = mysql.Spec.NodeSelector
 		in.Spec.Template.Spec.Affinity = mysql.Spec.Affinity
-		in.Spec.Template.Spec.SchedulerName = mysql.Spec.SchedulerName
 		in.Spec.Template.Spec.Tolerations = mysql.Spec.Tolerations
 		in.Spec.Template.Spec.ImagePullSecrets = mysql.Spec.ImagePullSecrets
+		if mysql.Spec.SchedulerName != "" {
+			in.Spec.Template.Spec.SchedulerName = mysql.Spec.SchedulerName
+		}
 
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 
@@ -219,7 +217,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSe
 						LocalObjectReference: core.LocalObjectReference{
 							Name: mysql.Spec.DatabaseSecret.SecretName,
 						},
-						Key: ".admin",
+						Key: KeyMySQLPassword,
 					},
 				},
 			})

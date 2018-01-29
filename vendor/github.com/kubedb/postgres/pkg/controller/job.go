@@ -3,7 +3,7 @@ package controller
 import (
 	"fmt"
 
-	"github.com/appscode/go/crypto/rand"
+	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/storage"
@@ -14,16 +14,18 @@ import (
 
 const (
 	snapshotProcessRestore = "restore"
-	snapshotTypePgDumpall  = "pg_dumpall"
+	snapshotProcessBackup  = "backup"
 )
 
 func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snapshot) (*batch.Job, error) {
-	databaseName := postgres.Name
-	jobName := rand.WithUniqSuffix(snapshot.OffshootName())
+	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshot.OffshootName())
 	jobLabel := map[string]string{
-		api.LabelDatabaseName: databaseName,
-		api.LabelJobType:      snapshotProcessRestore,
+		api.LabelDatabaseKind: api.ResourceKindPostgres,
 	}
+	jobAnnotation := map[string]string{
+		api.AnnotationJobType: api.JobTypeRestore,
+	}
+
 	backupSpec := snapshot.Spec.SnapshotStorageSpec
 	bucket, err := backupSpec.Container()
 	if err != nil {
@@ -41,8 +43,17 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   jobName,
-			Labels: jobLabel,
+			Name:        jobName,
+			Labels:      jobLabel,
+			Annotations: jobAnnotation,
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: api.SchemeGroupVersion.String(),
+					Kind:       api.ResourceKindPostgres,
+					Name:       postgres.Name,
+					UID:        postgres.UID,
+				},
+			},
 		},
 		Spec: batch.JobSpec{
 			Template: core.PodTemplateSpec{
@@ -56,13 +67,25 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 							Image:           c.opt.Docker.GetToolsImageWithTag(postgres),
 							ImagePullPolicy: core.PullIfNotPresent,
 							Args: []string{
-								fmt.Sprintf(`--process=%s`, snapshotProcessRestore),
-								fmt.Sprintf(`--host=%s`, databaseName),
+								snapshotProcessRestore,
+								fmt.Sprintf(`--host=%s`, postgres.PrimaryName()),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
+								fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
+								{
+									Name: KeyPostgresPassword,
+									ValueFrom: &core.EnvVarSource{
+										SecretKeyRef: &core.SecretKeySelector{
+											LocalObjectReference: core.LocalObjectReference{
+												Name: postgres.Spec.DatabaseSecret.SecretName,
+											},
+											Key: KeyPostgresPassword,
+										},
+									},
+								},
 								{
 									Name:  analytics.Key,
 									Value: c.opt.AnalyticsClientID,
@@ -71,12 +94,8 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 							Resources: snapshot.Spec.Resources,
 							VolumeMounts: []core.VolumeMount{
 								{
-									Name:      "secret",
-									MountPath: "/srv/" + api.ResourceNamePostgres + "/secrets",
-								},
-								{
 									Name:      persistentVolume.Name,
-									MountPath: "/var/" + snapshotTypePgDumpall + "/",
+									MountPath: "/var/data",
 								},
 								{
 									Name:      "osmconfig",
@@ -88,14 +107,6 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 					},
 					ImagePullSecrets: postgres.Spec.ImagePullSecrets,
 					Volumes: []core.Volume{
-						{
-							Name: "secret",
-							VolumeSource: core.VolumeSource{
-								Secret: &core.SecretVolumeSource{
-									SecretName: postgres.Spec.DatabaseSecret.SecretName,
-								},
-							},
-						},
 						{
 							Name:         persistentVolume.Name,
 							VolumeSource: persistentVolume.VolumeSource,
@@ -114,6 +125,7 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 			},
 		},
 	}
+
 	if snapshot.Spec.SnapshotStorageSpec.Local != nil {
 		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, core.VolumeMount{
 			Name:      "local",
@@ -129,19 +141,20 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 	return c.Client.BatchV1().Jobs(postgres.Namespace).Create(job)
 }
 
-func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, error) {
-	databaseName := snapshot.Spec.DatabaseName
-	jobName := rand.WithUniqSuffix(snapshot.OffshootName())
-	jobLabel := map[string]string{
-		api.LabelDatabaseName: databaseName,
-		api.LabelJobType:      snapshotProcessBackup,
-	}
-	backupSpec := snapshot.Spec.SnapshotStorageSpec
-	bucket, err := backupSpec.Container()
+func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) {
+	postgres, err := c.ExtClient.Postgreses(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
-	postgres, err := c.ExtClient.Postgreses(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
+	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshot.OffshootName())
+	jobLabel := map[string]string{
+		api.LabelDatabaseKind: api.ResourceKindPostgres,
+	}
+	jobAnnotation := map[string]string{
+		api.AnnotationJobType: api.JobTypeBackup,
+	}
+	backupSpec := snapshot.Spec.SnapshotStorageSpec
+	bucket, err := backupSpec.Container()
 	if err != nil {
 		return nil, err
 	}
@@ -156,8 +169,17 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 	folderName, _ := snapshot.Location()
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   jobName,
-			Labels: jobLabel,
+			Name:        jobName,
+			Labels:      jobLabel,
+			Annotations: jobAnnotation,
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: api.SchemeGroupVersion.String(),
+					Kind:       api.ResourceKindSnapshot,
+					Name:       snapshot.Name,
+					UID:        snapshot.UID,
+				},
+			},
 		},
 		Spec: batch.JobSpec{
 			Template: core.PodTemplateSpec{
@@ -170,13 +192,25 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 							Name:  snapshotProcessBackup,
 							Image: c.opt.Docker.GetToolsImageWithTag(postgres),
 							Args: []string{
-								fmt.Sprintf(`--process=%s`, snapshotProcessBackup),
-								fmt.Sprintf(`--host=%s`, databaseName),
+								snapshotProcessBackup,
+								fmt.Sprintf(`--host=%s`, postgres.PrimaryName()),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
+								fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
+								{
+									Name: KeyPostgresPassword,
+									ValueFrom: &core.EnvVarSource{
+										SecretKeyRef: &core.SecretKeySelector{
+											LocalObjectReference: core.LocalObjectReference{
+												Name: postgres.Spec.DatabaseSecret.SecretName,
+											},
+											Key: KeyPostgresPassword,
+										},
+									},
+								},
 								{
 									Name:  analytics.Key,
 									Value: c.opt.AnalyticsClientID,
@@ -185,12 +219,8 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 							Resources: snapshot.Spec.Resources,
 							VolumeMounts: []core.VolumeMount{
 								{
-									Name:      "secret",
-									MountPath: "/srv/" + api.ResourceNamePostgres + "/secrets",
-								},
-								{
 									Name:      persistentVolume.Name,
-									MountPath: "/var/" + snapshotTypePgDumpall + "/",
+									MountPath: "/var/data",
 								},
 								{
 									Name:      "osmconfig",
@@ -202,14 +232,6 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 					},
 					ImagePullSecrets: postgres.Spec.ImagePullSecrets,
 					Volumes: []core.Volume{
-						{
-							Name: "secret",
-							VolumeSource: core.VolumeSource{
-								Secret: &core.SecretVolumeSource{
-									SecretName: postgres.Spec.DatabaseSecret.SecretName,
-								},
-							},
-						},
 						{
 							Name:         persistentVolume.Name,
 							VolumeSource: persistentVolume.VolumeSource,
@@ -241,4 +263,42 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 		})
 	}
 	return job, nil
+}
+
+func (c *Controller) getVolumeForSnapshot(pvcSpec *core.PersistentVolumeClaimSpec, jobName, namespace string) (*core.Volume, error) {
+	volume := &core.Volume{
+		Name: "tools",
+	}
+	if pvcSpec != nil {
+		if len(pvcSpec.AccessModes) == 0 {
+			pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
+				core.ReadWriteOnce,
+			}
+			log.Infof(`Using "%v" as AccessModes in "%v"`, core.ReadWriteOnce, *pvcSpec)
+		}
+
+		claim := &core.PersistentVolumeClaim{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      jobName,
+				Namespace: namespace,
+			},
+			Spec: *pvcSpec,
+		}
+		if pvcSpec.StorageClassName != nil {
+			claim.Annotations = map[string]string{
+				"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+			}
+		}
+
+		if _, err := c.Client.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(claim); err != nil {
+			return nil, err
+		}
+
+		volume.PersistentVolumeClaim = &core.PersistentVolumeClaimVolumeSource{
+			ClaimName: claim.Name,
+		}
+	} else {
+		volume.EmptyDir = &core.EmptyDirVolumeSource{}
+	}
+	return volume, nil
 }

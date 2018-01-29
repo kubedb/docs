@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -84,9 +85,7 @@ func upsertServicePort(service *core.Service, mongodb *api.MongoDB) []core.Servi
 			TargetPort: intstr.FromString("db"),
 		},
 	}
-	if mongodb.Spec.Monitor != nil &&
-		mongodb.Spec.Monitor.Agent == api.AgentCoreosPrometheus &&
-		mongodb.Spec.Monitor.Prometheus != nil {
+	if mongodb.GetMonitoringVendor() == mon_api.VendorPrometheus {
 		desiredPorts = append(desiredPorts, core.ServicePort{
 			Name:       api.PrometheusExporterPortName,
 			Protocol:   core.ProtocolTCP,

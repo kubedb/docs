@@ -6,11 +6,13 @@ import (
 
 	"github.com/appscode/go/log"
 	core_util "github.com/appscode/kutil/core/v1"
-	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	rt "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
 )
@@ -20,15 +22,32 @@ func (c *Controller) initWatcher() {
 	// create the workqueue
 	c.queue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "snapshot")
 
+	// Watch with label selector
+	lw := &cache.ListWatch{
+		ListFunc: func(opts metav1.ListOptions) (rt.Object, error) {
+			return c.ExtClient.Snapshots(metav1.NamespaceAll).List(c.listOption)
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			return c.ExtClient.Snapshots(metav1.NamespaceAll).Watch(c.listOption)
+		},
+	}
+
 	// Bind the workqueue to a cache with the help of an informer. This way we make sure that
 	// whenever the cache is updated, the Snapshot key is added to the workqueue.
 	// Note that when we finally process the item from the workqueue, we might see a newer version
 	// of the Snapshot than the version which was responsible for triggering the update.
-	c.indexer, c.informer = cache.NewIndexerInformer(c.lw, &api.Snapshot{}, c.syncPeriod, cache.ResourceEventHandlerFuncs{
+	c.indexer, c.informer = cache.NewIndexerInformer(lw, &api.Snapshot{}, c.syncPeriod, cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			key, err := cache.MetaNamespaceKeyFunc(obj)
-			if err == nil {
-				c.queue.Add(key)
+			snapshot, ok := obj.(*api.Snapshot)
+			if !ok {
+				log.Errorln("Invalid Snapshot object")
+				return
+			}
+			if snapshot.Status.StartTime == nil {
+				key, err := cache.MetaNamespaceKeyFunc(obj)
+				if err == nil {
+					c.queue.Add(key)
+				}
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
@@ -39,34 +58,20 @@ func (c *Controller) initWatcher() {
 				c.queue.Add(key)
 			}
 		},
-		UpdateFunc: func(old, new interface{}) {
-			oldObj, ok := old.(*api.Snapshot)
+		UpdateFunc: func(_, obj interface{}) {
+			snapshot, ok := obj.(*api.Snapshot)
 			if !ok {
 				log.Errorln("Invalid Snapshot object")
 				return
 			}
-			newObj, ok := new.(*api.Snapshot)
-			if !ok {
-				log.Errorln("Invalid Snapshot object")
-				return
-			}
-			if newObj.DeletionTimestamp != nil || !snapshotEqual(oldObj, newObj) {
-				key, err := cache.MetaNamespaceKeyFunc(new)
+			if snapshot.DeletionTimestamp != nil {
+				key, err := cache.MetaNamespaceKeyFunc(snapshot)
 				if err == nil {
 					c.queue.Add(key)
 				}
 			}
 		},
 	}, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-}
-
-func snapshotEqual(old, new *api.Snapshot) bool {
-	if !meta_util.Equal(old.Spec, new.Spec) {
-		diff := meta_util.Diff(old.Spec, new.Spec)
-		log.Debugf("Snapshot %s/%s has changed. Diff: %s\n", new.Namespace, new.Name, diff)
-		return false
-	}
-	return true
 }
 
 func (c *Controller) runWatcher(threadiness int, stopCh chan struct{}) {

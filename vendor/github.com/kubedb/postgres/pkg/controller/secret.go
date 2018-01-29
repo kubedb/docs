@@ -13,6 +13,12 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
+const (
+	KeyPostgresPassword = "POSTGRES_PASSWORD"
+	PostgresUser        = "postgres"
+	ExporterSecretPath  = "/var/run/secrets/kubedb.com/"
+)
+
 func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
 	databaseSecretVolume := postgres.Spec.DatabaseSecret
 	if databaseSecretVolume == nil {
@@ -64,12 +70,6 @@ func (c *Controller) createDatabaseSecret(postgres *api.Postgres) (*core.SecretV
 		}, nil
 	}
 
-	postgresPassword := fmt.Sprintf("POSTGRES_PASSWORD=%s\n", rand.GeneratePassword())
-
-	data := map[string][]byte{
-		".admin": []byte(postgresPassword),
-	}
-
 	name := fmt.Sprintf("%v-auth", postgres.OffshootName())
 	secret := &core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -80,7 +80,9 @@ func (c *Controller) createDatabaseSecret(postgres *api.Postgres) (*core.SecretV
 			},
 		},
 		Type: core.SecretTypeOpaque,
-		Data: data,
+		Data: map[string][]byte{
+			KeyPostgresPassword: []byte(rand.GeneratePassword()),
+		},
 	}
 	if _, err := c.Client.CoreV1().Secrets(postgres.Namespace).Create(secret); err != nil {
 		return nil, err

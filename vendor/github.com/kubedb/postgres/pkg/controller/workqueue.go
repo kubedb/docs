@@ -29,7 +29,7 @@ func (c *Controller) initWatcher() {
 	}
 
 	// create the workqueue
-	c.queue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "postgres")
+	c.queue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), api.ResourceNamePostgres)
 
 	// Bind the workqueue to a cache with the help of an informer. This way we make sure that
 	// whenever the cache is updated, the Postgres key is added to the workqueue.
@@ -75,6 +75,11 @@ func postgresEqual(old, new *api.Postgres) bool {
 	if !meta_util.Equal(old.Spec, new.Spec) {
 		diff := meta_util.Diff(old.Spec, new.Spec)
 		log.Infof("Postgres %s/%s has changed. Diff: %s\n", new.Namespace, new.Name, diff)
+		return false
+	}
+	if !meta_util.Equal(old.Annotations, new.Annotations) {
+		diff := meta_util.Diff(old.Annotations, new.Annotations)
+		log.Infof("Annotations in Postgres %s/%s has changed. Diff: %s\n", new.Namespace, new.Name, diff)
 		return false
 	}
 	return true

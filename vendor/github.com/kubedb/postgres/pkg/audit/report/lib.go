@@ -12,7 +12,7 @@ import (
 	pg "github.com/lib/pq"
 )
 
-func newXormEngine(username, password, host, port, dbName string) (*xorm.Engine, error) {
+func newXormEngine(username, password, host string, port int, dbName string) (*xorm.Engine, error) {
 	cnnstr := fmt.Sprintf("user=%v password=%v host=%v port=%v dbname=%v sslmode=disable",
 		username, password, host, port, dbName)
 

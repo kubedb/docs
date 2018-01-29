@@ -1,9 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
-	"errors"
-
 	"github.com/appscode/go/log"
 	apps_util "github.com/appscode/kutil/apps/v1beta1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -90,10 +87,6 @@ func (c *Controller) ResumeDatabase(dormantDb *api.DormantDatabase) error {
 	origin := dormantDb.Spec.Origin
 	objectMeta := origin.ObjectMeta
 
-	if origin.Spec.Postgres.Init != nil {
-		return errors.New("do not support InitSpec in spec.origin.postgres")
-	}
-
 	postgres := &api.Postgres{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        objectMeta.Name,
@@ -102,14 +95,6 @@ func (c *Controller) ResumeDatabase(dormantDb *api.DormantDatabase) error {
 			Annotations: objectMeta.Annotations,
 		},
 		Spec: *origin.Spec.Postgres,
-	}
-
-	if postgres.Annotations == nil {
-		postgres.Annotations = make(map[string]string)
-	}
-
-	for key, val := range dormantDb.Annotations {
-		postgres.Annotations[key] = val
 	}
 
 	_, err := c.ExtClient.Postgreses(postgres.Namespace).Create(postgres)
@@ -139,17 +124,6 @@ func (c *Controller) createDormantDatabase(postgres *api.Postgres) (*api.Dormant
 			},
 		},
 	}
-
-	if postgres.Spec.Init != nil {
-		initSpec, err := json.Marshal(postgres.Spec.Init)
-		if err == nil {
-			dormantDb.Annotations = map[string]string{
-				api.GenericInitSpec: string(initSpec),
-			}
-		}
-	}
-
-	dormantDb.Spec.Origin.Spec.Postgres.Init = nil
 
 	return c.ExtClient.DormantDatabases(dormantDb.Namespace).Create(dormantDb)
 }

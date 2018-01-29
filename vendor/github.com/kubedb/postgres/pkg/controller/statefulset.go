@@ -6,9 +6,11 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
+	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	app_util "github.com/appscode/kutil/apps/v1beta1"
 	core_util "github.com/appscode/kutil/core/v1"
+	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	apps "k8s.io/api/apps/v1beta1"
@@ -41,11 +43,7 @@ func (c *Controller) ensureStatefulSet(
 
 		in.Spec.Replicas = types.Int32P(replicas)
 		in.Spec.ServiceName = c.opt.GoverningService
-		in.Spec.Template = core.PodTemplateSpec{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels: in.ObjectMeta.Labels,
-			},
-		}
+		in.Spec.Template.Labels = in.Labels
 
 		in = c.upsertContainer(in, postgres)
 		in = upsertEnv(in, postgres, envList)
@@ -53,12 +51,15 @@ func (c *Controller) ensureStatefulSet(
 
 		in.Spec.Template.Spec.NodeSelector = postgres.Spec.NodeSelector
 		in.Spec.Template.Spec.Affinity = postgres.Spec.Affinity
-		in.Spec.Template.Spec.SchedulerName = postgres.Spec.SchedulerName
+
+		if postgres.Spec.SchedulerName != "" {
+			in.Spec.Template.Spec.SchedulerName = postgres.Spec.SchedulerName
+		}
+
 		in.Spec.Template.Spec.Tolerations = postgres.Spec.Tolerations
 		in.Spec.Template.Spec.ImagePullSecrets = postgres.Spec.ImagePullSecrets
 
 		in = c.upsertMonitoringContainer(in, postgres)
-		in = upsertDatabaseSecret(in, postgres.Spec.DatabaseSecret.SecretName)
 		if postgres.Spec.Archiver != nil {
 			archiverStorage := postgres.Spec.Archiver.Storage
 			if archiverStorage != nil {
@@ -66,11 +67,13 @@ func (c *Controller) ensureStatefulSet(
 			}
 		}
 
-		if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
-			in = upsertInitWalSecret(in, postgres.Spec.Init.PostgresWAL.StorageSecretName)
-		}
-		if postgres.Spec.Init != nil && postgres.Spec.Init.ScriptSource != nil {
-			in = upsertInitScript(in, postgres.Spec.Init.ScriptSource.VolumeSource)
+		if _, err := meta_util.GetString(postgres.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound {
+			if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
+				in = upsertInitWalSecret(in, postgres.Spec.Init.PostgresWAL.StorageSecretName)
+			}
+			if postgres.Spec.Init != nil && postgres.Spec.Init.ScriptSource != nil {
+				in = upsertInitScript(in, postgres.Spec.Init.ScriptSource.VolumeSource)
+			}
 		}
 
 		in = upsertDataVolume(in, postgres)
@@ -165,20 +168,23 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres) (kutil.VerbType,
 		}
 	}
 
-	if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
-		wal := postgres.Spec.Init.PostgresWAL
-		envList = append(envList,
-			[]core.EnvVar{
-				{
-					Name:  "RESTORE",
-					Value: "true",
-				},
-				{
-					Name:  "RESTORE_S3_PREFIX",
-					Value: fmt.Sprintf("s3://%v/%v", wal.S3.Bucket, wal.S3.Prefix),
-				},
-			}...,
-		)
+	if postgres.Spec.Init != nil {
+		restoreStorage := postgres.Spec.Init.PostgresWAL
+		if restoreStorage != nil {
+			wal := postgres.Spec.Init.PostgresWAL
+			envList = append(envList,
+				[]core.EnvVar{
+					{
+						Name:  "RESTORE",
+						Value: "true",
+					},
+					{
+						Name:  "RESTORE_S3_PREFIX",
+						Value: fmt.Sprintf("s3://%v/%v", wal.S3.Bucket, wal.S3.Prefix),
+					},
+				}...,
+			)
+		}
 	}
 
 	return c.ensureStatefulSet(postgres, envList)
@@ -228,7 +234,6 @@ func (c *Controller) upsertContainer(statefulSet *apps.StatefulSet, postgres *ap
 }
 
 func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []core.EnvVar) *apps.StatefulSet {
-
 	envList := []core.EnvVar{
 		{
 			Name: "NAMESPACE",
@@ -241,6 +246,17 @@ func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []cor
 		{
 			Name:  "PRIMARY_HOST",
 			Value: postgres.PrimaryName(),
+		},
+		{
+			Name: KeyPostgresPassword,
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: postgres.Spec.DatabaseSecret.SecretName,
+					},
+					Key: KeyPostgresPassword,
+				},
+			},
 		},
 	}
 
@@ -261,8 +277,8 @@ func upsertPort(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 	getPorts := func() []core.ContainerPort {
 		portList := []core.ContainerPort{
 			{
-				Name:          "api",
-				ContainerPort: 5432,
+				Name:          PostgresPortName,
+				ContainerPort: PostgresPort,
 				Protocol:      core.ProtocolTCP,
 			},
 		}
@@ -280,16 +296,15 @@ func upsertPort(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 }
 
 func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
-	if postgres.Spec.Monitor != nil &&
-		postgres.Spec.Monitor.Agent == api.AgentCoreosPrometheus &&
-		postgres.Spec.Monitor.Prometheus != nil {
+	if postgres.GetMonitoringVendor() == mon_api.VendorPrometheus {
 		container := core.Container{
 			Name: "exporter",
-			Args: []string{
+			Args: append([]string{
 				"export",
 				fmt.Sprintf("--address=:%d", api.PrometheusExporterPortNumber),
 				"--v=3",
-			},
+				fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
+			}, c.opt.LoggerOptions.ToFlags()...),
 			Image:           c.opt.Docker.GetOperatorImageWithTag(postgres),
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
@@ -299,44 +314,34 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 					ContainerPort: int32(api.PrometheusExporterPortNumber),
 				},
 			},
+			VolumeMounts: []core.VolumeMount{
+				{
+					Name:      "secret",
+					MountPath: ExporterSecretPath,
+				},
+			},
 		}
 		containers := statefulSet.Spec.Template.Spec.Containers
 		containers = core_util.UpsertContainer(containers, container)
 		statefulSet.Spec.Template.Spec.Containers = containers
+
+		volume := core.Volume{
+			Name: "secret",
+			VolumeSource: core.VolumeSource{
+				Secret: &core.SecretVolumeSource{
+					SecretName: postgres.Spec.DatabaseSecret.SecretName,
+				},
+			},
+		}
+		volumes := statefulSet.Spec.Template.Spec.Volumes
+		volumes = core_util.UpsertVolume(volumes, volume)
+		statefulSet.Spec.Template.Spec.Volumes = volumes
 	}
 	return statefulSet
 }
 
-func upsertDatabaseSecret(statefulset *apps.StatefulSet, secretName string) *apps.StatefulSet {
-	for i, container := range statefulset.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceNamePostgres {
-			volumeMount := core.VolumeMount{
-				Name:      "secret",
-				MountPath: "/srv/" + api.ResourceNamePostgres + "/secrets",
-			}
-			volumeMounts := container.VolumeMounts
-			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-			statefulset.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
-
-			volume := core.Volume{
-				Name: "secret",
-				VolumeSource: core.VolumeSource{
-					Secret: &core.SecretVolumeSource{
-						SecretName: secretName,
-					},
-				},
-			}
-			volumes := statefulset.Spec.Template.Spec.Volumes
-			volumes = core_util.UpsertVolume(volumes, volume)
-			statefulset.Spec.Template.Spec.Volumes = volumes
-			return statefulset
-		}
-	}
-	return statefulset
-}
-
-func upsertArchiveSecret(statefulset *apps.StatefulSet, secretName string) *apps.StatefulSet {
-	for i, container := range statefulset.Spec.Template.Spec.Containers {
+func upsertArchiveSecret(statefulSet *apps.StatefulSet, secretName string) *apps.StatefulSet {
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceNamePostgres {
 			volumeMount := core.VolumeMount{
 				Name:      "wal-g-archive",
@@ -344,7 +349,7 @@ func upsertArchiveSecret(statefulset *apps.StatefulSet, secretName string) *apps
 			}
 			volumeMounts := container.VolumeMounts
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-			statefulset.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 			volume := core.Volume{
 				Name: "wal-g-archive",
@@ -354,17 +359,17 @@ func upsertArchiveSecret(statefulset *apps.StatefulSet, secretName string) *apps
 					},
 				},
 			}
-			volumes := statefulset.Spec.Template.Spec.Volumes
+			volumes := statefulSet.Spec.Template.Spec.Volumes
 			volumes = core_util.UpsertVolume(volumes, volume)
-			statefulset.Spec.Template.Spec.Volumes = volumes
-			return statefulset
+			statefulSet.Spec.Template.Spec.Volumes = volumes
+			return statefulSet
 		}
 	}
-	return statefulset
+	return statefulSet
 }
 
-func upsertInitWalSecret(statefulset *apps.StatefulSet, secretName string) *apps.StatefulSet {
-	for i, container := range statefulset.Spec.Template.Spec.Containers {
+func upsertInitWalSecret(statefulSet *apps.StatefulSet, secretName string) *apps.StatefulSet {
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceNamePostgres {
 			volumeMount := core.VolumeMount{
 				Name:      "wal-g-restore",
@@ -372,7 +377,7 @@ func upsertInitWalSecret(statefulset *apps.StatefulSet, secretName string) *apps
 			}
 			volumeMounts := container.VolumeMounts
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-			statefulset.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 			volume := core.Volume{
 				Name: "wal-g-restore",
@@ -382,17 +387,17 @@ func upsertInitWalSecret(statefulset *apps.StatefulSet, secretName string) *apps
 					},
 				},
 			}
-			volumes := statefulset.Spec.Template.Spec.Volumes
+			volumes := statefulSet.Spec.Template.Spec.Volumes
 			volumes = core_util.UpsertVolume(volumes, volume)
-			statefulset.Spec.Template.Spec.Volumes = volumes
-			return statefulset
+			statefulSet.Spec.Template.Spec.Volumes = volumes
+			return statefulSet
 		}
 	}
-	return statefulset
+	return statefulSet
 }
 
-func upsertInitScript(statefulset *apps.StatefulSet, script core.VolumeSource) *apps.StatefulSet {
-	for i, container := range statefulset.Spec.Template.Spec.Containers {
+func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *apps.StatefulSet {
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceNamePostgres {
 			volumeMount := core.VolumeMount{
 				Name:      "initial-script",
@@ -400,19 +405,19 @@ func upsertInitScript(statefulset *apps.StatefulSet, script core.VolumeSource) *
 			}
 			volumeMounts := container.VolumeMounts
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-			statefulset.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 			volume := core.Volume{
 				Name:         "initial-script",
 				VolumeSource: script,
 			}
-			volumes := statefulset.Spec.Template.Spec.Volumes
+			volumes := statefulSet.Spec.Template.Spec.Volumes
 			volumes = core_util.UpsertVolume(volumes, volume)
-			statefulset.Spec.Template.Spec.Volumes = volumes
-			return statefulset
+			statefulSet.Spec.Template.Spec.Volumes = volumes
+			return statefulSet
 		}
 	}
-	return statefulset
+	return statefulSet
 }
 
 func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {

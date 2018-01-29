@@ -29,7 +29,7 @@ func (c *Controller) initWatcher() {
 	}
 
 	// create the workqueue
-	c.queue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "mysql")
+	c.queue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), api.ResourceNameMySQL)
 
 	// Bind the workqueue to a cache with the help of an informer. This way we make sure that
 	// whenever the cache is updated, the MySQL key is added to the workqueue.
@@ -74,7 +74,7 @@ func (c *Controller) initWatcher() {
 func mysqlEqual(old, new *api.MySQL) bool {
 	if !meta_util.Equal(old.Spec, new.Spec) {
 		diff := meta_util.Diff(old.Spec, new.Spec)
-		log.Infoln("MySQL %s/%s has changed. Diff: %s", new.Namespace, new.Name, diff)
+		log.Infof("MySQL %s/%s has changed. Diff: %s", new.Namespace, new.Name, diff)
 		return false
 	}
 	return true
@@ -85,7 +85,7 @@ func (c *Controller) runWatcher(threadiness int, stopCh chan struct{}) {
 
 	// Let the workers stop when we are done
 	defer c.queue.ShutDown()
-	log.Infof("Starting MySQL controller")
+	log.Infoln("Starting MySQL controller")
 
 	go c.informer.Run(stopCh)
 
@@ -100,7 +100,7 @@ func (c *Controller) runWatcher(threadiness int, stopCh chan struct{}) {
 	}
 
 	<-stopCh
-	log.Infof("Stopping MySQL controller")
+	log.Infoln("Stopping MySQL controller")
 
 }
 
@@ -165,21 +165,21 @@ func (c *Controller) runMySQL(key string) error {
 		// is dependent on the actual instance, to detect that a MySQL was recreated with the same name
 		mysql := obj.(*api.MySQL).DeepCopy()
 		if mysql.DeletionTimestamp != nil {
-			if core_util.HasFinalizer(mysql.ObjectMeta, "kubedb.com") {
+			if core_util.HasFinalizer(mysql.ObjectMeta, api.GenericKey) {
 				util.AssignTypeKind(mysql)
 				if err := c.pause(mysql); err != nil {
 					log.Errorln(err)
 					return err
 				}
 				mysql, _, err = util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
-					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, "kubedb.com")
+					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, api.GenericKey)
 					return in
 				})
 				return err
 			}
 		} else {
 			mysql, _, err = util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
-				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, "kubedb.com")
+				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
 				return in
 			})
 			util.AssignTypeKind(mysql)

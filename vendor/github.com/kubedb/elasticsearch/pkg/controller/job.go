@@ -3,7 +3,7 @@ package controller
 import (
 	"fmt"
 
-	"github.com/appscode/go/crypto/rand"
+	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/storage"
@@ -13,17 +13,19 @@ import (
 )
 
 const (
-	snapshotProcessRestore  = "restore"
-	snapshotTypeDumpRestore = "dump-restore"
+	snapshotProcessBackup  = "backup"
+	snapshotProcessRestore = "restore"
 )
 
 func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot *api.Snapshot) (*batch.Job, error) {
-	databaseName := elasticsearch.Name
-	jobName := rand.WithUniqSuffix(snapshot.OffshootName())
+	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshot.OffshootName())
 	jobLabel := map[string]string{
-		api.LabelDatabaseName: databaseName,
-		api.LabelJobType:      snapshotProcessRestore,
+		api.LabelDatabaseKind: api.ResourceKindElasticsearch,
 	}
+	jobAnnotation := map[string]string{
+		api.AnnotationJobType: api.JobTypeRestore,
+	}
+
 	backupSpec := snapshot.Spec.SnapshotStorageSpec
 	bucket, err := backupSpec.Container()
 	if err != nil {
@@ -41,8 +43,17 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   jobName,
-			Labels: jobLabel,
+			Name:        jobName,
+			Labels:      jobLabel,
+			Annotations: jobAnnotation,
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: api.SchemeGroupVersion.String(),
+					Kind:       api.ResourceKindElasticsearch,
+					Name:       elasticsearch.Name,
+					UID:        elasticsearch.UID,
+				},
+			},
 		},
 		Spec: batch.JobSpec{
 			Template: core.PodTemplateSpec{
@@ -56,25 +67,26 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 							Image:           c.opt.Docker.GetToolsImageWithTag(elasticsearch),
 							ImagePullPolicy: core.PullIfNotPresent,
 							Args: []string{
-								fmt.Sprintf(`--process=%s`, snapshotProcessRestore),
-								fmt.Sprintf(`--host=%s`, databaseName),
+								snapshotProcessRestore,
+								fmt.Sprintf(`--host=%s`, elasticsearch.OffshootName()),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
+								fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
 								{
-									Name:  "USERNAME",
-									Value: "admin",
+									Name:  "DB_USER",
+									Value: AdminUser,
 								},
 								{
-									Name: "PASSWORD",
+									Name: "DB_PASSWORD",
 									ValueFrom: &core.EnvVarSource{
 										SecretKeyRef: &core.SecretKeySelector{
 											LocalObjectReference: core.LocalObjectReference{
 												Name: elasticsearch.Spec.DatabaseSecret.SecretName,
 											},
-											Key: "ADMIN_PASSWORD",
+											Key: KeyAdminPassword,
 										},
 									},
 								},
@@ -87,16 +99,11 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 							VolumeMounts: []core.VolumeMount{
 								{
 									Name:      persistentVolume.Name,
-									MountPath: "/var/" + snapshotTypeDumpRestore + "/",
+									MountPath: "/var/data",
 								},
 								{
 									Name:      "osmconfig",
 									MountPath: storage.SecretMountPath,
-									ReadOnly:  true,
-								},
-								{
-									Name:      "certs",
-									MountPath: "/certs",
 									ReadOnly:  true,
 								},
 							},
@@ -113,28 +120,6 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 							VolumeSource: core.VolumeSource{
 								Secret: &core.SecretVolumeSource{
 									SecretName: snapshot.OSMSecretName(),
-								},
-							},
-						},
-						{
-							Name: "certs",
-							VolumeSource: core.VolumeSource{
-								Secret: &core.SecretVolumeSource{
-									SecretName: elasticsearch.Spec.CertificateSecret.SecretName,
-									Items: []core.KeyToPath{
-										{
-											Key:  "ca.pem",
-											Path: "ca.pem",
-										},
-										{
-											Key:  "client-key.pem",
-											Path: "client-key.pem",
-										},
-										{
-											Key:  "client.pem",
-											Path: "client.pem",
-										},
-									},
 								},
 							},
 						},
@@ -160,18 +145,19 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 }
 
 func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) {
-	databaseName := snapshot.Spec.DatabaseName
-	jobName := rand.WithUniqSuffix(snapshot.OffshootName())
-	jobLabel := map[string]string{
-		api.LabelDatabaseName: databaseName,
-		api.LabelJobType:      snapshotProcessBackup,
-	}
-	backupSpec := snapshot.Spec.SnapshotStorageSpec
-	bucket, err := backupSpec.Container()
+	elasticsearch, err := c.ExtClient.Elasticsearchs(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
-	elasticsearch, err := c.ExtClient.Elasticsearchs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
+	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshot.OffshootName())
+	jobLabel := map[string]string{
+		api.LabelDatabaseKind: api.ResourceKindElasticsearch,
+	}
+	jobAnnotation := map[string]string{
+		api.AnnotationJobType: api.JobTypeBackup,
+	}
+	backupSpec := snapshot.Spec.SnapshotStorageSpec
+	bucket, err := backupSpec.Container()
 	if err != nil {
 		return nil, err
 	}
@@ -184,10 +170,25 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 
 	// Folder name inside Cloud bucket where backup will be uploaded
 	folderName, _ := snapshot.Location()
+
+	indices, err := c.getAllIndices(elasticsearch)
+	if err != nil {
+		return nil, err
+	}
+
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   jobName,
-			Labels: jobLabel,
+			Name:        jobName,
+			Labels:      jobLabel,
+			Annotations: jobAnnotation,
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: api.SchemeGroupVersion.String(),
+					Kind:       api.ResourceKindSnapshot,
+					Name:       snapshot.Name,
+					UID:        snapshot.UID,
+				},
+			},
 		},
 		Spec: batch.JobSpec{
 			Template: core.PodTemplateSpec{
@@ -197,28 +198,31 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 				Spec: core.PodSpec{
 					Containers: []core.Container{
 						{
-							Name:  snapshotProcessBackup,
-							Image: c.opt.Docker.GetToolsImageWithTag(elasticsearch),
+							Name:            snapshotProcessBackup,
+							Image:           c.opt.Docker.GetToolsImageWithTag(elasticsearch),
+							ImagePullPolicy: core.PullAlways,
 							Args: []string{
-								fmt.Sprintf(`--process=%s`, snapshotProcessBackup),
-								fmt.Sprintf(`--host=%s`, databaseName),
+								snapshotProcessBackup,
+								fmt.Sprintf(`--host=%s`, elasticsearch.OffshootName()),
+								fmt.Sprintf(`--indices=%s`, indices),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
+								fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
 								{
-									Name:  "USERNAME",
-									Value: "readall",
+									Name:  "DB_USER",
+									Value: ReadAllUser,
 								},
 								{
-									Name: "PASSWORD",
+									Name: "DB_PASSWORD",
 									ValueFrom: &core.EnvVarSource{
 										SecretKeyRef: &core.SecretKeySelector{
 											LocalObjectReference: core.LocalObjectReference{
 												Name: elasticsearch.Spec.DatabaseSecret.SecretName,
 											},
-											Key: "READALL_PASSWORD",
+											Key: KeyReadAllPassword,
 										},
 									},
 								},
@@ -231,16 +235,11 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 							VolumeMounts: []core.VolumeMount{
 								{
 									Name:      persistentVolume.Name,
-									MountPath: "/var/" + snapshotTypeDumpBackup + "/",
+									MountPath: "/var/data",
 								},
 								{
 									Name:      "osmconfig",
 									MountPath: storage.SecretMountPath,
-									ReadOnly:  true,
-								},
-								{
-									Name:      "certs",
-									MountPath: "/certs",
 									ReadOnly:  true,
 								},
 							},
@@ -257,28 +256,6 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 							VolumeSource: core.VolumeSource{
 								Secret: &core.SecretVolumeSource{
 									SecretName: snapshot.OSMSecretName(),
-								},
-							},
-						},
-						{
-							Name: "certs",
-							VolumeSource: core.VolumeSource{
-								Secret: &core.SecretVolumeSource{
-									SecretName: elasticsearch.Spec.CertificateSecret.SecretName,
-									Items: []core.KeyToPath{
-										{
-											Key:  "ca.pem",
-											Path: "ca.pem",
-										},
-										{
-											Key:  "client-key.pem",
-											Path: "client-key.pem",
-										},
-										{
-											Key:  "client.pem",
-											Path: "client.pem",
-										},
-									},
 								},
 							},
 						},
@@ -301,4 +278,42 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 		})
 	}
 	return job, nil
+}
+
+func (c *Controller) getVolumeForSnapshot(pvcSpec *core.PersistentVolumeClaimSpec, jobName, namespace string) (*core.Volume, error) {
+	volume := &core.Volume{
+		Name: "tools",
+	}
+	if pvcSpec != nil {
+		if len(pvcSpec.AccessModes) == 0 {
+			pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
+				core.ReadWriteOnce,
+			}
+			log.Infof(`Using "%v" as AccessModes in "%v"`, core.ReadWriteOnce, *pvcSpec)
+		}
+
+		claim := &core.PersistentVolumeClaim{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      jobName,
+				Namespace: namespace,
+			},
+			Spec: *pvcSpec,
+		}
+		if pvcSpec.StorageClassName != nil {
+			claim.Annotations = map[string]string{
+				"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+			}
+		}
+
+		if _, err := c.Client.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(claim); err != nil {
+			return nil, err
+		}
+
+		volume.PersistentVolumeClaim = &core.PersistentVolumeClaimVolumeSource{
+			ClaimName: claim.Name,
+		}
+	} else {
+		volume.EmptyDir = &core.EmptyDirVolumeSource{}
+	}
+	return volume, nil
 }

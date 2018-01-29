@@ -1,6 +1,7 @@
 package cmds
 
 import (
+	"flag"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -13,7 +14,6 @@ import (
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	tcs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
-	"github.com/kubedb/apimachinery/pkg/migrator"
 	esCtrl "github.com/kubedb/elasticsearch/pkg/controller"
 	esDocker "github.com/kubedb/elasticsearch/pkg/docker"
 	memCtrl "github.com/kubedb/memcached/pkg/controller"
@@ -32,8 +32,19 @@ import (
 	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	cgcmd "k8s.io/client-go/tools/clientcmd"
 )
+
+var (
+	prometheusCrdGroup = pcm.Group
+	prometheusCrdKinds = pcm.DefaultCrdKinds
+)
+
+func getPrometheusFlags() *flag.FlagSet {
+	fs := flag.NewFlagSet("prometheus", flag.ExitOnError)
+	fs.StringVar(&prometheusCrdGroup, "prometheus-crd-apigroup", prometheusCrdGroup, "prometheus CRD  API group name")
+	fs.Var(&prometheusCrdKinds, "prometheus-crd-kinds", " - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names")
+	return fs
+}
 
 func NewCmdRun() *cobra.Command {
 	cmd := &cobra.Command{
@@ -53,6 +64,8 @@ func NewCmdRun() *cobra.Command {
 	cmd.Flags().StringVar(&address, "address", address, "Address to listen on for web interface and telemetry.")
 	cmd.Flags().BoolVar(&enableRbac, "rbac", enableRbac, "Enable RBAC for database workloads")
 
+	cmd.Flags().AddGoFlagSet(getPrometheusFlags())
+
 	return cmd
 }
 
@@ -66,12 +79,7 @@ func run() {
 	apiExtKubeClient := ecs.NewForConfigOrDie(config)
 	dbClient = tcs.NewForConfigOrDie(config)
 
-	cgConfig, err := cgcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
-	if err != nil {
-		log.Fatalf("Could not get Kubernetes config: %s", err)
-	}
-
-	promClient, err := pcm.NewForConfig(cgConfig)
+	promClient, err := pcm.NewForConfig(&prometheusCrdKinds, prometheusCrdGroup, config)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -84,16 +92,6 @@ func run() {
 
 	fmt.Println("Starting operator...")
 
-	tprMigrator := migrator.NewMigrator(kubeClient, apiExtKubeClient, dbClient)
-	err = tprMigrator.RunMigration(
-		&api.Postgres{},
-		&api.Elasticsearch{},
-		&api.Snapshot{},
-		&api.DormantDatabase{},
-	)
-	if err != nil {
-		log.Fatalln(err)
-	}
 	defer runtime.HandleCrash()
 
 	// Register CRDs
@@ -112,10 +110,13 @@ func run() {
 		OperatorNamespace: operatorNamespace,
 		AnalyticsClientID: analyticsClientID,
 		EnableRbac:        enableRbac,
+		EnableAnalytics:   enableAnalytics,
+		LoggerOptions:     loggerOptions,
+		MaxNumRequeues:    3,
 	}).Run()
 
 	// Elasticsearch controller
-	esCtrl.New(kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
+	esCtrl.New(config, kubeClient, apiExtKubeClient, dbClient, promClient, cronController, esCtrl.Options{
 		Docker: esDocker.Docker{
 			Registry:    registry,
 			ExporterTag: exporterTag,
@@ -123,6 +124,9 @@ func run() {
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
 		AnalyticsClientID: analyticsClientID,
+		EnableAnalytics:   enableAnalytics,
+		LoggerOptions:     loggerOptions,
+		MaxNumRequeues:    3,
 	}).Run()
 
 	// MySQL controller
@@ -134,6 +138,9 @@ func run() {
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
 		AnalyticsClientID: analyticsClientID,
+		EnableAnalytics:   enableAnalytics,
+		LoggerOptions:     loggerOptions,
+		MaxNumRequeues:    3,
 	}).Run()
 
 	// MongoDB controller
@@ -145,6 +152,9 @@ func run() {
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
 		AnalyticsClientID: analyticsClientID,
+		EnableAnalytics:   enableAnalytics,
+		LoggerOptions:     loggerOptions,
+		MaxNumRequeues:    3,
 	}).Run()
 
 	// Redis controller
@@ -155,6 +165,9 @@ func run() {
 		},
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
+		EnableAnalytics:   enableAnalytics,
+		LoggerOptions:     loggerOptions,
+		MaxNumRequeues:    3,
 	}).Run()
 
 	// Memcached controller
@@ -165,6 +178,9 @@ func run() {
 		},
 		GoverningService:  governingService,
 		OperatorNamespace: operatorNamespace,
+		EnableAnalytics:   enableAnalytics,
+		LoggerOptions:     loggerOptions,
+		MaxNumRequeues:    3,
 	}).Run()
 
 	m := pat.New()

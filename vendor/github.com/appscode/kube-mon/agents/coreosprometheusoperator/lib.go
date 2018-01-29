@@ -5,30 +5,34 @@ import (
 	"reflect"
 
 	"github.com/appscode/kube-mon/api"
+	"github.com/appscode/kutil"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
-	"github.com/appscode/kutil"
 )
-
-const serviceKey = "monitoring.appscode.com/service-key"
 
 // PrometheusCoreosOperator creates `ServiceMonitor` so that CoreOS Prometheus operator can generate necessary config for Prometheus.
 type PrometheusCoreosOperator struct {
+	at api.AgentType
 	k8sClient  kubernetes.Interface
 	promClient prom.MonitoringV1Interface
 	extClient  ecs.ApiextensionsV1beta1Interface
 }
 
-func New(k8sClient kubernetes.Interface, extClient ecs.ApiextensionsV1beta1Interface, promClient prom.MonitoringV1Interface) api.Agent {
+func New(at api.AgentType, k8sClient kubernetes.Interface, extClient ecs.ApiextensionsV1beta1Interface, promClient prom.MonitoringV1Interface) api.Agent {
 	return &PrometheusCoreosOperator{
+		at:at,
 		k8sClient:  k8sClient,
 		extClient:  extClient,
 		promClient: promClient,
 	}
+}
+
+func (agent *PrometheusCoreosOperator) GetType() api.AgentType {
+	return agent.at
 }
 
 func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.AgentSpec) (kutil.VerbType, error) {
@@ -37,7 +41,7 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 	}
 	old, err := agent.promClient.ServiceMonitors(metav1.NamespaceAll).List(metav1.ListOptions{
 		LabelSelector: labels.Set{
-			serviceKey: sp.ServiceName() + "." + sp.GetNamespace(),
+			api.KeyService: sp.ServiceName() + "." + sp.GetNamespace(),
 		}.String(),
 	})
 
@@ -61,7 +65,7 @@ func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new 
 	if new.Prometheus.Labels == nil {
 		new.Prometheus.Labels = map[string]string{}
 	}
-	new.Prometheus.Labels[serviceKey] = sp.ServiceName() + "." + sp.GetNamespace()
+	new.Prometheus.Labels[api.KeyService] = sp.ServiceName() + "." + sp.GetNamespace()
 
 	actual, err := agent.promClient.ServiceMonitors(new.Prometheus.Namespace).Get(sp.ServiceMonitorName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
@@ -157,7 +161,7 @@ func (agent *PrometheusCoreosOperator) Delete(sp api.StatsAccessor) (kutil.VerbT
 
 	old, err := agent.promClient.ServiceMonitors(metav1.NamespaceAll).List(metav1.ListOptions{
 		LabelSelector: labels.Set{
-			serviceKey: sp.GetNamespace() + "." + sp.ServiceName(),
+			api.KeyService: sp.GetNamespace() + "." + sp.ServiceName(),
 		}.String(),
 	})
 	if err != nil && !kerr.IsNotFound(err) {

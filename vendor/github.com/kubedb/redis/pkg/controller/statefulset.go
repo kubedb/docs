@@ -5,6 +5,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
+	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	app_util "github.com/appscode/kutil/apps/v1beta1"
 	core_util "github.com/appscode/kutil/core/v1"
@@ -51,16 +52,14 @@ func (c *Controller) ensureStatefulSet(redis *api.Redis) (kutil.VerbType, error)
 			},
 			Resources: redis.Spec.Resources,
 		})
-		if redis.Spec.Monitor != nil &&
-			redis.Spec.Monitor.Agent == api.AgentCoreosPrometheus &&
-			redis.Spec.Monitor.Prometheus != nil {
+		if redis.GetMonitoringVendor() == mon_api.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
-				Args: []string{
+				Args: append([]string{
 					"export",
 					fmt.Sprintf("--address=:%d", redis.Spec.Monitor.Prometheus.Port),
-					"--v=3",
-				},
+					fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
+				}, c.opt.LoggerOptions.ToFlags()...),
 				Image:           c.opt.Docker.GetOperatorImageWithTag(redis),
 				ImagePullPolicy: core.PullIfNotPresent,
 				Ports: []core.ContainerPort{
@@ -199,14 +198,10 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.Sta
 }
 
 func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) error {
-	err := core_util.WaitUntilPodRunningBySelector(
+	return core_util.WaitUntilPodRunningBySelector(
 		c.Client,
 		statefulSet.Namespace,
 		statefulSet.Spec.Selector,
 		int(types.Int32(statefulSet.Spec.Replicas)),
 	)
-	if err != nil {
-		return err
-	}
-	return nil
 }

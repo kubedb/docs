@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -84,9 +85,7 @@ func upsertServicePort(service *core.Service, mysql *api.MySQL) []core.ServicePo
 			TargetPort: intstr.FromString("db"),
 		},
 	}
-	if mysql.Spec.Monitor != nil &&
-		mysql.Spec.Monitor.Agent == api.AgentCoreosPrometheus &&
-		mysql.Spec.Monitor.Prometheus != nil {
+	if mysql.GetMonitoringVendor() == mon_api.VendorPrometheus {
 		desiredPorts = append(desiredPorts, core.ServicePort{
 			Name:       api.PrometheusExporterPortName,
 			Protocol:   core.ProtocolTCP,

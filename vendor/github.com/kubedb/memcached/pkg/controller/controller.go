@@ -5,6 +5,7 @@ import (
 
 	"github.com/appscode/go/hold"
 	"github.com/appscode/go/log"
+	"github.com/appscode/go/log/golog"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -37,6 +38,10 @@ type Options struct {
 	Address string
 	//Max number requests for retries
 	MaxNumRequeues int
+	// Enable Analytics
+	EnableAnalytics bool
+	// Logger Options
+	LoggerOptions golog.Options
 }
 
 type Controller struct {
@@ -56,7 +61,7 @@ type Controller struct {
 	informer cache.Controller
 }
 
-var _ drmnc.Deleter = &Controller{}
+var _ amc.Deleter = &Controller{}
 
 func New(
 	client kubernetes.Interface,

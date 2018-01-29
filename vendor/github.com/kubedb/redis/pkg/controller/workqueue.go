@@ -92,7 +92,7 @@ func (c *Controller) runWatcher(threadiness int, stopCh chan struct{}) {
 
 	// Let the workers stop when we are done
 	defer c.queue.ShutDown()
-	log.Infof("Starting Redis controller")
+	log.Infoln("Starting Redis controller")
 
 	go c.informer.Run(stopCh)
 
@@ -107,7 +107,7 @@ func (c *Controller) runWatcher(threadiness int, stopCh chan struct{}) {
 	}
 
 	<-stopCh
-	log.Infof("Stopping Redis controller")
+	log.Infoln("Stopping Redis controller")
 
 }
 
@@ -173,6 +173,7 @@ func (c *Controller) runRedis(key string) error {
 		redis := obj.(*api.Redis).DeepCopy()
 		if redis.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(redis.ObjectMeta, "kubedb.com") {
+				util.AssignTypeKind(redis)
 				if err := c.pause(redis); err != nil {
 					log.Errorln(err)
 					return err
@@ -188,6 +189,7 @@ func (c *Controller) runRedis(key string) error {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, "kubedb.com")
 				return in
 			})
+			util.AssignTypeKind(redis)
 			if err := c.create(redis); err != nil {
 				log.Errorln(err)
 				c.pushFailureEvent(redis, err.Error())

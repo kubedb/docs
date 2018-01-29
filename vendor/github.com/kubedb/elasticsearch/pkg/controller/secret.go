@@ -17,6 +17,14 @@ import (
 	"k8s.io/client-go/util/cert"
 )
 
+const (
+	KeyAdminPassword   = "ADMIN_PASSWORD"
+	KeyReadAllPassword = "READALL_PASSWORD"
+	AdminUser          = "admin"
+	ReadAllUser        = "readall"
+	ExporterSecretPath = "/var/run/secrets/kubedb.com/"
+)
+
 func (c *Controller) ensureCertSecret(elasticsearch *api.Elasticsearch) error {
 	certSecretVolumeSource := elasticsearch.Spec.CertificateSecret
 	if certSecretVolumeSource == nil {
@@ -284,8 +292,8 @@ func (c *Controller) createDatabaseSecret(elasticsearch *api.Elasticsearch) (*co
 	}
 
 	data := map[string][]byte{
-		"ADMIN_PASSWORD":        []byte(adminPassword),
-		"READALL_PASSWORD":      []byte(readallPassword),
+		KeyAdminPassword:        []byte(adminPassword),
+		KeyReadAllPassword:      []byte(readallPassword),
 		"sg_action_groups.yml":  []byte(action_group),
 		"sg_config.yml":         []byte(config),
 		"sg_internal_users.yml": []byte(fmt.Sprintf(internal_user, hashedAdminPassword, hashedReadallPassword)),

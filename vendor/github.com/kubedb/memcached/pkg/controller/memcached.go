@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/appscode/go/log"
+	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
@@ -115,9 +116,14 @@ func (c *Controller) create(memcached *api.Memcached) error {
 	return nil
 }
 
+// Assign Default Monitoring Port if MonitoringSpec Exists
+// and the AgentVendor is Prometheus.
 func (c *Controller) setMonitoringPort(memcached *api.Memcached) error {
 	if memcached.Spec.Monitor != nil &&
-		memcached.Spec.Monitor.Prometheus != nil {
+		memcached.GetMonitoringVendor() == mon_api.VendorPrometheus {
+		if memcached.Spec.Monitor.Prometheus == nil {
+			memcached.Spec.Monitor.Prometheus = &mon_api.PrometheusSpec{}
+		}
 		if memcached.Spec.Monitor.Prometheus.Port == 0 {
 			mc, _, err := util.PatchMemcached(c.ExtClient, memcached, func(in *api.Memcached) *api.Memcached {
 				in.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber

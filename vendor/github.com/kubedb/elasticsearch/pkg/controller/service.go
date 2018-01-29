@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -17,6 +18,13 @@ var (
 	NodeRoleMaster = "node.role.master"
 	NodeRoleClient = "node.role.client"
 	NodeRoleData   = "node.role.data"
+)
+
+const (
+	ElasticsearchRestPort     = 9200
+	ElasticsearchRestPortName = "http"
+	ElasticsearchNodePort     = 9300
+	ElasticsearchNodePortName = "transport"
 )
 
 func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
@@ -117,14 +125,12 @@ func (c *Controller) createService(elasticsearch *api.Elasticsearch) (kutil.Verb
 func upsertServicePort(service *core.Service, elasticsearch *api.Elasticsearch) []core.ServicePort {
 	desiredPorts := []core.ServicePort{
 		{
-			Name:       "http",
-			Port:       9200,
-			TargetPort: intstr.FromString("http"),
+			Name:       ElasticsearchRestPortName,
+			Port:       ElasticsearchRestPort,
+			TargetPort: intstr.FromString(ElasticsearchRestPortName),
 		},
 	}
-	if elasticsearch.Spec.Monitor != nil &&
-		elasticsearch.Spec.Monitor.Agent == api.AgentCoreosPrometheus &&
-		elasticsearch.Spec.Monitor.Prometheus != nil {
+	if elasticsearch.GetMonitoringVendor() == mon_api.VendorPrometheus {
 		desiredPorts = append(desiredPorts, core.ServicePort{
 			Name:       api.PrometheusExporterPortName,
 			Protocol:   core.ProtocolTCP,
@@ -154,9 +160,9 @@ func (c *Controller) createMasterService(elasticsearch *api.Elasticsearch) (kuti
 func upsertMasterServicePort(service *core.Service) []core.ServicePort {
 	desiredPorts := []core.ServicePort{
 		{
-			Name:       "transport",
-			Port:       9300,
-			TargetPort: intstr.FromString("transport"),
+			Name:       ElasticsearchNodePortName,
+			Port:       ElasticsearchNodePort,
+			TargetPort: intstr.FromString(ElasticsearchNodePortName),
 		},
 	}
 	return core_util.MergeServicePorts(service.Spec.Ports, desiredPorts)

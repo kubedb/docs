@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -81,9 +82,7 @@ func upsertServicePort(service *core.Service, memcached *api.Memcached) []core.S
 			TargetPort: intstr.FromString("db"),
 		},
 	}
-	if memcached.Spec.Monitor != nil &&
-		memcached.Spec.Monitor.Agent == api.AgentCoreosPrometheus &&
-		memcached.Spec.Monitor.Prometheus != nil {
+	if memcached.GetMonitoringVendor() == mon_api.VendorPrometheus {
 		desiredPorts = append(desiredPorts, core.ServicePort{
 			Name:       api.PrometheusExporterPortName,
 			Protocol:   core.ProtocolTCP,

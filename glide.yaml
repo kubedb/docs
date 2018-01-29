@@ -4,9 +4,8 @@ import:
   version: master
 - package: github.com/appscode/pat
 - package: github.com/coreos/prometheus-operator
-  repo: https://github.com/appscode/prometheus-operator.git
-  vcs: git
-  version: client-go-5
+  repo: https://github.com/tamalsaha/prometheus-operator.git
+  version: k-1.9
 - package: github.com/graymeta/stow
   repo: https://github.com/appscode/stow.git
   vcs: git
@@ -42,22 +41,20 @@ import:
   version: v1.0.0
 - package: gopkg.in/ini.v1
   version: v1.28.2
-- package: github.com/appscode/kutil
-  version: release-5.0
 - package: k8s.io/api
-  version: release-1.8
+  version: kubernetes-1.9.0
 - package: k8s.io/apimachinery
-  repo: https://github.com/tamalsaha/apimachinery.git
-  vcs: git
-  version: release-1.8
+  version: kubernetes-1.9.0
 - package: k8s.io/client-go
-  version: kubernetes-1.8.3-beta.0
+  version: v6.0.0
 - package: k8s.io/apiextensions-apiserver
-  version: release-1.8
+  version: kubernetes-1.9.0
 - package: k8s.io/kubernetes
-  repo: https://github.com/appscode/kubernetes.git
-  vcs: git
-  version: v1.8.3
+  version: v1.9.0
+- package: github.com/appscode/kutil
+  version: release-6.0
+- package: github.com/appscode/kube-mon
+  version: release-6.0
 - package: github.com/kubedb/mongodb
   version: master
 - package: github.com/dcu/mongodb_exporter

@@ -5,6 +5,7 @@ set -o nounset
 set -o pipefail
 
 GOPATH=$(go env GOPATH)
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-kubedb}
 SRC=$GOPATH/src
 BIN=$GOPATH/bin
 ROOT=$GOPATH
@@ -51,7 +52,7 @@ COPY operator /usr/bin/operator
 USER nobody:nobody
 ENTRYPOINT ["operator"]
 EOL
-    local cmd="docker build -t kubedb/$IMG:$TAG ."
+    local cmd="docker build -t $DOCKER_REGISTRY/$IMG:$TAG ."
     echo $cmd; $cmd
 
     rm operator Dockerfile

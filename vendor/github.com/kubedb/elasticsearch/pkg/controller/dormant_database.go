@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/appscode/go/log"
@@ -144,10 +142,6 @@ func (c *Controller) ResumeDatabase(dormantDb *api.DormantDatabase) error {
 	origin := dormantDb.Spec.Origin
 	objectMeta := origin.ObjectMeta
 
-	if origin.Spec.Elasticsearch.Init != nil {
-		return errors.New("do not support InitSpec in spec.origin.elasticsearch")
-	}
-
 	elasticsearch := &api.Elasticsearch{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        objectMeta.Name,
@@ -156,14 +150,6 @@ func (c *Controller) ResumeDatabase(dormantDb *api.DormantDatabase) error {
 			Annotations: objectMeta.Annotations,
 		},
 		Spec: *origin.Spec.Elasticsearch,
-	}
-
-	if elasticsearch.Annotations == nil {
-		elasticsearch.Annotations = make(map[string]string)
-	}
-
-	for key, val := range dormantDb.Annotations {
-		elasticsearch.Annotations[key] = val
 	}
 
 	_, err := c.ExtClient.Elasticsearchs(elasticsearch.Namespace).Create(elasticsearch)
@@ -193,17 +179,6 @@ func (c *Controller) createDormantDatabase(elasticsearch *api.Elasticsearch) (*a
 			},
 		},
 	}
-
-	if elasticsearch.Spec.Init != nil {
-		initSpec, err := json.Marshal(elasticsearch.Spec.Init)
-		if err == nil {
-			dormantDb.Annotations = map[string]string{
-				api.GenericInitSpec: string(initSpec),
-			}
-		}
-	}
-
-	dormantDb.Spec.Origin.Spec.Elasticsearch.Init = nil
 
 	return c.ExtClient.DormantDatabases(dormantDb.Namespace).Create(dormantDb)
 }

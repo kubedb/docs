@@ -5,6 +5,7 @@ import (
 
 	"github.com/appscode/go/hold"
 	"github.com/appscode/go/log"
+	"github.com/appscode/go/log/golog"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -38,8 +39,12 @@ type Options struct {
 	Address string
 	//Max number requests for retries
 	MaxNumRequeues int
+	// Enable Analytics
+	EnableAnalytics bool
 	// Analytics Client ID
 	AnalyticsClientID string
+	// Logger Options
+	LoggerOptions golog.Options
 }
 
 type Controller struct {
@@ -61,8 +66,8 @@ type Controller struct {
 	informer cache.Controller
 }
 
-var _ snapc.Snapshotter = &Controller{}
-var _ drmnc.Deleter = &Controller{}
+var _ amc.Snapshotter = &Controller{}
+var _ amc.Deleter = &Controller{}
 
 func New(
 	client kubernetes.Interface,
@@ -134,22 +139,11 @@ func (c *Controller) watchDatabaseSnapshot() {
 		api.LabelDatabaseKind: api.ResourceKindMySQL,
 	}
 	// Watch with label selector
-	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.Snapshots(metav1.NamespaceAll).List(
-				metav1.ListOptions{
-					LabelSelector: labels.SelectorFromSet(labelMap).String(),
-				})
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.Snapshots(metav1.NamespaceAll).Watch(
-				metav1.ListOptions{
-					LabelSelector: labels.SelectorFromSet(labelMap).String(),
-				})
-		},
+	listOptions := metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(labelMap).String(),
 	}
 
-	snapc.NewController(c.Controller, c, lw, c.syncPeriod).Run()
+	snapc.NewController(c.Controller, c, listOptions, c.syncPeriod).Run()
 }
 
 func (c *Controller) watchDeletedDatabase() {
