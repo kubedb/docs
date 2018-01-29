@@ -17,13 +17,13 @@ import:
 - package: github.com/go-kit/kit
   version: v0.5.0
 - package: github.com/kubedb/apimachinery
-  version: master
+  version: 0.8.0-beta.1
 - package: github.com/kubedb/elasticsearch
-  version: master
+  version: 0.8.0-beta.1
 - package: github.com/justwatchcom/elasticsearch_exporter
   version: master
 - package: github.com/kubedb/postgres
-  version: master
+  version: 0.8.0-beta.1
 - package: github.com/wrouesnel/postgres_exporter
   repo: https://github.com/kubedb/postgres_exporter.git
   vcs: git
@@ -56,19 +56,19 @@ import:
 - package: github.com/appscode/kube-mon
   version: release-6.0
 - package: github.com/kubedb/mongodb
-  version: master
+  version: 0.1.0-beta.1
 - package: github.com/dcu/mongodb_exporter
   version: master
 - package: github.com/kubedb/mysql
-  version: master
+  version: 0.1.0-beta.1
 - package: github.com/prometheus/mysqld_exporter
   version: master
 - package: github.com/kubedb/redis
-  version: master
+  version: 0.1.0-beta.1
 - package: github.com/oliver006/redis_exporter
   version: master
 - package: github.com/kubedb/memcached
-  version: master
+  version: 0.1.0-beta.1
 - package: github.com/prometheus/memcached_exporter
   repo: https://github.com/kubedb/memcached_exporter.git
   vcs: git

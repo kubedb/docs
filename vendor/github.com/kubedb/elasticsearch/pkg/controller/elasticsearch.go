@@ -340,7 +340,6 @@ func (c *Controller) initialize(elasticsearch *api.Elasticsearch) error {
 		return fmt.Errorf(`image %s not found`, c.opt.Docker.GetToolsImageWithTag(elasticsearch))
 	}
 
-
 	snapshotSource := elasticsearch.Spec.Init.SnapshotSource
 	// Event for notification that kubernetes objects are creating
 	c.recorder.Eventf(

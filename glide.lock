@@ -1,5 +1,5 @@
-hash: acccbe7586010adccbf3092a233a1a7e43bad2bf39c02a2080e6d37e099d8a7f
-updated: 2018-01-29T16:34:14.685064852+06:00
+hash: 1008658d5328aa904bf0f6b77642af68b08c36ef5c557e18eb44c7eb5cf96866
+updated: 2018-01-29T07:45:13.21799181-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -38,7 +38,7 @@ imports:
   - agents/prometheusbuiltin
   - api
 - name: github.com/appscode/kutil
-  version: 60ced7f055b34d512a84f65ca0a7d412ec3d6ef2
+  version: a035b515d68bca793b2beacdf52e19a02f914017
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
@@ -108,7 +108,7 @@ imports:
   subpackages:
   - pkg/client/monitoring/v1
 - name: github.com/cpuguy83/go-md2man
-  version: 20f5889cbdc3c73dbd2862796665e7c465ade7d1
+  version: 71acacd42f85e5e82f70a55327789582a5200a90
   subpackages:
   - md2man
 - name: github.com/davecgh/go-spew
@@ -165,7 +165,7 @@ imports:
 - name: github.com/go-openapi/jsonreference
   version: 13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272
 - name: github.com/go-openapi/spec
-  version: 6aced65f8501fe1217321abf0749d354824ba2ff
+  version: 7abd5745472fff5eb3685386d5fb8bf38683154d
 - name: github.com/go-openapi/swag
   version: f3f9494671f93fcff853e3c6e9e948b3eb71e590
 - name: github.com/go-sql-driver/mysql
@@ -184,7 +184,7 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
+  version: 44145f04b68cf362d9c4df2182967c2275eaefed
 - name: github.com/golang/groupcache
   version: 02826c3e79038b59d737d3b1c0a1d937f71a4433
   subpackages:
@@ -209,7 +209,7 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/google/uuid
-  version: e367a344cbe8e08149f9951115dc299ebd42b919
+  version: dec09d789f3dba190787f8b4454c7d3c936fed9e
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
@@ -253,7 +253,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
-  version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
+  version: 0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74
 - name: github.com/jpillora/go-ogle-analytics
   version: 14b04e0594ef6a9fd943363b135656f0ec8c9d0e
 - name: github.com/json-iterator/go
@@ -267,7 +267,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 455d1a753fcd939ecb9497ed4ab77567207c155c
+  version: 0de29010181b4b361fb210d5a85de7a4ff56e9df
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -283,32 +283,32 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: df816b820e698383a7c0cf4b2758a57af6f19064
+  version: b440c174990c33798231df2124aea3810a262acf
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/memcached
-  version: 7bbee4aa80e6c83bb828fd0019221944587df48d
+  version: 08191a9cdbd143cebcb343c969d50b6420e19542
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mongodb
-  version: a2c4668e219f336236fb7f02b896c4fc425bf36e
+  version: de8f30be6c914ead85d25596836e7fb5313356f5
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mysql
-  version: ebbfec2f507d142c146cd4749f1c376c49b536f1
+  version: 6db2ae8d66b38c00106969bc801b247033e129dd
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/postgres
-  version: a5824238a43aca07f22382701364eb0c668cbed5
+  version: d04e61ec820c48c076828471479d45ceee29ac9a
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -316,7 +316,7 @@ imports:
   - pkg/leader_election
   - pkg/validator
 - name: github.com/kubedb/redis
-  version: 682c8cc57ab32fa22bdadcf951d921d817f6f68a
+  version: 56cc3e767e6714b07f84915e9177c138df299c3b
   subpackages:
   - pkg/controller
   - pkg/docker
@@ -350,11 +350,11 @@ imports:
 - name: github.com/opencontainers/go-digest
   version: 279bed98673dd5bef374d3b6e4b09e2af76183bf
 - name: github.com/orcaman/concurrent-map
-  version: 2ae17bc4c860c83513ee50feb9746f3e50d7515d
+  version: d4c23bd0e01134806215ffe65ba3fd22ec6721f7
 - name: github.com/peterbourgon/diskv
   version: 5f041e8faa004a95c88a202771f4cc3e991971e6
 - name: github.com/pkg/errors
-  version: a22138067af1c4942683050411a841ade67fe1eb
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/prometheus/client_golang
   version: c5b7fccd204277076155f10851dad72b76a49317
   subpackages:
@@ -386,7 +386,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 66b0aa3b4505d01f82cf4d0e71083112793723eb
+  version: 47538cf6cebbc143076043c5561d0f2a2c16ab6a
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
