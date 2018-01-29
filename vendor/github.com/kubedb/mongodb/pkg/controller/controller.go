@@ -66,8 +66,8 @@ type Controller struct {
 	informer cache.Controller
 }
 
-var _ snapc.Snapshotter = &Controller{}
-var _ drmnc.Deleter = &Controller{}
+var _ amc.Snapshotter = &Controller{}
+var _ amc.Deleter = &Controller{}
 
 func New(
 	client kubernetes.Interface,
@@ -140,22 +140,10 @@ func (c *Controller) watchDatabaseSnapshot() {
 		api.LabelDatabaseKind: api.ResourceKindMongoDB,
 	}
 	// Watch with label selector
-	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.Snapshots(metav1.NamespaceAll).List(
-				metav1.ListOptions{
-					LabelSelector: labels.SelectorFromSet(labelMap).String(),
-				})
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.Snapshots(metav1.NamespaceAll).Watch(
-				metav1.ListOptions{
-					LabelSelector: labels.SelectorFromSet(labelMap).String(),
-				})
-		},
+	listOptions := metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(labelMap).String(),
 	}
-
-	snapc.NewController(c.Controller, c, lw, c.syncPeriod).Run()
+	snapc.NewController(c.Controller, c, listOptions, c.syncPeriod).Run()
 }
 
 func (c *Controller) watchDeletedDatabase() {

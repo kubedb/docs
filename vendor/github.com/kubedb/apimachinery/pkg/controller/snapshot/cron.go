@@ -1,7 +1,6 @@
 package snapshot
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -13,7 +12,6 @@ import (
 	"github.com/orcaman/concurrent-map"
 	"gopkg.in/robfig/cron.v2"
 	core "k8s.io/api/core/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -71,11 +69,6 @@ func (c *cronController) ScheduleBackup(
 	// cronEntry name
 	cronEntryName := fmt.Sprintf("%v@%v", om.Name, om.Namespace)
 
-	// Remove previous cron job if exist
-	if id, exists := c.cronEntryIDs.Pop(cronEntryName); exists {
-		c.cron.Remove(id.(cron.EntryID))
-	}
-
 	invoker := &snapshotInvoker{
 		extClient:     c.extClient,
 		runtimeObject: runtimeObj,
@@ -84,8 +77,11 @@ func (c *cronController) ScheduleBackup(
 		eventRecorder: c.eventRecorder,
 	}
 
-	if err := invoker.validateScheduler(durationCheckSnapshotJob); err != nil {
-		return err
+	// Remove previous cron job if exist
+	if id, exists := c.cronEntryIDs.Pop(cronEntryName); exists {
+		c.cron.Remove(id.(cron.EntryID))
+	} else {
+		invoker.createScheduledSnapshot()
 	}
 
 	// Set cron job
@@ -96,6 +92,7 @@ func (c *cronController) ScheduleBackup(
 
 	// Add job entryID
 	c.cronEntryIDs.Set(cronEntryName, entryID)
+
 	return nil
 }
 
@@ -118,48 +115,6 @@ type snapshotInvoker struct {
 	om            metav1.ObjectMeta
 	spec          *api.BackupScheduleSpec
 	eventRecorder record.EventRecorder
-}
-
-func (s *snapshotInvoker) validateScheduler(checkDuration time.Duration) error {
-	utc := time.Now().UTC()
-	snapshotName := fmt.Sprintf("%v-%v", s.om.Name, utc.Format("20060102-150405"))
-	if err := s.createSnapshot(snapshotName); err != nil {
-		return err
-	}
-
-	var snapshotSuccess bool = false
-
-	then := time.Now()
-	now := time.Now()
-	for now.Sub(then) < checkDuration {
-		snapshot, err := s.extClient.Snapshots(s.om.Namespace).Get(snapshotName, metav1.GetOptions{})
-		if err != nil {
-			if kerr.IsNotFound(err) {
-				time.Sleep(sleepDuration)
-				now = time.Now()
-				continue
-			} else {
-				return err
-			}
-		}
-
-		if snapshot.Status.Phase == api.SnapshotPhaseSuccessed {
-			snapshotSuccess = true
-			break
-		}
-		if snapshot.Status.Phase == api.SnapshotPhaseFailed {
-			break
-		}
-
-		time.Sleep(sleepDuration)
-		now = time.Now()
-	}
-
-	if !snapshotSuccess {
-		return errors.New("failed to complete initial snapshot")
-	}
-
-	return nil
 }
 
 func (s *snapshotInvoker) createScheduledSnapshot() {
@@ -207,12 +162,12 @@ func (s *snapshotInvoker) createScheduledSnapshot() {
 	now := time.Now().UTC()
 	snapshotName := fmt.Sprintf("%v-%v", s.om.Name, now.Format("20060102-150405"))
 
-	if err = s.createSnapshot(snapshotName); err != nil {
+	if _, err = s.createSnapshot(snapshotName); err != nil {
 		log.Errorln(err)
 	}
 }
 
-func (s *snapshotInvoker) createSnapshot(snapshotName string) error {
+func (s *snapshotInvoker) createSnapshot(snapshotName string) (*api.Snapshot, error) {
 	labelMap := map[string]string{
 		api.LabelDatabaseKind: s.runtimeObject.GetObjectKind().GroupVersionKind().Kind,
 		api.LabelDatabaseName: s.om.Name,
@@ -231,7 +186,8 @@ func (s *snapshotInvoker) createSnapshot(snapshotName string) error {
 		},
 	}
 
-	if _, err := s.extClient.Snapshots(snapshot.Namespace).Create(snapshot); err != nil {
+	snapshot, err := s.extClient.Snapshots(snapshot.Namespace).Create(snapshot)
+	if err != nil {
 		s.eventRecorder.Eventf(
 			s.runtimeObject,
 			core.EventTypeWarning,
@@ -239,8 +195,8 @@ func (s *snapshotInvoker) createSnapshot(snapshotName string) error {
 			"Failed to create Snapshot. Reason: %v",
 			err,
 		)
-		return err
+		return nil, err
 	}
 
-	return nil
+	return snapshot, nil
 }

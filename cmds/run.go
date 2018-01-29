@@ -14,7 +14,6 @@ import (
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	tcs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
-	"github.com/kubedb/apimachinery/pkg/migrator"
 	//esCtrl "github.com/kubedb/elasticsearch/pkg/controller"
 	//esDocker "github.com/kubedb/elasticsearch/pkg/docker"
 	memCtrl "github.com/kubedb/memcached/pkg/controller"
@@ -93,16 +92,6 @@ func run() {
 
 	fmt.Println("Starting operator...")
 
-	tprMigrator := migrator.NewMigrator(kubeClient, apiExtKubeClient, dbClient)
-	err = tprMigrator.RunMigration(
-		&api.Postgres{},
-		&api.Elasticsearch{},
-		&api.Snapshot{},
-		&api.DormantDatabase{},
-	)
-	if err != nil {
-		log.Fatalln(err)
-	}
 	defer runtime.HandleCrash()
 
 	// Register CRDs

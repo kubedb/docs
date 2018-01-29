@@ -44,11 +44,7 @@ func (c *Controller) ensureStatefulSet(
 
 		in.Spec.Replicas = types.Int32P(replicas)
 		in.Spec.ServiceName = c.opt.GoverningService
-		in.Spec.Template = core.PodTemplateSpec{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels: in.ObjectMeta.Labels,
-			},
-		}
+		in.Spec.Template.Labels = in.Labels
 
 		in = upsertInitContainer(in)
 		in = c.upsertContainer(in, elasticsearch)
@@ -57,7 +53,11 @@ func (c *Controller) ensureStatefulSet(
 
 		in.Spec.Template.Spec.NodeSelector = elasticsearch.Spec.NodeSelector
 		in.Spec.Template.Spec.Affinity = elasticsearch.Spec.Affinity
-		in.Spec.Template.Spec.SchedulerName = elasticsearch.Spec.SchedulerName
+
+		if elasticsearch.Spec.SchedulerName != "" {
+			in.Spec.Template.Spec.SchedulerName = elasticsearch.Spec.SchedulerName
+		}
+
 		in.Spec.Template.Spec.Tolerations = elasticsearch.Spec.Tolerations
 		in.Spec.Template.Spec.ImagePullSecrets = elasticsearch.Spec.ImagePullSecrets
 

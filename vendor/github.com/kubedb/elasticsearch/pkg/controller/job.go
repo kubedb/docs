@@ -3,7 +3,7 @@ package controller
 import (
 	"fmt"
 
-	"github.com/appscode/go/crypto/rand"
+	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/storage"
@@ -18,11 +18,14 @@ const (
 )
 
 func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot *api.Snapshot) (*batch.Job, error) {
-	jobName := rand.WithUniqSuffix(snapshot.OffshootName())
+	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshot.OffshootName())
 	jobLabel := map[string]string{
-		api.LabelDatabaseName: elasticsearch.OffshootName(),
-		api.LabelJobType:      snapshotProcessRestore,
+		api.LabelDatabaseKind: api.ResourceKindElasticsearch,
 	}
+	jobAnnotation := map[string]string{
+		api.AnnotationJobType: api.JobTypeRestore,
+	}
+
 	backupSpec := snapshot.Spec.SnapshotStorageSpec
 	bucket, err := backupSpec.Container()
 	if err != nil {
@@ -40,8 +43,17 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   jobName,
-			Labels: jobLabel,
+			Name:        jobName,
+			Labels:      jobLabel,
+			Annotations: jobAnnotation,
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: api.SchemeGroupVersion.String(),
+					Kind:       api.ResourceKindElasticsearch,
+					Name:       elasticsearch.Name,
+					UID:        elasticsearch.UID,
+				},
+			},
 		},
 		Spec: batch.JobSpec{
 			Template: core.PodTemplateSpec{
@@ -133,18 +145,19 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 }
 
 func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) {
-	databaseName := snapshot.Spec.DatabaseName
-	jobName := rand.WithUniqSuffix(snapshot.OffshootName())
-	jobLabel := map[string]string{
-		api.LabelDatabaseName: databaseName,
-		api.LabelJobType:      snapshotProcessBackup,
-	}
-	backupSpec := snapshot.Spec.SnapshotStorageSpec
-	bucket, err := backupSpec.Container()
+	elasticsearch, err := c.ExtClient.Elasticsearchs(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
-	elasticsearch, err := c.ExtClient.Elasticsearchs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
+	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshot.OffshootName())
+	jobLabel := map[string]string{
+		api.LabelDatabaseKind: api.ResourceKindElasticsearch,
+	}
+	jobAnnotation := map[string]string{
+		api.AnnotationJobType: api.JobTypeBackup,
+	}
+	backupSpec := snapshot.Spec.SnapshotStorageSpec
+	bucket, err := backupSpec.Container()
 	if err != nil {
 		return nil, err
 	}
@@ -165,8 +178,17 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   jobName,
-			Labels: jobLabel,
+			Name:        jobName,
+			Labels:      jobLabel,
+			Annotations: jobAnnotation,
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: api.SchemeGroupVersion.String(),
+					Kind:       api.ResourceKindSnapshot,
+					Name:       snapshot.Name,
+					UID:        snapshot.UID,
+				},
+			},
 		},
 		Spec: batch.JobSpec{
 			Template: core.PodTemplateSpec{
@@ -256,4 +278,42 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 		})
 	}
 	return job, nil
+}
+
+func (c *Controller) getVolumeForSnapshot(pvcSpec *core.PersistentVolumeClaimSpec, jobName, namespace string) (*core.Volume, error) {
+	volume := &core.Volume{
+		Name: "tools",
+	}
+	if pvcSpec != nil {
+		if len(pvcSpec.AccessModes) == 0 {
+			pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
+				core.ReadWriteOnce,
+			}
+			log.Infof(`Using "%v" as AccessModes in "%v"`, core.ReadWriteOnce, *pvcSpec)
+		}
+
+		claim := &core.PersistentVolumeClaim{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      jobName,
+				Namespace: namespace,
+			},
+			Spec: *pvcSpec,
+		}
+		if pvcSpec.StorageClassName != nil {
+			claim.Annotations = map[string]string{
+				"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+			}
+		}
+
+		if _, err := c.Client.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(claim); err != nil {
+			return nil, err
+		}
+
+		volume.PersistentVolumeClaim = &core.PersistentVolumeClaimVolumeSource{
+			ClaimName: claim.Name,
+		}
+	} else {
+		volume.EmptyDir = &core.EmptyDirVolumeSource{}
+	}
+	return volume, nil
 }

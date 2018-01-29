@@ -10,7 +10,6 @@ import (
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
@@ -30,14 +29,6 @@ func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
 	}
 
 	return amv.ValidateSnapshotSpec(c.Client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)
-}
-
-func (c *Controller) GetDatabase(snapshot *api.Snapshot) (runtime.Object, error) {
-	mysql, err := c.ExtClient.MySQLs(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-	return mysql, nil
 }
 
 func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) {

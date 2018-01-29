@@ -61,7 +61,7 @@ type Controller struct {
 	informer cache.Controller
 }
 
-var _ drmnc.Deleter = &Controller{}
+var _ amc.Deleter = &Controller{}
 
 func New(
 	client kubernetes.Interface,

@@ -1,14 +1,14 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
-	"time"
 
 	"github.com/appscode/go/log"
 	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
+	core_util "github.com/appscode/kutil/core/v1"
+	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/docker"
@@ -18,6 +18,7 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func (c *Controller) create(mysql *api.MySQL) error {
@@ -93,58 +94,53 @@ func (c *Controller) create(mysql *api.MySQL) error {
 			mysql.ObjectReference(),
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
-			"Successfully created Elasticsearch",
+			"Successfully created MySQL",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
 		c.recorder.Event(
 			mysql.ObjectReference(),
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
-			"Successfully patched Elasticsearch",
+			"Successfully patched MySQL",
 		)
 	}
 
-	if vt2 == kutil.VerbCreated && mysql.Spec.Init != nil && mysql.Spec.Init.SnapshotSource != nil {
-		es, _, err := util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
-			in.Status.Phase = api.DatabasePhaseInitializing
-			return in
-		})
-		if err != nil {
-			c.recorder.Eventf(
-				mysql.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-			return err
-		}
-		mysql.Status = es.Status
+	if _, err := meta_util.GetString(mysql.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
+		mysql.Spec.Init != nil && mysql.Spec.Init.SnapshotSource != nil {
 
+		snapshotSource := mysql.Spec.Init.SnapshotSource
+
+		if mysql.Status.Phase == api.DatabasePhaseInitializing {
+			return nil
+		}
+		jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshotSource.Name)
+		if _, err := c.Client.BatchV1().Jobs(snapshotSource.Namespace).Get(jobName, metav1.GetOptions{}); err != nil {
+			if kerr.IsAlreadyExists(err) {
+				return nil
+			} else if !kerr.IsNotFound(err) {
+				return err
+			}
+		}
 		if err := c.initialize(mysql); err != nil {
-			c.recorder.Eventf(
-				mysql.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToInitialize,
-				"Failed to initialize. Reason: %v",
-				err,
-			)
+			return fmt.Errorf("failed to complete initialization. Reason: %v", err)
 		}
-
-		es, _, err = util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
-			in.Status.Phase = api.DatabasePhaseRunning
-			return in
-		})
-		if err != nil {
-			c.recorder.Eventf(
-				mysql.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-			return err
-		}
-		mysql.Status = es.Status
+		return nil
 	}
+
+	ms, _, err := util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
+		in.Status.Phase = api.DatabasePhaseRunning
+		return in
+	})
+	if err != nil {
+		c.recorder.Eventf(
+			mysql,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToUpdate,
+			err.Error(),
+		)
+		return err
+	}
+	mysql.Status = ms.Status
 
 	// Ensure Schedule backup
 	c.ensureBackupScheduler(mysql)
@@ -227,25 +223,9 @@ func (c *Controller) matchDormantDatabase(mysql *api.MySQL) error {
 			mysql.Name, dormantDb.Name))
 	}
 
-	// Check InitSpec
-	initSpecAnnotationStr := dormantDb.Annotations[api.GenericInitSpec]
-	if initSpecAnnotationStr != "" {
-		var initSpecAnnotation *api.InitSpec
-		if err := json.Unmarshal([]byte(initSpecAnnotationStr), &initSpecAnnotation); err != nil {
-			return sendEvent(err.Error())
-		}
-
-		if mysql.Spec.Init != nil {
-			if !reflect.DeepEqual(initSpecAnnotation, mysql.Spec.Init) {
-				return sendEvent("InitSpec mismatches with DormantDatabase annotation")
-			}
-		}
-	}
-
 	// Check Origin Spec
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.MySQL
 	originalSpec := mysql.Spec
-	originalSpec.Init = nil
 
 	if originalSpec.DatabaseSecret == nil {
 		originalSpec.DatabaseSecret = &core.SecretVolumeSource{
@@ -255,6 +235,21 @@ func (c *Controller) matchDormantDatabase(mysql *api.MySQL) error {
 
 	if !reflect.DeepEqual(drmnOriginSpec, &originalSpec) {
 		return sendEvent("MySQL spec mismatches with OriginSpec in DormantDatabases")
+	}
+
+	if _, err := meta_util.GetString(mysql.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
+		mysql.Spec.Init != nil &&
+		mysql.Spec.Init.SnapshotSource != nil {
+		mg, _, err := util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
+			in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
+				api.AnnotationInitialized: "",
+			})
+			return in
+		})
+		if err != nil {
+			return err
+		}
+		mysql.Annotations = mg.Annotations
 	}
 
 	return util.DeleteDormantDatabase(c.ExtClient, dormantDb.ObjectMeta)
@@ -279,11 +274,21 @@ func (c *Controller) ensureBackupScheduler(mysql *api.MySQL) {
 	}
 }
 
-const (
-	durationCheckRestoreJob = time.Minute * 30
-)
-
 func (c *Controller) initialize(mysql *api.MySQL) error {
+	mg, _, err := util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
+		in.Status.Phase = api.DatabasePhaseInitializing
+		return in
+	})
+	if err != nil {
+		c.recorder.Eventf(mysql, core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+		return err
+	}
+	mysql.Status = mg.Status
+
+	if err := docker.CheckDockerImageVersion(c.opt.Docker.GetToolsImage(mysql), string(mysql.Spec.Version)); err != nil {
+		return fmt.Errorf("image %s not found", c.opt.Docker.GetToolsImageWithTag(mysql))
+	}
+
 	snapshotSource := mysql.Spec.Init.SnapshotSource
 	// Event for notification that kubernetes objects are creating
 	c.recorder.Eventf(
@@ -303,10 +308,6 @@ func (c *Controller) initialize(mysql *api.MySQL) error {
 		return err
 	}
 
-	if err := docker.CheckDockerImageVersion(c.opt.Docker.GetToolsImage(mysql), string(mysql.Spec.Version)); err != nil {
-		return fmt.Errorf(`image %s not found`, c.opt.Docker.GetToolsImageWithTag(mysql))
-	}
-
 	secret, err := storage.NewOSMSecret(c.Client, snapshot)
 	if err != nil {
 		return err
@@ -321,49 +322,14 @@ func (c *Controller) initialize(mysql *api.MySQL) error {
 		return err
 	}
 
-	jobSuccess := c.CheckDatabaseRestoreJob(snapshot, job, mysql, c.recorder, durationCheckRestoreJob)
-	if jobSuccess {
-		c.recorder.Event(
-			mysql.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessfulInitialize,
-			"Successfully completed initialization",
-		)
-	} else {
-		c.recorder.Event(
-			mysql.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToInitialize,
-			"Failed to complete initialization",
-		)
+	if err := c.SetJobOwnerReference(snapshot, job); err != nil {
+		return err
 	}
+
 	return nil
 }
 
 func (c *Controller) pause(mysql *api.MySQL) error {
-	//if mysql.Spec.DoNotPause {
-	//	c.recorder.Eventf(
-	//		mysql.ObjectReference(),
-	//		core.EventTypeWarning,
-	//		eventer.EventReasonFailedToPause,
-	//		`MySQL "%v" is locked.`,
-	//		mysql.Name,
-	//	)
-	//
-	//	if err := c.reCreateMySQL(mysql); err != nil {
-	//		c.recorder.Eventf(
-	//			mysql.ObjectReference(),
-	//			core.EventTypeWarning,
-	//			eventer.EventReasonFailedToCreate,
-	//			`Failed to recreate MySQL: "%v". Reason: %v`,
-	//			mysql.Name,
-	//			err,
-	//		)
-	//		return err
-	//	}
-	//	return nil
-	//}
-
 	if _, err := c.createDormantDatabase(mysql); err != nil {
 		c.recorder.Eventf(
 			mysql.ObjectReference(),
@@ -399,4 +365,39 @@ func (c *Controller) pause(mysql *api.MySQL) error {
 		}
 	}
 	return nil
+}
+
+func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
+	mysql, err := c.ExtClient.MySQLs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return mysql, nil
+}
+
+func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
+	mysql, err := c.ExtClient.MySQLs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	_, _, err = util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
+		in.Status.Phase = phase
+		in.Status.Reason = reason
+		return in
+	})
+	return err
+}
+
+func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
+	mysql, err := c.ExtClient.MySQLs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	_, _, err = util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
+		in.Annotations = core_util.UpsertMap(mysql.Annotations, annotation)
+		return in
+	})
+	return err
 }

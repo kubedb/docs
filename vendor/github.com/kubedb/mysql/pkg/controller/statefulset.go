@@ -10,7 +10,6 @@ import (
 	app_util "github.com/appscode/kutil/apps/v1beta1"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	apps "k8s.io/api/apps/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -52,21 +51,6 @@ func (c *Controller) ensureStatefulSet(mysql *api.MySQL) (kutil.VerbType, error)
 			"Successfully %v StatefulSet",
 			vt,
 		)
-
-		ms, _, err := util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
-			in.Status.Phase = api.DatabasePhaseRunning
-			return in
-		})
-		if err != nil {
-			c.recorder.Eventf(
-				mysql,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-			return kutil.VerbUnchanged, err
-		}
-		mysql.Status = ms.Status
 	}
 	return vt, nil
 }
@@ -99,11 +83,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		in.Annotations = core_util.UpsertMap(in.Annotations, mysql.StatefulSetAnnotations())
 
 		in.Spec.Replicas = types.Int32P(1)
-		in.Spec.Template = core.PodTemplateSpec{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels: in.ObjectMeta.Labels,
-			},
-		}
+		in.Spec.Template.Labels = in.Labels
 
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 			Name:            api.ResourceNameMySQL,
@@ -163,9 +143,11 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 
 		in.Spec.Template.Spec.NodeSelector = mysql.Spec.NodeSelector
 		in.Spec.Template.Spec.Affinity = mysql.Spec.Affinity
-		in.Spec.Template.Spec.SchedulerName = mysql.Spec.SchedulerName
 		in.Spec.Template.Spec.Tolerations = mysql.Spec.Tolerations
 		in.Spec.Template.Spec.ImagePullSecrets = mysql.Spec.ImagePullSecrets
+		if mysql.Spec.SchedulerName != "" {
+			in.Spec.Template.Spec.SchedulerName = mysql.Spec.SchedulerName
+		}
 
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 

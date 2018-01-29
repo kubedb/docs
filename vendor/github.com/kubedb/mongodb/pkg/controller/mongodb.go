@@ -1,14 +1,14 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
-	"time"
 
 	"github.com/appscode/go/log"
 	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
+	core_util "github.com/appscode/kutil/core/v1"
+	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/docker"
@@ -18,6 +18,7 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func (c *Controller) create(mongodb *api.MongoDB) error {
@@ -104,47 +105,42 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		)
 	}
 
-	if vt2 == kutil.VerbCreated && mongodb.Spec.Init != nil && mongodb.Spec.Init.SnapshotSource != nil {
-		es, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
-			in.Status.Phase = api.DatabasePhaseInitializing
-			return in
-		})
-		if err != nil {
-			c.recorder.Eventf(
-				mongodb.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-			return err
-		}
-		mongodb.Status = es.Status
+	if _, err := meta_util.GetString(mongodb.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
+		mongodb.Spec.Init != nil && mongodb.Spec.Init.SnapshotSource != nil {
 
+		snapshotSource := mongodb.Spec.Init.SnapshotSource
+
+		if mongodb.Status.Phase == api.DatabasePhaseInitializing {
+			return nil
+		}
+		jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshotSource.Name)
+		if _, err := c.Client.BatchV1().Jobs(snapshotSource.Namespace).Get(jobName, metav1.GetOptions{}); err != nil {
+			if kerr.IsAlreadyExists(err) {
+				return nil
+			} else if !kerr.IsNotFound(err) {
+				return err
+			}
+		}
 		if err := c.initialize(mongodb); err != nil {
-			c.recorder.Eventf(
-				mongodb.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToInitialize,
-				"Failed to initialize. Reason: %v",
-				err,
-			)
+			return fmt.Errorf("failed to complete initialization. Reason: %v", err)
 		}
-
-		es, _, err = util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
-			in.Status.Phase = api.DatabasePhaseRunning
-			return in
-		})
-		if err != nil {
-			c.recorder.Eventf(
-				mongodb.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-			return err
-		}
-		mongodb.Status = es.Status
+		return nil
 	}
+
+	ms, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
+		in.Status.Phase = api.DatabasePhaseRunning
+		return in
+	})
+	if err != nil {
+		c.recorder.Eventf(
+			mongodb,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToUpdate,
+			err.Error(),
+		)
+		return err
+	}
+	mongodb.Status = ms.Status
 
 	// Ensure Schedule backup
 	c.ensureBackupScheduler(mongodb)
@@ -160,6 +156,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		log.Errorln(err)
 		return nil
 	}
+
 	return nil
 }
 
@@ -227,25 +224,9 @@ func (c *Controller) matchDormantDatabase(mongodb *api.MongoDB) error {
 			mongodb.Name, dormantDb.Name))
 	}
 
-	// Check InitSpec
-	initSpecAnnotationStr := dormantDb.Annotations[api.GenericInitSpec]
-	if initSpecAnnotationStr != "" {
-		var initSpecAnnotation *api.InitSpec
-		if err := json.Unmarshal([]byte(initSpecAnnotationStr), &initSpecAnnotation); err != nil {
-			return sendEvent(err.Error())
-		}
-
-		if mongodb.Spec.Init != nil {
-			if !reflect.DeepEqual(initSpecAnnotation, mongodb.Spec.Init) {
-				return sendEvent("InitSpec mismatches with DormantDatabase annotation")
-			}
-		}
-	}
-
 	// Check Origin Spec
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.MongoDB
 	originalSpec := mongodb.Spec
-	originalSpec.Init = nil
 
 	if originalSpec.DatabaseSecret == nil {
 		originalSpec.DatabaseSecret = &core.SecretVolumeSource{
@@ -255,6 +236,21 @@ func (c *Controller) matchDormantDatabase(mongodb *api.MongoDB) error {
 
 	if !reflect.DeepEqual(drmnOriginSpec, &originalSpec) {
 		return sendEvent("MongoDB spec mismatches with OriginSpec in DormantDatabases")
+	}
+
+	if _, err := meta_util.GetString(mongodb.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
+		mongodb.Spec.Init != nil &&
+		mongodb.Spec.Init.SnapshotSource != nil {
+		mg, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
+			in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
+				api.AnnotationInitialized: "",
+			})
+			return in
+		})
+		if err != nil {
+			return err
+		}
+		mongodb.Annotations = mg.Annotations
 	}
 
 	return util.DeleteDormantDatabase(c.ExtClient, dormantDb.ObjectMeta)
@@ -279,11 +275,21 @@ func (c *Controller) ensureBackupScheduler(mongodb *api.MongoDB) {
 	}
 }
 
-const (
-	durationCheckRestoreJob = time.Minute * 30
-)
-
 func (c *Controller) initialize(mongodb *api.MongoDB) error {
+	mg, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
+		in.Status.Phase = api.DatabasePhaseInitializing
+		return in
+	})
+	if err != nil {
+		c.recorder.Eventf(mongodb, core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+		return err
+	}
+	mongodb.Status = mg.Status
+
+	if err := docker.CheckDockerImageVersion(c.opt.Docker.GetToolsImage(mongodb), string(mongodb.Spec.Version)); err != nil {
+		return fmt.Errorf("image %s not found", c.opt.Docker.GetToolsImageWithTag(mongodb))
+	}
+
 	snapshotSource := mongodb.Spec.Init.SnapshotSource
 	// Event for notification that kubernetes objects are creating
 	c.recorder.Eventf(
@@ -303,15 +309,11 @@ func (c *Controller) initialize(mongodb *api.MongoDB) error {
 		return err
 	}
 
-	if err := docker.CheckDockerImageVersion(c.opt.Docker.GetToolsImage(mongodb), string(mongodb.Spec.Version)); err != nil {
-		return fmt.Errorf(`image %s not found`, c.opt.Docker.GetToolsImageWithTag(mongodb))
-	}
-
 	secret, err := storage.NewOSMSecret(c.Client, snapshot)
 	if err != nil {
 		return err
 	}
-	_, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
+	secret, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
 	if err != nil && !kerr.IsAlreadyExists(err) {
 		return err
 	}
@@ -321,49 +323,14 @@ func (c *Controller) initialize(mongodb *api.MongoDB) error {
 		return err
 	}
 
-	jobSuccess := c.CheckDatabaseRestoreJob(snapshot, job, mongodb, c.recorder, durationCheckRestoreJob)
-	if jobSuccess {
-		c.recorder.Event(
-			mongodb.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessfulInitialize,
-			"Successfully completed initialization",
-		)
-	} else {
-		c.recorder.Event(
-			mongodb.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToInitialize,
-			"Failed to complete initialization",
-		)
+	if err := c.SetJobOwnerReference(snapshot, job); err != nil {
+		return err
 	}
+
 	return nil
 }
 
 func (c *Controller) pause(mongodb *api.MongoDB) error {
-	//if mongodb.Spec.DoNotPause {
-	//	c.recorder.Eventf(
-	//		mongodb.ObjectReference(),
-	//		core.EventTypeWarning,
-	//		eventer.EventReasonFailedToPause,
-	//		`MongoDB "%v" is locked.`,
-	//		mongodb.Name,
-	//	)
-	//
-	//	if err := c.reCreateMongoDB(mongodb); err != nil {
-	//		c.recorder.Eventf(
-	//			mongodb.ObjectReference(),
-	//			core.EventTypeWarning,
-	//			eventer.EventReasonFailedToCreate,
-	//			`Failed to recreate MongoDB: "%v". Reason: %v`,
-	//			mongodb.Name,
-	//			err,
-	//		)
-	//		return err
-	//	}
-	//	return nil
-	//}
-
 	if _, err := c.createDormantDatabase(mongodb); err != nil {
 		c.recorder.Eventf(
 			mongodb.ObjectReference(),
@@ -399,4 +366,39 @@ func (c *Controller) pause(mongodb *api.MongoDB) error {
 		}
 	}
 	return nil
+}
+
+func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
+	mongodb, err := c.ExtClient.MongoDBs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	return mongodb, nil
+}
+
+func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
+	mongodb, err := c.ExtClient.MongoDBs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	_, _, err = util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
+		in.Status.Phase = phase
+		in.Status.Reason = reason
+		return in
+	})
+	return err
+}
+
+func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
+	mongodb, err := c.ExtClient.MongoDBs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	_, _, err = util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
+		in.Annotations = core_util.UpsertMap(mongodb.Annotations, annotation)
+		return in
+	})
+	return err
 }

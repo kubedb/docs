@@ -10,7 +10,6 @@ import (
 	app_util "github.com/appscode/kutil/apps/v1beta1"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	apps "k8s.io/api/apps/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -52,21 +51,6 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB) (kutil.VerbType, er
 			"Successfully %v StatefulSet",
 			vt,
 		)
-
-		ms, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
-			in.Status.Phase = api.DatabasePhaseRunning
-			return in
-		})
-		if err != nil {
-			c.recorder.Eventf(
-				mongodb,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-			return kutil.VerbUnchanged, err
-		}
-		mongodb.Status = ms.Status
 	}
 	return vt, nil
 }
@@ -99,11 +83,7 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 		in.Annotations = core_util.UpsertMap(in.Annotations, mongodb.StatefulSetAnnotations())
 
 		in.Spec.Replicas = types.Int32P(1)
-		in.Spec.Template = core.PodTemplateSpec{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels: in.ObjectMeta.Labels,
-			},
-		}
+		in.Spec.Template.Labels = in.Labels
 
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 			Name:  api.ResourceNameMongoDB,
@@ -165,9 +145,11 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 
 		in.Spec.Template.Spec.NodeSelector = mongodb.Spec.NodeSelector
 		in.Spec.Template.Spec.Affinity = mongodb.Spec.Affinity
-		in.Spec.Template.Spec.SchedulerName = mongodb.Spec.SchedulerName
 		in.Spec.Template.Spec.Tolerations = mongodb.Spec.Tolerations
 		in.Spec.Template.Spec.ImagePullSecrets = mongodb.Spec.ImagePullSecrets
+		if mongodb.Spec.SchedulerName != "" {
+			in.Spec.Template.Spec.SchedulerName = mongodb.Spec.SchedulerName
+		}
 
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 		return in
@@ -230,7 +212,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.Statef
 	envList := []core.EnvVar{
 		{
 			Name:  "MONGO_INITDB_ROOT_USERNAME",
-			Value: "root",
+			Value: mongodbUser,
 		},
 		{
 			Name: "MONGO_INITDB_ROOT_PASSWORD",
