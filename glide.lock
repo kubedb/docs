@@ -1,5 +1,5 @@
-hash: b104474856ed733da5c0ddbda537b84bb78e19eecbf30971629556500710b337
-updated: 2018-01-29T15:38:39.312433329+06:00
+hash: acccbe7586010adccbf3092a233a1a7e43bad2bf39c02a2080e6d37e099d8a7f
+updated: 2018-01-29T16:34:14.685064852+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -261,7 +261,7 @@ imports:
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/justwatchcom/elasticsearch_exporter
-  version: 92dcbf391cb6250ec4b23c01de47bfe242a259e5
+  version: 813a68e4fc32114356f199909ce41703c98984c2
   subpackages:
   - collector
 - name: github.com/kr/logfmt

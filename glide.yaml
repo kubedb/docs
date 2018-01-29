@@ -41,8 +41,6 @@ import:
   version: v1.0.0
 - package: gopkg.in/ini.v1
   version: v1.28.2
-- package: github.com/appscode/kutil
-  version: release-6.0
 - package: k8s.io/api
   version: kubernetes-1.9.0
 - package: k8s.io/apimachinery
@@ -53,6 +51,10 @@ import:
   version: kubernetes-1.9.0
 - package: k8s.io/kubernetes
   version: v1.9.0
+- package: github.com/appscode/kutil
+  version: release-6.0
+- package: github.com/appscode/kube-mon
+  version: release-6.0
 - package: github.com/kubedb/mongodb
   version: master
 - package: github.com/dcu/mongodb_exporter
