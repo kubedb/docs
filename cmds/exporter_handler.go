@@ -240,7 +240,7 @@ func getPostgresURL(podIP string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error in reading Password of Postgres: %v", err)
 	}
-	conn := fmt.Sprintf("postgres://%s:%s@%s:5432", user, password, podIP)
+	conn := fmt.Sprintf("postgres://%s:%s@%s:5432/?sslmode=disable", user, password, podIP)
 	return conn, nil
 }
 
