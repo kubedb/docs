@@ -8,27 +8,15 @@ import (
 	amc "github.com/kubedb/apimachinery/pkg/controller"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 )
 
-type Deleter interface {
-	// Check Database CRD
-	Exists(*metav1.ObjectMeta) (bool, error)
-	// Pause operation
-	PauseDatabase(*api.DormantDatabase) error
-	// Wipe out operation
-	WipeOutDatabase(*api.DormantDatabase) error
-	// Resume operation
-	ResumeDatabase(*api.DormantDatabase) error
-}
-
 type Controller struct {
 	*amc.Controller
 	// Deleter interface
-	deleter Deleter
+	deleter amc.Deleter
 	// ListerWatcher
 	lw *cache.ListWatch
 	// Event Recorder
@@ -46,7 +34,7 @@ type Controller struct {
 // NewController creates a new DormantDatabase Controller
 func NewController(
 	controller *amc.Controller,
-	deleter Deleter,
+	deleter amc.Deleter,
 	lw *cache.ListWatch,
 	syncPeriod time.Duration,
 ) *Controller {

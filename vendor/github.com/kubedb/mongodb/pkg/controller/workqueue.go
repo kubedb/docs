@@ -29,7 +29,7 @@ func (c *Controller) initWatcher() {
 	}
 
 	// create the workqueue
-	c.queue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "mongodb")
+	c.queue = workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), api.ResourceNameMongoDB)
 
 	// Bind the workqueue to a cache with the help of an informer. This way we make sure that
 	// whenever the cache is updated, the MongoDB key is added to the workqueue.
@@ -74,7 +74,12 @@ func (c *Controller) initWatcher() {
 func mongodbEqual(old, new *api.MongoDB) bool {
 	if !meta_util.Equal(old.Spec, new.Spec) {
 		diff := meta_util.Diff(old.Spec, new.Spec)
-		log.Infoln("MongoDB %s/%s has changed. Diff: %s", new.Namespace, new.Name, diff)
+		log.Infof("MongoDB %s/%s has changed. Diff: %s", new.Namespace, new.Name, diff)
+		return false
+	}
+	if !meta_util.Equal(old.Annotations, new.Annotations) {
+		diff := meta_util.Diff(old.Annotations, new.Annotations)
+		log.Infof("Annotations in MongoDB %s/%s has changed. Diff: %s\n", new.Namespace, new.Name, diff)
 		return false
 	}
 	return true
@@ -135,7 +140,6 @@ func (c *Controller) processNextItem() bool {
 	// This controller retries 5 times if something goes wrong. After that, it stops trying.
 	if c.queue.NumRequeues(key) < c.opt.MaxNumRequeues {
 		log.Infof("Error syncing crd %v: %v", key, err)
-
 		// Re-enqueue the key rate limited. Based on the rate limiter on the
 		// queue and the re-enqueue history, the key will be processed later again.
 		c.queue.AddRateLimited(key)
@@ -165,21 +169,21 @@ func (c *Controller) runMongoDB(key string) error {
 		// is dependent on the actual instance, to detect that a MongoDB was recreated with the same name
 		mongodb := obj.(*api.MongoDB).DeepCopy()
 		if mongodb.DeletionTimestamp != nil {
-			if core_util.HasFinalizer(mongodb.ObjectMeta, "kubedb.com") {
+			if core_util.HasFinalizer(mongodb.ObjectMeta, api.GenericKey) {
 				util.AssignTypeKind(mongodb)
 				if err := c.pause(mongodb); err != nil {
 					log.Errorln(err)
 					return err
 				}
 				mongodb, _, err = util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
-					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, "kubedb.com")
+					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, api.GenericKey)
 					return in
 				})
 				return err
 			}
 		} else {
 			mongodb, _, err = util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
-				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, "kubedb.com")
+				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
 				return in
 			})
 			util.AssignTypeKind(mongodb)

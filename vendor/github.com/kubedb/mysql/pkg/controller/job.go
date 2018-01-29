@@ -19,11 +19,14 @@ const (
 
 func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) (*batch.Job, error) {
 	databaseName := mysql.Name
-	jobName := snapshot.OffshootName()
+	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshot.OffshootName())
 	jobLabel := map[string]string{
-		api.LabelDatabaseName: databaseName,
-		api.LabelJobType:      snapshotProcessRestore,
+		api.LabelDatabaseKind: api.ResourceKindMySQL,
 	}
+	jobAnnotation := map[string]string{
+		api.AnnotationJobType: api.JobTypeRestore,
+	}
+
 	backupSpec := snapshot.Spec.SnapshotStorageSpec
 	bucket, err := backupSpec.Container()
 	if err != nil {
@@ -41,8 +44,17 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   jobName,
-			Labels: jobLabel,
+			Name:        jobName,
+			Labels:      jobLabel,
+			Annotations: jobAnnotation,
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: api.SchemeGroupVersion.String(),
+					Kind:       api.ResourceKindMySQL,
+					Name:       mysql.Name,
+					UID:        mysql.UID,
+				},
+			},
 		},
 		Spec: batch.JobSpec{
 			Template: core.PodTemplateSpec{
@@ -62,7 +74,7 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
-								fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
+								fmt.Sprintf(`--analytics=%v`, c.opt.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
 								{
@@ -132,10 +144,12 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 
 func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, error) {
 	databaseName := snapshot.Spec.DatabaseName
-	jobName := snapshot.OffshootName()
+	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshot.OffshootName())
 	jobLabel := map[string]string{
-		api.LabelDatabaseName: databaseName,
-		api.LabelJobType:      snapshotProcessBackup,
+		api.LabelDatabaseKind: api.ResourceKindMySQL,
+	}
+	jobAnnotation := map[string]string{
+		api.AnnotationJobType: snapshotProcessBackup,
 	}
 	backupSpec := snapshot.Spec.SnapshotStorageSpec
 	bucket, err := backupSpec.Container()
@@ -157,8 +171,17 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 	folderName, _ := snapshot.Location()
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   jobName,
-			Labels: jobLabel,
+			Name:        jobName,
+			Labels:      jobLabel,
+			Annotations: jobAnnotation,
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion: api.SchemeGroupVersion.String(),
+					Kind:       api.ResourceKindSnapshot,
+					Name:       snapshot.Name,
+					UID:        snapshot.UID,
+				},
+			},
 		},
 		Spec: batch.JobSpec{
 			Template: core.PodTemplateSpec{
@@ -178,7 +201,7 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
-								fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
+								fmt.Sprintf(`--analytics=%v`, c.opt.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
 								{
