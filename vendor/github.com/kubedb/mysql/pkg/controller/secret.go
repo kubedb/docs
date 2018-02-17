@@ -5,7 +5,7 @@ import (
 
 	"github.com/appscode/go/crypto/rand"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -90,9 +90,9 @@ func (c *Controller) checkSecret(secretName string, mysql *api.MySQL) (*core.Sec
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil
-		} else {
-			return nil, err
 		}
+		return nil, err
+
 	}
 	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindMySQL ||
 		secret.Labels[api.LabelDatabaseName] != mysql.Name {

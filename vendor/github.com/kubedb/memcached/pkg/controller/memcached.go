@@ -2,13 +2,13 @@ package controller
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/appscode/go/log"
 	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
+	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"github.com/kubedb/memcached/pkg/validator"
 	core "k8s.io/api/core/v1"
@@ -17,13 +17,14 @@ import (
 )
 
 func (c *Controller) create(memcached *api.Memcached) error {
-	if err := validator.ValidateMemcached(c.Client, memcached, &c.opt.Docker); err != nil {
+	if err := validator.ValidateMemcached(c.Client, memcached); err != nil {
 		c.recorder.Event(
 			memcached.ObjectReference(),
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
 			err.Error(),
 		)
+		log.Errorln(err)
 		return nil // user error so just record error and don't retry.
 	}
 
@@ -183,7 +184,10 @@ func (c *Controller) matchDormantDatabase(memcached *api.Memcached) error {
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Memcached
 	originalSpec := memcached.Spec
 
-	if !reflect.DeepEqual(drmnOriginSpec, &originalSpec) {
+	// Skip checking doNotPause
+	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
+
+	if !meta_util.Equal(drmnOriginSpec, originalSpec) {
 		return sendEvent("Memcached spec mismatches with OriginSpec in DormantDatabases")
 	}
 
@@ -191,29 +195,6 @@ func (c *Controller) matchDormantDatabase(memcached *api.Memcached) error {
 }
 
 func (c *Controller) pause(memcached *api.Memcached) error {
-	//if memcached.Spec.DoNotPause {
-	//	c.recorder.Eventf(
-	//		memcached.ObjectReference(),
-	//		core.EventTypeWarning,
-	//		eventer.EventReasonFailedToPause,
-	//		`Memcached "%v" is locked.`,
-	//		memcached.Name,
-	//	)
-	//
-	//	if err := c.reCreateMemcached(memcached); err != nil {
-	//		c.recorder.Eventf(
-	//			memcached.ObjectReference(),
-	//			core.EventTypeWarning,
-	//			eventer.EventReasonFailedToCreate,
-	//			`Failed to recreate Memcached: "%v". Reason: %v`,
-	//			memcached.Name,
-	//			err,
-	//		)
-	//		return err
-	//	}
-	//	return nil
-	//}
-
 	if _, err := c.createDormantDatabase(memcached); err != nil {
 		c.recorder.Eventf(
 			memcached.ObjectReference(),

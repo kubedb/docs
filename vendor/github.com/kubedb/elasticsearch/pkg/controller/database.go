@@ -2,7 +2,6 @@ package controller
 
 import (
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/portforward"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	"github.com/pkg/errors"
 	"gopkg.in/olivere/elastic.v5"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"

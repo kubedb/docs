@@ -11,7 +11,7 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	kutildb "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
+	kutildb "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/docker"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"github.com/kubedb/apimachinery/pkg/storage"
@@ -421,7 +421,7 @@ func (c *Controller) pause(elasticsearch *api.Elasticsearch) error {
 }
 
 func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
-	elasticsearch, err := c.ExtClient.Elasticsearchs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	elasticsearch, err := c.ExtClient.Elasticsearches(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -430,7 +430,7 @@ func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error)
 }
 
 func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
-	elasticsearch, err := c.ExtClient.Elasticsearchs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	elasticsearch, err := c.ExtClient.Elasticsearches(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -443,7 +443,7 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 }
 
 func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
-	elasticsearch, err := c.ExtClient.Elasticsearchs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	elasticsearch, err := c.ExtClient.Elasticsearches(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}

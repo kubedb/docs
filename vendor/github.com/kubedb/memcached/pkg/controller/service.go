@@ -48,9 +48,8 @@ func (c *Controller) checkService(memcached *api.Memcached) error {
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
-		} else {
-			return err
 		}
+		return err
 	}
 	if service.Spec.Selector[api.LabelDatabaseName] != name {
 		return fmt.Errorf(`intended service "%v" already exists`, name)
@@ -98,9 +97,8 @@ func (c *Controller) deleteService(name, namespace string) error {
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
-		} else {
-			return err
 		}
+		return err
 	}
 
 	if service.Spec.Selector[api.LabelDatabaseName] != name {

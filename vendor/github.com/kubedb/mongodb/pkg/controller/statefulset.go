@@ -211,8 +211,15 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps
 func upsertEnv(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
 	envList := []core.EnvVar{
 		{
-			Name:  "MONGO_INITDB_ROOT_USERNAME",
-			Value: mongodbUser,
+			Name: "MONGO_INITDB_ROOT_USERNAME",
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: mongodb.Spec.DatabaseSecret.SecretName,
+					},
+					Key: KeyMongoDBUser,
+				},
+			},
 		},
 		{
 			Name: "MONGO_INITDB_ROOT_PASSWORD",

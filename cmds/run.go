@@ -12,7 +12,7 @@ import (
 	"github.com/appscode/pat"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	tcs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
+	tcs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
 	esCtrl "github.com/kubedb/elasticsearch/pkg/controller"
 	esDocker "github.com/kubedb/elasticsearch/pkg/docker"

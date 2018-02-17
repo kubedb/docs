@@ -5,7 +5,6 @@ import (
 
 	"github.com/appscode/go/log"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/pkg/docker"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
@@ -19,13 +18,8 @@ func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
 		return fmt.Errorf(`object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
 	}
 
-	mongodb, err := c.ExtClient.MongoDBs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
-	if err != nil {
+	if _, err := c.ExtClient.MongoDBs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
 		return err
-	}
-
-	if err := docker.CheckDockerImageVersion(c.opt.Docker.GetToolsImage(mongodb), string(mongodb.Spec.Version)); err != nil {
-		return fmt.Errorf(`image %s not found`, c.opt.Docker.GetToolsImageWithTag(mongodb))
 	}
 
 	return amv.ValidateSnapshotSpec(c.Client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)

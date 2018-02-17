@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/appscode/go/log"
 	mon_api "github.com/appscode/kube-mon/api"
@@ -10,8 +9,7 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
-	"github.com/kubedb/apimachinery/pkg/docker"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"github.com/kubedb/apimachinery/pkg/storage"
 	"github.com/kubedb/mongodb/pkg/validator"
@@ -22,7 +20,7 @@ import (
 )
 
 func (c *Controller) create(mongodb *api.MongoDB) error {
-	if err := validator.ValidateMongoDB(c.Client, mongodb, &c.opt.Docker); err != nil {
+	if err := validator.ValidateMongoDB(c.Client, mongodb); err != nil {
 		c.recorder.Event(
 			mongodb.ObjectReference(),
 			core.EventTypeWarning,
@@ -234,7 +232,10 @@ func (c *Controller) matchDormantDatabase(mongodb *api.MongoDB) error {
 		}
 	}
 
-	if !reflect.DeepEqual(drmnOriginSpec, &originalSpec) {
+	// Skip checking doNotPause
+	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
+
+	if !meta_util.Equal(drmnOriginSpec, originalSpec) {
 		return sendEvent("MongoDB spec mismatches with OriginSpec in DormantDatabases")
 	}
 
@@ -285,10 +286,6 @@ func (c *Controller) initialize(mongodb *api.MongoDB) error {
 		return err
 	}
 	mongodb.Status = mg.Status
-
-	if err := docker.CheckDockerImageVersion(c.opt.Docker.GetToolsImage(mongodb), string(mongodb.Spec.Version)); err != nil {
-		return fmt.Errorf("image %s not found", c.opt.Docker.GetToolsImageWithTag(mongodb))
-	}
 
 	snapshotSource := mongodb.Spec.Init.SnapshotSource
 	// Event for notification that kubernetes objects are creating

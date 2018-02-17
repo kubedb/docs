@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/appscode/go/log"
 	mon_api "github.com/appscode/kube-mon/api"
@@ -10,8 +9,7 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
-	"github.com/kubedb/apimachinery/pkg/docker"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"github.com/kubedb/apimachinery/pkg/storage"
 	"github.com/kubedb/mysql/pkg/validator"
@@ -22,7 +20,7 @@ import (
 )
 
 func (c *Controller) create(mysql *api.MySQL) error {
-	if err := validator.ValidateMySQL(c.Client, mysql, &c.opt.Docker); err != nil {
+	if err := validator.ValidateMySQL(c.Client, mysql); err != nil {
 		c.recorder.Event(
 			mysql.ObjectReference(),
 			core.EventTypeWarning,
@@ -233,7 +231,10 @@ func (c *Controller) matchDormantDatabase(mysql *api.MySQL) error {
 		}
 	}
 
-	if !reflect.DeepEqual(drmnOriginSpec, &originalSpec) {
+	// Skip checking doNotPause
+	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
+
+	if !meta_util.Equal(drmnOriginSpec, originalSpec) {
 		return sendEvent("MySQL spec mismatches with OriginSpec in DormantDatabases")
 	}
 
@@ -284,10 +285,6 @@ func (c *Controller) initialize(mysql *api.MySQL) error {
 		return err
 	}
 	mysql.Status = mg.Status
-
-	if err := docker.CheckDockerImageVersion(c.opt.Docker.GetToolsImage(mysql), string(mysql.Spec.Version)); err != nil {
-		return fmt.Errorf("image %s not found", c.opt.Docker.GetToolsImageWithTag(mysql))
-	}
 
 	snapshotSource := mysql.Spec.Init.SnapshotSource
 	// Event for notification that kubernetes objects are creating

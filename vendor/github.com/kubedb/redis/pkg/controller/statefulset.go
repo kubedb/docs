@@ -10,7 +10,7 @@ import (
 	app_util "github.com/appscode/kutil/apps/v1beta1"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	apps "k8s.io/api/apps/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -133,9 +133,8 @@ func (c *Controller) checkStatefulSet(redis *api.Redis) error {
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
-		} else {
-			return err
 		}
+		return err
 	}
 
 	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindRedis {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/appscode/go/log"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	cs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
+	cs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"github.com/orcaman/concurrent-map"
 	"gopkg.in/robfig/cron.v2"
