@@ -2,13 +2,13 @@ package controller
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/appscode/go/log"
 	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
+	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"github.com/kubedb/redis/pkg/validator"
 	core "k8s.io/api/core/v1"
@@ -17,7 +17,7 @@ import (
 )
 
 func (c *Controller) create(redis *api.Redis) error {
-	if err := validator.ValidateRedis(c.Client, redis, &c.opt.Docker); err != nil {
+	if err := validator.ValidateRedis(c.Client, redis); err != nil {
 		log.Errorln(err)
 		c.recorder.Event(
 			redis.ObjectReference(),
@@ -181,7 +181,10 @@ func (c *Controller) matchDormantDatabase(redis *api.Redis) error {
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Redis
 	originalSpec := redis.Spec
 
-	if !reflect.DeepEqual(drmnOriginSpec, &originalSpec) {
+	// Skip checking doNotPause
+	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
+
+	if !meta_util.Equal(drmnOriginSpec, originalSpec) {
 		return sendEvent("Redis spec mismatches with OriginSpec in DormantDatabases")
 	}
 
@@ -189,28 +192,6 @@ func (c *Controller) matchDormantDatabase(redis *api.Redis) error {
 }
 
 func (c *Controller) pause(redis *api.Redis) error {
-	//if redis.Spec.DoNotPause {
-	//	c.recorder.Eventf(
-	//		redis.ObjectReference(),
-	//		core.EventTypeWarning,
-	//		eventer.EventReasonFailedToPause,
-	//		`Redis "%v" is locked.`,
-	//		redis.Name,
-	//	)
-	//
-	//	if err := c.reCreateRedis(redis); err != nil {
-	//		c.recorder.Eventf(
-	//			redis.ObjectReference(),
-	//			core.EventTypeWarning,
-	//			eventer.EventReasonFailedToCreate,
-	//			`Failed to recreate Redis: "%v". Reason: %v`,
-	//			redis.Name,
-	//			err,
-	//		)
-	//		return err
-	//	}
-	//	return nil
-	//}
 
 	if _, err := c.createDormantDatabase(redis); err != nil {
 		c.recorder.Eventf(

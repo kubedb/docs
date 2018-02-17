@@ -110,30 +110,29 @@ func (c *Controller) createService(postgres *api.Postgres) (kutil.VerbType, erro
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
 		in.Labels = postgres.OffshootLabels()
-		in.Spec.Ports = upsertServicePort(in)
 		in.Spec.Selector = postgres.OffshootLabels()
-		if postgres.GetMonitoringVendor() == mon_api.VendorPrometheus {
-			in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
-				{
-					Name:       api.PrometheusExporterPortName,
-					Protocol:   core.ProtocolTCP,
-					Port:       postgres.Spec.Monitor.Prometheus.Port,
-					TargetPort: intstr.FromString(api.PrometheusExporterPortName),
-				},
-			})
-		}
+		in.Spec.Ports = upsertServicePort(in, postgres)
+
 		return in
 	})
 	return ok, err
 }
 
-func upsertServicePort(service *core.Service) []core.ServicePort {
+func upsertServicePort(service *core.Service, postgres *api.Postgres) []core.ServicePort {
 	desiredPorts := []core.ServicePort{
 		{
 			Name:       PostgresPortName,
 			Port:       PostgresPort,
 			TargetPort: intstr.FromString(PostgresPortName),
 		},
+	}
+	if postgres.GetMonitoringVendor() == mon_api.VendorPrometheus {
+		desiredPorts = append(desiredPorts, core.ServicePort{
+			Name:       api.PrometheusExporterPortName,
+			Protocol:   core.ProtocolTCP,
+			Port:       postgres.Spec.Monitor.Prometheus.Port,
+			TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+		})
 	}
 	return core_util.MergeServicePorts(service.Spec.Ports, desiredPorts)
 }
@@ -146,8 +145,8 @@ func (c *Controller) createPrimaryService(postgres *api.Postgres) (kutil.VerbTyp
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
 		in.Labels = postgres.OffshootLabels()
-		in.Spec.Ports = upsertServicePort(in)
 		in.Spec.Selector = postgres.OffshootLabels()
+		in.Spec.Ports = upsertServicePort(in, postgres)
 		in.Spec.Selector[NodeRole] = "primary"
 		return in
 	})

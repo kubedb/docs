@@ -145,7 +145,7 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 }
 
 func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) {
-	elasticsearch, err := c.ExtClient.Elasticsearchs(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
+	elasticsearch, err := c.ExtClient.Elasticsearches(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

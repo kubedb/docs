@@ -16,7 +16,7 @@ func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
 		return fmt.Errorf(`object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
 	}
 
-	elasticsearch, err := c.ExtClient.Elasticsearchs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
+	elasticsearch, err := c.ExtClient.Elasticsearches(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}

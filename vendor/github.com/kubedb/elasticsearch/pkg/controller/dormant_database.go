@@ -12,7 +12,7 @@ import (
 )
 
 func (c *Controller) Exists(om *metav1.ObjectMeta) (bool, error) {
-	elasticsearch, err := c.ExtClient.Elasticsearchs(om.Namespace).Get(om.Name, metav1.GetOptions{})
+	elasticsearch, err := c.ExtClient.Elasticsearches(om.Namespace).Get(om.Name, metav1.GetOptions{})
 	if err != nil {
 		if !kerr.IsNotFound(err) {
 			return false, err
@@ -152,7 +152,7 @@ func (c *Controller) ResumeDatabase(dormantDb *api.DormantDatabase) error {
 		Spec: *origin.Spec.Elasticsearch,
 	}
 
-	_, err := c.ExtClient.Elasticsearchs(elasticsearch.Namespace).Create(elasticsearch)
+	_, err := c.ExtClient.Elasticsearches(elasticsearch.Namespace).Create(elasticsearch)
 	return err
 }
 

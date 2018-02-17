@@ -49,9 +49,8 @@ func (c *Controller) checkService(mysql *api.MySQL) error {
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
-		} else {
-			return err
 		}
+		return err
 	}
 
 	if service.Spec.Selector[api.LabelDatabaseName] != name {
@@ -101,9 +100,9 @@ func (c *Controller) deleteService(name, namespace string) error {
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
-		} else {
-			return err
 		}
+		return err
+
 	}
 
 	if service.Spec.Selector[api.LabelDatabaseName] != name {

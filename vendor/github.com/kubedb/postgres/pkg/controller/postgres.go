@@ -10,7 +10,7 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	kutildb "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
+	kutildb "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/docker"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"github.com/kubedb/apimachinery/pkg/storage"

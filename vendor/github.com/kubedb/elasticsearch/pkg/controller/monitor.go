@@ -49,7 +49,7 @@ func (c *Controller) getOldAgent(elasticsearch *api.Elasticsearch) mona.Agent {
 	if err != nil {
 		return nil
 	}
-	oldAgentType, _ := meta_util.GetString(service.Annotations, mona.KeyAgent)
+	oldAgentType, _ := meta_util.GetStringValue(service.Annotations, mona.KeyAgent)
 	return agents.New(mona.AgentType(oldAgentType), c.Client, c.ApiExtKubeClient, c.promClient)
 }
 

@@ -5,7 +5,7 @@ import (
 
 	"github.com/appscode/go/log"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
@@ -135,14 +135,14 @@ func (c *Controller) handleRestoreJob(job *batch.Job) error {
 				c.eventRecorder.Event(
 					api.ObjectReferenceFor(runtimeObj),
 					core.EventTypeNormal,
-					eventer.EventReasonSuccessfulSnapshot,
+					eventer.EventReasonSuccessfulInitialize,
 					"Successfully completed initialization",
 				)
 			} else {
 				c.eventRecorder.Event(
 					api.ObjectReferenceFor(runtimeObj),
 					core.EventTypeWarning,
-					eventer.EventReasonSnapshotFailed,
+					eventer.EventReasonFailedToInitialize,
 					"Failed to complete initialization",
 				)
 			}

@@ -1,5 +1,5 @@
-hash: 1008658d5328aa904bf0f6b77642af68b08c36ef5c557e18eb44c7eb5cf96866
-updated: 2018-01-29T07:45:13.21799181-08:00
+hash: acccbe7586010adccbf3092a233a1a7e43bad2bf39c02a2080e6d37e099d8a7f
+updated: 2018-02-17T12:00:35.098161646-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -13,7 +13,7 @@ imports:
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/appscode/go
-  version: 99dbf420807d9459b63d1d0bf702537bb7aa976f
+  version: 8367769380cf93a12b381d957941ddf2a19d0356
   subpackages:
   - analytics
   - context
@@ -31,14 +31,14 @@ imports:
   - types
   - version
 - name: github.com/appscode/kube-mon
-  version: 6c843f8c6418d421ec6e7d62d7840b114e043334
+  version: 69036cc40b44a7ba97be91d530f421e3adaba407
   subpackages:
   - agents
   - agents/coreosprometheusoperator
   - agents/prometheusbuiltin
   - api
 - name: github.com/appscode/kutil
-  version: a035b515d68bca793b2beacdf52e19a02f914017
+  version: 579ddb8cc946c9e5f09d59863a3c5fe27cdc56f5
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
@@ -101,7 +101,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/blang/semver
-  version: 2ee87856327ba09384cabd113bc6b5d174e9ec0f
+  version: a088618caaf34f5392024fc3386143873033fbea
 - name: github.com/coreos/prometheus-operator
   version: a1c26060308c9a7798d2900a9ec5f37d3e4eb42c
   repo: https://github.com/tamalsaha/prometheus-operator.git
@@ -144,6 +144,8 @@ imports:
   - log
 - name: github.com/evanphx/json-patch
   version: 944e07253867aacae43c04b2e6a239005443f33a
+- name: github.com/fsnotify/fsnotify
+  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
 - name: github.com/garyburd/redigo
   version: 34a326de1fea52965fa5ad664d3fc7163dd4b0a1
   subpackages:
@@ -184,7 +186,7 @@ imports:
   - proto
   - sortkeys
 - name: github.com/golang/glog
-  version: 44145f04b68cf362d9c4df2182967c2275eaefed
+  version: 23def4e6c14b4da8ac2ed8007337bc5eb5007998
 - name: github.com/golang/groupcache
   version: 02826c3e79038b59d737d3b1c0a1d937f71a4433
   subpackages:
@@ -200,7 +202,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 97aa668b73e764ccdd786bc3ccd2edffe621150e
+  version: 3af367b6b30c263d47e8895973edcca9a49cf029
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -261,19 +263,19 @@ imports:
 - name: github.com/juju/ratelimit
   version: 5b9ff866471762aa2ab2dced63c9fb6f53921342
 - name: github.com/justwatchcom/elasticsearch_exporter
-  version: 813a68e4fc32114356f199909ce41703c98984c2
+  version: 82fea068ec1e0da075abd1bb4f3e10217fab0fa4
   subpackages:
   - collector
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 0de29010181b4b361fb210d5a85de7a4ff56e9df
+  version: 89214d2501bcf65be0ccfa067086d9dc5f0c511d
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
-  - client/scheme
-  - client/typed/kubedb/v1alpha1
-  - client/typed/kubedb/v1alpha1/util
+  - client/clientset/versioned/scheme
+  - client/clientset/versioned/typed/kubedb/v1alpha1
+  - client/clientset/versioned/typed/kubedb/v1alpha1/util
   - pkg/controller
   - pkg/controller/dormant_database
   - pkg/controller/job
@@ -283,32 +285,32 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: b440c174990c33798231df2124aea3810a262acf
+  version: 4867374fc0b4a3a4134dc1e887108cc2727d529f
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/memcached
-  version: 08191a9cdbd143cebcb343c969d50b6420e19542
+  version: 9eb51f1b2ef822927e62ae6aa4b0571f1530a95f
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mongodb
-  version: de8f30be6c914ead85d25596836e7fb5313356f5
+  version: b28b7ca3799c61c4ecac5024b7ebd64320f1f78c
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mysql
-  version: 6db2ae8d66b38c00106969bc801b247033e129dd
+  version: 37a1e4fd52b5e77e9682ae4dc6acb2b6b6a35c95
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/postgres
-  version: d04e61ec820c48c076828471479d45ceee29ac9a
+  version: 848f17aa1b71e96adc39c2a2199e43751933b0f7
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -316,13 +318,13 @@ imports:
   - pkg/leader_election
   - pkg/validator
 - name: github.com/kubedb/redis
-  version: 56cc3e767e6714b07f84915e9177c138df299c3b
+  version: dc3173ab4af18258da47bda6e3a69235fe42c16a
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/lib/pq
-  version: 19c8e9ad00952ce0c64489b60e8df88bb16dd514
+  version: 88edab0803230a3898347e77b474f8c1820a1f20
   subpackages:
   - oid
 - name: github.com/mailru/easyjson
@@ -344,7 +346,7 @@ imports:
 - name: github.com/ncw/swift
   version: ae9f0ea1605b9aa6434ed5c731ca35d83ba67c55
 - name: github.com/oliver006/redis_exporter
-  version: a0d9e4c704b4d35cd08544d395038f417716a03a
+  version: fa5545286a5b4cc1849965e3193d4579aa0151f5
   subpackages:
   - exporter
 - name: github.com/opencontainers/go-digest
@@ -378,7 +380,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/prometheus/mysqld_exporter
-  version: 446651daf57fba19b221c172b683e4a70ebdf5a8
+  version: a71f4bbcff338d246f0b6e7d1e427eabeb46b11c
   subpackages:
   - collector
 - name: github.com/prometheus/procfs
@@ -386,7 +388,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 47538cf6cebbc143076043c5561d0f2a2c16ab6a
+  version: 67c13ba156a86afe6181f8d6e9fac1ec0f17c25f
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -397,6 +399,10 @@ imports:
   version: 300106c228d52c8941d4b3de6054a6062a86dda3
 - name: github.com/satori/uuid
   version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
+- name: github.com/sergi/go-diff
+  version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
+  subpackages:
+  - diffmatchpatch
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
@@ -406,7 +412,7 @@ imports:
   subpackages:
   - memcache
 - name: github.com/spf13/cobra
-  version: f91529fc609202eededff4de2dc0ba2f662240a3
+  version: be77323fc05148ef091e83b3866c0d47c8e74a8b
   subpackages:
   - doc
 - name: github.com/spf13/pflag
@@ -417,6 +423,12 @@ imports:
   vcs: git
   subpackages:
   - exporter
+- name: github.com/yudai/gojsondiff
+  version: 7b1b7adf999dab73a6eb02669c3d82dbb27a3dd6
+  subpackages:
+  - formatter
+- name: github.com/yudai/golcs
+  version: d1c525dea8ce39ea9a783d33cf08932305373f2c
 - name: golang.org/x/crypto
   version: 81e90905daefcd6fd217b62423c0908922eadb30
   subpackages:
@@ -466,7 +478,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: d7238a695cdc29affa1e76d5485eb2f72d30f8f8
+  version: c7a403bb5fe12fe4644bb956edd5cd677626120a
   subpackages:
   - gensupport
   - googleapi

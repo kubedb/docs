@@ -7,7 +7,7 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/pat"
-	tcs "github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1"
+	tcs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"

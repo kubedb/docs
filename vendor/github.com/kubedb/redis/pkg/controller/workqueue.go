@@ -8,7 +8,7 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	core_meta "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/client/typed/kubedb/v1alpha1/util"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	rt "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -172,21 +172,21 @@ func (c *Controller) runRedis(key string) error {
 		// is dependent on the actual instance, to detect that a Redis was recreated with the same name
 		redis := obj.(*api.Redis).DeepCopy()
 		if redis.DeletionTimestamp != nil {
-			if core_util.HasFinalizer(redis.ObjectMeta, "kubedb.com") {
+			if core_util.HasFinalizer(redis.ObjectMeta, api.GenericKey) {
 				util.AssignTypeKind(redis)
 				if err := c.pause(redis); err != nil {
 					log.Errorln(err)
 					return err
 				}
 				redis, _, err = util.PatchRedis(c.ExtClient, redis, func(in *api.Redis) *api.Redis {
-					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, "kubedb.com")
+					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, api.GenericKey)
 					return in
 				})
 				return err
 			}
 		} else {
 			redis, _, err = util.PatchRedis(c.ExtClient, redis, func(in *api.Redis) *api.Redis {
-				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, "kubedb.com")
+				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
 				return in
 			})
 			util.AssignTypeKind(redis)
