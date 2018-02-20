@@ -6,23 +6,25 @@ import (
 	"strings"
 
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	adr "github.com/kubedb/apimachinery/pkg/docker"
 	"github.com/kubedb/apimachinery/pkg/storage"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
-	dr "github.com/kubedb/postgres/pkg/docker"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 )
 
-func ValidatePostgres(client kubernetes.Interface, postgres *api.Postgres, docker *dr.Docker) error {
+var (
+	postgresVersions = sets.NewString("9.6", "9.6.6")
+)
+
+func ValidatePostgres(client kubernetes.Interface, postgres *api.Postgres) error {
 	if postgres.Spec.Version == "" {
 		return fmt.Errorf(`object 'Version' is missing in '%v'`, postgres.Spec)
 	}
 
-	if docker != nil {
-		if err := adr.CheckDockerImageVersion(docker.GetImage(postgres), string(postgres.Spec.Version)); err != nil {
-			return fmt.Errorf(`image %s not found`, docker.GetImageWithTag(postgres))
-		}
+	// check Postgres version validation
+	if !postgresVersions.Has(string(postgres.Spec.Version)) {
+		return fmt.Errorf(`KubeDB doesn't support Postgres version: %s`, string(postgres.Spec.Version))
 	}
 
 	if postgres.Spec.Storage != nil {
