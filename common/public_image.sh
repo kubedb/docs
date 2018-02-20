@@ -1,15 +1,15 @@
 #!/bin/bash
 
-DOCKER_REGISTRY=${DOCKER_REGISTRY:-appscode}
+export DOCKER_REGISTRY=${DOCKER_REGISTRY:-appscode}
 source $(dirname "${BASH_SOURCE}")/lib.sh
 
 # override this one if you need to change push & pull
 docker_push() {
-	attic_up
+	hub_canary
 }
 
 docker_pull() {
-	attic_pull
+	hub_pull
 }
 
 
