@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export DOCKER_REGISTRY=${DOCKER_REGISTRY:-cowrypay}
+export DOCKER_REGISTRY=${DOCKER_REGISTRY:-kiteci}
 source $(dirname "${BASH_SOURCE}")/lib.sh
 
 # override this one if you need to change push & pull
