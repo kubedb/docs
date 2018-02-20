@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/appscode/go/log"
 	mon_api "github.com/appscode/kube-mon/api"
@@ -11,7 +10,6 @@ import (
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	kutildb "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
-	"github.com/kubedb/apimachinery/pkg/docker"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"github.com/kubedb/apimachinery/pkg/storage"
 	"github.com/kubedb/postgres/pkg/validator"
@@ -22,13 +20,14 @@ import (
 )
 
 func (c *Controller) create(postgres *api.Postgres) error {
-	if err := validator.ValidatePostgres(c.Client, postgres, &c.opt.Docker); err != nil {
+	if err := validator.ValidatePostgres(c.Client, postgres); err != nil {
 		c.recorder.Event(
 			postgres.ObjectReference(),
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
 			err.Error(),
 		)
+		log.Error(err)
 		return nil // user error so just record error and don't retry.
 	}
 
@@ -230,7 +229,11 @@ func (c *Controller) matchDormantDatabase(postgres *api.Postgres) error {
 			SecretName: postgres.Name + "-auth",
 		}
 	}
-	if !reflect.DeepEqual(drmnOriginSpec, &originalSpec) {
+
+	// Skip checking doNotPause
+	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
+
+	if !meta_util.Equal(drmnOriginSpec, originalSpec) {
 		return sendEvent("Postgres spec mismatches with OriginSpec in DormantDatabases")
 	}
 
@@ -304,10 +307,6 @@ func (c *Controller) initialize(postgres *api.Postgres) error {
 		return err
 	}
 	postgres.Status = pg.Status
-
-	if err := docker.CheckDockerImageVersion(c.opt.Docker.GetToolsImage(postgres), string(postgres.Spec.Version)); err != nil {
-		return fmt.Errorf("image %s not found", c.opt.Docker.GetToolsImageWithTag(postgres))
-	}
 
 	snapshotSource := postgres.Spec.Init.SnapshotSource
 	// Event for notification that kubernetes objects are creating

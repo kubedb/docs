@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/pkg/docker"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -16,13 +15,8 @@ func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
 		return fmt.Errorf(`object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
 	}
 
-	elasticsearch, err := c.ExtClient.Elasticsearches(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
-	if err != nil {
+	if _, err := c.ExtClient.Elasticsearches(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
 		return err
-	}
-
-	if err := docker.CheckDockerImageVersion(c.opt.Docker.GetToolsImage(elasticsearch), string(elasticsearch.Spec.Version)); err != nil {
-		return fmt.Errorf(`image %s not found`, c.opt.Docker.GetToolsImageWithTag(elasticsearch))
 	}
 
 	return amv.ValidateSnapshotSpec(c.Client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)

@@ -1,5 +1,5 @@
 hash: acccbe7586010adccbf3092a233a1a7e43bad2bf39c02a2080e6d37e099d8a7f
-updated: 2018-02-17T12:00:35.098161646-08:00
+updated: 2018-02-20T10:28:50.166220499+06:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -38,7 +38,7 @@ imports:
   - agents/prometheusbuiltin
   - api
 - name: github.com/appscode/kutil
-  version: 579ddb8cc946c9e5f09d59863a3c5fe27cdc56f5
+  version: c4bd7a2b48691964d69834085ef9c0f8e22d21a4
   subpackages:
   - apiextensions/v1beta1
   - apps/v1beta1
@@ -108,7 +108,7 @@ imports:
   subpackages:
   - pkg/client/monitoring/v1
 - name: github.com/cpuguy83/go-md2man
-  version: 71acacd42f85e5e82f70a55327789582a5200a90
+  version: 48d8747a2ca13185e7cc8efe6e9fc196a83f71a5
   subpackages:
   - md2man
 - name: github.com/davecgh/go-spew
@@ -122,18 +122,6 @@ imports:
   - shared
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
-- name: github.com/docker/distribution
-  version: edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c
-  subpackages:
-  - context
-  - digestset
-  - manifest
-  - manifest/schema1
-  - manifest/schema2
-  - reference
-  - uuid
-- name: github.com/docker/libtrust
-  version: aabc10ec26b754e797f9028f4589c5b7bd90dc20
 - name: github.com/docker/spdystream
   version: 449fdfce4d962303d702fec724ef0ad181c92528
   subpackages:
@@ -167,7 +155,7 @@ imports:
 - name: github.com/go-openapi/jsonreference
   version: 13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272
 - name: github.com/go-openapi/spec
-  version: 7abd5745472fff5eb3685386d5fb8bf38683154d
+  version: 6aced65f8501fe1217321abf0749d354824ba2ff
 - name: github.com/go-openapi/swag
   version: f3f9494671f93fcff853e3c6e9e948b3eb71e590
 - name: github.com/go-sql-driver/mysql
@@ -211,17 +199,13 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/google/uuid
-  version: dec09d789f3dba190787f8b4454c7d3c936fed9e
+  version: e367a344cbe8e08149f9951115dc299ebd42b919
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
   - OpenAPIv2
   - compiler
   - extensions
-- name: github.com/gorilla/context
-  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
-- name: github.com/gorilla/mux
-  version: 0a192a193177452756c362c20087ddafcf6829c4
 - name: github.com/graymeta/stow
   version: 6f2b8867a3fb15cca5507da1d552b55cfe5d07a7
   repo: https://github.com/appscode/stow.git
@@ -244,10 +228,6 @@ imports:
   version: a0d98a5f288019575c6d1f4bb1573fef2d1fcdc4
   subpackages:
   - simplelru
-- name: github.com/heroku/docker-registry-client
-  version: fd2fe803496897db70c236ee244f41487ea92ec2
-  subpackages:
-  - registry
 - name: github.com/howeyc/gopass
   version: bf9dde6d0d2c004a008c27aaee91170c786f6db8
 - name: github.com/imdario/mergo
@@ -255,7 +235,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
-  version: 0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74
+  version: 3433f3ea46d9f8019119e7dd41274e112a2359a9
 - name: github.com/jpillora/go-ogle-analytics
   version: 14b04e0594ef6a9fd943363b135656f0ec8c9d0e
 - name: github.com/json-iterator/go
@@ -269,7 +249,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 89214d2501bcf65be0ccfa067086d9dc5f0c511d
+  version: 282a9829f9556525f042f366ba2d17d21a1b4ffe
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -280,12 +260,11 @@ imports:
   - pkg/controller/dormant_database
   - pkg/controller/job
   - pkg/controller/snapshot
-  - pkg/docker
   - pkg/eventer
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 4867374fc0b4a3a4134dc1e887108cc2727d529f
+  version: 9d799da7e7018b19bac63650c4a5e5ee67d9a255
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -310,7 +289,7 @@ imports:
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/postgres
-  version: 848f17aa1b71e96adc39c2a2199e43751933b0f7
+  version: bc18788caccb0fd1305c355c747596347e3dfeb1
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -349,10 +328,8 @@ imports:
   version: fa5545286a5b4cc1849965e3193d4579aa0151f5
   subpackages:
   - exporter
-- name: github.com/opencontainers/go-digest
-  version: 279bed98673dd5bef374d3b6e4b09e2af76183bf
 - name: github.com/orcaman/concurrent-map
-  version: d4c23bd0e01134806215ffe65ba3fd22ec6721f7
+  version: 2ae17bc4c860c83513ee50feb9746f3e50d7515d
 - name: github.com/peterbourgon/diskv
   version: 5f041e8faa004a95c88a202771f4cc3e991971e6
 - name: github.com/pkg/errors
@@ -388,7 +365,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 67c13ba156a86afe6181f8d6e9fac1ec0f17c25f
+  version: de043c95939613eec8e50c8b3120d42409a0613d
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -478,7 +455,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/api
-  version: c7a403bb5fe12fe4644bb956edd5cd677626120a
+  version: c76a25da6c114df45a86acb8873ae83eda1430b9
   subpackages:
   - gensupport
   - googleapi
