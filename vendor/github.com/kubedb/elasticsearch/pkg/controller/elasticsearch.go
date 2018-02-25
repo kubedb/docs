@@ -240,7 +240,7 @@ func (c *Controller) matchDormantDatabase(elasticsearch *api.Elasticsearch) erro
 	// Skip checking doNotPause
 	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
 
-	if !meta_util.Equal(drmnOriginSpec, originalSpec) {
+	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
 		return sendEvent("Elasticsearch spec mismatches with OriginSpec in DormantDatabases")
 	}
 

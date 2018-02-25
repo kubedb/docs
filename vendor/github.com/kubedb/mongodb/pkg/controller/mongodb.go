@@ -235,7 +235,7 @@ func (c *Controller) matchDormantDatabase(mongodb *api.MongoDB) error {
 	// Skip checking doNotPause
 	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
 
-	if !meta_util.Equal(drmnOriginSpec, originalSpec) {
+	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
 		return sendEvent("MongoDB spec mismatches with OriginSpec in DormantDatabases")
 	}
 

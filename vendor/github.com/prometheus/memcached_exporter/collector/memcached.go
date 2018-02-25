@@ -1,11 +1,11 @@
-package exporter
+package collector
 
 import (
 	"math"
 	"strconv"
 	"time"
 
-	"github.com/Snapbug/gomemcache/memcache"
+	"github.com/grobie/gomemcache/memcache"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/log"
 )
@@ -16,7 +16,8 @@ const (
 
 // Exporter collects metrics from a memcached server.
 type Exporter struct {
-	mc *memcache.Client
+	address string
+	timeout time.Duration
 
 	up                    *prometheus.Desc
 	uptime                *prometheus.Desc
@@ -58,11 +59,9 @@ type Exporter struct {
 
 // NewExporter returns an initialized exporter.
 func NewExporter(server string, timeout time.Duration) *Exporter {
-	c := memcache.New(server)
-	c.Timeout = timeout
-
 	return &Exporter{
-		mc: c,
+		address: server,
+		timeout: timeout,
 		up: prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, "", "up"),
 			"Could the memcached server be reached.",
@@ -327,7 +326,15 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 // Collect fetches the statistics from the configured memcached server, and
 // delivers them as Prometheus metrics. It implements prometheus.Collector.
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
-	stats, err := e.mc.Stats()
+	c, err := memcache.New(e.address)
+	if err != nil {
+		ch <- prometheus.MustNewConstMetric(e.up, prometheus.GaugeValue, 0)
+		log.Errorf("Failed to connect to memcached: %s", err)
+		return
+	}
+	c.Timeout = e.timeout
+
+	stats, err := c.Stats()
 	if err != nil {
 		ch <- prometheus.MustNewConstMetric(e.up, prometheus.GaugeValue, 0)
 		log.Errorf("Failed to collect stats from memcached: %s", err)
@@ -432,7 +439,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 	}
 
-	statsSettings, err := e.mc.StatsSettings()
+	statsSettings, err := c.StatsSettings()
 	if err != nil {
 		log.Errorf("Could not query stats settings: %s", err)
 	}

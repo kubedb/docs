@@ -67,19 +67,9 @@ func createCaCertificate(certPath string) (*rsa.PrivateKey, *x509.Certificate, s
 }
 
 func createNodeCertificate(certPath string, elasticsearch *api.Elasticsearch, caKey *rsa.PrivateKey, caCert *x509.Certificate, pass string) error {
-	name := elasticsearch.OffshootName()
-
 	cfg := cert.Config{
-		CommonName:   name,
+		CommonName:   elasticsearch.OffshootName(),
 		Organization: []string{"Elasticsearch Operator"},
-		AltNames: cert.AltNames{
-			DNSNames: []string{
-				"localhost",
-				name,
-				fmt.Sprintf("%v.%v", name, elasticsearch.Namespace),
-				fmt.Sprintf("%v.%v.svc.cluster.local", name, elasticsearch.Namespace),
-			},
-		},
 		Usages: []x509.ExtKeyUsage{
 			x509.ExtKeyUsageServerAuth,
 			x509.ExtKeyUsageClientAuth,
@@ -202,10 +192,16 @@ func createAdminCertificate(certPath string, caKey *rsa.PrivateKey, caCert *x509
 	return nil
 }
 
-func createClientCertificate(certPath string, caKey *rsa.PrivateKey, caCert *x509.Certificate, pass string) (*rsa.PrivateKey, *x509.Certificate, error) {
+func createClientCertificate(certPath string, elasticsearch *api.Elasticsearch, caKey *rsa.PrivateKey, caCert *x509.Certificate, pass string) error {
 	cfg := cert.Config{
-		CommonName:   "client",
+		CommonName:   elasticsearch.OffshootName(),
 		Organization: []string{"Elasticsearch Operator"},
+		AltNames: cert.AltNames{
+			DNSNames: []string{
+				"localhost",
+				fmt.Sprintf("%v.%v.svc", elasticsearch.OffshootName(), elasticsearch.Namespace),
+			},
+		},
 		Usages: []x509.ExtKeyUsage{
 			x509.ExtKeyUsageServerAuth,
 			x509.ExtKeyUsageClientAuth,
@@ -214,20 +210,20 @@ func createClientCertificate(certPath string, caKey *rsa.PrivateKey, caCert *x50
 
 	clientKey, err := cert.NewPrivateKey()
 	if err != nil {
-		return nil, nil, errors.New("failed to generate key for client certificate")
+		return errors.New("failed to generate key for client certificate")
 	}
 	clientCert, err := cert.NewSignedCert(cfg, clientKey, caCert, caKey)
 	if err != nil {
-		return nil, nil, errors.New("failed to sign client certificate")
+		return errors.New("failed to sign client certificate")
 	}
 
 	clientKeyByte := cert.EncodePrivateKeyPEM(clientKey)
 	if !ioutil.WriteString(fmt.Sprintf("%s/client-key.pem", certPath), string(clientKeyByte)) {
-		return nil, nil, errors.New("failed to write key for client certificate")
+		return errors.New("failed to write key for client certificate")
 	}
 	clientCertByte := cert.EncodeCertPEM(clientCert)
 	if !ioutil.WriteString(fmt.Sprintf("%s/client.pem", certPath), string(clientCertByte)) {
-		return nil, nil, errors.New("failed to write client certificate")
+		return errors.New("failed to write client certificate")
 	}
 
 	_, err = exec.Command(
@@ -241,7 +237,7 @@ func createClientCertificate(certPath string, caKey *rsa.PrivateKey, caCert *x50
 		"-out", fmt.Sprintf("%s/client.pkcs12", certPath),
 	).Output()
 	if err != nil {
-		return nil, nil, errors.New("failed to generate client.pkcs12")
+		return errors.New("failed to generate client.pkcs12")
 	}
 
 	_, err = exec.Command(
@@ -257,10 +253,10 @@ func createClientCertificate(certPath string, caKey *rsa.PrivateKey, caCert *x50
 	).Output()
 
 	if err != nil {
-		return nil, nil, errors.New("failed to generate client.jks")
+		return errors.New("failed to generate client.jks")
 	}
 
-	return clientKey, clientCert, nil
+	return nil
 }
 
 const (

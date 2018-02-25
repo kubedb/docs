@@ -226,14 +226,14 @@ func (c *Controller) matchDormantDatabase(postgres *api.Postgres) error {
 
 	if originalSpec.DatabaseSecret == nil {
 		originalSpec.DatabaseSecret = &core.SecretVolumeSource{
-			SecretName: postgres.Name + "-auth",
+			SecretName: postgres.OffshootName() + "-auth",
 		}
 	}
 
 	// Skip checking doNotPause
 	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
 
-	if !meta_util.Equal(drmnOriginSpec, originalSpec) {
+	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
 		return sendEvent("Postgres spec mismatches with OriginSpec in DormantDatabases")
 	}
 

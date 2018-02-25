@@ -184,7 +184,7 @@ func (c *Controller) matchDormantDatabase(redis *api.Redis) error {
 	// Skip checking doNotPause
 	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
 
-	if !meta_util.Equal(drmnOriginSpec, originalSpec) {
+	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
 		return sendEvent("Redis spec mismatches with OriginSpec in DormantDatabases")
 	}
 

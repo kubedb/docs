@@ -33,9 +33,9 @@ func (c *Controller) ensureStatefulSet(
 		Namespace: postgres.Namespace,
 	}
 
-	replicas := postgres.Spec.Replicas
-	if replicas <= 0 {
-		replicas = 1
+	replicas := int32(1)
+	if postgres.Spec.Replicas != nil {
+		replicas = types.Int32(postgres.Spec.Replicas)
 	}
 
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
@@ -130,23 +130,24 @@ func (c *Controller) CheckStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 }
 
 func (c *Controller) ensureCombinedNode(postgres *api.Postgres) (kutil.VerbType, error) {
-	standby := postgres.Spec.Standby
-	streaming := postgres.Spec.Streaming
-	if standby == "" {
-		standby = "warm"
+	standbyMode := api.WarmStandby
+	streamingMode := api.AsynchronousStreaming
+
+	if postgres.Spec.StandbyMode != nil {
+		standbyMode = *postgres.Spec.StandbyMode
 	}
-	if streaming == "" {
-		streaming = "asynchronous"
+	if postgres.Spec.StreamingMode != nil {
+		streamingMode = *postgres.Spec.StreamingMode
 	}
 
 	envList := []core.EnvVar{
 		{
 			Name:  "STANDBY",
-			Value: string(standby),
+			Value: string(standbyMode),
 		},
 		{
 			Name:  "STREAMING",
-			Value: string(streaming),
+			Value: string(streamingMode),
 		},
 	}
 

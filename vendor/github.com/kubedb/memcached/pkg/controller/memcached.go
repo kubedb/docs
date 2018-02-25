@@ -187,7 +187,7 @@ func (c *Controller) matchDormantDatabase(memcached *api.Memcached) error {
 	// Skip checking doNotPause
 	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
 
-	if !meta_util.Equal(drmnOriginSpec, originalSpec) {
+	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
 		return sendEvent("Memcached spec mismatches with OriginSpec in DormantDatabases")
 	}
 

@@ -3,8 +3,8 @@ package validator
 import (
 	"errors"
 	"fmt"
-	"strings"
 
+	"github.com/appscode/go/types"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/storage"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	postgresVersions = sets.NewString("9.6", "9.6.6")
+	postgresVersions = sets.NewString("9.6", "9.6.6", "10.2")
 )
 
 func ValidatePostgres(client kubernetes.Interface, postgres *api.Postgres) error {
@@ -27,23 +27,32 @@ func ValidatePostgres(client kubernetes.Interface, postgres *api.Postgres) error
 		return fmt.Errorf(`KubeDB doesn't support Postgres version: %s`, string(postgres.Spec.Version))
 	}
 
+	if postgres.Spec.Replicas != nil {
+		replicas := types.Int32(postgres.Spec.Replicas)
+		if replicas < 1 {
+			return fmt.Errorf(`spec.replicas "%d" invalid`, replicas)
+		}
+	}
+
 	if postgres.Spec.Storage != nil {
 		var err error
 		if err = amv.ValidateStorage(client, postgres.Spec.Storage); err != nil {
 			return err
 		}
 	}
-	if postgres.Spec.Standby != "" {
-		if strings.ToLower(string(postgres.Spec.Standby)) != "hot" &&
-			strings.ToLower(string(postgres.Spec.Standby)) != "warm" {
-			return fmt.Errorf(`configuration.Standby "%v" invalid`, postgres.Spec.Standby)
+
+	if postgres.Spec.StandbyMode != nil {
+		standByMode := *postgres.Spec.StandbyMode
+		if standByMode != api.HotStandby && standByMode != api.WarmStandby {
+			return fmt.Errorf(`spec.standbyMode "%s" invalid`, standByMode)
 		}
 	}
-	if postgres.Spec.Streaming != "" {
+
+	if postgres.Spec.StreamingMode != nil {
+		streamingMode := *postgres.Spec.StreamingMode
 		// TODO: synchronous Streaming is unavailable due to lack of support
-		if /*strings.ToLower(configuration.Streaming) != "synchronous" &&
-		 */strings.ToLower(string(postgres.Spec.Streaming)) != "asynchronous" {
-			return fmt.Errorf(`configuration.Streaming "%v" invalid`, postgres.Spec.Streaming)
+		if streamingMode != api.AsynchronousStreaming {
+			return fmt.Errorf(`spec.streamingMode "%s" invalid`, streamingMode)
 		}
 	}
 

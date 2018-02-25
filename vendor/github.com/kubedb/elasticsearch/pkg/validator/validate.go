@@ -3,6 +3,7 @@ package validator
 import (
 	"fmt"
 
+	"github.com/appscode/go/types"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
 	"github.com/pkg/errors"
@@ -35,6 +36,34 @@ func ValidateElasticsearch(client kubernetes.Interface, elasticsearch *api.Elast
 		}
 		if topology.Master.Prefix == topology.Data.Prefix {
 			return errors.New("master & data node should not have same prefix")
+		}
+
+		if topology.Client.Replicas != nil {
+			replicas := topology.Client.Replicas
+			if types.Int32(replicas) < 1 {
+				return fmt.Errorf(`topology.client.replicas "%d" invalid. Must be greater than zero`, replicas)
+			}
+		}
+
+		if topology.Master.Replicas != nil {
+			replicas := topology.Master.Replicas
+			if types.Int32(replicas) < 1 {
+				return fmt.Errorf(`topology.master.replicas "%d" invalid. Must be greater than zero`, replicas)
+			}
+		}
+
+		if topology.Data.Replicas != nil {
+			replicas := topology.Data.Replicas
+			if types.Int32(replicas) < 1 {
+				return fmt.Errorf(`topology.data.replicas "%d" invalid. Must be greater than zero`, replicas)
+			}
+		}
+	} else {
+		if elasticsearch.Spec.Replicas != nil {
+			replicas := types.Int32(elasticsearch.Spec.Replicas)
+			if replicas < 1 {
+				return fmt.Errorf(`spec.replicas "%d" invalid. Must be greater than zero`, replicas)
+			}
 		}
 	}
 

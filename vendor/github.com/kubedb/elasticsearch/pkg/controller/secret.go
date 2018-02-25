@@ -131,8 +131,7 @@ func (c *Controller) createCertSecret(elasticsearch *api.Elasticsearch) (*core.S
 	}
 
 	if elasticsearch.Spec.EnableSSL {
-		clientKey, clientCert, err := createClientCertificate(certPath, caKey, caCert, pass)
-		if err != nil {
+		if err := createClientCertificate(certPath, elasticsearch, caKey, caCert, pass); err != nil {
 			return nil, err
 		}
 
@@ -141,10 +140,8 @@ func (c *Controller) createCertSecret(elasticsearch *api.Elasticsearch) (*core.S
 			return nil, err
 		}
 
-		data["ca.pem"] = cert.EncodeCertPEM(caCert)
+		data["root.pem"] = cert.EncodeCertPEM(caCert)
 		data["client.jks"] = client
-		data["client.pem"] = cert.EncodeCertPEM(clientCert)
-		data["client-key.pem"] = cert.EncodePrivateKeyPEM(clientKey)
 	}
 
 	name := fmt.Sprintf("%v-cert", elasticsearch.OffshootName())

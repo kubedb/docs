@@ -234,7 +234,7 @@ func (c *Controller) matchDormantDatabase(mysql *api.MySQL) error {
 	// Skip checking doNotPause
 	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
 
-	if !meta_util.Equal(drmnOriginSpec, originalSpec) {
+	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
 		return sendEvent("MySQL spec mismatches with OriginSpec in DormantDatabases")
 	}
 

@@ -31,11 +31,11 @@ type PostgresSpec struct {
 	// Version of Postgres to be deployed.
 	Version types.StrYo `json:"version,omitempty"`
 	// Number of instances to deploy for a Postgres database.
-	Replicas int32 `json:"replicas,omitempty"`
+	Replicas *int32 `json:"replicas,omitempty"`
 	// Standby mode
-	Standby StandbyMode `json:"standby,omitempty"`
+	StandbyMode *StandbyMode `json:"standbyMode,omitempty"`
 	// Streaming mode
-	Streaming StreamingMode `json:"streaming,omitempty"`
+	StreamingMode *StreamingMode `json:"streamingMode,omitempty"`
 	// Archive for wal files
 	Archiver *PostgresArchiverSpec `json:"archiver,omitempty"`
 	// Database authentication secret
