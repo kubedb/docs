@@ -21,7 +21,7 @@ import (
 )
 
 func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
-	if err := validator.ValidateElasticsearch(c.Client, elasticsearch); err != nil {
+	if err := validator.ValidateElasticsearch(c.Client, c.ExtClient, elasticsearch); err != nil {
 		c.recorder.Event(
 			elasticsearch.ObjectReference(),
 			core.EventTypeWarning,
@@ -202,46 +202,6 @@ func (c *Controller) matchDormantDatabase(elasticsearch *api.Elasticsearch) erro
 			return err
 		}
 		return nil
-	}
-
-	var sendEvent = func(message string, args ...interface{}) error {
-		c.recorder.Eventf(
-			elasticsearch.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			message,
-			args,
-		)
-		return fmt.Errorf(message, args)
-	}
-
-	// Check DatabaseKind
-	if dormantDb.Labels[api.LabelDatabaseKind] != api.ResourceKindElasticsearch {
-		return sendEvent(fmt.Sprintf(`Invalid Elasticsearch: "%v". Exists DormantDatabase "%v" of different Kind`,
-			elasticsearch.Name, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Elasticsearch
-	originalSpec := elasticsearch.Spec
-
-	if originalSpec.DatabaseSecret == nil {
-		originalSpec.DatabaseSecret = &core.SecretVolumeSource{
-			SecretName: elasticsearch.Name + "-auth",
-		}
-	}
-
-	if originalSpec.CertificateSecret == nil {
-		originalSpec.CertificateSecret = &core.SecretVolumeSource{
-			SecretName: elasticsearch.Name + "-cert",
-		}
-	}
-
-	// Skip checking doNotPause
-	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
-
-	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
-		return sendEvent("Elasticsearch spec mismatches with OriginSpec in DormantDatabases")
 	}
 
 	if _, err := meta_util.GetString(elasticsearch.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&

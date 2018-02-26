@@ -20,7 +20,7 @@ import (
 )
 
 func (c *Controller) create(mongodb *api.MongoDB) error {
-	if err := validator.ValidateMongoDB(c.Client, mongodb); err != nil {
+	if err := validator.ValidateMongoDB(c.Client, c.ExtClient, mongodb); err != nil {
 		c.recorder.Event(
 			mongodb.ObjectReference(),
 			core.EventTypeWarning,
@@ -203,40 +203,6 @@ func (c *Controller) matchDormantDatabase(mongodb *api.MongoDB) error {
 			return err
 		}
 		return nil
-	}
-
-	var sendEvent = func(message string, args ...interface{}) error {
-		c.recorder.Eventf(
-			mongodb.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			message,
-			args,
-		)
-		return fmt.Errorf(message, args)
-	}
-
-	// Check DatabaseKind
-	if dormantDb.Labels[api.LabelDatabaseKind] != api.ResourceKindMongoDB {
-		return sendEvent(fmt.Sprintf(`Invalid MongoDB: "%v". Exists DormantDatabase "%v" of different Kind`,
-			mongodb.Name, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	drmnOriginSpec := dormantDb.Spec.Origin.Spec.MongoDB
-	originalSpec := mongodb.Spec
-
-	if originalSpec.DatabaseSecret == nil {
-		originalSpec.DatabaseSecret = &core.SecretVolumeSource{
-			SecretName: mongodb.Name + "-auth",
-		}
-	}
-
-	// Skip checking doNotPause
-	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
-
-	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
-		return sendEvent("MongoDB spec mismatches with OriginSpec in DormantDatabases")
 	}
 
 	if _, err := meta_util.GetString(mongodb.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&

@@ -246,7 +246,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []cor
 		},
 		{
 			Name:  "PRIMARY_HOST",
-			Value: postgres.PrimaryName(),
+			Value: postgres.ServiceName(),
 		},
 		{
 			Name: KeyPostgresPassword,

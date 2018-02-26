@@ -51,12 +51,12 @@ func (c *Controller) ensureService(postgres *api.Postgres) (kutil.VerbType, erro
 	}
 
 	// Check if service name exists
-	err = c.checkService(postgres, postgres.PrimaryName())
+	err = c.checkService(postgres, postgres.ReplicasServiceName())
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 	// create database Service
-	vt2, err := c.createPrimaryService(postgres)
+	vt2, err := c.createReplicasService(postgres)
 	if err != nil {
 		c.recorder.Eventf(
 			postgres.ObjectReference(),
@@ -112,7 +112,7 @@ func (c *Controller) createService(postgres *api.Postgres) (kutil.VerbType, erro
 		in.Labels = postgres.OffshootLabels()
 		in.Spec.Selector = postgres.OffshootLabels()
 		in.Spec.Ports = upsertServicePort(in, postgres)
-
+		in.Spec.Selector[NodeRole] = "primary"
 		return in
 	})
 	return ok, err
@@ -137,9 +137,9 @@ func upsertServicePort(service *core.Service, postgres *api.Postgres) []core.Ser
 	return core_util.MergeServicePorts(service.Spec.Ports, desiredPorts)
 }
 
-func (c *Controller) createPrimaryService(postgres *api.Postgres) (kutil.VerbType, error) {
+func (c *Controller) createReplicasService(postgres *api.Postgres) (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
-		Name:      postgres.PrimaryName(),
+		Name:      postgres.ReplicasServiceName(),
 		Namespace: postgres.Namespace,
 	}
 
@@ -147,7 +147,6 @@ func (c *Controller) createPrimaryService(postgres *api.Postgres) (kutil.VerbTyp
 		in.Labels = postgres.OffshootLabels()
 		in.Spec.Selector = postgres.OffshootLabels()
 		in.Spec.Ports = upsertServicePort(in, postgres)
-		in.Spec.Selector[NodeRole] = "primary"
 		return in
 	})
 	return ok, err

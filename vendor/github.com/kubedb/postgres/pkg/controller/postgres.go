@@ -20,7 +20,7 @@ import (
 )
 
 func (c *Controller) create(postgres *api.Postgres) error {
-	if err := validator.ValidatePostgres(c.Client, postgres); err != nil {
+	if err := validator.ValidatePostgres(c.Client, c.ExtClient, postgres); err != nil {
 		c.recorder.Event(
 			postgres.ObjectReference(),
 			core.EventTypeWarning,
@@ -201,40 +201,6 @@ func (c *Controller) matchDormantDatabase(postgres *api.Postgres) error {
 			return err
 		}
 		return nil
-	}
-
-	var sendEvent = func(message string, args ...interface{}) error {
-		c.recorder.Eventf(
-			postgres.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			message,
-			args,
-		)
-		return fmt.Errorf(message, args)
-	}
-
-	// Check DatabaseKind
-	if dormantDb.Labels[api.LabelDatabaseKind] != api.ResourceKindPostgres {
-		return sendEvent(fmt.Sprintf(`Invalid Postgres: "%v". Exists DormantDatabase "%v" of different Kind`,
-			postgres.Name, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Postgres
-	originalSpec := postgres.Spec
-
-	if originalSpec.DatabaseSecret == nil {
-		originalSpec.DatabaseSecret = &core.SecretVolumeSource{
-			SecretName: postgres.OffshootName() + "-auth",
-		}
-	}
-
-	// Skip checking doNotPause
-	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
-
-	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
-		return sendEvent("Postgres spec mismatches with OriginSpec in DormantDatabases")
 	}
 
 	if _, err := meta_util.GetString(postgres.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&

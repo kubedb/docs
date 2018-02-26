@@ -20,7 +20,7 @@ import (
 )
 
 func (c *Controller) create(mysql *api.MySQL) error {
-	if err := validator.ValidateMySQL(c.Client, mysql); err != nil {
+	if err := validator.ValidateMySQL(c.Client, c.ExtClient, mysql); err != nil {
 		c.recorder.Event(
 			mysql.ObjectReference(),
 			core.EventTypeWarning,
@@ -202,40 +202,6 @@ func (c *Controller) matchDormantDatabase(mysql *api.MySQL) error {
 			return err
 		}
 		return nil
-	}
-
-	var sendEvent = func(message string, args ...interface{}) error {
-		c.recorder.Eventf(
-			mysql.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			message,
-			args,
-		)
-		return fmt.Errorf(message, args)
-	}
-
-	// Check DatabaseKind
-	if dormantDb.Labels[api.LabelDatabaseKind] != api.ResourceKindMySQL {
-		return sendEvent(fmt.Sprintf(`Invalid MySQL: "%v". Exists DormantDatabase "%v" of different Kind`,
-			mysql.Name, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	drmnOriginSpec := dormantDb.Spec.Origin.Spec.MySQL
-	originalSpec := mysql.Spec
-
-	if originalSpec.DatabaseSecret == nil {
-		originalSpec.DatabaseSecret = &core.SecretVolumeSource{
-			SecretName: mysql.Name + "-auth",
-		}
-	}
-
-	// Skip checking doNotPause
-	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
-
-	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
-		return sendEvent("MySQL spec mismatches with OriginSpec in DormantDatabases")
 	}
 
 	if _, err := meta_util.GetString(mysql.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&

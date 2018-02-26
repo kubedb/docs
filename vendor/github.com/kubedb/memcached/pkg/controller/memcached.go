@@ -1,12 +1,9 @@
 package controller
 
 import (
-	"fmt"
-
 	"github.com/appscode/go/log"
 	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
-	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -17,7 +14,7 @@ import (
 )
 
 func (c *Controller) create(memcached *api.Memcached) error {
-	if err := validator.ValidateMemcached(c.Client, memcached); err != nil {
+	if err := validator.ValidateMemcached(c.Client, c.ExtClient, memcached); err != nil {
 		c.recorder.Event(
 			memcached.ObjectReference(),
 			core.EventTypeWarning,
@@ -51,23 +48,6 @@ func (c *Controller) create(memcached *api.Memcached) error {
 	// Assign Default Monitoring Port
 	if err := c.setMonitoringPort(memcached); err != nil {
 		return err
-	}
-	// set replica to at least 1
-	if memcached.Spec.Replicas < 1 {
-		mc, _, err := util.PatchMemcached(c.ExtClient, memcached, func(in *api.Memcached) *api.Memcached {
-			in.Spec.Replicas = 1
-			return in
-		})
-		if err != nil {
-			c.recorder.Eventf(
-				memcached.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-			return err
-		}
-		memcached.Spec = mc.Spec
 	}
 
 	// Check DormantDatabase
@@ -162,33 +142,6 @@ func (c *Controller) matchDormantDatabase(memcached *api.Memcached) error {
 			return err
 		}
 		return nil
-	}
-
-	var sendEvent = func(message string, args ...interface{}) error {
-		c.recorder.Eventf(
-			memcached.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			message,
-			args,
-		)
-		return fmt.Errorf(message, args)
-	}
-
-	// Check DatabaseKind
-	if dormantDb.Labels[api.LabelDatabaseKind] != api.ResourceKindMemcached {
-		return sendEvent(fmt.Sprintf(`Invalid Memcached: "%v". Exists DormantDatabase "%v" of different Kind`, memcached.Name, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Memcached
-	originalSpec := memcached.Spec
-
-	// Skip checking doNotPause
-	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
-
-	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
-		return sendEvent("Memcached spec mismatches with OriginSpec in DormantDatabases")
 	}
 
 	return util.DeleteDormantDatabase(c.ExtClient, dormantDb.ObjectMeta)

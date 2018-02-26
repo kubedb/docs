@@ -1,5 +1,5 @@
 hash: acccbe7586010adccbf3092a233a1a7e43bad2bf39c02a2080e6d37e099d8a7f
-updated: 2018-02-24T16:30:52.729633922-08:00
+updated: 2018-02-26T01:52:42.368950357-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -253,7 +253,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 8a7e329dba5f46d6162eeb9ffd525308a7caa20c
+  version: 37caef566d41ed47313b44975186c335dde08123
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -268,32 +268,32 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: db0aedbc9f6ff21dc35588183ae3536fece59158
+  version: 6a5e3a0a5b35788c5bf499c5f199c3a87bb6e678
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/memcached
-  version: 4138e6bd0d30b6e20a98d20ec94b45ea2456c0e1
+  version: 3f14a34ec5d89da05c90fabccab3bbfb4e3a7b1e
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mongodb
-  version: 4643f00921817edc4e33fd55f0e9a70fe4d3bc8b
+  version: 9ac4d6d3c43e60c99f45aba8ae5d47fa29e3a019
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mysql
-  version: dd023c50751868540af1f551253de5f4a00a47b8
+  version: 5ee1ac8cd219a6ad9de27c7fd853e3ef88e2e0f9
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/postgres
-  version: 223d5abd64f5d44983089411c1a26bfdc25e97c9
+  version: 4f0d831f8bcdadec688f19ccfc52e4c1a6f79002
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -301,7 +301,7 @@ imports:
   - pkg/leader_election
   - pkg/validator
 - name: github.com/kubedb/redis
-  version: 039319ad8805831a7ce8c2586b850b2ea8a61faf
+  version: 04c06279382ffdef80cbe56ad89fb3561c9a3bea
   subpackages:
   - pkg/controller
   - pkg/docker
@@ -369,7 +369,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 090e7e09598d1ce5ec9d73e44cce7bf2db8dc7e2
+  version: 7af69ad988d1d458030e221448d2c12ed31421bc
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
