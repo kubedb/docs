@@ -1,12 +1,9 @@
 package controller
 
 import (
-	"fmt"
-
 	"github.com/appscode/go/log"
 	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
-	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -17,7 +14,7 @@ import (
 )
 
 func (c *Controller) create(redis *api.Redis) error {
-	if err := validator.ValidateRedis(c.Client, redis); err != nil {
+	if err := validator.ValidateRedis(c.Client, c.ExtClient, redis); err != nil {
 		log.Errorln(err)
 		c.recorder.Event(
 			redis.ObjectReference(),
@@ -159,33 +156,6 @@ func (c *Controller) matchDormantDatabase(redis *api.Redis) error {
 			return err
 		}
 		return nil
-	}
-
-	var sendEvent = func(message string, args ...interface{}) error {
-		c.recorder.Eventf(
-			redis.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			message,
-			args,
-		)
-		return fmt.Errorf(message, args)
-	}
-
-	// Check DatabaseKind
-	if dormantDb.Labels[api.LabelDatabaseKind] != api.ResourceKindRedis {
-		return sendEvent(fmt.Sprintf(`Invalid Redis: "%v". Exists DormantDatabase "%v" of different Kind`, redis.Name, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Redis
-	originalSpec := redis.Spec
-
-	// Skip checking doNotPause
-	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
-
-	if !meta_util.Equal(drmnOriginSpec, originalSpec) {
-		return sendEvent("Redis spec mismatches with OriginSpec in DormantDatabases")
 	}
 
 	return util.DeleteDormantDatabase(c.ExtClient, dormantDb.ObjectMeta)

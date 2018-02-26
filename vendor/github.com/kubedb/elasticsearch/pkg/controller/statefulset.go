@@ -35,10 +35,6 @@ func (c *Controller) ensureStatefulSet(
 		Namespace: elasticsearch.Namespace,
 	}
 
-	if replicas <= 0 {
-		replicas = 1
-	}
-
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in = upsertObjectMeta(in, labels, elasticsearch.StatefulSetAnnotations())
 
@@ -141,7 +137,12 @@ func (c *Controller) ensureClientNode(elasticsearch *api.Elasticsearch) (kutil.V
 		},
 	}
 
-	return c.ensureStatefulSet(elasticsearch, statefulSetName, labels, clientNode.Replicas, envList, true)
+	replicas := int32(1)
+	if clientNode.Replicas != nil {
+		replicas = types.Int32(clientNode.Replicas)
+	}
+
+	return c.ensureStatefulSet(elasticsearch, statefulSetName, labels, replicas, envList, true)
 }
 
 func (c *Controller) ensureMasterNode(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
@@ -155,9 +156,9 @@ func (c *Controller) ensureMasterNode(elasticsearch *api.Elasticsearch) (kutil.V
 	labels := elasticsearch.StatefulSetLabels()
 	labels[NodeRoleMaster] = "set"
 
-	replicas := masterNode.Replicas
-	if replicas <= 0 {
-		replicas = 1
+	replicas := int32(1)
+	if masterNode.Replicas != nil {
+		replicas = types.Int32(masterNode.Replicas)
 	}
 
 	envList := []core.EnvVar{
@@ -179,7 +180,7 @@ func (c *Controller) ensureMasterNode(elasticsearch *api.Elasticsearch) (kutil.V
 		},
 	}
 
-	return c.ensureStatefulSet(elasticsearch, statefulSetName, labels, masterNode.Replicas, envList, false)
+	return c.ensureStatefulSet(elasticsearch, statefulSetName, labels, replicas, envList, false)
 }
 
 func (c *Controller) ensureDataNode(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
@@ -208,7 +209,12 @@ func (c *Controller) ensureDataNode(elasticsearch *api.Elasticsearch) (kutil.Ver
 		},
 	}
 
-	return c.ensureStatefulSet(elasticsearch, statefulSetName, labels, dataNode.Replicas, envList, false)
+	replicas := int32(1)
+	if dataNode.Replicas != nil {
+		replicas = types.Int32(dataNode.Replicas)
+	}
+
+	return c.ensureStatefulSet(elasticsearch, statefulSetName, labels, replicas, envList, false)
 }
 
 func (c *Controller) ensureCombinedNode(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
@@ -218,9 +224,9 @@ func (c *Controller) ensureCombinedNode(elasticsearch *api.Elasticsearch) (kutil
 	labels[NodeRoleMaster] = "set"
 	labels[NodeRoleData] = "set"
 
-	replicas := elasticsearch.Spec.Replicas
-	if replicas <= 0 {
-		replicas = 1
+	replicas := int32(1)
+	if elasticsearch.Spec.Replicas != nil {
+		replicas = types.Int32(elasticsearch.Spec.Replicas)
 	}
 
 	envList := []core.EnvVar{

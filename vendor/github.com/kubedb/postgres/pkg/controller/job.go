@@ -68,7 +68,7 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 							ImagePullPolicy: core.PullIfNotPresent,
 							Args: []string{
 								snapshotProcessRestore,
-								fmt.Sprintf(`--host=%s`, postgres.PrimaryName()),
+								fmt.Sprintf(`--host=%s`, postgres.ServiceName()),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
@@ -193,7 +193,7 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 							Image: c.opt.Docker.GetToolsImageWithTag(postgres),
 							Args: []string{
 								snapshotProcessBackup,
-								fmt.Sprintf(`--host=%s`, postgres.PrimaryName()),
+								fmt.Sprintf(`--host=%s`, postgres.ServiceName()),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),

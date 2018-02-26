@@ -25,9 +25,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	plog "github.com/prometheus/common/log"
-	memEx "github.com/prometheus/memcached_exporter/exporter"
+	memEx "github.com/prometheus/memcached_exporter/collector"
 	mse "github.com/prometheus/mysqld_exporter/collector"
-	pge "github.com/wrouesnel/postgres_exporter/exporter"
+	pge "github.com/wrouesnel/postgres_exporter/collector"
 )
 
 const (

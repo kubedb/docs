@@ -29,11 +29,11 @@ func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
 		},
 	}
 	// Delete Service
-	if err := c.deleteService(postgres.OffshootName(), dormantDb.Namespace); err != nil {
+	if err := c.deleteService(postgres.ServiceName(), dormantDb.Namespace); err != nil {
 		log.Errorln(err)
 		return err
 	}
-	if err := c.deleteService(postgres.PrimaryName(), dormantDb.Namespace); err != nil {
+	if err := c.deleteService(postgres.ReplicasServiceName(), dormantDb.Namespace); err != nil {
 		log.Errorln(err)
 		return err
 	}

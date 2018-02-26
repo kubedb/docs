@@ -31,7 +31,7 @@ type MemcachedSpec struct {
 	// Version of Memcached to be deployed.
 	Version types.StrYo `json:"version,omitempty"`
 	// Number of instances to deploy for a Memcached database.
-	Replicas int32 `json:"replicas,omitempty"`
+	Replicas *int32 `json:"replicas,omitempty"`
 	// NodeSelector is a selector which must be true for the pod to fit on a node
 	// +optional
 	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
