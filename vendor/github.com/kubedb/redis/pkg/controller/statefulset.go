@@ -7,12 +7,12 @@ import (
 	"github.com/appscode/go/types"
 	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
-	app_util "github.com/appscode/kutil/apps/v1beta1"
+	app_util "github.com/appscode/kutil/apps/v1"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
-	apps "k8s.io/api/apps/v1beta1"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,11 +33,12 @@ func (c *Controller) ensureStatefulSet(redis *api.Redis) (kutil.VerbType, error)
 		in.Annotations = core_util.UpsertMap(in.Annotations, redis.StatefulSetAnnotations())
 
 		in.Spec.Replicas = types.Int32P(1)
-		in.Spec.Template = core.PodTemplateSpec{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels: in.ObjectMeta.Labels,
-			},
+
+		in.Spec.Selector = &metav1.LabelSelector{
+			MatchLabels: in.Labels,
 		}
+
+		in.Spec.Template.Labels = in.Labels
 
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 			Name:            api.ResourceNameRedis,
@@ -129,7 +130,7 @@ func (c *Controller) ensureStatefulSet(redis *api.Redis) (kutil.VerbType, error)
 
 func (c *Controller) checkStatefulSet(redis *api.Redis) error {
 	// SatatefulSet for Redis database
-	statefulSet, err := c.Client.AppsV1beta1().StatefulSets(redis.Namespace).Get(redis.OffshootName(), metav1.GetOptions{})
+	statefulSet, err := c.Client.AppsV1().StatefulSets(redis.Namespace).Get(redis.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil

@@ -6,12 +6,12 @@ import (
 	"github.com/appscode/go/types"
 	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
-	app_util "github.com/appscode/kutil/apps/v1beta1"
+	app_util "github.com/appscode/kutil/apps/v1"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
-	apps "k8s.io/api/apps/v1beta1"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,10 +37,9 @@ func (c *Controller) ensureDeployment(memcached *api.Memcached) (kutil.VerbType,
 		in.Annotations = core_util.UpsertMap(in.Annotations, memcached.DeploymentAnnotations())
 
 		in.Spec.Replicas = types.Int32P(replicas)
-		in.Spec.Template = core.PodTemplateSpec{
-			ObjectMeta: metav1.ObjectMeta{
-				Labels: in.ObjectMeta.Labels,
-			},
+		in.Spec.Template.Labels = in.Labels
+		in.Spec.Selector = &metav1.LabelSelector{
+			MatchLabels: in.Labels,
 		}
 
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
@@ -128,7 +127,7 @@ func (c *Controller) ensureDeployment(memcached *api.Memcached) (kutil.VerbType,
 func (c *Controller) checkDeployment(memcached *api.Memcached) error {
 	// Deployment for Memcached database
 	dbName := memcached.OffshootName()
-	deployment, err := c.Client.AppsV1beta1().Deployments(memcached.Namespace).Get(dbName, metav1.GetOptions{})
+	deployment, err := c.Client.AppsV1().Deployments(memcached.Namespace).Get(dbName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil

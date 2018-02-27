@@ -97,7 +97,7 @@ func RunLeaderElection() {
 					os.Exit(1)
 				},
 				OnNewLeader: func(identity string) {
-					statefulSet, err := kubeClient.AppsV1beta1().StatefulSets(namespace).Get(statefulSetName, metav1.GetOptions{})
+					statefulSet, err := kubeClient.AppsV1().StatefulSets(namespace).Get(statefulSetName, metav1.GetOptions{})
 					if err != nil {
 						log.Fatalln(err)
 					}
