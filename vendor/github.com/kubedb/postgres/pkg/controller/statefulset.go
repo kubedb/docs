@@ -8,12 +8,12 @@ import (
 	"github.com/appscode/go/types"
 	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
-	app_util "github.com/appscode/kutil/apps/v1beta1"
+	app_util "github.com/appscode/kutil/apps/v1"
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
-	apps "k8s.io/api/apps/v1beta1"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,6 +42,11 @@ func (c *Controller) ensureStatefulSet(
 		in = upsertObjectMeta(in, postgres)
 
 		in.Spec.Replicas = types.Int32P(replicas)
+
+		in.Spec.Selector = &metav1.LabelSelector{
+			MatchLabels: in.Labels,
+		}
+
 		in.Spec.ServiceName = c.opt.GoverningService
 		in.Spec.Template.Labels = in.Labels
 
@@ -194,7 +199,7 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres) (kutil.VerbType,
 func (c *Controller) checkStatefulSet(postgres *api.Postgres) error {
 	name := postgres.OffshootName()
 	// SatatefulSet for Postgres database
-	statefulSet, err := c.Client.AppsV1beta1().StatefulSets(postgres.Namespace).Get(name, metav1.GetOptions{})
+	statefulSet, err := c.Client.AppsV1().StatefulSets(postgres.Namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil

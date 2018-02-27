@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/appscode/go/log"
-	apps_util "github.com/appscode/kutil/apps/v1beta1"
+	apps_util "github.com/appscode/kutil/apps/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

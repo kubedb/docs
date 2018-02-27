@@ -1,9 +1,9 @@
-package v1beta1
+package v1
 
 import (
 	"github.com/appscode/kutil/meta"
 	"github.com/pkg/errors"
-	apps "k8s.io/api/apps/v1beta1"
+	apps "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -24,6 +24,14 @@ func AssignTypeKind(v interface{}) error {
 		u.Kind = meta.GetKind(v)
 		return nil
 	case *apps.Deployment:
+		u.APIVersion = apps.SchemeGroupVersion.String()
+		u.Kind = meta.GetKind(v)
+		return nil
+	case *apps.DaemonSet:
+		u.APIVersion = apps.SchemeGroupVersion.String()
+		u.Kind = meta.GetKind(v)
+		return nil
+	case *apps.ReplicaSet:
 		u.APIVersion = apps.SchemeGroupVersion.String()
 		u.Kind = meta.GetKind(v)
 		return nil

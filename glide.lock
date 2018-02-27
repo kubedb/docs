@@ -1,5 +1,5 @@
 hash: acccbe7586010adccbf3092a233a1a7e43bad2bf39c02a2080e6d37e099d8a7f
-updated: 2018-02-26T01:52:42.368950357-08:00
+updated: 2018-02-27T01:22:46.878378675-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -38,10 +38,10 @@ imports:
   - agents/prometheusbuiltin
   - api
 - name: github.com/appscode/kutil
-  version: 20ffc2be6a1d88387bc6f6babe7bfe312c58b509
+  version: 6a5c108367b50c78b783e51490f015d03ce62259
   subpackages:
   - apiextensions/v1beta1
-  - apps/v1beta1
+  - apps/v1
   - core/v1
   - meta
   - rbac/v1beta1
@@ -268,32 +268,32 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 6a5e3a0a5b35788c5bf499c5f199c3a87bb6e678
+  version: 8e34461920f8ef8117dabfcdd05250403f25f6a8
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/memcached
-  version: 3f14a34ec5d89da05c90fabccab3bbfb4e3a7b1e
+  version: 2bab26a440f2ce68a3896b5fb583439bbe99ad40
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mongodb
-  version: 9ac4d6d3c43e60c99f45aba8ae5d47fa29e3a019
+  version: c14279b8947406bce9ce3501ffb243156a3c685f
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mysql
-  version: 5ee1ac8cd219a6ad9de27c7fd853e3ef88e2e0f9
+  version: 4d46d95d2a517408b3a0dffc9ae91be283623d94
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/postgres
-  version: 4f0d831f8bcdadec688f19ccfc52e4c1a6f79002
+  version: 8f7dc0db67d4e0206d1763741eb7fd03a41d6f64
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -301,7 +301,7 @@ imports:
   - pkg/leader_election
   - pkg/validator
 - name: github.com/kubedb/redis
-  version: 04c06279382ffdef80cbe56ad89fb3561c9a3bea
+  version: 5000d64623e13444f291be71b6b02194c4de4f41
   subpackages:
   - pkg/controller
   - pkg/docker
@@ -369,7 +369,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 7af69ad988d1d458030e221448d2c12ed31421bc
+  version: 0f00d776612837f7841c559542bcf329df0ba977
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -497,7 +497,7 @@ imports:
   repo: https://github.com/appscode/cron.git
   vcs: git
 - name: gopkg.in/yaml.v2
-  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
+  version: 7f97868eec74b32b0982dd158a51a446d1da7eb5
 - name: k8s.io/api
   version: af4bc157c3a209798fc897f6d4aaaaeb6c2e0d6a
   subpackages:
