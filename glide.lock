@@ -1,5 +1,5 @@
-hash: acccbe7586010adccbf3092a233a1a7e43bad2bf39c02a2080e6d37e099d8a7f
-updated: 2018-02-27T01:22:46.878378675-08:00
+hash: b5f18f585104b9b3ac3ffae658580267a2d5c0df560f13ab8f305b8dc6aeb324
+updated: 2018-02-27T04:42:31.394521239-08:00
 imports:
 - name: cloud.google.com/go
   version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
@@ -268,32 +268,32 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 8e34461920f8ef8117dabfcdd05250403f25f6a8
+  version: 1e48793e3f8d1eab09e0c97f82e8f8915e270b66
   subpackages:
   - pkg/audit/report
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/memcached
-  version: 2bab26a440f2ce68a3896b5fb583439bbe99ad40
+  version: 621878fe25b355bcd47428528e99170ed760b0b9
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mongodb
-  version: c14279b8947406bce9ce3501ffb243156a3c685f
+  version: 558e60d7073eddb2ce9db7dfc6ce671bc25ae63b
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/mysql
-  version: 4d46d95d2a517408b3a0dffc9ae91be283623d94
+  version: b4b749dff97bd2ed8a91ae418be86e1bb1f03bbd
   subpackages:
   - pkg/controller
   - pkg/docker
   - pkg/validator
 - name: github.com/kubedb/postgres
-  version: 8f7dc0db67d4e0206d1763741eb7fd03a41d6f64
+  version: bcd8dc144ed7f0d306ce3e31248a604d803286f9
   subpackages:
   - pkg/audit/report
   - pkg/controller
@@ -301,7 +301,7 @@ imports:
   - pkg/leader_election
   - pkg/validator
 - name: github.com/kubedb/redis
-  version: 5000d64623e13444f291be71b6b02194c4de4f41
+  version: 587883208079c25b2eb61ea091d30317d9ae54d3
   subpackages:
   - pkg/controller
   - pkg/docker
@@ -369,7 +369,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 0f00d776612837f7841c559542bcf329df0ba977
+  version: 6b0e9ef183fddf5b27b4ea4d2052153a6bdf0660
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -497,7 +497,7 @@ imports:
   repo: https://github.com/appscode/cron.git
   vcs: git
 - name: gopkg.in/yaml.v2
-  version: 7f97868eec74b32b0982dd158a51a446d1da7eb5
+  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/api
   version: af4bc157c3a209798fc897f6d4aaaaeb6c2e0d6a
   subpackages:
