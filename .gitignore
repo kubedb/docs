@@ -26,3 +26,4 @@ dist/
 *.pyc
 *.DS_Store
 .vscode/
+coverage.txt
