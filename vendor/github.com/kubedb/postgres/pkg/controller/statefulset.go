@@ -17,6 +17,8 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/reference"
 )
 
 func (c *Controller) ensureStatefulSet(
@@ -33,12 +35,19 @@ func (c *Controller) ensureStatefulSet(
 		Namespace: postgres.Namespace,
 	}
 
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres)
+	if rerr != nil {
+		return kutil.VerbUnchanged, rerr
+	}
+
 	replicas := int32(1)
 	if postgres.Spec.Replicas != nil {
 		replicas = types.Int32(postgres.Spec.Replicas)
 	}
 
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
+		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+
 		in = upsertObjectMeta(in, postgres)
 
 		in.Spec.Replicas = types.Int32P(replicas)
@@ -47,7 +56,7 @@ func (c *Controller) ensureStatefulSet(
 			MatchLabels: in.Labels,
 		}
 
-		in.Spec.ServiceName = c.opt.GoverningService
+		in.Spec.ServiceName = c.GoverningService
 		in.Spec.Template.Labels = in.Labels
 
 		in = c.upsertContainer(in, postgres)
@@ -83,7 +92,7 @@ func (c *Controller) ensureStatefulSet(
 
 		in = upsertDataVolume(in, postgres)
 
-		if c.opt.EnableRbac {
+		if c.EnableRBAC {
 			in.Spec.Template.Spec.ServiceAccountName = postgres.OffshootName()
 		}
 
@@ -99,24 +108,28 @@ func (c *Controller) ensureStatefulSet(
 	if vt == kutil.VerbCreated || vt == kutil.VerbPatched {
 		// Check StatefulSet Pod status
 		if err := c.CheckStatefulSetPodStatus(statefulSet); err != nil {
-			c.recorder.Eventf(
-				postgres.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToStart,
-				`Failed to be running after StatefulSet %v. Reason: %v`,
-				vt,
-				err,
-			)
+			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
+				c.recorder.Eventf(
+					ref,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToStart,
+					`Failed to be running after StatefulSet %v. Reason: %v`,
+					vt,
+					err,
+				)
+			}
 			return kutil.VerbUnchanged, err
 		}
 
-		c.recorder.Eventf(
-			postgres.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully %v StatefulSet",
-			vt,
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully %v StatefulSet",
+				vt,
+			)
+		}
 	}
 	return vt, nil
 }
@@ -224,8 +237,8 @@ func upsertObjectMeta(statefulSet *apps.StatefulSet, postgres *api.Postgres) *ap
 
 func (c *Controller) upsertContainer(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
 	container := core.Container{
-		Name:  api.ResourceNamePostgres,
-		Image: c.opt.Docker.GetImageWithTag(postgres),
+		Name:  api.ResourceSingularPostgres,
+		Image: c.docker.GetImageWithTag(postgres),
 		SecurityContext: &core.SecurityContext{
 			Privileged: types.BoolP(false),
 			Capabilities: &core.Capabilities{
@@ -270,7 +283,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []cor
 
 	// To do this, Upsert Container first
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceNamePostgres {
+		if container.Name == api.ResourceSingularPostgres {
 			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
 			return statefulSet
 		}
@@ -292,7 +305,7 @@ func upsertPort(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 	}
 
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceNamePostgres {
+		if container.Name == api.ResourceSingularPostgres {
 			statefulSet.Spec.Template.Spec.Containers[i].Ports = getPorts()
 			return statefulSet
 		}
@@ -309,9 +322,9 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 				"export",
 				fmt.Sprintf("--address=:%d", api.PrometheusExporterPortNumber),
 				"--v=3",
-				fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
-			}, c.opt.LoggerOptions.ToFlags()...),
-			Image:           c.opt.Docker.GetOperatorImageWithTag(postgres),
+				fmt.Sprintf("--enable-analytics=%v", c.EnableAnalytics),
+			}, c.LoggerOptions.ToFlags()...),
+			Image:           c.docker.GetOperatorImageWithTag(postgres),
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
 				{
@@ -348,7 +361,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 
 func upsertArchiveSecret(statefulSet *apps.StatefulSet, secretName string) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceNamePostgres {
+		if container.Name == api.ResourceSingularPostgres {
 			volumeMount := core.VolumeMount{
 				Name:      "wal-g-archive",
 				MountPath: "/srv/wal-g/archive/secrets",
@@ -376,7 +389,7 @@ func upsertArchiveSecret(statefulSet *apps.StatefulSet, secretName string) *apps
 
 func upsertInitWalSecret(statefulSet *apps.StatefulSet, secretName string) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceNamePostgres {
+		if container.Name == api.ResourceSingularPostgres {
 			volumeMount := core.VolumeMount{
 				Name:      "wal-g-restore",
 				MountPath: "/srv/wal-g/restore/secrets",
@@ -404,7 +417,7 @@ func upsertInitWalSecret(statefulSet *apps.StatefulSet, secretName string) *apps
 
 func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceNamePostgres {
+		if container.Name == api.ResourceSingularPostgres {
 			volumeMount := core.VolumeMount{
 				Name:      "initial-script",
 				MountPath: "/var/initdb",
@@ -428,7 +441,7 @@ func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *
 
 func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceNamePostgres {
+		if container.Name == api.ResourceSingularPostgres {
 			volumeMount := core.VolumeMount{
 				Name:      "data",
 				MountPath: "/var/pv",

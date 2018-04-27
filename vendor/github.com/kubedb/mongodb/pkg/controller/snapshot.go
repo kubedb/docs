@@ -4,12 +4,50 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/log"
+	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 )
+
+func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
+	mongodb, err := c.mgLister.MongoDBs(meta.Namespace).Get(meta.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return mongodb, nil
+}
+
+func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
+	mongodb, err := c.mgLister.MongoDBs(meta.Namespace).Get(meta.Name)
+	if err != nil {
+		return err
+	}
+	_, _, err = util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
+		in.Status.Phase = phase
+		in.Status.Reason = reason
+		return in
+	})
+	return err
+}
+
+func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
+	mongodb, err := c.mgLister.MongoDBs(meta.Namespace).Get(meta.Name)
+	if err != nil {
+		return err
+	}
+
+	_, _, err = util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
+		in.Annotations = core_util.UpsertMap(mongodb.Annotations, annotation)
+		return in
+	})
+	return err
+}
 
 func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
 	// Database name can't empty
@@ -18,7 +56,7 @@ func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
 		return fmt.Errorf(`object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
 	}
 
-	if _, err := c.ExtClient.MongoDBs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
+	if _, err := c.mgLister.MongoDBs(snapshot.Namespace).Get(databaseName); err != nil {
 		return err
 	}
 

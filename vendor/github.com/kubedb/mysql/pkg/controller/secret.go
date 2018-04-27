@@ -10,7 +10,8 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/reference"
 )
 
 const (
@@ -26,13 +27,15 @@ func (c *Controller) ensureDatabaseSecret(mysql *api.MySQL) error {
 	if mysql.Spec.DatabaseSecret == nil {
 		secretVolumeSource, err := c.createDatabaseSecret(mysql)
 		if err != nil {
-			c.recorder.Eventf(
-				mysql.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				`Failed to create Database Secret. Reason: %v`,
-				err.Error(),
-			)
+			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql); rerr == nil {
+				c.recorder.Eventf(
+					ref,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToCreate,
+					`Failed to create Database Secret. Reason: %v`,
+					err.Error(),
+				)
+			}
 			return err
 		}
 
@@ -41,12 +44,14 @@ func (c *Controller) ensureDatabaseSecret(mysql *api.MySQL) error {
 			return in
 		})
 		if err != nil {
-			c.recorder.Eventf(
-				mysql.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
+			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql); rerr == nil {
+				c.recorder.Eventf(
+					ref,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToUpdate,
+					err.Error(),
+				)
+			}
 			return err
 		}
 		mysql.Spec.DatabaseSecret = ms.Spec.DatabaseSecret
@@ -62,18 +67,21 @@ func (c *Controller) createDatabaseSecret(mysql *api.MySQL) (*core.SecretVolumeS
 		return nil, err
 	}
 	if sc == nil {
+		randPassword := ""
+
+		// if the password starts with "-", it will cause error in bash scripts (in mysql-tools)
+		for randPassword = rand.GeneratePassword(); randPassword[0] == '-'; {
+		}
+
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: authSecretName,
-				Labels: map[string]string{
-					api.LabelDatabaseKind: api.ResourceKindMySQL,
-					api.LabelDatabaseName: mysql.Name,
-				},
+				Name:   authSecretName,
+				Labels: mysql.OffshootLabels(),
 			},
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
 				KeyMySQLUser:     mysqlUser,
-				KeyMySQLPassword: rand.GeneratePassword(),
+				KeyMySQLPassword: randPassword,
 			},
 		}
 		if _, err := c.Client.CoreV1().Secrets(mysql.Namespace).Create(secret); err != nil {
@@ -98,60 +106,5 @@ func (c *Controller) checkSecret(secretName string, mysql *api.MySQL) (*core.Sec
 		secret.Labels[api.LabelDatabaseName] != mysql.Name {
 		return nil, fmt.Errorf(`intended secret "%v" already exists`, secretName)
 	}
-
 	return secret, nil
-}
-
-func (c *Controller) deleteSecret(dormantDb *api.DormantDatabase, secretVolume *core.SecretVolumeSource) error {
-	secretFound := false
-	mysqlList, err := c.ExtClient.MySQLs(dormantDb.Namespace).List(metav1.ListOptions{})
-	if err != nil {
-		return err
-	}
-
-	for _, mysql := range mysqlList.Items {
-		databaseSecret := mysql.Spec.DatabaseSecret
-		if databaseSecret != nil {
-			if databaseSecret.SecretName == secretVolume.SecretName {
-				secretFound = true
-				break
-			}
-		}
-	}
-
-	if !secretFound {
-		labelMap := map[string]string{
-			api.LabelDatabaseKind: api.ResourceKindMySQL,
-		}
-		dormantDatabaseList, err := c.ExtClient.DormantDatabases(dormantDb.Namespace).List(
-			metav1.ListOptions{
-				LabelSelector: labels.SelectorFromSet(labelMap).String(),
-			},
-		)
-		if err != nil {
-			return err
-		}
-
-		for _, ddb := range dormantDatabaseList.Items {
-			if ddb.Name == dormantDb.Name {
-				continue
-			}
-
-			databaseSecret := ddb.Spec.Origin.Spec.MySQL.DatabaseSecret
-			if databaseSecret != nil {
-				if databaseSecret.SecretName == secretVolume.SecretName {
-					secretFound = true
-					break
-				}
-			}
-		}
-	}
-
-	if !secretFound {
-		if err := c.Client.CoreV1().Secrets(dormantDb.Namespace).Delete(secretVolume.SecretName, nil); !kerr.IsNotFound(err) {
-			return err
-		}
-	}
-
-	return nil
 }

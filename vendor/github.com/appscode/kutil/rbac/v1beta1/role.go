@@ -32,12 +32,16 @@ func CreateOrPatchRole(c kubernetes.Interface, meta metav1.ObjectMeta, transform
 }
 
 func PatchRole(c kubernetes.Interface, cur *rbac.Role, transform func(*rbac.Role) *rbac.Role) (*rbac.Role, kutil.VerbType, error) {
+	return PatchRoleObject(c, cur, transform(cur.DeepCopy()))
+}
+
+func PatchRoleObject(c kubernetes.Interface, cur, mod *rbac.Role) (*rbac.Role, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	modJson, err := json.Marshal(transform(cur.DeepCopy()))
+	modJson, err := json.Marshal(mod)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -73,4 +77,14 @@ func TryUpdateRole(c kubernetes.Interface, meta metav1.ObjectMeta, transform fun
 		err = errors.Errorf("failed to update Role %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
+}
+
+func WaitUntillRoleDeleted(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) error {
+	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
+		_, err := kubeClient.RbacV1beta1().Roles(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		if err != nil && kerr.IsNotFound(err) {
+			return true, nil
+		}
+		return false, nil
+	})
 }

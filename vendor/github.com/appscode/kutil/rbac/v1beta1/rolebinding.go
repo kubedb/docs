@@ -32,12 +32,16 @@ func CreateOrPatchRoleBinding(c kubernetes.Interface, meta metav1.ObjectMeta, tr
 }
 
 func PatchRoleBinding(c kubernetes.Interface, cur *rbac.RoleBinding, transform func(*rbac.RoleBinding) *rbac.RoleBinding) (*rbac.RoleBinding, kutil.VerbType, error) {
+	return PatchRoleBindingObject(c, cur, transform(cur.DeepCopy()))
+}
+
+func PatchRoleBindingObject(c kubernetes.Interface, cur, mod *rbac.RoleBinding) (*rbac.RoleBinding, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	modJson, err := json.Marshal(transform(cur.DeepCopy()))
+	modJson, err := json.Marshal(mod)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -73,4 +77,14 @@ func TryUpdateRoleBinding(c kubernetes.Interface, meta metav1.ObjectMeta, transf
 		err = errors.Errorf("failed to update Role %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
+}
+
+func WaitUntillRoleBindingDeleted(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) error {
+	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
+		_, err := kubeClient.RbacV1beta1().RoleBindings(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		if err != nil && kerr.IsNotFound(err) {
+			return true, nil
+		}
+		return false, nil
+	})
 }

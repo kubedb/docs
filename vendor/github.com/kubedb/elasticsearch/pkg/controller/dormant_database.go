@@ -1,159 +1,58 @@
 package controller
 
 import (
-	"fmt"
-
-	"github.com/appscode/go/log"
-	apps_util "github.com/appscode/kutil/apps/v1"
+	core_util "github.com/appscode/kutil/core/v1"
+	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	cs_util "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 )
 
-func (c *Controller) Exists(om *metav1.ObjectMeta) (bool, error) {
-	elasticsearch, err := c.ExtClient.Elasticsearches(om.Namespace).Get(om.Name, metav1.GetOptions{})
+func (c *Controller) WaitUntilPaused(drmn *api.DormantDatabase) error {
+	db := &api.Elasticsearch{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      drmn.OffshootName(),
+			Namespace: drmn.Namespace,
+		},
+	}
+
+	if err := core_util.WaitUntilPodDeletedBySelector(c.Client, db.Namespace, metav1.SetAsLabelSelector(db.StatefulSetLabels())); err != nil {
+		return err
+	}
+
+	if err := core_util.WaitUntilServiceDeletedBySelector(c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootLabels())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Controller) deleteMatchingDormantDatabase(elasticsearch *api.Elasticsearch) error {
+	// Check if DormantDatabase exists or not
+	ddb, err := c.ExtClient.DormantDatabases(elasticsearch.Namespace).Get(elasticsearch.Name, metav1.GetOptions{})
 	if err != nil {
 		if !kerr.IsNotFound(err) {
-			return false, err
-		}
-		return false, nil
-	}
-
-	return elasticsearch.DeletionTimestamp == nil, nil
-}
-
-func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
-	elasticsearch := &api.Elasticsearch{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      dormantDb.OffshootName(),
-			Namespace: dormantDb.Namespace,
-		},
-	}
-	// Delete Service
-	if err := c.deleteService(elasticsearch.OffshootName(), dormantDb.Namespace); err != nil {
-		log.Errorln(err)
-		return err
-	}
-	if err := c.deleteService(elasticsearch.MasterServiceName(), dormantDb.Namespace); err != nil {
-		log.Errorln(err)
-		return err
-	}
-
-	topology := dormantDb.Spec.Origin.Spec.Elasticsearch.Topology
-	if topology != nil {
-
-		deleteStatefulSet := func(err chan<- error) error {
-			clientName := dormantDb.OffshootName()
-			if topology.Client.Prefix != "" {
-				clientName = fmt.Sprintf("%v-%v", topology.Client.Prefix, clientName)
-			}
-			go func() {
-				err2 := apps_util.DeleteStatefulSet(c.Client, metav1.ObjectMeta{
-					Name:      clientName,
-					Namespace: dormantDb.Namespace,
-				})
-				err <- err2
-			}()
-
-			masterName := dormantDb.OffshootName()
-			if topology.Master.Prefix != "" {
-				masterName = fmt.Sprintf("%v-%v", topology.Master.Prefix, masterName)
-			}
-			go func() {
-				err2 := apps_util.DeleteStatefulSet(c.Client, metav1.ObjectMeta{
-					Name:      masterName,
-					Namespace: dormantDb.Namespace,
-				})
-				err <- err2
-			}()
-
-			dataName := dormantDb.OffshootName()
-			if topology.Data.Prefix != "" {
-				dataName = fmt.Sprintf("%v-%v", topology.Data.Prefix, dataName)
-			}
-			go func() {
-				err2 := apps_util.DeleteStatefulSet(c.Client, metav1.ObjectMeta{
-					Name:      dataName,
-					Namespace: dormantDb.Namespace,
-				})
-				err <- err2
-			}()
-
-			return nil
-		}
-
-		errors := make(chan error, 3)
-
-		go deleteStatefulSet(errors)
-
-		for i := 1; i <= 3; i++ {
-			err := <-errors
-			if err != nil {
-				return err
-			}
-		}
-
-	} else {
-		err := apps_util.DeleteStatefulSet(c.Client, metav1.ObjectMeta{
-			Name:      dormantDb.OffshootName(),
-			Namespace: dormantDb.Namespace,
-		})
-		if err != nil {
 			return err
 		}
+		return nil
+	}
+
+	// Set WipeOut to false
+	if _, _, err := cs_util.PatchDormantDatabase(c.ExtClient, ddb, func(in *api.DormantDatabase) *api.DormantDatabase {
+		in.Spec.WipeOut = false
+		return in
+	}); err != nil {
+		return err
+	}
+
+	// Delete  Matching dormantDatabase
+	if err := c.ExtClient.DormantDatabases(elasticsearch.Namespace).Delete(elasticsearch.Name,
+		meta_util.DeleteInBackground()); err != nil && !kerr.IsNotFound(err) {
+		return err
 	}
 
 	return nil
-}
-
-func (c *Controller) WipeOutDatabase(dormantDb *api.DormantDatabase) error {
-	labelMap := map[string]string{
-		api.LabelDatabaseName: dormantDb.Name,
-		api.LabelDatabaseKind: api.ResourceKindElasticsearch,
-	}
-
-	labelSelector := labels.SelectorFromSet(labelMap)
-
-	if err := c.DeleteSnapshots(dormantDb.Namespace, labelSelector); err != nil {
-		return err
-	}
-
-	if err := c.DeletePersistentVolumeClaims(dormantDb.Namespace, labelSelector); err != nil {
-		return err
-	}
-
-	if dormantDb.Spec.Origin.Spec.Elasticsearch.DatabaseSecret != nil {
-		if err := c.deleteSecret(dormantDb, dormantDb.Spec.Origin.Spec.Elasticsearch.DatabaseSecret); err != nil {
-			return err
-		}
-	}
-
-	if dormantDb.Spec.Origin.Spec.Elasticsearch.CertificateSecret != nil {
-		if err := c.deleteSecret(dormantDb, dormantDb.Spec.Origin.Spec.Elasticsearch.CertificateSecret); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (c *Controller) ResumeDatabase(dormantDb *api.DormantDatabase) error {
-	origin := dormantDb.Spec.Origin
-	objectMeta := origin.ObjectMeta
-
-	elasticsearch := &api.Elasticsearch{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        objectMeta.Name,
-			Namespace:   objectMeta.Namespace,
-			Labels:      objectMeta.Labels,
-			Annotations: objectMeta.Annotations,
-		},
-		Spec: *origin.Spec.Elasticsearch,
-	}
-
-	_, err := c.ExtClient.Elasticsearches(elasticsearch.Namespace).Create(elasticsearch)
-	return err
 }
 
 func (c *Controller) createDormantDatabase(elasticsearch *api.Elasticsearch) (*api.DormantDatabase, error) {
@@ -168,10 +67,11 @@ func (c *Controller) createDormantDatabase(elasticsearch *api.Elasticsearch) (*a
 		Spec: api.DormantDatabaseSpec{
 			Origin: api.Origin{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:        elasticsearch.Name,
-					Namespace:   elasticsearch.Namespace,
-					Labels:      elasticsearch.Labels,
-					Annotations: elasticsearch.Annotations,
+					Name:              elasticsearch.Name,
+					Namespace:         elasticsearch.Namespace,
+					Labels:            elasticsearch.Labels,
+					Annotations:       elasticsearch.Annotations,
+					CreationTimestamp: elasticsearch.CreationTimestamp,
 				},
 				Spec: api.OriginSpec{
 					Elasticsearch: &(elasticsearch.Spec),

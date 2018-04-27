@@ -11,6 +11,8 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/reference"
 )
 
 func (c *Controller) completeJob(job *batch.Job) error {
@@ -55,7 +57,14 @@ func (c *Controller) handleBackupJob(job *batch.Job) error {
 				return in
 			})
 			if err != nil {
-				c.eventRecorder.Eventf(snapshot.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
+					c.eventRecorder.Eventf(
+						ref,
+						core.EventTypeWarning,
+						eventer.EventReasonFailedToUpdate,
+						err.Error(),
+					)
+				}
 				return err
 			}
 
@@ -64,31 +73,39 @@ func (c *Controller) handleBackupJob(job *batch.Job) error {
 				return nil
 			}
 			if jobSucceeded {
-				c.eventRecorder.Event(
-					api.ObjectReferenceFor(runtimeObj),
-					core.EventTypeNormal,
-					eventer.EventReasonSuccessfulSnapshot,
-					"Successfully completed snapshot",
-				)
-				c.eventRecorder.Event(
-					snapshot.ObjectReference(),
-					core.EventTypeNormal,
-					eventer.EventReasonSuccessfulSnapshot,
-					"Successfully completed snapshot",
-				)
+				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, runtimeObj); rerr == nil {
+					c.eventRecorder.Event(
+						ref,
+						core.EventTypeNormal,
+						eventer.EventReasonSuccessfulSnapshot,
+						"Successfully completed snapshot",
+					)
+				}
+				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
+					c.eventRecorder.Event(
+						ref,
+						core.EventTypeNormal,
+						eventer.EventReasonSuccessfulSnapshot,
+						"Successfully completed snapshot",
+					)
+				}
 			} else {
-				c.eventRecorder.Event(
-					api.ObjectReferenceFor(runtimeObj),
-					core.EventTypeWarning,
-					eventer.EventReasonSnapshotFailed,
-					"Failed to complete snapshot",
-				)
-				c.eventRecorder.Event(
-					snapshot.ObjectReference(),
-					core.EventTypeWarning,
-					eventer.EventReasonSnapshotFailed,
-					"Failed to complete snapshot",
-				)
+				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, runtimeObj); rerr == nil {
+					c.eventRecorder.Event(
+						ref,
+						core.EventTypeWarning,
+						eventer.EventReasonSnapshotFailed,
+						"Failed to complete snapshot",
+					)
+				}
+				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
+					c.eventRecorder.Event(
+						ref,
+						core.EventTypeWarning,
+						eventer.EventReasonSnapshotFailed,
+						"Failed to complete snapshot",
+					)
+				}
 			}
 
 			return nil
@@ -129,22 +146,27 @@ func (c *Controller) handleRestoreJob(job *batch.Job) error {
 
 			runtimeObj, err := c.snapshotter.GetDatabase(objectMeta)
 			if err != nil {
+				log.Errorln(err)
 				return nil
 			}
 			if jobSucceeded {
-				c.eventRecorder.Event(
-					api.ObjectReferenceFor(runtimeObj),
-					core.EventTypeNormal,
-					eventer.EventReasonSuccessfulInitialize,
-					"Successfully completed initialization",
-				)
+				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, runtimeObj); rerr == nil {
+					c.eventRecorder.Event(
+						ref,
+						core.EventTypeNormal,
+						eventer.EventReasonSuccessfulInitialize,
+						"Successfully completed initialization",
+					)
+				}
 			} else {
-				c.eventRecorder.Event(
-					api.ObjectReferenceFor(runtimeObj),
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToInitialize,
-					"Failed to complete initialization",
-				)
+				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, runtimeObj); rerr == nil {
+					c.eventRecorder.Event(
+						ref,
+						core.EventTypeWarning,
+						eventer.EventReasonFailedToInitialize,
+						"Failed to complete initialization",
+					)
+				}
 			}
 			return nil
 		}

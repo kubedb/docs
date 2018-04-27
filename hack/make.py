@@ -76,17 +76,17 @@ def version():
 
 
 def fmt():
-    libbuild.ungroup_go_imports('*.go', 'cmds')
-    die(call('goimports -w *.go cmds'))
-    call('gofmt -s -w *.go cmds')
+    libbuild.ungroup_go_imports('*.go', 'pkg')
+    die(call('goimports -w *.go pkg'))
+    call('gofmt -s -w *.go pkg')
 
 
 def lint():
-    call('golint *.go cmds')
+    call('golint *.go pkg')
 
 
 def vet():
-    call('go vet *.go cmds')
+    call('go vet *.go pkg')
 
 
 def build_cmd(name):

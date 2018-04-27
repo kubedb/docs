@@ -4,30 +4,46 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/log"
-	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
-	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"github.com/kubedb/apimachinery/pkg/storage"
-	"github.com/kubedb/mongodb/pkg/validator"
+	validator "github.com/kubedb/mongodb/pkg/admission"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/reference"
 )
 
 func (c *Controller) create(mongodb *api.MongoDB) error {
 	if err := validator.ValidateMongoDB(c.Client, c.ExtClient, mongodb); err != nil {
-		c.recorder.Event(
-			mongodb.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonInvalid,
-			err.Error())
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+			c.recorder.Event(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonInvalid,
+				err.Error())
+		}
 		log.Errorln(err)
 		return nil
+	}
+
+	// Delete Matching DormantDatabase if exists any
+	if err := c.deleteMatchingDormantDatabase(mongodb); err != nil {
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				`Failed to delete dormant Database : "%v". Reason: %v`,
+				mongodb.Name,
+				err,
+			)
+		}
+		return err
 	}
 
 	if mongodb.Status.CreationTime == nil {
@@ -38,46 +54,42 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 			return in
 		})
 		if err != nil {
-			c.recorder.Eventf(
-				mongodb.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
+			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+				c.recorder.Eventf(
+					ref,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToUpdate,
+					err.Error(),
+				)
+			}
 			return err
 		}
 		mongodb.Status = mg.Status
 	}
 
-	// Dynamic Defaulting
-	// Assign Default Monitoring Port
-	if err := c.setMonitoringPort(mongodb); err != nil {
-		return err
-	}
-
-	// Check DormantDatabase
-	// It can be used as resumed
-	if err := c.matchDormantDatabase(mongodb); err != nil {
-		return err
-	}
-
 	// create Governing Service
-	governingService := c.opt.GoverningService
+	governingService := c.GoverningService
 	if err := c.CreateGoverningService(governingService, mongodb.Namespace); err != nil {
-		c.recorder.Eventf(
-			mongodb.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			`Failed to create Service: "%v". Reason: %v`,
-			governingService,
-			err,
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				`Failed to create Service: "%v". Reason: %v`,
+				governingService,
+				err,
+			)
+		}
 		return err
 	}
 
 	// ensure database Service
 	vt1, err := c.ensureService(mongodb)
 	if err != nil {
+		return err
+	}
+
+	if err := c.ensureDatabaseSecret(mongodb); err != nil {
 		return err
 	}
 
@@ -88,19 +100,23 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
-			mongodb.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully created MongoDB",
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+			c.recorder.Event(
+				ref,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully created MongoDB",
+			)
+		}
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
-			mongodb.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully patched MongoDB",
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+			c.recorder.Event(
+				ref,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully patched MongoDB",
+			)
+		}
 	}
 
 	if _, err := meta_util.GetString(mongodb.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
@@ -130,12 +146,14 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		return in
 	})
 	if err != nil {
-		c.recorder.Eventf(
-			mongodb,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			err.Error(),
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
+			)
+		}
 		return err
 	}
 	mongodb.Status = ms.Status
@@ -144,13 +162,15 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	c.ensureBackupScheduler(mongodb)
 
 	if err := c.manageMonitor(mongodb); err != nil {
-		c.recorder.Eventf(
-			mongodb.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to manage monitoring system. Reason: %v",
-			err,
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				"Failed to manage monitoring system. Reason: %v",
+				err,
+			)
+		}
 		log.Errorln(err)
 		return nil
 	}
@@ -158,84 +178,21 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	return nil
 }
 
-// Assign Default Monitoring Port if MonitoringSpec Exists
-// and the AgentVendor is Prometheus.
-func (c *Controller) setMonitoringPort(mongodb *api.MongoDB) error {
-	if mongodb.Spec.Monitor != nil &&
-		mongodb.GetMonitoringVendor() == mon_api.VendorPrometheus {
-		if mongodb.Spec.Monitor.Prometheus == nil {
-			mongodb.Spec.Monitor.Prometheus = &mon_api.PrometheusSpec{}
-		}
-		if mongodb.Spec.Monitor.Prometheus.Port == 0 {
-			mg, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
-				in.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
-				return in
-			})
-
-			if err != nil {
-				c.recorder.Eventf(
-					mongodb.ObjectReference(),
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToUpdate,
-					err.Error(),
-				)
-				return err
-			}
-			mongodb.Spec = mg.Spec
-		}
-	}
-	return nil
-}
-
-func (c *Controller) matchDormantDatabase(mongodb *api.MongoDB) error {
-	// Check if DormantDatabase exists or not
-	dormantDb, err := c.ExtClient.DormantDatabases(mongodb.Namespace).Get(mongodb.Name, metav1.GetOptions{})
-	if err != nil {
-		if !kerr.IsNotFound(err) {
-			c.recorder.Eventf(
-				mongodb.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToGet,
-				`Fail to get DormantDatabase: "%v". Reason: %v`,
-				mongodb.Name,
-				err,
-			)
-			return err
-		}
-		return nil
-	}
-
-	if _, err := meta_util.GetString(mongodb.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		mongodb.Spec.Init != nil &&
-		mongodb.Spec.Init.SnapshotSource != nil {
-		mg, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
-			in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
-				api.AnnotationInitialized: "",
-			})
-			return in
-		})
-		if err != nil {
-			return err
-		}
-		mongodb.Annotations = mg.Annotations
-	}
-
-	return util.DeleteDormantDatabase(c.ExtClient, dormantDb.ObjectMeta)
-}
-
 func (c *Controller) ensureBackupScheduler(mongodb *api.MongoDB) {
 	// Setup Schedule backup
 	if mongodb.Spec.BackupSchedule != nil {
 		err := c.cronController.ScheduleBackup(mongodb, mongodb.ObjectMeta, mongodb.Spec.BackupSchedule)
 		if err != nil {
-			c.recorder.Eventf(
-				mongodb.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToSchedule,
-				"Failed to schedule snapshot. Reason: %v",
-				err,
-			)
 			log.Errorln(err)
+			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+				c.recorder.Eventf(
+					ref,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToSchedule,
+					"Failed to schedule snapshot. Reason: %v",
+					err,
+				)
+			}
 		}
 	} else {
 		c.cronController.StopBackupScheduling(mongodb.ObjectMeta)
@@ -248,20 +205,29 @@ func (c *Controller) initialize(mongodb *api.MongoDB) error {
 		return in
 	})
 	if err != nil {
-		c.recorder.Eventf(mongodb, core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
+			)
+		}
 		return err
 	}
 	mongodb.Status = mg.Status
 
 	snapshotSource := mongodb.Spec.Init.SnapshotSource
 	// Event for notification that kubernetes objects are creating
-	c.recorder.Eventf(
-		mongodb.ObjectReference(),
-		core.EventTypeNormal,
-		eventer.EventReasonInitializing,
-		`Initializing from Snapshot: "%v"`,
-		snapshotSource.Name,
-	)
+	if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+		c.recorder.Eventf(
+			ref,
+			core.EventTypeNormal,
+			eventer.EventReasonInitializing,
+			`Initializing from Snapshot: "%v"`,
+			snapshotSource.Name,
+		)
+	}
 
 	namespace := snapshotSource.Namespace
 	if namespace == "" {
@@ -295,73 +261,30 @@ func (c *Controller) initialize(mongodb *api.MongoDB) error {
 
 func (c *Controller) pause(mongodb *api.MongoDB) error {
 	if _, err := c.createDormantDatabase(mongodb); err != nil {
-		c.recorder.Eventf(
-			mongodb.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			`Failed to create DormantDatabase: "%v". Reason: %v`,
-			mongodb.Name,
-			err,
-		)
-		return err
+		if kerr.IsAlreadyExists(err) {
+			// if already exists, check if it is database of another Kind and return error in that case.
+			// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
+			// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
+			// So reuse that DormantDB!
+			ddb, err := c.ExtClient.DormantDatabases(mongodb.Namespace).Get(mongodb.Name, metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+			if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindMongoDB {
+				return fmt.Errorf(`DormantDatabase "%v" of kind %v already exists`, mongodb.Name, val)
+			}
+		} else {
+			return fmt.Errorf(`Failed to create DormantDatabase: "%v". Reason: %v`, mongodb.Name, err)
+		}
 	}
-	c.recorder.Eventf(
-		mongodb.ObjectReference(),
-		core.EventTypeNormal,
-		eventer.EventReasonSuccessfulCreate,
-		`Successfully created DormantDatabase: "%v"`,
-		mongodb.Name,
-	)
 
 	c.cronController.StopBackupScheduling(mongodb.ObjectMeta)
 
 	if mongodb.Spec.Monitor != nil {
 		if _, err := c.deleteMonitor(mongodb); err != nil {
-			c.recorder.Eventf(
-				mongodb.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToDelete,
-				"Failed to delete monitoring system. Reason: %v",
-				err,
-			)
 			log.Errorln(err)
 			return nil
 		}
 	}
 	return nil
-}
-
-func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
-	mongodb, err := c.ExtClient.MongoDBs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	return mongodb, nil
-}
-
-func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
-	mongodb, err := c.ExtClient.MongoDBs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	_, _, err = util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
-		in.Status.Phase = phase
-		in.Status.Reason = reason
-		return in
-	})
-	return err
-}
-
-func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
-	mongodb, err := c.ExtClient.MongoDBs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-
-	_, _, err = util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
-		in.Annotations = core_util.UpsertMap(mongodb.Annotations, annotation)
-		return in
-	})
-	return err
 }

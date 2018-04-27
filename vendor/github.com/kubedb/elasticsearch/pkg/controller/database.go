@@ -24,7 +24,7 @@ func (c *Controller) GetElasticClient(elasticsearch *api.Elasticsearch, url stri
 
 	client, err := elastic.NewClient(
 		elastic.SetHttpClient(&http.Client{
-			Timeout: time.Second * 5,
+			Timeout: 0,
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: true,
@@ -56,7 +56,7 @@ func (c *Controller) getAllIndices(elasticsearch *api.Elasticsearch) (string, er
 		clientPodName := fmt.Sprintf("%v-0", clientName)
 		tunnel := portforward.NewTunnel(
 			c.Client.CoreV1().RESTClient(),
-			c.config,
+			c.restConfig,
 			elasticsearch.Namespace,
 			clientPodName,
 			ElasticsearchRestPort,
@@ -73,6 +73,7 @@ func (c *Controller) getAllIndices(elasticsearch *api.Elasticsearch) (string, er
 		if err != nil {
 			return false, nil
 		}
+		defer client.Stop()
 		indices, err = client.IndexNames()
 		if err != nil {
 			return false, nil

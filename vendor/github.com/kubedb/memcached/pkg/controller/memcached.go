@@ -1,28 +1,49 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/appscode/go/log"
-	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
+	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
-	"github.com/kubedb/memcached/pkg/validator"
+	validator "github.com/kubedb/memcached/pkg/admission"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/reference"
 )
 
 func (c *Controller) create(memcached *api.Memcached) error {
 	if err := validator.ValidateMemcached(c.Client, c.ExtClient, memcached); err != nil {
-		c.recorder.Event(
-			memcached.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonInvalid,
-			err.Error(),
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
+			c.recorder.Event(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonInvalid,
+				err.Error(),
+			)
+		}
 		log.Errorln(err)
 		return nil // user error so just record error and don't retry.
+	}
+
+	// Delete Matching DormantDatabase if exists any
+	if err := c.deleteMatchingDormantDatabase(memcached); err != nil {
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				`Failed to delete dormant Database : "%v". Reason: %v`,
+				memcached.Name,
+				err,
+			)
+		}
+		return err
 	}
 
 	if memcached.Status.CreationTime == nil {
@@ -33,149 +54,105 @@ func (c *Controller) create(memcached *api.Memcached) error {
 			return in
 		})
 		if err != nil {
-			c.recorder.Eventf(
-				memcached.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
+			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
+				c.recorder.Eventf(
+					ref,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToUpdate,
+					err.Error(),
+				)
+			}
 			return err
 		}
 		memcached.Status = mc.Status
 	}
 
-	// Dynamic Defaulting
-	// Assign Default Monitoring Port
-	if err := c.setMonitoringPort(memcached); err != nil {
-		return err
-	}
-
-	// Check DormantDatabase
-	if err := c.matchDormantDatabase(memcached); err != nil {
-		return err
-	}
-
 	// ensure database Service
-	ok1, er1 := c.ensureService(memcached)
-	if er1 != nil {
-		return er1
+	vt1, err := c.ensureService(memcached)
+	if err != nil {
+		return err
 	}
 
 	// ensure database Deployment
-	ok2, er2 := c.ensureDeployment(memcached)
-	if er2 != nil {
-		return er2
+	vt2, err := c.ensureDeployment(memcached)
+	if err != nil {
+		return err
 	}
 
-	if ok1 == kutil.VerbCreated && ok2 == kutil.VerbCreated {
-		c.recorder.Event(
-			memcached.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully created Memcached",
-		)
-	} else if ok1 == kutil.VerbPatched || ok2 == kutil.VerbPatched {
-		c.recorder.Event(
-			memcached.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully patched Memcached",
-		)
+	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
+			c.recorder.Event(
+				ref,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully created Memcached",
+			)
+		}
+	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
+			c.recorder.Event(
+				ref,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully patched Memcached",
+			)
+		}
 	}
 
 	if err := c.manageMonitor(memcached); err != nil {
-		c.recorder.Eventf(
-			memcached.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to manage monitoring system. Reason: %v",
-			err,
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				"Failed to manage monitoring system. Reason: %v",
+				err,
+			)
+		}
 		log.Errorln(err)
 		return nil
 	}
-	return nil
-}
-
-// Assign Default Monitoring Port if MonitoringSpec Exists
-// and the AgentVendor is Prometheus.
-func (c *Controller) setMonitoringPort(memcached *api.Memcached) error {
-	if memcached.Spec.Monitor != nil &&
-		memcached.GetMonitoringVendor() == mon_api.VendorPrometheus {
-		if memcached.Spec.Monitor.Prometheus == nil {
-			memcached.Spec.Monitor.Prometheus = &mon_api.PrometheusSpec{}
-		}
-		if memcached.Spec.Monitor.Prometheus.Port == 0 {
-			mc, _, err := util.PatchMemcached(c.ExtClient, memcached, func(in *api.Memcached) *api.Memcached {
-				in.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
-				return in
-			})
-
-			if err != nil {
-				c.recorder.Eventf(
-					memcached.ObjectReference(),
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToUpdate,
-					err.Error(),
-				)
-				return err
-			}
-			memcached.Spec = mc.Spec
-		}
-	}
-	return nil
-}
-
-func (c *Controller) matchDormantDatabase(memcached *api.Memcached) error {
-	// Check if DormantDatabase exists or not
-	dormantDb, err := c.ExtClient.DormantDatabases(memcached.Namespace).Get(memcached.Name, metav1.GetOptions{})
+	mc, _, err := util.PatchMemcached(c.ExtClient, memcached, func(in *api.Memcached) *api.Memcached {
+		in.Status.Phase = api.DatabasePhaseRunning
+		return in
+	})
 	if err != nil {
-		if !kerr.IsNotFound(err) {
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
 			c.recorder.Eventf(
-				memcached.ObjectReference(),
+				ref,
 				core.EventTypeWarning,
-				eventer.EventReasonFailedToGet,
-				`Fail to get DormantDatabase: "%v". Reason: %v`,
-				memcached.Name,
-				err,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
 			)
-			return err
 		}
-		return nil
+		return err
 	}
+	memcached.Status = mc.Status
 
-	return util.DeleteDormantDatabase(c.ExtClient, dormantDb.ObjectMeta)
+	return nil
 }
 
 func (c *Controller) pause(memcached *api.Memcached) error {
 	if _, err := c.createDormantDatabase(memcached); err != nil {
-		c.recorder.Eventf(
-			memcached.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			`Failed to create DormantDatabase: "%v". Reason: %v`,
-			memcached.Name,
-			err,
-		)
-		return err
+		if kerr.IsAlreadyExists(err) {
+			// if already exists, check if it is database of another Kind and return error in that case.
+			// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
+			// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
+			// So reuse that DormantDB!
+			ddb, err := c.ExtClient.DormantDatabases(memcached.Namespace).Get(memcached.Name, metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+			if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindMemcached {
+				return fmt.Errorf(`DormantDatabase "%v" of kind %v already exists`, memcached.Name, val)
+			}
+		} else {
+			return fmt.Errorf(`failed to create DormantDatabase: "%v". Reason: %v`, memcached.Name, err)
+		}
 	}
-	c.recorder.Eventf(
-		memcached.ObjectReference(),
-		core.EventTypeNormal,
-		eventer.EventReasonSuccessfulCreate,
-		`Successfully created DormantDatabase: "%v"`,
-		memcached.Name,
-	)
 
 	if memcached.Spec.Monitor != nil {
 		if _, err := c.deleteMonitor(memcached); err != nil {
-			c.recorder.Eventf(
-				memcached.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToDelete,
-				"Failed to delete monitoring system. Reason: %v",
-				err,
-			)
 			log.Errorln(err)
 			return nil
 		}

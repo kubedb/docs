@@ -65,7 +65,7 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 					Containers: []core.Container{
 						{
 							Name:  snapshotProcessRestore,
-							Image: c.opt.Docker.GetToolsImageWithTag(mongodb),
+							Image: c.docker.GetToolsImageWithTag(mongodb),
 							Args: []string{
 								snapshotProcessRestore,
 								fmt.Sprintf(`--host=%s`, databaseName),
@@ -74,12 +74,12 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
-								fmt.Sprintf(`--analytics=%v`, c.opt.EnableAnalytics),
+								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
 								{
 									Name:  analytics.Key,
-									Value: c.opt.AnalyticsClientID,
+									Value: c.AnalyticsClientID,
 								},
 								{
 									Name: "DB_PASSWORD",
@@ -156,7 +156,7 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 	if err != nil {
 		return nil, err
 	}
-	mongodb, err := c.ExtClient.MongoDBs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
+	mongodb, err := c.mgLister.MongoDBs(snapshot.Namespace).Get(databaseName)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +193,7 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 					Containers: []core.Container{
 						{
 							Name:  snapshotProcessBackup,
-							Image: c.opt.Docker.GetToolsImageWithTag(mongodb),
+							Image: c.docker.GetToolsImageWithTag(mongodb),
 							Args: []string{
 								snapshotProcessBackup,
 								fmt.Sprintf(`--host=%s`, databaseName),
@@ -202,12 +202,12 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
-								fmt.Sprintf(`--analytics=%v`, c.opt.EnableAnalytics),
+								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
 								{
 									Name:  analytics.Key,
-									Value: c.opt.AnalyticsClientID,
+									Value: c.AnalyticsClientID,
 								},
 								{
 									Name: "DB_PASSWORD",
