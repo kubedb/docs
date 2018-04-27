@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"fmt"
-
 	"github.com/appscode/go/log/golog"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
@@ -21,7 +19,6 @@ import (
 	pgDocker "github.com/kubedb/postgres/pkg/docker"
 	rdc "github.com/kubedb/redis/pkg/controller"
 	rdDocker "github.com/kubedb/redis/pkg/docker"
-	"github.com/the-redback/go-oneliners"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -115,8 +112,6 @@ func (c *Controller) Init() error {
 	if err := c.EnsureCustomResourceDefinitions(); err != nil {
 		return err
 	}
-	oneliners.PrettyJson(c.pgCtrl)
-	fmt.Println(">>>>>>>>>>>>>>>>>", c.pgCtrl)
 	if err := c.pgCtrl.Init(); err != nil {
 		return err
 	}
