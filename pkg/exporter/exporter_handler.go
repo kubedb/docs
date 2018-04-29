@@ -77,7 +77,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch dbType {
-	case api.ResourceSingularPostgres:
+	case api.ResourcePluralPostgres:
 		var reg *prometheus.Registry
 		if val, ok := registerers.Get(r.URL.Path); ok {
 			reg = val.(*prometheus.Registry)
@@ -99,7 +99,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
 		return
-	case api.ResourceSingularElasticsearch:
+	case api.ResourcePluralElasticsearch:
 		logger := log.NewLogfmtLogger(log.NewSyncWriter(os.Stdout))
 		var reg *prometheus.Registry
 		if val, ok := registerers.Get(r.URL.Path); ok {
@@ -137,7 +137,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
 		return
-	case api.ResourceSingularMySQL:
+	case api.ResourcePluralMySQL:
 		var reg *prometheus.Registry
 		if val, ok := registerers.Get(r.URL.Path); ok {
 			reg = val.(*prometheus.Registry)
@@ -160,7 +160,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
 		return
-	case api.ResourceSingularMongoDB:
+	case api.ResourcePluralMongoDB:
 		var reg *prometheus.Registry
 		if val, ok := registerers.Get(r.URL.Path); ok {
 			reg = val.(*prometheus.Registry)
@@ -183,7 +183,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
 		return
-	case api.ResourceSingularRedis:
+	case api.ResourcePluralRedis:
 		var reg *prometheus.Registry
 		if val, ok := registerers.Get(r.URL.Path); ok {
 			reg = val.(*prometheus.Registry)
@@ -209,7 +209,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)
 		return
-	case api.ResourceSingularMemcached:
+	case api.ResourcePluralMemcached:
 		var reg *prometheus.Registry
 		if val, ok := registerers.Get(r.URL.Path); ok {
 			reg = val.(*prometheus.Registry)
