@@ -12,7 +12,7 @@ const (
 )
 
 type Docker struct {
-	// Docker Registry
+	// docker Registry
 	Registry string
 	// Exporter tag
 	ExporterTag string

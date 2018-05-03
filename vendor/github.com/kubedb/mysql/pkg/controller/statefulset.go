@@ -15,14 +15,12 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/reference"
 )
 
 func (c *Controller) ensureStatefulSet(mysql *api.MySQL) (kutil.VerbType, error) {
 	if err := c.checkStatefulSet(mysql); err != nil {
-		return kutil.VerbUnchanged, err
-	}
-
-	if err := c.ensureDatabaseSecret(mysql); err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
@@ -35,22 +33,26 @@ func (c *Controller) ensureStatefulSet(mysql *api.MySQL) (kutil.VerbType, error)
 	// Check StatefulSet Pod status
 	if vt != kutil.VerbUnchanged {
 		if err := c.checkStatefulSetPodStatus(statefulSet); err != nil {
-			c.recorder.Eventf(
-				mysql.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToStart,
-				`Failed to CreateOrPatch StatefulSet. Reason: %v`,
-				err,
-			)
+			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql); rerr == nil {
+				c.recorder.Eventf(
+					ref,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToStart,
+					`Failed to CreateOrPatch StatefulSet. Reason: %v`,
+					err,
+				)
+			}
 			return kutil.VerbUnchanged, err
 		}
-		c.recorder.Eventf(
-			mysql.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully %v StatefulSet",
-			vt,
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully %v StatefulSet",
+				vt,
+			)
+		}
 	}
 	return vt, nil
 }
@@ -78,19 +80,27 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		Name:      mysql.OffshootName(),
 		Namespace: mysql.Namespace,
 	}
+
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql)
+	if rerr != nil {
+		return nil, kutil.VerbUnchanged, rerr
+	}
+
 	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
+		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
 		in.Labels = core_util.UpsertMap(in.Labels, mysql.StatefulSetLabels())
 		in.Annotations = core_util.UpsertMap(in.Annotations, mysql.StatefulSetAnnotations())
 
 		in.Spec.Replicas = types.Int32P(1)
+		in.Spec.ServiceName = c.GoverningService
 		in.Spec.Template.Labels = in.Labels
 		in.Spec.Selector = &metav1.LabelSelector{
 			MatchLabels: in.Labels,
 		}
 
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
-			Name:            api.ResourceNameMySQL,
-			Image:           c.opt.Docker.GetImageWithTag(mysql),
+			Name:            api.ResourceSingularMySQL,
+			Image:           c.docker.GetImageWithTag(mysql),
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
 				{
@@ -107,9 +117,9 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 				Args: append([]string{
 					"export",
 					fmt.Sprintf("--address=:%d", mysql.Spec.Monitor.Prometheus.Port),
-					fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
-				}, c.opt.LoggerOptions.ToFlags()...),
-				Image: c.opt.Docker.GetOperatorImageWithTag(mysql),
+					fmt.Sprintf("--enable-analytics=%v", c.EnableAnalytics),
+				}, c.LoggerOptions.ToFlags()...),
+				Image: c.docker.GetOperatorImageWithTag(mysql),
 				Ports: []core.ContainerPort{
 					{
 						Name:          api.PrometheusExporterPortName,
@@ -160,7 +170,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 
 func upsertDataVolume(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceNameMySQL {
+		if container.Name == api.ResourceSingularMySQL {
 			volumeMount := core.VolumeMount{
 				Name:      "data",
 				MountPath: "/var/lib/mysql",
@@ -212,7 +222,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.Sta
 
 func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceNameMySQL {
+		if container.Name == api.ResourceSingularMySQL {
 			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, core.EnvVar{
 				Name: "MYSQL_ROOT_PASSWORD",
 				ValueFrom: &core.EnvVarSource{
@@ -232,7 +242,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSe
 
 func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceNameMySQL {
+		if container.Name == api.ResourceSingularMySQL {
 			volumeMount := core.VolumeMount{
 				Name:      "initial-script",
 				MountPath: "/docker-entrypoint-initdb.d",

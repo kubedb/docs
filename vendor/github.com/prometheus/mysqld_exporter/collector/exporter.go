@@ -48,31 +48,34 @@ var (
 
 // Collect defines which metrics we should collect
 type Collect struct {
-	Processlist          bool
-	TableSchema          bool
-	InnodbTablespaces    bool
-	InnodbMetrics        bool
-	GlobalStatus         bool
-	GlobalVariables      bool
-	SlaveStatus          bool
-	AutoIncrementColumns bool
-	BinlogSize           bool
-	PerfTableIOWaits     bool
-	PerfIndexIOWaits     bool
-	PerfTableLockWaits   bool
-	PerfEventsStatements bool
-	PerfEventsWaits      bool
-	PerfFileEvents       bool
-	PerfFileInstances    bool
-	UserStat             bool
-	ClientStat           bool
-	TableStat            bool
-	QueryResponseTime    bool
-	EngineTokudbStatus   bool
-	EngineInnodbStatus   bool
-	Heartbeat            bool
-	HeartbeatDatabase    string
-	HeartbeatTable       string
+	Processlist             bool
+	TableSchema             bool
+	InnodbTablespaces       bool
+	InnodbMetrics           bool
+	GlobalStatus            bool
+	GlobalVariables         bool
+	SlaveStatus             bool
+	AutoIncrementColumns    bool
+	BinlogSize              bool
+	PerfTableIOWaits        bool
+	PerfIndexIOWaits        bool
+	PerfTableLockWaits      bool
+	PerfEventsStatements    bool
+	PerfEventsWaits         bool
+	PerfFileEvents          bool
+	PerfFileInstances       bool
+	PerfRepGroupMemberStats bool
+	UserStat                bool
+	ClientStat              bool
+	TableStat               bool
+	InnodbCmp               bool
+	InnodbCmpMem            bool
+	QueryResponseTime       bool
+	EngineTokudbStatus      bool
+	EngineInnodbStatus      bool
+	Heartbeat               bool
+	HeartbeatDatabase       string
+	HeartbeatTable          string
 }
 
 // Exporter collects MySQL metrics. It implements prometheus.Collector.
@@ -343,6 +346,15 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) {
 		}
 		ch <- prometheus.MustNewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), "collect.perf_schema.file_instances")
 	}
+	if e.collect.PerfRepGroupMemberStats {
+		scrapeTime = time.Now()
+		if err = ScrapeReplicationGroupMemberStats(db, ch); err != nil {
+			log.Errorln("Error scraping for collect.replication_group_member_stats:", err)
+			e.scrapeErrors.WithLabelValues("collect.replication_group_member_stats").Inc()
+			e.error.Set(1)
+		}
+		ch <- prometheus.MustNewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), "collect.replication_group_member_stats")
+	}
 	if e.collect.UserStat {
 		scrapeTime = time.Now()
 		if err = ScrapeUserStat(db, ch); err != nil {
@@ -351,6 +363,24 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) {
 			e.error.Set(1)
 		}
 		ch <- prometheus.MustNewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), "collect.info_schema.userstats")
+	}
+	if e.collect.InnodbCmp {
+		scrapeTime = time.Now()
+		if err = ScrapeInnodbCmp(db, ch); err != nil {
+			log.Errorln("Error scraping for collect.info_schema.innodbcmp:", err)
+			e.scrapeErrors.WithLabelValues("collect.info_schema.innodbcmp").Inc()
+			e.error.Set(1)
+		}
+		ch <- prometheus.MustNewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), "collect.info_schema.innodbcmp")
+	}
+	if e.collect.InnodbCmpMem {
+		scrapeTime = time.Now()
+		if err = ScrapeInnodbCmpMem(db, ch); err != nil {
+			log.Errorln("Error scraping for collect.info_schema.innodbcmpmem:", err)
+			e.scrapeErrors.WithLabelValues("collect.info_schema.innodbcmpmem").Inc()
+			e.error.Set(1)
+		}
+		ch <- prometheus.MustNewConstMetric(scrapeDurationDesc, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), "collect.info_schema.innodbcmpmem")
 	}
 	if e.collect.ClientStat {
 		scrapeTime = time.Now()

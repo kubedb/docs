@@ -11,6 +11,8 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/reference"
 )
 
 const (
@@ -31,7 +33,14 @@ func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
 			return in
 		})
 		if err != nil {
-			c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
+				c.recorder.Eventf(
+					ref,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToUpdate,
+					err.Error(),
+				)
+			}
 			return err
 		}
 		postgres.Spec.DatabaseSecret = pg.Spec.DatabaseSecret
@@ -46,9 +55,8 @@ func (c *Controller) findDatabaseSecret(postgres *api.Postgres) (*core.Secret, e
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil
-		} else {
-			return nil, err
 		}
+		return nil, err
 	}
 
 	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindPostgres ||

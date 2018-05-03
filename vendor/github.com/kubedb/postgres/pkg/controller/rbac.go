@@ -10,6 +10,8 @@ import (
 	rbac "k8s.io/api/rbac/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/reference"
 )
 
 func (c *Controller) deleteRole(postgres *api.Postgres) error {
@@ -23,6 +25,11 @@ func (c *Controller) deleteRole(postgres *api.Postgres) error {
 }
 
 func (c *Controller) ensureRole(postgres *api.Postgres) error {
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres)
+	if rerr != nil {
+		return rerr
+	}
+
 	// Create new Roles
 	_, _, err := rbac_util.CreateOrPatchRole(
 		c.Client,
@@ -31,6 +38,7 @@ func (c *Controller) ensureRole(postgres *api.Postgres) error {
 			Namespace: postgres.Namespace,
 		},
 		func(in *rbac.Role) *rbac.Role {
+			in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
 			in.Rules = []rbac.PolicyRule{
 				{
 					APIGroups:     []string{apps.GroupName},
@@ -72,6 +80,10 @@ func (c *Controller) deleteServiceAccount(postgres *api.Postgres) error {
 }
 
 func (c *Controller) createServiceAccount(postgres *api.Postgres) error {
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres)
+	if rerr != nil {
+		return rerr
+	}
 	// Create new ServiceAccount
 	_, _, err := core_util.CreateOrPatchServiceAccount(
 		c.Client,
@@ -80,6 +92,7 @@ func (c *Controller) createServiceAccount(postgres *api.Postgres) error {
 			Namespace: postgres.Namespace,
 		},
 		func(in *core.ServiceAccount) *core.ServiceAccount {
+			in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
 			return in
 		},
 	)
@@ -97,6 +110,10 @@ func (c *Controller) deleteRoleBinding(postgres *api.Postgres) error {
 }
 
 func (c *Controller) createRoleBinding(postgres *api.Postgres) error {
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres)
+	if rerr != nil {
+		return rerr
+	}
 	// Ensure new RoleBindings
 	_, _, err := rbac_util.CreateOrPatchRoleBinding(
 		c.Client,
@@ -105,6 +122,7 @@ func (c *Controller) createRoleBinding(postgres *api.Postgres) error {
 			Namespace: postgres.Namespace,
 		},
 		func(in *rbac.RoleBinding) *rbac.RoleBinding {
+			in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
 			in.RoleRef = rbac.RoleRef{
 				APIGroup: rbac.GroupName,
 				Kind:     "Role",

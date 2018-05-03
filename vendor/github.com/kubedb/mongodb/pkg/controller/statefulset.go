@@ -15,14 +15,12 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/reference"
 )
 
 func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB) (kutil.VerbType, error) {
 	if err := c.checkStatefulSet(mongodb); err != nil {
-		return kutil.VerbUnchanged, err
-	}
-
-	if err := c.ensureDatabaseSecret(mongodb); err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
@@ -35,22 +33,26 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB) (kutil.VerbType, er
 	// Check StatefulSet Pod status
 	if vt != kutil.VerbUnchanged {
 		if err := c.checkStatefulSetPodStatus(statefulSet); err != nil {
-			c.recorder.Eventf(
-				mongodb.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToStart,
-				`Failed to CreateOrPatch StatefulSet. Reason: %v`,
-				err,
-			)
+			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+				c.recorder.Eventf(
+					ref,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToStart,
+					`Failed to CreateOrPatch StatefulSet. Reason: %v`,
+					err,
+				)
+			}
 			return kutil.VerbUnchanged, err
 		}
-		c.recorder.Eventf(
-			mongodb.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully %v StatefulSet",
-			vt,
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully %v StatefulSet",
+				vt,
+			)
+		}
 	}
 	return vt, nil
 }
@@ -61,9 +63,8 @@ func (c *Controller) checkStatefulSet(mongodb *api.MongoDB) error {
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
-		} else {
-			return err
 		}
+		return err
 	}
 
 	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindMongoDB {
@@ -78,19 +79,27 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 		Name:      mongodb.OffshootName(),
 		Namespace: mongodb.Namespace,
 	}
+
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb)
+	if rerr != nil {
+		return nil, kutil.VerbUnchanged, rerr
+	}
+
 	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
+		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
 		in.Labels = core_util.UpsertMap(in.Labels, mongodb.StatefulSetLabels())
 		in.Annotations = core_util.UpsertMap(in.Annotations, mongodb.StatefulSetAnnotations())
 
 		in.Spec.Replicas = types.Int32P(1)
+		in.Spec.ServiceName = c.GoverningService
 		in.Spec.Template.Labels = in.Labels
 		in.Spec.Selector = &metav1.LabelSelector{
 			MatchLabels: in.Labels,
 		}
 
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
-			Name:  api.ResourceNameMongoDB,
-			Image: c.opt.Docker.GetImageWithTag(mongodb),
+			Name:  api.ResourceSingularMongoDB,
+			Image: c.docker.GetImageWithTag(mongodb),
 			Ports: []core.ContainerPort{
 				{
 					Name:          "db",
@@ -109,9 +118,9 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 				Args: append([]string{
 					"export",
 					fmt.Sprintf("--address=:%d", mongodb.Spec.Monitor.Prometheus.Port),
-					fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
-				}, c.opt.LoggerOptions.ToFlags()...),
-				Image: c.opt.Docker.GetOperatorImageWithTag(mongodb),
+					fmt.Sprintf("--enable-analytics=%v", c.EnableAnalytics),
+				}, c.LoggerOptions.ToFlags()...),
+				Image: c.docker.GetOperatorImageWithTag(mongodb),
 				Ports: []core.ContainerPort{
 					{
 						Name:          api.PrometheusExporterPortName,
@@ -161,7 +170,7 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 
 func upsertDataVolume(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceNameMongoDB {
+		if container.Name == api.ResourceSingularMongoDB {
 			volumeMount := core.VolumeMount{
 				Name:      "data",
 				MountPath: "/data/db",
@@ -237,7 +246,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.Statef
 		},
 	}
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceNameMongoDB {
+		if container.Name == api.ResourceSingularMongoDB {
 			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
 			return statefulSet
 		}
@@ -247,7 +256,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.Statef
 
 func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceNameMongoDB {
+		if container.Name == api.ResourceSingularMongoDB {
 			volumeMount := core.VolumeMount{
 				Name:      "initial-script",
 				MountPath: "/docker-entrypoint-initdb.d",

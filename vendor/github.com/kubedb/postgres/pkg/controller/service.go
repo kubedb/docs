@@ -12,6 +12,8 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/reference"
 )
 
 var (
@@ -32,22 +34,26 @@ func (c *Controller) ensureService(postgres *api.Postgres) (kutil.VerbType, erro
 	// create database Service
 	vt1, err := c.createService(postgres)
 	if err != nil {
-		c.recorder.Eventf(
-			postgres.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to createOrPatch Service. Reason: %v",
-			err,
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				"Failed to createOrPatch Service. Reason: %v",
+				err,
+			)
+		}
 		return kutil.VerbUnchanged, err
 	} else if vt1 != kutil.VerbUnchanged {
-		c.recorder.Eventf(
-			postgres.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully %s Service",
-			vt1,
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully %s Service",
+				vt1,
+			)
+		}
 	}
 
 	// Check if service name exists
@@ -58,22 +64,26 @@ func (c *Controller) ensureService(postgres *api.Postgres) (kutil.VerbType, erro
 	// create database Service
 	vt2, err := c.createReplicasService(postgres)
 	if err != nil {
-		c.recorder.Eventf(
-			postgres.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to createOrPatch Service. Reason: %v",
-			err,
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				"Failed to createOrPatch Service. Reason: %v",
+				err,
+			)
+		}
 		return kutil.VerbUnchanged, err
 	} else if vt2 != kutil.VerbUnchanged {
-		c.recorder.Eventf(
-			postgres.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully %s Service",
-			vt2,
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully %s Service",
+				vt2,
+			)
+		}
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
@@ -90,9 +100,8 @@ func (c *Controller) checkService(postgres *api.Postgres, name string) error {
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
-		} else {
-			return err
 		}
+		return err
 	}
 
 	if service.Spec.Selector[api.LabelDatabaseName] != postgres.OffshootName() {
@@ -108,7 +117,13 @@ func (c *Controller) createService(postgres *api.Postgres) (kutil.VerbType, erro
 		Namespace: postgres.Namespace,
 	}
 
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres)
+	if rerr != nil {
+		return kutil.VerbUnchanged, rerr
+	}
+
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
 		in.Labels = postgres.OffshootLabels()
 		in.Spec.Selector = postgres.OffshootLabels()
 		in.Spec.Ports = upsertServicePort(in, postgres)
@@ -143,28 +158,17 @@ func (c *Controller) createReplicasService(postgres *api.Postgres) (kutil.VerbTy
 		Namespace: postgres.Namespace,
 	}
 
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres)
+	if rerr != nil {
+		return kutil.VerbUnchanged, rerr
+	}
+
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
 		in.Labels = postgres.OffshootLabels()
 		in.Spec.Selector = postgres.OffshootLabels()
 		in.Spec.Ports = upsertServicePort(in, postgres)
 		return in
 	})
 	return ok, err
-}
-
-func (c *Controller) deleteService(name, namespace string) error {
-	service, err := c.Client.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			return nil
-		} else {
-			return err
-		}
-	}
-
-	if service.Spec.Selector[api.LabelDatabaseName] != name {
-		return nil
-	}
-
-	return c.Client.CoreV1().Services(namespace).Delete(name, nil)
 }

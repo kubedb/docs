@@ -1,93 +1,58 @@
 package controller
 
 import (
-	"github.com/appscode/go/log"
-	apps_util "github.com/appscode/kutil/apps/v1"
+	core_util "github.com/appscode/kutil/core/v1"
+	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	cs_util "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 )
 
-func (c *Controller) Exists(om *metav1.ObjectMeta) (bool, error) {
-	mysql, err := c.ExtClient.MySQLs(om.Namespace).Get(om.Name, metav1.GetOptions{})
+func (c *Controller) WaitUntilPaused(drmn *api.DormantDatabase) error {
+	db := &api.MySQL{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      drmn.OffshootName(),
+			Namespace: drmn.Namespace,
+		},
+	}
+
+	if err := core_util.WaitUntilPodDeletedBySelector(c.Client, db.Namespace, metav1.SetAsLabelSelector(db.StatefulSetLabels())); err != nil {
+		return err
+	}
+
+	if err := core_util.WaitUntilServiceDeletedBySelector(c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootLabels())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Controller) deleteMatchingDormantDatabase(mysql *api.MySQL) error {
+	// Check if DormantDatabase exists or not
+	ddb, err := c.ExtClient.DormantDatabases(mysql.Namespace).Get(mysql.Name, metav1.GetOptions{})
 	if err != nil {
 		if !kerr.IsNotFound(err) {
-			return false, err
-		}
-		return false, nil
-	}
-
-	return mysql.DeletionTimestamp == nil, nil
-}
-
-func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
-	mysql := &api.MySQL{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      dormantDb.OffshootName(),
-			Namespace: dormantDb.Namespace,
-		},
-	}
-	// Delete Service
-	if err := c.deleteService(mysql.OffshootName(), dormantDb.Namespace); err != nil {
-		log.Errorln(err)
-		return err
-	}
-
-	if err := apps_util.DeleteStatefulSet(c.Client, metav1.ObjectMeta{
-		Name:      mysql.OffshootName(),
-		Namespace: dormantDb.Namespace,
-	}); err != nil {
-		log.Errorln(err)
-		return err
-	}
-
-	return nil
-}
-
-func (c *Controller) WipeOutDatabase(dormantDb *api.DormantDatabase) error {
-	labelMap := map[string]string{
-		api.LabelDatabaseName: dormantDb.Name,
-		api.LabelDatabaseKind: api.ResourceKindMySQL,
-	}
-
-	labelSelector := labels.SelectorFromSet(labelMap)
-
-	if err := c.DeleteSnapshots(dormantDb.Namespace, labelSelector); err != nil {
-		log.Errorln(err)
-		return err
-	}
-
-	if err := c.DeletePersistentVolumeClaims(dormantDb.Namespace, labelSelector); err != nil {
-		log.Errorln(err)
-		return err
-	}
-
-	if dormantDb.Spec.Origin.Spec.MySQL.DatabaseSecret != nil {
-		if err := c.deleteSecret(dormantDb, dormantDb.Spec.Origin.Spec.MySQL.DatabaseSecret); err != nil {
 			return err
 		}
+		return nil
+	}
+
+	// Set WipeOut to false
+	if _, _, err := cs_util.PatchDormantDatabase(c.ExtClient, ddb, func(in *api.DormantDatabase) *api.DormantDatabase {
+		in.Spec.WipeOut = false
+		return in
+	}); err != nil {
+		return err
+	}
+
+	// Delete  Matching dormantDatabase
+	if err := c.ExtClient.DormantDatabases(mysql.Namespace).Delete(mysql.Name,
+		meta_util.DeleteInBackground()); err != nil && !kerr.IsNotFound(err) {
+		return err
 	}
 
 	return nil
-}
-
-func (c *Controller) ResumeDatabase(dormantDb *api.DormantDatabase) error {
-	origin := dormantDb.Spec.Origin
-	objectMeta := origin.ObjectMeta
-
-	mysql := &api.MySQL{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        objectMeta.Name,
-			Namespace:   objectMeta.Namespace,
-			Labels:      objectMeta.Labels,
-			Annotations: objectMeta.Annotations,
-		},
-		Spec: *origin.Spec.MySQL,
-	}
-
-	_, err := c.ExtClient.MySQLs(mysql.Namespace).Create(mysql)
-	return err
 }
 
 func (c *Controller) createDormantDatabase(mysql *api.MySQL) (*api.DormantDatabase, error) {
@@ -102,10 +67,11 @@ func (c *Controller) createDormantDatabase(mysql *api.MySQL) (*api.DormantDataba
 		Spec: api.DormantDatabaseSpec{
 			Origin: api.Origin{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:        mysql.Name,
-					Namespace:   mysql.Namespace,
-					Labels:      mysql.Labels,
-					Annotations: mysql.Annotations,
+					Name:              mysql.Name,
+					Namespace:         mysql.Namespace,
+					Labels:            mysql.Labels,
+					Annotations:       mysql.Annotations,
+					CreationTimestamp: mysql.CreationTimestamp,
 				},
 				Spec: api.OriginSpec{
 					MySQL: &mysql.Spec,

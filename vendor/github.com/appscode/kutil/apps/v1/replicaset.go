@@ -33,12 +33,16 @@ func CreateOrPatchReplicaSet(c kubernetes.Interface, meta metav1.ObjectMeta, tra
 }
 
 func PatchReplicaSet(c kubernetes.Interface, cur *apps.ReplicaSet, transform func(*apps.ReplicaSet) *apps.ReplicaSet) (*apps.ReplicaSet, kutil.VerbType, error) {
+	return PatchReplicaSetObject(c, cur, transform(cur.DeepCopy()))
+}
+
+func PatchReplicaSetObject(c kubernetes.Interface, cur, mod *apps.ReplicaSet) (*apps.ReplicaSet, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	modJson, err := json.Marshal(transform(cur.DeepCopy()))
+	modJson, err := json.Marshal(mod)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}

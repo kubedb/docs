@@ -7,7 +7,9 @@ import (
 
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
+	amc "github.com/kubedb/apimachinery/pkg/controller"
 	"github.com/kubedb/elasticsearch/pkg/controller"
+	"github.com/kubedb/elasticsearch/pkg/docker"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -34,13 +36,13 @@ func ExportReport(
 	}
 
 	url := fmt.Sprintf("https://%s.%s:%d", kubedbName, namespace, controller.ElasticsearchRestPort)
-	c := controller.New(nil, kubeClient, nil, nil, nil, nil, controller.Options{})
+	c := controller.New(nil, kubeClient, nil, nil, nil, nil, docker.Docker{}, amc.Config{})
 	client, err := c.GetElasticClient(elastic, url)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	defer client.Stop()
 	indices := make([]string, 0)
 	if index == "" {
 		indices, err = getAllIndices(client)

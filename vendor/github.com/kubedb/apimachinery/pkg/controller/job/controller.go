@@ -3,63 +3,62 @@ package job
 import (
 	"time"
 
+	"github.com/appscode/kutil/tools/queue"
 	amc "github.com/kubedb/apimachinery/pkg/controller"
 	"github.com/kubedb/apimachinery/pkg/eventer"
+	batch "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	batchinformer "k8s.io/client-go/informers/batch/v1"
+	"k8s.io/client-go/kubernetes"
+	batch_listers "k8s.io/client-go/listers/batch/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/client-go/util/workqueue"
 )
 
 type Controller struct {
 	*amc.Controller
+	amc.Config
 	// SnapshotDoer interface
 	snapshotter amc.Snapshotter
-	// ListOptions for watcher
-	listOption metav1.ListOptions
+	// tweakListOptions for watcher
+	tweakListOptions func(*metav1.ListOptions)
 	// Event Recorder
 	eventRecorder record.EventRecorder
-	// sync time to sync the list.
-	syncPeriod time.Duration
-	// Workqueue
-	indexer  cache.Indexer
-	queue    workqueue.RateLimitingInterface
-	informer cache.Controller
-	//Max number requests for retries
-	maxNumRequests int
+	// Job
+	jobLister batch_listers.JobLister
 }
 
 // NewController creates a new Controller
 func NewController(
 	controller *amc.Controller,
 	snapshotter amc.Snapshotter,
-	listOption metav1.ListOptions,
-	syncPeriod time.Duration,
+	config amc.Config,
+	tweakListOptions func(*metav1.ListOptions),
 ) *Controller {
-
 	// return new DormantDatabase Controller
 	return &Controller{
-		Controller:     controller,
-		snapshotter:    snapshotter,
-		listOption:     listOption,
-		eventRecorder:  eventer.NewEventRecorder(controller.Client, "Job Controller"),
-		syncPeriod:     syncPeriod,
-		maxNumRequests: 5,
+		Controller:       controller,
+		snapshotter:      snapshotter,
+		Config:           config,
+		tweakListOptions: tweakListOptions,
+		eventRecorder:    eventer.NewEventRecorder(controller.Client, "Job Controller"),
 	}
 }
 
-func (c *Controller) Run() {
-	// Watch DormantDatabase with provided ListerWatcher
-	c.watchJob()
+func (c *Controller) InitInformer() cache.SharedIndexInformer {
+	return c.KubeInformerFactory.InformerFor(&batch.Job{}, func(client kubernetes.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+		return batchinformer.NewFilteredJobInformer(
+			client,
+			c.WatchNamespace,
+			resyncPeriod,
+			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+			c.tweakListOptions,
+		)
+	})
 }
 
-func (c *Controller) watchJob() {
-
-	c.initWatcher()
-
-	stop := make(chan struct{})
-	defer close(stop)
-
-	c.runWatcher(5, stop)
-	select {}
+func (c *Controller) AddEventHandlerFunc(selector labels.Selector) *queue.Worker {
+	c.addEventHandler(selector)
+	return c.JobQueue
 }

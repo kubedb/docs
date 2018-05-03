@@ -12,6 +12,8 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/reference"
 )
 
 func (c *Controller) ensureService(redis *api.Redis) (kutil.VerbType, error) {
@@ -22,22 +24,26 @@ func (c *Controller) ensureService(redis *api.Redis) (kutil.VerbType, error) {
 	// create database Service
 	vt, err := c.createService(redis)
 	if err != nil {
-		c.recorder.Eventf(
-			redis.ObjectReference(),
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to createOrPatch Service. Reason: %v",
-			err,
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, redis); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				"Failed to create Service. Reason: %v",
+				err,
+			)
+		}
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
-			redis.ObjectReference(),
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully %s Service",
-			vt,
-		)
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, redis); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully %s Service",
+				vt,
+			)
+		}
 	}
 	return vt, nil
 }
@@ -53,7 +59,7 @@ func (c *Controller) checkService(redis *api.Redis) error {
 	}
 
 	if service.Spec.Selector[api.LabelDatabaseName] != name {
-		return fmt.Errorf(`Intended service "%v" already exists`, name)
+		return fmt.Errorf(`intended service "%v" already exists`, name)
 	}
 
 	return nil
@@ -65,13 +71,19 @@ func (c *Controller) createService(redis *api.Redis) (kutil.VerbType, error) {
 		Namespace: redis.Namespace,
 	}
 
-	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, redis)
+	if rerr != nil {
+		return kutil.VerbUnchanged, rerr
+	}
+
+	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
 		in.Labels = redis.OffshootLabels()
 		in.Spec.Ports = upsertServicePort(in, redis)
 		in.Spec.Selector = redis.OffshootLabels()
 		return in
 	})
-	return vt, err
+	return ok, err
 }
 
 func upsertServicePort(service *core.Service, redis *api.Redis) []core.ServicePort {
@@ -92,20 +104,4 @@ func upsertServicePort(service *core.Service, redis *api.Redis) []core.ServicePo
 		})
 	}
 	return core_util.MergeServicePorts(service.Spec.Ports, desiredPorts)
-}
-
-func (c *Controller) deleteService(name, namespace string) error {
-	service, err := c.Client.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			return nil
-		}
-		return err
-	}
-
-	if service.Spec.Selector[api.LabelDatabaseName] != name {
-		return nil
-	}
-
-	return c.Client.CoreV1().Services(namespace).Delete(name, nil)
 }

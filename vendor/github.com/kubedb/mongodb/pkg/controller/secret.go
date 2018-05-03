@@ -10,7 +10,8 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/reference"
 )
 
 const (
@@ -26,13 +27,15 @@ func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 	if mongodb.Spec.DatabaseSecret == nil {
 		secretVolumeSource, err := c.createDatabaseSecret(mongodb)
 		if err != nil {
-			c.recorder.Eventf(
-				mongodb.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				`Failed to create Database Secret. Reason: %v`,
-				err.Error(),
-			)
+			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+				c.recorder.Eventf(
+					ref,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToCreate,
+					`Failed to create Database Secret. Reason: %v`,
+					err.Error(),
+				)
+			}
 			return err
 		}
 
@@ -41,12 +44,14 @@ func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 			return in
 		})
 		if err != nil {
-			c.recorder.Eventf(
-				mongodb.ObjectReference(),
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
+			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+				c.recorder.Eventf(
+					ref,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToUpdate,
+					err.Error(),
+				)
+			}
 			return err
 		}
 		mongodb.Spec.DatabaseSecret = ms.Spec.DatabaseSecret
@@ -62,18 +67,21 @@ func (c *Controller) createDatabaseSecret(mongodb *api.MongoDB) (*core.SecretVol
 		return nil, err
 	}
 	if sc == nil {
+		randPassword := ""
+
+		// if the password starts with "-" it will cause error in bash scripts (in mongodb-tools)
+		for randPassword = rand.GeneratePassword(); randPassword[0] == '-'; {
+		}
+
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name: authSecretName,
-				Labels: map[string]string{
-					api.LabelDatabaseKind: api.ResourceKindMongoDB,
-					api.LabelDatabaseName: mongodb.Name,
-				},
+				Name:   authSecretName,
+				Labels: mongodb.OffshootLabels(),
 			},
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
 				KeyMongoDBUser:     mongodbUser,
-				KeyMongoDBPassword: rand.GeneratePassword(),
+				KeyMongoDBPassword: randPassword,
 			},
 		}
 		if _, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Create(secret); err != nil {
@@ -90,68 +98,12 @@ func (c *Controller) checkSecret(secretName string, mongodb *api.MongoDB) (*core
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil
-		} else {
-			return nil, err
 		}
+		return nil, err
 	}
 	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindMongoDB ||
 		secret.Labels[api.LabelDatabaseName] != mongodb.Name {
 		return nil, fmt.Errorf(`intended secret "%v" already exists`, secretName)
 	}
-
 	return secret, nil
-}
-
-func (c *Controller) deleteSecret(dormantDb *api.DormantDatabase, secretVolume *core.SecretVolumeSource) error {
-	secretFound := false
-	mongodbList, err := c.ExtClient.MongoDBs(dormantDb.Namespace).List(metav1.ListOptions{})
-	if err != nil {
-		return err
-	}
-
-	for _, mongodb := range mongodbList.Items {
-		databaseSecret := mongodb.Spec.DatabaseSecret
-		if databaseSecret != nil {
-			if databaseSecret.SecretName == secretVolume.SecretName {
-				secretFound = true
-				break
-			}
-		}
-	}
-
-	if !secretFound {
-		labelMap := map[string]string{
-			api.LabelDatabaseKind: api.ResourceKindMongoDB,
-		}
-		dormantDatabaseList, err := c.ExtClient.DormantDatabases(dormantDb.Namespace).List(
-			metav1.ListOptions{
-				LabelSelector: labels.SelectorFromSet(labelMap).String(),
-			},
-		)
-		if err != nil {
-			return err
-		}
-
-		for _, ddb := range dormantDatabaseList.Items {
-			if ddb.Name == dormantDb.Name {
-				continue
-			}
-
-			databaseSecret := ddb.Spec.Origin.Spec.MongoDB.DatabaseSecret
-			if databaseSecret != nil {
-				if databaseSecret.SecretName == secretVolume.SecretName {
-					secretFound = true
-					break
-				}
-			}
-		}
-	}
-
-	if !secretFound {
-		if err := c.Client.CoreV1().Secrets(dormantDb.Namespace).Delete(secretVolume.SecretName, nil); !kerr.IsNotFound(err) {
-			return err
-		}
-	}
-
-	return nil
 }

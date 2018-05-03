@@ -65,7 +65,7 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 					Containers: []core.Container{
 						{
 							Name:  snapshotProcessRestore,
-							Image: c.opt.Docker.GetToolsImageWithTag(mysql),
+							Image: c.docker.GetToolsImageWithTag(mysql),
 							Args: []string{
 								snapshotProcessRestore,
 								fmt.Sprintf(`--host=%s`, databaseName),
@@ -74,12 +74,12 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
-								fmt.Sprintf(`--analytics=%v`, c.opt.EnableAnalytics),
+								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
 								{
 									Name:  analytics.Key,
-									Value: c.opt.AnalyticsClientID,
+									Value: c.AnalyticsClientID,
 								},
 								{
 									Name: "DB_PASSWORD",
@@ -156,7 +156,7 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 	if err != nil {
 		return nil, err
 	}
-	mysql, err := c.ExtClient.MySQLs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
+	mysql, err := c.myLister.MySQLs(snapshot.Namespace).Get(databaseName)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +192,7 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 					Containers: []core.Container{
 						{
 							Name:  snapshotProcessBackup,
-							Image: c.opt.Docker.GetToolsImageWithTag(mysql),
+							Image: c.docker.GetToolsImageWithTag(mysql),
 							Args: []string{
 								snapshotProcessBackup,
 								fmt.Sprintf(`--host=%s`, databaseName),
@@ -201,12 +201,12 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
-								fmt.Sprintf(`--analytics=%v`, c.opt.EnableAnalytics),
+								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
 								{
 									Name:  analytics.Key,
-									Value: c.opt.AnalyticsClientID,
+									Value: c.AnalyticsClientID,
 								},
 								{
 									Name: "DB_PASSWORD",

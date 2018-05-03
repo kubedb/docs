@@ -5,7 +5,6 @@ import (
 
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
@@ -15,7 +14,7 @@ func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
 		return fmt.Errorf(`object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
 	}
 
-	if _, err := c.ExtClient.Elasticsearches(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
+	if _, err := c.esLister.Elasticsearches(snapshot.Namespace).Get(databaseName); err != nil {
 		return err
 	}
 

@@ -1,89 +1,58 @@
 package controller
 
 import (
-	"github.com/appscode/go/log"
-	apps_util "github.com/appscode/kutil/apps/v1"
+	core_util "github.com/appscode/kutil/core/v1"
+	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	cs_util "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 )
 
-func (c *Controller) Exists(om *metav1.ObjectMeta) (bool, error) {
-	redis, err := c.ExtClient.Redises(om.Namespace).Get(om.Name, metav1.GetOptions{})
+func (c *Controller) WaitUntilPaused(drmn *api.DormantDatabase) error {
+	db := &api.Redis{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      drmn.OffshootName(),
+			Namespace: drmn.Namespace,
+		},
+	}
+
+	if err := core_util.WaitUntilPodDeletedBySelector(c.Client, db.Namespace, metav1.SetAsLabelSelector(db.StatefulSetLabels())); err != nil {
+		return err
+	}
+
+	if err := core_util.WaitUntilServiceDeletedBySelector(c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootLabels())); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Controller) deleteMatchingDormantDatabase(redis *api.Redis) error {
+	// Check if DormantDatabase exists or not
+	ddb, err := c.ExtClient.DormantDatabases(redis.Namespace).Get(redis.Name, metav1.GetOptions{})
 	if err != nil {
 		if !kerr.IsNotFound(err) {
-			return false, err
+			return err
 		}
-		return false, nil
+		return nil
 	}
 
-	return redis.DeletionTimestamp == nil, nil
-}
-
-func (c *Controller) PauseDatabase(dormantDb *api.DormantDatabase) error {
-	redis := &api.Redis{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      dormantDb.OffshootName(),
-			Namespace: dormantDb.Namespace,
-		},
-	}
-	// Delete Service
-	if err := c.deleteService(redis.OffshootName(), dormantDb.Namespace); err != nil {
-		log.Errorln(err)
-		return err
-	}
-
-	if err := apps_util.DeleteStatefulSet(c.Client, metav1.ObjectMeta{
-		Name:      redis.OffshootName(),
-		Namespace: dormantDb.Namespace,
+	// Set WipeOut to false
+	if _, _, err := cs_util.PatchDormantDatabase(c.ExtClient, ddb, func(in *api.DormantDatabase) *api.DormantDatabase {
+		in.Spec.WipeOut = false
+		return in
 	}); err != nil {
-		log.Errorln(err)
+		return err
+	}
+
+	// Delete  Matching dormantDatabase
+	if err := c.ExtClient.DormantDatabases(redis.Namespace).Delete(redis.Name,
+		meta_util.DeleteInBackground()); err != nil && !kerr.IsNotFound(err) {
 		return err
 	}
 
 	return nil
-}
-
-func (c *Controller) WipeOutDatabase(dormantDb *api.DormantDatabase) error {
-	labelMap := map[string]string{
-		api.LabelDatabaseName: dormantDb.Name,
-		api.LabelDatabaseKind: api.ResourceKindRedis,
-	}
-
-	labelSelector := labels.SelectorFromSet(labelMap)
-
-	if err := c.DeletePersistentVolumeClaims(dormantDb.Namespace, labelSelector); err != nil {
-		log.Errorln(err)
-		return err
-	}
-	return nil
-}
-
-func (c *Controller) ResumeDatabase(dormantDb *api.DormantDatabase) error {
-	origin := dormantDb.Spec.Origin
-	objectMeta := origin.ObjectMeta
-
-	redis := &api.Redis{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        objectMeta.Name,
-			Namespace:   objectMeta.Namespace,
-			Labels:      objectMeta.Labels,
-			Annotations: objectMeta.Annotations,
-		},
-		Spec: *origin.Spec.Redis,
-	}
-
-	if redis.Annotations == nil {
-		redis.Annotations = make(map[string]string)
-	}
-
-	for key, val := range dormantDb.Annotations {
-		redis.Annotations[key] = val
-	}
-
-	_, err := c.ExtClient.Redises(redis.Namespace).Create(redis)
-	return err
 }
 
 func (c *Controller) createDormantDatabase(redis *api.Redis) (*api.DormantDatabase, error) {
@@ -98,10 +67,11 @@ func (c *Controller) createDormantDatabase(redis *api.Redis) (*api.DormantDataba
 		Spec: api.DormantDatabaseSpec{
 			Origin: api.Origin{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:        redis.Name,
-					Namespace:   redis.Namespace,
-					Labels:      redis.Labels,
-					Annotations: redis.Annotations,
+					Name:              redis.Name,
+					Namespace:         redis.Namespace,
+					Labels:            redis.Labels,
+					Annotations:       redis.Annotations,
+					CreationTimestamp: redis.CreationTimestamp,
 				},
 				Spec: api.OriginSpec{
 					Redis: &redis.Spec,

@@ -1,71 +1,49 @@
 package controller
 
 import (
-	"time"
-
-	"github.com/appscode/go/hold"
 	"github.com/appscode/go/log"
-	"github.com/appscode/go/log/golog"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
+	"github.com/appscode/kutil/tools/queue"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
 	kutildb "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api_listers "github.com/kubedb/apimachinery/client/listers/kubedb/v1alpha1"
 	amc "github.com/kubedb/apimachinery/pkg/controller"
-	drmnc "github.com/kubedb/apimachinery/pkg/controller/dormant_database"
+	drmnc "github.com/kubedb/apimachinery/pkg/controller/dormantdatabase"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"github.com/kubedb/postgres/pkg/docker"
 	core "k8s.io/api/core/v1"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/client-go/util/workqueue"
+	"k8s.io/client-go/tools/reference"
 )
 
-type Options struct {
-	Docker docker.Docker
-	// Operator namespace
-	OperatorNamespace string
-	// Governing service
-	GoverningService string
-	// Address to listen on for web interface and telemetry.
-	Address string
-	// Enable RBAC for database workloads
-	EnableRbac bool
-	//Max number requests for retries
-	MaxNumRequeues int
-	// Enable Analytics
-	EnableAnalytics bool
-	// Analytics client ID
-	AnalyticsClientID string
-	// Logger Options
-	LoggerOptions golog.Options
-}
-
 type Controller struct {
+	amc.Config
 	*amc.Controller
+
+	docker docker.Docker
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
 	// Cron Controller
 	cronController snapc.CronControllerInterface
 	// Event Recorder
 	recorder record.EventRecorder
-	// Flag data
-	opt Options
-	// sync time to sync the list.
-	syncPeriod time.Duration
+	// labelselector for event-handler of Snapshot, Dormant and Job
+	selector labels.Selector
 
-	// Workqueue
-	indexer  cache.Indexer
-	queue    workqueue.RateLimitingInterface
-	informer cache.Controller
+	// Postgres
+	pgQueue    *queue.Worker
+	pgInformer cache.SharedIndexInformer
+	pgLister   api_listers.PostgresLister
 }
 
 var _ amc.Snapshotter = &Controller{}
@@ -77,7 +55,8 @@ func New(
 	extClient cs.KubedbV1alpha1Interface,
 	promClient pcm.MonitoringV1Interface,
 	cronController snapc.CronControllerInterface,
-	opt Options,
+	docker docker.Docker,
+	opt amc.Config,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
@@ -85,16 +64,19 @@ func New(
 			ExtClient:        extClient,
 			ApiExtKubeClient: apiExtKubeClient,
 		},
+		Config:         opt,
+		docker:         docker,
 		promClient:     promClient,
 		cronController: cronController,
 		recorder:       eventer.NewEventRecorder(client, "Postgres operator"),
-		opt:            opt,
-		syncPeriod:     time.Minute * 2,
+		selector: labels.SelectorFromSet(map[string]string{
+			api.LabelDatabaseKind: api.ResourceKindPostgres,
+		}),
 	}
 }
 
 // Ensuring Custom Resource Definitions
-func (c *Controller) Setup() error {
+func (c *Controller) EnsureCustomResourceDefinitions() error {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 	crds := []*crd_api.CustomResourceDefinition{
 		api.Postgres{}.CustomResourceDefinition(),
@@ -104,77 +86,77 @@ func (c *Controller) Setup() error {
 	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
 }
 
-func (c *Controller) Run() {
-	// Watch Postgres TPR objects
-	go c.watchPostgres()
-	// Watch Snapshot with labelSelector only for Postgres
-	go c.watchSnapshot()
-	// Watch DormantDatabase with labelSelector only for Postgres
-	go c.watchDormantDatabase()
+// InitInformer initializes Postgres, DormantDB amd Snapshot watcher
+func (c *Controller) Init() error {
+	if err := c.EnsureCustomResourceDefinitions(); err != nil {
+		return err
+	}
+	c.initWatcher()
+	c.DrmnQueue = drmnc.NewController(c.Controller, c, c.Config, nil).AddEventHandlerFunc(c.selector)
+	c.SnapQueue, c.JobQueue = snapc.NewController(c.Controller, c, c.Config, nil).AddEventHandlerFunc(c.selector)
+
+	return nil
+}
+
+// RunControllers runs queue.worker
+func (c *Controller) RunControllers(stopCh <-chan struct{}) {
+	// Start Cron
+	c.cronController.StartCron()
+
+	// Watch x  TPR objects
+	c.pgQueue.Run(stopCh)
+	c.DrmnQueue.Run(stopCh)
+	c.SnapQueue.Run(stopCh)
+	c.JobQueue.Run(stopCh)
 }
 
 // Blocks caller. Intended to be called as a Go routine.
-func (c *Controller) RunAndHold() {
-	c.Run()
+func (c *Controller) Run(stopCh <-chan struct{}) {
+	go c.StartAndRunControllers(stopCh)
 
-	// Run HTTP server to expose metrics, audit endpoint & debug profiles.
-	go c.runHTTPServer()
-	// hold
-	hold.Hold()
+	<-stopCh
+	c.cronController.StopCron()
 }
 
-func (c *Controller) watchPostgres() {
-	c.initWatcher()
+// StartAndRunControllers starts InformetFactory and runs queue.worker
+func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
+	defer utilruntime.HandleCrash()
 
-	stop := make(chan struct{})
-	defer close(stop)
+	log.Infoln("Starting KubeDB controller")
+	c.KubeInformerFactory.Start(stopCh)
+	c.KubedbInformerFactory.Start(stopCh)
 
-	c.runWatcher(5, stop)
-	select {}
-}
-
-func (c *Controller) watchSnapshot() {
-	labelMap := map[string]string{
-		api.LabelDatabaseKind: api.ResourceKindPostgres,
+	// Wait for all involved caches to be synced, before processing items from the queue is started
+	for t, v := range c.KubeInformerFactory.WaitForCacheSync(stopCh) {
+		if !v {
+			log.Fatalf("%v timed out waiting for caches to sync\n", t)
+			return
+		}
 	}
-	listOptions := metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(labelMap).String(),
-	}
-	snapc.NewController(c.Controller, c, listOptions, c.syncPeriod).Run()
-}
-
-func (c *Controller) watchDormantDatabase() {
-	labelMap := map[string]string{
-		api.LabelDatabaseKind: api.ResourceKindPostgres,
-	}
-	// Watch with label selector
-	lw := &cache.ListWatch{
-		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
-			return c.ExtClient.DormantDatabases(metav1.NamespaceAll).List(
-				metav1.ListOptions{
-					LabelSelector: labels.SelectorFromSet(labelMap).String(),
-				})
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return c.ExtClient.DormantDatabases(metav1.NamespaceAll).Watch(
-				metav1.ListOptions{
-					LabelSelector: labels.SelectorFromSet(labelMap).String(),
-				})
-		},
+	for t, v := range c.KubedbInformerFactory.WaitForCacheSync(stopCh) {
+		if !v {
+			log.Fatalf("%v timed out waiting for caches to sync\n", t)
+			return
+		}
 	}
 
-	drmnc.NewController(c.Controller, c, lw, c.syncPeriod).Run()
+	c.RunControllers(stopCh)
+
+	<-stopCh
+	log.Infoln("Stopping KubeDB controller")
 }
 
 func (c *Controller) pushFailureEvent(postgres *api.Postgres, reason string) {
-	c.recorder.Eventf(
-		postgres.ObjectReference(),
-		core.EventTypeWarning,
-		eventer.EventReasonFailedToStart,
-		`Fail to be ready Postgres: "%v". Reason: %v`,
-		postgres.Name,
-		reason,
-	)
+	if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
+		c.recorder.Eventf(
+			ref,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToStart,
+			`Fail to be ready Postgres: "%v". Reason: %v`,
+			postgres.Name,
+			reason,
+		)
+	}
 
 	pg, _, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
 		in.Status.Phase = api.DatabasePhaseFailed
@@ -182,7 +164,14 @@ func (c *Controller) pushFailureEvent(postgres *api.Postgres, reason string) {
 		return in
 	})
 	if err != nil {
-		c.recorder.Eventf(postgres.ObjectReference(), core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
+			)
+		}
 	}
 	postgres.Status = pg.Status
 }

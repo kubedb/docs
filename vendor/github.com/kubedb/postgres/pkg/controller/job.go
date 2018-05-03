@@ -64,7 +64,7 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 					Containers: []core.Container{
 						{
 							Name:            snapshotProcessRestore,
-							Image:           c.opt.Docker.GetToolsImageWithTag(postgres),
+							Image:           c.docker.GetToolsImageWithTag(postgres),
 							ImagePullPolicy: core.PullIfNotPresent,
 							Args: []string{
 								snapshotProcessRestore,
@@ -72,7 +72,7 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
-								fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
+								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
 								{
@@ -88,7 +88,7 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 								},
 								{
 									Name:  analytics.Key,
-									Value: c.opt.AnalyticsClientID,
+									Value: c.AnalyticsClientID,
 								},
 							},
 							Resources: snapshot.Spec.Resources,
@@ -142,7 +142,7 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 }
 
 func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) {
-	postgres, err := c.ExtClient.Postgreses(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
+	postgres, err := c.pgLister.Postgreses(snapshot.Namespace).Get(snapshot.Spec.DatabaseName)
 	if err != nil {
 		return nil, err
 	}
@@ -190,14 +190,14 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 					Containers: []core.Container{
 						{
 							Name:  snapshotProcessBackup,
-							Image: c.opt.Docker.GetToolsImageWithTag(postgres),
+							Image: c.docker.GetToolsImageWithTag(postgres),
 							Args: []string{
 								snapshotProcessBackup,
 								fmt.Sprintf(`--host=%s`, postgres.ServiceName()),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
-								fmt.Sprintf("--analytics=%v", c.opt.EnableAnalytics),
+								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
 							},
 							Env: []core.EnvVar{
 								{
@@ -213,7 +213,7 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 								},
 								{
 									Name:  analytics.Key,
-									Value: c.opt.AnalyticsClientID,
+									Value: c.AnalyticsClientID,
 								},
 							},
 							Resources: snapshot.Spec.Resources,
