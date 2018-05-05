@@ -32,6 +32,7 @@ func NewKubeDBServerOptions(out, errOut io.Writer) *KubeDBServerOptions {
 		StdErr:             errOut,
 	}
 	o.RecommendedOptions.Etcd = nil
+	o.RecommendedOptions.Admission = nil
 
 	return o
 }
