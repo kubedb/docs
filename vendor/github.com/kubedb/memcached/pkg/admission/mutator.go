@@ -32,11 +32,11 @@ var _ hookapi.AdmissionHook = &MemcachedMutator{}
 
 func (a *MemcachedMutator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "mutators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "memcachedmutationreviews",
+			Resource: "memcacheds",
 		},
-		"memcachedmutationreview"
+		"memcached"
 }
 
 func (a *MemcachedMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

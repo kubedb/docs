@@ -93,9 +93,6 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 
 // InitInformer initializes Elasticsearch, DormantDB amd Snapshot watcher
 func (c *Controller) Init() error {
-	if err := c.EnsureCustomResourceDefinitions(); err != nil {
-		return err
-	}
 	c.initWatcher()
 	c.DrmnQueue = drmnc.NewController(c.Controller, c, c.Config, nil).AddEventHandlerFunc(c.selector)
 	c.SnapQueue, c.JobQueue = snapc.NewController(c.Controller, c, c.Config, nil).AddEventHandlerFunc(c.selector)

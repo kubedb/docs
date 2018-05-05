@@ -36,11 +36,11 @@ var _ hookapi.AdmissionHook = &PostgresValidator{}
 
 func (a *PostgresValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "postgresvalidationreviews",
+			Resource: "postgreses",
 		},
-		"postgresvalidationreview"
+		"postgres"
 }
 
 func (a *PostgresValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

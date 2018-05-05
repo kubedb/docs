@@ -87,9 +87,6 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 
 // Init initializes mysql, DormantDB amd Snapshot watcher
 func (c *Controller) Init() error {
-	if err := c.EnsureCustomResourceDefinitions(); err != nil {
-		return err
-	}
 	c.initWatcher()
 	c.DrmnQueue = dormantdatabase.NewController(c.Controller, c, c.Config, nil).AddEventHandlerFunc(c.selector)
 	c.SnapQueue, c.JobQueue = snapc.NewController(c.Controller, c, c.Config, nil).AddEventHandlerFunc(c.selector)

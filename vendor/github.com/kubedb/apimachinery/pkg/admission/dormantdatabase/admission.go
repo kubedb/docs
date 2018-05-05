@@ -34,11 +34,11 @@ var _ hookapi.AdmissionHook = &DormantDatabaseValidator{}
 
 func (a *DormantDatabaseValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "dormantdatabasereviews",
+			Resource: "dormantdatabases",
 		},
-		"dormantdatabasereview"
+		"dormantdatabase"
 }
 
 func (a *DormantDatabaseValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
@@ -138,21 +138,23 @@ func (a *DormantDatabaseValidator) setOwnerReferenceToObjects(dormantDatabase *a
 		return rerr
 	}
 
-	// Set Owner Reference of Snapshots to this Dormant Database Object
-	snapshotList, err := a.extClient.KubedbV1alpha1().Snapshots(dormantDatabase.Namespace).List(
-		metav1.ListOptions{
-			LabelSelector: labelSelector.String(),
-		},
-	)
-	if err != nil {
-		return err
-	}
-	for _, snapshot := range snapshotList.Items {
-		if _, _, err := util.PatchSnapshot(a.extClient.KubedbV1alpha1(), &snapshot, func(in *api.Snapshot) *api.Snapshot {
-			in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
-			return in
-		}); err != nil {
+	if dbKind != api.ResourceKindMemcached && dbKind != api.ResourceKindRedis {
+		// Set Owner Reference of Snapshots to this Dormant Database Object
+		snapshotList, err := a.extClient.KubedbV1alpha1().Snapshots(dormantDatabase.Namespace).List(
+			metav1.ListOptions{
+				LabelSelector: labelSelector.String(),
+			},
+		)
+		if err != nil {
 			return err
+		}
+		for _, snapshot := range snapshotList.Items {
+			if _, _, err := util.PatchSnapshot(a.extClient.KubedbV1alpha1(), &snapshot, func(in *api.Snapshot) *api.Snapshot {
+				in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+				return in
+			}); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -207,25 +209,27 @@ func (a *DormantDatabaseValidator) removeOwnerReferenceFromObjects(dormantDataba
 		return rerr
 	}
 
-	// Set Owner Reference of Snapshots to this Dormant Database Object
-	snapshotList, err := a.extClient.KubedbV1alpha1().Snapshots(dormantDatabase.Namespace).List(
-		metav1.ListOptions{
-			LabelSelector: labelSelector.String(),
-		},
-	)
-	if err != nil {
-		return err
-	}
-	for _, snapshot := range snapshotList.Items {
-		if _, _, err := util.PatchSnapshot(a.extClient.KubedbV1alpha1(), &snapshot, func(in *api.Snapshot) *api.Snapshot {
-			in.ObjectMeta = core_util.RemoveOwnerReference(in.ObjectMeta, ref)
-			return in
-		}); err != nil {
+	// Remove Owner Reference of Snapshots
+	if dbKind != api.ResourceKindMemcached && dbKind != api.ResourceKindRedis {
+		snapshotList, err := a.extClient.KubedbV1alpha1().Snapshots(dormantDatabase.Namespace).List(
+			metav1.ListOptions{
+				LabelSelector: labelSelector.String(),
+			},
+		)
+		if err != nil {
 			return err
+		}
+		for _, snapshot := range snapshotList.Items {
+			if _, _, err := util.PatchSnapshot(a.extClient.KubedbV1alpha1(), &snapshot, func(in *api.Snapshot) *api.Snapshot {
+				in.ObjectMeta = core_util.RemoveOwnerReference(in.ObjectMeta, ref)
+				return in
+			}); err != nil {
+				return err
+			}
 		}
 	}
 
-	// Set Owner Reference of PVC to this Dormant Database Object
+	// Remove Owner Reference of PVC
 	pvcList, err := a.client.CoreV1().PersistentVolumeClaims(dormantDatabase.Namespace).List(
 		metav1.ListOptions{
 			LabelSelector: labelSelector.String(),

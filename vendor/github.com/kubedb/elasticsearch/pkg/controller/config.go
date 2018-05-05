@@ -58,6 +58,10 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	ctrl.DrmnInformer = dormantdatabase.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions).InitInformer()
 	ctrl.SnapInformer, ctrl.JobInformer = snapc.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions).InitInformer()
 
+	if err := ctrl.EnsureCustomResourceDefinitions(); err != nil {
+		return nil, err
+	}
+
 	if err := ctrl.Init(); err != nil {
 		return nil, err
 	}

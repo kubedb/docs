@@ -30,11 +30,11 @@ var _ hookapi.AdmissionHook = &SnapshotValidator{}
 
 func (a *SnapshotValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "snapshotreviews",
+			Resource: "snapshots",
 		},
-		"snapshotreview"
+		"snapshot"
 }
 
 func (a *SnapshotValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

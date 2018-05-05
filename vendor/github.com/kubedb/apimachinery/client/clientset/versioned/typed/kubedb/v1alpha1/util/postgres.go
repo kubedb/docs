@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
+	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -34,12 +35,16 @@ func CreateOrPatchPostgres(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta,
 }
 
 func PatchPostgres(c cs.KubedbV1alpha1Interface, cur *api.Postgres, transform func(*api.Postgres) *api.Postgres) (*api.Postgres, kutil.VerbType, error) {
+	return PatchPostgresObject(c, cur, transform(cur.DeepCopy()))
+}
+
+func PatchPostgresObject(c cs.KubedbV1alpha1Interface, cur, mod *api.Postgres) (*api.Postgres, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	modJson, err := json.Marshal(transform(cur.DeepCopy()))
+	modJson, err := json.Marshal(mod)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -75,4 +80,24 @@ func TryUpdatePostgres(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, tra
 		err = fmt.Errorf("failed to update Postgres %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
+}
+
+func UpdatePostgresStatus(c cs.KubedbV1alpha1Interface, cur *api.Postgres, transform func(*api.PostgresStatus) *api.PostgresStatus, useSubresource ...bool) (*api.Postgres, error) {
+	if len(useSubresource) > 1 {
+		return nil, errors.Errorf("invalid value passed for useSubresource: %v", useSubresource)
+	}
+
+	mod := &api.Postgres{
+		TypeMeta:   cur.TypeMeta,
+		ObjectMeta: cur.ObjectMeta,
+		Spec:       cur.Spec,
+		Status:     *transform(cur.Status.DeepCopy()),
+	}
+
+	if len(useSubresource) == 1 && useSubresource[0] {
+		return c.Postgreses(cur.Namespace).UpdateStatus(mod)
+	}
+
+	out, _, err := PatchPostgresObject(c, cur, mod)
+	return out, err
 }

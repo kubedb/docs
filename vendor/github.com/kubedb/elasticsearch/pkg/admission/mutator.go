@@ -34,11 +34,11 @@ var _ hookapi.AdmissionHook = &ElasticsearchMutator{}
 
 func (a *ElasticsearchMutator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "mutators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "elasticsearchmutationreviews",
+			Resource: "elasticsearches",
 		},
-		"elasticsearchmutationreview"
+		"elasticsearch"
 }
 
 func (a *ElasticsearchMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

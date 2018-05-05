@@ -32,11 +32,11 @@ var _ hookapi.AdmissionHook = &RedisMutator{}
 
 func (a *RedisMutator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "mutators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "redismutationreviews",
+			Resource: "redises",
 		},
-		"redismutationreview"
+		"redis"
 }
 
 func (a *RedisMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
+	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -34,12 +35,16 @@ func CreateOrPatchSnapshot(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta,
 }
 
 func PatchSnapshot(c cs.KubedbV1alpha1Interface, cur *api.Snapshot, transform func(*api.Snapshot) *api.Snapshot) (*api.Snapshot, kutil.VerbType, error) {
+	return PatchSnapshotObject(c, cur, transform(cur.DeepCopy()))
+}
+
+func PatchSnapshotObject(c cs.KubedbV1alpha1Interface, cur, mod *api.Snapshot) (*api.Snapshot, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	modJson, err := json.Marshal(transform(cur.DeepCopy()))
+	modJson, err := json.Marshal(mod)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -89,4 +94,24 @@ func WaitUntilSnapshotCompletion(c cs.KubedbV1alpha1Interface, meta metav1.Objec
 		return false, nil
 	})
 	return
+}
+
+func UpdateSnapshotStatus(c cs.KubedbV1alpha1Interface, cur *api.Snapshot, transform func(*api.SnapshotStatus) *api.SnapshotStatus, useSubresource ...bool) (*api.Snapshot, error) {
+	if len(useSubresource) > 1 {
+		return nil, errors.Errorf("invalid value passed for useSubresource: %v", useSubresource)
+	}
+
+	mod := &api.Snapshot{
+		TypeMeta:   cur.TypeMeta,
+		ObjectMeta: cur.ObjectMeta,
+		Spec:       cur.Spec,
+		Status:     *transform(cur.Status.DeepCopy()),
+	}
+
+	if len(useSubresource) == 1 && useSubresource[0] {
+		return c.Snapshots(cur.Namespace).UpdateStatus(mod)
+	}
+
+	out, _, err := PatchSnapshotObject(c, cur, mod)
+	return out, err
 }
