@@ -81,9 +81,6 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 
 // InitInformer initializes Memcached, DormantDB amd Snapshot watcher
 func (c *Controller) Init() error {
-	if err := c.EnsureCustomResourceDefinitions(); err != nil {
-		return err
-	}
 	c.initWatcher()
 	c.DrmnQueue = dormantdatabase.NewController(c.Controller, c, c.Config, nil).AddEventHandlerFunc(c.selector)
 

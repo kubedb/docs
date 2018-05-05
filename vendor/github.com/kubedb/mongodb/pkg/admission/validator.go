@@ -35,11 +35,11 @@ var _ hookapi.AdmissionHook = &MongoDBValidator{}
 
 func (a *MongoDBValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "mongodbvalidationreviews",
+			Resource: "mongodbs",
 		},
-		"mongodbvalidationreview"
+		"mongodb"
 }
 
 func (a *MongoDBValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
@@ -250,6 +250,5 @@ func preconditionFailedError(kind string) error {
 	apiVersion
 	kind
 	name
-	namespace
-	status`, strList}, "\n\t"))
+	namespace`, strList}, "\n\t"))
 }

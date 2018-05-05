@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
+	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -34,12 +35,16 @@ func CreateOrPatchMemcached(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta
 }
 
 func PatchMemcached(c cs.KubedbV1alpha1Interface, cur *api.Memcached, transform func(*api.Memcached) *api.Memcached) (*api.Memcached, kutil.VerbType, error) {
+	return PatchMemcachedObject(c, cur, transform(cur.DeepCopy()))
+}
+
+func PatchMemcachedObject(c cs.KubedbV1alpha1Interface, cur, mod *api.Memcached) (*api.Memcached, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	modJson, err := json.Marshal(transform(cur.DeepCopy()))
+	modJson, err := json.Marshal(mod)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -75,4 +80,24 @@ func TryUpdateMemcached(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, tr
 		err = fmt.Errorf("failed to update Memcached %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
+}
+
+func UpdateMemcachedStatus(c cs.KubedbV1alpha1Interface, cur *api.Memcached, transform func(*api.MemcachedStatus) *api.MemcachedStatus, useSubresource ...bool) (*api.Memcached, error) {
+	if len(useSubresource) > 1 {
+		return nil, errors.Errorf("invalid value passed for useSubresource: %v", useSubresource)
+	}
+
+	mod := &api.Memcached{
+		TypeMeta:   cur.TypeMeta,
+		ObjectMeta: cur.ObjectMeta,
+		Spec:       cur.Spec,
+		Status:     *transform(cur.Status.DeepCopy()),
+	}
+
+	if len(useSubresource) == 1 && useSubresource[0] {
+		return c.Memcacheds(cur.Namespace).UpdateStatus(mod)
+	}
+
+	out, _, err := PatchMemcachedObject(c, cur, mod)
+	return out, err
 }

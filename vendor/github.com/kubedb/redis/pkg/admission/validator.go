@@ -35,11 +35,11 @@ var _ hookapi.AdmissionHook = &RedisValidator{}
 
 func (a *RedisValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "redisvalidationreviews",
+			Resource: "redises",
 		},
-		"redisvalidationreview"
+		"redis"
 }
 
 func (a *RedisValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
@@ -225,6 +225,5 @@ func preconditionFailedError(kind string) error {
 	apiVersion
 	kind
 	name
-	namespace
-	status`, strList}, "\n\t"))
+	namespace`, strList}, "\n\t"))
 }

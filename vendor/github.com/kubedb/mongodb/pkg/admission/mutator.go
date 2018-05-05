@@ -34,11 +34,11 @@ var _ hookapi.AdmissionHook = &MongoDBMutator{}
 
 func (a *MongoDBMutator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "mutators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "mongodbmutationreviews",
+			Resource: "mongodbs",
 		},
-		"mongodbmutationreview"
+		"mongodb"
 }
 
 func (a *MongoDBMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
@@ -139,8 +139,6 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB) erro
 	// Take dormantDatabaseSecretName
 	if mongodb.Spec.DatabaseSecret == nil {
 		mongodb.Spec.DatabaseSecret = ddbOriginSpec.DatabaseSecret
-	} else {
-		ddbOriginSpec.DatabaseSecret = mongodb.Spec.DatabaseSecret
 	}
 
 	// If Monitoring Spec of new object is not given,

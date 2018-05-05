@@ -35,11 +35,11 @@ var _ hookapi.AdmissionHook = &MySQLValidator{}
 
 func (a *MySQLValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "mysqlvalidationreviews",
+			Resource: "mysqls",
 		},
-		"mysqlvalidationreview"
+		"mysql"
 }
 
 func (a *MySQLValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
@@ -257,6 +257,5 @@ func preconditionFailedError(kind string) error {
 	apiVersion
 	kind
 	name
-	namespace
-	status`, strList}, "\n\t"))
+	namespace`, strList}, "\n\t"))
 }

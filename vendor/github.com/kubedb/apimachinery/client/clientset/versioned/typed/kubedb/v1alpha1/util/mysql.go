@@ -8,6 +8,7 @@ import (
 	"github.com/golang/glog"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
+	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -34,12 +35,16 @@ func CreateOrPatchMySQL(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, tr
 }
 
 func PatchMySQL(c cs.KubedbV1alpha1Interface, cur *api.MySQL, transform func(*api.MySQL) *api.MySQL) (*api.MySQL, kutil.VerbType, error) {
+	return PatchMySQLObject(c, cur, transform(cur.DeepCopy()))
+}
+
+func PatchMySQLObject(c cs.KubedbV1alpha1Interface, cur, mod *api.MySQL) (*api.MySQL, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	modJson, err := json.Marshal(transform(cur.DeepCopy()))
+	modJson, err := json.Marshal(mod)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -75,4 +80,24 @@ func TryUpdateMySQL(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transf
 		err = fmt.Errorf("failed to update MySQL %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
+}
+
+func UpdateMySQLStatus(c cs.KubedbV1alpha1Interface, cur *api.MySQL, transform func(*api.MySQLStatus) *api.MySQLStatus, useSubresource ...bool) (*api.MySQL, error) {
+	if len(useSubresource) > 1 {
+		return nil, errors.Errorf("invalid value passed for useSubresource: %v", useSubresource)
+	}
+
+	mod := &api.MySQL{
+		TypeMeta:   cur.TypeMeta,
+		ObjectMeta: cur.ObjectMeta,
+		Spec:       cur.Spec,
+		Status:     *transform(cur.Status.DeepCopy()),
+	}
+
+	if len(useSubresource) == 1 && useSubresource[0] {
+		return c.MySQLs(cur.Namespace).UpdateStatus(mod)
+	}
+
+	out, _, err := PatchMySQLObject(c, cur, mod)
+	return out, err
 }

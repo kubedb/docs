@@ -35,11 +35,11 @@ var _ hookapi.AdmissionHook = &MemcachedValidator{}
 
 func (a *MemcachedValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "memcachedvalidationreviews",
+			Resource: "memcacheds",
 		},
-		"memcachedvalidationreview"
+		"memcached"
 }
 
 func (a *MemcachedValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

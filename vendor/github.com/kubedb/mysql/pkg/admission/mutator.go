@@ -34,11 +34,11 @@ var _ hookapi.AdmissionHook = &MySQLMutator{}
 
 func (a *MySQLMutator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "mutators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "mysqlmutationreviews",
+			Resource: "mysqls",
 		},
-		"mysqlmutationreview"
+		"mysql"
 }
 
 func (a *MySQLMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
@@ -139,8 +139,6 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mysql *api.MySQL) error {
 	// Take dormantDatabaseSecretName
 	if mysql.Spec.DatabaseSecret == nil {
 		mysql.Spec.DatabaseSecret = ddbOriginSpec.DatabaseSecret
-	} else {
-		ddbOriginSpec.DatabaseSecret = mysql.Spec.DatabaseSecret
 	}
 
 	// If Monitoring Spec of new object is not given,

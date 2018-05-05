@@ -55,6 +55,10 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	// Initialize Job and Snapshot Informer. Later EventHandler will be added to these informers.
 	ctrl.DrmnInformer = dormantdatabase.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions).InitInformer()
 
+	if err := ctrl.EnsureCustomResourceDefinitions(); err != nil {
+		return nil, err
+	}
+
 	if err := ctrl.Init(); err != nil {
 		return nil, err
 	}

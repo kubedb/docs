@@ -34,11 +34,11 @@ var _ hookapi.AdmissionHook = &PostgresMutator{}
 
 func (a *PostgresMutator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "mutators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "postgresmutationreviews",
+			Resource: "postgreses",
 		},
-		"postgresmutationreview"
+		"postgres"
 }
 
 func (a *PostgresMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

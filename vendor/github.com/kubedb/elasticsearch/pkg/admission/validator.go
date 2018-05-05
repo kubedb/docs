@@ -35,11 +35,11 @@ var _ hookapi.AdmissionHook = &ElasticsearchValidator{}
 
 func (a *ElasticsearchValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "admission.kubedb.com",
+			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "elasticsearchvalidationreviews",
+			Resource: "elasticsearches",
 		},
-		"elasticsearchvalidationreview"
+		"elasticsearch"
 }
 
 func (a *ElasticsearchValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
