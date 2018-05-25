@@ -45,12 +45,13 @@ var (
 )
 
 type CollectionStatus struct {
-	Name        string `bson:"ns"`
-	Count       int    `bson:"count"`
-	Size        int    `bson:"size"`
-	AvgSize     int    `bson:"avgObjSize"`
-	StorageSize int    `bson:"storageSize"`
-	IndexSize   int    `bson:"totalIndexSize"`
+	Name        string               `bson:"ns"`
+	Count       int                  `bson:"count"`
+	Size        int                  `bson:"size"`
+	AvgSize     int                  `bson:"avgObjSize"`
+	StorageSize int                  `bson:"storageSize"`
+	IndexSize   int                  `bson:"totalIndexSize"`
+	WiredTiger  *CollWiredTigerStats `bson:"wiredTiger"`
 }
 
 func (collStatus *CollectionStatus) Export(ch chan<- prometheus.Metric) {
@@ -59,6 +60,10 @@ func (collStatus *CollectionStatus) Export(ch chan<- prometheus.Metric) {
 	avgObjSize.WithLabelValues(collStatus.Name).Set(float64(collStatus.AvgSize))
 	storageSize.WithLabelValues(collStatus.Name).Set(float64(collStatus.StorageSize))
 	collIndexSize.WithLabelValues(collStatus.Name).Set(float64(collStatus.IndexSize))
+
+	if collStatus.WiredTiger != nil {
+		collStatus.WiredTiger.Export(ch, collStatus.Name)
+	}
 
 	count.Collect(ch)
 	size.Collect(ch)
@@ -79,6 +84,10 @@ func (collStatus *CollectionStatus) Describe(ch chan<- *prometheus.Desc) {
 	avgObjSize.Describe(ch)
 	storageSize.Describe(ch)
 	collIndexSize.Describe(ch)
+
+	if collStatus.WiredTiger != nil {
+		collStatus.WiredTiger.Describe(ch)
+	}
 }
 
 func GetCollectionStatus(session *mgo.Session, db string, collection string) *CollectionStatus {
@@ -101,7 +110,7 @@ func CollectCollectionStatus(session *mgo.Session, db string, ch chan<- promethe
 	for _, collection_name := range collection_names {
 		collStats := GetCollectionStatus(session, db, collection_name)
 		if collStats != nil {
-			glog.Infof("exporting Database Metrics for db=%q, table=%q", db, collection_name)
+			glog.V(1).Infof("exporting Database Metrics for db=%q, table=%q", db, collection_name)
 			collStats.Export(ch)
 		}
 	}

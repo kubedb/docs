@@ -50,12 +50,14 @@ var (
 	mongodbUserName                     = flag.String("mongodb.username", "", "Username to connect to Mongodb")
 	mongodbAuthMechanism                = flag.String("mongodb.mechanism", "", "auth mechanism to connect to Mongodb (ie: MONGODB-X509)")
 	mongodbCollectOplog                 = flag.Bool("mongodb.collect.oplog", true, "collect Mongodb Oplog status")
+	mongodbCollectOplogTail             = flag.Bool("mongodb.collect.oplog_tail", false, "tail Mongodb Oplog to get stats")
 	mongodbCollectReplSet               = flag.Bool("mongodb.collect.replset", true, "collect Mongodb replica set status")
 	mongodbCollectTopMetrics            = flag.Bool("mongodb.collect.top", false, "collect Mongodb Top metrics")
 	mongodbCollectDatabaseMetrics       = flag.Bool("mongodb.collect.database", false, "collect MongoDB database metrics")
 	mongodbCollectCollectionMetrics     = flag.Bool("mongodb.collect.collection", false, "Collect MongoDB collection metrics")
 	mongodbCollectProfileMetrics        = flag.Bool("mongodb.collect.profile", false, "Collect MongoDB profile metrics")
 	mongodbCollectConnPoolStats         = flag.Bool("mongodb.collect.connpoolstats", false, "Collect MongoDB connpoolstats")
+	mongodbSocketTimeout                = flag.Duration("mongodb.socket-timeout", 0, "timeout for socket operations to mongodb")
 	version                             = flag.Bool("version", false, "Print mongodb_exporter version")
 )
 
@@ -152,6 +154,7 @@ func registerCollector() {
 		TLSCaFile:                *mongodbTLSCa,
 		TLSHostnameValidation:    !(*mongodbTLSDisableHostnameValidation),
 		CollectOplog:             *mongodbCollectOplog,
+		TailOplog:                *mongodbCollectOplogTail,
 		CollectReplSet:           *mongodbCollectReplSet,
 		CollectTopMetrics:        *mongodbCollectTopMetrics,
 		CollectDatabaseMetrics:   *mongodbCollectDatabaseMetrics,
@@ -160,6 +163,7 @@ func registerCollector() {
 		CollectConnPoolStats:     *mongodbCollectConnPoolStats,
 		UserName:                 *mongodbUserName,
 		AuthMechanism:            *mongodbAuthMechanism,
+		SocketTimeout:            *mongodbSocketTimeout,
 	})
 	prometheus.MustRegister(mongodbCollector)
 }

@@ -451,40 +451,28 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *ap
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 			pvcSpec := postgres.Spec.Storage
-			if pvcSpec != nil {
-				if len(pvcSpec.AccessModes) == 0 {
-					pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
-						core.ReadWriteOnce,
-					}
-					log.Infof(`Using "%v" as AccessModes in postgres.Spec.Storage`, core.ReadWriteOnce)
+			if len(pvcSpec.AccessModes) == 0 {
+				pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
+					core.ReadWriteOnce,
 				}
-
-				volumeClaim := core.PersistentVolumeClaim{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "data",
-					},
-					Spec: *pvcSpec,
-				}
-				if pvcSpec.StorageClassName != nil {
-					volumeClaim.Annotations = map[string]string{
-						"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
-					}
-				}
-				volumeClaims := statefulSet.Spec.VolumeClaimTemplates
-				volumeClaims = core_util.UpsertVolumeClaim(volumeClaims, volumeClaim)
-				statefulSet.Spec.VolumeClaimTemplates = volumeClaims
-			} else {
-				volume := core.Volume{
-					Name: "data",
-					VolumeSource: core.VolumeSource{
-						EmptyDir: &core.EmptyDirVolumeSource{},
-					},
-				}
-				volumes := statefulSet.Spec.Template.Spec.Volumes
-				volumes = core_util.UpsertVolume(volumes, volume)
-				statefulSet.Spec.Template.Spec.Volumes = volumes
-				return statefulSet
+				log.Infof(`Using "%v" as AccessModes in postgres.Spec.Storage`, core.ReadWriteOnce)
 			}
+
+			volumeClaim := core.PersistentVolumeClaim{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "data",
+				},
+				Spec: pvcSpec,
+			}
+			if pvcSpec.StorageClassName != nil {
+				volumeClaim.Annotations = map[string]string{
+					"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+				}
+			}
+			volumeClaims := statefulSet.Spec.VolumeClaimTemplates
+			volumeClaims = core_util.UpsertVolumeClaim(volumeClaims, volumeClaim)
+			statefulSet.Spec.VolumeClaimTemplates = volumeClaims
+
 			break
 		}
 	}
