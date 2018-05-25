@@ -182,6 +182,7 @@ cp /tmp/.env hack/config/.env
 if ! (./hack/make.py test e2e --v=1 --storageclass=standard --selfhosted-operator=true); then
     EXIT_CODE=1
 fi
+popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
 
@@ -193,6 +194,7 @@ cp /tmp/.env hack/config/.env
 if ! (./hack/make.py test e2e --v=1 --storageclass=standard --selfhosted-operator=true); then
     EXIT_CODE=1
 fi
+popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
 
@@ -201,8 +203,6 @@ echo "======================TESTING POSTGRES=============================="
 git clone https://github.com/kubedb/postgres
 pushd postgres
 cp /tmp/.env hack/config/.env
-./hack/docker/pg-operator/make.sh build
-./hack/docker/pg-operator/make.sh push
 ./hack/docker/postgres/9.6.7/make.sh build
 ./hack/docker/postgres/9.6.7/make.sh push
 ./hack/docker/postgres/9.6/make.sh
