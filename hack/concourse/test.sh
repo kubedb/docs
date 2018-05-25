@@ -187,7 +187,7 @@ popd
 kubectl describe pods -n kube-system -l app=kubedb || true
 
 # test elasticsearch
-echo "======================TESTING ELASTICSEARCH=============================="
+echo "======================TESTING ELASTICSEARCH============================="
 git clone https://github.com/kubedb/elasticsearch
 pushd elasticsearch
 cp /tmp/.env hack/config/.env
