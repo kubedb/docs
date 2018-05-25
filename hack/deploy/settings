@@ -1,0 +1,9 @@
+# uncomment following line to deploy in development mode.
+# export APPSCODE_ENV=dev
+
+# kubedb/cli branch to checkout for installer script.
+export CLI_BRANCH="master"
+
+# provide CUSTOM_OPERATOR_TAG for kubedb installer.
+# if APPSCODE_ENV=dev then git_tag will be used as CUSTOM_OPERATOR_TAG
+export CUSTOM_OPERATOR_TAG="0.8.0-beta.2"
