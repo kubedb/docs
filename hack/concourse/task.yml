@@ -7,8 +7,8 @@ image_resource:
     tag: latest
 
 inputs:
-- name: postgres
+- name: operator
 - name: creds
 
 run:
-  path: postgres/hack/concourse/test.sh
+  path: operator/hack/concourse/test.sh
