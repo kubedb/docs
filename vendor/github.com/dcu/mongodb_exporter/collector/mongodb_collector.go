@@ -1,6 +1,8 @@
 package collector
 
 import (
+	"time"
+
 	"github.com/dcu/mongodb_exporter/shared"
 	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
@@ -29,6 +31,7 @@ type MongodbCollectorOpts struct {
 	TLSHostnameValidation    bool
 	CollectReplSet           bool
 	CollectOplog             bool
+	TailOplog                bool
 	CollectTopMetrics        bool
 	CollectDatabaseMetrics   bool
 	CollectCollectionMetrics bool
@@ -36,6 +39,7 @@ type MongodbCollectorOpts struct {
 	CollectConnPoolStats     bool
 	UserName                 string
 	AuthMechanism            string
+	SocketTimeout            time.Duration
 }
 
 func (in MongodbCollectorOpts) toSessionOps() shared.MongoSessionOpts {
@@ -47,6 +51,7 @@ func (in MongodbCollectorOpts) toSessionOps() shared.MongoSessionOpts {
 		TLSHostnameValidation: in.TLSHostnameValidation,
 		UserName:              in.UserName,
 		AuthMechanism:         in.AuthMechanism,
+		SocketTimeout:         in.SocketTimeout,
 	}
 }
 
@@ -68,6 +73,7 @@ func NewMongodbCollector(opts MongodbCollectorOpts) *MongodbCollector {
 func (exporter *MongodbCollector) Describe(ch chan<- *prometheus.Desc) {
 	(&ServerStatus{}).Describe(ch)
 	(&ReplSetStatus{}).Describe(ch)
+	(&ReplSetConf{}).Describe(ch)
 	(&DatabaseStatus{}).Describe(ch)
 
 	if exporter.Opts.CollectTopMetrics {
@@ -88,10 +94,16 @@ func (exporter *MongodbCollector) Collect(ch chan<- prometheus.Metric) {
 		if exporter.Opts.CollectReplSet {
 			glog.Info("Collecting ReplSet Status")
 			exporter.collectReplSetStatus(mongoSess, ch)
+			exporter.collectReplSetConf(mongoSess, ch)
 		}
 		if exporter.Opts.CollectOplog {
 			glog.Info("Collecting Oplog Status")
 			exporter.collectOplogStatus(mongoSess, ch)
+		}
+
+		if exporter.Opts.TailOplog {
+			glog.Info("Collecting Oplog Tail Stats")
+			exporter.collectOplogTailStats(mongoSess, ch)
 		}
 
 		if exporter.Opts.CollectTopMetrics {
@@ -145,6 +157,17 @@ func (exporter *MongodbCollector) collectReplSetStatus(session *mgo.Session, ch 
 	return replSetStatus
 }
 
+func (exporter *MongodbCollector) collectReplSetConf(session *mgo.Session, ch chan<- prometheus.Metric) *ReplSetConf {
+	replSetConf := GetReplSetConf(session)
+
+	if replSetConf != nil {
+		glog.Info("exporting ReplSetConf Metrics")
+		replSetConf.Export(ch)
+	}
+
+	return replSetConf
+}
+
 func (exporter *MongodbCollector) collectOplogStatus(session *mgo.Session, ch chan<- prometheus.Metric) *OplogStatus {
 	oplogStatus := GetOplogStatus(session)
 
@@ -154,6 +177,17 @@ func (exporter *MongodbCollector) collectOplogStatus(session *mgo.Session, ch ch
 	}
 
 	return oplogStatus
+}
+
+func (exporter *MongodbCollector) collectOplogTailStats(session *mgo.Session, ch chan<- prometheus.Metric) *OplogTailStats {
+	oplogTailStats := GetOplogTailStats(session)
+
+	if oplogTailStats != nil {
+		glog.Info("exporting oplogTailStats Metrics")
+		oplogTailStats.Export(ch)
+	}
+
+	return oplogTailStats
 }
 
 func (exporter *MongodbCollector) collectTopStatus(session *mgo.Session, ch chan<- prometheus.Metric) *TopStatus {

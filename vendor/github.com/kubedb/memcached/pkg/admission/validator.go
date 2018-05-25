@@ -77,12 +77,14 @@ func (a *MemcachedValidator) Admit(req *admission.AdmissionRequest) *admission.A
 
 	switch req.Operation {
 	case admission.Delete:
-		// req.Object.Raw = nil, so read from kubernetes
-		obj, err := a.extClient.KubedbV1alpha1().Memcacheds(req.Namespace).Get(req.Name, metav1.GetOptions{})
-		if err != nil && !kerr.IsNotFound(err) {
-			return hookapi.StatusInternalServerError(err)
-		} else if err == nil && obj.Spec.DoNotPause {
-			return hookapi.StatusBadRequest(fmt.Errorf(`memcached "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+		if req.Name != "" {
+			// req.Object.Raw = nil, so read from kubernetes
+			obj, err := a.extClient.KubedbV1alpha1().Memcacheds(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			if err != nil && !kerr.IsNotFound(err) {
+				return hookapi.StatusInternalServerError(err)
+			} else if err == nil && obj.Spec.DoNotPause {
+				return hookapi.StatusBadRequest(fmt.Errorf(`memcached "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+			}
 		}
 	default:
 		obj, err := meta_util.UnmarshalFromJSON(req.Object.Raw, api.SchemeGroupVersion)

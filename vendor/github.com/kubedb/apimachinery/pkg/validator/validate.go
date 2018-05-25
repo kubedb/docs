@@ -14,11 +14,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func ValidateStorage(client kubernetes.Interface, spec *core.PersistentVolumeClaimSpec) error {
-	if spec == nil {
-		return nil
-	}
-
+func ValidateStorage(client kubernetes.Interface, spec core.PersistentVolumeClaimSpec) error {
 	if spec.StorageClassName != nil {
 		if _, err := client.StorageV1beta1().StorageClasses().Get(*spec.StorageClassName, metav1.GetOptions{}); err != nil {
 			if kerr.IsNotFound(err) {
@@ -61,9 +57,12 @@ func ValidateSnapshotSpec(client kubernetes.Interface, spec api.SnapshotStorageS
 		return nil
 	}
 
-	// Need to provide Storage credential secret
-	if spec.StorageSecretName == "" {
-		return fmt.Errorf(`object 'SecretName' is missing in '%v'`, spec)
+	// Note: S3 & GCS bucket can be accessed with default IAM account credential. So do not require secret
+	// Must provide Storage credentials for Azure & Swift
+	if spec.Azure != nil || spec.Swift != nil {
+		if spec.StorageSecretName == "" {
+			return fmt.Errorf(`object 'SecretName' is missing in '%v'`, spec)
+		}
 	}
 
 	if err := storage.CheckBucketAccess(client, spec, namespace); err != nil {

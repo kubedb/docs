@@ -77,16 +77,17 @@ func (a *DormantDatabaseValidator) Admit(req *admission.AdmissionRequest) *admis
 
 	switch req.Operation {
 	case admission.Delete:
-		// req.Object.Raw = nil, so read from kubernetes
-		obj, err := a.extClient.KubedbV1alpha1().DormantDatabases(req.Namespace).Get(req.Name, metav1.GetOptions{})
-		if err != nil && !kerr.IsNotFound(err) {
-			return hookapi.StatusInternalServerError(err)
-		} else if kerr.IsNotFound(err) {
-			break
-		}
-
-		if err := a.handleOwnerReferences(obj); err != nil {
-			return hookapi.StatusInternalServerError(err)
+		if req.Name != "" {
+			// req.Object.Raw = nil, so read from kubernetes
+			obj, err := a.extClient.KubedbV1alpha1().DormantDatabases(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			if err != nil && !kerr.IsNotFound(err) {
+				return hookapi.StatusInternalServerError(err)
+			} else if kerr.IsNotFound(err) {
+				break
+			}
+			if err := a.handleOwnerReferences(obj); err != nil {
+				return hookapi.StatusInternalServerError(err)
+			}
 		}
 	case admission.Update:
 		// validate the operation made by User

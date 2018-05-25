@@ -1,5 +1,5 @@
 hash: 45d32513f20d4f55451fbb09800da222edd42307464eb981e4b7cc794e982004
-updated: 2018-05-05T13:30:49.384198416-07:00
+updated: 2018-05-25T17:51:04.86277982+06:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -32,7 +32,7 @@ imports:
   - types
   - version
 - name: github.com/appscode/jsonpatch
-  version: 58a38a46ddb591a543c6b1003213353e29331c5a
+  version: 1359b374de83fa14fd58ab10aa8ea4935f84d249
 - name: github.com/appscode/kube-mon
   version: dc81c09a885b0862f1bbbae3e440a68fbf2b36a6
   subpackages:
@@ -46,7 +46,7 @@ imports:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: ed8d181d523ddd37e5cb7a23fa457b4c370a5140
+  version: e04d4d7ed42f54b68fc1e6a5926679883b0e5b56
   subpackages:
   - apiextensions/v1beta1
   - apps/v1
@@ -112,7 +112,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/blang/semver
-  version: b38d23b8782a487059e8fc8773e9a5b228a77cb6
+  version: c5e971dbed7850a93c23aa6ff69db5771d8e23b3
 - name: github.com/cloudfoundry-community/go-cfenv
   version: f920e9562d5f951cbf11785728f67258c38a10d0
 - name: github.com/coreos/etcd
@@ -214,7 +214,7 @@ imports:
   subpackages:
   - spew
 - name: github.com/dcu/mongodb_exporter
-  version: 498ffd64e985b6220ae9a7ada551f8d073948cb0
+  version: 8f53431089a13bc46f4f86533451c01b60582478
   subpackages:
   - collector
   - shared
@@ -252,11 +252,11 @@ imports:
 - name: github.com/go-openapi/jsonreference
   version: 13c6e3589ad90f49bd3e3bbe2c2cb3d7a4142272
 - name: github.com/go-openapi/spec
-  version: 1de3e0542de65ad8d75452a595886fdd0befb363
+  version: 7abd5745472fff5eb3685386d5fb8bf38683154d
 - name: github.com/go-openapi/swag
   version: f3f9494671f93fcff853e3c6e9e948b3eb71e590
 - name: github.com/go-sql-driver/mysql
-  version: 3287d94d4c6a48a63e16fffaabf27ab20203af2a
+  version: ceae19ce1c5ac766abad8db04d649a7a83e91ced
 - name: github.com/go-stack/stack
   version: 259ab82a6cad3992b4e21ff5cac294ccb06474bc
 - name: github.com/go-xorm/builder
@@ -310,7 +310,7 @@ imports:
   - compiler
   - extensions
 - name: github.com/graymeta/stow
-  version: a2bb5ac932dfea981d79ab395a0ab4ea09365d52
+  version: 42dc7dbf948d85803a205b39e5d3790470651c73
   repo: https://github.com/appscode/stow.git
   vcs: git
   subpackages:
@@ -344,13 +344,13 @@ imports:
 - name: github.com/json-iterator/go
   version: 13f86432b882000a51c6e610c620974462691a97
 - name: github.com/justwatchcom/elasticsearch_exporter
-  version: 72f24dda59341eeca0f694e3089795fc070c4271
+  version: 396d251a13e7fa16920e86c91595c8f63e783ffe
   subpackages:
   - collector
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 7722f91fb07234ee69f3889e5c6ed5c181b0a0a7
+  version: 1f462fe2a8b320d95f5f81b3a063fc83c34d28f1
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -374,32 +374,32 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 2bcc990cbe58fdc65b5f32c4f087f8a82887934a
+  version: 6c0f84b297873f16ab3834bfafa866785be4068f
   subpackages:
   - pkg/admission
   - pkg/audit/report
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/memcached
-  version: 91c782433a1722288595efceca8e491eca5df691
+  version: 185ea480513a2f6eff978637d9ac65f0d32649f0
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/mongodb
-  version: fef7d1a3d2e3f0c6e7de90526e6521518bb28a5f
+  version: 9dc3feb941c70c99539370b151821b647ca6d870
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/mysql
-  version: ccb59db00394fb4d14ef87aff46cd832619e9b86
+  version: a2d13c828b1da61d94d4ad5455679707ee7bbfac
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/postgres
-  version: 89e32bff658b5952e2221c60353d872bddfab853
+  version: 3e4ae3174f261fb742bc631171ce0486dee83269
   subpackages:
   - pkg/admission
   - pkg/audit/report
@@ -407,13 +407,13 @@ imports:
   - pkg/docker
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: 362e314622934551dd120ec11dc5eb7691d0f035
+  version: 98ee895ef35dbc1abff9f4de5dd8402b1bed2652
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/docker
 - name: github.com/lib/pq
-  version: d34b9ff171c21ad295489235aec8b6626023cd04
+  version: 90697d60dd844d5ef6ff15135d0203f65d2f53b8
   subpackages:
   - oid
 - name: github.com/mailru/easyjson
@@ -427,13 +427,13 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/mitchellh/mapstructure
-  version: 53818660ed4955e899c0bcafa97299a388bd7c8e
+  version: bb74f1db0675b241733089d5a1faa5dd8b0ef57b
 - name: github.com/ncw/swift
   version: b2a7479cf26fa841ff90dd932d0221cb5c50782d
 - name: github.com/NYTimes/gziphandler
   version: 56545f4a5d46df9a6648819d1664c3a03a13ffdb
 - name: github.com/oliver006/redis_exporter
-  version: ee804e758906d0690115868ce463d51351e45388
+  version: 5643633ef83d61b99499f34591ea1005415bd927
   subpackages:
   - exporter
 - name: github.com/openshift/api
@@ -443,7 +443,7 @@ imports:
 - name: github.com/openshift/origin
   version: 93f12e580ece30e0055f030dcd6d239116ff5cb4
 - name: github.com/orcaman/concurrent-map
-  version: a05df785d2dcc16310fb997ee1702100d047cfe1
+  version: 2ae17bc4c860c83513ee50feb9746f3e50d7515d
 - name: github.com/pborman/uuid
   version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - name: github.com/pkg/errors
@@ -479,7 +479,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 390e260bd9899936562ea8206eafb11a16ddd8a9
+  version: 18e6fa7c8aafbe45ed0a9981fdd32affe819bbb4
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -488,12 +488,17 @@ imports:
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/russross/blackfriday
   version: 300106c228d52c8941d4b3de6054a6062a86dda3
+- name: github.com/rwynn/gtm
+  version: 495abc277593067479c3c528864191804ab04cf7
+  repo: https://github.com/jacksontj/gtm.git
 - name: github.com/satori/uuid
   version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
 - name: github.com/sergi/go-diff
   version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
   subpackages:
   - diffmatchpatch
+- name: github.com/serialx/hashring
+  version: 49a4782e9908fe098c907022a1bd7519c79803d6
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
@@ -576,14 +581,14 @@ imports:
   subpackages:
   - rate
 - name: google.golang.org/api
-  version: bb395b674c9930450ea7243b3e3c8f43150f4c11
+  version: 348810ff778af56686d572415ce79e6c9fad9613
   subpackages:
   - gensupport
   - googleapi
   - googleapi/internal/uritemplates
   - storage/v1
 - name: google.golang.org/appengine
-  version: 12d5545dc1cfa6047a286d5e853841b6471f4c19
+  version: b1f26356af11148e710935ed1ac8a7f5702c7612
   subpackages:
   - cloudsql
   - internal

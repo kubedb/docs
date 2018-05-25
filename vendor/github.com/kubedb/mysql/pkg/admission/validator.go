@@ -77,12 +77,14 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 
 	switch req.Operation {
 	case admission.Delete:
-		// req.Object.Raw = nil, so read from kubernetes
-		obj, err := a.extClient.KubedbV1alpha1().MySQLs(req.Namespace).Get(req.Name, metav1.GetOptions{})
-		if err != nil && !kerr.IsNotFound(err) {
-			return hookapi.StatusInternalServerError(err)
-		} else if err == nil && obj.Spec.DoNotPause {
-			return hookapi.StatusBadRequest(fmt.Errorf(`mysql "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+		if req.Name != "" {
+			// req.Object.Raw = nil, so read from kubernetes
+			obj, err := a.extClient.KubedbV1alpha1().MySQLs(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			if err != nil && !kerr.IsNotFound(err) {
+				return hookapi.StatusInternalServerError(err)
+			} else if err == nil && obj.Spec.DoNotPause {
+				return hookapi.StatusBadRequest(fmt.Errorf(`mysql "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+			}
 		}
 	default:
 		obj, err := meta_util.UnmarshalFromJSON(req.Object.Raw, api.SchemeGroupVersion)
@@ -136,11 +138,8 @@ func ValidateMySQL(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be one`, mysql.Spec.Replicas)
 	}
 
-	if mysql.Spec.Storage != nil {
-		var err error
-		if err = amv.ValidateStorage(client, mysql.Spec.Storage); err != nil {
-			return err
-		}
+	if err := amv.ValidateStorage(client, mysql.Spec.Storage); err != nil {
+		return err
 	}
 
 	databaseSecret := mysql.Spec.DatabaseSecret
