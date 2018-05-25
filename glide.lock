@@ -1,5 +1,5 @@
 hash: 45d32513f20d4f55451fbb09800da222edd42307464eb981e4b7cc794e982004
-updated: 2018-05-25T17:34:19.744474567+06:00
+updated: 2018-05-25T17:51:04.86277982+06:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -374,7 +374,7 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 2aede6ac83aee4af75eb4ac14e1d9e95831d064d
+  version: 6c0f84b297873f16ab3834bfafa866785be4068f
   subpackages:
   - pkg/admission
   - pkg/audit/report
