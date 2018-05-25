@@ -29,6 +29,18 @@ mv pharmer-linux-amd64 /bin/pharmer
 popd
 
 function cleanup {
+    # Workload Descriptions if the test fails
+    if [ $? -ne 0 ]; then
+        echo ""
+        kubectl describe deploy -n kube-system -l app=kubedb || true
+        echo ""
+        echo ""
+        kubectl describe replicasets -n kube-system -l app=kubedb || true
+        echo ""
+        echo ""
+        kubectl describe pods -n kube-system -l app=kubedb || true
+    fi
+
     # delete cluster on exit
     pharmer get cluster || true
     pharmer delete cluster $NAME || true
@@ -137,6 +149,8 @@ if ! (./hack/make.py test e2e --v=1 --storageclass=standard --selfhosted-operato
 fi
 popd
 
+kubectl describe pods -n kube-system -l app=kubedb || true
+
 # test memcached
 echo "======================TESTING MEMCACHED=============================="
 git clone https://github.com/kubedb/memcached
@@ -145,6 +159,8 @@ if ! (./hack/make.py test e2e --v=1 --selfhosted-operator=true); then
     EXIT_CODE=1
 fi
 popd
+
+kubectl describe pods -n kube-system -l app=kubedb || true
 
 # test mongodb
 echo "======================TESTING MONGODB=============================="
@@ -156,6 +172,8 @@ if ! (./hack/make.py test e2e --v=1 --storageclass=standard --selfhosted-operato
 fi
 popd
 
+kubectl describe pods -n kube-system -l app=kubedb || true
+
 # test mysql
 echo "======================TESTING MYSQL=============================="
 git clone https://github.com/kubedb/mysql
@@ -165,6 +183,8 @@ if ! (./hack/make.py test e2e --v=1 --storageclass=standard --selfhosted-operato
     EXIT_CODE=1
 fi
 
+kubectl describe pods -n kube-system -l app=kubedb || true
+
 # test elasticsearch
 echo "======================TESTING ELASTICSEARCH=============================="
 git clone https://github.com/kubedb/elasticsearch
@@ -173,6 +193,8 @@ cp /tmp/.env hack/config/.env
 if ! (./hack/make.py test e2e --v=1 --storageclass=standard --selfhosted-operator=true); then
     EXIT_CODE=1
 fi
+
+kubectl describe pods -n kube-system -l app=kubedb || true
 
 # test postgres
 echo "======================TESTING POSTGRES=============================="
@@ -190,6 +212,8 @@ if ! (./hack/make.py test e2e --v=1 --storageclass=standard --selfhosted-operato
     EXIT_CODE=1
 fi
 popd
+
+kubectl describe pods -n kube-system -l app=kubedb || true
 
 popd
 
