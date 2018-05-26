@@ -77,12 +77,14 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 
 	switch req.Operation {
 	case admission.Delete:
-		// req.Object.Raw = nil, so read from kubernetes
-		obj, err := a.extClient.KubedbV1alpha1().Elasticsearches(req.Namespace).Get(req.Name, metav1.GetOptions{})
-		if err != nil && !kerr.IsNotFound(err) {
-			return hookapi.StatusInternalServerError(err)
-		} else if err == nil && obj.Spec.DoNotPause {
-			return hookapi.StatusBadRequest(fmt.Errorf(`elasticsearch "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+		if req.Name != "" {
+			// req.Object.Raw = nil, so read from kubernetes
+			obj, err := a.extClient.KubedbV1alpha1().Elasticsearches(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			if err != nil && !kerr.IsNotFound(err) {
+				return hookapi.StatusInternalServerError(err)
+			} else if err == nil && obj.Spec.DoNotPause {
+				return hookapi.StatusBadRequest(fmt.Errorf(`elasticsearch "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+			}
 		}
 	default:
 		obj, err := meta_util.UnmarshalFromJSON(req.Object.Raw, api.SchemeGroupVersion)
@@ -139,6 +141,16 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient kubedbv1alpha1
 
 	topology := elasticsearch.Spec.Topology
 	if topology != nil {
+		if elasticsearch.Spec.Replicas != nil {
+			return errors.New("doesn't support spec.replicas when spec.topology is set")
+		}
+		if elasticsearch.Spec.Storage != nil {
+			return errors.New("doesn't support spec.storage when spec.topology is set")
+		}
+		if elasticsearch.Spec.Resources != nil {
+			return errors.New("doesn't support spec.resources when spec.topology is set")
+		}
+
 		if topology.Client.Prefix == topology.Master.Prefix {
 			return errors.New("client & master node should not have same prefix")
 		}
@@ -150,25 +162,35 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient kubedbv1alpha1
 		}
 
 		if topology.Client.Replicas == nil || *topology.Client.Replicas < 1 {
-			return fmt.Errorf(`topology.client.replicas "%d" invalid. Must be greater than zero`, topology.Client.Replicas)
+			return fmt.Errorf(`topology.client.replicas "%v" invalid. Must be greater than zero`, topology.Client.Replicas)
+		}
+		if err := amv.ValidateStorage(client, topology.Client.Storage); err != nil {
+			return err
 		}
 
 		if topology.Master.Replicas == nil || *topology.Master.Replicas < 1 {
-			return fmt.Errorf(`topology.master.replicas "%d" invalid. Must be greater than zero`, topology.Master.Replicas)
+			return fmt.Errorf(`topology.master.replicas "%v" invalid. Must be greater than zero`, topology.Master.Replicas)
+		}
+		if err := amv.ValidateStorage(client, topology.Master.Storage); err != nil {
+			return err
 		}
 
 		if topology.Data.Replicas == nil || *topology.Data.Replicas < 1 {
-			return fmt.Errorf(`topology.data.replicas "%d" invalid. Must be greater than zero`, topology.Data.Replicas)
+			return fmt.Errorf(`topology.data.replicas "%v" invalid. Must be greater than zero`, topology.Data.Replicas)
+		}
+		if err := amv.ValidateStorage(client, topology.Data.Storage); err != nil {
+			return err
 		}
 	} else {
 		if elasticsearch.Spec.Replicas == nil || *elasticsearch.Spec.Replicas < 1 {
-			return fmt.Errorf(`spec.replicas "%d" invalid. Must be greater than zero`, elasticsearch.Spec.Replicas)
+			return fmt.Errorf(`spec.replicas "%v" invalid. Must be greater than zero`, elasticsearch.Spec.Replicas)
 		}
-	}
 
-	if elasticsearch.Spec.Storage != nil {
-		var err error
-		if err = amv.ValidateStorage(client, elasticsearch.Spec.Storage); err != nil {
+		if elasticsearch.Spec.Storage == nil {
+			return fmt.Errorf(`invalid Elasticsearch: "%v". spec.storage can't be nil`, elasticsearch.Name)
+		}
+
+		if err := amv.ValidateStorage(client, *elasticsearch.Spec.Storage); err != nil {
 			return err
 		}
 	}
@@ -275,6 +297,7 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 var preconditionSpecFields = []string{
 	"spec.version",
 	"spec.topology.*.prefix",
+	"spec.topology.*.storage",
 	"spec.enableSSL",
 	"spec.certificateSecret",
 	"spec.databaseSecret",

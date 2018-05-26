@@ -265,40 +265,36 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 	return job, nil
 }
 
-func (c *Controller) getVolumeForSnapshot(pvcSpec *core.PersistentVolumeClaimSpec, jobName, namespace string) (*core.Volume, error) {
+func (c *Controller) getVolumeForSnapshot(pvcSpec core.PersistentVolumeClaimSpec, jobName, namespace string) (*core.Volume, error) {
 	volume := &core.Volume{
 		Name: "tools",
 	}
-	if pvcSpec != nil {
-		if len(pvcSpec.AccessModes) == 0 {
-			pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
-				core.ReadWriteOnce,
-			}
-			log.Infof(`Using "%v" as AccessModes in "%v"`, core.ReadWriteOnce, *pvcSpec)
+	if len(pvcSpec.AccessModes) == 0 {
+		pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
+			core.ReadWriteOnce,
 		}
+		log.Infof(`Using "%v" as AccessModes in "%v"`, core.ReadWriteOnce, pvcSpec)
+	}
 
-		claim := &core.PersistentVolumeClaim{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      jobName,
-				Namespace: namespace,
-			},
-			Spec: *pvcSpec,
+	claim := &core.PersistentVolumeClaim{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      jobName,
+			Namespace: namespace,
+		},
+		Spec: pvcSpec,
+	}
+	if pvcSpec.StorageClassName != nil {
+		claim.Annotations = map[string]string{
+			"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
 		}
-		if pvcSpec.StorageClassName != nil {
-			claim.Annotations = map[string]string{
-				"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
-			}
-		}
+	}
 
-		if _, err := c.Client.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(claim); err != nil {
-			return nil, err
-		}
+	if _, err := c.Client.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(claim); err != nil {
+		return nil, err
+	}
 
-		volume.PersistentVolumeClaim = &core.PersistentVolumeClaimVolumeSource{
-			ClaimName: claim.Name,
-		}
-	} else {
-		volume.EmptyDir = &core.EmptyDirVolumeSource{}
+	volume.PersistentVolumeClaim = &core.PersistentVolumeClaimVolumeSource{
+		ClaimName: claim.Name,
 	}
 	return volume, nil
 }

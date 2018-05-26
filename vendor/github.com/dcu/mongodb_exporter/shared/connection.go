@@ -26,6 +26,7 @@ type MongoSessionOpts struct {
 	TLSHostnameValidation bool
 	UserName              string
 	AuthMechanism         string
+	SocketTimeout         time.Duration
 }
 
 // MongoSession creates a Mongo session
@@ -55,7 +56,7 @@ func MongoSession(opts MongoSessionOpts) *mgo.Session {
 	}
 	session.SetMode(mgo.Eventual, true)
 	session.SetSyncTimeout(syncMongodbTimeout)
-	session.SetSocketTimeout(0)
+	session.SetSocketTimeout(opts.SocketTimeout)
 	return session
 }
 

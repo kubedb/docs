@@ -77,12 +77,14 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 
 	switch req.Operation {
 	case admission.Delete:
-		// req.Object.Raw = nil, so read from kubernetes
-		obj, err := a.extClient.KubedbV1alpha1().MongoDBs(req.Namespace).Get(req.Name, metav1.GetOptions{})
-		if err != nil && !kerr.IsNotFound(err) {
-			return hookapi.StatusInternalServerError(err)
-		} else if err == nil && obj.Spec.DoNotPause {
-			return hookapi.StatusBadRequest(fmt.Errorf(`mongodb "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+		if req.Name != "" {
+			// req.Object.Raw = nil, so read from kubernetes
+			obj, err := a.extClient.KubedbV1alpha1().MongoDBs(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			if err != nil && !kerr.IsNotFound(err) {
+				return hookapi.StatusInternalServerError(err)
+			} else if err == nil && obj.Spec.DoNotPause {
+				return hookapi.StatusBadRequest(fmt.Errorf(`mongodb "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+			}
 		}
 	default:
 		obj, err := meta_util.UnmarshalFromJSON(req.Object.Raw, api.SchemeGroupVersion)
@@ -136,11 +138,8 @@ func ValidateMongoDB(client kubernetes.Interface, extClient kubedbv1alpha1.Kubed
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be one`, mongodb.Spec.Replicas)
 	}
 
-	if mongodb.Spec.Storage != nil {
-		var err error
-		if err = amv.ValidateStorage(client, mongodb.Spec.Storage); err != nil {
-			return err
-		}
+	if err := amv.ValidateStorage(client, mongodb.Spec.Storage); err != nil {
+		return err
 	}
 
 	databaseSecret := mongodb.Spec.DatabaseSecret
