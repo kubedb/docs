@@ -12,20 +12,28 @@ resources:
     uri: https://github.com/kubedb/operator
     branch: master
 
-- name: pull-request
+- name: gke
   type: pull-request
   source:
     owner: kubedb
     repo: operator
-    label: ok-to-test
+    label: concourse/test-gke
     access_token: ((access_token))
 
-- name: kops
+- name: aws
   type: pull-request
   source:
     owner: kubedb
     repo: operator
     label: concourse/test-aws
+    access_token: ((access_token))
+
+- name: azure-aks
+  type: pull-request
+  source:
+    owner: kubedb
+    repo: operator
+    label: concourse/test-aks
     access_token: ((access_token))
 
 - name: creds
@@ -34,10 +42,10 @@ resources:
     bucket: kubedbci
     access_key_id: ((s3-access-key))
     secret_access_key: ((s3-secret))
-    versioned_file: gcs.zip
+    versioned_file: creds.zip
 
 jobs:
-- name: test-operator
+- name: test-operator-master
   plan:
   - get: operator
     trigger: true
@@ -48,6 +56,11 @@ jobs:
     privileged: true
     file: operator/hack/concourse/task.yml
     params:
+      CredProvider: GoogleCloud
+      ClusterProvider: gke
+      ZONE: us-central1-f
+      NODE: n1-standard-2
+      K8S_VERSION: 1.10.2-gke.3
       TOKEN: ((digitaloceanToken))
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
@@ -67,22 +80,27 @@ jobs:
       OS_REGION_NAME: ((os_region_name))
       SWIFT_CONTAINER_NAME: ((swift_container_name))
 
-- name: test-operator-pr
+- name: test-operator-gke
   plan:
-  - get: pull-request
+  - get: gke
     trigger: true
-  - put: pull-request
-    params: { path: pull-request, status: pending}
+    version: every
+  - put: gke
+    params: { path: gke, status: pending}
   - get: creds
     params:
       unpack: true
   - task: test-e2e
     privileged: true
-    file: pull-request/hack/concourse/task.yml
+    file: gke/hack/concourse/task.yml
     input_mapping:
-      operator: pull-request
+      operator: gke
     params:
-      TOKEN: ((digitaloceanToken))
+      CredProvider: GoogleCloud
+      ClusterProvider: gke
+      ZONE: us-central1-f
+      NODE: n1-standard-2
+      K8S_VERSION: 1.10.2-gke.3
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
       AWS_KEY_ID: ((aws_key_id))
@@ -101,30 +119,31 @@ jobs:
       OS_REGION_NAME: ((os_region_name))
       SWIFT_CONTAINER_NAME: ((swift_container_name))
     on_success:
-      put: pull-request
-      params: { path: pull-request, status: success}
+      put: gke
+      params: { path: gke, status: success}
     on_failure:
-      put: pull-request
-      params: {path: pull-request, status: failure}
+      put: gke
+      params: {path: gke, status: failure}
 
-- name: test-kops
+- name: test-operator-aws
   plan:
-  - get: kops
+  - get: aws
     version: every
     trigger: true
-  - put: kops
-    params: { path: kops, status: pending}
+  - put: aws
+    params: { path: aws, status: pending}
   - get: creds
     params:
       unpack: true
-  - task: test-kops
+  - task: test-aws-kops
     privileged: true
-    file: kops/hack/concourse/task_kops.yml
+    file: aws/hack/concourse/task.yml
     input_mapping:
-      operator: kops
+      operator: aws
     params:
       KOPS_AWS_ACCESS_KEY_ID: ((kops_aws_access_key_id))
       KOPS_AWS_SECRET_ACCESS_KEY: ((kops_aws_secret_access_key))
+      ClusterProvider: aws
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
       AWS_KEY_ID: ((aws_key_id))
@@ -143,8 +162,53 @@ jobs:
       OS_REGION_NAME: ((os_region_name))
       SWIFT_CONTAINER_NAME: ((swift_container_name))
     on_success:
-      put: kops
-      params: { path: kops, status: success}
+      put: aws
+      params: { path: aws, status: success}
     on_failure:
-      put: kops
-      params: {path: kops, status: failure}
+      put: aws
+      params: {path: aws, status: failure}
+
+- name: test-azure-aks
+  plan:
+  - get: azure-aks
+    version: every
+    trigger: true
+  - put: azure-aks
+    params: { path: azure-aks, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-azure-aks
+    privileged: true
+    file: azure-aks/hack/concourse/task.yml
+    input_mapping:
+      operator: azure-aks
+    params:
+      CredProvider: Azure
+      ClusterProvider: aks
+      ZONE: eastus
+      NODE: Standard_D1_v2
+      K8S_VERSION: 1.9.6
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+      AWS_KEY_ID: ((aws_key_id))
+      AWS_SECRET: ((aws_secret))
+      S3_BUCKET_NAME: ((s3_bucket_name))
+      GCE_PROJECT_ID: ((gce_project_id))
+      GCS_BUCKET_NAME: ((gcs_bucket_name))
+      AZURE_ACCOUNT_NAME: ((azure_account_name))
+      AZURE_ACCOUNT_KEY: ((azure_account_key))
+      AZURE_CONTAINER_NAME: ((azure_container_name))
+      OS_AUTH_URL: ((os_auth_url))
+      OS_TENANT_ID: ((os_tenant_id))
+      OS_TENANT_NAME: ((os_tenaant_name))
+      OS_USERNAME: ((os_username))
+      OS_PASSWORD: ((os_password))
+      OS_REGION_NAME: ((os_region_name))
+      SWIFT_CONTAINER_NAME: ((swift_container_name))
+    on_success:
+      put: azure-aks
+      params: { path: azure-aks, status: success}
+    on_failure:
+      put: azure-aks
+      params: {path: azure-aks, status: failure}
