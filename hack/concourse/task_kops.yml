@@ -11,4 +11,4 @@ inputs:
 - name: creds
 
 run:
-  path: operator/hack/concourse/test.sh
+  path: operator/hack/concourse/test_kops.sh

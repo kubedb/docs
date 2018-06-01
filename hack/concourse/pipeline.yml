@@ -20,6 +20,14 @@ resources:
     label: ok-to-test
     access_token: ((access_token))
 
+- name: kops
+  type: pull-request
+  source:
+    owner: kubedb
+    repo: operator
+    label: concourse/test-aws
+    access_token: ((access_token))
+
 - name: creds
   type: s3
   source:
@@ -98,3 +106,44 @@ jobs:
     on_failure:
       put: pull-request
       params: {path: pull-request, status: failure}
+
+- name: test-kops
+  plan:
+  - get: kops
+    version: every
+    trigger: true
+  - put: kops
+    params: { path: kops, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-kops
+    privileged: true
+    file: kops/hack/concourse/task.yml
+    input_mapping:
+      operator: kops
+    params:
+      TOKEN: ((digitaloceanToken))
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+      AWS_KEY_ID: ((aws_key_id))
+      AWS_SECRET: ((aws_secret))
+      S3_BUCKET_NAME: ((s3_bucket_name))
+      GCE_PROJECT_ID: ((gce_project_id))
+      GCS_BUCKET_NAME: ((gcs_bucket_name))
+      AZURE_ACCOUNT_NAME: ((azure_account_name))
+      AZURE_ACCOUNT_KEY: ((azure_account_key))
+      AZURE_CONTAINER_NAME: ((azure_container_name))
+      OS_AUTH_URL: ((os_auth_url))
+      OS_TENANT_ID: ((os_tenant_id))
+      OS_TENANT_NAME: ((os_tenaant_name))
+      OS_USERNAME: ((os_username))
+      OS_PASSWORD: ((os_password))
+      OS_REGION_NAME: ((os_region_name))
+      SWIFT_CONTAINER_NAME: ((swift_container_name))
+    on_success:
+      put: kops
+      params: { path: kops, status: success}
+    on_failure:
+      put: kops
+      params: {path: kops, status: failure}
