@@ -62,7 +62,7 @@ EXIT_CODE=0
 echo "======================TESTING REDIS=============================="
 git clone https://github.com/kubedb/redis
 pushd redis
-if ! (./hack/make.py test e2e --v=1 --storageclass=standard --selfhosted-operator=true); then
+if ! (./hack/make.py test e2e --v=1 --storageclass=$StorageClass --selfhosted-operator=true); then
     EXIT_CODE=1
 fi
 popd
@@ -85,7 +85,7 @@ kubectl describe pods -n kube-system -l app=kubedb || true
 #git clone https://github.com/kubedb/mongodb
 #pushd mongodb
 #cp /tmp/.env hack/config/.env
-#if ! (./hack/make.py test e2e --v=1 --storageclass=standard --selfhosted-operator=true); then
+#if ! (./hack/make.py test e2e --v=1 --storageclass=$StorageClass --selfhosted-operator=true); then
 #    EXIT_CODE=1
 #fi
 #popd
@@ -97,7 +97,7 @@ kubectl describe pods -n kube-system -l app=kubedb || true
 #git clone https://github.com/kubedb/mysql
 #pushd mysql
 #cp /tmp/.env hack/config/.env
-#if ! (./hack/make.py test e2e --v=1 --storageclass=standard --selfhosted-operator=true); then
+#if ! (./hack/make.py test e2e --v=1 --storageclass=$StorageClass --selfhosted-operator=true); then
 #    EXIT_CODE=1
 #fi
 #popd
@@ -109,7 +109,7 @@ kubectl describe pods -n kube-system -l app=kubedb || true
 #git clone https://github.com/kubedb/elasticsearch
 #pushd elasticsearch
 #cp /tmp/.env hack/config/.env
-#if ! (./hack/make.py test e2e --v=1 --storageclass=standard --selfhosted-operator=true); then
+#if ! (./hack/make.py test e2e --v=1 --storageclass=$StorageClass --selfhosted-operator=true); then
 #    EXIT_CODE=1
 #fi
 #popd
@@ -126,7 +126,7 @@ kubectl describe pods -n kube-system -l app=kubedb || true
 #./hack/docker/postgres/9.6/make.sh
 #./hack/docker/postgres/10.2/make.sh build
 #./hack/docker/postgres/10.2/make.sh push
-#if ! (./hack/make.py test e2e --v=1 --storageclass=standard --selfhosted-operator=true); then
+#if ! (./hack/make.py test e2e --v=1 --storageclass=$StorageClass --selfhosted-operator=true); then
 #    EXIT_CODE=1
 #fi
 #popd

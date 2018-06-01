@@ -111,12 +111,15 @@ function prepare_aws {
     while [ "$(kops validate cluster | tail -1)" != "Your cluster ${NAME} is ready" ]; do
         sleep 60
     done
+
+    export StorageClass="gp2"
 }
 
 function prepare_aks {
     true
 }
 
+export StorageClass="standard"
 
 # prepare cluster
 if [ "${ClusterProvider}" = "gke" ]; then
@@ -126,3 +129,5 @@ elif [ "${ClusterProvider}" = "aws" ]; then
 elif [ "${ClusterProvider}" = "aks" ]; then
     prepare_aks
 fi
+
+kubectl get nodes
