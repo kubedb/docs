@@ -2,16 +2,19 @@
 
 set -eoux pipefail
 
-# install all the dependencies and prepeare cluster
-#source dependencies.sh
-source cluster.sh
+GOPATH=$(go env GOPATH)
+REPO_ROOT="$GOPATH/src/github.com/kubedb/operator"
 
 # copy operator to $GOPATH
 mkdir -p $GOPATH/src/github.com/kubedb
 cp -r operator $GOPATH/src/github.com/kubedb
-pushd $GOPATH/src/github.com/kubedb/operator
+
+# install all the dependencies and prepeare cluster
+source "$REPO_ROOT/hack/concourse/dependencies.sh"
+source "$REPO_ROOT/hack/concourse/cluster.sh"
 
 # build and push operator docker-image
+pushd $GOPATH/src/github.com/kubedb/operator
 ./hack/builddeps.sh
 export APPSCODE_ENV=dev
 export DOCKER_REGISTRY=kubedbci
