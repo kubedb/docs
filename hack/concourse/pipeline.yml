@@ -119,7 +119,7 @@ jobs:
       unpack: true
   - task: test-kops
     privileged: true
-    file: kops/hack/concourse/task.yml
+    file: kops/hack/concourse/task_kops.yml
     input_mapping:
       operator: kops
     params:
