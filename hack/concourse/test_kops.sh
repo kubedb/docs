@@ -50,6 +50,10 @@ function cleanup {
 trap cleanup EXIT
 
 ## create cluster using kops
+# aws credentials for kops user
+export AWS_ACCESS_KEY_ID=$KOPS_AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$KOPS_AWS_SECRET_ACCESS_KEY
+
 # name of the cluster
 pushd operator
 export NAME=operator-$(git rev-parse --short HEAD).k8s.local

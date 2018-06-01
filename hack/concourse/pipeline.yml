@@ -123,7 +123,8 @@ jobs:
     input_mapping:
       operator: kops
     params:
-      TOKEN: ((digitaloceanToken))
+      KOPS_AWS_ACCESS_KEY_ID: ((kops_aws_access_key_id))
+      KOPS_AWS_SECRET_ACCESS_KEY: ((kops_aws_secret_access_key))
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
       AWS_KEY_ID: ((aws_key_id))
