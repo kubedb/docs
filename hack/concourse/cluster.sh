@@ -20,16 +20,17 @@ function cleanup {
     fi
 
     # delete cluster on exit
-    if [ "${ClusterProvider}" = "aws" ]; then
-        kops delete cluster --name ${NAME} --yes
-    else
-        pharmer get cluster
-        pharmer delete cluster ${NAME}
-        pharmer get cluster
-        sleep 120
-        pharmer apply ${NAME}
-        pharmer get cluster
-    fi
+    # todo: unblock the following. Just once to test.
+    #if [ "${ClusterProvider}" = "aws" ]; then
+    #    kops delete cluster --name ${NAME} --yes
+    #else
+    #    pharmer get cluster
+    #    pharmer delete cluster ${NAME}
+    #    pharmer get cluster
+    #    sleep 120
+    #    pharmer apply ${NAME}
+    #    pharmer get cluster
+    #fi
 
     # delete docker image on exit
     curl -LO https://raw.githubusercontent.com/appscodelabs/libbuild/master/docker.py
