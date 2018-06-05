@@ -189,6 +189,9 @@ jobs:
       ZONE: eastus
       NODE: Standard_D1_v2
       K8S_VERSION: 1.9.6
+      APP_ID: ((azure_app_id))
+      TENANT_ID: ((azure_tenant_id))
+      PASSWORD: ((azure_password))
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
       AWS_KEY_ID: ((aws_key_id))

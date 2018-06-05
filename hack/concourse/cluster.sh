@@ -2,7 +2,7 @@
 
 set -eoux pipefail
 
-export ClusterProvider=${ClusterProvider:-}
+export ClusterProvider=${ClusterProvider:-digitalocean}
 
 function cleanup {
     set +eoux pipefail
@@ -39,15 +39,15 @@ function cleanup {
 trap cleanup EXIT
 
 function pharmer_common {
-    export CredProvider=${CredProvider:-}
-    export ZONE=${ZONE:-}
-    export NODE=${NODE:-}
-    export K8S_VERSION=${K8S_VERSION:-}
+    export CredProvider=${CredProvider:-DigitalOcean}
+    export ZONE=${ZONE:-nyc1}
+    export NODE=${NODE:-2gb}
+    export K8S_VERSION=${K8S_VERSION:-1.10.0}
 
     # name of the cluster
-    #pushd operator
+    pushd operator
     export NAME=operator-$(git rev-parse --short HEAD)
-    #popd
+    popd
 
     # create cluster using pharmer
     pharmer create credential --from-file=creds/${ClusterProvider}.json --provider=${CredProvider} cred
@@ -116,7 +116,24 @@ function prepare_aws {
 }
 
 function prepare_aks {
-    true
+    pharmer_common
+
+    # download azure cli
+    AZ_REPO=$(lsb_release -cs)
+    echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | \
+    sudo tee /etc/apt/sources.list.d/azure-cli.list
+
+    # login with service principal
+    az login --service-principal --username $APP_ID --password $PASSWORD --tenant $TENANT_ID
+
+    az aks get-credentials -g $NAME -n $NAME
+    kubectl get nodes
+
+    # create storageclass named `standard`
+    curl -Lo az-sc.yaml https://raw.githubusercontent.com/kubernetes/kubernetes/v1.10.0/cluster/addons/storage-class/azure/default.yaml
+    kubectl create -f az-sc.yaml
+    kubectl get storageclass
+
 }
 
 export StorageClass="standard"
