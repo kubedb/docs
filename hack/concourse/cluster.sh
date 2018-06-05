@@ -126,7 +126,9 @@ function prepare_aks {
     apt-get update && apt-get install -y azure-cli
 
     # login with service principal
-    az login --service-principal --username $APP_ID --password $PASSWORD --tenant $TENANT_ID
+    set +x
+    az login --service-principal --username $APP_ID --password $PASSWORD --tenant $TENANT_ID &> /dev/null
+    set -x
 
     # create cluster
     pharmer_common
