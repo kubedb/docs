@@ -11,7 +11,7 @@ docker run hello-world
 
 # install python pip
 apt-get update > /dev/null
-apt-get install -y python python-pip > /dev/null
+apt-get install -y python python-pip lsb-release > /dev/null
 
 # install kubectl
 curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl &> /dev/null

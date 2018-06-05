@@ -116,15 +116,20 @@ function prepare_aws {
 }
 
 function prepare_aks {
-    pharmer_common
-
     # download azure cli
     AZ_REPO=$(lsb_release -cs)
     echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | \
-    sudo tee /etc/apt/sources.list.d/azure-cli.list
+    tee /etc/apt/sources.list.d/azure-cli.list
+    curl -L https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+    apt-get install -y apt-transport-https
+    apt-get update && apt-get install -y azure-cli
+
 
     # login with service principal
     az login --service-principal --username $APP_ID --password $PASSWORD --tenant $TENANT_ID
+
+    # create cluster
+    pharmer_common
 
     az aks get-credentials -g $NAME -n $NAME
     kubectl get nodes
