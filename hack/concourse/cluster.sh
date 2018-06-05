@@ -52,6 +52,7 @@ function pharmer_common {
     # create cluster using pharmer
     pharmer create credential --from-file=creds/${ClusterProvider}.json --provider=${CredProvider} cred
     pharmer create cluster ${NAME} --provider=${ClusterProvider} --zone=${ZONE} --nodes=${NODE}=1 --credential-uid=cred --v=10 --kubernetes-version=${K8S_VERSION}
+    pharmer apply ${NAME} || true
     pharmer apply ${NAME}
 }
 
@@ -124,7 +125,6 @@ function prepare_aks {
     apt-get install -y apt-transport-https
     apt-get update && apt-get install -y azure-cli
 
-
     # login with service principal
     az login --service-principal --username $APP_ID --password $PASSWORD --tenant $TENANT_ID
 
@@ -134,11 +134,7 @@ function prepare_aks {
     az aks get-credentials -g $NAME -n $NAME
     kubectl get nodes
 
-    # create storageclass named `standard`
-    curl -Lo az-sc.yaml https://raw.githubusercontent.com/kubernetes/kubernetes/v1.10.0/cluster/addons/storage-class/azure/default.yaml
-    kubectl create -f az-sc.yaml
-    kubectl get storageclass
-
+    export StorageClass="default"
 }
 
 export StorageClass="standard"
