@@ -31,5 +31,6 @@ mkdir -p $GOPATH/src/github.com/pharmer
 pushd $GOPATH/src/github.com/pharmer
 git clone https://github.com/pharmer/pharmer
 cd pharmer
-./hack/make.py
+./hack/builddeps.sh
+go install -v
 popd
