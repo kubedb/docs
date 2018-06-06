@@ -6,7 +6,9 @@ export DOCKER_PASS=${DOCKER_PASS:-}
 
 # start docker and log-in to docker-hub
 entrypoint.sh
+set +x
 docker login --username=${DOCKER_USER} --password=${DOCKER_PASS}
+set -x
 
 # install python pip
 apt-get update &> /dev/null
