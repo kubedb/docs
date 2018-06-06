@@ -24,6 +24,12 @@ chmod +x onessl
 mv onessl /usr/local/bin/
 
 # install pharmer
-curl -LO https://cdn.appscode.com/binaries/pharmer/0.1.0-rc.4/pharmer-linux-amd64
-chmod +x pharmer-linux-amd64
-mv pharmer-linux-amd64 /bin/pharmer
+##curl -LO https://cdn.appscode.com/binaries/pharmer/0.1.0-rc.4/pharmer-linux-amd64
+##chmod +x pharmer-linux-amd64
+##mv pharmer-linux-amd64 /bin/pharmer
+mkdir -p $GOPATH/src/github.com/pharmer
+pushd $GOPATH/src/github.com/pharmer
+git clone https://github.com/pharmer/pharmer
+cd pharmer
+./hack/make.py
+popd

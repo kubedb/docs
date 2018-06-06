@@ -131,20 +131,20 @@ function prepare_aks {
     set -x
 
     # create cluster
-    #pharmer_common
-    az provider register -n Microsoft.Network
-    az provider register -n Microsoft.Storage
-    az provider register -n Microsoft.Compute
-    az provider register -n Microsoft.ContainerService
+    pharmer_common
+   ### az provider register -n Microsoft.Network
+   ### az provider register -n Microsoft.Storage
+   ### az provider register -n Microsoft.Compute
+   ### az provider register -n Microsoft.ContainerService
 
-    # name of the cluster
-    pushd operator
-    export NAME=operator-$(git rev-parse --short HEAD)
-    popd
+   ### # name of the cluster
+   ### pushd operator
+   ### export NAME=operator-$(git rev-parse --short HEAD)
+   ### popd
 
-    az group create --name $NAME --location eastus
-    az aks create --resource-group $NAME --name $NAME --node-count 1 --generate-ssh-keys
-    az aks get-credentials --resource-group myResourceGroup --name myAKSCluster
+   ### az group create --name $NAME --location eastus
+   ### az aks create --resource-group $NAME --name $NAME --node-count 1 --service-principal --client-secret --generate-ssh-keys
+    az aks get-credentials --resource-group $NAME --name $NAME
 
     kubectl get nodes
 
