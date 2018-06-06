@@ -15,6 +15,13 @@ source "$REPO_ROOT/hack/concourse/cluster.sh"
 
 # build and push operator docker-image
 pushd $GOPATH/src/github.com/kubedb/operator
+
+# changed name of branch
+# this is necessary because operator image tag is based on branch name
+# for parallel tests, if two test build image of same tag, it'll create problem
+# one test may finish early and delete image while other is using it
+git branch -m $(git rev-parse --abbrev-ref HEAD)-${ClusterProvider}
+
 ./hack/builddeps.sh
 export APPSCODE_ENV=dev
 export DOCKER_REGISTRY=kubedbci
