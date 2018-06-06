@@ -25,7 +25,7 @@ resources:
   source:
     owner: kubedb
     repo: operator
-    label: ok-to-test/aws
+    label: ok-to-test/kops-aws
     access_token: ((access_token))
 
 - name: azure-aks
@@ -261,5 +261,5 @@ jobs:
       put: do
       params: { path: do, status: success}
     on_failure:
-      put: aws
+      put: do
       params: {path: do, status: failure}
