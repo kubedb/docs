@@ -131,9 +131,16 @@ function prepare_aks {
     set -x
 
     # create cluster
-    pharmer_common
+    #pharmer_common
+    az provider register -n Microsoft.Network
+    az provider register -n Microsoft.Storage
+    az provider register -n Microsoft.Compute
+    az provider register -n Microsoft.ContainerService
 
-    az aks get-credentials -g $NAME -n $NAME
+    az group create --name $NAME --location eastus
+    az aks create --resource-group $NAME --name $NAME --node-count 1 --generate-ssh-keys
+    az aks get-credentials --resource-group myResourceGroup --name myAKSCluster
+
     kubectl get nodes
 
     export StorageClass="default"
