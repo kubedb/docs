@@ -24,10 +24,20 @@ curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.3.0/
 chmod +x onessl
 mv onessl /usr/local/bin/
 
+export ClusterProvider=${ClusterProvider:-digitalocean}
+
 # install pharmer
-mkdir -p $GOPATH/src/github.com/pharmer
-pushd $GOPATH/src/github.com/pharmer
-git clone https://github.com/pharmer/pharmer
-cd pharmer
-go install -v
-popd
+if [ "$ClusterProvider" = "aks" ]; then
+    mkdir -p $GOPATH/src/github.com/pharmer
+    pushd $GOPATH/src/github.com/pharmer
+    git clone https://github.com/pharmer/pharmer
+    cd pharmer
+    go install -v
+    popd
+elif [ "$ClusterProvider" != "aws" ]; then
+    pushd /tmp
+    curl -LO https://cdn.appscode.com/binaries/pharmer/0.1.0-rc.3/pharmer-linux-amd64
+    chmod +x pharmer-linux-amd64
+    mv pharmer-linux-amd64 /bin/pharmer
+    popd
+fi

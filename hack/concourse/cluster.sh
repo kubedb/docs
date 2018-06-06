@@ -2,8 +2,6 @@
 
 set -eoux pipefail
 
-export ClusterProvider=${ClusterProvider:-digitalocean}
-
 function cleanup {
     set +eoux pipefail
 
