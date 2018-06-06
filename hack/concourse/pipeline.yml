@@ -17,7 +17,7 @@ resources:
   source:
     owner: kubedb
     repo: operator
-    label: concourse/test-gke
+    label: ok-to-test/gke
     access_token: ((access_token))
 
 - name: aws
@@ -25,7 +25,7 @@ resources:
   source:
     owner: kubedb
     repo: operator
-    label: concourse/test-aws
+    label: ok-to-test/aws
     access_token: ((access_token))
 
 - name: azure-aks
@@ -33,7 +33,15 @@ resources:
   source:
     owner: kubedb
     repo: operator
-    label: concourse/test-aks
+    label: ok-to-test/aks
+    access_token: ((access_token))
+
+- name: do
+  type: pull-request
+  source:
+    owner: kubedb
+    repo: operator
+    label: ok-to-test/do
     access_token: ((access_token))
 
 - name: creds
@@ -215,3 +223,44 @@ jobs:
     on_failure:
       put: azure-aks
       params: {path: azure-aks, status: failure}
+
+- name: test-operator-do
+  plan:
+  - get: do
+    version: every
+    trigger: true
+  - put: do
+    params: { path: do, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-do
+    privileged: true
+    file: do/hack/concourse/task.yml
+    input_mapping:
+      operator: do
+    params:
+      ClusterProvider: do
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+      AWS_KEY_ID: ((aws_key_id))
+      AWS_SECRET: ((aws_secret))
+      S3_BUCKET_NAME: ((s3_bucket_name))
+      GCE_PROJECT_ID: ((gce_project_id))
+      GCS_BUCKET_NAME: ((gcs_bucket_name))
+      AZURE_ACCOUNT_NAME: ((azure_account_name))
+      AZURE_ACCOUNT_KEY: ((azure_account_key))
+      AZURE_CONTAINER_NAME: ((azure_container_name))
+      OS_AUTH_URL: ((os_auth_url))
+      OS_TENANT_ID: ((os_tenant_id))
+      OS_TENANT_NAME: ((os_tenaant_name))
+      OS_USERNAME: ((os_username))
+      OS_PASSWORD: ((os_password))
+      OS_REGION_NAME: ((os_region_name))
+      SWIFT_CONTAINER_NAME: ((swift_container_name))
+    on_success:
+      put: do
+      params: { path: do, status: success}
+    on_failure:
+      put: aws
+      params: {path: do, status: failure}

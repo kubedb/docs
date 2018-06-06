@@ -85,8 +85,10 @@ function prepare_aws {
 
     ## create cluster using kops
     # aws credentials for kops user
+    set +x
     export AWS_ACCESS_KEY_ID=${KOPS_AWS_ACCESS_KEY_ID:-}
     export AWS_SECRET_ACCESS_KEY=${KOPS_AWS_SECRET_ACCESS_KEY:-}
+    set -x
 
     # name of the cluster
     pushd operator
@@ -148,6 +150,11 @@ elif [ "${ClusterProvider}" = "aws" ]; then
     prepare_aws
 elif [ "${ClusterProvider}" = "aks" ]; then
     prepare_aks
+elif [ "${ClusterProvider}" = "do" ]; then
+    pharmer_common
+else
+    echo "unknown provider"
+    exit 1
 fi
 
 kubectl get nodes
