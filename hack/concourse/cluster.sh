@@ -122,8 +122,8 @@ function prepare_aks {
     echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | \
     tee /etc/apt/sources.list.d/azure-cli.list
     curl -L https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-    apt-get install -y apt-transport-https
-    apt-get update && apt-get install -y azure-cli
+    apt-get install -y apt-transport-https &> /dev/null
+    apt-get update && apt-get install -y azure-cli &> /dev/null
 
     # login with service principal
     set +x
@@ -136,6 +136,11 @@ function prepare_aks {
     az provider register -n Microsoft.Storage
     az provider register -n Microsoft.Compute
     az provider register -n Microsoft.ContainerService
+
+    # name of the cluster
+    pushd operator
+    export NAME=operator-$(git rev-parse --short HEAD)
+    popd
 
     az group create --name $NAME --location eastus
     az aks create --resource-group $NAME --name $NAME --node-count 1 --generate-ssh-keys
