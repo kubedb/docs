@@ -123,7 +123,8 @@ function prepare_aks {
     tee /etc/apt/sources.list.d/azure-cli.list
     curl -L https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
     apt-get install -y apt-transport-https &> /dev/null
-    apt-get update && apt-get install -y azure-cli &> /dev/null
+    apt-get update &> /dev/null
+    apt-get install -y azure-cli &> /dev/null
 
     # login with service principal
     set +x
@@ -132,22 +133,9 @@ function prepare_aks {
 
     # create cluster
     pharmer_common
-   ### az provider register -n Microsoft.Network
-   ### az provider register -n Microsoft.Storage
-   ### az provider register -n Microsoft.Compute
-   ### az provider register -n Microsoft.ContainerService
-
-   ### # name of the cluster
-   ### pushd operator
-   ### export NAME=operator-$(git rev-parse --short HEAD)
-   ### popd
-
-   ### az group create --name $NAME --location eastus
-   ### az aks create --resource-group $NAME --name $NAME --node-count 1 --service-principal --client-secret --generate-ssh-keys
     az aks get-credentials --resource-group $NAME --name $NAME
 
     kubectl get nodes
-
     export StorageClass="default"
 }
 

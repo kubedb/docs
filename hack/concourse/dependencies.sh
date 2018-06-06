@@ -7,11 +7,10 @@ export DOCKER_PASS=${DOCKER_PASS:-}
 # start docker and log-in to docker-hub
 entrypoint.sh
 docker login --username=${DOCKER_USER} --password=${DOCKER_PASS}
-docker run hello-world
 
 # install python pip
-apt-get update > /dev/null
-apt-get install -y python python-pip lsb-release > /dev/null
+apt-get update &> /dev/null
+apt-get install -y python-pip lsb-release &> /dev/null
 
 # install kubectl
 curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl &> /dev/null
@@ -24,14 +23,9 @@ chmod +x onessl
 mv onessl /usr/local/bin/
 
 # install pharmer
-##curl -LO https://cdn.appscode.com/binaries/pharmer/0.1.0-rc.4/pharmer-linux-amd64
-##chmod +x pharmer-linux-amd64
-##mv pharmer-linux-amd64 /bin/pharmer
-##mkdir -p $GOPATH/src/github.com/pharmer
-##pushd $GOPATH/src/github.com/pharmer
-##git clone https://github.com/pharmer/pharmer
-##cd pharmer
-##./hack/builddeps.sh
-##go install -v
-##popd
-go get -u github.com/pharmer/pharmer
+mkdir -p $GOPATH/src/github.com/pharmer
+pushd $GOPATH/src/github.com/pharmer
+git clone https://github.com/pharmer/pharmer
+cd pharmer
+go install -v
+popd
