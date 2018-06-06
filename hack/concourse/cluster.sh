@@ -150,7 +150,7 @@ elif [ "${ClusterProvider}" = "aws" ]; then
     prepare_aws
 elif [ "${ClusterProvider}" = "aks" ]; then
     prepare_aks
-elif [ "${ClusterProvider}" = "do" ]; then
+elif [ "${ClusterProvider}" = "digitalocean" ]; then
     pharmer_common
 else
     echo "unknown provider"

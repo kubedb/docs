@@ -240,7 +240,6 @@ jobs:
     input_mapping:
       operator: do
     params:
-      ClusterProvider: do
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
       AWS_KEY_ID: ((aws_key_id))
