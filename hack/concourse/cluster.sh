@@ -135,6 +135,11 @@ function prepare_aks {
     set +x
     az login --service-principal --username $APP_ID --password $PASSWORD --tenant $TENANT_ID &> /dev/null
 
+    # name of the cluster
+    pushd operator
+    export NAME=operator-$(git rev-parse --short HEAD)
+    popd
+
     # create cluster
     # pharmer_common
     az aks create --resource-group $NAME --name $NAME --service-principal $APP_ID --client-secret $PASSWORD
