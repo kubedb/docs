@@ -134,14 +134,16 @@ function prepare_aks {
     # login with service principal
     set +x
     az login --service-principal --username $APP_ID --password $PASSWORD --tenant $TENANT_ID &> /dev/null
-    set -x
 
     # create cluster
-    pharmer_common
+    # pharmer_common
+    az aks create --resource-group $NAME --name $NAME --service-principal $APP_ID --client-secret $PASSWORD
+    set -x
+
     az aks get-credentials --resource-group $NAME --name $NAME
 
-    kubectl get nodes
     export StorageClass="default"
+    sleep 120
 }
 
 export StorageClass="standard"
@@ -155,6 +157,7 @@ elif [ "${ClusterProvider}" = "aks" ]; then
     prepare_aks
 elif [ "${ClusterProvider}" = "digitalocean" ]; then
     pharmer_common
+    sleep 120
 else
     echo "unknown provider"
     exit 1
