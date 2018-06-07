@@ -54,6 +54,8 @@ function pharmer_common {
     pharmer create cluster ${NAME} --provider=${ClusterProvider} --zone=${ZONE} --nodes=${NODE}=1 --credential-uid=cred --v=10 --kubernetes-version=${K8S_VERSION}
     pharmer apply ${NAME} || true
     pharmer apply ${NAME}
+    pharmer use cluster ${NAME}
+    sleep 120
 }
 
 function prepare_gke {
@@ -165,7 +167,6 @@ elif [ "${ClusterProvider}" = "aks" ]; then
     prepare_aks
 elif [ "${ClusterProvider}" = "digitalocean" ]; then
     pharmer_common
-    sleep 120
 else
     echo "unknown provider"
     exit 1
