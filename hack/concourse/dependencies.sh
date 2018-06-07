@@ -28,12 +28,13 @@ export ClusterProvider=${ClusterProvider:-digitalocean}
 
 # install pharmer
 if [ "$ClusterProvider" = "aks" ]; then
-    mkdir -p $GOPATH/src/github.com/pharmer
-    pushd $GOPATH/src/github.com/pharmer
-    git clone https://github.com/pharmer/pharmer
-    cd pharmer
-    go install -v
-    popd
+    true
+#    mkdir -p $GOPATH/src/github.com/pharmer
+#    pushd $GOPATH/src/github.com/pharmer
+#    git clone https://github.com/pharmer/pharmer
+#    cd pharmer
+#    go install -v
+#    popd
 elif [ "$ClusterProvider" != "aws" ]; then
     pushd /tmp
     curl -LO https://cdn.appscode.com/binaries/pharmer/0.1.0-rc.3/pharmer-linux-amd64
