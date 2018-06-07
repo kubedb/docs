@@ -2,6 +2,16 @@
 
 set -eoux pipefail
 
+export CredProvider=${CredProvider:-DigitalOcean}
+export ZONE=${ZONE:-nyc1}
+export NODE=${NODE:-2gb}
+export K8S_VERSION=${K8S_VERSION:-1.10.0}
+
+# name of the cluster
+pushd operator
+export NAME=operator-$(git rev-parse --short HEAD)
+popd
+
 function cleanup {
     set +eoux pipefail
 
@@ -20,6 +30,8 @@ function cleanup {
     # delete cluster on exit
     if [ "${ClusterProvider}" = "aws" ]; then
         kops delete cluster --name ${NAME} --yes
+    elif [ "${ClusterProvider}" = "aks" ]; then
+        az group delete --name $NAME --yes --no-wait
     else
         pharmer get cluster
         pharmer delete cluster ${NAME}
@@ -37,16 +49,6 @@ function cleanup {
 trap cleanup EXIT
 
 function pharmer_common {
-    export CredProvider=${CredProvider:-DigitalOcean}
-    export ZONE=${ZONE:-nyc1}
-    export NODE=${NODE:-2gb}
-    export K8S_VERSION=${K8S_VERSION:-1.10.0}
-
-    # name of the cluster
-    pushd operator
-    export NAME=operator-$(git rev-parse --short HEAD)
-    popd
-
     # create cluster using pharmer
     pharmer create credential --from-file=creds/${ClusterProvider}.json --provider=${CredProvider} cred
     pharmer create cluster ${NAME} --provider=${ClusterProvider} --zone=${ZONE} --nodes=${NODE}=1 --credential-uid=cred --v=10 --kubernetes-version=${K8S_VERSION}
@@ -64,7 +66,7 @@ function prepare_gke {
     source /tmp/google-cloud-sdk/path.bash.inc
     popd
     gcloud auth activate-service-account --key-file creds/gke.json
-    gcloud container clusters get-credentials ${NAME} --zone us-central1-f --project k8s-qa
+    gcloud container clusters get-credentials ${NAME} --zone ${ZONE} --project k8s-qa
     kubectl create clusterrolebinding cluster-admin-binding --clusterrole=cluster-admin --user=k8s-qa@k8s-qa.iam.gserviceaccount.com
 
     # wait for cluster to be ready
@@ -142,7 +144,8 @@ function prepare_aks {
 
     # create cluster
     # pharmer_common
-    az aks create --resource-group $NAME --name $NAME --service-principal $APP_ID --client-secret $PASSWORD
+    az group create --name $NAME --location $ZONE
+    az aks create --resource-group $NAME --name $NAME --service-principal $APP_ID --client-secret $PASSWORD --generate-ssh-keys --node-vm-size $NODE --kubernetes-version $K8S_VERSION
     set -x
 
     az aks get-credentials --resource-group $NAME --name $NAME
