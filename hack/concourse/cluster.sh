@@ -109,8 +109,13 @@ function prepare_aws {
     kops update cluster ${NAME} --yes
 
     # wait for cluster to be ready
-    while [ "$(kops validate cluster | tail -1)" != "Your cluster ${NAME} is ready" ]; do
-        sleep 60
+    end=$((SECONDS+900))
+    while [ $SECONDS -lt $end ]; do
+        if (kops validate cluster); then
+            break
+        else
+            sleep 60
+        fi
     done
 
     export StorageClass="gp2"
