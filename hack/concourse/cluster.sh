@@ -147,7 +147,7 @@ function prepare_aks {
     # create cluster
     # pharmer_common
     az group create --name $NAME --location $ZONE
-    az aks create --resource-group $NAME --name $NAME --service-principal $APP_ID --client-secret $PASSWORD --generate-ssh-keys --node-vm-size $NODE --kubernetes-version $K8S_VERSION
+    az aks create --resource-group $NAME --name $NAME --service-principal $APP_ID --client-secret $PASSWORD --generate-ssh-keys --node-vm-size $NODE --node-count 1 --kubernetes-version $K8S_VERSION
     set -x
 
     az aks get-credentials --resource-group $NAME --name $NAME
@@ -167,6 +167,21 @@ elif [ "${ClusterProvider}" = "aks" ]; then
     prepare_aks
 elif [ "${ClusterProvider}" = "digitalocean" ]; then
     pharmer_common
+
+    # create storageclass
+    cat > sc.yaml <<EOF
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard
+parameters:
+  zone: nyc1
+provisioner: external/pharmer
+EOF
+
+    kubectl create -f sc.yaml
+    sleep 60
+    kubectl get storageclass
 else
     echo "unknown provider"
     exit 1
