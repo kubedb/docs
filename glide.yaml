@@ -3,60 +3,81 @@ import:
 - package: github.com/appscode/go
   version: master
 - package: github.com/appscode/pat
+  version: master
 - package: github.com/coreos/prometheus-operator
-  repo: https://github.com/tamalsaha/prometheus-operator.git
-  version: k-1.9
+  version: v0.20.0
+- package: github.com/dcu/mongodb_exporter
+  version: master
+- package: github.com/go-kit/kit
+  version: v0.7.0
 - package: github.com/graymeta/stow
   repo: https://github.com/appscode/stow.git
   vcs: git
   version: master
-- package: gopkg.in/robfig/cron.v2
-  repo: https://github.com/appscode/cron.git
-  vcs: git
-  version: v2
-- package: github.com/go-kit/kit
-  version: v0.5.0
+- package: github.com/Azure/azure-sdk-for-go
+  version: v12.4.0-beta
+- package: github.com/Azure/go-autorest
+  version: v9.9.0
+- package: github.com/aws/aws-sdk-go
+  version: v1.12.7
+- package: google.golang.org/api/storage/v1
+  version: master
+- package: cloud.google.com/go
+  version: v0.2.0
+- package: github.com/jpillora/go-ogle-analytics
+- package: github.com/justwatchcom/elasticsearch_exporter
+  version: master
 - package: github.com/kubedb/apimachinery
   version: master
 - package: github.com/kubedb/elasticsearch
   version: master
-- package: github.com/justwatchcom/elasticsearch_exporter
+- package: github.com/kubedb/memcached
+  version: master
+- package: github.com/kubedb/mongodb
+  version: master
+- package: github.com/kubedb/mysql
   version: master
 - package: github.com/kubedb/postgres
   version: master
-- package: github.com/wrouesnel/postgres_exporter
-  repo: https://github.com/kubedb/postgres_exporter.git
-  vcs: git
+- package: github.com/kubedb/redis
+  version: master
+- package: github.com/oliver006/redis_exporter
   version: master
 - package: github.com/orcaman/concurrent-map
 - package: github.com/prometheus/client_golang
   version: v0.8.0
 - package: github.com/prometheus/common
   version: 3233b24a36715a2fe36d162260457857a56d672d
-- package: github.com/sirupsen/logrus
-  version: v1.0.3
+- package: github.com/prometheus/memcached_exporter
+  repo: https://github.com/kubedb/memcached_exporter.git
+  vcs: git
+  version: master
+- package: github.com/prometheus/mysqld_exporter
+  version: f76ef420f139f4a67c25a3009f90dcaf11f7f936
 - package: github.com/spf13/cobra
-  version: master
+  version: v0.0.3
 - package: github.com/spf13/pflag
+  version: v1.0.1
+- package: github.com/wrouesnel/postgres_exporter
+  repo: https://github.com/kubedb/postgres_exporter.git
+  vcs: git
   version: master
-- package: gopkg.in/ini.v1
-  version: v1.28.2
 - package: k8s.io/api
   version: kubernetes-1.10.0
-- package: k8s.io/apimachinery
+- package: k8s.io/apiextensions-apiserver
   version: kubernetes-1.10.0
+- package: k8s.io/apimachinery
+  repo: https://github.com/pharmer/apimachinery.git
+  vcs: git
+  version: release-1.10
 - package: k8s.io/apiserver
   repo: https://github.com/tamalsaha/apiserver.git
   version: k-1.10
 - package: k8s.io/client-go
   version: v7.0.0
-- package: k8s.io/apiextensions-apiserver
-  version: kubernetes-1.10.0
-- package: k8s.io/kubernetes
-  version: v1.10.0
 - package: github.com/appscode/kutil
   version: release-7.0
-- package: github.com/appscode/kube-mon
+- package: github.com/appscode/kubernetes-webhook-util
   version: release-7.0
 - package: github.com/openshift/api
   version: 09a4e3d50f1aae6613b1b86941ffb8bded21e674
@@ -68,25 +89,3 @@ import:
   version: release-3.10
 - package: github.com/mailru/easyjson
   version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
-- package: github.com/kubedb/mongodb
-  version: master
-- package: github.com/dcu/mongodb_exporter
-  version: master
-- package: github.com/kubedb/mysql
-  version: master
-- package: github.com/prometheus/mysqld_exporter
-  version: f76ef420f139f4a67c25a3009f90dcaf11f7f936
-- package: github.com/kubedb/redis
-  version: master
-- package: github.com/oliver006/redis_exporter
-  version: master
-- package: github.com/kubedb/memcached
-  version: master
-- package: github.com/prometheus/memcached_exporter
-  repo: https://github.com/kubedb/memcached_exporter.git
-  vcs: git
-  version: master
-- package: github.com/hashicorp/go-version
-  repo: https://github.com/appscode/go-version.git
-  vcs: git
-  version: master
