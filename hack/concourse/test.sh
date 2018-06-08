@@ -75,6 +75,8 @@ fi
 popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+kubectl describe nodes || true
 
 # test memcached
 echo "======================TESTING MEMCACHED=============================="
@@ -86,6 +88,8 @@ fi
 popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+kubectl describe nodes || true
 
 # test elasticsearch
 echo "======================TESTING ELASTICSEARCH============================="
@@ -98,6 +102,8 @@ fi
 popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+kubectl describe nodes || true
 
 # test postgres
 echo "======================TESTING POSTGRES=============================="
@@ -115,6 +121,8 @@ fi
 popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+kubectl describe nodes || true
 
 # test mongodb
 echo "======================TESTING MONGODB=============================="
@@ -127,6 +135,8 @@ fi
 popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+kubectl describe nodes || true
 
 # test mysql
 echo "======================TESTING MYSQL=============================="
@@ -139,6 +149,8 @@ fi
 popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+kubectl describe nodes || true
 
 popd
 

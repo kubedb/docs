@@ -16,16 +16,17 @@ function cleanup {
     set +eoux pipefail
 
     # Workload Descriptions if the test fails
-    if [ $? -ne 0 ]; then
-        echo ""
-        kubectl describe deploy -n kube-system -l app=kubedb
-        echo ""
-        echo ""
-        kubectl describe replicasets -n kube-system -l app=kubedb
-        echo ""
-        echo ""
-        kubectl describe pods -n kube-system -l app=kubedb
-    fi
+    echo ""
+    kubectl describe deploy -n kube-system -l app=kubedb
+    echo ""
+    echo ""
+    kubectl describe replicasets -n kube-system -l app=kubedb
+    echo ""
+    echo ""
+    kubectl describe pods -n kube-system -l app=kubedb
+    echo ""
+    echo ""
+    kubectl describe nodes
 
     # delete cluster on exit
     if [ "${ClusterProvider}" = "aws" ]; then
