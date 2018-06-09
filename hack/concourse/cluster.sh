@@ -4,7 +4,7 @@ set -eoux pipefail
 
 export CredProvider=${CredProvider:-DigitalOcean}
 export ZONE=${ZONE:-nyc1}
-export NODE=${NODE:-2gb}
+export NODE=${NODE:-4gb}
 export K8S_VERSION=${K8S_VERSION:-1.10.0}
 
 # name of the cluster
