@@ -36,7 +36,7 @@ function cleanup {
         pharmer get cluster
         pharmer delete cluster ${NAME}
         pharmer get cluster
-        sleep 120
+        sleep 300
         pharmer apply ${NAME}
         pharmer get cluster
     fi
