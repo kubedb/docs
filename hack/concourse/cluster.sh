@@ -17,14 +17,20 @@ function cleanup {
 
     # Workload Descriptions if the test fails
     echo ""
+    echo "::::::::::::::::::::::::::: Describe Deployment :::::::::::::::::::::::::::"
     kubectl describe deploy -n kube-system -l app=kubedb
     echo ""
     echo ""
+    echo "::::::::::::::::::::::::::: Describe Replica Set :::::::::::::::::::::::::::"
     kubectl describe replicasets -n kube-system -l app=kubedb
     echo ""
     echo ""
+    echo "::::::::::::::::::::::::::: Describe Pod :::::::::::::::::::::::::::"
     kubectl describe pods -n kube-system -l app=kubedb
     echo ""
+    echo ""
+    echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+    kubectl get nodes
     echo ""
     kubectl describe nodes
 

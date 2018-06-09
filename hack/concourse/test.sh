@@ -76,6 +76,10 @@ popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""
+echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+echo ""
+kubectl get nodes || true
+echo ""
 kubectl describe nodes || true
 
 # test memcached
@@ -88,6 +92,10 @@ fi
 popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+echo ""
+kubectl get nodes || true
 echo ""
 kubectl describe nodes || true
 
@@ -102,6 +110,10 @@ fi
 popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+echo ""
+kubectl get nodes || true
 echo ""
 kubectl describe nodes || true
 
@@ -122,6 +134,10 @@ popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""
+echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+echo ""
+kubectl get nodes || true
+echo ""
 kubectl describe nodes || true
 
 # test mongodb
@@ -136,6 +152,10 @@ popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""
+echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+echo ""
+kubectl get nodes || true
+echo ""
 kubectl describe nodes || true
 
 # test mysql
@@ -149,6 +169,10 @@ fi
 popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+echo ""
+kubectl get nodes || true
 echo ""
 kubectl describe nodes || true
 
