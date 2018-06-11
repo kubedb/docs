@@ -375,7 +375,6 @@ func (c *Controller) upsertContainer(statefulSet *apps.StatefulSet, elasticsearc
 }
 
 func upsertEnv(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch, envs []core.EnvVar) *apps.StatefulSet {
-
 	envList := []core.EnvVar{
 		{
 			Name:  "CLUSTER_NAME",
@@ -407,6 +406,10 @@ func upsertEnv(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch, 
 					Key: "key_pass",
 				},
 			},
+		},
+		{
+			Name:  "SEARCHGUARD_DISABLED",
+			Value: fmt.Sprintf("%v", elasticsearch.SearchGuardDisabled()),
 		},
 	}
 

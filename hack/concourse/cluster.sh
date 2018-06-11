@@ -4,7 +4,7 @@ set -eoux pipefail
 
 export CredProvider=${CredProvider:-DigitalOcean}
 export ZONE=${ZONE:-nyc1}
-export NODE=${NODE:-2gb}
+export NODE=${NODE:-4gb}
 export K8S_VERSION=${K8S_VERSION:-1.10.0}
 
 # name of the cluster
@@ -16,16 +16,23 @@ function cleanup {
     set +eoux pipefail
 
     # Workload Descriptions if the test fails
-    if [ $? -ne 0 ]; then
-        echo ""
-        kubectl describe deploy -n kube-system -l app=kubedb
-        echo ""
-        echo ""
-        kubectl describe replicasets -n kube-system -l app=kubedb
-        echo ""
-        echo ""
-        kubectl describe pods -n kube-system -l app=kubedb
-    fi
+    echo ""
+    echo "::::::::::::::::::::::::::: Describe Deployment :::::::::::::::::::::::::::"
+    kubectl describe deploy -n kube-system -l app=kubedb
+    echo ""
+    echo ""
+    echo "::::::::::::::::::::::::::: Describe Replica Set :::::::::::::::::::::::::::"
+    kubectl describe replicasets -n kube-system -l app=kubedb
+    echo ""
+    echo ""
+    echo "::::::::::::::::::::::::::: Describe Pod :::::::::::::::::::::::::::"
+    kubectl describe pods -n kube-system -l app=kubedb
+    echo ""
+    echo ""
+    echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+    kubectl get nodes
+    echo ""
+    kubectl describe nodes
 
     # delete cluster on exit
     if [ "${ClusterProvider}" = "aws" ]; then

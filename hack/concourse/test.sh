@@ -75,6 +75,12 @@ fi
 popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+echo ""
+kubectl get nodes || true
+echo ""
+kubectl describe nodes || true
 
 # test memcached
 echo "======================TESTING MEMCACHED=============================="
@@ -86,30 +92,12 @@ fi
 popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
-
-# test mongodb
-echo "======================TESTING MONGODB=============================="
-git clone https://github.com/kubedb/mongodb
-pushd mongodb
-cp /tmp/.env hack/config/.env
-if ! (./hack/make.py test e2e --v=1 --storageclass=$StorageClass --selfhosted-operator=true); then
-    EXIT_CODE=1
-fi
-popd
-
-kubectl describe pods -n kube-system -l app=kubedb || true
-
-# test mysql
-echo "======================TESTING MYSQL=============================="
-git clone https://github.com/kubedb/mysql
-pushd mysql
-cp /tmp/.env hack/config/.env
-if ! (./hack/make.py test e2e --v=1 --storageclass=$StorageClass --selfhosted-operator=true); then
-    EXIT_CODE=1
-fi
-popd
-
-kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+echo ""
+kubectl get nodes || true
+echo ""
+kubectl describe nodes || true
 
 # test elasticsearch
 echo "======================TESTING ELASTICSEARCH============================="
@@ -122,6 +110,12 @@ fi
 popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+echo ""
+kubectl get nodes || true
+echo ""
+kubectl describe nodes || true
 
 # test postgres
 echo "======================TESTING POSTGRES=============================="
@@ -139,6 +133,48 @@ fi
 popd
 
 kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+echo ""
+kubectl get nodes || true
+echo ""
+kubectl describe nodes || true
+
+# test mongodb
+echo "======================TESTING MONGODB=============================="
+git clone https://github.com/kubedb/mongodb
+pushd mongodb
+cp /tmp/.env hack/config/.env
+if ! (./hack/make.py test e2e --v=1 --storageclass=$StorageClass --selfhosted-operator=true); then
+    EXIT_CODE=1
+fi
+popd
+
+kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+echo ""
+kubectl get nodes || true
+echo ""
+kubectl describe nodes || true
+
+# test mysql
+echo "======================TESTING MYSQL=============================="
+git clone https://github.com/kubedb/mysql
+pushd mysql
+cp /tmp/.env hack/config/.env
+if ! (./hack/make.py test e2e --v=1 --storageclass=$StorageClass --selfhosted-operator=true); then
+    EXIT_CODE=1
+fi
+popd
+
+kubectl describe pods -n kube-system -l app=kubedb || true
+echo ""
+echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
+echo ""
+kubectl get nodes || true
+echo ""
+kubectl describe nodes || true
 
 popd
 

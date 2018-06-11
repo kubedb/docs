@@ -145,7 +145,7 @@ func NewOSMContext(client kubernetes.Interface, spec api.SnapshotStorageSpec, na
 		} else {
 			nc.Config[s3.ConfigAuthType] = "iam"
 		}
-		if strings.HasSuffix(spec.S3.Endpoint, ".amazonaws.com") {
+		if spec.S3.Endpoint == "" || strings.HasSuffix(spec.S3.Endpoint, ".amazonaws.com") {
 			// find region
 			var sess *session.Session
 			var err error
@@ -157,12 +157,11 @@ func NewOSMContext(client kubernetes.Interface, spec api.SnapshotStorageSpec, na
 					AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
 				})
 			} else {
-				config := &aws.Config{
-					Credentials: credentials.NewStaticCredentials(string(keyID), string(key), ""),
-					Region:      aws.String("us-east-1"),
-				}
 				sess, err = session.NewSessionWithOptions(session.Options{
-					Config: *config,
+					Config: aws.Config{
+						Credentials: credentials.NewStaticCredentials(string(keyID), string(key), ""),
+						Region:      aws.String("us-east-1"),
+					},
 					// Support MFA when authing using assumed roles.
 					SharedConfigState:       session.SharedConfigEnable,
 					AssumeRoleTokenProvider: stscreds.StdinTokenProvider,
@@ -175,6 +174,9 @@ func NewOSMContext(client kubernetes.Interface, spec api.SnapshotStorageSpec, na
 			out, err := svc.GetBucketLocation(&_s3.GetBucketLocationInput{
 				Bucket: types.StringP(spec.S3.Bucket),
 			})
+			if err != nil {
+				return nil, err
+			}
 			nc.Config[s3.ConfigRegion] = stringz.Val(types.String(out.LocationConstraint), "us-east-1")
 		} else {
 			nc.Config[s3.ConfigEndpoint] = spec.S3.Endpoint
