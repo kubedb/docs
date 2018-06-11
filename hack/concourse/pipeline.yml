@@ -250,7 +250,7 @@ jobs:
     params:
       ClusterProvider: acs
       ZONE: westcentralus
-      NODE: Standard_DS1_v2
+      NODE: Standard_DS2_v2
       K8S_VERSION: 1.10.3
       APP_ID: ((azure_app_id))
       TENANT_ID: ((azure_tenant_id))

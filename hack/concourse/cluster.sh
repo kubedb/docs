@@ -37,7 +37,7 @@ function cleanup {
     # delete cluster on exit
     if [ "${ClusterProvider}" = "aws" ]; then
         kops delete cluster --name ${NAME} --yes
-    elif [ "${ClusterProvider}" = "aks" ]; then
+    elif [ "${ClusterProvider}" = "aks" || "${ClusterProvider}" = "acs" ]; then
         az group delete --name $NAME --yes --no-wait
     else
         pharmer get cluster
