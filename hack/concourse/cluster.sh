@@ -163,7 +163,7 @@ function prepare_aks {
 function prepare_acs {
     azure_common
     set +x
-    az acs create --orchestrator-type kubernetes --orchestrator-version $K8S_VERSION --resource-group $NAME --name $NAME --agent-count 1 --service-principal $APP_ID --client-secret $PASSWORD --generate-ssh-keys &> /dev/null
+    az acs create --orchestrator-type kubernetes --orchestrator-version $K8S_VERSION --resource-group $NAME --name $NAME --master-vm-size $NODE --agent-vm-size $NODE --agent-count 1 --service-principal $APP_ID --client-secret $PASSWORD --generate-ssh-keys &> /dev/null
     set -x
     az acs kubernetes get-credentials --resource-group $NAME --name $NAME
 }
