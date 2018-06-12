@@ -13,6 +13,13 @@ kubectl get nodes
 export ROOT=$(pwd)
 export DB=${DB:-}
 
+export StorageClass=standard
+if [ "$ClusterProvider" = "aws" ]; then
+    export StorageClass=gp2
+elif [[ "$ClusterProvider" = "aks" || "$ClusterProvider" = "acs" ]]; then
+    export StorageClass=default
+fi
+
 # create config/.env file that have all necessary creds
 cp creds/gcs.json /gcs.json
 
