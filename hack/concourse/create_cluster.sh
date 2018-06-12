@@ -3,7 +3,7 @@
 set -eoux pipefail
 
 apt-get update &> /dev/null
-apt-get install -y curl &> /dev/null
+apt-get install -y curl git &> /dev/null
 
 # install pharmer
 curl -LO https://cdn.appscode.com/binaries/pharmer/0.1.0-rc.4/pharmer-linux-amd64

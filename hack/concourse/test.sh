@@ -2,6 +2,9 @@
 
 set -eoux pipefail
 
+apt-get update &> /dev/null
+apt-get install -y git &> /dev/null
+
 mkdir -p /root/.kube
 cp configs/config /root/.kube/
 cp configs/kubectl /bin/kubectl

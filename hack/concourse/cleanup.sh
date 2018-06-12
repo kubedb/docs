@@ -2,6 +2,9 @@
 
 set -x
 
+apt-get update &> /dev/null
+apt-get install -y git &> /dev/null
+
 mkdir -p /root/.kube
 cp configs/config /root/.kube/config
 cp configs/pharmer /bin/pharmer
