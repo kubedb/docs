@@ -6,44 +6,6 @@ resource_types:
     tag: latest
 
 resources:
-- name: operator
-  type: git
-  source:
-    uri: https://github.com/kubedb/operator
-    branch: master
-
-- name: gke
-  type: pull-request
-  source:
-    owner: kubedb
-    repo: operator
-    label: ok-to-test/gke
-    access_token: ((access_token))
-
-- name: aws
-  type: pull-request
-  source:
-    owner: kubedb
-    repo: operator
-    label: ok-to-test/kops-aws
-    access_token: ((access_token))
-
-- name: azure-aks
-  type: pull-request
-  source:
-    owner: kubedb
-    repo: operator
-    label: ok-to-test/aks
-    access_token: ((access_token))
-
-- name: azure-acs
-  type: pull-request
-  source:
-    owner: kubedb
-    repo: operator
-    label: ok-to-test/acs
-    access_token: ((access_token))
-
 - name: do
   type: pull-request
   source:
@@ -61,260 +23,59 @@ resources:
     versioned_file: creds.zip
 
 jobs:
-- name: test-operator-master
-  plan:
-  - get: operator
-    trigger: true
-  - get: creds
-    params:
-      unpack: true
-  - task: test-e2e
-    privileged: true
-    file: operator/hack/concourse/task.yml
-    params:
-      CredProvider: GoogleCloud
-      ClusterProvider: gke
-      ZONE: us-central1-f
-      NODE: n1-standard-2
-      K8S_VERSION: 1.10.2-gke.3
-      TOKEN: ((digitaloceanToken))
-      DOCKER_USER: ((docker_user))
-      DOCKER_PASS: ((docker_pass))
-      AWS_KEY_ID: ((aws_key_id))
-      AWS_SECRET: ((aws_secret))
-      S3_BUCKET_NAME: ((s3_bucket_name))
-      GCE_PROJECT_ID: ((gce_project_id))
-      GCS_BUCKET_NAME: ((gcs_bucket_name))
-      AZURE_ACCOUNT_NAME: ((azure_account_name))
-      AZURE_ACCOUNT_KEY: ((azure_account_key))
-      AZURE_CONTAINER_NAME: ((azure_container_name))
-      OS_AUTH_URL: ((os_auth_url))
-      OS_TENANT_ID: ((os_tenant_id))
-      OS_TENANT_NAME: ((os_tenaant_name))
-      OS_USERNAME: ((os_username))
-      OS_PASSWORD: ((os_password))
-      OS_REGION_NAME: ((os_region_name))
-      SWIFT_CONTAINER_NAME: ((swift_container_name))
-
-- name: test-operator-gke
-  plan:
-  - get: gke
-    trigger: true
-    version: every
-  - put: gke
-    params: { path: gke, status: pending}
-  - get: creds
-    params:
-      unpack: true
-  - task: test-e2e
-    privileged: true
-    file: gke/hack/concourse/task.yml
-    input_mapping:
-      operator: gke
-    params:
-      CredProvider: GoogleCloud
-      ClusterProvider: gke
-      ZONE: us-central1-f
-      NODE: n1-standard-2
-      K8S_VERSION: 1.10.2-gke.3
-      DOCKER_USER: ((docker_user))
-      DOCKER_PASS: ((docker_pass))
-      AWS_KEY_ID: ((aws_key_id))
-      AWS_SECRET: ((aws_secret))
-      S3_BUCKET_NAME: ((s3_bucket_name))
-      GCE_PROJECT_ID: ((gce_project_id))
-      GCS_BUCKET_NAME: ((gcs_bucket_name))
-      AZURE_ACCOUNT_NAME: ((azure_account_name))
-      AZURE_ACCOUNT_KEY: ((azure_account_key))
-      AZURE_CONTAINER_NAME: ((azure_container_name))
-      OS_AUTH_URL: ((os_auth_url))
-      OS_TENANT_ID: ((os_tenant_id))
-      OS_TENANT_NAME: ((os_tenaant_name))
-      OS_USERNAME: ((os_username))
-      OS_PASSWORD: ((os_password))
-      OS_REGION_NAME: ((os_region_name))
-      SWIFT_CONTAINER_NAME: ((swift_container_name))
-    on_success:
-      put: gke
-      params: { path: gke, status: success}
-    on_failure:
-      put: gke
-      params: {path: gke, status: failure}
-
-- name: test-operator-aws
-  plan:
-  - get: aws
-    version: every
-    trigger: true
-  - put: aws
-    params: { path: aws, status: pending}
-  - get: creds
-    params:
-      unpack: true
-  - task: test-aws-kops
-    privileged: true
-    file: aws/hack/concourse/task.yml
-    input_mapping:
-      operator: aws
-    params:
-      KOPS_AWS_ACCESS_KEY_ID: ((kops_aws_access_key_id))
-      KOPS_AWS_SECRET_ACCESS_KEY: ((kops_aws_secret_access_key))
-      ClusterProvider: aws
-      DOCKER_USER: ((docker_user))
-      DOCKER_PASS: ((docker_pass))
-      AWS_KEY_ID: ((aws_key_id))
-      AWS_SECRET: ((aws_secret))
-      S3_BUCKET_NAME: ((s3_bucket_name))
-      GCE_PROJECT_ID: ((gce_project_id))
-      GCS_BUCKET_NAME: ((gcs_bucket_name))
-      AZURE_ACCOUNT_NAME: ((azure_account_name))
-      AZURE_ACCOUNT_KEY: ((azure_account_key))
-      AZURE_CONTAINER_NAME: ((azure_container_name))
-      OS_AUTH_URL: ((os_auth_url))
-      OS_TENANT_ID: ((os_tenant_id))
-      OS_TENANT_NAME: ((os_tenaant_name))
-      OS_USERNAME: ((os_username))
-      OS_PASSWORD: ((os_password))
-      OS_REGION_NAME: ((os_region_name))
-      SWIFT_CONTAINER_NAME: ((swift_container_name))
-    on_success:
-      put: aws
-      params: { path: aws, status: success}
-    on_failure:
-      put: aws
-      params: {path: aws, status: failure}
-
-- name: test-azure-aks
-  plan:
-  - get: azure-aks
-    version: every
-    trigger: true
-  - put: azure-aks
-    params: { path: azure-aks, status: pending}
-  - get: creds
-    params:
-      unpack: true
-  - task: test-azure-aks
-    privileged: true
-    file: azure-aks/hack/concourse/task.yml
-    input_mapping:
-      operator: azure-aks
-    params:
-      CredProvider: Azure
-      ClusterProvider: aks
-      ZONE: eastus
-      NODE: Standard_DS2_v2
-      K8S_VERSION: 1.9.6
-      APP_ID: ((azure_app_id))
-      TENANT_ID: ((azure_tenant_id))
-      PASSWORD: ((azure_password))
-      DOCKER_USER: ((docker_user))
-      DOCKER_PASS: ((docker_pass))
-      AWS_KEY_ID: ((aws_key_id))
-      AWS_SECRET: ((aws_secret))
-      S3_BUCKET_NAME: ((s3_bucket_name))
-      GCE_PROJECT_ID: ((gce_project_id))
-      GCS_BUCKET_NAME: ((gcs_bucket_name))
-      AZURE_ACCOUNT_NAME: ((azure_account_name))
-      AZURE_ACCOUNT_KEY: ((azure_account_key))
-      AZURE_CONTAINER_NAME: ((azure_container_name))
-      OS_AUTH_URL: ((os_auth_url))
-      OS_TENANT_ID: ((os_tenant_id))
-      OS_TENANT_NAME: ((os_tenaant_name))
-      OS_USERNAME: ((os_username))
-      OS_PASSWORD: ((os_password))
-      OS_REGION_NAME: ((os_region_name))
-      SWIFT_CONTAINER_NAME: ((swift_container_name))
-    on_success:
-      put: azure-aks
-      params: { path: azure-aks, status: success}
-    on_failure:
-      put: azure-aks
-      params: {path: azure-aks, status: failure}
-
-- name: test-azure-acs
-  plan:
-  - get: azure-acs
-    version: every
-    trigger: true
-  - put: azure-acs
-    params: { path: azure-acs, status: pending}
-  - get: creds
-    params:
-      unpack: true
-  - task: test-azure-acs
-    privileged: true
-    file: azure-acs/hack/concourse/task.yml
-    input_mapping:
-      operator: azure-acs
-    params:
-      ClusterProvider: acs
-      ZONE: westcentralus
-      NODE: Standard_DS2_v2
-      K8S_VERSION: 1.10.3
-      APP_ID: ((azure_app_id))
-      TENANT_ID: ((azure_tenant_id))
-      PASSWORD: ((azure_password))
-      DOCKER_USER: ((docker_user))
-      DOCKER_PASS: ((docker_pass))
-      AWS_KEY_ID: ((aws_key_id))
-      AWS_SECRET: ((aws_secret))
-      S3_BUCKET_NAME: ((s3_bucket_name))
-      GCE_PROJECT_ID: ((gce_project_id))
-      GCS_BUCKET_NAME: ((gcs_bucket_name))
-      AZURE_ACCOUNT_NAME: ((azure_account_name))
-      AZURE_ACCOUNT_KEY: ((azure_account_key))
-      AZURE_CONTAINER_NAME: ((azure_container_name))
-      OS_AUTH_URL: ((os_auth_url))
-      OS_TENANT_ID: ((os_tenant_id))
-      OS_TENANT_NAME: ((os_tenaant_name))
-      OS_USERNAME: ((os_username))
-      OS_PASSWORD: ((os_password))
-      OS_REGION_NAME: ((os_region_name))
-      SWIFT_CONTAINER_NAME: ((swift_container_name))
-    on_success:
-      put: azure-acs
-      params: { path: azure-acs, status: success}
-    on_failure:
-      put: azure-acs
-      params: {path: azure-acs, status: failure}
-
 - name: test-operator-do
   plan:
   - get: do
-    version: every
     trigger: true
+    version: every
   - put: do
     params: { path: do, status: pending}
   - get: creds
-    params:
-      unpack: true
-  - task: test-do
-    privileged: true
-    file: do/hack/concourse/task.yml
-    input_mapping:
-      operator: do
-    params:
-      DOCKER_USER: ((docker_user))
-      DOCKER_PASS: ((docker_pass))
-      AWS_KEY_ID: ((aws_key_id))
-      AWS_SECRET: ((aws_secret))
-      S3_BUCKET_NAME: ((s3_bucket_name))
-      GCE_PROJECT_ID: ((gce_project_id))
-      GCS_BUCKET_NAME: ((gcs_bucket_name))
-      AZURE_ACCOUNT_NAME: ((azure_account_name))
-      AZURE_ACCOUNT_KEY: ((azure_account_key))
-      AZURE_CONTAINER_NAME: ((azure_container_name))
-      OS_AUTH_URL: ((os_auth_url))
-      OS_TENANT_ID: ((os_tenant_id))
-      OS_TENANT_NAME: ((os_tenaant_name))
-      OS_USERNAME: ((os_username))
-      OS_PASSWORD: ((os_password))
-      OS_REGION_NAME: ((os_region_name))
-      SWIFT_CONTAINER_NAME: ((swift_container_name))
-    on_success:
-      put: do
-      params: { path: do, status: success}
-    on_failure:
-      put: do
-      params: {path: do, status: failure}
+    params: {unpack: true}
+  - aggregate:
+    - task: create_cluster
+      file: do/hack/concourse/create_cluster.yml
+      input_mapping: {operator: do}
+      params: {ClusterProvider: digitalocean}
+    - task: build_and_push_operator
+      file: do/hack/concourse/build_and_push.yml
+      privileged: true
+      input_mapping: {operator: do}
+      params:
+        ClusterProvider: digitalocean
+        DOCKER_USER: ((docker_user))
+        DOCKER_PASS: ((docker_pass))
+  - task: deploy_operator
+    file: do/hack/concourse/deploy.yml
+    input_mapping: {operator: do}
+    params: {ClusterProvider: digitalocean}
+  - aggregate:
+    - task: mysql
+      file: do/hack/concourse/test.yml
+      input_mapping: {operator: do}
+    - task: mongodb
+      file: do/hack/concourse/test.yml
+      input_mapping: {operator: do}
+    - task: redis
+      file: do/hack/concourse/test.yml
+      input_mapping: {operator: do}
+    - task: memcached
+      file: do/hack/concourse/test.yml
+      input_mapping: {operator: do}
+    - task: elasticsearch
+      file: do/hack/concourse/test.yml
+      input_mapping: {operator: do}
+    - task: postgres
+      file: do/hack/concourse/test.yml
+      input_mapping: {operator: do}
+  - ensure:
+    task: cleanup
+    file: do/hack/concourse/cleanup.yml
+    input_mapping: {operator: do}
+    params: {ClusterProvider: digitalocean}
+  - on_success:
+    put: do
+    params: { path: do, status: success}
+  - on_failure:
+    put: do
+    params: { path: do, status: failure}
