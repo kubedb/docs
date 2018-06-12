@@ -59,23 +59,23 @@ jobs:
       - task: mongodb
         file: do/hack/concourse/test.yml
         input_mapping: {operator: do}
-        params: {DB: mysql, StorageClass: standard}
+        params: {DB: mongodb, StorageClass: standard}
       - task: redis
         file: do/hack/concourse/test.yml
         input_mapping: {operator: do}
-        params: {DB: mysql, StorageClass: standard}
+        params: {DB: redis, StorageClass: standard}
       - task: memcached
         file: do/hack/concourse/test.yml
         input_mapping: {operator: do}
-        params: {DB: mysql, StorageClass: standard}
+        params: {DB: memcached, StorageClass: standard}
       - task: elasticsearch
         file: do/hack/concourse/test.yml
         input_mapping: {operator: do}
-        params: {DB: mysql, StorageClass: standard}
+        params: {DB: elasticsearch, StorageClass: standard}
       - task: postgres
         file: do/hack/concourse/test.yml
         input_mapping: {operator: do}
-        params: {DB: mysql, StorageClass: standard}
+        params: {DB: postgres, StorageClass: standard}
     ensure:
       task: cleanup
       file: do/hack/concourse/cleanup.yml
