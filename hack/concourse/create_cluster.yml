@@ -1,0 +1,17 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: debian
+    tag: latest
+
+inputs:
+- name: operator
+- name: creds
+
+outputs:
+- name: configs
+
+run:
+  path: operator/hack/concourse/create_cluster.sh
