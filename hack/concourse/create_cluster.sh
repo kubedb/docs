@@ -121,6 +121,21 @@ if [ "$ClusterProvider" = "digitalocean" ]; then
     export K8S_VERSION="v1.10.0"
 
     prepare_pharmer
+
+    # create storageclass
+    cat > sc.yaml <<EOF
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard
+parameters:
+  zone: nyc1
+provisioner: external/pharmer
+EOF
+
+    kubectl create -f sc.yaml
+    sleep 60
+    kubectl get storageclass
 elif [ "$ClusterProvider" = "gke" ]; then
     export CredProvider="GoogleCloud"
     export ZONE="us-central1-f"
