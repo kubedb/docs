@@ -55,21 +55,27 @@ jobs:
       - task: mysql
         file: do/hack/concourse/test.yml
         input_mapping: {operator: do}
+        params: {DB: mysql}
       - task: mongodb
         file: do/hack/concourse/test.yml
         input_mapping: {operator: do}
+        params: {DB: mongodb}
       - task: redis
         file: do/hack/concourse/test.yml
         input_mapping: {operator: do}
+        params: {DB: redis}
       - task: memcached
         file: do/hack/concourse/test.yml
         input_mapping: {operator: do}
+        params: {DB: memcached}
       - task: elasticsearch
         file: do/hack/concourse/test.yml
         input_mapping: {operator: do}
+        params: {DB: elasticsearch}
       - task: postgres
         file: do/hack/concourse/test.yml
         input_mapping: {operator: do}
+        params: {DB: postgres}
     ensure:
       task: cleanup
       file: do/hack/concourse/cleanup.yml
