@@ -25,49 +25,51 @@ resources:
 jobs:
 - name: test-operator-do
   plan:
-  - get: do
-    trigger: true
-    version: every
+  - aggregate:
+    - get: do
+      trigger: true
+      version: every
+    - get: creds
+      params: {unpack: true}
   - put: do
     params: { path: do, status: pending}
-  - get: creds
-    params: {unpack: true}
-  - aggregate:
-    - task: create_cluster
-      file: do/hack/concourse/create_cluster.yml
+  - do:
+    - aggregate:
+      - task: create_cluster
+        file: do/hack/concourse/create_cluster.yml
+        input_mapping: {operator: do}
+        params: {ClusterProvider: digitalocean}
+      - task: build_and_push_operator
+        file: do/hack/concourse/build_and_push.yml
+        privileged: true
+        input_mapping: {operator: do}
+        params:
+          ClusterProvider: digitalocean
+          DOCKER_USER: ((docker_user))
+          DOCKER_PASS: ((docker_pass))
+    - task: deploy_operator
+      file: do/hack/concourse/deploy.yml
       input_mapping: {operator: do}
       params: {ClusterProvider: digitalocean}
-    - task: build_and_push_operator
-      file: do/hack/concourse/build_and_push.yml
-      privileged: true
-      input_mapping: {operator: do}
-      params:
-        ClusterProvider: digitalocean
-        DOCKER_USER: ((docker_user))
-        DOCKER_PASS: ((docker_pass))
-  - task: deploy_operator
-    file: do/hack/concourse/deploy.yml
-    input_mapping: {operator: do}
-    params: {ClusterProvider: digitalocean}
-  - aggregate:
-    - task: mysql
-      file: do/hack/concourse/test.yml
-      input_mapping: {operator: do}
-    - task: mongodb
-      file: do/hack/concourse/test.yml
-      input_mapping: {operator: do}
-    - task: redis
-      file: do/hack/concourse/test.yml
-      input_mapping: {operator: do}
-    - task: memcached
-      file: do/hack/concourse/test.yml
-      input_mapping: {operator: do}
-    - task: elasticsearch
-      file: do/hack/concourse/test.yml
-      input_mapping: {operator: do}
-    - task: postgres
-      file: do/hack/concourse/test.yml
-      input_mapping: {operator: do}
+    - aggregate:
+      - task: mysql
+        file: do/hack/concourse/test.yml
+        input_mapping: {operator: do}
+      - task: mongodb
+        file: do/hack/concourse/test.yml
+        input_mapping: {operator: do}
+      - task: redis
+        file: do/hack/concourse/test.yml
+        input_mapping: {operator: do}
+      - task: memcached
+        file: do/hack/concourse/test.yml
+        input_mapping: {operator: do}
+      - task: elasticsearch
+        file: do/hack/concourse/test.yml
+        input_mapping: {operator: do}
+      - task: postgres
+        file: do/hack/concourse/test.yml
+        input_mapping: {operator: do}
     ensure:
       task: cleanup
       file: do/hack/concourse/cleanup.yml

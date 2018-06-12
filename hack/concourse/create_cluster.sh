@@ -23,46 +23,6 @@ popd
 export ClusterProvider=${ClusterProvider:-}
 export StorageClass="standard"
 
-if [ "$ClusterProvider" = "digitalocean" ]; then
-    export CredProvider="DigitalOcean"
-    export ZONE="nyc1"
-    export NODE="4gb"
-    export K8S_VERSION="v1.10.0"
-
-    prepare_pharmer
-elif [ "$ClusterProvider" = "gke" ]; then
-    export CredProvider="GoogleCloud"
-    export ZONE="us-central1-f"
-    export NODE="n1-standard-2"
-    export K8S_VERSION="1.10.2-gke.3"
-
-    prepare_pharmer
-elif [ "$ClusterProvider" = "aks" ]; then
-    export CredProvider="Azure"
-    export ZONE="eastus"
-    export NODE="Standard_DS2_v2"
-    export K8S_VERSION="1.9.6"
-
-    prepare_aks
-elif [ "$ClusterProvider" = "acs" ]; then
-    export ZONE="westcentralus"
-    export NODE="Standard_DS2_v2"
-    export K8S_VERSION="1.10.3"
-
-    prepare_acs
-elif [ "$ClusterProvider" = "aws" ]; then
-    prepare_aws
-else
-    echo "unknown provider"
-    exit 1
-fi
-
-kubectl get nodes
-cp /root/.kube/config configs/
-cp /bin/pharmer configs/
-cp /bin/kubectl configs/
-cp -r /root/.pharmer configs
-
 # create cluster using pharmer
 function prepare_pharmer {
     pharmer create credential --from-file=creds/${ClusterProvider}.json --provider=${CredProvider} cred
@@ -153,3 +113,43 @@ function prepare_acs {
     set -x
     az acs kubernetes get-credentials --resource-group $NAME --name $NAME
 }
+
+if [ "$ClusterProvider" = "digitalocean" ]; then
+    export CredProvider="DigitalOcean"
+    export ZONE="nyc1"
+    export NODE="4gb"
+    export K8S_VERSION="v1.10.0"
+
+    prepare_pharmer
+elif [ "$ClusterProvider" = "gke" ]; then
+    export CredProvider="GoogleCloud"
+    export ZONE="us-central1-f"
+    export NODE="n1-standard-2"
+    export K8S_VERSION="1.10.2-gke.3"
+
+    prepare_pharmer
+elif [ "$ClusterProvider" = "aks" ]; then
+    export CredProvider="Azure"
+    export ZONE="eastus"
+    export NODE="Standard_DS2_v2"
+    export K8S_VERSION="1.9.6"
+
+    prepare_aks
+elif [ "$ClusterProvider" = "acs" ]; then
+    export ZONE="westcentralus"
+    export NODE="Standard_DS2_v2"
+    export K8S_VERSION="1.10.3"
+
+    prepare_acs
+elif [ "$ClusterProvider" = "aws" ]; then
+    prepare_aws
+else
+    echo "unknown provider"
+    exit 1
+fi
+
+kubectl get nodes
+cp /root/.kube/config configs/
+cp /bin/pharmer configs/
+cp /bin/kubectl configs/
+cp -r /root/.pharmer configs
