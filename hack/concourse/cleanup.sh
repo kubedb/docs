@@ -3,7 +3,7 @@
 set -x
 
 apt-get update &> /dev/null
-apt-get install -y git &> /dev/null
+apt-get install -y git curl &> /dev/null
 
 mkdir -p /root/.kube
 cp configs/config /root/.kube/config
