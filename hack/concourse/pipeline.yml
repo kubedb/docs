@@ -68,14 +68,14 @@ jobs:
     - task: postgres
       file: do/hack/concourse/test.yml
       input_mapping: {operator: do}
-  - ensure:
-    task: cleanup
-    file: do/hack/concourse/cleanup.yml
-    input_mapping: {operator: do}
-    params: {ClusterProvider: digitalocean}
-  - on_success:
-    put: do
-    params: { path: do, status: success}
-  - on_failure:
-    put: do
-    params: { path: do, status: failure}
+    ensure:
+      task: cleanup
+      file: do/hack/concourse/cleanup.yml
+      input_mapping: {operator: do}
+      params: {ClusterProvider: digitalocean}
+    on_success:
+      put: do
+      params: { path: do, status: success}
+    on_failure:
+      put: do
+      params: { path: do, status: failure}
