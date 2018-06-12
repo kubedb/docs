@@ -44,6 +44,8 @@ func (c *Controller) ensureStatefulSet(
 		return kutil.VerbUnchanged, rerr
 	}
 
+	searchGuard := string(elasticsearch.Spec.Version[0])
+
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
 		in = upsertObjectMeta(in, labels, elasticsearch.StatefulSetAnnotations())
@@ -74,7 +76,7 @@ func (c *Controller) ensureStatefulSet(
 
 		if isClient {
 			in = c.upsertMonitoringContainer(in, elasticsearch)
-			in = upsertDatabaseSecret(in, elasticsearch.Spec.DatabaseSecret.SecretName)
+			in = upsertDatabaseSecret(in, elasticsearch.Spec.DatabaseSecret.SecretName, searchGuard)
 		}
 
 		in = upsertCertificate(in, elasticsearch.Spec.CertificateSecret.SecretName, isClient, elasticsearch.Spec.EnableSSL)
@@ -558,12 +560,12 @@ func upsertCertificate(statefulSet *apps.StatefulSet, secretName string, isClien
 	return statefulSet
 }
 
-func upsertDatabaseSecret(statefulSet *apps.StatefulSet, secretName string) *apps.StatefulSet {
+func upsertDatabaseSecret(statefulSet *apps.StatefulSet, secretName string, searchGuard string) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularElasticsearch {
 			volumeMount := core.VolumeMount{
 				Name:      "sgconfig",
-				MountPath: "/elasticsearch/plugins/search-guard-5/sgconfig",
+				MountPath: fmt.Sprintf("/elasticsearch/plugins/search-guard-%v/sgconfig", searchGuard),
 			}
 			volumeMounts := container.VolumeMounts
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)

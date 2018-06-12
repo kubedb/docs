@@ -66,6 +66,9 @@ func (c *Controller) runMySQL(key string) error {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
 				return in
 			})
+			if err != nil {
+				return err
+			}
 			util.AssignTypeKind(mysql)
 			if err := c.create(mysql); err != nil {
 				log.Errorln(err)
