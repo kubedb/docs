@@ -13,7 +13,7 @@ export NAME=operator-$(git rev-parse --short HEAD)
 popd
 
 function cleanup {
-    set +eoux pipefail
+    set +eou pipefail
 
     # Workload Descriptions if the test fails
     echo ""
@@ -37,13 +37,13 @@ function cleanup {
     # delete cluster on exit
     if [ "${ClusterProvider}" = "aws" ]; then
         kops delete cluster --name ${NAME} --yes
-    elif [ "${ClusterProvider}" = "aks" ]; then
+    elif [[ "${ClusterProvider}" = "aks" || "${ClusterProvider}" = "acs" ]]; then
         az group delete --name $NAME --yes --no-wait
     else
         pharmer get cluster
         pharmer delete cluster ${NAME}
         pharmer get cluster
-        sleep 120
+        sleep 300
         pharmer apply ${NAME}
         pharmer get cluster
     fi
@@ -132,7 +132,9 @@ function prepare_aws {
     export StorageClass="gp2"
 }
 
-function prepare_aks {
+function azure_common {
+    export StorageClass="default"
+
     # download azure cli
     AZ_REPO=$(lsb_release -cs)
     echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | \
@@ -145,22 +147,25 @@ function prepare_aks {
     # login with service principal
     set +x
     az login --service-principal --username $APP_ID --password $PASSWORD --tenant $TENANT_ID &> /dev/null
-
-    # name of the cluster
-    pushd operator
-    export NAME=operator-$(git rev-parse --short HEAD)
-    popd
-
-    # create cluster
-    # pharmer_common
     az group create --name $NAME --location $ZONE
-    az aks create --resource-group $NAME --name $NAME --service-principal $APP_ID --client-secret $PASSWORD --generate-ssh-keys --node-vm-size $NODE --node-count 1 --kubernetes-version $K8S_VERSION
     set -x
+}
 
+function prepare_aks {
+    azure_common
+    set +x
+    az aks create --resource-group $NAME --name $NAME --service-principal $APP_ID --client-secret $PASSWORD --generate-ssh-keys --node-vm-size $NODE --node-count 1 --kubernetes-version $K8S_VERSION &> /dev/null
+    set -x
     az aks get-credentials --resource-group $NAME --name $NAME
 
-    export StorageClass="default"
-    sleep 120
+}
+
+function prepare_acs {
+    azure_common
+    set +x
+    az acs create --orchestrator-type kubernetes --orchestrator-version $K8S_VERSION --resource-group $NAME --name $NAME --master-vm-size $NODE --agent-vm-size $NODE --agent-count 1 --service-principal $APP_ID --client-secret $PASSWORD --generate-ssh-keys &> /dev/null
+    set -x
+    az acs kubernetes get-credentials --resource-group $NAME --name $NAME
 }
 
 export StorageClass="standard"
@@ -172,6 +177,8 @@ elif [ "${ClusterProvider}" = "aws" ]; then
     prepare_aws
 elif [ "${ClusterProvider}" = "aks" ]; then
     prepare_aks
+elif [ "${ClusterProvider}" = "acs" ]; then
+    prepare_acs
 elif [ "${ClusterProvider}" = "digitalocean" ]; then
     pharmer_common
 
