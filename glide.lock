@@ -1,5 +1,5 @@
-hash: 8114bcb1cef44748a70e08bea6d91f42dfa1dde0c0d87aa9e53e43039270cfde
-updated: 2018-06-08T11:47:38.280987053-07:00
+hash: ae0875c006e6377d183d4fbd7fa07a4856b3cc28551d37da1c7fd1b1bbdcbde5
+updated: 2018-06-12T04:55:38.205213231-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -46,7 +46,7 @@ imports:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: f771c672ed25b25dd14cb4435aab6e8b4685907d
+  version: 85abe6c009de4b732e5963cb1ec82950efd2fdda
   subpackages:
   - apiextensions/v1beta1
   - apps/v1
@@ -112,7 +112,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/blang/semver
-  version: c5e971dbed7850a93c23aa6ff69db5771d8e23b3
+  version: b38d23b8782a487059e8fc8773e9a5b228a77cb6
 - name: github.com/cloudfoundry-community/go-cfenv
   version: f920e9562d5f951cbf11785728f67258c38a10d0
 - name: github.com/coreos/etcd
@@ -238,7 +238,7 @@ imports:
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
-  version: 06f5f3d67269ccec1fe5fe4134ba6e982984f7f5
+  version: 300e940a926eb277d3901b20bdfcc54928ad3642
 - name: github.com/go-kit/kit
   version: ca4112baa34cb55091301bdc13b1420a122b1b9e
   subpackages:
@@ -292,7 +292,7 @@ imports:
   - internal
   - redis
 - name: github.com/google/go-cmp
-  version: 5411ab924f9ffa6566244a9e504bc347edacffd3
+  version: 3af367b6b30c263d47e8895973edcca9a49cf029
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -301,7 +301,7 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/google/uuid
-  version: dec09d789f3dba190787f8b4454c7d3c936fed9e
+  version: 8c31c18f31ede9fc8eae72290a7e7a8064e9b3e3
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
@@ -333,7 +333,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
-  version: c2b33e8439af944379acbdd9c3a5fe0bc44bd8a5
+  version: 0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74
 - name: github.com/jpillora/go-ogle-analytics
   version: 14b04e0594ef6a9fd943363b135656f0ec8c9d0e
 - name: github.com/json-iterator/go
@@ -345,7 +345,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 5db5bf9fd865027ed8e291f756d46ed132298c5b
+  version: a5e86ceb63069fd32b89cfbb1fc31a7ac9d8ce75
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -369,32 +369,32 @@ imports:
   - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 538c14aef3997dbc86eea9fbec3e2949bef02503
+  version: da52611729d713ef2bca7b07c7aef0d29b0a367d
   subpackages:
   - pkg/admission
   - pkg/audit/report
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/memcached
-  version: 4054184d5f431a62bedb75ada2fd588c11352404
+  version: 21a9a1447fc0e60018bc4023394ab345d662d505
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/mongodb
-  version: 51821ab8ae292a2a2d390759d73cb3533bba663b
+  version: 13eaf93320e78c38fb91cab5f48376689c6fb0b9
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/mysql
-  version: 8c05bb832fd00cadc50b0deaa5b71dbed8e91908
+  version: 10e309c05d2a55b74b29f67de379a6719b58621e
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/postgres
-  version: f01ada39491bbfc0383d13e4280f71e3b53209d1
+  version: 864e6fd2191e1d1a12a23e469b105fce2f13e694
   subpackages:
   - pkg/admission
   - pkg/audit/report
@@ -402,7 +402,7 @@ imports:
   - pkg/docker
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: 2c1ed9b25e9bbcc9ab52d826fe343d84a01bdb68
+  version: c45c2ab950b6af4950f25c065c2ba454aacf1a00
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -476,7 +476,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 25e2d9f152b634d65123ef11342aceb23e66a1a2
+  version: 0e5e7f75cd8607a0406ff38bc10dc4b084aac5f5
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -484,12 +484,12 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/russross/blackfriday
-  version: 11635eb403ff09dbc3a6b5a007ab5ab09151c229
+  version: 300106c228d52c8941d4b3de6054a6062a86dda3
 - name: github.com/rwynn/gtm
   version: 495abc277593067479c3c528864191804ab04cf7
   repo: https://github.com/jacksontj/gtm.git
 - name: github.com/satori/go.uuid
-  version: 36e9d2ebbde5e3f13ab2e25625fd453271d6522e
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/sergi/go-diff
   version: 24e2351369ec4949b2ed0dc5c477afdd4c4034e8
   repo: https://github.com/sergi/go-diff
@@ -497,6 +497,8 @@ imports:
   - diffmatchpatch
 - name: github.com/serialx/hashring
   version: 49a4782e9908fe098c907022a1bd7519c79803d6
+- name: github.com/shurcooL/sanitized_anchor_name
+  version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
   version: d26492970760ca5d33129d2d799e34be5c4782eb
 - name: github.com/spf13/cobra
@@ -578,14 +580,14 @@ imports:
   subpackages:
   - rate
 - name: google.golang.org/api
-  version: 4d8a15a217e46f47fb724569d74702bec99852d3
+  version: ef86ce4234efee96020bde00391d6a9cfae66561
   subpackages:
   - gensupport
   - googleapi
   - googleapi/internal/uritemplates
   - storage/v1
 - name: google.golang.org/appengine
-  version: b1f26356af11148e710935ed1ac8a7f5702c7612
+  version: 12d5545dc1cfa6047a286d5e853841b6471f4c19
   subpackages:
   - cloudsql
   - internal
@@ -963,7 +965,7 @@ imports:
   - util/retry
   - util/workqueue
 - name: k8s.io/kube-openapi
-  version: 8a9b82f00b3a86eac24681da3f9fe6c34c01cea2
+  version: bf40560368791a7dddfeea9b3cfcf89b34139f44
   subpackages:
   - pkg/builder
   - pkg/common

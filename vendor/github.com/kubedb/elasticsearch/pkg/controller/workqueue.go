@@ -66,6 +66,9 @@ func (c *Controller) runElasticsearch(key string) error {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, "kubedb.com")
 				return in
 			})
+			if err != nil {
+				return err
+			}
 			util.AssignTypeKind(elasticsearch)
 			if err := c.create(elasticsearch); err != nil {
 				log.Errorln(err)

@@ -66,6 +66,9 @@ func (c *Controller) runRedis(key string) error {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
 				return in
 			})
+			if err != nil {
+				return err
+			}
 			util.AssignTypeKind(redis)
 			if err := c.create(redis); err != nil {
 				log.Errorln(err)
