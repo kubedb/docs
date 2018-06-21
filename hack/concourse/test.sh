@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# shellcheck disable=SC1090,SC1091
 
 set -eoux pipefail
 
@@ -32,8 +33,7 @@ export DOCKER_REGISTRY=kubedbci
 ./hack/docker/setup.sh push
 popd
 
-export CRED_DIR
-CRED_DIR="$(pwd)"/creds/gcs.json
+cp creds/gcs.json /gcs.json
 
 # create config/.env file that have all necessary creds
 cp creds/.env /tmp/.env
