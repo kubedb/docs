@@ -52,6 +52,14 @@ resources:
     label: ok-to-test/do
     access_token: ((access_token))
 
+- name: kubespray
+  type: pull-request
+  source:
+    owner: kubedb
+    repo: operator
+    label: ok-to-test/kubespray
+    access_token: ((access_token))
+
 - name: creds
   type: s3
   source:
@@ -318,3 +326,31 @@ jobs:
     on_failure:
       put: do
       params: {path: do, status: failure}
+
+- name: test-operator-kubespray
+  plan:
+  - get: kubespray
+    version: every
+    trigger: true
+  - put: kubespray
+    params: { path: kubespray, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-kubespray
+    privileged: true
+    file: kubespray/hack/concourse/task.yml
+    input_mapping:
+      operator: kubespray
+    params:
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+      ClusterProvider: kubespray
+      PACKET_API_TOKEN: ((packet_api_token))
+      PACKET_PROJECT_ID: ((packet_project_id))
+    on_success:
+      put: kubespray
+      params: { path: kubespray, status: success}
+    on_failure:
+      put: kubespray
+      params: {path: kubespray, status: failure}
