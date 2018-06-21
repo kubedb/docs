@@ -7,6 +7,7 @@ export CredProvider=${CredProvider:-DigitalOcean}
 export ZONE=${ZONE:-nyc1}
 export NODE=${NODE:-4gb}
 export K8S_VERSION=${K8S_VERSION:-v1.10.0}
+export StorageClass="standard"
 
 # name of the cluster
 pushd operator
@@ -184,7 +185,7 @@ function prepare_kubespray {
     export PACKET_API_TOKEN=${PACKET_API_TOKEN:-}
     export PACKET_PROJECT_ID=${PACKET_PROJECT_ID:-}
 
-    packet admin create-sshkey -f /root/.ssh/id_rsa.pub --label test --key="$PACKET_API_TOKEN" > ssh_key.js
+    packet admin create-sshkey -f /root/.ssh/id_rsa.pub --label "$NAME" --key="$PACKET_API_TOKEN" > ssh_key.js
     export SSH_KEY_ID
     SSH_KEY_ID=$(jq -r .id ssh_key.js)
 
@@ -195,9 +196,6 @@ function prepare_kubespray {
 
     export PUBLIC_IP
     PUBLIC_IP=$(jq -r .ip_addresses[0].address js.json)
-
-    export PRIVATE_IP
-    PRIVATE_IP=$(jq -r .ip_addresses[2].address js.json)
 
     ssh -o "StrictHostKeyChecking no" root@"$PUBLIC_IP" swapoff -a
 
@@ -212,7 +210,7 @@ function prepare_kubespray {
 
     cat > inventory/mycluster/hosts.ini <<EOF
 [all]
-$NAME ansible_host=$PUBLIC_IP ip=$PRIVATE_IP
+$NAME ansible_host=$PUBLIC_IP ip=$PUBLIC_IP
 
 [kube-master]
 $NAME
@@ -240,10 +238,6 @@ EOF
     mkdir -p /root/.kube
     scp root@"$PUBLIC_IP":/root/.kube/config /root/.kube
 
-    sed -i '7d' ~/.kube/config
-    sed -i "s/$PRIVATE_IP/$PUBLIC_IP/" ~/.kube/config
-    sed -i '7s/^/    insecure-skip-tls-verify: true\n/' ~/.kube/config
-
     # rook
     git clone https://github.com/rook/rook
     pushd rook/cluster/examples/kubernetes/ceph/
@@ -260,7 +254,6 @@ EOF
     popd
 }
 
-export StorageClass="standard"
 
 # prepare cluster
 if [ "${ClusterProvider}" = "gke" ]; then
