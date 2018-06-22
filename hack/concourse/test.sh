@@ -55,6 +55,7 @@ if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-
     EXIT_CODE=1
 fi
 popd
+sleep 120
 
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""
@@ -72,6 +73,7 @@ if ! (./hack/make.py test e2e --v=1 --selfhosted-operator=true); then
     EXIT_CODE=1
 fi
 popd
+sleep 120
 
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""
@@ -90,6 +92,7 @@ if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-
     EXIT_CODE=1
 fi
 popd
+sleep 120
 
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""
@@ -113,6 +116,7 @@ if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-
     EXIT_CODE=1
 fi
 popd
+sleep 120
 
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""
@@ -131,6 +135,7 @@ if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-
     EXIT_CODE=1
 fi
 popd
+sleep 120
 
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""

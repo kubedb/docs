@@ -88,21 +88,6 @@ jobs:
       TOKEN: ((digitaloceanToken))
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
-      AWS_KEY_ID: ((aws_key_id))
-      AWS_SECRET: ((aws_secret))
-      S3_BUCKET_NAME: ((s3_bucket_name))
-      GCE_PROJECT_ID: ((gce_project_id))
-      GCS_BUCKET_NAME: ((gcs_bucket_name))
-      AZURE_ACCOUNT_NAME: ((azure_account_name))
-      AZURE_ACCOUNT_KEY: ((azure_account_key))
-      AZURE_CONTAINER_NAME: ((azure_container_name))
-      OS_AUTH_URL: ((os_auth_url))
-      OS_TENANT_ID: ((os_tenant_id))
-      OS_TENANT_NAME: ((os_tenaant_name))
-      OS_USERNAME: ((os_username))
-      OS_PASSWORD: ((os_password))
-      OS_REGION_NAME: ((os_region_name))
-      SWIFT_CONTAINER_NAME: ((swift_container_name))
 
 - name: test-operator-gke
   plan:
@@ -127,21 +112,6 @@ jobs:
       K8S_VERSION: 1.10.2-gke.3
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
-      AWS_KEY_ID: ((aws_key_id))
-      AWS_SECRET: ((aws_secret))
-      S3_BUCKET_NAME: ((s3_bucket_name))
-      GCE_PROJECT_ID: ((gce_project_id))
-      GCS_BUCKET_NAME: ((gcs_bucket_name))
-      AZURE_ACCOUNT_NAME: ((azure_account_name))
-      AZURE_ACCOUNT_KEY: ((azure_account_key))
-      AZURE_CONTAINER_NAME: ((azure_container_name))
-      OS_AUTH_URL: ((os_auth_url))
-      OS_TENANT_ID: ((os_tenant_id))
-      OS_TENANT_NAME: ((os_tenaant_name))
-      OS_USERNAME: ((os_username))
-      OS_PASSWORD: ((os_password))
-      OS_REGION_NAME: ((os_region_name))
-      SWIFT_CONTAINER_NAME: ((swift_container_name))
     on_success:
       put: gke
       params: { path: gke, status: success}
@@ -170,21 +140,6 @@ jobs:
       ClusterProvider: aws
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
-      AWS_KEY_ID: ((aws_key_id))
-      AWS_SECRET: ((aws_secret))
-      S3_BUCKET_NAME: ((s3_bucket_name))
-      GCE_PROJECT_ID: ((gce_project_id))
-      GCS_BUCKET_NAME: ((gcs_bucket_name))
-      AZURE_ACCOUNT_NAME: ((azure_account_name))
-      AZURE_ACCOUNT_KEY: ((azure_account_key))
-      AZURE_CONTAINER_NAME: ((azure_container_name))
-      OS_AUTH_URL: ((os_auth_url))
-      OS_TENANT_ID: ((os_tenant_id))
-      OS_TENANT_NAME: ((os_tenaant_name))
-      OS_USERNAME: ((os_username))
-      OS_PASSWORD: ((os_password))
-      OS_REGION_NAME: ((os_region_name))
-      SWIFT_CONTAINER_NAME: ((swift_container_name))
     on_success:
       put: aws
       params: { path: aws, status: success}
@@ -218,21 +173,6 @@ jobs:
       PASSWORD: ((azure_password))
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
-      AWS_KEY_ID: ((aws_key_id))
-      AWS_SECRET: ((aws_secret))
-      S3_BUCKET_NAME: ((s3_bucket_name))
-      GCE_PROJECT_ID: ((gce_project_id))
-      GCS_BUCKET_NAME: ((gcs_bucket_name))
-      AZURE_ACCOUNT_NAME: ((azure_account_name))
-      AZURE_ACCOUNT_KEY: ((azure_account_key))
-      AZURE_CONTAINER_NAME: ((azure_container_name))
-      OS_AUTH_URL: ((os_auth_url))
-      OS_TENANT_ID: ((os_tenant_id))
-      OS_TENANT_NAME: ((os_tenaant_name))
-      OS_USERNAME: ((os_username))
-      OS_PASSWORD: ((os_password))
-      OS_REGION_NAME: ((os_region_name))
-      SWIFT_CONTAINER_NAME: ((swift_container_name))
     on_success:
       put: azure-aks
       params: { path: azure-aks, status: success}
@@ -265,21 +205,6 @@ jobs:
       PASSWORD: ((azure_password))
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
-      AWS_KEY_ID: ((aws_key_id))
-      AWS_SECRET: ((aws_secret))
-      S3_BUCKET_NAME: ((s3_bucket_name))
-      GCE_PROJECT_ID: ((gce_project_id))
-      GCS_BUCKET_NAME: ((gcs_bucket_name))
-      AZURE_ACCOUNT_NAME: ((azure_account_name))
-      AZURE_ACCOUNT_KEY: ((azure_account_key))
-      AZURE_CONTAINER_NAME: ((azure_container_name))
-      OS_AUTH_URL: ((os_auth_url))
-      OS_TENANT_ID: ((os_tenant_id))
-      OS_TENANT_NAME: ((os_tenaant_name))
-      OS_USERNAME: ((os_username))
-      OS_PASSWORD: ((os_password))
-      OS_REGION_NAME: ((os_region_name))
-      SWIFT_CONTAINER_NAME: ((swift_container_name))
     on_success:
       put: azure-acs
       params: { path: azure-acs, status: success}
@@ -305,21 +230,6 @@ jobs:
     params:
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
-      AWS_KEY_ID: ((aws_key_id))
-      AWS_SECRET: ((aws_secret))
-      S3_BUCKET_NAME: ((s3_bucket_name))
-      GCE_PROJECT_ID: ((gce_project_id))
-      GCS_BUCKET_NAME: ((gcs_bucket_name))
-      AZURE_ACCOUNT_NAME: ((azure_account_name))
-      AZURE_ACCOUNT_KEY: ((azure_account_key))
-      AZURE_CONTAINER_NAME: ((azure_container_name))
-      OS_AUTH_URL: ((os_auth_url))
-      OS_TENANT_ID: ((os_tenant_id))
-      OS_TENANT_NAME: ((os_tenaant_name))
-      OS_USERNAME: ((os_username))
-      OS_PASSWORD: ((os_password))
-      OS_REGION_NAME: ((os_region_name))
-      SWIFT_CONTAINER_NAME: ((swift_container_name))
     on_success:
       put: do
       params: { path: do, status: success}
