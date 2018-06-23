@@ -57,6 +57,7 @@ fi
 popd
 sleep 120
 
+kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""
 echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
@@ -75,6 +76,7 @@ fi
 popd
 sleep 120
 
+kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""
 echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
@@ -94,6 +96,7 @@ fi
 popd
 sleep 120
 
+kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""
 echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
@@ -118,6 +121,7 @@ fi
 popd
 sleep 120
 
+kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""
 echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
@@ -137,6 +141,7 @@ fi
 popd
 sleep 120
 
+kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""
 echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
@@ -155,6 +160,7 @@ if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-
 fi
 popd
 
+kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
 echo ""
 echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"

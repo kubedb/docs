@@ -45,7 +45,7 @@ function cleanup {
         az group delete --name "$NAME" --yes --no-wait
     elif [ "$ClusterProvider" = "kubespray" ]; then
         packet admin delete-sshkey --key-id "$SSH_KEY_ID" --key "$PACKET_API_TOKEN"
-        # packet baremetal delete-device --device-id "$DEVICE_ID" --key "$PACKET_API_TOKEN"
+        packet baremetal delete-device --device-id "$DEVICE_ID" --key "$PACKET_API_TOKEN"
     else
         pharmer get cluster
         pharmer delete cluster "$NAME"
