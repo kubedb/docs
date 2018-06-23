@@ -6,4 +6,4 @@ export CLI_BRANCH="master"
 
 # provide CUSTOM_OPERATOR_TAG for kubedb installer.
 # if APPSCODE_ENV=dev then git_tag will be used as CUSTOM_OPERATOR_TAG
-export CUSTOM_OPERATOR_TAG="0.8.0-beta.2"
+export CUSTOM_OPERATOR_TAG="0.8.0"
