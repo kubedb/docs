@@ -8,6 +8,7 @@ import (
 	v "github.com/appscode/go/version"
 	"github.com/appscode/kutil/meta"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
 	kubedbinformers "github.com/kubedb/apimachinery/client/informers/externalversions"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
@@ -78,6 +79,8 @@ func (s *ExtraOptions) AddGoFlags(fs *flag.FlagSet) {
 
 	fs.StringVar(&s.PrometheusCrdGroup, "prometheus-crd-apigroup", s.PrometheusCrdGroup, "prometheus CRD  API group name")
 	fs.Var(&s.PrometheusCrdKinds, "prometheus-crd-kinds", " - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names")
+
+	fs.BoolVar(&api.EnableStatusSubresource, "enable-status-subresource", api.EnableStatusSubresource, "If true, uses sub resource for Voyager crds.")
 }
 
 func (s *ExtraOptions) AddFlags(fs *pflag.FlagSet) {

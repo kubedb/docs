@@ -33,6 +33,10 @@ type MemcachedValidator struct {
 
 var _ hookapi.AdmissionHook = &MemcachedValidator{}
 
+var forbiddenEnvVars = []string{
+	// No forbidden envs yet
+}
+
 func (a *MemcachedValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
@@ -128,6 +132,10 @@ func ValidateMemcached(client kubernetes.Interface, extClient kubedbv1alpha1.Kub
 		return fmt.Errorf(`KubeDB doesn't support Memcached version: %s`, string(memcached.Spec.Version))
 	}
 
+	if err := amv.ValidateEnvVar(memcached.Spec.Env, forbiddenEnvVars, api.ResourceKindMemcached); err != nil {
+		return err
+	}
+
 	if memcached.Spec.Replicas == nil || *memcached.Spec.Replicas < 1 {
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be atleast 1"`, memcached.Spec.Replicas)
 	}
@@ -210,6 +218,7 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 var preconditionSpecFields = []string{
 	"spec.version",
 	"spec.nodeSelector",
+	"spec.env",
 }
 
 func preconditionFailedError(kind string) error {

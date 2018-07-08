@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/appscode/go/arrays"
 	mona "github.com/appscode/kube-mon/api"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/storage"
@@ -93,4 +94,14 @@ func ValidateMonitorSpec(monitorSpec *mona.AgentSpec) error {
 	}
 
 	return fmt.Errorf(`invalid 'Agent' in '%v'`, string(specData))
+}
+
+func ValidateEnvVar(envs []core.EnvVar, forbiddenEnvs []string, resourceType string) error {
+	for _, env := range envs {
+		present, _ := arrays.Contains(forbiddenEnvs, env.Name)
+		if present {
+			return fmt.Errorf("environment variable %s is forbidden to use in %s spec", env.Name, resourceType)
+		}
+	}
+	return nil
 }

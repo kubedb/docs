@@ -139,11 +139,11 @@ func (c *Controller) pushFailureEvent(memcached *api.Memcached, reason string) {
 		)
 	}
 
-	mc, _, err := kutildb.PatchMemcached(c.ExtClient, memcached, func(in *api.Memcached) *api.Memcached {
-		in.Status.Phase = api.DatabasePhaseFailed
-		in.Status.Reason = reason
+	mc, err := kutildb.UpdateMemcachedStatus(c.ExtClient, memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+		in.Phase = api.DatabasePhaseFailed
+		in.Reason = reason
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
 			c.recorder.Eventf(

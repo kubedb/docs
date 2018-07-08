@@ -61,6 +61,7 @@ func (c *Controller) ensureStatefulSet(
 
 		in = c.upsertContainer(in, postgres)
 		in = upsertEnv(in, postgres, envList)
+		in = upsertUserEnv(in, postgres)
 		in = upsertPort(in)
 
 		in.Spec.Template.Spec.NodeSelector = postgres.Spec.NodeSelector
@@ -289,6 +290,17 @@ func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []cor
 		}
 	}
 
+	return statefulSet
+}
+
+// upsertUserEnv add/overwrite env from user provided env in crd spec
+func upsertUserEnv(statefulSet *apps.StatefulSet, postgress *api.Postgres) *apps.StatefulSet {
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularPostgres {
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, postgress.Spec.Env...)
+			return statefulSet
+		}
+	}
 	return statefulSet
 }
 

@@ -160,11 +160,11 @@ func (c *Controller) pushFailureEvent(elasticsearch *api.Elasticsearch, reason s
 		)
 	}
 
-	es, _, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
-		in.Status.Phase = api.DatabasePhaseFailed
-		in.Status.Reason = reason
+	es, err := kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+		in.Phase = api.DatabasePhaseFailed
+		in.Reason = reason
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
 			c.recorder.Eventf(

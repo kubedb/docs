@@ -164,7 +164,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		}
 
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
-
+		in = upsertUserEnv(in, mysql)
 		return in
 	})
 }
@@ -246,6 +246,17 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSe
 					},
 				},
 			})
+			return statefulSet
+		}
+	}
+	return statefulSet
+}
+
+// upsertUserEnv add/overwrite env from user provided env in crd spec
+func upsertUserEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularMySQL {
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, mysql.Spec.Env...)
 			return statefulSet
 		}
 	}

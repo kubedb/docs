@@ -74,7 +74,7 @@ func (c *Controller) manageMonitor(postgres *api.Postgres) error {
 		if oldAgent != nil &&
 			oldAgent.GetType() != postgres.Spec.Monitor.Agent {
 			if _, err := oldAgent.Delete(postgres.StatsAccessor()); err != nil {
-				log.Errorf("error in deleting Prometheus agent:", err)
+				log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 			}
 		}
 		if _, err := c.addOrUpdateMonitor(postgres); err != nil {
@@ -83,7 +83,7 @@ func (c *Controller) manageMonitor(postgres *api.Postgres) error {
 		return c.setNewAgent(postgres)
 	} else if oldAgent != nil {
 		if _, err := oldAgent.Delete(postgres.StatsAccessor()); err != nil {
-			log.Errorf("error in deleting Prometheus agent:", err)
+			log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 		}
 	}
 	return nil

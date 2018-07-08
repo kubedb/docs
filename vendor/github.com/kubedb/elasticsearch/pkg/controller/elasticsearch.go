@@ -51,12 +51,12 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	if elasticsearch.Status.CreationTime == nil {
-		es, _, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+		es, err := kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 			t := metav1.Now()
-			in.Status.CreationTime = &t
-			in.Status.Phase = api.DatabasePhaseCreating
+			in.CreationTime = &t
+			in.Phase = api.DatabasePhaseCreating
 			return in
-		})
+		}, api.EnableStatusSubresource)
 		if err != nil {
 			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
 				c.recorder.Eventf(
@@ -131,11 +131,11 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 
 		jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshotSource.Name)
 		if _, err := c.Client.BatchV1().Jobs(snapshotSource.Namespace).Get(jobName, metav1.GetOptions{}); err != nil {
-			if kerr.IsAlreadyExists(err) {
-				return nil
-			} else if !kerr.IsNotFound(err) {
+			if !kerr.IsNotFound(err) {
 				return err
 			}
+		} else {
+			return nil
 		}
 		err = c.initialize(elasticsearch)
 		if err != nil {
@@ -144,10 +144,10 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return nil
 	}
 
-	es, _, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
-		in.Status.Phase = api.DatabasePhaseRunning
+	es, err := kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+		in.Phase = api.DatabasePhaseRunning
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
 			c.recorder.Eventf(
@@ -248,10 +248,10 @@ func (c *Controller) ensureBackupScheduler(elasticsearch *api.Elasticsearch) {
 }
 
 func (c *Controller) initialize(elasticsearch *api.Elasticsearch) error {
-	es, _, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
-		in.Status.Phase = api.DatabasePhaseInitializing
+	es, err := kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+		in.Phase = api.DatabasePhaseInitializing
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
 			c.recorder.Eventf(
@@ -351,11 +351,11 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 	if err != nil {
 		return err
 	}
-	_, _, err = kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
-		in.Status.Phase = phase
-		in.Status.Reason = reason
+	_, err = kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+		in.Phase = phase
+		in.Reason = reason
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	return err
 }
 

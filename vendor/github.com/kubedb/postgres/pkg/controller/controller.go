@@ -155,11 +155,11 @@ func (c *Controller) pushFailureEvent(postgres *api.Postgres, reason string) {
 		)
 	}
 
-	pg, _, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
-		in.Status.Phase = api.DatabasePhaseFailed
-		in.Status.Reason = reason
+	pg, err := kutildb.UpdatePostgresStatus(c.ExtClient, postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
+		in.Phase = api.DatabasePhaseFailed
+		in.Reason = reason
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
 			c.recorder.Eventf(

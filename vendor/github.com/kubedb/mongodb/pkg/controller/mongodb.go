@@ -47,12 +47,12 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	if mongodb.Status.CreationTime == nil {
-		mg, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
+		mg, err := util.UpdateMongoDBStatus(c.ExtClient, mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 			t := metav1.Now()
-			in.Status.CreationTime = &t
-			in.Status.Phase = api.DatabasePhaseCreating
+			in.CreationTime = &t
+			in.Phase = api.DatabasePhaseCreating
 			return in
-		})
+		}, api.EnableStatusSubresource)
 		if err != nil {
 			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
 				c.recorder.Eventf(
@@ -129,22 +129,23 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		}
 		jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshotSource.Name)
 		if _, err := c.Client.BatchV1().Jobs(snapshotSource.Namespace).Get(jobName, metav1.GetOptions{}); err != nil {
-			if kerr.IsAlreadyExists(err) {
-				return nil
-			} else if !kerr.IsNotFound(err) {
+			if !kerr.IsNotFound(err) {
 				return err
 			}
+		} else {
+			return nil
 		}
+
 		if err := c.initialize(mongodb); err != nil {
 			return fmt.Errorf("failed to complete initialization. Reason: %v", err)
 		}
 		return nil
 	}
 
-	ms, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
-		in.Status.Phase = api.DatabasePhaseRunning
+	ms, err := util.UpdateMongoDBStatus(c.ExtClient, mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		in.Phase = api.DatabasePhaseRunning
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
 			c.recorder.Eventf(
@@ -200,10 +201,10 @@ func (c *Controller) ensureBackupScheduler(mongodb *api.MongoDB) {
 }
 
 func (c *Controller) initialize(mongodb *api.MongoDB) error {
-	mg, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
-		in.Status.Phase = api.DatabasePhaseInitializing
+	mg, err := util.UpdateMongoDBStatus(c.ExtClient, mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		in.Phase = api.DatabasePhaseInitializing
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
 			c.recorder.Eventf(

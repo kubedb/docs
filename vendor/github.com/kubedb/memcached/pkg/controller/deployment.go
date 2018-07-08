@@ -130,7 +130,19 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 		in.Spec.Template.Spec.SchedulerName = memcached.Spec.SchedulerName
 		in.Spec.Template.Spec.Tolerations = memcached.Spec.Tolerations
 		in.Spec.Template.Spec.ImagePullSecrets = memcached.Spec.ImagePullSecrets
+		in = upsertUserEnv(in, memcached)
 
 		return in
 	})
+}
+
+// upsertUserEnv add/overwrite env from user provided env in crd spec
+func upsertUserEnv(deployment *apps.Deployment, memcached *api.Memcached) *apps.Deployment {
+	for i, container := range deployment.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularMemcached {
+			deployment.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, memcached.Spec.Env...)
+			return deployment
+		}
+	}
+	return deployment
 }

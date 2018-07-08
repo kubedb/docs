@@ -155,11 +155,11 @@ func (c *Controller) pushFailureEvent(mongodb *api.MongoDB, reason string) {
 		)
 	}
 
-	mg, _, err := kutildb.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
-		in.Status.Phase = api.DatabasePhaseFailed
-		in.Status.Reason = reason
+	mg, err := kutildb.UpdateMongoDBStatus(c.ExtClient, mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		in.Phase = api.DatabasePhaseFailed
+		in.Reason = reason
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
 			c.recorder.Eventf(

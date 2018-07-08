@@ -74,7 +74,7 @@ func (c *Controller) manageMonitor(elasticsearch *api.Elasticsearch) error {
 		if oldAgent != nil &&
 			oldAgent.GetType() != elasticsearch.Spec.Monitor.Agent {
 			if _, err := oldAgent.Delete(elasticsearch.StatsAccessor()); err != nil {
-				log.Errorln("error in deleting Prometheus agent:", err)
+				log.Errorln("error in deleting Prometheus agent. Reason: %v", err.Error())
 			}
 		}
 		if _, err := c.addOrUpdateMonitor(elasticsearch); err != nil {
@@ -83,7 +83,7 @@ func (c *Controller) manageMonitor(elasticsearch *api.Elasticsearch) error {
 		return c.setNewAgent(elasticsearch)
 	} else if oldAgent != nil {
 		if _, err := oldAgent.Delete(elasticsearch.StatsAccessor()); err != nil {
-			log.Errorln("error in deleting Prometheus agent:", err)
+			log.Errorln("error in deleting Prometheus agent. Reason: %v", err.Error())
 		}
 	}
 	return nil

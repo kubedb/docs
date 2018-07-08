@@ -34,6 +34,10 @@ type PostgresValidator struct {
 
 var _ hookapi.AdmissionHook = &PostgresValidator{}
 
+var forbiddenEnvVars = []string{
+	"POSTGRES_PASSWORD",
+}
+
 func (a *PostgresValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
@@ -137,6 +141,10 @@ func ValidatePostgres(client kubernetes.Interface, extClient kubedbv1alpha1.Kube
 
 	if postgres.Spec.Replicas == nil || *postgres.Spec.Replicas < 1 {
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be greater than zero`, postgres.Spec.Replicas)
+	}
+
+	if err := amv.ValidateEnvVar(postgres.Spec.Env, forbiddenEnvVars, api.ResourceKindPostgres); err != nil {
+		return err
 	}
 
 	if err := amv.ValidateStorage(client, postgres.Spec.Storage); err != nil {
@@ -302,6 +310,7 @@ var preconditionSpecFields = []string{
 	"spec.storage",
 	"spec.nodeSelector",
 	"spec.init",
+	"spec.env",
 }
 
 func preconditionFailedError(kind string) error {

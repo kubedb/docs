@@ -33,6 +33,10 @@ type RedisValidator struct {
 
 var _ hookapi.AdmissionHook = &RedisValidator{}
 
+var forbiddenEnvVars = []string{
+	// No forbidden envs yet
+}
+
 func (a *RedisValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
@@ -136,6 +140,10 @@ func ValidateRedis(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV
 		return err
 	}
 
+	if err := amv.ValidateEnvVar(redis.Spec.Env, forbiddenEnvVars, api.ResourceKindRedis); err != nil {
+		return err
+	}
+
 	monitorSpec := redis.Spec.Monitor
 	if monitorSpec != nil {
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
@@ -215,6 +223,7 @@ var preconditionSpecFields = []string{
 	"spec.version",
 	"spec.storage",
 	"spec.nodeSelector",
+	"spec.env",
 }
 
 func preconditionFailedError(kind string) error {

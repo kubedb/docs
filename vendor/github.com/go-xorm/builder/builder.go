@@ -29,6 +29,9 @@ type Builder struct {
 	joins     []join
 	inserts   Eq
 	updates   []Eq
+	orderBy   string
+	groupBy   string
+	having    string
 }
 
 // Select creates a select Builder
@@ -65,6 +68,11 @@ func (b *Builder) Where(cond Cond) *Builder {
 func (b *Builder) From(tableName string) *Builder {
 	b.tableName = tableName
 	return b
+}
+
+// TableName returns the table name
+func (b *Builder) TableName() string {
+	return b.tableName
 }
 
 // Into sets insert table name
