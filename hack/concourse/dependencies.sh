@@ -11,11 +11,11 @@ docker login --username="$DOCKER_USER" --password="$DOCKER_PASS"
 set -x
 
 # install python pip
-apt-get update &> /dev/null
-apt-get install -y python-pip lsb-release &> /dev/null
+apt-get update &>/dev/null
+apt-get install -y python-pip lsb-release &>/dev/null
 
 # install kubectl
-curl -LO https://storage.googleapis.com/kubernetes-release/release/"$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"/bin/linux/amd64/kubectl &> /dev/null
+curl -LO https://storage.googleapis.com/kubernetes-release/release/"$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)"/bin/linux/amd64/kubectl &>/dev/null
 chmod +x ./kubectl
 mv ./kubectl /bin/kubectl
 
@@ -28,13 +28,13 @@ export ClusterProvider=${ClusterProvider:-digitalocean}
 
 # install pharmer
 if [ "$ClusterProvider" != "kubespray" ]; then
-    mkdir -p "$GOPATH"/src/github.com/pharmer
-    pushd "$GOPATH"/src/github.com/pharmer
-    git clone https://github.com/pharmer/pharmer
-    cd pharmer
-    ./hack/builddeps.sh
-    ./hack/make.py
-    popd
+  mkdir -p "$GOPATH"/src/github.com/pharmer
+  pushd "$GOPATH"/src/github.com/pharmer
+  git clone https://github.com/pharmer/pharmer
+  cd pharmer
+  ./hack/builddeps.sh
+  ./hack/make.py
+  popd
 fi
 #if [ "$ClusterProvider" = "aks" ]; then
 #    true
