@@ -52,7 +52,7 @@ echo "======================TESTING REDIS=============================="
 git clone https://github.com/kubedb/redis
 pushd redis
 if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-operator=true --ginkgo.flakeAttempts=3); then
-    EXIT_CODE=1
+  EXIT_CODE=1
 fi
 popd
 sleep 120
@@ -71,7 +71,7 @@ echo "======================TESTING MEMCACHED=============================="
 git clone https://github.com/kubedb/memcached
 pushd memcached
 if ! (./hack/make.py test e2e --v=1 --selfhosted-operator=true --ginkgo.flakeAttempts=3); then
-    EXIT_CODE=1
+  EXIT_CODE=1
 fi
 popd
 sleep 120
@@ -91,7 +91,7 @@ git clone https://github.com/kubedb/elasticsearch
 pushd elasticsearch
 cp /tmp/.env hack/config/.env
 if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-operator=true --ginkgo.flakeAttempts=3); then
-    EXIT_CODE=1
+  EXIT_CODE=1
 fi
 popd
 sleep 120
@@ -116,7 +116,7 @@ cp /tmp/.env hack/config/.env
 ./hack/docker/postgres/10.2/make.sh build
 ./hack/docker/postgres/10.2/make.sh push
 if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-operator=true --ginkgo.flakeAttempts=3); then
-    EXIT_CODE=1
+  EXIT_CODE=1
 fi
 popd
 sleep 120
@@ -136,7 +136,7 @@ git clone https://github.com/kubedb/mongodb
 pushd mongodb
 cp /tmp/.env hack/config/.env
 if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-operator=true --ginkgo.flakeAttempts=3); then
-    EXIT_CODE=1
+  EXIT_CODE=1
 fi
 popd
 sleep 120
@@ -156,7 +156,7 @@ git clone https://github.com/kubedb/mysql
 pushd mysql
 cp /tmp/.env hack/config/.env
 if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-operator=true --ginkgo.flakeAttempts=3); then
-    EXIT_CODE=1
+  EXIT_CODE=1
 fi
 popd
 
