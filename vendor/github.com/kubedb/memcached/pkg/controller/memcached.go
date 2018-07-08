@@ -47,12 +47,12 @@ func (c *Controller) create(memcached *api.Memcached) error {
 	}
 
 	if memcached.Status.CreationTime == nil {
-		mc, _, err := util.PatchMemcached(c.ExtClient, memcached, func(in *api.Memcached) *api.Memcached {
+		mc, err := util.UpdateMemcachedStatus(c.ExtClient, memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 			t := metav1.Now()
-			in.Status.CreationTime = &t
-			in.Status.Phase = api.DatabasePhaseCreating
+			in.CreationTime = &t
+			in.Phase = api.DatabasePhaseCreating
 			return in
-		})
+		}, api.EnableStatusSubresource)
 		if err != nil {
 			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
 				c.recorder.Eventf(
@@ -112,10 +112,10 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		log.Errorln(err)
 		return nil
 	}
-	mc, _, err := util.PatchMemcached(c.ExtClient, memcached, func(in *api.Memcached) *api.Memcached {
-		in.Status.Phase = api.DatabasePhaseRunning
+	mc, err := util.UpdateMemcachedStatus(c.ExtClient, memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+		in.Phase = api.DatabasePhaseRunning
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
 			c.recorder.Eventf(

@@ -62,6 +62,7 @@ func (c *Controller) ensureStatefulSet(
 		in = upsertInitContainer(in)
 		in = c.upsertContainer(in, elasticsearch, resources)
 		in = upsertEnv(in, elasticsearch, envList)
+		in = upsertUserEnv(in, elasticsearch)
 		in = upsertPort(in, isClient)
 
 		in.Spec.Template.Spec.NodeSelector = elasticsearch.Spec.NodeSelector
@@ -425,6 +426,17 @@ func upsertEnv(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch, 
 		}
 	}
 
+	return statefulSet
+}
+
+// upsertUserEnv add/overwrite env from user provided env in crd spec
+func upsertUserEnv(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch) *apps.StatefulSet {
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularElasticsearch {
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, elasticsearch.Spec.Env...)
+			return statefulSet
+		}
+	}
 	return statefulSet
 }
 

@@ -33,6 +33,11 @@ type MongoDBValidator struct {
 
 var _ hookapi.AdmissionHook = &MongoDBValidator{}
 
+var forbiddenEnvVars = []string{
+	"MONGO_INITDB_ROOT_USERNAME",
+	"MONGO_INITDB_ROOT_PASSWORD",
+}
+
 func (a *MongoDBValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
@@ -138,6 +143,10 @@ func ValidateMongoDB(client kubernetes.Interface, extClient kubedbv1alpha1.Kubed
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be one`, mongodb.Spec.Replicas)
 	}
 
+	if err := amv.ValidateEnvVar(mongodb.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
+		return err
+	}
+
 	if err := amv.ValidateStorage(client, mongodb.Spec.Storage); err != nil {
 		return err
 	}
@@ -240,6 +249,7 @@ var preconditionSpecFields = []string{
 	"spec.databaseSecret",
 	"spec.nodeSelector",
 	"spec.init",
+	"spec.env",
 }
 
 func preconditionFailedError(kind string) error {

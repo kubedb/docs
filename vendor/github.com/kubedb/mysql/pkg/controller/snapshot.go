@@ -28,11 +28,11 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 	if err != nil {
 		return err
 	}
-	_, _, err = util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
-		in.Status.Phase = phase
-		in.Status.Reason = reason
+	_, err = util.UpdateMySQLStatus(c.ExtClient, mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
+		in.Phase = phase
+		in.Reason = reason
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	return err
 }
 

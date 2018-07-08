@@ -139,11 +139,11 @@ func (c *Controller) pushFailureEvent(redis *api.Redis, reason string) {
 		)
 	}
 
-	rd, _, err := kutildb.PatchRedis(c.ExtClient, redis, func(in *api.Redis) *api.Redis {
-		in.Status.Phase = api.DatabasePhaseFailed
-		in.Status.Reason = reason
+	rd, err := kutildb.UpdateRedisStatus(c.ExtClient, redis, func(in *api.RedisStatus) *api.RedisStatus {
+		in.Phase = api.DatabasePhaseFailed
+		in.Reason = reason
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, redis); rerr == nil {
 			c.recorder.Eventf(

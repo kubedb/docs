@@ -33,6 +33,12 @@ type ElasticsearchValidator struct {
 
 var _ hookapi.AdmissionHook = &ElasticsearchValidator{}
 
+var forbiddenEnvVars = []string{
+	"NODE_NAME",
+	"NODE_MASTER",
+	"NODE_DATA",
+}
+
 func (a *ElasticsearchValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
@@ -195,6 +201,10 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient kubedbv1alpha1
 		}
 	}
 
+	if err := amv.ValidateEnvVar(elasticsearch.Spec.Env, forbiddenEnvVars, api.ResourceKindElasticsearch); err != nil {
+		return err
+	}
+
 	databaseSecret := elasticsearch.Spec.DatabaseSecret
 	if databaseSecret != nil {
 		if _, err := client.CoreV1().Secrets(elasticsearch.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
@@ -226,6 +236,7 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient kubedbv1alpha1
 	if err := matchWithDormantDatabase(extClient, elasticsearch); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -304,6 +315,7 @@ var preconditionSpecFields = []string{
 	"spec.storage",
 	"spec.nodeSelector",
 	"spec.init",
+	"spec.env",
 }
 
 func preconditionFailedError(kind string) error {

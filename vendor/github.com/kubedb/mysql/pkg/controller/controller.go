@@ -154,11 +154,11 @@ func (c *Controller) pushFailureEvent(mysql *api.MySQL, reason string) {
 		)
 	}
 
-	my, _, err := kutildb.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
-		in.Status.Phase = api.DatabasePhaseFailed
-		in.Status.Reason = reason
+	my, err := kutildb.UpdateMySQLStatus(c.ExtClient, mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
+		in.Phase = api.DatabasePhaseFailed
+		in.Reason = reason
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql); rerr == nil {
 			c.recorder.Eventf(

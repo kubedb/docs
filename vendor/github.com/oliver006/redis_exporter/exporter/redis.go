@@ -133,6 +133,11 @@ func (e *Exporter) initGauges() {
 		Name:      "slave_info",
 		Help:      "Information about the Redis slave",
 	}, []string{"addr", "alias", "master_host", "master_port", "read_only"})
+	e.metrics["start_time_seconds"] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: e.namespace,
+		Name:      "start_time_seconds",
+		Help:      "Start time of the Redis instance since unix epoch in seconds.",
+	}, []string{"addr", "alias"})
 	e.metrics["master_link_up"] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: e.namespace,
 		Name:      "master_link_up",
@@ -182,6 +187,11 @@ func (e *Exporter) initGauges() {
 		Name:      "command_call_duration_seconds_sum",
 		Help:      "Total amount of time in seconds spent per command",
 	}, []string{"addr", "alias", "cmd"})
+	e.metrics["slowlog_length"] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: e.namespace,
+		Name:      "slowlog_length",
+		Help:      "Total slowlog",
+	}, []string{"addr", "alias"})
 }
 
 // NewRedisExporter returns a new exporter of Redis metrics.
@@ -460,6 +470,13 @@ func (e *Exporter) extractInfoMetrics(info, addr string, alias string, scrapes c
 			e.metricsMtx.RUnlock()
 			continue
 		}
+		if fieldKey == "uptime_in_seconds" {
+			if uptime, err := strconv.ParseFloat(fieldValue, 64); err == nil {
+				e.metricsMtx.RLock()
+				e.metrics["start_time_seconds"].WithLabelValues(addr, alias).Set(float64(time.Now().Unix()) - uptime)
+				e.metricsMtx.RUnlock()
+			}
+		}
 
 		if slaveOffset, slaveIp, slaveState, ok := parseConnectedSlaveString(fieldKey, fieldValue); ok {
 			e.metricsMtx.RLock()
@@ -732,6 +749,12 @@ func (e *Exporter) scrapeRedisHost(scrapes chan<- scrapeResult, addr string, idx
 		}
 	}
 
+	if reply, err := c.Do("SLOWLOG", "LEN"); err == nil {
+		e.metricsMtx.RLock()
+		e.metrics["slowlog_length"].WithLabelValues(addr, e.redis.Aliases[idx]).Set(float64(reply.(int64)))
+		e.metricsMtx.RUnlock()
+	}
+
 	log.Debugf("scrapeRedisHost() done")
 	return nil
 }
@@ -764,6 +787,7 @@ func (e *Exporter) setMetrics(scrapes <-chan scrapeResult) {
 			e.metrics[name] = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 				Namespace: e.namespace,
 				Name:      name,
+				Help:      name + "metric", // needs to be set for prometheus >= 2.3.1
 			}, []string{"addr", "alias"})
 			e.metricsMtx.Unlock()
 		}

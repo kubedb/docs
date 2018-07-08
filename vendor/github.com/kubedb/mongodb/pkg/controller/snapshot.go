@@ -28,11 +28,11 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 	if err != nil {
 		return err
 	}
-	_, _, err = util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
-		in.Status.Phase = phase
-		in.Status.Reason = reason
+	_, err = util.UpdateMongoDBStatus(c.ExtClient, mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		in.Phase = phase
+		in.Reason = reason
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	return err
 }
 

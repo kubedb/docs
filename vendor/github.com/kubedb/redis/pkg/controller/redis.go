@@ -47,12 +47,12 @@ func (c *Controller) create(redis *api.Redis) error {
 	}
 
 	if redis.Status.CreationTime == nil {
-		mc, _, err := util.PatchRedis(c.ExtClient, redis, func(in *api.Redis) *api.Redis {
+		rd, err := util.UpdateRedisStatus(c.ExtClient, redis, func(in *api.RedisStatus) *api.RedisStatus {
 			t := metav1.Now()
-			in.Status.CreationTime = &t
-			in.Status.Phase = api.DatabasePhaseCreating
+			in.CreationTime = &t
+			in.Phase = api.DatabasePhaseCreating
 			return in
-		})
+		}, api.EnableStatusSubresource)
 		if err != nil {
 			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, redis); rerr == nil {
 				c.recorder.Eventf(
@@ -64,7 +64,7 @@ func (c *Controller) create(redis *api.Redis) error {
 			}
 			return err
 		}
-		redis.Status = mc.Status
+		redis.Status = rd.Status
 	}
 
 	// create Governing Service
@@ -129,10 +129,10 @@ func (c *Controller) create(redis *api.Redis) error {
 		return nil
 	}
 
-	rd, _, err := util.PatchRedis(c.ExtClient, redis, func(in *api.Redis) *api.Redis {
-		in.Status.Phase = api.DatabasePhaseRunning
+	rd, err := util.UpdateRedisStatus(c.ExtClient, redis, func(in *api.RedisStatus) *api.RedisStatus {
+		in.Phase = api.DatabasePhaseRunning
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, redis); rerr == nil {
 			c.recorder.Eventf(

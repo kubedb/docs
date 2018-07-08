@@ -139,6 +139,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis) (*apps.StatefulSet, kut
 		in.Spec.Template.Spec.ImagePullSecrets = redis.Spec.ImagePullSecrets
 
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
+		in = upsertUserEnv(in, redis)
 		return in
 	})
 }
@@ -189,4 +190,15 @@ func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 		statefulSet.Spec.Selector,
 		int(types.Int32(statefulSet.Spec.Replicas)),
 	)
+}
+
+// upsertUserEnv add/overwrite env from user provided env in crd spec
+func upsertUserEnv(statefulset *apps.StatefulSet, redis *api.Redis) *apps.StatefulSet {
+	for i, container := range statefulset.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularRedis {
+			statefulset.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, redis.Spec.Env...)
+			return statefulset
+		}
+	}
+	return statefulset
 }
