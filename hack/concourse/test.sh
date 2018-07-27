@@ -1,29 +1,18 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC1090,SC1091
 
 set -eoux pipefail
 
-GOPATH=$(go env GOPATH)
-REPO_ROOT="$GOPATH/src/github.com/kubedb/operator"
-export ClusterProvider=${ClusterProvider:-digitalocean}
-export StorageClass=${StorageClass:-standard}
+REPO_NAME=operator
 
-# copy operator to $GOPATH
-mkdir -p "$GOPATH"/src/github.com/kubedb
-cp -r operator "$GOPATH"/src/github.com/kubedb
+# get concourse-common
+pushd $REPO_NAME
+git status
+git subtree pull --prefix hack/concourse/common https://github.com/kubedb/concourse-common.git master --squash -m 'concourse'
+popd
 
-# install all the dependencies and prepeare cluster
-source "$REPO_ROOT/hack/concourse/dependencies.sh"
-source "$REPO_ROOT/hack/concourse/cluster.sh"
+source $REPO_NAME/hack/concourse/common/init.sh
 
-# build and push operator docker-image
-pushd "$GOPATH"/src/github.com/kubedb/operator
-
-# changed name of branch
-# this is necessary because operator image tag is based on branch name
-# for parallel tests, if two test build image of same tag, it'll create problem
-# one test may finish early and delete image while other is using it
-git branch -m "$(git rev-parse --abbrev-ref HEAD)-$ClusterProvider"
+pushd "$GOPATH"/src/github.com/kubedb/$REPO_NAME
 
 ./hack/builddeps.sh
 export APPSCODE_ENV=dev
@@ -48,7 +37,7 @@ popd
 EXIT_CODE=0
 
 # test redis
-echo "======================TESTING REDIS=============================="
+cowsay -f tux "testing redis"
 git clone https://github.com/kubedb/redis
 pushd redis
 if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-operator=true --ginkgo.flakeAttempts=3); then
@@ -57,17 +46,16 @@ fi
 popd
 sleep 120
 
+cowsay -f tux "describe pods"
 kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
-echo ""
-echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
-echo ""
+
+cowsay -f tux "describe nodes"
 kubectl get nodes || true
-echo ""
 kubectl describe nodes || true
 
 # test memcached
-echo "======================TESTING MEMCACHED=============================="
+cowsay -f tux "testing memcached"
 git clone https://github.com/kubedb/memcached
 pushd memcached
 if ! (./hack/make.py test e2e --v=1 --selfhosted-operator=true --ginkgo.flakeAttempts=3); then
@@ -76,17 +64,16 @@ fi
 popd
 sleep 120
 
+cowsay -f tux "describe pods"
 kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
-echo ""
-echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
-echo ""
+
+cowsay -f tux "describe nodes"
 kubectl get nodes || true
-echo ""
 kubectl describe nodes || true
 
 # test elasticsearch
-echo "======================TESTING ELASTICSEARCH============================="
+cowsay -f tux "testing elasticsearch"
 git clone https://github.com/kubedb/elasticsearch
 pushd elasticsearch
 cp /tmp/.env hack/config/.env
@@ -96,17 +83,16 @@ fi
 popd
 sleep 120
 
+cowsay -f tux "describe pods"
 kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
-echo ""
-echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
-echo ""
+
+cowsay -f tux "describe nodes"
 kubectl get nodes || true
-echo ""
 kubectl describe nodes || true
 
 # test postgres
-echo "======================TESTING POSTGRES=============================="
+cowsay -f tux "testing postgres"
 git clone https://github.com/kubedb/postgres
 pushd postgres
 cp /tmp/.env hack/config/.env
@@ -121,17 +107,16 @@ fi
 popd
 sleep 120
 
+cowsay -f tux "describe pods"
 kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
-echo ""
-echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
-echo ""
+
+cowsay -f tux "describe nodes"
 kubectl get nodes || true
-echo ""
 kubectl describe nodes || true
 
 # test mongodb
-echo "======================TESTING MONGODB=============================="
+cowsay -f tux "testing mongodb"
 git clone https://github.com/kubedb/mongodb
 pushd mongodb
 cp /tmp/.env hack/config/.env
@@ -141,17 +126,16 @@ fi
 popd
 sleep 120
 
+cowsay -f tux "describe pods"
 kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
-echo ""
-echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
-echo ""
+
+cowsay -f tux "describe nodes"
 kubectl get nodes || true
-echo ""
 kubectl describe nodes || true
 
 # test mysql
-echo "======================TESTING MYSQL=============================="
+cowsay -f tux "testing mysql"
 git clone https://github.com/kubedb/mysql
 pushd mysql
 cp /tmp/.env hack/config/.env
@@ -160,13 +144,12 @@ if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-
 fi
 popd
 
+cowsay -f tux "describe pods"
 kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
-echo ""
-echo "::::::::::::::::::::::::::: Describe Nodes :::::::::::::::::::::::::::"
-echo ""
+
+cowsay -f tux "describe nodes"
 kubectl get nodes || true
-echo ""
 kubectl describe nodes || true
 
 popd
