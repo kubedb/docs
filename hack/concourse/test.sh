@@ -3,6 +3,7 @@
 set -eoux pipefail
 
 REPO_NAME=operator
+OPERATOR_NAME=operator
 
 # get concourse-common
 pushd $REPO_NAME
