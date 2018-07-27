@@ -6,8 +6,8 @@ set -eoux pipefail
 StorageClass="standard"
 
 # name of the cluster
-pushd operator
-NAME=operator-$(git rev-parse --short HEAD)
+pushd $REPO_NAME
+NAME=$REPO_NAME-$(git rev-parse --short HEAD)
 popd
 
 function cleanup() {
@@ -47,7 +47,7 @@ function cleanup() {
   # delete docker image on exit
   curl -LO https://raw.githubusercontent.com/appscodelabs/libbuild/master/docker.py
   chmod +x docker.py
-  ./docker.py del_tag kubedbci operator "$CUSTOM_OPERATOR_TAG"
+  ./docker.py del_tag kubedbci $REPO_NAME "$CUSTOM_OPERATOR_TAG"
 }
 trap cleanup EXIT
 
@@ -249,6 +249,12 @@ elif [ "${ClusterProvider}" = "acs" ]; then
   prepare_acs
 elif [ "${ClusterProvider}" = "kubespray" ]; then
   prepare_kubespray
+elif [ "${ClusterProvider}" = "eks" ]; then
+  CredProvider=AWS
+  K8S_VERSION=1.10
+  NODE=t2.medium
+  ZONE=us-west-2a
+
 elif [ "${ClusterProvider}" = "digitalocean" ]; then
   CredProvider=DigitalOcean
   ZONE=nyc1
