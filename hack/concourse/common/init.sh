@@ -3,7 +3,6 @@
 set -eoux pipefail
 
 GOPATH=$(go env GOPATH)
-REPO_NAME=$REPO_NAME
 REPO_ROOT="$GOPATH/src/github.com/kubedb/$REPO_NAME"
 PHARMER_VERSION="0.1.0-rc.5"
 ONESSL_VERSION="0.7.0"
