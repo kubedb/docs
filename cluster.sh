@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC1091
 
 set -eoux pipefail
 
@@ -47,7 +46,7 @@ function cleanup() {
   # delete docker image on exit
   curl -LO https://raw.githubusercontent.com/appscodelabs/libbuild/master/docker.py
   chmod +x docker.py
-  ./docker.py del_tag kubedbci $REPO_NAME "$CUSTOM_OPERATOR_TAG"
+  ./docker.py del_tag kubedbci $OPERATOR_NAME "$CUSTOM_OPERATOR_TAG"
 }
 trap cleanup EXIT
 
@@ -229,7 +228,7 @@ if [ "${ClusterProvider}" = "gke" ]; then
   CredProvider=GoogleCloud
   ZONE=us-central1-f
   NODE=n1-standard-2
-  K8S_VERSION=1.10.2-gke.3
+  K8S_VERSION=1.10.4-gke.2
 
   pharmer_common
 elif [ "${ClusterProvider}" = "aws" ]; then
