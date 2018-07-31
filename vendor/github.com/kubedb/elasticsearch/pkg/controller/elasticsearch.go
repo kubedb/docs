@@ -11,7 +11,6 @@ import (
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	kutildb "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
-	"github.com/kubedb/apimachinery/pkg/storage"
 	validator "github.com/kubedb/elasticsearch/pkg/admission"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -19,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
+	storage "kmodules.xyz/objectstore-api/osm"
 )
 
 func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
@@ -286,7 +286,7 @@ func (c *Controller) initialize(elasticsearch *api.Elasticsearch) error {
 		return err
 	}
 
-	secret, err := storage.NewOSMSecret(c.Client, snapshot)
+	secret, err := storage.NewOSMSecret(c.Client, snapshot.OSMSecretName(), snapshot.Namespace, snapshot.Spec.Backend)
 	if err != nil {
 		return err
 	}

@@ -1,5 +1,5 @@
-hash: d951577cd8a27783a3c0f7c3ccbb05ef94be0d7dbfac2d9542f125831ef87849
-updated: 2018-07-08T14:02:28.692724086-07:00
+hash: 7f9931b5b66ab07ab55bbe0ba3ecf10bdc800b4f24b41d0d5d95c9093e26889e
+updated: 2018-07-31T14:08:53.748303402-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -35,19 +35,16 @@ imports:
 - name: github.com/appscode/jsonpatch
   version: 1359b374de83fa14fd58ab10aa8ea4935f84d249
 - name: github.com/appscode/kube-mon
-  version: 6844d3b8506f97e79663419dfe8a3b7bfe1b3264
+  version: 323ed6f2129deea0309979d9396728c613f369d4
   subpackages:
   - agents
-  - agents/coreosprometheusoperator
-  - agents/prometheusbuiltin
-  - api
 - name: github.com/appscode/kubernetes-webhook-util
   version: 73ca8be3135ee210b778c7dc19709c24bf3481eb
   subpackages:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: ade0469e223909a181ae7a020024aa7adeb3dde6
+  version: c9b929cfcab96c233c1b0ab59cd4a5ab6a4ff96a
   subpackages:
   - apiextensions/v1beta1
   - apps/v1
@@ -261,7 +258,7 @@ imports:
 - name: github.com/go-stack/stack
   version: 259ab82a6cad3992b4e21ff5cac294ccb06474bc
 - name: github.com/go-xorm/builder
-  version: 92cb06fde99cbf0d058584238724499211913702
+  version: dc8bf48f58fab2b4da338ffd25191905fd741b8f
 - name: github.com/go-xorm/core
   version: c10e21e7e1cec20e09398f2dfae385e58c8df555
 - name: github.com/go-xorm/xorm
@@ -351,7 +348,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: cb8c61a4c4cbec3fe08a61ead39ba252ec29bfa6
+  version: e3f101afd0112e3d266359879bc03865d28381f9
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -372,35 +369,34 @@ imports:
   - pkg/controller/job
   - pkg/controller/snapshot
   - pkg/eventer
-  - pkg/storage
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 21f51be2248fd6cddef747a3cc05232bcc9b9d59
+  version: 1763adfbf17eb3817a70c9e648957ac5388a9c35
   subpackages:
   - pkg/admission
   - pkg/audit/report
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/memcached
-  version: a3fab73b1b4bdccd4eff7c879785d00a7b4d9940
+  version: 36d675e5cb060315739bd1173eb8f66ded764a45
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/mongodb
-  version: 47f638aeec685a044f17470e1815b971256e8693
+  version: 8270046114edc9c5c3c7995a893c3e79ed864cf0
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/mysql
-  version: 696135d573fe75e6393b91cc589ddccce76c7102
+  version: a127d6cd8a99c29c22e71015ea623e3678887ffd
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/postgres
-  version: 25c2943a4679b9c228efbf67a83f0bbe8eedca8d
+  version: a4d4800fc4cec7ed643063fa05748342662b71e3
   subpackages:
   - pkg/admission
   - pkg/audit/report
@@ -408,7 +404,7 @@ imports:
   - pkg/docker
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: 0fb031e2a038284a693f4f213cc34730e6b0f5b2
+  version: fe79adb1798f9bea318db8f253e397fe4771cb16
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -440,7 +436,7 @@ imports:
 - name: github.com/NYTimes/gziphandler
   version: 56545f4a5d46df9a6648819d1664c3a03a13ffdb
 - name: github.com/oliver006/redis_exporter
-  version: 3e15af27aac37e114b32a07f5e9dc0510f4cbfc4
+  version: 0c860fc1a79cb79db28afd637a0520f23825ae7b
   subpackages:
   - exporter
 - name: github.com/openshift/api
@@ -450,7 +446,7 @@ imports:
 - name: github.com/openshift/origin
   version: fecffb2fce100260088a1b9f268c0901a778cf2b
 - name: github.com/orcaman/concurrent-map
-  version: a05df785d2dcc16310fb997ee1702100d047cfe1
+  version: b28018939af9022337862b94a463abb18abb3e0e
 - name: github.com/pborman/uuid
   version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - name: github.com/peterbourgon/diskv
@@ -488,7 +484,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 504acf4a0aec394fa7993dc2fe5744ef59f97b2c
+  version: 41b0580e7e7f4c08825c0e8b65d0cbf866bb4df8
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -590,7 +586,7 @@ imports:
   subpackages:
   - rate
 - name: google.golang.org/api
-  version: ac730e38c5514b49097b1459b3acbe1bf905e930
+  version: 31ca0e01cd791f07750cb23fc99327721f753290
   subpackages:
   - gensupport
   - googleapi
@@ -980,11 +976,27 @@ imports:
   - util/retry
   - util/workqueue
 - name: k8s.io/kube-openapi
-  version: d83b052f768a50a309c692a9c271da3f3276ff88
+  version: e3762e86a74c878ffed47484592986685639c2cd
   subpackages:
   - pkg/builder
   - pkg/common
   - pkg/handler
   - pkg/util
   - pkg/util/proto
+- name: kmodules.xyz/monitoring-agent-api
+  version: 323ed6f2129deea0309979d9396728c613f369d4
+  repo: https://github.com/kmodules/monitoring-agent-api.git
+  vcs: git
+  subpackages:
+  - agents
+  - agents/coreosprometheusoperator
+  - agents/prometheusbuiltin
+  - api
+- name: kmodules.xyz/objectstore-api
+  version: f2d3726e2b0438b0b7264f8bf62edf928e5ca962
+  repo: https://github.com/kmodules/objectstore-api.git
+  vcs: git
+  subpackages:
+  - api
+  - osm
 testImports: []

@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/appscode/kube-mon/api"
 	crdutils "github.com/appscode/kutil/apiextensions/v1beta1"
-	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
-	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"kmodules.xyz/monitoring-agent-api/api"
 )
 
 func (p MongoDB) OffshootName() string {
@@ -84,15 +83,21 @@ func (m *MongoDB) GetMonitoringVendor() string {
 	return ""
 }
 
-func (p MongoDB) CustomResourceDefinition() *crd_api.CustomResourceDefinition {
+func (p MongoDB) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
 	return crdutils.NewCustomResourceDefinition(crdutils.Config{
 		Group:         SchemeGroupVersion.Group,
-		Version:       SchemeGroupVersion.Version,
 		Plural:        ResourcePluralMongoDB,
 		Singular:      ResourceSingularMongoDB,
 		Kind:          ResourceKindMongoDB,
 		ShortNames:    []string{ResourceCodeMongoDB},
 		ResourceScope: string(apiextensions.NamespaceScoped),
+		Versions: []apiextensions.CustomResourceDefinitionVersion{
+			{
+				Name:    SchemeGroupVersion.Version,
+				Served:  true,
+				Storage: true,
+			},
+		},
 		Labels: crdutils.Labels{
 			LabelsMap: map[string]string{"app": "kubedb"},
 		},

@@ -6,7 +6,6 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	app_util "github.com/appscode/kutil/apps/v1"
 	core_util "github.com/appscode/kutil/core/v1"
@@ -19,6 +18,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
+	mon_api "kmodules.xyz/monitoring-agent-api/api"
 )
 
 func (c *Controller) ensureStatefulSet(
@@ -92,6 +92,7 @@ func (c *Controller) ensureStatefulSet(
 		}
 
 		in = upsertDataVolume(in, postgres)
+		in = upsertCustomConfig(in, postgres)
 
 		if c.EnableRBAC {
 			in.Spec.Template.Spec.ServiceAccountName = postgres.OffshootName()
@@ -486,6 +487,33 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *ap
 			statefulSet.Spec.VolumeClaimTemplates = volumeClaims
 
 			break
+		}
+	}
+	return statefulSet
+}
+
+func upsertCustomConfig(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
+	if postgres.Spec.ConfigSource != nil {
+		for i, container := range statefulSet.Spec.Template.Spec.Containers {
+			if container.Name == api.ResourceSingularPostgres {
+				configVolumeMount := core.VolumeMount{
+					Name:      "custom-config",
+					MountPath: "/etc/config",
+				}
+				volumeMounts := container.VolumeMounts
+				volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+				statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+				configVolume := core.Volume{
+					Name:         "custom-config",
+					VolumeSource: *postgres.Spec.ConfigSource,
+				}
+
+				volumes := statefulSet.Spec.Template.Spec.Volumes
+				volumes = core_util.UpsertVolume(volumes, configVolume)
+				statefulSet.Spec.Template.Spec.Volumes = volumes
+				break
+			}
 		}
 	}
 	return statefulSet

@@ -9,13 +9,13 @@ import (
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
-	"github.com/kubedb/apimachinery/pkg/storage"
 	validator "github.com/kubedb/mysql/pkg/admission"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
+	storage "kmodules.xyz/objectstore-api/osm"
 )
 
 func (c *Controller) create(mysql *api.MySQL) error {
@@ -238,7 +238,7 @@ func (c *Controller) initialize(mysql *api.MySQL) error {
 		return err
 	}
 
-	secret, err := storage.NewOSMSecret(c.Client, snapshot)
+	secret, err := storage.NewOSMSecret(c.Client, snapshot.OSMSecretName(), snapshot.Namespace, snapshot.Spec.Backend)
 	if err != nil {
 		return err
 	}

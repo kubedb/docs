@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/appscode/kube-mon/api"
 	crdutils "github.com/appscode/kutil/apiextensions/v1beta1"
 	"github.com/appscode/kutil/meta"
-	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
-	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"kmodules.xyz/monitoring-agent-api/api"
 )
 
 func (e Elasticsearch) OffshootName() string {
@@ -91,15 +90,21 @@ func (e *Elasticsearch) GetMonitoringVendor() string {
 	return ""
 }
 
-func (r Elasticsearch) CustomResourceDefinition() *crd_api.CustomResourceDefinition {
+func (r Elasticsearch) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
 	return crdutils.NewCustomResourceDefinition(crdutils.Config{
 		Group:         SchemeGroupVersion.Group,
-		Version:       SchemeGroupVersion.Version,
 		Plural:        ResourcePluralElasticsearch,
 		Singular:      ResourceSingularElasticsearch,
 		Kind:          ResourceKindElasticsearch,
 		ShortNames:    []string{ResourceCodeElasticsearch},
 		ResourceScope: string(apiextensions.NamespaceScoped),
+		Versions: []apiextensions.CustomResourceDefinitionVersion{
+			{
+				Name:    SchemeGroupVersion.Version,
+				Served:  true,
+				Storage: true,
+			},
+		},
 		Labels: crdutils.Labels{
 			LabelsMap: map[string]string{"app": "kubedb"},
 		},
@@ -107,6 +112,23 @@ func (r Elasticsearch) CustomResourceDefinition() *crd_api.CustomResourceDefinit
 		EnableValidation:        true,
 		GetOpenAPIDefinitions:   GetOpenAPIDefinitions,
 		EnableStatusSubresource: EnableStatusSubresource,
+		AdditionalPrinterColumns: []apiextensions.CustomResourceColumnDefinition{
+			{
+				Name:     "Version",
+				Type:     "string",
+				JSONPath: ".spec.version",
+			},
+			{
+				Name:     "Status",
+				Type:     "string",
+				JSONPath: ".status.phase",
+			},
+			{
+				Name:     "Age",
+				Type:     "date",
+				JSONPath: ".metadata.creationTimestamp",
+			},
+		},
 	}, setNameSchema)
 }
 

@@ -6,7 +6,6 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	mon_api "github.com/appscode/kube-mon/api"
 	hookapi "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
@@ -21,6 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	mon_api "kmodules.xyz/monitoring-agent-api/api"
 )
 
 type MySQLMutator struct {

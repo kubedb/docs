@@ -2,10 +2,10 @@ package controller
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	app_util "github.com/appscode/kutil/apps/v1"
 	core_util "github.com/appscode/kutil/core/v1"
@@ -17,6 +17,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
+	mon_api "kmodules.xyz/monitoring-agent-api/api"
+)
+
+const (
+	CONFIG_MOUNT_PATH = "/usr/local/etc/redis/"
 )
 
 func (c *Controller) ensureStatefulSet(redis *api.Redis) (kutil.VerbType, error) {
@@ -140,6 +145,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis) (*apps.StatefulSet, kut
 
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 		in = upsertUserEnv(in, redis)
+		in = upsertCustomConfig(in, redis)
 		return in
 	})
 }
@@ -201,4 +207,39 @@ func upsertUserEnv(statefulset *apps.StatefulSet, redis *api.Redis) *apps.Statef
 		}
 	}
 	return statefulset
+}
+
+func upsertCustomConfig(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.StatefulSet {
+	if redis.Spec.ConfigSource != nil {
+		for i, container := range statefulSet.Spec.Template.Spec.Containers {
+			if container.Name == api.ResourceSingularRedis {
+				configVolumeMount := core.VolumeMount{
+					Name:      "custom-config",
+					MountPath: CONFIG_MOUNT_PATH,
+				}
+				volumeMounts := container.VolumeMounts
+				volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+				statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+				configVolume := core.Volume{
+					Name:         "custom-config",
+					VolumeSource: *redis.Spec.ConfigSource,
+				}
+
+				volumes := statefulSet.Spec.Template.Spec.Volumes
+				volumes = core_util.UpsertVolume(volumes, configVolume)
+				statefulSet.Spec.Template.Spec.Volumes = volumes
+
+				// send custom config file path as argument
+				configPath := filepath.Join(CONFIG_MOUNT_PATH, "redis.conf")
+				args := statefulSet.Spec.Template.Spec.Containers[i].Args
+				if len(args) == 0 || args[len(args)-1] != configPath {
+					args = append(args, configPath)
+				}
+				statefulSet.Spec.Template.Spec.Containers[i].Args = args
+				break
+			}
+		}
+	}
+	return statefulSet
 }

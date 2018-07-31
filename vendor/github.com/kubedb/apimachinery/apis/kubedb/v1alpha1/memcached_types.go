@@ -2,9 +2,9 @@ package v1alpha1
 
 import (
 	"github.com/appscode/go/encoding/json/types"
-	"github.com/appscode/kube-mon/api"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"kmodules.xyz/monitoring-agent-api/api"
 )
 
 const (
@@ -57,10 +57,57 @@ type MemcachedSpec struct {
 	// If specified, these secrets will be passed to individual puller implementations for them to use.
 	// +optional
 	ImagePullSecrets []core.LocalObjectReference `json:"imagePullSecrets,omitempty"`
+	// ConfigSource is an optional field to provide custom configuration file for database.
+	// If specified, this file will be used as configuration file otherwise default configuration file will be used.
+	ConfigSource *core.VolumeSource `json:"configSource,omitempty"`
 	// List of environment variables to set in the container.
 	// Cannot be updated.
 	// +optional
-	Env []core.EnvVar `json:"env,omitempty" protobuf:"bytes,7,rep,name=env"`
+	Env []core.EnvVar `json:"env,omitempty"`
+
+	// Workload is an optional configuration for workload controller and pods used to expose database
+	Workload *WorkloadConfig `json:"workload,omitempty"`
+
+	// Service is an optional configuration for service used to expose database
+	Service *ServiceConfig `json:"service,omitempty"`
+
+	// List of initialization containers belonging to the pod.
+	// Init containers are executed in order prior to containers being started. If any
+	// init container fails, the pod is considered to have failed and is handled according
+	// to its restartPolicy. The name for an init container or normal container must be
+	// unique among all containers.
+	// Init containers may not have Lifecycle actions, Readiness probes, or Liveness probes.
+	// The resourceRequirements of an init container are taken into account during scheduling
+	// by finding the highest request/limit for each resource type, and then using the max of
+	// of that value or the sum of the normal containers. Limits are applied to init containers
+	// in a similar fashion.
+	// Init containers cannot currently be added or removed.
+	// Cannot be updated.
+	// More info: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+	// +patchMergeKey=name
+	// +patchStrategy=merge
+	InitContainers []core.Container `json:"initContainers,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
+
+	// If specified, indicates the pod's priority. "system-node-critical" and
+	// "system-cluster-critical" are two special keywords which indicate the
+	// highest priorities with the former being the highest priority. Any other
+	// name must be defined by creating a PriorityClass object with that name.
+	// If not specified, the pod priority will be default or zero if there is no
+	// default.
+	// +optional
+	PriorityClassName string `json:"priorityClassName,omitempty"`
+	// The priority value. Various system components use this field to find the
+	// priority of the pod. When Priority Admission Controller is enabled, it
+	// prevents users from setting this field. The admission controller populates
+	// this field from PriorityClassName.
+	// The higher the value, the higher the priority.
+	// +optional
+	Priority *int32 `json:"priority,omitempty"`
+
+	// SecurityContext holds pod-level security attributes and common container settings.
+	// Optional: Defaults to empty.  See type description for default values of each field.
+	// +optional
+	SecurityContext *core.PodSecurityContext `json:"securityContext,omitempty"`
 }
 
 type MemcachedStatus struct {

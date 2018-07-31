@@ -5,13 +5,13 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/kube-mon/agents"
-	mona "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	mona "kmodules.xyz/monitoring-agent-api/api"
 )
 
 func (c *Controller) newMonitorController(elasticsearch *api.Elasticsearch) (mona.Agent, error) {

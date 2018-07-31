@@ -9,15 +9,15 @@ import (
 	_ "github.com/graymeta/stow/google"
 	_ "github.com/graymeta/stow/s3"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/pkg/storage"
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"kmodules.xyz/objectstore-api/osm"
 )
 
 func (c *Controller) DeleteSnapshotData(snapshot *api.Snapshot) error {
-	cfg, err := storage.NewOSMContext(c.Client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)
+	cfg, err := osm.NewOSMContext(c.Client, snapshot.Spec.Backend, snapshot.Namespace)
 	if err != nil {
 		return err
 	}
@@ -26,7 +26,7 @@ func (c *Controller) DeleteSnapshotData(snapshot *api.Snapshot) error {
 	if err != nil {
 		return err
 	}
-	bucket, err := snapshot.Spec.SnapshotStorageSpec.Container()
+	bucket, err := snapshot.Spec.Backend.Container()
 	if err != nil {
 		return err
 	}
