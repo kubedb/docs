@@ -45,18 +45,31 @@ func (c *Controller) handleBackupJob(job *batch.Job) error {
 
 			jobSucceeded := job.Status.Succeeded > 0
 
-			_, _, err = util.PatchSnapshot(c.ExtClient, snapshot, func(in *api.Snapshot) *api.Snapshot {
+			if _, err := util.UpdateSnapshotStatus(c.ExtClient, snapshot, func(in *api.SnapshotStatus) *api.SnapshotStatus {
 				if jobSucceeded {
-					in.Status.Phase = api.SnapshotPhaseSucceeded
+					in.Phase = api.SnapshotPhaseSucceeded
 				} else {
-					in.Status.Phase = api.SnapshotPhaseFailed
+					in.Phase = api.SnapshotPhaseFailed
 				}
 				t := metav1.Now()
-				in.Status.CompletionTime = &t
+				in.CompletionTime = &t
+				return in
+			}, api.EnableStatusSubresource); err != nil {
+				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
+					c.eventRecorder.Eventf(
+						ref,
+						core.EventTypeWarning,
+						eventer.EventReasonFailedToUpdate,
+						err.Error(),
+					)
+				}
+				return err
+			}
+
+			if _, _, err := util.PatchSnapshot(c.ExtClient, snapshot, func(in *api.Snapshot) *api.Snapshot {
 				delete(in.Labels, api.LabelSnapshotStatus)
 				return in
-			})
-			if err != nil {
+			}); err != nil {
 				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
 					c.eventRecorder.Eventf(
 						ref,

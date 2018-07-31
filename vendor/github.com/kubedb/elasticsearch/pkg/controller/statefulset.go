@@ -5,7 +5,6 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	app_util "github.com/appscode/kutil/apps/v1"
 	core_util "github.com/appscode/kutil/core/v1"
@@ -17,6 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
+	mon_api "kmodules.xyz/monitoring-agent-api/api"
 )
 
 func (c *Controller) ensureStatefulSet(

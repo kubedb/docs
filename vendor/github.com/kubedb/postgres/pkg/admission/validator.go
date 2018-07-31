@@ -11,7 +11,6 @@ import (
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
 	kubedbv1alpha1 "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/pkg/storage"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
@@ -23,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	storage "kmodules.xyz/objectstore-api/osm"
 )
 
 type PostgresValidator struct {
@@ -211,7 +211,7 @@ func ValidatePostgres(client kubernetes.Interface, extClient kubedbv1alpha1.Kube
 			return errors.New("invalid storage provider is configured")
 		}
 
-		if err := storage.CheckBucketAccess(client, wal.SnapshotStorageSpec, postgres.Namespace); err != nil {
+		if err := storage.CheckBucketAccess(client, wal.Backend, postgres.Namespace); err != nil {
 			return err
 		}
 	}

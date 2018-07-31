@@ -5,14 +5,15 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/arrays"
-	mona "github.com/appscode/kube-mon/api"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/pkg/storage"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	mona "kmodules.xyz/monitoring-agent-api/api"
+	store "kmodules.xyz/objectstore-api/api"
+	"kmodules.xyz/objectstore-api/osm"
 )
 
 func ValidateStorage(client kubernetes.Interface, spec core.PersistentVolumeClaimSpec) error {
@@ -45,10 +46,10 @@ func ValidateBackupSchedule(client kubernetes.Interface, spec *api.BackupSchedul
 		return errors.New("invalid cron expression")
 	}
 
-	return ValidateSnapshotSpec(client, spec.SnapshotStorageSpec, namespace)
+	return ValidateSnapshotSpec(client, spec.Backend, namespace)
 }
 
-func ValidateSnapshotSpec(client kubernetes.Interface, spec api.SnapshotStorageSpec, namespace string) error {
+func ValidateSnapshotSpec(client kubernetes.Interface, spec store.Backend, namespace string) error {
 	// BucketName can't be empty
 	if spec.S3 == nil && spec.GCS == nil && spec.Azure == nil && spec.Swift == nil && spec.Local == nil {
 		return errors.New("no storage provider is configured")
@@ -66,7 +67,7 @@ func ValidateSnapshotSpec(client kubernetes.Interface, spec api.SnapshotStorageS
 		}
 	}
 
-	if err := storage.CheckBucketAccess(client, spec, namespace); err != nil {
+	if err := osm.CheckBucketAccess(client, spec, namespace); err != nil {
 		return err
 	}
 

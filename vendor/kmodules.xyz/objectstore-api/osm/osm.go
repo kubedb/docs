@@ -1,4 +1,4 @@
-package storage
+package osm
 
 import (
 	"bytes"
@@ -26,11 +26,11 @@ import (
 	"github.com/graymeta/stow/local"
 	"github.com/graymeta/stow/s3"
 	"github.com/graymeta/stow/swift"
-	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	api "kmodules.xyz/objectstore-api/api"
 )
 
 const (
@@ -52,8 +52,8 @@ const (
 // ├── ca.crt
 // └── config
 
-func NewOSMSecret(client kubernetes.Interface, snapshot *api.Snapshot) (*core.Secret, error) {
-	osmCtx, err := NewOSMContext(client, snapshot.Spec.SnapshotStorageSpec, snapshot.Namespace)
+func NewOSMSecret(client kubernetes.Interface, name, namespace string, spec api.Backend) (*core.Secret, error) {
+	osmCtx, err := NewOSMContext(client, spec, namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -67,8 +67,8 @@ func NewOSMSecret(client kubernetes.Interface, snapshot *api.Snapshot) (*core.Se
 	}
 	return upserCaCertFile(osmCtx, &core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      snapshot.OSMSecretName(),
-			Namespace: snapshot.Namespace,
+			Name:      name,
+			Namespace: namespace,
 		},
 		Data: map[string][]byte{
 			"config": osmBytes,
@@ -89,7 +89,7 @@ func upserCaCertFile(osmCtx *otx.Context, secret *core.Secret) (*core.Secret, er
 	return secret, nil
 }
 
-func CheckBucketAccess(client kubernetes.Interface, spec api.SnapshotStorageSpec, namespace string) error {
+func CheckBucketAccess(client kubernetes.Interface, spec api.Backend, namespace string) error {
 	cfg, err := NewOSMContext(client, spec, namespace)
 	if err != nil {
 		return err
@@ -107,7 +107,7 @@ func CheckBucketAccess(client kubernetes.Interface, spec api.SnapshotStorageSpec
 		return err
 	}
 	r := bytes.NewReader([]byte("CheckBucketAccess"))
-	item, err := container.Put(".kubedb", r, r.Size(), nil)
+	item, err := container.Put(".objectstore", r, r.Size(), nil)
 	if err != nil {
 		return err
 	}
@@ -117,7 +117,7 @@ func CheckBucketAccess(client kubernetes.Interface, spec api.SnapshotStorageSpec
 	return nil
 }
 
-func NewOSMContext(client kubernetes.Interface, spec api.SnapshotStorageSpec, namespace string) (*otx.Context, error) {
+func NewOSMContext(client kubernetes.Interface, spec api.Backend, namespace string) (*otx.Context, error) {
 	config := make(map[string][]byte)
 
 	if spec.StorageSecretName != "" {
@@ -129,7 +129,7 @@ func NewOSMContext(client kubernetes.Interface, spec api.SnapshotStorageSpec, na
 	}
 
 	nc := &otx.Context{
-		Name:   "kubedb",
+		Name:   "objectstore",
 		Config: stow.ConfigMap{},
 	}
 

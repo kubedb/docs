@@ -3,7 +3,6 @@ package controller
 import (
 	"fmt"
 
-	mon_api "github.com/appscode/kube-mon/api"
 	"github.com/appscode/kutil"
 	app_util "github.com/appscode/kutil/apps/v1"
 	core_util "github.com/appscode/kutil/core/v1"
@@ -15,6 +14,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
+	mon_api "kmodules.xyz/monitoring-agent-api/api"
+)
+
+const (
+	CONFIG_SOURCE_VOLUME           = "custom-config"
+	CONFIG_SOURCE_VOLUME_MOUNTPATH = "/usr/config/"
 )
 
 func (c *Controller) ensureDeployment(memcached *api.Memcached) (kutil.VerbType, error) {
@@ -131,7 +136,7 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 		in.Spec.Template.Spec.Tolerations = memcached.Spec.Tolerations
 		in.Spec.Template.Spec.ImagePullSecrets = memcached.Spec.ImagePullSecrets
 		in = upsertUserEnv(in, memcached)
-
+		in = upsertCustomConfig(in, memcached)
 		return in
 	})
 }
@@ -144,5 +149,36 @@ func upsertUserEnv(deployment *apps.Deployment, memcached *api.Memcached) *apps.
 			return deployment
 		}
 	}
+	return deployment
+}
+
+// upsertCustomConfig insert custom configuration volume if provided.
+func upsertCustomConfig(deployment *apps.Deployment, memcached *api.Memcached) *apps.Deployment {
+	if memcached.Spec.ConfigSource != nil {
+		for i, container := range deployment.Spec.Template.Spec.Containers {
+			if container.Name == api.ResourceSingularMemcached {
+
+				configSourceVolumeMount := core.VolumeMount{
+					Name:      CONFIG_SOURCE_VOLUME,
+					MountPath: CONFIG_SOURCE_VOLUME_MOUNTPATH,
+				}
+
+				volumeMounts := container.VolumeMounts
+				volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configSourceVolumeMount)
+				deployment.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+				configSourceVolume := core.Volume{
+					Name:         CONFIG_SOURCE_VOLUME,
+					VolumeSource: *memcached.Spec.ConfigSource,
+				}
+
+				volumes := deployment.Spec.Template.Spec.Volumes
+				volumes = core_util.UpsertVolume(volumes, configSourceVolume)
+				deployment.Spec.Template.Spec.Volumes = volumes
+				break
+			}
+		}
+	}
+
 	return deployment
 }

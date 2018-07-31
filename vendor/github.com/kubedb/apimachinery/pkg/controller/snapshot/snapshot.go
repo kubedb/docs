@@ -7,21 +7,21 @@ import (
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
-	"github.com/kubedb/apimachinery/pkg/storage"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
+	"kmodules.xyz/objectstore-api/osm"
 )
 
 func (c *Controller) create(snapshot *api.Snapshot) error {
-	snap, _, err := util.PatchSnapshot(c.ExtClient, snapshot, func(in *api.Snapshot) *api.Snapshot {
+	snap, err := util.UpdateSnapshotStatus(c.ExtClient, snapshot, func(in *api.SnapshotStatus) *api.SnapshotStatus {
 		t := metav1.Now()
-		in.Status.StartTime = &t
+		in.StartTime = &t
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
 			c.eventRecorder.Eventf(
@@ -46,15 +46,30 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 				err.Error(),
 			)
 		}
-		_, _, err = util.PatchSnapshot(c.ExtClient, snapshot, func(in *api.Snapshot) *api.Snapshot {
+
+		if _, err := util.UpdateSnapshotStatus(c.ExtClient, snapshot, func(in *api.SnapshotStatus) *api.SnapshotStatus {
 			t := metav1.Now()
-			in.Status.CompletionTime = &t
-			in.Labels[api.LabelDatabaseName] = snapshot.Spec.DatabaseName
-			in.Status.Phase = api.SnapshotPhaseFailed
-			in.Status.Reason = "Invalid Snapshot"
+			in.CompletionTime = &t
+			in.Phase = api.SnapshotPhaseFailed
+			in.Reason = "Invalid Snapshot"
 			return in
-		})
-		if err != nil {
+		}, api.EnableStatusSubresource); err != nil {
+			log.Errorln(err)
+			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
+				c.eventRecorder.Eventf(
+					ref,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToUpdate,
+					err.Error(),
+				)
+			}
+			return err
+		}
+
+		if _, _, err = util.PatchSnapshot(c.ExtClient, snapshot, func(in *api.Snapshot) *api.Snapshot {
+			in.Labels[api.LabelDatabaseName] = snapshot.Spec.DatabaseName
+			return in
+		}); err != nil {
 			log.Errorln(err)
 			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
 				c.eventRecorder.Eventf(
@@ -83,14 +98,13 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 		return err
 	}
 	if running {
-		_, _, err = util.PatchSnapshot(c.ExtClient, snapshot, func(in *api.Snapshot) *api.Snapshot {
+		if _, err := util.UpdateSnapshotStatus(c.ExtClient, snapshot, func(in *api.SnapshotStatus) *api.SnapshotStatus {
 			t := metav1.Now()
-			in.Status.CompletionTime = &t
-			in.Status.Phase = api.SnapshotPhaseFailed
-			in.Status.Reason = "One Snapshot is already Running"
+			in.CompletionTime = &t
+			in.Phase = api.SnapshotPhaseFailed
+			in.Reason = "One Snapshot is already Running"
 			return in
-		})
-		if err != nil {
+		}, api.EnableStatusSubresource); err != nil {
 			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
 				c.eventRecorder.Eventf(
 					ref,
@@ -133,7 +147,7 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 			"Backup running",
 		)
 	}
-	secret, err := storage.NewOSMSecret(c.Client, snapshot)
+	secret, err := osm.NewOSMSecret(c.Client, snapshot.OSMSecretName(), snapshot.Namespace, snapshot.Spec.Backend)
 	if err != nil {
 		message := fmt.Sprintf("Failed to generate osm secret. Reason: %v", err)
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, runtimeObj); rerr == nil {
@@ -198,13 +212,26 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 		return err
 	}
 
-	_, _, err = util.PatchSnapshot(c.ExtClient, snapshot, func(in *api.Snapshot) *api.Snapshot {
+	if _, err := util.UpdateSnapshotStatus(c.ExtClient, snapshot, func(in *api.SnapshotStatus) *api.SnapshotStatus {
+		in.Phase = api.SnapshotPhaseRunning
+		return in
+	}, api.EnableStatusSubresource); err != nil {
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
+			c.eventRecorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
+			)
+		}
+		return err
+	}
+
+	if _, _, err = util.PatchSnapshot(c.ExtClient, snapshot, func(in *api.Snapshot) *api.Snapshot {
 		in.Labels[api.LabelDatabaseName] = snapshot.Spec.DatabaseName
 		in.Labels[api.LabelSnapshotStatus] = string(api.SnapshotPhaseRunning)
-		in.Status.Phase = api.SnapshotPhaseRunning
 		return in
-	})
-	if err != nil {
+	}); err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
 			c.eventRecorder.Eventf(
 				ref,

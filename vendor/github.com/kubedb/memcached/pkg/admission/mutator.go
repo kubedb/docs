@@ -6,7 +6,6 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	mon_api "github.com/appscode/kube-mon/api"
 	hookapi "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -19,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	mon_api "kmodules.xyz/monitoring-agent-api/api"
 )
 
 type MemcachedMutator struct {

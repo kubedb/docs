@@ -6,10 +6,10 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"github.com/kubedb/apimachinery/pkg/storage"
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	storage "kmodules.xyz/objectstore-api/osm"
 )
 
 const (
@@ -26,7 +26,7 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 		api.AnnotationJobType: api.JobTypeRestore,
 	}
 
-	backupSpec := snapshot.Spec.SnapshotStorageSpec
+	backupSpec := snapshot.Spec.Backend
 	bucket, err := backupSpec.Container()
 	if err != nil {
 		return nil, err
@@ -129,15 +129,15 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 			},
 		},
 	}
-	if snapshot.Spec.SnapshotStorageSpec.Local != nil {
+	if snapshot.Spec.Backend.Local != nil {
 		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, core.VolumeMount{
 			Name:      "local",
-			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.MountPath,
-			SubPath:   snapshot.Spec.SnapshotStorageSpec.Local.SubPath,
+			MountPath: snapshot.Spec.Backend.Local.MountPath,
+			SubPath:   snapshot.Spec.Backend.Local.SubPath,
 		})
 		volume := core.Volume{
 			Name:         "local",
-			VolumeSource: snapshot.Spec.SnapshotStorageSpec.Local.VolumeSource,
+			VolumeSource: snapshot.Spec.Backend.Local.VolumeSource,
 		}
 		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, volume)
 	}
@@ -156,7 +156,7 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 	jobAnnotation := map[string]string{
 		api.AnnotationJobType: api.JobTypeBackup,
 	}
-	backupSpec := snapshot.Spec.SnapshotStorageSpec
+	backupSpec := snapshot.Spec.Backend
 	bucket, err := backupSpec.Container()
 	if err != nil {
 		return nil, err
@@ -266,15 +266,15 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 		},
 	}
 
-	if snapshot.Spec.SnapshotStorageSpec.Local != nil {
+	if snapshot.Spec.Backend.Local != nil {
 		job.Spec.Template.Spec.Containers[0].VolumeMounts = append(job.Spec.Template.Spec.Containers[0].VolumeMounts, core.VolumeMount{
 			Name:      "local",
-			MountPath: snapshot.Spec.SnapshotStorageSpec.Local.MountPath,
-			SubPath:   snapshot.Spec.SnapshotStorageSpec.Local.SubPath,
+			MountPath: snapshot.Spec.Backend.Local.MountPath,
+			SubPath:   snapshot.Spec.Backend.Local.SubPath,
 		})
 		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, core.Volume{
 			Name:         "local",
-			VolumeSource: snapshot.Spec.SnapshotStorageSpec.Local.VolumeSource,
+			VolumeSource: snapshot.Spec.Backend.Local.VolumeSource,
 		})
 	}
 	return job, nil

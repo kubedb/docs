@@ -12,11 +12,11 @@ import (
 
 func (c *Controller) create(ddb *api.DormantDatabase) error {
 	if ddb.Status.CreationTime == nil {
-		_, _, err := util.PatchDormantDatabase(c.ExtClient, ddb, func(in *api.DormantDatabase) *api.DormantDatabase {
+		_, err := util.UpdateDormantDatabaseStatus(c.ExtClient, ddb, func(in *api.DormantDatabaseStatus) *api.DormantDatabaseStatus {
 			t := metav1.Now()
-			in.Status.CreationTime = &t
+			in.CreationTime = &t
 			return in
-		})
+		}, api.EnableStatusSubresource)
 		if err != nil {
 			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, ddb); rerr == nil {
 				c.recorder.Eventf(
@@ -34,10 +34,10 @@ func (c *Controller) create(ddb *api.DormantDatabase) error {
 		return nil
 	}
 
-	_, _, err := util.PatchDormantDatabase(c.ExtClient, ddb, func(in *api.DormantDatabase) *api.DormantDatabase {
-		in.Status.Phase = api.DormantDatabasePhasePausing
+	_, err := util.UpdateDormantDatabaseStatus(c.ExtClient, ddb, func(in *api.DormantDatabaseStatus) *api.DormantDatabaseStatus {
+		in.Phase = api.DormantDatabasePhasePausing
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		c.recorder.Eventf(ddb, core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
@@ -68,12 +68,12 @@ func (c *Controller) create(ddb *api.DormantDatabase) error {
 		)
 	}
 
-	_, _, err = util.PatchDormantDatabase(c.ExtClient, ddb, func(in *api.DormantDatabase) *api.DormantDatabase {
+	_, err = util.UpdateDormantDatabaseStatus(c.ExtClient, ddb, func(in *api.DormantDatabaseStatus) *api.DormantDatabaseStatus {
 		t := metav1.Now()
-		in.Status.PausingTime = &t
-		in.Status.Phase = api.DormantDatabasePhasePaused
+		in.PausingTime = &t
+		in.Phase = api.DormantDatabasePhasePaused
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		c.recorder.Eventf(ddb, core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err

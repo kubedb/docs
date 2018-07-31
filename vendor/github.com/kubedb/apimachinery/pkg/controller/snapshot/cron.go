@@ -186,9 +186,9 @@ func (s *snapshotInvoker) createSnapshot(snapshotName string) (*api.Snapshot, er
 			Labels:    labelMap,
 		},
 		Spec: api.SnapshotSpec{
-			DatabaseName:        s.om.Name,
-			SnapshotStorageSpec: s.spec.SnapshotStorageSpec,
-			Resources:           s.spec.Resources,
+			DatabaseName: s.om.Name,
+			Backend:      s.spec.Backend,
+			Resources:    s.spec.Resources,
 		},
 	}
 

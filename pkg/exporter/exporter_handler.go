@@ -199,6 +199,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 				exp, err := rde.NewRedisExporter(
 					rde.RedisHost{Addrs: []string{conn}, Aliases: []string{""}},
 					"",
+					"",
 					"")
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
