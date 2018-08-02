@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
-	mon_api "kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 func (c *Controller) ensureService(mysql *api.MySQL) (kutil.VerbType, error) {
@@ -96,7 +96,7 @@ func upsertServicePort(service *core.Service, mysql *api.MySQL) []core.ServicePo
 			TargetPort: intstr.FromString("db"),
 		},
 	}
-	if mysql.GetMonitoringVendor() == mon_api.VendorPrometheus {
+	if mysql.GetMonitoringVendor() == mona.VendorPrometheus {
 		desiredPorts = append(desiredPorts, core.ServicePort{
 			Name:       api.PrometheusExporterPortName,
 			Protocol:   core.ProtocolTCP,

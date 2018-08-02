@@ -7,7 +7,7 @@ import (
 	crdutils "github.com/appscode/kutil/apiextensions/v1beta1"
 	"github.com/appscode/kutil/meta"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	"kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 func (e Elasticsearch) OffshootName() string {
@@ -79,7 +79,7 @@ func (r Elasticsearch) Scheme() string {
 	return ""
 }
 
-func (r *Elasticsearch) StatsAccessor() api.StatsAccessor {
+func (r *Elasticsearch) StatsAccessor() mona.StatsAccessor {
 	return r
 }
 

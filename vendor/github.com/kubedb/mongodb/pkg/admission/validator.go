@@ -143,7 +143,7 @@ func ValidateMongoDB(client kubernetes.Interface, extClient kubedbv1alpha1.Kubed
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be one`, mongodb.Spec.Replicas)
 	}
 
-	if err := amv.ValidateEnvVar(mongodb.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
+	if err := amv.ValidateEnvVar(mongodb.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
 		return err
 	}
 

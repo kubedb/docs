@@ -20,7 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	mon_api "kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 type MongoDBMutator struct {
@@ -183,9 +183,9 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB) erro
 // and the AgentVendor is Prometheus.
 func setMonitoringPort(mongodb *api.MongoDB) {
 	if mongodb.Spec.Monitor != nil &&
-		mongodb.GetMonitoringVendor() == mon_api.VendorPrometheus {
+		mongodb.GetMonitoringVendor() == mona.VendorPrometheus {
 		if mongodb.Spec.Monitor.Prometheus == nil {
-			mongodb.Spec.Monitor.Prometheus = &mon_api.PrometheusSpec{}
+			mongodb.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
 		}
 		if mongodb.Spec.Monitor.Prometheus.Port == 0 {
 			mongodb.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber

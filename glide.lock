@@ -1,5 +1,5 @@
-hash: 7f9931b5b66ab07ab55bbe0ba3ecf10bdc800b4f24b41d0d5d95c9093e26889e
-updated: 2018-07-31T14:08:53.748303402-07:00
+hash: c6a96eb20095cb884a49078c3321776e55aa9133cecdb421d29e1829dc2a3e5a
+updated: 2018-08-01T19:59:21.825580985-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -34,10 +34,6 @@ imports:
   - version
 - name: github.com/appscode/jsonpatch
   version: 1359b374de83fa14fd58ab10aa8ea4935f84d249
-- name: github.com/appscode/kube-mon
-  version: 323ed6f2129deea0309979d9396728c613f369d4
-  subpackages:
-  - agents
 - name: github.com/appscode/kubernetes-webhook-util
   version: 73ca8be3135ee210b778c7dc19709c24bf3481eb
   subpackages:
@@ -348,7 +344,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: e3f101afd0112e3d266359879bc03865d28381f9
+  version: 883ae26a8ff0a28ffc2c36ba7c34f2532cefae21
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -371,32 +367,32 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 1763adfbf17eb3817a70c9e648957ac5388a9c35
+  version: 1c7cb6b1bbba363504c8c1343cdcb036ba74607c
   subpackages:
   - pkg/admission
   - pkg/audit/report
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/memcached
-  version: 36d675e5cb060315739bd1173eb8f66ded764a45
+  version: 1040eb3c38fbc0eeb07384bbd29bf35d14e04c5a
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/mongodb
-  version: 8270046114edc9c5c3c7995a893c3e79ed864cf0
+  version: 8e8b8c3053b45733766f8757017b58de3cab747f
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/mysql
-  version: a127d6cd8a99c29c22e71015ea623e3678887ffd
+  version: 2fd02169f394aa8943fdaf58832cb1604c6c2154
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/docker
 - name: github.com/kubedb/postgres
-  version: a4d4800fc4cec7ed643063fa05748342662b71e3
+  version: c1260de6137deb9c61804ff8509033766a41df76
   subpackages:
   - pkg/admission
   - pkg/audit/report
@@ -404,7 +400,7 @@ imports:
   - pkg/docker
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: fe79adb1798f9bea318db8f253e397fe4771cb16
+  version: 55067be098de730da237a08858de794740cc76ed
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -436,7 +432,7 @@ imports:
 - name: github.com/NYTimes/gziphandler
   version: 56545f4a5d46df9a6648819d1664c3a03a13ffdb
 - name: github.com/oliver006/redis_exporter
-  version: 0c860fc1a79cb79db28afd637a0520f23825ae7b
+  version: 4663e1e84c7c0df0fdf7159be116b0fb5fb02613
   subpackages:
   - exporter
 - name: github.com/openshift/api
@@ -484,7 +480,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 41b0580e7e7f4c08825c0e8b65d0cbf866bb4df8
+  version: 70c98a06f13a167795f867640f6702adaaef2e2f
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -492,7 +488,7 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/russross/blackfriday
-  version: 300106c228d52c8941d4b3de6054a6062a86dda3
+  version: 4048872b16cc0fc2c5fd9eacf0ed2c2fedaa0c8c
 - name: github.com/rwynn/gtm
   version: 495abc277593067479c3c528864191804ab04cf7
   repo: https://github.com/jacksontj/gtm.git
@@ -504,8 +500,6 @@ imports:
   - diffmatchpatch
 - name: github.com/serialx/hashring
   version: 49a4782e9908fe098c907022a1bd7519c79803d6
-- name: github.com/shurcooL/sanitized_anchor_name
-  version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
   version: d26492970760ca5d33129d2d799e34be5c4782eb
 - name: github.com/spf13/cobra
@@ -984,19 +978,25 @@ imports:
   - pkg/util
   - pkg/util/proto
 - name: kmodules.xyz/monitoring-agent-api
-  version: 323ed6f2129deea0309979d9396728c613f369d4
+  version: 2b926a410fbfe224acd3297619e15734eb0ad75d
   repo: https://github.com/kmodules/monitoring-agent-api.git
   vcs: git
   subpackages:
   - agents
   - agents/coreosprometheusoperator
   - agents/prometheusbuiltin
-  - api
+  - api/v1
 - name: kmodules.xyz/objectstore-api
-  version: f2d3726e2b0438b0b7264f8bf62edf928e5ca962
+  version: 5437829d6e1c97de1c3effe5f2dc6cbca2e0bfd4
   repo: https://github.com/kmodules/objectstore-api.git
   vcs: git
   subpackages:
-  - api
+  - api/v1
   - osm
+- name: kmodules.xyz/offshoot-api
+  version: ca509dced59191f2fe70d49a5e238ec92016a8eb
+  repo: https://github.com/kmodules/offshoot-api.git
+  vcs: git
+  subpackages:
+  - api/v1
 testImports: []

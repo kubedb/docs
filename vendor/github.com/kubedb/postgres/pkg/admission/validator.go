@@ -143,7 +143,7 @@ func ValidatePostgres(client kubernetes.Interface, extClient kubedbv1alpha1.Kube
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be greater than zero`, postgres.Spec.Replicas)
 	}
 
-	if err := amv.ValidateEnvVar(postgres.Spec.Env, forbiddenEnvVars, api.ResourceKindPostgres); err != nil {
+	if err := amv.ValidateEnvVar(postgres.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindPostgres); err != nil {
 		return err
 	}
 

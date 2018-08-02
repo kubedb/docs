@@ -18,7 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	mon_api "kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 type RedisMutator struct {
@@ -159,9 +159,9 @@ func setDefaultsFromDormantDB(extClient cs.Interface, redis *api.Redis) error {
 // and the AgentVendor is Prometheus.
 func setMonitoringPort(redis *api.Redis) {
 	if redis.Spec.Monitor != nil &&
-		redis.GetMonitoringVendor() == mon_api.VendorPrometheus {
+		redis.GetMonitoringVendor() == mona.VendorPrometheus {
 		if redis.Spec.Monitor.Prometheus == nil {
-			redis.Spec.Monitor.Prometheus = &mon_api.PrometheusSpec{}
+			redis.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
 		}
 		if redis.Spec.Monitor.Prometheus.Port == 0 {
 			redis.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
