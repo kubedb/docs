@@ -20,7 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	mon_api "kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 type ElasticsearchMutator struct {
@@ -204,9 +204,9 @@ func setDefaultsFromDormantDB(extClient cs.Interface, elasticsearch *api.Elastic
 // and the AgentVendor is Prometheus.
 func setMonitoringPort(elasticsearch *api.Elasticsearch) {
 	if elasticsearch.Spec.Monitor != nil &&
-		elasticsearch.GetMonitoringVendor() == mon_api.VendorPrometheus {
+		elasticsearch.GetMonitoringVendor() == mona.VendorPrometheus {
 		if elasticsearch.Spec.Monitor.Prometheus == nil {
-			elasticsearch.Spec.Monitor.Prometheus = &mon_api.PrometheusSpec{}
+			elasticsearch.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
 		}
 		if elasticsearch.Spec.Monitor.Prometheus.Port == 0 {
 			elasticsearch.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber

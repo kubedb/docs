@@ -6,7 +6,7 @@ import (
 
 	crdutils "github.com/appscode/kutil/apiextensions/v1beta1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	"kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 func (r Memcached) OffshootName() string {
@@ -72,7 +72,7 @@ func (m Memcached) Scheme() string {
 	return ""
 }
 
-func (m *Memcached) StatsAccessor() api.StatsAccessor {
+func (m *Memcached) StatsAccessor() mona.StatsAccessor {
 	return m
 }
 

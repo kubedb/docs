@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
-	mon_api "kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 func (c *Controller) ensureService(memcached *api.Memcached) (kutil.VerbType, error) {
@@ -93,7 +93,7 @@ func upsertServicePort(service *core.Service, memcached *api.Memcached) []core.S
 			TargetPort: intstr.FromString("db"),
 		},
 	}
-	if memcached.GetMonitoringVendor() == mon_api.VendorPrometheus {
+	if memcached.GetMonitoringVendor() == mona.VendorPrometheus {
 		desiredPorts = append(desiredPorts, core.ServicePort{
 			Name:       api.PrometheusExporterPortName,
 			Protocol:   core.ProtocolTCP,

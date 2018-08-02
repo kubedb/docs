@@ -11,8 +11,8 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	mona "kmodules.xyz/monitoring-agent-api/api"
-	store "kmodules.xyz/objectstore-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
+	store "kmodules.xyz/objectstore-api/api/v1"
 	"kmodules.xyz/objectstore-api/osm"
 )
 

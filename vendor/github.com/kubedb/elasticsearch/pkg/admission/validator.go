@@ -201,7 +201,7 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient kubedbv1alpha1
 		}
 	}
 
-	if err := amv.ValidateEnvVar(elasticsearch.Spec.Env, forbiddenEnvVars, api.ResourceKindElasticsearch); err != nil {
+	if err := amv.ValidateEnvVar(elasticsearch.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindElasticsearch); err != nil {
 		return err
 	}
 

@@ -34,6 +34,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Postgres{},
 		&PostgresList{},
+		&PostgresVersion{},
+		&PostgresVersionList{},
 		&Elasticsearch{},
 		&ElasticsearchList{},
 		&Memcached{},

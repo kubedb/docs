@@ -13,7 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
-	mon_api "kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 var (
@@ -141,7 +141,7 @@ func upsertServicePort(service *core.Service, postgres *api.Postgres) []core.Ser
 			TargetPort: intstr.FromString(PostgresPortName),
 		},
 	}
-	if postgres.GetMonitoringVendor() == mon_api.VendorPrometheus {
+	if postgres.GetMonitoringVendor() == mona.VendorPrometheus {
 		desiredPorts = append(desiredPorts, core.ServicePort{
 			Name:       api.PrometheusExporterPortName,
 			Protocol:   core.ProtocolTCP,

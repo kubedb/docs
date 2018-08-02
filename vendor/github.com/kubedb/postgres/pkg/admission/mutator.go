@@ -20,7 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	mon_api "kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 type PostgresMutator struct {
@@ -183,9 +183,9 @@ func setDefaultsFromDormantDB(extClient cs.Interface, postgres *api.Postgres) er
 // and the AgentVendor is Prometheus.
 func setMonitoringPort(postgres *api.Postgres) {
 	if postgres.Spec.Monitor != nil &&
-		postgres.GetMonitoringVendor() == mon_api.VendorPrometheus {
+		postgres.GetMonitoringVendor() == mona.VendorPrometheus {
 		if postgres.Spec.Monitor.Prometheus == nil {
-			postgres.Spec.Monitor.Prometheus = &mon_api.PrometheusSpec{}
+			postgres.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
 		}
 		if postgres.Spec.Monitor.Prometheus.Port == 0 {
 			postgres.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber

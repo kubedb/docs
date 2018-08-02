@@ -20,7 +20,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	mon_api "kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 type MySQLMutator struct {
@@ -183,9 +183,9 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mysql *api.MySQL) error {
 // and the AgentVendor is Prometheus.
 func setMonitoringPort(mysql *api.MySQL) {
 	if mysql.Spec.Monitor != nil &&
-		mysql.GetMonitoringVendor() == mon_api.VendorPrometheus {
+		mysql.GetMonitoringVendor() == mona.VendorPrometheus {
 		if mysql.Spec.Monitor.Prometheus == nil {
-			mysql.Spec.Monitor.Prometheus = &mon_api.PrometheusSpec{}
+			mysql.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
 		}
 		if mysql.Spec.Monitor.Prometheus.Port == 0 {
 			mysql.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber

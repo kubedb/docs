@@ -6,7 +6,7 @@ import (
 
 	crdutils "github.com/appscode/kutil/apiextensions/v1beta1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	"kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 func (p Etcd) OffshootName() string {
@@ -65,14 +65,14 @@ func (p Etcd) ServiceMonitorName() string {
 }
 
 func (p Etcd) Path() string {
-	return fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/metrics", p.Namespace, p.ResourcePlural(), p.Name)
+	return fmt.Sprintf("/metrics")
 }
 
 func (p Etcd) Scheme() string {
 	return ""
 }
 
-func (p *Etcd) StatsAccessor() api.StatsAccessor {
+func (p *Etcd) StatsAccessor() mona.StatsAccessor {
 	return p
 }
 

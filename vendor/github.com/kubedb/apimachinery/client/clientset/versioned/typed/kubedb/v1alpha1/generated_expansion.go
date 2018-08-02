@@ -32,6 +32,8 @@ type MySQLExpansion interface{}
 
 type PostgresExpansion interface{}
 
+type PostgresVersionExpansion interface{}
+
 type RedisExpansion interface{}
 
 type SnapshotExpansion interface{}

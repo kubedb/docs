@@ -145,7 +145,7 @@ func ValidateMySQL(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be one`, mysql.Spec.Replicas)
 	}
 
-	if err := amv.ValidateEnvVar(mysql.Spec.Env, forbiddenEnvVars, api.ResourceKindMySQL); err != nil {
+	if err := amv.ValidateEnvVar(mysql.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMySQL); err != nil {
 		return err
 	}
 

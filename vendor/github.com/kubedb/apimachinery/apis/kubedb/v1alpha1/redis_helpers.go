@@ -6,7 +6,7 @@ import (
 
 	crdutils "github.com/appscode/kutil/apiextensions/v1beta1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	"kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 func (r Redis) OffshootName() string {
@@ -72,7 +72,7 @@ func (r Redis) Scheme() string {
 	return ""
 }
 
-func (r *Redis) StatsAccessor() api.StatsAccessor {
+func (r *Redis) StatsAccessor() mona.StatsAccessor {
 	return r
 }
 

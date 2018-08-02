@@ -14,7 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
-	mon_api "kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 const (
@@ -108,9 +108,9 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 					Protocol:      core.ProtocolTCP,
 				},
 			},
-			Resources: memcached.Spec.Resources,
+			Resources: memcached.Spec.PodTemplate.Spec.Resources,
 		})
-		if memcached.GetMonitoringVendor() == mon_api.VendorPrometheus {
+		if memcached.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
 				Args: append([]string{
@@ -145,7 +145,7 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 func upsertUserEnv(deployment *apps.Deployment, memcached *api.Memcached) *apps.Deployment {
 	for i, container := range deployment.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMemcached {
-			deployment.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, memcached.Spec.Env...)
+			deployment.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, memcached.Spec.PodTemplate.Spec.Env...)
 			return deployment
 		}
 	}

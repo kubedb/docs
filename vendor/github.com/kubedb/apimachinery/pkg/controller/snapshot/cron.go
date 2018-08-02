@@ -188,7 +188,7 @@ func (s *snapshotInvoker) createSnapshot(snapshotName string) (*api.Snapshot, er
 		Spec: api.SnapshotSpec{
 			DatabaseName: s.om.Name,
 			Backend:      s.spec.Backend,
-			Resources:    s.spec.Resources,
+			PodTemplate:  s.spec.PodTemplate,
 		},
 	}
 

@@ -18,7 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	mon_api "kmodules.xyz/monitoring-agent-api/api"
+	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 type MemcachedMutator struct {
@@ -159,9 +159,9 @@ func setDefaultsFromDormantDB(extClient cs.Interface, memcached *api.Memcached) 
 // and the AgentVendor is Prometheus.
 func setMonitoringPort(memcached *api.Memcached) {
 	if memcached.Spec.Monitor != nil &&
-		memcached.GetMonitoringVendor() == mon_api.VendorPrometheus {
+		memcached.GetMonitoringVendor() == mona.VendorPrometheus {
 		if memcached.Spec.Monitor.Prometheus == nil {
-			memcached.Spec.Monitor.Prometheus = &mon_api.PrometheusSpec{}
+			memcached.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
 		}
 		if memcached.Spec.Monitor.Prometheus.Port == 0 {
 			memcached.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
