@@ -46,10 +46,8 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		return err
 	}
 
-	if mongodb.Status.CreationTime == nil {
+	if mongodb.Status.Phase == "" {
 		mg, err := util.UpdateMongoDBStatus(c.ExtClient, mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
-			t := metav1.Now()
-			in.CreationTime = &t
 			in.Phase = api.DatabasePhaseCreating
 			return in
 		}, api.EnableStatusSubresource)
@@ -142,8 +140,9 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		return nil
 	}
 
-	ms, err := util.UpdateMongoDBStatus(c.ExtClient, mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+	mg, err := util.UpdateMongoDBStatus(c.ExtClient, mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseRunning
+		in.ObservedGeneration = mongodb.Generation
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {
@@ -157,10 +156,25 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		}
 		return err
 	}
-	mongodb.Status = ms.Status
+	mongodb.Status = mg.Status
 
 	// Ensure Schedule backup
 	c.ensureBackupScheduler(mongodb)
+
+	// ensure StatsService for desired monitoring
+	if _, err := c.ensureStatsService(mongodb); err != nil {
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				"Failed to manage monitoring system. Reason: %v",
+				err,
+			)
+		}
+		log.Errorln(err)
+		return nil
+	}
 
 	if err := c.manageMonitor(mongodb); err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {

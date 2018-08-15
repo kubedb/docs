@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
+	"github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -120,7 +121,7 @@ type snapshotInvoker struct {
 }
 
 func (s *snapshotInvoker) createScheduledSnapshot() {
-	kind := s.runtimeObject.GetObjectKind().GroupVersionKind().Kind
+	kind := meta.GetKind(s.runtimeObject)
 	name := s.om.Name
 
 	labelMap := map[string]string{
@@ -175,7 +176,7 @@ func (s *snapshotInvoker) createScheduledSnapshot() {
 
 func (s *snapshotInvoker) createSnapshot(snapshotName string) (*api.Snapshot, error) {
 	labelMap := map[string]string{
-		api.LabelDatabaseKind: s.runtimeObject.GetObjectKind().GroupVersionKind().Kind,
+		api.LabelDatabaseKind: meta.GetKind(s.runtimeObject),
 		api.LabelDatabaseName: s.om.Name,
 	}
 

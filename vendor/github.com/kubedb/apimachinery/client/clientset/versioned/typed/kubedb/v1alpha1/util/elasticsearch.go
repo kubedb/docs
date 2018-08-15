@@ -1,7 +1,6 @@
 package util
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/appscode/kutil"
@@ -82,22 +81,55 @@ func TryUpdateElasticsearch(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta
 	return
 }
 
-func UpdateElasticsearchStatus(c cs.KubedbV1alpha1Interface, cur *api.Elasticsearch, transform func(*api.ElasticsearchStatus) *api.ElasticsearchStatus, useSubresource ...bool) (*api.Elasticsearch, error) {
+func UpdateElasticsearchStatus(
+	c cs.KubedbV1alpha1Interface,
+	in *api.Elasticsearch,
+	transform func(*api.ElasticsearchStatus) *api.ElasticsearchStatus,
+	useSubresource ...bool,
+) (result *api.Elasticsearch, err error) {
 	if len(useSubresource) > 1 {
 		return nil, errors.Errorf("invalid value passed for useSubresource: %v", useSubresource)
 	}
 
-	mod := &api.Elasticsearch{
-		TypeMeta:   cur.TypeMeta,
-		ObjectMeta: cur.ObjectMeta,
-		Spec:       cur.Spec,
-		Status:     *transform(cur.Status.DeepCopy()),
+	apply := func(x *api.Elasticsearch) *api.Elasticsearch {
+		return &api.Elasticsearch{
+			TypeMeta:   x.TypeMeta,
+			ObjectMeta: x.ObjectMeta,
+			Spec:       x.Spec,
+			Status:     *transform(in.Status.DeepCopy()),
+		}
 	}
 
 	if len(useSubresource) == 1 && useSubresource[0] {
-		return c.Elasticsearches(cur.Namespace).UpdateStatus(mod)
+		attempt := 0
+		cur := in.DeepCopy()
+		err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+			attempt++
+			var e2 error
+			result, e2 = c.Elasticsearches(in.Namespace).UpdateStatus(apply(cur))
+			if kerr.IsConflict(e2) {
+				latest, e3 := c.Elasticsearches(in.Namespace).Get(in.Name, metav1.GetOptions{})
+				switch {
+				case e3 == nil:
+					cur = latest
+					return false, nil
+				case kutil.IsRequestRetryable(e3):
+					return false, nil
+				default:
+					return false, e3
+				}
+			} else if err != nil && !kutil.IsRequestRetryable(e2) {
+				return false, e2
+			}
+			return e2 == nil, nil
+		})
+
+		if err != nil {
+			err = fmt.Errorf("failed to update status of Elasticsearch %s/%s after %d attempts due to %v", in.Namespace, in.Name, attempt, err)
+		}
+		return
 	}
 
-	out, _, err := PatchElasticsearchObject(c, cur, mod)
-	return out, err
+	result, _, err = PatchElasticsearchObject(c, in, apply(in))
+	return
 }

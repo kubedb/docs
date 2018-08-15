@@ -18,7 +18,7 @@ func (c *Controller) ValidateSnapshot(snapshot *api.Snapshot) error {
 		return err
 	}
 
-	return amv.ValidateSnapshotSpec(c.Client, snapshot.Spec.Backend, snapshot.Namespace)
+	return amv.ValidateSnapshotSpec(snapshot.Spec.Backend)
 }
 
 func (c *Controller) WipeOutSnapshot(snapshot *api.Snapshot) error {

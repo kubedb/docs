@@ -19,6 +19,10 @@ import (
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
+const (
+	CONFIG_MOUNT_PATH = "/elasticsearch/custom-config"
+)
+
 func (c *Controller) ensureStatefulSet(
 	elasticsearch *api.Elasticsearch,
 	pvcSpec core.PersistentVolumeClaimSpec,
@@ -29,6 +33,11 @@ func (c *Controller) ensureStatefulSet(
 	envList []core.EnvVar,
 	isClient bool,
 ) (kutil.VerbType, error) {
+
+	elasticsearchVersion, err := c.ExtClient.ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	if err := c.checkStatefulSet(elasticsearch, statefulSetName); err != nil {
 		return kutil.VerbUnchanged, err
@@ -47,36 +56,66 @@ func (c *Controller) ensureStatefulSet(
 	searchGuard := string(elasticsearch.Spec.Version[0])
 
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
+		in.Labels = core_util.UpsertMap(labels, elasticsearch.OffshootLabels())
+		in.Annotations = elasticsearch.Spec.PodTemplate.Controller.Annotations
 		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
-		in = upsertObjectMeta(in, labels, elasticsearch.StatefulSetAnnotations())
 
 		in.Spec.Replicas = types.Int32P(replicas)
 
-		in.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: in.Labels,
-		}
-
 		in.Spec.ServiceName = c.GoverningService
-		in.Spec.Template.Labels = in.Labels
-
-		in = upsertInitContainer(in)
-		in = c.upsertContainer(in, elasticsearch, resources)
+		in.Spec.Selector = &metav1.LabelSelector{
+			MatchLabels: core_util.UpsertMap(labels, elasticsearch.OffshootSelectors()),
+		}
+		in.Spec.Template.Labels = core_util.UpsertMap(labels, elasticsearch.OffshootSelectors())
+		in.Spec.Template.Annotations = elasticsearch.Spec.PodTemplate.Annotations
+		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
+			in.Spec.Template.Spec.InitContainers,
+			append(
+				[]core.Container{
+					{
+						Name:            "init-sysctl",
+						Image:           "busybox",
+						ImagePullPolicy: core.PullIfNotPresent,
+						Command:         []string{"sysctl", "-w", "vm.max_map_count=262144"},
+						SecurityContext: &core.SecurityContext{
+							Privileged: types.BoolP(true),
+						},
+					},
+				},
+				elasticsearch.Spec.PodTemplate.Spec.InitContainers...,
+			),
+		)
+		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+			in.Spec.Template.Spec.Containers,
+			core.Container{
+				Name:  api.ResourceSingularElasticsearch,
+				Image: elasticsearchVersion.Spec.DB.Image,
+				SecurityContext: &core.SecurityContext{
+					Privileged: types.BoolP(false),
+					Capabilities: &core.Capabilities{
+						Add: []core.Capability{"IPC_LOCK", "SYS_RESOURCE"},
+					},
+				},
+				Resources: resources,
+			})
 		in = upsertEnv(in, elasticsearch, envList)
 		in = upsertUserEnv(in, elasticsearch)
 		in = upsertPort(in, isClient)
+		in = upsertCustomConfig(in, elasticsearch)
 
-		in.Spec.Template.Spec.NodeSelector = elasticsearch.Spec.NodeSelector
-		in.Spec.Template.Spec.Affinity = elasticsearch.Spec.Affinity
-
-		if elasticsearch.Spec.SchedulerName != "" {
-			in.Spec.Template.Spec.SchedulerName = elasticsearch.Spec.SchedulerName
+		in.Spec.Template.Spec.NodeSelector = elasticsearch.Spec.PodTemplate.Spec.NodeSelector
+		in.Spec.Template.Spec.Affinity = elasticsearch.Spec.PodTemplate.Spec.Affinity
+		if elasticsearch.Spec.PodTemplate.Spec.SchedulerName != "" {
+			in.Spec.Template.Spec.SchedulerName = elasticsearch.Spec.PodTemplate.Spec.SchedulerName
 		}
-
-		in.Spec.Template.Spec.Tolerations = elasticsearch.Spec.Tolerations
-		in.Spec.Template.Spec.ImagePullSecrets = elasticsearch.Spec.ImagePullSecrets
+		in.Spec.Template.Spec.Tolerations = elasticsearch.Spec.PodTemplate.Spec.Tolerations
+		in.Spec.Template.Spec.ImagePullSecrets = elasticsearch.Spec.PodTemplate.Spec.ImagePullSecrets
+		in.Spec.Template.Spec.PriorityClassName = elasticsearch.Spec.PodTemplate.Spec.PriorityClassName
+		in.Spec.Template.Spec.Priority = elasticsearch.Spec.PodTemplate.Spec.Priority
+		in.Spec.Template.Spec.SecurityContext = elasticsearch.Spec.PodTemplate.Spec.SecurityContext
 
 		if isClient {
-			in = c.upsertMonitoringContainer(in, elasticsearch)
+			in = c.upsertMonitoringContainer(in, elasticsearch, elasticsearchVersion)
 			in = upsertDatabaseSecret(in, elasticsearch.Spec.DatabaseSecret.SecretName, searchGuard)
 		}
 
@@ -146,7 +185,7 @@ func (c *Controller) ensureClientNode(elasticsearch *api.Elasticsearch) (kutil.V
 		statefulSetName = fmt.Sprintf("%v-%v", clientNode.Prefix, statefulSetName)
 	}
 
-	labels := elasticsearch.StatefulSetLabels()
+	labels := elasticsearch.OffshootLabels()
 	labels[NodeRoleClient] = "set"
 
 	heapSize := int64(134217728) // 128mb
@@ -189,7 +228,7 @@ func (c *Controller) ensureMasterNode(elasticsearch *api.Elasticsearch) (kutil.V
 		statefulSetName = fmt.Sprintf("%v-%v", masterNode.Prefix, statefulSetName)
 	}
 
-	labels := elasticsearch.StatefulSetLabels()
+	labels := elasticsearch.OffshootLabels()
 	labels[NodeRoleMaster] = "set"
 
 	heapSize := int64(134217728) // 128mb
@@ -236,7 +275,7 @@ func (c *Controller) ensureDataNode(elasticsearch *api.Elasticsearch) (kutil.Ver
 		statefulSetName = fmt.Sprintf("%v-%v", dataNode.Prefix, statefulSetName)
 	}
 
-	labels := elasticsearch.StatefulSetLabels()
+	labels := elasticsearch.OffshootLabels()
 	labels[NodeRoleData] = "set"
 
 	heapSize := int64(134217728) // 128mb
@@ -273,7 +312,7 @@ func (c *Controller) ensureDataNode(elasticsearch *api.Elasticsearch) (kutil.Ver
 
 func (c *Controller) ensureCombinedNode(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
 	statefulSetName := elasticsearch.OffshootName()
-	labels := elasticsearch.StatefulSetLabels()
+	labels := elasticsearch.OffshootLabels()
 	labels[NodeRoleClient] = "set"
 	labels[NodeRoleMaster] = "set"
 	labels[NodeRoleData] = "set"
@@ -334,47 +373,6 @@ func (c *Controller) checkStatefulSet(elasticsearch *api.Elasticsearch, name str
 	}
 
 	return nil
-}
-
-func upsertObjectMeta(statefulSet *apps.StatefulSet, labels, annotations map[string]string) *apps.StatefulSet {
-	statefulSet.Labels = core_util.UpsertMap(statefulSet.Labels, labels)
-	statefulSet.Annotations = core_util.UpsertMap(statefulSet.Annotations, annotations)
-	return statefulSet
-}
-
-func upsertInitContainer(statefulSet *apps.StatefulSet) *apps.StatefulSet {
-	container := core.Container{
-		Name:            "init-sysctl",
-		Image:           "busybox",
-		ImagePullPolicy: core.PullIfNotPresent,
-		Command:         []string{"sysctl", "-w", "vm.max_map_count=262144"},
-		SecurityContext: &core.SecurityContext{
-			Privileged: types.BoolP(true),
-		},
-	}
-	initContainers := statefulSet.Spec.Template.Spec.InitContainers
-	initContainers = core_util.UpsertContainer(initContainers, container)
-	statefulSet.Spec.Template.Spec.InitContainers = initContainers
-	return statefulSet
-}
-
-func (c *Controller) upsertContainer(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch, resources core.ResourceRequirements) *apps.StatefulSet {
-	container := core.Container{
-		Name:  api.ResourceSingularElasticsearch,
-		Image: c.docker.GetImageWithTag(elasticsearch),
-		SecurityContext: &core.SecurityContext{
-			Privileged: types.BoolP(false),
-			Capabilities: &core.Capabilities{
-				Add: []core.Capability{"IPC_LOCK", "SYS_RESOURCE"},
-			},
-		},
-		Resources: resources,
-	}
-
-	containers := statefulSet.Spec.Template.Spec.Containers
-	containers = core_util.UpsertContainer(containers, container)
-	statefulSet.Spec.Template.Spec.Containers = containers
-	return statefulSet
 }
 
 func upsertEnv(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch, envs []core.EnvVar) *apps.StatefulSet {
@@ -471,7 +469,7 @@ func upsertPort(statefulSet *apps.StatefulSet, isClient bool) *apps.StatefulSet 
 	return statefulSet
 }
 
-func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch) *apps.StatefulSet {
+func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch, elasticsearchVersion *api.ElasticsearchVersion) *apps.StatefulSet {
 	if elasticsearch.GetMonitoringVendor() == mona.VendorPrometheus {
 		container := core.Container{
 			Name: "exporter",
@@ -480,7 +478,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, el
 				fmt.Sprintf("--address=:%d", api.PrometheusExporterPortNumber),
 				fmt.Sprintf("--enable-analytics=%v", c.EnableAnalytics),
 			}, c.LoggerOptions.ToFlags()...),
-			Image:           c.docker.GetOperatorImageWithTag(elasticsearch),
+			Image:           elasticsearchVersion.Spec.Exporter.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
 				{
@@ -634,6 +632,33 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, pvcSpec core.PersistentVolu
 			statefulSet.Spec.VolumeClaimTemplates = volumeClaims
 
 			return statefulSet
+		}
+	}
+	return statefulSet
+}
+
+func upsertCustomConfig(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch) *apps.StatefulSet {
+	if elasticsearch.Spec.ConfigSource != nil {
+		for i, container := range statefulSet.Spec.Template.Spec.Containers {
+			if container.Name == api.ResourceSingularElasticsearch {
+				configVolumeMount := core.VolumeMount{
+					Name:      "custom-config",
+					MountPath: CONFIG_MOUNT_PATH,
+				}
+				volumeMounts := container.VolumeMounts
+				volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+				statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+				configVolume := core.Volume{
+					Name:         "custom-config",
+					VolumeSource: *elasticsearch.Spec.ConfigSource,
+				}
+
+				volumes := statefulSet.Spec.Template.Spec.Volumes
+				volumes = core_util.UpsertVolume(volumes, configVolume)
+				statefulSet.Spec.Template.Spec.Volumes = volumes
+				break
+			}
 		}
 	}
 	return statefulSet

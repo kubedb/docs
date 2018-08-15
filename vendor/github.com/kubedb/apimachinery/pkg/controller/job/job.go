@@ -25,7 +25,7 @@ func (c *Controller) completeJob(job *batch.Job) error {
 		return fmt.Errorf("failed to delete job: %s, reason: %s", job.Name, err)
 	}
 
-	jobType := job.Annotations[api.AnnotationJobType]
+	jobType := job.Labels[api.AnnotationJobType]
 	if jobType == api.JobTypeBackup {
 		return c.handleBackupJob(job)
 	} else if jobType == api.JobTypeRestore {

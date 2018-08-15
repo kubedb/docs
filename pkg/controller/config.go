@@ -8,17 +8,11 @@ import (
 	"github.com/kubedb/apimachinery/pkg/controller/dormantdatabase"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
 	esc "github.com/kubedb/elasticsearch/pkg/controller"
-	esDocker "github.com/kubedb/elasticsearch/pkg/docker"
 	mcc "github.com/kubedb/memcached/pkg/controller"
-	mcDocker "github.com/kubedb/memcached/pkg/docker"
 	mgc "github.com/kubedb/mongodb/pkg/controller"
-	mgDocker "github.com/kubedb/mongodb/pkg/docker"
 	myc "github.com/kubedb/mysql/pkg/controller"
-	myDocker "github.com/kubedb/mysql/pkg/docker"
 	pgc "github.com/kubedb/postgres/pkg/controller"
-	pgDocker "github.com/kubedb/postgres/pkg/docker"
 	rdc "github.com/kubedb/redis/pkg/controller"
-	rdDocker "github.com/kubedb/redis/pkg/docker"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -63,42 +57,12 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	ctrl.DrmnInformer = dormantdatabase.NewController(ctrl.Controller, nil, ctrl.Config, nil).InitInformer()
 	ctrl.SnapInformer, ctrl.JobInformer = snapc.NewController(ctrl.Controller, nil, ctrl.Config, nil).InitInformer()
 
-	ctrl.pgCtrl = pgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(),
-		c.PromClient, c.CronController, pgDocker.Docker{
-			ExporterTag: c.Docker.ExporterTag,
-			Registry:    c.Docker.Registry,
-		}, ctrl.Config,
-	)
-	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(),
-		c.PromClient, c.CronController, esDocker.Docker{
-			ExporterTag: c.Docker.ExporterTag,
-			Registry:    c.Docker.Registry,
-		}, ctrl.Config,
-	)
-	ctrl.mgCtrl = mgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(),
-		c.PromClient, c.CronController, mgDocker.Docker{
-			ExporterTag: c.Docker.ExporterTag,
-			Registry:    c.Docker.Registry,
-		}, ctrl.Config,
-	)
-	ctrl.myCtrl = myc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(),
-		c.PromClient, c.CronController, myDocker.Docker{
-			ExporterTag: c.Docker.ExporterTag,
-			Registry:    c.Docker.Registry,
-		}, ctrl.Config,
-	)
-	ctrl.rdCtrl = rdc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(),
-		c.PromClient, rdDocker.Docker{
-			ExporterTag: c.Docker.ExporterTag,
-			Registry:    c.Docker.Registry,
-		}, ctrl.Config,
-	)
-	ctrl.mcCtrl = mcc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(),
-		c.PromClient, mcDocker.Docker{
-			ExporterTag: c.Docker.ExporterTag,
-			Registry:    c.Docker.Registry,
-		}, ctrl.Config,
-	)
+	ctrl.pgCtrl = pgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
+	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
+	ctrl.mgCtrl = mgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
+	ctrl.myCtrl = myc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
+	ctrl.rdCtrl = rdc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, ctrl.Config)
+	ctrl.mcCtrl = mcc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, ctrl.Config)
 
 	if err := ctrl.Init(); err != nil {
 		return nil, err

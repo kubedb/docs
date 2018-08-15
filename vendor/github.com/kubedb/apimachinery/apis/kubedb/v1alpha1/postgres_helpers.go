@@ -2,9 +2,12 @@ package v1alpha1
 
 import (
 	"fmt"
-	"strings"
+	"reflect"
 
+	"github.com/appscode/go/log"
 	crdutils "github.com/appscode/kutil/apiextensions/v1beta1"
+	meta_util "github.com/appscode/kutil/meta"
+	"github.com/golang/glog"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
@@ -13,31 +16,15 @@ func (p Postgres) OffshootName() string {
 	return p.Name
 }
 
-func (p Postgres) OffshootLabels() map[string]string {
+func (p Postgres) OffshootSelectors() map[string]string {
 	return map[string]string{
 		LabelDatabaseName: p.Name,
 		LabelDatabaseKind: ResourceKindPostgres,
 	}
 }
 
-func (p Postgres) StatefulSetLabels() map[string]string {
-	labels := p.OffshootLabels()
-	for key, val := range p.Labels {
-		if !strings.HasPrefix(key, GenericKey+"/") && !strings.HasPrefix(key, PostgresKey+"/") {
-			labels[key] = val
-		}
-	}
-	return labels
-}
-
-func (p Postgres) StatefulSetAnnotations() map[string]string {
-	annotations := make(map[string]string)
-	for key, val := range p.Annotations {
-		if !strings.HasPrefix(key, GenericKey+"/") && !strings.HasPrefix(key, PostgresKey+"/") {
-			annotations[key] = val
-		}
-	}
-	return annotations
+func (p Postgres) OffshootLabels() map[string]string {
+	return filterTags(p.OffshootSelectors(), p.Labels)
 }
 
 var _ ResourceInfo = &Postgres{}
@@ -62,20 +49,32 @@ func (p Postgres) ServiceName() string {
 	return p.OffshootName()
 }
 
-func (p Postgres) ServiceMonitorName() string {
+type postgresStatsService struct {
+	*Postgres
+}
+
+func (p postgresStatsService) GetNamespace() string {
+	return p.Postgres.GetNamespace()
+}
+
+func (p postgresStatsService) ServiceName() string {
+	return p.OffshootName() + "-stats"
+}
+
+func (p postgresStatsService) ServiceMonitorName() string {
 	return fmt.Sprintf("kubedb-%s-%s", p.Namespace, p.Name)
 }
 
-func (p Postgres) Path() string {
+func (p postgresStatsService) Path() string {
 	return fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/metrics", p.Namespace, p.ResourcePlural(), p.Name)
 }
 
-func (p Postgres) Scheme() string {
+func (p postgresStatsService) Scheme() string {
 	return ""
 }
 
-func (p *Postgres) StatsAccessor() mona.StatsAccessor {
-	return p
+func (p Postgres) StatsService() mona.StatsAccessor {
+	return &postgresStatsService{&p}
 }
 
 func (p *Postgres) GetMonitoringVendor() string {
@@ -96,6 +95,7 @@ func (p Postgres) CustomResourceDefinition() *apiextensions.CustomResourceDefini
 		Singular:      ResourceSingularPostgres,
 		Kind:          ResourceKindPostgres,
 		ShortNames:    []string{ResourceCodePostgres},
+		Categories:    []string{"datastore", "kubedb", "appscode"},
 		ResourceScope: string(apiextensions.NamespaceScoped),
 		Versions: []apiextensions.CustomResourceDefinitionVersion{
 			{
@@ -129,4 +129,74 @@ func (p Postgres) CustomResourceDefinition() *apiextensions.CustomResourceDefini
 			},
 		},
 	}, setNameSchema)
+}
+
+func (p *Postgres) Migrate() {
+	if p == nil {
+		return
+	}
+	p.Spec.Migrate()
+}
+
+func (p *PostgresSpec) Migrate() {
+	if p == nil {
+		return
+	}
+	p.BackupSchedule.Migrate()
+	if len(p.NodeSelector) > 0 {
+		p.PodTemplate.Spec.NodeSelector = p.NodeSelector
+		p.NodeSelector = nil
+	}
+	if p.Resources != nil {
+		p.PodTemplate.Spec.Resources = *p.Resources
+		p.Resources = nil
+	}
+	if p.Affinity != nil {
+		p.PodTemplate.Spec.Affinity = p.Affinity
+		p.Affinity = nil
+	}
+	if len(p.SchedulerName) > 0 {
+		p.PodTemplate.Spec.SchedulerName = p.SchedulerName
+		p.SchedulerName = ""
+	}
+	if len(p.Tolerations) > 0 {
+		p.PodTemplate.Spec.Tolerations = p.Tolerations
+		p.Tolerations = nil
+	}
+	if len(p.ImagePullSecrets) > 0 {
+		p.PodTemplate.Spec.ImagePullSecrets = p.ImagePullSecrets
+		p.ImagePullSecrets = nil
+	}
+}
+
+func (p *Postgres) AlreadyObserved(other *Postgres) bool {
+	if p == nil {
+		return other == nil
+	}
+	if other == nil { // && d != nil
+		return false
+	}
+	if p == other {
+		return true
+	}
+
+	var match bool
+
+	if EnableStatusSubresource {
+		match = p.Status.ObservedGeneration >= p.Generation
+	} else {
+		match = meta_util.Equal(p.Spec, other.Spec)
+	}
+	if match {
+		match = reflect.DeepEqual(p.Labels, other.Labels)
+	}
+	if match {
+		match = reflect.DeepEqual(p.Annotations, other.Annotations)
+	}
+
+	if !match && bool(glog.V(log.LevelDebug)) {
+		diff := meta_util.Diff(other, p)
+		glog.V(log.LevelDebug).Infof("%s %s/%s has changed. Diff: %s", meta_util.GetKind(p), p.Namespace, p.Name, diff)
+	}
+	return match
 }

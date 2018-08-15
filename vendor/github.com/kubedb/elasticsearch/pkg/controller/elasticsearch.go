@@ -50,10 +50,8 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return err
 	}
 
-	if elasticsearch.Status.CreationTime == nil {
+	if elasticsearch.Status.Phase == "" {
 		es, err := kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-			t := metav1.Now()
-			in.CreationTime = &t
 			in.Phase = api.DatabasePhaseCreating
 			return in
 		}, api.EnableStatusSubresource)
@@ -146,6 +144,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 
 	es, err := kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.Phase = api.DatabasePhaseRunning
+		in.ObservedGeneration = elasticsearch.Generation
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {
@@ -163,6 +162,21 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 
 	// Ensure Schedule backup
 	c.ensureBackupScheduler(elasticsearch)
+
+	// ensure StatsService for desired monitoring
+	if _, err := c.ensureStatsService(elasticsearch); err != nil {
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				"Failed to manage monitoring system. Reason: %v",
+				err,
+			)
+		}
+		log.Errorln(err)
+		return nil
+	}
 
 	if err := c.manageMonitor(elasticsearch); err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
@@ -226,7 +240,6 @@ func (c *Controller) ensureElasticsearchNode(elasticsearch *api.Elasticsearch) (
 }
 
 func (c *Controller) ensureBackupScheduler(elasticsearch *api.Elasticsearch) {
-	kutildb.AssignTypeKind(elasticsearch)
 	// Setup Schedule backup
 	if elasticsearch.Spec.BackupSchedule != nil {
 		err := c.cronController.ScheduleBackup(elasticsearch, elasticsearch.ObjectMeta, elasticsearch.Spec.BackupSchedule)

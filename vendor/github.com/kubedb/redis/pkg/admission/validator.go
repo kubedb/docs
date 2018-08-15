@@ -19,7 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -116,10 +115,6 @@ func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 	return status
 }
 
-var (
-	redisVersions = sets.NewString("4", "4.0", "4.0.6")
-)
-
 // ValidateRedis checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
 func ValidateRedis(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, redis *api.Redis) error {
@@ -128,8 +123,8 @@ func ValidateRedis(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV
 	}
 
 	// Check Redis version validation
-	if !redisVersions.Has(string(redis.Spec.Version)) {
-		return fmt.Errorf(`KubeDB doesn't support Redis version: %s`, string(redis.Spec.Version))
+	if _, err := extClient.RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{}); err != nil {
+		return err
 	}
 
 	if redis.Spec.Replicas == nil || *redis.Spec.Replicas != 1 {

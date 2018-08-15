@@ -2,94 +2,94 @@ package v1alpha1
 
 import (
 	"fmt"
-	"strings"
+	"reflect"
 
+	"github.com/appscode/go/log"
 	crdutils "github.com/appscode/kutil/apiextensions/v1beta1"
+	meta_util "github.com/appscode/kutil/meta"
+	"github.com/golang/glog"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
-func (p Etcd) OffshootName() string {
-	return p.Name
+func (e Etcd) OffshootName() string {
+	return e.Name
 }
 
-func (p Etcd) OffshootLabels() map[string]string {
+func (e Etcd) OffshootSelectors() map[string]string {
 	return map[string]string{
-		LabelDatabaseName: p.Name,
+		LabelDatabaseName: e.Name,
 		LabelDatabaseKind: ResourceKindEtcd,
 	}
 }
 
-func (p Etcd) StatefulSetLabels() map[string]string {
-	labels := p.OffshootLabels()
-	for key, val := range p.Labels {
-		if !strings.HasPrefix(key, GenericKey+"/") && !strings.HasPrefix(key, EtcdKey+"/") {
-			labels[key] = val
-		}
-	}
-	return labels
+func (e Etcd) OffshootLabels() map[string]string {
+	return filterTags(e.OffshootSelectors(), e.Labels)
 }
 
-func (p Etcd) StatefulSetAnnotations() map[string]string {
-	annotations := make(map[string]string)
-	for key, val := range p.Annotations {
-		if !strings.HasPrefix(key, GenericKey+"/") && !strings.HasPrefix(key, EtcdKey+"/") {
-			annotations[key] = val
-		}
-	}
-	return annotations
-}
-
-func (p Etcd) ResourceShortCode() string {
+func (e Etcd) ResourceShortCode() string {
 	return ResourceCodeEtcd
 }
 
-func (p Etcd) ResourceKind() string {
+func (e Etcd) ResourceKind() string {
 	return ResourceKindEtcd
 }
 
-func (p Etcd) ResourceSingular() string {
+func (e Etcd) ResourceSingular() string {
 	return ResourceSingularEtcd
 }
 
-func (p Etcd) ResourcePlural() string {
+func (e Etcd) ResourcePlural() string {
 	return ResourcePluralEtcd
 }
 
-func (p Etcd) ServiceName() string {
-	return p.OffshootName()
+func (e Etcd) ServiceName() string {
+	return e.OffshootName()
 }
 
-func (p Etcd) ServiceMonitorName() string {
-	return fmt.Sprintf("kubedb-%s-%s", p.Namespace, p.Name)
+type etcdStatsService struct {
+	*Etcd
 }
 
-func (p Etcd) Path() string {
+func (e etcdStatsService) GetNamespace() string {
+	return e.Etcd.GetNamespace()
+}
+
+func (e etcdStatsService) ServiceName() string {
+	return e.OffshootName() + "-stats"
+}
+
+func (e etcdStatsService) ServiceMonitorName() string {
+	return fmt.Sprintf("kubedb-%s-%s", e.Namespace, e.Name)
+}
+
+func (e etcdStatsService) Path() string {
 	return fmt.Sprintf("/metrics")
 }
 
-func (p Etcd) Scheme() string {
+func (e etcdStatsService) Scheme() string {
 	return ""
 }
 
-func (p *Etcd) StatsAccessor() mona.StatsAccessor {
-	return p
+func (e Etcd) StatsService() mona.StatsAccessor {
+	return &etcdStatsService{&e}
 }
 
-func (m *Etcd) GetMonitoringVendor() string {
-	if m.Spec.Monitor != nil {
-		return m.Spec.Monitor.Agent.Vendor()
+func (e *Etcd) GetMonitoringVendor() string {
+	if e.Spec.Monitor != nil {
+		return e.Spec.Monitor.Agent.Vendor()
 	}
 	return ""
 }
 
-func (p Etcd) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
+func (e Etcd) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
 	return crdutils.NewCustomResourceDefinition(crdutils.Config{
 		Group:         SchemeGroupVersion.Group,
 		Plural:        ResourcePluralEtcd,
 		Singular:      ResourceSingularEtcd,
 		Kind:          ResourceKindEtcd,
 		ShortNames:    []string{ResourceCodeEtcd},
+		Categories:    []string{"datastore", "kubedb", "appscode"},
 		ResourceScope: string(apiextensions.NamespaceScoped),
 		Versions: []apiextensions.CustomResourceDefinitionVersion{
 			{
@@ -123,4 +123,49 @@ func (p Etcd) CustomResourceDefinition() *apiextensions.CustomResourceDefinition
 			},
 		},
 	}, setNameSchema)
+}
+
+func (e *Etcd) Migrate() {
+	if e == nil {
+		return
+	}
+	e.Spec.Migrate()
+}
+
+func (e *EtcdSpec) Migrate() {
+	if e == nil {
+		return
+	}
+}
+
+func (e *Etcd) AlreadyObserved(other *Etcd) bool {
+	if e == nil {
+		return other == nil
+	}
+	if other == nil { // && d != nil
+		return false
+	}
+	if e == other {
+		return true
+	}
+
+	var match bool
+
+	if EnableStatusSubresource {
+		match = e.Status.ObservedGeneration >= e.Generation
+	} else {
+		match = meta_util.Equal(e.Spec, other.Spec)
+	}
+	if match {
+		match = reflect.DeepEqual(e.Labels, other.Labels)
+	}
+	if match {
+		match = reflect.DeepEqual(e.Annotations, other.Annotations)
+	}
+
+	if !match && bool(glog.V(log.LevelDebug)) {
+		diff := meta_util.Diff(other, e)
+		glog.V(log.LevelDebug).Infof("%s %s/%s has changed. Diff: %s", meta_util.GetKind(e), e.Namespace, e.Name, diff)
+	}
+	return match
 }

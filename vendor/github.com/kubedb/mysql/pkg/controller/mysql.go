@@ -46,10 +46,8 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		return err
 	}
 
-	if mysql.Status.CreationTime == nil {
+	if mysql.Status.Phase == "" {
 		my, err := util.UpdateMySQLStatus(c.ExtClient, mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
-			t := metav1.Now()
-			in.CreationTime = &t
 			in.Phase = api.DatabasePhaseCreating
 			return in
 		}, api.EnableStatusSubresource)
@@ -141,8 +139,9 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		return nil
 	}
 
-	ms, err := util.UpdateMySQLStatus(c.ExtClient, mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
+	my, err := util.UpdateMySQLStatus(c.ExtClient, mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = api.DatabasePhaseRunning
+		in.ObservedGeneration = mysql.Generation
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {
@@ -156,10 +155,25 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		}
 		return err
 	}
-	mysql.Status = ms.Status
+	mysql.Status = my.Status
 
 	// Ensure Schedule backup
 	c.ensureBackupScheduler(mysql)
+
+	// ensure StatsService for desired monitoring
+	if _, err := c.ensureStatsService(mysql); err != nil {
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				"Failed to manage monitoring system. Reason: %v",
+				err,
+			)
+		}
+		log.Errorln(err)
+		return nil
+	}
 
 	if err := c.manageMonitor(mysql); err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql); rerr == nil {

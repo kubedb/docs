@@ -33,7 +33,7 @@ func (c *Controller) addOrUpdateMonitor(mysql *api.MySQL) (kutil.VerbType, error
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.CreateOrUpdate(mysql.StatsAccessor(), mysql.Spec.Monitor)
+	return agent.CreateOrUpdate(mysql.StatsService(), mysql.Spec.Monitor)
 }
 
 func (c *Controller) deleteMonitor(mysql *api.MySQL) (kutil.VerbType, error) {
@@ -41,11 +41,11 @@ func (c *Controller) deleteMonitor(mysql *api.MySQL) (kutil.VerbType, error) {
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.Delete(mysql.StatsAccessor())
+	return agent.Delete(mysql.StatsService())
 }
 
 func (c *Controller) getOldAgent(mysql *api.MySQL) mona.Agent {
-	service, err := c.Client.CoreV1().Services(mysql.Namespace).Get(mysql.StatsAccessor().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(mysql.Namespace).Get(mysql.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -54,7 +54,7 @@ func (c *Controller) getOldAgent(mysql *api.MySQL) mona.Agent {
 }
 
 func (c *Controller) setNewAgent(mysql *api.MySQL) error {
-	service, err := c.Client.CoreV1().Services(mysql.Namespace).Get(mysql.StatsAccessor().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(mysql.Namespace).Get(mysql.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -73,8 +73,8 @@ func (c *Controller) manageMonitor(mysql *api.MySQL) error {
 	if mysql.Spec.Monitor != nil {
 		if oldAgent != nil &&
 			oldAgent.GetType() != mysql.Spec.Monitor.Agent {
-			if _, err := oldAgent.Delete(mysql.StatsAccessor()); err != nil {
-				log.Errorf("error in deleting Prometheus agent. Reason: %s\n", err)
+			if _, err := oldAgent.Delete(mysql.StatsService()); err != nil {
+				log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 			}
 		}
 		if _, err := c.addOrUpdateMonitor(mysql); err != nil {
@@ -82,8 +82,8 @@ func (c *Controller) manageMonitor(mysql *api.MySQL) error {
 		}
 		return c.setNewAgent(mysql)
 	} else if oldAgent != nil {
-		if _, err := oldAgent.Delete(mysql.StatsAccessor()); err != nil {
-			log.Errorf("error in deleting Prometheus agent. Reason: %s\n", err)
+		if _, err := oldAgent.Delete(mysql.StatsService()); err != nil {
+			log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 		}
 	}
 	return nil

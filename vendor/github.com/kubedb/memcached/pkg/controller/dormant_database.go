@@ -17,11 +17,11 @@ func (c *Controller) WaitUntilPaused(drmn *api.DormantDatabase) error {
 		},
 	}
 
-	if err := core_util.WaitUntilPodDeletedBySelector(c.Client, db.Namespace, metav1.SetAsLabelSelector(db.DeploymentLabels())); err != nil {
+	if err := core_util.WaitUntilPodDeletedBySelector(c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootSelectors())); err != nil {
 		return err
 	}
 
-	if err := core_util.WaitUntilServiceDeletedBySelector(c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootLabels())); err != nil {
+	if err := core_util.WaitUntilServiceDeletedBySelector(c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootSelectors())); err != nil {
 		return err
 	}
 

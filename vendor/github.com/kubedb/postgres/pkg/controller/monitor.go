@@ -33,7 +33,7 @@ func (c *Controller) addOrUpdateMonitor(postgres *api.Postgres) (kutil.VerbType,
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.CreateOrUpdate(postgres.StatsAccessor(), postgres.Spec.Monitor)
+	return agent.CreateOrUpdate(postgres.StatsService(), postgres.Spec.Monitor)
 }
 
 func (c *Controller) deleteMonitor(postgres *api.Postgres) (kutil.VerbType, error) {
@@ -41,11 +41,11 @@ func (c *Controller) deleteMonitor(postgres *api.Postgres) (kutil.VerbType, erro
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.Delete(postgres.StatsAccessor())
+	return agent.Delete(postgres.StatsService())
 }
 
 func (c *Controller) getOldAgent(postgres *api.Postgres) mona.Agent {
-	service, err := c.Client.CoreV1().Services(postgres.Namespace).Get(postgres.StatsAccessor().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(postgres.Namespace).Get(postgres.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -54,7 +54,7 @@ func (c *Controller) getOldAgent(postgres *api.Postgres) mona.Agent {
 }
 
 func (c *Controller) setNewAgent(postgres *api.Postgres) error {
-	service, err := c.Client.CoreV1().Services(postgres.Namespace).Get(postgres.StatsAccessor().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(postgres.Namespace).Get(postgres.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (c *Controller) manageMonitor(postgres *api.Postgres) error {
 	if postgres.Spec.Monitor != nil {
 		if oldAgent != nil &&
 			oldAgent.GetType() != postgres.Spec.Monitor.Agent {
-			if _, err := oldAgent.Delete(postgres.StatsAccessor()); err != nil {
+			if _, err := oldAgent.Delete(postgres.StatsService()); err != nil {
 				log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 			}
 		}
@@ -82,7 +82,7 @@ func (c *Controller) manageMonitor(postgres *api.Postgres) error {
 		}
 		return c.setNewAgent(postgres)
 	} else if oldAgent != nil {
-		if _, err := oldAgent.Delete(postgres.StatsAccessor()); err != nil {
+		if _, err := oldAgent.Delete(postgres.StatsService()); err != nil {
 			log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 		}
 	}

@@ -9,6 +9,12 @@ import (
 	"fmt"
 )
 
+// Select creates a select Builder
+func Select(cols ...string) *Builder {
+	builder := &Builder{cond: NewCond()}
+	return builder.Select(cols...)
+}
+
 func (b *Builder) selectWriteTo(w Writer) error {
 	if len(b.tableName) <= 0 {
 		return errors.New("no table indicated")
@@ -34,8 +40,21 @@ func (b *Builder) selectWriteTo(w Writer) error {
 		}
 	}
 
-	if _, err := fmt.Fprint(w, " FROM ", b.tableName); err != nil {
-		return err
+	if b.subQuery == nil {
+		if _, err := fmt.Fprint(w, " FROM ", b.tableName); err != nil {
+			return err
+		}
+	} else {
+		switch b.subQuery.optype {
+		case selectType, unionType:
+			fmt.Fprint(w, " FROM (")
+			if err := b.subQuery.WriteTo(w); err != nil {
+				return err
+			}
+			fmt.Fprintf(w, ") AS %v", b.tableName)
+		default:
+			return errors.New("SubQuery is limited in SELECT and UNION")
+		}
 	}
 
 	for _, v := range b.joins {

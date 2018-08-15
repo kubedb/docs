@@ -61,16 +61,16 @@ func (c *Controller) ensureDeployment(memcached *api.Memcached) (kutil.VerbType,
 
 func (c *Controller) checkDeployment(memcached *api.Memcached) error {
 	// Deployment for Memcached database
-	dbName := memcached.OffshootName()
-	deployment, err := c.Client.AppsV1().Deployments(memcached.Namespace).Get(dbName, metav1.GetOptions{})
+	deployment, err := c.Client.AppsV1().Deployments(memcached.Namespace).Get(memcached.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
 		}
 		return err
 	}
-	if deployment.Labels[api.LabelDatabaseKind] != api.ResourceKindMemcached || deployment.Labels[api.LabelDatabaseName] != dbName {
-		return fmt.Errorf(`intended deployment "%v" already exists`, dbName)
+	if deployment.Labels[api.LabelDatabaseKind] != api.ResourceKindMemcached ||
+		deployment.Labels[api.LabelDatabaseName] != memcached.Name {
+		return fmt.Errorf(`intended deployment "%v" already exists`, memcached.OffshootName())
 	}
 	return nil
 }
@@ -86,20 +86,27 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 		return nil, kutil.VerbUnchanged, rerr
 	}
 
+	memcachedVersion, err := c.ExtClient.MemcachedVersions().Get(string(memcached.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return nil, kutil.VerbUnchanged, err
+	}
+
 	return app_util.CreateOrPatchDeployment(c.Client, deploymentMeta, func(in *apps.Deployment) *apps.Deployment {
+		in.Labels = memcached.OffshootLabels()
+		in.Annotations = memcached.Spec.PodTemplate.Controller.Annotations
 		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
-		in.Labels = core_util.UpsertMap(in.Labels, memcached.DeploymentLabels())
-		in.Annotations = core_util.UpsertMap(in.Annotations, memcached.DeploymentAnnotations())
 
 		in.Spec.Replicas = memcached.Spec.Replicas
 		in.Spec.Template.Labels = in.Labels
 		in.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: in.Labels,
+			MatchLabels: memcached.OffshootSelectors(),
 		}
-
+		in.Spec.Template.Labels = memcached.OffshootSelectors()
+		in.Spec.Template.Annotations = memcached.Spec.PodTemplate.Annotations
+		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, memcached.Spec.PodTemplate.Spec.InitContainers)
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 			Name:            api.ResourceSingularMemcached,
-			Image:           c.docker.GetImageWithTag(memcached),
+			Image:           memcachedVersion.Spec.DB.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
 				{
@@ -118,7 +125,7 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 					fmt.Sprintf("--address=:%d", memcached.Spec.Monitor.Prometheus.Port),
 					fmt.Sprintf("--enable-analytics=%v", c.EnableAnalytics),
 				}, c.LoggerOptions.ToFlags()...),
-				Image:           c.docker.GetOperatorImageWithTag(memcached),
+				Image:           memcachedVersion.Spec.Exporter.Image,
 				ImagePullPolicy: core.PullIfNotPresent,
 				Ports: []core.ContainerPort{
 					{
@@ -129,14 +136,19 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 				},
 			})
 		}
-
-		in.Spec.Template.Spec.NodeSelector = memcached.Spec.NodeSelector
-		in.Spec.Template.Spec.Affinity = memcached.Spec.Affinity
-		in.Spec.Template.Spec.SchedulerName = memcached.Spec.SchedulerName
-		in.Spec.Template.Spec.Tolerations = memcached.Spec.Tolerations
-		in.Spec.Template.Spec.ImagePullSecrets = memcached.Spec.ImagePullSecrets
 		in = upsertUserEnv(in, memcached)
 		in = upsertCustomConfig(in, memcached)
+
+		in.Spec.Template.Spec.NodeSelector = memcached.Spec.PodTemplate.Spec.NodeSelector
+		in.Spec.Template.Spec.Affinity = memcached.Spec.PodTemplate.Spec.Affinity
+		if memcached.Spec.PodTemplate.Spec.SchedulerName != "" {
+			in.Spec.Template.Spec.SchedulerName = memcached.Spec.PodTemplate.Spec.SchedulerName
+		}
+		in.Spec.Template.Spec.Tolerations = memcached.Spec.PodTemplate.Spec.Tolerations
+		in.Spec.Template.Spec.ImagePullSecrets = memcached.Spec.PodTemplate.Spec.ImagePullSecrets
+		in.Spec.Template.Spec.PriorityClassName = memcached.Spec.PodTemplate.Spec.PriorityClassName
+		in.Spec.Template.Spec.Priority = memcached.Spec.PodTemplate.Spec.Priority
+		in.Spec.Template.Spec.SecurityContext = memcached.Spec.PodTemplate.Spec.SecurityContext
 		return in
 	})
 }

@@ -67,7 +67,8 @@ func (c *Controller) checkStatefulSet(mongodb *api.MongoDB) error {
 		return err
 	}
 
-	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindMongoDB {
+	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindMongoDB ||
+		statefulSet.Labels[api.LabelDatabaseName] != mongodb.Name {
 		return fmt.Errorf(`intended statefulSet "%v" already exists`, mongodb.OffshootName())
 	}
 
@@ -85,33 +86,42 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 		return nil, kutil.VerbUnchanged, rerr
 	}
 
+	mongodbVersion, err := c.ExtClient.MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return nil, kutil.VerbUnchanged, err
+	}
+
 	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
+		in.Labels = mongodb.OffshootLabels()
+		in.Annotations = mongodb.Spec.PodTemplate.Controller.Annotations
 		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
-		in.Labels = core_util.UpsertMap(in.Labels, mongodb.StatefulSetLabels())
-		in.Annotations = core_util.UpsertMap(in.Annotations, mongodb.StatefulSetAnnotations())
 
 		in.Spec.Replicas = types.Int32P(1)
 		in.Spec.ServiceName = c.GoverningService
-		in.Spec.Template.Labels = in.Labels
 		in.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: in.Labels,
+			MatchLabels: mongodb.OffshootSelectors(),
 		}
-
-		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
-			Name:  api.ResourceSingularMongoDB,
-			Image: c.docker.GetImageWithTag(mongodb),
-			Ports: []core.ContainerPort{
-				{
-					Name:          "db",
-					ContainerPort: 27017,
-					Protocol:      core.ProtocolTCP,
+		in.Spec.Template.Labels = mongodb.OffshootSelectors()
+		in.Spec.Template.Annotations = mongodb.Spec.PodTemplate.Annotations
+		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, mongodb.Spec.PodTemplate.Spec.InitContainers)
+		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+			in.Spec.Template.Spec.Containers,
+			core.Container{
+				Name:  api.ResourceSingularMongoDB,
+				Image: mongodbVersion.Spec.DB.Image,
+				Ports: []core.ContainerPort{
+					{
+						Name:          "db",
+						ContainerPort: 27017,
+						Protocol:      core.ProtocolTCP,
+					},
 				},
+				Args: []string{
+					"--auth",
+				},
+				Resources: mongodb.Spec.PodTemplate.Spec.Resources,
 			},
-			Args: []string{
-				"--auth",
-			},
-			Resources: mongodb.Spec.PodTemplate.Spec.Resources,
-		})
+		)
 		if mongodb.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
@@ -120,7 +130,7 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 					fmt.Sprintf("--address=:%d", mongodb.Spec.Monitor.Prometheus.Port),
 					fmt.Sprintf("--enable-analytics=%v", c.EnableAnalytics),
 				}, c.LoggerOptions.ToFlags()...),
-				Image: c.docker.GetOperatorImageWithTag(mongodb),
+				Image: mongodbVersion.Spec.Exporter.Image,
 				Ports: []core.ContainerPort{
 					{
 						Name:          api.PrometheusExporterPortName,
@@ -156,13 +166,16 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 			in = upsertInitScript(in, mongodb.Spec.Init.ScriptSource.VolumeSource)
 		}
 
-		in.Spec.Template.Spec.NodeSelector = mongodb.Spec.NodeSelector
-		in.Spec.Template.Spec.Affinity = mongodb.Spec.Affinity
-		in.Spec.Template.Spec.Tolerations = mongodb.Spec.Tolerations
-		in.Spec.Template.Spec.ImagePullSecrets = mongodb.Spec.ImagePullSecrets
-		if mongodb.Spec.SchedulerName != "" {
-			in.Spec.Template.Spec.SchedulerName = mongodb.Spec.SchedulerName
+		in.Spec.Template.Spec.NodeSelector = mongodb.Spec.PodTemplate.Spec.NodeSelector
+		in.Spec.Template.Spec.Affinity = mongodb.Spec.PodTemplate.Spec.Affinity
+		if mongodb.Spec.PodTemplate.Spec.SchedulerName != "" {
+			in.Spec.Template.Spec.SchedulerName = mongodb.Spec.PodTemplate.Spec.SchedulerName
 		}
+		in.Spec.Template.Spec.Tolerations = mongodb.Spec.PodTemplate.Spec.Tolerations
+		in.Spec.Template.Spec.ImagePullSecrets = mongodb.Spec.PodTemplate.Spec.ImagePullSecrets
+		in.Spec.Template.Spec.PriorityClassName = mongodb.Spec.PodTemplate.Spec.PriorityClassName
+		in.Spec.Template.Spec.Priority = mongodb.Spec.PodTemplate.Spec.Priority
+		in.Spec.Template.Spec.SecurityContext = mongodb.Spec.PodTemplate.Spec.SecurityContext
 
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 		return in

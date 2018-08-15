@@ -8,7 +8,7 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	kutildb "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	util "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	validator "github.com/kubedb/postgres/pkg/admission"
 	core "k8s.io/api/core/v1"
@@ -34,6 +34,20 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		return nil // user error so just record error and don't retry.
 	}
 
+	version, err := c.ExtClient.PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
+			c.recorder.Event(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonInvalid,
+				err.Error(),
+			)
+		}
+		log.Error(err)
+		return nil
+	}
+
 	// Delete Matching DormantDatabase if exists any
 	if err := c.deleteMatchingDormantDatabase(postgres); err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
@@ -49,10 +63,8 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		return err
 	}
 
-	if postgres.Status.CreationTime == nil {
-		pg, err := kutildb.UpdatePostgresStatus(c.ExtClient, postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
-			t := metav1.Now()
-			in.CreationTime = &t
+	if postgres.Status.Phase == "" {
+		pg, err := util.UpdatePostgresStatus(c.ExtClient, postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
 		}, api.EnableStatusSubresource)
@@ -93,7 +105,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	// ensure database StatefulSet
-	vt2, err := c.ensurePostgresNode(postgres)
+	vt2, err := c.ensurePostgresNode(postgres, version)
 	if err != nil {
 		return err
 	}
@@ -144,8 +156,9 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		return nil
 	}
 
-	pg, err := kutildb.UpdatePostgresStatus(c.ExtClient, postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
+	pg, err := util.UpdatePostgresStatus(c.ExtClient, postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseRunning
+		in.ObservedGeneration = postgres.Generation
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {
@@ -164,6 +177,21 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	// Ensure Schedule backup
 	c.ensureBackupScheduler(postgres)
 
+	// ensure StatsService for desired monitoring
+	if _, err := c.ensureStatsService(postgres); err != nil {
+		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				"Failed to manage monitoring system. Reason: %v",
+				err,
+			)
+		}
+		log.Errorln(err)
+		return nil
+	}
+
 	if err := c.manageMonitor(postgres); err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
 			c.recorder.Eventf(
@@ -180,7 +208,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	return nil
 }
 
-func (c *Controller) ensurePostgresNode(postgres *api.Postgres) (kutil.VerbType, error) {
+func (c *Controller) ensurePostgresNode(postgres *api.Postgres, postgresVersion *api.PostgresVersion) (kutil.VerbType, error) {
 	var err error
 
 	if err = c.ensureDatabaseSecret(postgres); err != nil {
@@ -194,7 +222,7 @@ func (c *Controller) ensurePostgresNode(postgres *api.Postgres) (kutil.VerbType,
 		}
 	}
 
-	vt, err := c.ensureCombinedNode(postgres)
+	vt, err := c.ensureCombinedNode(postgres, postgresVersion)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -203,7 +231,6 @@ func (c *Controller) ensurePostgresNode(postgres *api.Postgres) (kutil.VerbType,
 }
 
 func (c *Controller) ensureBackupScheduler(postgres *api.Postgres) {
-	kutildb.AssignTypeKind(postgres)
 	// Setup Schedule backup
 	if postgres.Spec.BackupSchedule != nil {
 		err := c.cronController.ScheduleBackup(postgres, postgres.ObjectMeta, postgres.Spec.BackupSchedule)
@@ -225,7 +252,7 @@ func (c *Controller) ensureBackupScheduler(postgres *api.Postgres) {
 }
 
 func (c *Controller) initialize(postgres *api.Postgres) error {
-	pg, err := kutildb.UpdatePostgresStatus(c.ExtClient, postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
+	pg, err := util.UpdatePostgresStatus(c.ExtClient, postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseInitializing
 		return in
 	}, api.EnableStatusSubresource)
@@ -328,7 +355,7 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 	if err != nil {
 		return err
 	}
-	_, err = kutildb.UpdatePostgresStatus(c.ExtClient, postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
+	_, err = util.UpdatePostgresStatus(c.ExtClient, postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = phase
 		in.Reason = reason
 		return in
@@ -342,7 +369,7 @@ func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation
 		return err
 	}
 
-	_, _, err = kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
+	_, _, err = util.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
 		in.Annotations = core_util.UpsertMap(postgres.Annotations, annotation)
 		return in
 	})

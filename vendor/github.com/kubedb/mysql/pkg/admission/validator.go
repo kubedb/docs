@@ -19,7 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -125,10 +124,6 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 	return status
 }
 
-var (
-	mysqlVersions = sets.NewString("8.0", "8", "5.7", "5 ")
-)
-
 // ValidateMySQL checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
 func ValidateMySQL(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, mysql *api.MySQL) error {
@@ -136,9 +131,8 @@ func ValidateMySQL(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV
 		return fmt.Errorf(`object 'Version' is missing in '%v'`, mysql.Spec)
 	}
 
-	// Check MySQL version validation
-	if !mysqlVersions.Has(string(mysql.Spec.Version)) {
-		return fmt.Errorf(`KubeDB doesn't support MySQL version: %s`, string(mysql.Spec.Version))
+	if _, err := extClient.MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{}); err != nil {
+		return err
 	}
 
 	if mysql.Spec.Replicas == nil || *mysql.Spec.Replicas != 1 {

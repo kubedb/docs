@@ -19,7 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -129,10 +128,6 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 	return status
 }
 
-var (
-	elasticVersions = sets.NewString("5.6", "5.6.4", "6.2", "6.2.4")
-)
-
 // ValidateElasticsearch checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
 func ValidateElasticsearch(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, elasticsearch *api.Elasticsearch) error {
@@ -140,9 +135,8 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient kubedbv1alpha1
 		return fmt.Errorf(`object 'Version' is missing in '%v'`, elasticsearch.Spec)
 	}
 
-	// check Elasticsearch version validation
-	if !elasticVersions.Has(string(elasticsearch.Spec.Version)) {
-		return fmt.Errorf(`KubeDB doesn't support Elasticsearch version: %s`, string(elasticsearch.Spec.Version))
+	if _, err := extClient.ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{}); err != nil {
+		return err
 	}
 
 	topology := elasticsearch.Spec.Topology

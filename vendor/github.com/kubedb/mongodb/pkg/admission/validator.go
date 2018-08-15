@@ -19,7 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -123,10 +122,6 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 	return status
 }
 
-var (
-	mongodbVersions = sets.NewString("3.4", "3.6")
-)
-
 // ValidateMongoDB checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
 func ValidateMongoDB(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, mongodb *api.MongoDB) error {
@@ -134,9 +129,8 @@ func ValidateMongoDB(client kubernetes.Interface, extClient kubedbv1alpha1.Kubed
 		return fmt.Errorf(`object 'Version' is missing in '%v'`, mongodb.Spec)
 	}
 
-	// Check MongoDB version validation
-	if !mongodbVersions.Has(string(mongodb.Spec.Version)) {
-		return fmt.Errorf(`KubeDB doesn't support MongoDB version: %s`, string(mongodb.Spec.Version))
+	if _, err := extClient.MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{}); err != nil {
+		return err
 	}
 
 	if mongodb.Spec.Replicas == nil || *mongodb.Spec.Replicas != 1 {

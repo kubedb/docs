@@ -33,7 +33,7 @@ func (c *Controller) addOrUpdateMonitor(elasticsearch *api.Elasticsearch) (kutil
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.CreateOrUpdate(elasticsearch.StatsAccessor(), elasticsearch.Spec.Monitor)
+	return agent.CreateOrUpdate(elasticsearch.StatsService(), elasticsearch.Spec.Monitor)
 }
 
 func (c *Controller) deleteMonitor(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
@@ -41,11 +41,11 @@ func (c *Controller) deleteMonitor(elasticsearch *api.Elasticsearch) (kutil.Verb
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.Delete(elasticsearch.StatsAccessor())
+	return agent.Delete(elasticsearch.StatsService())
 }
 
 func (c *Controller) getOldAgent(elasticsearch *api.Elasticsearch) mona.Agent {
-	service, err := c.Client.CoreV1().Services(elasticsearch.Namespace).Get(elasticsearch.StatsAccessor().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(elasticsearch.Namespace).Get(elasticsearch.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -54,7 +54,7 @@ func (c *Controller) getOldAgent(elasticsearch *api.Elasticsearch) mona.Agent {
 }
 
 func (c *Controller) setNewAgent(elasticsearch *api.Elasticsearch) error {
-	service, err := c.Client.CoreV1().Services(elasticsearch.Namespace).Get(elasticsearch.StatsAccessor().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(elasticsearch.Namespace).Get(elasticsearch.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (c *Controller) manageMonitor(elasticsearch *api.Elasticsearch) error {
 	if elasticsearch.Spec.Monitor != nil {
 		if oldAgent != nil &&
 			oldAgent.GetType() != elasticsearch.Spec.Monitor.Agent {
-			if _, err := oldAgent.Delete(elasticsearch.StatsAccessor()); err != nil {
+			if _, err := oldAgent.Delete(elasticsearch.StatsService()); err != nil {
 				log.Errorln("error in deleting Prometheus agent. Reason: %v", err.Error())
 			}
 		}
@@ -82,7 +82,7 @@ func (c *Controller) manageMonitor(elasticsearch *api.Elasticsearch) error {
 		}
 		return c.setNewAgent(elasticsearch)
 	} else if oldAgent != nil {
-		if _, err := oldAgent.Delete(elasticsearch.StatsAccessor()); err != nil {
+		if _, err := oldAgent.Delete(elasticsearch.StatsService()); err != nil {
 			log.Errorln("error in deleting Prometheus agent. Reason: %v", err.Error())
 		}
 	}

@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -104,7 +105,8 @@ func (c *Controller) checkService(postgres *api.Postgres, name string) error {
 		return err
 	}
 
-	if service.Spec.Selector[api.LabelDatabaseName] != postgres.OffshootName() {
+	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindPostgres ||
+		service.Labels[api.LabelDatabaseName] != postgres.Name {
 		return fmt.Errorf(`intended service "%v" already exists`, name)
 	}
 
@@ -125,9 +127,25 @@ func (c *Controller) createService(postgres *api.Postgres) (kutil.VerbType, erro
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
 		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
 		in.Labels = postgres.OffshootLabels()
-		in.Spec.Selector = postgres.OffshootLabels()
-		in.Spec.Ports = upsertServicePort(in, postgres)
+		in.Annotations = postgres.Spec.ServiceTemplate.Annotations
+
+		in.Spec.Selector = postgres.OffshootSelectors()
 		in.Spec.Selector[NodeRole] = "primary"
+		in.Spec.Ports = upsertServicePort(in, postgres)
+
+		if postgres.Spec.ServiceTemplate.Spec.ClusterIP != "" {
+			in.Spec.ClusterIP = postgres.Spec.ServiceTemplate.Spec.ClusterIP
+		}
+		if postgres.Spec.ServiceTemplate.Spec.Type != "" {
+			in.Spec.Type = postgres.Spec.ServiceTemplate.Spec.Type
+		}
+		in.Spec.ExternalIPs = postgres.Spec.ServiceTemplate.Spec.ExternalIPs
+		in.Spec.LoadBalancerIP = postgres.Spec.ServiceTemplate.Spec.LoadBalancerIP
+		in.Spec.LoadBalancerSourceRanges = postgres.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
+		in.Spec.ExternalTrafficPolicy = postgres.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
+		if postgres.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
+			in.Spec.HealthCheckNodePort = postgres.Spec.ServiceTemplate.Spec.HealthCheckNodePort
+		}
 		return in
 	})
 	return ok, err
@@ -140,14 +158,6 @@ func upsertServicePort(service *core.Service, postgres *api.Postgres) []core.Ser
 			Port:       PostgresPort,
 			TargetPort: intstr.FromString(PostgresPortName),
 		},
-	}
-	if postgres.GetMonitoringVendor() == mona.VendorPrometheus {
-		desiredPorts = append(desiredPorts, core.ServicePort{
-			Name:       api.PrometheusExporterPortName,
-			Protocol:   core.ProtocolTCP,
-			Port:       postgres.Spec.Monitor.Prometheus.Port,
-			TargetPort: intstr.FromString(api.PrometheusExporterPortName),
-		})
 	}
 	return core_util.MergeServicePorts(service.Spec.Ports, desiredPorts)
 }
@@ -165,10 +175,67 @@ func (c *Controller) createReplicasService(postgres *api.Postgres) (kutil.VerbTy
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
 		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
-		in.Labels = postgres.OffshootLabels()
-		in.Spec.Selector = postgres.OffshootLabels()
+		in.Labels = postgres.OffshootSelectors()
+		in.Spec.Selector = postgres.OffshootSelectors()
 		in.Spec.Ports = upsertServicePort(in, postgres)
 		return in
 	})
 	return ok, err
+}
+
+func (c *Controller) ensureStatsService(postgres *api.Postgres) (kutil.VerbType, error) {
+	// return if monitoring is not prometheus
+	if postgres.GetMonitoringVendor() != mona.VendorPrometheus {
+		log.Warningln("postgres.spec.monitor.agent is not coreos-operator or builtin.")
+		return kutil.VerbUnchanged, nil
+	}
+
+	// Check if statsService name exists
+	if err := c.checkService(postgres, postgres.StatsService().ServiceName()); err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres)
+	if rerr != nil {
+		return kutil.VerbUnchanged, rerr
+	}
+
+	// reconcile stats service
+	meta := metav1.ObjectMeta{
+		Name:      postgres.StatsService().ServiceName(),
+		Namespace: postgres.Namespace,
+	}
+	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+		in.Labels = postgres.OffshootLabels()
+		in.Spec.Selector = postgres.OffshootSelectors()
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       api.PrometheusExporterPortName,
+				Protocol:   core.ProtocolTCP,
+				Port:       postgres.Spec.Monitor.Prometheus.Port,
+				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+			},
+		})
+		return in
+	})
+	if err != nil {
+		c.recorder.Eventf(
+			ref,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			"Failed to reconcile stats service. Reason: %v",
+			err,
+		)
+		return kutil.VerbUnchanged, err
+	} else if vt != kutil.VerbUnchanged {
+		c.recorder.Eventf(
+			ref,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %s stats service",
+			vt,
+		)
+	}
+	return vt, nil
 }

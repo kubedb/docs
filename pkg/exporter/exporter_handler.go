@@ -132,7 +132,7 @@ func ExportMetrics(w http.ResponseWriter, r *http.Request) {
 					Host:   fmt.Sprintf("%s:%d", podIP, 9200),
 				}
 				reg.MustRegister(ese.NewClusterHealth(logger, httpClient, u))
-				reg.MustRegister(ese.NewNodes(logger, httpClient, u, esAllNodes))
+				reg.MustRegister(ese.NewNodes(logger, httpClient, u, esAllNodes, ""))
 			}
 		}
 		promhttp.HandlerFor(reg, promhttp.HandlerOpts{}).ServeHTTP(w, r)

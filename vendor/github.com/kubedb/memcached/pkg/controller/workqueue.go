@@ -3,7 +3,6 @@ package controller
 import (
 	"github.com/appscode/go/log"
 	core_util "github.com/appscode/kutil/core/v1"
-	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/queue"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
@@ -16,17 +15,8 @@ func (c *Controller) initWatcher() {
 	c.mcInformer.AddEventHandler(queue.NewEventHandler(c.mcQueue.GetQueue(), func(old interface{}, new interface{}) bool {
 		oldObj := old.(*api.Memcached)
 		newObj := new.(*api.Memcached)
-		return newObj.DeletionTimestamp != nil || !memcachedEqual(oldObj, newObj)
+		return newObj.DeletionTimestamp != nil || !newObj.AlreadyObserved(oldObj)
 	}))
-}
-
-func memcachedEqual(old, new *api.Memcached) bool {
-	if !meta_util.Equal(old.Spec, new.Spec) {
-		diff := meta_util.Diff(old.Spec, new.Spec)
-		log.Infoln("Memcached %s/%s has changed. Diff: %s", new.Namespace, new.Name, diff)
-		return false
-	}
-	return true
 }
 
 func (c *Controller) runMemcached(key string) error {
@@ -38,14 +28,13 @@ func (c *Controller) runMemcached(key string) error {
 	}
 
 	if !exists {
-		log.Debugf("Memcached %s does not exist anymore\n", key)
+		log.Debugf("Memcached %s does not exist anymore", key)
 	} else {
 		// Note that you also have to check the uid if you have a local controlled resource, which
 		// is dependent on the actual instance, to detect that a Memcached was recreated with the same name
 		memcached := obj.(*api.Memcached).DeepCopy()
 		if memcached.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(memcached.ObjectMeta, api.GenericKey) {
-				util.AssignTypeKind(memcached)
 				if err := c.pause(memcached); err != nil {
 					log.Errorln(err)
 					return err
@@ -64,7 +53,6 @@ func (c *Controller) runMemcached(key string) error {
 			if err != nil {
 				return err
 			}
-			util.AssignTypeKind(memcached)
 			if err := c.create(memcached); err != nil {
 				log.Errorln(err)
 				c.pushFailureEvent(memcached, err.Error())

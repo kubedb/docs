@@ -33,7 +33,7 @@ func (c *Controller) addOrUpdateMonitor(redis *api.Redis) (kutil.VerbType, error
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.CreateOrUpdate(redis.StatsAccessor(), redis.Spec.Monitor)
+	return agent.CreateOrUpdate(redis.StatsService(), redis.Spec.Monitor)
 }
 
 func (c *Controller) deleteMonitor(redis *api.Redis) (kutil.VerbType, error) {
@@ -41,11 +41,11 @@ func (c *Controller) deleteMonitor(redis *api.Redis) (kutil.VerbType, error) {
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.Delete(redis.StatsAccessor())
+	return agent.Delete(redis.StatsService())
 }
 
 func (c *Controller) getOldAgent(redis *api.Redis) mona.Agent {
-	service, err := c.Client.CoreV1().Services(redis.Namespace).Get(redis.StatsAccessor().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(redis.Namespace).Get(redis.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -54,7 +54,7 @@ func (c *Controller) getOldAgent(redis *api.Redis) mona.Agent {
 }
 
 func (c *Controller) setNewAgent(redis *api.Redis) error {
-	service, err := c.Client.CoreV1().Services(redis.Namespace).Get(redis.StatsAccessor().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(redis.Namespace).Get(redis.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -71,9 +71,8 @@ func (c *Controller) setNewAgent(redis *api.Redis) error {
 func (c *Controller) manageMonitor(redis *api.Redis) error {
 	oldAgent := c.getOldAgent(redis)
 	if redis.Spec.Monitor != nil {
-		if oldAgent != nil &&
-			oldAgent.GetType() != redis.Spec.Monitor.Agent {
-			if _, err := oldAgent.Delete(redis.StatsAccessor()); err != nil {
+		if oldAgent != nil && oldAgent.GetType() != redis.Spec.Monitor.Agent {
+			if _, err := oldAgent.Delete(redis.StatsService()); err != nil {
 				log.Error("error in deleting Prometheus agent:", err)
 			}
 		}
@@ -82,7 +81,7 @@ func (c *Controller) manageMonitor(redis *api.Redis) error {
 		}
 		return c.setNewAgent(redis)
 	} else if oldAgent != nil {
-		if _, err := oldAgent.Delete(redis.StatsAccessor()); err != nil {
+		if _, err := oldAgent.Delete(redis.StatsService()); err != nil {
 			log.Error("error in deleting Prometheus agent:", err)
 		}
 	}
