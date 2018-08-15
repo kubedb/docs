@@ -67,8 +67,9 @@ func (c *Controller) checkStatefulSet(mysql *api.MySQL) error {
 		return err
 	}
 
-	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindMySQL {
-		return fmt.Errorf(`Intended statefulSet "%v" already exists`, mysql.OffshootName())
+	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindMySQL ||
+		statefulSet.Labels[api.LabelDatabaseName] != mysql.Name {
+		return fmt.Errorf(`intended statefulSet "%v" already exists`, mysql.OffshootName())
 	}
 
 	return nil
@@ -85,24 +86,51 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		return nil, kutil.VerbUnchanged, rerr
 	}
 
+	mysqlVersion, err := c.ExtClient.MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return nil, kutil.VerbUnchanged, rerr
+	}
+
 	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
+		in.Labels = mysql.OffshootLabels()
+		in.Annotations = mysql.Spec.PodTemplate.Controller.Annotations
 		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
-		in.Labels = core_util.UpsertMap(in.Labels, mysql.StatefulSetLabels())
-		in.Annotations = core_util.UpsertMap(in.Annotations, mysql.StatefulSetAnnotations())
 
 		in.Spec.Replicas = types.Int32P(1)
 		in.Spec.ServiceName = c.GoverningService
-		in.Spec.Template.Labels = in.Labels
 		in.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: in.Labels,
+			MatchLabels: mysql.OffshootSelectors(),
 		}
-
-		in = upsertInitContainer(in)
-
+		in.Spec.Template.Labels = mysql.OffshootSelectors()
+		in.Spec.Template.Annotations = mysql.Spec.PodTemplate.Annotations
+		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
+			in.Spec.Template.Spec.InitContainers,
+			append(
+				[]core.Container{
+					{
+						Name:            "remove-lost-found",
+						Image:           "busybox",
+						ImagePullPolicy: core.PullIfNotPresent,
+						Command: []string{
+							"rm",
+							"-rf",
+							"/var/lib/mysql/lost+found",
+						},
+						VolumeMounts: []core.VolumeMount{
+							{
+								Name:      "data",
+								MountPath: "/var/lib/mysql",
+							},
+						},
+					},
+				},
+				mysql.Spec.PodTemplate.Spec.InitContainers...,
+			),
+		)
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
-			Name:            api.ResourceSingularMySQL,
-			Image:           c.docker.GetImageWithTag(mysql),
-			ImagePullPolicy: core.PullIfNotPresent,
+			Name:      api.ResourceSingularMySQL,
+			Image:     mysqlVersion.Spec.DB.Image,
+			Resources: mysql.Spec.PodTemplate.Spec.Resources,
 			Ports: []core.ContainerPort{
 				{
 					Name:          "db",
@@ -110,7 +138,6 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 					Protocol:      core.ProtocolTCP,
 				},
 			},
-			Resources: mysql.Spec.PodTemplate.Spec.Resources,
 		})
 		if mysql.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
@@ -120,7 +147,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 					fmt.Sprintf("--address=:%d", mysql.Spec.Monitor.Prometheus.Port),
 					fmt.Sprintf("--enable-analytics=%v", c.EnableAnalytics),
 				}, c.LoggerOptions.ToFlags()...),
-				Image: c.docker.GetOperatorImageWithTag(mysql),
+				Image: mysqlVersion.Spec.Exporter.Image,
 				Ports: []core.ContainerPort{
 					{
 						Name:          api.PrometheusExporterPortName,
@@ -157,41 +184,21 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 			in = upsertInitScript(in, mysql.Spec.Init.ScriptSource.VolumeSource)
 		}
 
-		in.Spec.Template.Spec.NodeSelector = mysql.Spec.NodeSelector
-		in.Spec.Template.Spec.Affinity = mysql.Spec.Affinity
-		in.Spec.Template.Spec.Tolerations = mysql.Spec.Tolerations
-		in.Spec.Template.Spec.ImagePullSecrets = mysql.Spec.ImagePullSecrets
-		if mysql.Spec.SchedulerName != "" {
-			in.Spec.Template.Spec.SchedulerName = mysql.Spec.SchedulerName
+		in.Spec.Template.Spec.NodeSelector = mysql.Spec.PodTemplate.Spec.NodeSelector
+		in.Spec.Template.Spec.Affinity = mysql.Spec.PodTemplate.Spec.Affinity
+		if mysql.Spec.PodTemplate.Spec.SchedulerName != "" {
+			in.Spec.Template.Spec.SchedulerName = mysql.Spec.PodTemplate.Spec.SchedulerName
 		}
+		in.Spec.Template.Spec.Tolerations = mysql.Spec.PodTemplate.Spec.Tolerations
+		in.Spec.Template.Spec.ImagePullSecrets = mysql.Spec.PodTemplate.Spec.ImagePullSecrets
+		in.Spec.Template.Spec.PriorityClassName = mysql.Spec.PodTemplate.Spec.PriorityClassName
+		in.Spec.Template.Spec.Priority = mysql.Spec.PodTemplate.Spec.Priority
+		in.Spec.Template.Spec.SecurityContext = mysql.Spec.PodTemplate.Spec.SecurityContext
 
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 		in = upsertUserEnv(in, mysql)
 		return in
 	})
-}
-
-func upsertInitContainer(statefulSet *apps.StatefulSet) *apps.StatefulSet {
-	container := core.Container{
-		Name:            "remove-lost-found",
-		Image:           "busybox",
-		ImagePullPolicy: core.PullIfNotPresent,
-		Command: []string{
-			"rm",
-			"-rf",
-			"/var/lib/mysql/lost+found",
-		},
-		VolumeMounts: []core.VolumeMount{
-			{
-				Name:      "data",
-				MountPath: "/var/lib/mysql",
-			},
-		},
-	}
-	initContainers := statefulSet.Spec.Template.Spec.InitContainers
-	initContainers = core_util.UpsertContainer(initContainers, container)
-	statefulSet.Spec.Template.Spec.InitContainers = initContainers
-	return statefulSet
 }
 
 func upsertDataVolume(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {

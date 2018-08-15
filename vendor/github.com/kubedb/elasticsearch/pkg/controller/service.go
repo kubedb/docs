@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -108,7 +109,8 @@ func (c *Controller) checkService(elasticsearch *api.Elasticsearch, name string)
 		return err
 	}
 
-	if service.Spec.Selector[api.LabelDatabaseName] != elasticsearch.OffshootName() {
+	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindElasticsearch ||
+		service.Labels[api.LabelDatabaseName] != elasticsearch.Name {
 		return fmt.Errorf(`intended service "%v" already exists`, name)
 	}
 
@@ -129,31 +131,34 @@ func (c *Controller) createService(elasticsearch *api.Elasticsearch) (kutil.Verb
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
 		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
 		in.Labels = elasticsearch.OffshootLabels()
-		in.Spec.Ports = upsertServicePort(in, elasticsearch)
-		in.Spec.Selector = elasticsearch.OffshootLabels()
+		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
+
+		in.Spec.Selector = elasticsearch.OffshootSelectors()
 		in.Spec.Selector[NodeRoleClient] = "set"
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       ElasticsearchRestPortName,
+				Port:       ElasticsearchRestPort,
+				TargetPort: intstr.FromString(ElasticsearchRestPortName),
+			},
+		})
+
+		if elasticsearch.Spec.ServiceTemplate.Spec.ClusterIP != "" {
+			in.Spec.ClusterIP = elasticsearch.Spec.ServiceTemplate.Spec.ClusterIP
+		}
+		if elasticsearch.Spec.ServiceTemplate.Spec.Type != "" {
+			in.Spec.Type = elasticsearch.Spec.ServiceTemplate.Spec.Type
+		}
+		in.Spec.ExternalIPs = elasticsearch.Spec.ServiceTemplate.Spec.ExternalIPs
+		in.Spec.LoadBalancerIP = elasticsearch.Spec.ServiceTemplate.Spec.LoadBalancerIP
+		in.Spec.LoadBalancerSourceRanges = elasticsearch.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
+		in.Spec.ExternalTrafficPolicy = elasticsearch.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
+		if elasticsearch.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
+			in.Spec.HealthCheckNodePort = elasticsearch.Spec.ServiceTemplate.Spec.HealthCheckNodePort
+		}
 		return in
 	})
 	return ok, err
-}
-
-func upsertServicePort(service *core.Service, elasticsearch *api.Elasticsearch) []core.ServicePort {
-	desiredPorts := []core.ServicePort{
-		{
-			Name:       ElasticsearchRestPortName,
-			Port:       ElasticsearchRestPort,
-			TargetPort: intstr.FromString(ElasticsearchRestPortName),
-		},
-	}
-	if elasticsearch.GetMonitoringVendor() == mona.VendorPrometheus {
-		desiredPorts = append(desiredPorts, core.ServicePort{
-			Name:       api.PrometheusExporterPortName,
-			Protocol:   core.ProtocolTCP,
-			Port:       elasticsearch.Spec.Monitor.Prometheus.Port,
-			TargetPort: intstr.FromString(api.PrometheusExporterPortName),
-		})
-	}
-	return core_util.MergeServicePorts(service.Spec.Ports, desiredPorts)
 }
 
 func (c *Controller) createMasterService(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
@@ -170,21 +175,75 @@ func (c *Controller) createMasterService(elasticsearch *api.Elasticsearch) (kuti
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
 		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
 		in.Labels = elasticsearch.OffshootLabels()
-		in.Spec.Ports = upsertMasterServicePort(in)
-		in.Spec.Selector = elasticsearch.OffshootLabels()
+		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
+
+		in.Spec.Selector = elasticsearch.OffshootSelectors()
 		in.Spec.Selector[NodeRoleMaster] = "set"
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       ElasticsearchNodePortName,
+				Port:       ElasticsearchNodePort,
+				TargetPort: intstr.FromString(ElasticsearchNodePortName),
+			},
+		})
 		return in
 	})
 	return ok, err
 }
 
-func upsertMasterServicePort(service *core.Service) []core.ServicePort {
-	desiredPorts := []core.ServicePort{
-		{
-			Name:       ElasticsearchNodePortName,
-			Port:       ElasticsearchNodePort,
-			TargetPort: intstr.FromString(ElasticsearchNodePortName),
-		},
+func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
+	// return if monitoring is not prometheus
+	if elasticsearch.GetMonitoringVendor() != mona.VendorPrometheus {
+		log.Warningln("spec.monitor.agent is not coreos-operator or builtin.")
+		return kutil.VerbUnchanged, nil
 	}
-	return core_util.MergeServicePorts(service.Spec.Ports, desiredPorts)
+
+	// Check if statsService name exists
+	if err := c.checkService(elasticsearch, elasticsearch.StatsService().ServiceName()); err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch)
+	if rerr != nil {
+		return kutil.VerbUnchanged, rerr
+	}
+
+	// reconcile statsService
+	meta := metav1.ObjectMeta{
+		Name:      elasticsearch.StatsService().ServiceName(),
+		Namespace: elasticsearch.Namespace,
+	}
+	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+		in.Labels = elasticsearch.OffshootLabels()
+		in.Spec.Selector = elasticsearch.OffshootSelectors()
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       api.PrometheusExporterPortName,
+				Protocol:   core.ProtocolTCP,
+				Port:       elasticsearch.Spec.Monitor.Prometheus.Port,
+				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+			},
+		})
+		return in
+	})
+	if err != nil {
+		c.recorder.Eventf(
+			ref,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			"Failed to reconcile stats service. Reason: %v",
+			err,
+		)
+		return kutil.VerbUnchanged, err
+	} else if vt != kutil.VerbUnchanged {
+		c.recorder.Eventf(
+			ref,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %s stats service",
+			vt,
+		)
+	}
+	return vt, nil
 }

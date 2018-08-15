@@ -10,6 +10,12 @@ import (
 	"fmt"
 )
 
+// Insert creates an insert Builder
+func Insert(eq Eq) *Builder {
+	builder := &Builder{cond: NewCond()}
+	return builder.Insert(eq)
+}
+
 func (b *Builder) insertWriteTo(w Writer) error {
 	if len(b.tableName) <= 0 {
 		return errors.New("no table indicated")

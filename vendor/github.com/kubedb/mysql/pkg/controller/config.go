@@ -7,7 +7,6 @@ import (
 	amc "github.com/kubedb/apimachinery/pkg/controller"
 	"github.com/kubedb/apimachinery/pkg/controller/dormantdatabase"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
-	"github.com/kubedb/mysql/pkg/docker"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -29,7 +28,6 @@ type OperatorConfig struct {
 	DBClient         cs.Interface
 	PromClient       pcm.MonitoringV1Interface
 	CronController   snapc.CronControllerInterface
-	Docker           docker.Docker
 }
 
 func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
@@ -45,7 +43,6 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.DBClient.KubedbV1alpha1(),
 		c.PromClient,
 		c.CronController,
-		c.Docker,
 		c.Config,
 	)
 

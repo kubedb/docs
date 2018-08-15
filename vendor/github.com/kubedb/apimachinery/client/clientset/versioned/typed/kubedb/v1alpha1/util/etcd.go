@@ -1,7 +1,6 @@
 package util
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/appscode/kutil"
@@ -83,22 +82,55 @@ func TryUpdateEtcd(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transfo
 	return
 }
 
-func UpdateEtcdStatus(c cs.KubedbV1alpha1Interface, cur *api.Etcd, transform func(*api.EtcdStatus) *api.EtcdStatus, useSubresource ...bool) (*api.Etcd, error) {
+func UpdateEtcdStatus(
+	c cs.KubedbV1alpha1Interface,
+	in *api.Etcd,
+	transform func(*api.EtcdStatus) *api.EtcdStatus,
+	useSubresource ...bool,
+) (result *api.Etcd, err error) {
 	if len(useSubresource) > 1 {
 		return nil, errors.Errorf("invalid value passed for useSubresource: %v", useSubresource)
 	}
 
-	mod := &api.Etcd{
-		TypeMeta:   cur.TypeMeta,
-		ObjectMeta: cur.ObjectMeta,
-		Spec:       cur.Spec,
-		Status:     *transform(cur.Status.DeepCopy()),
+	apply := func(x *api.Etcd) *api.Etcd {
+		return &api.Etcd{
+			TypeMeta:   x.TypeMeta,
+			ObjectMeta: x.ObjectMeta,
+			Spec:       x.Spec,
+			Status:     *transform(in.Status.DeepCopy()),
+		}
 	}
 
 	if len(useSubresource) == 1 && useSubresource[0] {
-		return c.Etcds(cur.Namespace).UpdateStatus(mod)
+		attempt := 0
+		cur := in.DeepCopy()
+		err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+			attempt++
+			var e2 error
+			result, e2 = c.Etcds(in.Namespace).UpdateStatus(apply(cur))
+			if kerr.IsConflict(e2) {
+				latest, e3 := c.Etcds(in.Namespace).Get(in.Name, metav1.GetOptions{})
+				switch {
+				case e3 == nil:
+					cur = latest
+					return false, nil
+				case kutil.IsRequestRetryable(e3):
+					return false, nil
+				default:
+					return false, e3
+				}
+			} else if err != nil && !kutil.IsRequestRetryable(e2) {
+				return false, e2
+			}
+			return e2 == nil, nil
+		})
+
+		if err != nil {
+			err = fmt.Errorf("failed to update status of Etcd %s/%s after %d attempts due to %v", in.Namespace, in.Name, attempt, err)
+		}
+		return
 	}
 
-	out, _, err := PatchEtcdObject(c, cur, mod)
-	return out, err
+	result, _, err = PatchEtcdObject(c, in, apply(in))
+	return
 }

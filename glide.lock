@@ -1,5 +1,5 @@
 hash: c6a96eb20095cb884a49078c3321776e55aa9133cecdb421d29e1829dc2a3e5a
-updated: 2018-08-01T19:59:21.825580985-07:00
+updated: 2018-08-15T14:49:51.412096475-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -40,7 +40,7 @@ imports:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: c9b929cfcab96c233c1b0ab59cd4a5ab6a4ff96a
+  version: 266e2ad77d953e86893aa1abba587d3f29bbdc92
   subpackages:
   - apiextensions/v1beta1
   - apps/v1
@@ -254,7 +254,7 @@ imports:
 - name: github.com/go-stack/stack
   version: 259ab82a6cad3992b4e21ff5cac294ccb06474bc
 - name: github.com/go-xorm/builder
-  version: dc8bf48f58fab2b4da338ffd25191905fd741b8f
+  version: df941ac9ef63468508b3ea92e739ffa6de0e4f81
 - name: github.com/go-xorm/core
   version: c10e21e7e1cec20e09398f2dfae385e58c8df555
 - name: github.com/go-xorm/xorm
@@ -306,7 +306,7 @@ imports:
   - compiler
   - extensions
 - name: github.com/graymeta/stow
-  version: 749bd5039731d827684b5d49a59b01d4c5316b65
+  version: afce6d90444a3ba63c6d6671498c6cdc79375369
   repo: https://github.com/appscode/stow.git
   vcs: git
   subpackages:
@@ -338,13 +338,13 @@ imports:
 - name: github.com/json-iterator/go
   version: f2b4162afba35581b6d4a50d3b8f34e33c144682
 - name: github.com/justwatchcom/elasticsearch_exporter
-  version: 4c4fc00013323e6f8695024a24171518dcd83f9b
+  version: 19f7a89ac1c0a15121cead63c2ea648246b498aa
   subpackages:
   - collector
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/kubedb/apimachinery
-  version: 883ae26a8ff0a28ffc2c36ba7c34f2532cefae21
+  version: b99af3c4a3bab4c08a916fc92f6f8479ad8715ec
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -367,44 +367,39 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 1c7cb6b1bbba363504c8c1343cdcb036ba74607c
+  version: 3620d46b32250adfc80323d0101421b6478bc6ad
   subpackages:
   - pkg/admission
   - pkg/audit/report
   - pkg/controller
-  - pkg/docker
+  - pkg/util/es
 - name: github.com/kubedb/memcached
-  version: 1040eb3c38fbc0eeb07384bbd29bf35d14e04c5a
+  version: f940b2f3c3456ba24ee9cd804183994a3e2b8f25
   subpackages:
   - pkg/admission
   - pkg/controller
-  - pkg/docker
 - name: github.com/kubedb/mongodb
-  version: 8e8b8c3053b45733766f8757017b58de3cab747f
+  version: e7b242227e209bb22db2e2979ad56ad784acd5c9
   subpackages:
   - pkg/admission
   - pkg/controller
-  - pkg/docker
 - name: github.com/kubedb/mysql
-  version: 2fd02169f394aa8943fdaf58832cb1604c6c2154
+  version: 0f629ab3abe094ac202bffb158e8d6ca81005389
   subpackages:
   - pkg/admission
   - pkg/controller
-  - pkg/docker
 - name: github.com/kubedb/postgres
-  version: c1260de6137deb9c61804ff8509033766a41df76
+  version: 0f19193a48fa6770aff461df7647b8be723dbfb0
   subpackages:
   - pkg/admission
   - pkg/audit/report
   - pkg/controller
-  - pkg/docker
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: 55067be098de730da237a08858de794740cc76ed
+  version: 63496491d4b1ac5186f0e1826eb09b1eea6079dd
   subpackages:
   - pkg/admission
   - pkg/controller
-  - pkg/docker
 - name: github.com/lib/pq
   version: 90697d60dd844d5ef6ff15135d0203f65d2f53b8
   subpackages:
@@ -428,13 +423,18 @@ imports:
 - name: github.com/modern-go/reflect2
   version: 05fbef0ca5da472bbf96c9322b84a53edc03c9fd
 - name: github.com/ncw/swift
-  version: b2a7479cf26fa841ff90dd932d0221cb5c50782d
+  version: bd8b704d15b2f5357186ac39c863bd74eb837291
 - name: github.com/NYTimes/gziphandler
   version: 56545f4a5d46df9a6648819d1664c3a03a13ffdb
 - name: github.com/oliver006/redis_exporter
-  version: 4663e1e84c7c0df0fdf7159be116b0fb5fb02613
+  version: a139cf43d3eaf14e95943b989f71816e811c3f0c
   subpackages:
   - exporter
+- name: github.com/olivere/elastic
+  version: eaed0556f99723e97fcf8733b54f9139a2c39099
+  subpackages:
+  - config
+  - uritemplates
 - name: github.com/openshift/api
   version: 31a7bbd2266d178da3c12bb83f5274d387f775e6
 - name: github.com/openshift/client-go
@@ -480,7 +480,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 70c98a06f13a167795f867640f6702adaaef2e2f
+  version: 0b4d22b245bb3c3ad7076876970d5b4b7c3efc69
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -488,7 +488,7 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/russross/blackfriday
-  version: 4048872b16cc0fc2c5fd9eacf0ed2c2fedaa0c8c
+  version: 300106c228d52c8941d4b3de6054a6062a86dda3
 - name: github.com/rwynn/gtm
   version: 495abc277593067479c3c528864191804ab04cf7
   repo: https://github.com/jacksontj/gtm.git
@@ -500,6 +500,8 @@ imports:
   - diffmatchpatch
 - name: github.com/serialx/hashring
   version: 49a4782e9908fe098c907022a1bd7519c79803d6
+- name: github.com/shurcooL/sanitized_anchor_name
+  version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
   version: d26492970760ca5d33129d2d799e34be5c4782eb
 - name: github.com/spf13/cobra
@@ -580,7 +582,7 @@ imports:
   subpackages:
   - rate
 - name: google.golang.org/api
-  version: 31ca0e01cd791f07750cb23fc99327721f753290
+  version: 0e8d13b5c025da6a7cf249bb854e5869921dd459
   subpackages:
   - gensupport
   - googleapi
@@ -642,6 +644,8 @@ imports:
   subpackages:
   - config
   - uritemplates
+- name: gopkg.in/olivere/elastic.v6
+  version: e3492b022a109ac0e52a6d42d5bfb835050fa7f4
 - name: gopkg.in/robfig/cron.v2
   version: ca60c6d796d4b1f7bb2a8fd5271d8a59aeffb4bf
   repo: https://github.com/appscode/cron.git
@@ -987,14 +991,14 @@ imports:
   - agents/prometheusbuiltin
   - api/v1
 - name: kmodules.xyz/objectstore-api
-  version: 5437829d6e1c97de1c3effe5f2dc6cbca2e0bfd4
+  version: 94d68f0dfad22b23d98d8461344ebabc1f8a4a7c
   repo: https://github.com/kmodules/objectstore-api.git
   vcs: git
   subpackages:
   - api/v1
   - osm
 - name: kmodules.xyz/offshoot-api
-  version: ca509dced59191f2fe70d49a5e238ec92016a8eb
+  version: 71dd2bafc0a452e3eb2d5bc60b2786d1f1843a51
   repo: https://github.com/kmodules/offshoot-api.git
   vcs: git
   subpackages:

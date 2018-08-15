@@ -17,23 +17,29 @@ import (
 )
 
 func (c *Controller) create(snapshot *api.Snapshot) error {
-	snap, err := util.UpdateSnapshotStatus(c.ExtClient, snapshot, func(in *api.SnapshotStatus) *api.SnapshotStatus {
-		t := metav1.Now()
-		in.StartTime = &t
-		return in
-	}, api.EnableStatusSubresource)
-	if err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
-			c.eventRecorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
+	if snapshot.Status.StartTime == nil {
+		snap, err := util.UpdateSnapshotStatus(c.ExtClient, snapshot, func(in *api.SnapshotStatus) *api.SnapshotStatus {
+			t := metav1.Now()
+			in.StartTime = &t
+			return in
+		}, api.EnableStatusSubresource)
+		if err != nil {
+			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
+				c.eventRecorder.Eventf(
+					ref,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToUpdate,
+					err.Error(),
+				)
+			}
+			return err
 		}
-		return err
+		*snapshot = *snap
 	}
-	snapshot.Status = snap.Status
+
+	if snapshot.Status.Phase == api.SnapshotPhaseFailed || snapshot.Status.Phase == api.SnapshotPhaseSucceeded {
+		return nil
+	}
 
 	// Validate DatabaseSnapshot
 	if err := c.snapshotter.ValidateSnapshot(snapshot); err != nil {
@@ -187,6 +193,10 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 				message,
 			)
 		}
+		return err
+	}
+
+	if err := osm.CheckBucketAccess(c.Client, snapshot.Spec.Backend, snapshot.Namespace); err != nil {
 		return err
 	}
 

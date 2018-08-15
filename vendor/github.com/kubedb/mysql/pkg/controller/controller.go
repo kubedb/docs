@@ -13,7 +13,6 @@ import (
 	"github.com/kubedb/apimachinery/pkg/controller/dormantdatabase"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
 	"github.com/kubedb/apimachinery/pkg/eventer"
-	"github.com/kubedb/mysql/pkg/docker"
 	core "k8s.io/api/core/v1"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
@@ -30,7 +29,6 @@ type Controller struct {
 	amc.Config
 	*amc.Controller
 
-	docker docker.Docker
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
 	// Cron Controller
@@ -54,7 +52,6 @@ func New(
 	extClient cs.KubedbV1alpha1Interface,
 	promClient pcm.MonitoringV1Interface,
 	cronController snapc.CronControllerInterface,
-	docker docker.Docker,
 	opt amc.Config,
 ) *Controller {
 	return &Controller{
@@ -64,7 +61,6 @@ func New(
 			ApiExtKubeClient: apiExtKubeClient,
 		},
 		Config:         opt,
-		docker:         docker,
 		promClient:     promClient,
 		cronController: cronController,
 		recorder:       eventer.NewEventRecorder(client, "MySQL operator"),
@@ -79,6 +75,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 	crds := []*crd_api.CustomResourceDefinition{
 		api.MySQL{}.CustomResourceDefinition(),
+		api.MySQLVersion{}.CustomResourceDefinition(),
 		api.DormantDatabase{}.CustomResourceDefinition(),
 		api.Snapshot{}.CustomResourceDefinition(),
 	}
@@ -125,13 +122,13 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range c.KubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for caches to sync\n", t)
+			log.Fatalf("%v timed out waiting for caches to sync", t)
 			return
 		}
 	}
 	for t, v := range c.KubedbInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for caches to sync\n", t)
+			log.Fatalf("%v timed out waiting for caches to sync", t)
 			return
 		}
 	}

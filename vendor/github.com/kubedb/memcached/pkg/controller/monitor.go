@@ -33,7 +33,7 @@ func (c *Controller) addOrUpdateMonitor(memcached *api.Memcached) (kutil.VerbTyp
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.CreateOrUpdate(memcached.StatsAccessor(), memcached.Spec.Monitor)
+	return agent.CreateOrUpdate(memcached.StatsService(), memcached.Spec.Monitor)
 }
 
 func (c *Controller) deleteMonitor(memcached *api.Memcached) (kutil.VerbType, error) {
@@ -41,11 +41,11 @@ func (c *Controller) deleteMonitor(memcached *api.Memcached) (kutil.VerbType, er
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.Delete(memcached.StatsAccessor())
+	return agent.Delete(memcached.StatsService())
 }
 
 func (c *Controller) getOldAgent(memcached *api.Memcached) mona.Agent {
-	service, err := c.Client.CoreV1().Services(memcached.Namespace).Get(memcached.StatsAccessor().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(memcached.Namespace).Get(memcached.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -54,7 +54,7 @@ func (c *Controller) getOldAgent(memcached *api.Memcached) mona.Agent {
 }
 
 func (c *Controller) setNewAgent(memcached *api.Memcached) error {
-	service, err := c.Client.CoreV1().Services(memcached.Namespace).Get(memcached.StatsAccessor().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(memcached.Namespace).Get(memcached.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (c *Controller) manageMonitor(memcached *api.Memcached) error {
 	if memcached.Spec.Monitor != nil {
 		if oldAgent != nil &&
 			oldAgent.GetType() != memcached.Spec.Monitor.Agent {
-			if _, err := oldAgent.Delete(memcached.StatsAccessor()); err != nil {
+			if _, err := oldAgent.Delete(memcached.StatsService()); err != nil {
 				log.Error("error in deleting Prometheus agent:", err)
 			}
 		}
@@ -82,7 +82,7 @@ func (c *Controller) manageMonitor(memcached *api.Memcached) error {
 		}
 		return c.setNewAgent(memcached)
 	} else if oldAgent != nil {
-		if _, err := oldAgent.Delete(memcached.StatsAccessor()); err != nil {
+		if _, err := oldAgent.Delete(memcached.StatsService()); err != nil {
 			log.Error("error in deleting Prometheus agent:", err)
 		}
 	}

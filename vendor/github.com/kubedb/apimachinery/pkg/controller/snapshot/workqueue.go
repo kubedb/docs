@@ -19,22 +19,21 @@ func (c *Controller) addEventHandler(selector labels.Selector) {
 }
 
 func (c *Controller) runSnapshot(key string) error {
-	log.Debugf("started processing, key: %v\n", key)
+	log.Debugf("started processing, key: %v", key)
 	obj, exists, err := c.SnapInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		log.Errorf("Fetching object with key %s from store failed with %v\n", key, err)
+		log.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 
 	if !exists {
-		log.Debugf("Snapshot %s does not exist anymore\n", key)
+		log.Debugf("Snapshot %s does not exist anymore", key)
 	} else {
 		// Note that you also have to check the uid if you have a local controlled resource, which
 		// is dependent on the actual instance, to detect that a Snapshot was recreated with the same name
 		snapshot := obj.(*api.Snapshot).DeepCopy()
 		if snapshot.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(snapshot.ObjectMeta, api.GenericKey) {
-				util.AssignTypeKind(snapshot)
 				if err := c.delete(snapshot); err != nil {
 					log.Errorln(err)
 					return err
@@ -50,7 +49,6 @@ func (c *Controller) runSnapshot(key string) error {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
 				return in
 			})
-			util.AssignTypeKind(snapshot)
 			if err := c.create(snapshot); err != nil {
 				log.Errorln(err)
 				return err

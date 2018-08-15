@@ -72,7 +72,8 @@ func (c *Controller) checkStatefulSet(redis *api.Redis) error {
 		return err
 	}
 
-	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindRedis {
+	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindRedis ||
+		statefulSet.Labels[api.LabelDatabaseName] != redis.Name {
 		return fmt.Errorf(`Intended statefulSet "%v" already exists`, redis.OffshootName())
 	}
 
@@ -90,21 +91,30 @@ func (c *Controller) createStatefulSet(redis *api.Redis) (*apps.StatefulSet, kut
 		return nil, kutil.VerbUnchanged, rerr
 	}
 
+	redisVersion, err := c.ExtClient.RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return nil, kutil.VerbUnchanged, err
+	}
+
 	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
+		in.Labels = redis.OffshootLabels()
+		in.Annotations = redis.Spec.PodTemplate.Controller.Annotations
 		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
-		in.Labels = core_util.UpsertMap(in.Labels, redis.StatefulSetLabels())
-		in.Annotations = core_util.UpsertMap(in.Annotations, redis.StatefulSetAnnotations())
 
 		in.Spec.Replicas = types.Int32P(1)
 		in.Spec.ServiceName = c.GoverningService
-		in.Spec.Template.Labels = in.Labels
 		in.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: in.Labels,
+			MatchLabels: redis.OffshootSelectors(),
 		}
-
+		in.Spec.Template.Labels = redis.OffshootSelectors()
+		in.Spec.Template.Annotations = redis.Spec.PodTemplate.Annotations
+		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
+			in.Spec.Template.Spec.InitContainers,
+			redis.Spec.PodTemplate.Spec.InitContainers,
+		)
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 			Name:            api.ResourceSingularRedis,
-			Image:           c.docker.GetImageWithTag(redis),
+			Image:           redisVersion.Spec.DB.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
 				{
@@ -123,7 +133,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis) (*apps.StatefulSet, kut
 					fmt.Sprintf("--address=:%d", redis.Spec.Monitor.Prometheus.Port),
 					fmt.Sprintf("--enable-analytics=%v", c.EnableAnalytics),
 				}, c.LoggerOptions.ToFlags()...),
-				Image:           c.docker.GetOperatorImageWithTag(redis),
+				Image:           redisVersion.Spec.Exporter.Image,
 				ImagePullPolicy: core.PullIfNotPresent,
 				Ports: []core.ContainerPort{
 					{
@@ -137,11 +147,16 @@ func (c *Controller) createStatefulSet(redis *api.Redis) (*apps.StatefulSet, kut
 
 		in = upsertDataVolume(in, redis)
 
-		in.Spec.Template.Spec.NodeSelector = redis.Spec.NodeSelector
-		in.Spec.Template.Spec.Affinity = redis.Spec.Affinity
-		in.Spec.Template.Spec.SchedulerName = redis.Spec.SchedulerName
-		in.Spec.Template.Spec.Tolerations = redis.Spec.Tolerations
-		in.Spec.Template.Spec.ImagePullSecrets = redis.Spec.ImagePullSecrets
+		in.Spec.Template.Spec.NodeSelector = redis.Spec.PodTemplate.Spec.NodeSelector
+		in.Spec.Template.Spec.Affinity = redis.Spec.PodTemplate.Spec.Affinity
+		if redis.Spec.PodTemplate.Spec.SchedulerName != "" {
+			in.Spec.Template.Spec.SchedulerName = redis.Spec.PodTemplate.Spec.SchedulerName
+		}
+		in.Spec.Template.Spec.Tolerations = redis.Spec.PodTemplate.Spec.Tolerations
+		in.Spec.Template.Spec.ImagePullSecrets = redis.Spec.PodTemplate.Spec.ImagePullSecrets
+		in.Spec.Template.Spec.PriorityClassName = redis.Spec.PodTemplate.Spec.PriorityClassName
+		in.Spec.Template.Spec.Priority = redis.Spec.PodTemplate.Spec.Priority
+		in.Spec.Template.Spec.SecurityContext = redis.Spec.PodTemplate.Spec.SecurityContext
 
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 		in = upsertUserEnv(in, redis)

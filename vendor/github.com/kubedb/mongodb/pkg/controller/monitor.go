@@ -33,7 +33,7 @@ func (c *Controller) addOrUpdateMonitor(mongodb *api.MongoDB) (kutil.VerbType, e
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.CreateOrUpdate(mongodb.StatsAccessor(), mongodb.Spec.Monitor)
+	return agent.CreateOrUpdate(mongodb.StatsService(), mongodb.Spec.Monitor)
 }
 
 func (c *Controller) deleteMonitor(mongodb *api.MongoDB) (kutil.VerbType, error) {
@@ -41,11 +41,11 @@ func (c *Controller) deleteMonitor(mongodb *api.MongoDB) (kutil.VerbType, error)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.Delete(mongodb.StatsAccessor())
+	return agent.Delete(mongodb.StatsService())
 }
 
 func (c *Controller) getOldAgent(mongodb *api.MongoDB) mona.Agent {
-	service, err := c.Client.CoreV1().Services(mongodb.Namespace).Get(mongodb.StatsAccessor().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(mongodb.Namespace).Get(mongodb.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -54,7 +54,7 @@ func (c *Controller) getOldAgent(mongodb *api.MongoDB) mona.Agent {
 }
 
 func (c *Controller) setNewAgent(mongodb *api.MongoDB) error {
-	service, err := c.Client.CoreV1().Services(mongodb.Namespace).Get(mongodb.StatsAccessor().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(mongodb.Namespace).Get(mongodb.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -71,9 +71,8 @@ func (c *Controller) setNewAgent(mongodb *api.MongoDB) error {
 func (c *Controller) manageMonitor(mongodb *api.MongoDB) error {
 	oldAgent := c.getOldAgent(mongodb)
 	if mongodb.Spec.Monitor != nil {
-		if oldAgent != nil &&
-			oldAgent.GetType() != mongodb.Spec.Monitor.Agent {
-			if _, err := oldAgent.Delete(mongodb.StatsAccessor()); err != nil {
+		if oldAgent != nil && oldAgent.GetType() != mongodb.Spec.Monitor.Agent {
+			if _, err := oldAgent.Delete(mongodb.StatsService()); err != nil {
 				log.Error("error in deleting Prometheus agent. Reason: %v", err.Error())
 			}
 		}
@@ -82,7 +81,7 @@ func (c *Controller) manageMonitor(mongodb *api.MongoDB) error {
 		}
 		return c.setNewAgent(mongodb)
 	} else if oldAgent != nil {
-		if _, err := oldAgent.Delete(mongodb.StatsAccessor()); err != nil {
+		if _, err := oldAgent.Delete(mongodb.StatsService()); err != nil {
 			log.Error("error in deleting Prometheus agent. Reason: %v", err.Error())
 		}
 	}

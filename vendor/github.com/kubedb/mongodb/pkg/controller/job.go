@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	batch "k8s.io/api/batch/v1"
@@ -12,20 +13,21 @@ import (
 )
 
 const (
-	snapshotDumpDir        = "/var/data"
-	snapshotProcessRestore = "restore"
-	snapshotProcessBackup  = "backup"
+	snapshotDumpDir = "/var/data"
 )
 
 func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapshot) (*batch.Job, error) {
-	databaseName := mongodb.Name
+	mongodbVersion, err := c.ExtClient.MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
 	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshot.OffshootName())
-	jobLabel := map[string]string{
-		api.LabelDatabaseKind: api.ResourceKindMongoDB,
+	jobLabel := mongodb.OffshootLabels()
+	if jobLabel == nil {
+		jobLabel = map[string]string{}
 	}
-	jobAnnotation := map[string]string{
-		api.AnnotationJobType: api.JobTypeRestore,
-	}
+	jobLabel[api.LabelDatabaseKind] = api.ResourceKindMongoDB
+	jobLabel[api.AnnotationJobType] = api.JobTypeRestore
 
 	backupSpec := snapshot.Spec.Backend
 	bucket, err := backupSpec.Container()
@@ -46,7 +48,7 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        jobName,
 			Labels:      jobLabel,
-			Annotations: jobAnnotation,
+			Annotations: snapshot.Spec.PodTemplate.Controller.Annotations,
 			OwnerReferences: []metav1.OwnerReference{
 				{
 					APIVersion: api.SchemeGroupVersion.String(),
@@ -59,16 +61,16 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 		Spec: batch.JobSpec{
 			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: jobLabel,
+					Annotations: snapshot.Spec.PodTemplate.Annotations,
 				},
 				Spec: core.PodSpec{
 					Containers: []core.Container{
 						{
-							Name:  snapshotProcessRestore,
-							Image: c.docker.GetToolsImageWithTag(mongodb),
+							Name:  api.JobTypeRestore,
+							Image: mongodbVersion.Spec.Tools.Image,
 							Args: []string{
-								snapshotProcessRestore,
-								fmt.Sprintf(`--host=%s`, databaseName),
+								api.JobTypeRestore,
+								fmt.Sprintf(`--host=%s`, mongodb.ServiceName()),
 								fmt.Sprintf(`--user=%s`, mongodbUser),
 								fmt.Sprintf(`--data-dir=%s`, snapshotDumpDir),
 								fmt.Sprintf(`--bucket=%s`, bucket),
@@ -93,7 +95,7 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 									},
 								},
 							},
-							Resources: snapshot.Spec.Resources,
+							Resources: snapshot.Spec.PodTemplate.Spec.Resources,
 							VolumeMounts: []core.VolumeMount{
 								{
 									Name:      persistentVolume.Name,
@@ -107,7 +109,6 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 							},
 						},
 					},
-					ImagePullSecrets: mongodb.Spec.ImagePullSecrets,
 					Volumes: []core.Volume{
 						{
 							Name:         persistentVolume.Name,
@@ -122,7 +123,18 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 							},
 						},
 					},
-					RestartPolicy: core.RestartPolicyNever,
+					RestartPolicy:     core.RestartPolicyNever,
+					NodeSelector:      snapshot.Spec.PodTemplate.Spec.NodeSelector,
+					Affinity:          snapshot.Spec.PodTemplate.Spec.Affinity,
+					SchedulerName:     snapshot.Spec.PodTemplate.Spec.SchedulerName,
+					Tolerations:       snapshot.Spec.PodTemplate.Spec.Tolerations,
+					PriorityClassName: snapshot.Spec.PodTemplate.Spec.PriorityClassName,
+					Priority:          snapshot.Spec.PodTemplate.Spec.Priority,
+					SecurityContext:   snapshot.Spec.PodTemplate.Spec.SecurityContext,
+					ImagePullSecrets: core_util.MergeLocalObjectReferences(
+						snapshot.Spec.PodTemplate.Spec.ImagePullSecrets,
+						mongodb.Spec.PodTemplate.Spec.ImagePullSecrets,
+					),
 				},
 			},
 		},
@@ -143,20 +155,25 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 }
 
 func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, error) {
-	databaseName := snapshot.Spec.DatabaseName
-	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshot.OffshootName())
-	jobLabel := map[string]string{
-		api.LabelDatabaseKind: api.ResourceKindMongoDB,
-	}
-	jobAnnotation := map[string]string{
-		api.AnnotationJobType: api.JobTypeBackup,
-	}
-	backupSpec := snapshot.Spec.Backend
-	bucket, err := backupSpec.Container()
+	mongodb, err := c.mgLister.MongoDBs(snapshot.Namespace).Get(snapshot.Spec.DatabaseName)
 	if err != nil {
 		return nil, err
 	}
-	mongodb, err := c.mgLister.MongoDBs(snapshot.Namespace).Get(databaseName)
+	mongodbVersion, err := c.ExtClient.MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshot.OffshootName())
+	jobLabel := mongodb.OffshootLabels()
+	if jobLabel == nil {
+		jobLabel = map[string]string{}
+	}
+	jobLabel[api.LabelDatabaseKind] = api.ResourceKindMongoDB
+	jobLabel[api.AnnotationJobType] = api.JobTypeBackup
+
+	backupSpec := snapshot.Spec.Backend
+	bucket, err := backupSpec.Container()
 	if err != nil {
 		return nil, err
 	}
@@ -169,12 +186,11 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 
 	// Folder name inside Cloud bucket where backup will be uploaded
 	folderName, _ := snapshot.Location()
-
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        jobName,
 			Labels:      jobLabel,
-			Annotations: jobAnnotation,
+			Annotations: snapshot.Spec.PodTemplate.Controller.Annotations,
 			OwnerReferences: []metav1.OwnerReference{
 				{
 					APIVersion: api.SchemeGroupVersion.String(),
@@ -187,16 +203,16 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 		Spec: batch.JobSpec{
 			Template: core.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: jobLabel,
+					Annotations: snapshot.Spec.PodTemplate.Annotations,
 				},
 				Spec: core.PodSpec{
 					Containers: []core.Container{
 						{
-							Name:  snapshotProcessBackup,
-							Image: c.docker.GetToolsImageWithTag(mongodb),
+							Name:  api.JobTypeBackup,
+							Image: mongodbVersion.Spec.Tools.Image,
 							Args: []string{
-								snapshotProcessBackup,
-								fmt.Sprintf(`--host=%s`, databaseName),
+								api.JobTypeBackup,
+								fmt.Sprintf(`--host=%s`, mongodb.ServiceName()),
 								fmt.Sprintf(`--user=%s`, mongodbUser),
 								fmt.Sprintf(`--data-dir=%s`, snapshotDumpDir),
 								fmt.Sprintf(`--bucket=%s`, bucket),
@@ -221,7 +237,7 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 									},
 								},
 							},
-							Resources: snapshot.Spec.Resources,
+							Resources: snapshot.Spec.PodTemplate.Spec.Resources,
 							VolumeMounts: []core.VolumeMount{
 								{
 									Name:      persistentVolume.Name,
@@ -235,7 +251,6 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 							},
 						},
 					},
-					ImagePullSecrets: mongodb.Spec.ImagePullSecrets,
 					Volumes: []core.Volume{
 						{
 							Name:         persistentVolume.Name,
@@ -250,7 +265,18 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 							},
 						},
 					},
-					RestartPolicy: core.RestartPolicyNever,
+					RestartPolicy:     core.RestartPolicyNever,
+					NodeSelector:      snapshot.Spec.PodTemplate.Spec.NodeSelector,
+					Affinity:          snapshot.Spec.PodTemplate.Spec.Affinity,
+					SchedulerName:     snapshot.Spec.PodTemplate.Spec.SchedulerName,
+					Tolerations:       snapshot.Spec.PodTemplate.Spec.Tolerations,
+					PriorityClassName: snapshot.Spec.PodTemplate.Spec.PriorityClassName,
+					Priority:          snapshot.Spec.PodTemplate.Spec.Priority,
+					SecurityContext:   snapshot.Spec.PodTemplate.Spec.SecurityContext,
+					ImagePullSecrets: core_util.MergeLocalObjectReferences(
+						snapshot.Spec.PodTemplate.Spec.ImagePullSecrets,
+						mongodb.Spec.PodTemplate.Spec.ImagePullSecrets,
+					),
 				},
 			},
 		},

@@ -13,7 +13,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	store "kmodules.xyz/objectstore-api/api/v1"
-	"kmodules.xyz/objectstore-api/osm"
 )
 
 func ValidateStorage(client kubernetes.Interface, spec core.PersistentVolumeClaimSpec) error {
@@ -46,10 +45,10 @@ func ValidateBackupSchedule(client kubernetes.Interface, spec *api.BackupSchedul
 		return errors.New("invalid cron expression")
 	}
 
-	return ValidateSnapshotSpec(client, spec.Backend, namespace)
+	return ValidateSnapshotSpec(spec.Backend)
 }
 
-func ValidateSnapshotSpec(client kubernetes.Interface, spec store.Backend, namespace string) error {
+func ValidateSnapshotSpec(spec store.Backend) error {
 	// BucketName can't be empty
 	if spec.S3 == nil && spec.GCS == nil && spec.Azure == nil && spec.Swift == nil && spec.Local == nil {
 		return errors.New("no storage provider is configured")
@@ -65,10 +64,6 @@ func ValidateSnapshotSpec(client kubernetes.Interface, spec store.Backend, names
 		if spec.StorageSecretName == "" {
 			return fmt.Errorf(`object 'SecretName' is missing in '%v'`, spec)
 		}
-	}
-
-	if err := osm.CheckBucketAccess(client, spec, namespace); err != nil {
-		return err
 	}
 
 	return nil

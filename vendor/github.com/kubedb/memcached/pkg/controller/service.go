@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -18,7 +19,7 @@ import (
 
 func (c *Controller) ensureService(memcached *api.Memcached) (kutil.VerbType, error) {
 	// Check if service name exists
-	if err := c.checkService(memcached); err != nil {
+	if err := c.checkService(memcached, memcached.ServiceName()); err != nil {
 		return kutil.VerbUnchanged, err
 	}
 	// create database Service
@@ -48,18 +49,20 @@ func (c *Controller) ensureService(memcached *api.Memcached) (kutil.VerbType, er
 	return vt, nil
 }
 
-func (c *Controller) checkService(memcached *api.Memcached) error {
-	name := memcached.OffshootName()
-	service, err := c.Client.CoreV1().Services(memcached.Namespace).Get(name, metav1.GetOptions{})
+func (c *Controller) checkService(memcached *api.Memcached, serviceName string) error {
+	service, err := c.Client.CoreV1().Services(memcached.Namespace).Get(serviceName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
 		}
 		return err
 	}
-	if service.Spec.Selector[api.LabelDatabaseName] != name {
-		return fmt.Errorf(`intended service "%v" already exists`, name)
+
+	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindMemcached ||
+		service.Labels[api.LabelDatabaseName] != memcached.Name {
+		return fmt.Errorf(`intended service "%v" already exists`, serviceName)
 	}
+
 	return nil
 }
 
@@ -77,29 +80,89 @@ func (c *Controller) createService(memcached *api.Memcached) (kutil.VerbType, er
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
 		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
 		in.Labels = memcached.OffshootLabels()
-		in.Spec.Ports = upsertServicePort(in, memcached)
-		in.Spec.Selector = memcached.OffshootLabels()
+		in.Annotations = memcached.Spec.ServiceTemplate.Annotations
+
+		in.Spec.Selector = memcached.OffshootSelectors()
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       "db",
+				Protocol:   core.ProtocolTCP,
+				Port:       11211,
+				TargetPort: intstr.FromString("db"),
+			},
+		})
+
+		if memcached.Spec.ServiceTemplate.Spec.ClusterIP != "" {
+			in.Spec.ClusterIP = memcached.Spec.ServiceTemplate.Spec.ClusterIP
+		}
+		if memcached.Spec.ServiceTemplate.Spec.Type != "" {
+			in.Spec.Type = memcached.Spec.ServiceTemplate.Spec.Type
+		}
+		in.Spec.ExternalIPs = memcached.Spec.ServiceTemplate.Spec.ExternalIPs
+		in.Spec.LoadBalancerIP = memcached.Spec.ServiceTemplate.Spec.LoadBalancerIP
+		in.Spec.LoadBalancerSourceRanges = memcached.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
+		in.Spec.ExternalTrafficPolicy = memcached.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
+		if memcached.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
+			in.Spec.HealthCheckNodePort = memcached.Spec.ServiceTemplate.Spec.HealthCheckNodePort
+		}
 		return in
 	})
 	return ok, err
 }
 
-func upsertServicePort(service *core.Service, memcached *api.Memcached) []core.ServicePort {
-	desiredPorts := []core.ServicePort{
-		{
-			Name:       "db",
-			Protocol:   core.ProtocolTCP,
-			Port:       11211,
-			TargetPort: intstr.FromString("db"),
-		},
+func (c *Controller) ensureStatsService(memcached *api.Memcached) (kutil.VerbType, error) {
+	// return if monitoring is not prometheus
+	if memcached.GetMonitoringVendor() != mona.VendorPrometheus {
+		log.Warningln("spec.monitor.agent is not coreos-operator or builtin.")
+		return kutil.VerbUnchanged, nil
 	}
-	if memcached.GetMonitoringVendor() == mona.VendorPrometheus {
-		desiredPorts = append(desiredPorts, core.ServicePort{
-			Name:       api.PrometheusExporterPortName,
-			Protocol:   core.ProtocolTCP,
-			Port:       memcached.Spec.Monitor.Prometheus.Port,
-			TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+
+	// Check if Stats Service name exists
+	if err := c.checkService(memcached, memcached.StatsService().ServiceName()); err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached)
+	if rerr != nil {
+		return kutil.VerbUnchanged, rerr
+	}
+
+	// reconcile stats Service
+	meta := metav1.ObjectMeta{
+		Name:      memcached.StatsService().ServiceName(),
+		Namespace: memcached.Namespace,
+	}
+	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+		in.Labels = memcached.OffshootLabels()
+		in.Spec.Selector = memcached.OffshootSelectors()
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       api.PrometheusExporterPortName,
+				Protocol:   core.ProtocolTCP,
+				Port:       memcached.Spec.Monitor.Prometheus.Port,
+				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+			},
 		})
+		return in
+	})
+	if err != nil {
+		c.recorder.Eventf(
+			ref,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			"Failed to reconcile stats service. Reason: %v",
+			err,
+		)
+		return kutil.VerbUnchanged, err
+	} else if vt != kutil.VerbUnchanged {
+		c.recorder.Eventf(
+			ref,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %s stats service",
+			vt,
+		)
 	}
-	return core_util.MergeServicePorts(service.Spec.Ports, desiredPorts)
+	return vt, nil
 }

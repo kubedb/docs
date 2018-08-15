@@ -19,7 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -115,10 +114,6 @@ func (a *MemcachedValidator) Admit(req *admission.AdmissionRequest) *admission.A
 	return status
 }
 
-var (
-	memcachedVersions = sets.NewString("1.5", "1.5.4")
-)
-
 // ValidateMemcached checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
 func ValidateMemcached(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, memcached *api.Memcached) error {
@@ -127,8 +122,8 @@ func ValidateMemcached(client kubernetes.Interface, extClient kubedbv1alpha1.Kub
 	}
 
 	// Check Memcached version validation
-	if !memcachedVersions.Has(string(memcached.Spec.Version)) {
-		return fmt.Errorf(`KubeDB doesn't support Memcached version: %s`, string(memcached.Spec.Version))
+	if _, err := extClient.MemcachedVersions().Get(string(memcached.Spec.Version), metav1.GetOptions{}); err != nil {
+		return err
 	}
 
 	if err := amv.ValidateEnvVar(memcached.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMemcached); err != nil {

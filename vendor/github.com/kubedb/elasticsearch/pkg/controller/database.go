@@ -1,46 +1,17 @@
 package controller
 
 import (
-	"crypto/tls"
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
 
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/portforward"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	"github.com/kubedb/elasticsearch/pkg/util/es"
 	"github.com/pkg/errors"
-	"gopkg.in/olivere/elastic.v5"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
-
-func (c *Controller) GetElasticClient(elasticsearch *api.Elasticsearch, url string) (*elastic.Client, error) {
-	secret, err := c.Client.CoreV1().Secrets(elasticsearch.Namespace).Get(elasticsearch.Spec.DatabaseSecret.SecretName, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := elastic.NewClient(
-		elastic.SetHttpClient(&http.Client{
-			Timeout: 0,
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{
-					InsecureSkipVerify: true,
-				},
-			},
-		}),
-		elastic.SetBasicAuth(AdminUser, string(secret.Data[KeyAdminPassword])),
-		elastic.SetURL(url),
-		elastic.SetHealthcheck(true),
-		elastic.SetSniff(false),
-	)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
-}
 
 func (c *Controller) getAllIndices(elasticsearch *api.Elasticsearch) (string, error) {
 	var url string
@@ -69,12 +40,12 @@ func (c *Controller) getAllIndices(elasticsearch *api.Elasticsearch) (string, er
 
 	var indices []string
 	err := wait.PollImmediate(time.Second*30, time.Minute*5, func() (bool, error) {
-		client, err := c.GetElasticClient(elasticsearch, url)
+		client, err := es.GetElasticClient(c.Client, elasticsearch, url)
 		if err != nil {
 			return false, nil
 		}
 		defer client.Stop()
-		indices, err = client.IndexNames()
+		indices, err = client.GetIndexNames()
 		if err != nil {
 			return false, nil
 		}

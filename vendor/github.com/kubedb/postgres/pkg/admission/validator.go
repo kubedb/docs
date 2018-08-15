@@ -19,7 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	storage "kmodules.xyz/objectstore-api/osm"
@@ -123,10 +122,6 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 	return status
 }
 
-var (
-	postgresVersions = sets.NewString("9.6", "9.6.7", "10.2")
-)
-
 // ValidatePostgres checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
 func ValidatePostgres(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, postgres *api.Postgres) error {
@@ -134,9 +129,8 @@ func ValidatePostgres(client kubernetes.Interface, extClient kubedbv1alpha1.Kube
 		return fmt.Errorf(`object 'Version' is missing in '%v'`, postgres.Spec)
 	}
 
-	// Check Postgres version validation
-	if !postgresVersions.Has(string(postgres.Spec.Version)) {
-		return fmt.Errorf(`KubeDB doesn't support Postgres version: %s`, string(postgres.Spec.Version))
+	if _, err := extClient.PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{}); err != nil {
+		return err
 	}
 
 	if postgres.Spec.Replicas == nil || *postgres.Spec.Replicas < 1 {
