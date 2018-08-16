@@ -80,12 +80,7 @@ jobs:
     privileged: true
     file: operator/hack/concourse/task.yml
     params:
-      CredProvider: GoogleCloud
       ClusterProvider: gke
-      ZONE: us-central1-f
-      NODE: n1-standard-2
-      K8S_VERSION: 1.10.2-gke.3
-      TOKEN: ((digitaloceanToken))
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
 
@@ -105,11 +100,7 @@ jobs:
     input_mapping:
       operator: gke
     params:
-      CredProvider: GoogleCloud
       ClusterProvider: gke
-      ZONE: us-central1-f
-      NODE: n1-standard-2
-      K8S_VERSION: 1.10.2-gke.3
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
     on_success:
@@ -163,11 +154,7 @@ jobs:
     input_mapping:
       operator: azure-aks
     params:
-      CredProvider: Azure
       ClusterProvider: aks
-      ZONE: eastus
-      NODE: Standard_DS2_v2
-      K8S_VERSION: 1.9.6
       APP_ID: ((azure_app_id))
       TENANT_ID: ((azure_tenant_id))
       PASSWORD: ((azure_password))
@@ -197,9 +184,6 @@ jobs:
       operator: azure-acs
     params:
       ClusterProvider: acs
-      ZONE: westcentralus
-      NODE: Standard_DS2_v2
-      K8S_VERSION: 1.10.3
       APP_ID: ((azure_app_id))
       TENANT_ID: ((azure_tenant_id))
       PASSWORD: ((azure_password))
@@ -228,6 +212,7 @@ jobs:
     input_mapping:
       operator: do
     params:
+      ClusterProvider: digitalocean
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
     on_success:
