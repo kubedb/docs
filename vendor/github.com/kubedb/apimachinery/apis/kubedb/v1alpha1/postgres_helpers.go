@@ -191,7 +191,7 @@ func (p *Postgres) AlreadyObserved(other *Postgres) bool {
 		match = reflect.DeepEqual(p.Labels, other.Labels)
 	}
 	if match {
-		match = reflect.DeepEqual(p.Annotations, other.Annotations)
+		match = meta_util.EqualAnnotation(p.Annotations, other.Annotations)
 	}
 
 	if !match && bool(glog.V(log.LevelDebug)) {

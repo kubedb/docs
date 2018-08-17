@@ -184,7 +184,7 @@ func (r *Redis) AlreadyObserved(other *Redis) bool {
 		match = reflect.DeepEqual(r.Labels, other.Labels)
 	}
 	if match {
-		match = reflect.DeepEqual(r.Annotations, other.Annotations)
+		match = meta_util.EqualAnnotation(r.Annotations, other.Annotations)
 	}
 
 	if !match && bool(glog.V(log.LevelDebug)) {

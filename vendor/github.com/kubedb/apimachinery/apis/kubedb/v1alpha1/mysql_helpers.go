@@ -187,7 +187,7 @@ func (m *MySQL) AlreadyObserved(other *MySQL) bool {
 		match = reflect.DeepEqual(m.Labels, other.Labels)
 	}
 	if match {
-		match = reflect.DeepEqual(m.Annotations, other.Annotations)
+		match = meta_util.EqualAnnotation(m.Annotations, other.Annotations)
 	}
 
 	if !match && bool(glog.V(log.LevelDebug)) {
