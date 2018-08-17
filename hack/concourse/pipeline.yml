@@ -74,6 +74,7 @@ resources:
     owner: kubedb
     repo: operator
     label: ok-to-test/cncf
+    org: kubedb
     access_token: ((access_token))
 
 - name: concourse-locks
