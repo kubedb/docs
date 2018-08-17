@@ -103,7 +103,7 @@ func (d *DormantDatabase) AlreadyObserved(other *DormantDatabase) bool {
 		match = reflect.DeepEqual(d.Labels, other.Labels)
 	}
 	if match {
-		match = reflect.DeepEqual(d.Annotations, other.Annotations)
+		match = meta_util.EqualAnnotation(d.Annotations, other.Annotations)
 	}
 
 	if !match && bool(glog.V(log.LevelDebug)) {

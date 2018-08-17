@@ -160,7 +160,7 @@ func (e *Etcd) AlreadyObserved(other *Etcd) bool {
 		match = reflect.DeepEqual(e.Labels, other.Labels)
 	}
 	if match {
-		match = reflect.DeepEqual(e.Annotations, other.Annotations)
+		match = meta_util.EqualAnnotation(e.Annotations, other.Annotations)
 	}
 
 	if !match && bool(glog.V(log.LevelDebug)) {

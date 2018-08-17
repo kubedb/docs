@@ -128,7 +128,7 @@ func (s *Snapshot) AlreadyObserved(other *Snapshot) bool {
 		match = reflect.DeepEqual(s.Labels, other.Labels)
 	}
 	if match {
-		match = reflect.DeepEqual(s.Annotations, other.Annotations)
+		match = meta_util.EqualAnnotation(s.Annotations, other.Annotations)
 	}
 
 	if !match && bool(glog.V(log.LevelDebug)) {

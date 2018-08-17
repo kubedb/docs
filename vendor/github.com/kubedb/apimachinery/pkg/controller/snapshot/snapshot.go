@@ -196,8 +196,11 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 		return err
 	}
 
-	if err := osm.CheckBucketAccess(c.Client, snapshot.Spec.Backend, snapshot.Namespace); err != nil {
-		return err
+	// skip bucket access verification for local volume
+	if snapshot.Spec.Local != nil {
+		if err := osm.CheckBucketAccess(c.Client, snapshot.Spec.Backend, snapshot.Namespace); err != nil {
+			return err
+		}
 	}
 
 	job, err := c.snapshotter.GetSnapshotter(snapshot)

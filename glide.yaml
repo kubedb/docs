@@ -100,3 +100,5 @@ import:
   version: release-3.11
 - package: github.com/mailru/easyjson
   version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
+- package: github.com/cpuguy83/go-md2man
+  version: v1.0.8
