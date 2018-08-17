@@ -1,8 +1,8 @@
 #!/bin/bash
 set -eoux pipefail
 
-export DOCKER_USER=${DOCKER_USER:-}
-export DOCKER_PASS=${DOCKER_PASS:-}
+DOCKER_USER=$DOCKER_USER
+DOCKER_PASS=$DOCKER_PASS
 
 # start docker and log-in to docker-hub
 entrypoint.sh
@@ -23,8 +23,6 @@ mv ./kubectl /bin/kubectl
 curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.3.0/onessl-linux-amd64
 chmod +x onessl
 mv onessl /usr/local/bin/
-
-export ClusterProvider=${ClusterProvider:-digitalocean}
 
 # install pharmer
 if [ "$ClusterProvider" != "kubespray" ]; then
