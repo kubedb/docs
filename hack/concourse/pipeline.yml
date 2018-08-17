@@ -68,6 +68,23 @@ resources:
     secret_access_key: ((s3-secret))
     versioned_file: creds.zip
 
+- name: cncf
+  type: pull-request
+  source:
+    owner: kubedb
+    repo: operator
+    label: ok-to-test/cncf
+    org: kubedb
+    access_token: ((access_token))
+
+- name: concourse-locks
+  type: pool
+  source:
+    uri: git@github.com:kubedb/concourse-locks.git
+    branch: master
+    pool: kubedb
+    private_key: ((private_key))
+
 jobs:
 - name: test-operator-master
   plan:
@@ -76,18 +93,56 @@ jobs:
   - get: creds
     params:
       unpack: true
+  - put: concourse-locks
+    params:
+      acquire: true
   - task: test-e2e
     privileged: true
     file: operator/hack/concourse/task.yml
     params:
-      CredProvider: GoogleCloud
-      ClusterProvider: gke
-      ZONE: us-central1-f
-      NODE: n1-standard-2
-      K8S_VERSION: 1.10.2-gke.3
-      TOKEN: ((digitaloceanToken))
+      ClusterProvider: cncf
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
+    tags: [cncf]
+    ensure:
+      put: concourse-locks
+      params:
+        release: concourse-locks
+
+
+- name: test-operator-cncf
+  plan:
+  - get: cncf
+    trigger: true
+    version: every
+  - put: cncf
+    params: { path: cncf, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - put: concourse-locks
+    params:
+      acquire: true
+  - task: test-e2e
+    privileged: true
+    file: cncf/hack/concourse/task.yml
+    input_mapping:
+      operator: cncf
+    tags: [cncf]
+    params:
+      ClusterProvider: cncf
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+    ensure:
+      put: concourse-locks
+      params:
+        release: concourse-locks
+    on_success:
+      put: cncf
+      params: { path: cncf, status: success}
+    on_failure:
+      put: cncf
+      params: {path: cncf, status: failure}
 
 - name: test-operator-gke
   plan:
@@ -105,11 +160,7 @@ jobs:
     input_mapping:
       operator: gke
     params:
-      CredProvider: GoogleCloud
       ClusterProvider: gke
-      ZONE: us-central1-f
-      NODE: n1-standard-2
-      K8S_VERSION: 1.10.2-gke.3
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
     on_success:
@@ -163,11 +214,7 @@ jobs:
     input_mapping:
       operator: azure-aks
     params:
-      CredProvider: Azure
       ClusterProvider: aks
-      ZONE: eastus
-      NODE: Standard_DS2_v2
-      K8S_VERSION: 1.9.6
       APP_ID: ((azure_app_id))
       TENANT_ID: ((azure_tenant_id))
       PASSWORD: ((azure_password))
@@ -197,9 +244,6 @@ jobs:
       operator: azure-acs
     params:
       ClusterProvider: acs
-      ZONE: westcentralus
-      NODE: Standard_DS2_v2
-      K8S_VERSION: 1.10.3
       APP_ID: ((azure_app_id))
       TENANT_ID: ((azure_tenant_id))
       PASSWORD: ((azure_password))
@@ -228,6 +272,7 @@ jobs:
     input_mapping:
       operator: do
     params:
+      ClusterProvider: digitalocean
       DOCKER_USER: ((docker_user))
       DOCKER_PASS: ((docker_pass))
     on_success:
