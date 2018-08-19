@@ -6,6 +6,8 @@
 [![mailing list](https://img.shields.io/badge/mailing_list-join-blue.svg)](https://groups.google.com/forum/#!forum/kubedb)
 [![Twitter](https://img.shields.io/twitter/follow/kubedb.svg?style=social&logo=twitter&label=Follow)](https://twitter.com/intent/follow?screen_name=kubedb)
 
+[![Throughput Graph](https://graphs.waffle.io/kubedb/project/throughput.svg)](https://waffle.io/kubedb/project/metrics/throughput)
+
 # operator
 KubeDB Operator
 
