@@ -7,7 +7,7 @@ pushd $REPO_NAME
 NAME=$REPO_NAME-$(git rev-parse --short HEAD)
 popd
 
-function cleanup() {
+function cleanup_test_stuff() {
   set +eou pipefail
 
   # Workload Descriptions if the test fails
@@ -24,8 +24,12 @@ function cleanup() {
   kubectl get nodes
   kubectl describe nodes
 
+  if [ -d "$BASE_DIR/creds" ]; then
+      rm -rf $BASE_DIR/creds
+  fi
+
   pushd $GOPATH/src/github.com/$ORG_NAME/$REPO_NAME
-  ./hack/deploy/setup.sh --uninstall --purge
+  ./hack/concourse/uninstall.sh
   popd
 
   # delete cluster on exit
@@ -44,17 +48,8 @@ function cleanup() {
     pharmer apply "$NAME"
     pharmer get cluster
   fi
-
-  pushd $GOPATH/src/github.com/$ORG_NAME/$REPO_NAME
-  ./hack/deploy/setup.sh --uninstall --purge
-  popd
-
-  # delete docker image on exit
-  curl -LO https://raw.githubusercontent.com/appscodelabs/libbuild/master/docker.py
-  chmod +x docker.py
-  ./docker.py del_tag $DOCKER_REGISTRY $OPERATOR_NAME "$CUSTOM_OPERATOR_TAG"
 }
-trap cleanup EXIT
+trap cleanup_test_stuff EXIT
 
 function pharmer_common() {
   # create cluster using pharmer
