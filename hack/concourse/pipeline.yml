@@ -1,6 +1,7 @@
 resource_types:
 - name: pull-request
   type: docker-image
+  tags: [cncf]
   source:
     repository: appscodeci/github-pr-resource
     tag: latest
@@ -8,12 +9,14 @@ resource_types:
 resources:
 - name: operator
   type: git
+  tags: [cncf]
   source:
     uri: https://github.com/kubedb/operator
     branch: master
 
 - name: gke
   type: pull-request
+  tags: [cncf]
   source:
     owner: kubedb
     repo: operator
@@ -22,6 +25,7 @@ resources:
 
 - name: aws
   type: pull-request
+  tags: [cncf]
   source:
     owner: kubedb
     repo: operator
@@ -30,6 +34,7 @@ resources:
 
 - name: azure-aks
   type: pull-request
+  tags: [cncf]
   source:
     owner: kubedb
     repo: operator
@@ -38,6 +43,7 @@ resources:
 
 - name: azure-acs
   type: pull-request
+  tags: [cncf]
   source:
     owner: kubedb
     repo: operator
@@ -46,6 +52,7 @@ resources:
 
 - name: do
   type: pull-request
+  tags: [cncf]
   source:
     owner: kubedb
     repo: operator
@@ -54,6 +61,7 @@ resources:
 
 - name: kubespray
   type: pull-request
+  tags: [cncf]
   source:
     owner: kubedb
     repo: operator
@@ -70,6 +78,7 @@ resources:
 
 - name: cncf
   type: pull-request
+  tags: [cncf]
   source:
     owner: kubedb
     repo: operator
@@ -79,6 +88,7 @@ resources:
 
 - name: concourse-locks
   type: pool
+  tags: [cncf]
   source:
     uri: git@github.com:kubedb/concourse-locks.git
     branch: master

@@ -4,7 +4,6 @@ set -eoux pipefail
 
 ORG_NAME=kubedb
 REPO_NAME=operator
-OPERATOR_NAME=operator
 APP_LABEL=kubedb #required for `kubectl describe deploy -n kube-system -l app=$APP_LABEL`
 
 export APPSCODE_ENV=dev
@@ -18,6 +17,7 @@ popd
 
 source $REPO_NAME/hack/libbuild/concourse/init.sh
 
+# create config/.env file that have all necessary creds
 cp creds/gcs.json /gcs.json
 cp creds/.env /tmp/.env
 
@@ -26,10 +26,6 @@ pushd "$GOPATH"/src/github.com/$ORG_NAME/$REPO_NAME
 ./hack/docker/setup.sh build
 ./hack/docker/setup.sh push
 popd
-
-# create config/.env file that have all necessary creds
-cp creds/.env /tmp/.env
-cp creds/gcs.json /gcs.json
 
 pushd "$GOPATH"/src/github.com/kubedb
 
@@ -84,6 +80,7 @@ cp /tmp/.env hack/config/.env
 if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-operator=true --ginkgo.flakeAttempts=2); then
   EXIT_CODE=1
 fi
+rm -rf hack/config/.env
 popd
 sleep 120
 
@@ -108,6 +105,7 @@ cp /tmp/.env hack/config/.env
 if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-operator=true --ginkgo.flakeAttempts=2); then
   EXIT_CODE=1
 fi
+rm -rf hack/config/.env
 popd
 sleep 120
 
@@ -127,6 +125,7 @@ cp /tmp/.env hack/config/.env
 if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-operator=true --ginkgo.flakeAttempts=2); then
   EXIT_CODE=1
 fi
+rm -rf hack/config/.env
 popd
 sleep 120
 
@@ -146,6 +145,7 @@ cp /tmp/.env hack/config/.env
 if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --selfhosted-operator=true --ginkgo.flakeAttempts=2); then
   EXIT_CODE=1
 fi
+rm -rf hack/config/.env
 popd
 
 cowsay -f tux "describe pods"
