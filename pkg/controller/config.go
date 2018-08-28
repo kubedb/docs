@@ -84,6 +84,10 @@ func (c *Controller) Init() error {
 		return err
 	}
 
+	if err := c.edCtrl.Init(); err != nil {
+		return err
+	}
+
 	if err := c.mgCtrl.Init(); err != nil {
 		return err
 	}

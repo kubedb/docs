@@ -1,5 +1,5 @@
 hash: 38f3f4cb8e54e6f96924845e757b32e977bc50eac3cee1ef6334dc99f19111dd
-updated: 2018-08-28T10:46:12.712456698+06:00
+updated: 2018-08-28T11:51:20.540012873+06:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -375,6 +375,12 @@ imports:
   - pkg/audit/report
   - pkg/controller
   - pkg/util/es
+- name: github.com/kubedb/etcd
+  version: 1022afb95f8127fe34f8eeaa09e7b64e024080a7
+  subpackages:
+  - pkg/admission
+  - pkg/controller
+  - pkg/util
 - name: github.com/kubedb/memcached
   version: 058c500e96383c17b7fbf28372880f8788841a44
   subpackages:
