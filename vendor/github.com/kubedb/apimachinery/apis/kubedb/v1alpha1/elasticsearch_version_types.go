@@ -25,7 +25,7 @@ type ElasticsearchVersion struct {
 // ElasticsearchVersionSpec is the spec for elasticsearch version
 type ElasticsearchVersionSpec struct {
 	// Version
-	Version string `json:"version,omitempty"`
+	Version string `json:"version"`
 	// Database Image
 	DB ElasticsearchVersionDatabase `json:"db"`
 	// Exporter Image

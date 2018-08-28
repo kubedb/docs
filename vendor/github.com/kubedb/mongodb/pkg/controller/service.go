@@ -17,6 +17,11 @@ import (
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
+const (
+	MongoDbPort                   = "27017"
+	mongoDBGoverningServiceSuffix = "-gvr"
+)
+
 func (c *Controller) ensureService(mongodb *api.MongoDB) (kutil.VerbType, error) {
 	// Check if service name exists
 	if err := c.checkService(mongodb, mongodb.ServiceName()); err != nil {
@@ -166,4 +171,44 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 		)
 	}
 	return vt, nil
+}
+
+func (c *Controller) createMongoDBGoverningService(mongodb *api.MongoDB) (string, error) {
+
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb)
+	if rerr != nil {
+		return "", rerr
+	}
+
+	service := &core.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      mongodb.ServiceName() + mongoDBGoverningServiceSuffix,
+			Namespace: mongodb.Namespace,
+			Labels:    mongodb.OffshootLabels(),
+			// 'tolerate-unready-endpoints' annotation is deprecated.
+			// ref: https://github.com/kubernetes/kubernetes/pull/63742
+			Annotations: map[string]string{
+				"service.alpha.kubernetes.io/tolerate-unready-endpoints": "true",
+			},
+		},
+		Spec: core.ServiceSpec{
+			Type:                     core.ServiceTypeClusterIP,
+			ClusterIP:                core.ClusterIPNone,
+			PublishNotReadyAddresses: true,
+			Ports: []core.ServicePort{
+				{
+					Name: "db",
+					Port: 27017,
+				},
+			},
+			Selector: mongodb.OffshootSelectors(),
+		},
+	}
+	service.ObjectMeta = core_util.EnsureOwnerReference(service.ObjectMeta, ref)
+
+	_, err := c.Client.CoreV1().Services(mongodb.Namespace).Create(service)
+	if err != nil && !kerr.IsAlreadyExists(err) {
+		return "", err
+	}
+	return service.Name, nil
 }

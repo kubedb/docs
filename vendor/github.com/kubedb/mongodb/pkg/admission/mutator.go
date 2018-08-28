@@ -98,7 +98,11 @@ func (a *MongoDBMutator) Admit(req *admission.AdmissionRequest) *admission.Admis
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a MongoDB database
 func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, mongodb *api.MongoDB) (runtime.Object, error) {
 	if mongodb.Spec.Version == "" {
-		return nil, fmt.Errorf(`object 'Version' is missing in '%v'`, mongodb.Spec)
+		return nil, errors.New(`'spec.version' is missing`)
+	}
+
+	if mongodb.Spec.StorageType == "" {
+		mongodb.Spec.StorageType = api.StorageTypeDurable
 	}
 
 	if mongodb.Spec.Replicas == nil {
@@ -139,6 +143,15 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB) erro
 	// Take dormantDatabaseSecretName
 	if mongodb.Spec.DatabaseSecret == nil {
 		mongodb.Spec.DatabaseSecret = ddbOriginSpec.DatabaseSecret
+	}
+
+	if mongodb.Spec.ReplicaSet != nil &&
+		mongodb.Spec.ReplicaSet.KeyFile == nil {
+		mongodb.Spec.ReplicaSet.KeyFile = ddbOriginSpec.ReplicaSet.KeyFile
+	}
+
+	if mongodb.Spec.ConfigSource == nil {
+		mongodb.Spec.ConfigSource = ddbOriginSpec.ConfigSource
 	}
 
 	// If Monitoring Spec of new object is not given,

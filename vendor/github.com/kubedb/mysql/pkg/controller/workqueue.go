@@ -12,11 +12,7 @@ func (c *Controller) initWatcher() {
 	c.myInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().MySQLs().Informer()
 	c.myQueue = queue.New("MySQL", c.MaxNumRequeues, c.NumThreads, c.runMySQL)
 	c.myLister = c.KubedbInformerFactory.Kubedb().V1alpha1().MySQLs().Lister()
-	c.myInformer.AddEventHandler(queue.NewEventHandler(c.myQueue.GetQueue(), func(old interface{}, new interface{}) bool {
-		oldObj := old.(*api.MySQL)
-		newObj := new.(*api.MySQL)
-		return newObj.DeletionTimestamp != nil || !newObj.AlreadyObserved(oldObj)
-	}))
+	c.myInformer.AddEventHandler(queue.NewObservableHandler(c.myQueue.GetQueue(), api.EnableStatusSubresource))
 }
 
 func (c *Controller) runMySQL(key string) error {

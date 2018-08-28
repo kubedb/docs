@@ -196,8 +196,8 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 		return err
 	}
 
-	// skip bucket access verification for local volume
-	if snapshot.Spec.Local != nil {
+	// Do not check bucket access for local volume
+	if snapshot.Spec.Local == nil {
 		if err := osm.CheckBucketAccess(c.Client, snapshot.Spec.Backend, snapshot.Namespace); err != nil {
 			return err
 		}

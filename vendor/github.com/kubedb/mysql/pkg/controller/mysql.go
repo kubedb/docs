@@ -142,6 +142,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	my, err := util.UpdateMySQLStatus(c.ExtClient, mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = mysql.Generation
+		in.ObservedGenerationHash = meta_util.GenerationHash(mysql)
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

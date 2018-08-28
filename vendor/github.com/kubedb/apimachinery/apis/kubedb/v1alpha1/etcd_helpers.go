@@ -2,12 +2,9 @@ package v1alpha1
 
 import (
 	"fmt"
-	"reflect"
 
-	"github.com/appscode/go/log"
 	crdutils "github.com/appscode/kutil/apiextensions/v1beta1"
 	meta_util "github.com/appscode/kutil/meta"
-	"github.com/golang/glog"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
@@ -24,7 +21,7 @@ func (e Etcd) OffshootSelectors() map[string]string {
 }
 
 func (e Etcd) OffshootLabels() map[string]string {
-	return filterTags(e.OffshootSelectors(), e.Labels)
+	return meta_util.FilterKeys(GenericKey, e.OffshootSelectors(), e.Labels)
 }
 
 func (e Etcd) ResourceShortCode() string {
@@ -43,7 +40,11 @@ func (e Etcd) ResourcePlural() string {
 	return ResourcePluralEtcd
 }
 
-func (e Etcd) ServiceName() string {
+func (e Etcd) ClientServiceName() string {
+	return e.OffshootName() + "-client"
+}
+
+func (e Etcd) PeerServiceName() string {
 	return e.OffshootName()
 }
 
@@ -89,7 +90,7 @@ func (e Etcd) CustomResourceDefinition() *apiextensions.CustomResourceDefinition
 		Singular:      ResourceSingularEtcd,
 		Kind:          ResourceKindEtcd,
 		ShortNames:    []string{ResourceCodeEtcd},
-		Categories:    []string{"datastore", "kubedb", "appscode"},
+		Categories:    []string{"datastore", "kubedb", "appscode", "all"},
 		ResourceScope: string(apiextensions.NamespaceScoped),
 		Versions: []apiextensions.CustomResourceDefinitionVersion{
 			{
@@ -136,36 +137,4 @@ func (e *EtcdSpec) Migrate() {
 	if e == nil {
 		return
 	}
-}
-
-func (e *Etcd) AlreadyObserved(other *Etcd) bool {
-	if e == nil {
-		return other == nil
-	}
-	if other == nil { // && d != nil
-		return false
-	}
-	if e == other {
-		return true
-	}
-
-	var match bool
-
-	if EnableStatusSubresource {
-		match = e.Status.ObservedGeneration >= e.Generation
-	} else {
-		match = meta_util.Equal(e.Spec, other.Spec)
-	}
-	if match {
-		match = reflect.DeepEqual(e.Labels, other.Labels)
-	}
-	if match {
-		match = meta_util.EqualAnnotation(e.Annotations, other.Annotations)
-	}
-
-	if !match && bool(glog.V(log.LevelDebug)) {
-		diff := meta_util.Diff(other, e)
-		glog.V(log.LevelDebug).Infof("%s %s/%s has changed. Diff: %s", meta_util.GetKind(e), e.Namespace, e.Name, diff)
-	}
-	return match
 }

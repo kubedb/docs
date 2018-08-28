@@ -98,7 +98,11 @@ func (a *MySQLMutator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a MySQL database
 func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, mysql *api.MySQL) (runtime.Object, error) {
 	if mysql.Spec.Version == "" {
-		return nil, fmt.Errorf(`object 'Version' is missing in '%v'`, mysql.Spec)
+		return nil, errors.New(`'spec.version' is missing`)
+	}
+
+	if mysql.Spec.StorageType == "" {
+		mysql.Spec.StorageType = api.StorageTypeDurable
 	}
 
 	if mysql.Spec.Replicas == nil {

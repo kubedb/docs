@@ -159,6 +159,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	pg, err := util.UpdatePostgresStatus(c.ExtClient, postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = postgres.Generation
+		in.ObservedGenerationHash = meta_util.GenerationHash(postgres)
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

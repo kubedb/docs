@@ -25,7 +25,7 @@ type RedisVersion struct {
 // RedisVersionSpec is the spec for redis version
 type RedisVersionSpec struct {
 	// Version
-	Version string `json:"version,omitempty"`
+	Version string `json:"version"`
 	// Database Image
 	DB RedisVersionDatabase `json:"db"`
 	// Exporter Image

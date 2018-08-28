@@ -109,6 +109,12 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 				oldMongoDB.Spec.DatabaseSecret = mongodb.Spec.DatabaseSecret
 			}
 
+			// Allow changing Database ReplicaSet Keyfile only if there was no secret have set up yet.
+			if mongodb.Spec.ReplicaSet != nil &&
+				oldMongoDB.Spec.ReplicaSet.KeyFile == nil {
+				oldMongoDB.Spec.ReplicaSet.KeyFile = mongodb.Spec.ReplicaSet.KeyFile
+			}
+
 			if err := validateUpdate(mongodb, oldMongoDB, req.Kind.Kind); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
@@ -126,22 +132,29 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 // It is not method of Interface, because it is referenced from controller package too.
 func ValidateMongoDB(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, mongodb *api.MongoDB) error {
 	if mongodb.Spec.Version == "" {
-		return fmt.Errorf(`object 'Version' is missing in '%v'`, mongodb.Spec)
+		return errors.New(`'spec.version' is missing`)
 	}
-
 	if _, err := extClient.MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
-	if mongodb.Spec.Replicas == nil || *mongodb.Spec.Replicas != 1 {
-		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be one`, mongodb.Spec.Replicas)
+	if mongodb.Spec.StorageType == "" {
+		return fmt.Errorf(`'spec.storageType' is missing`)
+	}
+
+	if mongodb.Spec.Replicas == nil || *mongodb.Spec.Replicas < 1 {
+		return fmt.Errorf(`spec.replicas "%v" invalid. Must be greater than zero`, mongodb.Spec.Replicas)
+	}
+
+	if mongodb.Spec.Replicas == nil || (mongodb.Spec.ReplicaSet == nil && *mongodb.Spec.Replicas != 1) {
+		return fmt.Errorf(`spec.replicas "%v" invalid for 'MongoDB Standalone' instance. Value must be one`, mongodb.Spec.Replicas)
 	}
 
 	if err := amv.ValidateEnvVar(mongodb.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
 		return err
 	}
 
-	if err := amv.ValidateStorage(client, mongodb.Spec.Storage); err != nil {
+	if err := amv.ValidateStorage(client, mongodb.Spec.StorageType, mongodb.Spec.Storage); err != nil {
 		return err
 	}
 
@@ -241,9 +254,10 @@ var preconditionSpecFields = []string{
 	"spec.version",
 	"spec.storage",
 	"spec.databaseSecret",
-	"spec.nodeSelector",
 	"spec.init",
-	"spec.env",
+	"spec.ReplicaSet",
+	"spec.podTemplate.spec.nodeSelector",
+	"spec.podTemplate.spec.env",
 }
 
 func preconditionFailedError(kind string) error {

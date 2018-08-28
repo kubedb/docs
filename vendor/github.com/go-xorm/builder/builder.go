@@ -4,6 +4,11 @@
 
 package builder
 
+import (
+	sql2 "database/sql"
+	"fmt"
+)
+
 type optype byte
 
 const (
@@ -13,6 +18,14 @@ const (
 	updateType               // update
 	deleteType               // delete
 	unionType                // union
+)
+
+const (
+	POSTGRES = "postgres"
+	SQLITE   = "sqlite3"
+	MYSQL    = "mysql"
+	MSSQL    = "mssql"
+	ORACLE   = "oracle"
 )
 
 type join struct {
@@ -26,34 +39,88 @@ type union struct {
 	builder   *Builder
 }
 
+type limit struct {
+	limitN int
+	offset int
+}
+
 // Builder describes a SQL statement
 type Builder struct {
 	optype
-	tableName string
-	subQuery  *Builder
-	cond      Cond
-	selects   []string
-	joins     []join
-	unions    []union
-	inserts   Eq
-	updates   []Eq
-	orderBy   string
-	groupBy   string
-	having    string
+	dialect    string
+	isNested   bool
+	tableName  string
+	subQuery   *Builder
+	cond       Cond
+	selects    []string
+	joins      []join
+	unions     []union
+	limitation *limit
+	inserts    Eq
+	updates    []Eq
+	orderBy    string
+	groupBy    string
+	having     string
+}
+
+// Dialect sets the db dialect of Builder.
+func Dialect(dialect string) *Builder {
+	builder := &Builder{cond: NewCond(), dialect: dialect}
+	return builder
+}
+
+// MySQL is shortcut of Dialect(MySQL)
+func MySQL() *Builder {
+	return Dialect(MYSQL)
+}
+
+// MsSQL is shortcut of Dialect(MsSQL)
+func MsSQL() *Builder {
+	return Dialect(MSSQL)
+}
+
+// Oracle is shortcut of Dialect(Oracle)
+func Oracle() *Builder {
+	return Dialect(ORACLE)
+}
+
+// Postgres is shortcut of Dialect(Postgres)
+func Postgres() *Builder {
+	return Dialect(POSTGRES)
+}
+
+// SQLite is shortcut of Dialect(SQLITE)
+func SQLite() *Builder {
+	return Dialect(SQLITE)
 }
 
 // Where sets where SQL
 func (b *Builder) Where(cond Cond) *Builder {
-	b.cond = b.cond.And(cond)
+	if b.cond.IsValid() {
+		b.cond = b.cond.And(cond)
+	} else {
+		b.cond = cond
+	}
 	return b
 }
 
-// From sets the name of table or the sub query's alias and itself
-func (b *Builder) From(tableName string, subQuery ...*Builder) *Builder {
-	b.tableName = tableName
+// From sets from subject(can be a table name in string or a builder pointer) and its alias
+func (b *Builder) From(subject interface{}, alias ...string) *Builder {
+	switch subject.(type) {
+	case *Builder:
+		b.subQuery = subject.(*Builder)
 
-	if len(subQuery) > 0 {
-		b.subQuery = subQuery[0]
+		if len(alias) > 0 {
+			b.tableName = alias[0]
+		} else {
+			b.isNested = true
+		}
+	case string:
+		b.tableName = subject.(string)
+
+		if len(alias) > 0 {
+			b.tableName = b.tableName + " " + alias[0]
+		}
 	}
 
 	return b
@@ -88,10 +155,16 @@ func (b *Builder) Union(unionTp string, unionCond *Builder) *Builder {
 	if b.optype != unionType {
 		builder = &Builder{cond: NewCond()}
 		builder.optype = unionType
+		builder.dialect = b.dialect
+		builder.selects = b.selects
 
 		currentUnions := b.unions
 		// erase sub unions (actually append to new Builder.unions)
 		b.unions = nil
+
+		for e := range currentUnions {
+			currentUnions[e].builder.dialect = b.dialect
+		}
 
 		builder.unions = append(append(builder.unions, union{"", b}), currentUnions...)
 	} else {
@@ -99,10 +172,25 @@ func (b *Builder) Union(unionTp string, unionCond *Builder) *Builder {
 	}
 
 	if unionCond != nil {
+		if unionCond.dialect == "" && builder.dialect != "" {
+			unionCond.dialect = builder.dialect
+		}
+
 		builder.unions = append(builder.unions, union{unionTp, unionCond})
 	}
 
 	return builder
+}
+
+// Limit sets limitN condition
+func (b *Builder) Limit(limitN int, offset ...int) *Builder {
+	b.limitation = &limit{limitN: limitN}
+
+	if len(offset) > 0 {
+		b.limitation.offset = offset[0]
+	}
+
+	return b
 }
 
 // InnerJoin sets inner join
@@ -178,8 +266,8 @@ func (b *Builder) Delete(conds ...Cond) *Builder {
 // WriteTo implements Writer interface
 func (b *Builder) WriteTo(w Writer) error {
 	switch b.optype {
-	case condType:
-		return b.cond.WriteTo(w)
+	/*case condType:
+	return b.cond.WriteTo(w)*/
 	case selectType:
 		return b.selectWriteTo(w)
 	case insertType:
@@ -202,15 +290,48 @@ func (b *Builder) ToSQL() (string, []interface{}, error) {
 		return "", nil, err
 	}
 
-	return w.writer.String(), w.args, nil
+	// in case of sql.NamedArg in args
+	for e := range w.args {
+		if namedArg, ok := w.args[e].(sql2.NamedArg); ok {
+			w.args[e] = namedArg.Value
+		}
+	}
+
+	var sql = w.writer.String()
+	var err error
+
+	switch b.dialect {
+	case ORACLE, MSSQL:
+		// This is for compatibility with different sql drivers
+		for e := range w.args {
+			w.args[e] = sql2.Named(fmt.Sprintf("p%d", e+1), w.args[e])
+		}
+
+		var prefix string
+		if b.dialect == ORACLE {
+			prefix = ":p"
+		} else {
+			prefix = "@p"
+		}
+
+		if sql, err = ConvertPlaceholder(sql, prefix); err != nil {
+			return "", nil, err
+		}
+	case POSTGRES:
+		if sql, err = ConvertPlaceholder(sql, "$"); err != nil {
+			return "", nil, err
+		}
+	}
+
+	return sql, w.args, nil
 }
 
-// ToBindedSQL
-func (b *Builder) ToBindedSQL() (string, error) {
+// ToBoundSQL
+func (b *Builder) ToBoundSQL() (string, error) {
 	w := NewWriter()
 	if err := b.WriteTo(w); err != nil {
 		return "", err
 	}
 
-	return ConvertToBindedSQL(w.writer.String(), w.args)
+	return ConvertToBoundSQL(w.writer.String(), w.args)
 }

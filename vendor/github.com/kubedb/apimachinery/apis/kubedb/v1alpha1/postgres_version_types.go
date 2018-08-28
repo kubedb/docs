@@ -25,7 +25,7 @@ type PostgresVersion struct {
 // PostgresVersionSpec is the spec for postgres version
 type PostgresVersionSpec struct {
 	// Version
-	Version string `json:"version,omitempty"`
+	Version string `json:"version"`
 	// Database Image
 	DB PostgresVersionDatabase `json:"db"`
 	// Exporter Image

@@ -119,19 +119,21 @@ func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 // It is not method of Interface, because it is referenced from controller package too.
 func ValidateRedis(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, redis *api.Redis) error {
 	if redis.Spec.Version == "" {
-		return fmt.Errorf(`object 'Version' is missing in '%v'`, redis.Spec)
+		return errors.New(`'spec.version' is missing`)
 	}
-
-	// Check Redis version validation
 	if _, err := extClient.RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
+	}
+
+	if redis.Spec.StorageType == "" {
+		return fmt.Errorf(`'spec.storageType' is missing`)
 	}
 
 	if redis.Spec.Replicas == nil || *redis.Spec.Replicas != 1 {
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be one`, redis.Spec.Replicas)
 	}
 
-	if err := amv.ValidateStorage(client, redis.Spec.Storage); err != nil {
+	if err := amv.ValidateStorage(client, redis.Spec.StorageType, redis.Spec.Storage); err != nil {
 		return err
 	}
 
@@ -216,9 +218,10 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 
 var preconditionSpecFields = []string{
 	"spec.version",
+	"spec.storageType",
 	"spec.storage",
-	"spec.nodeSelector",
-	"spec.env",
+	"spec.podTemplate.spec.nodeSelector",
+	"spec.podTemplate.spec.env",
 }
 
 func preconditionFailedError(kind string) error {

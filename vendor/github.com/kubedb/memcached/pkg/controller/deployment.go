@@ -108,6 +108,7 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 			Name:            api.ResourceSingularMemcached,
 			Image:           memcachedVersion.Spec.DB.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
+			Args:            memcached.Spec.PodTemplate.Spec.Args,
 			Ports: []core.ContainerPort{
 				{
 					Name:          "db",

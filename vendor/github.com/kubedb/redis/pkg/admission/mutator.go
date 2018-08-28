@@ -96,7 +96,11 @@ func (a *RedisMutator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a Redis database
 func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, redis *api.Redis) (runtime.Object, error) {
 	if redis.Spec.Version == "" {
-		return nil, fmt.Errorf(`object 'Version' is missing in '%v'`, redis.Spec)
+		return nil, errors.New(`'spec.version' is missing`)
+	}
+
+	if redis.Spec.StorageType == "" {
+		redis.Spec.StorageType = api.StorageTypeDurable
 	}
 
 	if redis.Spec.Replicas == nil {

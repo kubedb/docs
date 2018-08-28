@@ -26,7 +26,7 @@ import (
 
 const (
 	// Version is the current version of Elastic.
-	Version = "6.1.27"
+	Version = "6.1.28"
 
 	// DefaultURL is the default endpoint of Elasticsearch on the local machine.
 	// It is used e.g. when initializing a new Client without a specific URL.
@@ -1182,6 +1182,7 @@ type PerformRequestOptions struct {
 	ContentType  string
 	IgnoreErrors []int
 	Retrier      Retrier
+	Headers      http.Header
 }
 
 // PerformRequest does a HTTP request to Elasticsearch.
@@ -1259,6 +1260,14 @@ func (c *Client) PerformRequest(ctx context.Context, opt PerformRequestOptions) 
 		}
 		if opt.ContentType != "" {
 			req.Header.Set("Content-Type", opt.ContentType)
+		}
+
+		if len(opt.Headers) > 0 {
+			for key, value := range opt.Headers {
+				for _, v := range value {
+					req.Header.Add(key, v)
+				}
+			}
 		}
 
 		// Set body
@@ -1766,6 +1775,63 @@ func (c *Client) PutScript() *PutScriptService {
 // DeleteScript allows removing a stored script from Elasticsearch.
 func (c *Client) DeleteScript() *DeleteScriptService {
 	return NewDeleteScriptService(c)
+}
+
+// -- X-Pack --
+
+// XPackWatchPut adds a watch.
+func (c *Client) XPackWatchPut() *XpackWatcherPutWatchService {
+	return NewXpackWatcherPutWatchService(c)
+}
+
+// XPackWatchGet gets a watch.
+func (c *Client) XPackWatchGet() *XpackWatcherGetWatchService {
+	return NewXpackWatcherGetWatchService(c)
+}
+
+// XPackWatchDelete deletes a watch.
+func (c *Client) XPackWatchDelete() *XpackWatcherDeleteWatchService {
+	return NewXpackWatcherDeleteWatchService(c)
+}
+
+// XPackWatchExecute executes a watch.
+func (c *Client) XPackWatchExecute() *XpackWatcherExecuteWatchService {
+	return NewXpackWatcherExecuteWatchService(c)
+}
+
+// XPackWatchAck acknowledging a watch.
+func (c *Client) XPackWatchAck() *XpackWatcherAckWatchService {
+	return NewXpackWatcherAckWatchService(c)
+}
+
+// XPackWatchActivate activates a watch.
+func (c *Client) XPackWatchActivate() *XpackWatcherActivateWatchService {
+	return NewXpackWatcherActivateWatchService(c)
+}
+
+// XPackWatchDeactivate deactivates a watch.
+func (c *Client) XPackWatchDeactivate() *XpackWatcherDeactivateWatchService {
+	return NewXpackWatcherDeactivateWatchService(c)
+}
+
+// XPackWatchStats returns the current Watcher metrics.
+func (c *Client) XPackWatchStats() *XpackWatcherStatsService {
+	return NewXpackWatcherStatsService(c)
+}
+
+// XPackWatchStart starts a watch.
+func (c *Client) XPackWatchStart() *XpackWatcherStartService {
+	return NewXpackWatcherStartService(c)
+}
+
+// XPackWatchStop stops a watch.
+func (c *Client) XPackWatchStop() *XpackWatcherStopService {
+	return NewXpackWatcherStopService(c)
+}
+
+// XPackWatchRestart restarts a watch.
+func (c *Client) XPackWatchRestart() *XpackWatcherRestartService {
+	return NewXpackWatcherRestartService(c)
 }
 
 // -- Helpers and shortcuts --

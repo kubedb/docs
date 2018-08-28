@@ -25,7 +25,7 @@ type MemcachedVersion struct {
 // MemcachedVersionSpec is the spec for memcached version
 type MemcachedVersionSpec struct {
 	// Version
-	Version string `json:"version,omitempty"`
+	Version string `json:"version"`
 	// Database Image
 	DB MemcachedVersionDatabase `json:"db"`
 	// Exporter Image

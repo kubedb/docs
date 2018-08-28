@@ -12,11 +12,7 @@ func (c *Controller) initWatcher() {
 	c.rdInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Redises().Informer()
 	c.rdQueue = queue.New("Redis", c.MaxNumRequeues, c.NumThreads, c.runRedis)
 	c.rdLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Redises().Lister()
-	c.rdInformer.AddEventHandler(queue.NewEventHandler(c.rdQueue.GetQueue(), func(old interface{}, new interface{}) bool {
-		oldObj := old.(*api.Redis)
-		newObj := new.(*api.Redis)
-		return newObj.DeletionTimestamp != nil || !newObj.AlreadyObserved(oldObj)
-	}))
+	c.rdInformer.AddEventHandler(queue.NewObservableHandler(c.rdQueue.GetQueue(), api.EnableStatusSubresource))
 }
 
 func (c *Controller) runRedis(key string) error {

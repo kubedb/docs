@@ -239,7 +239,7 @@ searchguard:
           type: basic
           challenge: true
         authentication_backend:
-          type: intern
+          type: internal
 `
 
 var internal_user = `

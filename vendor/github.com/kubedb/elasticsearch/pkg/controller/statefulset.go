@@ -25,7 +25,7 @@ const (
 
 func (c *Controller) ensureStatefulSet(
 	elasticsearch *api.Elasticsearch,
-	pvcSpec core.PersistentVolumeClaimSpec,
+	pvcSpec *core.PersistentVolumeClaimSpec,
 	resources core.ResourceRequirements,
 	statefulSetName string,
 	labels map[string]string,
@@ -120,7 +120,7 @@ func (c *Controller) ensureStatefulSet(
 		}
 
 		in = upsertCertificate(in, elasticsearch.Spec.CertificateSecret.SecretName, isClient, elasticsearch.Spec.EnableSSL)
-		in = upsertDataVolume(in, pvcSpec)
+		in = upsertDataVolume(in, elasticsearch.Spec.StorageType, pvcSpec)
 		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 
 		return in
@@ -352,7 +352,7 @@ func (c *Controller) ensureCombinedNode(elasticsearch *api.Elasticsearch) (kutil
 	if elasticsearch.Spec.Resources != nil {
 		resources = *elasticsearch.Spec.Resources
 	}
-	return c.ensureStatefulSet(elasticsearch, pvcSpec, resources, statefulSetName, labels, replicas, envList, true)
+	return c.ensureStatefulSet(elasticsearch, &pvcSpec, resources, statefulSetName, labels, replicas, envList, true)
 }
 
 func (c *Controller) checkStatefulSet(elasticsearch *api.Elasticsearch, name string) error {
@@ -598,7 +598,7 @@ func upsertDatabaseSecret(statefulSet *apps.StatefulSet, secretName string, sear
 	return statefulSet
 }
 
-func upsertDataVolume(statefulSet *apps.StatefulSet, pvcSpec core.PersistentVolumeClaimSpec) *apps.StatefulSet {
+func upsertDataVolume(statefulSet *apps.StatefulSet, st api.StorageType, pvcSpec *core.PersistentVolumeClaimSpec) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularElasticsearch {
 			volumeMount := core.VolumeMount{
@@ -609,27 +609,42 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, pvcSpec core.PersistentVolu
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
-			if len(pvcSpec.AccessModes) == 0 {
-				pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
-					core.ReadWriteOnce,
+			if st == api.StorageTypeEphemeral {
+				ed := core.EmptyDirVolumeSource{}
+				if pvcSpec != nil {
+					if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
+						ed.SizeLimit = &sz
+					}
 				}
-				log.Infof(`Using "%v" as AccessModes in "%v"`, core.ReadWriteOnce, pvcSpec)
-			}
+				statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+					statefulSet.Spec.Template.Spec.Volumes,
+					core.Volume{
+						Name: "data",
+						VolumeSource: core.VolumeSource{
+							EmptyDir: &ed,
+						},
+					})
+			} else {
+				if len(pvcSpec.AccessModes) == 0 {
+					pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
+						core.ReadWriteOnce,
+					}
+					log.Infof(`Using "%v" as AccessModes in "%v"`, core.ReadWriteOnce, pvcSpec)
+				}
 
-			volumeClaim := core.PersistentVolumeClaim{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "data",
-				},
-				Spec: pvcSpec,
-			}
-			if pvcSpec.StorageClassName != nil {
-				volumeClaim.Annotations = map[string]string{
-					"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+				claim := core.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "data",
+					},
+					Spec: *pvcSpec,
 				}
+				if pvcSpec.StorageClassName != nil {
+					claim.Annotations = map[string]string{
+						"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+					}
+				}
+				statefulSet.Spec.VolumeClaimTemplates = core_util.UpsertVolumeClaim(statefulSet.Spec.VolumeClaimTemplates, claim)
 			}
-			volumeClaims := statefulSet.Spec.VolumeClaimTemplates
-			volumeClaims = core_util.UpsertVolumeClaim(volumeClaims, volumeClaim)
-			statefulSet.Spec.VolumeClaimTemplates = volumeClaims
 
 			return statefulSet
 		}

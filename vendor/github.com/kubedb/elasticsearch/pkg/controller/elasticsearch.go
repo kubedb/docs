@@ -145,6 +145,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	es, err := kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = elasticsearch.Generation
+		in.ObservedGenerationHash = meta_util.GenerationHash(elasticsearch)
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

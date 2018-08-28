@@ -15,7 +15,15 @@ import (
 	store "kmodules.xyz/objectstore-api/api/v1"
 )
 
-func ValidateStorage(client kubernetes.Interface, spec core.PersistentVolumeClaimSpec) error {
+func ValidateStorage(client kubernetes.Interface, storageType api.StorageType, spec *core.PersistentVolumeClaimSpec) error {
+	if storageType == api.StorageTypeEphemeral {
+		return nil
+	}
+
+	if spec == nil {
+		return errors.New(`spec.storage is missing for durable storage type`)
+	}
+
 	if spec.StorageClassName != nil {
 		if _, err := client.StorageV1beta1().StorageClasses().Get(*spec.StorageClassName, metav1.GetOptions{}); err != nil {
 			if kerr.IsNotFound(err) {

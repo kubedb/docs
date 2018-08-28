@@ -12,11 +12,7 @@ func (c *Controller) initWatcher() {
 	c.mgInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().MongoDBs().Informer()
 	c.mgQueue = queue.New("MongoDB", c.MaxNumRequeues, c.NumThreads, c.runMongoDB)
 	c.mgLister = c.KubedbInformerFactory.Kubedb().V1alpha1().MongoDBs().Lister()
-	c.mgInformer.AddEventHandler(queue.NewEventHandler(c.mgQueue.GetQueue(), func(old interface{}, new interface{}) bool {
-		oldObj := old.(*api.MongoDB)
-		newObj := new.(*api.MongoDB)
-		return newObj.DeletionTimestamp != nil || !newObj.AlreadyObserved(oldObj)
-	}))
+	c.mgInformer.AddEventHandler(queue.NewObservableHandler(c.mgQueue.GetQueue(), api.EnableStatusSubresource))
 }
 
 func (c *Controller) runMongoDB(key string) error {

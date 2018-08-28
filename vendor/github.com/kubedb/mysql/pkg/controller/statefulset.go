@@ -128,9 +128,11 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 			),
 		)
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
-			Name:      api.ResourceSingularMySQL,
-			Image:     mysqlVersion.Spec.DB.Image,
-			Resources: mysql.Spec.PodTemplate.Spec.Resources,
+			Name:            api.ResourceSingularMySQL,
+			Image:           mysqlVersion.Spec.DB.Image,
+			ImagePullPolicy: core.PullIfNotPresent,
+			Args:            mysql.Spec.PodTemplate.Spec.Args,
+			Resources:       mysql.Spec.PodTemplate.Spec.Resources,
 			Ports: []core.ContainerPort{
 				{
 					Name:          "db",
@@ -213,28 +215,42 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.Sta
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 			pvcSpec := mysql.Spec.Storage
-			if len(pvcSpec.AccessModes) == 0 {
-				pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
-					core.ReadWriteOnce,
+			if mysql.Spec.StorageType == api.StorageTypeEphemeral {
+				ed := core.EmptyDirVolumeSource{}
+				if pvcSpec != nil {
+					if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
+						ed.SizeLimit = &sz
+					}
 				}
-				log.Infof(`Using "%v" as AccessModes in mysql.Spec.Storage`, core.ReadWriteOnce)
-			}
-
-			volumeClaim := core.PersistentVolumeClaim{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: "data",
-				},
-				Spec: pvcSpec,
-			}
-			if pvcSpec.StorageClassName != nil {
-				volumeClaim.Annotations = map[string]string{
-					"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+				statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+					statefulSet.Spec.Template.Spec.Volumes,
+					core.Volume{
+						Name: "data",
+						VolumeSource: core.VolumeSource{
+							EmptyDir: &ed,
+						},
+					})
+			} else {
+				if len(pvcSpec.AccessModes) == 0 {
+					pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
+						core.ReadWriteOnce,
+					}
+					log.Infof(`Using "%v" as AccessModes in mysql.Spec.Storage`, core.ReadWriteOnce)
 				}
-			}
-			volumeClaims := statefulSet.Spec.VolumeClaimTemplates
-			volumeClaims = core_util.UpsertVolumeClaim(volumeClaims, volumeClaim)
-			statefulSet.Spec.VolumeClaimTemplates = volumeClaims
 
+				claim := core.PersistentVolumeClaim{
+					ObjectMeta: metav1.ObjectMeta{
+						Name: "data",
+					},
+					Spec: *pvcSpec,
+				}
+				if pvcSpec.StorageClassName != nil {
+					claim.Annotations = map[string]string{
+						"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+					}
+				}
+				statefulSet.Spec.VolumeClaimTemplates = core_util.UpsertVolumeClaim(statefulSet.Spec.VolumeClaimTemplates, claim)
+			}
 			break
 		}
 	}

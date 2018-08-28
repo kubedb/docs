@@ -116,6 +116,7 @@ func (c *Controller) create(redis *api.Redis) error {
 	rd, err := util.UpdateRedisStatus(c.ExtClient, redis, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = redis.Generation
+		in.ObservedGenerationHash = meta_util.GenerationHash(redis)
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {
