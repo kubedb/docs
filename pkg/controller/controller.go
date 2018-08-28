@@ -10,7 +10,7 @@ import (
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
 	esc "github.com/kubedb/elasticsearch/pkg/controller"
 	edc "github.com/kubedb/etcd/pkg/controller"
-		mcc "github.com/kubedb/memcached/pkg/controller"
+	mcc "github.com/kubedb/memcached/pkg/controller"
 	mgc "github.com/kubedb/mongodb/pkg/controller"
 	myc "github.com/kubedb/mysql/pkg/controller"
 	pgc "github.com/kubedb/postgres/pkg/controller"
@@ -25,7 +25,6 @@ type Controller struct {
 	*amc.Controller
 	promClient     pcm.MonitoringV1Interface
 	cronController snapc.CronControllerInterface
-	docker         Docker
 
 	// DB controllers
 	mgCtrl *mgc.Controller
@@ -37,20 +36,12 @@ type Controller struct {
 	mcCtrl *mcc.Controller
 }
 
-type Docker struct {
-	// docker Registry
-	Registry string
-	// Exporter tag
-	ExporterTag string
-}
-
 func New(
 	client kubernetes.Interface,
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
 	dbClient cs.KubedbV1alpha1Interface,
 	promClient pcm.MonitoringV1Interface,
 	cronController snapc.CronControllerInterface,
-	docker Docker,
 	opt amc.Config,
 ) *Controller {
 	return &Controller{
@@ -60,7 +51,6 @@ func New(
 			ApiExtKubeClient: apiExtKubeClient,
 		},
 		Config:         opt,
-		docker:         docker,
 		promClient:     promClient,
 		cronController: cronController,
 	}

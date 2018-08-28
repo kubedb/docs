@@ -509,6 +509,21 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, el
 		volumes := statefulSet.Spec.Template.Spec.Volumes
 		volumes = core_util.UpsertVolume(volumes, volume)
 		statefulSet.Spec.Template.Spec.Volumes = volumes
+
+		// this environment variable will be used to determine url scheme in exporter
+		envList := []core.EnvVar{
+			{
+				Name:  "USE_SSL",
+				Value: fmt.Sprintf("%v", elasticsearch.Spec.EnableSSL),
+			},
+		}
+
+		for i, container := range statefulSet.Spec.Template.Spec.Containers {
+			if container.Name == "exporter" {
+				statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
+				return statefulSet
+			}
+		}
 	}
 	return statefulSet
 }

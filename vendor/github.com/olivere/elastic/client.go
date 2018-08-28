@@ -21,12 +21,12 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/olivere/elastic/v6/config"
+	"github.com/olivere/elastic/config"
 )
 
 const (
 	// Version is the current version of Elastic.
-	Version = "6.2.0"
+	Version = "6.2.2"
 
 	// DefaultURL is the default endpoint of Elasticsearch on the local machine.
 	// It is used e.g. when initializing a new Client without a specific URL.
@@ -452,9 +452,11 @@ func configToOptions(cfg *config.Config) ([]ClientOptionFunc, error) {
 		if cfg.Sniff != nil {
 			options = append(options, SetSniff(*cfg.Sniff))
 		}
+		/*
 		if cfg.Healthcheck != nil {
 			options = append(options, SetHealthcheck(*cfg.Healthcheck))
 		}
+		*/
 	}
 	return options, nil
 }

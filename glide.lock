@@ -1,5 +1,5 @@
 hash: 38f3f4cb8e54e6f96924845e757b32e977bc50eac3cee1ef6334dc99f19111dd
-updated: 2018-08-28T11:51:20.540012873+06:00
+updated: 2018-08-28T16:20:42.40880445+06:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -369,7 +369,7 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: fd379cc5536f7d5c12ab36ce53996b9872b3b22d
+  version: 45306807c4e94556eeaaecc8493411ff695fc1f5
   subpackages:
   - pkg/admission
   - pkg/audit/report
@@ -382,29 +382,29 @@ imports:
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: 058c500e96383c17b7fbf28372880f8788841a44
+  version: f64af50681f5061c4ea9cce87f7e3b62f095d573
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: 68796a0b6246e5d416d2aece03290e16842a321e
+  version: fb48b128a4559bace72d5da50c3cf399fee37faf
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 559cdb6a0e81793439b8214cc590243d45398db4
+  version: 9ee88bd2cbca695b56cb4d9f08d2bc4ec9e6c608
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: 334157ae350a918f90924dee303f4aa9831acda5
+  version: 72b37b5e31d61f69d2568a249a24af06903bd5eb
   subpackages:
   - pkg/admission
   - pkg/audit/report
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: fc213f7ac8e99a393363ee4951ff046189169b92
+  version: e280162cd8d4d799a032c0e3304b82b6e3d1c6b4
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -439,7 +439,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/olivere/elastic
-  version: 4d73bd24ea39a44588a3e485f21ee4722735d2ee
+  version: 66b430cdba34722e4a9656f651df616fe5f0503f
   subpackages:
   - config
   - uritemplates
