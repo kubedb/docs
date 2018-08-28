@@ -32,7 +32,7 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 		in.Phase = phase
 		in.Reason = reason
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	return err
 }
 

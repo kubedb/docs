@@ -134,7 +134,7 @@ func (c *Controller) handleEtcdEvent(event *Event) error {
 		in.ObservedGeneration = etcd.Generation
 		in.ObservedGenerationHash = meta_util.GenerationHash(etcd)
 		return in
-	})
+	}, api.EnableStatusSubresource)
 
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd); rerr == nil {
@@ -209,7 +209,7 @@ func (c *Controller) initialize(etcd *api.Etcd) error {
 	db, err := util.UpdateEtcdStatus(c.ExtClient, etcd, func(in *api.EtcdStatus) *api.EtcdStatus {
 		in.Phase = api.DatabasePhaseInitializing
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd); rerr == nil {
 			c.recorder.Eventf(

@@ -1,5 +1,5 @@
 hash: 38f3f4cb8e54e6f96924845e757b32e977bc50eac3cee1ef6334dc99f19111dd
-updated: 2018-08-28T16:20:42.40880445+06:00
+updated: 2018-08-28T05:18:15.801898204-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -107,7 +107,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/blang/semver
-  version: 3c1074078d32d767e08ab2c8564867292da86926
+  version: b38d23b8782a487059e8fc8773e9a5b228a77cb6
 - name: github.com/cloudfoundry-community/go-cfenv
   version: f920e9562d5f951cbf11785728f67258c38a10d0
 - name: github.com/coreos/etcd
@@ -231,11 +231,11 @@ imports:
 - name: github.com/fatih/structs
   version: ebf56d35bba727c68ac77f56f2fcf90b181851aa
 - name: github.com/fsnotify/fsnotify
-  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
+  version: f12c6236fe7b5cf6bcf30e5935d08cb079d78334
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
-  version: 5cf292cae48347c2490ac1a58fe36735fb78df7e
+  version: 300e940a926eb277d3901b20bdfcc54928ad3642
 - name: github.com/go-kit/kit
   version: ca4112baa34cb55091301bdc13b1420a122b1b9e
   subpackages:
@@ -300,7 +300,7 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/google/uuid
-  version: d460ce9f8df2e77fb1ba55ca87fafed96c607494
+  version: 8c31c18f31ede9fc8eae72290a7e7a8064e9b3e3
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
@@ -334,7 +334,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
-  version: c2b33e8439af944379acbdd9c3a5fe0bc44bd8a5
+  version: 0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74
 - name: github.com/jpillora/go-ogle-analytics
   version: 14b04e0594ef6a9fd943363b135656f0ec8c9d0e
 - name: github.com/json-iterator/go
@@ -376,7 +376,7 @@ imports:
   - pkg/controller
   - pkg/util/es
 - name: github.com/kubedb/etcd
-  version: 1022afb95f8127fe34f8eeaa09e7b64e024080a7
+  version: 0fc1d97ca04836ef92f64044e5bff1c38b7d66a4
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -425,7 +425,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/mitchellh/mapstructure
-  version: fa473d140ef3c6adf42d6b391fe76707f1f243c8
+  version: 53818660ed4955e899c0bcafa97299a388bd7c8e
 - name: github.com/modern-go/concurrent
   version: bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94
 - name: github.com/modern-go/reflect2
@@ -439,7 +439,7 @@ imports:
   subpackages:
   - exporter
 - name: github.com/olivere/elastic
-  version: 66b430cdba34722e4a9656f651df616fe5f0503f
+  version: cb2d6d05f9451337c8852815c23ca057922687eb
   subpackages:
   - config
   - uritemplates
@@ -488,7 +488,7 @@ imports:
   subpackages:
   - xfs
 - name: github.com/prometheus/prometheus
-  version: 87f1dad16da760aa48f8a41089c0d1a20b56689c
+  version: f0a1ebc19df4bb580bb560a191d121cb7bf3ce67
   subpackages:
   - util/strutil
 - name: github.com/PuerkitoBio/purell
@@ -496,19 +496,20 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/russross/blackfriday
-  version: 46c73eb196baff5bb07288f245b223bd1a30fba6
+  version: 300106c228d52c8941d4b3de6054a6062a86dda3
 - name: github.com/rwynn/gtm
   version: 495abc277593067479c3c528864191804ab04cf7
   repo: https://github.com/jacksontj/gtm.git
 - name: github.com/satori/go.uuid
-  version: 36e9d2ebbde5e3f13ab2e25625fd453271d6522e
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/sergi/go-diff
-  version: 24e2351369ec4949b2ed0dc5c477afdd4c4034e8
-  repo: https://github.com/sergi/go-diff
+  version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
   subpackages:
   - diffmatchpatch
 - name: github.com/serialx/hashring
   version: 49a4782e9908fe098c907022a1bd7519c79803d6
+- name: github.com/shurcooL/sanitized_anchor_name
+  version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
   version: d26492970760ca5d33129d2d799e34be5c4782eb
 - name: github.com/spf13/cobra
@@ -528,12 +529,11 @@ imports:
   subpackages:
   - collector
 - name: github.com/yudai/gojsondiff
-  version: 0525c875b75ca60b9e67ddc44496aa16f21066b0
+  version: 7b1b7adf999dab73a6eb02669c3d82dbb27a3dd6
   subpackages:
   - formatter
 - name: github.com/yudai/golcs
   version: d1c525dea8ce39ea9a783d33cf08932305373f2c
-  repo: https://github.com/yudai/golcs
 - name: golang.org/x/crypto
   version: 49796115aa4b964c318aad4f3084fdb41e9aa067
   subpackages:
@@ -597,7 +597,7 @@ imports:
   - googleapi/internal/uritemplates
   - storage/v1
 - name: google.golang.org/appengine
-  version: 03cac3b07182cfb08c0d0c0b6ee72a1ceb151c92
+  version: 12d5545dc1cfa6047a286d5e853841b6471f4c19
   subpackages:
   - cloudsql
   - internal

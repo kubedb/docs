@@ -96,7 +96,7 @@ func (c *Controller) checkService(etcd *api.Etcd, serviceName string) error {
 		return err
 	}
 
-	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindMySQL ||
+	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindEtcd ||
 		service.Labels[api.LabelDatabaseName] != etcd.Name {
 		return fmt.Errorf(`intended service "%v" already exists`, serviceName)
 	}

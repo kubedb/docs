@@ -376,6 +376,6 @@ func (c *Controller) updateCRStatus(cl *Cluster) error {
 		in.ObservedGeneration = cl.cluster.Generation
 		in.ObservedGenerationHash = meta_util.GenerationHash(cl.cluster)
 		return in
-	})
+	}, api.EnableStatusSubresource)
 	return err
 }
