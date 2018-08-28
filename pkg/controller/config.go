@@ -8,6 +8,7 @@ import (
 	"github.com/kubedb/apimachinery/pkg/controller/dormantdatabase"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
 	esc "github.com/kubedb/elasticsearch/pkg/controller"
+	edc "github.com/kubedb/etcd/pkg/controller"
 	mcc "github.com/kubedb/memcached/pkg/controller"
 	mgc "github.com/kubedb/mongodb/pkg/controller"
 	myc "github.com/kubedb/mysql/pkg/controller"
@@ -33,7 +34,6 @@ type OperatorConfig struct {
 	DBClient         cs.Interface
 	PromClient       pcm.MonitoringV1Interface
 	CronController   snapc.CronControllerInterface
-	Docker           Docker
 }
 
 func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
@@ -50,7 +50,6 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.DBClient.KubedbV1alpha1(),
 		c.PromClient,
 		c.CronController,
-		c.Docker,
 		c.Config,
 	)
 
@@ -59,6 +58,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 
 	ctrl.pgCtrl = pgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
 	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
+	ctrl.edCtrl = edc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
 	ctrl.mgCtrl = mgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
 	ctrl.myCtrl = myc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
 	ctrl.rdCtrl = rdc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, ctrl.Config)
@@ -81,6 +81,10 @@ func (c *Controller) Init() error {
 	}
 
 	if err := c.esCtrl.Init(); err != nil {
+		return err
+	}
+
+	if err := c.edCtrl.Init(); err != nil {
 		return err
 	}
 

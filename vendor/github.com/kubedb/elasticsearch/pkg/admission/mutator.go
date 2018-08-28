@@ -98,7 +98,11 @@ func (a *ElasticsearchMutator) Admit(req *admission.AdmissionRequest) *admission
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a Elasticsearch database
 func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, elasticsearch *api.Elasticsearch) (runtime.Object, error) {
 	if elasticsearch.Spec.Version == "" {
-		return nil, fmt.Errorf(`object 'Version' is missing in '%v'`, elasticsearch.Spec)
+		return nil, errors.New(`'spec.version' is missing`)
+	}
+
+	if elasticsearch.Spec.StorageType == "" {
+		elasticsearch.Spec.StorageType = api.StorageTypeDurable
 	}
 
 	topology := elasticsearch.Spec.Topology

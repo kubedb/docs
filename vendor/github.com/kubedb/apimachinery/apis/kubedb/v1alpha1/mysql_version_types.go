@@ -25,7 +25,7 @@ type MySQLVersion struct {
 // MySQLVersionSpec is the spec for postgres version
 type MySQLVersionSpec struct {
 	// Version
-	Version string `json:"version,omitempty"`
+	Version string `json:"version"`
 	// Database Image
 	DB MySQLVersionDatabase `json:"db"`
 	// Exporter Image

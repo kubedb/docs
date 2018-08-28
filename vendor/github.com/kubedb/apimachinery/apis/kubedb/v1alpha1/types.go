@@ -85,3 +85,12 @@ const (
 	// used for Databases that are Failed
 	DatabasePhaseFailed DatabasePhase = "Failed"
 )
+
+type StorageType string
+
+const (
+	// default storage type and requires spec.storage to be configured
+	StorageTypeDurable StorageType = "Durable"
+	// Uses emptyDir as storage
+	StorageTypeEphemeral StorageType = "Ephemeral"
+)

@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/appscode/go/log"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
+	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/queue"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -160,6 +161,8 @@ func (c *Controller) pushFailureEvent(elasticsearch *api.Elasticsearch, reason s
 	es, err := kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
+		in.ObservedGeneration = elasticsearch.Generation
+		in.ObservedGenerationHash = meta_util.GenerationHash(elasticsearch)
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

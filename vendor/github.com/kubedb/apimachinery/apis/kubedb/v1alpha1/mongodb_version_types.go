@@ -25,7 +25,7 @@ type MongoDBVersion struct {
 // MongoDBVersionSpec is the spec for mongodb version
 type MongoDBVersionSpec struct {
 	// Version
-	Version string `json:"version,omitempty"`
+	Version string `json:"version"`
 	// Database Image
 	DB MongoDBVersionDatabase `json:"db"`
 	// Exporter Image

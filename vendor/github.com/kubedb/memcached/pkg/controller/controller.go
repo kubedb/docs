@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/appscode/go/log"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
+	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/queue"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -139,6 +140,8 @@ func (c *Controller) pushFailureEvent(memcached *api.Memcached, reason string) {
 	mc, err := kutildb.UpdateMemcachedStatus(c.ExtClient, memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
+		in.ObservedGeneration = memcached.Generation
+		in.ObservedGenerationHash = meta_util.GenerationHash(memcached)
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

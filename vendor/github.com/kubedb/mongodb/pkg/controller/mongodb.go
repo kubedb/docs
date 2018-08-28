@@ -66,8 +66,8 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	// create Governing Service
-	governingService := c.GoverningService
-	if err := c.CreateGoverningService(governingService, mongodb.Namespace); err != nil {
+	governingService, err := c.createMongoDBGoverningService(mongodb)
+	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
 			c.recorder.Eventf(
 				ref,
@@ -80,6 +80,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		}
 		return err
 	}
+	c.GoverningService = governingService
 
 	// ensure database Service
 	vt1, err := c.ensureService(mongodb)
@@ -143,6 +144,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	mg, err := util.UpdateMongoDBStatus(c.ExtClient, mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = mongodb.Generation
+		in.ObservedGenerationHash = meta_util.GenerationHash(mongodb)
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/appscode/go/log"
 	core_util "github.com/appscode/kutil/core/v1"
+	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	batch "k8s.io/api/batch/v1"
@@ -33,7 +34,7 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 	}
 
 	// Get PersistentVolume object for Backup Util pod.
-	persistentVolume, err := c.getVolumeForSnapshot(postgres.Spec.Storage, jobName, postgres.Namespace)
+	persistentVolume, err := c.getVolumeForSnapshot(postgres.Spec.StorageType, postgres.Spec.Storage, jobName, postgres.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -66,14 +67,14 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 							Name:            api.JobTypeRestore,
 							Image:           postgresVersion.Spec.Tools.Image,
 							ImagePullPolicy: core.PullIfNotPresent,
-							Args: []string{
+							Args: meta_util.UpsertArgumentList([]string{
 								api.JobTypeRestore,
 								fmt.Sprintf(`--host=%s`, postgres.ServiceName()),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
-							},
+							}, snapshot.Spec.PodTemplate.Spec.Args, "--enable-analytics"),
 							Env: []core.EnvVar{
 								{
 									Name: KeyPostgresPassword,
@@ -175,7 +176,7 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 	}
 
 	// Get PersistentVolume object for Backup Util pod.
-	persistentVolume, err := c.getVolumeForSnapshot(postgres.Spec.Storage, jobName, snapshot.Namespace)
+	persistentVolume, err := c.getVolumeForSnapshot(postgres.Spec.StorageType, postgres.Spec.Storage, jobName, snapshot.Namespace)
 	if err != nil {
 		return nil, err
 	}
@@ -206,14 +207,14 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 						{
 							Name:  api.JobTypeBackup,
 							Image: postgresVersion.Spec.Tools.Image,
-							Args: []string{
+							Args: meta_util.UpsertArgumentList([]string{
 								api.JobTypeBackup,
 								fmt.Sprintf(`--host=%s`, postgres.ServiceName()),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
-							},
+							}, snapshot.Spec.PodTemplate.Spec.Args, "--enable-analytics"),
 							Env: []core.EnvVar{
 								{
 									Name: KeyPostgresPassword,
@@ -290,7 +291,22 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 	return job, nil
 }
 
-func (c *Controller) getVolumeForSnapshot(pvcSpec core.PersistentVolumeClaimSpec, jobName, namespace string) (*core.Volume, error) {
+func (c *Controller) getVolumeForSnapshot(st api.StorageType, pvcSpec *core.PersistentVolumeClaimSpec, jobName, namespace string) (*core.Volume, error) {
+	if st == api.StorageTypeEphemeral {
+		ed := core.EmptyDirVolumeSource{}
+		if pvcSpec != nil {
+			if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
+				ed.SizeLimit = &sz
+			}
+		}
+		return &core.Volume{
+			Name: "tools",
+			VolumeSource: core.VolumeSource{
+				EmptyDir: &ed,
+			},
+		}, nil
+	}
+
 	volume := &core.Volume{
 		Name: "tools",
 	}
@@ -306,7 +322,7 @@ func (c *Controller) getVolumeForSnapshot(pvcSpec core.PersistentVolumeClaimSpec
 			Name:      jobName,
 			Namespace: namespace,
 		},
-		Spec: pvcSpec,
+		Spec: *pvcSpec,
 	}
 	if pvcSpec.StorageClassName != nil {
 		claim.Annotations = map[string]string{

@@ -4,8 +4,6 @@ import (
 	"flag"
 	"time"
 
-	stringz "github.com/appscode/go/strings"
-	v "github.com/appscode/go/version"
 	"github.com/appscode/kutil/meta"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -21,7 +19,6 @@ import (
 )
 
 type ExtraOptions struct {
-	Docker                      controller.Docker
 	EnableRBAC                  bool
 	OperatorNamespace           string
 	RestrictToOperatorNamespace bool
@@ -45,10 +42,6 @@ func (s ExtraOptions) WatchNamespace() string {
 
 func NewExtraOptions() *ExtraOptions {
 	return &ExtraOptions{
-		Docker: controller.Docker{
-			Registry:    "kubedb",
-			ExporterTag: "canary",
-		},
 		EnableRBAC:        true,
 		OperatorNamespace: meta.Namespace(),
 		GoverningService:  "kubedb",
@@ -66,8 +59,6 @@ func NewExtraOptions() *ExtraOptions {
 }
 
 func (s *ExtraOptions) AddGoFlags(fs *flag.FlagSet) {
-	fs.StringVar(&s.Docker.Registry, "docker-registry", s.Docker.Registry, "User provided docker repository")
-	fs.StringVar(&s.Docker.ExporterTag, "exporter-tag", stringz.Val(v.Version.Version, s.Docker.ExporterTag), "Tag of kubedb/operator used as exporter")
 	fs.StringVar(&s.GoverningService, "governing-service", s.GoverningService, "Governing service for database statefulset")
 	fs.BoolVar(&s.EnableRBAC, "rbac", s.EnableRBAC, "Enable RBAC for operator & offshoot Kubernetes objects")
 
@@ -92,7 +83,6 @@ func (s *ExtraOptions) AddFlags(fs *pflag.FlagSet) {
 func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 	var err error
 
-	cfg.Docker = s.Docker
 	cfg.EnableRBAC = s.EnableRBAC
 	cfg.OperatorNamespace = s.OperatorNamespace
 	cfg.GoverningService = s.GoverningService

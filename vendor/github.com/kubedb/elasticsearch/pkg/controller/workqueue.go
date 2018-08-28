@@ -12,11 +12,7 @@ func (c *Controller) initWatcher() {
 	c.esInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Elasticsearches().Informer()
 	c.esQueue = queue.New("Elasticsearch", c.MaxNumRequeues, c.NumThreads, c.runElasticsearch)
 	c.esLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Elasticsearches().Lister()
-	c.esInformer.AddEventHandler(queue.NewEventHandler(c.esQueue.GetQueue(), func(old interface{}, new interface{}) bool {
-		oldObj := old.(*api.Elasticsearch)
-		newObj := new.(*api.Elasticsearch)
-		return newObj.DeletionTimestamp != nil || !newObj.AlreadyObserved(oldObj)
-	}))
+	c.esInformer.AddEventHandler(queue.NewObservableHandler(c.esQueue.GetQueue(), api.EnableStatusSubresource))
 }
 
 func (c *Controller) runElasticsearch(key string) error {

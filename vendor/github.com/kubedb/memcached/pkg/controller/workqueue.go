@@ -12,11 +12,7 @@ func (c *Controller) initWatcher() {
 	c.mcInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Memcacheds().Informer()
 	c.mcQueue = queue.New("Memcached", c.MaxNumRequeues, c.NumThreads, c.runMemcached)
 	c.mcLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Memcacheds().Lister()
-	c.mcInformer.AddEventHandler(queue.NewEventHandler(c.mcQueue.GetQueue(), func(old interface{}, new interface{}) bool {
-		oldObj := old.(*api.Memcached)
-		newObj := new.(*api.Memcached)
-		return newObj.DeletionTimestamp != nil || !newObj.AlreadyObserved(oldObj)
-	}))
+	c.mcInformer.AddEventHandler(queue.NewObservableHandler(c.mcQueue.GetQueue(), api.EnableStatusSubresource))
 }
 
 func (c *Controller) runMemcached(key string) error {

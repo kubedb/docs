@@ -12,11 +12,7 @@ func (c *Controller) initWatcher() {
 	c.pgInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Postgreses().Informer()
 	c.pgQueue = queue.New("Postgres", c.MaxNumRequeues, c.NumThreads, c.runPostgres)
 	c.pgLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Postgreses().Lister()
-	c.pgInformer.AddEventHandler(queue.NewEventHandler(c.pgQueue.GetQueue(), func(old interface{}, new interface{}) bool {
-		oldObj := old.(*api.Postgres)
-		newObj := new.(*api.Postgres)
-		return newObj.DeletionTimestamp != nil || !newObj.AlreadyObserved(oldObj)
-	}))
+	c.pgInformer.AddEventHandler(queue.NewObservableHandler(c.pgQueue.GetQueue(), api.EnableStatusSubresource))
 }
 
 func (c *Controller) runPostgres(key string) error {

@@ -9,6 +9,7 @@ import (
 	amc "github.com/kubedb/apimachinery/pkg/controller"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
 	esc "github.com/kubedb/elasticsearch/pkg/controller"
+	edc "github.com/kubedb/etcd/pkg/controller"
 	mcc "github.com/kubedb/memcached/pkg/controller"
 	mgc "github.com/kubedb/mongodb/pkg/controller"
 	myc "github.com/kubedb/mysql/pkg/controller"
@@ -24,22 +25,15 @@ type Controller struct {
 	*amc.Controller
 	promClient     pcm.MonitoringV1Interface
 	cronController snapc.CronControllerInterface
-	docker         Docker
 
 	// DB controllers
 	mgCtrl *mgc.Controller
 	myCtrl *myc.Controller
 	pgCtrl *pgc.Controller
 	esCtrl *esc.Controller
+	edCtrl *edc.Controller
 	rdCtrl *rdc.Controller
 	mcCtrl *mcc.Controller
-}
-
-type Docker struct {
-	// docker Registry
-	Registry string
-	// Exporter tag
-	ExporterTag string
 }
 
 func New(
@@ -48,7 +42,6 @@ func New(
 	dbClient cs.KubedbV1alpha1Interface,
 	promClient pcm.MonitoringV1Interface,
 	cronController snapc.CronControllerInterface,
-	docker Docker,
 	opt amc.Config,
 ) *Controller {
 	return &Controller{
@@ -58,7 +51,6 @@ func New(
 			ApiExtKubeClient: apiExtKubeClient,
 		},
 		Config:         opt,
-		docker:         docker,
 		promClient:     promClient,
 		cronController: cronController,
 	}
@@ -69,11 +61,19 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 	crds := []*crd_api.CustomResourceDefinition{
 		api.Elasticsearch{}.CustomResourceDefinition(),
+		api.ElasticsearchVersion{}.CustomResourceDefinition(),
+		api.Etcd{}.CustomResourceDefinition(),
+		api.EtcdVersion{}.CustomResourceDefinition(),
 		api.Postgres{}.CustomResourceDefinition(),
+		api.PostgresVersion{}.CustomResourceDefinition(),
 		api.MySQL{}.CustomResourceDefinition(),
+		api.MySQLVersion{}.CustomResourceDefinition(),
 		api.MongoDB{}.CustomResourceDefinition(),
+		api.MongoDBVersion{}.CustomResourceDefinition(),
 		api.Redis{}.CustomResourceDefinition(),
+		api.RedisVersion{}.CustomResourceDefinition(),
 		api.Memcached{}.CustomResourceDefinition(),
+		api.MemcachedVersion{}.CustomResourceDefinition(),
 		api.DormantDatabase{}.CustomResourceDefinition(),
 		api.Snapshot{}.CustomResourceDefinition(),
 	}

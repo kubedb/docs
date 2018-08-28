@@ -77,7 +77,22 @@ func (c *Controller) WipeOutSnapshot(snapshot *api.Snapshot) error {
 	return c.DeleteSnapshotData(snapshot)
 }
 
-func (c *Controller) getVolumeForSnapshot(pvcSpec core.PersistentVolumeClaimSpec, jobName, namespace string) (*core.Volume, error) {
+func (c *Controller) getVolumeForSnapshot(st api.StorageType, pvcSpec *core.PersistentVolumeClaimSpec, jobName, namespace string) (*core.Volume, error) {
+	if st == api.StorageTypeEphemeral {
+		ed := core.EmptyDirVolumeSource{}
+		if pvcSpec != nil {
+			if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
+				ed.SizeLimit = &sz
+			}
+		}
+		return &core.Volume{
+			Name: "util-volume",
+			VolumeSource: core.VolumeSource{
+				EmptyDir: &ed,
+			},
+		}, nil
+	}
+
 	volume := &core.Volume{
 		Name: "util-volume",
 	}
@@ -93,7 +108,7 @@ func (c *Controller) getVolumeForSnapshot(pvcSpec core.PersistentVolumeClaimSpec
 			Name:      jobName,
 			Namespace: namespace,
 		},
-		Spec: pvcSpec,
+		Spec: *pvcSpec,
 	}
 	if pvcSpec.StorageClassName != nil {
 		claim.Annotations = map[string]string{

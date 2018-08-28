@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/appscode/go/log"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
+	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/queue"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -155,6 +156,8 @@ func (c *Controller) pushFailureEvent(mongodb *api.MongoDB, reason string) {
 	mg, err := kutildb.UpdateMongoDBStatus(c.ExtClient, mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
+		in.ObservedGeneration = mongodb.Generation
+		in.ObservedGenerationHash = meta_util.GenerationHash(mongodb)
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

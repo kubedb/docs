@@ -89,8 +89,8 @@ func WaitUntilReplicaSetReady(c kubernetes.Interface, meta metav1.ObjectMeta) er
 	})
 }
 
-func IsOwnedByDeployment(rs *apps.ReplicaSet) bool {
-	for _, ref := range rs.OwnerReferences {
+func IsOwnedByDeployment(refs []metav1.OwnerReference) bool {
+	for _, ref := range refs {
 		if ref.Kind == "Deployment" && ref.Name != "" {
 			return true
 		}

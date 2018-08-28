@@ -100,6 +100,7 @@ func (c *Controller) create(memcached *api.Memcached) error {
 	mc, err := util.UpdateMemcachedStatus(c.ExtClient, memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = memcached.Generation
+		in.ObservedGenerationHash = meta_util.GenerationHash(memcached)
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {
