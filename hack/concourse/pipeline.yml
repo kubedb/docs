@@ -27,6 +27,7 @@ resources:
   source:
     repository: kubedb/operator
     access_token: ((access_token))
+    context: "concourse-ci"
 
 - name: cncf
   type: pull-request
@@ -123,8 +124,7 @@ jobs:
   - put: repo-status
     params:
       state: pending
-      commit: operator
-      context: "concourse-ci"
+      commit: master
   - task: test-e2e
     privileged: true
     file: master/hack/concourse/task.yml
@@ -139,14 +139,12 @@ jobs:
       put: repo-status
       params:
         state: success
-        commit: operator
-        context: "concourse-ci"
+        commit: master
     on_failure:
       put: repo-status
       params:
         state: failure
-        commit: operator
-        context: "concourse-ci"
+        commit: master
     ensure:
       put: concourse-locks
       params:
