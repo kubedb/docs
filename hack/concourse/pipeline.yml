@@ -14,7 +14,7 @@ resource_types:
     tag: master
 
 resources:
-- name: operator
+- name: master
   type: git
   tags: [cncf]
   source:
@@ -112,7 +112,7 @@ resources:
 jobs:
 - name: test-master
   plan:
-  - get: operator
+  - get: master
     trigger: true
   - get: creds
     params:
@@ -124,10 +124,12 @@ jobs:
     params:
       state: pending
       commit: operator
-      description: "concourse-ci"
+      context: "concourse-ci"
   - task: test-e2e
     privileged: true
-    file: operator/hack/concourse/task.yml
+    file: master/hack/concourse/task.yml
+    input_mapping:
+      operator: master
     params:
       ClusterProvider: cncf
       DOCKER_USER: ((docker_user))
@@ -138,13 +140,13 @@ jobs:
       params:
         state: success
         commit: operator
-        description: "concourse-ci"
+        context: "concourse-ci"
     on_failure:
       put: repo-status
       params:
         state: failure
         commit: operator
-        description: "concourse-ci"
+        context: "concourse-ci"
     ensure:
       put: concourse-locks
       params:
@@ -220,7 +222,7 @@ jobs:
   - get: creds
     params:
       unpack: true
-  - task: test-aws-kops
+  - task: test-e2e
     privileged: true
     file: aws/hack/concourse/task.yml
     input_mapping:
@@ -238,7 +240,7 @@ jobs:
       put: aws
       params: {path: aws, status: failure}
 
-- name: test-azur-aks
+- name: test-azure-aks
   plan:
   - get: azure-aks
     version: every
@@ -248,7 +250,7 @@ jobs:
   - get: creds
     params:
       unpack: true
-  - task: test-azure-aks
+  - task: test-e2e
     privileged: true
     file: azure-aks/hack/concourse/task.yml
     input_mapping:
@@ -277,7 +279,7 @@ jobs:
   - get: creds
     params:
       unpack: true
-  - task: test-azure-acs
+  - task: test-e2e
     privileged: true
     file: azure-acs/hack/concourse/task.yml
     input_mapping:
@@ -306,7 +308,7 @@ jobs:
   - get: creds
     params:
       unpack: true
-  - task: test-do
+  - task: test-e2e
     privileged: true
     file: do/hack/concourse/task.yml
     input_mapping:
@@ -332,7 +334,7 @@ jobs:
   - get: creds
     params:
       unpack: true
-  - task: test-kubespray
+  - task: test-e2e
     privileged: true
     file: kubespray/hack/concourse/task.yml
     input_mapping:
