@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	meta_util "github.com/appscode/kutil/meta"
@@ -167,8 +168,7 @@ func (c *Controller) pushFailureEvent(etcd *api.Etcd, reason string) {
 	db, err := kutildb.UpdateEtcdStatus(c.ExtClient, etcd, func(in *api.EtcdStatus) *api.EtcdStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
-		in.ObservedGeneration = etcd.Generation
-		in.ObservedGenerationHash = meta_util.GenerationHash(etcd)
+		in.ObservedGeneration = types.NewIntHash(etcd.Generation, meta_util.GenerationHash(etcd))
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

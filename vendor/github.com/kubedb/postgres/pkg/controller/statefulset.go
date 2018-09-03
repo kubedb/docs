@@ -260,13 +260,24 @@ func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []cor
 			Value: postgres.ServiceName(),
 		},
 		{
-			Name: KeyPostgresPassword,
+			Name: PostgresUser,
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
 						Name: postgres.Spec.DatabaseSecret.SecretName,
 					},
-					Key: KeyPostgresPassword,
+					Key: PostgresUser,
+				},
+			},
+		},
+		{
+			Name: PostgresPassword,
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: postgres.Spec.DatabaseSecret.SecretName,
+					},
+					Key: PostgresPassword,
 				},
 			},
 		},
@@ -323,11 +334,8 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 		container := core.Container{
 			Name: "exporter",
 			Args: append([]string{
-				"export",
-				fmt.Sprintf("--address=:%d", api.PrometheusExporterPortNumber),
-				"--v=3",
-				fmt.Sprintf("--enable-analytics=%v", c.EnableAnalytics),
-			}, c.LoggerOptions.ToFlags()...),
+				"--log.level=info",
+			}),
 			Image:           postgresVersion.Spec.Exporter.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
@@ -337,28 +345,49 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 					ContainerPort: int32(api.PrometheusExporterPortNumber),
 				},
 			},
-			VolumeMounts: []core.VolumeMount{
-				{
-					Name:      "secret",
-					MountPath: ExporterSecretPath,
+		}
+
+		envList := []core.EnvVar{
+			{
+				Name:  "DATA_SOURCE_URI",
+				Value: fmt.Sprintf("localhost:%d/?sslmode=disable", PostgresPort),
+			},
+			{
+				Name: "DATA_SOURCE_USER",
+				ValueFrom: &core.EnvVarSource{
+					SecretKeyRef: &core.SecretKeySelector{
+						LocalObjectReference: core.LocalObjectReference{
+							Name: postgres.Spec.DatabaseSecret.SecretName,
+						},
+						Key: PostgresUser,
+					},
 				},
 			},
+			{
+				Name: "DATA_SOURCE_PASS",
+				ValueFrom: &core.EnvVarSource{
+					SecretKeyRef: &core.SecretKeySelector{
+						LocalObjectReference: core.LocalObjectReference{
+							Name: postgres.Spec.DatabaseSecret.SecretName,
+						},
+						Key: PostgresPassword,
+					},
+				},
+			},
+			{
+				Name:  "PG_EXPORTER_WEB_LISTEN_ADDRESS",
+				Value: fmt.Sprintf(":%d", api.PrometheusExporterPortNumber),
+			},
+			{
+				Name:  "PG_EXPORTER_WEB_TELEMETRY_PATH",
+				Value: postgres.StatsService().Path(),
+			},
 		}
+
+		container.Env = core_util.UpsertEnvVars(container.Env, envList...)
 		containers := statefulSet.Spec.Template.Spec.Containers
 		containers = core_util.UpsertContainer(containers, container)
 		statefulSet.Spec.Template.Spec.Containers = containers
-
-		volume := core.Volume{
-			Name: "secret",
-			VolumeSource: core.VolumeSource{
-				Secret: &core.SecretVolumeSource{
-					SecretName: postgres.Spec.DatabaseSecret.SecretName,
-				},
-			},
-		}
-		volumes := statefulSet.Spec.Template.Spec.Volumes
-		volumes = core_util.UpsertVolume(volumes, volume)
-		statefulSet.Spec.Template.Spec.Volumes = volumes
 	}
 	return statefulSet
 }

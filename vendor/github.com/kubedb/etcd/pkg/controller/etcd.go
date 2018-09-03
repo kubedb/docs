@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	. "github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	"github.com/appscode/kutil"
@@ -131,8 +132,7 @@ func (c *Controller) handleEtcdEvent(event *Event) error {
 
 	db, err := util.UpdateEtcdStatus(c.ExtClient, etcd, func(in *api.EtcdStatus) *api.EtcdStatus {
 		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = etcd.Generation
-		in.ObservedGenerationHash = meta_util.GenerationHash(etcd)
+		in.ObservedGeneration = NewIntHash(etcd.Generation, meta_util.GenerationHash(etcd))
 		return in
 	}, api.EnableStatusSubresource)
 

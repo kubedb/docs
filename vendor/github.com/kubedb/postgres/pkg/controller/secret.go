@@ -16,9 +16,9 @@ import (
 )
 
 const (
-	KeyPostgresPassword = "POSTGRES_PASSWORD"
-	PostgresUser        = "postgres"
-	ExporterSecretPath  = "/var/run/secrets/kubedb.com/"
+	PostgresUser       = "POSTGRES_USER"
+	PostgresPassword   = "POSTGRES_PASSWORD"
+	ExporterSecretPath = "/var/run/secrets/kubedb.com/"
 )
 
 func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
@@ -89,7 +89,8 @@ func (c *Controller) createDatabaseSecret(postgres *api.Postgres) (*core.SecretV
 		},
 		Type: core.SecretTypeOpaque,
 		Data: map[string][]byte{
-			KeyPostgresPassword: []byte(rand.GeneratePassword()),
+			PostgresUser:     []byte("postgres"),
+			PostgresPassword: []byte(rand.GeneratePassword()),
 		},
 	}
 	if _, err := c.Client.CoreV1().Secrets(postgres.Namespace).Create(secret); err != nil {

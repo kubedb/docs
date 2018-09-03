@@ -115,6 +115,8 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, redis
 	// set default Listening port
 	setMonitoringPort(redis)
 
+	redis.Migrate()
+
 	return redis, nil
 }
 

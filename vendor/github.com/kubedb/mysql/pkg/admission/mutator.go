@@ -117,6 +117,8 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, mysql
 	// set default Listening port
 	setMonitoringPort(mysql)
 
+	mysql.Migrate()
+
 	return mysql, nil
 }
 

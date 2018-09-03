@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	meta_util "github.com/appscode/kutil/meta"
@@ -141,8 +142,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 
 	my, err := util.UpdateMySQLStatus(c.ExtClient, mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = mysql.Generation
-		in.ObservedGenerationHash = meta_util.GenerationHash(mysql)
+		in.ObservedGeneration = types.NewIntHash(mysql.Generation, meta_util.GenerationHash(mysql))
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

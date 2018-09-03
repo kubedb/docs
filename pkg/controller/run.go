@@ -1,12 +1,10 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/appscode/go/log"
-	"github.com/appscode/pat"
-	"github.com/kubedb/operator/pkg/exporter"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 )
 
@@ -17,6 +15,8 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 	<-stopCh
 	c.cronController.StopCron()
 }
+
+const opsAdress = ":8080"
 
 // StartAndRunControllers starts InformetFactory and runs queue.worker
 func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
@@ -48,16 +48,9 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.rdCtrl.RunControllers(stopCh)
 	c.mcCtrl.RunControllers(stopCh)
 
-	// For database summary report
-	ex := exporter.New("", "", ":8080", c.Client, c.ExtClient)
-	m := pat.New()
-	auditPattern := fmt.Sprintf("/kubedb.com/v1alpha1/namespaces/%s/%s/%s/report", exporter.PathParamNamespace, exporter.PathParamType, exporter.PathParamName)
-	log.Infoln("Report URL pattern:", auditPattern)
-	m.Get(auditPattern, http.HandlerFunc(ex.ExportSummaryReport))
-
-	http.Handle("/", m)
-	log.Infof("Starting Server: %s", ex.Address)
-	log.Fatal(http.ListenAndServe(ex.Address, nil))
+	http.Handle("/metrics", promhttp.Handler())
+	log.Infof("Starting Server: %s", opsAdress)
+	log.Fatal(http.ListenAndServe(opsAdress, nil))
 
 	<-stopCh
 	log.Infoln("Stopping KubeDB controller")

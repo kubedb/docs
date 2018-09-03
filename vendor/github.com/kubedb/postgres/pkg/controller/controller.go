@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	meta_util "github.com/appscode/kutil/meta"
@@ -156,8 +157,7 @@ func (c *Controller) pushFailureEvent(postgres *api.Postgres, reason string) {
 	pg, err := kutildb.UpdatePostgresStatus(c.ExtClient, postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
-		in.ObservedGeneration = postgres.Generation
-		in.ObservedGenerationHash = meta_util.GenerationHash(postgres)
+		in.ObservedGeneration = types.NewIntHash(postgres.Generation, meta_util.GenerationHash(postgres))
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

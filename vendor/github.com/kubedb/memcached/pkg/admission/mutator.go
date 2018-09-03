@@ -111,6 +111,8 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, memca
 	// set default Listening port
 	setMonitoringPort(memcached)
 
+	memcached.Migrate()
+
 	return memcached, nil
 }
 

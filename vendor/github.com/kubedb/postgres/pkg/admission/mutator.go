@@ -117,6 +117,8 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, postg
 	// set default Listening port
 	setMonitoringPort(postgres)
 
+	postgres.Migrate()
+
 	return postgres, nil
 }
 

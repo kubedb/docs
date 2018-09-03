@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
@@ -20,7 +21,8 @@ import (
 )
 
 const (
-	CONFIG_MOUNT_PATH = "/elasticsearch/custom-config"
+	ConfigMountPath = "/elasticsearch/custom-config"
+	ExporterCertDir = "/usr/config/certs"
 )
 
 func (c *Controller) ensureStatefulSet(
@@ -324,7 +326,7 @@ func (c *Controller) ensureCombinedNode(elasticsearch *api.Elasticsearch) (kutil
 
 	heapSize := int64(134217728) // 128mb
 	if elasticsearch.Spec.Resources != nil {
-		if request, found := elasticsearch.Spec.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
+		if request, found := elasticsearch.Spec.PodTemplate.Spec.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
 			heapSize = getHeapSizeForNode(request.Value())
 		}
 	}
@@ -471,13 +473,17 @@ func upsertPort(statefulSet *apps.StatefulSet, isClient bool) *apps.StatefulSet 
 
 func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch, elasticsearchVersion *api.ElasticsearchVersion) *apps.StatefulSet {
 	if elasticsearch.GetMonitoringVendor() == mona.VendorPrometheus {
+		scheme := "http"
+		if elasticsearch.Spec.EnableSSL {
+			scheme = "https"
+		}
 		container := core.Container{
 			Name: "exporter",
 			Args: append([]string{
-				"export",
-				fmt.Sprintf("--address=:%d", api.PrometheusExporterPortNumber),
-				fmt.Sprintf("--enable-analytics=%v", c.EnableAnalytics),
-			}, c.LoggerOptions.ToFlags()...),
+				fmt.Sprintf("--es.uri=%s://$(DB_USER):$(DB_PASSWORD)@localhost:%d", scheme, ElasticsearchRestPort),
+				fmt.Sprintf("--web.listen-address=:%d", api.PrometheusExporterPortNumber),
+				fmt.Sprintf("--web.telemetry-path=%s", elasticsearch.StatsService().Path()),
+			}),
 			Image:           elasticsearchVersion.Spec.Exporter.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
@@ -487,43 +493,63 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, el
 					ContainerPort: int32(api.PrometheusExporterPortNumber),
 				},
 			},
-			VolumeMounts: []core.VolumeMount{
-				{
-					Name:      "secret",
-					MountPath: ExporterSecretPath,
-				},
-			},
 		}
-		containers := statefulSet.Spec.Template.Spec.Containers
-		containers = core_util.UpsertContainer(containers, container)
-		statefulSet.Spec.Template.Spec.Containers = containers
-
-		volume := core.Volume{
-			Name: "secret",
-			VolumeSource: core.VolumeSource{
-				Secret: &core.SecretVolumeSource{
-					SecretName: elasticsearch.Spec.DatabaseSecret.SecretName,
-				},
-			},
-		}
-		volumes := statefulSet.Spec.Template.Spec.Volumes
-		volumes = core_util.UpsertVolume(volumes, volume)
-		statefulSet.Spec.Template.Spec.Volumes = volumes
-
-		// this environment variable will be used to determine url scheme in exporter
 		envList := []core.EnvVar{
 			{
-				Name:  "USE_SSL",
-				Value: fmt.Sprintf("%v", elasticsearch.Spec.EnableSSL),
+				Name: "DB_USER",
+				ValueFrom: &core.EnvVarSource{
+					SecretKeyRef: &core.SecretKeySelector{
+						LocalObjectReference: core.LocalObjectReference{
+							Name: elasticsearch.Spec.DatabaseSecret.SecretName,
+						},
+						Key: KeyAdminUserName,
+					},
+				},
+			},
+			{
+				Name: "DB_PASSWORD",
+				ValueFrom: &core.EnvVarSource{
+					SecretKeyRef: &core.SecretKeySelector{
+						LocalObjectReference: core.LocalObjectReference{
+							Name: elasticsearch.Spec.DatabaseSecret.SecretName,
+						},
+						Key: KeyAdminPassword,
+					},
+				},
 			},
 		}
+		container.Env = core_util.UpsertEnvVars(container.Env, envList...)
 
-		for i, container := range statefulSet.Spec.Template.Spec.Containers {
-			if container.Name == "exporter" {
-				statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
-				return statefulSet
+		if elasticsearch.Spec.EnableSSL {
+			certVolumeMount := core.VolumeMount{
+				Name:      "exporter-certs",
+				MountPath: ExporterCertDir,
+			}
+			container.VolumeMounts = core_util.UpsertVolumeMount(container.VolumeMounts, certVolumeMount)
+
+			volume := core.Volume{
+				Name: "exporter-certs",
+				VolumeSource: core.VolumeSource{
+					Secret: &core.SecretVolumeSource{
+						SecretName: elasticsearch.Spec.CertificateSecret.SecretName,
+						Items: []core.KeyToPath{
+							{
+								Key:  "root.pem",
+								Path: "root.pem",
+							},
+						},
+					},
+				},
+			}
+
+			statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(statefulSet.Spec.Template.Spec.Volumes, volume)
+			esCaFlag := "--es.ca=" + filepath.Join(ExporterCertDir, "root.pem")
+
+			if len(container.Args) == 0 || container.Args[len(container.Args)-1] != esCaFlag {
+				container.Args = append(container.Args, esCaFlag)
 			}
 		}
+		statefulSet.Spec.Template.Spec.Containers = core_util.UpsertContainer(statefulSet.Spec.Template.Spec.Containers, container)
 	}
 	return statefulSet
 }
@@ -566,9 +592,8 @@ func upsertCertificate(statefulSet *apps.StatefulSet, secretName string, isClien
 				Name:      "certs",
 				MountPath: "/elasticsearch/config/certs",
 			}
-			volumeMounts := container.VolumeMounts
-			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.UpsertVolumeMount(container.VolumeMounts, volumeMount)
 
 			volume := core.Volume{
 				Name: "certs",
@@ -576,9 +601,8 @@ func upsertCertificate(statefulSet *apps.StatefulSet, secretName string, isClien
 					Secret: addCertVolume(),
 				},
 			}
-			volumes := statefulSet.Spec.Template.Spec.Volumes
-			volumes = core_util.UpsertVolume(volumes, volume)
-			statefulSet.Spec.Template.Spec.Volumes = volumes
+
+			statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(statefulSet.Spec.Template.Spec.Volumes, volume)
 			return statefulSet
 		}
 	}
@@ -592,9 +616,7 @@ func upsertDatabaseSecret(statefulSet *apps.StatefulSet, secretName string, sear
 				Name:      "sgconfig",
 				MountPath: fmt.Sprintf("/elasticsearch/plugins/search-guard-%v/sgconfig", searchGuard),
 			}
-			volumeMounts := container.VolumeMounts
-			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.UpsertVolumeMount(container.VolumeMounts, volumeMount)
 
 			volume := core.Volume{
 				Name: "sgconfig",
@@ -604,9 +626,7 @@ func upsertDatabaseSecret(statefulSet *apps.StatefulSet, secretName string, sear
 					},
 				},
 			}
-			volumes := statefulSet.Spec.Template.Spec.Volumes
-			volumes = core_util.UpsertVolume(volumes, volume)
-			statefulSet.Spec.Template.Spec.Volumes = volumes
+			statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(statefulSet.Spec.Template.Spec.Volumes, volume)
 			return statefulSet
 		}
 	}
@@ -620,9 +640,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, st api.StorageType, pvcSpec
 				Name:      "data",
 				MountPath: "/data",
 			}
-			volumeMounts := container.VolumeMounts
-			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.UpsertVolumeMount(container.VolumeMounts, volumeMount)
 
 			if st == api.StorageTypeEphemeral {
 				ed := core.EmptyDirVolumeSource{}
@@ -673,20 +691,15 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, elasticsearch *api.Elasti
 			if container.Name == api.ResourceSingularElasticsearch {
 				configVolumeMount := core.VolumeMount{
 					Name:      "custom-config",
-					MountPath: CONFIG_MOUNT_PATH,
+					MountPath: ConfigMountPath,
 				}
-				volumeMounts := container.VolumeMounts
-				volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
-				statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+				statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.UpsertVolumeMount(container.VolumeMounts, configVolumeMount)
 
 				configVolume := core.Volume{
 					Name:         "custom-config",
 					VolumeSource: *elasticsearch.Spec.ConfigSource,
 				}
-
-				volumes := statefulSet.Spec.Template.Spec.Volumes
-				volumes = core_util.UpsertVolume(volumes, configVolume)
-				statefulSet.Spec.Template.Spec.Volumes = volumes
+				statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(statefulSet.Spec.Template.Spec.Volumes, configVolume)
 				break
 			}
 		}

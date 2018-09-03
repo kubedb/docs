@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	meta_util "github.com/appscode/kutil/meta"
@@ -115,8 +116,7 @@ func (c *Controller) create(redis *api.Redis) error {
 
 	rd, err := util.UpdateRedisStatus(c.ExtClient, redis, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = redis.Generation
-		in.ObservedGenerationHash = meta_util.GenerationHash(redis)
+		in.ObservedGeneration = types.NewIntHash(redis.Generation, meta_util.GenerationHash(redis))
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

@@ -132,6 +132,8 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, elast
 	// set default Listening port
 	setMonitoringPort(elasticsearch)
 
+	elasticsearch.Migrate()
+
 	return elasticsearch, nil
 }
 
