@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	meta_util "github.com/appscode/kutil/meta"
@@ -155,8 +156,7 @@ func (c *Controller) pushFailureEvent(mysql *api.MySQL, reason string) {
 	my, err := kutildb.UpdateMySQLStatus(c.ExtClient, mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
-		in.ObservedGeneration = mysql.Generation
-		in.ObservedGenerationHash = meta_util.GenerationHash(mysql)
+		in.ObservedGeneration = types.NewIntHash(mysql.Generation, meta_util.GenerationHash(mysql))
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

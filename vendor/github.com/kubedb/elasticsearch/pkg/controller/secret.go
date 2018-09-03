@@ -19,10 +19,12 @@ import (
 )
 
 const (
-	KeyAdminPassword   = "ADMIN_PASSWORD"
-	KeyReadAllPassword = "READALL_PASSWORD"
 	AdminUser          = "admin"
+	KeyAdminUserName   = "ADMIN_USERNAME"
+	KeyAdminPassword   = "ADMIN_PASSWORD"
 	ReadAllUser        = "readall"
+	KeyReadAllUserName = "READALL_USERNAME"
+	KeyReadAllPassword = "READALL_PASSWORD"
 	ExporterSecretPath = "/var/run/secrets/kubedb.com/"
 )
 
@@ -307,7 +309,9 @@ func (c *Controller) createDatabaseSecret(elasticsearch *api.Elasticsearch) (*co
 	}
 
 	data := map[string][]byte{
+		KeyAdminUserName:        []byte(AdminUser),
 		KeyAdminPassword:        []byte(adminPassword),
+		KeyReadAllUserName:      []byte(ReadAllUser),
 		KeyReadAllPassword:      []byte(readallPassword),
 		"sg_action_groups.yml":  []byte(action_group),
 		"sg_config.yml":         []byte(config),

@@ -26,7 +26,7 @@ import (
 
 const (
 	// Version is the current version of Elastic.
-	Version = "6.2.2"
+	Version = "6.2.5"
 
 	// DefaultURL is the default endpoint of Elasticsearch on the local machine.
 	// It is used e.g. when initializing a new Client without a specific URL.
@@ -453,9 +453,9 @@ func configToOptions(cfg *config.Config) ([]ClientOptionFunc, error) {
 			options = append(options, SetSniff(*cfg.Sniff))
 		}
 		/*
-		if cfg.Healthcheck != nil {
-			options = append(options, SetHealthcheck(*cfg.Healthcheck))
-		}
+			if cfg.Healthcheck != nil {
+				options = append(options, SetHealthcheck(*cfg.Healthcheck))
+			}
 		*/
 	}
 	return options, nil
@@ -1622,6 +1622,15 @@ func (c *Client) Refresh(indices ...string) *RefreshService {
 // flush data to disk.
 func (c *Client) Flush(indices ...string) *IndicesFlushService {
 	return NewIndicesFlushService(c).Index(indices...)
+}
+
+// SyncedFlush performs a synced flush.
+//
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.4/indices-synced-flush.html
+// for more details on synched flushes and how they differ from a normal
+// Flush.
+func (c *Client) SyncedFlush(indices ...string) *IndicesSyncedFlushService {
+	return NewIndicesSyncedFlushService(c).Index(indices...)
 }
 
 // Alias enables the caller to add and/or remove aliases.

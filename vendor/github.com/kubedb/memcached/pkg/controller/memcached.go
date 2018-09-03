@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	meta_util "github.com/appscode/kutil/meta"
@@ -99,8 +100,7 @@ func (c *Controller) create(memcached *api.Memcached) error {
 
 	mc, err := util.UpdateMemcachedStatus(c.ExtClient, memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = memcached.Generation
-		in.ObservedGenerationHash = meta_util.GenerationHash(memcached)
+		in.ObservedGeneration = types.NewIntHash(memcached.Generation, meta_util.GenerationHash(memcached))
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

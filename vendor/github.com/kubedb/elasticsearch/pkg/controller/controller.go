@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	meta_util "github.com/appscode/kutil/meta"
@@ -161,8 +162,7 @@ func (c *Controller) pushFailureEvent(elasticsearch *api.Elasticsearch, reason s
 	es, err := kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
-		in.ObservedGeneration = elasticsearch.Generation
-		in.ObservedGenerationHash = meta_util.GenerationHash(elasticsearch)
+		in.ObservedGeneration = types.NewIntHash(elasticsearch.Generation, meta_util.GenerationHash(elasticsearch))
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

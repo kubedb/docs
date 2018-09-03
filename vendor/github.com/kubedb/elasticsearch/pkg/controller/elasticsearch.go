@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
@@ -144,8 +145,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 
 	es, err := kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = elasticsearch.Generation
-		in.ObservedGenerationHash = meta_util.GenerationHash(elasticsearch)
+		in.ObservedGeneration = types.NewIntHash(elasticsearch.Generation, meta_util.GenerationHash(elasticsearch))
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

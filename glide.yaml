@@ -5,7 +5,7 @@ import:
 - package: github.com/appscode/pat
   version: master
 - package: github.com/coreos/prometheus-operator
-  version: ccf8867cdb9e5bd099093e27cfdb5fecce15c90b
+  version: v0.23.1
 - package: github.com/dcu/mongodb_exporter
   version: master
 - package: github.com/go-kit/kit
@@ -102,3 +102,5 @@ import:
   version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
 - package: github.com/cpuguy83/go-md2man
   version: v1.0.8
+- package: github.com/json-iterator/go
+  version: 1.1.5

@@ -1,6 +1,7 @@
 package dormantdatabase
 
 import (
+	"github.com/appscode/go/encoding/json/types"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
@@ -55,8 +56,7 @@ func (c *Controller) create(ddb *api.DormantDatabase) error {
 		t := metav1.Now()
 		in.PausingTime = &t
 		in.Phase = api.DormantDatabasePhasePaused
-		in.ObservedGeneration = ddb.Generation
-		in.ObservedGenerationHash = meta_util.GenerationHash(ddb)
+		in.ObservedGeneration = types.NewIntHash(ddb.Generation, meta_util.GenerationHash(ddb))
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

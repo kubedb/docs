@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	meta_util "github.com/appscode/kutil/meta"
@@ -156,8 +157,7 @@ func (c *Controller) pushFailureEvent(mongodb *api.MongoDB, reason string) {
 	mg, err := kutildb.UpdateMongoDBStatus(c.ExtClient, mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
-		in.ObservedGeneration = mongodb.Generation
-		in.ObservedGenerationHash = meta_util.GenerationHash(mongodb)
+		in.ObservedGeneration = types.NewIntHash(mongodb.Generation, meta_util.GenerationHash(mongodb))
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

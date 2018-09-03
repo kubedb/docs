@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	meta_util "github.com/appscode/kutil/meta"
@@ -140,8 +141,7 @@ func (c *Controller) pushFailureEvent(memcached *api.Memcached, reason string) {
 	mc, err := kutildb.UpdateMemcachedStatus(c.ExtClient, memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
-		in.ObservedGeneration = memcached.Generation
-		in.ObservedGenerationHash = meta_util.GenerationHash(memcached)
+		in.ObservedGeneration = types.NewIntHash(memcached.Generation, meta_util.GenerationHash(memcached))
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {

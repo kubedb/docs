@@ -144,11 +144,17 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		if mysql.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
-				Args: append([]string{
-					"export",
-					fmt.Sprintf("--address=:%d", mysql.Spec.Monitor.Prometheus.Port),
-					fmt.Sprintf("--enable-analytics=%v", c.EnableAnalytics),
-				}, c.LoggerOptions.ToFlags()...),
+				Command: []string{
+					"/bin/sh",
+				},
+				Args: []string{
+					"-c",
+					// DATA_SOURCE_NAME=user:password@tcp(localhost:5555)/dbname
+					// ref: https://github.com/prometheus/mysqld_exporter#setting-the-mysql-servers-data-source-name
+					fmt.Sprintf(`export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"
+						/bin/mysqld_exporter --web.listen-address=:%v --web.telemetry-path=%v`,
+						mysql.Spec.Monitor.Prometheus.Port, mysql.StatsService().Path()),
+				},
 				Image: mysqlVersion.Spec.Exporter.Image,
 				Ports: []core.ContainerPort{
 					{
@@ -157,25 +163,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 						ContainerPort: mysql.Spec.Monitor.Prometheus.Port,
 					},
 				},
-				VolumeMounts: []core.VolumeMount{
-					{
-						Name:      "db-secret",
-						MountPath: ExporterSecretPath,
-						ReadOnly:  true,
-					},
-				},
 			})
-			in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
-				in.Spec.Template.Spec.Volumes,
-				core.Volume{
-					Name: "db-secret",
-					VolumeSource: core.VolumeSource{
-						Secret: &core.SecretVolumeSource{
-							SecretName: mysql.Spec.DatabaseSecret.SecretName,
-						},
-					},
-				},
-			)
 		}
 		// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
 		in = upsertEnv(in, mysql)
@@ -259,19 +247,31 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.Sta
 
 func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMySQL {
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, core.EnvVar{
-				Name: "MYSQL_ROOT_PASSWORD",
-				ValueFrom: &core.EnvVarSource{
-					SecretKeyRef: &core.SecretKeySelector{
-						LocalObjectReference: core.LocalObjectReference{
-							Name: mysql.Spec.DatabaseSecret.SecretName,
+		if container.Name == api.ResourceSingularMySQL || container.Name == "exporter" {
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, []core.EnvVar{
+				{
+					Name: "MYSQL_ROOT_PASSWORD",
+					ValueFrom: &core.EnvVarSource{
+						SecretKeyRef: &core.SecretKeySelector{
+							LocalObjectReference: core.LocalObjectReference{
+								Name: mysql.Spec.DatabaseSecret.SecretName,
+							},
+							Key: KeyMySQLPassword,
 						},
-						Key: KeyMySQLPassword,
 					},
 				},
-			})
-			return statefulSet
+				{
+					Name: "MYSQL_ROOT_USERNAME",
+					ValueFrom: &core.EnvVarSource{
+						SecretKeyRef: &core.SecretKeySelector{
+							LocalObjectReference: core.LocalObjectReference{
+								Name: mysql.Spec.DatabaseSecret.SecretName,
+							},
+							Key: KeyMySQLUser,
+						},
+					},
+				},
+			}...)
 		}
 	}
 	return statefulSet

@@ -77,8 +77,15 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 							}, snapshot.Spec.PodTemplate.Spec.Args, "--enable-analytics"),
 							Env: []core.EnvVar{
 								{
-									Name:  "DB_USER",
-									Value: AdminUser,
+									Name: "DB_USER",
+									ValueFrom: &core.EnvVarSource{
+										SecretKeyRef: &core.SecretKeySelector{
+											LocalObjectReference: core.LocalObjectReference{
+												Name: elasticsearch.Spec.DatabaseSecret.SecretName,
+											},
+											Key: KeyAdminUserName,
+										},
+									},
 								},
 								{
 									Name: "DB_PASSWORD",
@@ -227,8 +234,15 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 							}, snapshot.Spec.PodTemplate.Spec.Args, "--enable-analytics"),
 							Env: []core.EnvVar{
 								{
-									Name:  "DB_USER",
-									Value: ReadAllUser,
+									Name: "DB_USER",
+									ValueFrom: &core.EnvVarSource{
+										SecretKeyRef: &core.SecretKeySelector{
+											LocalObjectReference: core.LocalObjectReference{
+												Name: elasticsearch.Spec.DatabaseSecret.SecretName,
+											},
+											Key: KeyReadAllUserName,
+										},
+									},
 								},
 								{
 									Name: "DB_PASSWORD",

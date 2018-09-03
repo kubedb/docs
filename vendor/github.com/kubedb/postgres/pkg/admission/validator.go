@@ -35,6 +35,7 @@ var _ hookapi.AdmissionHook = &PostgresValidator{}
 
 var forbiddenEnvVars = []string{
 	"POSTGRES_PASSWORD",
+	"POSTGRES_USER",
 }
 
 func (a *PostgresValidator) Resource() (plural schema.GroupVersionResource, singular string) {

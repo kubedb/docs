@@ -157,11 +157,11 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 		if mongodb.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
-				Args: append([]string{
-					"export",
-					fmt.Sprintf("--address=:%d", mongodb.Spec.Monitor.Prometheus.Port),
-					fmt.Sprintf("--enable-analytics=%v", c.EnableAnalytics),
-				}, c.LoggerOptions.ToFlags()...),
+				Args: []string{
+					fmt.Sprintf("--web.listen-address=:%d", mongodb.Spec.Monitor.Prometheus.Port),
+					fmt.Sprintf("--web.metrics-path=%v", mongodb.StatsService().Path()),
+					"--mongodb.uri=mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@127.0.0.1:27017",
+				},
 				Image: mongodbVersion.Spec.Exporter.Image,
 				Ports: []core.ContainerPort{
 					{
@@ -170,25 +170,7 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 						ContainerPort: mongodb.Spec.Monitor.Prometheus.Port,
 					},
 				},
-				VolumeMounts: []core.VolumeMount{
-					{
-						Name:      "db-secret",
-						MountPath: ExporterSecretPath,
-						ReadOnly:  true,
-					},
-				},
 			})
-			in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
-				in.Spec.Template.Spec.Volumes,
-				core.Volume{
-					Name: "db-secret",
-					VolumeSource: core.VolumeSource{
-						Secret: &core.SecretVolumeSource{
-							SecretName: mongodb.Spec.DatabaseSecret.SecretName,
-						},
-					},
-				},
-			)
 		}
 		// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
 		in = upsertEnv(in, mongodb)
@@ -404,9 +386,8 @@ func upsertEnv(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.Statef
 		},
 	}
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB {
+		if container.Name == api.ResourceSingularMongoDB || container.Name == "exporter" {
 			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
-			return statefulSet
 		}
 	}
 	return statefulSet

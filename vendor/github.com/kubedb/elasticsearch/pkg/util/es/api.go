@@ -14,8 +14,8 @@ import (
 )
 
 const (
+	KeyAdminUserName = "ADMIN_USERNAME"
 	KeyAdminPassword = "ADMIN_PASSWORD"
-	AdminUser        = "admin"
 )
 
 type ESClient interface {
@@ -68,7 +68,7 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, url string
 					},
 				},
 			}),
-			esv5.SetBasicAuth(AdminUser, string(secret.Data[KeyAdminPassword])),
+			esv5.SetBasicAuth(string(secret.Data[KeyAdminUserName]), string(secret.Data[KeyAdminPassword])),
 			esv5.SetURL(url),
 			esv5.SetHealthcheck(true),
 			esv5.SetSniff(false),
@@ -88,7 +88,7 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, url string
 					},
 				},
 			}),
-			esv6.SetBasicAuth(AdminUser, string(secret.Data[KeyAdminPassword])),
+			esv6.SetBasicAuth(string(secret.Data[KeyAdminUserName]), string(secret.Data[KeyAdminPassword])),
 			esv6.SetURL(url),
 			esv6.SetHealthcheck(true),
 			esv6.SetSniff(false),

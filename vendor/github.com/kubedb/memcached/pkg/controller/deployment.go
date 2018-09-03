@@ -121,11 +121,10 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 		if memcached.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
-				Args: append([]string{
-					"export",
-					fmt.Sprintf("--address=:%d", memcached.Spec.Monitor.Prometheus.Port),
-					fmt.Sprintf("--enable-analytics=%v", c.EnableAnalytics),
-				}, c.LoggerOptions.ToFlags()...),
+				Args: []string{
+					fmt.Sprintf("--web.listen-address=:%v", memcached.Spec.Monitor.Prometheus.Port),
+					fmt.Sprintf("--web.telemetry-path=%v", memcached.StatsService().Path()),
+				},
 				Image:           memcachedVersion.Spec.Exporter.Image,
 				ImagePullPolicy: core.PullIfNotPresent,
 				Ports: []core.ContainerPort{

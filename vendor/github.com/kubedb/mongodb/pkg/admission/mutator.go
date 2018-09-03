@@ -117,6 +117,8 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, mongo
 	// set default Listening port
 	setMonitoringPort(mongodb)
 
+	mongodb.Migrate()
+
 	return mongodb, nil
 }
 

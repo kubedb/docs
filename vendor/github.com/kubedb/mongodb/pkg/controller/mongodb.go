@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 
+	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	meta_util "github.com/appscode/kutil/meta"
@@ -143,8 +144,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 
 	mg, err := util.UpdateMongoDBStatus(c.ExtClient, mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = mongodb.Generation
-		in.ObservedGenerationHash = meta_util.GenerationHash(mongodb)
+		in.ObservedGeneration = types.NewIntHash(mongodb.Generation, meta_util.GenerationHash(mongodb))
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {
