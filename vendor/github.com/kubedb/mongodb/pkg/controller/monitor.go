@@ -73,7 +73,7 @@ func (c *Controller) manageMonitor(mongodb *api.MongoDB) error {
 	if mongodb.Spec.Monitor != nil {
 		if oldAgent != nil && oldAgent.GetType() != mongodb.Spec.Monitor.Agent {
 			if _, err := oldAgent.Delete(mongodb.StatsService()); err != nil {
-				log.Error("error in deleting Prometheus agent. Reason: %v", err.Error())
+				log.Errorf("error in deleting Prometheus agent. Reason: %v", err.Error())
 			}
 		}
 		if _, err := c.addOrUpdateMonitor(mongodb); err != nil {
@@ -82,7 +82,7 @@ func (c *Controller) manageMonitor(mongodb *api.MongoDB) error {
 		return c.setNewAgent(mongodb)
 	} else if oldAgent != nil {
 		if _, err := oldAgent.Delete(mongodb.StatsService()); err != nil {
-			log.Error("error in deleting Prometheus agent. Reason: %v", err.Error())
+			log.Errorf("error in deleting Prometheus agent. Reason: %v", err.Error())
 		}
 	}
 	return nil
