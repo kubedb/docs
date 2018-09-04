@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/portforward"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -38,21 +39,26 @@ func (c *Controller) getAllIndices(elasticsearch *api.Elasticsearch) (string, er
 		url = fmt.Sprintf("https://127.0.0.1:%d", tunnel.Local)
 	}
 
+	var reason error
 	var indices []string
 	err := wait.PollImmediate(time.Second*30, time.Minute*5, func() (bool, error) {
 		client, err := es.GetElasticClient(c.Client, elasticsearch, url)
 		if err != nil {
+			log.Warningln(err)
+			reason = err
 			return false, nil
 		}
 		defer client.Stop()
 		indices, err = client.GetIndexNames()
 		if err != nil {
+			log.Warningln(err)
+			reason = err
 			return false, nil
 		}
 		return true, nil
 	})
 	if err != nil {
-		return "", errors.New("failed to get Elasticsearch indices")
+		return "", errors.Wrapf(err, "failed to get Elasticsearch indices. Reason: %v", reason)
 	}
 	return strings.Join(indices, ","), nil
 }
