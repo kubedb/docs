@@ -94,7 +94,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Labels = mysql.OffshootLabels()
 		in.Annotations = mysql.Spec.PodTemplate.Controller.Annotations
-		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 
 		in.Spec.Replicas = types.Int32P(1)
 		in.Spec.ServiceName = c.GoverningService
@@ -185,7 +185,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		in.Spec.Template.Spec.Priority = mysql.Spec.PodTemplate.Spec.Priority
 		in.Spec.Template.Spec.SecurityContext = mysql.Spec.PodTemplate.Spec.SecurityContext
 
-		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
+		in.Spec.UpdateStrategy = mysql.Spec.UpdateStrategy
 		in = upsertUserEnv(in, mysql)
 		return in
 	})

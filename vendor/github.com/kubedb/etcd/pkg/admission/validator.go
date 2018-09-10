@@ -139,6 +139,10 @@ func ValidateEtcd(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1
 		}
 	}
 
+	if etcd.Spec.TerminationPolicy == "" {
+		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
+	}
+
 	databaseSecret := etcd.Spec.DatabaseSecret
 	if databaseSecret != nil {
 		if _, err := client.CoreV1().Secrets(etcd.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {

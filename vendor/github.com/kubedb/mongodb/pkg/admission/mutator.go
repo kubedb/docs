@@ -101,13 +101,10 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, mongo
 		return nil, errors.New(`'spec.version' is missing`)
 	}
 
-	if mongodb.Spec.StorageType == "" {
-		mongodb.Spec.StorageType = api.StorageTypeDurable
-	}
-
 	if mongodb.Spec.Replicas == nil {
 		mongodb.Spec.Replicas = types.Int32P(1)
 	}
+	mongodb.SetDefaults()
 
 	if err := setDefaultsFromDormantDB(extClient, mongodb); err != nil {
 		return nil, err
@@ -116,8 +113,6 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, mongo
 	// If monitoring spec is given without port,
 	// set default Listening port
 	setMonitoringPort(mongodb)
-
-	mongodb.Migrate()
 
 	return mongodb, nil
 }
@@ -140,6 +135,7 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB) erro
 
 	// Check Origin Spec
 	ddbOriginSpec := dormantDb.Spec.Origin.Spec.MongoDB
+	ddbOriginSpec.SetDefaults()
 
 	// If DatabaseSecret of new object is not given,
 	// Take dormantDatabaseSecretName

@@ -94,7 +94,7 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 	return app_util.CreateOrPatchDeployment(c.Client, deploymentMeta, func(in *apps.Deployment) *apps.Deployment {
 		in.Labels = memcached.OffshootLabels()
 		in.Annotations = memcached.Spec.PodTemplate.Controller.Annotations
-		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 
 		in.Spec.Replicas = memcached.Spec.Replicas
 		in.Spec.Template.Labels = in.Labels
@@ -149,6 +149,9 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 		in.Spec.Template.Spec.PriorityClassName = memcached.Spec.PodTemplate.Spec.PriorityClassName
 		in.Spec.Template.Spec.Priority = memcached.Spec.PodTemplate.Spec.Priority
 		in.Spec.Template.Spec.SecurityContext = memcached.Spec.PodTemplate.Spec.SecurityContext
+
+		in.Spec.Strategy = memcached.Spec.UpdateStrategy
+
 		return in
 	})
 }

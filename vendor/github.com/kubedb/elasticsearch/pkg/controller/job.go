@@ -77,6 +77,10 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 							}, snapshot.Spec.PodTemplate.Spec.Args, "--enable-analytics"),
 							Env: []core.EnvVar{
 								{
+									Name:  "DB_SCHEME",
+									Value: elasticsearch.GetConnectionScheme(),
+								},
+								{
 									Name: "DB_USER",
 									ValueFrom: &core.EnvVarSource{
 										SecretKeyRef: &core.SecretKeySelector{
@@ -221,8 +225,9 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 				Spec: core.PodSpec{
 					Containers: []core.Container{
 						{
-							Name:  api.JobTypeBackup,
-							Image: elasticsearchVersion.Spec.Tools.Image,
+							Name:            api.JobTypeBackup,
+							Image:           elasticsearchVersion.Spec.Tools.Image,
+							ImagePullPolicy: core.PullIfNotPresent,
 							Args: meta_util.UpsertArgumentList([]string{
 								api.JobTypeBackup,
 								fmt.Sprintf(`--host=%s`, elasticsearch.OffshootName()),
@@ -233,6 +238,10 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
 							}, snapshot.Spec.PodTemplate.Spec.Args, "--enable-analytics"),
 							Env: []core.EnvVar{
+								{
+									Name:  "DB_SCHEME",
+									Value: elasticsearch.GetConnectionScheme(),
+								},
 								{
 									Name: "DB_USER",
 									ValueFrom: &core.EnvVarSource{

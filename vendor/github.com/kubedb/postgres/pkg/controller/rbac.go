@@ -38,7 +38,7 @@ func (c *Controller) ensureRole(postgres *api.Postgres) error {
 			Namespace: postgres.Namespace,
 		},
 		func(in *rbac.Role) *rbac.Role {
-			in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 			in.Rules = []rbac.PolicyRule{
 				{
 					APIGroups:     []string{apps.GroupName},
@@ -92,7 +92,7 @@ func (c *Controller) createServiceAccount(postgres *api.Postgres) error {
 			Namespace: postgres.Namespace,
 		},
 		func(in *core.ServiceAccount) *core.ServiceAccount {
-			in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 			return in
 		},
 	)
@@ -122,7 +122,7 @@ func (c *Controller) createRoleBinding(postgres *api.Postgres) error {
 			Namespace: postgres.Namespace,
 		},
 		func(in *rbac.RoleBinding) *rbac.RoleBinding {
-			in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 			in.RoleRef = rbac.RoleRef{
 				APIGroup: rbac.GroupName,
 				Kind:     "Role",

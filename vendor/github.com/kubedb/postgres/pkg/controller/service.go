@@ -125,7 +125,7 @@ func (c *Controller) createService(postgres *api.Postgres) (kutil.VerbType, erro
 	}
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 		in.Labels = postgres.OffshootLabels()
 		in.Annotations = postgres.Spec.ServiceTemplate.Annotations
 
@@ -174,7 +174,7 @@ func (c *Controller) createReplicasService(postgres *api.Postgres) (kutil.VerbTy
 	}
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 		in.Labels = postgres.OffshootSelectors()
 		in.Spec.Selector = postgres.OffshootSelectors()
 		in.Spec.Ports = upsertServicePort(in, postgres)
@@ -206,7 +206,7 @@ func (c *Controller) ensureStatsService(postgres *api.Postgres) (kutil.VerbType,
 		Namespace: postgres.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 		in.Labels = postgres.OffshootLabels()
 		in.Spec.Selector = postgres.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{

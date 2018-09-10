@@ -115,7 +115,7 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Labels = mongodb.OffshootLabels()
 		in.Annotations = mongodb.Spec.PodTemplate.Controller.Annotations
-		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 
 		in.Spec.Replicas = mongodb.Spec.Replicas
 		in.Spec.ServiceName = c.GoverningService
@@ -197,7 +197,7 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 		in.Spec.Template.Spec.Priority = mongodb.Spec.PodTemplate.Spec.Priority
 		in.Spec.Template.Spec.SecurityContext = mongodb.Spec.PodTemplate.Spec.SecurityContext
 
-		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
+		in.Spec.UpdateStrategy = mongodb.Spec.UpdateStrategy
 		return in
 	})
 }

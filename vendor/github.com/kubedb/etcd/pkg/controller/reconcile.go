@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
+	"github.com/appscode/go/log"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -41,12 +41,12 @@ func (c *Controller) reconcile(cl *Cluster, pods []*v1.Pod) error {
 }
 
 func (c *Controller) reconcileMembers(cl *Cluster, running util.MemberSet) error {
-	log.Println("running members: %s", running)
-	log.Println("cluster membership: %s", cl.members)
+	log.Infof("running members: %v", running)
+	log.Infof("cluster membership: %v", cl.members)
 
 	unknownMembers := running.Diff(cl.members)
 	if unknownMembers.Size() > 0 {
-		log.Println("removing unexpected pods: %v", unknownMembers)
+		log.Infof("removing unexpected pods: %v", unknownMembers)
 		for _, m := range unknownMembers {
 			if err := c.removePod(cl.cluster.Namespace, m.Name); err != nil {
 				return err
@@ -63,7 +63,7 @@ func (c *Controller) reconcileMembers(cl *Cluster, running util.MemberSet) error
 		return ErrLostQuorum
 	}
 
-	log.Println("removing one dead member")
+	log.Infoln("removing one dead member")
 	// remove dead members that doesn't have any running pods before doing resizing.
 	return c.removeDeadMember(cl, cl.members.Diff(L).PickOne())
 }
@@ -106,7 +106,7 @@ func (c *Controller) addOneMember(cl *Cluster) error {
 	if err != nil {
 		return fmt.Errorf("fail to create member's pod (%s): %v", newMember.Name, err)
 	}
-	log.Println("added member (%s)", newMember.Name)
+	log.Infof("added member (%s)", newMember.Name)
 	_, err = cl.eventsCli.Create(util.NewMemberAddEvent(newMember.Name, cl.cluster))
 	if err != nil {
 		cl.logger.Errorf("failed to create new member add event: %v", err)
@@ -143,7 +143,7 @@ func (c *Controller) removeOneMember(cl *Cluster) error {
 }
 
 func (c *Controller) removeDeadMember(cl *Cluster, toRemove *util.Member) error {
-	log.Println("removing dead member %q", toRemove.Name)
+	log.Infof("removing dead member %q", toRemove.Name)
 	_, err := cl.eventsCli.Create(util.ReplacingDeadMemberEvent(toRemove.Name, cl.cluster))
 	if err != nil {
 		cl.logger.Errorf("failed to create replacing dead member event: %v", err)
@@ -163,7 +163,7 @@ func (c *Controller) removeMember(cl *Cluster, toRemove *util.Member) (err error
 	if err != nil {
 		switch err {
 		case rpctypes.ErrMemberNotFound:
-			log.Println("etcd member (%v) has been removed with id ", toRemove.Name, toRemove.ID)
+			log.Infof("etcd member (%v) has been removed with id %d", toRemove.Name, toRemove.ID)
 		default:
 			return err
 		}

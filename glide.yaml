@@ -5,7 +5,7 @@ import:
 - package: github.com/appscode/pat
   version: master
 - package: github.com/coreos/prometheus-operator
-  version: v0.23.1
+  version: v0.23.2
 - package: github.com/dcu/mongodb_exporter
   version: master
 - package: github.com/go-kit/kit
@@ -63,17 +63,19 @@ import:
   vcs: git
   version: master
 - package: k8s.io/api
-  version: kubernetes-1.11.0
+  version: kubernetes-1.11.3
 - package: k8s.io/apiextensions-apiserver
-  version: kubernetes-1.11.0
+  version: kubernetes-1.11.3
 - package: k8s.io/apimachinery
   repo: https://github.com/pharmer/apimachinery.git
   vcs: git
-  version: release-1.11
+  version: release-1.11.3
 - package: k8s.io/apiserver
-  version: kubernetes-1.11.0
+  repo: https://github.com/pharmer/apiserver.git
+  vcs: git
+  version: release-1.11.3
 - package: k8s.io/client-go
-  version: v8.0.0
+  version: kubernetes-1.11.3
 - package: github.com/appscode/kutil
   version: release-8.0
 - package: github.com/appscode/kubernetes-webhook-util
