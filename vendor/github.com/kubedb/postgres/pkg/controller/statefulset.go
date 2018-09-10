@@ -49,7 +49,7 @@ func (c *Controller) ensureStatefulSet(
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Labels = postgres.OffshootLabels()
 		in.Annotations = postgres.Spec.PodTemplate.Controller.Annotations
-		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 
 		in.Spec.Replicas = types.Int32P(replicas)
 
@@ -112,7 +112,7 @@ func (c *Controller) ensureStatefulSet(
 			in.Spec.Template.Spec.ServiceAccountName = postgres.OffshootName()
 		}
 
-		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
+		in.Spec.UpdateStrategy = postgres.Spec.UpdateStrategy
 
 		return in
 	})

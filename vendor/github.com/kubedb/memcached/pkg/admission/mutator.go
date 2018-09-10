@@ -102,6 +102,7 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, memca
 	if memcached.Spec.Replicas == nil {
 		memcached.Spec.Replicas = types.Int32P(1)
 	}
+	memcached.SetDefaults()
 
 	if err := setDefaultsFromDormantDB(extClient, memcached); err != nil {
 		return nil, err
@@ -110,8 +111,6 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, memca
 	// If monitoring spec is given without port,
 	// set default Listening port
 	setMonitoringPort(memcached)
-
-	memcached.Migrate()
 
 	return memcached, nil
 }
@@ -134,6 +133,7 @@ func setDefaultsFromDormantDB(extClient cs.Interface, memcached *api.Memcached) 
 
 	// Check Origin Spec
 	ddbOriginSpec := dormantDb.Spec.Origin.Spec.Memcached
+	ddbOriginSpec.SetDefaults()
 
 	// If Monitoring Spec of new object is not given,
 	// Take Monitoring Settings from Dormant

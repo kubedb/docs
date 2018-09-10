@@ -134,10 +134,6 @@ func ValidateMySQL(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV
 		return err
 	}
 
-	if mysql.Spec.StorageType == "" {
-		return fmt.Errorf(`'spec.storageType' is missing`)
-	}
-
 	if mysql.Spec.Replicas == nil || *mysql.Spec.Replicas != 1 {
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be one`, mysql.Spec.Replicas)
 	}
@@ -146,6 +142,9 @@ func ValidateMySQL(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV
 		return err
 	}
 
+	if mysql.Spec.StorageType == "" {
+		return fmt.Errorf(`'spec.storageType' is missing`)
+	}
 	if err := amv.ValidateStorage(client, mysql.Spec.StorageType, mysql.Spec.Storage); err != nil {
 		return err
 	}
@@ -169,6 +168,14 @@ func ValidateMySQL(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV
 		if err := amv.ValidateBackupSchedule(client, backupScheduleSpec, mysql.Namespace); err != nil {
 			return err
 		}
+	}
+
+	if mysql.Spec.UpdateStrategy.Type == "" {
+		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
+	}
+
+	if mysql.Spec.TerminationPolicy == "" {
+		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
 	monitorSpec := mysql.Spec.Monitor
@@ -201,6 +208,7 @@ func matchWithDormantDatabase(extClient kubedbv1alpha1.KubedbV1alpha1Interface, 
 
 	// Check Origin Spec
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.MySQL
+	drmnOriginSpec.SetDefaults()
 	originalSpec := mysql.Spec
 
 	// Skip checking doNotPause

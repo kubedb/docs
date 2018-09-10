@@ -78,7 +78,7 @@ func (c *Controller) createService(memcached *api.Memcached) (kutil.VerbType, er
 	}
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 		in.Labels = memcached.OffshootLabels()
 		in.Annotations = memcached.Spec.ServiceTemplate.Annotations
 
@@ -133,7 +133,7 @@ func (c *Controller) ensureStatsService(memcached *api.Memcached) (kutil.VerbTyp
 		Namespace: memcached.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 		in.Labels = memcached.OffshootLabels()
 		in.Spec.Selector = memcached.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{

@@ -133,10 +133,6 @@ func ValidatePostgres(client kubernetes.Interface, extClient kubedbv1alpha1.Kube
 		return err
 	}
 
-	if postgres.Spec.StorageType == "" {
-		return fmt.Errorf(`'spec.storageType' is missing`)
-	}
-
 	if postgres.Spec.Replicas == nil || *postgres.Spec.Replicas < 1 {
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be greater than zero`, postgres.Spec.Replicas)
 	}
@@ -145,6 +141,9 @@ func ValidatePostgres(client kubernetes.Interface, extClient kubedbv1alpha1.Kube
 		return err
 	}
 
+	if postgres.Spec.StorageType == "" {
+		return fmt.Errorf(`'spec.storageType' is missing`)
+	}
 	if err := amv.ValidateStorage(client, postgres.Spec.StorageType, postgres.Spec.Storage); err != nil {
 		return err
 	}
@@ -221,6 +220,14 @@ func ValidatePostgres(client kubernetes.Interface, extClient kubedbv1alpha1.Kube
 		}
 	}
 
+	if postgres.Spec.UpdateStrategy.Type == "" {
+		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
+	}
+
+	if postgres.Spec.TerminationPolicy == "" {
+		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
+	}
+
 	monitorSpec := postgres.Spec.Monitor
 	if monitorSpec != nil {
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
@@ -251,6 +258,7 @@ func matchWithDormantDatabase(extClient kubedbv1alpha1.KubedbV1alpha1Interface, 
 
 	// Check Origin Spec
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Postgres
+	drmnOriginSpec.SetDefaults()
 	originalSpec := postgres.Spec
 
 	// Skip checking doNotPause

@@ -101,10 +101,6 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, elast
 		return nil, errors.New(`'spec.version' is missing`)
 	}
 
-	if elasticsearch.Spec.StorageType == "" {
-		elasticsearch.Spec.StorageType = api.StorageTypeDurable
-	}
-
 	topology := elasticsearch.Spec.Topology
 	if topology != nil {
 		if topology.Client.Replicas == nil {
@@ -123,6 +119,7 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, elast
 			elasticsearch.Spec.Replicas = types.Int32P(1)
 		}
 	}
+	elasticsearch.SetDefaults()
 
 	if err := setDefaultsFromDormantDB(extClient, elasticsearch); err != nil {
 		return nil, err
@@ -131,8 +128,6 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, elast
 	// If monitoring spec is given without port,
 	// set default Listening port
 	setMonitoringPort(elasticsearch)
-
-	elasticsearch.Migrate()
 
 	return elasticsearch, nil
 }
@@ -155,6 +150,7 @@ func setDefaultsFromDormantDB(extClient cs.Interface, elasticsearch *api.Elastic
 
 	// Check Origin Spec
 	ddbOriginSpec := dormantDb.Spec.Origin.Spec.Elasticsearch
+	ddbOriginSpec.SetDefaults()
 
 	// If DatabaseSecret of new object is not given,
 	// Take dormantDatabaseSecretName

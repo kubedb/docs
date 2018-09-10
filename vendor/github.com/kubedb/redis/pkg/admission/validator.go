@@ -125,16 +125,23 @@ func ValidateRedis(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV
 		return err
 	}
 
-	if redis.Spec.StorageType == "" {
-		return fmt.Errorf(`'spec.storageType' is missing`)
-	}
-
 	if redis.Spec.Replicas == nil || *redis.Spec.Replicas != 1 {
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be one`, redis.Spec.Replicas)
 	}
 
+	if redis.Spec.StorageType == "" {
+		return fmt.Errorf(`'spec.storageType' is missing`)
+	}
 	if err := amv.ValidateStorage(client, redis.Spec.StorageType, redis.Spec.Storage); err != nil {
 		return err
+	}
+
+	if redis.Spec.UpdateStrategy.Type == "" {
+		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
+	}
+
+	if redis.Spec.TerminationPolicy == "" {
+		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
 	if err := amv.ValidateEnvVar(redis.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindRedis); err != nil {
@@ -171,6 +178,7 @@ func matchWithDormantDatabase(extClient kubedbv1alpha1.KubedbV1alpha1Interface, 
 
 	// Check Origin Spec
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Redis
+	drmnOriginSpec.SetDefaults()
 	originalSpec := redis.Spec
 
 	// Skip checking doNotPause

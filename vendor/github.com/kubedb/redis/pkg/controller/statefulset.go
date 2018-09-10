@@ -99,7 +99,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis) (*apps.StatefulSet, kut
 	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Labels = redis.OffshootLabels()
 		in.Annotations = redis.Spec.PodTemplate.Controller.Annotations
-		in.ObjectMeta = core_util.EnsureOwnerReference(in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 
 		in.Spec.Replicas = types.Int32P(1)
 		in.Spec.ServiceName = c.GoverningService
@@ -158,7 +158,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis) (*apps.StatefulSet, kut
 		in.Spec.Template.Spec.Priority = redis.Spec.PodTemplate.Spec.Priority
 		in.Spec.Template.Spec.SecurityContext = redis.Spec.PodTemplate.Spec.SecurityContext
 
-		in.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
+		in.Spec.UpdateStrategy = redis.Spec.UpdateStrategy
 		in = upsertUserEnv(in, redis)
 		in = upsertCustomConfig(in, redis)
 		return in

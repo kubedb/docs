@@ -134,6 +134,14 @@ func ValidateMemcached(client kubernetes.Interface, extClient kubedbv1alpha1.Kub
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be atleast 1"`, memcached.Spec.Replicas)
 	}
 
+	if memcached.Spec.UpdateStrategy.Type == "" {
+		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
+	}
+
+	if memcached.Spec.TerminationPolicy == "" {
+		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
+	}
+
 	monitorSpec := memcached.Spec.Monitor
 	if monitorSpec != nil {
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
@@ -164,6 +172,7 @@ func matchWithDormantDatabase(extClient kubedbv1alpha1.KubedbV1alpha1Interface, 
 
 	// Check Origin Spec
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Memcached
+	drmnOriginSpec.SetDefaults()
 	originalSpec := memcached.Spec
 
 	// Skip checking doNotPause

@@ -105,6 +105,10 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, etcd 
 		etcd.Spec.StorageType = api.StorageTypeDurable
 	}
 
+	if etcd.Spec.TerminationPolicy == "" {
+		etcd.Spec.TerminationPolicy = api.TerminationPolicyPause
+	}
+
 	if etcd.Spec.Replicas == nil {
 		etcd.Spec.Replicas = types.Int32P(1)
 	}

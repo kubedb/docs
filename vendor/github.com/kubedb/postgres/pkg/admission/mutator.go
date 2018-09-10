@@ -101,13 +101,10 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, postg
 		return nil, errors.New(`'spec.version' is missing`)
 	}
 
-	if postgres.Spec.StorageType == "" {
-		postgres.Spec.StorageType = api.StorageTypeDurable
-	}
-
 	if postgres.Spec.Replicas == nil {
 		postgres.Spec.Replicas = types.Int32P(1)
 	}
+	postgres.SetDefaults()
 
 	if err := setDefaultsFromDormantDB(extClient, postgres); err != nil {
 		return nil, err
@@ -116,8 +113,6 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, postg
 	// If monitoring spec is given without port,
 	// set default Listening port
 	setMonitoringPort(postgres)
-
-	postgres.Migrate()
 
 	return postgres, nil
 }
@@ -140,6 +135,7 @@ func setDefaultsFromDormantDB(extClient cs.Interface, postgres *api.Postgres) er
 
 	// Check Origin Spec
 	ddbOriginSpec := dormantDb.Spec.Origin.Spec.Postgres
+	ddbOriginSpec.SetDefaults()
 
 	// If DatabaseSecret of new object is not given,
 	// Take dormantDatabaseSecretName

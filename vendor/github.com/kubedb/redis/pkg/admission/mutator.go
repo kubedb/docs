@@ -99,13 +99,11 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, redis
 		return nil, errors.New(`'spec.version' is missing`)
 	}
 
-	if redis.Spec.StorageType == "" {
-		redis.Spec.StorageType = api.StorageTypeDurable
-	}
-
 	if redis.Spec.Replicas == nil {
 		redis.Spec.Replicas = types.Int32P(1)
 	}
+
+	redis.SetDefaults()
 
 	if err := setDefaultsFromDormantDB(extClient, redis); err != nil {
 		return nil, err
@@ -114,8 +112,6 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, redis
 	// If monitoring spec is given without port,
 	// set default Listening port
 	setMonitoringPort(redis)
-
-	redis.Migrate()
 
 	return redis, nil
 }
@@ -138,6 +134,7 @@ func setDefaultsFromDormantDB(extClient cs.Interface, redis *api.Redis) error {
 
 	// Check Origin Spec
 	ddbOriginSpec := dormantDb.Spec.Origin.Spec.Redis
+	ddbOriginSpec.SetDefaults()
 
 	// If Monitoring Spec of new object is not given,
 	// Take Monitoring Settings from Dormant

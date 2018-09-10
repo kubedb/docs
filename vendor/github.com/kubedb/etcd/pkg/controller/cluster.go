@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/appscode/go/encoding/json/types"
+	"github.com/appscode/go/log"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	dbutil "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
@@ -305,11 +306,11 @@ func (c *Controller) pollPods(cl *Cluster) (running, pending []*v1.Pod, err erro
 			continue
 		}
 		if len(pod.OwnerReferences) < 1 {
-			fmt.Println("pollPods: ignore pod %v: no owner", pod.Name)
+			log.Infof("pollPods: ignore pod %v: no owner", pod.Name)
 			continue
 		}
 		if pod.OwnerReferences[0].UID != cl.cluster.UID {
-			fmt.Println("pollPods: ignore pod %v: owner (%v) is not %v",
+			log.Infof("pollPods: ignore pod %v: owner (%v) is not %v",
 				pod.Name, pod.OwnerReferences[0].UID, cl.cluster.UID)
 			continue
 		}
