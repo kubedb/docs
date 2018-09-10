@@ -1,5 +1,5 @@
 hash: a4c9549a92cce5eb0cb95320f40f4979f61e0416acf2b967173cdf412c6bbcff
-updated: 2018-09-10T11:13:06.44562725-07:00
+updated: 2018-09-10T16:26:53.736559591-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -259,7 +259,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 3af367b6b30c263d47e8895973edcca9a49cf029
+  version: 2006917edc5a27cd174dbc4baba31a137d6cb9ff
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -329,40 +329,40 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: c937b1cd77570e1323297dd10aeff9c67fe8acc3
+  version: 8a40abc5e47f26cd4cfd6a2e4c0dcbd4e0f933eb
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util/es
 - name: github.com/kubedb/etcd
-  version: 91ad632331c13efb4e9a7440ffc03b75b62e27d9
+  version: 89b00202ecaa0b79dfeed8d761ccd48cdc040467
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: 739a23b8f39834fcba7c9e31b61cd71ae6e34d86
+  version: d8b773bc70fee9e7210b4f4a7f3e2ed6c7d4375f
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: 97160b1b4a6d87098202afaabab596b24f9a6b23
+  version: fe2639a1df19c99bf1c0451a1077dd5864ce3ad9
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 809a3c49153fa436cfaf0800042310d60c7178fc
+  version: 5a1e3f5749b0b57de2c478e205b1b742e7311d13
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: 70109f228fd6d03b2307cb34fc00b48dec0030fd
+  version: 4af241215cdb71b95e9664d829dca4e330b0ce43
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: 1168c561e98a32eeb03dce0dfc5d276ccc658833
+  version: f23d91131932f5bedc2e929eb93feaeaec550ad6
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -437,15 +437,17 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/russross/blackfriday
-  version: 4048872b16cc0fc2c5fd9eacf0ed2c2fedaa0c8c
+  version: 300106c228d52c8941d4b3de6054a6062a86dda3
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/sergi/go-diff
   version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
   subpackages:
   - diffmatchpatch
+- name: github.com/shurcooL/sanitized_anchor_name
+  version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
-  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
+  version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
 - name: github.com/spf13/cobra
   version: ef82de70bb3f60c65fb8eebacbb2d122ef517385
   subpackages:
@@ -678,7 +680,7 @@ imports:
   - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/apiserver
-  version: 8573140a007810ee0d5a165647f171b0a77acfe5
+  version: 9970aee1898bc65beb8f3829b2ddf8e191777f78
   repo: https://github.com/pharmer/apiserver.git
   vcs: git
   subpackages:
