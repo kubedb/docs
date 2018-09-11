@@ -66,3 +66,12 @@ func (c *Controller) create(ddb *api.DormantDatabase) error {
 
 	return nil
 }
+
+func (c *Controller) delete(dormantDb *api.DormantDatabase) error {
+	if dormantDb.Spec.WipeOut {
+		if err := c.deleter.WipeOutDatabase(dormantDb); err != nil {
+			return err
+		}
+	}
+	return nil
+}
