@@ -22,15 +22,14 @@ cp creds/gcs.json /gcs.json
 cp creds/.env /tmp/.env
 
 pushd "$GOPATH"/src/github.com/$ORG_NAME/$REPO_NAME
+
 ./hack/builddeps.sh
 ./hack/docker/setup.sh build
 ./hack/docker/setup.sh push
-popd
 
-pushd "$GOPATH"/src/github.com/kubedb
+# clean the cluster in case previous operator exists
+./hack/deploy/setup.sh --uninstall --purge
 
-# deploy operator
-pushd operator
 source ./hack/deploy/setup.sh --docker-registry=kubedbci
 popd
 
