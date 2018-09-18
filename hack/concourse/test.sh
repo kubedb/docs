@@ -34,6 +34,7 @@ source ./hack/deploy/setup.sh --docker-registry=kubedbci
 popd
 
 EXIT_CODE=0
+pushd "$GOPATH"/src/github.com/kubedb
 
 # test redis
 cowsay -f tux "testing redis"
