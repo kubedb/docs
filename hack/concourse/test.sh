@@ -45,15 +45,10 @@ if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --docker-regi
   EXIT_CODE=1
 fi
 popd
-sleep 120
 
 cowsay -f tux "describe pods"
 kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
-
-cowsay -f tux "describe nodes"
-kubectl get nodes || true
-kubectl describe nodes || true
 
 # test memcached
 cowsay -f tux "testing memcached"
@@ -64,15 +59,10 @@ if ! (./hack/make.py test e2e --v=1 --docker-registry="$DOCKER_REGISTRY" --selfh
   EXIT_CODE=1
 fi
 popd
-sleep 120
 
 cowsay -f tux "describe pods"
 kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
-
-cowsay -f tux "describe nodes"
-kubectl get nodes || true
-kubectl describe nodes || true
 
 # test elasticsearch
 cowsay -f tux "testing elasticsearch"
@@ -85,15 +75,10 @@ if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --docker-regi
 fi
 rm -rf hack/config/.env
 popd
-sleep 120
 
 cowsay -f tux "describe pods"
 kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
-
-cowsay -f tux "describe nodes"
-kubectl get nodes || true
-kubectl describe nodes || true
 
 # test postgres
 cowsay -f tux "testing postgres"
@@ -106,15 +91,10 @@ if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --docker-regi
 fi
 rm -rf hack/config/.env
 popd
-sleep 120
 
 cowsay -f tux "describe pods"
 kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
-
-cowsay -f tux "describe nodes"
-kubectl get nodes || true
-kubectl describe nodes || true
 
 # test mongodb
 cowsay -f tux "testing mongodb"
@@ -127,15 +107,10 @@ if ! (./hack/make.py test e2e --v=1 --storageclass="$StorageClass" --docker-regi
 fi
 rm -rf hack/config/.env
 popd
-sleep 120
 
 cowsay -f tux "describe pods"
 kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
-
-cowsay -f tux "describe nodes"
-kubectl get nodes || true
-kubectl describe nodes || true
 
 # test mysql
 cowsay -f tux "testing mysql"
@@ -152,10 +127,6 @@ popd
 cowsay -f tux "describe pods"
 kubectl get pods --all-namespaces
 kubectl describe pods -n kube-system -l app=kubedb || true
-
-cowsay -f tux "describe nodes"
-kubectl get nodes || true
-kubectl describe nodes || true
 
 popd
 
