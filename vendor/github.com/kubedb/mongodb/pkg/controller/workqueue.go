@@ -31,7 +31,7 @@ func (c *Controller) runMongoDB(key string) error {
 		mongodb := obj.(*api.MongoDB).DeepCopy()
 		if mongodb.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(mongodb.ObjectMeta, api.GenericKey) {
-				if err := c.pause(mongodb); err != nil {
+				if err := c.terminate(mongodb); err != nil {
 					log.Errorln(err)
 					return err
 				}

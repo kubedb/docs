@@ -82,7 +82,7 @@ func (a *MySQLMutator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mysqlMod != nil {
-		patch, err := meta_util.CreateJSONPatch(obj, mysqlMod)
+		patch, err := meta_util.CreateJSONPatch(req.Object.Raw, mysqlMod)
 		if err != nil {
 			return hookapi.StatusInternalServerError(err)
 		}
@@ -161,6 +161,12 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mysql *api.MySQL) error {
 
 	// Skip checking DoNotPause
 	ddbOriginSpec.DoNotPause = mysql.Spec.DoNotPause
+
+	// Skip checking UpdateStrategy
+	ddbOriginSpec.UpdateStrategy = mysql.Spec.UpdateStrategy
+
+	// Skip checking TerminationPolicy
+	ddbOriginSpec.TerminationPolicy = mysql.Spec.TerminationPolicy
 
 	if !meta_util.Equal(ddbOriginSpec, &mysql.Spec) {
 		diff := meta_util.Diff(ddbOriginSpec, &mysql.Spec)

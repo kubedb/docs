@@ -8,8 +8,6 @@ import (
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 )
 
 func (c *Controller) create(ddb *api.DormantDatabase) error {
@@ -31,26 +29,22 @@ func (c *Controller) create(ddb *api.DormantDatabase) error {
 
 	// Pause Database workload
 	if err := c.deleter.WaitUntilPaused(ddb); err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, ddb); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToDelete,
-				"Failed to pause. Reason: %v",
-				err,
-			)
-		}
+		c.recorder.Eventf(
+			ddb,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToDelete,
+			"Failed to pause. Reason: %v",
+			err,
+		)
 		return err
 	}
 
-	if ref, rerr := reference.GetReference(clientsetscheme.Scheme, ddb); rerr == nil {
-		c.recorder.Event(
-			ref,
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessfulPause,
-			"Successfully paused Database workload",
-		)
-	}
+	c.recorder.Event(
+		ddb,
+		core.EventTypeNormal,
+		eventer.EventReasonSuccessfulPause,
+		"Successfully paused Database workload",
+	)
 
 	_, err = util.UpdateDormantDatabaseStatus(c.ExtClient, ddb, func(in *api.DormantDatabaseStatus) *api.DormantDatabaseStatus {
 		t := metav1.Now()

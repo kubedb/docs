@@ -8,14 +8,17 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
+	dynamic_util "github.com/appscode/kutil/dynamic"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	kutildb "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	validator "github.com/kubedb/elasticsearch/pkg/admission"
+	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
@@ -24,30 +27,45 @@ import (
 
 func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	if err := validator.ValidateElasticsearch(c.Client, c.ExtClient, elasticsearch); err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Event(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonInvalid,
-				err.Error(),
-			)
-		}
+		c.recorder.Event(
+			elasticsearch,
+			core.EventTypeWarning,
+			eventer.EventReasonInvalid,
+			err.Error(),
+		)
 		log.Errorln(err)
 		return nil // user error so just record error and don't retry.
 	}
 
+	// Check if elasticsearchVersion is deprecated.
+	// If deprecated, add event and return nil (stop processing.)
+	elasticsearchVersion, err := c.ExtClient.ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if elasticsearchVersion.Spec.Deprecated {
+		c.recorder.Eventf(
+			elasticsearch,
+			core.EventTypeWarning,
+			eventer.EventReasonInvalid,
+			"ElasticsearchVersion %v is deprecated. Skipped processing.",
+			elasticsearchVersion.Name,
+		)
+		log.Errorf("Elasticsearch %s/%s is using deprecated version %v. Skipped processing.",
+			elasticsearch.Namespace, elasticsearch.Name, elasticsearchVersion.Name)
+		return nil
+	}
+
 	// Delete Matching DormantDatabase if exists any
 	if err := c.deleteMatchingDormantDatabase(elasticsearch); err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				`Failed to delete dormant Database : "%v". Reason: %v`,
-				elasticsearch.Name,
-				err,
-			)
-		}
+		c.recorder.Eventf(
+			elasticsearch,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			`Failed to delete dormant Database : "%v". Reason: %v`,
+			elasticsearch.Name,
+			err,
+		)
 		return err
 	}
 
@@ -57,14 +75,12 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 			return in
 		}, api.EnableStatusSubresource)
 		if err != nil {
-			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-				c.recorder.Eventf(
-					ref,
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToUpdate,
-					err.Error(),
-				)
-			}
+			c.recorder.Eventf(
+				elasticsearch,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
+			)
 			return err
 		}
 		elasticsearch.Status = es.Status
@@ -73,16 +89,14 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	// create Governing Service
 	governingService := c.GoverningService
 	if err := c.CreateGoverningService(governingService, elasticsearch.Namespace); err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				`Failed to create ServiceAccount: "%v". Reason: %v`,
-				governingService,
-				err,
-			)
-		}
+		c.recorder.Eventf(
+			elasticsearch,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			`Failed to create ServiceAccount: "%v". Reason: %v`,
+			governingService,
+			err,
+		)
 		return err
 	}
 
@@ -99,23 +113,20 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Event(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully created Elasticsearch",
-			)
-		}
+		c.recorder.Event(
+			elasticsearch,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully created Elasticsearch",
+		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Event(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully patched Elasticsearch",
-			)
-		}
+		c.recorder.Event(
+			elasticsearch,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully patched Elasticsearch",
+		)
+
 	}
 
 	if _, err := meta_util.GetString(elasticsearch.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
@@ -149,14 +160,13 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-		}
+		c.recorder.Eventf(
+			elasticsearch,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToUpdate,
+			err.Error(),
+		)
+
 		return err
 	}
 	elasticsearch.Status = es.Status
@@ -166,29 +176,26 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(elasticsearch); err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				"Failed to manage monitoring system. Reason: %v",
-				err,
-			)
-		}
+		c.recorder.Eventf(
+			elasticsearch,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			"Failed to manage monitoring system. Reason: %v",
+			err,
+		)
+
 		log.Errorln(err)
 		return nil
 	}
 
 	if err := c.manageMonitor(elasticsearch); err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				"Failed to manage monitoring system. Reason: %v",
-				err,
-			)
-		}
+		c.recorder.Eventf(
+			elasticsearch,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			"Failed to manage monitoring system. Reason: %v",
+			err,
+		)
 		log.Errorln(err)
 		return nil
 	}
@@ -245,15 +252,13 @@ func (c *Controller) ensureBackupScheduler(elasticsearch *api.Elasticsearch) {
 	if elasticsearch.Spec.BackupSchedule != nil {
 		err := c.cronController.ScheduleBackup(elasticsearch, elasticsearch.ObjectMeta, elasticsearch.Spec.BackupSchedule)
 		if err != nil {
-			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-				c.recorder.Eventf(
-					ref,
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToSchedule,
-					"Failed to schedule snapshot. Reason: %v",
-					err,
-				)
-			}
+			c.recorder.Eventf(
+				elasticsearch,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToSchedule,
+				"Failed to schedule snapshot. Reason: %v",
+				err,
+			)
 			log.Errorln(err)
 		}
 	} else {
@@ -267,29 +272,26 @@ func (c *Controller) initialize(elasticsearch *api.Elasticsearch) error {
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-		}
+		c.recorder.Eventf(
+			elasticsearch,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToUpdate,
+			err.Error(),
+		)
+
 		return err
 	}
 	elasticsearch.Status = es.Status
 
 	snapshotSource := elasticsearch.Spec.Init.SnapshotSource
 	// Event for notification that kubernetes objects are creating
-	if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-		c.recorder.Eventf(
-			ref,
-			core.EventTypeNormal,
-			eventer.EventReasonInitializing,
-			`Initializing from Snapshot: "%v"`,
-			snapshotSource.Name,
-		)
-	}
+	c.recorder.Eventf(
+		elasticsearch,
+		core.EventTypeNormal,
+		eventer.EventReasonInitializing,
+		`Initializing from Snapshot: "%v"`,
+		snapshotSource.Name,
+	)
 
 	namespace := snapshotSource.Namespace
 	if namespace == "" {
@@ -320,23 +322,42 @@ func (c *Controller) initialize(elasticsearch *api.Elasticsearch) error {
 	return nil
 }
 
-func (c *Controller) pause(elasticsearch *api.Elasticsearch) error {
+func (c *Controller) terminate(elasticsearch *api.Elasticsearch) error {
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch)
+	if rerr != nil {
+		return rerr
+	}
 
-	if _, err := c.createDormantDatabase(elasticsearch); err != nil {
-		if kerr.IsAlreadyExists(err) {
-			// if already exists, check if it is database of another Kind and return error in that case.
-			// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
-			// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
-			// So reuse that DormantDB!
-			ddb, err := c.ExtClient.DormantDatabases(elasticsearch.Namespace).Get(elasticsearch.Name, metav1.GetOptions{})
-			if err != nil {
-				return err
+	// If TerminationPolicy is "pause", keep everything (ie, PVCs,Secrets,Snapshots) intact.
+	// In operator, create dormantdatabase
+	if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyPause {
+		if err := c.removeOwnerReferenceFromOffshoots(elasticsearch, ref); err != nil {
+			return err
+		}
+
+		if _, err := c.createDormantDatabase(elasticsearch); err != nil {
+			if kerr.IsAlreadyExists(err) {
+				// if already exists, check if it is database of another Kind and return error in that case.
+				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
+				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
+				// So reuse that DormantDB!
+				ddb, err := c.ExtClient.DormantDatabases(elasticsearch.Namespace).Get(elasticsearch.Name, metav1.GetOptions{})
+				if err != nil {
+					return err
+				}
+				if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindElasticsearch {
+					return fmt.Errorf(`DormantDatabase "%s/%s" of kind %v already exists`, elasticsearch.Namespace, elasticsearch.Name, val)
+				}
+			} else {
+				return fmt.Errorf(`failed to create DormantDatabase: "%s/%s". Reason: %v`, elasticsearch.Namespace, elasticsearch.Name, err)
 			}
-			if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindElasticsearch {
-				return fmt.Errorf(`DormantDatabase "%v" of kind %v already exists`, elasticsearch.Name, val)
-			}
-		} else {
-			return fmt.Errorf(`failed to create DormantDatabase: "%v". Reason: %v`, elasticsearch.Name, err)
+		}
+	} else {
+		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
+		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
+		// In both these cases, don't create dormantdatabase
+		if err := c.setOwnerReferenceToOffshoots(elasticsearch, ref); err != nil {
+			return err
 		}
 	}
 
@@ -347,6 +368,82 @@ func (c *Controller) pause(elasticsearch *api.Elasticsearch) error {
 			log.Errorln(err)
 			return nil
 		}
+	}
+	return nil
+}
+
+func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsearch, ref *core.ObjectReference) error {
+	selector := labels.SelectorFromSet(elasticsearch.OffshootSelectors())
+
+	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
+	// else, keep it intact.
+	if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
+		if err := dynamic_util.EnsureOwnerReferenceForSelector(
+			c.DynamicClient,
+			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
+			elasticsearch.Namespace,
+			selector,
+			ref); err != nil {
+			return err
+		}
+		if err := c.wipeOutDatabase(elasticsearch.ObjectMeta, elasticsearch.Spec.GetSecrets(), ref); err != nil {
+			return errors.Wrap(err, "error in wiping out database.")
+		}
+	} else {
+		// Make sure snapshot and secret's ownerreference is removed.
+		if err := dynamic_util.RemoveOwnerReferenceForSelector(
+			c.DynamicClient,
+			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
+			elasticsearch.Namespace,
+			selector,
+			ref); err != nil {
+			return err
+		}
+		if err := dynamic_util.RemoveOwnerReferenceForItems(
+			c.DynamicClient,
+			core.SchemeGroupVersion.WithResource("secrets"),
+			elasticsearch.Namespace,
+			elasticsearch.Spec.GetSecrets(),
+			ref); err != nil {
+			return err
+		}
+	}
+	// delete PVC for both "wipeOut" and "delete" TerminationPolicy.
+	return dynamic_util.EnsureOwnerReferenceForSelector(
+		c.DynamicClient,
+		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
+		elasticsearch.Namespace,
+		selector,
+		ref)
+}
+
+func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasticsearch, ref *core.ObjectReference) error {
+	// First, Get LabelSelector for Other Components
+	labelSelector := labels.SelectorFromSet(elasticsearch.OffshootSelectors())
+
+	if err := dynamic_util.RemoveOwnerReferenceForSelector(
+		c.DynamicClient,
+		api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
+		elasticsearch.Namespace,
+		labelSelector,
+		ref); err != nil {
+		return err
+	}
+	if err := dynamic_util.RemoveOwnerReferenceForSelector(
+		c.DynamicClient,
+		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
+		elasticsearch.Namespace,
+		labelSelector,
+		ref); err != nil {
+		return err
+	}
+	if err := dynamic_util.RemoveOwnerReferenceForItems(
+		c.DynamicClient,
+		core.SchemeGroupVersion.WithResource("secrets"),
+		elasticsearch.Namespace,
+		elasticsearch.Spec.GetSecrets(),
+		ref); err != nil {
+		return err
 	}
 	return nil
 }

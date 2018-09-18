@@ -20,10 +20,8 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/client-go/tools/reference"
 )
 
 type Controller struct {
@@ -74,6 +72,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		api.Memcached{}.CustomResourceDefinition(),
 		api.MemcachedVersion{}.CustomResourceDefinition(),
 		api.DormantDatabase{}.CustomResourceDefinition(),
+		api.Snapshot{}.CustomResourceDefinition(),
 	}
 	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
 }
@@ -127,16 +126,14 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) pushFailureEvent(memcached *api.Memcached, reason string) {
-	if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
-		c.recorder.Eventf(
-			ref,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToStart,
-			`Fail to be ready Memcached: "%v". Reason: %v`,
-			memcached.Name,
-			reason,
-		)
-	}
+	c.recorder.Eventf(
+		memcached,
+		core.EventTypeWarning,
+		eventer.EventReasonFailedToStart,
+		`Fail to be ready Memcached: "%v". Reason: %v`,
+		memcached.Name,
+		reason,
+	)
 
 	mc, err := kutildb.UpdateMemcachedStatus(c.ExtClient, memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseFailed
@@ -145,14 +142,12 @@ func (c *Controller) pushFailureEvent(memcached *api.Memcached, reason string) {
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-		}
+		c.recorder.Eventf(
+			memcached,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToUpdate,
+			err.Error(),
+		)
 	}
 	memcached.Status = mc.Status
 }

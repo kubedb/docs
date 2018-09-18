@@ -33,26 +33,22 @@ func (c *Controller) ensureStatefulSet(mysql *api.MySQL) (kutil.VerbType, error)
 	// Check StatefulSet Pod status
 	if vt != kutil.VerbUnchanged {
 		if err := c.checkStatefulSetPodStatus(statefulSet); err != nil {
-			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql); rerr == nil {
-				c.recorder.Eventf(
-					ref,
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToStart,
-					`Failed to CreateOrPatch StatefulSet. Reason: %v`,
-					err,
-				)
-			}
+			c.recorder.Eventf(
+				mysql,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToStart,
+				`Failed to CreateOrPatch StatefulSet. Reason: %v`,
+				err,
+			)
 			return kutil.VerbUnchanged, err
 		}
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully %v StatefulSet",
-				vt,
-			)
-		}
+		c.recorder.Eventf(
+			mysql,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %v StatefulSet",
+			vt,
+		)
 	}
 	return vt, nil
 }

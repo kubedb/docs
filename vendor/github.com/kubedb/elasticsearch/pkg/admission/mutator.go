@@ -82,7 +82,7 @@ func (a *ElasticsearchMutator) Admit(req *admission.AdmissionRequest) *admission
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mod != nil {
-		patch, err := meta_util.CreateJSONPatch(obj, mod)
+		patch, err := meta_util.CreateJSONPatch(req.Object.Raw, mod)
 		if err != nil {
 			return hookapi.StatusInternalServerError(err)
 		}
@@ -182,6 +182,12 @@ func setDefaultsFromDormantDB(extClient cs.Interface, elasticsearch *api.Elastic
 
 	// Skip checking DoNotPause
 	ddbOriginSpec.DoNotPause = elasticsearch.Spec.DoNotPause
+
+	// Skip checking UpdateStrategy
+	ddbOriginSpec.UpdateStrategy = elasticsearch.Spec.UpdateStrategy
+
+	// Skip checking TerminationPolicy
+	ddbOriginSpec.TerminationPolicy = elasticsearch.Spec.TerminationPolicy
 
 	if !meta_util.Equal(ddbOriginSpec, &elasticsearch.Spec) {
 		diff := meta_util.Diff(ddbOriginSpec, &elasticsearch.Spec)

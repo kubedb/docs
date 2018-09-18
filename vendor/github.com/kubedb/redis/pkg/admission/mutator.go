@@ -76,11 +76,11 @@ func (a *RedisMutator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	redisMod, err := setDefaultValues(a.client, a.extClient, obj.(*api.Redis).DeepCopy())
+	mod, err := setDefaultValues(a.client, a.extClient, obj.(*api.Redis).DeepCopy())
 	if err != nil {
 		return hookapi.StatusForbidden(err)
-	} else if redisMod != nil {
-		patch, err := meta_util.CreateJSONPatch(obj, redisMod)
+	} else if mod != nil {
+		patch, err := meta_util.CreateJSONPatch(req.Object.Raw, mod)
 		if err != nil {
 			return hookapi.StatusInternalServerError(err)
 		}
@@ -146,6 +146,12 @@ func setDefaultsFromDormantDB(extClient cs.Interface, redis *api.Redis) error {
 
 	// Skip checking DoNotPause
 	ddbOriginSpec.DoNotPause = redis.Spec.DoNotPause
+
+	// Skip checking UpdateStrategy
+	ddbOriginSpec.UpdateStrategy = redis.Spec.UpdateStrategy
+
+	// Skip checking TerminationPolicy
+	ddbOriginSpec.TerminationPolicy = redis.Spec.TerminationPolicy
 
 	if !meta_util.Equal(ddbOriginSpec, &redis.Spec) {
 		diff := meta_util.Diff(ddbOriginSpec, &redis.Spec)

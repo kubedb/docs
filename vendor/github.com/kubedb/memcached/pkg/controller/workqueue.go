@@ -31,7 +31,7 @@ func (c *Controller) runMemcached(key string) error {
 		memcached := obj.(*api.Memcached).DeepCopy()
 		if memcached.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(memcached.ObjectMeta, api.GenericKey) {
-				if err := c.pause(memcached); err != nil {
+				if err := c.terminate(memcached); err != nil {
 					log.Errorln(err)
 					return err
 				}

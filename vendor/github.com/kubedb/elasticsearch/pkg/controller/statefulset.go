@@ -136,28 +136,25 @@ func (c *Controller) ensureStatefulSet(
 	if vt == kutil.VerbCreated || vt == kutil.VerbPatched {
 		// Check StatefulSet Pod status
 		if err := c.CheckStatefulSetPodStatus(statefulSet); err != nil {
-			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-				c.recorder.Eventf(
-					ref,
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToStart,
-					`Failed to be running after StatefulSet %v. Reason: %v`,
-					vt,
-					err,
-				)
-			}
+			c.recorder.Eventf(
+				elasticsearch,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToStart,
+				`Failed to be running after StatefulSet %v. Reason: %v`,
+				vt,
+				err,
+			)
 			return kutil.VerbUnchanged, err
 		}
 
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully %v StatefulSet",
-				vt,
-			)
-		}
+		c.recorder.Eventf(
+			elasticsearch,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %v StatefulSet",
+			vt,
+		)
+
 	}
 	return vt, nil
 }

@@ -3,6 +3,7 @@ package dynamic
 import (
 	"github.com/appscode/kutil/core/v1"
 	core "k8s.io/api/core/v1"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -29,15 +30,16 @@ func RemoveOwnerReferenceForItems(
 	for _, name := range items {
 		item, err := ri.Get(name, metav1.GetOptions{})
 		if err != nil {
-			errs = append(errs, err)
+			if !kerr.IsNotFound(err) {
+				errs = append(errs, err)
+			}
 			continue
 		}
 		if _, _, err := Patch(c, gvr, item, func(in *unstructured.Unstructured) *unstructured.Unstructured {
 			v1.RemoveOwnerReference(in, ref)
 			return in
-		}); err != nil {
+		}); err != nil && !kerr.IsNotFound(err) {
 			errs = append(errs, err)
-			continue
 		}
 	}
 	return utilerrors.NewAggregate(errs)
@@ -67,9 +69,8 @@ func RemoveOwnerReferenceForSelector(
 		if _, _, err := Patch(c, gvr, &item, func(in *unstructured.Unstructured) *unstructured.Unstructured {
 			v1.RemoveOwnerReference(in, ref)
 			return in
-		}); err != nil {
+		}); err != nil && !kerr.IsNotFound(err) {
 			errs = append(errs, err)
-			continue
 		}
 	}
 	return utilerrors.NewAggregate(errs)
@@ -93,15 +94,16 @@ func EnsureOwnerReferenceForItems(
 	for _, name := range items {
 		item, err := ri.Get(name, metav1.GetOptions{})
 		if err != nil {
-			errs = append(errs, err)
+			if !kerr.IsNotFound(err) {
+				errs = append(errs, err)
+			}
 			continue
 		}
 		if _, _, err := Patch(c, gvr, item, func(in *unstructured.Unstructured) *unstructured.Unstructured {
 			v1.EnsureOwnerReference(in, ref)
 			return in
-		}); err != nil {
+		}); err != nil && !kerr.IsNotFound(err) {
 			errs = append(errs, err)
-			continue
 		}
 	}
 	return utilerrors.NewAggregate(errs)
@@ -130,9 +132,8 @@ func EnsureOwnerReferenceForSelector(
 		if _, _, err := Patch(c, gvr, &item, func(in *unstructured.Unstructured) *unstructured.Unstructured {
 			v1.EnsureOwnerReference(in, ref)
 			return in
-		}); err != nil {
+		}); err != nil && !kerr.IsNotFound(err) {
 			errs = append(errs, err)
-			continue
 		}
 	}
 	return utilerrors.NewAggregate(errs)

@@ -32,26 +32,24 @@ func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.Verb
 	// create database Service
 	vt1, err := c.createService(elasticsearch)
 	if err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				"Failed to createOrPatch Service. Reason: %v",
-				err,
-			)
-		}
+		c.recorder.Eventf(
+			elasticsearch,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			"Failed to createOrPatch Service. Reason: %v",
+			err,
+		)
+
 		return kutil.VerbUnchanged, err
 	} else if vt1 != kutil.VerbUnchanged {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully %s Service",
-				vt1,
-			)
-		}
+		c.recorder.Eventf(
+			elasticsearch,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %s Service",
+			vt1,
+		)
+
 	}
 
 	// Check if service name exists
@@ -62,26 +60,23 @@ func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.Verb
 	// create database Service
 	vt2, err := c.createMasterService(elasticsearch)
 	if err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				"Failed to createOrPatch Service. Reason: %v",
-				err,
-			)
-		}
+		c.recorder.Eventf(
+			elasticsearch,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			"Failed to createOrPatch Service. Reason: %v",
+			err,
+		)
+
 		return kutil.VerbUnchanged, err
 	} else if vt2 != kutil.VerbUnchanged {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully %s Service",
-				vt2,
-			)
-		}
+		c.recorder.Eventf(
+			elasticsearch,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %s Service",
+			vt2,
+		)
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
@@ -222,7 +217,7 @@ func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil
 	})
 	if err != nil {
 		c.recorder.Eventf(
-			ref,
+			elasticsearch,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to reconcile stats service. Reason: %v",
@@ -231,7 +226,7 @@ func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
-			ref,
+			elasticsearch,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s stats service",

@@ -82,7 +82,7 @@ func (a *MongoDBMutator) Admit(req *admission.AdmissionRequest) *admission.Admis
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mongoMod != nil {
-		patch, err := meta_util.CreateJSONPatch(obj, mongoMod)
+		patch, err := meta_util.CreateJSONPatch(req.Object.Raw, mongoMod)
 		if err != nil {
 			return hookapi.StatusInternalServerError(err)
 		}
@@ -170,6 +170,12 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB) erro
 
 	// Skip checking DoNotPause
 	ddbOriginSpec.DoNotPause = mongodb.Spec.DoNotPause
+
+	// Skip checking UpdateStrategy
+	ddbOriginSpec.UpdateStrategy = mongodb.Spec.UpdateStrategy
+
+	// Skip checking TerminationPolicy
+	ddbOriginSpec.TerminationPolicy = mongodb.Spec.TerminationPolicy
 
 	if !meta_util.Equal(ddbOriginSpec, &mongodb.Spec) {
 		diff := meta_util.Diff(ddbOriginSpec, &mongodb.Spec)

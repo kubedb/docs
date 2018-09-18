@@ -19,11 +19,10 @@ import (
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/client-go/tools/reference"
 )
 
 type Controller struct {
@@ -49,6 +48,7 @@ func New(
 	client kubernetes.Interface,
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
 	extClient cs.KubedbV1alpha1Interface,
+	dynamicClient dynamic.Interface,
 	promClient pcm.MonitoringV1Interface,
 	opt amc.Config,
 ) *Controller {
@@ -57,6 +57,7 @@ func New(
 			Client:           client,
 			ExtClient:        extClient,
 			ApiExtKubeClient: apiExtKubeClient,
+			DynamicClient:    dynamicClient,
 		},
 		Config:     opt,
 		promClient: promClient,
@@ -74,6 +75,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		api.Redis{}.CustomResourceDefinition(),
 		api.RedisVersion{}.CustomResourceDefinition(),
 		api.DormantDatabase{}.CustomResourceDefinition(),
+		api.Snapshot{}.CustomResourceDefinition(),
 	}
 	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
 }
@@ -127,16 +129,14 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) pushFailureEvent(redis *api.Redis, reason string) {
-	if ref, rerr := reference.GetReference(clientsetscheme.Scheme, redis); rerr == nil {
-		c.recorder.Eventf(
-			ref,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToStart,
-			`Fail to be ready Redis: "%v". Reason: %v`,
-			redis.Name,
-			reason,
-		)
-	}
+	c.recorder.Eventf(
+		redis,
+		core.EventTypeWarning,
+		eventer.EventReasonFailedToStart,
+		`Fail to be ready Redis: "%v". Reason: %v`,
+		redis.Name,
+		reason,
+	)
 
 	rd, err := kutildb.UpdateRedisStatus(c.ExtClient, redis, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseFailed
@@ -145,14 +145,12 @@ func (c *Controller) pushFailureEvent(redis *api.Redis, reason string) {
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, redis); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-		}
+		c.recorder.Eventf(
+			redis,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToUpdate,
+			err.Error(),
+		)
 	}
 	redis.Status = rd.Status
 }

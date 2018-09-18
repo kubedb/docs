@@ -31,26 +31,24 @@ func (c *Controller) ensureService(mongodb *api.MongoDB) (kutil.VerbType, error)
 	// create database Service
 	vt, err := c.createService(mongodb)
 	if err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				"Failed to create Service. Reason: %v",
-				err,
-			)
-		}
+		c.recorder.Eventf(
+			mongodb,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			"Failed to createOrPatch Service. Reason: %v",
+			err,
+		)
+
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully %s Service",
-				vt,
-			)
-		}
+		c.recorder.Eventf(
+			mongodb,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %s Service",
+			vt,
+		)
+
 	}
 	return vt, nil
 }

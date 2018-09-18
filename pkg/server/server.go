@@ -9,7 +9,6 @@ import (
 	"github.com/kubedb/apimachinery/pkg/admission/dormantdatabase"
 	"github.com/kubedb/apimachinery/pkg/admission/snapshot"
 	esAdmsn "github.com/kubedb/elasticsearch/pkg/admission"
-	edAdmsn "github.com/kubedb/etcd/pkg/admission"
 	mcAdmsn "github.com/kubedb/memcached/pkg/admission"
 	mgAdmsn "github.com/kubedb/mongodb/pkg/admission"
 	myAdmsn "github.com/kubedb/mysql/pkg/admission"
@@ -114,8 +113,8 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 		&pgAdmsn.PostgresMutator{},
 		&esAdmsn.ElasticsearchValidator{},
 		&esAdmsn.ElasticsearchMutator{},
-		&edAdmsn.EtcdValidator{},
-		&edAdmsn.EtcdMutator{},
+		//&edAdmsn.EtcdValidator{},
+		//&edAdmsn.EtcdMutator{},
 		&rdAdmsn.RedisValidator{},
 		&rdAdmsn.RedisMutator{},
 		&mcAdmsn.MemcachedValidator{},

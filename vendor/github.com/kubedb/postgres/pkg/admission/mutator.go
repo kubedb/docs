@@ -82,7 +82,7 @@ func (a *PostgresMutator) Admit(req *admission.AdmissionRequest) *admission.Admi
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if dbMod != nil {
-		patch, err := meta_util.CreateJSONPatch(obj, dbMod)
+		patch, err := meta_util.CreateJSONPatch(req.Object.Raw, dbMod)
 		if err != nil {
 			return hookapi.StatusInternalServerError(err)
 		}
@@ -161,6 +161,12 @@ func setDefaultsFromDormantDB(extClient cs.Interface, postgres *api.Postgres) er
 
 	// Skip checking DoNotPause
 	ddbOriginSpec.DoNotPause = postgres.Spec.DoNotPause
+
+	// Skip checking UpdateStrategy
+	ddbOriginSpec.UpdateStrategy = postgres.Spec.UpdateStrategy
+
+	// Skip checking TerminationPolicy
+	ddbOriginSpec.TerminationPolicy = postgres.Spec.TerminationPolicy
 
 	if !meta_util.Equal(ddbOriginSpec, &postgres.Spec) {
 		diff := meta_util.Diff(ddbOriginSpec, &postgres.Spec)

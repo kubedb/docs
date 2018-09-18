@@ -2,7 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
@@ -124,28 +123,24 @@ func (c *Controller) ensureStatefulSet(
 	if vt == kutil.VerbCreated || vt == kutil.VerbPatched {
 		// Check StatefulSet Pod status
 		if err := c.CheckStatefulSetPodStatus(statefulSet); err != nil {
-			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
-				c.recorder.Eventf(
-					ref,
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToStart,
-					`Failed to be running after StatefulSet %v. Reason: %v`,
-					vt,
-					err,
-				)
-			}
+			c.recorder.Eventf(
+				postgres,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToStart,
+				`Failed to be running after StatefulSet %v. Reason: %v`,
+				vt,
+				err,
+			)
 			return kutil.VerbUnchanged, err
 		}
 
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully %v StatefulSet",
-				vt,
-			)
-		}
+		c.recorder.Eventf(
+			postgres,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %v StatefulSet",
+			vt,
+		)
 	}
 	return vt, nil
 }
@@ -196,7 +191,7 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion 
 					},
 					{
 						Name:  "ARCHIVE_S3_PREFIX",
-						Value: fmt.Sprintf("s3://%v/%v/archive", archiverStorage.S3.Bucket, filepath.Join(archiverStorage.S3.Prefix, api.DatabaseNamePrefix, postgres.Namespace, postgres.Name)),
+						Value: fmt.Sprintf("s3://%v/%v", archiverStorage.S3.Bucket, WalDataDir(postgres)),
 					},
 				}...,
 			)

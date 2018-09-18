@@ -17,9 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/client-go/tools/reference"
 )
 
 type CronControllerInterface interface {
@@ -134,28 +132,24 @@ func (s *snapshotInvoker) createScheduledSnapshot() {
 		LabelSelector: labels.Set(labelMap).AsSelector().String(),
 	})
 	if err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, s.runtimeObject); rerr == nil {
-			s.eventRecorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToList,
-				"Failed to list Snapshots. Reason: %v",
-				err,
-			)
-		}
+		s.eventRecorder.Eventf(
+			s.runtimeObject,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToList,
+			"Failed to list Snapshots. Reason: %v",
+			err,
+		)
 		log.Errorln(err)
 		return
 	}
 
 	if len(snapshotList.Items) > 0 {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, s.runtimeObject); rerr == nil {
-			s.eventRecorder.Event(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonIgnoredSnapshot,
-				"Skipping scheduled Backup. One is still active.",
-			)
-		}
+		s.eventRecorder.Event(
+			s.runtimeObject,
+			core.EventTypeNormal,
+			eventer.EventReasonIgnoredSnapshot,
+			"Skipping scheduled Backup. One is still active.",
+		)
 		log.Debugln("Skipping scheduled Backup. One is still active.")
 		return
 	}

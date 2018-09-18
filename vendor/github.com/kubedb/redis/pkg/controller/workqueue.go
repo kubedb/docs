@@ -31,7 +31,7 @@ func (c *Controller) runRedis(key string) error {
 		redis := obj.(*api.Redis).DeepCopy()
 		if redis.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(redis.ObjectMeta, api.GenericKey) {
-				if err := c.pause(redis); err != nil {
+				if err := c.terminate(redis); err != nil {
 					log.Errorln(err)
 					return err
 				}

@@ -14,36 +14,49 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 )
 
 func (c *Controller) create(memcached *api.Memcached) error {
 	if err := validator.ValidateMemcached(c.Client, c.ExtClient, memcached); err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
-			c.recorder.Event(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonInvalid,
-				err.Error(),
-			)
-		}
+		c.recorder.Event(
+			memcached,
+			core.EventTypeWarning,
+			eventer.EventReasonInvalid,
+			err.Error(),
+		)
 		log.Errorln(err)
 		return nil // user error so just record error and don't retry.
 	}
 
+	// Check if memcachedVersion is deprecated.
+	// If deprecated, add event and return nil (stop processing.)
+	memcachedVersion, err := c.ExtClient.MemcachedVersions().Get(string(memcached.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if memcachedVersion.Spec.Deprecated {
+		c.recorder.Eventf(
+			memcached,
+			core.EventTypeWarning,
+			eventer.EventReasonInvalid,
+			"DBVersion %v is deprecated. Skipped processing.",
+			memcachedVersion.Name,
+		)
+		log.Errorf("Memcached %s/%s is using deprecated version %v. Skipped processing.",
+			memcached.Namespace, memcached.Name, memcachedVersion.Name)
+		return nil
+	}
+
 	// Delete Matching DormantDatabase if exists any
 	if err := c.deleteMatchingDormantDatabase(memcached); err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				`Failed to delete dormant Database : "%v". Reason: %v`,
-				memcached.Name,
-				err,
-			)
-		}
+		c.recorder.Eventf(
+			memcached,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			`Failed to delete dormant Database : "%v". Reason: %v`,
+			memcached.Name,
+			err,
+		)
 		return err
 	}
 
@@ -53,14 +66,12 @@ func (c *Controller) create(memcached *api.Memcached) error {
 			return in
 		}, api.EnableStatusSubresource)
 		if err != nil {
-			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
-				c.recorder.Eventf(
-					ref,
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToUpdate,
-					err.Error(),
-				)
-			}
+			c.recorder.Eventf(
+				memcached,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
+			)
 			return err
 		}
 		memcached.Status = mc.Status
@@ -79,23 +90,19 @@ func (c *Controller) create(memcached *api.Memcached) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
-			c.recorder.Event(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully created Memcached",
-			)
-		}
+		c.recorder.Event(
+			memcached,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully created Memcached",
+		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
-			c.recorder.Event(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully patched Memcached",
-			)
-		}
+		c.recorder.Event(
+			memcached,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully patched Memcached",
+		)
 	}
 
 	mc, err := util.UpdateMemcachedStatus(c.ExtClient, memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
@@ -104,43 +111,37 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		return in
 	}, api.EnableStatusSubresource)
 	if err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-		}
+		c.recorder.Eventf(
+			memcached,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToUpdate,
+			err.Error(),
+		)
 		return err
 	}
 	memcached.Status = mc.Status
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(memcached); err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				"Failed to manage monitoring system. Reason: %v",
-				err,
-			)
-		}
+		c.recorder.Eventf(
+			memcached,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			"Failed to manage monitoring system. Reason: %v",
+			err,
+		)
 		log.Errorln(err)
 		return nil
 	}
 
 	if err := c.manageMonitor(memcached); err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				"Failed to manage monitoring system. Reason: %v",
-				err,
-			)
-		}
+		c.recorder.Eventf(
+			memcached,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			"Failed to manage monitoring system. Reason: %v",
+			err,
+		)
 		log.Errorln(err)
 		return nil
 	}
@@ -148,24 +149,35 @@ func (c *Controller) create(memcached *api.Memcached) error {
 	return nil
 }
 
-func (c *Controller) pause(memcached *api.Memcached) error {
-	if _, err := c.createDormantDatabase(memcached); err != nil {
-		if kerr.IsAlreadyExists(err) {
-			// if already exists, check if it is database of another Kind and return error in that case.
-			// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
-			// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
-			// So reuse that DormantDB!
-			ddb, err := c.ExtClient.DormantDatabases(memcached.Namespace).Get(memcached.Name, metav1.GetOptions{})
-			if err != nil {
-				return err
+func (c *Controller) terminate(memcached *api.Memcached) error {
+	// If TerminationPolicy is "terminate", keep everything (ie, PVCs,Secrets,Snapshots) intact.
+	// In operator, create dormantdatabase
+	if memcached.Spec.TerminationPolicy == api.TerminationPolicyPause {
+
+		if _, err := c.createDormantDatabase(memcached); err != nil {
+			if kerr.IsAlreadyExists(err) {
+				// if already exists, check if it is database of another Kind and return error in that case.
+				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
+				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
+				// So reuse that DormantDB!
+				ddb, err := c.ExtClient.DormantDatabases(memcached.Namespace).Get(memcached.Name, metav1.GetOptions{})
+				if err != nil {
+					return err
+				}
+				if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindMemcached {
+					return fmt.Errorf(`DormantDatabase "%v" of kind %v already exists`, memcached.Name, val)
+				}
+			} else {
+				return fmt.Errorf(`failed to create DormantDatabase: "%v". Reason: %v`, memcached.Name, err)
 			}
-			if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindMemcached {
-				return fmt.Errorf(`DormantDatabase "%v" of kind %v already exists`, memcached.Name, val)
-			}
-		} else {
-			return fmt.Errorf(`failed to create DormantDatabase: "%v". Reason: %v`, memcached.Name, err)
 		}
 	}
+	// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
+	// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
+	// In both these cases, don't create dormantdatabase
+
+	// At this moment, No elements of memcached to wipe out.
+	// In future. if we add any secrets or other component, handle here
 
 	if memcached.Spec.Monitor != nil {
 		if _, err := c.deleteMonitor(memcached); err != nil {
