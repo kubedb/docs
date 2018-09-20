@@ -6,8 +6,6 @@ import:
   version: master
 - package: github.com/coreos/prometheus-operator
   version: v0.23.2
-- package: github.com/dcu/mongodb_exporter
-  version: master
 - package: github.com/go-kit/kit
   version: v0.7.0
 - package: github.com/graymeta/stow
@@ -25,8 +23,6 @@ import:
 - package: cloud.google.com/go
   version: v0.2.0
 - package: github.com/jpillora/go-ogle-analytics
-- package: github.com/justwatchcom/elasticsearch_exporter
-  version: master
 - package: github.com/kubedb/apimachinery
   version: master
 - package: github.com/kubedb/elasticsearch
@@ -43,27 +39,15 @@ import:
   version: master
 - package: github.com/kubedb/redis
   version: master
-- package: github.com/oliver006/redis_exporter
-  version: master
 - package: github.com/orcaman/concurrent-map
 - package: github.com/prometheus/client_golang
   version: v0.8.0
 - package: github.com/prometheus/common
   version: 3233b24a36715a2fe36d162260457857a56d672d
-- package: github.com/prometheus/memcached_exporter
-  repo: https://github.com/kubedb/memcached_exporter.git
-  vcs: git
-  version: master
-- package: github.com/prometheus/mysqld_exporter
-  version: f76ef420f139f4a67c25a3009f90dcaf11f7f936
 - package: github.com/spf13/cobra
   version: v0.0.3
 - package: github.com/spf13/pflag
   version: v1.0.1
-- package: github.com/wrouesnel/postgres_exporter
-  repo: https://github.com/kubedb/postgres_exporter.git
-  vcs: git
-  version: master
 - package: k8s.io/api
   version: kubernetes-1.11.3
 - package: k8s.io/apiextensions-apiserver
