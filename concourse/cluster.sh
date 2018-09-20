@@ -25,10 +25,10 @@ function cleanup_test_stuff() {
   kubectl describe nodes
 
   if [ -d "$BASE_DIR/creds" ]; then
-      rm -rf $BASE_DIR/creds
+    rm -rf $BASE_DIR/creds
   fi
 
-  pushd $GOPATH/src/github.com/$ORG_NAME/$REPO_NAME
+  pushd $REPO_ROOT
   ./hack/concourse/uninstall.sh
   popd
 
@@ -236,7 +236,7 @@ if [ "${ClusterProvider}" = "gke" ]; then
   CredProvider=GoogleCloud
   ZONE=us-central1-f
   NODE=n1-standard-2
-  K8S_VERSION=${K8S_VERSION:-"1.10.4-gke.2"}
+  K8S_VERSION=${K8S_VERSION:-"1.10.6-gke.2"}
 
   pharmer_common
 elif [ "${ClusterProvider}" = "aws" ]; then
