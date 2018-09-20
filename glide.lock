@@ -1,5 +1,5 @@
 hash: 0e1a7188d08c5c296a6ee23892c22077f334488705a5b9f66137f2117f53747a
-updated: 2018-09-18T12:27:27.659502223+06:00
+updated: 2018-09-20T12:01:27.543295099-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -219,11 +219,11 @@ imports:
 - name: github.com/fatih/structs
   version: 4966fc68f5b7593aafa6cbbba2d65ec6e1416047
 - name: github.com/fsnotify/fsnotify
-  version: ccc981bf80385c528a65fbfdd49bf2d8da22aa23
+  version: f12c6236fe7b5cf6bcf30e5935d08cb079d78334
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
-  version: fa25069db393aecc09b71267d0489b357781c860
+  version: 20b96f641a5ea98f2f8619ff4f3e061cff4833bd
 - name: github.com/go-kit/kit
   version: ca4112baa34cb55091301bdc13b1420a122b1b9e
 - name: github.com/go-openapi/jsonpointer
@@ -259,7 +259,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 875f8df8b7965f1eac1098d36d677f807ac0b49e
+  version: 3af367b6b30c263d47e8895973edcca9a49cf029
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -268,7 +268,7 @@ imports:
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/google/uuid
-  version: 9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8
+  version: 8c31c18f31ede9fc8eae72290a7e7a8064e9b3e3
 - name: github.com/googleapis/gnostic
   version: 0c5108395e2debce0d731cf0287ddf7242066aba
   subpackages:
@@ -298,7 +298,7 @@ imports:
 - name: github.com/inconshreveable/mousetrap
   version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/jmespath/go-jmespath
-  version: c2b33e8439af944379acbdd9c3a5fe0bc44bd8a5
+  version: 0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74
 - name: github.com/jpillora/go-ogle-analytics
   version: 14b04e0594ef6a9fd943363b135656f0ec8c9d0e
 - name: github.com/json-iterator/go
@@ -306,7 +306,7 @@ imports:
 - name: github.com/justwatchcom/elasticsearch_exporter
   version: 35c5cb0f59c20238ae07ca37213a54727750e257
 - name: github.com/kubedb/apimachinery
-  version: 870ac65aca2d85b1ff5743e149eef38697bec4ed
+  version: 7760fb61e363cdc939e78708046db6a4d92ca77c
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -329,40 +329,40 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: fb55eaff5a2d688dc75ace9d66df2e031b15325a
+  version: d433e2b305c87547148ba8247a3878487e09fcd5
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util/es
 - name: github.com/kubedb/etcd
-  version: 81f5f78255796624931e90d9550560dea2d92482
+  version: 1ea4683ec358553ca7a32dff74d2d00d0256d0b0
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: bc37387ee356137178d39d368a2ebc0747b00131
+  version: e69fc06b18936f42c026dd795c83abd824f7b3e4
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: 2fdbbf048966c882e95ab4a1adbff3b5970aba93
+  version: 36a2ffc21f8c6ba5c315c6d389126ffe50d397bc
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 47dd3cadd8b66e073045a2a8b9e57b3875b940bc
+  version: d1fe8a8a06fb690ad50d967607e50b1482ca0d0a
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: 771f29d80eecfadc5bf891046b1672bb7f0735ec
+  version: a167fd900c55e1b98b225318bf5113474eb70462
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: f4716b3eb6094aea2396ebd6e3498dc4bade7747
+  version: ffdf0a3751678790783d0d0447d2fd6f1cc3cc27
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -387,9 +387,9 @@ imports:
 - name: github.com/NYTimes/gziphandler
   version: 56545f4a5d46df9a6648819d1664c3a03a13ffdb
 - name: github.com/oliver006/redis_exporter
-  version: c28ee9de697fb35af27f2c03affdc92c05e74c4e
+  version: 8bb0b841e9a70b0348f69483e58fea01d521c47a
 - name: github.com/olivere/elastic
-  version: e6cae211ee802eab70248a68fe2cb03b616744c9
+  version: 2ddc762ab5e88f2666b664e840efbeedf7150e99
   subpackages:
   - config
   - uritemplates
@@ -437,16 +437,15 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/russross/blackfriday
-  version: 05f3235734ad95d0016f6a23902f06461fcf567a
+  version: 4048872b16cc0fc2c5fd9eacf0ed2c2fedaa0c8c
 - name: github.com/satori/go.uuid
-  version: 36e9d2ebbde5e3f13ab2e25625fd453271d6522e
+  version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/sergi/go-diff
-  version: 24e2351369ec4949b2ed0dc5c477afdd4c4034e8
-  repo: https://github.com/sergi/go-diff
+  version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
   subpackages:
   - diffmatchpatch
 - name: github.com/sirupsen/logrus
-  version: d26492970760ca5d33129d2d799e34be5c4782eb
+  version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
 - name: github.com/spf13/cobra
   version: ef82de70bb3f60c65fb8eebacbb2d122ef517385
   subpackages:
@@ -462,12 +461,11 @@ imports:
   repo: https://github.com/kubedb/postgres_exporter.git
   vcs: git
 - name: github.com/yudai/gojsondiff
-  version: 0525c875b75ca60b9e67ddc44496aa16f21066b0
+  version: 7b1b7adf999dab73a6eb02669c3d82dbb27a3dd6
   subpackages:
   - formatter
 - name: github.com/yudai/golcs
   version: d1c525dea8ce39ea9a783d33cf08932305373f2c
-  repo: https://github.com/yudai/golcs
 - name: golang.org/x/crypto
   version: 49796115aa4b964c318aad4f3084fdb41e9aa067
   subpackages:
@@ -529,7 +527,7 @@ imports:
   - googleapi/internal/uritemplates
   - storage/v1
 - name: google.golang.org/appengine
-  version: 03cac3b07182cfb08c0d0c0b6ee72a1ceb151c92
+  version: 12d5545dc1cfa6047a286d5e853841b6471f4c19
   subpackages:
   - internal
   - internal/app_identity
@@ -680,7 +678,7 @@ imports:
   - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/apiserver
-  version: dea48c5b25a85e0fa07fec5bd5b8ec8fcaae6653
+  version: 9970aee1898bc65beb8f3829b2ddf8e191777f78
   repo: https://github.com/pharmer/apiserver.git
   vcs: git
   subpackages:

@@ -37,7 +37,7 @@ func (c *Controller) runEtcd(key string) error {
 			}
 			err = c.handleEtcdEvent(ev)
 			if core_util.HasFinalizer(etcd.ObjectMeta, api.GenericKey) {
-				if err := c.pause(etcd); err != nil {
+				if err := c.terminate(etcd); err != nil {
 					log.Errorln(err)
 					return err
 				}

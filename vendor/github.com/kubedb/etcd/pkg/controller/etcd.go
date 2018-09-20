@@ -8,6 +8,7 @@ import (
 	"github.com/appscode/go/types"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
+	dynamic_util "github.com/appscode/kutil/dynamic"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
@@ -16,6 +17,7 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	kwatch "k8s.io/apimachinery/pkg/watch"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
@@ -54,6 +56,25 @@ func (c *Controller) handleEtcdEvent(event *Event) error {
 				err.Error())
 		}
 		log.Errorln(err)
+		return nil
+	}
+
+	// Check if etcdVersion is deprecated.
+	// If deprecated, add event and return nil (stop processing.)
+	etcdVersion, err := c.ExtClient.EtcdVersions().Get(string(etcd.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if etcdVersion.Spec.Deprecated {
+		c.recorder.Eventf(
+			etcd,
+			core.EventTypeWarning,
+			eventer.EventReasonInvalid,
+			"EtcdVersion %v is deprecated. Skipped processing.",
+			etcdVersion.Name,
+		)
+		log.Errorf("Etcd %s/%s is using deprecated version %v. Skipped processing.",
+			etcd.Namespace, etcd.Name, etcdVersion.Name)
 		return nil
 	}
 
@@ -226,22 +247,41 @@ func (c *Controller) initialize(etcd *api.Etcd) error {
 	return nil
 }
 
-func (c *Controller) pause(etcd *api.Etcd) error {
-	if _, err := c.createDormantDatabase(etcd); err != nil {
-		if kerr.IsAlreadyExists(err) {
-			// if already exists, check if it is database of another Kind and return error in that case.
-			// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
-			// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
-			// So reuse that DormantDB!
-			ddb, err := c.ExtClient.DormantDatabases(etcd.Namespace).Get(etcd.Name, metav1.GetOptions{})
-			if err != nil {
-				return err
+func (c *Controller) terminate(etcd *api.Etcd) error {
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd)
+	if rerr != nil {
+		return rerr
+	}
+
+	// If TerminationPolicy is "terminate", keep everything (ie, PVCs,Secrets,Snapshots) intact.
+	// In operator, create dormantdatabase
+	if etcd.Spec.TerminationPolicy == api.TerminationPolicyPause {
+		if err := c.removeOwnerReferenceFromOffshoots(etcd, ref); err != nil {
+			return err
+		}
+		if _, err := c.createDormantDatabase(etcd); err != nil {
+			if kerr.IsAlreadyExists(err) {
+				// if already exists, check if it is database of another Kind and return error in that case.
+				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
+				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
+				// So reuse that DormantDB!
+				ddb, err := c.ExtClient.DormantDatabases(etcd.Namespace).Get(etcd.Name, metav1.GetOptions{})
+				if err != nil {
+					return err
+				}
+				if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindEtcd {
+					return fmt.Errorf(`DormantDatabase "%v" of kind %v already exists`, etcd.Name, val)
+				}
+			} else {
+				return fmt.Errorf(`Failed to create DormantDatabase: "%v". Reason: %v`, etcd.Name, err)
 			}
-			if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindEtcd {
-				return fmt.Errorf(`DormantDatabase "%v" of kind %v already exists`, etcd.Name, val)
-			}
-		} else {
-			return fmt.Errorf(`Failed to create DormantDatabase: "%v". Reason: %v`, etcd.Name, err)
+		}
+	} else {
+		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
+		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
+		// In both these cases, don't create dormantdatabase
+		if err := c.setOwnerReferenceToOffshoots(etcd, ref); err != nil {
+			return err
 		}
 	}
 
@@ -252,6 +292,63 @@ func (c *Controller) pause(etcd *api.Etcd) error {
 			log.Errorln(err)
 			return nil
 		}
+	}
+	return nil
+}
+
+func (c *Controller) setOwnerReferenceToOffshoots(etcd *api.Etcd, ref *core.ObjectReference) error {
+	selector := labels.SelectorFromSet(etcd.OffshootSelectors())
+
+	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
+	// else, keep it intact.
+	if etcd.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
+		if err := dynamic_util.EnsureOwnerReferenceForSelector(
+			c.DynamicClient,
+			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
+			etcd.Namespace,
+			selector,
+			ref); err != nil {
+			return err
+		}
+	} else {
+		// Make sure snapshot and secret's ownerreference is removed.
+		if err := dynamic_util.RemoveOwnerReferenceForSelector(
+			c.DynamicClient,
+			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
+			etcd.Namespace,
+			selector,
+			ref); err != nil {
+			return err
+		}
+	}
+	// delete PVC for both "wipeOut" and "delete" TerminationPolicy.
+	return dynamic_util.EnsureOwnerReferenceForSelector(
+		c.DynamicClient,
+		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
+		etcd.Namespace,
+		selector,
+		ref)
+}
+
+func (c *Controller) removeOwnerReferenceFromOffshoots(etcd *api.Etcd, ref *core.ObjectReference) error {
+	// First, Get LabelSelector for Other Components
+	labelSelector := labels.SelectorFromSet(etcd.OffshootSelectors())
+
+	if err := dynamic_util.RemoveOwnerReferenceForSelector(
+		c.DynamicClient,
+		api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
+		etcd.Namespace,
+		labelSelector,
+		ref); err != nil {
+		return err
+	}
+	if err := dynamic_util.RemoveOwnerReferenceForSelector(
+		c.DynamicClient,
+		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
+		etcd.Namespace,
+		labelSelector,
+		ref); err != nil {
+		return err
 	}
 	return nil
 }

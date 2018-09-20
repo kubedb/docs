@@ -42,7 +42,7 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 
 	c.pgCtrl.RunControllers(stopCh)
 	c.esCtrl.RunControllers(stopCh)
-	//c.edCtrl.RunControllers(stopCh)
+	c.edCtrl.RunControllers(stopCh)
 	c.mgCtrl.RunControllers(stopCh)
 	c.myCtrl.RunControllers(stopCh)
 	c.rdCtrl.RunControllers(stopCh)

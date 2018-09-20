@@ -5,7 +5,6 @@ import (
 
 	"github.com/appscode/go/log"
 	core_util "github.com/appscode/kutil/core/v1"
-	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	batch "k8s.io/api/batch/v1"
@@ -67,14 +66,15 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 							Name:            api.JobTypeRestore,
 							Image:           elasticsearchVersion.Spec.Tools.Image,
 							ImagePullPolicy: core.PullIfNotPresent,
-							Args: meta_util.UpsertArgumentList([]string{
+							Args: append([]string{
 								api.JobTypeRestore,
 								fmt.Sprintf(`--host=%s`, elasticsearch.OffshootName()),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
-							}, snapshot.Spec.PodTemplate.Spec.Args, "--enable-analytics"),
+								"--",
+							}, elasticsearch.Spec.Init.SnapshotSource.Args...),
 							Env: []core.EnvVar{
 								{
 									Name:  "DB_SCHEME",
@@ -228,7 +228,7 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 							Name:            api.JobTypeBackup,
 							Image:           elasticsearchVersion.Spec.Tools.Image,
 							ImagePullPolicy: core.PullIfNotPresent,
-							Args: meta_util.UpsertArgumentList([]string{
+							Args: append([]string{
 								api.JobTypeBackup,
 								fmt.Sprintf(`--host=%s`, elasticsearch.OffshootName()),
 								fmt.Sprintf(`--indices=%s`, indices),
@@ -236,7 +236,8 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
-							}, snapshot.Spec.PodTemplate.Spec.Args, "--enable-analytics"),
+								"--",
+							}, snapshot.Spec.PodTemplate.Spec.Args...),
 							Env: []core.EnvVar{
 								{
 									Name:  "DB_SCHEME",

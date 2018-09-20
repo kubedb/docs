@@ -9,6 +9,7 @@ import (
 	amc "github.com/kubedb/apimachinery/pkg/controller"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
 	esc "github.com/kubedb/elasticsearch/pkg/controller"
+	edc "github.com/kubedb/etcd/pkg/controller"
 	mcc "github.com/kubedb/memcached/pkg/controller"
 	mgc "github.com/kubedb/mongodb/pkg/controller"
 	myc "github.com/kubedb/mysql/pkg/controller"
@@ -31,7 +32,7 @@ type Controller struct {
 	myCtrl *myc.Controller
 	pgCtrl *pgc.Controller
 	esCtrl *esc.Controller
-	// edCtrl *edc.Controller
+	edCtrl *edc.Controller
 	rdCtrl *rdc.Controller
 	mcCtrl *mcc.Controller
 }
@@ -64,8 +65,8 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 	crds := []*crd_api.CustomResourceDefinition{
 		api.Elasticsearch{}.CustomResourceDefinition(),
 		api.ElasticsearchVersion{}.CustomResourceDefinition(),
-		//api.Etcd{}.CustomResourceDefinition(),
-		//api.EtcdVersion{}.CustomResourceDefinition(),
+		api.Etcd{}.CustomResourceDefinition(),
+		api.EtcdVersion{}.CustomResourceDefinition(),
 		api.Postgres{}.CustomResourceDefinition(),
 		api.PostgresVersion{}.CustomResourceDefinition(),
 		api.MySQL{}.CustomResourceDefinition(),

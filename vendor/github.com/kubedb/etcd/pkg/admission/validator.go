@@ -76,12 +76,14 @@ func (a *EtcdValidator) Admit(req *admission.AdmissionRequest) *admission.Admiss
 
 	switch req.Operation {
 	case admission.Delete:
-		// req.Object.Raw = nil, so read from kubernetes
-		obj, err := a.extClient.KubedbV1alpha1().Etcds(req.Namespace).Get(req.Name, metav1.GetOptions{})
-		if err != nil && !kerr.IsNotFound(err) {
-			return hookapi.StatusInternalServerError(err)
-		} else if err == nil && obj.Spec.DoNotPause {
-			return hookapi.StatusBadRequest(fmt.Errorf(`etcd "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+		if req.Name != "" {
+			// req.Object.Raw = nil, so read from kubernetes
+			obj, err := a.extClient.KubedbV1alpha1().Etcds(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			if err != nil && !kerr.IsNotFound(err) {
+				return hookapi.StatusInternalServerError(err)
+			} else if err == nil && obj.Spec.DoNotPause {
+				return hookapi.StatusBadRequest(fmt.Errorf(`etcd "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+			}
 		}
 	default:
 		obj, err := meta_util.UnmarshalFromJSON(req.Object.Raw, api.SchemeGroupVersion)
@@ -132,15 +134,8 @@ func ValidateEtcd(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1
 	if etcd.Spec.StorageType == "" {
 		return fmt.Errorf(`'spec.storageType' is missing`)
 	}
-	if etcd.Spec.Storage != nil {
-		var err error
-		if err = amv.ValidateStorage(client, etcd.Spec.StorageType, etcd.Spec.Storage); err != nil {
-			return err
-		}
-	}
-
-	if etcd.Spec.TerminationPolicy == "" {
-		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
+	if err := amv.ValidateStorage(client, etcd.Spec.StorageType, etcd.Spec.Storage); err != nil {
+		return err
 	}
 
 	databaseSecret := etcd.Spec.DatabaseSecret
@@ -155,6 +150,14 @@ func ValidateEtcd(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1
 		if err := amv.ValidateBackupSchedule(client, backupScheduleSpec, etcd.Namespace); err != nil {
 			return err
 		}
+	}
+
+	if etcd.Spec.UpdateStrategy.Type == "" {
+		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
+	}
+
+	if etcd.Spec.TerminationPolicy == "" {
+		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
 	monitorSpec := etcd.Spec.Monitor
@@ -187,10 +190,17 @@ func matchWithDormantDatabase(extClient kubedbv1alpha1.KubedbV1alpha1Interface, 
 
 	// Check Origin Spec
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Etcd
+	drmnOriginSpec.SetDefaults()
 	originalSpec := etcd.Spec
 
 	// Skip checking doNotPause
 	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
+
+	// Skip checking UpdateStrategy
+	drmnOriginSpec.UpdateStrategy = originalSpec.UpdateStrategy
+
+	// Skip checking TerminationPolicy
+	drmnOriginSpec.TerminationPolicy = originalSpec.TerminationPolicy
 
 	// Skip checking Monitoring
 	drmnOriginSpec.Monitor = originalSpec.Monitor
@@ -236,7 +246,6 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 }
 
 var preconditionSpecFields = []string{
-	// "spec.version",
 	"spec.storageType",
 	"spec.storage",
 	"spec.databaseSecret",
@@ -252,6 +261,5 @@ func preconditionFailedError(kind string) error {
 	apiVersion
 	kind
 	name
-	namespace
-	status`, strList}, "\n\t"))
+	namespace`, strList}, "\n\t"))
 }

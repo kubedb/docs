@@ -159,7 +159,7 @@ var blockTags = map[string]struct{}{
 // Currently Html and Latex implementations are provided
 type Renderer interface {
 	// block-level callbacks
-	BlockCode(out *bytes.Buffer, text []byte, infoString string)
+	BlockCode(out *bytes.Buffer, text []byte, lang string)
 	BlockQuote(out *bytes.Buffer, text []byte)
 	BlockHtml(out *bytes.Buffer, text []byte)
 	Header(out *bytes.Buffer, text func() bool, level int, id string)
@@ -804,17 +804,7 @@ func ispunct(c byte) bool {
 
 // Test if a character is a whitespace character.
 func isspace(c byte) bool {
-	return ishorizontalspace(c) || isverticalspace(c)
-}
-
-// Test if a character is a horizontal whitespace character.
-func ishorizontalspace(c byte) bool {
-	return c == ' ' || c == '\t'
-}
-
-// Test if a character is a vertical whitespace character.
-func isverticalspace(c byte) bool {
-	return c == '\n' || c == '\r' || c == '\f' || c == '\v'
+	return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\f' || c == '\v'
 }
 
 // Test if a character is letter.

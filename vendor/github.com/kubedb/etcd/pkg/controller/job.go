@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	core_util "github.com/appscode/kutil/core/v1"
-	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -56,8 +55,8 @@ func (c *Controller) getRestoreContainer(etcd *api.Etcd, snapshot *api.Snapshot,
 
 	containers = append(containers, core.Container{
 		Name:  api.JobTypeRestore,
-		Image: etcdVersion.Spec.DB.Image,
-		Args: meta_util.UpsertArgumentList([]string{
+		Image: etcdVersion.Spec.Tools.Image,
+		Args: append([]string{
 			api.JobTypeRestore,
 			fmt.Sprintf(`--host=%s`, endpoints),
 			fmt.Sprintf(`--data-dir=%s`, snapshotDumpDir),
@@ -65,7 +64,8 @@ func (c *Controller) getRestoreContainer(etcd *api.Etcd, snapshot *api.Snapshot,
 			fmt.Sprintf(`--folder=%s`, folderName),
 			fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 			fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
-		}, snapshot.Spec.PodTemplate.Spec.Args, "--enable-analytics"),
+			"--",
+		}, snapshot.Spec.PodTemplate.Spec.Args...),
 		Env: []core.EnvVar{
 			{
 				Name:  analytics.Key,
@@ -169,7 +169,7 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 						{
 							Name:  api.JobTypeBackup,
 							Image: etcdVersion.Spec.Tools.Image,
-							Args: meta_util.UpsertArgumentList([]string{
+							Args: append([]string{
 								api.JobTypeBackup,
 								fmt.Sprintf(`--host=%s`, endpoints),
 								// fmt.Sprintf(`--user=%s`, etcdUser),
@@ -178,7 +178,8 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
-							}, snapshot.Spec.PodTemplate.Spec.Args, "--enable-analytics"),
+								"--",
+							}, snapshot.Spec.PodTemplate.Spec.Args...),
 							Env: []core.EnvVar{
 								{
 									Name:  analytics.Key,
