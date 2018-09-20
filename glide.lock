@@ -1,5 +1,5 @@
-hash: 0e1a7188d08c5c296a6ee23892c22077f334488705a5b9f66137f2117f53747a
-updated: 2018-09-20T12:01:27.543295099-07:00
+hash: 06805ee70d732bb6967611c79e539b02089098644c24f0f604b61dbedb8dbf51
+updated: 2018-09-20T12:23:25.468588192-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -198,8 +198,6 @@ imports:
   version: 782f4967f2dc4564575ca782fe2d04090b5faca8
   subpackages:
   - spew
-- name: github.com/dcu/mongodb_exporter
-  version: 8f53431089a13bc46f4f86533451c01b60582478
 - name: github.com/dgrijalva/jwt-go
   version: 01aeca54ebda6e0fbfafd0a524d234159c05ec20
 - name: github.com/docker/spdystream
@@ -303,8 +301,6 @@ imports:
   version: 14b04e0594ef6a9fd943363b135656f0ec8c9d0e
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
-- name: github.com/justwatchcom/elasticsearch_exporter
-  version: 35c5cb0f59c20238ae07ca37213a54727750e257
 - name: github.com/kubedb/apimachinery
   version: 7760fb61e363cdc939e78708046db6a4d92ca77c
   subpackages:
@@ -386,8 +382,6 @@ imports:
   version: 7854abff473c41fdde529ebe4cf7db6334dd61ce
 - name: github.com/NYTimes/gziphandler
   version: 56545f4a5d46df9a6648819d1664c3a03a13ffdb
-- name: github.com/oliver006/redis_exporter
-  version: 8bb0b841e9a70b0348f69483e58fea01d521c47a
 - name: github.com/olivere/elastic
   version: 2ddc762ab5e88f2666b664e840efbeedf7150e99
   subpackages:
@@ -422,12 +416,6 @@ imports:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
-- name: github.com/prometheus/memcached_exporter
-  version: d8f8362d7dfc221991c3014de718f17670c56279
-  repo: https://github.com/kubedb/memcached_exporter.git
-  vcs: git
-- name: github.com/prometheus/mysqld_exporter
-  version: f76ef420f139f4a67c25a3009f90dcaf11f7f936
 - name: github.com/prometheus/procfs
   version: 65c1f6f8f0fc1e2185eb9863a3bc751496404259
   subpackages:
@@ -456,10 +444,6 @@ imports:
   version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:
   - codec
-- name: github.com/wrouesnel/postgres_exporter
-  version: 441fe33611b45dac6475325978e47797b23c5aec
-  repo: https://github.com/kubedb/postgres_exporter.git
-  vcs: git
 - name: github.com/yudai/gojsondiff
   version: 7b1b7adf999dab73a6eb02669c3d82dbb27a3dd6
   subpackages:
