@@ -31,6 +31,8 @@ import:
   version: master
 - package: github.com/kubedb/elasticsearch
   version: master
+- package: github.com/kubedb/etcd
+  version: master
 - package: github.com/kubedb/memcached
   version: master
 - package: github.com/kubedb/mongodb
