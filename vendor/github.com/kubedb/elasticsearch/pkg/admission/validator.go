@@ -85,7 +85,10 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
 			obj, err := a.extClient.KubedbV1alpha1().Elasticsearches(req.Namespace).Get(req.Name, metav1.GetOptions{})
-			if err != nil && !kerr.IsNotFound(err) {
+			if err != nil {
+				if kerr.IsNotFound(err) {
+					break
+				}
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.DoNotPause {
 				return hookapi.StatusBadRequest(fmt.Errorf(`elasticsearch "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
@@ -268,6 +271,12 @@ func matchWithDormantDatabase(extClient kubedbv1alpha1.KubedbV1alpha1Interface, 
 	// Skip checking doNotPause
 	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
 
+	// Skip checking UpdateStrategy
+	drmnOriginSpec.UpdateStrategy = originalSpec.UpdateStrategy
+
+	// Skip checking TerminationPolicy
+	drmnOriginSpec.TerminationPolicy = originalSpec.TerminationPolicy
+
 	// Skip checking Monitoring
 	drmnOriginSpec.Monitor = originalSpec.Monitor
 
@@ -312,7 +321,6 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 }
 
 var preconditionSpecFields = []string{
-	"spec.version",
 	"spec.topology.*.prefix",
 	"spec.topology.*.storage",
 	"spec.enableSSL",

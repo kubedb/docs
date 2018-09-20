@@ -75,7 +75,9 @@ import:
   vcs: git
   version: release-1.11.3
 - package: k8s.io/client-go
-  version: kubernetes-1.11.3
+  repo: https://github.com/pharmer/client-go.git
+  vcs: git
+  version: release-1.11.3
 - package: github.com/appscode/kutil
   version: release-8.0
 - package: github.com/appscode/kubernetes-webhook-util

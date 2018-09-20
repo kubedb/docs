@@ -2,8 +2,10 @@ package dormantdatabase
 
 import (
 	"github.com/appscode/go/log"
+	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/tools/queue"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
@@ -27,9 +29,27 @@ func (c *Controller) runDormantDatabase(key string) error {
 		// Note that you also have to check the uid if you have a local controlled resource, which
 		// is dependent on the actual instance, to detect that a DormantDatabase was recreated with the same name
 		dormantDatabase := obj.(*api.DormantDatabase).DeepCopy()
-		if err := c.create(dormantDatabase); err != nil {
-			log.Errorln(err)
-			return err
+		if dormantDatabase.DeletionTimestamp != nil {
+			if core_util.HasFinalizer(dormantDatabase.ObjectMeta, api.GenericKey) {
+				if err := c.delete(dormantDatabase); err != nil {
+					log.Errorln(err)
+					return err
+				}
+				dormantDatabase, _, err = util.PatchDormantDatabase(c.ExtClient, dormantDatabase, func(in *api.DormantDatabase) *api.DormantDatabase {
+					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, api.GenericKey)
+					return in
+				})
+				return err
+			}
+		} else {
+			dormantDatabase, _, err = util.PatchDormantDatabase(c.ExtClient, dormantDatabase, func(in *api.DormantDatabase) *api.DormantDatabase {
+				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
+				return in
+			})
+			if err := c.create(dormantDatabase); err != nil {
+				log.Errorln(err)
+				return err
+			}
 		}
 	}
 	return nil

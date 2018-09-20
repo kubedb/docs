@@ -147,7 +147,7 @@ func (a *DormantDatabaseValidator) setOwnerReferenceToObjects(dormantDatabase *a
 		dormantDatabase.Namespace,
 		selector,
 		ref); err != nil {
-		return nil
+		return err
 	}
 	if err := dynamic_util.EnsureOwnerReferenceForSelector(
 		a.dc,
@@ -155,16 +155,9 @@ func (a *DormantDatabaseValidator) setOwnerReferenceToObjects(dormantDatabase *a
 		dormantDatabase.Namespace,
 		selector,
 		ref); err != nil {
-		return nil
+		return err
 	}
-	if err := dynamic_util.EnsureOwnerReferenceForItems(
-		a.dc,
-		core.SchemeGroupVersion.WithResource("secrets"),
-		dormantDatabase.Namespace,
-		dormantDatabase.GetDatabaseSecrets(),
-		ref); err != nil {
-		return nil
-	}
+	// Delete secrets in operator after checking if existing DBs are using this secret.
 	return nil
 }
 
@@ -191,7 +184,7 @@ func (a *DormantDatabaseValidator) removeOwnerReferenceFromObjects(dormantDataba
 		dormantDatabase.Namespace,
 		selector,
 		ref); err != nil {
-		return nil
+		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
 		a.dc,
@@ -199,15 +192,16 @@ func (a *DormantDatabaseValidator) removeOwnerReferenceFromObjects(dormantDataba
 		dormantDatabase.Namespace,
 		selector,
 		ref); err != nil {
-		return nil
+		return err
 	}
+	// It's okay to remove owner reference of secrets on webhook
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
 		a.dc,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		dormantDatabase.Namespace,
 		dormantDatabase.GetDatabaseSecrets(),
 		ref); err != nil {
-		return nil
+		return err
 	}
 	return nil
 }

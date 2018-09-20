@@ -264,10 +264,16 @@ func matchWithDormantDatabase(extClient kubedbv1alpha1.KubedbV1alpha1Interface, 
 	// Skip checking doNotPause
 	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
 
+	// Skip checking UpdateStrategy
+	drmnOriginSpec.UpdateStrategy = originalSpec.UpdateStrategy
+
+	// Skip checking TerminationPolicy
+	drmnOriginSpec.TerminationPolicy = originalSpec.TerminationPolicy
+
 	// Skip checking Monitoring
 	drmnOriginSpec.Monitor = originalSpec.Monitor
 
-	// Skip Checking BackUP Scheduler
+	// Skip Checking Backup Scheduler
 	drmnOriginSpec.BackupSchedule = originalSpec.BackupSchedule
 
 	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
@@ -308,7 +314,6 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 }
 
 var preconditionSpecFields = []string{
-	"spec.version",
 	"spec.standby",
 	"spec.streaming",
 	"spec.archiver",

@@ -15,6 +15,7 @@ import (
 	pgc "github.com/kubedb/postgres/pkg/controller"
 	rdc "github.com/kubedb/redis/pkg/controller"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -32,6 +33,7 @@ type OperatorConfig struct {
 	KubeClient       kubernetes.Interface
 	APIExtKubeClient crd_cs.ApiextensionsV1beta1Interface
 	DBClient         cs.Interface
+	DynamicClient    dynamic.Interface
 	PromClient       pcm.MonitoringV1Interface
 	CronController   snapc.CronControllerInterface
 }
@@ -48,6 +50,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.KubeClient,
 		c.APIExtKubeClient,
 		c.DBClient.KubedbV1alpha1(),
+		c.DynamicClient,
 		c.PromClient,
 		c.CronController,
 		c.Config,
@@ -56,12 +59,12 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	ctrl.DrmnInformer = dormantdatabase.NewController(ctrl.Controller, nil, ctrl.Config, nil).InitInformer()
 	ctrl.SnapInformer, ctrl.JobInformer = snapc.NewController(ctrl.Controller, nil, ctrl.Config, nil).InitInformer()
 
-	ctrl.pgCtrl = pgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
-	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
-	ctrl.edCtrl = edc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
-	ctrl.mgCtrl = mgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
-	ctrl.myCtrl = myc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, c.CronController, ctrl.Config)
-	ctrl.rdCtrl = rdc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, ctrl.Config)
+	ctrl.pgCtrl = pgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.edCtrl = edc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.mgCtrl = mgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.myCtrl = myc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.rdCtrl = rdc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.DynamicClient, c.PromClient, ctrl.Config)
 	ctrl.mcCtrl = mcc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, ctrl.Config)
 
 	if err := ctrl.Init(); err != nil {

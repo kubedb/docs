@@ -31,7 +31,7 @@ func (c *Controller) runPostgres(key string) error {
 		postgres := obj.(*api.Postgres).DeepCopy()
 		if postgres.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(postgres.ObjectMeta, api.GenericKey) {
-				if err := c.pause(postgres); err != nil {
+				if err := c.terminate(postgres); err != nil {
 					log.Errorln(err)
 					return err
 				}

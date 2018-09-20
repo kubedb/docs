@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/pflag"
 	core "k8s.io/api/core/v1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 )
@@ -101,6 +102,9 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 		return err
 	}
 	if cfg.DBClient, err = cs.NewForConfig(cfg.ClientConfig); err != nil {
+		return err
+	}
+	if cfg.DynamicClient, err = dynamic.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
 	if cfg.PromClient, err = prom.NewForConfig(&s.PrometheusCrdKinds, s.PrometheusCrdGroup, cfg.ClientConfig); err != nil {

@@ -9,6 +9,7 @@ import (
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -26,6 +27,7 @@ type OperatorConfig struct {
 	KubeClient       kubernetes.Interface
 	APIExtKubeClient crd_cs.ApiextensionsV1beta1Interface
 	DBClient         cs.Interface
+	DynamicClient    dynamic.Interface
 	PromClient       pcm.MonitoringV1Interface
 	CronController   snapc.CronControllerInterface
 }
@@ -41,6 +43,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.KubeClient,
 		c.APIExtKubeClient,
 		c.DBClient.KubedbV1alpha1(),
+		c.DynamicClient,
 		c.PromClient,
 		c.CronController,
 		c.Config,
@@ -53,6 +56,10 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	// Initialize Job and Snapshot Informer. Later EventHandler will be added to these informers.
 	ctrl.DrmnInformer = dormantdatabase.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions).InitInformer()
 	ctrl.SnapInformer, ctrl.JobInformer = snapc.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions).InitInformer()
+
+	if err := ctrl.EnsureCustomResourceDefinitions(); err != nil {
+		return nil, err
+	}
 
 	if err := ctrl.Init(); err != nil {
 		return nil, err

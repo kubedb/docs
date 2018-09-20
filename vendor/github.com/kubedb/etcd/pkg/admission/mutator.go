@@ -82,7 +82,7 @@ func (a *EtcdMutator) Admit(req *admission.AdmissionRequest) *admission.Admissio
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if etcdMod != nil {
-		patch, err := meta_util.CreateJSONPatch(obj, etcdMod)
+		patch, err := meta_util.CreateJSONPatch(req.Object.Raw, etcdMod)
 		if err != nil {
 			return hookapi.StatusInternalServerError(err)
 		}
@@ -101,17 +101,10 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, etcd 
 		return nil, errors.New(`'spec.version' is missing`)
 	}
 
-	if etcd.Spec.StorageType == "" {
-		etcd.Spec.StorageType = api.StorageTypeDurable
-	}
-
-	if etcd.Spec.TerminationPolicy == "" {
-		etcd.Spec.TerminationPolicy = api.TerminationPolicyPause
-	}
-
 	if etcd.Spec.Replicas == nil {
 		etcd.Spec.Replicas = types.Int32P(1)
 	}
+	etcd.SetDefaults()
 
 	if err := setDefaultsFromDormantDB(extClient, etcd); err != nil {
 		return nil, err
@@ -142,6 +135,7 @@ func setDefaultsFromDormantDB(extClient cs.Interface, etcd *api.Etcd) error {
 
 	// Check Origin Spec
 	ddbOriginSpec := dormantDb.Spec.Origin.Spec.Etcd
+	ddbOriginSpec.SetDefaults()
 
 	// If DatabaseSecret of new object is not given,
 	// Take dormantDatabaseSecretName
@@ -169,6 +163,12 @@ func setDefaultsFromDormantDB(extClient cs.Interface, etcd *api.Etcd) error {
 
 	// Skip checking DoNotPause
 	ddbOriginSpec.DoNotPause = etcd.Spec.DoNotPause
+
+	// Skip checking UpdateStrategy
+	ddbOriginSpec.UpdateStrategy = etcd.Spec.UpdateStrategy
+
+	// Skip checking TerminationPolicy
+	ddbOriginSpec.TerminationPolicy = etcd.Spec.TerminationPolicy
 
 	if !meta_util.Equal(ddbOriginSpec, &etcd.Spec) {
 		diff := meta_util.Diff(ddbOriginSpec, &etcd.Spec)

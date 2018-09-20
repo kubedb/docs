@@ -31,7 +31,7 @@ func (c *Controller) runElasticsearch(key string) error {
 		elasticsearch := obj.(*api.Elasticsearch).DeepCopy()
 		if elasticsearch.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(elasticsearch.ObjectMeta, "kubedb.com") {
-				if err := c.pause(elasticsearch); err != nil {
+				if err := c.terminate(elasticsearch); err != nil {
 					log.Errorln(err)
 					return err
 				}

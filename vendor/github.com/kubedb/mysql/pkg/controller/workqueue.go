@@ -31,7 +31,7 @@ func (c *Controller) runMySQL(key string) error {
 		mysql := obj.(*api.MySQL).DeepCopy()
 		if mysql.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(mysql.ObjectMeta, api.GenericKey) {
-				if err := c.pause(mysql); err != nil {
+				if err := c.terminate(mysql); err != nil {
 					log.Errorln(err)
 					return err
 				}

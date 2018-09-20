@@ -13,8 +13,6 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	"k8s.io/client-go/util/cert"
 )
 
@@ -40,14 +38,13 @@ func (c *Controller) ensureCertSecret(elasticsearch *api.Elasticsearch) error {
 			return in
 		})
 		if err != nil {
-			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-				c.recorder.Eventf(
-					ref,
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToUpdate,
-					err.Error(),
-				)
-			}
+			c.recorder.Eventf(
+				elasticsearch,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
+			)
+
 			return err
 		}
 		elasticsearch.Spec.CertificateSecret = es.Spec.CertificateSecret
@@ -67,14 +64,12 @@ func (c *Controller) ensureDatabaseSecret(elasticsearch *api.Elasticsearch) erro
 			return in
 		})
 		if err != nil {
-			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch); rerr == nil {
-				c.recorder.Eventf(
-					ref,
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToUpdate,
-					err.Error(),
-				)
-			}
+			c.recorder.Eventf(
+				elasticsearch,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
+			)
 			return err
 		}
 		elasticsearch.Spec.DatabaseSecret = es.Spec.DatabaseSecret

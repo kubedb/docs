@@ -11,8 +11,6 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 )
 
 func (c *Controller) completeJob(job *batch.Job) error {
@@ -55,14 +53,12 @@ func (c *Controller) handleBackupJob(job *batch.Job) error {
 				in.CompletionTime = &t
 				return in
 			}, api.EnableStatusSubresource); err != nil {
-				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
-					c.eventRecorder.Eventf(
-						ref,
-						core.EventTypeWarning,
-						eventer.EventReasonFailedToUpdate,
-						err.Error(),
-					)
-				}
+				c.eventRecorder.Eventf(
+					snapshot,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToUpdate,
+					err.Error(),
+				)
 				return err
 			}
 
@@ -70,14 +66,12 @@ func (c *Controller) handleBackupJob(job *batch.Job) error {
 				delete(in.Labels, api.LabelSnapshotStatus)
 				return in
 			}); err != nil {
-				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
-					c.eventRecorder.Eventf(
-						ref,
-						core.EventTypeWarning,
-						eventer.EventReasonFailedToUpdate,
-						err.Error(),
-					)
-				}
+				c.eventRecorder.Eventf(
+					snapshot,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToUpdate,
+					err.Error(),
+				)
 				return err
 			}
 
@@ -86,39 +80,31 @@ func (c *Controller) handleBackupJob(job *batch.Job) error {
 				return nil
 			}
 			if jobSucceeded {
-				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, runtimeObj); rerr == nil {
-					c.eventRecorder.Event(
-						ref,
-						core.EventTypeNormal,
-						eventer.EventReasonSuccessfulSnapshot,
-						"Successfully completed snapshot",
-					)
-				}
-				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
-					c.eventRecorder.Event(
-						ref,
-						core.EventTypeNormal,
-						eventer.EventReasonSuccessfulSnapshot,
-						"Successfully completed snapshot",
-					)
-				}
+				c.eventRecorder.Event(
+					runtimeObj,
+					core.EventTypeNormal,
+					eventer.EventReasonSuccessfulSnapshot,
+					"Successfully completed snapshot",
+				)
+				c.eventRecorder.Event(
+					snapshot,
+					core.EventTypeNormal,
+					eventer.EventReasonSuccessfulSnapshot,
+					"Successfully completed snapshot",
+				)
 			} else {
-				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, runtimeObj); rerr == nil {
-					c.eventRecorder.Event(
-						ref,
-						core.EventTypeWarning,
-						eventer.EventReasonSnapshotFailed,
-						"Failed to complete snapshot",
-					)
-				}
-				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, snapshot); rerr == nil {
-					c.eventRecorder.Event(
-						ref,
-						core.EventTypeWarning,
-						eventer.EventReasonSnapshotFailed,
-						"Failed to complete snapshot",
-					)
-				}
+				c.eventRecorder.Event(
+					runtimeObj,
+					core.EventTypeWarning,
+					eventer.EventReasonSnapshotFailed,
+					"Failed to complete snapshot",
+				)
+				c.eventRecorder.Event(
+					snapshot,
+					core.EventTypeWarning,
+					eventer.EventReasonSnapshotFailed,
+					"Failed to complete snapshot",
+				)
 			}
 
 			return nil
@@ -163,23 +149,19 @@ func (c *Controller) handleRestoreJob(job *batch.Job) error {
 				return nil
 			}
 			if jobSucceeded {
-				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, runtimeObj); rerr == nil {
-					c.eventRecorder.Event(
-						ref,
-						core.EventTypeNormal,
-						eventer.EventReasonSuccessfulInitialize,
-						"Successfully completed initialization",
-					)
-				}
+				c.eventRecorder.Event(
+					runtimeObj,
+					core.EventTypeNormal,
+					eventer.EventReasonSuccessfulInitialize,
+					"Successfully completed initialization",
+				)
 			} else {
-				if ref, rerr := reference.GetReference(clientsetscheme.Scheme, runtimeObj); rerr == nil {
-					c.eventRecorder.Event(
-						ref,
-						core.EventTypeWarning,
-						eventer.EventReasonFailedToInitialize,
-						"Failed to complete initialization",
-					)
-				}
+				c.eventRecorder.Event(
+					runtimeObj,
+					core.EventTypeWarning,
+					eventer.EventReasonFailedToInitialize,
+					"Failed to complete initialization",
+				)
 			}
 			return nil
 		}

@@ -76,11 +76,11 @@ func (a *MemcachedMutator) Admit(req *admission.AdmissionRequest) *admission.Adm
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	memcachedMod, err := setDefaultValues(a.client, a.extClient, obj.(*api.Memcached).DeepCopy())
+	mod, err := setDefaultValues(a.client, a.extClient, obj.(*api.Memcached).DeepCopy())
 	if err != nil {
 		return hookapi.StatusForbidden(err)
-	} else if memcachedMod != nil {
-		patch, err := meta_util.CreateJSONPatch(obj, memcachedMod)
+	} else if mod != nil {
+		patch, err := meta_util.CreateJSONPatch(req.Object.Raw, mod)
 		if err != nil {
 			return hookapi.StatusInternalServerError(err)
 		}
@@ -145,6 +145,12 @@ func setDefaultsFromDormantDB(extClient cs.Interface, memcached *api.Memcached) 
 
 	// Skip checking DoNotPause
 	ddbOriginSpec.DoNotPause = memcached.Spec.DoNotPause
+
+	// Skip checking UpdateStrategy
+	ddbOriginSpec.UpdateStrategy = memcached.Spec.UpdateStrategy
+
+	// Skip checking TerminationPolicy
+	ddbOriginSpec.TerminationPolicy = memcached.Spec.TerminationPolicy
 
 	if !meta_util.Equal(ddbOriginSpec, &memcached.Spec) {
 		diff := meta_util.Diff(ddbOriginSpec, &memcached.Spec)

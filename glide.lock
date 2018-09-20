@@ -1,5 +1,5 @@
-hash: a4c9549a92cce5eb0cb95320f40f4979f61e0416acf2b967173cdf412c6bbcff
-updated: 2018-09-10T16:26:53.736559591-07:00
+hash: 0e1a7188d08c5c296a6ee23892c22077f334488705a5b9f66137f2117f53747a
+updated: 2018-09-20T12:01:27.543295099-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -27,14 +27,14 @@ imports:
   - types
   - version
 - name: github.com/appscode/jsonpatch
-  version: 1359b374de83fa14fd58ab10aa8ea4935f84d249
+  version: 5af499cf01c842bfdd7761a433fc90525ccd6836
 - name: github.com/appscode/kubernetes-webhook-util
   version: cb010279d0a6d1885e6316f78cf3ef682fca7a42
   subpackages:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 6a61b0d2df81e2d5b4764bee574eb43a9a954a5a
+  version: bd70cefb33397b4c196aca7e33cab656755e195e
   subpackages:
   - apiextensions/v1beta1
   - apps/v1
@@ -217,13 +217,13 @@ imports:
 - name: github.com/evanphx/json-patch
   version: 94e38aa1586e8a6c8a75770bddf5ff84c48a106b
 - name: github.com/fatih/structs
-  version: ebf56d35bba727c68ac77f56f2fcf90b181851aa
+  version: 4966fc68f5b7593aafa6cbbba2d65ec6e1416047
 - name: github.com/fsnotify/fsnotify
   version: f12c6236fe7b5cf6bcf30e5935d08cb079d78334
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
-  version: 300e940a926eb277d3901b20bdfcc54928ad3642
+  version: 20b96f641a5ea98f2f8619ff4f3e061cff4833bd
 - name: github.com/go-kit/kit
   version: ca4112baa34cb55091301bdc13b1420a122b1b9e
 - name: github.com/go-openapi/jsonpointer
@@ -259,7 +259,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 2006917edc5a27cd174dbc4baba31a137d6cb9ff
+  version: 3af367b6b30c263d47e8895973edcca9a49cf029
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -276,7 +276,7 @@ imports:
   - compiler
   - extensions
 - name: github.com/graymeta/stow
-  version: afce6d90444a3ba63c6d6671498c6cdc79375369
+  version: 1849a82ac7fbd3e5cb144bcc711544e90903eac4
   repo: https://github.com/appscode/stow.git
   vcs: git
   subpackages:
@@ -304,9 +304,9 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/justwatchcom/elasticsearch_exporter
-  version: cede30d88a210f47c88fa63f66a2b00883a849bc
+  version: 35c5cb0f59c20238ae07ca37213a54727750e257
 - name: github.com/kubedb/apimachinery
-  version: b708c5206e4e9fdb0753d18036b5b17dac5d8b5c
+  version: 7760fb61e363cdc939e78708046db6a4d92ca77c
   subpackages:
   - apis/kubedb
   - apis/kubedb/v1alpha1
@@ -329,40 +329,40 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 8a40abc5e47f26cd4cfd6a2e4c0dcbd4e0f933eb
+  version: d433e2b305c87547148ba8247a3878487e09fcd5
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util/es
 - name: github.com/kubedb/etcd
-  version: 89b00202ecaa0b79dfeed8d761ccd48cdc040467
+  version: 1ea4683ec358553ca7a32dff74d2d00d0256d0b0
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: d8b773bc70fee9e7210b4f4a7f3e2ed6c7d4375f
+  version: e69fc06b18936f42c026dd795c83abd824f7b3e4
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: fe2639a1df19c99bf1c0451a1077dd5864ce3ad9
+  version: 36a2ffc21f8c6ba5c315c6d389126ffe50d397bc
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 5a1e3f5749b0b57de2c478e205b1b742e7311d13
+  version: d1fe8a8a06fb690ad50d967607e50b1482ca0d0a
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: 4af241215cdb71b95e9664d829dca4e330b0ce43
+  version: a167fd900c55e1b98b225318bf5113474eb70462
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: f23d91131932f5bedc2e929eb93feaeaec550ad6
+  version: ffdf0a3751678790783d0d0447d2fd6f1cc3cc27
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -387,9 +387,9 @@ imports:
 - name: github.com/NYTimes/gziphandler
   version: 56545f4a5d46df9a6648819d1664c3a03a13ffdb
 - name: github.com/oliver006/redis_exporter
-  version: c28ee9de697fb35af27f2c03affdc92c05e74c4e
+  version: 8bb0b841e9a70b0348f69483e58fea01d521c47a
 - name: github.com/olivere/elastic
-  version: e6cae211ee802eab70248a68fe2cb03b616744c9
+  version: 2ddc762ab5e88f2666b664e840efbeedf7150e99
   subpackages:
   - config
   - uritemplates
@@ -437,17 +437,15 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/russross/blackfriday
-  version: 300106c228d52c8941d4b3de6054a6062a86dda3
+  version: 4048872b16cc0fc2c5fd9eacf0ed2c2fedaa0c8c
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/sergi/go-diff
   version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
   subpackages:
   - diffmatchpatch
-- name: github.com/shurcooL/sanitized_anchor_name
-  version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
-  version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
+  version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
 - name: github.com/spf13/cobra
   version: ef82de70bb3f60c65fb8eebacbb2d122ef517385
   subpackages:
@@ -522,7 +520,7 @@ imports:
   subpackages:
   - rate
 - name: google.golang.org/api
-  version: 7ca32eb868bf53ea2fc406698eb98583a8073d19
+  version: 19ff8768a5c0b8e46ea281065664787eefc24121
   subpackages:
   - gensupport
   - googleapi
@@ -773,7 +771,9 @@ imports:
   - plugin/pkg/authenticator/token/webhook
   - plugin/pkg/authorizer/webhook
 - name: k8s.io/client-go
-  version: 2cefa64ff137e128daeddbd1775cd775708a05bf
+  version: 805859b028aa45844e5d3b699d1dfad9eed753ad
+  repo: https://github.com/pharmer/client-go.git
+  vcs: git
   subpackages:
   - deprecated-dynamic
   - discovery

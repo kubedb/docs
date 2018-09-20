@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	kwatch "k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/cache"
@@ -60,6 +61,7 @@ func New(
 	client kubernetes.Interface,
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
 	extClient cs.KubedbV1alpha1Interface,
+	dc dynamic.Interface,
 	promClient pcm.MonitoringV1Interface,
 	cronController snapc.CronControllerInterface,
 	opt amc.Config,
@@ -69,6 +71,7 @@ func New(
 			Client:           client,
 			ExtClient:        extClient,
 			ApiExtKubeClient: apiExtKubeClient,
+			DynamicClient:    dc,
 		},
 		Config:         opt,
 		promClient:     promClient,
@@ -95,9 +98,6 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 
 // InitInformer initializes Etcd, DormantDB amd Snapshot watcher
 func (c *Controller) Init() error {
-	if err := c.EnsureCustomResourceDefinitions(); err != nil {
-		return err
-	}
 	c.initWatcher()
 	c.DrmnQueue = dormantdatabase.NewController(c.Controller, c, c.Config, nil).AddEventHandlerFunc(c.selector)
 	c.SnapQueue, c.JobQueue = snapc.NewController(c.Controller, c, c.Config, nil).AddEventHandlerFunc(c.selector)

@@ -35,26 +35,22 @@ func (c *Controller) ensureDeployment(memcached *api.Memcached) (kutil.VerbType,
 	// Check Deployment Pod status
 	if vt != kutil.VerbUnchanged {
 		if err := app_util.WaitUntilDeploymentReady(c.Client, deployment.ObjectMeta); err != nil {
-			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
-				c.recorder.Eventf(
-					ref,
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToStart,
-					`Failed to CreateOrPatch StatefulSet. Reason: %v`,
-					err,
-				)
-			}
+			c.recorder.Eventf(
+				memcached,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToStart,
+				`Failed to CreateOrPatch StatefulSet. Reason: %v`,
+				err,
+			)
 			return kutil.VerbUnchanged, err
 		}
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully %v StatefulSet",
-				vt,
-			)
-		}
+		c.recorder.Eventf(
+			memcached,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %v StatefulSet",
+			vt,
+		)
 	}
 	return vt, nil
 }

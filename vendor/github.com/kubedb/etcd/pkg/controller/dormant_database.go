@@ -28,6 +28,10 @@ func (c *Controller) WaitUntilPaused(drmn *api.DormantDatabase) error {
 	return nil
 }
 
+func (c *Controller) WipeOutDatabase(drmn *api.DormantDatabase) error {
+	return nil
+}
+
 func (c *Controller) deleteMatchingDormantDatabase(etcd *api.Etcd) error {
 	// Check if DormantDatabase exists or not
 	ddb, err := c.ExtClient.DormantDatabases(etcd.Namespace).Get(etcd.Name, metav1.GetOptions{})

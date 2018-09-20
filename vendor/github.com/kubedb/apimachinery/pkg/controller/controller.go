@@ -12,6 +12,7 @@ import (
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
@@ -24,6 +25,8 @@ type Controller struct {
 	ApiExtKubeClient crd_cs.ApiextensionsV1beta1Interface
 	// ThirdPartyExtension client
 	ExtClient cs.KubedbV1alpha1Interface
+	// Dynamic client
+	DynamicClient dynamic.Interface
 }
 
 type Config struct {
@@ -65,4 +68,8 @@ type Snapshotter interface {
 type Deleter interface {
 	// WaitUntilPaused will block until db pods and service are deleted. PV/PVC will remain intact.
 	WaitUntilPaused(*api.DormantDatabase) error
+	// WipeOutDatabase won't need to handle snapshots and PVCs.
+	// All other elements of database will be Wipedout on WipeOutDatabase function.
+	// Ex: secrets, wal-g data and other staff that is required.
+	WipeOutDatabase(*api.DormantDatabase) error
 }

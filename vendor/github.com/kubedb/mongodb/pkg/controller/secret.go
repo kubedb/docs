@@ -11,8 +11,6 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 )
 
 const (
@@ -32,15 +30,14 @@ func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 	if mongodb.Spec.DatabaseSecret == nil {
 		secretVolumeSource, err := c.createDatabaseSecret(mongodb)
 		if err != nil {
-			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
-				c.recorder.Eventf(
-					ref,
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToCreate,
-					`Failed to create Database Secret. Reason: %v`,
-					err.Error(),
-				)
-			}
+			c.recorder.Eventf(
+				mongodb,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				`Failed to create Database Secret. Reason: %v`,
+				err.Error(),
+			)
+
 			return err
 		}
 
@@ -49,14 +46,13 @@ func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 			return in
 		})
 		if err != nil {
-			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
-				c.recorder.Eventf(
-					ref,
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToUpdate,
-					err.Error(),
-				)
-			}
+			c.recorder.Eventf(
+				mongodb,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
+			)
+
 			return err
 		}
 		mongodb.Spec.DatabaseSecret = ms.Spec.DatabaseSecret
@@ -68,15 +64,14 @@ func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 
 		secretVolumeSource, err := c.createKeyFileSecret(mongodb)
 		if err != nil {
-			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
-				c.recorder.Eventf(
-					ref,
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToCreate,
-					`Failed to create KeyFile Secret. Reason: %v`,
-					err.Error(),
-				)
-			}
+			c.recorder.Eventf(
+				mongodb,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToCreate,
+				`Failed to create KeyFile Secret. Reason: %v`,
+				err.Error(),
+			)
+
 			return err
 		}
 
@@ -85,14 +80,12 @@ func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 			return in
 		})
 		if err != nil {
-			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb); rerr == nil {
-				c.recorder.Eventf(
-					ref,
-					core.EventTypeWarning,
-					eventer.EventReasonFailedToUpdate,
-					err.Error(),
-				)
-			}
+			c.recorder.Eventf(
+				mongodb,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
+			)
 			return err
 		}
 		mongodb.Spec.ReplicaSet.KeyFile = ms.Spec.ReplicaSet.KeyFile

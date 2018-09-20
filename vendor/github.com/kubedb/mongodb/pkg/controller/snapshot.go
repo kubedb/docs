@@ -68,11 +68,10 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 }
 
 func (c *Controller) WipeOutSnapshot(snapshot *api.Snapshot) error {
+	// wipeOut not possible for local backend.
+	// Ref: https://github.com/kubedb/project/issues/261
 	if snapshot.Spec.Local != nil {
-		local := snapshot.Spec.Local
-		if local.VolumeSource.EmptyDir != nil {
-			return nil
-		}
+		return nil
 	}
 	return c.DeleteSnapshotData(snapshot)
 }

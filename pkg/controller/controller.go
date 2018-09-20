@@ -17,6 +17,7 @@ import (
 	rdc "github.com/kubedb/redis/pkg/controller"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -40,6 +41,7 @@ func New(
 	client kubernetes.Interface,
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
 	dbClient cs.KubedbV1alpha1Interface,
+	dc dynamic.Interface,
 	promClient pcm.MonitoringV1Interface,
 	cronController snapc.CronControllerInterface,
 	opt amc.Config,
@@ -49,6 +51,7 @@ func New(
 			Client:           client,
 			ExtClient:        dbClient,
 			ApiExtKubeClient: apiExtKubeClient,
+			DynamicClient:    dc,
 		},
 		Config:         opt,
 		promClient:     promClient,

@@ -35,26 +35,22 @@ func (c *Controller) ensureService(postgres *api.Postgres) (kutil.VerbType, erro
 	// create database Service
 	vt1, err := c.createService(postgres)
 	if err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				"Failed to createOrPatch Service. Reason: %v",
-				err,
-			)
-		}
+		c.recorder.Eventf(
+			postgres,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			"Failed to createOrPatch Service. Reason: %v",
+			err,
+		)
 		return kutil.VerbUnchanged, err
 	} else if vt1 != kutil.VerbUnchanged {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully %s Service",
-				vt1,
-			)
-		}
+		c.recorder.Eventf(
+			postgres,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %s Service",
+			vt1,
+		)
 	}
 
 	// Check if service name exists
@@ -65,26 +61,22 @@ func (c *Controller) ensureService(postgres *api.Postgres) (kutil.VerbType, erro
 	// create database Service
 	vt2, err := c.createReplicasService(postgres)
 	if err != nil {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToCreate,
-				"Failed to createOrPatch Service. Reason: %v",
-				err,
-			)
-		}
+		c.recorder.Eventf(
+			postgres,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToCreate,
+			"Failed to createOrPatch Service. Reason: %v",
+			err,
+		)
 		return kutil.VerbUnchanged, err
 	} else if vt2 != kutil.VerbUnchanged {
-		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres); rerr == nil {
-			c.recorder.Eventf(
-				ref,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully %s Service",
-				vt2,
-			)
-		}
+		c.recorder.Eventf(
+			postgres,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %s Service",
+			vt2,
+		)
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
