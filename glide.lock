@@ -1,5 +1,5 @@
-hash: 06805ee70d732bb6967611c79e539b02089098644c24f0f604b61dbedb8dbf51
-updated: 2018-09-20T12:23:25.468588192-07:00
+hash: 6527e60c335321c7d763c8468a625c0293647b060952e26085c914bd6b839a25
+updated: 2018-09-20T12:30:25.417613884-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -325,40 +325,40 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: d433e2b305c87547148ba8247a3878487e09fcd5
+  version: efd4971e11b83abd7ee5f486759ed14d054c6cb0
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util/es
 - name: github.com/kubedb/etcd
-  version: 1ea4683ec358553ca7a32dff74d2d00d0256d0b0
+  version: e537d186d2184f1a1c728483c2b72e4c813fe830
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: e69fc06b18936f42c026dd795c83abd824f7b3e4
+  version: 3b18436ca39adb62a45c60be7dd04c278e8c07a4
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: 36a2ffc21f8c6ba5c315c6d389126ffe50d397bc
+  version: 9094d089533138995e55a8e9e36463e8cc40ca6d
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: d1fe8a8a06fb690ad50d967607e50b1482ca0d0a
+  version: 04eb9bb5156ae6c4109a0398073f4b90de22ba93
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: a167fd900c55e1b98b225318bf5113474eb70462
+  version: 85783294de09f749fd77b558901c7c602edac1ca
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: ffdf0a3751678790783d0d0447d2fd6f1cc3cc27
+  version: 301038d1ec3872ba5bb17155159cbb877e20963d
   subpackages:
   - pkg/admission
   - pkg/controller
