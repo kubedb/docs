@@ -1,5 +1,40 @@
 # Change Log
 
+## [0.9.0-beta.0](https://github.com/kubedb/operator/tree/0.9.0-beta.0) (2018-09-20)
+[Full Changelog](https://github.com/kubedb/operator/compare/0.8.0...0.9.0-beta.0)
+
+**Merged pull requests:**
+
+- Remove unused exporter dependency [\#193](https://github.com/kubedb/operator/pull/193) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor and Update controller [\#192](https://github.com/kubedb/operator/pull/192) ([the-redback](https://github.com/the-redback))
+- Revendor k8s.io/apiserver [\#191](https://github.com/kubedb/operator/pull/191) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor kubernetes-1.11.3 [\#190](https://github.com/kubedb/operator/pull/190) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor api [\#189](https://github.com/kubedb/operator/pull/189) ([tamalsaha](https://github.com/tamalsaha))
+- Remove exporter subcommand [\#188](https://github.com/kubedb/operator/pull/188) ([tamalsaha](https://github.com/tamalsaha))
+- fix github status [\#187](https://github.com/kubedb/operator/pull/187) ([tahsinrahman](https://github.com/tahsinrahman))
+- update pipeline [\#186](https://github.com/kubedb/operator/pull/186) ([tahsinrahman](https://github.com/tahsinrahman))
+- update pipeline [\#185](https://github.com/kubedb/operator/pull/185) ([tahsinrahman](https://github.com/tahsinrahman))
+- Added etcd operator and DBVersion crd creation [\#184](https://github.com/kubedb/operator/pull/184) ([the-redback](https://github.com/the-redback))
+- Fix uninstall for concourse [\#183](https://github.com/kubedb/operator/pull/183) ([tahsinrahman](https://github.com/tahsinrahman))
+- Revendor api [\#182](https://github.com/kubedb/operator/pull/182) ([tamalsaha](https://github.com/tamalsaha))
+- Add support for running tests on cncf cluster [\#181](https://github.com/kubedb/operator/pull/181) ([tahsinrahman](https://github.com/tahsinrahman))
+- Revendor api and operators [\#180](https://github.com/kubedb/operator/pull/180) ([tamalsaha](https://github.com/tamalsaha))
+- Revendor api [\#179](https://github.com/kubedb/operator/pull/179) ([tamalsaha](https://github.com/tamalsaha))
+- Use kmodules monitoring and objectstore api [\#178](https://github.com/kubedb/operator/pull/178) ([tamalsaha](https://github.com/tamalsaha))
+- Update client-go to v8.0.0 [\#176](https://github.com/kubedb/operator/pull/176) ([tamalsaha](https://github.com/tamalsaha))
+- Format shell script [\#175](https://github.com/kubedb/operator/pull/175) ([tamalsaha](https://github.com/tamalsaha))
+- Concourse test on kubespray [\#174](https://github.com/kubedb/operator/pull/174) ([tahsinrahman](https://github.com/tahsinrahman))
+
+## [0.8.0](https://github.com/kubedb/operator/tree/0.8.0) (2018-06-12)
+[Full Changelog](https://github.com/kubedb/operator/compare/0.8.0-rc.0...0.8.0)
+
+**Merged pull requests:**
+
+- azure acs-engine [\#172](https://github.com/kubedb/operator/pull/172) ([tahsinrahman](https://github.com/tahsinrahman))
+- Revendor dependencies [\#171](https://github.com/kubedb/operator/pull/171) ([tamalsaha](https://github.com/tamalsaha))
+- Added separate concourse tests for GKE, AWS-Kops and DO [\#170](https://github.com/kubedb/operator/pull/170) ([tahsinrahman](https://github.com/tahsinrahman))
+- Add changelog [\#169](https://github.com/kubedb/operator/pull/169) ([tamalsaha](https://github.com/tamalsaha))
+
 ## [0.8.0-rc.0](https://github.com/kubedb/operator/tree/0.8.0-rc.0) (2018-05-28)
 [Full Changelog](https://github.com/kubedb/operator/compare/0.8.0-beta.2...0.8.0-rc.0)
 
