@@ -67,7 +67,7 @@ func (c *Controller) createPod(cluster *api.Etcd, members util.MemberSet, m *uti
 			return nil, kutil.VerbUnchanged, err
 		}
 		snapshotSource := cluster.Spec.Init.SnapshotSource
-		snapshot, err := c.Controller.ExtClient.Snapshots(cluster.Namespace).Get(snapshotSource.Name, metav1.GetOptions{})
+		snapshot, err := c.Controller.ExtClient.KubedbV1alpha1().Snapshots(cluster.Namespace).Get(snapshotSource.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
@@ -106,7 +106,7 @@ func (c *Controller) createPod(cluster *api.Etcd, members util.MemberSet, m *uti
 		commands = fmt.Sprintf("%s --initial-cluster-token=%s", commands, token)
 	}
 
-	etcdVersion, err := c.ExtClient.EtcdVersions().Get(string(cluster.Spec.Version), metav1.GetOptions{})
+	etcdVersion, err := c.ExtClient.CatalogV1alpha1().EtcdVersions().Get(string(cluster.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -234,7 +234,7 @@ func (c *Controller) createPod(cluster *api.Etcd, members util.MemberSet, m *uti
 
 func (c *Controller) upgradeOneMember(cl *Cluster, member *util.Member) error {
 	//c.status.Phase = api.c.cluster.Spec.Version)
-	etcdVersion, err := c.ExtClient.EtcdVersions().Get(string(cl.cluster.Spec.Version), metav1.GetOptions{})
+	etcdVersion, err := c.ExtClient.CatalogV1alpha1().EtcdVersions().Get(string(cl.cluster.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}

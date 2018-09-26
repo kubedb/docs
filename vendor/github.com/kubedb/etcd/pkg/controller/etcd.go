@@ -10,6 +10,7 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	dynamic_util "github.com/appscode/kutil/dynamic"
 	meta_util "github.com/appscode/kutil/meta"
+	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -61,7 +62,7 @@ func (c *Controller) handleEtcdEvent(event *Event) error {
 
 	// Check if etcdVersion is deprecated.
 	// If deprecated, add event and return nil (stop processing.)
-	etcdVersion, err := c.ExtClient.EtcdVersions().Get(string(etcd.Spec.Version), metav1.GetOptions{})
+	etcdVersion, err := c.ExtClient.CatalogV1alpha1().EtcdVersions().Get(string(etcd.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -151,11 +152,11 @@ func (c *Controller) handleEtcdEvent(event *Event) error {
 		})
 	}
 
-	db, err := util.UpdateEtcdStatus(c.ExtClient, etcd, func(in *api.EtcdStatus) *api.EtcdStatus {
+	db, err := util.UpdateEtcdStatus(c.ExtClient.KubedbV1alpha1(), etcd, func(in *api.EtcdStatus) *api.EtcdStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = NewIntHash(etcd.Generation, meta_util.GenerationHash(etcd))
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd); rerr == nil {
@@ -227,10 +228,10 @@ func (c *Controller) ensureBackupScheduler(etcd *api.Etcd) {
 }
 
 func (c *Controller) initialize(etcd *api.Etcd) error {
-	db, err := util.UpdateEtcdStatus(c.ExtClient, etcd, func(in *api.EtcdStatus) *api.EtcdStatus {
+	db, err := util.UpdateEtcdStatus(c.ExtClient.KubedbV1alpha1(), etcd, func(in *api.EtcdStatus) *api.EtcdStatus {
 		in.Phase = api.DatabasePhaseInitializing
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd); rerr == nil {
 			c.recorder.Eventf(
@@ -265,7 +266,7 @@ func (c *Controller) terminate(etcd *api.Etcd) error {
 				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
 				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
 				// So reuse that DormantDB!
-				ddb, err := c.ExtClient.DormantDatabases(etcd.Namespace).Get(etcd.Name, metav1.GetOptions{})
+				ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(etcd.Namespace).Get(etcd.Name, metav1.GetOptions{})
 				if err != nil {
 					return err
 				}

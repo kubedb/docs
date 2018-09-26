@@ -10,7 +10,6 @@ import (
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
-	kubedbv1alpha1 "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
@@ -116,7 +115,7 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			}
 		}
 		// validate database specs
-		if err = ValidateMySQL(a.client, a.extClient.KubedbV1alpha1(), obj.(*api.MySQL)); err != nil {
+		if err = ValidateMySQL(a.client, a.extClient, obj.(*api.MySQL)); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -126,11 +125,11 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 
 // ValidateMySQL checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateMySQL(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, mysql *api.MySQL) error {
+func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *api.MySQL) error {
 	if mysql.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if _, err := extClient.MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -191,9 +190,9 @@ func ValidateMySQL(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV
 	return nil
 }
 
-func matchWithDormantDatabase(extClient kubedbv1alpha1.KubedbV1alpha1Interface, mysql *api.MySQL) error {
+func matchWithDormantDatabase(extClient cs.Interface, mysql *api.MySQL) error {
 	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.DormantDatabases(mysql.Namespace).Get(mysql.Name, metav1.GetOptions{})
+	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(mysql.Namespace).Get(mysql.Name, metav1.GetOptions{})
 	if err != nil {
 		if !kerr.IsNotFound(err) {
 			return err

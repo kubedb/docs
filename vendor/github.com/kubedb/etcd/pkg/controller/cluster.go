@@ -9,6 +9,7 @@ import (
 	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	meta_util "github.com/appscode/kutil/meta"
+	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	dbutil "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/etcd/pkg/util"
@@ -373,10 +374,10 @@ func (c *Controller) updateCRStatus(cl *Cluster) error {
 	if reflect.DeepEqual(cl.cluster.Status, cl.status) {
 		return nil
 	}
-	_, err := dbutil.UpdateEtcdStatus(c.Controller.ExtClient, cl.cluster, func(in *api.EtcdStatus) *api.EtcdStatus {
+	_, err := dbutil.UpdateEtcdStatus(c.Controller.ExtClient.KubedbV1alpha1(), cl.cluster, func(in *api.EtcdStatus) *api.EtcdStatus {
 		in.Phase = cl.status.Phase
 		in.ObservedGeneration = types.NewIntHash(cl.cluster.Generation, meta_util.GenerationHash(cl.cluster))
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 	return err
 }

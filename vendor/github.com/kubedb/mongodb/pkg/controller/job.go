@@ -17,7 +17,7 @@ const (
 )
 
 func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapshot) (*batch.Job, error) {
-	mongodbVersion, err := c.ExtClient.MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +160,7 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 	if err != nil {
 		return nil, err
 	}
-	mongodbVersion, err := c.ExtClient.MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

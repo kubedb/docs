@@ -4,7 +4,7 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	cs_util "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -34,7 +34,7 @@ func (c *Controller) WipeOutDatabase(drmn *api.DormantDatabase) error {
 
 func (c *Controller) deleteMatchingDormantDatabase(etcd *api.Etcd) error {
 	// Check if DormantDatabase exists or not
-	ddb, err := c.ExtClient.DormantDatabases(etcd.Namespace).Get(etcd.Name, metav1.GetOptions{})
+	ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(etcd.Namespace).Get(etcd.Name, metav1.GetOptions{})
 	if err != nil {
 		if !kerr.IsNotFound(err) {
 			return err
@@ -43,7 +43,7 @@ func (c *Controller) deleteMatchingDormantDatabase(etcd *api.Etcd) error {
 	}
 
 	// Set WipeOut to false
-	if _, _, err := cs_util.PatchDormantDatabase(c.ExtClient, ddb, func(in *api.DormantDatabase) *api.DormantDatabase {
+	if _, _, err := util.PatchDormantDatabase(c.ExtClient.KubedbV1alpha1(), ddb, func(in *api.DormantDatabase) *api.DormantDatabase {
 		in.Spec.WipeOut = false
 		return in
 	}); err != nil {
@@ -51,7 +51,7 @@ func (c *Controller) deleteMatchingDormantDatabase(etcd *api.Etcd) error {
 	}
 
 	// Delete  Matching dormantDatabase
-	if err := c.ExtClient.DormantDatabases(etcd.Namespace).Delete(etcd.Name,
+	if err := c.ExtClient.KubedbV1alpha1().DormantDatabases(etcd.Namespace).Delete(etcd.Name,
 		meta_util.DeleteInBackground()); err != nil && !kerr.IsNotFound(err) {
 		return err
 	}
@@ -84,5 +84,5 @@ func (c *Controller) createDormantDatabase(etcd *api.Etcd) (*api.DormantDatabase
 		},
 	}
 
-	return c.ExtClient.DormantDatabases(dormantDb.Namespace).Create(dormantDb)
+	return c.ExtClient.KubedbV1alpha1().DormantDatabases(dormantDb.Namespace).Create(dormantDb)
 }

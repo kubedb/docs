@@ -38,7 +38,7 @@ func (c *Controller) WipeOutDatabase(drmn *api.DormantDatabase) error {
 
 func (c *Controller) deleteMatchingDormantDatabase(redis *api.Redis) error {
 	// Check if DormantDatabase exists or not
-	ddb, err := c.ExtClient.DormantDatabases(redis.Namespace).Get(redis.Name, metav1.GetOptions{})
+	ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(redis.Namespace).Get(redis.Name, metav1.GetOptions{})
 	if err != nil {
 		if !kerr.IsNotFound(err) {
 			return err
@@ -47,7 +47,7 @@ func (c *Controller) deleteMatchingDormantDatabase(redis *api.Redis) error {
 	}
 
 	// Set WipeOut to false
-	if _, _, err := cs_util.PatchDormantDatabase(c.ExtClient, ddb, func(in *api.DormantDatabase) *api.DormantDatabase {
+	if _, _, err := cs_util.PatchDormantDatabase(c.ExtClient.KubedbV1alpha1(), ddb, func(in *api.DormantDatabase) *api.DormantDatabase {
 		in.Spec.WipeOut = false
 		return in
 	}); err != nil {
@@ -55,7 +55,7 @@ func (c *Controller) deleteMatchingDormantDatabase(redis *api.Redis) error {
 	}
 
 	// Delete  Matching dormantDatabase
-	if err := c.ExtClient.DormantDatabases(redis.Namespace).Delete(redis.Name,
+	if err := c.ExtClient.KubedbV1alpha1().DormantDatabases(redis.Namespace).Delete(redis.Name,
 		meta_util.DeleteInBackground()); err != nil && !kerr.IsNotFound(err) {
 		return err
 	}
@@ -88,5 +88,5 @@ func (c *Controller) createDormantDatabase(redis *api.Redis) (*api.DormantDataba
 		},
 	}
 
-	return c.ExtClient.DormantDatabases(dormantDb.Namespace).Create(dormantDb)
+	return c.ExtClient.KubedbV1alpha1().DormantDatabases(dormantDb.Namespace).Create(dormantDb)
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/appscode/kutil"
 	dynamic_util "github.com/appscode/kutil/dynamic"
 	meta_util "github.com/appscode/kutil/meta"
+	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -35,7 +36,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 
 	// Check if mysqlVersion is deprecated.
 	// If deprecated, add event and return nil (stop processing.)
-	mysqlVersion, err := c.ExtClient.MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{})
+	mysqlVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -65,10 +66,10 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	}
 
 	if mysql.Status.Phase == "" {
-		my, err := util.UpdateMySQLStatus(c.ExtClient, mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
+		my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
-		}, api.EnableStatusSubresource)
+		}, apis.EnableStatusSubresource)
 		if err != nil {
 			c.recorder.Eventf(
 				mysql,
@@ -149,11 +150,11 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		return nil
 	}
 
-	my, err := util.UpdateMySQLStatus(c.ExtClient, mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
+	my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = types.NewIntHash(mysql.Generation, meta_util.GenerationHash(mysql))
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 	if err != nil {
 		c.recorder.Eventf(
 			mysql,
@@ -216,10 +217,10 @@ func (c *Controller) ensureBackupScheduler(mysql *api.MySQL) {
 }
 
 func (c *Controller) initialize(mysql *api.MySQL) error {
-	my, err := util.UpdateMySQLStatus(c.ExtClient, mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
+	my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = api.DatabasePhaseInitializing
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 	if err != nil {
 		c.recorder.Eventf(
 			mysql,
@@ -245,7 +246,7 @@ func (c *Controller) initialize(mysql *api.MySQL) error {
 	if namespace == "" {
 		namespace = mysql.Namespace
 	}
-	snapshot, err := c.ExtClient.Snapshots(namespace).Get(snapshotSource.Name, metav1.GetOptions{})
+	snapshot, err := c.ExtClient.KubedbV1alpha1().Snapshots(namespace).Get(snapshotSource.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -290,7 +291,7 @@ func (c *Controller) terminate(mysql *api.MySQL) error {
 				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
 				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
 				// So reuse that DormantDB!
-				ddb, err := c.ExtClient.DormantDatabases(mysql.Namespace).Get(mysql.Name, metav1.GetOptions{})
+				ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(mysql.Namespace).Get(mysql.Name, metav1.GetOptions{})
 				if err != nil {
 					return err
 				}

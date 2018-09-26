@@ -10,7 +10,6 @@ import (
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
-	kubedbv1alpha1 "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
@@ -109,7 +108,7 @@ func (a *EtcdValidator) Admit(req *admission.AdmissionRequest) *admission.Admiss
 			}
 		}
 		// validate database specs
-		if err = ValidateEtcd(a.client, a.extClient.KubedbV1alpha1(), obj.(*api.Etcd)); err != nil {
+		if err = ValidateEtcd(a.client, a.extClient, obj.(*api.Etcd)); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -119,11 +118,11 @@ func (a *EtcdValidator) Admit(req *admission.AdmissionRequest) *admission.Admiss
 
 // ValidateEtcd checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateEtcd(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, etcd *api.Etcd) error {
+func ValidateEtcd(client kubernetes.Interface, extClient cs.Interface, etcd *api.Etcd) error {
 	if etcd.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if _, err := extClient.EtcdVersions().Get(string(etcd.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().EtcdVersions().Get(string(etcd.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -173,9 +172,9 @@ func ValidateEtcd(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1
 	return nil
 }
 
-func matchWithDormantDatabase(extClient kubedbv1alpha1.KubedbV1alpha1Interface, etcd *api.Etcd) error {
+func matchWithDormantDatabase(extClient cs.Interface, etcd *api.Etcd) error {
 	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.DormantDatabases(etcd.Namespace).Get(etcd.Name, metav1.GetOptions{})
+	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(etcd.Namespace).Get(etcd.Name, metav1.GetOptions{})
 	if err != nil {
 		if !kerr.IsNotFound(err) {
 			return err

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/log"
+	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -36,14 +37,14 @@ func (c *Controller) completeJob(job *batch.Job) error {
 func (c *Controller) handleBackupJob(job *batch.Job) error {
 	for _, o := range job.OwnerReferences {
 		if o.Kind == api.ResourceKindSnapshot {
-			snapshot, err := c.ExtClient.Snapshots(job.Namespace).Get(o.Name, metav1.GetOptions{})
+			snapshot, err := c.ExtClient.KubedbV1alpha1().Snapshots(job.Namespace).Get(o.Name, metav1.GetOptions{})
 			if err != nil {
 				return err
 			}
 
 			jobSucceeded := job.Status.Succeeded > 0
 
-			if _, err := util.UpdateSnapshotStatus(c.ExtClient, snapshot, func(in *api.SnapshotStatus) *api.SnapshotStatus {
+			if _, err := util.UpdateSnapshotStatus(c.ExtClient.KubedbV1alpha1(), snapshot, func(in *api.SnapshotStatus) *api.SnapshotStatus {
 				if jobSucceeded {
 					in.Phase = api.SnapshotPhaseSucceeded
 				} else {
@@ -52,7 +53,7 @@ func (c *Controller) handleBackupJob(job *batch.Job) error {
 				t := metav1.Now()
 				in.CompletionTime = &t
 				return in
-			}, api.EnableStatusSubresource); err != nil {
+			}, apis.EnableStatusSubresource); err != nil {
 				c.eventRecorder.Eventf(
 					snapshot,
 					core.EventTypeWarning,
@@ -62,7 +63,7 @@ func (c *Controller) handleBackupJob(job *batch.Job) error {
 				return err
 			}
 
-			if _, _, err := util.PatchSnapshot(c.ExtClient, snapshot, func(in *api.Snapshot) *api.Snapshot {
+			if _, _, err := util.PatchSnapshot(c.ExtClient.KubedbV1alpha1(), snapshot, func(in *api.Snapshot) *api.Snapshot {
 				delete(in.Labels, api.LabelSnapshotStatus)
 				return in
 			}); err != nil {
@@ -122,27 +123,22 @@ func (c *Controller) handleRestoreJob(job *batch.Job) error {
 
 			var phase api.DatabasePhase
 			var reason string
+			objectMeta := metav1.ObjectMeta{Name: o.Name, Namespace: job.Namespace}
+
 			if jobSucceeded {
 				phase = api.DatabasePhaseRunning
+				if err := c.snapshotter.UpsertDatabaseAnnotation(objectMeta, map[string]string{
+					api.AnnotationInitialized: "",
+				}); err != nil {
+					return err
+				}
 			} else {
 				phase = api.DatabasePhaseFailed
 				reason = "Failed to complete initialization"
 			}
-			objectMeta := metav1.ObjectMeta{Name: o.Name, Namespace: job.Namespace}
-			err := c.snapshotter.SetDatabaseStatus(objectMeta, phase, reason)
-			if err != nil {
+			if err := c.snapshotter.SetDatabaseStatus(objectMeta, phase, reason); err != nil {
 				return err
 			}
-
-			if jobSucceeded {
-				err = c.snapshotter.UpsertDatabaseAnnotation(objectMeta, map[string]string{
-					api.AnnotationInitialized: "",
-				})
-				if err != nil {
-					return err
-				}
-			}
-
 			runtimeObj, err := c.snapshotter.GetDatabase(objectMeta)
 			if err != nil {
 				log.Errorln(err)

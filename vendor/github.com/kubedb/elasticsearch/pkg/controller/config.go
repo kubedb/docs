@@ -43,7 +43,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.ClientConfig,
 		c.KubeClient,
 		c.APIExtKubeClient,
-		c.DBClient.KubedbV1alpha1(),
+		c.DBClient,
 		c.DynamicClient,
 		c.PromClient,
 		c.CronController,

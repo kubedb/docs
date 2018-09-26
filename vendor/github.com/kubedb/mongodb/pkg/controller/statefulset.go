@@ -9,7 +9,8 @@ import (
 	app_util "github.com/appscode/kutil/apps/v1"
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
-	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	catalogapi "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
+	dbapi "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -40,7 +41,7 @@ const (
 	InitBootstrapContainerName = "bootstrap"
 )
 
-func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB) (kutil.VerbType, error) {
+func (c *Controller) ensureStatefulSet(mongodb *dbapi.MongoDB) (kutil.VerbType, error) {
 	if err := c.checkStatefulSet(mongodb); err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -74,7 +75,7 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB) (kutil.VerbType, er
 	return vt, nil
 }
 
-func (c *Controller) checkStatefulSet(mongodb *api.MongoDB) error {
+func (c *Controller) checkStatefulSet(mongodb *dbapi.MongoDB) error {
 	// SatatefulSet for MongoDB database
 	statefulSet, err := c.Client.AppsV1().StatefulSets(mongodb.Namespace).Get(mongodb.OffshootName(), metav1.GetOptions{})
 	if err != nil {
@@ -84,15 +85,15 @@ func (c *Controller) checkStatefulSet(mongodb *api.MongoDB) error {
 		return err
 	}
 
-	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindMongoDB ||
-		statefulSet.Labels[api.LabelDatabaseName] != mongodb.Name {
+	if statefulSet.Labels[dbapi.LabelDatabaseKind] != dbapi.ResourceKindMongoDB ||
+		statefulSet.Labels[dbapi.LabelDatabaseName] != mongodb.Name {
 		return fmt.Errorf(`intended statefulSet "%v" already exists`, mongodb.OffshootName())
 	}
 
 	return nil
 }
 
-func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet, kutil.VerbType, error) {
+func (c *Controller) createStatefulSet(mongodb *dbapi.MongoDB) (*apps.StatefulSet, kutil.VerbType, error) {
 	statefulSetMeta := metav1.ObjectMeta{
 		Name:      mongodb.OffshootName(),
 		Namespace: mongodb.Namespace,
@@ -103,7 +104,7 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 		return nil, kutil.VerbUnchanged, rerr
 	}
 
-	mongodbVersion, err := c.ExtClient.MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -124,7 +125,7 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 			in.Spec.Template.Spec.Containers,
 			core.Container{
-				Name:            api.ResourceSingularMongoDB,
+				Name:            dbapi.ResourceSingularMongoDB,
 				Image:           mongodbVersion.Spec.DB.Image,
 				ImagePullPolicy: core.PullIfNotPresent,
 				Args: meta_util.UpsertArgumentList([]string{
@@ -161,7 +162,7 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 				Image: mongodbVersion.Spec.Exporter.Image,
 				Ports: []core.ContainerPort{
 					{
-						Name:          api.PrometheusExporterPortName,
+						Name:          dbapi.PrometheusExporterPortName,
 						Protocol:      core.ProtocolTCP,
 						ContainerPort: mongodb.Spec.Monitor.Prometheus.Port,
 					},
@@ -198,9 +199,9 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 	})
 }
 
-func addContainerProbe(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
+func addContainerProbe(statefulSet *apps.StatefulSet, mongodb *dbapi.MongoDB) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB {
+		if container.Name == dbapi.ResourceSingularMongoDB {
 			cmd := []string{
 				"mongo",
 				"--eval",
@@ -234,7 +235,7 @@ func addContainerProbe(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *app
 }
 
 // Init container for both ReplicaSet and Standalone instances
-func (c *Controller) upsertInstallInitContainer(statefulSet *apps.StatefulSet, mongodb *api.MongoDB, mongodbVersion *api.MongoDBVersion) *apps.StatefulSet {
+func (c *Controller) upsertInstallInitContainer(statefulSet *apps.StatefulSet, mongodb *dbapi.MongoDB, mongodbVersion *catalogapi.MongoDBVersion) *apps.StatefulSet {
 	installContainer := core.Container{
 		Name:            InitInstallContainerName,
 		Image:           "busybox",
@@ -286,9 +287,9 @@ func (c *Controller) upsertInstallInitContainer(statefulSet *apps.StatefulSet, m
 	return statefulSet
 }
 
-func upsertDataVolume(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
+func upsertDataVolume(statefulSet *apps.StatefulSet, mongodb *dbapi.MongoDB) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB {
+		if container.Name == dbapi.ResourceSingularMongoDB {
 			volumeMount := []core.VolumeMount{
 				{
 					Name:      dataDirectoryName,
@@ -314,7 +315,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps
 			statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(statefulSet.Spec.Template.Spec.Volumes, volumes)
 
 			pvcSpec := mongodb.Spec.Storage
-			if mongodb.Spec.StorageType == api.StorageTypeEphemeral {
+			if mongodb.Spec.StorageType == dbapi.StorageTypeEphemeral {
 				ed := core.EmptyDirVolumeSource{}
 				if pvcSpec != nil {
 					if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
@@ -356,7 +357,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps
 	return statefulSet
 }
 
-func upsertEnv(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
+func upsertEnv(statefulSet *apps.StatefulSet, mongodb *dbapi.MongoDB) *apps.StatefulSet {
 	envList := []core.EnvVar{
 		{
 			Name: "MONGO_INITDB_ROOT_USERNAME",
@@ -382,7 +383,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.Statef
 		},
 	}
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB || container.Name == "exporter" {
+		if container.Name == dbapi.ResourceSingularMongoDB || container.Name == "exporter" {
 			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
 		}
 	}
@@ -390,9 +391,9 @@ func upsertEnv(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.Statef
 }
 
 // upsertUserEnv add/overwrite env from user provided env in crd spec
-func upsertUserEnv(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
+func upsertUserEnv(statefulSet *apps.StatefulSet, mongodb *dbapi.MongoDB) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB {
+		if container.Name == dbapi.ResourceSingularMongoDB {
 			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, mongodb.Spec.PodTemplate.Spec.Env...)
 			break
 		}
@@ -423,7 +424,7 @@ func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *
 	)
 
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB {
+		if container.Name == dbapi.ResourceSingularMongoDB {
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.UpsertVolumeMount(
 				container.VolumeMounts,
 				volumeMount,

@@ -5,7 +5,7 @@ import (
 
 	"github.com/appscode/go/crypto/rand"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	kutildb "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -26,7 +26,7 @@ func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
 		if databaseSecretVolume, err = c.createDatabaseSecret(postgres); err != nil {
 			return err
 		}
-		pg, _, err := kutildb.PatchPostgres(c.ExtClient, postgres, func(in *api.Postgres) *api.Postgres {
+		pg, _, err := util.PatchPostgres(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
 			in.Spec.DatabaseSecret = databaseSecretVolume
 			return in
 		})
@@ -100,7 +100,7 @@ func (c *Controller) createDatabaseSecret(postgres *api.Postgres) (*core.SecretV
 
 func (c *Controller) deleteSecret(dormantDb *api.DormantDatabase, secretVolume *core.SecretVolumeSource) error {
 	secretFound := false
-	postgresList, err := c.ExtClient.Postgreses(dormantDb.Namespace).List(metav1.ListOptions{})
+	postgresList, err := c.ExtClient.KubedbV1alpha1().Postgreses(dormantDb.Namespace).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -119,7 +119,7 @@ func (c *Controller) deleteSecret(dormantDb *api.DormantDatabase, secretVolume *
 		labelMap := map[string]string{
 			api.LabelDatabaseKind: api.ResourceKindPostgres,
 		}
-		dormantDatabaseList, err := c.ExtClient.DormantDatabases(dormantDb.Namespace).List(
+		dormantDatabaseList, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(dormantDb.Namespace).List(
 			metav1.ListOptions{
 				LabelSelector: labels.SelectorFromSet(labelMap).String(),
 			},

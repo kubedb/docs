@@ -7,9 +7,11 @@ import (
 	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/queue"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
-	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	cs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
-	kutildb "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"github.com/kubedb/apimachinery/apis"
+	catalogapi "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
+	dbapi "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	api_listers "github.com/kubedb/apimachinery/client/listers/kubedb/v1alpha1"
 	amc "github.com/kubedb/apimachinery/pkg/controller"
 	drmnc "github.com/kubedb/apimachinery/pkg/controller/dormantdatabase"
@@ -50,7 +52,7 @@ var _ amc.Deleter = &Controller{}
 func New(
 	client kubernetes.Interface,
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
-	extClient cs.KubedbV1alpha1Interface,
+	extClient cs.Interface,
 	dc dynamic.Interface,
 	promClient pcm.MonitoringV1Interface,
 	cronController snapc.CronControllerInterface,
@@ -68,7 +70,7 @@ func New(
 		cronController: cronController,
 		recorder:       eventer.NewEventRecorder(client, "MySQL operator"),
 		selector: labels.SelectorFromSet(map[string]string{
-			api.LabelDatabaseKind: api.ResourceKindMySQL,
+			dbapi.LabelDatabaseKind: dbapi.ResourceKindMySQL,
 		}),
 	}
 }
@@ -77,10 +79,10 @@ func New(
 func (c *Controller) EnsureCustomResourceDefinitions() error {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 	crds := []*crd_api.CustomResourceDefinition{
-		api.MySQL{}.CustomResourceDefinition(),
-		api.MySQLVersion{}.CustomResourceDefinition(),
-		api.DormantDatabase{}.CustomResourceDefinition(),
-		api.Snapshot{}.CustomResourceDefinition(),
+		dbapi.MySQL{}.CustomResourceDefinition(),
+		catalogapi.MySQLVersion{}.CustomResourceDefinition(),
+		dbapi.DormantDatabase{}.CustomResourceDefinition(),
+		dbapi.Snapshot{}.CustomResourceDefinition(),
 	}
 	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
 }
@@ -142,7 +144,7 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	log.Infoln("Stopping KubeDB controller")
 }
 
-func (c *Controller) pushFailureEvent(mysql *api.MySQL, reason string) {
+func (c *Controller) pushFailureEvent(mysql *dbapi.MySQL, reason string) {
 	c.recorder.Eventf(
 		mysql,
 		core.EventTypeWarning,
@@ -152,12 +154,12 @@ func (c *Controller) pushFailureEvent(mysql *api.MySQL, reason string) {
 		reason,
 	)
 
-	my, err := kutildb.UpdateMySQLStatus(c.ExtClient, mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
-		in.Phase = api.DatabasePhaseFailed
+	my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql, func(in *dbapi.MySQLStatus) *dbapi.MySQLStatus {
+		in.Phase = dbapi.DatabasePhaseFailed
 		in.Reason = reason
 		in.ObservedGeneration = types.NewIntHash(mysql.Generation, meta_util.GenerationHash(mysql))
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 
 	if err != nil {
 		c.recorder.Eventf(

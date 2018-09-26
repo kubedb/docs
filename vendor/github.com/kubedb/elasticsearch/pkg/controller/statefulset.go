@@ -9,7 +9,8 @@ import (
 	"github.com/appscode/kutil"
 	app_util "github.com/appscode/kutil/apps/v1"
 	core_util "github.com/appscode/kutil/core/v1"
-	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	catalogapi "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
+	dbapi "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -26,7 +27,7 @@ const (
 )
 
 func (c *Controller) ensureStatefulSet(
-	elasticsearch *api.Elasticsearch,
+	elasticsearch *dbapi.Elasticsearch,
 	pvcSpec *core.PersistentVolumeClaimSpec,
 	resources core.ResourceRequirements,
 	statefulSetName string,
@@ -36,7 +37,7 @@ func (c *Controller) ensureStatefulSet(
 	isClient bool,
 ) (kutil.VerbType, error) {
 
-	elasticsearchVersion, err := c.ExtClient.ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{})
+	elasticsearchVersion, err := c.ExtClient.CatalogV1alpha1().ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -90,7 +91,7 @@ func (c *Controller) ensureStatefulSet(
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 			in.Spec.Template.Spec.Containers,
 			core.Container{
-				Name:            api.ResourceSingularElasticsearch,
+				Name:            dbapi.ResourceSingularElasticsearch,
 				Image:           elasticsearchVersion.Spec.DB.Image,
 				ImagePullPolicy: core.PullIfNotPresent,
 				SecurityContext: &core.SecurityContext{
@@ -177,7 +178,7 @@ func getHeapSizeForNode(val int64) int64 {
 	return ret * 80
 }
 
-func (c *Controller) ensureClientNode(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
+func (c *Controller) ensureClientNode(elasticsearch *dbapi.Elasticsearch) (kutil.VerbType, error) {
 	statefulSetName := elasticsearch.OffshootName()
 	clientNode := elasticsearch.Spec.Topology.Client
 
@@ -220,7 +221,7 @@ func (c *Controller) ensureClientNode(elasticsearch *api.Elasticsearch) (kutil.V
 	return c.ensureStatefulSet(elasticsearch, clientNode.Storage, clientNode.Resources, statefulSetName, labels, replicas, envList, true)
 }
 
-func (c *Controller) ensureMasterNode(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
+func (c *Controller) ensureMasterNode(elasticsearch *dbapi.Elasticsearch) (kutil.VerbType, error) {
 	statefulSetName := elasticsearch.OffshootName()
 	masterNode := elasticsearch.Spec.Topology.Master
 
@@ -267,7 +268,7 @@ func (c *Controller) ensureMasterNode(elasticsearch *api.Elasticsearch) (kutil.V
 	return c.ensureStatefulSet(elasticsearch, masterNode.Storage, masterNode.Resources, statefulSetName, labels, replicas, envList, false)
 }
 
-func (c *Controller) ensureDataNode(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
+func (c *Controller) ensureDataNode(elasticsearch *dbapi.Elasticsearch) (kutil.VerbType, error) {
 	statefulSetName := elasticsearch.OffshootName()
 	dataNode := elasticsearch.Spec.Topology.Data
 
@@ -310,7 +311,7 @@ func (c *Controller) ensureDataNode(elasticsearch *api.Elasticsearch) (kutil.Ver
 	return c.ensureStatefulSet(elasticsearch, dataNode.Storage, dataNode.Resources, statefulSetName, labels, replicas, envList, false)
 }
 
-func (c *Controller) ensureCombinedNode(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
+func (c *Controller) ensureCombinedNode(elasticsearch *dbapi.Elasticsearch) (kutil.VerbType, error) {
 	statefulSetName := elasticsearch.OffshootName()
 	labels := elasticsearch.OffshootLabels()
 	labels[NodeRoleClient] = "set"
@@ -323,7 +324,7 @@ func (c *Controller) ensureCombinedNode(elasticsearch *api.Elasticsearch) (kutil
 	}
 
 	heapSize := int64(134217728) // 128mb
-	if elasticsearch.Spec.Resources != nil {
+	if elasticsearch.Spec.PodTemplate.Spec.Resources.Size() != 0 {
 		if request, found := elasticsearch.Spec.PodTemplate.Spec.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
 			heapSize = getHeapSizeForNode(request.Value())
 		}
@@ -349,13 +350,13 @@ func (c *Controller) ensureCombinedNode(elasticsearch *api.Elasticsearch) (kutil
 	if elasticsearch.Spec.Storage != nil {
 		pvcSpec = *elasticsearch.Spec.Storage
 	}
-	if elasticsearch.Spec.Resources != nil {
-		resources = *elasticsearch.Spec.Resources
+	if elasticsearch.Spec.PodTemplate.Spec.Resources.Size() != 0 {
+		resources = elasticsearch.Spec.PodTemplate.Spec.Resources
 	}
 	return c.ensureStatefulSet(elasticsearch, &pvcSpec, resources, statefulSetName, labels, replicas, envList, true)
 }
 
-func (c *Controller) checkStatefulSet(elasticsearch *api.Elasticsearch, name string) error {
+func (c *Controller) checkStatefulSet(elasticsearch *dbapi.Elasticsearch, name string) error {
 	elasticsearchName := elasticsearch.OffshootName()
 	// SatatefulSet for Elasticsearch database
 	statefulSet, err := c.Client.AppsV1().StatefulSets(elasticsearch.Namespace).Get(name, metav1.GetOptions{})
@@ -367,15 +368,15 @@ func (c *Controller) checkStatefulSet(elasticsearch *api.Elasticsearch, name str
 		}
 	}
 
-	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindElasticsearch ||
-		statefulSet.Labels[api.LabelDatabaseName] != elasticsearchName {
+	if statefulSet.Labels[dbapi.LabelDatabaseKind] != dbapi.ResourceKindElasticsearch ||
+		statefulSet.Labels[dbapi.LabelDatabaseName] != elasticsearchName {
 		return fmt.Errorf(`intended statefulSet "%v" already exists`, name)
 	}
 
 	return nil
 }
 
-func upsertEnv(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch, envs []core.EnvVar) *apps.StatefulSet {
+func upsertEnv(statefulSet *apps.StatefulSet, elasticsearch *dbapi.Elasticsearch, envs []core.EnvVar) *apps.StatefulSet {
 	envList := []core.EnvVar{
 		{
 			Name:  "CLUSTER_NAME",
@@ -418,7 +419,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch, 
 
 	// To do this, Upsert Container first
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularElasticsearch {
+		if container.Name == dbapi.ResourceSingularElasticsearch {
 			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
 			return statefulSet
 		}
@@ -428,9 +429,9 @@ func upsertEnv(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch, 
 }
 
 // upsertUserEnv add/overwrite env from user provided env in crd spec
-func upsertUserEnv(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch) *apps.StatefulSet {
+func upsertUserEnv(statefulSet *apps.StatefulSet, elasticsearch *dbapi.Elasticsearch) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularElasticsearch {
+		if container.Name == dbapi.ResourceSingularElasticsearch {
 			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, elasticsearch.Spec.PodTemplate.Spec.Env...)
 			return statefulSet
 		}
@@ -443,15 +444,15 @@ func upsertPort(statefulSet *apps.StatefulSet, isClient bool) *apps.StatefulSet 
 	getPorts := func() []core.ContainerPort {
 		portList := []core.ContainerPort{
 			{
-				Name:          api.ElasticsearchNodePortName,
-				ContainerPort: api.ElasticsearchNodePort,
+				Name:          dbapi.ElasticsearchNodePortName,
+				ContainerPort: dbapi.ElasticsearchNodePort,
 				Protocol:      core.ProtocolTCP,
 			},
 		}
 		if isClient {
 			portList = append(portList, core.ContainerPort{
-				Name:          api.ElasticsearchRestPortName,
-				ContainerPort: api.ElasticsearchRestPort,
+				Name:          dbapi.ElasticsearchRestPortName,
+				ContainerPort: dbapi.ElasticsearchRestPort,
 				Protocol:      core.ProtocolTCP,
 			})
 		}
@@ -460,7 +461,7 @@ func upsertPort(statefulSet *apps.StatefulSet, isClient bool) *apps.StatefulSet 
 	}
 
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularElasticsearch {
+		if container.Name == dbapi.ResourceSingularElasticsearch {
 			statefulSet.Spec.Template.Spec.Containers[i].Ports = getPorts()
 			return statefulSet
 		}
@@ -469,22 +470,22 @@ func upsertPort(statefulSet *apps.StatefulSet, isClient bool) *apps.StatefulSet 
 	return statefulSet
 }
 
-func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch, elasticsearchVersion *api.ElasticsearchVersion) *apps.StatefulSet {
+func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, elasticsearch *dbapi.Elasticsearch, elasticsearchVersion *catalogapi.ElasticsearchVersion) *apps.StatefulSet {
 	if elasticsearch.GetMonitoringVendor() == mona.VendorPrometheus {
 		container := core.Container{
 			Name: "exporter",
 			Args: append([]string{
-				fmt.Sprintf("--es.uri=%s://$(DB_USER):$(DB_PASSWORD)@localhost:%d", elasticsearch.GetConnectionScheme(), api.ElasticsearchRestPort),
-				fmt.Sprintf("--web.listen-address=:%d", api.PrometheusExporterPortNumber),
+				fmt.Sprintf("--es.uri=%s://$(DB_USER):$(DB_PASSWORD)@localhost:%d", elasticsearch.GetConnectionScheme(), dbapi.ElasticsearchRestPort),
+				fmt.Sprintf("--web.listen-address=:%d", dbapi.PrometheusExporterPortNumber),
 				fmt.Sprintf("--web.telemetry-path=%s", elasticsearch.StatsService().Path()),
 			}),
 			Image:           elasticsearchVersion.Spec.Exporter.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
 				{
-					Name:          api.PrometheusExporterPortName,
+					Name:          dbapi.PrometheusExporterPortName,
 					Protocol:      core.ProtocolTCP,
-					ContainerPort: int32(api.PrometheusExporterPortNumber),
+					ContainerPort: int32(dbapi.PrometheusExporterPortNumber),
 				},
 			},
 		}
@@ -581,7 +582,7 @@ func upsertCertificate(statefulSet *apps.StatefulSet, secretName string, isClien
 	}
 
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularElasticsearch {
+		if container.Name == dbapi.ResourceSingularElasticsearch {
 			volumeMount := core.VolumeMount{
 				Name:      "certs",
 				MountPath: "/elasticsearch/config/certs",
@@ -605,7 +606,7 @@ func upsertCertificate(statefulSet *apps.StatefulSet, secretName string, isClien
 
 func upsertDatabaseSecret(statefulSet *apps.StatefulSet, secretName string, searchGuard string) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularElasticsearch {
+		if container.Name == dbapi.ResourceSingularElasticsearch {
 			volumeMount := core.VolumeMount{
 				Name:      "sgconfig",
 				MountPath: fmt.Sprintf("/elasticsearch/plugins/search-guard-%v/sgconfig", searchGuard),
@@ -627,16 +628,16 @@ func upsertDatabaseSecret(statefulSet *apps.StatefulSet, secretName string, sear
 	return statefulSet
 }
 
-func upsertDataVolume(statefulSet *apps.StatefulSet, st api.StorageType, pvcSpec *core.PersistentVolumeClaimSpec) *apps.StatefulSet {
+func upsertDataVolume(statefulSet *apps.StatefulSet, st dbapi.StorageType, pvcSpec *core.PersistentVolumeClaimSpec) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularElasticsearch {
+		if container.Name == dbapi.ResourceSingularElasticsearch {
 			volumeMount := core.VolumeMount{
 				Name:      "data",
 				MountPath: "/data",
 			}
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.UpsertVolumeMount(container.VolumeMounts, volumeMount)
 
-			if st == api.StorageTypeEphemeral {
+			if st == dbapi.StorageTypeEphemeral {
 				ed := core.EmptyDirVolumeSource{}
 				if pvcSpec != nil {
 					if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
@@ -679,10 +680,10 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, st api.StorageType, pvcSpec
 	return statefulSet
 }
 
-func upsertCustomConfig(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsearch) *apps.StatefulSet {
+func upsertCustomConfig(statefulSet *apps.StatefulSet, elasticsearch *dbapi.Elasticsearch) *apps.StatefulSet {
 	if elasticsearch.Spec.ConfigSource != nil {
 		for i, container := range statefulSet.Spec.Template.Spec.Containers {
-			if container.Name == api.ResourceSingularElasticsearch {
+			if container.Name == dbapi.ResourceSingularElasticsearch {
 				configVolumeMount := core.VolumeMount{
 					Name:      "custom-config",
 					MountPath: ConfigMountPath,

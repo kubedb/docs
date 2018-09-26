@@ -9,7 +9,8 @@ import (
 	app_util "github.com/appscode/kutil/apps/v1"
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
-	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	catalogapi "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
+	dbapi "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -21,8 +22,8 @@ import (
 )
 
 func (c *Controller) ensureStatefulSet(
-	postgres *api.Postgres,
-	postgresVersion *api.PostgresVersion,
+	postgres *dbapi.Postgres,
+	postgresVersion *catalogapi.PostgresVersion,
 	envList []core.EnvVar,
 ) (kutil.VerbType, error) {
 
@@ -62,7 +63,7 @@ func (c *Controller) ensureStatefulSet(
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 			in.Spec.Template.Spec.Containers,
 			core.Container{
-				Name:      api.ResourceSingularPostgres,
+				Name:      dbapi.ResourceSingularPostgres,
 				Image:     postgresVersion.Spec.DB.Image,
 				Resources: postgres.Spec.PodTemplate.Spec.Resources,
 				SecurityContext: &core.SecurityContext{
@@ -95,7 +96,7 @@ func (c *Controller) ensureStatefulSet(
 			}
 		}
 
-		if _, err := meta_util.GetString(postgres.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound {
+		if _, err := meta_util.GetString(postgres.Annotations, dbapi.AnnotationInitialized); err == kutil.ErrNotFound {
 			if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
 				in = upsertInitWalSecret(in, postgres.Spec.Init.PostgresWAL.StorageSecretName)
 			}
@@ -158,9 +159,9 @@ func (c *Controller) CheckStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 	return nil
 }
 
-func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion *api.PostgresVersion) (kutil.VerbType, error) {
-	standbyMode := api.WarmStandby
-	streamingMode := api.AsynchronousStreaming
+func (c *Controller) ensureCombinedNode(postgres *dbapi.Postgres, postgresVersion *catalogapi.PostgresVersion) (kutil.VerbType, error) {
+	standbyMode := dbapi.WarmStandby
+	streamingMode := dbapi.AsynchronousStreaming
 
 	if postgres.Spec.StandbyMode != nil {
 		standbyMode = *postgres.Spec.StandbyMode
@@ -220,7 +221,7 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion 
 	return c.ensureStatefulSet(postgres, postgresVersion, envList)
 }
 
-func (c *Controller) checkStatefulSet(postgres *api.Postgres) error {
+func (c *Controller) checkStatefulSet(postgres *dbapi.Postgres) error {
 	name := postgres.OffshootName()
 	// SatatefulSet for Postgres database
 	statefulSet, err := c.Client.AppsV1().StatefulSets(postgres.Namespace).Get(name, metav1.GetOptions{})
@@ -232,15 +233,15 @@ func (c *Controller) checkStatefulSet(postgres *api.Postgres) error {
 		}
 	}
 
-	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindPostgres ||
-		statefulSet.Labels[api.LabelDatabaseName] != name {
+	if statefulSet.Labels[dbapi.LabelDatabaseKind] != dbapi.ResourceKindPostgres ||
+		statefulSet.Labels[dbapi.LabelDatabaseName] != name {
 		return fmt.Errorf(`intended statefulSet "%v" already exists`, name)
 	}
 
 	return nil
 }
 
-func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []core.EnvVar) *apps.StatefulSet {
+func upsertEnv(statefulSet *apps.StatefulSet, postgres *dbapi.Postgres, envs []core.EnvVar) *apps.StatefulSet {
 	envList := []core.EnvVar{
 		{
 			Name: "NAMESPACE",
@@ -282,7 +283,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []cor
 
 	// To do this, Upsert Container first
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPostgres {
+		if container.Name == dbapi.ResourceSingularPostgres {
 			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
 			return statefulSet
 		}
@@ -292,9 +293,9 @@ func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []cor
 }
 
 // upsertUserEnv add/overwrite env from user provided env in crd spec
-func upsertUserEnv(statefulSet *apps.StatefulSet, postgress *api.Postgres) *apps.StatefulSet {
+func upsertUserEnv(statefulSet *apps.StatefulSet, postgress *dbapi.Postgres) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPostgres {
+		if container.Name == dbapi.ResourceSingularPostgres {
 			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, postgress.Spec.PodTemplate.Spec.Env...)
 			return statefulSet
 		}
@@ -315,7 +316,7 @@ func upsertPort(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 	}
 
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPostgres {
+		if container.Name == dbapi.ResourceSingularPostgres {
 			statefulSet.Spec.Template.Spec.Containers[i].Ports = getPorts()
 			return statefulSet
 		}
@@ -324,7 +325,7 @@ func upsertPort(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 	return statefulSet
 }
 
-func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, postgres *api.Postgres, postgresVersion *api.PostgresVersion) *apps.StatefulSet {
+func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, postgres *dbapi.Postgres, postgresVersion *catalogapi.PostgresVersion) *apps.StatefulSet {
 	if postgres.GetMonitoringVendor() == mona.VendorPrometheus {
 		container := core.Container{
 			Name: "exporter",
@@ -335,9 +336,9 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
 				{
-					Name:          api.PrometheusExporterPortName,
+					Name:          dbapi.PrometheusExporterPortName,
 					Protocol:      core.ProtocolTCP,
-					ContainerPort: int32(api.PrometheusExporterPortNumber),
+					ContainerPort: int32(dbapi.PrometheusExporterPortNumber),
 				},
 			},
 		}
@@ -371,7 +372,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 			},
 			{
 				Name:  "PG_EXPORTER_WEB_LISTEN_ADDRESS",
-				Value: fmt.Sprintf(":%d", api.PrometheusExporterPortNumber),
+				Value: fmt.Sprintf(":%d", dbapi.PrometheusExporterPortNumber),
 			},
 			{
 				Name:  "PG_EXPORTER_WEB_TELEMETRY_PATH",
@@ -389,7 +390,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 
 func upsertArchiveSecret(statefulSet *apps.StatefulSet, secretName string) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPostgres {
+		if container.Name == dbapi.ResourceSingularPostgres {
 			volumeMount := core.VolumeMount{
 				Name:      "wal-g-archive",
 				MountPath: "/srv/wal-g/archive/secrets",
@@ -417,7 +418,7 @@ func upsertArchiveSecret(statefulSet *apps.StatefulSet, secretName string) *apps
 
 func upsertInitWalSecret(statefulSet *apps.StatefulSet, secretName string) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPostgres {
+		if container.Name == dbapi.ResourceSingularPostgres {
 			volumeMount := core.VolumeMount{
 				Name:      "wal-g-restore",
 				MountPath: "/srv/wal-g/restore/secrets",
@@ -445,7 +446,7 @@ func upsertInitWalSecret(statefulSet *apps.StatefulSet, secretName string) *apps
 
 func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPostgres {
+		if container.Name == dbapi.ResourceSingularPostgres {
 			volumeMount := core.VolumeMount{
 				Name:      "initial-script",
 				MountPath: "/var/initdb",
@@ -467,9 +468,9 @@ func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *
 	return statefulSet
 }
 
-func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
+func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *dbapi.Postgres) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPostgres {
+		if container.Name == dbapi.ResourceSingularPostgres {
 			volumeMount := core.VolumeMount{
 				Name:      "data",
 				MountPath: "/var/pv",
@@ -479,7 +480,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *ap
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 			pvcSpec := postgres.Spec.Storage
-			if postgres.Spec.StorageType == api.StorageTypeEphemeral {
+			if postgres.Spec.StorageType == dbapi.StorageTypeEphemeral {
 				ed := core.EmptyDirVolumeSource{}
 				if pvcSpec != nil {
 					if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
@@ -521,10 +522,10 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *ap
 	return statefulSet
 }
 
-func upsertCustomConfig(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
+func upsertCustomConfig(statefulSet *apps.StatefulSet, postgres *dbapi.Postgres) *apps.StatefulSet {
 	if postgres.Spec.ConfigSource != nil {
 		for i, container := range statefulSet.Spec.Template.Spec.Containers {
-			if container.Name == api.ResourceSingularPostgres {
+			if container.Name == dbapi.ResourceSingularPostgres {
 				configVolumeMount := core.VolumeMount{
 					Name:      "custom-config",
 					MountPath: "/etc/config",

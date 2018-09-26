@@ -4,14 +4,15 @@ import (
 	"github.com/appscode/go/types"
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
-	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	catalogapi "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
+	dbapi "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 )
 
-func upsertRSArgs(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
+func upsertRSArgs(statefulSet *apps.StatefulSet, mongodb *dbapi.MongoDB) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB {
+		if container.Name == dbapi.ResourceSingularMongoDB {
 			statefulSet.Spec.Template.Spec.Containers[i].Args = meta_util.UpsertArgumentList(
 				statefulSet.Spec.Template.Spec.Containers[i].Args,
 				[]string{
@@ -32,7 +33,7 @@ func upsertRSArgs(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.Sta
 	return statefulSet
 }
 
-func (c *Controller) upsertRSInitContainer(statefulSet *apps.StatefulSet, mongodb *api.MongoDB, mongodbVersion *api.MongoDBVersion) *apps.StatefulSet {
+func (c *Controller) upsertRSInitContainer(statefulSet *apps.StatefulSet, mongodb *dbapi.MongoDB, mongodbVersion *catalogapi.MongoDBVersion) *apps.StatefulSet {
 	bootstrapContainer := core.Container{
 		Name:            InitBootstrapContainerName,
 		Image:           mongodbVersion.Spec.DB.Image,

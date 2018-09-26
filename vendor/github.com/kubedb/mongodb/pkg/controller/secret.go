@@ -41,7 +41,7 @@ func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 			return err
 		}
 
-		ms, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
+		ms, _, err := util.PatchMongoDB(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
 			in.Spec.DatabaseSecret = secretVolumeSource
 			return in
 		})
@@ -75,7 +75,7 @@ func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 			return err
 		}
 
-		ms, _, err := util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
+		ms, _, err := util.PatchMongoDB(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
 			in.Spec.ReplicaSet.KeyFile = secretVolumeSource
 			return in
 		})
