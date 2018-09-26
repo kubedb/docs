@@ -14,7 +14,7 @@ import (
 )
 
 func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snapshot) (*batch.Job, error) {
-	postgresVersion, err := c.ExtClient.PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{})
+	postgresVersion, err := c.ExtClient.CatalogV1alpha1().PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 	if err != nil {
 		return nil, err
 	}
-	postgresVersion, err := c.ExtClient.PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{})
+	postgresVersion, err := c.ExtClient.CatalogV1alpha1().PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

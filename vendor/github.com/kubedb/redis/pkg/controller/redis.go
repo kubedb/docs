@@ -8,6 +8,7 @@ import (
 	"github.com/appscode/kutil"
 	dynamic_util "github.com/appscode/kutil/dynamic"
 	meta_util "github.com/appscode/kutil/meta"
+	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -34,7 +35,7 @@ func (c *Controller) create(redis *api.Redis) error {
 
 	// Check if redisVersion is deprecated.
 	// If deprecated, add event and return nil (stop processing.)
-	redisVersion, err := c.ExtClient.RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{})
+	redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -65,10 +66,10 @@ func (c *Controller) create(redis *api.Redis) error {
 	}
 
 	if redis.Status.Phase == "" {
-		rd, err := util.UpdateRedisStatus(c.ExtClient, redis, func(in *api.RedisStatus) *api.RedisStatus {
+		rd, err := util.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), redis, func(in *api.RedisStatus) *api.RedisStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
-		}, api.EnableStatusSubresource)
+		}, apis.EnableStatusSubresource)
 		if err != nil {
 			c.recorder.Eventf(
 				redis,
@@ -123,11 +124,11 @@ func (c *Controller) create(redis *api.Redis) error {
 		)
 	}
 
-	rd, err := util.UpdateRedisStatus(c.ExtClient, redis, func(in *api.RedisStatus) *api.RedisStatus {
+	rd, err := util.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), redis, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = types.NewIntHash(redis.Generation, meta_util.GenerationHash(redis))
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 	if err != nil {
 		c.recorder.Eventf(
 			redis,
@@ -186,7 +187,7 @@ func (c *Controller) terminate(redis *api.Redis) error {
 				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
 				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
 				// So reuse that DormantDB!
-				ddb, err := c.ExtClient.DormantDatabases(redis.Namespace).Get(redis.Name, metav1.GetOptions{})
+				ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(redis.Namespace).Get(redis.Name, metav1.GetOptions{})
 				if err != nil {
 					return err
 				}

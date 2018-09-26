@@ -5,7 +5,7 @@ import (
 	dynamic_util "github.com/appscode/kutil/dynamic"
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	cs_util "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -68,7 +68,7 @@ func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, r
 
 func (c *Controller) deleteMatchingDormantDatabase(elasticsearch *api.Elasticsearch) error {
 	// Check if DormantDatabase exists or not
-	ddb, err := c.ExtClient.DormantDatabases(elasticsearch.Namespace).Get(elasticsearch.Name, metav1.GetOptions{})
+	ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(elasticsearch.Namespace).Get(elasticsearch.Name, metav1.GetOptions{})
 	if err != nil {
 		if !kerr.IsNotFound(err) {
 			return err
@@ -77,7 +77,7 @@ func (c *Controller) deleteMatchingDormantDatabase(elasticsearch *api.Elasticsea
 	}
 
 	// Set WipeOut to false
-	if _, _, err := cs_util.PatchDormantDatabase(c.ExtClient, ddb, func(in *api.DormantDatabase) *api.DormantDatabase {
+	if _, _, err := util.PatchDormantDatabase(c.ExtClient.KubedbV1alpha1(), ddb, func(in *api.DormantDatabase) *api.DormantDatabase {
 		in.Spec.WipeOut = false
 		return in
 	}); err != nil {
@@ -85,7 +85,7 @@ func (c *Controller) deleteMatchingDormantDatabase(elasticsearch *api.Elasticsea
 	}
 
 	// Delete  Matching dormantDatabase
-	if err := c.ExtClient.DormantDatabases(elasticsearch.Namespace).Delete(elasticsearch.Name,
+	if err := c.ExtClient.KubedbV1alpha1().DormantDatabases(elasticsearch.Namespace).Delete(elasticsearch.Name,
 		meta_util.DeleteInBackground()); err != nil && !kerr.IsNotFound(err) {
 		return err
 	}
@@ -118,7 +118,7 @@ func (c *Controller) createDormantDatabase(elasticsearch *api.Elasticsearch) (*a
 		},
 	}
 
-	return c.ExtClient.DormantDatabases(dormantDb.Namespace).Create(dormantDb)
+	return c.ExtClient.KubedbV1alpha1().DormantDatabases(dormantDb.Namespace).Create(dormantDb)
 }
 
 // isSecretUsed gets the DBList of same kind, then checks if our required secret is used by those.
@@ -139,7 +139,7 @@ func (c *Controller) secretsUsedByPeers(meta metav1.ObjectMeta) (sets.String, er
 	labelMap := map[string]string{
 		api.LabelDatabaseKind: api.ResourceKindElasticsearch,
 	}
-	drmnList, err := c.ExtClient.DormantDatabases(meta.Namespace).List(
+	drmnList, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(meta.Namespace).List(
 		metav1.ListOptions{
 			LabelSelector: labels.SelectorFromSet(labelMap).String(),
 		},

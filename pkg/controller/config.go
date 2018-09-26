@@ -49,7 +49,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	ctrl := New(
 		c.KubeClient,
 		c.APIExtKubeClient,
-		c.DBClient.KubedbV1alpha1(),
+		c.DBClient,
 		c.DynamicClient,
 		c.PromClient,
 		c.CronController,
@@ -59,13 +59,13 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	ctrl.DrmnInformer = dormantdatabase.NewController(ctrl.Controller, nil, ctrl.Config, nil).InitInformer()
 	ctrl.SnapInformer, ctrl.JobInformer = snapc.NewController(ctrl.Controller, nil, ctrl.Config, nil).InitInformer()
 
-	ctrl.pgCtrl = pgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
-	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
-	ctrl.edCtrl = edc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
-	ctrl.mgCtrl = mgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
-	ctrl.myCtrl = myc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
-	ctrl.rdCtrl = rdc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.DynamicClient, c.PromClient, ctrl.Config)
-	ctrl.mcCtrl = mcc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient.KubedbV1alpha1(), c.PromClient, ctrl.Config)
+	ctrl.pgCtrl = pgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.edCtrl = edc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.mgCtrl = mgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.myCtrl = myc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.rdCtrl = rdc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, ctrl.Config)
+	ctrl.mcCtrl = mcc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient, c.PromClient, ctrl.Config)
 
 	if err := ctrl.Init(); err != nil {
 		return nil, err

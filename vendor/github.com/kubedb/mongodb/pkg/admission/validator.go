@@ -10,7 +10,6 @@ import (
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
-	kubedbv1alpha1 "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
@@ -120,7 +119,7 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 			}
 		}
 		// validate database specs
-		if err = ValidateMongoDB(a.client, a.extClient.KubedbV1alpha1(), obj.(*api.MongoDB)); err != nil {
+		if err = ValidateMongoDB(a.client, a.extClient, obj.(*api.MongoDB)); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -130,11 +129,11 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 
 // ValidateMongoDB checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateMongoDB(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, mongodb *api.MongoDB) error {
+func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongodb *api.MongoDB) error {
 	if mongodb.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if _, err := extClient.MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -192,9 +191,9 @@ func ValidateMongoDB(client kubernetes.Interface, extClient kubedbv1alpha1.Kubed
 	return nil
 }
 
-func matchWithDormantDatabase(extClient kubedbv1alpha1.KubedbV1alpha1Interface, mongodb *api.MongoDB) error {
+func matchWithDormantDatabase(extClient cs.Interface, mongodb *api.MongoDB) error {
 	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.DormantDatabases(mongodb.Namespace).Get(mongodb.Name, metav1.GetOptions{})
+	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(mongodb.Namespace).Get(mongodb.Name, metav1.GetOptions{})
 	if err != nil {
 		if !kerr.IsNotFound(err) {
 			return err
@@ -265,6 +264,7 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 }
 
 var preconditionSpecFields = []string{
+	"spec.storageType",
 	"spec.storage",
 	"spec.databaseSecret",
 	"spec.init",

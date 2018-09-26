@@ -23,7 +23,7 @@ const (
 )
 
 func (c *Controller) getRestoreContainer(etcd *api.Etcd, snapshot *api.Snapshot, m *etcdutil.Member, ms etcdutil.MemberSet) ([]core.Container, error) {
-	etcdVersion, err := c.ExtClient.EtcdVersions().Get(string(etcd.Spec.Version), metav1.GetOptions{})
+	etcdVersion, err := c.ExtClient.CatalogV1alpha1().EtcdVersions().Get(string(etcd.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 	if err != nil {
 		return nil, err
 	}
-	etcdVersion, err := c.ExtClient.EtcdVersions().Get(string(etcd.Spec.Version), metav1.GetOptions{})
+	etcdVersion, err := c.ExtClient.CatalogV1alpha1().EtcdVersions().Get(string(etcd.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}

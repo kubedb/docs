@@ -38,14 +38,14 @@ func (c *Controller) runSnapshot(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				snapshot, _, err = util.PatchSnapshot(c.ExtClient, snapshot, func(in *api.Snapshot) *api.Snapshot {
+				snapshot, _, err = util.PatchSnapshot(c.ExtClient.KubedbV1alpha1(), snapshot, func(in *api.Snapshot) *api.Snapshot {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, api.GenericKey)
 					return in
 				})
 				return err
 			}
 		} else {
-			snapshot, _, err = util.PatchSnapshot(c.ExtClient, snapshot, func(in *api.Snapshot) *api.Snapshot {
+			snapshot, _, err = util.PatchSnapshot(c.ExtClient.KubedbV1alpha1(), snapshot, func(in *api.Snapshot) *api.Snapshot {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
 				return in
 			})

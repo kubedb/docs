@@ -6,7 +6,7 @@ import (
 	"github.com/appscode/go/log/golog"
 	"github.com/appscode/kutil/tools/queue"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	cs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
+	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
 	kubedbinformers "github.com/kubedb/apimachinery/client/informers/externalversions"
 	batch "k8s.io/api/batch/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
@@ -24,7 +24,7 @@ type Controller struct {
 	// Api Extension Client
 	ApiExtKubeClient crd_cs.ApiextensionsV1beta1Interface
 	// ThirdPartyExtension client
-	ExtClient cs.KubedbV1alpha1Interface
+	ExtClient cs.Interface
 	// Dynamic client
 	DynamicClient dynamic.Interface
 }

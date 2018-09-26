@@ -40,7 +40,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	ctrl := New(
 		c.KubeClient,
 		c.APIExtKubeClient,
-		c.DBClient.KubedbV1alpha1(),
+		c.DBClient,
 		c.PromClient,
 		c.Config,
 	)

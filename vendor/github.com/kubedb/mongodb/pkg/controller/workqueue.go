@@ -4,6 +4,7 @@ import (
 	"github.com/appscode/go/log"
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/tools/queue"
+	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 )
@@ -12,7 +13,7 @@ func (c *Controller) initWatcher() {
 	c.mgInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().MongoDBs().Informer()
 	c.mgQueue = queue.New("MongoDB", c.MaxNumRequeues, c.NumThreads, c.runMongoDB)
 	c.mgLister = c.KubedbInformerFactory.Kubedb().V1alpha1().MongoDBs().Lister()
-	c.mgInformer.AddEventHandler(queue.NewObservableHandler(c.mgQueue.GetQueue(), api.EnableStatusSubresource))
+	c.mgInformer.AddEventHandler(queue.NewObservableHandler(c.mgQueue.GetQueue(), apis.EnableStatusSubresource))
 }
 
 func (c *Controller) runMongoDB(key string) error {
@@ -35,14 +36,14 @@ func (c *Controller) runMongoDB(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				mongodb, _, err = util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
+				mongodb, _, err = util.PatchMongoDB(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, api.GenericKey)
 					return in
 				})
 				return err
 			}
 		} else {
-			mongodb, _, err = util.PatchMongoDB(c.ExtClient, mongodb, func(in *api.MongoDB) *api.MongoDB {
+			mongodb, _, err = util.PatchMongoDB(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
 				return in
 			})

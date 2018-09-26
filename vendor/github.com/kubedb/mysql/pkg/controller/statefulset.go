@@ -82,7 +82,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		return nil, kutil.VerbUnchanged, rerr
 	}
 
-	mysqlVersion, err := c.ExtClient.MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{})
+	mysqlVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, rerr
 	}

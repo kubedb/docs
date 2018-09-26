@@ -1,5 +1,5 @@
-hash: 6527e60c335321c7d763c8468a625c0293647b060952e26085c914bd6b839a25
-updated: 2018-09-20T12:30:25.417613884-07:00
+hash: 06805ee70d732bb6967611c79e539b02089098644c24f0f604b61dbedb8dbf51
+updated: 2018-09-26T06:32:36.956038843-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -302,18 +302,25 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: 7760fb61e363cdc939e78708046db6a4d92ca77c
+  version: 483ed62aba8976cb227e543ed9d1223a560f3278
   subpackages:
+  - apis
+  - apis/catalog
+  - apis/catalog/v1alpha1
   - apis/kubedb
   - apis/kubedb/v1alpha1
   - client/clientset/versioned
   - client/clientset/versioned/scheme
+  - client/clientset/versioned/typed/catalog/v1alpha1
   - client/clientset/versioned/typed/kubedb/v1alpha1
   - client/clientset/versioned/typed/kubedb/v1alpha1/util
   - client/informers/externalversions
+  - client/informers/externalversions/catalog
+  - client/informers/externalversions/catalog/v1alpha1
   - client/informers/externalversions/internalinterfaces
   - client/informers/externalversions/kubedb
   - client/informers/externalversions/kubedb/v1alpha1
+  - client/listers/catalog/v1alpha1
   - client/listers/kubedb/v1alpha1
   - pkg/admission
   - pkg/admission/dormantdatabase
@@ -325,40 +332,40 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: efd4971e11b83abd7ee5f486759ed14d054c6cb0
+  version: cd1d09ef2973993c17d62461e563a9ba2ce1defc
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util/es
 - name: github.com/kubedb/etcd
-  version: e537d186d2184f1a1c728483c2b72e4c813fe830
+  version: 7ec0604164cccb95cde90bea152dad8a10d6495c
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: 3b18436ca39adb62a45c60be7dd04c278e8c07a4
+  version: 24eb5df16960d17128b12612867746cf0e35a69d
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: 9094d089533138995e55a8e9e36463e8cc40ca6d
+  version: 69c12fae45a84d2be8c4dc9bee1db833cf029af7
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 04eb9bb5156ae6c4109a0398073f4b90de22ba93
+  version: 2f850243f447e02bb554c24a59b66bb9e300a2aa
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: 85783294de09f749fd77b558901c7c602edac1ca
+  version: b00c451ac7a0e26bcc1b3d4757e87f873413c457
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: 301038d1ec3872ba5bb17155159cbb877e20963d
+  version: 6dc923cbd87e5bebb013ac213ea726881212ced8
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -383,7 +390,7 @@ imports:
 - name: github.com/NYTimes/gziphandler
   version: 56545f4a5d46df9a6648819d1664c3a03a13ffdb
 - name: github.com/olivere/elastic
-  version: 2ddc762ab5e88f2666b664e840efbeedf7150e99
+  version: 18b71235c09c127a0138e941e99524b93687898b
   subpackages:
   - config
   - uritemplates
@@ -425,15 +432,17 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/russross/blackfriday
-  version: 4048872b16cc0fc2c5fd9eacf0ed2c2fedaa0c8c
+  version: 300106c228d52c8941d4b3de6054a6062a86dda3
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/sergi/go-diff
   version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
   subpackages:
   - diffmatchpatch
+- name: github.com/shurcooL/sanitized_anchor_name
+  version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
-  version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
+  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - name: github.com/spf13/cobra
   version: ef82de70bb3f60c65fb8eebacbb2d122ef517385
   subpackages:
@@ -504,7 +513,7 @@ imports:
   subpackages:
   - rate
 - name: google.golang.org/api
-  version: 19ff8768a5c0b8e46ea281065664787eefc24121
+  version: e5ba110cb6cd042d05ea6ea2ce9dd13198c6387a
   subpackages:
   - gensupport
   - googleapi

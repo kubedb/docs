@@ -8,7 +8,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	cs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
+	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"github.com/orcaman/concurrent-map"
 	"gopkg.in/robfig/cron.v2"
@@ -29,7 +29,7 @@ type CronControllerInterface interface {
 
 type cronController struct {
 	// ThirdPartyExtension client
-	extClient cs.KubedbV1alpha1Interface
+	extClient cs.Interface
 	// For Internal Cron Job
 	cron *cron.Cron
 	// Store Cron Job EntryID for further use
@@ -44,7 +44,7 @@ type cronController struct {
  NewCronController returns CronControllerInterface.
  Need to call StartCron() method to start Cron.
 */
-func NewCronController(client kubernetes.Interface, extClient cs.KubedbV1alpha1Interface) CronControllerInterface {
+func NewCronController(client kubernetes.Interface, extClient cs.Interface) CronControllerInterface {
 	return &cronController{
 		extClient:     extClient,
 		cron:          cron.New(),
@@ -111,7 +111,7 @@ func (c *cronController) StopCron() {
 }
 
 type snapshotInvoker struct {
-	extClient     cs.KubedbV1alpha1Interface
+	extClient     cs.Interface
 	runtimeObject runtime.Object
 	om            metav1.ObjectMeta
 	spec          *api.BackupScheduleSpec
@@ -128,7 +128,7 @@ func (s *snapshotInvoker) createScheduledSnapshot() {
 		api.LabelSnapshotStatus: string(api.SnapshotPhaseRunning),
 	}
 
-	snapshotList, err := s.extClient.Snapshots(s.om.Namespace).List(metav1.ListOptions{
+	snapshotList, err := s.extClient.KubedbV1alpha1().Snapshots(s.om.Namespace).List(metav1.ListOptions{
 		LabelSelector: labels.Set(labelMap).AsSelector().String(),
 	})
 	if err != nil {
@@ -187,7 +187,7 @@ func (s *snapshotInvoker) createSnapshot(snapshotName string) (*api.Snapshot, er
 		},
 	}
 
-	snapshot, err := s.extClient.Snapshots(snapshot.Namespace).Create(snapshot)
+	snapshot, err := s.extClient.KubedbV1alpha1().Snapshots(snapshot.Namespace).Create(snapshot)
 	if err != nil {
 		s.eventRecorder.Eventf(
 			s.runtimeObject,

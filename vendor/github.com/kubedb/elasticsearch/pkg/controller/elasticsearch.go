@@ -10,8 +10,9 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	dynamic_util "github.com/appscode/kutil/dynamic"
 	meta_util "github.com/appscode/kutil/meta"
+	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	kutildb "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	validator "github.com/kubedb/elasticsearch/pkg/admission"
 	"github.com/pkg/errors"
@@ -39,7 +40,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 
 	// Check if elasticsearchVersion is deprecated.
 	// If deprecated, add event and return nil (stop processing.)
-	elasticsearchVersion, err := c.ExtClient.ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{})
+	elasticsearchVersion, err := c.ExtClient.CatalogV1alpha1().ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -70,10 +71,10 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	if elasticsearch.Status.Phase == "" {
-		es, err := kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+		es, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
-		}, api.EnableStatusSubresource)
+		}, apis.EnableStatusSubresource)
 		if err != nil {
 			c.recorder.Eventf(
 				elasticsearch,
@@ -154,11 +155,11 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return nil
 	}
 
-	es, err := kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+	es, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = types.NewIntHash(elasticsearch.Generation, meta_util.GenerationHash(elasticsearch))
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 	if err != nil {
 		c.recorder.Eventf(
 			elasticsearch,
@@ -267,10 +268,10 @@ func (c *Controller) ensureBackupScheduler(elasticsearch *api.Elasticsearch) {
 }
 
 func (c *Controller) initialize(elasticsearch *api.Elasticsearch) error {
-	es, err := kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+	es, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.Phase = api.DatabasePhaseInitializing
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 	if err != nil {
 		c.recorder.Eventf(
 			elasticsearch,
@@ -297,7 +298,7 @@ func (c *Controller) initialize(elasticsearch *api.Elasticsearch) error {
 	if namespace == "" {
 		namespace = elasticsearch.Namespace
 	}
-	snapshot, err := c.ExtClient.Snapshots(namespace).Get(snapshotSource.Name, metav1.GetOptions{})
+	snapshot, err := c.ExtClient.KubedbV1alpha1().Snapshots(namespace).Get(snapshotSource.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -341,7 +342,7 @@ func (c *Controller) terminate(elasticsearch *api.Elasticsearch) error {
 				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
 				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
 				// So reuse that DormantDB!
-				ddb, err := c.ExtClient.DormantDatabases(elasticsearch.Namespace).Get(elasticsearch.Name, metav1.GetOptions{})
+				ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(elasticsearch.Namespace).Get(elasticsearch.Name, metav1.GetOptions{})
 				if err != nil {
 					return err
 				}
@@ -449,7 +450,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasti
 }
 
 func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
-	elasticsearch, err := c.ExtClient.Elasticsearches(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	elasticsearch, err := c.ExtClient.KubedbV1alpha1().Elasticsearches(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -458,25 +459,25 @@ func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error)
 }
 
 func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
-	elasticsearch, err := c.ExtClient.Elasticsearches(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	elasticsearch, err := c.ExtClient.KubedbV1alpha1().Elasticsearches(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	_, err = kutildb.UpdateElasticsearchStatus(c.ExtClient, elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+	_, err = util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.Phase = phase
 		in.Reason = reason
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 	return err
 }
 
 func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
-	elasticsearch, err := c.ExtClient.Elasticsearches(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	elasticsearch, err := c.ExtClient.KubedbV1alpha1().Elasticsearches(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	_, _, err = kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+	_, _, err = util.PatchElasticsearch(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
 		in.Annotations = core_util.UpsertMap(elasticsearch.Annotations, annotation)
 		return in
 	})

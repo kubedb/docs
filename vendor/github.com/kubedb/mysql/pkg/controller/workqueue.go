@@ -4,6 +4,7 @@ import (
 	"github.com/appscode/go/log"
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/tools/queue"
+	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 )
@@ -12,7 +13,7 @@ func (c *Controller) initWatcher() {
 	c.myInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().MySQLs().Informer()
 	c.myQueue = queue.New("MySQL", c.MaxNumRequeues, c.NumThreads, c.runMySQL)
 	c.myLister = c.KubedbInformerFactory.Kubedb().V1alpha1().MySQLs().Lister()
-	c.myInformer.AddEventHandler(queue.NewObservableHandler(c.myQueue.GetQueue(), api.EnableStatusSubresource))
+	c.myInformer.AddEventHandler(queue.NewObservableHandler(c.myQueue.GetQueue(), apis.EnableStatusSubresource))
 }
 
 func (c *Controller) runMySQL(key string) error {
@@ -35,14 +36,14 @@ func (c *Controller) runMySQL(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				mysql, _, err = util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
+				mysql, _, err = util.PatchMySQL(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, api.GenericKey)
 					return in
 				})
 				return err
 			}
 		} else {
-			mysql, _, err = util.PatchMySQL(c.ExtClient, mysql, func(in *api.MySQL) *api.MySQL {
+			mysql, _, err = util.PatchMySQL(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
 				return in
 			})

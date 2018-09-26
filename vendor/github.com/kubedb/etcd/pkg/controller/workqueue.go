@@ -4,6 +4,7 @@ import (
 	"github.com/appscode/go/log"
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/tools/queue"
+	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	kwatch "k8s.io/apimachinery/pkg/watch"
@@ -13,7 +14,7 @@ func (c *Controller) initWatcher() {
 	c.etcdInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Etcds().Informer()
 	c.etcdQueue = queue.New("Etcd", c.MaxNumRequeues, c.NumThreads, c.runEtcd)
 	c.etcdLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Etcds().Lister()
-	c.etcdInformer.AddEventHandler(queue.NewObservableHandler(c.etcdQueue.GetQueue(), api.EnableStatusSubresource))
+	c.etcdInformer.AddEventHandler(queue.NewObservableHandler(c.etcdQueue.GetQueue(), apis.EnableStatusSubresource))
 }
 
 func (c *Controller) runEtcd(key string) error {
@@ -41,14 +42,14 @@ func (c *Controller) runEtcd(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				etcd, _, err = util.PatchEtcd(c.ExtClient, etcd, func(in *api.Etcd) *api.Etcd {
+				etcd, _, err = util.PatchEtcd(c.ExtClient.KubedbV1alpha1(), etcd, func(in *api.Etcd) *api.Etcd {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, api.GenericKey)
 					return in
 				})
 				return err
 			}
 		} else {
-			etcd, _, err = util.PatchEtcd(c.ExtClient, etcd, func(in *api.Etcd) *api.Etcd {
+			etcd, _, err = util.PatchEtcd(c.ExtClient.KubedbV1alpha1(), etcd, func(in *api.Etcd) *api.Etcd {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
 				return in
 			})

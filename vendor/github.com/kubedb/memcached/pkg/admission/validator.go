@@ -10,7 +10,6 @@ import (
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
-	kubedbv1alpha1 "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
@@ -106,7 +105,7 @@ func (a *MemcachedValidator) Admit(req *admission.AdmissionRequest) *admission.A
 			}
 		}
 		// validate database specs
-		if err = ValidateMemcached(a.client, a.extClient.KubedbV1alpha1(), obj.(*api.Memcached)); err != nil {
+		if err = ValidateMemcached(a.client, a.extClient, obj.(*api.Memcached)); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -116,13 +115,13 @@ func (a *MemcachedValidator) Admit(req *admission.AdmissionRequest) *admission.A
 
 // ValidateMemcached checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateMemcached(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, memcached *api.Memcached) error {
+func ValidateMemcached(client kubernetes.Interface, extClient cs.Interface, memcached *api.Memcached) error {
 	if memcached.Spec.Version == "" {
 		return fmt.Errorf(`object 'Version' is missing in '%v'`, memcached.Spec)
 	}
 
 	// Check Memcached version validation
-	if _, err := extClient.MemcachedVersions().Get(string(memcached.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().MemcachedVersions().Get(string(memcached.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -155,9 +154,9 @@ func ValidateMemcached(client kubernetes.Interface, extClient kubedbv1alpha1.Kub
 	return nil
 }
 
-func matchWithDormantDatabase(extClient kubedbv1alpha1.KubedbV1alpha1Interface, memcached *api.Memcached) error {
+func matchWithDormantDatabase(extClient cs.Interface, memcached *api.Memcached) error {
 	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.DormantDatabases(memcached.Namespace).Get(memcached.Name, metav1.GetOptions{})
+	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(memcached.Namespace).Get(memcached.Name, metav1.GetOptions{})
 	if err != nil {
 		if !kerr.IsNotFound(err) {
 			return err

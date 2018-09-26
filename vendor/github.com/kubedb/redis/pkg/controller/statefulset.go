@@ -87,7 +87,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis) (*apps.StatefulSet, kut
 		return nil, kutil.VerbUnchanged, rerr
 	}
 
-	redisVersion, err := c.ExtClient.RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{})
+	redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}

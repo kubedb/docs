@@ -5,6 +5,7 @@ import (
 
 	"github.com/appscode/go/log"
 	core_util "github.com/appscode/kutil/core/v1"
+	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
@@ -28,11 +29,11 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 	if err != nil {
 		return err
 	}
-	_, err = util.UpdateEtcdStatus(c.ExtClient, etcd, func(in *api.EtcdStatus) *api.EtcdStatus {
+	_, err = util.UpdateEtcdStatus(c.ExtClient.KubedbV1alpha1(), etcd, func(in *api.EtcdStatus) *api.EtcdStatus {
 		in.Phase = phase
 		in.Reason = reason
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 	return err
 }
 
@@ -42,7 +43,7 @@ func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation
 		return err
 	}
 
-	_, _, err = util.PatchEtcd(c.ExtClient, etcd, func(in *api.Etcd) *api.Etcd {
+	_, _, err = util.PatchEtcd(c.ExtClient.KubedbV1alpha1(), etcd, func(in *api.Etcd) *api.Etcd {
 		in.Annotations = core_util.UpsertMap(etcd.Annotations, annotation)
 		return in
 	})

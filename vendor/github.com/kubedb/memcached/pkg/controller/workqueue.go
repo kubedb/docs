@@ -4,6 +4,7 @@ import (
 	"github.com/appscode/go/log"
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/tools/queue"
+	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 )
@@ -12,7 +13,7 @@ func (c *Controller) initWatcher() {
 	c.mcInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Memcacheds().Informer()
 	c.mcQueue = queue.New("Memcached", c.MaxNumRequeues, c.NumThreads, c.runMemcached)
 	c.mcLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Memcacheds().Lister()
-	c.mcInformer.AddEventHandler(queue.NewObservableHandler(c.mcQueue.GetQueue(), api.EnableStatusSubresource))
+	c.mcInformer.AddEventHandler(queue.NewObservableHandler(c.mcQueue.GetQueue(), apis.EnableStatusSubresource))
 }
 
 func (c *Controller) runMemcached(key string) error {
@@ -35,14 +36,14 @@ func (c *Controller) runMemcached(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				memcached, _, err = util.PatchMemcached(c.ExtClient, memcached, func(in *api.Memcached) *api.Memcached {
+				memcached, _, err = util.PatchMemcached(c.ExtClient.KubedbV1alpha1(), memcached, func(in *api.Memcached) *api.Memcached {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, api.GenericKey)
 					return in
 				})
 				return err
 			}
 		} else {
-			memcached, _, err = util.PatchMemcached(c.ExtClient, memcached, func(in *api.Memcached) *api.Memcached {
+			memcached, _, err = util.PatchMemcached(c.ExtClient.KubedbV1alpha1(), memcached, func(in *api.Memcached) *api.Memcached {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
 				return in
 			})

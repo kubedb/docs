@@ -7,6 +7,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/kutil"
 	meta_util "github.com/appscode/kutil/meta"
+	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -30,7 +31,7 @@ func (c *Controller) create(memcached *api.Memcached) error {
 
 	// Check if memcachedVersion is deprecated.
 	// If deprecated, add event and return nil (stop processing.)
-	memcachedVersion, err := c.ExtClient.MemcachedVersions().Get(string(memcached.Spec.Version), metav1.GetOptions{})
+	memcachedVersion, err := c.ExtClient.CatalogV1alpha1().MemcachedVersions().Get(string(memcached.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -61,10 +62,10 @@ func (c *Controller) create(memcached *api.Memcached) error {
 	}
 
 	if memcached.Status.Phase == "" {
-		mc, err := util.UpdateMemcachedStatus(c.ExtClient, memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+		mc, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
-		}, api.EnableStatusSubresource)
+		}, apis.EnableStatusSubresource)
 		if err != nil {
 			c.recorder.Eventf(
 				memcached,
@@ -105,11 +106,11 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		)
 	}
 
-	mc, err := util.UpdateMemcachedStatus(c.ExtClient, memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+	mc, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = types.NewIntHash(memcached.Generation, meta_util.GenerationHash(memcached))
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 	if err != nil {
 		c.recorder.Eventf(
 			memcached,
@@ -160,7 +161,7 @@ func (c *Controller) terminate(memcached *api.Memcached) error {
 				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
 				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
 				// So reuse that DormantDB!
-				ddb, err := c.ExtClient.DormantDatabases(memcached.Namespace).Get(memcached.Name, metav1.GetOptions{})
+				ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(memcached.Namespace).Get(memcached.Name, metav1.GetOptions{})
 				if err != nil {
 					return err
 				}

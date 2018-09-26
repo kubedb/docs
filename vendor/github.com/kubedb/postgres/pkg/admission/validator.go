@@ -10,7 +10,6 @@ import (
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
-	kubedbv1alpha1 "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
@@ -115,7 +114,7 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 			}
 		}
 		// validate database specs
-		if err = ValidatePostgres(a.client, a.extClient.KubedbV1alpha1(), obj.(*api.Postgres)); err != nil {
+		if err = ValidatePostgres(a.client, a.extClient, obj.(*api.Postgres)); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -125,11 +124,11 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 
 // ValidatePostgres checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidatePostgres(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, postgres *api.Postgres) error {
+func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postgres *api.Postgres) error {
 	if postgres.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if _, err := extClient.PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -241,9 +240,9 @@ func ValidatePostgres(client kubernetes.Interface, extClient kubedbv1alpha1.Kube
 	return nil
 }
 
-func matchWithDormantDatabase(extClient kubedbv1alpha1.KubedbV1alpha1Interface, postgres *api.Postgres) error {
+func matchWithDormantDatabase(extClient cs.Interface, postgres *api.Postgres) error {
 	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.DormantDatabases(postgres.Namespace).Get(postgres.Name, metav1.GetOptions{})
+	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(postgres.Namespace).Get(postgres.Name, metav1.GetOptions{})
 	if err != nil {
 		if !kerr.IsNotFound(err) {
 			return err

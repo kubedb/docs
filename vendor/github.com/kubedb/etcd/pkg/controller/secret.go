@@ -40,7 +40,7 @@ func (c *Controller) ensureDatabaseSecret(etcd *api.Etcd) error {
 			return err
 		}
 
-		ms, _, err := util.PatchEtcd(c.ExtClient, etcd, func(in *api.Etcd) *api.Etcd {
+		ms, _, err := util.PatchEtcd(c.ExtClient.KubedbV1alpha1(), etcd, func(in *api.Etcd) *api.Etcd {
 			in.Spec.DatabaseSecret = secretVolumeSource
 			return in
 		})

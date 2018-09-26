@@ -7,7 +7,7 @@ import (
 
 	"github.com/appscode/go/crypto/rand"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	kutildb "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"golang.org/x/crypto/bcrypt"
 	core "k8s.io/api/core/v1"
@@ -33,7 +33,7 @@ func (c *Controller) ensureCertSecret(elasticsearch *api.Elasticsearch) error {
 		if certSecretVolumeSource, err = c.createCertSecret(elasticsearch); err != nil {
 			return err
 		}
-		es, _, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+		es, _, err := util.PatchElasticsearch(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
 			in.Spec.CertificateSecret = certSecretVolumeSource
 			return in
 		})
@@ -59,7 +59,7 @@ func (c *Controller) ensureDatabaseSecret(elasticsearch *api.Elasticsearch) erro
 		if databaseSecretVolume, err = c.createDatabaseSecret(elasticsearch); err != nil {
 			return err
 		}
-		es, _, err := kutildb.PatchElasticsearch(c.ExtClient, elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+		es, _, err := util.PatchElasticsearch(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
 			in.Spec.DatabaseSecret = databaseSecretVolume
 			return in
 		})

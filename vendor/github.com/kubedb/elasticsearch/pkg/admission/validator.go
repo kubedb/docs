@@ -10,7 +10,6 @@ import (
 	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
-	kubedbv1alpha1 "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
@@ -123,7 +122,7 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 			}
 		}
 		// validate database specs
-		if err = ValidateElasticsearch(a.client, a.extClient.KubedbV1alpha1(), obj.(*api.Elasticsearch)); err != nil {
+		if err = ValidateElasticsearch(a.client, a.extClient, obj.(*api.Elasticsearch)); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -133,11 +132,11 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 
 // ValidateElasticsearch checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateElasticsearch(client kubernetes.Interface, extClient kubedbv1alpha1.KubedbV1alpha1Interface, elasticsearch *api.Elasticsearch) error {
+func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, elasticsearch *api.Elasticsearch) error {
 	if elasticsearch.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if _, err := extClient.ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -153,7 +152,7 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient kubedbv1alpha1
 		if elasticsearch.Spec.Storage != nil {
 			return errors.New("doesn't support spec.storage when spec.topology is set")
 		}
-		if elasticsearch.Spec.Resources != nil {
+		if elasticsearch.Spec.PodTemplate.Spec.Resources.Size() != 0 {
 			return errors.New("doesn't support spec.resources when spec.topology is set")
 		}
 
@@ -248,9 +247,9 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient kubedbv1alpha1
 	return nil
 }
 
-func matchWithDormantDatabase(extClient kubedbv1alpha1.KubedbV1alpha1Interface, elasticsearch *api.Elasticsearch) error {
+func matchWithDormantDatabase(extClient cs.Interface, elasticsearch *api.Elasticsearch) error {
 	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.DormantDatabases(elasticsearch.Namespace).Get(elasticsearch.Name, metav1.GetOptions{})
+	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(elasticsearch.Namespace).Get(elasticsearch.Name, metav1.GetOptions{})
 	if err != nil {
 		if !kerr.IsNotFound(err) {
 			return err

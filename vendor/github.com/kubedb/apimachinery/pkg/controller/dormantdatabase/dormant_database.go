@@ -3,6 +3,7 @@ package dormantdatabase
 import (
 	"github.com/appscode/go/encoding/json/types"
 	meta_util "github.com/appscode/kutil/meta"
+	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -15,10 +16,10 @@ func (c *Controller) create(ddb *api.DormantDatabase) error {
 		return nil
 	}
 
-	drmn, err := util.UpdateDormantDatabaseStatus(c.ExtClient, ddb, func(in *api.DormantDatabaseStatus) *api.DormantDatabaseStatus {
+	drmn, err := util.UpdateDormantDatabaseStatus(c.ExtClient.KubedbV1alpha1(), ddb, func(in *api.DormantDatabaseStatus) *api.DormantDatabaseStatus {
 		in.Phase = api.DormantDatabasePhasePausing
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 	if err != nil {
 		c.recorder.Eventf(ddb, core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
@@ -46,13 +47,13 @@ func (c *Controller) create(ddb *api.DormantDatabase) error {
 		"Successfully paused Database workload",
 	)
 
-	_, err = util.UpdateDormantDatabaseStatus(c.ExtClient, ddb, func(in *api.DormantDatabaseStatus) *api.DormantDatabaseStatus {
+	_, err = util.UpdateDormantDatabaseStatus(c.ExtClient.KubedbV1alpha1(), ddb, func(in *api.DormantDatabaseStatus) *api.DormantDatabaseStatus {
 		t := metav1.Now()
 		in.PausingTime = &t
 		in.Phase = api.DormantDatabasePhasePaused
 		in.ObservedGeneration = types.NewIntHash(ddb.Generation, meta_util.GenerationHash(ddb))
 		return in
-	}, api.EnableStatusSubresource)
+	}, apis.EnableStatusSubresource)
 	if err != nil {
 		c.recorder.Eventf(ddb, core.EventTypeWarning, eventer.EventReasonFailedToUpdate, err.Error())
 		return err
