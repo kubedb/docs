@@ -1,5 +1,5 @@
-hash: 06805ee70d732bb6967611c79e539b02089098644c24f0f604b61dbedb8dbf51
-updated: 2018-09-26T06:32:36.956038843-07:00
+hash: 4e3a0ac1bd620359cf6ee57316c8c84ded795a7f4832d7036411c73422816992
+updated: 2018-09-29T18:44:10.148024432-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -34,8 +34,9 @@ imports:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: bd70cefb33397b4c196aca7e33cab656755e195e
+  version: 5617bb0cf28a16c58d9ca41b213f086115225789
   subpackages:
+  - admissionregistration/v1beta1
   - apiextensions/v1beta1
   - apps/v1
   - core/v1
@@ -45,6 +46,7 @@ imports:
   - tools/analytics
   - tools/portforward
   - tools/queue
+  - tools/watch
 - name: github.com/appscode/mergo
   version: 9f23e2d6bd2a77f959b2bf6acdbefd708a83a4a4
 - name: github.com/appscode/ocutil
@@ -302,7 +304,7 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: 483ed62aba8976cb227e543ed9d1223a560f3278
+  version: f4533695883663ff711ccdde40901d3f252c5a97
   subpackages:
   - apis
   - apis/catalog
@@ -359,7 +361,7 @@ imports:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: b00c451ac7a0e26bcc1b3d4757e87f873413c457
+  version: 955994f1b5fd3afc3ebeac2997bd790e3a366510
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -390,7 +392,7 @@ imports:
 - name: github.com/NYTimes/gziphandler
   version: 56545f4a5d46df9a6648819d1664c3a03a13ffdb
 - name: github.com/olivere/elastic
-  version: 18b71235c09c127a0138e941e99524b93687898b
+  version: bd115a1132ece51519151c33b5d74e1387d3265a
   subpackages:
   - config
   - uritemplates
@@ -513,7 +515,7 @@ imports:
   subpackages:
   - rate
 - name: google.golang.org/api
-  version: e5ba110cb6cd042d05ea6ea2ce9dd13198c6387a
+  version: 5da02d31af7d15cc65a207f8a46a6e3c50d41178
   subpackages:
   - gensupport
   - googleapi
@@ -899,7 +901,7 @@ imports:
   - util/retry
   - util/workqueue
 - name: k8s.io/kube-openapi
-  version: e3762e86a74c878ffed47484592986685639c2cd
+  version: 9dfdf9be683f61f82cda12362c44c784e0778b56
   subpackages:
   - pkg/builder
   - pkg/common

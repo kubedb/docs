@@ -10,8 +10,8 @@ import (
 	dynamic_util "github.com/appscode/kutil/dynamic"
 	meta_util "github.com/appscode/kutil/meta"
 	"github.com/kubedb/apimachinery/apis"
-	catalogapi "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
-	dbapi "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	catalog "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
+	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	validator "github.com/kubedb/postgres/pkg/admission"
@@ -26,7 +26,7 @@ import (
 	storage "kmodules.xyz/objectstore-api/osm"
 )
 
-func (c *Controller) create(postgres *dbapi.Postgres) error {
+func (c *Controller) create(postgres *api.Postgres) error {
 	if err := validator.ValidatePostgres(c.Client, c.ExtClient, postgres); err != nil {
 		c.recorder.Event(
 			postgres,
@@ -71,8 +71,8 @@ func (c *Controller) create(postgres *dbapi.Postgres) error {
 	}
 
 	if postgres.Status.Phase == "" {
-		pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *dbapi.PostgresStatus) *dbapi.PostgresStatus {
-			in.Phase = dbapi.DatabasePhaseCreating
+		pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
+			in.Phase = api.DatabasePhaseCreating
 			return in
 		}, apis.EnableStatusSubresource)
 		if err != nil {
@@ -129,17 +129,17 @@ func (c *Controller) create(postgres *dbapi.Postgres) error {
 		)
 	}
 
-	if _, err := meta_util.GetString(postgres.Annotations, dbapi.AnnotationInitialized); err == kutil.ErrNotFound &&
+	if _, err := meta_util.GetString(postgres.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
 		postgres.Spec.Init != nil &&
 		postgres.Spec.Init.SnapshotSource != nil {
 
 		snapshotSource := postgres.Spec.Init.SnapshotSource
 
-		if postgres.Status.Phase == dbapi.DatabasePhaseInitializing {
+		if postgres.Status.Phase == api.DatabasePhaseInitializing {
 			return nil
 		}
 
-		jobName := fmt.Sprintf("%s-%s", dbapi.DatabaseNamePrefix, snapshotSource.Name)
+		jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshotSource.Name)
 		if _, err := c.Client.BatchV1().Jobs(snapshotSource.Namespace).Get(jobName, metav1.GetOptions{}); err != nil {
 			if !kerr.IsNotFound(err) {
 				return err
@@ -155,8 +155,8 @@ func (c *Controller) create(postgres *dbapi.Postgres) error {
 		return nil
 	}
 
-	pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *dbapi.PostgresStatus) *dbapi.PostgresStatus {
-		in.Phase = dbapi.DatabasePhaseRunning
+	pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
+		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = types.NewIntHash(postgres.Generation, meta_util.GenerationHash(postgres))
 		return in
 	}, apis.EnableStatusSubresource)
@@ -201,7 +201,7 @@ func (c *Controller) create(postgres *dbapi.Postgres) error {
 	return nil
 }
 
-func (c *Controller) ensurePostgresNode(postgres *dbapi.Postgres, postgresVersion *catalogapi.PostgresVersion) (kutil.VerbType, error) {
+func (c *Controller) ensurePostgresNode(postgres *api.Postgres, postgresVersion *catalog.PostgresVersion) (kutil.VerbType, error) {
 	var err error
 
 	if err = c.ensureDatabaseSecret(postgres); err != nil {
@@ -223,7 +223,7 @@ func (c *Controller) ensurePostgresNode(postgres *dbapi.Postgres, postgresVersio
 	return vt, nil
 }
 
-func (c *Controller) ensureBackupScheduler(postgres *dbapi.Postgres) {
+func (c *Controller) ensureBackupScheduler(postgres *api.Postgres) {
 	// Setup Schedule backup
 	if postgres.Spec.BackupSchedule != nil {
 		err := c.cronController.ScheduleBackup(postgres, postgres.ObjectMeta, postgres.Spec.BackupSchedule)
@@ -242,9 +242,9 @@ func (c *Controller) ensureBackupScheduler(postgres *dbapi.Postgres) {
 	}
 }
 
-func (c *Controller) initialize(postgres *dbapi.Postgres) error {
-	pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *dbapi.PostgresStatus) *dbapi.PostgresStatus {
-		in.Phase = dbapi.DatabasePhaseInitializing
+func (c *Controller) initialize(postgres *api.Postgres) error {
+	pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
+		in.Phase = api.DatabasePhaseInitializing
 		return in
 	}, apis.EnableStatusSubresource)
 	if err != nil {
@@ -297,7 +297,7 @@ func (c *Controller) initialize(postgres *dbapi.Postgres) error {
 	return nil
 }
 
-func (c *Controller) terminate(postgres *dbapi.Postgres) error {
+func (c *Controller) terminate(postgres *api.Postgres) error {
 	ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres)
 	if rerr != nil {
 		return rerr
@@ -305,7 +305,7 @@ func (c *Controller) terminate(postgres *dbapi.Postgres) error {
 
 	// If TerminationPolicy is "pause", keep everything (ie, PVCs,Secrets,Snapshots) intact.
 	// In operator, create dormantdatabase
-	if postgres.Spec.TerminationPolicy == dbapi.TerminationPolicyPause {
+	if postgres.Spec.TerminationPolicy == api.TerminationPolicyPause {
 		if err := c.removeOwnerReferenceFromOffshoots(postgres, ref); err != nil {
 			return err
 		}
@@ -320,7 +320,7 @@ func (c *Controller) terminate(postgres *dbapi.Postgres) error {
 				if err != nil {
 					return err
 				}
-				if val, _ := meta_util.GetStringValue(ddb.Labels, dbapi.LabelDatabaseKind); val != dbapi.ResourceKindPostgres {
+				if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindPostgres {
 					return fmt.Errorf(`DormantDatabase "%s/%s" of kind %v already exists`, postgres.Namespace, postgres.Name, val)
 				}
 			} else {
@@ -347,15 +347,15 @@ func (c *Controller) terminate(postgres *dbapi.Postgres) error {
 	return nil
 }
 
-func (c *Controller) setOwnerReferenceToOffshoots(postgres *dbapi.Postgres, ref *core.ObjectReference) error {
+func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, ref *core.ObjectReference) error {
 	selector := labels.SelectorFromSet(postgres.OffshootSelectors())
 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
-	if postgres.Spec.TerminationPolicy == dbapi.TerminationPolicyWipeOut {
+	if postgres.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
 		if err := dynamic_util.EnsureOwnerReferenceForSelector(
 			c.DynamicClient,
-			dbapi.SchemeGroupVersion.WithResource(dbapi.ResourcePluralSnapshot),
+			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 			postgres.Namespace,
 			selector,
 			ref); err != nil {
@@ -372,7 +372,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *dbapi.Postgres, ref 
 		// Make sure snapshot and secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForSelector(
 			c.DynamicClient,
-			dbapi.SchemeGroupVersion.WithResource(dbapi.ResourcePluralSnapshot),
+			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 			postgres.Namespace,
 			selector,
 			ref); err != nil {
@@ -396,13 +396,13 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *dbapi.Postgres, ref 
 		ref)
 }
 
-func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *dbapi.Postgres, ref *core.ObjectReference) error {
+func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *api.Postgres, ref *core.ObjectReference) error {
 	// First, Get LabelSelector for Other Components
 	labelSelector := labels.SelectorFromSet(postgres.OffshootSelectors())
 
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
 		c.DynamicClient,
-		dbapi.SchemeGroupVersion.WithResource(dbapi.ResourcePluralSnapshot),
+		api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 		postgres.Namespace,
 		labelSelector,
 		ref); err != nil {
@@ -436,12 +436,12 @@ func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error)
 	return postgres, nil
 }
 
-func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase dbapi.DatabasePhase, reason string) error {
+func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
 	postgres, err := c.ExtClient.KubedbV1alpha1().Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	_, err = util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *dbapi.PostgresStatus) *dbapi.PostgresStatus {
+	_, err = util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = phase
 		in.Reason = reason
 		return in
@@ -455,7 +455,7 @@ func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation
 		return err
 	}
 
-	_, _, err = util.PatchPostgres(c.ExtClient.KubedbV1alpha1(), postgres, func(in *dbapi.Postgres) *dbapi.Postgres {
+	_, _, err = util.PatchPostgres(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
 		in.Annotations = core_util.UpsertMap(postgres.Annotations, annotation)
 		return in
 	})

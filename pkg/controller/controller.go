@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/appscode/go/log"
+	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	catalogapi "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
@@ -20,6 +21,7 @@ import (
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 type Controller struct {
@@ -36,9 +38,12 @@ type Controller struct {
 	edCtrl *edc.Controller
 	rdCtrl *rdc.Controller
 	mcCtrl *mcc.Controller
+
+	clientConfig *rest.Config
 }
 
 func New(
+	clientConfig *rest.Config,
 	client kubernetes.Interface,
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
 	dbClient cs.Interface,
@@ -57,6 +62,7 @@ func New(
 		Config:         opt,
 		promClient:     promClient,
 		cronController: cronController,
+		clientConfig:   clientConfig,
 	}
 }
 
@@ -83,4 +89,10 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		catalogapi.MemcachedVersion{}.CustomResourceDefinition(),
 	}
 	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
+}
+
+func (c *Controller) UpdateWebhookCABundle() (err error) {
+	err = reg_util.UpdateMutatingWebhookCABundle(c.clientConfig, mutatingWebhook)
+	err = reg_util.UpdateValidatingWebhookCABundle(c.clientConfig, validatingWebhook)
+	return
 }

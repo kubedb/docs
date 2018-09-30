@@ -149,7 +149,10 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 
 	if postgres.Spec.StandbyMode != nil {
 		standByMode := *postgres.Spec.StandbyMode
-		if standByMode != api.HotStandby && standByMode != api.WarmStandby {
+		if standByMode != api.HotPostgresStandbyMode &&
+			standByMode != api.WarmPostgresStandbyMode &&
+			standByMode != api.DeprecatedHotStandby &&
+			standByMode != api.DeprecatedWarmStandby {
 			return fmt.Errorf(`spec.standbyMode "%s" invalid`, standByMode)
 		}
 	}
@@ -157,7 +160,9 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	if postgres.Spec.StreamingMode != nil {
 		streamingMode := *postgres.Spec.StreamingMode
 		// TODO: synchronous Streaming is unavailable due to lack of support
-		if streamingMode != api.AsynchronousStreaming {
+		if streamingMode != api.AsynchronousPostgresStreamingMode &&
+			streamingMode != api.SynchronousPostgresStreamingMode &&
+			streamingMode != api.DeprecatedAsynchronousStreaming {
 			return fmt.Errorf(`spec.streamingMode "%s" invalid`, streamingMode)
 		}
 	}
