@@ -4,19 +4,30 @@ import (
 	"net/http"
 
 	"github.com/appscode/go/log"
+	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+)
+
+const (
+	opsAdress         = ":8080"
+	mutatingWebhook   = "mutators.kubedb.com"
+	validatingWebhook = "validators.kubedb.com"
 )
 
 // Blocks caller. Intended to be called as a Go routine.
 func (c *Controller) Run(stopCh <-chan struct{}) {
 	go c.StartAndRunControllers(stopCh)
 
+	cancel1, _ := reg_util.SyncMutatingWebhookCABundle(c.clientConfig, mutatingWebhook)
+	cancel2, _ := reg_util.SyncValidatingWebhookCABundle(c.clientConfig, validatingWebhook)
+
 	<-stopCh
+
+	cancel1()
+	cancel2()
 	c.cronController.StopCron()
 }
-
-const opsAdress = ":8080"
 
 // StartAndRunControllers starts InformetFactory and runs queue.worker
 func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {

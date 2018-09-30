@@ -47,6 +47,7 @@ func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
 func (c *OperatorConfig) New() (*Controller, error) {
 	// define all the controllers
 	ctrl := New(
+		c.ClientConfig,
 		c.KubeClient,
 		c.APIExtKubeClient,
 		c.DBClient,
@@ -77,6 +78,9 @@ func (c *OperatorConfig) New() (*Controller, error) {
 // InitInformer initializes MongoDB, DormantDB amd Snapshot watcher
 func (c *Controller) Init() error {
 	if err := c.EnsureCustomResourceDefinitions(); err != nil {
+		return err
+	}
+	if err := c.UpdateWebhookCABundle(); err != nil {
 		return err
 	}
 	if err := c.pgCtrl.Init(); err != nil {
