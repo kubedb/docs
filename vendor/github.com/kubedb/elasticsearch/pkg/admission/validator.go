@@ -324,6 +324,7 @@ var preconditionSpecFields = []string{
 	"spec.topology.*.storage",
 	"spec.enableSSL",
 	"spec.certificateSecret",
+	"spec.authPlugin",
 	"spec.databaseSecret",
 	"spec.storageType",
 	"spec.storage",

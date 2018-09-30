@@ -1,5 +1,5 @@
-hash: 4e3a0ac1bd620359cf6ee57316c8c84ded795a7f4832d7036411c73422816992
-updated: 2018-09-29T18:44:10.148024432-07:00
+hash: 99584ffc5c6a9c3da46e464600c9f19cd896f9b48c2b2890187db043fad30a15
+updated: 2018-09-30T00:01:51.749126962-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -34,7 +34,7 @@ imports:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 5617bb0cf28a16c58d9ca41b213f086115225789
+  version: 8098faaaba7e4781cbaecf630c8583be1b58d36c
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1
@@ -304,7 +304,7 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: f4533695883663ff711ccdde40901d3f252c5a97
+  version: b93e1eba97539a3eefeae622b05f79b3365d1d28
   subpackages:
   - apis
   - apis/catalog
@@ -334,40 +334,40 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: cd1d09ef2973993c17d62461e563a9ba2ce1defc
+  version: 9476ec693f26b7dd061651b71b85b8e6d0fc0188
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util/es
 - name: github.com/kubedb/etcd
-  version: 7ec0604164cccb95cde90bea152dad8a10d6495c
+  version: b31abbe2cb252b44bf379eed5b9c326c25d9dab5
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: 24eb5df16960d17128b12612867746cf0e35a69d
+  version: 3cdcfe7e6aa9f3d16b753b6d3c961d331fb64bc1
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: 69c12fae45a84d2be8c4dc9bee1db833cf029af7
+  version: 1ed8cdc6eae69961ce1c4603e48333bfb3521c56
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 2f850243f447e02bb554c24a59b66bb9e300a2aa
+  version: a79ff03b350db4b66c6d564c12e7c784d048d3b7
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: 955994f1b5fd3afc3ebeac2997bd790e3a366510
+  version: 70e8f6cb4d2df05274d1335be6249eb2d55b05c3
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: 6dc923cbd87e5bebb013ac213ea726881212ced8
+  version: fda87f37aba16ef1d166aa5e0558b294360c514a
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -434,15 +434,13 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/russross/blackfriday
-  version: 300106c228d52c8941d4b3de6054a6062a86dda3
+  version: 4048872b16cc0fc2c5fd9eacf0ed2c2fedaa0c8c
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/sergi/go-diff
   version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
   subpackages:
   - diffmatchpatch
-- name: github.com/shurcooL/sanitized_anchor_name
-  version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 - name: github.com/sirupsen/logrus
   version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - name: github.com/spf13/cobra
@@ -574,7 +572,7 @@ imports:
   repo: https://github.com/appscode/cron.git
   vcs: git
 - name: gopkg.in/yaml.v2
-  version: 670d4cfef0544295bc27a114dbac37980d83185a
+  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/api
   version: 4e7be11eab3ffcfc1876898b8272df53785a9504
   subpackages:

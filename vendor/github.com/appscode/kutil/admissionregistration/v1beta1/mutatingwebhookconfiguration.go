@@ -10,7 +10,6 @@ import (
 	"github.com/pkg/errors"
 	reg "k8s.io/api/admissionregistration/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -117,9 +116,6 @@ func UpdateMutatingWebhookCABundle(config *rest.Config, name string) error {
 		&reg.MutatingWebhookConfiguration{},
 		nil,
 		func(event watch.Event) (bool, error) {
-			a, _ := meta.Accessor(event.Object)
-			fmt.Println(event.Type, a.GetName())
-
 			switch event.Type {
 			case watch.Deleted:
 				return false, nil
@@ -168,9 +164,6 @@ func SyncMutatingWebhookCABundle(config *rest.Config, name string) (cancel conte
 		&reg.MutatingWebhookConfiguration{},
 		nil,
 		func(event watch.Event) (bool, error) {
-			a, _ := meta.Accessor(event.Object)
-			fmt.Println(event.Type, a.GetName())
-
 			switch event.Type {
 			case watch.Deleted:
 				return false, nil

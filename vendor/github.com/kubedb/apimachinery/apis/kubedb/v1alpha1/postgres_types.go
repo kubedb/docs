@@ -189,5 +189,5 @@ const (
 	AsynchronousPostgresStreamingMode PostgresStreamingMode = "Asynchronous"
 
 	// Deprecated
-	DeprecatedAsynchronousStreaming   PostgresStreamingMode = "asynchronous"
+	DeprecatedAsynchronousStreaming PostgresStreamingMode = "asynchronous"
 )

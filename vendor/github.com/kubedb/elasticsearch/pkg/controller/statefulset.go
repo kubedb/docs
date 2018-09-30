@@ -409,13 +409,20 @@ func upsertEnv(statefulSet *apps.StatefulSet, elasticsearch *dbapi.Elasticsearch
 				},
 			},
 		},
-		{
-			Name:  "SEARCHGUARD_DISABLED",
-			Value: fmt.Sprintf("%v", elasticsearch.SearchGuardDisabled()),
-		},
 	}
-
 	envList = append(envList, envs...)
+
+	if elasticsearch.Spec.AuthPlugin == dbapi.ElasticsearchAuthPluginSearchGuard {
+		envList = append(envList, core.EnvVar{
+			Name:  "SEARCHGUARD_DISABLED",
+			Value: "false",
+		})
+	} else if elasticsearch.Spec.AuthPlugin == dbapi.ElasticsearchAuthPluginNone {
+		envList = append(envList, core.EnvVar{
+			Name:  "SEARCHGUARD_DISABLED",
+			Value: "true",
+		})
+	}
 
 	// To do this, Upsert Container first
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
