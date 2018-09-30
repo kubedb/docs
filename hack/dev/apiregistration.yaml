@@ -35,12 +35,29 @@ subsets:
 apiVersion: apiregistration.k8s.io/v1beta1
 kind: APIService
 metadata:
-  name: v1alpha1.admission.kubedb.com
+  name: v1alpha1.validators.kubedb.com
   labels:
     app: kubedb
 spec:
   insecureSkipTLSVerify: true
-  group: admission.kubedb.com
+  group: validators.kubedb.com
+  groupPriorityMinimum: 1000
+  versionPriority: 15
+  service:
+    name: kubedb-operator
+    namespace: ${KUBEDB_NAMESPACE}
+  version: v1alpha1
+---
+# register as aggregated apiserver
+apiVersion: apiregistration.k8s.io/v1beta1
+kind: APIService
+metadata:
+  name: v1alpha1.mutators.kubedb.com
+  labels:
+    app: kubedb
+spec:
+  insecureSkipTLSVerify: true
+  group: mutators.kubedb.com
   groupPriorityMinimum: 1000
   versionPriority: 15
   service:
