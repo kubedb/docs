@@ -141,7 +141,10 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 						Protocol:      core.ProtocolTCP,
 					},
 				},
-				Resources: mongodb.Spec.PodTemplate.Spec.Resources,
+				Resources:      mongodb.Spec.PodTemplate.Spec.Resources,
+				LivenessProbe:  mongodb.Spec.PodTemplate.Spec.LivenessProbe,
+				ReadinessProbe: mongodb.Spec.PodTemplate.Spec.ReadinessProbe,
+				Lifecycle:      mongodb.Spec.PodTemplate.Spec.Lifecycle,
 			})
 
 		in = c.upsertInstallInitContainer(in, mongodb, mongodbVersion)

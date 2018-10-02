@@ -64,9 +64,12 @@ func (c *Controller) ensureStatefulSet(
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 			in.Spec.Template.Spec.Containers,
 			core.Container{
-				Name:      api.ResourceSingularPostgres,
-				Image:     postgresVersion.Spec.DB.Image,
-				Resources: postgres.Spec.PodTemplate.Spec.Resources,
+				Name:           api.ResourceSingularPostgres,
+				Image:          postgresVersion.Spec.DB.Image,
+				Resources:      postgres.Spec.PodTemplate.Spec.Resources,
+				LivenessProbe:  postgres.Spec.PodTemplate.Spec.LivenessProbe,
+				ReadinessProbe: postgres.Spec.PodTemplate.Spec.ReadinessProbe,
+				Lifecycle:      postgres.Spec.PodTemplate.Spec.Lifecycle,
 				SecurityContext: &core.SecurityContext{
 					Privileged: types.BoolP(false),
 					Capabilities: &core.Capabilities{

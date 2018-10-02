@@ -120,7 +120,10 @@ func (c *Controller) createStatefulSet(redis *api.Redis) (*apps.StatefulSet, kut
 					Protocol:      core.ProtocolTCP,
 				},
 			},
-			Resources: redis.Spec.PodTemplate.Spec.Resources,
+			Resources:      redis.Spec.PodTemplate.Spec.Resources,
+			LivenessProbe:  redis.Spec.PodTemplate.Spec.LivenessProbe,
+			ReadinessProbe: redis.Spec.PodTemplate.Spec.ReadinessProbe,
+			Lifecycle:      redis.Spec.PodTemplate.Spec.Lifecycle,
 		})
 		if redis.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{

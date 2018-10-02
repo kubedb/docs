@@ -12,6 +12,7 @@ import (
 
 	"github.com/appscode/go/ioutil"
 	core_util "github.com/appscode/kutil/core/v1"
+	"github.com/appscode/kutil/tools/clientcmd"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -55,6 +56,7 @@ func RunLeaderElection() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	clientcmd.Fix(config)
 
 	kubeClient, err := kubernetes.NewForConfig(config)
 	if err != nil {

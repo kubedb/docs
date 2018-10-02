@@ -112,7 +112,10 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 					Protocol:      core.ProtocolTCP,
 				},
 			},
-			Resources: memcached.Spec.PodTemplate.Spec.Resources,
+			Resources:      memcached.Spec.PodTemplate.Spec.Resources,
+			LivenessProbe:  memcached.Spec.PodTemplate.Spec.LivenessProbe,
+			ReadinessProbe: memcached.Spec.PodTemplate.Spec.ReadinessProbe,
+			Lifecycle:      memcached.Spec.PodTemplate.Spec.Lifecycle,
 		})
 		if memcached.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
