@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/appscode/go/log/golog"
+	"github.com/appscode/kutil/discovery"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
 	amc "github.com/kubedb/apimachinery/pkg/controller"
@@ -45,6 +46,10 @@ func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
 }
 
 func (c *OperatorConfig) New() (*Controller, error) {
+	if err := discovery.IsDefaultSupportedVersion(c.KubeClient); err != nil {
+		return nil, err
+	}
+
 	// define all the controllers
 	ctrl := New(
 		c.ClientConfig,
