@@ -144,6 +144,7 @@ func (c *Controller) createPod(cluster *api.Etcd, members util.MemberSet, m *uti
 				},
 			},
 			Resources: cluster.Spec.PodTemplate.Spec.Resources,
+			Lifecycle: cluster.Spec.PodTemplate.Spec.Lifecycle,
 		}
 		var volumes []core.Volume
 		if m.SecurePeer {

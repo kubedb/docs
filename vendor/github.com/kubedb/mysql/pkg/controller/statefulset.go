@@ -129,6 +129,9 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 			ImagePullPolicy: core.PullIfNotPresent,
 			Args:            mysql.Spec.PodTemplate.Spec.Args,
 			Resources:       mysql.Spec.PodTemplate.Spec.Resources,
+			LivenessProbe:   mysql.Spec.PodTemplate.Spec.LivenessProbe,
+			ReadinessProbe:  mysql.Spec.PodTemplate.Spec.ReadinessProbe,
+			Lifecycle:       mysql.Spec.PodTemplate.Spec.Lifecycle,
 			Ports: []core.ContainerPort{
 				{
 					Name:          "db",

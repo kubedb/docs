@@ -128,6 +128,11 @@ type PodSpec struct {
 	// More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes
 	// +optional
 	ReadinessProbe *core.Probe `json:"readinessProbe,omitempty"`
+
+	// Actions that the management system should take in response to container lifecycle events.
+	// Cannot be updated.
+	// +optional
+	Lifecycle *core.Lifecycle `json:"lifecycle,omitempty"`
 }
 
 // ServiceTemplateSpec describes the data a service should have when created from a template
@@ -145,6 +150,12 @@ type ServiceTemplateSpec struct {
 
 // ServiceSpec describes the attributes that a user creates on a service.
 type ServiceSpec struct {
+	// The list of ports that are exposed by this service.
+	// More info: https://kubernetes.io/docs/concepts/services-networking/service/#virtual-ips-and-service-proxies
+	// +patchMergeKey=port
+	// +patchStrategy=merge
+	Ports []ServicePort `json:"ports,omitempty" patchStrategy:"merge" patchMergeKey:"port"`
+
 	// clusterIP is the IP address of the service and is usually assigned
 	// randomly by the master. If an address is specified manually and is not in
 	// use by others, it will be allocated to the service; otherwise, creation
@@ -213,4 +224,41 @@ type ServiceSpec struct {
 	// and ExternalTrafficPolicy is set to Local.
 	// +optional
 	HealthCheckNodePort int32 `json:"healthCheckNodePort,omitempty"`
+}
+
+// ServicePort contains information on service's port.
+type ServicePort struct {
+	// The name of this port within the service. This must be a DNS_LABEL.
+	// All ports within a ServiceSpec must have unique names. This maps to
+	// the 'Name' field in EndpointPort objects.
+	// Optional if only one ServicePort is defined on this service.
+	// +optional
+	Name string `json:"name,omitempty"`
+
+	// The port that will be exposed by this service.
+	Port int32 `json:"port"`
+}
+
+func MergeServicePorts(cur []core.ServicePort, desired []ServicePort) []core.ServicePort {
+	if len(desired) == 0 {
+		return cur
+	}
+
+	// ports
+	desiredPorts := make(map[string]int32)
+	for _, p := range desired {
+		if len(p.Name) == 0 {
+			continue
+		}
+		desiredPorts[p.Name] = p.Port
+	}
+	for i, cp := range cur {
+		port, ok := desiredPorts[cp.Name]
+		// svc port not found
+		if !ok {
+			continue
+		}
+		cur[i].Port = port
+	}
+	return cur
 }

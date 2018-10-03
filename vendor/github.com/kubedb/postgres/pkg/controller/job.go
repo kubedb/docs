@@ -92,7 +92,10 @@ func (c *Controller) createRestoreJob(postgres *api.Postgres, snapshot *api.Snap
 									Value: c.AnalyticsClientID,
 								},
 							},
-							Resources: snapshot.Spec.PodTemplate.Spec.Resources,
+							Resources:      snapshot.Spec.PodTemplate.Spec.Resources,
+							LivenessProbe:  snapshot.Spec.PodTemplate.Spec.LivenessProbe,
+							ReadinessProbe: snapshot.Spec.PodTemplate.Spec.ReadinessProbe,
+							Lifecycle:      snapshot.Spec.PodTemplate.Spec.Lifecycle,
 							VolumeMounts: []core.VolumeMount{
 								{
 									Name:      persistentVolume.Name,
@@ -233,7 +236,10 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 									Value: c.AnalyticsClientID,
 								},
 							},
-							Resources: snapshot.Spec.PodTemplate.Spec.Resources,
+							Resources:      snapshot.Spec.PodTemplate.Spec.Resources,
+							LivenessProbe:  snapshot.Spec.PodTemplate.Spec.LivenessProbe,
+							ReadinessProbe: snapshot.Spec.PodTemplate.Spec.ReadinessProbe,
+							Lifecycle:      snapshot.Spec.PodTemplate.Spec.Lifecycle,
 							VolumeMounts: []core.VolumeMount{
 								{
 									Name:      persistentVolume.Name,

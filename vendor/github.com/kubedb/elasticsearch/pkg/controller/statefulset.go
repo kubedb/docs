@@ -100,7 +100,10 @@ func (c *Controller) ensureStatefulSet(
 						Add: []core.Capability{"IPC_LOCK", "SYS_RESOURCE"},
 					},
 				},
-				Resources: resources,
+				Resources:      resources,
+				LivenessProbe:  elasticsearch.Spec.PodTemplate.Spec.LivenessProbe,
+				ReadinessProbe: elasticsearch.Spec.PodTemplate.Spec.ReadinessProbe,
+				Lifecycle:      elasticsearch.Spec.PodTemplate.Spec.Lifecycle,
 			})
 		in = upsertEnv(in, elasticsearch, envList)
 		in = upsertUserEnv(in, elasticsearch)
