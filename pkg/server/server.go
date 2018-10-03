@@ -6,6 +6,7 @@ import (
 
 	hooks "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
 	admissionreview "github.com/appscode/kubernetes-webhook-util/registry/admissionreview/v1beta1"
+	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/admission/dormantdatabase"
 	"github.com/kubedb/apimachinery/pkg/admission/namespace"
 	"github.com/kubedb/apimachinery/pkg/admission/snapshot"
@@ -121,7 +122,17 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 		&rdAdmsn.RedisMutator{},
 		&mcAdmsn.MemcachedValidator{},
 		&mcAdmsn.MemcachedMutator{},
-		&namespace.NamespaceValidator{},
+		&namespace.NamespaceValidator{
+			Resources: []string{
+				api.ResourcePluralElasticsearch,
+				api.ResourcePluralEtcd,
+				api.ResourcePluralMemcached,
+				api.ResourcePluralMongoDB,
+				api.ResourcePluralMySQL,
+				api.ResourcePluralPostgres,
+				api.ResourcePluralRedis,
+			},
+		},
 	}
 	ctrl, err := c.OperatorConfig.New()
 	if err != nil {

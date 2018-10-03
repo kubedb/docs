@@ -1,5 +1,5 @@
 hash: 86897fd2ed995b48c5dbd8f0cf736220b559d2c073ed1725b698b70c81168696
-updated: 2018-10-02T18:32:19.581344629-07:00
+updated: 2018-10-02T22:58:21.041776564-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -317,7 +317,7 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: 983c7b0e1014256f33bfa30d3131c640d972f2e0
+  version: 639d949f74aeed5fe7ea760dc51c6e6ef537e942
   subpackages:
   - apis
   - apis/catalog
@@ -586,7 +586,7 @@ imports:
   repo: https://github.com/appscode/cron.git
   vcs: git
 - name: gopkg.in/yaml.v2
-  version: 670d4cfef0544295bc27a114dbac37980d83185a
+  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/api
   version: 4e7be11eab3ffcfc1876898b8272df53785a9504
   subpackages:
@@ -944,7 +944,7 @@ imports:
   - api/v1
   - osm
 - name: kmodules.xyz/offshoot-api
-  version: 2051fc8d05f53e96ac787faa30995278be6721d9
+  version: 19332f50ff9b7d684402d5a9e604815391f5900b
   repo: https://github.com/kmodules/offshoot-api.git
   vcs: git
   subpackages:

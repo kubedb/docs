@@ -18,6 +18,7 @@ import (
 )
 
 type NamespaceValidator struct {
+	Resources   []string
 	dc          dynamic.Interface
 	lock        sync.RWMutex
 	initialized bool
@@ -69,18 +70,9 @@ func (a *NamespaceValidator) Admit(req *admission.AdmissionRequest) *admission.A
 	case admission.Delete:
 		if req.Name != "" {
 			var wg sync.WaitGroup
-			resources := []string{
-				api.ResourcePluralElasticsearch,
-				api.ResourcePluralEtcd,
-				api.ResourcePluralMemcached,
-				api.ResourcePluralMongoDB,
-				api.ResourcePluralMySQL,
-				api.ResourcePluralPostgres,
-				api.ResourcePluralRedis,
-			}
 
-			results := make([]error, len(resources))
-			for idx, resource := range resources {
+			results := make([]error, len(a.Resources))
+			for idx, resource := range a.Resources {
 				// Increment the WaitGroup counter.
 				wg.Add(1)
 				// Launch a goroutine to check a database kind.

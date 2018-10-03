@@ -273,6 +273,13 @@ func schema_kmodulesxyz_offshoot_api_api_v1_ServicePort(ref common.ReferenceCall
 							Format:      "int32",
 						},
 					},
+					"nodePort": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The port on each node on which this service is exposed when type=NodePort or LoadBalancer. Usually assigned by the system. If specified, it will be allocated to the service if unused or else creation of the service will fail. Default is to auto-allocate a port if the ServiceType of this Service requires one. More info: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport",
+							Type:        []string{"integer"},
+							Format:      "int32",
+						},
+					},
 				},
 				Required: []string{"port"},
 			},
