@@ -237,6 +237,14 @@ type ServicePort struct {
 
 	// The port that will be exposed by this service.
 	Port int32 `json:"port"`
+
+	// The port on each node on which this service is exposed when type=NodePort or LoadBalancer.
+	// Usually assigned by the system. If specified, it will be allocated to the service
+	// if unused or else creation of the service will fail.
+	// Default is to auto-allocate a port if the ServiceType of this Service requires one.
+	// More info: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+	// +optional
+	NodePort int32 `json:"nodePort,omitempty"`
 }
 
 func MergeServicePorts(cur []core.ServicePort, desired []ServicePort) []core.ServicePort {
@@ -245,20 +253,25 @@ func MergeServicePorts(cur []core.ServicePort, desired []ServicePort) []core.Ser
 	}
 
 	// ports
-	desiredPorts := make(map[string]int32)
+	desiredPorts := make(map[string]ServicePort)
 	for _, p := range desired {
 		if len(p.Name) == 0 {
 			continue
 		}
-		desiredPorts[p.Name] = p.Port
+		desiredPorts[p.Name] = p
 	}
 	for i, cp := range cur {
-		port, ok := desiredPorts[cp.Name]
+		dp, ok := desiredPorts[cp.Name]
 		// svc port not found
 		if !ok {
 			continue
 		}
-		cur[i].Port = port
+		if dp.Port > 0 {
+			cur[i].Port = dp.Port
+		}
+		if dp.NodePort > 0 {
+			cur[i].NodePort = dp.NodePort
+		}
 	}
 	return cur
 }
