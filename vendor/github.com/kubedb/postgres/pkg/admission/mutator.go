@@ -159,9 +159,6 @@ func setDefaultsFromDormantDB(extClient cs.Interface, postgres *api.Postgres) er
 		ddbOriginSpec.BackupSchedule = postgres.Spec.BackupSchedule
 	}
 
-	// Skip checking DoNotPause
-	ddbOriginSpec.DoNotPause = postgres.Spec.DoNotPause
-
 	// Skip checking UpdateStrategy
 	ddbOriginSpec.UpdateStrategy = postgres.Spec.UpdateStrategy
 

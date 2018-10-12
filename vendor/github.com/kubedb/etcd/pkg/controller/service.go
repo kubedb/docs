@@ -17,6 +17,7 @@ import (
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 const TolerateUnreadyEndpointsAnnotation = "service.alpha.kubernetes.io/tolerate-unready-endpoints"
@@ -69,7 +70,10 @@ func createService(kubecli kubernetes.Interface, svcName, clusterIP string, port
 		in.Annotations[TolerateUnreadyEndpointsAnnotation] = "true"
 
 		in.Spec.Selector = etcd.OffshootSelectors()
-		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, ports)
+		in.Spec.Ports = ofst.MergeServicePorts(
+			core_util.MergeServicePorts(in.Spec.Ports, ports),
+			etcd.Spec.ServiceTemplate.Spec.Ports,
+		)
 
 		in.Spec.ClusterIP = clusterIP
 		if etcd.Spec.ServiceTemplate.Spec.Type != "" {

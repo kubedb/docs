@@ -1,5 +1,5 @@
-hash: 86897fd2ed995b48c5dbd8f0cf736220b559d2c073ed1725b698b70c81168696
-updated: 2018-10-02T22:58:21.041776564-07:00
+hash: ce114352883084067ecb9f25697e6d96d90d4c32af1f07a73e30642b8d3dd6b0
+updated: 2018-10-12T08:06:30.622261981-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -21,6 +21,7 @@ imports:
   - ioutil
   - log
   - log/golog
+  - net
   - runtime
   - sets
   - strings
@@ -36,10 +37,11 @@ imports:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: ab4a23e683a5b1c2d7f23f49b30c0316de8c7f94
+  version: cbd53e2bd56256ebdbc5d9e2b33e68dfebcc5f7c
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1
+  - apiregistration/v1beta1
   - apps/v1
   - core/v1
   - discovery
@@ -221,7 +223,7 @@ imports:
 - name: github.com/evanphx/json-patch
   version: 94e38aa1586e8a6c8a75770bddf5ff84c48a106b
 - name: github.com/fatih/structs
-  version: 4966fc68f5b7593aafa6cbbba2d65ec6e1416047
+  version: 878a968ab22548362a09bdb3322f98b00f470d46
 - name: github.com/fsnotify/fsnotify
   version: f12c6236fe7b5cf6bcf30e5935d08cb079d78334
 - name: github.com/ghodss/yaml
@@ -317,24 +319,32 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: 639d949f74aeed5fe7ea760dc51c6e6ef537e942
+  version: e3eb6d136773c2cb5edf4a89636aa8a2583cff73
   subpackages:
   - apis
+  - apis/authorization
+  - apis/authorization/v1alpha1
   - apis/catalog
   - apis/catalog/v1alpha1
+  - apis/config/v1alpha1
   - apis/kubedb
   - apis/kubedb/v1alpha1
   - client/clientset/versioned
   - client/clientset/versioned/scheme
+  - client/clientset/versioned/typed/authorization/v1alpha1
   - client/clientset/versioned/typed/catalog/v1alpha1
+  - client/clientset/versioned/typed/config/v1alpha1
   - client/clientset/versioned/typed/kubedb/v1alpha1
   - client/clientset/versioned/typed/kubedb/v1alpha1/util
   - client/informers/externalversions
+  - client/informers/externalversions/authorization
+  - client/informers/externalversions/authorization/v1alpha1
   - client/informers/externalversions/catalog
   - client/informers/externalversions/catalog/v1alpha1
   - client/informers/externalversions/internalinterfaces
   - client/informers/externalversions/kubedb
   - client/informers/externalversions/kubedb/v1alpha1
+  - client/listers/authorization/v1alpha1
   - client/listers/catalog/v1alpha1
   - client/listers/kubedb/v1alpha1
   - pkg/admission
@@ -348,40 +358,40 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: e5392f4cfc18d01da5823ea58f5b2d2c500f2b6e
+  version: eaf05867e227c288bf16b36e582c48f3a29335a1
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util/es
 - name: github.com/kubedb/etcd
-  version: 3e4033c0f5398dfa08658b245125937eb74090c6
+  version: 119b689bdee79917124d0f3c347e1a19b31163fb
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: 538047c0ee4512a35910dd4dce0807f7962400c0
+  version: a426000fc03ee6978c138c578cfa83e166cd3ebd
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: dd034c96d67494fb7a19201298f60efc7d4dadc0
+  version: 2945d2ed33e5279452961a0aea31660ccc9760fc
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: aed12bf570558a0fa53f29692f3dc5df8536c870
+  version: 145bba2b9b64247af9c3266cfdd60318cb6b0c43
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: fd97b6a20d1093802695e551ecef8524ee8e0f47
+  version: 11faceee0469816890130f81f8add9ac1bfc5c78
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: b3a1559ce11ec825649d6f5d066bba5bfd77be8e
+  version: 679fb62d4b7f5cc71d83576768a0cf8727da86ab
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -402,11 +412,11 @@ imports:
 - name: github.com/modern-go/reflect2
   version: 05fbef0ca5da472bbf96c9322b84a53edc03c9fd
 - name: github.com/ncw/swift
-  version: 7854abff473c41fdde529ebe4cf7db6334dd61ce
+  version: 6f907bcc698fc1d24fa918255b18c6c5668b8b2b
 - name: github.com/NYTimes/gziphandler
   version: 56545f4a5d46df9a6648819d1664c3a03a13ffdb
 - name: github.com/olivere/elastic
-  version: bd115a1132ece51519151c33b5d74e1387d3265a
+  version: f0e3221bfd8ed0eb75549cadf670db7ccb88b7f3
   subpackages:
   - config
   - uritemplates
@@ -450,7 +460,7 @@ imports:
 - name: github.com/russross/blackfriday
   version: 4048872b16cc0fc2c5fd9eacf0ed2c2fedaa0c8c
 - name: github.com/satori/go.uuid
-  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+  version: 36e9d2ebbde5e3f13ab2e25625fd453271d6522e
 - name: github.com/sergi/go-diff
   version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
   subpackages:
@@ -527,14 +537,14 @@ imports:
   subpackages:
   - rate
 - name: google.golang.org/api
-  version: f5c49d98d21cc639f7ba8c7e4b127e88ee2af7ed
+  version: 72df7e5ac770e49326116145ee04771cf1913a73
   subpackages:
   - gensupport
   - googleapi
   - googleapi/internal/uritemplates
   - storage/v1
 - name: google.golang.org/appengine
-  version: 12d5545dc1cfa6047a286d5e853841b6471f4c19
+  version: ae0ab99deb4dc413a2b4bd6c8bdd0eb67f1e4d06
   subpackages:
   - internal
   - internal/app_identity
@@ -586,7 +596,7 @@ imports:
   repo: https://github.com/appscode/cron.git
   vcs: git
 - name: gopkg.in/yaml.v2
-  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
+  version: 670d4cfef0544295bc27a114dbac37980d83185a
 - name: k8s.io/api
   version: 4e7be11eab3ffcfc1876898b8272df53785a9504
   subpackages:
@@ -685,7 +695,7 @@ imports:
   - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/apiserver
-  version: 9970aee1898bc65beb8f3829b2ddf8e191777f78
+  version: dea48c5b25a85e0fa07fec5bd5b8ec8fcaae6653
   repo: https://github.com/pharmer/apiserver.git
   vcs: git
   subpackages:
@@ -919,6 +929,16 @@ imports:
   - util/jsonpath
   - util/retry
   - util/workqueue
+- name: k8s.io/kube-aggregator
+  version: 07bfdba27d43fe6b7eea965213b3aad555de2457
+  subpackages:
+  - pkg/apis/apiregistration
+  - pkg/apis/apiregistration/v1
+  - pkg/apis/apiregistration/v1beta1
+  - pkg/client/clientset_generated/clientset
+  - pkg/client/clientset_generated/clientset/scheme
+  - pkg/client/clientset_generated/clientset/typed/apiregistration/v1
+  - pkg/client/clientset_generated/clientset/typed/apiregistration/v1beta1
 - name: k8s.io/kube-openapi
   version: 91cfa479c814065e420cee7ed227db0f63a5854e
   subpackages:
@@ -927,8 +947,17 @@ imports:
   - pkg/handler
   - pkg/util
   - pkg/util/proto
+- name: kmodules.xyz/custom-resources
+  version: ad163b0888db79656ef85ffea3c2661cad8c4f5e
+  repo: https://github.com/kmodules/custom-resources.git
+  vcs: git
+  subpackages:
+  - apis/appcatalog
+  - apis/appcatalog/v1alpha1
+  - client/clientset/versioned/scheme
+  - client/clientset/versioned/typed/appcatalog/v1alpha1
 - name: kmodules.xyz/monitoring-agent-api
-  version: 00cac08cb50defd6df8d08483fad35df790d7675
+  version: 4379f00ed40be267dabe0b895293cb55ba1da7ea
   repo: https://github.com/kmodules/monitoring-agent-api.git
   vcs: git
   subpackages:

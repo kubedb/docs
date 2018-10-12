@@ -22,7 +22,7 @@ import (
 )
 
 func (c *Controller) create(redis *api.Redis) error {
-	if err := validator.ValidateRedis(c.Client, c.ExtClient, redis); err != nil {
+	if err := validator.ValidateRedis(c.Client, c.ExtClient, redis, true); err != nil {
 		c.recorder.Event(
 			redis,
 			core.EventTypeWarning,
@@ -31,25 +31,6 @@ func (c *Controller) create(redis *api.Redis) error {
 		)
 		log.Errorln(err)
 		return nil // user error so just record error and don't retry.
-	}
-
-	// Check if redisVersion is deprecated.
-	// If deprecated, add event and return nil (stop processing.)
-	redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	if redisVersion.Spec.Deprecated {
-		c.recorder.Eventf(
-			redis,
-			core.EventTypeWarning,
-			eventer.EventReasonInvalid,
-			"RedisVersion %v is deprecated. Skipped processing.",
-			redisVersion.Name,
-		)
-		log.Errorf("Redis %s/%s is using deprecated version %v. Skipped processing.",
-			redis.Namespace, redis.Name, redisVersion.Name)
-		return nil
 	}
 
 	// Delete Matching DormantDatabase if exists any

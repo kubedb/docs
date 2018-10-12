@@ -2,6 +2,7 @@ package controller
 
 import (
 	"github.com/appscode/go/log/golog"
+	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
 	"github.com/appscode/kutil/discovery"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
@@ -19,6 +20,11 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+)
+
+const (
+	mutatingWebhookConfig   = "mutators.kubedb.com"
+	validatingWebhookConfig = "validators.kubedb.com"
 )
 
 var (
@@ -65,13 +71,13 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	ctrl.DrmnInformer = dormantdatabase.NewController(ctrl.Controller, nil, ctrl.Config, nil).InitInformer()
 	ctrl.SnapInformer, ctrl.JobInformer = snapc.NewController(ctrl.Controller, nil, ctrl.Config, nil).InitInformer()
 
-	ctrl.pgCtrl = pgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
 	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
-	ctrl.edCtrl = edc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
-	ctrl.mgCtrl = mgc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
-	ctrl.myCtrl = myc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
-	ctrl.rdCtrl = rdc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, ctrl.Config)
-	ctrl.mcCtrl = mcc.New(c.KubeClient, c.APIExtKubeClient, c.DBClient, c.PromClient, ctrl.Config)
+	ctrl.edCtrl = edc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.mgCtrl = mgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.myCtrl = myc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, c.CronController, ctrl.Config)
+	ctrl.rdCtrl = rdc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, ctrl.Config)
+	ctrl.mcCtrl = mcc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.PromClient, ctrl.Config)
 
 	if err := ctrl.Init(); err != nil {
 		return nil, err
@@ -85,9 +91,17 @@ func (c *Controller) Init() error {
 	if err := c.EnsureCustomResourceDefinitions(); err != nil {
 		return err
 	}
-	if err := c.UpdateWebhookCABundle(); err != nil {
-		return err
+	if c.EnableMutatingWebhook {
+		if err := reg_util.UpdateMutatingWebhookCABundle(c.ClientConfig, mutatingWebhookConfig); err != nil {
+			return err
+		}
 	}
+	if c.EnableValidatingWebhook {
+		if err := reg_util.UpdateValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig); err != nil {
+			return err
+		}
+	}
+
 	if err := c.pgCtrl.Init(); err != nil {
 		return err
 	}

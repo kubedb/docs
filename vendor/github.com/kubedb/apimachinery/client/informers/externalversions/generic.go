@@ -21,7 +21,8 @@ package externalversions
 import (
 	"fmt"
 
-	v1alpha1 "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
+	v1alpha1 "github.com/kubedb/apimachinery/apis/authorization/v1alpha1"
+	catalog_v1alpha1 "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
 	kubedb_v1alpha1 "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
@@ -53,20 +54,34 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=catalog.kubedb.com, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("elasticsearchversions"):
+	// Group=authorization.kubedb.com, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithResource("mongodbroles"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Authorization().V1alpha1().MongoDBRoles().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("mongodbrolebindings"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Authorization().V1alpha1().MongoDBRoleBindings().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("mysqlroles"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Authorization().V1alpha1().MySQLRoles().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("mysqlrolebindings"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Authorization().V1alpha1().MySQLRoleBindings().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("postgresroles"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Authorization().V1alpha1().PostgresRoles().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("postgresrolebindings"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Authorization().V1alpha1().PostgresRoleBindings().Informer()}, nil
+
+		// Group=catalog.kubedb.com, Version=v1alpha1
+	case catalog_v1alpha1.SchemeGroupVersion.WithResource("elasticsearchversions"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().ElasticsearchVersions().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("etcdversions"):
+	case catalog_v1alpha1.SchemeGroupVersion.WithResource("etcdversions"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().EtcdVersions().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("memcachedversions"):
+	case catalog_v1alpha1.SchemeGroupVersion.WithResource("memcachedversions"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().MemcachedVersions().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("mongodbversions"):
+	case catalog_v1alpha1.SchemeGroupVersion.WithResource("mongodbversions"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().MongoDBVersions().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("mysqlversions"):
+	case catalog_v1alpha1.SchemeGroupVersion.WithResource("mysqlversions"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().MySQLVersions().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("postgresversions"):
+	case catalog_v1alpha1.SchemeGroupVersion.WithResource("postgresversions"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().PostgresVersions().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("redisversions"):
+	case catalog_v1alpha1.SchemeGroupVersion.WithResource("redisversions"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().RedisVersions().Informer()}, nil
 
 		// Group=kubedb.com, Version=v1alpha1

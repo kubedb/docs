@@ -15,11 +15,11 @@ import (
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 const (
-	MongoDbPort                   = "27017"
-	mongoDBGoverningServiceSuffix = "-gvr"
+	MongoDBPort = 27017
 )
 
 func (c *Controller) ensureService(mongodb *api.MongoDB) (kutil.VerbType, error) {
@@ -38,7 +38,6 @@ func (c *Controller) ensureService(mongodb *api.MongoDB) (kutil.VerbType, error)
 			"Failed to createOrPatch Service. Reason: %v",
 			err,
 		)
-
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
@@ -48,7 +47,6 @@ func (c *Controller) ensureService(mongodb *api.MongoDB) (kutil.VerbType, error)
 			"Successfully %s Service",
 			vt,
 		)
-
 	}
 	return vt, nil
 }
@@ -87,14 +85,17 @@ func (c *Controller) createService(mongodb *api.MongoDB) (kutil.VerbType, error)
 		in.Annotations = mongodb.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Selector = mongodb.OffshootSelectors()
-		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
-			{
-				Name:       "db",
-				Protocol:   core.ProtocolTCP,
-				Port:       27017,
-				TargetPort: intstr.FromString("db"),
-			},
-		})
+		in.Spec.Ports = ofst.MergeServicePorts(
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+				{
+					Name:       "db",
+					Protocol:   core.ProtocolTCP,
+					Port:       MongoDBPort,
+					TargetPort: intstr.FromString("db"),
+				},
+			}),
+			mongodb.Spec.ServiceTemplate.Spec.Ports,
+		)
 
 		if mongodb.Spec.ServiceTemplate.Spec.ClusterIP != "" {
 			in.Spec.ClusterIP = mongodb.Spec.ServiceTemplate.Spec.ClusterIP
@@ -117,7 +118,7 @@ func (c *Controller) createService(mongodb *api.MongoDB) (kutil.VerbType, error)
 func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
 	if mongodb.GetMonitoringVendor() != mona.VendorPrometheus {
-		log.Warningln("spec.monitor.agent is not coreos-operator or builtin.")
+		log.Infoln("spec.monitor.agent is not coreos-operator or builtin.")
 		return kutil.VerbUnchanged, nil
 	}
 
@@ -172,7 +173,6 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 }
 
 func (c *Controller) createMongoDBGoverningService(mongodb *api.MongoDB) (string, error) {
-
 	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb)
 	if rerr != nil {
 		return "", rerr
@@ -180,7 +180,7 @@ func (c *Controller) createMongoDBGoverningService(mongodb *api.MongoDB) (string
 
 	service := &core.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      mongodb.ServiceName() + mongoDBGoverningServiceSuffix,
+			Name:      mongodb.GoverningServiceName(),
 			Namespace: mongodb.Namespace,
 			Labels:    mongodb.OffshootLabels(),
 			// 'tolerate-unready-endpoints' annotation is deprecated.
@@ -196,7 +196,7 @@ func (c *Controller) createMongoDBGoverningService(mongodb *api.MongoDB) (string
 			Ports: []core.ServicePort{
 				{
 					Name: "db",
-					Port: 27017,
+					Port: MongoDBPort,
 				},
 			},
 			Selector: mongodb.OffshootSelectors(),

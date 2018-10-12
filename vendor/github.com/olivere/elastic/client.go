@@ -26,7 +26,7 @@ import (
 
 const (
 	// Version is the current version of Elastic.
-	Version = "6.2.8"
+	Version = "6.2.11"
 
 	// DefaultURL is the default endpoint of Elasticsearch on the local machine.
 	// It is used e.g. when initializing a new Client without a specific URL.
@@ -1230,14 +1230,15 @@ func (c *Client) mustActiveConn() error {
 
 // PerformRequestOptions must be passed into PerformRequest.
 type PerformRequestOptions struct {
-	Method       string
-	Path         string
-	Params       url.Values
-	Body         interface{}
-	ContentType  string
-	IgnoreErrors []int
-	Retrier      Retrier
-	Headers      http.Header
+	Method          string
+	Path            string
+	Params          url.Values
+	Body            interface{}
+	ContentType     string
+	IgnoreErrors    []int
+	Retrier         Retrier
+	Headers         http.Header
+	MaxResponseSize int64
 }
 
 // PerformRequest does a HTTP request to Elasticsearch.
@@ -1376,14 +1377,14 @@ func (c *Client) PerformRequest(ctx context.Context, opt PerformRequestOptions) 
 		if err := checkResponse((*http.Request)(req), res, opt.IgnoreErrors...); err != nil {
 			// No retry if request succeeded
 			// We still try to return a response.
-			resp, _ = c.newResponse(res)
+			resp, _ = c.newResponse(res, opt.MaxResponseSize)
 			return resp, err
 		}
 
 		// We successfully made a request with this connection
 		conn.MarkAsHealthy()
 
-		resp, err = c.newResponse(res)
+		resp, err = c.newResponse(res, opt.MaxResponseSize)
 		if err != nil {
 			return nil, err
 		}
@@ -1850,58 +1851,58 @@ func (c *Client) DeleteScript() *DeleteScriptService {
 // -- X-Pack --
 
 // XPackWatchPut adds a watch.
-func (c *Client) XPackWatchPut() *XpackWatcherPutWatchService {
-	return NewXpackWatcherPutWatchService(c)
+func (c *Client) XPackWatchPut(watchId string) *XPackWatcherPutWatchService {
+	return NewXPackWatcherPutWatchService(c).Id(watchId)
 }
 
 // XPackWatchGet gets a watch.
-func (c *Client) XPackWatchGet() *XpackWatcherGetWatchService {
-	return NewXpackWatcherGetWatchService(c)
+func (c *Client) XPackWatchGet(watchId string) *XPackWatcherGetWatchService {
+	return NewXPackWatcherGetWatchService(c).Id(watchId)
 }
 
 // XPackWatchDelete deletes a watch.
-func (c *Client) XPackWatchDelete() *XpackWatcherDeleteWatchService {
-	return NewXpackWatcherDeleteWatchService(c)
+func (c *Client) XPackWatchDelete(watchId string) *XPackWatcherDeleteWatchService {
+	return NewXPackWatcherDeleteWatchService(c).Id(watchId)
 }
 
 // XPackWatchExecute executes a watch.
-func (c *Client) XPackWatchExecute() *XpackWatcherExecuteWatchService {
-	return NewXpackWatcherExecuteWatchService(c)
+func (c *Client) XPackWatchExecute() *XPackWatcherExecuteWatchService {
+	return NewXPackWatcherExecuteWatchService(c)
 }
 
 // XPackWatchAck acknowledging a watch.
-func (c *Client) XPackWatchAck() *XpackWatcherAckWatchService {
-	return NewXpackWatcherAckWatchService(c)
+func (c *Client) XPackWatchAck(watchId string) *XPackWatcherAckWatchService {
+	return NewXPackWatcherAckWatchService(c).WatchId(watchId)
 }
 
 // XPackWatchActivate activates a watch.
-func (c *Client) XPackWatchActivate() *XpackWatcherActivateWatchService {
-	return NewXpackWatcherActivateWatchService(c)
+func (c *Client) XPackWatchActivate(watchId string) *XPackWatcherActivateWatchService {
+	return NewXPackWatcherActivateWatchService(c).WatchId(watchId)
 }
 
 // XPackWatchDeactivate deactivates a watch.
-func (c *Client) XPackWatchDeactivate() *XpackWatcherDeactivateWatchService {
-	return NewXpackWatcherDeactivateWatchService(c)
+func (c *Client) XPackWatchDeactivate(watchId string) *XPackWatcherDeactivateWatchService {
+	return NewXPackWatcherDeactivateWatchService(c).WatchId(watchId)
 }
 
 // XPackWatchStats returns the current Watcher metrics.
-func (c *Client) XPackWatchStats() *XpackWatcherStatsService {
-	return NewXpackWatcherStatsService(c)
+func (c *Client) XPackWatchStats() *XPackWatcherStatsService {
+	return NewXPackWatcherStatsService(c)
 }
 
 // XPackWatchStart starts a watch.
-func (c *Client) XPackWatchStart() *XpackWatcherStartService {
-	return NewXpackWatcherStartService(c)
+func (c *Client) XPackWatchStart() *XPackWatcherStartService {
+	return NewXPackWatcherStartService(c)
 }
 
 // XPackWatchStop stops a watch.
-func (c *Client) XPackWatchStop() *XpackWatcherStopService {
-	return NewXpackWatcherStopService(c)
+func (c *Client) XPackWatchStop() *XPackWatcherStopService {
+	return NewXPackWatcherStopService(c)
 }
 
 // XPackWatchRestart restarts a watch.
-func (c *Client) XPackWatchRestart() *XpackWatcherRestartService {
-	return NewXpackWatcherRestartService(c)
+func (c *Client) XPackWatchRestart() *XPackWatcherRestartService {
+	return NewXPackWatcherRestartService(c)
 }
 
 // -- Helpers and shortcuts --

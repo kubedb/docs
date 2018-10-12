@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
+	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/queue"
@@ -33,8 +34,6 @@ type Controller struct {
 	amc.Config
 	*amc.Controller
 
-	// Rest restConfig
-	restConfig *restclient.Config
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
 	// Cron Controller
@@ -65,12 +64,12 @@ func New(
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
+			ClientConfig:     restConfig,
 			Client:           client,
 			ExtClient:        extClient,
 			ApiExtKubeClient: apiExtKubeClient,
 			DynamicClient:    dc,
 		},
-		restConfig:     restConfig,
 		Config:         opt,
 		promClient:     promClient,
 		cronController: cronController,
@@ -145,6 +144,15 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	}
 
 	c.RunControllers(stopCh)
+
+	if c.EnableMutatingWebhook {
+		cancel1, _ := reg_util.SyncMutatingWebhookCABundle(c.ClientConfig, mutatingWebhookConfig)
+		defer cancel1()
+	}
+	if c.EnableValidatingWebhook {
+		cancel2, _ := reg_util.SyncValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig)
+		defer cancel2()
+	}
 
 	<-stopCh
 	log.Infoln("Stopping KubeDB controller")

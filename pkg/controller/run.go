@@ -19,13 +19,17 @@ const (
 func (c *Controller) Run(stopCh <-chan struct{}) {
 	go c.StartAndRunControllers(stopCh)
 
-	cancel1, _ := reg_util.SyncMutatingWebhookCABundle(c.clientConfig, mutatingWebhook)
-	cancel2, _ := reg_util.SyncValidatingWebhookCABundle(c.clientConfig, validatingWebhook)
+	if c.EnableMutatingWebhook {
+		cancel1, _ := reg_util.SyncMutatingWebhookCABundle(c.ClientConfig, mutatingWebhookConfig)
+		defer cancel1()
+	}
+	if c.EnableValidatingWebhook {
+		cancel2, _ := reg_util.SyncValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig)
+		defer cancel2()
+	}
 
 	<-stopCh
 
-	cancel1()
-	cancel2()
 	c.cronController.StopCron()
 }
 

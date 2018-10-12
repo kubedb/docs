@@ -27,7 +27,7 @@ import (
 )
 
 func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
-	if err := validator.ValidateElasticsearch(c.Client, c.ExtClient, elasticsearch); err != nil {
+	if err := validator.ValidateElasticsearch(c.Client, c.ExtClient, elasticsearch, true); err != nil {
 		c.recorder.Event(
 			elasticsearch,
 			core.EventTypeWarning,
@@ -36,25 +36,6 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		)
 		log.Errorln(err)
 		return nil // user error so just record error and don't retry.
-	}
-
-	// Check if elasticsearchVersion is deprecated.
-	// If deprecated, add event and return nil (stop processing.)
-	elasticsearchVersion, err := c.ExtClient.CatalogV1alpha1().ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	if elasticsearchVersion.Spec.Deprecated {
-		c.recorder.Eventf(
-			elasticsearch,
-			core.EventTypeWarning,
-			eventer.EventReasonInvalid,
-			"ElasticsearchVersion %v is deprecated. Skipped processing.",
-			elasticsearchVersion.Name,
-		)
-		log.Errorf("Elasticsearch %s/%s is using deprecated version %v. Skipped processing.",
-			elasticsearch.Namespace, elasticsearch.Name, elasticsearchVersion.Name)
-		return nil
 	}
 
 	// Delete Matching DormantDatabase if exists any

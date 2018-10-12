@@ -84,8 +84,8 @@ func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			obj, err := a.extClient.KubedbV1alpha1().Redises(req.Namespace).Get(req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
-			} else if err == nil && obj.Spec.DoNotPause {
-				return hookapi.StatusBadRequest(fmt.Errorf(`redis "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
+				return hookapi.StatusBadRequest(fmt.Errorf(`redis "%s" can't be paused. To delete, change spec.terminationPolicy`, req.Name))
 			}
 		}
 	default:
@@ -106,7 +106,7 @@ func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			}
 		}
 		// validate database specs
-		if err = ValidateRedis(a.client, a.extClient, obj.(*api.Redis)); err != nil {
+		if err = ValidateRedis(a.client, a.extClient, obj.(*api.Redis), false); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -116,7 +116,7 @@ func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 
 // ValidateRedis checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *api.Redis) error {
+func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *api.Redis, strictValidation bool) error {
 	if redis.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
@@ -131,8 +131,24 @@ func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *a
 	if redis.Spec.StorageType == "" {
 		return fmt.Errorf(`'spec.storageType' is missing`)
 	}
+	if redis.Spec.StorageType != api.StorageTypeDurable && redis.Spec.StorageType != api.StorageTypeEphemeral {
+		return fmt.Errorf(`'spec.storageType' %s is invalid`, redis.Spec.StorageType)
+	}
 	if err := amv.ValidateStorage(client, redis.Spec.StorageType, redis.Spec.Storage); err != nil {
 		return err
+	}
+
+	if strictValidation {
+		// Check if redisVersion is deprecated.
+		// If deprecated, return error
+		redisVersion, err := extClient.CatalogV1alpha1().RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		if redisVersion.Spec.Deprecated {
+			return fmt.Errorf("redis %s/%s is using deprecated version %v. Skipped processing",
+				redis.Namespace, redis.Name, redisVersion.Name)
+		}
 	}
 
 	if redis.Spec.UpdateStrategy.Type == "" {
@@ -141,6 +157,10 @@ func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *a
 
 	if redis.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
+	}
+
+	if redis.Spec.StorageType == api.StorageTypeEphemeral && redis.Spec.TerminationPolicy == api.TerminationPolicyPause {
+		return fmt.Errorf(`'spec.terminationPolicy: Pause' can not be used for 'Ephemeral' storage`)
 	}
 
 	if err := amv.ValidateEnvVar(redis.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindRedis); err != nil {
@@ -179,9 +199,6 @@ func matchWithDormantDatabase(extClient cs.Interface, redis *api.Redis) error {
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Redis
 	drmnOriginSpec.SetDefaults()
 	originalSpec := redis.Spec
-
-	// Skip checking doNotPause
-	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
 
 	// Skip checking UpdateStrategy
 	drmnOriginSpec.UpdateStrategy = originalSpec.UpdateStrategy

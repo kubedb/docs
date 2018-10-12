@@ -180,9 +180,6 @@ func setDefaultsFromDormantDB(extClient cs.Interface, elasticsearch *api.Elastic
 		ddbOriginSpec.BackupSchedule = elasticsearch.Spec.BackupSchedule
 	}
 
-	// Skip checking DoNotPause
-	ddbOriginSpec.DoNotPause = elasticsearch.Spec.DoNotPause
-
 	// Skip checking UpdateStrategy
 	ddbOriginSpec.UpdateStrategy = elasticsearch.Spec.UpdateStrategy
 

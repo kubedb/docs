@@ -103,6 +103,10 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 									},
 								},
 								{
+									Name:  "AUTH_PLUGIN",
+									Value: fmt.Sprintf("%s", elasticsearch.Spec.AuthPlugin),
+								},
+								{
 									Name:  analytics.Key,
 									Value: c.AnalyticsClientID,
 								},
@@ -267,6 +271,10 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 											Key: KeyReadAllPassword,
 										},
 									},
+								},
+								{
+									Name:  "AUTH_PLUGIN",
+									Value: fmt.Sprintf("%s", elasticsearch.Spec.AuthPlugin),
 								},
 								{
 									Name:  analytics.Key,
