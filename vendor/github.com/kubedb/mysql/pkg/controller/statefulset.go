@@ -118,6 +118,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 								MountPath: "/var/lib/mysql",
 							},
 						},
+						Resources: mysql.Spec.PodTemplate.Spec.Resources,
 					},
 				},
 				mysql.Spec.PodTemplate.Spec.InitContainers...,

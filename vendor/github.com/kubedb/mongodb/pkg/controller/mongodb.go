@@ -24,7 +24,7 @@ import (
 )
 
 func (c *Controller) create(mongodb *api.MongoDB) error {
-	if err := validator.ValidateMongoDB(c.Client, c.ExtClient, mongodb); err != nil {
+	if err := validator.ValidateMongoDB(c.Client, c.ExtClient, mongodb, true); err != nil {
 		c.recorder.Event(
 			mongodb,
 			core.EventTypeWarning,
@@ -32,25 +32,6 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 			err.Error())
 
 		log.Errorln(err)
-		return nil
-	}
-
-	// Check if mongodbVersion is deprecated.
-	// If deprecated, add event and return nil (stop processing.)
-	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	if mongodbVersion.Spec.Deprecated {
-		c.recorder.Eventf(
-			mongodb,
-			core.EventTypeWarning,
-			eventer.EventReasonInvalid,
-			"DBVersion %v is deprecated. Skipped processing.",
-			mongodbVersion.Name,
-		)
-		log.Errorf("MongoDB %s/%s is using deprecated version %v. Skipped processing.",
-			mongodb.Namespace, mongodb.Name, mongodbVersion.Name)
 		return nil
 	}
 

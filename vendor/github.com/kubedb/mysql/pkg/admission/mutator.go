@@ -159,9 +159,6 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mysql *api.MySQL) error {
 		ddbOriginSpec.BackupSchedule = mysql.Spec.BackupSchedule
 	}
 
-	// Skip checking DoNotPause
-	ddbOriginSpec.DoNotPause = mysql.Spec.DoNotPause
-
 	// Skip checking UpdateStrategy
 	ddbOriginSpec.UpdateStrategy = mysql.Spec.UpdateStrategy
 

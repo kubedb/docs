@@ -15,6 +15,7 @@ import (
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 var (
@@ -143,15 +144,17 @@ func (c *Controller) createService(postgres *api.Postgres) (kutil.VerbType, erro
 	return ok, err
 }
 
-func upsertServicePort(service *core.Service, postgres *api.Postgres) []core.ServicePort {
-	desiredPorts := []core.ServicePort{
-		{
-			Name:       PostgresPortName,
-			Port:       PostgresPort,
-			TargetPort: intstr.FromString(PostgresPortName),
-		},
-	}
-	return core_util.MergeServicePorts(service.Spec.Ports, desiredPorts)
+func upsertServicePort(in *core.Service, postgres *api.Postgres) []core.ServicePort {
+	return ofst.MergeServicePorts(
+		core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       PostgresPortName,
+				Port:       PostgresPort,
+				TargetPort: intstr.FromString(PostgresPortName),
+			},
+		}),
+		postgres.Spec.ServiceTemplate.Spec.Ports,
+	)
 }
 
 func (c *Controller) createReplicasService(postgres *api.Postgres) (kutil.VerbType, error) {

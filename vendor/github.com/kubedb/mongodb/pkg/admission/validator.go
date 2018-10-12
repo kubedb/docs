@@ -85,8 +85,8 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 			obj, err := a.extClient.KubedbV1alpha1().MongoDBs(req.Namespace).Get(req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
-			} else if err == nil && obj.Spec.DoNotPause {
-				return hookapi.StatusBadRequest(fmt.Errorf(`mongodb "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
+				return hookapi.StatusBadRequest(fmt.Errorf(`mongodb "%s" can't be paused. To delete, change spec.terminationPolicy`, req.Name))
 			}
 		}
 	default:
@@ -119,7 +119,7 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 			}
 		}
 		// validate database specs
-		if err = ValidateMongoDB(a.client, a.extClient, obj.(*api.MongoDB)); err != nil {
+		if err = ValidateMongoDB(a.client, a.extClient, obj.(*api.MongoDB), false); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -129,7 +129,7 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 
 // ValidateMongoDB checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongodb *api.MongoDB) error {
+func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongodb *api.MongoDB, strictValidation bool) error {
 	if mongodb.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
@@ -152,14 +152,30 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 	if mongodb.Spec.StorageType == "" {
 		return fmt.Errorf(`'spec.storageType' is missing`)
 	}
+	if mongodb.Spec.StorageType != api.StorageTypeDurable && mongodb.Spec.StorageType != api.StorageTypeEphemeral {
+		return fmt.Errorf(`'spec.storageType' %s is invalid`, mongodb.Spec.StorageType)
+	}
 	if err := amv.ValidateStorage(client, mongodb.Spec.StorageType, mongodb.Spec.Storage); err != nil {
 		return err
 	}
 
-	databaseSecret := mongodb.Spec.DatabaseSecret
-	if databaseSecret != nil {
-		if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+	if strictValidation {
+		databaseSecret := mongodb.Spec.DatabaseSecret
+		if databaseSecret != nil {
+			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+				return err
+			}
+		}
+
+		// Check if mongodbVersion is deprecated.
+		// If deprecated, return error
+		mongodbVersion, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+		if err != nil {
 			return err
+		}
+		if mongodbVersion.Spec.Deprecated {
+			return fmt.Errorf("mongoDB %s/%s is using deprecated version %v. Skipped processing",
+				mongodb.Namespace, mongodb.Name, mongodbVersion.Name)
 		}
 	}
 
@@ -176,6 +192,10 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 
 	if mongodb.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
+	}
+
+	if mongodb.Spec.StorageType == api.StorageTypeEphemeral && mongodb.Spec.TerminationPolicy == api.TerminationPolicyPause {
+		return fmt.Errorf(`'spec.terminationPolicy: Pause' can not be used for 'Ephemeral' storage`)
 	}
 
 	monitorSpec := mongodb.Spec.Monitor
@@ -210,9 +230,6 @@ func matchWithDormantDatabase(extClient cs.Interface, mongodb *api.MongoDB) erro
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.MongoDB
 	drmnOriginSpec.SetDefaults()
 	originalSpec := mongodb.Spec
-
-	// Skip checking doNotPause
-	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
 
 	// Skip checking UpdateStrategy
 	drmnOriginSpec.UpdateStrategy = originalSpec.UpdateStrategy

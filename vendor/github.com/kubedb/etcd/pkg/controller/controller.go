@@ -3,6 +3,7 @@ package controller
 import (
 	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
+	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	meta_util "github.com/appscode/kutil/meta"
 	"github.com/appscode/kutil/tools/queue"
@@ -26,6 +27,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/tools/reference"
@@ -60,6 +62,7 @@ var _ amc.Snapshotter = &Controller{}
 var _ amc.Deleter = &Controller{}
 
 func New(
+	clientConfig *rest.Config,
 	client kubernetes.Interface,
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
 	extClient cs.Interface,
@@ -70,6 +73,7 @@ func New(
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
+			ClientConfig:     clientConfig,
 			Client:           client,
 			ExtClient:        extClient,
 			ApiExtKubeClient: apiExtKubeClient,
@@ -122,6 +126,15 @@ func (c *Controller) RunControllers(stopCh <-chan struct{}) {
 // Blocks caller. Intended to be called as a Go routine.
 func (c *Controller) Run(stopCh <-chan struct{}) {
 	go c.StartAndRunControllers(stopCh)
+
+	if c.EnableMutatingWebhook {
+		cancel1, _ := reg_util.SyncMutatingWebhookCABundle(c.ClientConfig, mutatingWebhookConfig)
+		defer cancel1()
+	}
+	if c.EnableValidatingWebhook {
+		cancel2, _ := reg_util.SyncValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig)
+		defer cancel2()
+	}
 
 	<-stopCh
 	c.cronController.StopCron()

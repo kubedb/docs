@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
@@ -132,12 +133,12 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 					"--dbpath=" + dataDirectoryPath,
 					"--auth",
 					"--bind_ip=0.0.0.0",
-					"--port=" + string(MongoDbPort),
+					"--port=" + strconv.Itoa(MongoDBPort),
 				}, mongodb.Spec.PodTemplate.Spec.Args),
 				Ports: []core.ContainerPort{
 					{
 						Name:          "db",
-						ContainerPort: 27017,
+						ContainerPort: MongoDBPort,
 						Protocol:      core.ProtocolTCP,
 					},
 				},
@@ -268,6 +269,7 @@ func (c *Controller) upsertInstallInitContainer(statefulSet *apps.StatefulSet, m
 				MountPath: configDirectoryPath,
 			},
 		},
+		Resources: mongodb.Spec.PodTemplate.Spec.Resources,
 	}
 	if mongodb.Spec.ReplicaSet != nil {
 		installContainer.VolumeMounts = core_util.UpsertVolumeMount(installContainer.VolumeMounts, core.VolumeMount{
@@ -328,7 +330,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps
 				statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
 					statefulSet.Spec.Template.Spec.Volumes,
 					core.Volume{
-						Name: "data",
+						Name: dataDirectoryName,
 						VolumeSource: core.VolumeSource{
 							EmptyDir: &ed,
 						},

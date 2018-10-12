@@ -104,3 +104,9 @@ import:
   version: 91cfa479c814065e420cee7ed227db0f63a5854e
 - package: github.com/golang/protobuf
   version: v1.1.0
+- package: kmodules.xyz/custom-resources
+  repo: https://github.com/kmodules/custom-resources.git
+  vcs: git
+  version: release-8.0
+- package: k8s.io/kube-aggregator
+  version: kubernetes-1.11.3

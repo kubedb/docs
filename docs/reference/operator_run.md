@@ -54,8 +54,10 @@ operator run [flags]
       --cert-dir string                                         The directory where the TLS certs are located. If --tls-cert-file and --tls-private-key-file are provided, this flag will be ignored. (default "apiserver.local.config/certificates")
       --client-ca-file string                                   If set, any request presenting a client certificate signed by one of the authorities in the client-ca-file is authenticated with an identity corresponding to the CommonName of the client certificate.
       --contention-profiling                                    Enable lock contention profiling, if profiling is enabled
-      --enable-status-subresource                               If true, uses sub resource for Voyager crds.
+      --enable-mutating-webhook                                 If true, enables mutating webhooks for KubeDB CRDs.
+      --enable-status-subresource                               If true, uses sub resource for KubeDB crds.
       --enable-swagger-ui                                       Enables swagger ui on the apiserver at /swagger-ui
+      --enable-validating-webhook                               If true, enables validating webhooks for KubeDB CRDs.
       --governing-service string                                Governing service for database statefulset (default "kubedb")
   -h, --help                                                    help for run
       --http2-max-streams-per-connection int                    The limit that the server gives to clients for the maximum number of streams in an HTTP/2 connection. Zero means to use golang's default. (default 1000)
@@ -84,11 +86,13 @@ operator run [flags]
 
 ```
       --alsologtostderr                  log to standard error as well as files
+      --bypass-validating-webhook-xray   if true, bypasses validating webhook xray checks
       --enable-analytics                 Send analytical events to Google Analytics (default true)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files
       --stderrthreshold severity         logs at or above this threshold go to stderr
+      --use-kubeapiserver-fqdn-for-aks   if true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 (default true)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
 ```

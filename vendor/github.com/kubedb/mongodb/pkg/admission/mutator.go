@@ -168,9 +168,6 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB) erro
 		ddbOriginSpec.BackupSchedule = mongodb.Spec.BackupSchedule
 	}
 
-	// Skip checking DoNotPause
-	ddbOriginSpec.DoNotPause = mongodb.Spec.DoNotPause
-
 	// Skip checking UpdateStrategy
 	ddbOriginSpec.UpdateStrategy = mongodb.Spec.UpdateStrategy
 

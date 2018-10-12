@@ -2,7 +2,6 @@ package controller
 
 import (
 	"github.com/appscode/go/log"
-	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
 	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	catalogapi "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
@@ -89,10 +88,4 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		catalogapi.MemcachedVersion{}.CustomResourceDefinition(),
 	}
 	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
-}
-
-func (c *Controller) UpdateWebhookCABundle() (err error) {
-	err = reg_util.UpdateMutatingWebhookCABundle(c.clientConfig, mutatingWebhook)
-	err = reg_util.UpdateValidatingWebhookCABundle(c.clientConfig, validatingWebhook)
-	return
 }

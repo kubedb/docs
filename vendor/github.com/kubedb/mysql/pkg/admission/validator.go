@@ -87,8 +87,8 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			obj, err := a.extClient.KubedbV1alpha1().MySQLs(req.Namespace).Get(req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
-			} else if err == nil && obj.Spec.DoNotPause {
-				return hookapi.StatusBadRequest(fmt.Errorf(`mysql "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
+				return hookapi.StatusBadRequest(fmt.Errorf(`mysql "%s" can't be paused. To delete, change spec.terminationPolicy`, req.Name))
 			}
 		}
 	default:
@@ -115,7 +115,7 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			}
 		}
 		// validate database specs
-		if err = ValidateMySQL(a.client, a.extClient, obj.(*api.MySQL)); err != nil {
+		if err = ValidateMySQL(a.client, a.extClient, obj.(*api.MySQL), false); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -125,7 +125,7 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 
 // ValidateMySQL checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *api.MySQL) error {
+func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *api.MySQL, strictValidation bool) error {
 	if mysql.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
@@ -144,14 +144,31 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 	if mysql.Spec.StorageType == "" {
 		return fmt.Errorf(`'spec.storageType' is missing`)
 	}
+	if mysql.Spec.StorageType != api.StorageTypeDurable && mysql.Spec.StorageType != api.StorageTypeEphemeral {
+		return fmt.Errorf(`'spec.storageType' %s is invalid`, mysql.Spec.StorageType)
+	}
 	if err := amv.ValidateStorage(client, mysql.Spec.StorageType, mysql.Spec.Storage); err != nil {
 		return err
 	}
 
 	databaseSecret := mysql.Spec.DatabaseSecret
-	if databaseSecret != nil {
-		if _, err := client.CoreV1().Secrets(mysql.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+
+	if strictValidation {
+		if databaseSecret != nil {
+			if _, err := client.CoreV1().Secrets(mysql.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+				return err
+			}
+		}
+
+		// Check if mysqlVersion is deprecated.
+		// If deprecated, return error
+		mysqlVersion, err := extClient.CatalogV1alpha1().MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{})
+		if err != nil {
 			return err
+		}
+
+		if mysqlVersion.Spec.Deprecated {
+			return fmt.Errorf("mysql %s/%s is using deprecated version %v. Skipped processing", mysql.Namespace, mysql.Name, mysqlVersion.Name)
 		}
 	}
 
@@ -175,6 +192,10 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 
 	if mysql.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
+	}
+
+	if mysql.Spec.StorageType == api.StorageTypeEphemeral && mysql.Spec.TerminationPolicy == api.TerminationPolicyPause {
+		return fmt.Errorf(`'spec.terminationPolicy: Pause' can not be used for 'Ephemeral' storage`)
 	}
 
 	monitorSpec := mysql.Spec.Monitor
@@ -209,9 +230,6 @@ func matchWithDormantDatabase(extClient cs.Interface, mysql *api.MySQL) error {
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.MySQL
 	drmnOriginSpec.SetDefaults()
 	originalSpec := mysql.Spec
-
-	// Skip checking doNotPause
-	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
 
 	// Skip checking UpdateStrategy
 	drmnOriginSpec.UpdateStrategy = originalSpec.UpdateStrategy

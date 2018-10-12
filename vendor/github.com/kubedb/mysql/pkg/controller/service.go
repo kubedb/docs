@@ -15,6 +15,7 @@ import (
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 func (c *Controller) ensureService(mysql *api.MySQL) (kutil.VerbType, error) {
@@ -80,14 +81,17 @@ func (c *Controller) createService(mysql *api.MySQL) (kutil.VerbType, error) {
 		in.Annotations = mysql.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Selector = mysql.OffshootSelectors()
-		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
-			{
-				Name:       "db",
-				Protocol:   core.ProtocolTCP,
-				Port:       3306,
-				TargetPort: intstr.FromString("db"),
-			},
-		})
+		in.Spec.Ports = ofst.MergeServicePorts(
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+				{
+					Name:       "db",
+					Protocol:   core.ProtocolTCP,
+					Port:       3306,
+					TargetPort: intstr.FromString("db"),
+				},
+			}),
+			mysql.Spec.ServiceTemplate.Spec.Ports,
+		)
 
 		if mysql.Spec.ServiceTemplate.Spec.ClusterIP != "" {
 			in.Spec.ClusterIP = mysql.Spec.ServiceTemplate.Spec.ClusterIP
@@ -110,7 +114,7 @@ func (c *Controller) createService(mysql *api.MySQL) (kutil.VerbType, error) {
 func (c *Controller) ensureStatsService(mysql *api.MySQL) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
 	if mysql.GetMonitoringVendor() != mona.VendorPrometheus {
-		log.Warningln("spec.monitor.agent is not coreos-operator or builtin.")
+		log.Infoln("spec.monitor.agent is not coreos-operator or builtin.")
 		return kutil.VerbUnchanged, nil
 	}
 

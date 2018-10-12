@@ -83,6 +83,7 @@ func (c *Controller) ensureStatefulSet(
 						SecurityContext: &core.SecurityContext{
 							Privileged: types.BoolP(true),
 						},
+						Resources: resources,
 					},
 				},
 				elasticsearch.Spec.PodTemplate.Spec.InitContainers...,
@@ -485,7 +486,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, el
 		container := core.Container{
 			Name: "exporter",
 			Args: append([]string{
-				fmt.Sprintf("--es.uri=%s://$(DB_USER):$(DB_PASSWORD)@localhost:%d", elasticsearch.GetConnectionScheme(), api.ElasticsearchRestPort),
+				fmt.Sprintf("--es.uri=%s", getURI(elasticsearch)),
 				fmt.Sprintf("--web.listen-address=:%d", api.PrometheusExporterPortNumber),
 				fmt.Sprintf("--web.telemetry-path=%s", elasticsearch.StatsService().Path()),
 			}),
@@ -710,4 +711,15 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, elasticsearch *api.Elasti
 		}
 	}
 	return statefulSet
+}
+
+func getURI(e *api.Elasticsearch) string {
+	if e.Spec.AuthPlugin == api.ElasticsearchAuthPluginNone {
+		return fmt.Sprintf("%s://localhost:%d", e.GetConnectionScheme(), api.ElasticsearchRestPort)
+	} else if e.Spec.AuthPlugin == api.ElasticsearchAuthPluginSearchGuard {
+		return fmt.Sprintf("%s://$(DB_USER):$(DB_PASSWORD)@localhost:%d", e.GetConnectionScheme(), api.ElasticsearchRestPort)
+	} else {
+		log.Infoln("Invalid Auth Plugin")
+	}
+	return ""
 }

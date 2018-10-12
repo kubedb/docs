@@ -80,8 +80,8 @@ func (a *EtcdValidator) Admit(req *admission.AdmissionRequest) *admission.Admiss
 			obj, err := a.extClient.KubedbV1alpha1().Etcds(req.Namespace).Get(req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
-			} else if err == nil && obj.Spec.DoNotPause {
-				return hookapi.StatusBadRequest(fmt.Errorf(`etcd "%s" can't be paused. To continue delete, unset spec.doNotPause and retry`, req.Name))
+			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
+				return hookapi.StatusBadRequest(fmt.Errorf(`etcd "%s" can't be paused. To delete, change spec.terminationPolicy`, req.Name))
 			}
 		}
 	default:
@@ -191,9 +191,6 @@ func matchWithDormantDatabase(extClient cs.Interface, etcd *api.Etcd) error {
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Etcd
 	drmnOriginSpec.SetDefaults()
 	originalSpec := etcd.Spec
-
-	// Skip checking doNotPause
-	drmnOriginSpec.DoNotPause = originalSpec.DoNotPause
 
 	// Skip checking UpdateStrategy
 	drmnOriginSpec.UpdateStrategy = originalSpec.UpdateStrategy

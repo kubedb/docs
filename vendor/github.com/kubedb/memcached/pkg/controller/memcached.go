@@ -18,7 +18,7 @@ import (
 )
 
 func (c *Controller) create(memcached *api.Memcached) error {
-	if err := validator.ValidateMemcached(c.Client, c.ExtClient, memcached); err != nil {
+	if err := validator.ValidateMemcached(c.Client, c.ExtClient, memcached, true); err != nil {
 		c.recorder.Event(
 			memcached,
 			core.EventTypeWarning,
@@ -27,25 +27,6 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		)
 		log.Errorln(err)
 		return nil // user error so just record error and don't retry.
-	}
-
-	// Check if memcachedVersion is deprecated.
-	// If deprecated, add event and return nil (stop processing.)
-	memcachedVersion, err := c.ExtClient.CatalogV1alpha1().MemcachedVersions().Get(string(memcached.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	if memcachedVersion.Spec.Deprecated {
-		c.recorder.Eventf(
-			memcached,
-			core.EventTypeWarning,
-			eventer.EventReasonInvalid,
-			"DBVersion %v is deprecated. Skipped processing.",
-			memcachedVersion.Name,
-		)
-		log.Errorf("Memcached %s/%s is using deprecated version %v. Skipped processing.",
-			memcached.Namespace, memcached.Name, memcachedVersion.Name)
-		return nil
 	}
 
 	// Delete Matching DormantDatabase if exists any

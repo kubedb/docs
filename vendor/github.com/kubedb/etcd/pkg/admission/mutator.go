@@ -161,9 +161,6 @@ func setDefaultsFromDormantDB(extClient cs.Interface, etcd *api.Etcd) error {
 		ddbOriginSpec.BackupSchedule = etcd.Spec.BackupSchedule
 	}
 
-	// Skip checking DoNotPause
-	ddbOriginSpec.DoNotPause = etcd.Spec.DoNotPause
-
 	// Skip checking UpdateStrategy
 	ddbOriginSpec.UpdateStrategy = etcd.Spec.UpdateStrategy
 

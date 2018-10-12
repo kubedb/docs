@@ -24,31 +24,13 @@ import (
 )
 
 func (c *Controller) create(mysql *api.MySQL) error {
-	if err := validator.ValidateMySQL(c.Client, c.ExtClient, mysql); err != nil {
+	if err := validator.ValidateMySQL(c.Client, c.ExtClient, mysql, true); err != nil {
 		c.recorder.Event(
 			mysql,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
 			err.Error())
 		log.Errorln(err)
-		return nil
-	}
-
-	// Check if mysqlVersion is deprecated.
-	// If deprecated, add event and return nil (stop processing.)
-	mysqlVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	if mysqlVersion.Spec.Deprecated {
-		c.recorder.Eventf(
-			mysql,
-			core.EventTypeWarning,
-			eventer.EventReasonInvalid,
-			"MySQLVersion %v is deprecated. Skipped processing.",
-			mysqlVersion.Name,
-		)
-		log.Errorf("MySQL %s/%s is using deprecated version %v. Skipped processing.", mysql.Namespace, mysql.Name, mysqlVersion.Name)
 		return nil
 	}
 

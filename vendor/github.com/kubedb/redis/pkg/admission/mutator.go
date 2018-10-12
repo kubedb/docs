@@ -144,9 +144,6 @@ func setDefaultsFromDormantDB(extClient cs.Interface, redis *api.Redis) error {
 		ddbOriginSpec.Monitor = redis.Spec.Monitor
 	}
 
-	// Skip checking DoNotPause
-	ddbOriginSpec.DoNotPause = redis.Spec.DoNotPause
-
 	// Skip checking UpdateStrategy
 	ddbOriginSpec.UpdateStrategy = redis.Spec.UpdateStrategy
 

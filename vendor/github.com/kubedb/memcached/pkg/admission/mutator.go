@@ -143,9 +143,6 @@ func setDefaultsFromDormantDB(extClient cs.Interface, memcached *api.Memcached) 
 		ddbOriginSpec.Monitor = memcached.Spec.Monitor
 	}
 
-	// Skip checking DoNotPause
-	ddbOriginSpec.DoNotPause = memcached.Spec.DoNotPause
-
 	// Skip checking UpdateStrategy
 	ddbOriginSpec.UpdateStrategy = memcached.Spec.UpdateStrategy
 
