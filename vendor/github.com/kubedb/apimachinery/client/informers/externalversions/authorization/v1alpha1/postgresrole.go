@@ -21,7 +21,7 @@ package v1alpha1
 import (
 	time "time"
 
-	authorization_v1alpha1 "github.com/kubedb/apimachinery/apis/authorization/v1alpha1"
+	authorizationv1alpha1 "github.com/kubedb/apimachinery/apis/authorization/v1alpha1"
 	versioned "github.com/kubedb/apimachinery/client/clientset/versioned"
 	internalinterfaces "github.com/kubedb/apimachinery/client/informers/externalversions/internalinterfaces"
 	v1alpha1 "github.com/kubedb/apimachinery/client/listers/authorization/v1alpha1"
@@ -70,7 +70,7 @@ func NewFilteredPostgresRoleInformer(client versioned.Interface, namespace strin
 				return client.AuthorizationV1alpha1().PostgresRoles(namespace).Watch(options)
 			},
 		},
-		&authorization_v1alpha1.PostgresRole{},
+		&authorizationv1alpha1.PostgresRole{},
 		resyncPeriod,
 		indexers,
 	)
@@ -81,7 +81,7 @@ func (f *postgresRoleInformer) defaultInformer(client versioned.Interface, resyn
 }
 
 func (f *postgresRoleInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&authorization_v1alpha1.PostgresRole{}, f.defaultInformer)
+	return f.factory.InformerFor(&authorizationv1alpha1.PostgresRole{}, f.defaultInformer)
 }
 
 func (f *postgresRoleInformer) Lister() v1alpha1.PostgresRoleLister {

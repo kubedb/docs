@@ -1,6 +1,7 @@
 package leader_election
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -85,13 +86,13 @@ func RunLeaderElection() {
 	runningFirstTime := true
 
 	go func() {
-		leaderelection.RunOrDie(leaderelection.LeaderElectionConfig{
+		leaderelection.RunOrDie(context.Background(), leaderelection.LeaderElectionConfig{
 			Lock:          resLock,
 			LeaseDuration: leaderElectionLease,
 			RenewDeadline: leaderElectionLease * 2 / 3,
 			RetryPeriod:   leaderElectionLease / 3,
 			Callbacks: leaderelection.LeaderCallbacks{
-				OnStartedLeading: func(stop <-chan struct{}) {
+				OnStartedLeading: func(ctx context.Context) {
 					fmt.Println("Got leadership, now do your jobs")
 				},
 				OnStoppedLeading: func() {
