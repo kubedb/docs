@@ -166,9 +166,21 @@ type PostgresSummary struct {
 }
 
 type PostgresWALSourceSpec struct {
-	BackupName    string `json:"backupName,omitempty"`
-	PITR          string `json:"pitr,omitempty"`
+	BackupName    string          `json:"backupName,omitempty"`
+	PITR          *RecoveryTarget `json:"pitr,omitempty"`
 	store.Backend `json:",inline,omitempty"`
+}
+
+type RecoveryTarget struct {
+	// TargetTime specifies the time stamp up to which recovery will proceed.
+	TargetTime string `json:"targetTime,omitempty"`
+	// TargetTimeline specifies recovering into a particular timeline.
+	// The default is to recover along the same timeline that was current when the base backup was taken.
+	TargetTimeline string `json:"targetTimeline,omitempty"`
+	// TargetXID specifies the transaction ID up to which recovery will proceed.
+	TargetXID string `json:"targetXID,omitempty"`
+	// TargetInclusive specifies whether to include ongoing transaction in given target point.
+	TargetInclusive *bool `json:"targetInclusive,omitempty"`
 }
 
 type PostgresStandbyMode string

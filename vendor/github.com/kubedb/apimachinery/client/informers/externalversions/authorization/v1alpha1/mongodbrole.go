@@ -21,7 +21,7 @@ package v1alpha1
 import (
 	time "time"
 
-	authorization_v1alpha1 "github.com/kubedb/apimachinery/apis/authorization/v1alpha1"
+	authorizationv1alpha1 "github.com/kubedb/apimachinery/apis/authorization/v1alpha1"
 	versioned "github.com/kubedb/apimachinery/client/clientset/versioned"
 	internalinterfaces "github.com/kubedb/apimachinery/client/informers/externalversions/internalinterfaces"
 	v1alpha1 "github.com/kubedb/apimachinery/client/listers/authorization/v1alpha1"
@@ -70,7 +70,7 @@ func NewFilteredMongoDBRoleInformer(client versioned.Interface, namespace string
 				return client.AuthorizationV1alpha1().MongoDBRoles(namespace).Watch(options)
 			},
 		},
-		&authorization_v1alpha1.MongoDBRole{},
+		&authorizationv1alpha1.MongoDBRole{},
 		resyncPeriod,
 		indexers,
 	)
@@ -81,7 +81,7 @@ func (f *mongoDBRoleInformer) defaultInformer(client versioned.Interface, resync
 }
 
 func (f *mongoDBRoleInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&authorization_v1alpha1.MongoDBRole{}, f.defaultInformer)
+	return f.factory.InformerFor(&authorizationv1alpha1.MongoDBRole{}, f.defaultInformer)
 }
 
 func (f *mongoDBRoleInformer) Lister() v1alpha1.MongoDBRoleLister {

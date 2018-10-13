@@ -3,6 +3,7 @@ package v1alpha1
 import (
 	"fmt"
 
+	"github.com/appscode/go/types"
 	crdutils "github.com/appscode/kutil/apiextensions/v1beta1"
 	meta_util "github.com/appscode/kutil/meta"
 	"github.com/kubedb/apimachinery/apis"
@@ -204,6 +205,15 @@ func (p *PostgresSpec) SetDefaults() {
 		} else {
 			p.TerminationPolicy = TerminationPolicyPause
 		}
+	}
+	if p.Init != nil && p.Init.PostgresWAL != nil && p.Init.PostgresWAL.PITR != nil {
+		pitr := p.Init.PostgresWAL.PITR
+
+		if pitr.TargetInclusive == nil {
+			pitr.TargetInclusive = types.BoolP(true)
+		}
+
+		p.Init.PostgresWAL.PITR = pitr
 	}
 }
 

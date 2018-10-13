@@ -91,21 +91,13 @@ func (in *AppBindingSpec) DeepCopyInto(out *AppBindingSpec) {
 	in.ClientConfig.DeepCopyInto(&out.ClientConfig)
 	if in.Secret != nil {
 		in, out := &in.Secret, &out.Secret
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(v1.LocalObjectReference)
-			**out = **in
-		}
+		*out = new(v1.LocalObjectReference)
+		**out = **in
 	}
 	if in.Parameters != nil {
 		in, out := &in.Parameters, &out.Parameters
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(runtime.RawExtension)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(runtime.RawExtension)
+		(*in).DeepCopyInto(*out)
 	}
 	return
 }
@@ -125,12 +117,8 @@ func (in *AppReference) DeepCopyInto(out *AppReference) {
 	*out = *in
 	if in.Parameters != nil {
 		in, out := &in.Parameters, &out.Parameters
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(runtime.RawExtension)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(runtime.RawExtension)
+		(*in).DeepCopyInto(*out)
 	}
 	return
 }
@@ -150,21 +138,13 @@ func (in *ClientConfig) DeepCopyInto(out *ClientConfig) {
 	*out = *in
 	if in.URL != nil {
 		in, out := &in.URL, &out.URL
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(string)
-			**out = **in
-		}
+		*out = new(string)
+		**out = **in
 	}
 	if in.Service != nil {
 		in, out := &in.Service, &out.Service
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(ServiceReference)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(ServiceReference)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.CABundle != nil {
 		in, out := &in.CABundle, &out.CABundle
@@ -189,12 +169,8 @@ func (in *ServiceReference) DeepCopyInto(out *ServiceReference) {
 	*out = *in
 	if in.Path != nil {
 		in, out := &in.Path, &out.Path
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(string)
-			**out = **in
-		}
+		*out = new(string)
+		**out = **in
 	}
 	return
 }
