@@ -171,6 +171,7 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 						ContainerPort: mongodb.Spec.Monitor.Prometheus.Port,
 					},
 				},
+				Resources: mongodb.Spec.Monitor.Resources,
 			})
 		}
 		// Set Admin Secret as MONGO_INITDB_ROOT_PASSWORD env variable

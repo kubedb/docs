@@ -499,6 +499,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, el
 					ContainerPort: int32(api.PrometheusExporterPortNumber),
 				},
 			},
+			Resources: elasticsearch.Spec.Monitor.Resources,
 		}
 		envList := []core.EnvVar{
 			{

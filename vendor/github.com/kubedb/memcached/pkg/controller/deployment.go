@@ -133,6 +133,7 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 						ContainerPort: memcached.Spec.Monitor.Prometheus.Port,
 					},
 				},
+				Resources: memcached.Spec.Monitor.Resources,
 			})
 		}
 		in = upsertUserEnv(in, memcached)

@@ -108,7 +108,7 @@ func (a *EtcdValidator) Admit(req *admission.AdmissionRequest) *admission.Admiss
 			}
 		}
 		// validate database specs
-		if err = ValidateEtcd(a.client, a.extClient, obj.(*api.Etcd)); err != nil {
+		if err = ValidateEtcd(a.client, a.extClient, obj.(*api.Etcd), false); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -118,7 +118,7 @@ func (a *EtcdValidator) Admit(req *admission.AdmissionRequest) *admission.Admiss
 
 // ValidateEtcd checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateEtcd(client kubernetes.Interface, extClient cs.Interface, etcd *api.Etcd) error {
+func ValidateEtcd(client kubernetes.Interface, extClient cs.Interface, etcd *api.Etcd, strictValidation bool) error {
 	if etcd.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
@@ -137,10 +137,23 @@ func ValidateEtcd(client kubernetes.Interface, extClient cs.Interface, etcd *api
 		return err
 	}
 
-	databaseSecret := etcd.Spec.DatabaseSecret
-	if databaseSecret != nil {
-		if _, err := client.CoreV1().Secrets(etcd.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+	if strictValidation {
+		databaseSecret := etcd.Spec.DatabaseSecret
+		if databaseSecret != nil {
+			if _, err := client.CoreV1().Secrets(etcd.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+				return err
+			}
+		}
+
+		// Check if etcdVersion is deprecated.
+		// If deprecated, return error
+		etcdVersion, err := extClient.CatalogV1alpha1().EtcdVersions().Get(string(etcd.Spec.Version), metav1.GetOptions{})
+		if err != nil {
 			return err
+		}
+		if etcdVersion.Spec.Deprecated {
+			return fmt.Errorf("etcd %s/%s is using deprecated version %v. Skipped processing",
+				etcd.Namespace, etcd.Name, etcdVersion.Name)
 		}
 	}
 
@@ -157,6 +170,10 @@ func ValidateEtcd(client kubernetes.Interface, extClient cs.Interface, etcd *api
 
 	if etcd.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
+	}
+
+	if etcd.Spec.StorageType == api.StorageTypeEphemeral && etcd.Spec.TerminationPolicy == api.TerminationPolicyPause {
+		return fmt.Errorf(`'spec.terminationPolicy: Pause' can not be used for 'Ephemeral' storage`)
 	}
 
 	monitorSpec := etcd.Spec.Monitor

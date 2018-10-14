@@ -48,7 +48,7 @@ func (c *Controller) handleEtcdEvent(event *Event) error {
 		return fmt.Errorf("ignore failed cluster (%s). Please delete its CR", etcd.Name)
 	}
 
-	if err := validator.ValidateEtcd(c.Client, c.ExtClient, etcd); err != nil {
+	if err := validator.ValidateEtcd(c.Client, c.ExtClient, etcd, true); err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd); rerr == nil {
 			c.recorder.Event(
 				ref,
@@ -57,25 +57,6 @@ func (c *Controller) handleEtcdEvent(event *Event) error {
 				err.Error())
 		}
 		log.Errorln(err)
-		return nil
-	}
-
-	// Check if etcdVersion is deprecated.
-	// If deprecated, add event and return nil (stop processing.)
-	etcdVersion, err := c.ExtClient.CatalogV1alpha1().EtcdVersions().Get(string(etcd.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	if etcdVersion.Spec.Deprecated {
-		c.recorder.Eventf(
-			etcd,
-			core.EventTypeWarning,
-			eventer.EventReasonInvalid,
-			"EtcdVersion %v is deprecated. Skipped processing.",
-			etcdVersion.Name,
-		)
-		log.Errorf("Etcd %s/%s is using deprecated version %v. Skipped processing.",
-			etcd.Namespace, etcd.Name, etcdVersion.Name)
 		return nil
 	}
 

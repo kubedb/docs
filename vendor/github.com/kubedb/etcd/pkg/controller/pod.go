@@ -56,6 +56,7 @@ func (c *Controller) createPod(cluster *api.Etcd, members util.MemberSet, m *uti
 					do
 						sleep 1
 					done`, m.Addr())},
+			Resources: cluster.Spec.PodTemplate.Spec.Resources,
 		},
 	}
 	osmVolume := core.Volume{}

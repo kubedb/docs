@@ -204,21 +204,9 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion 
 	}
 
 	if postgres.Spec.Init != nil {
-		restoreStorage := postgres.Spec.Init.PostgresWAL
-		if restoreStorage != nil {
-			wal := postgres.Spec.Init.PostgresWAL
-			envList = append(envList,
-				[]core.EnvVar{
-					{
-						Name:  "RESTORE",
-						Value: "true",
-					},
-					{
-						Name:  "RESTORE_S3_PREFIX",
-						Value: fmt.Sprintf("s3://%v/%v", wal.S3.Bucket, wal.S3.Prefix),
-					},
-				}...,
-			)
+		wal := postgres.Spec.Init.PostgresWAL
+		if wal != nil {
+			envList = append(envList, walRecoveryConfig(wal)...)
 		}
 	}
 
@@ -345,6 +333,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 					ContainerPort: int32(api.PrometheusExporterPortNumber),
 				},
 			},
+			Resources: postgres.Spec.Monitor.Resources,
 		}
 
 		envList := []core.EnvVar{
@@ -551,4 +540,60 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, postgres *api.Postgres) *
 		}
 	}
 	return statefulSet
+}
+
+func walRecoveryConfig(wal *api.PostgresWALSourceSpec) []core.EnvVar {
+
+	envList := []core.EnvVar{
+		{
+			Name:  "RESTORE",
+			Value: "true",
+		},
+		{
+			Name:  "RESTORE_S3_PREFIX",
+			Value: fmt.Sprintf("s3://%v/%v", wal.S3.Bucket, wal.S3.Prefix),
+		},
+	}
+
+	if wal.PITR != nil {
+		envList = append(envList,
+			[]core.EnvVar{
+				{
+					Name:  "PITR",
+					Value: "true",
+				},
+				{
+					Name:  "TARGET_INCLUSIVE",
+					Value: fmt.Sprintf("%t", *wal.PITR.TargetInclusive),
+				},
+			}...)
+		if wal.PITR.TargetTime != "" {
+			envList = append(envList,
+				[]core.EnvVar{
+					{
+						Name:  "TARGET_TIME",
+						Value: wal.PITR.TargetTime,
+					},
+				}...)
+		}
+		if wal.PITR.TargetTimeline != "" {
+			envList = append(envList,
+				[]core.EnvVar{
+					{
+						Name:  "TARGET_TIMELINE",
+						Value: wal.PITR.TargetTimeline,
+					},
+				}...)
+		}
+		if wal.PITR.TargetXID != "" {
+			envList = append(envList,
+				[]core.EnvVar{
+					{
+						Name:  "TARGET_XID",
+						Value: wal.PITR.TargetXID,
+					},
+				}...)
+		}
+	}
+	return envList
 }

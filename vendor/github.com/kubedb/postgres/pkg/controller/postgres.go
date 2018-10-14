@@ -27,7 +27,7 @@ import (
 )
 
 func (c *Controller) create(postgres *api.Postgres) error {
-	if err := validator.ValidatePostgres(c.Client, c.ExtClient, postgres); err != nil {
+	if err := validator.ValidatePostgres(c.Client, c.ExtClient, postgres, true); err != nil {
 		c.recorder.Event(
 			postgres,
 			core.EventTypeWarning,
@@ -36,25 +36,6 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		)
 		log.Error(err)
 		return nil // user error so just record error and don't retry.
-	}
-
-	// Check if postgresVersion is deprecated.
-	// If deprecated, add event and return nil (stop processing.)
-	postgresVersion, err := c.ExtClient.CatalogV1alpha1().PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	if postgresVersion.Spec.Deprecated {
-		c.recorder.Eventf(
-			postgres,
-			core.EventTypeWarning,
-			eventer.EventReasonInvalid,
-			"PostgresVersion %v is deprecated. Skipped processing.",
-			postgresVersion.Name,
-		)
-		log.Errorf("Postgres %s/%s is using deprecated version %v. Skipped processing.",
-			postgres.Namespace, postgres.Name, postgresVersion.Name)
-		return nil
 	}
 
 	// Delete Matching DormantDatabase if exists any
@@ -108,6 +89,10 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	// ensure database StatefulSet
+	postgresVersion, err := c.ExtClient.CatalogV1alpha1().PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
 	vt2, err := c.ensurePostgresNode(postgres, postgresVersion)
 	if err != nil {
 		return err

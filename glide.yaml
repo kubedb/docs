@@ -49,7 +49,7 @@ import:
 - package: github.com/spf13/cobra
   version: v0.0.3
 - package: github.com/spf13/pflag
-  version: v1.0.1
+  version: v1.0.3
 - package: k8s.io/api
   version: kubernetes-1.12.0
 - package: k8s.io/apiextensions-apiserver
