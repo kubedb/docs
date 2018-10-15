@@ -1,5 +1,5 @@
 hash: e8279a261b8646b0efad466868ed2a4d2a74f6b7bb4bc31d8df2b07b5d2f361f
-updated: 2018-10-14T21:38:31.237411885-07:00
+updated: 2018-10-15T00:13:07.20428362-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -396,7 +396,7 @@ imports:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 8c84ba20aede4b2c1e1846caa1af8bea5f9296de
+  version: ddfe4be1caa34aa036666db652196ca07c95e864
   subpackages:
   - pkg/admission
   - pkg/controller
