@@ -1,5 +1,33 @@
 # Change Log
 
+## [0.9.0-rc.0](https://github.com/kubedb/operator/tree/0.9.0-rc.0) (2018-10-15)
+[Full Changelog](https://github.com/kubedb/operator/compare/0.9.0-beta.1...0.9.0-rc.0)
+
+**Fixed bugs:**
+
+- Assign ClientConfig in controller [\#207](https://github.com/kubedb/operator/pull/207) ([tamalsaha](https://github.com/tamalsaha))
+
+**Merged pull requests:**
+
+- Support custom user passowrd for MySQL backup [\#205](https://github.com/kubedb/operator/pull/205) ([tamalsaha](https://github.com/tamalsaha))
+- Support providing resources for monitoring container [\#204](https://github.com/kubedb/operator/pull/204) ([tamalsaha](https://github.com/tamalsaha))
+- Update kubernetes client libraries to 1.12.0 [\#203](https://github.com/kubedb/operator/pull/203) ([tamalsaha](https://github.com/tamalsaha))
+- Add validation webhook xray [\#202](https://github.com/kubedb/operator/pull/202) ([tamalsaha](https://github.com/tamalsaha))
+- Pass resources to NamespaceValidator [\#201](https://github.com/kubedb/operator/pull/201) ([tamalsaha](https://github.com/tamalsaha))
+- Use FQDN for kube-apiserver in AKS [\#200](https://github.com/kubedb/operator/pull/200) ([tamalsaha](https://github.com/tamalsaha))
+- Add validation webhook for Namespace deletion [\#199](https://github.com/kubedb/operator/pull/199) ([tamalsaha](https://github.com/tamalsaha))
+- Check if Kubernetes version is supported before running operator [\#198](https://github.com/kubedb/operator/pull/198) ([tamalsaha](https://github.com/tamalsaha))
+
+## [0.9.0-beta.1](https://github.com/kubedb/operator/tree/0.9.0-beta.1) (2018-09-30)
+[Full Changelog](https://github.com/kubedb/operator/compare/0.9.0-beta.0...0.9.0-beta.1)
+
+**Merged pull requests:**
+
+- Update admission webhook ca bundle [\#197](https://github.com/kubedb/operator/pull/197) ([tamalsaha](https://github.com/tamalsaha))
+- Simplify dev installation in minikube [\#196](https://github.com/kubedb/operator/pull/196) ([the-redback](https://github.com/the-redback))
+- Revendor api for catalog apigroup [\#195](https://github.com/kubedb/operator/pull/195) ([tamalsaha](https://github.com/tamalsaha))
+- Use --pull flag with docker build \(\#20\) [\#194](https://github.com/kubedb/operator/pull/194) ([tamalsaha](https://github.com/tamalsaha))
+
 ## [0.9.0-beta.0](https://github.com/kubedb/operator/tree/0.9.0-beta.0) (2018-09-20)
 [Full Changelog](https://github.com/kubedb/operator/compare/0.8.0...0.9.0-beta.0)
 
