@@ -37,8 +37,6 @@ type Controller struct {
 	edCtrl *edc.Controller
 	rdCtrl *rdc.Controller
 	mcCtrl *mcc.Controller
-
-	clientConfig *rest.Config
 }
 
 func New(
@@ -53,6 +51,7 @@ func New(
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
+			ClientConfig:     clientConfig,
 			Client:           client,
 			ExtClient:        dbClient,
 			ApiExtKubeClient: apiExtKubeClient,
@@ -61,7 +60,6 @@ func New(
 		Config:         opt,
 		promClient:     promClient,
 		cronController: cronController,
-		clientConfig:   clientConfig,
 	}
 }
 
