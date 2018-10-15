@@ -1,5 +1,5 @@
-hash: 0b4365bdc9ac580afeb6242dbdb968b022584145e99b9d7ff0edde55b88d1336
-updated: 2018-10-13T14:35:31.216844941-07:00
+hash: e8279a261b8646b0efad466868ed2a4d2a74f6b7bb4bc31d8df2b07b5d2f361f
+updated: 2018-10-14T21:38:31.237411885-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -37,7 +37,7 @@ imports:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 303298aa86dad096fed4c49ba117700e506eca2c
+  version: 25382b15981e816818803a66b6e1a1270efa89ab
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1
@@ -279,7 +279,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 875f8df8b7965f1eac1098d36d677f807ac0b49e
+  version: 3af367b6b30c263d47e8895973edcca9a49cf029
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -374,40 +374,40 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 649a5b6876059640b05d399a8bad5bab18252681
+  version: de49d7de9667e925c4c5aad4f9dfa8289cb2785e
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util/es
 - name: github.com/kubedb/etcd
-  version: d2774bdcada77c341ce718c60b812317582b5950
+  version: 8354b4ff99cc0529facab54dc9f2e528a667da50
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: f319545fe539b0e49b1ff240ed5142f171f88115
+  version: 2a2317af19ff3cec4b09351c13dc489e2f2bf3dc
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: e6a2fe70e537ff6743597a61fd3b733433292683
+  version: d272af63e013c72e1278bc95f9bd99b157459205
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 7bcfbc48dcff2c378f06387ee3e1f0eb7f0e47ef
+  version: 8c84ba20aede4b2c1e1846caa1af8bea5f9296de
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: 3d8881804af7d03a243948493557ebec7c7678ff
+  version: ae4012f01bfe83049e986de7516f1057e68ddc5a
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: 1c2bcbd6d69cfe5d15be5e16a115cc81deab36f2
+  version: b818f0c7a3b3792f75f41f48d9818149750cd88c
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -484,7 +484,7 @@ imports:
   subpackages:
   - doc
 - name: github.com/spf13/pflag
-  version: 583c0c0531f06d5278b7d917446061adc344b5cd
+  version: 298182f68c66c05229eb03ac171abe6e309ee79a
 - name: github.com/ugorji/go
   version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:
@@ -978,7 +978,7 @@ imports:
   - client/clientset/versioned/scheme
   - client/clientset/versioned/typed/appcatalog/v1alpha1
 - name: kmodules.xyz/monitoring-agent-api
-  version: cb29a44ae61b9096ce83750c2b070d57daa8d953
+  version: 626ef00ec8baebe0d2b451cf8f06450c2588f237
   repo: https://github.com/kmodules/monitoring-agent-api.git
   vcs: git
   subpackages:

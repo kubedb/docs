@@ -114,7 +114,7 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 			}
 		}
 		// validate database specs
-		if err = ValidatePostgres(a.client, a.extClient, obj.(*api.Postgres)); err != nil {
+		if err = ValidatePostgres(a.client, a.extClient, obj.(*api.Postgres), false); err != nil {
 			return hookapi.StatusForbidden(err)
 		}
 	}
@@ -124,7 +124,7 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 
 // ValidatePostgres checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postgres *api.Postgres) error {
+func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postgres *api.Postgres, strictValidation bool) error {
 	if postgres.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
@@ -190,9 +190,22 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	}
 
 	databaseSecret := postgres.Spec.DatabaseSecret
-	if databaseSecret != nil {
-		if _, err := client.CoreV1().Secrets(postgres.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+	if strictValidation {
+		if databaseSecret != nil {
+			if _, err := client.CoreV1().Secrets(postgres.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+				return err
+			}
+		}
+
+		// Check if postgresVersion is deprecated.
+		// If deprecated, return error
+		postgresVersion, err := extClient.CatalogV1alpha1().PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{})
+		if err != nil {
 			return err
+		}
+		if postgresVersion.Spec.Deprecated {
+			return fmt.Errorf("postgres %s/%s is using deprecated version %v. Skipped processing",
+				postgres.Namespace, postgres.Name, postgresVersion.Name)
 		}
 	}
 
@@ -233,6 +246,10 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 
 	if postgres.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
+	}
+
+	if postgres.Spec.StorageType == api.StorageTypeEphemeral && postgres.Spec.TerminationPolicy == api.TerminationPolicyPause {
+		return fmt.Errorf(`'spec.terminationPolicy: Pause' can not be used for 'Ephemeral' storage`)
 	}
 
 	monitorSpec := postgres.Spec.Monitor

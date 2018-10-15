@@ -181,7 +181,7 @@ func (c *Controller) createReplicasService(postgres *api.Postgres) (kutil.VerbTy
 func (c *Controller) ensureStatsService(postgres *api.Postgres) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
 	if postgres.GetMonitoringVendor() != mona.VendorPrometheus {
-		log.Warningln("postgres.spec.monitor.agent is not coreos-operator or builtin.")
+		log.Infoln("postgres.spec.monitor.agent is not coreos-operator or builtin.")
 		return kutil.VerbUnchanged, nil
 	}
 

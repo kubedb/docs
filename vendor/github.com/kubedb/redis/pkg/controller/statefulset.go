@@ -141,6 +141,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis) (*apps.StatefulSet, kut
 						ContainerPort: redis.Spec.Monitor.Prometheus.Port,
 					},
 				},
+				Resources: redis.Spec.Monitor.Resources,
 			})
 		}
 

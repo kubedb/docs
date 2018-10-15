@@ -163,6 +163,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 						ContainerPort: mysql.Spec.Monitor.Prometheus.Port,
 					},
 				},
+				Resources: mysql.Spec.Monitor.Resources,
 			})
 		}
 		// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable

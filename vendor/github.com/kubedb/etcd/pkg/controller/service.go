@@ -111,7 +111,7 @@ func (c *Controller) checkService(etcd *api.Etcd, serviceName string) error {
 func (c *Controller) ensureStatsService(etcd *api.Etcd) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
 	if etcd.GetMonitoringVendor() != mona.VendorPrometheus {
-		log.Warningln("spec.monitor.agent is not coreos-operator or builtin.")
+		log.Infoln("spec.monitor.agent is not coreos-operator or builtin.")
 		return kutil.VerbUnchanged, nil
 	}
 
