@@ -26,3 +26,4 @@ We use Slack for public discussions. To chit chat with us or the rest of the com
 To receive product annoucements, please join our [mailing list](https://groups.google.com/forum/#!forum/kubedb) or follow us on [Twitter](https://twitter.com/KubeDB). Our mailing list is also used to share design docs shared via Google docs.
 
 If you have found a bug with KubeDB or want to request for new features, please [file an issue](https://github.com/kubedb/project/issues/new).
+
