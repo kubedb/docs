@@ -71,7 +71,6 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 							Args: append([]string{
 								api.JobTypeRestore,
 								fmt.Sprintf(`--host=%s`, mysql.ServiceName()),
-								fmt.Sprintf(`--user=%s`, mysqlUser),
 								fmt.Sprintf(`--data-dir=%s`, snapshotDumpDir),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
@@ -79,10 +78,14 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
 								"--",
 							}, mysql.Spec.Init.SnapshotSource.Args...),
-							Env: []core.EnvVar{
+							Env: core_util.UpsertEnvVars([]core.EnvVar{
 								{
 									Name:  analytics.Key,
 									Value: c.AnalyticsClientID,
+								},
+								{
+									Name:  "DB_USER",
+									Value: mysqlUser,
 								},
 								{
 									Name: "DB_PASSWORD",
@@ -95,7 +98,7 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 										},
 									},
 								},
-							},
+							}, snapshot.Spec.PodTemplate.Spec.Env...),
 							Resources:      snapshot.Spec.PodTemplate.Spec.Resources,
 							LivenessProbe:  snapshot.Spec.PodTemplate.Spec.LivenessProbe,
 							ReadinessProbe: snapshot.Spec.PodTemplate.Spec.ReadinessProbe,
@@ -222,7 +225,6 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 							Args: append([]string{
 								api.JobTypeBackup,
 								fmt.Sprintf(`--host=%s`, mysql.ServiceName()),
-								fmt.Sprintf(`--user=%s`, mysqlUser),
 								fmt.Sprintf(`--data-dir=%s`, snapshotDumpDir),
 								fmt.Sprintf(`--bucket=%s`, bucket),
 								fmt.Sprintf(`--folder=%s`, folderName),
@@ -230,10 +232,14 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
 								"--",
 							}, dumpArgs...),
-							Env: []core.EnvVar{
+							Env: core_util.UpsertEnvVars([]core.EnvVar{
 								{
 									Name:  analytics.Key,
 									Value: c.AnalyticsClientID,
+								},
+								{
+									Name:  "DB_USER",
+									Value: mysqlUser,
 								},
 								{
 									Name: "DB_PASSWORD",
@@ -246,7 +252,7 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 										},
 									},
 								},
-							},
+							}, snapshot.Spec.PodTemplate.Spec.Env...),
 							Resources:      snapshot.Spec.PodTemplate.Spec.Resources,
 							LivenessProbe:  snapshot.Spec.PodTemplate.Spec.LivenessProbe,
 							ReadinessProbe: snapshot.Spec.PodTemplate.Spec.ReadinessProbe,
