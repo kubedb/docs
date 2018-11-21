@@ -13,7 +13,7 @@ func (c *Controller) initWatcher() {
 	c.pgInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Postgreses().Informer()
 	c.pgQueue = queue.New("Postgres", c.MaxNumRequeues, c.NumThreads, c.runPostgres)
 	c.pgLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Postgreses().Lister()
-	c.pgInformer.AddEventHandler(queue.NewObservableHandler(c.pgQueue.GetQueue(), apis.EnableStatusSubresource))
+	c.pgInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.pgQueue.GetQueue(), apis.EnableStatusSubresource))
 }
 
 func (c *Controller) runPostgres(key string) error {

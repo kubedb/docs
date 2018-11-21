@@ -8,7 +8,6 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
-	"github.com/kubedb/apimachinery/pkg/eventer"
 	"golang.org/x/crypto/bcrypt"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -38,13 +37,6 @@ func (c *Controller) ensureCertSecret(elasticsearch *api.Elasticsearch) error {
 			return in
 		})
 		if err != nil {
-			c.recorder.Eventf(
-				elasticsearch,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-
 			return err
 		}
 		elasticsearch.Spec.CertificateSecret = es.Spec.CertificateSecret
@@ -64,12 +56,6 @@ func (c *Controller) ensureDatabaseSecret(elasticsearch *api.Elasticsearch) erro
 			return in
 		})
 		if err != nil {
-			c.recorder.Eventf(
-				elasticsearch,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
 			return err
 		}
 		elasticsearch.Spec.DatabaseSecret = es.Spec.DatabaseSecret
@@ -91,7 +77,7 @@ func (c *Controller) findCertSecret(elasticsearch *api.Elasticsearch) (*core.Sec
 
 	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindElasticsearch ||
 		secret.Labels[api.LabelDatabaseName] != elasticsearch.Name {
-		return nil, fmt.Errorf(`intended secret "%v" already exists`, name)
+		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, elasticsearch.Namespace, name)
 	}
 
 	return secret, nil
@@ -196,7 +182,7 @@ func (c *Controller) findDatabaseSecret(elasticsearch *api.Elasticsearch) (*core
 
 	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindElasticsearch ||
 		secret.Labels[api.LabelDatabaseName] != elasticsearch.Name {
-		return nil, fmt.Errorf(`intended secret "%v" already exists`, name)
+		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, elasticsearch.Namespace, name)
 	}
 
 	return secret, nil

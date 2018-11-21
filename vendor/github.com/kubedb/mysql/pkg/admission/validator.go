@@ -88,7 +88,7 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
-				return hookapi.StatusBadRequest(fmt.Errorf(`mysql "%s" can't be paused. To delete, change spec.terminationPolicy`, req.Name))
+				return hookapi.StatusBadRequest(fmt.Errorf(`mysql "%v/%v" can't be paused. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
 			}
 		}
 	default:
@@ -175,8 +175,8 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 	if mysql.Spec.Init != nil &&
 		mysql.Spec.Init.SnapshotSource != nil &&
 		databaseSecret == nil {
-		return fmt.Errorf("for Snapshot init, 'spec.databaseSecret.secretName' of %v needs to be similar to older database of snapshot %v",
-			mysql.Name, mysql.Spec.Init.SnapshotSource.Name)
+		return fmt.Errorf("for Snapshot init, 'spec.databaseSecret.secretName' of %v/%v needs to be similar to older database of snapshot %v/%v",
+			mysql.Namespace, mysql.Name, mysql.Spec.Init.SnapshotSource.Namespace, mysql.Spec.Init.SnapshotSource.Name)
 	}
 
 	backupScheduleSpec := mysql.Spec.BackupSchedule
@@ -223,7 +223,7 @@ func matchWithDormantDatabase(extClient cs.Interface, mysql *api.MySQL) error {
 
 	// Check DatabaseKind
 	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindMySQL {
-		return errors.New(fmt.Sprintf(`invalid MySQL: "%v". Exists DormantDatabase "%v" of different Kind`, mysql.Name, dormantDb.Name))
+		return errors.New(fmt.Sprintf(`invalid MySQL: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, mysql.Namespace, mysql.Name, dormantDb.Namespace, dormantDb.Name))
 	}
 
 	// Check Origin Spec

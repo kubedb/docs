@@ -13,7 +13,7 @@ func (c *Controller) initWatcher() {
 	c.myInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().MySQLs().Informer()
 	c.myQueue = queue.New("MySQL", c.MaxNumRequeues, c.NumThreads, c.runMySQL)
 	c.myLister = c.KubedbInformerFactory.Kubedb().V1alpha1().MySQLs().Lister()
-	c.myInformer.AddEventHandler(queue.NewObservableHandler(c.myQueue.GetQueue(), apis.EnableStatusSubresource))
+	c.myInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.myQueue.GetQueue(), apis.EnableStatusSubresource))
 }
 
 func (c *Controller) runMySQL(key string) error {

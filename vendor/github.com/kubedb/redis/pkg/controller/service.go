@@ -27,13 +27,6 @@ func (c *Controller) ensureService(redis *api.Redis) (kutil.VerbType, error) {
 	// create database Service
 	vt, err := c.createService(redis)
 	if err != nil {
-		c.recorder.Eventf(
-			redis,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to create Service. Reason: %v",
-			err,
-		)
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
@@ -58,7 +51,7 @@ func (c *Controller) checkService(redis *api.Redis, serviceName string) error {
 
 	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindRedis ||
 		service.Labels[api.LabelDatabaseName] != redis.Name {
-		return fmt.Errorf(`intended service "%v" already exists`, serviceName)
+		return fmt.Errorf(`intended service "%v/%v" already exists`, redis.Namespace, serviceName)
 	}
 
 	return nil
@@ -148,13 +141,6 @@ func (c *Controller) ensureStatsService(redis *api.Redis) (kutil.VerbType, error
 		return in
 	})
 	if err != nil {
-		c.recorder.Eventf(
-			redis,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to reconcile stats service. Reason: %v",
-			err,
-		)
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(

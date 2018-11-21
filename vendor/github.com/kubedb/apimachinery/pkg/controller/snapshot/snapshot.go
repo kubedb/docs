@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/log"
+	"github.com/appscode/kutil"
 	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
@@ -34,7 +35,26 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 		*snapshot = *snap
 	}
 
+	// Do not process "completed", aka "failed" or "succeeded", snapshots.
 	if snapshot.Status.Phase == api.SnapshotPhaseFailed || snapshot.Status.Phase == api.SnapshotPhaseSucceeded {
+		// Although the snapshot is "completed", yet the snapshot CRD can contain annotation "snapshot.kubedb.com/status: Running",
+		// due to failure of operator in critical moment. So, Make sure the "completed" snapshot doesn't have
+		// annotation "snapshot.kubedb.com/status: Running".
+		// Error may occur when the operator just restarted and the Webhooks is not in working state yet. So retry for "InternalError".
+		if _, _, err := util.PatchSnapshot(c.ExtClient.KubedbV1alpha1(), snapshot, func(in *api.Snapshot) *api.Snapshot {
+			delete(in.Labels, api.LabelSnapshotStatus)
+			return in
+		}); err != nil {
+			c.eventRecorder.Eventf(
+				snapshot,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToUpdate,
+				err.Error(),
+			)
+			if kutil.IsRequestRetryable(err) || kutil.AdmissionWebhookDeniedRequest(err) {
+				return err
+			}
+		}
 		return nil
 	}
 

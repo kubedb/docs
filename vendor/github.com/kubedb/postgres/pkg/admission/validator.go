@@ -87,7 +87,7 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
-				return hookapi.StatusBadRequest(fmt.Errorf(`postgres "%s" can't be paused. To delete, change spec.terminationPolicy`, req.Name))
+				return hookapi.StatusBadRequest(fmt.Errorf(`postgres "%v/%v" can't be paused. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
 			}
 		}
 	default:
@@ -212,8 +212,8 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	if postgres.Spec.Init != nil &&
 		postgres.Spec.Init.SnapshotSource != nil &&
 		databaseSecret == nil {
-		return fmt.Errorf("in Snapshot init, 'spec.databaseSecret.secretName' of %v needs to be similar to older database of snapshot %v",
-			postgres.Name, postgres.Spec.Init.SnapshotSource.Name)
+		return fmt.Errorf("in Snapshot init, 'spec.databaseSecret.secretName' of %v/%v needs to be similar to older database of snapshot %v",
+			postgres.Namespace, postgres.Name, postgres.Spec.Init.SnapshotSource.Name)
 	}
 
 	if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
@@ -277,7 +277,7 @@ func matchWithDormantDatabase(extClient cs.Interface, postgres *api.Postgres) er
 
 	// Check DatabaseKind
 	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindPostgres {
-		return errors.New(fmt.Sprintf(`invalid Postgres: "%v". Exists DormantDatabase "%v" of different Kind`, postgres.Name, dormantDb.Name))
+		return errors.New(fmt.Sprintf(`invalid Postgres: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, postgres.Namespace, postgres.Name, dormantDb.Namespace, dormantDb.Name))
 	}
 
 	// Check Origin Spec

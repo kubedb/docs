@@ -38,13 +38,6 @@ func (c *Controller) ensureStatefulSet(redis *api.Redis) (kutil.VerbType, error)
 	// Check StatefulSet Pod status
 	if vt != kutil.VerbUnchanged {
 		if err := c.checkStatefulSetPodStatus(statefulSet); err != nil {
-			c.recorder.Eventf(
-				redis,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToStart,
-				`Failed to CreateOrPatch StatefulSet. Reason: %v`,
-				err,
-			)
 			return kutil.VerbUnchanged, err
 		}
 		c.recorder.Eventf(
@@ -70,7 +63,7 @@ func (c *Controller) checkStatefulSet(redis *api.Redis) error {
 
 	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindRedis ||
 		statefulSet.Labels[api.LabelDatabaseName] != redis.Name {
-		return fmt.Errorf(`Intended statefulSet "%v" already exists`, redis.OffshootName())
+		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, redis.Namespace, redis.OffshootName())
 	}
 
 	return nil

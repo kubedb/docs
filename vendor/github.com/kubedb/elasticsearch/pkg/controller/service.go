@@ -33,14 +33,6 @@ func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.Verb
 	// create database Service
 	vt1, err := c.createService(elasticsearch)
 	if err != nil {
-		c.recorder.Eventf(
-			elasticsearch,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to createOrPatch Service. Reason: %v",
-			err,
-		)
-
 		return kutil.VerbUnchanged, err
 	} else if vt1 != kutil.VerbUnchanged {
 		c.recorder.Eventf(
@@ -61,14 +53,6 @@ func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.Verb
 	// create database Service
 	vt2, err := c.createMasterService(elasticsearch)
 	if err != nil {
-		c.recorder.Eventf(
-			elasticsearch,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to createOrPatch Service. Reason: %v",
-			err,
-		)
-
 		return kutil.VerbUnchanged, err
 	} else if vt2 != kutil.VerbUnchanged {
 		c.recorder.Eventf(
@@ -100,7 +84,7 @@ func (c *Controller) checkService(elasticsearch *api.Elasticsearch, name string)
 
 	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindElasticsearch ||
 		service.Labels[api.LabelDatabaseName] != elasticsearch.Name {
-		return fmt.Errorf(`intended service "%v" already exists`, name)
+		return fmt.Errorf(`intended service "%v/%v" already exists`, elasticsearch.Namespace, name)
 	}
 
 	return nil
@@ -220,13 +204,6 @@ func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil
 		return in
 	})
 	if err != nil {
-		c.recorder.Eventf(
-			elasticsearch,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to reconcile stats service. Reason: %v",
-			err,
-		)
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(

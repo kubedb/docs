@@ -85,7 +85,7 @@ func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
-				return hookapi.StatusBadRequest(fmt.Errorf(`redis "%s" can't be paused. To delete, change spec.terminationPolicy`, req.Name))
+				return hookapi.StatusBadRequest(fmt.Errorf(`redis "%v/%v" can't be paused. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
 			}
 		}
 	default:
@@ -192,7 +192,7 @@ func matchWithDormantDatabase(extClient cs.Interface, redis *api.Redis) error {
 
 	// Check DatabaseKind
 	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindRedis {
-		return errors.New(fmt.Sprintf(`invalid Redis: "%v". Exists DormantDatabase "%v" of different Kind`, redis.Name, dormantDb.Name))
+		return errors.New(fmt.Sprintf(`invalid Redis: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, redis.Namespace, redis.Name, dormantDb.Namespace, dormantDb.Name))
 	}
 
 	// Check Origin Spec

@@ -26,13 +26,6 @@ func (c *Controller) ensureService(memcached *api.Memcached) (kutil.VerbType, er
 	// create database Service
 	vt, err := c.createService(memcached)
 	if err != nil {
-		c.recorder.Eventf(
-			memcached,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to create Service. Reason: %v",
-			err,
-		)
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
@@ -57,7 +50,7 @@ func (c *Controller) checkService(memcached *api.Memcached, serviceName string) 
 
 	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindMemcached ||
 		service.Labels[api.LabelDatabaseName] != memcached.Name {
-		return fmt.Errorf(`intended service "%v" already exists`, serviceName)
+		return fmt.Errorf(`intended service "%v/%v" already exists`, memcached.Namespace, serviceName)
 	}
 
 	return nil
@@ -147,13 +140,6 @@ func (c *Controller) ensureStatsService(memcached *api.Memcached) (kutil.VerbTyp
 		return in
 	})
 	if err != nil {
-		c.recorder.Eventf(
-			memcached,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to reconcile stats service. Reason: %v",
-			err,
-		)
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(

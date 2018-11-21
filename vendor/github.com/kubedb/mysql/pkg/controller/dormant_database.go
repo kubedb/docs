@@ -43,11 +43,9 @@ func (c *Controller) WipeOutDatabase(drmn *api.DormantDatabase) error {
 	if rerr != nil {
 		return rerr
 	}
-
 	if err := c.wipeOutDatabase(drmn.ObjectMeta, drmn.GetDatabaseSecrets(), ref); err != nil {
 		return errors.Wrap(err, "error in wiping out database.")
 	}
-
 	return nil
 }
 
@@ -135,7 +133,6 @@ func (c *Controller) secretsUsedByPeers(meta metav1.ObjectMeta) (sets.String, er
 			secretUsed.Insert(my.Spec.GetSecrets()...)
 		}
 	}
-
 	labelMap := map[string]string{
 		api.LabelDatabaseKind: api.ResourceKindMySQL,
 	}

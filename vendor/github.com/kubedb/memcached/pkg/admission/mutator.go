@@ -128,7 +128,7 @@ func setDefaultsFromDormantDB(extClient cs.Interface, memcached *api.Memcached) 
 
 	// Check DatabaseKind
 	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindMemcached {
-		return errors.New(fmt.Sprintf(`invalid Memcached: "%v". Exists DormantDatabase "%v" of different Kind`, memcached.Name, dormantDb.Name))
+		return errors.New(fmt.Sprintf(`invalid Memcached: "%v/%v". Exists DormantDatabase "%v%v" of different Kind`, memcached.Namespace, memcached.Name, dormantDb.Namespace, dormantDb.Name))
 	}
 
 	// Check Origin Spec
