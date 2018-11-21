@@ -29,22 +29,17 @@ func (c *Controller) create(mysql *api.MySQL) error {
 			mysql,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
-			err.Error())
+			err.Error(),
+		)
 		log.Errorln(err)
+		// stop Scheduler in case there is any.
+		c.cronController.StopBackupScheduling(mysql.ObjectMeta)
 		return nil
 	}
 
 	// Delete Matching DormantDatabase if exists any
 	if err := c.deleteMatchingDormantDatabase(mysql); err != nil {
-		c.recorder.Eventf(
-			mysql,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			`Failed to delete dormant Database : "%v". Reason: %v`,
-			mysql.Name,
-			err,
-		)
-		return err
+		return fmt.Errorf(`failed to delete dormant Database : "%v/%v". Reason: %v`, mysql.Namespace, mysql.Name, err)
 	}
 
 	if mysql.Status.Phase == "" {
@@ -53,12 +48,6 @@ func (c *Controller) create(mysql *api.MySQL) error {
 			return in
 		}, apis.EnableStatusSubresource)
 		if err != nil {
-			c.recorder.Eventf(
-				mysql,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
 			return err
 		}
 		mysql.Status = my.Status
@@ -67,15 +56,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	// create Governing Service
 	governingService := c.GoverningService
 	if err := c.CreateGoverningService(governingService, mysql.Namespace); err != nil {
-		c.recorder.Eventf(
-			mysql,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			`Failed to create Service: "%v". Reason: %v`,
-			governingService,
-			err,
-		)
-		return err
+		return fmt.Errorf(`failed to create Service: "%v/%v". Reason: %v`, mysql.Namespace, governingService, err)
 	}
 
 	// ensure database Service
@@ -127,7 +108,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 			return nil
 		}
 		if err := c.initialize(mysql); err != nil {
-			return fmt.Errorf("failed to complete initialization. Reason: %v", err)
+			return fmt.Errorf("failed to complete initialization for %v/%v. Reason: %v", mysql.Namespace, mysql.Name, err)
 		}
 		return nil
 	}
@@ -138,18 +119,21 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		return in
 	}, apis.EnableStatusSubresource)
 	if err != nil {
-		c.recorder.Eventf(
-			mysql,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			err.Error(),
-		)
 		return err
 	}
 	mysql.Status = my.Status
 
 	// Ensure Schedule backup
-	c.ensureBackupScheduler(mysql)
+	if err := c.ensureBackupScheduler(mysql); err != nil {
+		c.recorder.Eventf(
+			mysql,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToSchedule,
+			err.Error(),
+		)
+		log.Errorln(err)
+		// Don't return error. Continue processing rest.
+	}
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(mysql); err != nil {
@@ -179,23 +163,21 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	return nil
 }
 
-func (c *Controller) ensureBackupScheduler(mysql *api.MySQL) {
+func (c *Controller) ensureBackupScheduler(mysql *api.MySQL) error {
+	mysqlVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to get MySQLVersion %v for %v/%v. Reason: %v", mysql.Spec.Version, mysql.Namespace, mysql.Name, err)
+	}
 	// Setup Schedule backup
 	if mysql.Spec.BackupSchedule != nil {
-		err := c.cronController.ScheduleBackup(mysql, mysql.ObjectMeta, mysql.Spec.BackupSchedule)
+		err := c.cronController.ScheduleBackup(mysql, mysql.Spec.BackupSchedule, mysqlVersion)
 		if err != nil {
-			log.Errorln(err)
-			c.recorder.Eventf(
-				mysql,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToSchedule,
-				"Failed to schedule snapshot. Reason: %v",
-				err,
-			)
+			return fmt.Errorf("failed to schedule snapshot for %v/%v. Reason: %v", mysql.Namespace, mysql.Name, err)
 		}
 	} else {
 		c.cronController.StopBackupScheduling(mysql.ObjectMeta)
 	}
+	return nil
 }
 
 func (c *Controller) initialize(mysql *api.MySQL) error {
@@ -204,12 +186,6 @@ func (c *Controller) initialize(mysql *api.MySQL) error {
 		return in
 	}, apis.EnableStatusSubresource)
 	if err != nil {
-		c.recorder.Eventf(
-			mysql,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			err.Error(),
-		)
 		return err
 	}
 	mysql.Status = my.Status
@@ -281,7 +257,7 @@ func (c *Controller) terminate(mysql *api.MySQL) error {
 					return fmt.Errorf(`DormantDatabase "%v" of kind %v already exists`, mysql.Name, val)
 				}
 			} else {
-				return fmt.Errorf(`failed to create DormantDatabase: "%v". Reason: %v`, mysql.Name, err)
+				return fmt.Errorf(`failed to create DormantDatabase: "%v/%v". Reason: %v`, mysql.Namespace, mysql.Name, err)
 			}
 		}
 	} else {

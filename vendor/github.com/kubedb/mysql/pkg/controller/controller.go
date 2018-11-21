@@ -42,6 +42,7 @@ type Controller struct {
 	recorder record.EventRecorder
 	// labelselector for event-handler of Snapshot, Dormant and Job
 	selector labels.Selector
+
 	// MySQL
 	myQueue    *queue.Worker
 	myInformer cache.SharedIndexInformer
@@ -56,7 +57,7 @@ func New(
 	client kubernetes.Interface,
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
 	extClient cs.Interface,
-	dc dynamic.Interface,
+	dynamicClient dynamic.Interface,
 	promClient pcm.MonitoringV1Interface,
 	cronController snapc.CronControllerInterface,
 	opt amc.Config,
@@ -67,7 +68,7 @@ func New(
 			Client:           client,
 			ExtClient:        extClient,
 			ApiExtKubeClient: apiExtKubeClient,
-			DynamicClient:    dc,
+			DynamicClient:    dynamicClient,
 		},
 		Config:         opt,
 		promClient:     promClient,

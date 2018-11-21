@@ -13,7 +13,7 @@ func (c *Controller) initWatcher() {
 	c.esInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Elasticsearches().Informer()
 	c.esQueue = queue.New("Elasticsearch", c.MaxNumRequeues, c.NumThreads, c.runElasticsearch)
 	c.esLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Elasticsearches().Lister()
-	c.esInformer.AddEventHandler(queue.NewObservableHandler(c.esQueue.GetQueue(), apis.EnableStatusSubresource))
+	c.esInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.esQueue.GetQueue(), apis.EnableStatusSubresource))
 }
 
 func (c *Controller) runElasticsearch(key string) error {

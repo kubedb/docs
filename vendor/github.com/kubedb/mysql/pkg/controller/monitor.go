@@ -18,14 +18,14 @@ func (c *Controller) newMonitorController(mysql *api.MySQL) (mona.Agent, error) 
 	monitorSpec := mysql.Spec.Monitor
 
 	if monitorSpec == nil {
-		return nil, fmt.Errorf("MonitorSpec not found in %v", mysql.Spec)
+		return nil, fmt.Errorf("MonitorSpec not found for MySQL %v/%v in %v", mysql.Namespace, mysql.Name, mysql.Spec)
 	}
 
 	if monitorSpec.Prometheus != nil {
 		return agents.New(monitorSpec.Agent, c.Client, c.ApiExtKubeClient, c.promClient), nil
 	}
 
-	return nil, fmt.Errorf("monitoring controller not found for %v", monitorSpec)
+	return nil, fmt.Errorf("monitoring controller not found for MySQL %v/%v in %v", mysql.Namespace, mysql.Name, monitorSpec)
 }
 
 func (c *Controller) addOrUpdateMonitor(mysql *api.MySQL) (kutil.VerbType, error) {

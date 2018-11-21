@@ -1,35 +1,46 @@
 package snapshot
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 	"time"
 
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil/meta"
+	discovery_util "github.com/appscode/kutil/discovery"
+	meta_util "github.com/appscode/kutil/meta"
+	apiCatalog "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	"github.com/orcaman/concurrent-map"
 	"gopkg.in/robfig/cron.v2"
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 )
 
 type CronControllerInterface interface {
 	StartCron()
-	ScheduleBackup(runtime.Object, metav1.ObjectMeta, *api.BackupScheduleSpec) error
+	// ScheduleBackup takes parameter DB-runtime object, DB.scheduleSpec.BackupSchedule and DB-Version-Catalog
+	ScheduleBackup(db runtime.Object, scheduleSpec *api.BackupScheduleSpec, catalog runtime.Object) error
 	StopBackupScheduling(metav1.ObjectMeta)
 	StopCron()
 }
 
 type cronController struct {
+	// kube client
+	kubeClient kubernetes.Interface
 	// ThirdPartyExtension client
 	extClient cs.Interface
+	// dynamic client
+	dynamicClient dynamic.Interface
 	// For Internal Cron Job
 	cron *cron.Cron
 	// Store Cron Job EntryID for further use
@@ -44,9 +55,11 @@ type cronController struct {
  NewCronController returns CronControllerInterface.
  Need to call StartCron() method to start Cron.
 */
-func NewCronController(client kubernetes.Interface, extClient cs.Interface) CronControllerInterface {
+func NewCronController(client kubernetes.Interface, extClient cs.Interface, dc dynamic.Interface) CronControllerInterface {
 	return &cronController{
+		kubeClient:    client,
 		extClient:     extClient,
+		dynamicClient: dc,
 		cron:          cron.New(),
 		cronEntryIDs:  cmap.New(),
 		eventRecorder: eventer.NewEventRecorder(client, "Cron controller"),
@@ -61,20 +74,27 @@ func (c *cronController) StartCron() {
 
 func (c *cronController) ScheduleBackup(
 	// Runtime Object to push event
-	runtimeObj runtime.Object,
-	// ObjectMeta of Database TPR object
-	om metav1.ObjectMeta,
+	db runtime.Object,
 	// BackupScheduleSpec
-	spec *api.BackupScheduleSpec,
+	scheduleSpec *api.BackupScheduleSpec,
+	// DBVersion catalog
+	catalog runtime.Object,
 ) error {
+	dbObjectMeta, err := meta.Accessor(db)
+	if err != nil {
+		return err
+	}
 	// cronEntry name
-	cronEntryName := fmt.Sprintf("%v@%v", om.Name, om.Namespace)
+	cronEntryName := fmt.Sprintf("%v@%v", dbObjectMeta.GetName(), dbObjectMeta.GetNamespace())
 
 	invoker := &snapshotInvoker{
+		kubeClient:    c.kubeClient,
 		extClient:     c.extClient,
-		runtimeObject: runtimeObj,
-		om:            om,
-		spec:          spec,
+		dynamicClient: c.dynamicClient,
+		db:            db,
+		dbMetaObject:  dbObjectMeta,
+		scheduleSpec:  scheduleSpec,
+		catalog:       catalog,
 		eventRecorder: c.eventRecorder,
 	}
 
@@ -82,11 +102,30 @@ func (c *cronController) ScheduleBackup(
 	if id, exists := c.cronEntryIDs.Pop(cronEntryName); exists {
 		c.cron.Remove(id.(cron.EntryID))
 	} else {
-		invoker.createScheduledSnapshot()
+		if err := invoker.createScheduledSnapshot(); err != nil {
+			invoker.eventRecorder.Eventf(
+				invoker.db,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToList,
+				err.Error(),
+			)
+			log.Errorf(err.Error())
+			return err
+		}
 	}
 
 	// Set cron job
-	entryID, err := c.cron.AddFunc(spec.CronExpression, invoker.createScheduledSnapshot)
+	entryID, err := c.cron.AddFunc(scheduleSpec.CronExpression, func() {
+		if err := invoker.createScheduledSnapshot(); err != nil {
+			invoker.eventRecorder.Eventf(
+				invoker.db,
+				core.EventTypeWarning,
+				eventer.EventReasonFailedToList,
+				err.Error(),
+			)
+			log.Errorf(err.Error())
+		}
+	})
 	if err != nil {
 		return err
 	}
@@ -111,92 +150,96 @@ func (c *cronController) StopCron() {
 }
 
 type snapshotInvoker struct {
+	kubeClient    kubernetes.Interface
 	extClient     cs.Interface
-	runtimeObject runtime.Object
-	om            metav1.ObjectMeta
-	spec          *api.BackupScheduleSpec
+	dynamicClient dynamic.Interface
+	db            runtime.Object
+	dbMetaObject  metav1.Object
+	scheduleSpec  *api.BackupScheduleSpec
+	catalog       runtime.Object
 	eventRecorder record.EventRecorder
 }
 
-func (s *snapshotInvoker) createScheduledSnapshot() {
-	kind := meta.GetKind(s.runtimeObject)
-	name := s.om.Name
+func (s *snapshotInvoker) createScheduledSnapshot() error {
+	dbKind := meta_util.GetKind(s.db)
+	catalogKind := meta_util.GetKind(s.catalog)
+	catalogMetaObject, err := meta.Accessor(s.catalog)
+	if err != nil {
+		return err
+	}
+
+	gvkCatalog := apiCatalog.SchemeGroupVersion.WithKind(catalogKind)
+	gvrCatalog, err := discovery_util.ResourceForGVK(s.kubeClient.Discovery(), gvkCatalog)
+	if err != nil {
+		return fmt.Errorf("failed to get 'gvrCatalog' for %v/%v. Reason: %v", catalogKind, catalogMetaObject, err)
+	}
+
+	updatedCatalog, err := s.dynamicClient.Resource(gvrCatalog).Get(catalogMetaObject.GetName(), metav1.GetOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to get DB Catalog %v/%v. Reason: %v", catalogKind, catalogMetaObject, err)
+	}
+
+	if val, found, err := unstructured.NestedBool(updatedCatalog.UnstructuredContent(), "scheduleSpec", "deprecated"); err != nil {
+		return fmt.Errorf("failed to get scheduleSpec.Deprecated value. Reason: %v", err)
+	} else if found && val == true {
+		return fmt.Errorf("%v %s/%s is using deprecated version %v. Skipped processing scheduler",
+			dbKind, s.dbMetaObject.GetNamespace(), s.dbMetaObject.GetName(), catalogMetaObject)
+	}
 
 	labelMap := map[string]string{
-		api.LabelDatabaseKind:   kind,
-		api.LabelDatabaseName:   name,
+		api.LabelDatabaseKind:   dbKind,
+		api.LabelDatabaseName:   s.dbMetaObject.GetName(),
 		api.LabelSnapshotStatus: string(api.SnapshotPhaseRunning),
 	}
 
-	snapshotList, err := s.extClient.KubedbV1alpha1().Snapshots(s.om.Namespace).List(metav1.ListOptions{
+	snapshotList, err := s.extClient.KubedbV1alpha1().Snapshots(s.dbMetaObject.GetNamespace()).List(metav1.ListOptions{
 		LabelSelector: labels.Set(labelMap).AsSelector().String(),
 	})
 	if err != nil {
-		s.eventRecorder.Eventf(
-			s.runtimeObject,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToList,
-			"Failed to list Snapshots. Reason: %v",
-			err,
-		)
-		log.Errorln(err)
-		return
+		return fmt.Errorf("failed to list Snapshots. Reason: %v", err)
 	}
 
 	if len(snapshotList.Items) > 0 {
-		s.eventRecorder.Event(
-			s.runtimeObject,
-			core.EventTypeNormal,
-			eventer.EventReasonIgnoredSnapshot,
-			"Skipping scheduled Backup. One is still active.",
-		)
-		log.Debugln("Skipping scheduled Backup. One is still active.")
-		return
+		return errors.New("skipping scheduled Backup. One is still active")
 	}
 
 	// Set label. Elastic controller will detect this using label selector
 	labelMap = map[string]string{
-		api.LabelDatabaseKind: kind,
-		api.LabelDatabaseName: name,
+		api.LabelDatabaseKind: dbKind,
+		api.LabelDatabaseName: s.dbMetaObject.GetName(),
 	}
 
 	now := time.Now().UTC()
-	snapshotName := fmt.Sprintf("%v-%v", s.om.Name, now.Format("20060102-150405"))
+	snapshotName := fmt.Sprintf("%v-%v", s.dbMetaObject.GetName(), now.Format("20060102-150405"))
 
 	if _, err = s.createSnapshot(snapshotName); err != nil {
-		log.Errorln(err)
+		return err
 	}
+	return nil
 }
 
 func (s *snapshotInvoker) createSnapshot(snapshotName string) (*api.Snapshot, error) {
 	labelMap := map[string]string{
-		api.LabelDatabaseKind: meta.GetKind(s.runtimeObject),
-		api.LabelDatabaseName: s.om.Name,
+		api.LabelDatabaseKind: meta_util.GetKind(s.db),
+		api.LabelDatabaseName: s.dbMetaObject.GetName(),
 	}
 
 	snapshot := &api.Snapshot{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      snapshotName,
-			Namespace: s.om.Namespace,
+			Namespace: s.dbMetaObject.GetNamespace(),
 			Labels:    labelMap,
 		},
 		Spec: api.SnapshotSpec{
-			DatabaseName: s.om.Name,
-			Backend:      s.spec.Backend,
-			PodTemplate:  s.spec.PodTemplate,
+			DatabaseName: s.dbMetaObject.GetName(),
+			Backend:      s.scheduleSpec.Backend,
+			PodTemplate:  s.scheduleSpec.PodTemplate,
 		},
 	}
 
 	snapshot, err := s.extClient.KubedbV1alpha1().Snapshots(snapshot.Namespace).Create(snapshot)
 	if err != nil {
-		s.eventRecorder.Eventf(
-			s.runtimeObject,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to create Snapshot. Reason: %v",
-			err,
-		)
-		return nil, err
+		return nil, fmt.Errorf("failed to create Snapshot. Reason: %v", err)
 	}
 
 	return snapshot, nil

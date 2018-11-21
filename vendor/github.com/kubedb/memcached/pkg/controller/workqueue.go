@@ -13,7 +13,7 @@ func (c *Controller) initWatcher() {
 	c.mcInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Memcacheds().Informer()
 	c.mcQueue = queue.New("Memcached", c.MaxNumRequeues, c.NumThreads, c.runMemcached)
 	c.mcLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Memcacheds().Lister()
-	c.mcInformer.AddEventHandler(queue.NewObservableHandler(c.mcQueue.GetQueue(), apis.EnableStatusSubresource))
+	c.mcInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.mcQueue.GetQueue(), apis.EnableStatusSubresource))
 }
 
 func (c *Controller) runMemcached(key string) error {
