@@ -1,0 +1,14 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: appscodeci/dind
+    tag: latest
+
+inputs:
+- name: mongodb
+- name: creds
+
+run:
+  path: mongodb/hack/concourse/test.sh

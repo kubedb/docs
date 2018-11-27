@@ -33,13 +33,6 @@ func (c *Controller) ensureStatefulSet(mysql *api.MySQL) (kutil.VerbType, error)
 	// Check StatefulSet Pod status
 	if vt != kutil.VerbUnchanged {
 		if err := c.checkStatefulSetPodStatus(statefulSet); err != nil {
-			c.recorder.Eventf(
-				mysql,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToStart,
-				`Failed to CreateOrPatch StatefulSet. Reason: %v`,
-				err,
-			)
 			return kutil.VerbUnchanged, err
 		}
 		c.recorder.Eventf(
@@ -65,7 +58,7 @@ func (c *Controller) checkStatefulSet(mysql *api.MySQL) error {
 
 	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindMySQL ||
 		statefulSet.Labels[api.LabelDatabaseName] != mysql.Name {
-		return fmt.Errorf(`intended statefulSet "%v" already exists`, mysql.OffshootName())
+		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, mysql.Namespace, mysql.OffshootName())
 	}
 
 	return nil

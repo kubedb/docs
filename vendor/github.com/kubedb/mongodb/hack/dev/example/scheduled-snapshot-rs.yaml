@@ -1,0 +1,27 @@
+apiVersion: kubedb.com/v1alpha1
+kind: MongoDB
+metadata:
+  name: mgo-scheduled-rs
+  namespace: demo
+spec:
+  version: "3.6"
+  replicas: 3
+  replicaSet:
+    name: rs0
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Mi
+  init:
+    scriptSource:
+      gitRepo:
+        repository: "https://github.com/kubedb/mongodb-init-scripts.git"
+        directory: .
+  backupSchedule:
+    cronExpression: "@every 1m"
+    storageSecretName: gcs-secret
+    gcs:
+      bucket: kubedb

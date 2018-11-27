@@ -1,4 +1,4 @@
-package: github.com/kubedb/operator
+package: github.com/tekliner/operator
 import:
 - package: github.com/appscode/go
   version: master
@@ -24,8 +24,7 @@ import:
   version: 3639d6d93f377f39a1de765fa4ef37b3c7ca8bd9
 - package: cloud.google.com/go
   version: v0.2.0
-- package: github.com/jpillora/go-ogle-analytics
-- package: github.com/kubedb/apimachinery
+- package: github.com/tekliner/apimachinery
   version: master
 - package: github.com/kubedb/elasticsearch
   version: master
@@ -37,7 +36,7 @@ import:
   version: master
 - package: github.com/kubedb/mysql
   version: master
-- package: github.com/kubedb/postgres
+- package: github.com/tekliner/postgres
   version: master
 - package: github.com/kubedb/redis
   version: master

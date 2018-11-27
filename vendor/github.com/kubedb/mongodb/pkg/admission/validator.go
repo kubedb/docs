@@ -86,7 +86,7 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
-				return hookapi.StatusBadRequest(fmt.Errorf(`mongodb "%s" can't be paused. To delete, change spec.terminationPolicy`, req.Name))
+				return hookapi.StatusBadRequest(fmt.Errorf(`mongodb "%v/%v" can't be paused. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
 			}
 		}
 	default:
@@ -223,7 +223,7 @@ func matchWithDormantDatabase(extClient cs.Interface, mongodb *api.MongoDB) erro
 
 	// Check DatabaseKind
 	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindMongoDB {
-		return errors.New(fmt.Sprintf(`invalid MongoDB: "%v". Exists DormantDatabase "%v" of different Kind`, mongodb.Name, dormantDb.Name))
+		return errors.New(fmt.Sprintf(`invalid MongoDB: "%v/%v". Exists DormantDatabase "%v" of different Kind`, mongodb.Namespace, mongodb.Name, dormantDb.Name))
 	}
 
 	// Check Origin Spec

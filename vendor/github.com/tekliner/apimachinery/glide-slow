@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# You can execute me through Glide by doing the following:
+# - Execute `glide slow`
+# - ???
+# - Profit
+
+pushd $GOPATH/src/github.com/kubedb/apimachinery
+
+glide up -v
+glide vc --use-lock-file --only-code --no-tests
+
+popd

@@ -5,10 +5,10 @@ import (
 	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
 	"github.com/appscode/kutil/discovery"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
-	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
-	amc "github.com/kubedb/apimachinery/pkg/controller"
-	"github.com/kubedb/apimachinery/pkg/controller/dormantdatabase"
-	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
+	cs "github.com/tekliner/apimachinery/client/clientset/versioned"
+	amc "github.com/tekliner/apimachinery/pkg/controller"
+	"github.com/tekliner/apimachinery/pkg/controller/dormantdatabase"
+	snapc "github.com/tekliner/apimachinery/pkg/controller/snapshot"
 	esc "github.com/kubedb/elasticsearch/pkg/controller"
 	edc "github.com/kubedb/etcd/pkg/controller"
 	mcc "github.com/kubedb/memcached/pkg/controller"
@@ -28,9 +28,7 @@ const (
 )
 
 var (
-	AnalyticsClientID string
-	EnableAnalytics   = true
-	LoggerOptions     golog.Options
+	LoggerOptions golog.Options
 )
 
 type OperatorConfig struct {

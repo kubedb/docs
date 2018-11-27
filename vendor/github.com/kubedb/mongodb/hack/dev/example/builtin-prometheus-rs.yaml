@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha1
+kind: MongoDB
+metadata:
+  name: mgo-mon-prometheus-rs
+  namespace: demo
+spec:
+  version: "3.6"
+  replicas: 3
+  replicaSet:
+    name: rs0
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Mi
+  monitor:
+    agent: prometheus.io/builtin

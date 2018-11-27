@@ -36,13 +36,6 @@ func (c *Controller) ensureService(postgres *api.Postgres) (kutil.VerbType, erro
 	// create database Service
 	vt1, err := c.createService(postgres)
 	if err != nil {
-		c.recorder.Eventf(
-			postgres,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to createOrPatch Service. Reason: %v",
-			err,
-		)
 		return kutil.VerbUnchanged, err
 	} else if vt1 != kutil.VerbUnchanged {
 		c.recorder.Eventf(
@@ -62,13 +55,6 @@ func (c *Controller) ensureService(postgres *api.Postgres) (kutil.VerbType, erro
 	// create database Service
 	vt2, err := c.createReplicasService(postgres)
 	if err != nil {
-		c.recorder.Eventf(
-			postgres,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to createOrPatch Service. Reason: %v",
-			err,
-		)
 		return kutil.VerbUnchanged, err
 	} else if vt2 != kutil.VerbUnchanged {
 		c.recorder.Eventf(
@@ -100,7 +86,7 @@ func (c *Controller) checkService(postgres *api.Postgres, name string) error {
 
 	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindPostgres ||
 		service.Labels[api.LabelDatabaseName] != postgres.Name {
-		return fmt.Errorf(`intended service "%v" already exists`, name)
+		return fmt.Errorf(`intended service "%v/%v" already exists`, postgres.Namespace, name)
 	}
 
 	return nil
@@ -215,13 +201,6 @@ func (c *Controller) ensureStatsService(postgres *api.Postgres) (kutil.VerbType,
 		return in
 	})
 	if err != nil {
-		c.recorder.Eventf(
-			ref,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to reconcile stats service. Reason: %v",
-			err,
-		)
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(

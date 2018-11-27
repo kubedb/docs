@@ -1,0 +1,12 @@
+apiVersion: kubedb.com/v1alpha1
+kind: Snapshot
+metadata:
+  name: snapshot-rs
+  namespace: demo
+  labels:
+    kubedb.com/kind: MongoDB
+spec:
+  databaseName: mgo-rs
+  storageSecretName: gcs-secret
+  gcs:
+    bucket: kubedb

@@ -1,0 +1,3 @@
+To deploy es-operator:
+
+    $ ./hack/deploy/setup.sh --docker-registry=<docker-registry-name>

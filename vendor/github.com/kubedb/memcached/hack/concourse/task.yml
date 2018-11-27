@@ -1,0 +1,14 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: appscodeci/dind
+    tag: latest
+
+inputs:
+- name: memcached
+- name: creds
+
+run:
+  path: memcached/hack/concourse/test.sh

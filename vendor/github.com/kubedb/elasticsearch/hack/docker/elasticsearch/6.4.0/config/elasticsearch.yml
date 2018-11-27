@@ -1,0 +1,55 @@
+cluster:
+  name: ${CLUSTER_NAME}
+
+node:
+  master: ${NODE_MASTER}
+  data: ${NODE_DATA}
+  name: ${NODE_NAME}
+  ingest: ${NODE_INGEST}
+
+network.host: 0.0.0.0
+
+path:
+  data: /data/data
+  logs: /data/log
+
+bootstrap:
+  memory_lock: false
+
+http:
+  enabled: ${HTTP_ENABLE}
+  compression: true
+  cors:
+    enabled: ${HTTP_CORS_ENABLE}
+    allow-origin: ${HTTP_CORS_ALLOW_ORIGIN}
+    allow-credentials: true
+    allow-headers: "X-Requested-With, Content-Type, Content-Length, Authorization"
+
+discovery:
+  zen:
+    ping.unicast.hosts: ${DISCOVERY_SERVICE}
+    minimum_master_nodes: ${NUMBER_OF_MASTERS}
+
+# ref: https://github.com/floragunncom/search-guard-ssl/issues/43
+xpack.security.enabled: ${XPACK_SECURITY_ENABLED:false}
+
+######## Start Search Guard Configuration ########
+searchguard.disabled: ${SEARCHGUARD_DISABLED:false}
+
+# disable Search Guard enterprise modules by default
+searchguard.enterprise_modules_enabled: false
+
+searchguard.ssl.transport.keystore_filepath: certs/node.jks
+searchguard.ssl.transport.keystore_password: ${KEY_PASS}
+searchguard.ssl.transport.truststore_filepath: certs/root.jks
+searchguard.ssl.transport.truststore_password: ${KEY_PASS}
+searchguard.ssl.transport.enforce_hostname_verification: false
+searchguard.ssl.http.enabled: ${SSL_ENABLE}
+searchguard.ssl.http.keystore_filepath: certs/client.jks
+searchguard.ssl.http.keystore_password: ${KEY_PASS}
+searchguard.ssl.http.truststore_filepath: certs/root.jks
+searchguard.ssl.http.truststore_password: ${KEY_PASS}
+
+searchguard.authcz.admin_dn:
+  - 'CN=sgadmin,O=Elasticsearch Operator'
+######## End Search Guard Configuration ########

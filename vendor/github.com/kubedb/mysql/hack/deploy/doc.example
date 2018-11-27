@@ -1,0 +1,11 @@
+To deploy my-operator in self-hosted:
+
+    $ ./hack/deploy/setup.sh --docker-registry=<docker-registry-name> (--selfhosted)
+
+To run my-operator in local machine to connect minikube:
+
+    $ ./hack/deploy/setup.sh --minikube
+
+To uninstall:
+
+    $ ./hack/deploy/setup.sh --minikube --uninstall (--purge)

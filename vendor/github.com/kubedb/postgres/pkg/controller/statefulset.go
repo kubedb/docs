@@ -10,6 +10,7 @@ import (
 	app_util "github.com/appscode/kutil/apps/v1"
 	core_util "github.com/appscode/kutil/core/v1"
 	meta_util "github.com/appscode/kutil/meta"
+	"github.com/appscode/kutil/tools/analytics"
 	catalog "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -64,7 +65,17 @@ func (c *Controller) ensureStatefulSet(
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 			in.Spec.Template.Spec.Containers,
 			core.Container{
-				Name:           api.ResourceSingularPostgres,
+				Name: api.ResourceSingularPostgres,
+				Args: append([]string{
+					"leader_election",
+					fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
+				}, c.LoggerOptions.ToFlags()...),
+				Env: []core.EnvVar{
+					{
+						Name:  analytics.Key,
+						Value: c.AnalyticsClientID,
+					},
+				},
 				Image:          postgresVersion.Spec.DB.Image,
 				Resources:      postgres.Spec.PodTemplate.Spec.Resources,
 				LivenessProbe:  postgres.Spec.PodTemplate.Spec.LivenessProbe,
@@ -115,7 +126,6 @@ func (c *Controller) ensureStatefulSet(
 		if c.EnableRBAC {
 			in.Spec.Template.Spec.ServiceAccountName = postgres.OffshootName()
 		}
-
 		in.Spec.UpdateStrategy = postgres.Spec.UpdateStrategy
 
 		return in
@@ -128,14 +138,6 @@ func (c *Controller) ensureStatefulSet(
 	if vt == kutil.VerbCreated || vt == kutil.VerbPatched {
 		// Check StatefulSet Pod status
 		if err := c.CheckStatefulSetPodStatus(statefulSet); err != nil {
-			c.recorder.Eventf(
-				postgres,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToStart,
-				`Failed to be running after StatefulSet %v. Reason: %v`,
-				vt,
-				err,
-			)
 			return kutil.VerbUnchanged, err
 		}
 
@@ -227,7 +229,7 @@ func (c *Controller) checkStatefulSet(postgres *api.Postgres) error {
 
 	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindPostgres ||
 		statefulSet.Labels[api.LabelDatabaseName] != name {
-		return fmt.Errorf(`intended statefulSet "%v" already exists`, name)
+		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, postgres.Namespace, name)
 	}
 
 	return nil

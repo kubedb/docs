@@ -54,8 +54,11 @@ func (c *Controller) handleEtcdEvent(event *Event) error {
 				ref,
 				core.EventTypeWarning,
 				eventer.EventReasonInvalid,
-				err.Error())
+				err.Error(),
+			)
 		}
+		// stop Scheduler in case there is any.
+		c.cronController.StopBackupScheduling(etcd.ObjectMeta)
 		log.Errorln(err)
 		return nil
 	}
@@ -188,9 +191,21 @@ func (c *Controller) handleEtcdEvent(event *Event) error {
 }
 
 func (c *Controller) ensureBackupScheduler(etcd *api.Etcd) {
+	etcdVersion, err := c.ExtClient.CatalogV1alpha1().EtcdVersions().Get(string(etcd.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		c.recorder.Eventf(
+			etcd,
+			core.EventTypeWarning,
+			eventer.EventReasonFailedToSchedule,
+			"Failed to get EtcdVersion for %v. Reason: %v",
+			etcd.Spec.Version, err,
+		)
+		log.Errorln(err)
+		return
+	}
 	// Setup Schedule backup
 	if etcd.Spec.BackupSchedule != nil {
-		err := c.cronController.ScheduleBackup(etcd, etcd.ObjectMeta, etcd.Spec.BackupSchedule)
+		err := c.cronController.ScheduleBackup(etcd, etcd.Spec.BackupSchedule, etcdVersion)
 		if err != nil {
 			log.Errorln(err)
 			if ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd); rerr == nil {

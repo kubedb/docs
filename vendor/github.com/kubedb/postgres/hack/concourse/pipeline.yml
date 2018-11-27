@@ -1,0 +1,351 @@
+resource_types:
+- name: pull-request
+  type: docker-image
+  tags: [cncf]
+  source:
+    repository: appscodeci/github-pr-resource
+    tag: latest
+
+- name: github-status
+  type: docker-image
+  tags: [cncf]
+  source:
+    repository: dpb587/github-status-resource
+    tag: master
+
+resources:
+- name: master
+  type: git
+  tags: [cncf]
+  source:
+    uri: https://github.com/kubedb/postgres
+    branch: master
+
+- name: repo-status
+  type: github-status
+  tags: [cncf]
+  source:
+    repository: kubedb/postgres
+    access_token: ((access_token))
+    context: "concourse-ci"
+
+- name: cncf
+  type: pull-request
+  tags: [cncf]
+  source:
+    owner: kubedb
+    repo: postgres
+    label: ok-to-test/cncf
+    # org: kubedb
+    access_token: ((access_token))
+
+- name: gke
+  type: pull-request
+  tags: [cncf]
+  source:
+    owner: kubedb
+    repo: postgres
+    label: ok-to-test/gke
+    access_token: ((access_token))
+
+- name: aws
+  type: pull-request
+  tags: [cncf]
+  source:
+    owner: kubedb
+    repo: postgres
+    label: ok-to-test/kops-aws
+    access_token: ((access_token))
+
+- name: azure-aks
+  type: pull-request
+  tags: [cncf]
+  source:
+    owner: kubedb
+    repo: postgres
+    label: ok-to-test/aks
+    access_token: ((access_token))
+
+- name: azure-acs
+  type: pull-request
+  tags: [cncf]
+  source:
+    owner: kubedb
+    repo: postgres
+    label: ok-to-test/acs
+    access_token: ((access_token))
+
+- name: do
+  type: pull-request
+  tags: [cncf]
+  source:
+    owner: kubedb
+    repo: postgres
+    label: ok-to-test/do
+    access_token: ((access_token))
+
+- name: kubespray
+  type: pull-request
+  tags: [cncf]
+  source:
+    owner: kubedb
+    repo: postgres
+    label: ok-to-test/kubespray
+    access_token: ((access_token))
+
+- name: creds
+  type: s3
+  source:
+    bucket: kubedbci
+    access_key_id: ((s3-access-key))
+    secret_access_key: ((s3-secret))
+    versioned_file: creds.zip
+
+- name: concourse-locks
+  type: pool
+  tags: [cncf]
+  source:
+    uri: git@github.com:kubedb/concourse-locks.git
+    branch: master
+    pool: kubedb
+    private_key: ((private_key))
+
+jobs:
+- name: test-master
+  plan:
+  - get: master
+    trigger: true
+  - get: creds
+    params:
+      unpack: true
+  - put: concourse-locks
+    params:
+      acquire: true
+  - put: repo-status
+    params:
+      state: pending
+      commit: master
+  - task: test-e2e
+    privileged: true
+    file: master/hack/concourse/task.yml
+    input_mapping:
+      postgres: master
+    params:
+      ClusterProvider: cncf
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+    tags: [cncf]
+    on_success:
+      put: repo-status
+      params:
+        state: success
+        commit: master
+    on_failure:
+      put: repo-status
+      params:
+        state: failure
+        commit: master
+    ensure:
+      put: concourse-locks
+      params:
+        release: concourse-locks
+
+- name: test-cncf
+  plan:
+  - get: cncf
+    trigger: true
+    version: every
+  - put: cncf
+    params: { path: cncf, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - put: concourse-locks
+    params:
+      acquire: true
+  - task: test-e2e
+    privileged: true
+    file: cncf/hack/concourse/task.yml
+    input_mapping:
+      postgres: cncf
+    tags: [cncf]
+    params:
+      ClusterProvider: cncf
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+    ensure:
+      put: concourse-locks
+      params:
+        release: concourse-locks
+    on_success:
+      put: cncf
+      params: { path: cncf, status: success}
+    on_failure:
+      put: cncf
+      params: {path: cncf, status: failure}
+
+- name: test-gke
+  plan:
+  - get: gke
+    trigger: true
+    version: every
+  - put: gke
+    params: { path: gke, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-e2e
+    privileged: true
+    file: gke/hack/concourse/task.yml
+    input_mapping:
+      postgres: gke
+    params:
+      ClusterProvider: gke
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+    on_success:
+      put: gke
+      params: { path: gke, status: success}
+    on_failure:
+      put: gke
+      params: {path: gke, status: failure}
+
+- name: test-aws
+  plan:
+  - get: aws
+    version: every
+    trigger: true
+  - put: aws
+    params: { path: aws, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-e2e
+    privileged: true
+    file: aws/hack/concourse/task.yml
+    input_mapping:
+      postgres: aws
+    params:
+      KOPS_AWS_ACCESS_KEY_ID: ((kops_aws_access_key_id))
+      KOPS_AWS_SECRET_ACCESS_KEY: ((kops_aws_secret_access_key))
+      ClusterProvider: aws
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+    on_success:
+      put: aws
+      params: { path: aws, status: success}
+    on_failure:
+      put: aws
+      params: {path: aws, status: failure}
+
+- name: test-azure-aks
+  plan:
+  - get: azure-aks
+    version: every
+    trigger: true
+  - put: azure-aks
+    params: { path: azure-aks, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-e2e
+    privileged: true
+    file: azure-aks/hack/concourse/task.yml
+    input_mapping:
+      postgres: azure-aks
+    params:
+      ClusterProvider: aks
+      APP_ID: ((azure_app_id))
+      TENANT_ID: ((azure_tenant_id))
+      PASSWORD: ((azure_password))
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+    on_success:
+      put: azure-aks
+      params: { path: azure-aks, status: success}
+    on_failure:
+      put: azure-aks
+      params: {path: azure-aks, status: failure}
+
+- name: test-azure-acs
+  plan:
+  - get: azure-acs
+    version: every
+    trigger: true
+  - put: azure-acs
+    params: { path: azure-acs, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-e2e
+    privileged: true
+    file: azure-acs/hack/concourse/task.yml
+    input_mapping:
+      postgres: azure-acs
+    params:
+      ClusterProvider: acs
+      APP_ID: ((azure_app_id))
+      TENANT_ID: ((azure_tenant_id))
+      PASSWORD: ((azure_password))
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+    on_success:
+      put: azure-acs
+      params: { path: azure-acs, status: success}
+    on_failure:
+      put: azure-acs
+      params: {path: azure-acs, status: failure}
+
+- name: test-do
+  plan:
+  - get: do
+    version: every
+    trigger: true
+  - put: do
+    params: { path: do, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-e2e
+    privileged: true
+    file: do/hack/concourse/task.yml
+    input_mapping:
+      postgres: do
+    params:
+      ClusterProvider: digitalocean
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+    on_success:
+      put: do
+      params: { path: do, status: success}
+    on_failure:
+      put: do
+      params: {path: do, status: failure}
+
+- name: test-kubespray
+  plan:
+  - get: kubespray
+    version: every
+    trigger: true
+  - put: kubespray
+    params: { path: kubespray, status: pending}
+  - get: creds
+    params:
+      unpack: true
+  - task: test-e2e
+    privileged: true
+    file: kubespray/hack/concourse/task.yml
+    input_mapping:
+      postgres: kubespray
+    params:
+      DOCKER_USER: ((docker_user))
+      DOCKER_PASS: ((docker_pass))
+      ClusterProvider: kubespray
+      PACKET_API_TOKEN: ((packet_api_token))
+      PACKET_PROJECT_ID: ((packet_project_id))
+    on_success:
+      put: kubespray
+      params: { path: kubespray, status: success}
+    on_failure:
+      put: kubespray
+      params: {path: kubespray, status: failure}

@@ -1,0 +1,14 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: appscodeci/dind
+    tag: latest
+
+inputs:
+- name: postgres
+- name: creds
+
+run:
+  path: postgres/hack/concourse/test.sh

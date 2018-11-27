@@ -31,13 +31,6 @@ func (c *Controller) ensureService(mongodb *api.MongoDB) (kutil.VerbType, error)
 	// create database Service
 	vt, err := c.createService(mongodb)
 	if err != nil {
-		c.recorder.Eventf(
-			mongodb,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to createOrPatch Service. Reason: %v",
-			err,
-		)
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
@@ -62,7 +55,7 @@ func (c *Controller) checkService(mongodb *api.MongoDB, serviceName string) erro
 
 	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindMongoDB ||
 		service.Labels[api.LabelDatabaseName] != mongodb.Name {
-		return fmt.Errorf(`intended service "%v" already exists`, serviceName)
+		return fmt.Errorf(`intended service "%v/%v" already exists`, mongodb.Namespace, serviceName)
 	}
 
 	return nil
@@ -152,13 +145,6 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 		return in
 	})
 	if err != nil {
-		c.recorder.Eventf(
-			ref,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToCreate,
-			"Failed to reconcile stats service. Reason: %v",
-			err,
-		)
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(

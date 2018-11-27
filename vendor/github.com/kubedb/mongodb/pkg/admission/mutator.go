@@ -130,7 +130,7 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB) erro
 
 	// Check DatabaseKind
 	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindMongoDB {
-		return errors.New(fmt.Sprintf(`invalid MongoDB: "%v". Exists DormantDatabase "%v" of different Kind`, mongodb.Name, dormantDb.Name))
+		return errors.New(fmt.Sprintf(`invalid MongoDB: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, mongodb.Namespace, mongodb.Name, dormantDb.Namespace, dormantDb.Name))
 	}
 
 	// Check Origin Spec

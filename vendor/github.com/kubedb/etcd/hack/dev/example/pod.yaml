@@ -1,0 +1,232 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: 2018-07-27T08:50:09Z
+  labels:
+    kubedb.com/kind: Etcd
+    kubedb.com/name: etcdb-re
+  name: etcdb-re-h2szccqqsg
+  namespace: demo
+  ownerReferences:
+  - apiVersion: kubedb.com/v1alpha1
+    blockOwnerDeletion: false
+    kind: Etcd
+    name: etcdb-re
+    uid: 1058f96d-917a-11e8-8226-080027627586
+  resourceVersion: "17402"
+  selfLink: /api/v1/namespaces/demo/pods/etcdb-re-h2szccqqsg
+  uid: 110d8ffb-917a-11e8-8226-080027627586
+spec:
+  automountServiceAccountToken: false
+  containers:
+  - command:
+    - /usr/local/bin/etcd
+    - --data-dir=/var/etcd/data
+    - --name=etcdb-re-h2szccqqsg
+    - --initial-advertise-peer-urls=http://etcdb-re-h2szccqqsg.etcdb-re.demo.svc:2380
+    - --listen-peer-urls=http://0.0.0.0:2380
+    - --listen-client-urls=http://0.0.0.0:2379
+    - --advertise-client-urls=http://etcdb-re-h2szccqqsg.etcdb-re.demo.svc:2379
+    - --initial-cluster=etcdb-re-h2szccqqsg=http://etcdb-re-h2szccqqsg.etcdb-re.demo.svc:2380
+    - --initial-cluster-state=new
+    - --initial-cluster-token=etcdb-re
+    env:
+    - name: NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
+    - name: PRIMARY_HOST
+      value: etcdb-re
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    image: sanjid/etcd:3.2.13
+    imagePullPolicy: Always
+    livenessProbe:
+      exec:
+        command:
+        - /bin/sh
+        - -ec
+        - ETCDCTL_API=3 etcdctl get foo
+      failureThreshold: 3
+      initialDelaySeconds: 10
+      periodSeconds: 60
+      successThreshold: 1
+      timeoutSeconds: 10
+    name: etcd
+    ports:
+    - containerPort: 2380
+      name: server
+      protocol: TCP
+    - containerPort: 2379
+      name: client
+      protocol: TCP
+    readinessProbe:
+      exec:
+        command:
+        - /bin/sh
+        - -ec
+        - ETCDCTL_API=3 etcdctl get foo
+      failureThreshold: 3
+      initialDelaySeconds: 1
+      periodSeconds: 5
+      successThreshold: 1
+      timeoutSeconds: 5
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/etcd
+      name: data
+  dnsPolicy: ClusterFirst
+  hostname: etcdb-re-h2szccqqsg
+  initContainers:
+  - command:
+    - /bin/sh
+    - -c
+    - "\n\t\t\t\t\twhile ( ! nslookup etcdb-re-h2szccqqsg.etcdb-re.demo.svc )\n\t\t\t\t\tdo\n\t\t\t\t\t\tsleep
+      1\n\t\t\t\t\tdone"
+    image: busybox:1.28.0-glibc
+    imagePullPolicy: IfNotPresent
+    name: check-dns
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+  - args:
+    - restore
+    - --host=etcdb-re-client.demo
+    - --data-dir=/var/etcd/snapshot
+    - --bucket=kubedbetcd
+    - --folder=etcdb/kubedb/demo/etcdb
+    - --snapshot=snapshot-n
+    - --enable-analytics=false
+    env:
+    - name: APPSCODE_ANALYTICS_CLIENT_ID
+    image: sanjid/etcd-tools:3.2.13
+    imagePullPolicy: IfNotPresent
+    name: restore
+    resources:
+      limits:
+        cpu: 500m
+        memory: 128Mi
+      requests:
+        cpu: 250m
+        memory: 64Mi
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/etcd
+      name: data
+    - mountPath: /etc/osm
+      name: osmconfig
+      readOnly: true
+  - command:
+    - /bin/sh
+    - -ec
+    - ETCDCTL_API=3 etcdctl snapshot restore /var/etcd/snapshot/snapshot-n --name
+      etcdb-re-h2szccqqsg --initial-cluster etcdb-re-h2szccqqsg=http://etcdb-re-h2szccqqsg.etcdb-re.demo.svc:2380
+      --initial-cluster-token etcdb-re --initial-advertise-peer-urls http://etcdb-re-h2szccqqsg.etcdb-re.demo.svc:2380
+      --data-dir /var/etcd/data 2>/dev/termination-log
+    image: sanjid/etcd-tools:3.2.13
+    imagePullPolicy: IfNotPresent
+    name: restore-datadir
+    resources:
+      limits:
+        cpu: 500m
+        memory: 128Mi
+      requests:
+        cpu: 250m
+        memory: 64Mi
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/etcd
+      name: data
+  nodeName: minikube
+  restartPolicy: Never
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  subdomain: etcdb-re
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: osmconfig
+    secret:
+      defaultMode: 420
+      secretName: osm-snapshot-n
+  - name: data
+    persistentVolumeClaim:
+      claimName: etcdb-re-h2szccqqsg
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: 2018-07-27T08:50:17Z
+    message: 'containers with incomplete status: [check-dns restore restore-datadir]'
+    reason: ContainersNotInitialized
+    status: "False"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: 2018-07-27T08:50:17Z
+    message: 'containers with unready status: [etcd]'
+    reason: ContainersNotReady
+    status: "False"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: 2018-07-27T08:50:16Z
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - image: sanjid/etcd:3.2.13
+    imageID: ""
+    lastState: {}
+    name: etcd
+    ready: false
+    restartCount: 0
+    state:
+      waiting:
+        reason: PodInitializing
+  hostIP: 10.0.2.15
+  initContainerStatuses:
+  - image: busybox:1.28.0-glibc
+    imageID: ""
+    lastState: {}
+    name: check-dns
+    ready: false
+    restartCount: 0
+    state:
+      waiting:
+        reason: PodInitializing
+  - image: sanjid/etcd-tools:3.2.13
+    imageID: ""
+    lastState: {}
+    name: restore
+    ready: false
+    restartCount: 0
+    state:
+      waiting:
+        reason: PodInitializing
+  - image: sanjid/etcd-tools:3.2.13
+    imageID: ""
+    lastState: {}
+    name: restore-datadir
+    ready: false
+    restartCount: 0
+    state:
+      waiting:
+        reason: PodInitializing
+  phase: Pending
+  qosClass: BestEffort
+  startTime: 2018-07-27T08:50:17Z

@@ -145,7 +145,7 @@ func setDefaultsFromDormantDB(extClient cs.Interface, elasticsearch *api.Elastic
 
 	// Check DatabaseKind
 	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindElasticsearch {
-		return errors.New(fmt.Sprintf(`invalid Elasticsearch: "%v". Exists DormantDatabase "%v" of different Kind`, elasticsearch.Name, dormantDb.Name))
+		return errors.New(fmt.Sprintf(`invalid Elasticsearch: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, elasticsearch.Namespace, elasticsearch.Name, dormantDb.Namespace, dormantDb.Name))
 	}
 
 	// Check Origin Spec

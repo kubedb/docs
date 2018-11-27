@@ -130,7 +130,7 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mysql *api.MySQL) error {
 
 	// Check DatabaseKind
 	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindMySQL {
-		return errors.New(fmt.Sprintf(`invalid MySQL: "%v". Exists DormantDatabase "%v" of different Kind`, mysql.Name, dormantDb.Name))
+		return errors.New(fmt.Sprintf(`invalid MySQL: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, mysql.Namespace, mysql.Name, dormantDb.Namespace, dormantDb.Name))
 	}
 
 	// Check Origin Spec

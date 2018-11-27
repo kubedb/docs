@@ -1,0 +1,80 @@
+# Gopkg.toml example
+#
+# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
+# for detailed Gopkg.toml documentation.
+#
+# required = ["github.com/user/thing/cmd/thing"]
+# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
+#
+# [[constraint]]
+#   name = "github.com/user/project"
+#   version = "1.0.0"
+#
+# [[constraint]]
+#   name = "github.com/user/project2"
+#   branch = "dev"
+#   source = "github.com/myfork/project2"
+#
+# [[override]]
+#   name = "github.com/x/y"
+#   version = "2.4.0"
+#
+# [prune]
+#   non-go = false
+#   go-tests = true
+#   unused-packages = true
+
+
+[[constraint]]
+  name = "github.com/appscode/go"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/appscode/kutil"
+  branch = "release-9.0"
+
+[[constraint]]
+  name = "github.com/appscode/osm"
+  version = "0.9.0"
+
+[[constraint]]
+  name = "github.com/aws/aws-sdk-go"
+  version = "=v1.14.12"
+
+[[constraint]]
+  name = "github.com/ghodss/yaml"
+  version = "=1.0.0"
+
+[[constraint]]
+  name = "github.com/go-openapi/spec"
+  version = "0.15.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/graymeta/stow"
+  source = "github.com/appscode/stow"
+
+[[constraint]]
+  name = "github.com/pkg/errors"
+  version = "0.8.0"
+
+[[override]]
+  name = "k8s.io/api"
+  version = "kubernetes-1.12.0"
+
+[[override]]
+  name = "k8s.io/apimachinery"
+  branch = "ac-1.12.0"
+  source = "github.com/kmodules/apimachinery"
+
+[[override]]
+  name = "k8s.io/client-go"
+  version = "=v9.0.0"
+
+[[override]]
+  name = "k8s.io/kube-openapi"
+  revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803"
+
+[prune]
+  go-tests = true
+  unused-packages = true
