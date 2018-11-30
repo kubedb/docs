@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/pflag"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
+	appcatscheme "kmodules.xyz/custom-resources/client/clientset/versioned/scheme"
 )
 
 const (
@@ -38,6 +39,7 @@ func NewRootCmd(version string) *cobra.Command {
 				}
 			}
 			scheme.AddToScheme(clientsetscheme.Scheme)
+			appcatscheme.AddToScheme(clientsetscheme.Scheme)
 			controller.LoggerOptions = golog.ParseFlags(c.Flags())
 		},
 	}

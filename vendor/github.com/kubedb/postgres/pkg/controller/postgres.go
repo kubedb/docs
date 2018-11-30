@@ -166,6 +166,13 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		log.Errorln(err)
 		return nil
 	}
+
+	_, err = c.ensureAppBinding(postgres)
+	if err != nil {
+		log.Errorln(err)
+		return err
+	}
+
 	return nil
 }
 

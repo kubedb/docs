@@ -27,6 +27,14 @@ const (
 	PostgresPortName = "api"
 )
 
+var (
+	defaultDBPort = core.ServicePort{
+		Name:       PostgresPortName,
+		Port:       PostgresPort,
+		TargetPort: intstr.FromString(PostgresPortName),
+	}
+)
+
 func (c *Controller) ensureService(postgres *api.Postgres) (kutil.VerbType, error) {
 	// Check if service name exists
 	err := c.checkService(postgres, postgres.OffshootName())
@@ -132,13 +140,7 @@ func (c *Controller) createService(postgres *api.Postgres) (kutil.VerbType, erro
 
 func upsertServicePort(in *core.Service, postgres *api.Postgres) []core.ServicePort {
 	return ofst.MergeServicePorts(
-		core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
-			{
-				Name:       PostgresPortName,
-				Port:       PostgresPort,
-				TargetPort: intstr.FromString(PostgresPortName),
-			},
-		}),
+		core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
 		postgres.Spec.ServiceTemplate.Spec.Ports,
 	)
 }

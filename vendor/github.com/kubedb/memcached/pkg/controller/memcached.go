@@ -108,6 +108,11 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		return nil
 	}
 
+	_, err = c.ensureAppBinding(memcached)
+	if err != nil {
+		log.Errorln(err)
+		return err
+	}
 	return nil
 }
 

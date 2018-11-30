@@ -60,7 +60,7 @@ func createCaCertificate(certPath string) (*rsa.PrivateKey, *x509.Certificate, s
 		"-noprompt",
 	).Output()
 	if err != nil {
-		return nil, nil, "", errors.New("failed to generate root.pk12")
+		return nil, nil, "", fmt.Errorf("failed to generate root.pk12. Reason: %v", err)
 	}
 
 	return caKey, caCert, pass, nil

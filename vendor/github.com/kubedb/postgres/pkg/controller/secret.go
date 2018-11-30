@@ -13,9 +13,8 @@ import (
 )
 
 const (
-	PostgresUser       = "POSTGRES_USER"
-	PostgresPassword   = "POSTGRES_PASSWORD"
-	ExporterSecretPath = "/var/run/secrets/kubedb.com/"
+	PostgresUser     = "POSTGRES_USER"
+	PostgresPassword = "POSTGRES_PASSWORD"
 )
 
 func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {

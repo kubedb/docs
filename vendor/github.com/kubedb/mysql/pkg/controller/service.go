@@ -18,6 +18,13 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
+var defaultDBPort = core.ServicePort{
+	Name:       "db",
+	Protocol:   core.ProtocolTCP,
+	Port:       3306,
+	TargetPort: intstr.FromString("db"),
+}
+
 func (c *Controller) ensureService(mysql *api.MySQL) (kutil.VerbType, error) {
 	// Check if service name exists
 	if err := c.checkService(mysql, mysql.ServiceName()); err != nil {
@@ -75,14 +82,7 @@ func (c *Controller) createService(mysql *api.MySQL) (kutil.VerbType, error) {
 
 		in.Spec.Selector = mysql.OffshootSelectors()
 		in.Spec.Ports = ofst.MergeServicePorts(
-			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
-				{
-					Name:       "db",
-					Protocol:   core.ProtocolTCP,
-					Port:       3306,
-					TargetPort: intstr.FromString("db"),
-				},
-			}),
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
 			mysql.Spec.ServiceTemplate.Spec.Ports,
 		)
 

@@ -14,10 +14,8 @@ import (
 const (
 	mysqlUser = "root"
 
-	KeyMySQLUser     = "user"
+	KeyMySQLUser     = "username"
 	KeyMySQLPassword = "password"
-
-	ExporterSecretPath = "/var/run/secrets/kubedb.com/"
 )
 
 func (c *Controller) ensureDatabaseSecret(mysql *api.MySQL) error {

@@ -18,6 +18,13 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
+var defaultDBPort = core.ServicePort{
+	Name:       "db",
+	Protocol:   core.ProtocolTCP,
+	Port:       6379,
+	TargetPort: intstr.FromString("db"),
+}
+
 func (c *Controller) ensureService(redis *api.Redis) (kutil.VerbType, error) {
 	// Check if service name exists
 	if err := c.checkService(redis, redis.ServiceName()); err != nil {
@@ -75,14 +82,7 @@ func (c *Controller) createService(redis *api.Redis) (kutil.VerbType, error) {
 
 		in.Spec.Selector = redis.OffshootSelectors()
 		in.Spec.Ports = ofst.MergeServicePorts(
-			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
-				{
-					Name:       "db",
-					Protocol:   core.ProtocolTCP,
-					Port:       6379,
-					TargetPort: intstr.FromString("db"),
-				},
-			}),
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
 			redis.Spec.ServiceTemplate.Spec.Ports,
 		)
 

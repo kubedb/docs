@@ -15,14 +15,12 @@ import (
 const (
 	mongodbUser = "root"
 
-	KeyMongoDBUser     = "user"
+	KeyMongoDBUser     = "username"
 	KeyMongoDBPassword = "password"
 	KeyForKeyFile      = "key.txt"
 
 	DatabaseSecretSuffix = "-auth"
 	KeyFileSecretSuffix  = "-keyfile"
-
-	ExporterSecretPath = "/var/run/secrets/kubedb.com/"
 )
 
 func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
