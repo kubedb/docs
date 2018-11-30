@@ -5,8 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appscode/go/log"
 	"github.com/jpillora/go-ogle-analytics"
+
+	"github.com/appscode/go/log"
 	"github.com/kubedb/operator/pkg/cmds/server"
 	"github.com/kubedb/operator/pkg/controller"
 	"github.com/spf13/cobra"
@@ -23,17 +24,9 @@ func NewCmdRun(out, errOut io.Writer, version string, stopCh <-chan struct{}) *c
 			if controller.EnableAnalytics && gaTrackingCode != "" {
 				ticker := time.NewTicker(24 * time.Hour)
 				go func() {
-					// ref: https://stackoverflow.com/a/17799161/4628962
-					for {
-						select {
-						case <-ticker.C:
-							if client, err := ga.NewClient(gaTrackingCode); err == nil {
-								client.ClientID(controller.AnalyticsClientID)
-								parts := strings.Split(cmd.CommandPath(), " ")
-								client.Send(ga.NewEvent("kubedb-operator", strings.Join(parts[1:], "/")).Label(version))
-							}
-						case <-stopCh:
-							return
+					for range ticker.C {
+						if err := sendAnalytics(cmd.CommandPath(), version); err != nil {
+							log.Error(err)
 						}
 					}
 				}()
@@ -58,4 +51,14 @@ func NewCmdRun(out, errOut io.Writer, version string, stopCh <-chan struct{}) *c
 	o.AddFlags(cmd.Flags())
 
 	return cmd
+}
+
+func sendAnalytics(commandPath, version string) error {
+	client, err := ga.NewClient(gaTrackingCode)
+	if err != nil {
+		return err
+	}
+	client.ClientID(controller.AnalyticsClientID)
+	parts := strings.Split(commandPath, " ")
+	return client.Send(ga.NewEvent("kubedb-operator", strings.Join(parts[1:], "/")).Label(version))
 }

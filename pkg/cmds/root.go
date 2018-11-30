@@ -4,11 +4,10 @@ import (
 	"flag"
 	"log"
 	"os"
-	"strings"
 
+	log2 "github.com/appscode/go/log"
 	"github.com/appscode/go/log/golog"
 	v "github.com/appscode/go/version"
-	"github.com/jpillora/go-ogle-analytics"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/scheme"
 	"github.com/kubedb/operator/pkg/controller"
 	"github.com/spf13/cobra"
@@ -32,10 +31,8 @@ func NewRootCmd(version string) *cobra.Command {
 				log.Printf("FLAG: --%s=%q", flag.Name, flag.Value)
 			})
 			if controller.EnableAnalytics && gaTrackingCode != "" {
-				if client, err := ga.NewClient(gaTrackingCode); err == nil {
-					client.ClientID(controller.AnalyticsClientID)
-					parts := strings.Split(c.CommandPath(), " ")
-					client.Send(ga.NewEvent("kubedb-operator", strings.Join(parts[1:], "/")).Label(version))
+				if err := sendAnalytics(c.CommandPath(), version); err != nil {
+					log2.Error(err)
 				}
 			}
 			scheme.AddToScheme(clientsetscheme.Scheme)
