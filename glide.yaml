@@ -28,19 +28,19 @@ import:
 - package: github.com/kubedb/apimachinery
   version: master
 - package: github.com/kubedb/elasticsearch
-  version: test-appcat
+  version: master
 - package: github.com/kubedb/etcd
-  version: appcat
+  version: master
 - package: github.com/kubedb/memcached
-  version: test-appcat
+  version: master
 - package: github.com/kubedb/mongodb
-  version: test-appcat
+  version: master
 - package: github.com/kubedb/mysql
-  version: test-appcat
+  version: master
 - package: github.com/kubedb/postgres
-  version: test-appcat
+  version: master
 - package: github.com/kubedb/redis
-  version: test-appcat
+  version: master
 - package: github.com/orcaman/concurrent-map
 - package: github.com/prometheus/client_golang
   version: v0.8.0
@@ -106,3 +106,4 @@ import:
   version: de0752318171da717af4ce24d0a2e8626afaeb11
 - package: github.com/davecgh/go-spew
   version: v1.1.1
+  
