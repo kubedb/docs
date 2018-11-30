@@ -22,29 +22,29 @@ import (
 
 const TolerateUnreadyEndpointsAnnotation = "service.alpha.kubernetes.io/tolerate-unready-endpoints"
 
-func (c *Controller) CreateClientService(cl *Cluster) error {
-	ports := []v1.ServicePort{{
+var (
+	defaultClientPort = v1.ServicePort{
 		Name:       "client",
 		Port:       EtcdClientPort,
 		TargetPort: intstr.FromInt(EtcdClientPort),
 		Protocol:   v1.ProtocolTCP,
-	}}
+	}
+	defaultPeerPort = v1.ServicePort{
+		Name:       "peer",
+		Port:       EtcdPeerPort,
+		TargetPort: intstr.FromInt(EtcdPeerPort),
+		Protocol:   v1.ProtocolTCP,
+	}
+)
+
+func (c *Controller) CreateClientService(cl *Cluster) error {
+	ports := []v1.ServicePort{defaultClientPort}
 
 	return createService(c.Controller.Client, cl.cluster.ClientServiceName(), "", ports, cl.cluster)
 }
 
 func (c *Controller) CreatePeerService(cl *Cluster) error {
-	ports := []v1.ServicePort{{
-		Name:       "client",
-		Port:       EtcdClientPort,
-		TargetPort: intstr.FromInt(EtcdClientPort),
-		Protocol:   v1.ProtocolTCP,
-	}, {
-		Name:       "peer",
-		Port:       2380,
-		TargetPort: intstr.FromInt(2380),
-		Protocol:   v1.ProtocolTCP,
-	}}
+	ports := []v1.ServicePort{defaultClientPort, defaultPeerPort}
 
 	return createService(c.Controller.Client, cl.cluster.PeerServiceName(), v1.ClusterIPNone, ports, cl.cluster)
 }

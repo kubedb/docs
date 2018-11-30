@@ -84,8 +84,15 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 									Value: c.AnalyticsClientID,
 								},
 								{
-									Name:  "DB_USER",
-									Value: mysqlUser,
+									Name: "DB_USER",
+									ValueFrom: &core.EnvVarSource{
+										SecretKeyRef: &core.SecretKeySelector{
+											LocalObjectReference: core.LocalObjectReference{
+												Name: mysql.Spec.DatabaseSecret.SecretName,
+											},
+											Key: KeyMySQLUser,
+										},
+									},
 								},
 								{
 									Name: "DB_PASSWORD",
@@ -238,8 +245,15 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 									Value: c.AnalyticsClientID,
 								},
 								{
-									Name:  "DB_USER",
-									Value: mysqlUser,
+									Name: "DB_USER",
+									ValueFrom: &core.EnvVarSource{
+										SecretKeyRef: &core.SecretKeySelector{
+											LocalObjectReference: core.LocalObjectReference{
+												Name: mysql.Spec.DatabaseSecret.SecretName,
+											},
+											Key: KeyMySQLUser,
+										},
+									},
 								},
 								{
 									Name: "DB_PASSWORD",

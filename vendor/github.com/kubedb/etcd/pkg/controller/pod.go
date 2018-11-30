@@ -22,6 +22,7 @@ import (
 const (
 	// EtcdClientPort is the client port on client service and etcd nodes.
 	EtcdClientPort = 2379
+	EtcdPeerPort   = 2380
 
 	etcdVolumeMountDir    = "/var/etcd"
 	dataDir               = etcdVolumeMountDir + "/data"

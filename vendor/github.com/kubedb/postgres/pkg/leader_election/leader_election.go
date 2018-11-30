@@ -31,8 +31,6 @@ const (
 
 func RunLeaderElection() {
 
-	leaderElectionLease := 3 * time.Second
-
 	namespace := os.Getenv("NAMESPACE")
 	if namespace == "" {
 		namespace = "default"
@@ -87,10 +85,11 @@ func RunLeaderElection() {
 
 	go func() {
 		leaderelection.RunOrDie(context.Background(), leaderelection.LeaderElectionConfig{
-			Lock:          resLock,
-			LeaseDuration: leaderElectionLease,
-			RenewDeadline: leaderElectionLease * 2 / 3,
-			RetryPeriod:   leaderElectionLease / 3,
+			Lock: resLock,
+			// ref: https://github.com/kubernetes/apiserver/blob/kubernetes-1.12.0/pkg/apis/config/v1alpha1/defaults.go#L26-L52
+			LeaseDuration: 15 * time.Second,
+			RenewDeadline: 10 * time.Second,
+			RetryPeriod:   2 * time.Second,
 			Callbacks: leaderelection.LeaderCallbacks{
 				OnStartedLeading: func(ctx context.Context) {
 					fmt.Println("Got leadership, now do your jobs")

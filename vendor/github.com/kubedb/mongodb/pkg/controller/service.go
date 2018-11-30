@@ -22,6 +22,15 @@ const (
 	MongoDBPort = 27017
 )
 
+var (
+	defaultDBPort = core.ServicePort{
+		Name:       "db",
+		Protocol:   core.ProtocolTCP,
+		Port:       MongoDBPort,
+		TargetPort: intstr.FromString("db"),
+	}
+)
+
 func (c *Controller) ensureService(mongodb *api.MongoDB) (kutil.VerbType, error) {
 	// Check if service name exists
 	if err := c.checkService(mongodb, mongodb.ServiceName()); err != nil {
@@ -79,14 +88,7 @@ func (c *Controller) createService(mongodb *api.MongoDB) (kutil.VerbType, error)
 
 		in.Spec.Selector = mongodb.OffshootSelectors()
 		in.Spec.Ports = ofst.MergeServicePorts(
-			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
-				{
-					Name:       "db",
-					Protocol:   core.ProtocolTCP,
-					Port:       MongoDBPort,
-					TargetPort: intstr.FromString("db"),
-				},
-			}),
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
 			mongodb.Spec.ServiceTemplate.Spec.Ports,
 		)
 

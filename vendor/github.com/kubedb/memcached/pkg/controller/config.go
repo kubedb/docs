@@ -13,6 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
 )
 
 const (
@@ -33,6 +34,7 @@ type OperatorConfig struct {
 	KubeClient       kubernetes.Interface
 	APIExtKubeClient crd_cs.ApiextensionsV1beta1Interface
 	DBClient         cs.Interface
+	AppCatalogClient appcat_cs.AppcatalogV1alpha1Interface
 	PromClient       pcm.MonitoringV1Interface
 }
 
@@ -52,6 +54,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.KubeClient,
 		c.APIExtKubeClient,
 		c.DBClient,
+		c.AppCatalogClient,
 		c.PromClient,
 		c.Config,
 	)

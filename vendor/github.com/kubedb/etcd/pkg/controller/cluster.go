@@ -182,6 +182,9 @@ func (c *Controller) run(cluster *Cluster) {
 	if err := c.updateCRStatus(cluster); err != nil {
 		cluster.logger.Warningf("update initial CR status failed: %v", err)
 	}
+	if _, err := c.ensureAppBinding(cluster.cluster); err != nil {
+		log.Errorln(err)
+	}
 
 	var rerr error
 	for {

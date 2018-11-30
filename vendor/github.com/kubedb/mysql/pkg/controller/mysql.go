@@ -160,6 +160,12 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		return nil
 	}
 
+	_, err = c.ensureAppBinding(mysql)
+	if err != nil {
+		log.Errorln(err)
+		return err
+	}
+
 	return nil
 }
 

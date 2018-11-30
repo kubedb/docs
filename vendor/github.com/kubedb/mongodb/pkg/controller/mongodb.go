@@ -163,6 +163,11 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		return nil
 	}
 
+	_, err = c.ensureAppBinding(mongodb)
+	if err != nil {
+		log.Errorln(err)
+		return err
+	}
 	return nil
 }
 

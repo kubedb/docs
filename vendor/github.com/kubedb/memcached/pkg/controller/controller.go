@@ -26,6 +26,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
 )
 
 type Controller struct {
@@ -52,6 +54,8 @@ func New(
 	client kubernetes.Interface,
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
 	extClient cs.Interface,
+
+	appCatalogClient appcat_cs.AppcatalogV1alpha1Interface,
 	promClient pcm.MonitoringV1Interface,
 	opt amc.Config,
 ) *Controller {
@@ -61,6 +65,8 @@ func New(
 			Client:           client,
 			ExtClient:        extClient,
 			ApiExtKubeClient: apiExtKubeClient,
+
+			AppCatalogClient: appCatalogClient,
 		},
 		Config:     opt,
 		promClient: promClient,
@@ -79,6 +85,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		catalog.MemcachedVersion{}.CustomResourceDefinition(),
 		api.DormantDatabase{}.CustomResourceDefinition(),
 		api.Snapshot{}.CustomResourceDefinition(),
+		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
 	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
 }

@@ -162,6 +162,11 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return nil
 	}
 
+	_, err = c.ensureAppBinding(elasticsearch)
+	if err != nil {
+		log.Errorln(err)
+		return err
+	}
 	return nil
 }
 
