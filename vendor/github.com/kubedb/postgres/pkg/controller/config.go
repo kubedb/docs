@@ -1,10 +1,8 @@
 package controller
 
 import (
-	"github.com/appscode/go/log/golog"
 	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
 	"github.com/appscode/kutil/discovery"
-	"github.com/appscode/kutil/tools/analytics"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
 	amc "github.com/kubedb/apimachinery/pkg/controller"
@@ -21,12 +19,6 @@ import (
 const (
 	mutatingWebhookConfig   = "mutators.kubedb.com"
 	validatingWebhookConfig = "validators.kubedb.com"
-)
-
-var (
-	AnalyticsClientID = analytics.ClientID()
-	EnableAnalytics   = true
-	LoggerOptions     golog.Options
 )
 
 type OperatorConfig struct {

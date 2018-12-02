@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/appscode/kutil/meta"
+	"github.com/appscode/kutil/tools/cli"
 	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/kubedb/apimachinery/apis"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
@@ -94,9 +95,9 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 	cfg.OperatorNamespace = s.OperatorNamespace
 	cfg.GoverningService = s.GoverningService
 
-	cfg.EnableAnalytics = controller.EnableAnalytics
-	cfg.AnalyticsClientID = controller.AnalyticsClientID
-	cfg.LoggerOptions = controller.LoggerOptions
+	cfg.EnableAnalytics = cli.EnableAnalytics
+	cfg.AnalyticsClientID = cli.AnalyticsClientID
+	cfg.LoggerOptions = cli.LoggerOptions
 
 	cfg.ClientConfig.QPS = float32(s.QPS)
 	cfg.ClientConfig.Burst = s.Burst

@@ -27,24 +27,18 @@ check_antipackage()
 
 # ref: https://github.com/ellisonbg/antipackage
 import antipackage
-from github.appscode.libbuild import libbuild
+from github.appscode.libbuild import libbuild, pydotenv
 
-import datetime
-import io
-import json
 import os
 import os.path
-import socket
 import subprocess
 import sys
-from collections import OrderedDict
-from os.path import expandvars
-
+from os.path import expandvars, join, dirname
 
 libbuild.REPO_ROOT = expandvars('$GOPATH') + '/src/github.com/kubedb/operator'
 BUILD_METADATA = libbuild.metadata(libbuild.REPO_ROOT)
 libbuild.BIN_MATRIX = {
-    'operator': {
+    'kubedb-operator': {
         'type': 'go',
         'go_version': True,
         'use_cgo': False,
@@ -69,6 +63,11 @@ def die(status):
         sys.exit(status)
 
 
+def check_output(cmd, stdin=None, cwd=libbuild.REPO_ROOT):
+    print(cmd)
+    return subprocess.check_output([expandvars(cmd)], shell=True, stdin=stdin, cwd=cwd)
+
+
 def version():
     # json.dump(BUILD_METADATA, sys.stdout, sort_keys=True, indent=2)
     for k in sorted(BUILD_METADATA):
@@ -76,37 +75,52 @@ def version():
 
 
 def fmt():
-    libbuild.ungroup_go_imports('*.go', 'pkg')
-    die(call('goimports -w *.go pkg'))
-    call('gofmt -s -w *.go pkg')
-
-
-def lint():
-    call('golint *.go pkg')
+    libbuild.ungroup_go_imports('cmd', 'pkg')
+    die(call('goimports -w cmd pkg'))
+    call('gofmt -s -w cmd pkg')
 
 
 def vet():
-    call('go vet *.go pkg')
+    call('go vet ./cmd/... ./pkg/...')
+
+
+def lint():
+    call('golint ./cmd/...')
+    call('golint ./pkg/...')
+
+
+def gen():
+    return
 
 
 def build_cmd(name):
     cfg = libbuild.BIN_MATRIX[name]
+    entrypoint = 'cmd/{}/*.go'.format(name)
+    compress = libbuild.ENV in ['prod']
+    upx= False
     if cfg['type'] == 'go':
         if 'distro' in cfg:
             for goos, archs in cfg['distro'].items():
                 for goarch in archs:
-                    libbuild.go_build(name, goos, goarch, main='*.go')
+                    libbuild.go_build(name, goos, goarch, entrypoint, compress, upx)
         else:
-            libbuild.go_build(name, libbuild.GOHOSTOS, libbuild.GOHOSTARCH, main='*.go')
+            libbuild.go_build(name, libbuild.GOHOSTOS, libbuild.GOHOSTARCH, entrypoint, compress, upx)
 
 
 def build_cmds():
+    gen()
     for name in libbuild.BIN_MATRIX:
         build_cmd(name)
 
 
-def build():
-    build_cmds()
+def build(name=None):
+    if name:
+        cfg = libbuild.BIN_MATRIX[name]
+        if cfg['type'] == 'go':
+            gen()
+            build_cmd(name)
+    else:
+        build_cmds()
 
 
 def push(name=None):
@@ -134,10 +148,11 @@ def update_registry():
 
 
 def install():
-    die(call(libbuild.GOC + ' install .'))
+    die(call(libbuild.GOC + ' install ./...'))
 
 
 def default():
+    gen()
     fmt()
     install()
 
