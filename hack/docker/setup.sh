@@ -5,7 +5,6 @@ set -o nounset
 set -o pipefail
 
 GOPATH=$(go env GOPATH)
-DOCKER_REGISTRY=${DOCKER_REGISTRY:-kubedb}
 SRC=$GOPATH/src
 BIN=$GOPATH/bin
 ROOT=$GOPATH
@@ -14,6 +13,7 @@ REPO_ROOT=$GOPATH/src/github.com/kubedb/operator
 source "$REPO_ROOT/hack/libbuild/common/kubedb_image.sh"
 
 APPSCODE_ENV=${APPSCODE_ENV:-dev}
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-kubedb}
 IMG=operator
 
 DIST=$GOPATH/src/github.com/kubedb/operator/dist
@@ -24,22 +24,22 @@ fi
 
 clean() {
   pushd $REPO_ROOT/hack/docker
-  rm -f operator Dockerfile
+  rm -f kubedb-operator Dockerfile
   popd
 }
 
 build_binary() {
   pushd $REPO_ROOT
   ./hack/builddeps.sh
-  ./hack/make.py build
+  ./hack/make.py build kubedb-operator
   detect_tag $DIST/.tag
   popd
 }
 
 build_docker() {
   pushd $REPO_ROOT/hack/docker
-  cp $DIST/operator/operator-alpine-amd64 operator
-  chmod 755 operator
+  cp $DIST/kubedb-operator/kubedb-operator-alpine-amd64 kubedb-operator
+  chmod 755 kubedb-operator
 
   cat >Dockerfile <<EOL
 FROM alpine:3.8
@@ -47,15 +47,15 @@ FROM alpine:3.8
 RUN set -x \
   && apk add --update --no-cache ca-certificates openssl openjdk8-jre-base
 
-COPY operator /usr/bin/operator
+COPY kubedb-operator /usr/bin/kubedb-operator
 
 USER nobody:nobody
-ENTRYPOINT ["operator"]
+ENTRYPOINT ["kubedb-operator"]
 EOL
   local cmd="docker build --pull -t $DOCKER_REGISTRY/$IMG:$TAG ."
   echo $cmd; $cmd
 
-  rm operator Dockerfile
+  rm kubedb-operator Dockerfile
   popd
 }
 
