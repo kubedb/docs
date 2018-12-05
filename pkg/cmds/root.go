@@ -2,15 +2,14 @@ package cmds
 
 import (
 	"flag"
-	"log"
 	"os"
 
+	"github.com/appscode/go/flags"
 	"github.com/appscode/go/log/golog"
 	v "github.com/appscode/go/version"
 	"github.com/appscode/kutil/tools/cli"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/scheme"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	appcatscheme "kmodules.xyz/custom-resources/client/clientset/versioned/scheme"
@@ -22,9 +21,7 @@ func NewRootCmd(version string) *cobra.Command {
 		Short:             `KubeDB operator by AppsCode`,
 		DisableAutoGenTag: true,
 		PersistentPreRun: func(c *cobra.Command, args []string) {
-			c.Flags().VisitAll(func(flag *pflag.Flag) {
-				log.Printf("FLAG: --%s=%q", flag.Name, flag.Value)
-			})
+			flags.DumpAll(c.Flags())
 			cli.SendAnalytics(c, version)
 
 			scheme.AddToScheme(clientsetscheme.Scheme)
