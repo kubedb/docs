@@ -21,6 +21,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
 )
 
@@ -87,6 +88,8 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		catalogapi.MongoDBVersion{}.CustomResourceDefinition(),
 		catalogapi.RedisVersion{}.CustomResourceDefinition(),
 		catalogapi.MemcachedVersion{}.CustomResourceDefinition(),
+
+		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
 	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
 }
