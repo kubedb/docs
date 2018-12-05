@@ -1,5 +1,5 @@
 hash: cb44243e0315bc99bcbc7cce4760ad733afd053af8b22bef65225666989e7665
-updated: 2018-12-02T09:14:43.89061759-08:00
+updated: 2018-12-05T11:11:25.038580766-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -9,7 +9,7 @@ imports:
   - compute/metadata
   - internal
 - name: github.com/appscode/go
-  version: a6d58457b39324ead2ffb1f24be7a0a638c9f112
+  version: aa0a55d74dac66f9b9bec9c0e7b67944115a3f44
   subpackages:
   - analytics
   - arrays
@@ -17,6 +17,7 @@ imports:
   - crypto/rand
   - encoding/json/types
   - encoding/yaml
+  - flags
   - homedir
   - ioutil
   - log
@@ -56,7 +57,7 @@ imports:
 - name: github.com/appscode/mergo
   version: 9f23e2d6bd2a77f959b2bf6acdbefd708a83a4a4
 - name: github.com/appscode/osm
-  version: 1afd84f09007c717e2a46e9d87e30902d8331b91
+  version: fb08059eb9264578f9e15dc796f7afdb1bd40294
   subpackages:
   - context
 - name: github.com/appscode/pat
@@ -402,7 +403,7 @@ imports:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: 37ce0c405fc94b02a93793090fe6eb894c8ab91a
+  version: c516c5e3d9c0967dbaaabcf50ea57eb266329f7a
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -550,7 +551,7 @@ imports:
   - googleapi/internal/uritemplates
   - storage/v1
 - name: google.golang.org/appengine
-  version: 4a4468ece617fc8205e99368fa2200e9d1fad421
+  version: 12d5545dc1cfa6047a286d5e853841b6471f4c19
   subpackages:
   - internal
   - internal/app_identity
