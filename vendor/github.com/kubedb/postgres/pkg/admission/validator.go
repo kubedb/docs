@@ -104,6 +104,7 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 
 			postgres := obj.(*api.Postgres).DeepCopy()
 			oldPostgres := oldObject.(*api.Postgres).DeepCopy()
+			oldPostgres.SetDefaults()
 			// Allow changing Database Secret only if there was no secret have set up yet.
 			if oldPostgres.Spec.DatabaseSecret == nil {
 				oldPostgres.Spec.DatabaseSecret = postgres.Spec.DatabaseSecret
@@ -343,7 +344,6 @@ var preconditionSpecFields = []string{
 	"spec.storage",
 	"spec.init",
 	"spec.podTemplate.spec.nodeSelector",
-	"spec.podTemplate.spec.env",
 }
 
 func preconditionFailedError(kind string) error {

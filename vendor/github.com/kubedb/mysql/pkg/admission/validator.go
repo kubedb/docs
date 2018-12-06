@@ -105,6 +105,7 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 
 			mysql := obj.(*api.MySQL).DeepCopy()
 			oldMySQL := oldObject.(*api.MySQL).DeepCopy()
+			oldMySQL.SetDefaults()
 			// Allow changing Database Secret only if there was no secret have set up yet.
 			if oldMySQL.Spec.DatabaseSecret == nil {
 				oldMySQL.Spec.DatabaseSecret = mysql.Spec.DatabaseSecret
@@ -286,7 +287,6 @@ var preconditionSpecFields = []string{
 	"spec.databaseSecret",
 	"spec.init",
 	"spec.podTemplate.spec.nodeSelector",
-	"spec.podTemplate.spec.env",
 }
 
 func preconditionFailedError(kind string) error {

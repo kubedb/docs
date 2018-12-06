@@ -26,21 +26,21 @@ import:
   version: v0.2.0
 - package: github.com/jpillora/go-ogle-analytics
 - package: github.com/kubedb/apimachinery
-  version: 0.9.0-rc.1
+  version: 0.9.0-rc.2
 - package: github.com/kubedb/elasticsearch
-  version: 0.9.0-rc.1
+  version: 0.9.0-rc.2
 - package: github.com/kubedb/etcd
-  version: 0.1.0-rc.1
+  version: 0.1.0-rc.2
 - package: github.com/kubedb/memcached
-  version: 0.2.0-rc.1
+  version: 0.2.0-rc.2
 - package: github.com/kubedb/mongodb
-  version: 0.2.0-rc.1
+  version: 0.2.0-rc.2
 - package: github.com/kubedb/mysql
-  version: 0.2.0-rc.1
+  version: 0.2.0-rc.2
 - package: github.com/kubedb/postgres
-  version: 0.9.0-rc.1
+  version: 0.9.0-rc.2
 - package: github.com/kubedb/redis
-  version: 0.2.0-rc.1
+  version: 0.2.0-rc.2
 - package: github.com/orcaman/concurrent-map
 - package: github.com/prometheus/client_golang
   version: v0.8.0

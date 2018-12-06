@@ -113,6 +113,7 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 
 			elasticsearch := obj.(*api.Elasticsearch).DeepCopy()
 			oldElasticsearch := oldObject.(*api.Elasticsearch).DeepCopy()
+			oldElasticsearch.SetDefaults()
 			// Allow changing Database Secret only if there was no secret have set up yet.
 			if oldElasticsearch.Spec.DatabaseSecret == nil {
 				oldElasticsearch.Spec.DatabaseSecret = elasticsearch.Spec.DatabaseSecret
@@ -356,7 +357,6 @@ var preconditionSpecFields = []string{
 	"spec.storage",
 	"spec.init",
 	"spec.podTemplate.spec.nodeSelector",
-	"spec.podTemplate.spec.env",
 }
 
 func preconditionFailedError(kind string) error {

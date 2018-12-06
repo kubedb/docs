@@ -325,7 +325,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 			Name: "exporter",
 			Args: append([]string{
 				"--log.level=info",
-			}),
+			}, postgres.Spec.Monitor.Args...),
 			Image:           postgresVersion.Spec.Exporter.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
@@ -335,7 +335,9 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 					ContainerPort: int32(api.PrometheusExporterPortNumber),
 				},
 			},
-			Resources: postgres.Spec.Monitor.Resources,
+			Env:             postgres.Spec.Monitor.Env,
+			Resources:       postgres.Spec.Monitor.Resources,
+			SecurityContext: postgres.Spec.Monitor.SecurityContext,
 		}
 
 		envList := []core.EnvVar{

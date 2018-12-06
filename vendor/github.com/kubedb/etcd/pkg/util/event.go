@@ -7,7 +7,7 @@ import (
 
 	"github.com/appscode/go/encoding/json/types"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/appscode/kutil"
-	"github.com/appscode/kutil/core/v1"
+	v1 "github.com/appscode/kutil/core/v1"
 	discovery_util "github.com/appscode/kutil/discovery"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"

@@ -101,6 +101,7 @@ func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			}
 			redis := obj.(*api.Redis).DeepCopy()
 			oldRedis := oldObject.(*api.Redis).DeepCopy()
+			oldRedis.SetDefaults()
 			if err := validateUpdate(redis, oldRedis, req.Kind.Kind); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
@@ -250,7 +251,6 @@ var preconditionSpecFields = []string{
 	"spec.storageType",
 	"spec.storage",
 	"spec.podTemplate.spec.nodeSelector",
-	"spec.podTemplate.spec.env",
 }
 
 func preconditionFailedError(kind string) error {

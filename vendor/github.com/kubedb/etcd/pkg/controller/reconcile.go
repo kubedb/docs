@@ -10,7 +10,7 @@ import (
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/etcd/pkg/util"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/kubernetes"
 )

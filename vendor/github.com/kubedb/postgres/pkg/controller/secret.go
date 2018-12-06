@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/crypto/rand"
+	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	core "k8s.io/api/core/v1"
@@ -32,8 +33,9 @@ func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
 			return err
 		}
 		postgres.Spec.DatabaseSecret = pg.Spec.DatabaseSecret
+		return nil
 	}
-	return nil
+	return c.upgradeDatabaseSecret(postgres)
 }
 
 func (c *Controller) findDatabaseSecret(postgres *api.Postgres) (*core.Secret, error) {
@@ -88,6 +90,23 @@ func (c *Controller) createDatabaseSecret(postgres *api.Postgres) (*core.SecretV
 	return &core.SecretVolumeSource{
 		SecretName: secret.Name,
 	}, nil
+}
+
+// This is done to fix 0.8.0 -> 0.9.0 upgrade due to
+// https://github.com/kubedb/postgres/pull/179/files#diff-10ddaf307bbebafda149db10a28b9c24R20 commit
+func (c *Controller) upgradeDatabaseSecret(postgres *api.Postgres) error {
+	meta := metav1.ObjectMeta{
+		Name:      postgres.Spec.DatabaseSecret.SecretName,
+		Namespace: postgres.Namespace,
+	}
+
+	_, _, err := core_util.CreateOrPatchSecret(c.Client, meta, func(in *core.Secret) *core.Secret {
+		if _, ok := in.Data[PostgresUser]; !ok {
+			in.StringData = map[string]string{PostgresUser: "postgres"}
+		}
+		return in
+	})
+	return err
 }
 
 func (c *Controller) deleteSecret(dormantDb *api.DormantDatabase, secretVolume *core.SecretVolumeSource) error {

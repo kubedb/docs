@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/appscode/go/crypto/rand"
+	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"golang.org/x/crypto/bcrypt"
@@ -59,8 +60,9 @@ func (c *Controller) ensureDatabaseSecret(elasticsearch *api.Elasticsearch) erro
 			return err
 		}
 		elasticsearch.Spec.DatabaseSecret = es.Spec.DatabaseSecret
+		return nil
 	}
-	return nil
+	return c.upgradeDatabaseSecret(elasticsearch)
 }
 
 func (c *Controller) findCertSecret(elasticsearch *api.Elasticsearch) (*core.Secret, error) {
@@ -320,4 +322,25 @@ func (c *Controller) createDatabaseSecret(elasticsearch *api.Elasticsearch) (*co
 	return &core.SecretVolumeSource{
 		SecretName: secret.Name,
 	}, nil
+}
+
+// This is done to fix 0.8.0 -> 0.9.0 upgrade due to
+// https://github.com/kubedb/elasticsearch/pull/181/files#diff-10ddaf307bbebafda149db10a28b9c24R23 commit
+func (c *Controller) upgradeDatabaseSecret(elasticsearch *api.Elasticsearch) error {
+	meta := metav1.ObjectMeta{
+		Name:      elasticsearch.Spec.DatabaseSecret.SecretName,
+		Namespace: elasticsearch.Namespace,
+	}
+
+	_, _, err := core_util.CreateOrPatchSecret(c.Client, meta, func(in *core.Secret) *core.Secret {
+		in.StringData = make(map[string]string)
+		if _, ok := in.Data[KeyAdminUserName]; !ok {
+			in.StringData[KeyAdminUserName] = AdminUser
+		}
+		if _, ok := in.Data[KeyReadAllUserName]; !ok {
+			in.StringData[KeyReadAllUserName] = ReadAllUser
+		}
+		return in
+	})
+	return err
 }

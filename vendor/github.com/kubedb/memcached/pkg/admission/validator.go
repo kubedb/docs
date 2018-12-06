@@ -100,6 +100,7 @@ func (a *MemcachedValidator) Admit(req *admission.AdmissionRequest) *admission.A
 			}
 			memcached := obj.(*api.Memcached).DeepCopy()
 			oldMemcached := oldObject.(*api.Memcached).DeepCopy()
+			oldMemcached.SetDefaults()
 			if err := validateUpdate(memcached, oldMemcached, req.Kind.Kind); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
@@ -235,7 +236,6 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 
 var preconditionSpecFields = []string{
 	"spec.podTemplate.spec.nodeSelector",
-	"spec.podTemplate.spec.env",
 }
 
 func preconditionFailedError(kind string) error {

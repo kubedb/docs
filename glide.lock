@@ -1,5 +1,5 @@
-hash: cb44243e0315bc99bcbc7cce4760ad733afd053af8b22bef65225666989e7665
-updated: 2018-12-05T11:11:25.038580766-08:00
+hash: d2eaac97567dfac4df5f853f23b84bc3284619a399f4b0d538b8c8880a18668b
+updated: 2018-12-06T11:56:13.900059846-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -38,7 +38,7 @@ imports:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 239838b6231b8a27a66426e25678351ce50c4cfd
+  version: 72dd199d4e2019a69a7929245f7e17823d753381
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1
@@ -337,7 +337,7 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: edf77e9609ff15a2ad16582deda49eef5a0b80f4
+  version: bd45ce0b7b20bea3aa4029fcbfef4e15350c7bc6
   subpackages:
   - apis
   - apis/authorization
@@ -376,40 +376,40 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: cddfa21f66691aabdebe19e9b01436bf61fe6461
+  version: b091bf10968a6e2e240c087d653ce3b6f342ec95
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util/es
 - name: github.com/kubedb/etcd
-  version: 3689dfb00aa881ad482508d250c9fb2f4fd10a13
+  version: f6abd0aa8d388618cb9f2fe024124bf8c1b6d75e
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: 275ce5b6e44e26f45ef1d289bb513deecf07eef0
+  version: 08e6c82e3fda32a23707e4b641e3bf0f44f9dab4
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: 2d46eaddfa6853ee288f7f52191556fe12e15511
+  version: 1c95edab5aca9a876ed8b9931c0b881b941d7c43
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 9d33c1a0f6a0cf66474d4b1bdba39679a13106c9
+  version: 8a4f3b13738789d8c0f4cc825a643ee102abdd3e
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: c516c5e3d9c0967dbaaabcf50ea57eb266329f7a
+  version: ac35509e480250df8988af900ee4f70e5be9d83d
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: 5baf1011555f79350521cfeb628957d382e73f25
+  version: fe32d272cc366b2f11439c09cb8218ea5bcec6a9
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -979,7 +979,7 @@ imports:
   - client/clientset/versioned/typed/appcatalog/v1alpha1
   - client/clientset/versioned/typed/appcatalog/v1alpha1/util
 - name: kmodules.xyz/monitoring-agent-api
-  version: c68fa034fbbaeb8c930c17d1ec0790a4ea46bad3
+  version: d12289267b3d7510feb9fac1f5e451d476f23a38
   repo: https://github.com/kmodules/monitoring-agent-api.git
   vcs: git
   subpackages:

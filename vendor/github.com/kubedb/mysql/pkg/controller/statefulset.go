@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
@@ -145,8 +146,8 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 					// DATA_SOURCE_NAME=user:password@tcp(localhost:5555)/dbname
 					// ref: https://github.com/prometheus/mysqld_exporter#setting-the-mysql-servers-data-source-name
 					fmt.Sprintf(`export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"
-						/bin/mysqld_exporter --web.listen-address=:%v --web.telemetry-path=%v`,
-						mysql.Spec.Monitor.Prometheus.Port, mysql.StatsService().Path()),
+						/bin/mysqld_exporter --web.listen-address=:%v --web.telemetry-path=%v %v`,
+						mysql.Spec.Monitor.Prometheus.Port, mysql.StatsService().Path(), strings.Join(mysql.Spec.Monitor.Args, " ")),
 				},
 				Image: mysqlVersion.Spec.Exporter.Image,
 				Ports: []core.ContainerPort{
@@ -156,7 +157,9 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 						ContainerPort: mysql.Spec.Monitor.Prometheus.Port,
 					},
 				},
-				Resources: mysql.Spec.Monitor.Resources,
+				Env:             mysql.Spec.Monitor.Env,
+				Resources:       mysql.Spec.Monitor.Resources,
+				SecurityContext: mysql.Spec.Monitor.SecurityContext,
 			})
 		}
 		// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable

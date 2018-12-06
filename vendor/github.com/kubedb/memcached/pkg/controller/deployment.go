@@ -113,10 +113,10 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 		if memcached.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
-				Args: []string{
+				Args: append([]string{
 					fmt.Sprintf("--web.listen-address=:%v", memcached.Spec.Monitor.Prometheus.Port),
 					fmt.Sprintf("--web.telemetry-path=%v", memcached.StatsService().Path()),
-				},
+				}, memcached.Spec.Monitor.Args...),
 				Image:           memcachedVersion.Spec.Exporter.Image,
 				ImagePullPolicy: core.PullIfNotPresent,
 				Ports: []core.ContainerPort{
@@ -126,7 +126,9 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 						ContainerPort: memcached.Spec.Monitor.Prometheus.Port,
 					},
 				},
-				Resources: memcached.Spec.Monitor.Resources,
+				Env:             memcached.Spec.Monitor.Env,
+				Resources:       memcached.Spec.Monitor.Resources,
+				SecurityContext: memcached.Spec.Monitor.SecurityContext,
 			})
 		}
 		in = upsertUserEnv(in, memcached)

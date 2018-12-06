@@ -121,10 +121,10 @@ func (c *Controller) createStatefulSet(redis *api.Redis) (*apps.StatefulSet, kut
 		if redis.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
-				Args: []string{
+				Args: append([]string{
 					fmt.Sprintf("--web.listen-address=:%v", redis.Spec.Monitor.Prometheus.Port),
 					fmt.Sprintf("--web.telemetry-path=%v", redis.StatsService().Path()),
-				},
+				}, redis.Spec.Monitor.Args...),
 				Image:           redisVersion.Spec.Exporter.Image,
 				ImagePullPolicy: core.PullIfNotPresent,
 				Ports: []core.ContainerPort{
@@ -134,7 +134,9 @@ func (c *Controller) createStatefulSet(redis *api.Redis) (*apps.StatefulSet, kut
 						ContainerPort: redis.Spec.Monitor.Prometheus.Port,
 					},
 				},
-				Resources: redis.Spec.Monitor.Resources,
+				Env:             redis.Spec.Monitor.Env,
+				Resources:       redis.Spec.Monitor.Resources,
+				SecurityContext: redis.Spec.Monitor.SecurityContext,
 			})
 		}
 

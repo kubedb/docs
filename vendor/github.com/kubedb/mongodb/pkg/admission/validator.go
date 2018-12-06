@@ -103,6 +103,7 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 
 			mongodb := obj.(*api.MongoDB).DeepCopy()
 			oldMongoDB := oldObject.(*api.MongoDB).DeepCopy()
+			oldMongoDB.SetDefaults()
 			// Allow changing Database Secret only if there was no secret have set up yet.
 			if oldMongoDB.Spec.DatabaseSecret == nil {
 				oldMongoDB.Spec.DatabaseSecret = mongodb.Spec.DatabaseSecret
@@ -287,7 +288,6 @@ var preconditionSpecFields = []string{
 	"spec.init",
 	"spec.ReplicaSet",
 	"spec.podTemplate.spec.nodeSelector",
-	"spec.podTemplate.spec.env",
 }
 
 func preconditionFailedError(kind string) error {

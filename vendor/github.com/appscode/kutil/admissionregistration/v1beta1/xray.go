@@ -8,7 +8,7 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/discovery"
 	meta_util "github.com/appscode/kutil/meta"
-	"github.com/evanphx/json-patch"
+	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
