@@ -59,6 +59,7 @@ func New(
 	appCatalogClient appcat_cs.AppcatalogV1alpha1Interface,
 	promClient pcm.MonitoringV1Interface,
 	opt amc.Config,
+	recorder record.EventRecorder,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
@@ -71,7 +72,7 @@ func New(
 		},
 		Config:     opt,
 		promClient: promClient,
-		recorder:   eventer.NewEventRecorder(client, "Redis operator"),
+		recorder:   recorder,
 		selector: labels.SelectorFromSet(map[string]string{
 			api.LabelDatabaseKind: api.ResourceKindRedis,
 		}),
@@ -94,7 +95,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 // InitInformer initializes Redis, DormantDB amd Snapshot watcher
 func (c *Controller) Init() error {
 	c.initWatcher()
-	c.DrmnQueue = dormantdatabase.NewController(c.Controller, c, c.Config, nil).AddEventHandlerFunc(c.selector)
+	c.DrmnQueue = dormantdatabase.NewController(c.Controller, c, c.Config, nil, c.recorder).AddEventHandlerFunc(c.selector)
 
 	return nil
 }

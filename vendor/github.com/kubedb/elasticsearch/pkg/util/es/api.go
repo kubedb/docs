@@ -1,6 +1,7 @@
 package es
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net/http"
@@ -70,9 +71,15 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, url string
 			}),
 			esv5.SetBasicAuth(string(secret.Data[KeyAdminUserName]), string(secret.Data[KeyAdminPassword])),
 			esv5.SetURL(url),
-			esv5.SetHealthcheck(true),
+			esv5.SetHealthcheck(false), // don't check health here. otherwise error message can be misleading for invalid credentials
 			esv5.SetSniff(false),
 		)
+		if err != nil {
+			return nil, err
+		}
+
+		// do a manual health check to test client
+		_, err = client.ClusterHealth().Do(context.Background())
 		if err != nil {
 			return nil, err
 		}
@@ -90,12 +97,19 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, url string
 			}),
 			esv6.SetBasicAuth(string(secret.Data[KeyAdminUserName]), string(secret.Data[KeyAdminPassword])),
 			esv6.SetURL(url),
-			esv6.SetHealthcheck(true),
+			esv6.SetHealthcheck(false), // don't check health here. otherwise error message can be misleading for invalid credentials
 			esv6.SetSniff(false),
 		)
 		if err != nil {
 			return nil, err
 		}
+
+		// do a manual health check to test client
+		_, err = client.ClusterHealth().Do(context.Background())
+		if err != nil {
+			return nil, err
+		}
+
 		return &ESClientV6{client: client}, nil
 	}
 	return nil, fmt.Errorf("unknown database verserion: %s", db.Spec.Version)

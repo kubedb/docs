@@ -1,15 +1,14 @@
-hash: d2eaac97567dfac4df5f853f23b84bc3284619a399f4b0d538b8c8880a18668b
-updated: 2018-12-06T11:56:13.900059846-08:00
+hash: 7aaa47f322a7dad20ff27cddee9b3ebd3679fd6387a521e9740bf6c1de44b887
+updated: 2018-12-14T17:10:09.730957758-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
 - name: cloud.google.com/go
-  version: fe3d41e1ecb2ce36ad3a979037c9b9a2b726226f
+  version: 0fd7230b2a7505833d5f69b75cbd6c9582401479
   subpackages:
   - compute/metadata
-  - internal
 - name: github.com/appscode/go
-  version: aa0a55d74dac66f9b9bec9c0e7b67944115a3f44
+  version: 584aaa73af837f112c0a471be398ea837341c330
   subpackages:
   - analytics
   - arrays
@@ -38,7 +37,7 @@ imports:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 72dd199d4e2019a69a7929245f7e17823d753381
+  version: d9fb2e606bf2c196a8cd8cff13097f531d686a44
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1
@@ -57,7 +56,7 @@ imports:
 - name: github.com/appscode/mergo
   version: 9f23e2d6bd2a77f959b2bf6acdbefd708a83a4a4
 - name: github.com/appscode/osm
-  version: fb08059eb9264578f9e15dc796f7afdb1bd40294
+  version: 06ce62d34064847e7c6d4e4cc6c7264774499d47
   subpackages:
   - context
 - name: github.com/appscode/pat
@@ -204,9 +203,7 @@ imports:
   - daemon
   - journal
 - name: github.com/coreos/prometheus-operator
-  version: b9bfccafc646c76bd9b1ebf209ea528fde37f2e3
-  repo: https://github.com/kmodules/prometheus-operator.git
-  vcs: git
+  version: 82a6ad2071ff653e38b3b4719ecb789d73f3ab05
   subpackages:
   - pkg/client/monitoring/v1
 - name: github.com/cpuguy83/go-md2man
@@ -268,7 +265,7 @@ imports:
   subpackages:
   - lru
 - name: github.com/golang/protobuf
-  version: b4deda0973fb4c70b50d226b1af49f3da59f5265
+  version: 925541529c1fa6821df4e44ce2723319eb2be768
   subpackages:
   - jsonpb
   - proto
@@ -306,8 +303,10 @@ imports:
   - openstack/identity/v3/tokens
   - openstack/utils
   - pagination
+- name: github.com/gorilla/websocket
+  version: 66b9c49e59c6c48f0ffce28c2d8b8a5678502c6d
 - name: github.com/graymeta/stow
-  version: 1849a82ac7fbd3e5cb144bcc711544e90903eac4
+  version: 8020e152292b2cdbdca30274fec24e18905f254d
   repo: https://github.com/appscode/stow.git
   vcs: git
   subpackages:
@@ -337,7 +336,7 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: bd45ce0b7b20bea3aa4029fcbfef4e15350c7bc6
+  version: f2efa1e550560074ff45fbeeb1e37104736a0db8
   subpackages:
   - apis
   - apis/authorization
@@ -376,40 +375,40 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: b091bf10968a6e2e240c087d653ce3b6f342ec95
+  version: e2fb045849d64040190cda00feebdd2c2b429c38
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util/es
 - name: github.com/kubedb/etcd
-  version: f6abd0aa8d388618cb9f2fe024124bf8c1b6d75e
+  version: 74656d3b48c9869a39cc80cd221fe0f3ec22e6f3
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: 08e6c82e3fda32a23707e4b641e3bf0f44f9dab4
+  version: e1bba559b70dc85309d495aec9e7f5d3000ee08a
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: 1c95edab5aca9a876ed8b9931c0b881b941d7c43
+  version: 1244119751180c493da1b92719e8546ec587bafc
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 8a4f3b13738789d8c0f4cc825a643ee102abdd3e
+  version: 6941ea597a3bdb8f4449d1bda50db21508854681
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: ac35509e480250df8988af900ee4f70e5be9d83d
+  version: 91645d991f66d4a41063bbad6066347a6f453333
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: fe32d272cc366b2f11439c09cb8218ea5bcec6a9
+  version: a7d5410974be38174a5b1af9dc9a1b6aa6a4a495
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -425,6 +424,8 @@ imports:
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
   - pbutil
+- name: github.com/mitchellh/mapstructure
+  version: 53818660ed4955e899c0bcafa97299a388bd7c8e
 - name: github.com/modern-go/concurrent
   version: bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94
 - name: github.com/modern-go/reflect2
@@ -434,7 +435,7 @@ imports:
 - name: github.com/NYTimes/gziphandler
   version: 56545f4a5d46df9a6648819d1664c3a03a13ffdb
 - name: github.com/olivere/elastic
-  version: 1619150b007041b6dba8aa447f0e2d151cc2b4c5
+  version: 46a8b35d25c08bebb767e8de83d081709af95dc3
   subpackages:
   - config
   - uritemplates
@@ -602,6 +603,8 @@ imports:
   version: ca60c6d796d4b1f7bb2a8fd5271d8a59aeffb4bf
   repo: https://github.com/appscode/cron.git
   vcs: git
+- name: gopkg.in/square/go-jose.v2
+  version: 72415094398e2f013bf50b76fd6de36df47938ea
 - name: gopkg.in/yaml.v2
   version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
 - name: k8s.io/api
@@ -1000,4 +1003,6 @@ imports:
   vcs: git
   subpackages:
   - api/v1
+- name: sigs.k8s.io/yaml
+  version: fd68e9863619f6ec2fdd8625fe1f02e7c877e480
 testImports: []

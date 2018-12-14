@@ -1,30 +1,42 @@
 package: github.com/kubedb/operator
 import:
-- package: github.com/appscode/go
-  version: master
-- package: github.com/appscode/pat
-  version: master
-- package: github.com/coreos/prometheus-operator
-  repo: https://github.com/kmodules/prometheus-operator.git
-  vcs: git
-  version: k-1.12
-- package: github.com/go-kit/kit
-  version: v0.7.0
-- package: github.com/graymeta/stow
-  repo: https://github.com/appscode/stow.git
-  vcs: git
-  version: master
+- package: cloud.google.com/go
+  version: v0.23.0
 - package: github.com/Azure/azure-sdk-for-go
   version: v19.0.0
 - package: github.com/Azure/go-autorest
   version: v10.14.0
+- package: github.com/appscode/go
+  version: master
+- package: github.com/appscode/kubernetes-webhook-util
+  version: release-9.0
+- package: github.com/appscode/kutil
+  version: release-9.0
+- package: github.com/appscode/pat
+  version: master
 - package: github.com/aws/aws-sdk-go
   version: v1.14.12
-- package: google.golang.org/api/storage/v1
-  version: 3639d6d93f377f39a1de765fa4ef37b3c7ca8bd9
-- package: cloud.google.com/go
-  version: v0.2.0
+- package: github.com/coreos/prometheus-operator
+  version: v0.25.0
+- package: github.com/cpuguy83/go-md2man
+  version: v1.0.8
+- package: github.com/davecgh/go-spew
+  version: v1.1.1
+- package: github.com/go-kit/kit
+  version: v0.7.0
+- package: github.com/golang/protobuf
+  version: v1.0.0
+- package: github.com/gorilla/websocket
+  version: v1.4.0
+- package: github.com/graymeta/stow
+  repo: https://github.com/appscode/stow.git
+  vcs: git
+  version: master
+- package: github.com/imdario/mergo
+  version: v0.3.5
 - package: github.com/jpillora/go-ogle-analytics
+- package: github.com/json-iterator/go
+  version: 1.1.5
 - package: github.com/kubedb/apimachinery
   version: master
 - package: github.com/kubedb/elasticsearch
@@ -41,15 +53,33 @@ import:
   version: master
 - package: github.com/kubedb/redis
   version: master
+- package: github.com/mailru/easyjson
+  version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
 - package: github.com/orcaman/concurrent-map
 - package: github.com/prometheus/client_golang
   version: v0.8.0
 - package: github.com/prometheus/common
   version: 3233b24a36715a2fe36d162260457857a56d672d
+- package: github.com/russross/blackfriday
+  version: v1.5.2
 - package: github.com/spf13/cobra
   version: v0.0.3
 - package: github.com/spf13/pflag
   version: v1.0.3
+- package: golang.org/x/crypto
+  version: de0752318171da717af4ce24d0a2e8626afaeb11
+- package: golang.org/x/net
+  version: 1c05540f6879653db88113bc4a2b70aec4bd491f
+- package: golang.org/x/sys
+  version: 95c6576299259db960f6c5b9b69ea52422860fce
+- package: golang.org/x/text
+  version: b19bf474d317b857955b12035d2c5acb57ce8b01
+- package: google.golang.org/api/storage/v1
+  version: 3639d6d93f377f39a1de765fa4ef37b3c7ca8bd9
+- package: gopkg.in/square/go-jose.v2
+  version: v2.2.1
+- package: gopkg.in/yaml.v2
+  version: v2.2.1
 - package: k8s.io/api
   version: kubernetes-1.12.0
 - package: k8s.io/apiextensions-apiserver
@@ -64,9 +94,13 @@ import:
   version: ac-1.12.0
 - package: k8s.io/client-go
   version: v9.0.0
-- package: github.com/appscode/kutil
-  version: release-9.0
-- package: github.com/appscode/kubernetes-webhook-util
+- package: k8s.io/kube-aggregator
+  version: kubernetes-1.12.0
+- package: k8s.io/kube-openapi
+  version: 0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803
+- package: kmodules.xyz/custom-resources
+  repo: https://github.com/kmodules/custom-resources.git
+  vcs: git
   version: release-9.0
 - package: kmodules.xyz/monitoring-agent-api
   repo: https://github.com/kmodules/monitoring-agent-api.git
@@ -80,29 +114,3 @@ import:
   repo: https://github.com/kmodules/offshoot-api.git
   vcs: git
   version: release-9.0
-- package: github.com/mailru/easyjson
-  version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
-- package: github.com/cpuguy83/go-md2man
-  version: v1.0.8
-- package: github.com/json-iterator/go
-  version: 1.1.5
-- package: golang.org/x/text
-  version: b19bf474d317b857955b12035d2c5acb57ce8b01
-- package: golang.org/x/net
-  version: 1c05540f6879653db88113bc4a2b70aec4bd491f
-- package: golang.org/x/sys
-  version: 95c6576299259db960f6c5b9b69ea52422860fce
-- package: k8s.io/kube-openapi
-  version: 0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803
-- package: github.com/golang/protobuf
-  version: v1.1.0
-- package: kmodules.xyz/custom-resources
-  repo: https://github.com/kmodules/custom-resources.git
-  vcs: git
-  version: release-9.0
-- package: k8s.io/kube-aggregator
-  version: kubernetes-1.12.0
-- package: golang.org/x/crypto
-  version: de0752318171da717af4ce24d0a2e8626afaeb11
-- package: github.com/davecgh/go-spew
-  version: v1.1.1

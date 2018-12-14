@@ -73,6 +73,7 @@ func New(
 	promClient pcm.MonitoringV1Interface,
 	cronController snapc.CronControllerInterface,
 	opt amc.Config,
+	recorder record.EventRecorder,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
@@ -86,7 +87,7 @@ func New(
 		Config:         opt,
 		promClient:     promClient,
 		cronController: cronController,
-		recorder:       eventer.NewEventRecorder(client, "Etcd operator"),
+		recorder:       recorder,
 		selector: labels.SelectorFromSet(map[string]string{
 			api.LabelDatabaseKind: api.ResourceKindEtcd,
 		}),
@@ -110,8 +111,8 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 // InitInformer initializes Etcd, DormantDB amd Snapshot watcher
 func (c *Controller) Init() error {
 	c.initWatcher()
-	c.DrmnQueue = dormantdatabase.NewController(c.Controller, c, c.Config, nil).AddEventHandlerFunc(c.selector)
-	c.SnapQueue, c.JobQueue = snapc.NewController(c.Controller, c, c.Config, nil).AddEventHandlerFunc(c.selector)
+	c.DrmnQueue = dormantdatabase.NewController(c.Controller, c, c.Config, nil, c.recorder).AddEventHandlerFunc(c.selector)
+	c.SnapQueue, c.JobQueue = snapc.NewController(c.Controller, c, c.Config, nil, c.recorder).AddEventHandlerFunc(c.selector)
 
 	return nil
 }
