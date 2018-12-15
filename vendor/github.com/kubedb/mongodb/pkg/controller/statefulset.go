@@ -202,11 +202,11 @@ func addContainerProbe(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *app
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMongoDB {
 			readinessProbe := mongodb.Spec.PodTemplate.Spec.ReadinessProbe
-			if structs.IsZero(*readinessProbe) {
+			if readinessProbe != nil && structs.IsZero(*readinessProbe) {
 				readinessProbe = nil
 			}
 			livenessProbe := mongodb.Spec.PodTemplate.Spec.LivenessProbe
-			if structs.IsZero(*livenessProbe) {
+			if livenessProbe != nil && structs.IsZero(*livenessProbe) {
 				livenessProbe = nil
 			}
 			statefulSet.Spec.Template.Spec.Containers[i].LivenessProbe = livenessProbe

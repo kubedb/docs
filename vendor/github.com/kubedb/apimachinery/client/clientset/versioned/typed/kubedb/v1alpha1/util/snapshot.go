@@ -147,3 +147,18 @@ func UpdateSnapshotStatus(
 	result, _, err = PatchSnapshotObject(c, in, apply(in))
 	return
 }
+
+func MarkAsFailedSnapshot(
+	c cs.KubedbV1alpha1Interface,
+	cur *api.Snapshot,
+	reason string,
+	useSubresource ...bool,
+) (*api.Snapshot, error) {
+	return UpdateSnapshotStatus(c, cur, func(in *api.SnapshotStatus) *api.SnapshotStatus {
+		t := metav1.Now()
+		in.CompletionTime = &t
+		in.Phase = api.SnapshotPhaseFailed
+		in.Reason = reason
+		return in
+	}, useSubresource...)
+}

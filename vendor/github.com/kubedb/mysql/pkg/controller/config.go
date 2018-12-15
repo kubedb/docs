@@ -8,6 +8,7 @@ import (
 	amc "github.com/kubedb/apimachinery/pkg/controller"
 	"github.com/kubedb/apimachinery/pkg/controller/dormantdatabase"
 	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
+	"github.com/kubedb/apimachinery/pkg/eventer"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
@@ -45,6 +46,8 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 
+	recorder := eventer.NewEventRecorder(c.KubeClient, "MySQL operator")
+
 	ctrl := New(
 		c.ClientConfig,
 		c.KubeClient,
@@ -55,6 +58,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.PromClient,
 		c.CronController,
 		c.Config,
+		recorder,
 	)
 
 	tweakListOptions := func(options *metav1.ListOptions) {
@@ -62,8 +66,8 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	}
 
 	// Initialize Job and Snapshot Informer. Later EventHandler will be added to these informers.
-	ctrl.DrmnInformer = dormantdatabase.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions).InitInformer()
-	ctrl.SnapInformer, ctrl.JobInformer = snapc.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions).InitInformer()
+	ctrl.DrmnInformer = dormantdatabase.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions, recorder).InitInformer()
+	ctrl.SnapInformer, ctrl.JobInformer = snapc.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions, recorder).InitInformer()
 
 	if err := ctrl.EnsureCustomResourceDefinitions(); err != nil {
 		return nil, err

@@ -27,7 +27,7 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 			c.eventRecorder.Eventf(
 				snapshot,
 				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
+				eventer.EventReasonSnapshotError,
 				err.Error(),
 			)
 			return err
@@ -48,57 +48,43 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 			c.eventRecorder.Eventf(
 				snapshot,
 				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
+				eventer.EventReasonSnapshotError,
 				err.Error(),
 			)
-			if kutil.IsRequestRetryable(err) || kutil.AdmissionWebhookDeniedRequest(err) {
-				return err
-			}
+			return err
 		}
 		return nil
 	}
 
+	if _, _, err := util.PatchSnapshot(c.ExtClient.KubedbV1alpha1(), snapshot, func(in *api.Snapshot) *api.Snapshot {
+		in.Labels[api.LabelDatabaseName] = snapshot.Spec.DatabaseName
+		return in
+	}); err != nil {
+		c.eventRecorder.Eventf(
+			snapshot,
+			core.EventTypeWarning,
+			eventer.EventReasonSnapshotError,
+			err.Error(),
+		)
+		return err
+	}
+
 	// Validate DatabaseSnapshot
 	if err := c.snapshotter.ValidateSnapshot(snapshot); err != nil {
-		log.Errorln(err)
+		if kutil.IsRequestRetryable(err) {
+			return err
+		}
+
+		if _, e2 := util.MarkAsFailedSnapshot(c.ExtClient.KubedbV1alpha1(), snapshot, err.Error(), apis.EnableStatusSubresource); e2 != nil {
+			return e2 // retry if retryable error
+		}
 		c.eventRecorder.Event(
 			snapshot,
 			core.EventTypeWarning,
-			eventer.EventReasonInvalid,
+			eventer.EventReasonSnapshotFailed,
 			err.Error(),
 		)
-
-		if _, err := util.UpdateSnapshotStatus(c.ExtClient.KubedbV1alpha1(), snapshot, func(in *api.SnapshotStatus) *api.SnapshotStatus {
-			t := metav1.Now()
-			in.CompletionTime = &t
-			in.Phase = api.SnapshotPhaseFailed
-			in.Reason = "Invalid Snapshot"
-			return in
-		}, apis.EnableStatusSubresource); err != nil {
-			log.Errorln(err)
-			c.eventRecorder.Eventf(
-				snapshot,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-			return err
-		}
-
-		if _, _, err = util.PatchSnapshot(c.ExtClient.KubedbV1alpha1(), snapshot, func(in *api.Snapshot) *api.Snapshot {
-			in.Labels[api.LabelDatabaseName] = snapshot.Spec.DatabaseName
-			return in
-		}); err != nil {
-			log.Errorln(err)
-			c.eventRecorder.Eventf(
-				snapshot,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-			return err
-		}
-		return nil
+		return nil // stop retry
 	}
 
 	// Check running snapshot
@@ -107,83 +93,69 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 		c.eventRecorder.Event(
 			snapshot,
 			core.EventTypeWarning,
-			eventer.EventReasonSnapshotFailed,
+			eventer.EventReasonSnapshotError,
 			err.Error(),
 		)
 		return err
 	}
 	if running {
-		if _, err := util.UpdateSnapshotStatus(c.ExtClient.KubedbV1alpha1(), snapshot, func(in *api.SnapshotStatus) *api.SnapshotStatus {
-			t := metav1.Now()
-			in.CompletionTime = &t
-			in.Phase = api.SnapshotPhaseFailed
-			in.Reason = "One Snapshot is already Running"
-			return in
-		}, apis.EnableStatusSubresource); err != nil {
-			c.eventRecorder.Eventf(
-				snapshot,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToUpdate,
-				err.Error(),
-			)
-			return err
+		msg := "One Snapshot is already Running"
+		if _, e2 := util.MarkAsFailedSnapshot(c.ExtClient.KubedbV1alpha1(), snapshot, msg, apis.EnableStatusSubresource); e2 != nil {
+			return e2 // retry if retryable error
 		}
+		c.eventRecorder.Event(
+			snapshot,
+			core.EventTypeWarning,
+			eventer.EventReasonSnapshotFailed,
+			msg,
+		)
 		return nil
 	}
 
-	runtimeObj, err := c.snapshotter.GetDatabase(metav1.ObjectMeta{Name: snapshot.Spec.DatabaseName, Namespace: snapshot.Namespace})
+	db, err := c.snapshotter.GetDatabase(metav1.ObjectMeta{Name: snapshot.Spec.DatabaseName, Namespace: snapshot.Namespace})
 	if err != nil {
 		c.eventRecorder.Event(
 			snapshot,
 			core.EventTypeWarning,
-			eventer.EventReasonFailedToGet,
+			eventer.EventReasonSnapshotError,
 			err.Error(),
 		)
 		return err
 	}
 
-	c.eventRecorder.Event(
-		runtimeObj,
-		core.EventTypeNormal,
-		eventer.EventReasonStarting,
-		"Backup running",
-	)
-	c.eventRecorder.Event(
-		snapshot,
-		core.EventTypeNormal,
-		eventer.EventReasonStarting,
-		"Backup running",
-	)
 	secret, err := osm.NewOSMSecret(c.Client, snapshot.OSMSecretName(), snapshot.Namespace, snapshot.Spec.Backend)
 	if err != nil {
-		message := fmt.Sprintf("Failed to generate osm secret. Reason: %v", err)
+		msg := fmt.Sprintf("Failed to generate osm secret. Reason: %v", err)
+		if _, e2 := util.MarkAsFailedSnapshot(c.ExtClient.KubedbV1alpha1(), snapshot, msg, apis.EnableStatusSubresource); e2 != nil {
+			return e2 // retry if retryable error
+		}
 		c.eventRecorder.Event(
-			runtimeObj,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonSnapshotFailed,
-			message,
+			msg,
 		)
 		c.eventRecorder.Event(
 			snapshot,
 			core.EventTypeWarning,
 			eventer.EventReasonSnapshotFailed,
-			message,
+			msg,
 		)
-		return err
+		return nil // don't retry
 	}
-	_, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
-	if err != nil && !kerr.IsAlreadyExists(err) {
+
+	if _, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret); err != nil && !kerr.IsAlreadyExists(err) {
 		message := fmt.Sprintf("Failed to create osm secret. Reason: %v", err)
 		c.eventRecorder.Event(
-			runtimeObj,
+			db,
 			core.EventTypeWarning,
-			eventer.EventReasonSnapshotFailed,
+			eventer.EventReasonSnapshotError,
 			message,
 		)
 		c.eventRecorder.Event(
 			snapshot,
 			core.EventTypeWarning,
-			eventer.EventReasonSnapshotFailed,
+			eventer.EventReasonSnapshotError,
 			message,
 		)
 		return err
@@ -192,25 +164,43 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 	// Do not check bucket access for local volume
 	if snapshot.Spec.Local == nil {
 		if err := osm.CheckBucketAccess(c.Client, snapshot.Spec.Backend, snapshot.Namespace); err != nil {
-			return err
+			if _, e2 := util.MarkAsFailedSnapshot(c.ExtClient.KubedbV1alpha1(), snapshot, err.Error(), apis.EnableStatusSubresource); e2 != nil {
+				return e2 // retry if retryable error
+			}
+			c.eventRecorder.Eventf(
+				snapshot,
+				core.EventTypeWarning,
+				eventer.EventReasonSnapshotFailed,
+				err.Error(),
+			)
+			return nil // don't retry
 		}
 	}
 
 	job, err := c.snapshotter.GetSnapshotter(snapshot)
 	if err != nil {
-		message := fmt.Sprintf("Failed to take snapshot. Reason: %v", err)
+		message := fmt.Sprintf("Failed to create Snapshotter Job. Reason: %v", err)
 		c.eventRecorder.Event(
-			runtimeObj,
+			db,
 			core.EventTypeWarning,
-			eventer.EventReasonSnapshotFailed,
+			eventer.EventReasonSnapshotError,
 			message,
 		)
 		c.eventRecorder.Event(
 			snapshot,
 			core.EventTypeWarning,
-			eventer.EventReasonSnapshotFailed,
+			eventer.EventReasonSnapshotError,
 			message,
 		)
+
+		// If error is not retryable then mark the snapshot as failed and don't retry
+		if !kutil.IsRequestRetryable(err) {
+			if _, e2 := util.MarkAsFailedSnapshot(c.ExtClient.KubedbV1alpha1(), snapshot, err.Error(), apis.EnableStatusSubresource); e2 != nil {
+				return e2 // retry if retryable error
+			}
+			return nil // don't retry
+		}
+
 		return err
 	}
 
@@ -221,7 +211,7 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 		c.eventRecorder.Eventf(
 			snapshot,
 			core.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
+			eventer.EventReasonSnapshotError,
 			err.Error(),
 		)
 		return err
@@ -235,25 +225,38 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 		c.eventRecorder.Eventf(
 			snapshot,
 			core.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
+			eventer.EventReasonSnapshotError,
 			err.Error(),
 		)
 		return err
 	}
 
+	c.eventRecorder.Event(
+		db,
+		core.EventTypeNormal,
+		eventer.EventReasonStarting,
+		"Backup running",
+	)
+	c.eventRecorder.Event(
+		snapshot,
+		core.EventTypeNormal,
+		eventer.EventReasonStarting,
+		"Backup running",
+	)
+
 	job, err = c.Client.BatchV1().Jobs(snapshot.Namespace).Create(job)
 	if err != nil {
-		message := fmt.Sprintf("Failed to take snapshot. Reason: %v", err)
+		message := fmt.Sprintf("Failed to create snapshot job. Reason: %v", err)
 		c.eventRecorder.Event(
-			runtimeObj,
+			db,
 			core.EventTypeWarning,
-			eventer.EventReasonSnapshotFailed,
+			eventer.EventReasonSnapshotError,
 			message,
 		)
 		c.eventRecorder.Event(
 			snapshot,
 			core.EventTypeWarning,
-			eventer.EventReasonSnapshotFailed,
+			eventer.EventReasonSnapshotError,
 			message,
 		)
 		return err
@@ -267,22 +270,22 @@ func (c *Controller) create(snapshot *api.Snapshot) error {
 }
 
 func (c *Controller) delete(snapshot *api.Snapshot) error {
-	runtimeObj, err := c.snapshotter.GetDatabase(metav1.ObjectMeta{Name: snapshot.Spec.DatabaseName, Namespace: snapshot.Namespace})
-	if err != nil {
-		if !kerr.IsNotFound(err) {
-			c.eventRecorder.Event(
-				snapshot,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToGet,
-				err.Error(),
-			)
-			return err
-		}
+	db, err := c.snapshotter.GetDatabase(metav1.ObjectMeta{Name: snapshot.Spec.DatabaseName, Namespace: snapshot.Namespace})
+	// Database may not exists while dormantdb is deleted and wipedout.
+	// So, skip error if not found. But process the rest.
+	if err != nil && !kerr.IsNotFound(err) {
+		c.eventRecorder.Event(
+			snapshot,
+			core.EventTypeWarning,
+			eventer.EventReasonSnapshotError,
+			err.Error(),
+		)
+		return err
 	}
 
-	if runtimeObj != nil {
+	if db != nil {
 		c.eventRecorder.Eventf(
-			runtimeObj,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonWipingOut,
 			"Wiping out Snapshot: %v",
@@ -291,21 +294,21 @@ func (c *Controller) delete(snapshot *api.Snapshot) error {
 	}
 
 	if err := c.snapshotter.WipeOutSnapshot(snapshot); err != nil {
-		if runtimeObj != nil {
+		if db != nil {
 			c.eventRecorder.Eventf(
-				runtimeObj,
+				db,
 				core.EventTypeWarning,
 				eventer.EventReasonFailedToWipeOut,
-				"Failed to  wipeOut. Reason: %v",
+				"Failed to wipeOut. Reason: %v",
 				err,
 			)
 		}
 		return err
 	}
 
-	if runtimeObj != nil {
+	if db != nil {
 		c.eventRecorder.Eventf(
-			runtimeObj,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessfulWipeOut,
 			"Successfully wiped out Snapshot: %v",

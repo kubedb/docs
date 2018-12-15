@@ -5,7 +5,6 @@ import (
 
 	"github.com/appscode/kutil/tools/queue"
 	amc "github.com/kubedb/apimachinery/pkg/controller"
-	"github.com/kubedb/apimachinery/pkg/eventer"
 	batch "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -35,6 +34,7 @@ func NewController(
 	snapshotter amc.Snapshotter,
 	config amc.Config,
 	tweakListOptions func(*metav1.ListOptions),
+	eventRecorder record.EventRecorder,
 ) *Controller {
 	// return new DormantDatabase Controller
 	return &Controller{
@@ -42,7 +42,7 @@ func NewController(
 		snapshotter:      snapshotter,
 		Config:           config,
 		tweakListOptions: tweakListOptions,
-		eventRecorder:    eventer.NewEventRecorder(controller.Client, "Job Controller"),
+		eventRecorder:    eventRecorder,
 	}
 }
 

@@ -10,7 +10,6 @@ import (
 	kubedb_informers "github.com/kubedb/apimachinery/client/informers/externalversions/kubedb/v1alpha1"
 	api_listers "github.com/kubedb/apimachinery/client/listers/kubedb/v1alpha1"
 	amc "github.com/kubedb/apimachinery/pkg/controller"
-	"github.com/kubedb/apimachinery/pkg/eventer"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -37,6 +36,7 @@ func NewController(
 	deleter amc.Deleter,
 	config amc.Config,
 	tweakListOptions func(*metav1.ListOptions),
+	recorder record.EventRecorder,
 ) *Controller {
 	// return new DormantDatabase Controller
 	return &Controller{
@@ -44,7 +44,7 @@ func NewController(
 		deleter:          deleter,
 		Config:           config,
 		tweakListOptions: tweakListOptions,
-		recorder:         eventer.NewEventRecorder(controller.Client, "DormantDatabase Controller"),
+		recorder:         recorder,
 	}
 }
 

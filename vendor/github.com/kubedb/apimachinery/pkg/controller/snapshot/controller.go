@@ -11,7 +11,6 @@ import (
 	api_listers "github.com/kubedb/apimachinery/client/listers/kubedb/v1alpha1"
 	amc "github.com/kubedb/apimachinery/pkg/controller"
 	jobc "github.com/kubedb/apimachinery/pkg/controller/job"
-	"github.com/kubedb/apimachinery/pkg/eventer"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -38,6 +37,7 @@ func NewController(
 	snapshotter amc.Snapshotter,
 	config amc.Config,
 	tweakListOptions func(*metav1.ListOptions),
+	eventRecorder record.EventRecorder,
 ) *Controller {
 	// return new DormantDatabase Controller
 	return &Controller{
@@ -45,7 +45,7 @@ func NewController(
 		snapshotter:      snapshotter,
 		Config:           config,
 		tweakListOptions: tweakListOptions,
-		eventRecorder:    eventer.NewEventRecorder(controller.Client, "Job Controller"),
+		eventRecorder:    eventRecorder,
 	}
 }
 
@@ -69,7 +69,7 @@ func (c *Controller) InitInformer() (cache.SharedIndexInformer, cache.SharedInde
 			c.tweakListOptions,
 		)
 	})
-	c.JobInformer = jobc.NewController(c.Controller, c.snapshotter, c.Config, c.tweakListOptions).InitInformer()
+	c.JobInformer = jobc.NewController(c.Controller, c.snapshotter, c.Config, c.tweakListOptions, c.eventRecorder).InitInformer()
 	return c.SnapInformer, c.JobInformer
 }
 
@@ -78,6 +78,6 @@ func (c *Controller) InitInformer() (cache.SharedIndexInformer, cache.SharedInde
 // Return type: Snapshot queue as 1st parameter and Job.Queue as 2nd.
 func (c *Controller) AddEventHandlerFunc(selector labels.Selector) (*queue.Worker, *queue.Worker) {
 	c.addEventHandler(selector)
-	c.JobQueue = jobc.NewController(c.Controller, c.snapshotter, c.Config, c.tweakListOptions).AddEventHandlerFunc(selector)
+	c.JobQueue = jobc.NewController(c.Controller, c.snapshotter, c.Config, c.tweakListOptions, c.eventRecorder).AddEventHandlerFunc(selector)
 	return c.SnapQueue, c.JobQueue
 }
