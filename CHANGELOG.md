@@ -1,5 +1,29 @@
 # Change Log
 
+## [0.9.0](https://github.com/kubedb/operator/tree/0.9.0) (2018-12-17)
+[Full Changelog](https://github.com/kubedb/operator/compare/0.9.0-rc.2...0.9.0)
+
+**Merged pull requests:**
+
+- Reuse event recorder [\#214](https://github.com/kubedb/operator/pull/214) ([tamalsaha](https://github.com/tamalsaha))
+
+## [0.9.0-rc.2](https://github.com/kubedb/operator/tree/0.9.0-rc.2) (2018-12-06)
+[Full Changelog](https://github.com/kubedb/operator/compare/0.9.0-rc.1...0.9.0-rc.2)
+
+**Merged pull requests:**
+
+- Use flags.DumpAll [\#213](https://github.com/kubedb/operator/pull/213) ([tamalsaha](https://github.com/tamalsaha))
+- Ensure appbinding CRD from operator [\#212](https://github.com/kubedb/operator/pull/212) ([the-redback](https://github.com/the-redback))
+
+## [0.9.0-rc.1](https://github.com/kubedb/operator/tree/0.9.0-rc.1) (2018-12-02)
+[Full Changelog](https://github.com/kubedb/operator/compare/0.9.0-rc.0...0.9.0-rc.1)
+
+**Merged pull requests:**
+
+- Set periodic analytics [\#211](https://github.com/kubedb/operator/pull/211) ([the-redback](https://github.com/the-redback))
+- AppCatalog Support [\#210](https://github.com/kubedb/operator/pull/210) ([the-redback](https://github.com/the-redback))
+- Fix analytics adn Revendored [\#208](https://github.com/kubedb/operator/pull/208) ([the-redback](https://github.com/the-redback))
+
 ## [0.9.0-rc.0](https://github.com/kubedb/operator/tree/0.9.0-rc.0) (2018-10-15)
 [Full Changelog](https://github.com/kubedb/operator/compare/0.9.0-beta.1...0.9.0-rc.0)
 
