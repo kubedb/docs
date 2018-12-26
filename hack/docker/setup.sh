@@ -45,7 +45,7 @@ build_docker() {
 FROM alpine:3.8
 
 RUN set -x \
-  && apk add --update --no-cache ca-certificates openssl openjdk8-jre-base
+  && apk add --update --no-cache ca-certificates openssl
 
 COPY kubedb-operator /usr/bin/kubedb-operator
 
