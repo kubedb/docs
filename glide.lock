@@ -1,5 +1,5 @@
-hash: a5ad20eacee200f7ca387a00b46c922018192aaa17b1726f9a032a22f38ed515
-updated: 2018-12-16T19:05:39.848910511-08:00
+hash: 7aaa47f322a7dad20ff27cddee9b3ebd3679fd6387a521e9740bf6c1de44b887
+updated: 2018-12-26T11:06:41.873333537-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -242,7 +242,7 @@ imports:
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
-  version: 300e940a926eb277d3901b20bdfcc54928ad3642
+  version: a9da9309fb4822643ceebb765f80025c35ac19a1
 - name: github.com/go-kit/kit
   version: ca4112baa34cb55091301bdc13b1420a122b1b9e
 - name: github.com/go-openapi/jsonpointer
@@ -336,7 +336,7 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: 6319e29148b40f1ac9a7ea312394754e83feba8e
+  version: 4c42014d5745345e56a41261142b9ae4b977d696
   subpackages:
   - apis
   - apis/authorization
@@ -392,7 +392,7 @@ imports:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: 75cde1b9e633f064290e6e1fc0be9bec78b6937f
+  version: 7df13968ca4f594a8048470820e4d0f1efde8950
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -402,7 +402,7 @@ imports:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: aab5e5ba779b97e5b586cb9f407de8aa25ea9717
+  version: 7a61653364754e5c1935233d61dcbf370d0cd8f7
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -425,13 +425,13 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/mitchellh/mapstructure
-  version: 53818660ed4955e899c0bcafa97299a388bd7c8e
+  version: 3536a929edddb9a5b34bd6861dc4a9647cb459fe
 - name: github.com/modern-go/concurrent
   version: bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94
 - name: github.com/modern-go/reflect2
   version: 05fbef0ca5da472bbf96c9322b84a53edc03c9fd
 - name: github.com/ncw/swift
-  version: 6f342da371d063863f2f354f183e4ab0ef72d287
+  version: 3d63426e3fec66c303577c2257565bd19a5ca3bc
 - name: github.com/NYTimes/gziphandler
   version: 56545f4a5d46df9a6648819d1664c3a03a13ffdb
 - name: github.com/olivere/elastic
@@ -708,7 +708,7 @@ imports:
   - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/apiserver
-  version: 70f523ccd088c9dca12de68b719d9b29f8e8c7d2
+  version: 419ab4faf457be27411fc8125ed110a03be373e8
   repo: https://github.com/kmodules/apiserver.git
   vcs: git
   subpackages:
@@ -972,7 +972,7 @@ imports:
   - pkg/util
   - pkg/util/proto
 - name: kmodules.xyz/custom-resources
-  version: 6d398bd2d81b1d6a811ad026c1dd24f1564a1f3c
+  version: b4ef1fe08b7a09681a676c1b697cf66fd74b7ed4
   repo: https://github.com/kmodules/custom-resources.git
   vcs: git
   subpackages:
