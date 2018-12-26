@@ -1,5 +1,5 @@
-hash: 6d500ed647f7d9cc102a3534b629c33b8ce52172669154977c8678c71ae60cf5
-updated: 2018-12-26T11:19:30.491686581+06:00
+hash: 7aaa47f322a7dad20ff27cddee9b3ebd3679fd6387a521e9740bf6c1de44b887
+updated: 2018-12-26T11:06:41.873333537-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -238,11 +238,11 @@ imports:
 - name: github.com/fatih/structs
   version: 878a968ab22548362a09bdb3322f98b00f470d46
 - name: github.com/fsnotify/fsnotify
-  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
+  version: f12c6236fe7b5cf6bcf30e5935d08cb079d78334
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
-  version: 300e940a926eb277d3901b20bdfcc54928ad3642
+  version: a9da9309fb4822643ceebb765f80025c35ac19a1
 - name: github.com/go-kit/kit
   version: ca4112baa34cb55091301bdc13b1420a122b1b9e
 - name: github.com/go-openapi/jsonpointer
@@ -278,7 +278,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 2248b49eaa8e1c8c0963ee77b40841adbc19d4ca
+  version: 3af367b6b30c263d47e8895973edcca9a49cf029
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -336,7 +336,7 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: 6319e29148b40f1ac9a7ea312394754e83feba8e
+  version: 4c42014d5745345e56a41261142b9ae4b977d696
   subpackages:
   - apis
   - apis/authorization
@@ -375,14 +375,11 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 68e602107ff70b6908967d22f159a02e36186945
+  version: c5a111c571e43c0ee1d5500f1dbd2f10ba1558c7
   subpackages:
   - pkg/admission
   - pkg/controller
-  - pkg/keystore
   - pkg/util/es
-  - third_party/golang/crypto/pkcs12
-  - third_party/golang/crypto/pkcs12/internal/rc2
 - name: github.com/kubedb/etcd
   version: b5ec91574a9bcab6f149bc1baa68f6f9dd019ece
   subpackages:
@@ -395,7 +392,7 @@ imports:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: 75cde1b9e633f064290e6e1fc0be9bec78b6937f
+  version: 7df13968ca4f594a8048470820e4d0f1efde8950
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -405,7 +402,7 @@ imports:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: aab5e5ba779b97e5b586cb9f407de8aa25ea9717
+  version: 7a61653364754e5c1935233d61dcbf370d0cd8f7
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -444,9 +441,6 @@ imports:
   - uritemplates
 - name: github.com/orcaman/concurrent-map
   version: b28018939af9022337862b94a463abb18abb3e0e
-- name: github.com/pavel-v-chernykh/keystore-go
-  version: 7bbcda7e585ed7a01e8610f6e19dde5bc2c1f6d0
-  vcs: git
 - name: github.com/pborman/uuid
   version: ca53cad383cad2479bbba7f7a1a05797ec1386e4
 - name: github.com/peterbourgon/diskv
@@ -479,7 +473,7 @@ imports:
 - name: github.com/russross/blackfriday
   version: 05f3235734ad95d0016f6a23902f06461fcf567a
 - name: github.com/satori/go.uuid
-  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+  version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sergi/go-diff
   version: 97b2266dfe4bd4ea1b81a463322f04f8b724801e
   subpackages:
@@ -714,7 +708,7 @@ imports:
   - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/apiserver
-  version: 70f523ccd088c9dca12de68b719d9b29f8e8c7d2
+  version: 419ab4faf457be27411fc8125ed110a03be373e8
   repo: https://github.com/kmodules/apiserver.git
   vcs: git
   subpackages:

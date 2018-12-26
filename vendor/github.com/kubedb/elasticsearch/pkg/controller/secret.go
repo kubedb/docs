@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	"github.com/appscode/go/crypto/rand"
 	core_util "github.com/appscode/kutil/core/v1"
@@ -112,23 +111,23 @@ func (c *Controller) createCertSecret(elasticsearch *api.Elasticsearch) (*core.S
 	if err != nil {
 		return nil, err
 	}
-	root, err := ioutil.ReadFile(filepath.Join(certPath, rootKeyStore))
+	root, err := ioutil.ReadFile(fmt.Sprintf("%s/root.jks", certPath))
 	if err != nil {
 		return nil, err
 	}
-	node, err := ioutil.ReadFile(filepath.Join(certPath, nodeKeyStore))
+	node, err := ioutil.ReadFile(fmt.Sprintf("%s/node.jks", certPath))
 	if err != nil {
 		return nil, err
 	}
-	sgadmin, err := ioutil.ReadFile(filepath.Join(certPath, sgAdminKeyStore))
+	sgadmin, err := ioutil.ReadFile(fmt.Sprintf("%s/sgadmin.jks", certPath))
 	if err != nil {
 		return nil, err
 	}
 
 	data := map[string][]byte{
-		rootKeyStore:    root,
-		nodeKeyStore:    node,
-		sgAdminKeyStore: sgadmin,
+		"root.jks":    root,
+		"node.jks":    node,
+		"sgadmin.jks": sgadmin,
 	}
 
 	if elasticsearch.Spec.EnableSSL {
@@ -136,13 +135,13 @@ func (c *Controller) createCertSecret(elasticsearch *api.Elasticsearch) (*core.S
 			return nil, err
 		}
 
-		client, err := ioutil.ReadFile(filepath.Join(certPath, clientKeyStore))
+		client, err := ioutil.ReadFile(fmt.Sprintf("%s/client.jks", certPath))
 		if err != nil {
 			return nil, err
 		}
 
-		data[rootCert] = cert.EncodeCertPEM(caCert)
-		data[clientKeyStore] = client
+		data["root.pem"] = cert.EncodeCertPEM(caCert)
+		data["client.jks"] = client
 	}
 
 	name := fmt.Sprintf("%v-cert", elasticsearch.OffshootName())
