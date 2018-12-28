@@ -28,15 +28,16 @@ func (c *Controller) ensureAppBinding(db *api.Redis) (kutil.VerbType, error) {
 
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(c.AppCatalogClient, meta, func(in *appcat.AppBinding) *appcat.AppBinding {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
-		in.Labels = db.OffshootSelectors()
+		in.Labels = db.OffshootLabels()
 		in.Annotations = db.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Type = appmeta.Type()
 		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
-			Name: db.ServiceName(),
-			Port: defaultDBPort.Port,
+			Scheme: "redis",
+			Name:   db.ServiceName(),
+			Port:   defaultDBPort.Port,
 		}
-		in.Spec.ClientConfig.InsecureSkipTLSVerify = true
+		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
 
 		return in
 	})

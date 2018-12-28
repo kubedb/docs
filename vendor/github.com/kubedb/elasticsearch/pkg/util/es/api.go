@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
+	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
 	esv5 "gopkg.in/olivere/elastic.v5"
 	esv6 "gopkg.in/olivere/elastic.v6"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -52,14 +53,19 @@ type NodeInfo struct {
 	Settings *Setting `json:"settings,omitempty"`
 }
 
-func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, url string) (ESClient, error) {
+func GetElasticClient(kc kubernetes.Interface, extClient cs.Interface, db *api.Elasticsearch, url string) (ESClient, error) {
 	secret, err := kc.CoreV1().Secrets(db.Namespace).Get(db.Spec.DatabaseSecret.SecretName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
+	elasicsearchversion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(string(db.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
 	switch {
-	case strings.HasPrefix(string(db.Spec.Version), "5."):
+	case strings.HasPrefix(elasicsearchversion.Spec.Version, "5."):
 		client, err := esv5.NewClient(
 			esv5.SetHttpClient(&http.Client{
 				Timeout: 0,
@@ -85,7 +91,7 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, url string
 		}
 
 		return &ESClientV5{client: client}, nil
-	case strings.HasPrefix(string(db.Spec.Version), "6."):
+	case strings.HasPrefix(string(elasicsearchversion.Spec.Version), "6."):
 		client, err := esv6.NewClient(
 			esv6.SetHttpClient(&http.Client{
 				Timeout: 0,
@@ -112,5 +118,6 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, url string
 
 		return &ESClientV6{client: client}, nil
 	}
+
 	return nil, fmt.Errorf("unknown database verserion: %s", db.Spec.Version)
 }

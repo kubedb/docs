@@ -37,6 +37,7 @@ func (c *Controller) DeleteSnapshotData(snapshot *api.Snapshot) error {
 
 	prefixLocation, _ := snapshot.Location() // error checked by .Container()
 	prefix := filepath.Join(prefixLocation, snapshot.Name)
+	prefix += "/" // A separator after prefix to prevent multiple snapshot's prefix matching. ref: https://github.com/kubedb/project/issues/377
 	cursor := stow.CursorStart
 	for {
 		items, next, err := container.Items(prefix, cursor, 50)
