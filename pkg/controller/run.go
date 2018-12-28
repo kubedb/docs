@@ -1,16 +1,12 @@
 package controller
 
 import (
-	"net/http"
-
 	"github.com/appscode/go/log"
 	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 )
 
 const (
-	opsAdress         = ":8080"
 	mutatingWebhook   = "mutators.kubedb.com"
 	validatingWebhook = "validators.kubedb.com"
 )
@@ -62,10 +58,6 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.myCtrl.RunControllers(stopCh)
 	c.rdCtrl.RunControllers(stopCh)
 	c.mcCtrl.RunControllers(stopCh)
-
-	http.Handle("/metrics", promhttp.Handler())
-	log.Infof("Starting Server: %s", opsAdress)
-	log.Fatal(http.ListenAndServe(opsAdress, nil))
 
 	<-stopCh
 	log.Infoln("Stopping KubeDB controller")
