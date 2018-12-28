@@ -22,6 +22,8 @@ import:
   version: v1.0.8
 - package: github.com/davecgh/go-spew
   version: v1.1.1
+- package: github.com/go-ini/ini
+  version: v1.40.0
 - package: github.com/go-kit/kit
   version: v0.7.0
 - package: github.com/golang/protobuf
@@ -55,7 +57,11 @@ import:
   version: master
 - package: github.com/mailru/easyjson
   version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
+- package: github.com/mitchellh/mapstructure
+  version: v1.1.2
 - package: github.com/orcaman/concurrent-map
+- package: github.com/pavel-v-chernykh/keystore-go
+  version: v2.1.0
 - package: github.com/prometheus/client_golang
   version: v0.8.0
 - package: github.com/prometheus/common
@@ -76,6 +82,8 @@ import:
   version: b19bf474d317b857955b12035d2c5acb57ce8b01
 - package: google.golang.org/api/storage/v1
   version: 3639d6d93f377f39a1de765fa4ef37b3c7ca8bd9
+- package: gopkg.in/ini.v1
+  version: v1.40.0
 - package: gopkg.in/square/go-jose.v2
   version: v2.2.1
 - package: gopkg.in/yaml.v2

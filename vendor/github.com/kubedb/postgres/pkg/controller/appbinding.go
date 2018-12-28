@@ -28,19 +28,36 @@ func (c *Controller) ensureAppBinding(db *api.Postgres) (kutil.VerbType, error) 
 
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(c.AppCatalogClient, meta, func(in *appcat.AppBinding) *appcat.AppBinding {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
-		in.Labels = db.OffshootSelectors()
+		in.Labels = db.OffshootLabels()
 		in.Annotations = db.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Type = appmeta.Type()
+		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
+			Scheme: "postgresql",
+			Name:   db.ServiceName(),
+			Port:   defaultDBPort.Port,
+			Path:   "/",
+			Query:  "sslmode=disable", // TODO: Fix when sslmode is supported
+		}
+		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
+
 		in.Spec.Secret = &core.LocalObjectReference{
 			Name: db.Spec.DatabaseSecret.SecretName,
 		}
-		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
-			Name: db.ServiceName(),
-			Port: defaultDBPort.Port,
-			//todo: add scheme
+		in.Spec.SecretTransforms = []appcat.SecretTransform{
+			{
+				RenameKey: &appcat.RenameKeyTransform{
+					From: PostgresUser,
+					To:   appcat.KeyUsername,
+				},
+			},
+			{
+				RenameKey: &appcat.RenameKeyTransform{
+					From: PostgresPassword,
+					To:   appcat.KeyPassword,
+				},
+			},
 		}
-		in.Spec.ClientConfig.InsecureSkipTLSVerify = true
 
 		return in
 	})

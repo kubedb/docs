@@ -42,7 +42,7 @@ func (c *Controller) getAllIndices(elasticsearch *api.Elasticsearch) (string, er
 	var reason error
 	var indices []string
 	err := wait.PollImmediate(time.Second*30, time.Minute*5, func() (bool, error) {
-		client, err := es.GetElasticClient(c.Client, elasticsearch, url)
+		client, err := es.GetElasticClient(c.Client, c.ExtClient, elasticsearch, url)
 		if err != nil {
 			log.Warningln(err)
 			reason = err

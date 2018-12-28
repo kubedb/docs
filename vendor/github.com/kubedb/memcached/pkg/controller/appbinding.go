@@ -28,7 +28,7 @@ func (c *Controller) ensureAppBinding(db *api.Memcached) (kutil.VerbType, error)
 
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(c.AppCatalogClient, meta, func(in *appcat.AppBinding) *appcat.AppBinding {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
-		in.Labels = db.OffshootSelectors()
+		in.Labels = db.OffshootLabels()
 		in.Annotations = db.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Type = appmeta.Type()
@@ -36,7 +36,7 @@ func (c *Controller) ensureAppBinding(db *api.Memcached) (kutil.VerbType, error)
 			Name: db.ServiceName(),
 			Port: defaultDBPort.Port,
 		}
-		in.Spec.ClientConfig.InsecureSkipTLSVerify = true
+		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
 
 		return in
 	})

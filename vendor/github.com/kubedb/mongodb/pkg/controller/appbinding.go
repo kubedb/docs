@@ -28,18 +28,20 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(c.AppCatalogClient, meta, func(in *appcat.AppBinding) *appcat.AppBinding {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
-		in.Labels = db.OffshootSelectors()
+		in.Labels = db.OffshootLabels()
 		in.Annotations = db.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Type = appmeta.Type()
+		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
+			Scheme: "mongodb",
+			Name:   db.ServiceName(),
+			Port:   defaultDBPort.Port,
+		}
+		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
+
 		in.Spec.Secret = &core.LocalObjectReference{
 			Name: db.Spec.DatabaseSecret.SecretName,
 		}
-		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
-			Name: db.ServiceName(),
-			Port: defaultDBPort.Port,
-		}
-		in.Spec.ClientConfig.InsecureSkipTLSVerify = true
 
 		return in
 	})
