@@ -104,7 +104,11 @@ func (s *AliasesService) Do(ctx context.Context) (*AliasesResult, error) {
 	//     ...
 	//   },
 	// }
-	indexMap := make(map[string]interface{})
+	indexMap := make(map[string]struct {
+		Aliases map[string]struct {
+			IsWriteIndex bool `json:"is_write_index"`
+		} `json:"aliases"`
+	})
 	if err := s.client.decoder.Decode(res.Body, &indexMap); err != nil {
 		return nil, err
 	}
@@ -114,21 +118,19 @@ func (s *AliasesService) Do(ctx context.Context) (*AliasesResult, error) {
 		Indices: make(map[string]indexResult),
 	}
 	for indexName, indexData := range indexMap {
+		if indexData.Aliases == nil {
+			continue
+		}
+
 		indexOut, found := ret.Indices[indexName]
 		if !found {
 			indexOut = indexResult{Aliases: make([]aliasResult, 0)}
 		}
 
 		// { "aliases" : { ... } }
-		indexDataMap, ok := indexData.(map[string]interface{})
-		if ok {
-			aliasesData, ok := indexDataMap["aliases"].(map[string]interface{})
-			if ok {
-				for aliasName, _ := range aliasesData {
-					aliasRes := aliasResult{AliasName: aliasName}
-					indexOut.Aliases = append(indexOut.Aliases, aliasRes)
-				}
-			}
+		for aliasName, aliasData := range indexData.Aliases {
+			aliasRes := aliasResult{AliasName: aliasName, IsWriteIndex: aliasData.IsWriteIndex}
+			indexOut.Aliases = append(indexOut.Aliases, aliasRes)
 		}
 
 		ret.Indices[indexName] = indexOut
@@ -139,6 +141,7 @@ func (s *AliasesService) Do(ctx context.Context) (*AliasesResult, error) {
 
 // -- Result of an alias request.
 
+// AliasesResult is the outcome of calling AliasesService.Do.
 type AliasesResult struct {
 	Indices map[string]indexResult
 }
@@ -148,9 +151,11 @@ type indexResult struct {
 }
 
 type aliasResult struct {
-	AliasName string
+	AliasName    string
+	IsWriteIndex bool
 }
 
+// IndicesByAlias returns all indices given a specific alias name.
 func (ar AliasesResult) IndicesByAlias(aliasName string) []string {
 	var indices []string
 	for indexName, indexInfo := range ar.Indices {
@@ -163,6 +168,7 @@ func (ar AliasesResult) IndicesByAlias(aliasName string) []string {
 	return indices
 }
 
+// HasAlias returns true if the index has a specific alias.
 func (ir indexResult) HasAlias(aliasName string) bool {
 	for _, alias := range ir.Aliases {
 		if alias.AliasName == aliasName {

@@ -101,17 +101,6 @@ func (c *cronController) ScheduleBackup(
 	// Remove previous cron job if exist
 	if id, exists := c.cronEntryIDs.Pop(cronEntryName); exists {
 		c.cron.Remove(id.(cron.EntryID))
-	} else {
-		if err := invoker.createScheduledSnapshot(); err != nil {
-			invoker.eventRecorder.Eventf(
-				invoker.db,
-				core.EventTypeWarning,
-				eventer.EventReasonFailedToList,
-				err.Error(),
-			)
-			log.Errorf(err.Error())
-			return err
-		}
 	}
 
 	// Set cron job
@@ -231,9 +220,10 @@ func (s *snapshotInvoker) createSnapshot(snapshotName string) (*api.Snapshot, er
 			Labels:    labelMap,
 		},
 		Spec: api.SnapshotSpec{
-			DatabaseName: s.dbMetaObject.GetName(),
-			Backend:      s.scheduleSpec.Backend,
-			PodTemplate:  s.scheduleSpec.PodTemplate,
+			DatabaseName:       s.dbMetaObject.GetName(),
+			Backend:            s.scheduleSpec.Backend,
+			PodTemplate:        s.scheduleSpec.PodTemplate,
+			PodVolumeClaimSpec: s.scheduleSpec.PodVolumeClaimSpec,
 		},
 	}
 
