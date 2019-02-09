@@ -12,6 +12,7 @@ import (
 	plugin "github.com/kubedb/apimachinery/pkg/admission"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
 	admission "k8s.io/api/admission/v1beta1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -116,6 +117,8 @@ func (a *SnapshotValidator) validateSnapshot(snapshot *api.Snapshot) error {
 		return fmt.Errorf(`object 'DatabaseName' is missing in '%v'`, snapshot.Spec)
 	}
 
+	//
+
 	kind, err := meta_util.GetStringValue(snapshot.Labels, api.LabelDatabaseKind)
 	if err != nil {
 		return fmt.Errorf("'%v:XDB' label is missing", api.LabelDatabaseKind)
@@ -124,19 +127,40 @@ func (a *SnapshotValidator) validateSnapshot(snapshot *api.Snapshot) error {
 	// Check if DB exists
 	switch kind {
 	case api.ResourceKindElasticsearch:
-		if _, err := a.extClient.KubedbV1alpha1().Elasticsearches(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
+		es, err := a.extClient.KubedbV1alpha1().Elasticsearches(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		storage := es.Spec.Storage
+		if es.Spec.Topology != nil {
+			storage = es.Spec.Topology.Data.Storage
+		}
+		if err := verifyStorageType(snapshot, storage); err != nil {
 			return err
 		}
 	case api.ResourceKindPostgres:
-		if _, err := a.extClient.KubedbV1alpha1().Postgreses(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
+		pg, err := a.extClient.KubedbV1alpha1().Postgreses(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		if err := verifyStorageType(snapshot, pg.Spec.Storage); err != nil {
 			return err
 		}
 	case api.ResourceKindMongoDB:
-		if _, err := a.extClient.KubedbV1alpha1().MongoDBs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
+		mg, err := a.extClient.KubedbV1alpha1().MongoDBs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
+		if err != nil {
 			return err
 		}
+		if err := verifyStorageType(snapshot, mg.Spec.Storage); err != nil {
+			return err
+		}
+
 	case api.ResourceKindMySQL:
-		if _, err := a.extClient.KubedbV1alpha1().MySQLs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{}); err != nil {
+		my, err := a.extClient.KubedbV1alpha1().MySQLs(snapshot.Namespace).Get(databaseName, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		if err := verifyStorageType(snapshot, my.Spec.Storage); err != nil {
 			return err
 		}
 	case api.ResourceKindRedis:
@@ -149,6 +173,17 @@ func (a *SnapshotValidator) validateSnapshot(snapshot *api.Snapshot) error {
 		}
 	}
 
+	return nil
+}
+
+func verifyStorageType(snapshot *api.Snapshot, dbPvcSpec *core.PersistentVolumeClaimSpec) error {
+	if snapshot.Spec.StorageType != nil &&
+		*snapshot.Spec.StorageType == api.StorageTypeDurable &&
+		snapshot.Spec.PodVolumeClaimSpec == nil &&
+		dbPvcSpec == nil {
+		return fmt.Errorf("snapshot storagetype is durable but, " +
+			"pvc Spec is not specified in either PodVolumeClaimSpec or db.Spec.Storage")
+	}
 	return nil
 }
 

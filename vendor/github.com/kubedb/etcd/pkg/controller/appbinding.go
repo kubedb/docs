@@ -34,8 +34,8 @@ func (c *Controller) ensureAppBinding(db *api.Etcd) (kutil.VerbType, error) {
 		in.Spec.Type = appmeta.Type()
 		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
 			Scheme: "https",
-			Name: db.ClientServiceName(),
-			Port: defaultClientPort.Port,
+			Name:   db.ClientServiceName(),
+			Port:   defaultClientPort.Port,
 		}
 		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
 

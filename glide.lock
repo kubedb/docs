@@ -1,5 +1,5 @@
-hash: d194d36118200db5dbd5fa3226d1cadb82c6c47f25ad8a4e460900551c9e9e69
-updated: 2018-12-27T23:05:47.501132394-08:00
+hash: 09da6d471d355a7e27c4a8437edad6f181e1039f3edae0ca95699570a013ccc6
+updated: 2019-02-09T15:29:22.896749484-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -8,7 +8,7 @@ imports:
   subpackages:
   - compute/metadata
 - name: github.com/appscode/go
-  version: 584aaa73af837f112c0a471be398ea837341c330
+  version: 52eaa8008e2e5fe8df77ac6fb2fd45e3ea2ae47c
   subpackages:
   - analytics
   - arrays
@@ -30,14 +30,14 @@ imports:
 - name: github.com/appscode/go-version
   version: 7aba545c679b0f45679eeb406dc662d2c8a04c26
 - name: github.com/appscode/jsonpatch
-  version: 5af499cf01c842bfdd7761a433fc90525ccd6836
+  version: 7c0e3b262f30165a8ec3d0b4c6059fd92703bfb2
 - name: github.com/appscode/kubernetes-webhook-util
   version: 904e96afd5093a20c8e1e247749221d9a5c9419b
   subpackages:
   - admission/v1beta1
   - registry/admissionreview/v1beta1
 - name: github.com/appscode/kutil
-  version: 6546fe6e8bde14cda08b0415f926cbed47d66e6a
+  version: 963f95c3833ac1630834cb574a30fac82234a3bd
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1
@@ -234,7 +234,7 @@ imports:
 - name: github.com/emicklei/go-restful-swagger12
   version: dcef7f55730566d41eae5db10e7d6981829720f6
 - name: github.com/evanphx/json-patch
-  version: afac545df32f2287a079e2dfb7ba2745a643747e
+  version: 72bf35d0ff611848c1dc9df0f976c81192392fa5
 - name: github.com/fatih/structs
   version: 878a968ab22548362a09bdb3322f98b00f470d46
 - name: github.com/fsnotify/fsnotify
@@ -278,7 +278,7 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 2248b49eaa8e1c8c0963ee77b40841adbc19d4ca
+  version: 3af367b6b30c263d47e8895973edcca9a49cf029
   subpackages:
   - cmp
   - cmp/internal/diff
@@ -336,7 +336,7 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: aec041af864d9601b83e1e3c1b4c22bb0b52f925
+  version: eeb9deabd8e6713fe06eb09dd44bfc40f180a652
   subpackages:
   - apis
   - apis/authorization
@@ -375,7 +375,7 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: e53966e0f5c3682439eb8ad571c694497f49a3d1
+  version: e6c80bd7492b8ed7424957c0e512f696f0d7bd23
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -384,34 +384,34 @@ imports:
   - third_party/golang/crypto/pkcs12
   - third_party/golang/crypto/pkcs12/internal/rc2
 - name: github.com/kubedb/etcd
-  version: 764e14d91a6eaf87f4247e4759acd949b491d3f9
+  version: b1c803068cf83df4c876e5efd2fdb807e2c1ef7e
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: 9aa9ca09daee0ed24cdd51d7f26db2e246e88c38
+  version: 3de634ab4e18bddc0cc3bb62a60b9d67ed09dbc0
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: eadf3cf7e275d12b5c9a8f66eb72fa520d369a0b
+  version: 1a1ed5bc70e4dad7047e275ba314184f63886273
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 61497be6d521a2e948e2b8f904e7f98846fa9a34
+  version: 57f63bd720ff872939354a8ac7e5ef686052598b
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: b0ed4c6ee2ab737001ef9fc2e3e1b1d48f6bfa24
+  version: 780efe6d86d3a67c496d10c90ee44a17b9c25505
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: 8a5b715bdcfa863e5532290b894dedff090587b6
+  version: 3bbd2d33053c668a50b1fac441062e0e637c28a6
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -434,16 +434,16 @@ imports:
 - name: github.com/modern-go/reflect2
   version: 05fbef0ca5da472bbf96c9322b84a53edc03c9fd
 - name: github.com/ncw/swift
-  version: 3d63426e3fec66c303577c2257565bd19a5ca3bc
+  version: ba19fe35e796969e50f19bd748a770ec5d191ece
 - name: github.com/NYTimes/gziphandler
   version: 56545f4a5d46df9a6648819d1664c3a03a13ffdb
 - name: github.com/olivere/elastic
-  version: 4f37c8b6272e53c8d4c35c6704cc82ad76cbed72
+  version: f82cf7c66881f3f18d0354a68086e9aa2f9a48d1
   subpackages:
   - config
   - uritemplates
 - name: github.com/orcaman/concurrent-map
-  version: b28018939af9022337862b94a463abb18abb3e0e
+  version: 7ed82d9cb71768a4e3656ee8837c7af568c75459
 - name: github.com/pavel-v-chernykh/keystore-go
   version: 7bbcda7e585ed7a01e8610f6e19dde5bc2c1f6d0
 - name: github.com/pborman/uuid
@@ -456,7 +456,6 @@ imports:
   version: c5b7fccd204277076155f10851dad72b76a49317
   subpackages:
   - prometheus
-  - prometheus/promhttp
 - name: github.com/prometheus/client_model
   version: fa8ad6fec33561be4280a8f0514318c79d7f6cb6
   subpackages:
@@ -715,7 +714,7 @@ imports:
   - third_party/forked/golang/netutil
   - third_party/forked/golang/reflect
 - name: k8s.io/apiserver
-  version: 419ab4faf457be27411fc8125ed110a03be373e8
+  version: 2aa1408a8c0a98b7d52911b63a98cbb7c9fd5e7c
   repo: https://github.com/kmodules/apiserver.git
   vcs: git
   subpackages:
@@ -980,8 +979,6 @@ imports:
   - pkg/util/proto
 - name: kmodules.xyz/custom-resources
   version: b4ef1fe08b7a09681a676c1b697cf66fd74b7ed4
-  repo: https://github.com/kmodules/custom-resources.git
-  vcs: git
   subpackages:
   - apis/appcatalog
   - apis/appcatalog/v1alpha1
@@ -989,9 +986,7 @@ imports:
   - client/clientset/versioned/typed/appcatalog/v1alpha1
   - client/clientset/versioned/typed/appcatalog/v1alpha1/util
 - name: kmodules.xyz/monitoring-agent-api
-  version: d12289267b3d7510feb9fac1f5e451d476f23a38
-  repo: https://github.com/kmodules/monitoring-agent-api.git
-  vcs: git
+  version: e79ddf3f680a16a99b9aacb718f5607b54cef04d
   subpackages:
   - agents
   - agents/coreosprometheusoperator
@@ -999,15 +994,11 @@ imports:
   - api/v1
 - name: kmodules.xyz/objectstore-api
   version: ebe27c957a5bf41e0680776e3626b5507087f4c3
-  repo: https://github.com/kmodules/objectstore-api.git
-  vcs: git
   subpackages:
   - api/v1
   - osm
 - name: kmodules.xyz/offshoot-api
   version: 2ab6d9decb219e8465875d80be5d6bc754052bd9
-  repo: https://github.com/kmodules/offshoot-api.git
-  vcs: git
   subpackages:
   - api/v1
 - name: sigs.k8s.io/yaml

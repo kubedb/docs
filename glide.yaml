@@ -107,18 +107,10 @@ import:
 - package: k8s.io/kube-openapi
   version: 0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803
 - package: kmodules.xyz/custom-resources
-  repo: https://github.com/kmodules/custom-resources.git
-  vcs: git
   version: release-9.0
 - package: kmodules.xyz/monitoring-agent-api
-  repo: https://github.com/kmodules/monitoring-agent-api.git
-  vcs: git
   version: release-9.0
 - package: kmodules.xyz/objectstore-api
-  repo: https://github.com/kmodules/objectstore-api.git
-  vcs: git
   version: release-9.0
 - package: kmodules.xyz/offshoot-api
-  repo: https://github.com/kmodules/offshoot-api.git
-  vcs: git
   version: release-9.0
