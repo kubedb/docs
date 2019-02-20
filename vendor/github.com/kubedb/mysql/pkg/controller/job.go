@@ -36,13 +36,24 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 	}
 
 	// Get PersistentVolume object for Backup Util pod.
-	persistentVolume, err := c.getVolumeForSnapshot(mysql.Spec.StorageType, mysql.Spec.Storage, jobName, mysql.Namespace)
+	pvcSpec := snapshot.Spec.PodVolumeClaimSpec
+	if pvcSpec == nil {
+		pvcSpec = mysql.Spec.Storage
+	}
+	st := snapshot.Spec.StorageType
+	if st == nil {
+		st = &mysql.Spec.StorageType
+	}
+	persistentVolume, err := c.GetVolumeForSnapshot(*st, pvcSpec, jobName, snapshot.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
 	// Folder name inside Cloud bucket where backup will be uploaded
-	folderName, _ := snapshot.Location()
+	folderName, err := snapshot.Location()
+	if err != nil {
+		return nil, err
+	}
 
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -165,6 +176,11 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 		}
 		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, volume)
 	}
+
+	if c.EnableRBAC {
+		job.Spec.Template.Spec.ServiceAccountName = mysql.SnapshotSAName()
+	}
+
 	return c.Client.BatchV1().Jobs(mysql.Namespace).Create(job)
 }
 
@@ -198,13 +214,25 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 	}
 
 	// Get PersistentVolume object for Backup Util pod.
-	persistentVolume, err := c.getVolumeForSnapshot(mysql.Spec.StorageType, mysql.Spec.Storage, jobName, snapshot.Namespace)
+	pvcSpec := snapshot.Spec.PodVolumeClaimSpec
+	if pvcSpec == nil {
+		pvcSpec = mysql.Spec.Storage
+	}
+	st := snapshot.Spec.StorageType
+	if st == nil {
+		st = &mysql.Spec.StorageType
+	}
+	persistentVolume, err := c.GetVolumeForSnapshot(*st, pvcSpec, jobName, snapshot.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
 	// Folder name inside Cloud bucket where backup will be uploaded
-	folderName, _ := snapshot.Location()
+	folderName, err := snapshot.Location()
+	if err != nil {
+		return nil, err
+	}
+
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        jobName,
@@ -325,5 +353,10 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 			VolumeSource: snapshot.Spec.Backend.Local.VolumeSource,
 		})
 	}
+
+	if c.EnableRBAC {
+		job.Spec.Template.Spec.ServiceAccountName = mysql.SnapshotSAName()
+	}
+
 	return job, nil
 }

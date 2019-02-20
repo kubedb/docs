@@ -27,14 +27,14 @@ import (
 const (
 	RolePrimary = "primary"
 	RoleReplica = "replica"
+
+	LeaseDurationEnv = "LEASE_DURATION"
+	RenewDeadlineEnv = "RENEW_DEADLINE"
+	RetryPeriodEnv   = "RETRY_PERIOD"
 )
 
 func RunLeaderElection() {
-
-	namespace := os.Getenv("NAMESPACE")
-	if namespace == "" {
-		namespace = "default"
-	}
+	namespace, leaseDuration, renewDeadline, retryPeriod := loadEnvVariables()
 
 	// Change owner of Postgres data directory
 	if err := setPermission(); err != nil {
@@ -87,9 +87,9 @@ func RunLeaderElection() {
 		leaderelection.RunOrDie(context.Background(), leaderelection.LeaderElectionConfig{
 			Lock: resLock,
 			// ref: https://github.com/kubernetes/apiserver/blob/kubernetes-1.12.0/pkg/apis/config/v1alpha1/defaults.go#L26-L52
-			LeaseDuration: 15 * time.Second,
-			RenewDeadline: 10 * time.Second,
-			RetryPeriod:   2 * time.Second,
+			LeaseDuration: time.Duration(leaseDuration) * time.Second,
+			RenewDeadline: time.Duration(renewDeadline) * time.Second,
+			RetryPeriod:   time.Duration(retryPeriod) * time.Second,
 			Callbacks: leaderelection.LeaderCallbacks{
 				OnStartedLeading: func(ctx context.Context) {
 					fmt.Println("Got leadership, now do your jobs")
@@ -153,6 +153,32 @@ func RunLeaderElection() {
 	}()
 
 	select {}
+}
+
+func loadEnvVariables() (namespace string, leaseDuration, renewDeadline, retryPeriod int) {
+	var err error
+
+	namespace = os.Getenv("NAMESPACE")
+	if namespace == "" {
+		namespace = "default"
+	}
+
+	leaseDurationStr := os.Getenv(LeaseDurationEnv)
+	if leaseDuration, err = strconv.Atoi(leaseDurationStr); err != nil || leaseDuration == 0 {
+		leaseDuration = 15
+	}
+
+	renewDeadlineStr := os.Getenv(RenewDeadlineEnv)
+	if renewDeadline, err = strconv.Atoi(renewDeadlineStr); err != nil || renewDeadline == 0 {
+		renewDeadline = 10
+	}
+
+	retryPeriodStr := os.Getenv(RetryPeriodEnv)
+	if retryPeriod, err = strconv.Atoi(retryPeriodStr); err != nil || retryPeriod == 0 {
+		retryPeriod = 2
+	}
+
+	return
 }
 
 func setPermission() error {

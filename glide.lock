@@ -1,5 +1,5 @@
-hash: 09da6d471d355a7e27c4a8437edad6f181e1039f3edae0ca95699570a013ccc6
-updated: 2019-02-09T15:29:22.896749484-08:00
+hash: 5e1a0e7c50481ec4360d36df24782a915a9057f203ac4a640a072a5751484f70
+updated: 2019-02-20T05:51:00.342878531-08:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -51,6 +51,7 @@ imports:
   - tools/analytics
   - tools/cli
   - tools/clientcmd
+  - tools/exec
   - tools/portforward
   - tools/queue
 - name: github.com/appscode/mergo
@@ -336,7 +337,7 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: eeb9deabd8e6713fe06eb09dd44bfc40f180a652
+  version: a307434ffe887287826f1197ca7221213905900b
   subpackages:
   - apis
   - apis/authorization
@@ -375,7 +376,7 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: e6c80bd7492b8ed7424957c0e512f696f0d7bd23
+  version: b565a02edb4570ab40edda5810d2e2de7ecbdfbb
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -384,36 +385,37 @@ imports:
   - third_party/golang/crypto/pkcs12
   - third_party/golang/crypto/pkcs12/internal/rc2
 - name: github.com/kubedb/etcd
-  version: b1c803068cf83df4c876e5efd2fdb807e2c1ef7e
+  version: f91ff54d3663b5c8b7d53b6db476eb987ad478e4
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: 3de634ab4e18bddc0cc3bb62a60b9d67ed09dbc0
+  version: d81d581ed68c7a9e4270c3b30b6bc28a177f5a8c
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: 1a1ed5bc70e4dad7047e275ba314184f63886273
+  version: 7f66413272c0d6a69ba36b1e9a732a1eb490b771
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 57f63bd720ff872939354a8ac7e5ef686052598b
+  version: 678b26aa9a8c90970cf5d4e9ac6e79ca60d30725
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: 780efe6d86d3a67c496d10c90ee44a17b9c25505
+  version: 2f4c2f2b99eccb69a135d9482c067528ff1e3dbf
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: 3bbd2d33053c668a50b1fac441062e0e637c28a6
+  version: cdbb6ea0e7f61fbdc1bf605556654b05fcdf1396
   subpackages:
   - pkg/admission
+  - pkg/configure-cluster
   - pkg/controller
 - name: github.com/mailru/easyjson
   version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
@@ -699,6 +701,7 @@ imports:
   - pkg/util/naming
   - pkg/util/net
   - pkg/util/rand
+  - pkg/util/remotecommand
   - pkg/util/runtime
   - pkg/util/sets
   - pkg/util/strategicpatch
@@ -947,12 +950,14 @@ imports:
   - tools/portforward
   - tools/record
   - tools/reference
+  - tools/remotecommand
   - tools/watch
   - transport
   - transport/spdy
   - util/buffer
   - util/cert
   - util/connrotation
+  - util/exec
   - util/flowcontrol
   - util/homedir
   - util/integer

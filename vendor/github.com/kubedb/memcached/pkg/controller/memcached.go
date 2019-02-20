@@ -45,6 +45,13 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		memcached.Status = mc.Status
 	}
 
+	if c.EnableRBAC {
+		// Ensure ClusterRoles for deployments
+		if err := c.ensureRBACStuff(memcached); err != nil {
+			return err
+		}
+	}
+
 	// ensure database Service
 	vt1, err := c.ensureService(memcached)
 	if err != nil {

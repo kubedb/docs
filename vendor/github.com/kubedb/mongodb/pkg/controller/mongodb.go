@@ -60,6 +60,13 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 	c.GoverningService = governingService
 
+	if c.EnableRBAC {
+		// Ensure ClusterRoles for statefulsets
+		if err := c.ensureRBACStuff(mongodb); err != nil {
+			return err
+		}
+	}
+
 	// ensure database Service
 	vt1, err := c.ensureService(mongodb)
 	if err != nil {

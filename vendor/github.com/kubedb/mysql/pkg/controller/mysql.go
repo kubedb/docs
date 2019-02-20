@@ -59,6 +59,13 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		return fmt.Errorf(`failed to create Service: "%v/%v". Reason: %v`, mysql.Namespace, governingService, err)
 	}
 
+	if c.EnableRBAC {
+		// Ensure ClusterRoles for statefulsets
+		if err := c.ensureRBACStuff(mysql); err != nil {
+			return err
+		}
+	}
+
 	// ensure database Service
 	vt1, err := c.ensureService(mysql)
 	if err != nil {

@@ -33,6 +33,28 @@ func (c *Controller) WaitUntilPaused(drmn *api.DormantDatabase) error {
 		return err
 	}
 
+	if err := c.waitUntilRBACStuffDeleted(db); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Controller) waitUntilRBACStuffDeleted(mysql *api.MySQL) error {
+	// Delete ServiceAccount
+	if err := core_util.WaitUntillServiceAccountDeleted(c.Client, mysql.ObjectMeta); err != nil {
+		return err
+	}
+
+	// Delete Snapshot ServiceAccount
+	snapSAMeta := metav1.ObjectMeta{
+		Name:      mysql.SnapshotSAName(),
+		Namespace: mysql.Namespace,
+	}
+	if err := core_util.WaitUntillServiceAccountDeleted(c.Client, snapSAMeta); err != nil {
+		return err
+	}
+
 	return nil
 }
 

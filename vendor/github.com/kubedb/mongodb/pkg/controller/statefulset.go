@@ -193,6 +193,10 @@ func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet,
 		in.Spec.Template.Spec.Priority = mongodb.Spec.PodTemplate.Spec.Priority
 		in.Spec.Template.Spec.SecurityContext = mongodb.Spec.PodTemplate.Spec.SecurityContext
 
+		if c.EnableRBAC {
+			in.Spec.Template.Spec.ServiceAccountName = mongodb.OffshootName()
+		}
+
 		in.Spec.UpdateStrategy = mongodb.Spec.UpdateStrategy
 		return in
 	})

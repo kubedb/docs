@@ -209,9 +209,12 @@ CLUSTER_COMPOSITE_OPS_RO:
 
 CLUSTER_KUBEDB_SNAPSHOT:
   - "indices:data/read/scroll*"
+  - "cluster:monitor/main"
 
 INDICES_KUBEDB_SNAPSHOT:
   - "indices:admin/get"
+  - "indices:monitor/settings/get"
+  - "indices:admin/mappings/get"
 `
 
 var config = `

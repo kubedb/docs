@@ -9,6 +9,7 @@ import (
 	"github.com/appscode/kutil/tools/queue"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
 	"github.com/kubedb/apimachinery/apis"
+	authorization "github.com/kubedb/apimachinery/apis/authorization/v1alpha1"
 	catalog "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
@@ -93,6 +94,8 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		catalog.MySQLVersion{}.CustomResourceDefinition(),
 		api.DormantDatabase{}.CustomResourceDefinition(),
 		api.Snapshot{}.CustomResourceDefinition(),
+		authorization.MySQLRole{}.CustomResourceDefinition(),
+		authorization.DatabaseAccessRequest{}.CustomResourceDefinition(),
 		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
 	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)

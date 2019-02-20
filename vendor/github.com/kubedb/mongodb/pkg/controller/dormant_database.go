@@ -32,6 +32,28 @@ func (c *Controller) WaitUntilPaused(drmn *api.DormantDatabase) error {
 		return err
 	}
 
+	if err := c.waitUntilRBACStuffDeleted(db); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Controller) waitUntilRBACStuffDeleted(mongodb *api.MongoDB) error {
+	// Delete ServiceAccount
+	if err := core_util.WaitUntillServiceAccountDeleted(c.Client, mongodb.ObjectMeta); err != nil {
+		return err
+	}
+
+	// Delete Snapshot ServiceAccount
+	snapSAMeta := metav1.ObjectMeta{
+		Name:      mongodb.SnapshotSAName(),
+		Namespace: mongodb.Namespace,
+	}
+	if err := core_util.WaitUntillServiceAccountDeleted(c.Client, snapSAMeta); err != nil {
+		return err
+	}
+
 	return nil
 }
 

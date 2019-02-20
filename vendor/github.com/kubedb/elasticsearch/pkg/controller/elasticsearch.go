@@ -180,6 +180,13 @@ func (c *Controller) ensureElasticsearchNode(elasticsearch *api.Elasticsearch) (
 		return kutil.VerbUnchanged, err
 	}
 
+	if c.EnableRBAC {
+		// Ensure ClusterRoles for statefulsets
+		if err := c.ensureRBACStuff(elasticsearch); err != nil {
+			return kutil.VerbUnchanged, err
+		}
+	}
+
 	vt := kutil.VerbUnchanged
 	topology := elasticsearch.Spec.Topology
 	if topology != nil {

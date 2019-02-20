@@ -36,13 +36,24 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 	}
 
 	// Get PersistentVolume object for Backup Util pod.
-	persistentVolume, err := c.getVolumeForSnapshot(mongodb.Spec.StorageType, mongodb.Spec.Storage, jobName, mongodb.Namespace)
+	pvcSpec := snapshot.Spec.PodVolumeClaimSpec
+	if pvcSpec == nil {
+		pvcSpec = mongodb.Spec.Storage
+	}
+	st := snapshot.Spec.StorageType
+	if st == nil {
+		st = &mongodb.Spec.StorageType
+	}
+	persistentVolume, err := c.GetVolumeForSnapshot(*st, pvcSpec, jobName, snapshot.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
 	// Folder name inside Cloud bucket where backup will be uploaded
-	folderName, _ := snapshot.Location()
+	folderName, err := snapshot.Location()
+	if err != nil {
+		return nil, err
+	}
 
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -165,6 +176,11 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 		}
 		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, volume)
 	}
+
+	if c.EnableRBAC {
+		job.Spec.Template.Spec.ServiceAccountName = mongodb.SnapshotSAName()
+	}
+
 	return c.Client.BatchV1().Jobs(mongodb.Namespace).Create(job)
 }
 
@@ -193,13 +209,25 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 	}
 
 	// Get PersistentVolume object for Backup Util pod.
-	persistentVolume, err := c.getVolumeForSnapshot(mongodb.Spec.StorageType, mongodb.Spec.Storage, jobName, snapshot.Namespace)
+	pvcSpec := snapshot.Spec.PodVolumeClaimSpec
+	if pvcSpec == nil {
+		pvcSpec = mongodb.Spec.Storage
+	}
+	st := snapshot.Spec.StorageType
+	if st == nil {
+		st = &mongodb.Spec.StorageType
+	}
+	persistentVolume, err := c.GetVolumeForSnapshot(*st, pvcSpec, jobName, snapshot.Namespace)
 	if err != nil {
 		return nil, err
 	}
 
 	// Folder name inside Cloud bucket where backup will be uploaded
-	folderName, _ := snapshot.Location()
+	folderName, err := snapshot.Location()
+	if err != nil {
+		return nil, err
+	}
+
 	job := &batch.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        jobName,
@@ -320,5 +348,10 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 			VolumeSource: snapshot.Spec.Backend.Local.VolumeSource,
 		})
 	}
+
+	if c.EnableRBAC {
+		job.Spec.Template.Spec.ServiceAccountName = mongodb.SnapshotSAName()
+	}
+
 	return job, nil
 }

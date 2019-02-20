@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/appscode/go/log"
@@ -14,6 +15,7 @@ import (
 	catalog "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
+	"github.com/kubedb/postgres/pkg/leader_election"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -187,21 +189,47 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion 
 		},
 	}
 
+	if postgres.Spec.LeaderElection != nil {
+		envList = append(envList, []core.EnvVar{
+			{
+				Name:  leader_election.LeaseDurationEnv,
+				Value: strconv.Itoa(int(postgres.Spec.LeaderElection.LeaseDurationSeconds)),
+			},
+			{
+				Name:  leader_election.RenewDeadlineEnv,
+				Value: strconv.Itoa(int(postgres.Spec.LeaderElection.RenewDeadlineSeconds)),
+			},
+			{
+				Name:  leader_election.RetryPeriodEnv,
+				Value: strconv.Itoa(int(postgres.Spec.LeaderElection.RetryPeriodSeconds)),
+			},
+		}...)
+	}
+
 	if postgres.Spec.Archiver != nil {
 		archiverStorage := postgres.Spec.Archiver.Storage
 		if archiverStorage != nil {
 			envList = append(envList,
-				[]core.EnvVar{
-					{
-						Name:  "ARCHIVE",
-						Value: "wal-g",
-					},
-					{
+				core.EnvVar{
+					Name:  "ARCHIVE",
+					Value: "wal-g",
+				},
+			)
+			if archiverStorage.S3 != nil {
+				envList = append(envList,
+					core.EnvVar{
 						Name:  "ARCHIVE_S3_PREFIX",
 						Value: fmt.Sprintf("s3://%v/%v", archiverStorage.S3.Bucket, WalDataDir(postgres)),
 					},
-				}...,
-			)
+				)
+			} else if archiverStorage.GCS != nil {
+				envList = append(envList,
+					core.EnvVar{
+						Name:  "ARCHIVE_GS_PREFIX",
+						Value: fmt.Sprintf("gs://%v/%v", archiverStorage.GCS.Bucket, WalDataDir(postgres)),
+					},
+				)
+			}
 		}
 	}
 
@@ -547,16 +575,27 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, postgres *api.Postgres) *
 }
 
 func walRecoveryConfig(wal *api.PostgresWALSourceSpec) []core.EnvVar {
-
 	envList := []core.EnvVar{
 		{
 			Name:  "RESTORE",
 			Value: "true",
 		},
-		{
-			Name:  "RESTORE_S3_PREFIX",
-			Value: fmt.Sprintf("s3://%v/%v", wal.S3.Bucket, wal.S3.Prefix),
-		},
+	}
+
+	if wal.S3 != nil {
+		envList = append(envList,
+			core.EnvVar{
+				Name:  "RESTORE_S3_PREFIX",
+				Value: fmt.Sprintf("s3://%v/%v", wal.S3.Bucket, wal.S3.Prefix),
+			},
+		)
+	} else if wal.GCS != nil {
+		envList = append(envList,
+			core.EnvVar{
+				Name:  "RESTORE_GS_PREFIX",
+				Value: fmt.Sprintf("gs://%v/%v", wal.GCS.Bucket, wal.GCS.Prefix),
+			},
+		)
 	}
 
 	if wal.PITR != nil {

@@ -25,6 +25,19 @@ func (c *Controller) WaitUntilPaused(drmn *api.DormantDatabase) error {
 		return err
 	}
 
+	if err := c.waitUntilRBACStuffDeleted(db.ObjectMeta); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Controller) waitUntilRBACStuffDeleted(meta metav1.ObjectMeta) error {
+	// Delete ServiceAccount
+	if err := core_util.WaitUntillServiceAccountDeleted(c.Client, meta); err != nil {
+		return err
+	}
+
 	return nil
 }
 

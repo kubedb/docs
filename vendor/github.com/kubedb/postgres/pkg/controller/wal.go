@@ -11,13 +11,13 @@ import (
 )
 
 func WalDataDir(postgres *api.Postgres) string {
-	return filepath.Join(
-		postgres.Spec.Archiver.Storage.S3.Prefix,
-		api.DatabaseNamePrefix,
-		postgres.Namespace,
-		postgres.Name,
-		"archive",
-	)
+	spec := postgres.Spec.Archiver.Storage
+	if spec.S3 != nil {
+		return filepath.Join(spec.S3.Prefix, api.DatabaseNamePrefix, postgres.Namespace, postgres.Name, "archive")
+	} else if spec.GCS != nil {
+		return filepath.Join(spec.GCS.Prefix, api.DatabaseNamePrefix, postgres.Namespace, postgres.Name, "archive")
+	}
+	return ""
 }
 
 func (c *Controller) wipeOutWalData(meta metav1.ObjectMeta, spec *api.PostgresSpec) error {

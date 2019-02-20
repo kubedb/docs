@@ -34,7 +34,7 @@ func (c *Controller) WaitUntilPaused(drmn *api.DormantDatabase) error {
 		return err
 	}
 
-	if err := c.waitUntilRBACStuffDeleted(db.ObjectMeta); err != nil {
+	if err := c.waitUntilRBACStuffDeleted(db); err != nil {
 		return err
 	}
 
@@ -45,19 +45,28 @@ func (c *Controller) WaitUntilPaused(drmn *api.DormantDatabase) error {
 	return nil
 }
 
-func (c *Controller) waitUntilRBACStuffDeleted(meta metav1.ObjectMeta) error {
+func (c *Controller) waitUntilRBACStuffDeleted(postgres *api.Postgres) error {
 	// Delete Existing Role
-	if err := rbac_util.WaitUntillRoleDeleted(c.Client, meta); err != nil {
+	if err := rbac_util.WaitUntillRoleDeleted(c.Client, postgres.ObjectMeta); err != nil {
+		return err
+	}
+
+	// Delete RoleBinding
+	if err := rbac_util.WaitUntillRoleBindingDeleted(c.Client, postgres.ObjectMeta); err != nil {
 		return err
 	}
 
 	// Delete ServiceAccount
-	if err := rbac_util.WaitUntillRoleBindingDeleted(c.Client, meta); err != nil {
+	if err := core_util.WaitUntillServiceAccountDeleted(c.Client, postgres.ObjectMeta); err != nil {
 		return err
 	}
 
-	// Delete New RoleBinding
-	if err := core_util.WaitUntillServiceAccountDeleted(c.Client, meta); err != nil {
+	// Delete Snapshot ServiceAccount
+	snapSAMeta := metav1.ObjectMeta{
+		Name:      postgres.SnapshotSAName(),
+		Namespace: postgres.Namespace,
+	}
+	if err := core_util.WaitUntillServiceAccountDeleted(c.Client, snapSAMeta); err != nil {
 		return err
 	}
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/appscode/go/log"
 	hookapi "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
@@ -20,7 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	storage "kmodules.xyz/objectstore-api/osm"
+	"k8s.io/client-go/tools/leaderelection"
 )
 
 type PostgresValidator struct {
@@ -174,18 +175,11 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	if postgres.Spec.Archiver != nil {
 		archiverStorage := postgres.Spec.Archiver.Storage
 		if archiverStorage != nil {
-			if archiverStorage.StorageSecretName == "" {
-				return fmt.Errorf(`object 'StorageSecretName' is missing in '%v'`, archiverStorage)
-			}
-			if archiverStorage.S3 == nil {
+			if archiverStorage.S3 == nil && archiverStorage.GCS == nil {
 				return errors.New("no storage provider is configured")
 			}
-			if !(archiverStorage.GCS == nil && archiverStorage.Azure == nil && archiverStorage.Swift == nil && archiverStorage.Local == nil) {
-				return errors.New("invalid storage provider is configured")
-			}
-
-			if err := storage.CheckBucketAccess(client, *archiverStorage, postgres.Namespace); err != nil {
-				return err
+			if !(archiverStorage.Azure == nil && archiverStorage.Swift == nil && archiverStorage.Local == nil) {
+				return errors.New("unsupported storage provider")
 			}
 		}
 	}
@@ -210,6 +204,28 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 		}
 	}
 
+	// validate leader election configs. ref: https://github.com/kubernetes/client-go/blob/6134db91200ea474868bc6775e62cc294a74c6c6/tools/leaderelection/leaderelection.go#L73-L87
+	// ==============> start
+	lec := postgres.Spec.LeaderElection
+	if lec != nil {
+		if lec.LeaseDurationSeconds <= lec.RenewDeadlineSeconds {
+			return fmt.Errorf("leaseDuration must be greater than renewDeadline")
+		}
+		if time.Duration(lec.RenewDeadlineSeconds) <= time.Duration(leaderelection.JitterFactor*float64(lec.RetryPeriodSeconds)) {
+			return fmt.Errorf("renewDeadline must be greater than retryPeriod*JitterFactor")
+		}
+		if lec.LeaseDurationSeconds < 1 {
+			return fmt.Errorf("leaseDuration must be greater than zero")
+		}
+		if lec.RenewDeadlineSeconds < 1 {
+			return fmt.Errorf("renewDeadline must be greater than zero")
+		}
+		if lec.RetryPeriodSeconds < 1 {
+			return fmt.Errorf("retryPeriod must be greater than zero")
+		}
+	}
+	// end <==============
+
 	if postgres.Spec.Init != nil &&
 		postgres.Spec.Init.SnapshotSource != nil &&
 		databaseSecret == nil {
@@ -219,18 +235,11 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 
 	if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
 		wal := postgres.Spec.Init.PostgresWAL
-		if wal.StorageSecretName == "" {
-			return fmt.Errorf(`object 'StorageSecretName' is missing in '%v'`, wal)
-		}
-		if wal.S3 == nil {
+		if wal.S3 == nil && wal.GCS == nil {
 			return errors.New("no storage provider is configured")
 		}
-		if !(wal.GCS == nil && wal.Azure == nil && wal.Swift == nil && wal.Local == nil) {
-			return errors.New("invalid storage provider is configured")
-		}
-
-		if err := storage.CheckBucketAccess(client, wal.Backend, postgres.Namespace); err != nil {
-			return err
+		if !(wal.Azure == nil && wal.Swift == nil && wal.Local == nil) {
+			return errors.New("unsupported storage provider")
 		}
 	}
 
@@ -297,6 +306,9 @@ func matchWithDormantDatabase(extClient cs.Interface, postgres *api.Postgres) er
 
 	// Skip Checking Backup Scheduler
 	drmnOriginSpec.BackupSchedule = originalSpec.BackupSchedule
+
+	// Skip Checking LeaderElectionConfigs
+	drmnOriginSpec.LeaderElection = originalSpec.LeaderElection
 
 	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
 		diff := meta_util.Diff(drmnOriginSpec, &originalSpec)

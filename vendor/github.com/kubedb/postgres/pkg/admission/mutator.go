@@ -159,6 +159,14 @@ func setDefaultsFromDormantDB(extClient cs.Interface, postgres *api.Postgres) er
 		ddbOriginSpec.BackupSchedule = postgres.Spec.BackupSchedule
 	}
 
+	// If LeaderElectionConfig of new object is not given,
+	// Take configs from Dormant
+	if postgres.Spec.LeaderElection == nil {
+		postgres.Spec.LeaderElection = ddbOriginSpec.LeaderElection
+	} else {
+		ddbOriginSpec.LeaderElection = postgres.Spec.LeaderElection
+	}
+
 	// Skip checking UpdateStrategy
 	ddbOriginSpec.UpdateStrategy = postgres.Spec.UpdateStrategy
 

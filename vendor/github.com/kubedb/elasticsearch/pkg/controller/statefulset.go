@@ -130,6 +130,11 @@ func (c *Controller) ensureStatefulSet(
 		in = upsertCertificate(in, elasticsearch.Spec.CertificateSecret.SecretName, isClient, elasticsearch.Spec.EnableSSL)
 		in = upsertDataVolume(in, elasticsearch.Spec.StorageType, pvcSpec)
 		in = upsertTemporaryVolume(in)
+
+		if c.EnableRBAC {
+			in.Spec.Template.Spec.ServiceAccountName = elasticsearch.OffshootName()
+		}
+
 		in.Spec.UpdateStrategy = elasticsearch.Spec.UpdateStrategy
 
 		return in
