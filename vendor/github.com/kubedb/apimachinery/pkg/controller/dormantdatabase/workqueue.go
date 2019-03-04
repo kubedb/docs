@@ -2,12 +2,12 @@ package dormantdatabase
 
 import (
 	"github.com/appscode/go/log"
-	core_util "github.com/appscode/kutil/core/v1"
-	"github.com/appscode/kutil/tools/queue"
 	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"k8s.io/apimachinery/pkg/labels"
+	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (c *Controller) addEventHandler(selector labels.Selector) {

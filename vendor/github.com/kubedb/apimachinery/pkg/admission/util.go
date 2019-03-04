@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func ValidateUpdate(obj, oldObj runtime.Object, kind string) error {

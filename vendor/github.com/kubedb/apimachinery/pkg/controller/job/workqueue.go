@@ -3,10 +3,10 @@ package job
 import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	"github.com/appscode/kutil/tools/queue"
 	batch "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (c *Controller) addEventHandler(selector labels.Selector) {

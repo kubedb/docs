@@ -2,8 +2,8 @@ package controller
 
 import (
 	"github.com/appscode/go/log"
-	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 )
 
 const (

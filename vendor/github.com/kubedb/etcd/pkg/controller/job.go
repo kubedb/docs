@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	core_util "github.com/appscode/kutil/core/v1"
-	"github.com/appscode/kutil/tools/analytics"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	etcdutil "github.com/kubedb/etcd/pkg/util"
@@ -15,6 +13,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
+	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/tools/analytics"
 	storage "kmodules.xyz/objectstore-api/osm"
 )
 

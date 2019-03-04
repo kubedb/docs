@@ -2,8 +2,7 @@ package controller
 
 import (
 	"github.com/appscode/go/log"
-	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	catalogapi "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
 	dbapi "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
@@ -21,6 +20,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
 )

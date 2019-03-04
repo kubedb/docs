@@ -1,8 +1,6 @@
 package controller
 
 import (
-	core_util "github.com/appscode/kutil/core/v1"
-	rbac_util "github.com/appscode/kutil/rbac/v1beta1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	le "github.com/kubedb/postgres/pkg/leader_election"
 	apps "k8s.io/api/apps/v1"
@@ -12,6 +10,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
+	core_util "kmodules.xyz/client-go/core/v1"
+	rbac_util "kmodules.xyz/client-go/rbac/v1beta1"
 )
 
 func (c *Controller) ensureRole(postgres *api.Postgres) error {
