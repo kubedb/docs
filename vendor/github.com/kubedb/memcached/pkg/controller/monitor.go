@@ -4,12 +4,12 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil"
-	core_util "github.com/appscode/kutil/core/v1"
-	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kutil "kmodules.xyz/client-go"
+	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/monitoring-agent-api/agents"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )

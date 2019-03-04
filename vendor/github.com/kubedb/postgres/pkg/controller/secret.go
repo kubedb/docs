@@ -4,13 +4,13 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/crypto/rand"
-	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 const (

@@ -12,8 +12,6 @@ import (
 	"time"
 
 	"github.com/appscode/go/ioutil"
-	core_util "github.com/appscode/kutil/core/v1"
-	"github.com/appscode/kutil/tools/clientcmd"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,6 +20,8 @@ import (
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/client-go/tools/record"
+	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/tools/clientcmd"
 )
 
 const (

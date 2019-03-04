@@ -3,7 +3,6 @@ package job
 import (
 	"time"
 
-	"github.com/appscode/kutil/tools/queue"
 	amc "github.com/kubedb/apimachinery/pkg/controller"
 	batch "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,6 +12,7 @@ import (
 	batch_listers "k8s.io/client-go/listers/batch/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 type Controller struct {

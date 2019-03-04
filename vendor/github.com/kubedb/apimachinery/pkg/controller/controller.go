@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/appscode/go/log/golog"
-	"github.com/appscode/kutil/tools/queue"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
 	kubedbinformers "github.com/kubedb/apimachinery/client/informers/externalversions"
@@ -17,6 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	"kmodules.xyz/client-go/tools/queue"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
 )
 

@@ -3,11 +3,7 @@ package controller
 import (
 	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
-	reg_util "github.com/appscode/kutil/admissionregistration/v1beta1"
-	apiext_util "github.com/appscode/kutil/apiextensions/v1beta1"
-	meta_util "github.com/appscode/kutil/meta"
-	"github.com/appscode/kutil/tools/queue"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/kubedb/apimachinery/apis"
 	catalog "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -28,6 +24,10 @@ import (
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
+	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
+	meta_util "kmodules.xyz/client-go/meta"
+	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
 )

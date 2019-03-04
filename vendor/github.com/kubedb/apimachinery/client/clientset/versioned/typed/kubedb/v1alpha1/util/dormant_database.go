@@ -3,7 +3,6 @@ package util
 import (
 	"fmt"
 
-	"github.com/appscode/kutil"
 	"github.com/golang/glog"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
@@ -13,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/jsonmergepatch"
 	"k8s.io/apimachinery/pkg/util/wait"
+	kutil "kmodules.xyz/client-go"
 )
 
 func CreateOrPatchDormantDatabase(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.DormantDatabase) *api.DormantDatabase) (*api.DormantDatabase, kutil.VerbType, error) {

@@ -4,9 +4,7 @@ import (
 	"flag"
 	"time"
 
-	"github.com/appscode/kutil/meta"
-	"github.com/appscode/kutil/tools/cli"
-	prom "github.com/coreos/prometheus-operator/pkg/client/monitoring/v1"
+	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/kubedb/apimachinery/apis"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
 	kubedbinformers "github.com/kubedb/apimachinery/client/informers/externalversions"
@@ -18,6 +16,8 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
+	"kmodules.xyz/client-go/meta"
+	"kmodules.xyz/client-go/tools/cli"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
 )
 
@@ -31,9 +31,6 @@ type ExtraOptions struct {
 	ResyncPeriod                time.Duration
 	MaxNumRequeues              int
 	NumThreads                  int
-
-	PrometheusCrdGroup string
-	PrometheusCrdKinds prom.CrdKinds
 
 	EnableMutatingWebhook   bool
 	EnableValidatingWebhook bool
@@ -58,9 +55,7 @@ func NewExtraOptions() *ExtraOptions {
 		// High enough QPS to fit all expected use cases. QPS=0 is not set here, because client code is overriding it.
 		QPS: 1e6,
 		// High enough Burst to fit all expected use cases. Burst=0 is not set here, because client code is overriding it.
-		Burst:              1e6,
-		PrometheusCrdGroup: prom.Group,
-		PrometheusCrdKinds: prom.DefaultCrdKinds,
+		Burst: 1e6,
 	}
 }
 
@@ -73,9 +68,6 @@ func (s *ExtraOptions) AddGoFlags(fs *flag.FlagSet) {
 	fs.DurationVar(&s.ResyncPeriod, "resync-period", s.ResyncPeriod, "If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out.")
 
 	fs.BoolVar(&s.RestrictToOperatorNamespace, "restrict-to-operator-namespace", s.RestrictToOperatorNamespace, "If true, KubeDB operator will only handle Kubernetes objects in its own namespace.")
-
-	fs.StringVar(&s.PrometheusCrdGroup, "prometheus-crd-apigroup", s.PrometheusCrdGroup, "prometheus CRD  API group name")
-	fs.Var(&s.PrometheusCrdKinds, "prometheus-crd-kinds", " - EXPERIMENTAL (could be removed in future releases) - customize CRD kind names")
 
 	fs.BoolVar(&s.EnableMutatingWebhook, "enable-mutating-webhook", s.EnableMutatingWebhook, "If true, enables mutating webhooks for KubeDB CRDs.")
 	fs.BoolVar(&s.EnableValidatingWebhook, "enable-validating-webhook", s.EnableValidatingWebhook, "If true, enables validating webhooks for KubeDB CRDs.")
@@ -123,7 +115,7 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 	if cfg.AppCatalogClient, err = appcat_cs.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
-	if cfg.PromClient, err = prom.NewForConfig(&s.PrometheusCrdKinds, s.PrometheusCrdGroup, cfg.ClientConfig); err != nil {
+	if cfg.PromClient, err = prom.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
 	cfg.KubeInformerFactory = informers.NewSharedInformerFactory(cfg.KubeClient, cfg.ResyncPeriod)

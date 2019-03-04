@@ -2,12 +2,12 @@ package controller
 
 import (
 	"github.com/appscode/go/types"
-	core_util "github.com/appscode/kutil/core/v1"
-	meta_util "github.com/appscode/kutil/meta"
 	catalog "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
+	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func upsertRSArgs(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {

@@ -4,9 +4,9 @@ import (
 	"io"
 
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil/tools/cli"
 	"github.com/kubedb/operator/pkg/cmds/server"
 	"github.com/spf13/cobra"
+	"kmodules.xyz/client-go/tools/cli"
 )
 
 func NewCmdRun(version string, out, errOut io.Writer, stopCh <-chan struct{}) *cobra.Command {

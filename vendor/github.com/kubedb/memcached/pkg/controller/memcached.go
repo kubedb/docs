@@ -5,8 +5,6 @@ import (
 
 	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil"
-	meta_util "github.com/appscode/kutil/meta"
 	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
@@ -15,6 +13,8 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kutil "kmodules.xyz/client-go"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (c *Controller) create(memcached *api.Memcached) error {

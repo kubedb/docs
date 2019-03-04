@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/types"
-	"github.com/appscode/kutil"
-	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	kutildb "github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"github.com/kubedb/apimachinery/pkg/eventer"
@@ -15,6 +13,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
+	kutil "kmodules.xyz/client-go"
+	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 const (

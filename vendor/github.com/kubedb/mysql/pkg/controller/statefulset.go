@@ -6,9 +6,6 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	"github.com/appscode/kutil"
-	app_util "github.com/appscode/kutil/apps/v1"
-	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	apps "k8s.io/api/apps/v1"
@@ -17,6 +14,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
+	kutil "kmodules.xyz/client-go"
+	app_util "kmodules.xyz/client-go/apps/v1"
+	core_util "kmodules.xyz/client-go/core/v1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 

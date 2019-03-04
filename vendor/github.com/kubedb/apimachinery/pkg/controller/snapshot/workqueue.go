@@ -2,12 +2,12 @@ package snapshot
 
 import (
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil"
-	core_util "github.com/appscode/kutil/core/v1"
-	"github.com/appscode/kutil/tools/queue"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"k8s.io/apimachinery/pkg/labels"
+	kutil "kmodules.xyz/client-go"
+	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (c *Controller) addEventHandler(selector labels.Selector) {

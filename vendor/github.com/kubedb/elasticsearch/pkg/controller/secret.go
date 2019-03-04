@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/appscode/go/crypto/rand"
-	core_util "github.com/appscode/kutil/core/v1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"golang.org/x/crypto/bcrypt"
@@ -15,6 +14,7 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/cert"
+	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 const (

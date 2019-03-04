@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/appscode/go/log"
-	discovery_util "github.com/appscode/kutil/discovery"
-	meta_util "github.com/appscode/kutil/meta"
 	apiCatalog "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
@@ -24,6 +22,8 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
+	discovery_util "kmodules.xyz/client-go/discovery"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 type CronControllerInterface interface {

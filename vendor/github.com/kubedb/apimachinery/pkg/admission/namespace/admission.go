@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sync"
 
-	hookapi "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	admission "k8s.io/api/admission/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -15,6 +14,7 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
+	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
 type NamespaceValidator struct {

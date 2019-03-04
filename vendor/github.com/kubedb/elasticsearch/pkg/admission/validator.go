@@ -7,8 +7,6 @@ import (
 
 	"github.com/appscode/go/arrays"
 	"github.com/appscode/go/log"
-	hookapi "github.com/appscode/kubernetes-webhook-util/admission/v1beta1"
-	meta_util "github.com/appscode/kutil/meta"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
 	amv "github.com/kubedb/apimachinery/pkg/validator"
@@ -21,6 +19,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	meta_util "kmodules.xyz/client-go/meta"
+	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
 type ElasticsearchValidator struct {

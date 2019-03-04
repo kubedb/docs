@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/log"
-	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
@@ -13,6 +12,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {

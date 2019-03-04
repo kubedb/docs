@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/appscode/go/log"
-	"github.com/appscode/kutil/tools/exec"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
+	"kmodules.xyz/client-go/tools/exec"
 )
 
 func (c Config) createCluster(pod *core.Pod, addrs ...string) error {

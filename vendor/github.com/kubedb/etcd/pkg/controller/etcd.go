@@ -6,10 +6,6 @@ import (
 	. "github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
-	"github.com/appscode/kutil"
-	core_util "github.com/appscode/kutil/core/v1"
-	dynamic_util "github.com/appscode/kutil/dynamic"
-	meta_util "github.com/appscode/kutil/meta"
 	"github.com/kubedb/apimachinery/apis"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
@@ -22,6 +18,10 @@ import (
 	kwatch "k8s.io/apimachinery/pkg/watch"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
+	kutil "kmodules.xyz/client-go"
+	core_util "kmodules.xyz/client-go/core/v1"
+	dynamic_util "kmodules.xyz/client-go/dynamic"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (c *Controller) syncEtcd(etcd *api.Etcd) error {
