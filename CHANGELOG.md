@@ -1,5 +1,15 @@
 # Change Log
 
+## [0.10.0](https://github.com/kubedb/operator/tree/0.10.0) (2019-02-20)
+[Full Changelog](https://github.com/kubedb/operator/compare/0.9.0...0.10.0)
+
+**Merged pull requests:**
+
+- Revendor dependencies [\#218](https://github.com/kubedb/operator/pull/218) ([tamalsaha](https://github.com/tamalsaha))
+- Don't add admission/v1beta1 group as a prioritized version [\#217](https://github.com/kubedb/operator/pull/217) ([hossainemruz](https://github.com/hossainemruz))
+- Revendor dependencies [\#216](https://github.com/kubedb/operator/pull/216) ([tamalsaha](https://github.com/tamalsaha))
+- Remove jdk from docker image \(keytool removed\) [\#215](https://github.com/kubedb/operator/pull/215) ([hossainemruz](https://github.com/hossainemruz))
+
 ## [0.9.0](https://github.com/kubedb/operator/tree/0.9.0) (2018-12-17)
 [Full Changelog](https://github.com/kubedb/operator/compare/0.9.0-rc.2...0.9.0)
 
