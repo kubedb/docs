@@ -35,6 +35,8 @@ type MySQLVersionSpec struct {
 	// Deprecated versions usable but regarded as obsolete and best avoided, typically due to having been superseded.
 	// +optional
 	Deprecated bool `json:"deprecated,omitempty"`
+	// Init container Image
+	InitContainer MySQLVersionInitContainer `json:"initContainer"`
 }
 
 // MySQLVersionDatabase is the MySQL Database image
@@ -49,6 +51,11 @@ type MySQLVersionExporter struct {
 
 // MySQLVersionTools is the image for the postgres tools
 type MySQLVersionTools struct {
+	Image string `json:"image"`
+}
+
+// MySQLVersionInitContainer is the Elasticsearch Container initializer
+type MySQLVersionInitContainer struct {
 	Image string `json:"image"`
 }
 

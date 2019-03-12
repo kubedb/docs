@@ -1,5 +1,5 @@
 hash: 4981763ece47c6ddba616a90ebea841ec7a7025c16f28371ee92aa72fdfe28a5
-updated: 2019-03-04T01:44:38.452649067-08:00
+updated: 2019-03-12T15:01:45.40220559-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -31,8 +31,6 @@ imports:
   version: 7aba545c679b0f45679eeb406dc662d2c8a04c26
 - name: github.com/appscode/jsonpatch
   version: 7c0e3b262f30165a8ec3d0b4c6059fd92703bfb2
-- name: github.com/appscode/mergo
-  version: 9f23e2d6bd2a77f959b2bf6acdbefd708a83a4a4
 - name: github.com/appscode/osm
   version: 90ec9897e91b750de9fbb939f93f9b6920957dd2
   subpackages:
@@ -214,7 +212,7 @@ imports:
 - name: github.com/fatih/structs
   version: 878a968ab22548362a09bdb3322f98b00f470d46
 - name: github.com/fsnotify/fsnotify
-  version: ccc981bf80385c528a65fbfdd49bf2d8da22aa23
+  version: 1485a34d5d5723fea214f5710708e19a831720e4
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
 - name: github.com/go-ini/ini
@@ -255,10 +253,11 @@ imports:
 - name: github.com/google/btree
   version: 7d79101e329e5a3adf994758c578dab82b90c017
 - name: github.com/google/go-cmp
-  version: 3af367b6b30c263d47e8895973edcca9a49cf029
+  version: 6f77996f0c42f7b84e5a2b252227263f93432e9b
   subpackages:
   - cmp
   - cmp/internal/diff
+  - cmp/internal/flags
   - cmp/internal/function
   - cmp/internal/value
 - name: github.com/google/gofuzz
@@ -313,7 +312,7 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: 492c6d520a33091da6ececa5846fd11cabf8fc6f
+  version: 947c3c783b4e4a20f6d01282ccc9a61364bf9f65
   subpackages:
   - apis
   - apis/authorization
@@ -352,7 +351,7 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 50374386935fdcf6111dc31ac8f7f1bbba2a4100
+  version: fea8645a60a637445967fea9e03a20484e6dd3cd
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -361,34 +360,34 @@ imports:
   - third_party/golang/crypto/pkcs12
   - third_party/golang/crypto/pkcs12/internal/rc2
 - name: github.com/kubedb/etcd
-  version: 703ce48e56a015d8a324276feab2c885697ccb52
+  version: 20eff7b8f8ef832d9435a18e7cd04166b6721142
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: 8b8de648a0a9460212cc8eaf1d9e398ce840d366
+  version: 46e2b8725452c0036414947f77256ac4a41d8d7f
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: 163911b0b17348c5dfa2408b136ae9c2a4c87c5f
+  version: 7568174d8c85667e067f460fc6e9c7d89dfc26c1
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 978f1139514aff881231bd9bc428c904ad9e60e0
+  version: 29e23470c52d0ca8858ec19e26b5aeb75bbcbefd
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: 0264a3c31525889f23c3ac1374f70d18cc0bf2ac
+  version: 638c60919890613f7e92a3e056f328942cc00b03
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: 598eb51c5d6f306804b41e4fe732f42295bc3c9e
+  version: bc6cb00cc7c539a2c069c2d825d4d1e94fb25cb1
   subpackages:
   - pkg/admission
   - pkg/configure-cluster
@@ -531,7 +530,7 @@ imports:
   - googleapi/internal/uritemplates
   - storage/v1
 - name: google.golang.org/appengine
-  version: 54a98f90d1c46b7731eb8fb305d2a321c30ef610
+  version: 12d5545dc1cfa6047a286d5e853841b6471f4c19
   subpackages:
   - internal
   - internal/app_identity
@@ -953,7 +952,7 @@ imports:
   - util/retry
   - util/workqueue
 - name: k8s.io/klog
-  version: 8139d8cb77af419532b33dfa7dd09fbc5f1d344f
+  version: b9b56d5dfc9208f60ea747056670942d8b0afdc8
 - name: k8s.io/kube-aggregator
   version: 71ff10f5febb8733ad25fc112736ff5f8cd97beb
   subpackages:
@@ -975,7 +974,7 @@ imports:
 - name: k8s.io/utils
   version: 66066c83e385e385ccc3c964b44fd7dcd413d0ed
 - name: kmodules.xyz/client-go
-  version: 8e7590427751a4d2512094be0144780dc7ec860a
+  version: b4cd767776cc2c7cc31df6721ebad3cb6f728baa
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1

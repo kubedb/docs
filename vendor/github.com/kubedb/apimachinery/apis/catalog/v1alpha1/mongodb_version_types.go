@@ -35,6 +35,8 @@ type MongoDBVersionSpec struct {
 	// Deprecated versions usable but regarded as obsolete and best avoided, typically due to having been superseded.
 	// +optional
 	Deprecated bool `json:"deprecated,omitempty"`
+	// Init container Image
+	InitContainer MongoDBVersionInitContainer `json:"initContainer"`
 }
 
 // MongoDBVersionDatabase is the MongoDB Database image
@@ -49,6 +51,11 @@ type MongoDBVersionExporter struct {
 
 // MongoDBVersionTools is the image for the mongodb tools
 type MongoDBVersionTools struct {
+	Image string `json:"image"`
+}
+
+// MongoDBVersionInitContainer is the Elasticsearch Container initializer
+type MongoDBVersionInitContainer struct {
 	Image string `json:"image"`
 }
 

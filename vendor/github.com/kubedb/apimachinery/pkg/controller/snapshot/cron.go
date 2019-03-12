@@ -222,6 +222,7 @@ func (s *snapshotInvoker) createSnapshot(snapshotName string) (*api.Snapshot, er
 		Spec: api.SnapshotSpec{
 			DatabaseName:       s.dbMetaObject.GetName(),
 			Backend:            s.scheduleSpec.Backend,
+			StorageType:        s.scheduleSpec.StorageType,
 			PodTemplate:        s.scheduleSpec.PodTemplate,
 			PodVolumeClaimSpec: s.scheduleSpec.PodVolumeClaimSpec,
 		},
