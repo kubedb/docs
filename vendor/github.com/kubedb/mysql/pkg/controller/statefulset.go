@@ -99,7 +99,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 				[]core.Container{
 					{
 						Name:            "remove-lost-found",
-						Image:           "busybox",
+						Image:           mysqlVersion.Spec.InitContainer.Image,
 						ImagePullPolicy: core.PullIfNotPresent,
 						Command: []string{
 							"rm",

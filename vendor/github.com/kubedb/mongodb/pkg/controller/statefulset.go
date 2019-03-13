@@ -224,7 +224,7 @@ func addContainerProbe(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *app
 func (c *Controller) upsertInstallInitContainer(statefulSet *apps.StatefulSet, mongodb *api.MongoDB, mongodbVersion *catalog.MongoDBVersion) *apps.StatefulSet {
 	installContainer := core.Container{
 		Name:            InitInstallContainerName,
-		Image:           "busybox",
+		Image:           mongodbVersion.Spec.InitContainer.Image,
 		ImagePullPolicy: core.PullIfNotPresent,
 		Command:         []string{"sh"},
 		Args: []string{

@@ -77,7 +77,7 @@ func (c *Controller) ensureStatefulSet(
 				[]core.Container{
 					{
 						Name:            "init-sysctl",
-						Image:           "busybox",
+						Image:           elasticsearchVersion.Spec.InitContainer.Image,
 						ImagePullPolicy: core.PullIfNotPresent,
 						Command:         []string{"sysctl", "-w", "vm.max_map_count=262144"},
 						SecurityContext: &core.SecurityContext{
