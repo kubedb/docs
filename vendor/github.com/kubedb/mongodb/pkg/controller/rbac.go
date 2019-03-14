@@ -3,15 +3,18 @@ package controller
 import (
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	core "k8s.io/api/core/v1"
+	policy_v1beta1 "k8s.io/api/policy/v1beta1"
+	rbac "k8s.io/api/rbac/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/reference"
 	core_util "kmodules.xyz/client-go/core/v1"
+	rbac_util "kmodules.xyz/client-go/rbac/v1beta1"
 )
 
-func (c *Controller) createServiceAccount(mongodb *api.MongoDB, saName string) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb)
+func (c *Controller) createServiceAccount(db *api.MongoDB, saName string) error {
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, db)
 	if rerr != nil {
 		return rerr
 	}
@@ -20,17 +23,97 @@ func (c *Controller) createServiceAccount(mongodb *api.MongoDB, saName string) e
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      saName,
-			Namespace: mongodb.Namespace,
+			Namespace: db.Namespace,
 		},
 		func(in *core.ServiceAccount) *core.ServiceAccount {
 			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			in.Labels = db.OffshootLabels()
 			return in
 		},
 	)
 	return err
 }
 
+func (c *Controller) ensureRole(db *api.MongoDB, name string, pspName string) error {
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, db)
+	if rerr != nil {
+		return rerr
+	}
+
+	// Create new Role for ElasticSearch and it's Snapshot
+	_, _, err := rbac_util.CreateOrPatchRole(
+		c.Client,
+		metav1.ObjectMeta{
+			Name:      name,
+			Namespace: db.Namespace,
+		},
+		func(in *rbac.Role) *rbac.Role {
+			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			in.Labels = db.OffshootLabels()
+			in.Rules = []rbac.PolicyRule{
+				{
+					APIGroups:     []string{policy_v1beta1.GroupName},
+					Resources:     []string{"podsecuritypolicies"},
+					Verbs:         []string{"use"},
+					ResourceNames: []string{pspName},
+				},
+			}
+			return in
+		},
+	)
+	return err
+}
+
+func (c *Controller) createRoleBinding(db *api.MongoDB, name string) error {
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, db)
+	if rerr != nil {
+		return rerr
+	}
+	// Ensure new RoleBindings for ElasticSearch and it's Snapshot
+	_, _, err := rbac_util.CreateOrPatchRoleBinding(
+		c.Client,
+		metav1.ObjectMeta{
+			Name:      name,
+			Namespace: db.Namespace,
+		},
+		func(in *rbac.RoleBinding) *rbac.RoleBinding {
+			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			in.Labels = db.OffshootLabels()
+			in.RoleRef = rbac.RoleRef{
+				APIGroup: rbac.GroupName,
+				Kind:     "Role",
+				Name:     name,
+			}
+			in.Subjects = []rbac.Subject{
+				{
+					Kind:      rbac.ServiceAccountKind,
+					Name:      name,
+					Namespace: db.Namespace,
+				},
+			}
+			return in
+		},
+	)
+	return err
+}
+
+func (c *Controller) getPolicyNames(db *api.MongoDB) (string, string, error) {
+	dbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(db.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return "", "", err
+	}
+	dbPolicyName := dbVersion.Spec.PodSecurityPolicies.DatabasePolicyName
+	snapshotPolicyName := dbVersion.Spec.PodSecurityPolicies.SnapshotterPolicyName
+
+	return dbPolicyName, snapshotPolicyName, nil
+}
+
 func (c *Controller) ensureRBACStuff(mongodb *api.MongoDB) error {
+	dbPolicyName, snapshotPolicyName, err := c.getPolicyNames(mongodb)
+	if err != nil {
+		return err
+	}
+
 	// Create New ServiceAccount
 	if err := c.createServiceAccount(mongodb, mongodb.OffshootName()); err != nil {
 		if !kerr.IsAlreadyExists(err) {
@@ -38,11 +121,31 @@ func (c *Controller) ensureRBACStuff(mongodb *api.MongoDB) error {
 		}
 	}
 
-	// Create New SNapshot ServiceAccount
+	// Create New Role
+	if err := c.ensureRole(mongodb, mongodb.OffshootName(), dbPolicyName); err != nil {
+		return err
+	}
+
+	// Create New RoleBinding
+	if err := c.createRoleBinding(mongodb, mongodb.OffshootName()); err != nil {
+		return err
+	}
+
+	// Create New Snapshot ServiceAccount
 	if err := c.createServiceAccount(mongodb, mongodb.SnapshotSAName()); err != nil {
 		if !kerr.IsAlreadyExists(err) {
 			return err
 		}
+	}
+
+	// Create New Role for Snapshot
+	if err := c.ensureRole(mongodb, mongodb.SnapshotSAName(), snapshotPolicyName); err != nil {
+		return err
+	}
+
+	// Create New RoleBinding for Snapshot
+	if err := c.createRoleBinding(mongodb, mongodb.SnapshotSAName()); err != nil {
+		return err
 	}
 
 	return nil

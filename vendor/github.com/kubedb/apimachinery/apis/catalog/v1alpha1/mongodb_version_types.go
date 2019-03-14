@@ -37,6 +37,8 @@ type MongoDBVersionSpec struct {
 	Deprecated bool `json:"deprecated,omitempty"`
 	// Init container Image
 	InitContainer MongoDBVersionInitContainer `json:"initContainer"`
+	// PSP names
+	PodSecurityPolicies MongoDBVersionPodSecurityPolicy `json:"podSecurityPolicies"`
 }
 
 // MongoDBVersionDatabase is the MongoDB Database image
@@ -57,6 +59,12 @@ type MongoDBVersionTools struct {
 // MongoDBVersionInitContainer is the Elasticsearch Container initializer
 type MongoDBVersionInitContainer struct {
 	Image string `json:"image"`
+}
+
+// MongoDBVersionPodSecurityPolicy is the MongoDB pod security policies
+type MongoDBVersionPodSecurityPolicy struct {
+	DatabasePolicyName    string `json:"databasePolicyName"`
+	SnapshotterPolicyName string `json:"snapshotterPolicyName"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

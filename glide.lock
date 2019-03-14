@@ -1,5 +1,5 @@
-hash: 4981763ece47c6ddba616a90ebea841ec7a7025c16f28371ee92aa72fdfe28a5
-updated: 2019-03-12T15:01:45.40220559-07:00
+hash: b7abac5fcc6cc17d6db29b4cd9cbd5d65e9c766c7b3ca4d4438f92cc14775ec0
+updated: 2019-03-14T13:43:42.01207782-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -208,7 +208,7 @@ imports:
 - name: github.com/emicklei/go-restful-swagger12
   version: dcef7f55730566d41eae5db10e7d6981829720f6
 - name: github.com/evanphx/json-patch
-  version: 36442dbdb585210f8d5a1b45e67aa323c197d5c4
+  version: 5858425f75500d40c52783dce87d085a483ce135
 - name: github.com/fatih/structs
   version: 878a968ab22548362a09bdb3322f98b00f470d46
 - name: github.com/fsnotify/fsnotify
@@ -312,7 +312,7 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: 947c3c783b4e4a20f6d01282ccc9a61364bf9f65
+  version: 334b49d77d819d1e3a8d90c7a4ea526bbb71f8b4
   subpackages:
   - apis
   - apis/authorization
@@ -351,7 +351,7 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: fea8645a60a637445967fea9e03a20484e6dd3cd
+  version: 7a830503e7c92dce3f657abd8ef29bfd920c2764
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -360,34 +360,34 @@ imports:
   - third_party/golang/crypto/pkcs12
   - third_party/golang/crypto/pkcs12/internal/rc2
 - name: github.com/kubedb/etcd
-  version: 20eff7b8f8ef832d9435a18e7cd04166b6721142
+  version: 3eeca2389ca23cbfdcdfd0da8243085b16f269d6
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: 46e2b8725452c0036414947f77256ac4a41d8d7f
+  version: 11d8cb7e3c7ba57dbdd513f1ebe0e1f5a044f03b
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: 7568174d8c85667e067f460fc6e9c7d89dfc26c1
+  version: c896b6752142c218df929a094e77b2331c6b528b
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 29e23470c52d0ca8858ec19e26b5aeb75bbcbefd
+  version: 3d22757088b9d8748b48ae50600a578224ffc6b6
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: 638c60919890613f7e92a3e056f328942cc00b03
+  version: c4af5c82ecb5dad7d0b76ff8db8e6f35f1051947
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: bc6cb00cc7c539a2c069c2d825d4d1e94fb25cb1
+  version: 10563536a32afc61ebab7b631e5d38b1425687e9
   subpackages:
   - pkg/admission
   - pkg/configure-cluster
@@ -420,7 +420,7 @@ imports:
   - config
   - uritemplates
 - name: github.com/orcaman/concurrent-map
-  version: 7ed82d9cb71768a4e3656ee8837c7af568c75459
+  version: 2693aad1ed7517c2bb5b3a42cb8fde88b941d89d
 - name: github.com/pavel-v-chernykh/keystore-go
   version: 7bbcda7e585ed7a01e8610f6e19dde5bc2c1f6d0
 - name: github.com/pborman/uuid
@@ -508,8 +508,13 @@ imports:
   version: b19bf474d317b857955b12035d2c5acb57ce8b01
   subpackages:
   - cases
+  - encoding
+  - encoding/internal
+  - encoding/internal/identifier
+  - encoding/unicode
   - internal
   - internal/tag
+  - internal/utf8internal
   - language
   - runes
   - secure/bidirule
@@ -652,6 +657,7 @@ imports:
   - pkg/apis/meta/internalversion
   - pkg/apis/meta/v1
   - pkg/apis/meta/v1/unstructured
+  - pkg/apis/meta/v1/unstructured/unstructuredscheme
   - pkg/apis/meta/v1/validation
   - pkg/apis/meta/v1beta1
   - pkg/conversion
@@ -798,6 +804,12 @@ imports:
   - plugin/pkg/audit/webhook
   - plugin/pkg/authenticator/token/webhook
   - plugin/pkg/authorizer/webhook
+- name: k8s.io/cli-runtime
+  version: a04da5c88c0796c1dc5ff976a9c91999779ac0e4
+  subpackages:
+  - pkg/genericclioptions
+  - pkg/genericclioptions/printers
+  - pkg/genericclioptions/resource
 - name: k8s.io/client-go
   version: e64494209f554a6723674bd494d69445fb76a1d4
   subpackages:
@@ -923,6 +935,7 @@ imports:
   - plugin/pkg/client/auth/openstack
   - rest
   - rest/watch
+  - restmapper
   - third_party/forked/golang/template
   - tools/auth
   - tools/cache
@@ -952,7 +965,7 @@ imports:
   - util/retry
   - util/workqueue
 - name: k8s.io/klog
-  version: b9b56d5dfc9208f60ea747056670942d8b0afdc8
+  version: 8139d8cb77af419532b33dfa7dd09fbc5f1d344f
 - name: k8s.io/kube-aggregator
   version: 71ff10f5febb8733ad25fc112736ff5f8cd97beb
   subpackages:
@@ -974,7 +987,7 @@ imports:
 - name: k8s.io/utils
   version: 66066c83e385e385ccc3c964b44fd7dcd413d0ed
 - name: kmodules.xyz/client-go
-  version: b4cd767776cc2c7cc31df6721ebad3cb6f728baa
+  version: fd7cc05edf46bb8d630fa6a84b875162f321e778
   subpackages:
   - admissionregistration/v1beta1
   - apiextensions/v1beta1

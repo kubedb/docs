@@ -16,12 +16,16 @@ import:
   version: v1.0.8
 - package: github.com/davecgh/go-spew
   version: v1.1.1
+- package: github.com/evanphx/json-patch
+  version: 5858425f75500d40c52783dce87d085a483ce135
 - package: github.com/go-ini/ini
   version: v1.40.0
 - package: github.com/go-kit/kit
   version: v0.7.0
 - package: github.com/golang/protobuf
   version: v1.1.0
+- package: github.com/google/go-cmp
+  version: 6f77996f0c42f7b84e5a2b252227263f93432e9b
 - package: github.com/gorilla/websocket
   version: v1.4.0
 - package: github.com/graymeta/stow

@@ -1,6 +1,7 @@
 package configure_cluster
 
 import (
+	"strconv"
 	"strings"
 	"time"
 
@@ -65,7 +66,35 @@ func (c Config) ensureFirstPodAsMaster(pods [][]*core.Pod) error {
 		return err
 	}
 
-	if strings.Count(nodesConf, "master") > 1 {
+	if countMasterInNodesConf(nodesConf, "master") > 1 {
+
+		// If a node does not know another node then do a `CLUSTER MEET` from the first one
+		for i := 0; i < min(c.Cluster.MasterCnt, len(pods)); i++ {
+			for j := 0; j < min(c.Cluster.Replicas+1, len(pods[i])); j++ {
+				execPod := pods[i][j]
+				senderIP := execPod.Status.PodIP
+				if nodesConf, err = c.getClusterNodes(execPod, senderIP); err != nil {
+					return err
+				}
+
+				x := i
+				y := j
+				for ; x < min(c.Cluster.MasterCnt, len(pods)); x++ {
+					for ; y < min(c.Cluster.Replicas+1, len(pods[x])); y++ {
+						receiverIP := pods[x][y].Status.PodIP
+						if !strings.Contains(nodesConf, receiverIP) {
+							if err = c.clusterMeet(
+								execPod,
+								senderIP, receiverIP, strconv.Itoa(api.RedisNodePort)); err != nil {
+								return err
+							}
+						}
+					}
+					y = 0
+				}
+			}
+		}
+
 		for i := 0; i < c.Cluster.MasterCnt; i++ {
 			if nodesConf, err = c.getClusterNodes(pods[i][0], pods[i][0].Status.PodIP); err != nil {
 				return err
@@ -105,7 +134,7 @@ Again:
 			return nil, err
 		}
 
-		// ensures pods[i][j] is slave of pods[i][0]
+		// for j > 0, this ensures pods[i][j] is slave of pods[i][0]
 		nodes = processNodesConf(nodesConf)
 		for _, master := range nodes {
 			for i := 0; i < len(pods); i++ {
@@ -132,11 +161,16 @@ Again:
 		break
 	}
 
-	// order the nodes we got
-	orderedNodes = make([][]RedisNode, len(nodes))
+	// order the nodes we got earlier
+	orderedNodes = make([][]RedisNode, len(pods))
+	gotMasterCnt := 0
 	for i := 0; i < len(nodes); i++ {
+		if gotMasterCnt >= len(pods) {
+			break
+		}
 		for _, master := range nodes {
 			if master.IP == pods[i][0].Status.PodIP {
+				gotMasterCnt++
 				orderedNodes[i] = make([]RedisNode, len(master.Slaves)+1)
 				orderedNodes[i][0] = *master
 				for j := 1; j < len(orderedNodes[i]); j++ {
@@ -167,14 +201,12 @@ func (c Config) ensureExtraSlavesBeRemoved(pods [][]*core.Pod) error {
 
 	nodes, err = c.getOrderedNodes(pods)
 	for i := range nodes {
-		if c.Cluster.Replicas < len(nodes[i])-1 {
-			for j := c.Cluster.Replicas + 1; j < len(nodes[i]); j++ {
-				if err = c.deleteNode(pods[0][0], nodeAddress(nodes[i][0].IP), nodes[i][j].ID); err != nil {
-					return err
-				}
-				// TODO: Need to use a better alternative for successful completion of the above operation.
-				time.Sleep(time.Second * 5)
+		for j := c.Cluster.Replicas + 1; j < len(nodes[i]); j++ {
+			if err = c.deleteNode(pods[0][0], nodeAddress(nodes[i][0].IP), nodes[i][j].ID); err != nil {
+				return err
 			}
+			// TODO: Need to use a better alternative for successful completion of the above operation.
+			time.Sleep(time.Second * 5)
 		}
 	}
 
@@ -193,7 +225,12 @@ func (c Config) ensureExtraMastersBeRemoved(pods [][]*core.Pod) error {
 	)
 
 	nodes, err = c.getOrderedNodes(pods)
-	existingMasterCnt = len(nodes)
+	existingMasterCnt = 0
+	for i := range nodes {
+		if len(nodes[i]) > 0 {
+			existingMasterCnt++
+		}
+	}
 
 	// first the masters being deleted need to be empty
 	if existingMasterCnt > c.Cluster.MasterCnt {
@@ -270,14 +307,19 @@ func (c Config) ensureNewMastersBeAdded(pods [][]*core.Pod) error {
 	)
 
 	nodes, err = c.getOrderedNodes(pods)
-	existingMasterCnt = len(nodes)
+	existingMasterCnt = 0
+	for i := range nodes {
+		if len(nodes[i]) > 0 {
+			existingMasterCnt++
+		}
+	}
 
 	if existingMasterCnt > 1 {
 		// add new master(s)
 		if existingMasterCnt < c.Cluster.MasterCnt {
 			for i := existingMasterCnt; i < c.Cluster.MasterCnt; i++ {
 				// ensure node must be empty before adding
-				if err = c.clusterReset(pods[i][0], pods[i][0].Status.PodIP); err != nil {
+				if err = c.clusterReset(pods[i][0], pods[i][0].Status.PodIP, string(resetTypeSoft)); err != nil {
 					return err
 				}
 				// TODO: Need to use a better alternative for successful completion of the above operation.
@@ -304,18 +346,22 @@ func (c Config) rebalanceSlots(pods [][]*core.Pod) error {
 		err                           error
 		existingMasterCnt             int
 		nodes                         [][]RedisNode
-		masterIndicesWithLessSlots    []int
-		masterIndicesWithExtraSlots   []int
 		slotsPerMaster, slotsRequired int
 	)
 
 	nodes, err = c.getOrderedNodes(pods)
-
-	existingMasterCnt = len(nodes)
+	existingMasterCnt = 0
+	for i := range nodes {
+		if len(nodes[i]) > 0 {
+			existingMasterCnt++
+		}
+	}
+	masterIndicesWithLessSlots := make([]int, 0, len(nodes))
+	masterIndicesWithExtraSlots := make([]int, 0, len(nodes))
 
 	if existingMasterCnt > 1 {
 		slotsPerMaster = 16384 / c.Cluster.MasterCnt
-		for i := range nodes {
+		for i := 0; i < existingMasterCnt; i++ {
 			if nodes[i][0].SlotsCnt < slotsPerMaster {
 				masterIndicesWithLessSlots = append(masterIndicesWithLessSlots, i)
 			} else {
@@ -379,15 +425,20 @@ func (c Config) ensureNewSlavesBeAdded(pods [][]*core.Pod) error {
 	)
 
 	nodes, err = c.getOrderedNodes(pods)
-	existingMasterCnt = len(nodes)
+	existingMasterCnt = 0
+	for i := range nodes {
+		if len(nodes[i]) > 0 {
+			existingMasterCnt++
+		}
+	}
 
 	if existingMasterCnt > 1 {
 		// add new slave(s)
-		for i := range nodes {
+		for i := 0; i < existingMasterCnt; i++ {
 			if len(nodes[i])-1 < c.Cluster.Replicas {
 				for j := len(nodes[i]); j <= c.Cluster.Replicas; j++ {
 					// ensure node must be empty before adding
-					if err = c.clusterReset(pods[i][j], pods[i][j].Status.PodIP); err != nil {
+					if err = c.clusterReset(pods[i][j], pods[i][j].Status.PodIP, string(resetTypeSoft)); err != nil {
 						return err
 					}
 					// TODO: Need to use a better alternative for successful completion of the above operation.
@@ -424,7 +475,11 @@ func (c Config) ensureCluster(pods [][]*core.Pod) error {
 	if err != nil {
 		return err
 	}
-	if len(nodes) > 1 {
+	masterCnt := 0
+	for i := range nodes {
+		masterCnt += int(len(nodes[i]))
+	}
+	if masterCnt > 1 {
 		return nil
 	}
 
@@ -482,6 +537,10 @@ func (c Config) configureClusterState(pods [][]*core.Pod) error {
 	}
 
 	if err = c.ensureNewSlavesBeAdded(pods); err != nil {
+		return err
+	}
+
+	if err = c.ensureFirstPodAsMaster(pods); err != nil {
 		return err
 	}
 

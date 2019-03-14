@@ -4,6 +4,13 @@ import (
 	"strconv"
 )
 
+type ResetType string
+
+const (
+	resetTypeHard ResetType = "hard"
+	resetTypeSoft ResetType = "soft"
+)
+
 /**********************************
 		redis-trib commands
 ***********************************/
@@ -39,8 +46,12 @@ func ClusterNodesCmd(ip string) []string {
 	return []string{"redis-cli", "-c", "-h", ip, "cluster", "nodes"}
 }
 
-func ClusterResetCmd(ip string) []string {
-	return []string{"redis-cli", "-c", "cluster", "reset", "hard"}
+func ClusterMeetCmd(ip, meetIP, meetPort string) []string {
+	return []string{"redis-cli", "-c", "-h", ip, "cluster", "meet", meetIP, meetPort}
+}
+
+func ClusterResetCmd(ip, resetType string) []string {
+	return []string{"redis-cli", "-c", "cluster", "reset", resetType}
 }
 
 func ClusterFailoverCmd(ip string) []string {

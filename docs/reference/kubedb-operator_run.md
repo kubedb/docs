@@ -64,6 +64,7 @@ kubedb-operator run [flags]
   -h, --help                                                    help for run
       --http2-max-streams-per-connection int                    The limit that the server gives to clients for the maximum number of streams in an HTTP/2 connection. Zero means to use golang's default. (default 1000)
       --kubeconfig string                                       kubeconfig file pointing at the 'core' kubernetes server.
+      --label-key-blacklist strings                             list of keys that are not propagated from a CRD object to its offshoots (default [app.kubernetes.io/name,app.kubernetes.io/version,app.kubernetes.io/instance,app.kubernetes.io/managed-by])
       --profiling                                               Enable profiling via web interface host:port/debug/pprof/ (default true)
       --qps float                                               The maximum QPS to the master from this client (default 1e+06)
       --rbac                                                    Enable RBAC for operator & offshoot Kubernetes objects (default true)
@@ -88,7 +89,6 @@ kubedb-operator run [flags]
       --alsologtostderr                  log to standard error as well as files
       --bypass-validating-webhook-xray   if true, bypasses validating webhook xray checks
       --enable-analytics                 Send analytical events to Google Analytics (default true)
-      --label-key-blacklist strings      list of keys that are not propagated from a CRD object to its offshoots (default [app.kubernetes.io/name,app.kubernetes.io/version,app.kubernetes.io/instance,app.kubernetes.io/component,app.kubernetes.io/managed-by])
       --log-flush-frequency duration     Maximum number of seconds between log flushes (default 5s)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
