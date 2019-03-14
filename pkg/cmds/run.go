@@ -6,6 +6,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/kubedb/operator/pkg/cmds/server"
 	"github.com/spf13/cobra"
+	"kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/cli"
 )
 
@@ -36,6 +37,7 @@ func NewCmdRun(version string, out, errOut io.Writer, stopCh <-chan struct{}) *c
 	}
 
 	o.AddFlags(cmd.Flags())
+	meta.AddLabelBlacklistFlag(cmd.Flags())
 
 	return cmd
 }

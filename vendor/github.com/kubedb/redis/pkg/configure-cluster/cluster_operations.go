@@ -75,8 +75,17 @@ func (c Config) getClusterNodes(pod *core.Pod, ip string) (string, error) {
 	return strings.TrimSpace(out), nil
 }
 
-func (c Config) clusterReset(pod *core.Pod, ip string) error {
-	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterResetCmd(ip)...))
+func (c Config) clusterMeet(pod *core.Pod, ip, meetIP, meetPort string) error {
+	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterMeetCmd(ip, meetIP, meetPort)...))
+	if err != nil {
+		return errors.Wrapf(err, "Failed to meet node %q with node %q", ip, meetIP)
+	}
+
+	return nil
+}
+
+func (c Config) clusterReset(pod *core.Pod, ip, resetType string) error {
+	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterResetCmd(ip, resetType)...))
 	if err != nil {
 		return errors.Wrapf(err, "Failed to reset node %q", ip)
 	}

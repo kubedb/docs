@@ -37,6 +37,8 @@ type MySQLVersionSpec struct {
 	Deprecated bool `json:"deprecated,omitempty"`
 	// Init container Image
 	InitContainer MySQLVersionInitContainer `json:"initContainer"`
+	// PSP names
+	PodSecurityPolicies MySQLVersionPodSecurityPolicy `json:"podSecurityPolicies"`
 }
 
 // MySQLVersionDatabase is the MySQL Database image
@@ -57,6 +59,12 @@ type MySQLVersionTools struct {
 // MySQLVersionInitContainer is the Elasticsearch Container initializer
 type MySQLVersionInitContainer struct {
 	Image string `json:"image"`
+}
+
+// MySQLVersionPodSecurityPolicy is the MySQL pod security policies
+type MySQLVersionPodSecurityPolicy struct {
+	DatabasePolicyName    string `json:"databasePolicyName"`
+	SnapshotterPolicyName string `json:"snapshotterPolicyName"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

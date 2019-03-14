@@ -131,6 +131,10 @@ func processNodesConf(nodesConf string) map[string]*RedisNode {
 			if strings.Contains(parts[2], "fail") {
 				nd.Down = true
 			}
+
+			if nds[parts[3]] == nil {
+				continue
+			}
 			nd.Master = nds[parts[3]]
 			nds[parts[3]].Slaves = append(nds[parts[3]].Slaves, &nd)
 		}
@@ -141,4 +145,32 @@ func processNodesConf(nodesConf string) map[string]*RedisNode {
 
 func nodeAddress(ip string) string {
 	return fmt.Sprintf("%s:%d", ip, api.RedisNodePort)
+}
+
+func countMasterInNodesConf(nodesConf, find string) int {
+	count := 0
+
+	nodes := strings.Split(nodesConf, "\n")
+	for _, node := range nodes {
+		node = strings.TrimSpace(node)
+		parts := strings.Split(strings.TrimSpace(node), " ")
+
+		if strings.Contains(parts[2], "noaddr") {
+			continue
+		}
+
+		if strings.Contains(parts[2], find) {
+			count++
+		}
+	}
+
+	return count
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+
+	return b
 }
