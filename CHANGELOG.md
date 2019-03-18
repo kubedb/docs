@@ -1,5 +1,14 @@
 # Change Log
 
+## [0.11.0](https://github.com/kubedb/operator/tree/0.11.0) (2019-03-18)
+[Full Changelog](https://github.com/kubedb/operator/compare/0.10.0...0.11.0)
+
+**Merged pull requests:**
+
+- Add label-key-blacklist flag to run command only [\#221](https://github.com/kubedb/operator/pull/221) ([tamalsaha](https://github.com/tamalsaha))
+- Don't inherit app.kubernetes.io labels from CRD into offshoots [\#220](https://github.com/kubedb/operator/pull/220) ([tamalsaha](https://github.com/tamalsaha))
+- Update Kubernetes client libraries to 1.13.0 [\#219](https://github.com/kubedb/operator/pull/219) ([tamalsaha](https://github.com/tamalsaha))
+
 ## [0.10.0](https://github.com/kubedb/operator/tree/0.10.0) (2019-02-20)
 [Full Changelog](https://github.com/kubedb/operator/compare/0.9.0...0.10.0)
 
