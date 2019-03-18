@@ -38,21 +38,21 @@ import:
 - package: github.com/json-iterator/go
   version: 1.1.5
 - package: github.com/kubedb/apimachinery
-  version: master
+  version: 0.11.0
 - package: github.com/kubedb/elasticsearch
-  version: master
+  version: 0.11.0
 - package: github.com/kubedb/etcd
-  version: master
+  version: 0.3.0
 - package: github.com/kubedb/memcached
-  version: master
+  version: 0.4.0
 - package: github.com/kubedb/mongodb
-  version: master
+  version: 0.4.0
 - package: github.com/kubedb/mysql
-  version: master
+  version: 0.4.0
 - package: github.com/kubedb/postgres
-  version: master
+  version: 0.11.0
 - package: github.com/kubedb/redis
-  version: master
+  version: 0.4.0
 - package: github.com/mailru/easyjson
   version: 2f5df55504ebc322e4d52d34df6a1f5b503bf26d
 - package: github.com/mitchellh/mapstructure

@@ -8,6 +8,17 @@ import (
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 )
 
+const (
+	// constants for flags of nodes
+	nodeFlagNoAddr = "noaddr"
+	nodeFlagMaster = "master"
+	nodeFlagSlave  = "slave"
+	nodeFlagMyself = "myself"
+
+	nodeRoleMaster = nodeFlagMaster
+	nodeRoleSlave  = nodeFlagSlave
+)
+
 func getMyConf(nodesConf string) (myConf string) {
 	myConf = ""
 	nodes := strings.Split(nodesConf, "\n")
@@ -147,19 +158,16 @@ func nodeAddress(ip string) string {
 	return fmt.Sprintf("%s:%d", ip, api.RedisNodePort)
 }
 
-func countMasterInNodesConf(nodesConf, find string) int {
+func countNodesInNodesConf(nodesConf, nodeFlag string) int {
 	count := 0
 
 	nodes := strings.Split(nodesConf, "\n")
 	for _, node := range nodes {
-		node = strings.TrimSpace(node)
-		parts := strings.Split(strings.TrimSpace(node), " ")
-
-		if strings.Contains(parts[2], "noaddr") {
+		if strings.Contains(node, "noaddr") {
 			continue
 		}
 
-		if strings.Contains(parts[2], find) {
+		if strings.Contains(node, nodeFlag) {
 			count++
 		}
 	}
@@ -173,4 +181,15 @@ func min(a, b int) int {
 	}
 
 	return b
+}
+
+func splitOff(input *string, delim string) (val string) {
+	parts := strings.SplitN(*input, delim, 2)
+
+	if len(parts) == 2 {
+		*input = parts[0]
+		val = parts[1]
+	}
+
+	return val
 }

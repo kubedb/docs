@@ -1,7 +1,6 @@
 package configure_cluster
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/appscode/go/log"
@@ -13,7 +12,7 @@ import (
 func (c Config) createCluster(pod *core.Pod, addrs ...string) error {
 	options := []func(options *exec.Options){
 		exec.Input("yes"),
-		exec.Command(ClusterCreateCmd(0, addrs...)...),
+		exec.Command(c.ClusterCreateCmd(0, addrs...)...),
 	}
 	_, err := exec.ExecIntoPod(c.RestConfig, pod, options...)
 	if err != nil {
@@ -27,11 +26,11 @@ func (c Config) addNode(pod *core.Pod, newAddr, existingAddr, masterId string) e
 	var err error
 
 	if masterId == "" {
-		if _, err = exec.ExecIntoPod(c.RestConfig, pod, exec.Command(AddNodeAsMasterCmd(newAddr, existingAddr)...)); err != nil {
+		if _, err = exec.ExecIntoPod(c.RestConfig, pod, exec.Command(c.AddNodeAsMasterCmd(newAddr, existingAddr)...)); err != nil {
 			return errors.Wrapf(err, "Failed to add %q as a master", newAddr)
 		}
 	} else {
-		if _, err = exec.ExecIntoPod(c.RestConfig, pod, exec.Command(AddNodeAsSlaveCmd(newAddr, existingAddr, masterId)...)); err != nil {
+		if _, err = exec.ExecIntoPod(c.RestConfig, pod, exec.Command(c.AddNodeAsSlaveCmd(newAddr, existingAddr, masterId)...)); err != nil {
 			return errors.Wrapf(err, "Failed to add %q as a slave of master with id %q", newAddr, masterId)
 		}
 	}
@@ -40,7 +39,7 @@ func (c Config) addNode(pod *core.Pod, newAddr, existingAddr, masterId string) e
 }
 
 func (c Config) deleteNode(pod *core.Pod, existingAddr, deletingNodeID string) error {
-	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(DeleteNodeCmd(existingAddr, deletingNodeID)...))
+	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(c.DeleteNodeCmd(existingAddr, deletingNodeID)...))
 	if err != nil {
 		return errors.Wrapf(err, "Failed to delete node with ID %q", deletingNodeID)
 	}
@@ -75,10 +74,10 @@ func (c Config) getClusterNodes(pod *core.Pod, ip string) (string, error) {
 	return strings.TrimSpace(out), nil
 }
 
-func (c Config) clusterMeet(pod *core.Pod, ip, meetIP, meetPort string) error {
-	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterMeetCmd(ip, meetIP, meetPort)...))
+func (c Config) clusterMeet(pod *core.Pod, senderIP, receiverIP, receiverPort string) error {
+	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterMeetCmd(senderIP, receiverIP, receiverPort)...))
 	if err != nil {
-		return errors.Wrapf(err, "Failed to meet node %q with node %q", ip, meetIP)
+		return errors.Wrapf(err, "Failed to meet node %q with node %q", senderIP, receiverIP)
 	}
 
 	return nil
@@ -172,9 +171,10 @@ func (c Config) reshard(pod *core.Pod, nodes [][]RedisNode, src, dst, requstedSl
 		if end-start+1 > need {
 			end = start + need - 1
 		}
-		cmd := []string{"/conf/cluster.sh", "reshard", nodes[src][0].IP, nodes[src][0].ID, nodes[dst][0].IP, nodes[dst][0].ID,
-			strconv.Itoa(start), strconv.Itoa(end),
-		}
+		//cmd := []string{"/conf/cluster.sh", "reshard", nodes[src][0].IP, nodes[src][0].ID, nodes[dst][0].IP, nodes[dst][0].ID,
+		//	strconv.Itoa(start), strconv.Itoa(end),
+		//}
+		cmd := c.ReshardCmd(nodes[src][0].IP, nodes[src][0].ID, nodes[dst][0].IP, nodes[dst][0].ID, start, end)
 
 		_, err = exec.ExecIntoPod(c.RestConfig, pod, exec.Command(cmd...))
 		if err != nil {

@@ -16,6 +16,10 @@ func WalDataDir(postgres *api.Postgres) string {
 		return filepath.Join(spec.S3.Prefix, api.DatabaseNamePrefix, postgres.Namespace, postgres.Name, "archive")
 	} else if spec.GCS != nil {
 		return filepath.Join(spec.GCS.Prefix, api.DatabaseNamePrefix, postgres.Namespace, postgres.Name, "archive")
+	} else if spec.Azure != nil {
+		return filepath.Join(spec.Azure.Prefix, api.DatabaseNamePrefix, postgres.Namespace, postgres.Name, "archive")
+	} else if spec.Swift != nil {
+		return filepath.Join(spec.Swift.Prefix, api.DatabaseNamePrefix, postgres.Namespace, postgres.Name, "archive")
 	}
 	return ""
 }

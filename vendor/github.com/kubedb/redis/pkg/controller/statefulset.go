@@ -100,7 +100,11 @@ func (c *Controller) ensureRedisNodes(redis *api.Redis) (kutil.VerbType, error) 
 			}
 		}
 
-		if err := configure_cluster.ConfigureRedisCluster(c.ClientConfig, redis, pods); err != nil {
+		redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{})
+		if err != nil {
+			return vt, err
+		}
+		if err := configure_cluster.ConfigureRedisCluster(c.ClientConfig, redis, redisVersion.Spec.Version, pods); err != nil {
 			return vt, errors.Wrap(err, "failed to configure required cluster")
 		}
 

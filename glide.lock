@@ -1,5 +1,5 @@
-hash: b7abac5fcc6cc17d6db29b4cd9cbd5d65e9c766c7b3ca4d4438f92cc14775ec0
-updated: 2019-03-14T13:43:42.01207782-07:00
+hash: ee791bc30281c750064d85a63df7733bd50307c16f7eabb0c1f78ad66cbe4bfc
+updated: 2019-03-18T15:48:49.754039814-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -312,7 +312,7 @@ imports:
 - name: github.com/json-iterator/go
   version: 1624edc4454b8682399def8740d46db5e4362ba4
 - name: github.com/kubedb/apimachinery
-  version: 334b49d77d819d1e3a8d90c7a4ea526bbb71f8b4
+  version: fb8b2533cc4f81f8c39214d943b3951206be0a2b
   subpackages:
   - apis
   - apis/authorization
@@ -351,7 +351,7 @@ imports:
   - pkg/eventer
   - pkg/validator
 - name: github.com/kubedb/elasticsearch
-  version: 7a830503e7c92dce3f657abd8ef29bfd920c2764
+  version: 94857418f936c660402c04dab7900cce49c5eee5
   subpackages:
   - pkg/admission
   - pkg/controller
@@ -360,34 +360,34 @@ imports:
   - third_party/golang/crypto/pkcs12
   - third_party/golang/crypto/pkcs12/internal/rc2
 - name: github.com/kubedb/etcd
-  version: 3eeca2389ca23cbfdcdfd0da8243085b16f269d6
+  version: 78803c0fae89338449e61960bdd15311a5b35981
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/util
 - name: github.com/kubedb/memcached
-  version: 11d8cb7e3c7ba57dbdd513f1ebe0e1f5a044f03b
+  version: 6098c5e63cd3b906341cceaa26e92872e4fbcecf
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mongodb
-  version: c896b6752142c218df929a094e77b2331c6b528b
+  version: 38000f549d5f2a8fcb59103bf0f9a51be3174aeb
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/mysql
-  version: 3d22757088b9d8748b48ae50600a578224ffc6b6
+  version: 838d9459881febfe3e5007738db85372cb397d93
   subpackages:
   - pkg/admission
   - pkg/controller
 - name: github.com/kubedb/postgres
-  version: c4af5c82ecb5dad7d0b76ff8db8e6f35f1051947
+  version: f7ba306786ae351a4a0a1864e8385abe8f21fa43
   subpackages:
   - pkg/admission
   - pkg/controller
   - pkg/leader_election
 - name: github.com/kubedb/redis
-  version: 10563536a32afc61ebab7b631e5d38b1425687e9
+  version: 6deb30df86a0bf2ed0ee8f65e0be7e4e4b19812e
   subpackages:
   - pkg/admission
   - pkg/configure-cluster
@@ -965,7 +965,7 @@ imports:
   - util/retry
   - util/workqueue
 - name: k8s.io/klog
-  version: 8139d8cb77af419532b33dfa7dd09fbc5f1d344f
+  version: b9b56d5dfc9208f60ea747056670942d8b0afdc8
 - name: k8s.io/kube-aggregator
   version: 71ff10f5febb8733ad25fc112736ff5f8cd97beb
   subpackages:

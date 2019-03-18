@@ -229,6 +229,20 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion 
 						Value: fmt.Sprintf("gs://%v/%v", archiverStorage.GCS.Bucket, WalDataDir(postgres)),
 					},
 				)
+			} else if archiverStorage.Azure != nil {
+				envList = append(envList,
+					core.EnvVar{
+						Name:  "ARCHIVE_AZ_PREFIX",
+						Value: fmt.Sprintf("azure://%v/%v", archiverStorage.Azure.Container, WalDataDir(postgres)),
+					},
+				)
+			} else if archiverStorage.Swift != nil {
+				envList = append(envList,
+					core.EnvVar{
+						Name:  "ARCHIVE_SWIFT_PREFIX",
+						Value: fmt.Sprintf("swift://%v/%v", archiverStorage.Swift.Container, WalDataDir(postgres)),
+					},
+				)
 			}
 		}
 	}
@@ -594,6 +608,20 @@ func walRecoveryConfig(wal *api.PostgresWALSourceSpec) []core.EnvVar {
 			core.EnvVar{
 				Name:  "RESTORE_GS_PREFIX",
 				Value: fmt.Sprintf("gs://%v/%v", wal.GCS.Bucket, wal.GCS.Prefix),
+			},
+		)
+	} else if wal.Azure != nil {
+		envList = append(envList,
+			core.EnvVar{
+				Name:  "RESTORE_AZ_PREFIX",
+				Value: fmt.Sprintf("azure://%v/%v", wal.Azure.Container, wal.Azure.Prefix),
+			},
+		)
+	} else if wal.Swift != nil {
+		envList = append(envList,
+			core.EnvVar{
+				Name:  "RESTORE_SWIFT_PREFIX",
+				Value: fmt.Sprintf("swift://%v/%v", wal.Swift.Container, wal.Swift.Prefix),
 			},
 		)
 	}
