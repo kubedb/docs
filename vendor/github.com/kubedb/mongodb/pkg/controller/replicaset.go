@@ -1,46 +1,40 @@
 package controller
 
 import (
+	"fmt"
+
 	"github.com/appscode/go/types"
 	catalog "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
-	meta_util "kmodules.xyz/client-go/meta"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-func upsertRSArgs(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB {
-			statefulSet.Spec.Template.Spec.Containers[i].Args = meta_util.UpsertArgumentList(
-				statefulSet.Spec.Template.Spec.Containers[i].Args,
-				[]string{
-					"--replSet=" + mongodb.Spec.ReplicaSet.Name,
-					"--bind_ip=0.0.0.0",
-					"--keyFile=" + configDirectoryPath + "/" + KeyForKeyFile,
-				})
-			statefulSet.Spec.Template.Spec.Containers[i].Command = []string{
-				"mongod",
-			}
-		}
+func topologyInitContainer(
+	mongodb *api.MongoDB,
+	mongodbVersion *catalog.MongoDBVersion,
+	podTemplate *ofst.PodTemplateSpec,
+	repSetName string,
+	gvrSvc string,
+	scriptName string,
+) (core.Container, []core.Volume) {
+	// Take value of podTemplate
+	var pt ofst.PodTemplateSpec
+	if podTemplate != nil {
+		pt = *podTemplate
 	}
-	statefulSet.Spec.Template.Spec.SecurityContext = &core.PodSecurityContext{
-		FSGroup:      types.Int64P(999),
-		RunAsNonRoot: types.BoolP(true),
-		RunAsUser:    types.Int64P(999),
-	}
-	return statefulSet
-}
 
-func (c *Controller) upsertRSInitContainer(statefulSet *apps.StatefulSet, mongodb *api.MongoDB, mongodbVersion *catalog.MongoDBVersion) *apps.StatefulSet {
 	bootstrapContainer := core.Container{
 		Name:            InitBootstrapContainerName,
 		Image:           mongodbVersion.Spec.DB.Image,
 		ImagePullPolicy: core.PullIfNotPresent,
 		Command:         []string{"peer-finder"},
-		Args:            []string{"-on-start=/usr/local/bin/on-start.sh", "-service=" + c.GoverningService},
-		Env: []core.EnvVar{
+		Args: []string{
+			fmt.Sprintf("-on-start=/usr/local/bin/%v", scriptName),
+			"-service=" + gvrSvc,
+		},
+		Env: core_util.UpsertEnvVars([]core.EnvVar{
 			{
 				Name: "POD_NAMESPACE",
 				ValueFrom: &core.EnvVarSource{
@@ -52,7 +46,7 @@ func (c *Controller) upsertRSInitContainer(statefulSet *apps.StatefulSet, mongod
 			},
 			{
 				Name:  "REPLICA_SET",
-				Value: mongodb.Spec.ReplicaSet.Name,
+				Value: repSetName,
 			},
 			{
 				Name:  "AUTH",
@@ -80,7 +74,7 @@ func (c *Controller) upsertRSInitContainer(statefulSet *apps.StatefulSet, mongod
 					},
 				},
 			},
-		},
+		}, pt.Spec.Env...),
 		VolumeMounts: []core.VolumeMount{
 			{
 				Name:      workDirectoryName,
@@ -95,21 +89,36 @@ func (c *Controller) upsertRSInitContainer(statefulSet *apps.StatefulSet, mongod
 				MountPath: dataDirectoryPath,
 			},
 		},
+		Resources: pt.Spec.Resources,
 	}
 
-	initContainers := statefulSet.Spec.Template.Spec.InitContainers
-	statefulSet.Spec.Template.Spec.InitContainers = core_util.UpsertContainer(initContainers, bootstrapContainer)
-
-	rsVolume := core.Volume{
-		Name: initialKeyDirectoryName,
-		VolumeSource: core.VolumeSource{
-			Secret: &core.SecretVolumeSource{
-				DefaultMode: types.Int32P(256),
-				SecretName:  mongodb.Spec.ReplicaSet.KeyFile.SecretName,
+	rsVolume := []core.Volume{
+		{
+			Name: initialKeyDirectoryName,
+			VolumeSource: core.VolumeSource{
+				Secret: &core.SecretVolumeSource{
+					DefaultMode: types.Int32P(256),
+					SecretName:  mongodb.Spec.CertificateSecret.SecretName,
+				},
 			},
 		},
 	}
-	volumes := statefulSet.Spec.Template.Spec.Volumes
-	statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(volumes, rsVolume)
-	return statefulSet
+
+	//only on mongos in case of sharding (which is handled on 'ensureMongosNode'.
+	if mongodb.Spec.ShardTopology == nil && mongodb.Spec.Init != nil && mongodb.Spec.Init.ScriptSource != nil {
+		rsVolume = append(rsVolume, core.Volume{
+			Name:         "initial-script",
+			VolumeSource: mongodb.Spec.Init.ScriptSource.VolumeSource,
+		})
+
+		bootstrapContainer.VolumeMounts = core_util.UpsertVolumeMount(
+			bootstrapContainer.VolumeMounts,
+			core.VolumeMount{
+				Name:      "initial-script",
+				MountPath: "/docker-entrypoint-initdb.d",
+			},
+		)
+	}
+
+	return bootstrapContainer, rsVolume
 }

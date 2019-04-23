@@ -42,9 +42,9 @@ func (a *MySQLValidator) Resource() (plural schema.GroupVersionResource, singula
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "mysqls",
+			Resource: "mysqlvalidators",
 		},
-		"mysql"
+		"mysqlvalidator"
 }
 
 func (a *MySQLValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

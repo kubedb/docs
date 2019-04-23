@@ -38,9 +38,9 @@ func (a *MemcachedValidator) Resource() (plural schema.GroupVersionResource, sin
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "memcacheds",
+			Resource: "memcachedvalidators",
 		},
-		"memcached"
+		"memcachedvalidator"
 }
 
 func (a *MemcachedValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

@@ -54,11 +54,9 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	// create Governing Service
-	governingService, err := c.createMongoDBGoverningService(mongodb)
-	if err != nil {
-		return fmt.Errorf(`failed to create Service: "%v/%v". Reason: %v`, mongodb.Namespace, governingService, err)
+	if err := c.ensureMongoGvrSvc(mongodb); err != nil {
+		return fmt.Errorf(`failed to create governing Service for "%v/%v". Reason: %v`, mongodb.Namespace, mongodb.Name, err)
 	}
-	c.GoverningService = governingService
 
 	if c.EnableRBAC {
 		// Ensure ClusterRoles for statefulsets
@@ -78,7 +76,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	// ensure database StatefulSet
-	vt2, err := c.ensureStatefulSet(mongodb)
+	vt2, err := c.ensureMongoDBNode(mongodb)
 	if err != nil {
 		return err
 	}

@@ -42,9 +42,9 @@ func (a *PostgresValidator) Resource() (plural schema.GroupVersionResource, sing
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "postgreses",
+			Resource: "postgresvalidators",
 		},
-		"postgres"
+		"postgresvalidator"
 }
 
 func (a *PostgresValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

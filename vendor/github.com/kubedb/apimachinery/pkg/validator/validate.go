@@ -3,6 +3,7 @@ package validator
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/appscode/go/arrays"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
@@ -15,19 +16,24 @@ import (
 	store "kmodules.xyz/objectstore-api/api/v1"
 )
 
-func ValidateStorage(client kubernetes.Interface, storageType api.StorageType, spec *core.PersistentVolumeClaimSpec) error {
+func ValidateStorage(client kubernetes.Interface, storageType api.StorageType, spec *core.PersistentVolumeClaimSpec, storageSpecPath ...string) error {
 	if storageType == api.StorageTypeEphemeral {
 		return nil
 	}
 
+	storagePath := "spec.storage"
+	if len(storageSpecPath) != 0 {
+		storagePath = strings.Join(storageSpecPath, ".")
+	}
+
 	if spec == nil {
-		return errors.New(`spec.storage is missing for durable storage type`)
+		return fmt.Errorf(`%v is missing for durable storage type`, storagePath)
 	}
 
 	if spec.StorageClassName != nil {
 		if _, err := client.StorageV1beta1().StorageClasses().Get(*spec.StorageClassName, metav1.GetOptions{}); err != nil {
 			if kerr.IsNotFound(err) {
-				return fmt.Errorf(`spec.storage.storageClassName "%v" not found`, *spec.StorageClassName)
+				return fmt.Errorf(`%v.storageClassName "%v" not found`, storagePath, *spec.StorageClassName)
 			}
 			return err
 		}

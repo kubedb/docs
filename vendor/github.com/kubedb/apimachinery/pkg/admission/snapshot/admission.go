@@ -33,9 +33,9 @@ func (a *SnapshotValidator) Resource() (plural schema.GroupVersionResource, sing
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "snapshots",
+			Resource: "snapshotvalidators",
 		},
-		"snapshot"
+		"snapshotvalidator"
 }
 
 func (a *SnapshotValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

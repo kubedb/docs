@@ -39,9 +39,9 @@ func (a *RedisValidator) Resource() (plural schema.GroupVersionResource, singula
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "redises",
+			Resource: "redisvalidators",
 		},
-		"redis"
+		"redisvalidator"
 }
 
 func (a *RedisValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

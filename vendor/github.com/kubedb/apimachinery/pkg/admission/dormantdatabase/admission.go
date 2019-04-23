@@ -36,9 +36,9 @@ func (a *DormantDatabaseValidator) Resource() (plural schema.GroupVersionResourc
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "dormantdatabases",
+			Resource: "dormantdatabasevalidators",
 		},
-		"dormantdatabase"
+		"dormantdatabasevalidator"
 }
 
 func (a *DormantDatabaseValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

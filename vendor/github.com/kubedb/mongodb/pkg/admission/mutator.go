@@ -5,11 +5,11 @@ import (
 	"sync"
 
 	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
+	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -20,6 +20,7 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
@@ -36,9 +37,9 @@ func (a *MongoDBMutator) Resource() (plural schema.GroupVersionResource, singula
 	return schema.GroupVersionResource{
 			Group:    "mutators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "mongodbs",
+			Resource: "mongodbmutators",
 		},
-		"mongodb"
+		"mongodbmutator"
 }
 
 func (a *MongoDBMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
@@ -78,7 +79,7 @@ func (a *MongoDBMutator) Admit(req *admission.AdmissionRequest) *admission.Admis
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	mongoMod, err := setDefaultValues(a.client, a.extClient, obj.(*api.MongoDB).DeepCopy())
+	mongoMod, err := setDefaultValues(a.extClient, obj.(*api.MongoDB).DeepCopy(), req.Operation)
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mongoMod != nil {
@@ -96,17 +97,14 @@ func (a *MongoDBMutator) Admit(req *admission.AdmissionRequest) *admission.Admis
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a MongoDB database
-func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, mongodb *api.MongoDB) (runtime.Object, error) {
+func setDefaultValues(extClient cs.Interface, mongodb *api.MongoDB, op admission.Operation) (runtime.Object, error) {
 	if mongodb.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
 	}
 
-	if mongodb.Spec.Replicas == nil {
-		mongodb.Spec.Replicas = types.Int32P(1)
-	}
 	mongodb.SetDefaults()
 
-	if err := setDefaultsFromDormantDB(extClient, mongodb); err != nil {
+	if err := setDefaultsFromDormantDB(extClient, mongodb, op); err != nil {
 		return nil, err
 	}
 
@@ -118,19 +116,26 @@ func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, mongo
 }
 
 // setDefaultsFromDormantDB takes values from Similar Dormant Database
-func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB) error {
+func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB, op admission.Operation) error {
 	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(mongodb.Namespace).Get(mongodb.Name, metav1.GetOptions{})
+	dormantDb, err := getDormantDB(extClient, mongodb)
 	if err != nil {
-		if !kerr.IsNotFound(err) {
-			return err
-		}
-		return nil
+		return err
 	}
 
-	// Check DatabaseKind
-	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindMongoDB {
-		return errors.New(fmt.Sprintf(`invalid MongoDB: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, mongodb.Namespace, mongodb.Name, dormantDb.Namespace, dormantDb.Name))
+	// If dormantDb doesn't exist, then SetSecurityContext and return.
+	if dormantDb == nil {
+		if op != admission.Create {
+			return nil
+		}
+		if mongodb.Spec.ShardTopology != nil {
+			mongodb.Spec.SetSecurityContext(&mongodb.Spec.ShardTopology.Shard.PodTemplate)
+			mongodb.Spec.SetSecurityContext(&mongodb.Spec.ShardTopology.ConfigServer.PodTemplate)
+			mongodb.Spec.SetSecurityContext(&mongodb.Spec.ShardTopology.Mongos.PodTemplate)
+		} else {
+			mongodb.Spec.SetSecurityContext(mongodb.Spec.PodTemplate)
+		}
+		return nil
 	}
 
 	// Check Origin Spec
@@ -143,9 +148,8 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB) erro
 		mongodb.Spec.DatabaseSecret = ddbOriginSpec.DatabaseSecret
 	}
 
-	if mongodb.Spec.ReplicaSet != nil &&
-		mongodb.Spec.ReplicaSet.KeyFile == nil {
-		mongodb.Spec.ReplicaSet.KeyFile = ddbOriginSpec.ReplicaSet.KeyFile
+	if mongodb.Spec.CertificateSecret == nil {
+		mongodb.Spec.CertificateSecret = ddbOriginSpec.CertificateSecret
 	}
 
 	if mongodb.Spec.ConfigSource == nil {
@@ -160,6 +164,10 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB) erro
 		ddbOriginSpec.Monitor = mongodb.Spec.Monitor
 	}
 
+	// If SecurityContext of new object is not given,
+	// Take dormantDatabase's Security Context
+	setSecurityContextFromDormantDB(mongodb, ddbOriginSpec)
+
 	// If Backup Scheduler of new object is not given,
 	// Take Backup Scheduler Settings from Dormant
 	if mongodb.Spec.BackupSchedule == nil {
@@ -173,6 +181,11 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB) erro
 
 	// Skip checking TerminationPolicy
 	ddbOriginSpec.TerminationPolicy = mongodb.Spec.TerminationPolicy
+
+	if ddbOriginSpec.ShardTopology != nil && mongodb.Spec.ShardTopology != nil {
+		// Skip checking strategy of mongos
+		ddbOriginSpec.ShardTopology.Mongos.Strategy = mongodb.Spec.ShardTopology.Mongos.Strategy
+	}
 
 	if !meta_util.Equal(ddbOriginSpec, &mongodb.Spec) {
 		diff := meta_util.Diff(ddbOriginSpec, &mongodb.Spec)
@@ -191,6 +204,56 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB) erro
 	// Delete  Matching dormantDatabase in Controller
 
 	return nil
+}
+
+// getDormantDB returns Dormant database that exists
+// with same name in same namespace with label set to 'MongoDB'
+func getDormantDB(extClient cs.Interface, mongodb *api.MongoDB) (*api.DormantDatabase, error) {
+	// Check if DormantDatabase exists or not
+	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(mongodb.Namespace).Get(mongodb.Name, metav1.GetOptions{})
+	if err != nil {
+		if !kerr.IsNotFound(err) {
+			return nil, err
+		}
+		return nil, nil
+	}
+
+	// Check DatabaseKind
+	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindMongoDB {
+		return nil, errors.New(fmt.Sprintf(`invalid MongoDB: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, mongodb.Namespace, mongodb.Name, dormantDb.Namespace, dormantDb.Name))
+	}
+	return dormantDb, nil
+}
+
+func setSecurityContextFromDormantDB(mongodb *api.MongoDB, ddbOriginSpec *api.MongoDBSpec) {
+	fn := func(mongoPt *ofst.PodTemplateSpec, drmPt *ofst.PodTemplateSpec) {
+		if drmPt == nil || drmPt.Spec.SecurityContext == nil {
+			return
+		}
+		if mongoPt.Spec.SecurityContext == nil {
+			mongoPt.Spec.SecurityContext = new(core.PodSecurityContext)
+		}
+		if mongoPt.Spec.SecurityContext.FSGroup == nil {
+			mongoPt.Spec.SecurityContext.FSGroup = drmPt.Spec.SecurityContext.FSGroup
+		}
+		if mongoPt.Spec.SecurityContext.RunAsNonRoot == nil {
+			mongoPt.Spec.SecurityContext.RunAsNonRoot = drmPt.Spec.SecurityContext.RunAsNonRoot
+		}
+		if mongoPt.Spec.SecurityContext.RunAsUser == nil {
+			mongoPt.Spec.SecurityContext.RunAsUser = drmPt.Spec.SecurityContext.RunAsUser
+		}
+	}
+
+	if mongodb.Spec.ShardTopology != nil && ddbOriginSpec.ShardTopology != nil {
+		fn(&mongodb.Spec.ShardTopology.Shard.PodTemplate, &ddbOriginSpec.ShardTopology.Shard.PodTemplate)
+		fn(&mongodb.Spec.ShardTopology.ConfigServer.PodTemplate, &ddbOriginSpec.ShardTopology.ConfigServer.PodTemplate)
+		fn(&mongodb.Spec.ShardTopology.Mongos.PodTemplate, &ddbOriginSpec.ShardTopology.Mongos.PodTemplate)
+	} else if ddbOriginSpec.PodTemplate != nil {
+		if mongodb.Spec.PodTemplate == nil {
+			mongodb.Spec.PodTemplate = new(ofst.PodTemplateSpec)
+		}
+		fn(mongodb.Spec.PodTemplate, ddbOriginSpec.PodTemplate)
+	}
 }
 
 // Assign Default Monitoring Port if MonitoringSpec Exists

@@ -36,9 +36,9 @@ func (a *PostgresMutator) Resource() (plural schema.GroupVersionResource, singul
 	return schema.GroupVersionResource{
 			Group:    "mutators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "postgreses",
+			Resource: "postgresmutators",
 		},
-		"postgres"
+		"postgresmutator"
 }
 
 func (a *PostgresMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

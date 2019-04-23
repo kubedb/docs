@@ -7,7 +7,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	"github.com/fatih/structs"
-	catalog "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
+	"github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	apps "k8s.io/api/apps/v1"
@@ -21,6 +21,7 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 const (
@@ -43,13 +44,404 @@ const (
 	InitBootstrapContainerName = "bootstrap"
 )
 
-func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB) (kutil.VerbType, error) {
-	if err := c.checkStatefulSet(mongodb); err != nil {
+type workloadOptions struct {
+	// App level options
+	stsName   string
+	labels    map[string]string
+	selectors map[string]string
+
+	// db container options
+	cmd          []string      // cmd of `mongodb` container
+	args         []string      // args of `mongodb` container
+	envList      []core.EnvVar // envList of `mongodb` container
+	volumeMount  []core.VolumeMount
+	configSource *core.VolumeSource
+
+	// pod Template level options
+	replicas       *int32
+	gvrSvcName     string
+	podTemplate    *ofst.PodTemplateSpec
+	pvcSpec        *core.PersistentVolumeClaimSpec
+	initContainers []core.Container
+	volume         []core.Volume // volumes to mount on stsPodTemplate
+}
+
+func (c *Controller) ensureMongoDBNode(mongodb *api.MongoDB) (kutil.VerbType, error) {
+	// Standalone, replicaset, shard
+	if mongodb.Spec.ShardTopology != nil {
+		return c.ensureTopologyCluster(mongodb)
+	}
+
+	return c.ensureNonTopology(mongodb)
+}
+
+func (c *Controller) ensureTopologyCluster(mongodb *api.MongoDB) (kutil.VerbType, error) {
+	vt1, err := c.ensureConfigNode(mongodb)
+	if err != nil {
+		return vt1, err
+	}
+
+	vt2, err := c.ensureShardNode(mongodb)
+	if err != nil {
+		return vt2, err
+	}
+
+	vt3, err := c.ensureMongosNode(mongodb)
+	if err != nil {
+		return vt3, err
+	}
+
+	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated && vt3 == kutil.VerbCreated {
+		return kutil.VerbCreated, nil
+	} else if vt1 != kutil.VerbUnchanged || vt2 != kutil.VerbUnchanged || vt3 != kutil.VerbUnchanged {
+		return kutil.VerbPatched, nil
+	}
+
+	return kutil.VerbUnchanged, nil
+}
+
+func (c *Controller) ensureShardNode(mongodb *api.MongoDB) (kutil.VerbType, error) {
+	shardSts := func(nodeNum int32) (kutil.VerbType, error) {
+		mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+		if err != nil {
+			return kutil.VerbUnchanged, err
+		}
+
+		args := []string{
+			"--dbpath=" + dataDirectoryPath,
+			"--auth",
+			"--bind_ip=0.0.0.0",
+			"--port=" + strconv.Itoa(MongoDBPort),
+			"--shardsvr",
+			"--replSet=" + mongodb.ShardRepSetName(nodeNum),
+			"--clusterAuthMode=keyFile",
+			"--keyFile=" + configDirectoryPath + "/" + KeyForKeyFile,
+		}
+
+		initContnr, initvolumes := installInitContainer(
+			mongodb,
+			mongodbVersion,
+			&mongodb.Spec.ShardTopology.Shard.PodTemplate,
+		)
+
+		var initContainers []core.Container
+		var volumes []core.Volume
+		var volumeMounts []core.VolumeMount
+		cmds := []string{"mongod"}
+
+		initContainers = append(initContainers, initContnr)
+		volumes = append(volumes, initvolumes)
+
+		bootstrpContnr, bootstrpVol := topologyInitContainer(
+			mongodb,
+			mongodbVersion,
+			&mongodb.Spec.ShardTopology.Shard.PodTemplate,
+			mongodb.ShardRepSetName(nodeNum),
+			mongodb.GvrSvcName(mongodb.ShardNodeName(nodeNum)),
+			"sharding.sh",
+		)
+		initContainers = append(initContainers, bootstrpContnr)
+		volumes = append(volumes, bootstrpVol...)
+
+		opts := workloadOptions{
+			stsName:        mongodb.ShardNodeName(nodeNum),
+			labels:         mongodb.ShardLabels(nodeNum),
+			selectors:      mongodb.ShardSelectors(nodeNum),
+			args:           args,
+			cmd:            cmds,
+			envList:        nil,
+			initContainers: initContainers,
+			gvrSvcName:     mongodb.GvrSvcName(mongodb.ShardNodeName(nodeNum)),
+			podTemplate:    &mongodb.Spec.ShardTopology.Shard.PodTemplate,
+			configSource:   mongodb.Spec.ShardTopology.Shard.ConfigSource,
+			pvcSpec:        mongodb.Spec.ShardTopology.Shard.Storage,
+			replicas:       &mongodb.Spec.ShardTopology.Shard.Replicas,
+			volume:         volumes,
+			volumeMount:    volumeMounts,
+		}
+
+		return c.ensureStatefulSet(mongodb, opts)
+	}
+
+	for i := int32(0); i < mongodb.Spec.ShardTopology.Shard.Shards; i++ {
+		if _, err := shardSts(i); err != nil {
+			return kutil.VerbUnchanged, err
+		}
+	}
+
+	return kutil.VerbUnchanged, nil
+}
+
+func (c *Controller) ensureConfigNode(mongodb *api.MongoDB) (kutil.VerbType, error) {
+	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	args := []string{
+		"--dbpath=" + dataDirectoryPath,
+		"--auth",
+		"--bind_ip=0.0.0.0",
+		"--port=" + strconv.Itoa(MongoDBPort),
+		"--configsvr",
+		"--replSet=" + mongodb.ConfigSvrRepSetName(),
+		"--clusterAuthMode=keyFile",
+		"--keyFile=" + configDirectoryPath + "/" + KeyForKeyFile,
+	}
+
+	initContnr, initvolumes := installInitContainer(
+		mongodb,
+		mongodbVersion,
+		&mongodb.Spec.ShardTopology.ConfigServer.PodTemplate,
+	)
+
+	var initContainers []core.Container
+	var volumes []core.Volume
+	var volumeMounts []core.VolumeMount
+	cmds := []string{"mongod"}
+
+	initContainers = append(initContainers, initContnr)
+	volumes = append(volumes, initvolumes)
+
+	bootstrpContnr, bootstrpVol := topologyInitContainer(
+		mongodb,
+		mongodbVersion,
+		&mongodb.Spec.ShardTopology.ConfigServer.PodTemplate,
+		mongodb.ConfigSvrRepSetName(),
+		mongodb.GvrSvcName(mongodb.ConfigSvrNodeName()),
+		"configdb.sh",
+	)
+	initContainers = append(initContainers, bootstrpContnr)
+	volumes = append(volumes, bootstrpVol...)
+
+	opts := workloadOptions{
+		stsName:        mongodb.ConfigSvrNodeName(),
+		labels:         mongodb.ConfigSvrLabels(),
+		selectors:      mongodb.ConfigSvrSelectors(),
+		args:           args,
+		cmd:            cmds,
+		envList:        nil,
+		initContainers: initContainers,
+		gvrSvcName:     mongodb.GvrSvcName(mongodb.ConfigSvrNodeName()),
+		podTemplate:    &mongodb.Spec.ShardTopology.ConfigServer.PodTemplate,
+		configSource:   mongodb.Spec.ShardTopology.ConfigServer.ConfigSource,
+		pvcSpec:        mongodb.Spec.ShardTopology.ConfigServer.Storage,
+		replicas:       &mongodb.Spec.ShardTopology.ConfigServer.Replicas,
+		volume:         volumes,
+		volumeMount:    volumeMounts,
+	}
+
+	return c.ensureStatefulSet(mongodb, opts)
+}
+
+func (c *Controller) ensureNonTopology(mongodb *api.MongoDB) (kutil.VerbType, error) {
+	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	args := []string{
+		"--dbpath=" + dataDirectoryPath,
+		"--auth",
+		"--bind_ip=0.0.0.0",
+		"--port=" + strconv.Itoa(MongoDBPort),
+	}
+
+	initContnr, initvolumes := installInitContainer(mongodb, mongodbVersion, mongodb.Spec.PodTemplate)
+
+	var initContainers []core.Container
+	var volumes []core.Volume
+	var volumeMounts []core.VolumeMount
+	var cmds []string
+
+	initContainers = append(initContainers, initContnr)
+	volumes = append(volumes, initvolumes)
+
+	if mongodb.Spec.Init != nil && mongodb.Spec.Init.ScriptSource != nil {
+		volumes = append(volumes, core.Volume{
+			Name:         "initial-script",
+			VolumeSource: mongodb.Spec.Init.ScriptSource.VolumeSource,
+		})
+
+		volumeMounts = []core.VolumeMount{
+			{
+				Name:      "initial-script",
+				MountPath: "/docker-entrypoint-initdb.d",
+			},
+		}
+	}
+
+	if mongodb.Spec.ReplicaSet != nil {
+		cmds = []string{"mongod"}
+		args = meta_util.UpsertArgumentList(args, []string{
+			"--replSet=" + mongodb.RepSetName(),
+			"--bind_ip=0.0.0.0",
+			"--keyFile=" + configDirectoryPath + "/" + KeyForKeyFile,
+		})
+		bootstrpContnr, bootstrpVol := topologyInitContainer(
+			mongodb,
+			mongodbVersion,
+			mongodb.Spec.PodTemplate,
+			mongodb.RepSetName(),
+			mongodb.GvrSvcName(mongodb.OffshootName()),
+			"replicaset.sh",
+		)
+		initContainers = append(initContainers, bootstrpContnr)
+		volumes = append(volumes, bootstrpVol...)
+	}
+
+	opts := workloadOptions{
+		stsName:        mongodb.OffshootName(),
+		labels:         mongodb.OffshootLabels(),
+		selectors:      mongodb.OffshootSelectors(),
+		args:           args,
+		cmd:            cmds,
+		envList:        nil,
+		initContainers: initContainers,
+		gvrSvcName:     mongodb.GvrSvcName(mongodb.OffshootName()),
+		podTemplate:    mongodb.Spec.PodTemplate,
+		configSource:   mongodb.Spec.ConfigSource,
+		pvcSpec:        mongodb.Spec.Storage,
+		replicas:       mongodb.Spec.Replicas,
+		volume:         volumes,
+		volumeMount:    volumeMounts,
+	}
+
+	return c.ensureStatefulSet(mongodb, opts)
+}
+
+func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB, opts workloadOptions) (kutil.VerbType, error) {
+	// Take value of podTemplate
+	var pt ofst.PodTemplateSpec
+	if opts.podTemplate != nil {
+		pt = *opts.podTemplate
+	}
+	if err := c.checkStatefulSet(mongodb, opts.stsName); err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
 	// Create statefulSet for MongoDB database
-	statefulSet, vt, err := c.createStatefulSet(mongodb)
+	statefulSetMeta := metav1.ObjectMeta{
+		Name:      opts.stsName,
+		Namespace: mongodb.Namespace,
+	}
+
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb)
+	if rerr != nil {
+		return kutil.VerbUnchanged, rerr
+	}
+
+	readinessProbe := pt.Spec.ReadinessProbe
+	if readinessProbe != nil && structs.IsZero(*readinessProbe) {
+		readinessProbe = nil
+	}
+	livenessProbe := pt.Spec.LivenessProbe
+	if livenessProbe != nil && structs.IsZero(*livenessProbe) {
+		livenessProbe = nil
+	}
+
+	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
+		in.Labels = opts.labels
+		in.Annotations = pt.Controller.Annotations
+		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+
+		in.Spec.Replicas = opts.replicas
+		in.Spec.ServiceName = opts.gvrSvcName
+		in.Spec.Selector = &metav1.LabelSelector{
+			MatchLabels: opts.selectors,
+		}
+		in.Spec.Template.Labels = opts.selectors
+		in.Spec.Template.Annotations = pt.Annotations
+		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
+			in.Spec.Template.Spec.InitContainers,
+			pt.Spec.InitContainers,
+		)
+		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+			in.Spec.Template.Spec.Containers,
+			core.Container{
+				Name:            api.ResourceSingularMongoDB,
+				Image:           mongodbVersion.Spec.DB.Image,
+				ImagePullPolicy: core.PullIfNotPresent,
+				Command:         opts.cmd,
+				Args: meta_util.UpsertArgumentList(
+					opts.args, pt.Spec.Args),
+				Ports: []core.ContainerPort{
+					{
+						Name:          "db",
+						ContainerPort: MongoDBPort,
+						Protocol:      core.ProtocolTCP,
+					},
+				},
+				Env:            core_util.UpsertEnvVars(opts.envList, pt.Spec.Env...),
+				Resources:      pt.Spec.Resources,
+				Lifecycle:      pt.Spec.Lifecycle,
+				LivenessProbe:  livenessProbe,
+				ReadinessProbe: readinessProbe,
+				VolumeMounts:   opts.volumeMount,
+			})
+
+		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
+			in.Spec.Template.Spec.InitContainers,
+			opts.initContainers,
+		)
+
+		if mongodb.GetMonitoringVendor() == mona.VendorPrometheus {
+			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+				in.Spec.Template.Spec.Containers,
+				core.Container{
+					Name: "exporter",
+					Args: append([]string{
+						fmt.Sprintf("--web.listen-address=:%d", mongodb.Spec.Monitor.Prometheus.Port),
+						fmt.Sprintf("--web.metrics-path=%v", mongodb.StatsService().Path()),
+						"--mongodb.uri=mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@127.0.0.1:27017",
+					}, mongodb.Spec.Monitor.Args...),
+					Image: mongodbVersion.Spec.Exporter.Image,
+					Ports: []core.ContainerPort{
+						{
+							Name:          api.PrometheusExporterPortName,
+							Protocol:      core.ProtocolTCP,
+							ContainerPort: mongodb.Spec.Monitor.Prometheus.Port,
+						},
+					},
+					Env:             mongodb.Spec.Monitor.Env,
+					Resources:       mongodb.Spec.Monitor.Resources,
+					SecurityContext: mongodb.Spec.Monitor.SecurityContext,
+				})
+		}
+
+		in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(in.Spec.Template.Spec.Volumes, opts.volume...)
+
+		in.Spec.Template = upsertEnv(in.Spec.Template, mongodb)
+		in = upsertDataVolume(in, opts.pvcSpec, mongodb.Spec.StorageType)
+
+		if opts.configSource != nil {
+			in.Spec.Template = c.upsertConfigSourceVolume(in.Spec.Template, opts.configSource)
+		}
+
+		in.Spec.Template.Spec.NodeSelector = pt.Spec.NodeSelector
+		in.Spec.Template.Spec.Affinity = pt.Spec.Affinity
+		if pt.Spec.SchedulerName != "" {
+			in.Spec.Template.Spec.SchedulerName = pt.Spec.SchedulerName
+		}
+		in.Spec.Template.Spec.Tolerations = pt.Spec.Tolerations
+		in.Spec.Template.Spec.ImagePullSecrets = pt.Spec.ImagePullSecrets
+		in.Spec.Template.Spec.PriorityClassName = pt.Spec.PriorityClassName
+		in.Spec.Template.Spec.Priority = pt.Spec.Priority
+		in.Spec.Template.Spec.SecurityContext = pt.Spec.SecurityContext
+
+		if c.EnableRBAC {
+			in.Spec.Template.Spec.ServiceAccountName = mongodb.OffshootName()
+		}
+
+		in.Spec.UpdateStrategy = mongodb.Spec.UpdateStrategy
+		return in
+	})
+
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -63,16 +455,16 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB) (kutil.VerbType, er
 			mongodb,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
-			"Successfully %v StatefulSet",
-			vt,
+			"Successfully %v StatefulSet %v/%v",
+			vt, mongodb.Namespace, opts.stsName,
 		)
 	}
 	return vt, nil
 }
 
-func (c *Controller) checkStatefulSet(mongodb *api.MongoDB) error {
-	// SatatefulSet for MongoDB database
-	statefulSet, err := c.Client.AppsV1().StatefulSets(mongodb.Namespace).Get(mongodb.OffshootName(), metav1.GetOptions{})
+func (c *Controller) checkStatefulSet(mongodb *api.MongoDB, stsName string) error {
+	// StatefulSet for MongoDB database
+	statefulSet, err := c.Client.AppsV1().StatefulSets(mongodb.Namespace).Get(stsName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -82,146 +474,24 @@ func (c *Controller) checkStatefulSet(mongodb *api.MongoDB) error {
 
 	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindMongoDB ||
 		statefulSet.Labels[api.LabelDatabaseName] != mongodb.Name {
-		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, mongodb.Namespace, mongodb.OffshootName())
+		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, mongodb.Namespace, stsName)
 	}
 
 	return nil
 }
 
-func (c *Controller) createStatefulSet(mongodb *api.MongoDB) (*apps.StatefulSet, kutil.VerbType, error) {
-	statefulSetMeta := metav1.ObjectMeta{
-		Name:      mongodb.OffshootName(),
-		Namespace: mongodb.Namespace,
-	}
-
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb)
-	if rerr != nil {
-		return nil, kutil.VerbUnchanged, rerr
-	}
-
-	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return nil, kutil.VerbUnchanged, err
-	}
-
-	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
-		in.Labels = mongodb.OffshootLabels()
-		in.Annotations = mongodb.Spec.PodTemplate.Controller.Annotations
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
-
-		in.Spec.Replicas = mongodb.Spec.Replicas
-		in.Spec.ServiceName = c.GoverningService
-		in.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: mongodb.OffshootSelectors(),
-		}
-		in.Spec.Template.Labels = mongodb.OffshootSelectors()
-		in.Spec.Template.Annotations = mongodb.Spec.PodTemplate.Annotations
-		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, mongodb.Spec.PodTemplate.Spec.InitContainers)
-		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
-			in.Spec.Template.Spec.Containers,
-			core.Container{
-				Name:            api.ResourceSingularMongoDB,
-				Image:           mongodbVersion.Spec.DB.Image,
-				ImagePullPolicy: core.PullIfNotPresent,
-				Args: meta_util.UpsertArgumentList([]string{
-					"--dbpath=" + dataDirectoryPath,
-					"--auth",
-					"--bind_ip=0.0.0.0",
-					"--port=" + strconv.Itoa(MongoDBPort),
-				}, mongodb.Spec.PodTemplate.Spec.Args),
-				Ports: []core.ContainerPort{
-					{
-						Name:          "db",
-						ContainerPort: MongoDBPort,
-						Protocol:      core.ProtocolTCP,
-					},
-				},
-				Resources: mongodb.Spec.PodTemplate.Spec.Resources,
-				Lifecycle: mongodb.Spec.PodTemplate.Spec.Lifecycle,
-			})
-
-		in = c.upsertInstallInitContainer(in, mongodb, mongodbVersion)
-		if mongodb.Spec.ReplicaSet != nil {
-			in = c.upsertRSInitContainer(in, mongodb, mongodbVersion)
-			in = upsertRSArgs(in, mongodb)
-
-		}
-
-		if mongodb.GetMonitoringVendor() == mona.VendorPrometheus {
-			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
-				Name: "exporter",
-				Args: append([]string{
-					fmt.Sprintf("--web.listen-address=:%d", mongodb.Spec.Monitor.Prometheus.Port),
-					fmt.Sprintf("--web.metrics-path=%v", mongodb.StatsService().Path()),
-					"--mongodb.uri=mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@127.0.0.1:27017",
-				}, mongodb.Spec.Monitor.Args...),
-				Image: mongodbVersion.Spec.Exporter.Image,
-				Ports: []core.ContainerPort{
-					{
-						Name:          api.PrometheusExporterPortName,
-						Protocol:      core.ProtocolTCP,
-						ContainerPort: mongodb.Spec.Monitor.Prometheus.Port,
-					},
-				},
-				Env:             mongodb.Spec.Monitor.Env,
-				Resources:       mongodb.Spec.Monitor.Resources,
-				SecurityContext: mongodb.Spec.Monitor.SecurityContext,
-			})
-		}
-		// Set Admin Secret as MONGO_INITDB_ROOT_PASSWORD env variable
-		in = upsertEnv(in, mongodb)
-		in = upsertUserEnv(in, mongodb)
-		in = upsertDataVolume(in, mongodb)
-		in = addContainerProbe(in, mongodb)
-
-		if mongodb.Spec.ConfigSource != nil {
-			in = c.upsertConfigSourceVolume(in, mongodb)
-		}
-
-		if mongodb.Spec.Init != nil && mongodb.Spec.Init.ScriptSource != nil {
-			in = upsertInitScript(in, mongodb.Spec.Init.ScriptSource.VolumeSource)
-		}
-
-		in.Spec.Template.Spec.NodeSelector = mongodb.Spec.PodTemplate.Spec.NodeSelector
-		in.Spec.Template.Spec.Affinity = mongodb.Spec.PodTemplate.Spec.Affinity
-		if mongodb.Spec.PodTemplate.Spec.SchedulerName != "" {
-			in.Spec.Template.Spec.SchedulerName = mongodb.Spec.PodTemplate.Spec.SchedulerName
-		}
-		in.Spec.Template.Spec.Tolerations = mongodb.Spec.PodTemplate.Spec.Tolerations
-		in.Spec.Template.Spec.ImagePullSecrets = mongodb.Spec.PodTemplate.Spec.ImagePullSecrets
-		in.Spec.Template.Spec.PriorityClassName = mongodb.Spec.PodTemplate.Spec.PriorityClassName
-		in.Spec.Template.Spec.Priority = mongodb.Spec.PodTemplate.Spec.Priority
-		in.Spec.Template.Spec.SecurityContext = mongodb.Spec.PodTemplate.Spec.SecurityContext
-
-		if c.EnableRBAC {
-			in.Spec.Template.Spec.ServiceAccountName = mongodb.OffshootName()
-		}
-
-		in.Spec.UpdateStrategy = mongodb.Spec.UpdateStrategy
-		return in
-	})
-}
-
-func addContainerProbe(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB {
-			readinessProbe := mongodb.Spec.PodTemplate.Spec.ReadinessProbe
-			if readinessProbe != nil && structs.IsZero(*readinessProbe) {
-				readinessProbe = nil
-			}
-			livenessProbe := mongodb.Spec.PodTemplate.Spec.LivenessProbe
-			if livenessProbe != nil && structs.IsZero(*livenessProbe) {
-				livenessProbe = nil
-			}
-			statefulSet.Spec.Template.Spec.Containers[i].LivenessProbe = livenessProbe
-			statefulSet.Spec.Template.Spec.Containers[i].ReadinessProbe = readinessProbe
-		}
-	}
-	return statefulSet
-}
-
 // Init container for both ReplicaSet and Standalone instances
-func (c *Controller) upsertInstallInitContainer(statefulSet *apps.StatefulSet, mongodb *api.MongoDB, mongodbVersion *catalog.MongoDBVersion) *apps.StatefulSet {
+func installInitContainer(
+	mongodb *api.MongoDB,
+	mongodbVersion *v1alpha1.MongoDBVersion,
+	podTemplate *ofst.PodTemplateSpec,
+) (core.Container, core.Volume) {
+	// Take value of podTemplate
+	var pt ofst.PodTemplateSpec
+	if podTemplate != nil {
+		pt = *podTemplate
+	}
+
 	installContainer := core.Container{
 		Name:            InitInstallContainerName,
 		Image:           mongodbVersion.Spec.InitContainer.Image,
@@ -243,25 +513,20 @@ func (c *Controller) upsertInstallInitContainer(statefulSet *apps.StatefulSet, m
 		},
 		VolumeMounts: []core.VolumeMount{
 			{
-				Name:      workDirectoryName,
-				MountPath: workDirectoryPath,
-			},
-			{
 				Name:      configDirectoryName,
 				MountPath: configDirectoryPath,
 			},
 		},
-		Resources: mongodb.Spec.PodTemplate.Spec.Resources,
+		Resources: pt.Spec.Resources,
 	}
-	if mongodb.Spec.ReplicaSet != nil {
-		installContainer.VolumeMounts = core_util.UpsertVolumeMount(installContainer.VolumeMounts, core.VolumeMount{
-			Name:      initialKeyDirectoryName,
-			MountPath: initialKeyDirectoryPath,
-		})
+	if mongodb.Spec.ReplicaSet != nil || mongodb.Spec.ShardTopology != nil {
+		installContainer.VolumeMounts = core_util.UpsertVolumeMount(
+			installContainer.VolumeMounts,
+			core.VolumeMount{
+				Name:      initialKeyDirectoryName,
+				MountPath: initialKeyDirectoryPath,
+			})
 	}
-
-	initContainers := statefulSet.Spec.Template.Spec.InitContainers
-	statefulSet.Spec.Template.Spec.InitContainers = core_util.UpsertContainer(initContainers, installContainer)
 
 	initVolumes := core.Volume{
 		Name: workDirectoryName,
@@ -269,12 +534,15 @@ func (c *Controller) upsertInstallInitContainer(statefulSet *apps.StatefulSet, m
 			EmptyDir: &core.EmptyDirVolumeSource{},
 		},
 	}
-	statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(statefulSet.Spec.Template.Spec.Volumes, initVolumes)
 
-	return statefulSet
+	return installContainer, initVolumes
 }
 
-func upsertDataVolume(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
+func upsertDataVolume(
+	statefulSet *apps.StatefulSet,
+	pvcSpec *core.PersistentVolumeClaimSpec,
+	storageType api.StorageType,
+) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMongoDB {
 			volumeMount := []core.VolumeMount{
@@ -299,10 +567,12 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps
 					EmptyDir: &core.EmptyDirVolumeSource{},
 				},
 			}
-			statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(statefulSet.Spec.Template.Spec.Volumes, volumes)
+			statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+				statefulSet.Spec.Template.Spec.Volumes,
+				volumes,
+			)
 
-			pvcSpec := mongodb.Spec.Storage
-			if mongodb.Spec.StorageType == api.StorageTypeEphemeral {
+			if storageType == api.StorageTypeEphemeral {
 				ed := core.EmptyDirVolumeSource{}
 				if pvcSpec != nil {
 					if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
@@ -336,7 +606,10 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps
 						"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
 					}
 				}
-				statefulSet.Spec.VolumeClaimTemplates = core_util.UpsertVolumeClaim(statefulSet.Spec.VolumeClaimTemplates, claim)
+				statefulSet.Spec.VolumeClaimTemplates = core_util.UpsertVolumeClaim(
+					statefulSet.Spec.VolumeClaimTemplates,
+					claim,
+				)
 			}
 			break
 		}
@@ -344,7 +617,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps
 	return statefulSet
 }
 
-func upsertEnv(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
+func upsertEnv(template core.PodTemplateSpec, mongodb *api.MongoDB) core.PodTemplateSpec {
 	envList := []core.EnvVar{
 		{
 			Name: "MONGO_INITDB_ROOT_USERNAME",
@@ -369,67 +642,12 @@ func upsertEnv(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.Statef
 			},
 		},
 	}
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+	for i, container := range template.Spec.Containers {
 		if container.Name == api.ResourceSingularMongoDB || container.Name == "exporter" {
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
+			template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
 		}
 	}
-	return statefulSet
-}
-
-// upsertUserEnv add/overwrite env from user provided env in crd spec
-func upsertUserEnv(statefulSet *apps.StatefulSet, mongodb *api.MongoDB) *apps.StatefulSet {
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB {
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, mongodb.Spec.PodTemplate.Spec.Env...)
-			break
-		}
-	}
-	for i, container := range statefulSet.Spec.Template.Spec.InitContainers {
-		if container.Name == InitBootstrapContainerName {
-			statefulSet.Spec.Template.Spec.InitContainers[i].Env = core_util.UpsertEnvVars(container.Env, mongodb.Spec.PodTemplate.Spec.Env...)
-			break
-		}
-	}
-	return statefulSet
-}
-
-func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *apps.StatefulSet {
-	volume := core.Volume{
-		Name:         "initial-script",
-		VolumeSource: script,
-	}
-
-	volumeMount := core.VolumeMount{
-		Name:      "initial-script",
-		MountPath: "/docker-entrypoint-initdb.d",
-	}
-
-	statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
-		statefulSet.Spec.Template.Spec.Volumes,
-		volume,
-	)
-
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB {
-			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.UpsertVolumeMount(
-				container.VolumeMounts,
-				volumeMount,
-			)
-			break
-		}
-	}
-
-	for i, container := range statefulSet.Spec.Template.Spec.InitContainers {
-		if container.Name == InitBootstrapContainerName {
-			statefulSet.Spec.Template.Spec.InitContainers[i].VolumeMounts = core_util.UpsertVolumeMount(
-				container.VolumeMounts,
-				volumeMount,
-			)
-			break
-		}
-	}
-	return statefulSet
+	return template
 }
 
 func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) error {
