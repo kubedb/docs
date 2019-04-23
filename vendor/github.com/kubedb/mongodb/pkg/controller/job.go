@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"strings"
 
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	batch "k8s.io/api/batch/v1"
@@ -10,10 +11,12 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/analytics"
 	storage "kmodules.xyz/objectstore-api/osm"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 const (
-	snapshotDumpDir = "/var/data"
+	snapshotDumpDir  = "/var/data"
+	restoreConfigArg = "--skip-config"
 )
 
 func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapshot) (*batch.Job, error) {
@@ -38,7 +41,7 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 	// Get PersistentVolume object for Backup Util pod.
 	pvcSpec := snapshot.Spec.PodVolumeClaimSpec
 	if pvcSpec == nil {
-		pvcSpec = mongodb.Spec.Storage
+		pvcSpec = snapshotStorageSize(mongodb)
 	}
 	st := snapshot.Spec.StorageType
 	if st == nil {
@@ -53,6 +56,14 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 	folderName, err := snapshot.Location()
 	if err != nil {
 		return nil, err
+	}
+
+	// Take podTemplate from either Shard or spec.PodTemplate
+	var dbPodTemplate ofst.PodTemplateSpec
+	if mongodb.Spec.ShardTopology != nil {
+		dbPodTemplate = mongodb.Spec.ShardTopology.Shard.PodTemplate
+	} else if mongodb.Spec.PodTemplate != nil {
+		dbPodTemplate = *mongodb.Spec.PodTemplate
 	}
 
 	job := &batch.Job{
@@ -87,8 +98,7 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 								fmt.Sprintf(`--folder=%s`, folderName),
 								fmt.Sprintf(`--snapshot=%s`, snapshot.Name),
 								fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
-								"--",
-							}, mongodb.Spec.Init.SnapshotSource.Args...),
+							}, getRestoreConfigArg(mongodb)...),
 							Env: []core.EnvVar{
 								{
 									Name:  analytics.Key,
@@ -158,7 +168,7 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 					SecurityContext:   snapshot.Spec.PodTemplate.Spec.SecurityContext,
 					ImagePullSecrets: core_util.MergeLocalObjectReferences(
 						snapshot.Spec.PodTemplate.Spec.ImagePullSecrets,
-						mongodb.Spec.PodTemplate.Spec.ImagePullSecrets,
+						dbPodTemplate.Spec.ImagePullSecrets,
 					),
 				},
 			},
@@ -211,7 +221,7 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 	// Get PersistentVolume object for Backup Util pod.
 	pvcSpec := snapshot.Spec.PodVolumeClaimSpec
 	if pvcSpec == nil {
-		pvcSpec = mongodb.Spec.Storage
+		pvcSpec = snapshotStorageSize(mongodb)
 	}
 	st := snapshot.Spec.StorageType
 	if st == nil {
@@ -226,6 +236,14 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 	folderName, err := snapshot.Location()
 	if err != nil {
 		return nil, err
+	}
+
+	// Take podTemplate from either Shard or spec.PodTemplate
+	var dbPodTemplate ofst.PodTemplateSpec
+	if mongodb.Spec.ShardTopology != nil {
+		dbPodTemplate = mongodb.Spec.ShardTopology.Shard.PodTemplate
+	} else if mongodb.Spec.PodTemplate != nil {
+		dbPodTemplate = *mongodb.Spec.PodTemplate
 	}
 
 	job := &batch.Job{
@@ -331,7 +349,7 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 					SecurityContext:   snapshot.Spec.PodTemplate.Spec.SecurityContext,
 					ImagePullSecrets: core_util.MergeLocalObjectReferences(
 						snapshot.Spec.PodTemplate.Spec.ImagePullSecrets,
-						mongodb.Spec.PodTemplate.Spec.ImagePullSecrets,
+						dbPodTemplate.Spec.ImagePullSecrets,
 					),
 				},
 			},
@@ -354,4 +372,31 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 	}
 
 	return job, nil
+}
+
+func snapshotStorageSize(db *api.MongoDB) *core.PersistentVolumeClaimSpec {
+	topology := db.Spec.ShardTopology
+	if topology != nil {
+		stg := topology.Shard.Storage
+		stgSizePtr := stg.Resources.Requests[core.ResourceStorage]
+		for i := int32(0); i < topology.Shard.Shards; i++ {
+			stgSizePtr.Add(stg.Resources.Requests[core.ResourceStorage])
+		}
+		stg.Resources.Requests[core.ResourceStorage] = stgSizePtr
+		return stg
+	}
+	return db.Spec.Storage
+}
+
+func getRestoreConfigArg(db *api.MongoDB) []string {
+	args := append([]string{"--"}, db.Spec.Init.SnapshotSource.Args...)
+	for in, val := range args {
+		if strings.HasPrefix(val, string(restoreConfigArg)) {
+			// Move '--skip-config=*' to the beginning (before of '--') of argument list
+			args = append(args[:in], args[in+1:]...)
+			args = append([]string{val}, args...)
+			break
+		}
+	}
+	return args
 }

@@ -36,9 +36,9 @@ func (a *ElasticsearchMutator) Resource() (plural schema.GroupVersionResource, s
 	return schema.GroupVersionResource{
 			Group:    "mutators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "elasticsearches",
+			Resource: "elasticsearchmutators",
 		},
-		"elasticsearch"
+		"elasticsearchmutator"
 }
 
 func (a *ElasticsearchMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

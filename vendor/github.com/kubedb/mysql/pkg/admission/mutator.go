@@ -36,9 +36,9 @@ func (a *MySQLMutator) Resource() (plural schema.GroupVersionResource, singular 
 	return schema.GroupVersionResource{
 			Group:    "mutators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "mysqls",
+			Resource: "mysqlmutators",
 		},
-		"mysql"
+		"mysqlmutator"
 }
 
 func (a *MySQLMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

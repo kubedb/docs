@@ -34,9 +34,9 @@ func (a *RedisMutator) Resource() (plural schema.GroupVersionResource, singular 
 	return schema.GroupVersionResource{
 			Group:    "mutators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "redises",
+			Resource: "redismutators",
 		},
-		"redis"
+		"redismutator"
 }
 
 func (a *RedisMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

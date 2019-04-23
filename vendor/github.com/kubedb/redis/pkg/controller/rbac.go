@@ -40,7 +40,7 @@ func (c *Controller) ensureRole(db *api.Redis, name string, pspName string) erro
 		return rerr
 	}
 
-	// Create new Role for ElasticSearch and it's Snapshot
+	// Create new Role for Redis and it's Snapshot
 	_, _, err := rbac_util.CreateOrPatchRole(
 		c.Client,
 		metav1.ObjectMeta{
@@ -50,13 +50,15 @@ func (c *Controller) ensureRole(db *api.Redis, name string, pspName string) erro
 		func(in *rbac.Role) *rbac.Role {
 			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 			in.Labels = db.OffshootLabels()
-			in.Rules = []rbac.PolicyRule{
-				{
+			in.Rules = []rbac.PolicyRule{}
+			if pspName != "" {
+				pspRule := rbac.PolicyRule{
 					APIGroups:     []string{policy_v1beta1.GroupName},
 					Resources:     []string{"podsecuritypolicies"},
 					Verbs:         []string{"use"},
 					ResourceNames: []string{pspName},
-				},
+				}
+				in.Rules = append(in.Rules, pspRule)
 			}
 			return in
 		},

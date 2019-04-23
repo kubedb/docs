@@ -81,12 +81,17 @@ func (c *Controller) createService(mongodb *api.MongoDB) (kutil.VerbType, error)
 		return kutil.VerbUnchanged, rerr
 	}
 
+	selector := mongodb.OffshootSelectors()
+	if mongodb.Spec.ShardTopology != nil {
+		selector = mongodb.MongosSelectors()
+	}
+
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 		in.Labels = mongodb.OffshootLabels()
 		in.Annotations = mongodb.Spec.ServiceTemplate.Annotations
 
-		in.Spec.Selector = mongodb.OffshootSelectors()
+		in.Spec.Selector = selector
 		in.Spec.Ports = ofst.MergeServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
 			mongodb.Spec.ServiceTemplate.Spec.Ports,
@@ -160,41 +165,82 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 	return vt, nil
 }
 
-func (c *Controller) createMongoDBGoverningService(mongodb *api.MongoDB) (string, error) {
+func (c *Controller) ensureMongoGvrSvc(mongodb *api.MongoDB) error {
 	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb)
 	if rerr != nil {
-		return "", rerr
+		return rerr
 	}
 
-	service := &core.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      mongodb.GoverningServiceName(),
+	svcFunc := func(svcName string, labels, selectors map[string]string) error {
+
+		// Check if service name exists with different db kind
+		if err := c.checkService(mongodb, svcName); err != nil {
+			return err
+		}
+
+		meta := metav1.ObjectMeta{
+			Name:      svcName,
 			Namespace: mongodb.Namespace,
-			Labels:    mongodb.OffshootLabels(),
+		}
+
+		_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			in.Labels = labels
 			// 'tolerate-unready-endpoints' annotation is deprecated.
-			// ref: https://github.com/kubernetes/kubernetes/pull/63742
-			Annotations: map[string]string{
+			// Use: spec.PublishNotReadyAddresses
+			// ref: https://github.com/kubernetes/kubernetes/pull/63742.
+			// TODO: delete this annotation
+			in.Annotations = map[string]string{
 				"service.alpha.kubernetes.io/tolerate-unready-endpoints": "true",
-			},
-		},
-		Spec: core.ServiceSpec{
-			Type:                     core.ServiceTypeClusterIP,
-			ClusterIP:                core.ClusterIPNone,
-			PublishNotReadyAddresses: true,
-			Ports: []core.ServicePort{
+			}
+			in.Spec.Selector = selectors
+			in.Spec.Type = core.ServiceTypeClusterIP
+			in.Spec.ClusterIP = core.ClusterIPNone
+			in.Spec.PublishNotReadyAddresses = true
+			in.Spec.Ports = []core.ServicePort{
 				{
 					Name: "db",
 					Port: MongoDBPort,
 				},
-			},
-			Selector: mongodb.OffshootSelectors(),
-		},
-	}
-	core_util.EnsureOwnerReference(&service.ObjectMeta, ref)
+			}
+			return in
+		})
 
-	_, err := c.Client.CoreV1().Services(mongodb.Namespace).Create(service)
-	if err != nil && !kerr.IsAlreadyExists(err) {
-		return "", err
+		if err == nil {
+			c.recorder.Eventf(
+				ref,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully %s stats service",
+				vt,
+			)
+		}
+		return err
 	}
-	return service.Name, nil
+
+	if mongodb.Spec.ShardTopology != nil {
+		topology := mongodb.Spec.ShardTopology
+		// create shard governing service
+		for i := int32(0); i < topology.Shard.Shards; i++ {
+			if err := svcFunc(mongodb.GvrSvcName(
+				mongodb.ShardNodeName(i)),
+				mongodb.ShardLabels(i),
+				mongodb.ShardSelectors(i),
+			); err != nil {
+				return err
+			}
+		}
+		// create configsvr governing service
+		return svcFunc(mongodb.GvrSvcName(
+			mongodb.ConfigSvrNodeName()),
+			mongodb.ConfigSvrLabels(),
+			mongodb.ConfigSvrSelectors(),
+		)
+	}
+	// create mongodb governing service
+	return svcFunc(mongodb.GvrSvcName(
+		mongodb.OffshootName()),
+		mongodb.OffshootLabels(),
+		mongodb.OffshootSelectors(),
+	)
 }

@@ -47,9 +47,9 @@ func (a *ElasticsearchValidator) Resource() (plural schema.GroupVersionResource,
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "elasticsearches",
+			Resource: "elasticsearchvalidators",
 		},
-		"elasticsearch"
+		"elasticsearchvalidator"
 }
 
 func (a *ElasticsearchValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

@@ -34,9 +34,9 @@ func (a *MemcachedMutator) Resource() (plural schema.GroupVersionResource, singu
 	return schema.GroupVersionResource{
 			Group:    "mutators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "memcacheds",
+			Resource: "memcachedmutators",
 		},
-		"memcached"
+		"memcachedmutator"
 }
 
 func (a *MemcachedMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

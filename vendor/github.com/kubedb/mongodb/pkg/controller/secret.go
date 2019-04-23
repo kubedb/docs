@@ -43,9 +43,9 @@ func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 		return err
 	}
 
-	// keyfile secret for mongodb replication
-	if mongodb.Spec.ReplicaSet != nil &&
-		mongodb.Spec.ReplicaSet.KeyFile == nil {
+	// Certificate Secret for mongodb replication
+	if (mongodb.Spec.ReplicaSet != nil || mongodb.Spec.ShardTopology != nil) &&
+		mongodb.Spec.CertificateSecret == nil {
 
 		secretVolumeSource, err := c.createKeyFileSecret(mongodb)
 		if err != nil {
@@ -53,13 +53,13 @@ func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 		}
 
 		ms, _, err := util.PatchMongoDB(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
-			in.Spec.ReplicaSet.KeyFile = secretVolumeSource
+			in.Spec.CertificateSecret = secretVolumeSource
 			return in
 		})
 		if err != nil {
 			return err
 		}
-		mongodb.Spec.ReplicaSet.KeyFile = ms.Spec.ReplicaSet.KeyFile
+		mongodb.Spec.CertificateSecret = ms.Spec.CertificateSecret
 	}
 
 	return nil

@@ -36,9 +36,9 @@ func (a *EtcdMutator) Resource() (plural schema.GroupVersionResource, singular s
 	return schema.GroupVersionResource{
 			Group:    "mutators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "etcds",
+			Resource: "etcdmutators",
 		},
-		"etcd"
+		"etcdmutator"
 }
 
 func (a *EtcdMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

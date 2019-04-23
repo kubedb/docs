@@ -35,9 +35,9 @@ func (a *EtcdValidator) Resource() (plural schema.GroupVersionResource, singular
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "etcds",
+			Resource: "etcdvalidators",
 		},
-		"etcd"
+		"etcdvalidator"
 }
 
 func (a *EtcdValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

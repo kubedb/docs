@@ -40,9 +40,9 @@ func (a *MongoDBValidator) Resource() (plural schema.GroupVersionResource, singu
 	return schema.GroupVersionResource{
 			Group:    "validators.kubedb.com",
 			Version:  "v1alpha1",
-			Resource: "mongodbs",
+			Resource: "mongodbvalidators",
 		},
-		"mongodb"
+		"mongodbvalidator"
 }
 
 func (a *MongoDBValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
@@ -110,12 +110,11 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 			}
 
 			// Allow changing Database ReplicaSet Keyfile only if there was no secret have set up yet.
-			if mongodb.Spec.ReplicaSet != nil &&
-				oldMongoDB.Spec.ReplicaSet.KeyFile == nil {
-				oldMongoDB.Spec.ReplicaSet.KeyFile = mongodb.Spec.ReplicaSet.KeyFile
+			if oldMongoDB.Spec.CertificateSecret == nil {
+				oldMongoDB.Spec.CertificateSecret = mongodb.Spec.CertificateSecret
 			}
 
-			if err := validateUpdate(mongodb, oldMongoDB, req.Kind.Kind); err != nil {
+			if err := validateUpdate(mongodb, oldMongoDB); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
 		}
@@ -138,16 +137,61 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 		return err
 	}
 
-	if mongodb.Spec.Replicas == nil || *mongodb.Spec.Replicas < 1 {
-		return fmt.Errorf(`spec.replicas "%v" invalid. Must be greater than zero`, mongodb.Spec.Replicas)
-	}
+	top := mongodb.Spec.ShardTopology
+	if top != nil {
+		if mongodb.Spec.Replicas != nil {
+			return fmt.Errorf(`doesn't support 'spec.replicas' when spec.shardTopology is set`)
+		}
+		if mongodb.Spec.PodTemplate != nil {
+			return fmt.Errorf(`doesn't support 'spec.podTemplate' when spec.shardTopology is set`)
+		}
+		if mongodb.Spec.ConfigSource != nil {
+			return fmt.Errorf(`doesn't support 'spec.configSource' when spec.shardTopology is set`)
+		}
 
-	if mongodb.Spec.Replicas == nil || (mongodb.Spec.ReplicaSet == nil && *mongodb.Spec.Replicas != 1) {
-		return fmt.Errorf(`spec.replicas "%v" invalid for 'MongoDB Standalone' instance. Value must be one`, mongodb.Spec.Replicas)
-	}
+		// Validate Topology Replicas values
+		if top.Shard.Shards < 1 {
+			return fmt.Errorf(`spec.shardTopology.shard.shards %v invalid. Must be greater than zero when spec.shardTopology is set`, top.Shard.Shards)
+		}
+		if top.Shard.Replicas < 1 {
+			return fmt.Errorf(`spec.shardTopology.shard.replicas %v invalid. Must be greater than zero when spec.shardTopology is set`, top.Shard.Replicas)
+		}
+		if top.ConfigServer.Replicas < 1 {
+			return fmt.Errorf(`spec.shardTopology.configServer.replicas %v invalid. Must be greater than zero when spec.shardTopology is set`, top.ConfigServer.Replicas)
+		}
+		if top.Mongos.Replicas < 1 {
+			return fmt.Errorf(`spec.shardTopology.mongos.replicas %v invalid. Must be greater than zero when spec.shardTopology is set`, top.Mongos.Replicas)
+		}
 
-	if err := amv.ValidateEnvVar(mongodb.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
-		return err
+		// Validate Mongos deployment strategy
+		if top.Mongos.Strategy.Type == "" {
+			return fmt.Errorf(`spec.shardTopology.mongos.strategy.type is missing`)
+		}
+
+		// Validate Envs
+		if err := amv.ValidateEnvVar(top.Shard.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
+			return err
+		}
+		if err := amv.ValidateEnvVar(top.ConfigServer.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
+			return err
+		}
+		if err := amv.ValidateEnvVar(top.Mongos.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
+			return err
+		}
+	} else {
+		if mongodb.Spec.Replicas == nil || *mongodb.Spec.Replicas < 1 {
+			return fmt.Errorf(`spec.replicas "%v" invalid. Must be greater than zero in non-shardTopology`, mongodb.Spec.Replicas)
+		}
+
+		if mongodb.Spec.Replicas == nil || (mongodb.Spec.ReplicaSet == nil && *mongodb.Spec.Replicas != 1) {
+			return fmt.Errorf(`spec.replicas "%v" invalid for 'MongoDB Standalone' instance. Value must be one`, mongodb.Spec.Replicas)
+		}
+
+		if mongodb.Spec.PodTemplate != nil {
+			if err := amv.ValidateEnvVar(mongodb.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
+				return err
+			}
+		}
 	}
 
 	if mongodb.Spec.StorageType == "" {
@@ -156,14 +200,34 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 	if mongodb.Spec.StorageType != api.StorageTypeDurable && mongodb.Spec.StorageType != api.StorageTypeEphemeral {
 		return fmt.Errorf(`'spec.storageType' %s is invalid`, mongodb.Spec.StorageType)
 	}
-	if err := amv.ValidateStorage(client, mongodb.Spec.StorageType, mongodb.Spec.Storage); err != nil {
-		return err
+	// Validate storage for topology or non-topology
+	if top != nil {
+		if mongodb.Spec.Storage != nil {
+			return fmt.Errorf("doesn't support 'spec.storage' when spec.shardTopology is set")
+		}
+		if err := amv.ValidateStorage(client, mongodb.Spec.StorageType, top.Shard.Storage, "spec.shardTopology.shard.storage"); err != nil {
+			return err
+		}
+		if err := amv.ValidateStorage(client, mongodb.Spec.StorageType, top.ConfigServer.Storage, "spec.shardTopology.configServer.storage"); err != nil {
+			return err
+		}
+	} else {
+		if err := amv.ValidateStorage(client, mongodb.Spec.StorageType, mongodb.Spec.Storage); err != nil {
+			return err
+		}
 	}
 
 	if strictValidation {
 		databaseSecret := mongodb.Spec.DatabaseSecret
 		if databaseSecret != nil {
 			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+				return err
+			}
+		}
+
+		certSecret := mongodb.Spec.CertificateSecret
+		if certSecret != nil {
+			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(certSecret.SecretName, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
@@ -244,6 +308,11 @@ func matchWithDormantDatabase(extClient cs.Interface, mongodb *api.MongoDB) erro
 	// Skip Checking BackUP Scheduler
 	drmnOriginSpec.BackupSchedule = originalSpec.BackupSchedule
 
+	if drmnOriginSpec.ShardTopology != nil && originalSpec.ShardTopology != nil {
+		// Skip checking Mongos deployment strategy
+		drmnOriginSpec.ShardTopology.Mongos.Strategy = originalSpec.ShardTopology.Mongos.Strategy
+	}
+
 	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
 		diff := meta_util.Diff(drmnOriginSpec, &originalSpec)
 		log.Errorf("mongodb spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff)
@@ -253,12 +322,12 @@ func matchWithDormantDatabase(extClient cs.Interface, mongodb *api.MongoDB) erro
 	return nil
 }
 
-func validateUpdate(obj, oldObj runtime.Object, kind string) error {
+func validateUpdate(obj, oldObj runtime.Object) error {
 	preconditions := getPreconditionFunc()
 	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
-			return fmt.Errorf("%v.%v", err, preconditionFailedError(kind))
+			return fmt.Errorf("%v.%v", err, preconditionFailedError())
 		}
 		return err
 	}
@@ -285,12 +354,14 @@ var preconditionSpecFields = []string{
 	"spec.storageType",
 	"spec.storage",
 	"spec.databaseSecret",
+	"spec.certificateSecret",
 	"spec.init",
-	"spec.ReplicaSet",
-	"spec.podTemplate.spec.nodeSelector",
+	"spec.replicaSet.name",
+	"spec.shardTopology.*.storage",
+	"spec.shardTopology.*.prefix",
 }
 
-func preconditionFailedError(kind string) error {
+func preconditionFailedError() error {
 	str := preconditionSpecFields
 	strList := strings.Join(str, "\n\t")
 	return fmt.Errorf(strings.Join([]string{`At least one of the following was changed:
