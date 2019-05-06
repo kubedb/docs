@@ -10,12 +10,12 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // ClusterHealthService allows to get a very simple status on the health of the cluster.
 //
-// See http://www.elastic.co/guide/en/elasticsearch/reference/5.2/cluster-health.html
+// See http://www.elastic.co/guide/en/elasticsearch/reference/7.0/cluster-health.html
 // for details.
 type ClusterHealthService struct {
 	client                    *Client

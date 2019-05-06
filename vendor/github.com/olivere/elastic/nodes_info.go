@@ -11,12 +11,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // NodesInfoService allows to retrieve one or more or all of the
 // cluster nodes information.
-// It is documented at https://www.elastic.co/guide/en/elasticsearch/reference/6.7/cluster-nodes-info.html.
+// It is documented at https://www.elastic.co/guide/en/elasticsearch/reference/7.0/cluster-nodes-info.html.
 type NodesInfoService struct {
 	client       *Client
 	pretty       bool

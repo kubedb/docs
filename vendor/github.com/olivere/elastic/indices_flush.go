@@ -10,14 +10,14 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // Flush allows to flush one or more indices. The flush process of an index
 // basically frees memory from the index by flushing data to the index
 // storage and clearing the internal transaction log.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-flush.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/indices-flush.html
 // for details.
 type IndicesFlushService struct {
 	client            *Client

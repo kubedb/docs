@@ -11,11 +11,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // XPackWatcherAckWatchService enables you to manually throttle execution of the watch’s actions.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/watcher-api-ack-watch.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/watcher-api-ack-watch.html.
 type XPackWatcherAckWatchService struct {
 	client        *Client
 	pretty        bool
@@ -64,12 +64,12 @@ func (s *XPackWatcherAckWatchService) buildURL() (string, url.Values, error) {
 		err  error
 	)
 	if len(s.actionId) > 0 {
-		path, err = uritemplates.Expand("/_xpack/watcher/watch/{watch_id}/_ack/{action_id}", map[string]string{
+		path, err = uritemplates.Expand("/_watcher/watch/{watch_id}/_ack/{action_id}", map[string]string{
 			"watch_id":  s.watchId,
 			"action_id": strings.Join(s.actionId, ","),
 		})
 	} else {
-		path, err = uritemplates.Expand("/_xpack/watcher/watch/{watch_id}/_ack", map[string]string{
+		path, err = uritemplates.Expand("/_watcher/watch/{watch_id}/_ack", map[string]string{
 			"watch_id": s.watchId,
 		})
 	}

@@ -10,12 +10,12 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // ValidateService allows a user to validate a potentially
 // expensive query without executing it.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/search-validate.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/search-validate.html.
 type ValidateService struct {
 	client            *Client
 	pretty            bool
@@ -50,7 +50,10 @@ func (s *ValidateService) Index(index ...string) *ValidateService {
 	return s
 }
 
-// Types adds search restrictions for a list of types.
+// Type adds search restrictions for a list of types.
+//
+// Deprecated: Types are in the process of being removed. Instead of using a type, prefer to
+// filter on a field on the document.
 func (s *ValidateService) Type(typ ...string) *ValidateService {
 	s.typ = append(s.typ, typ...)
 	return s

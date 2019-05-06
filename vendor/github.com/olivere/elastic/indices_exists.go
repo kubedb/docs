@@ -11,12 +11,12 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // IndicesExistsService checks if an index or indices exist or not.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-exists.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/indices-exists.html
 // for details.
 type IndicesExistsService struct {
 	client            *Client

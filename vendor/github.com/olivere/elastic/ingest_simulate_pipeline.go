@@ -10,14 +10,14 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // IngestSimulatePipelineService executes a specific pipeline against the set of
 // documents provided in the body of the request.
 //
 // The API is documented at
-// https://www.elastic.co/guide/en/elasticsearch/reference/6.7/simulate-pipeline-api.html.
+// https://www.elastic.co/guide/en/elasticsearch/reference/7.0/simulate-pipeline-api.html.
 type IngestSimulatePipelineService struct {
 	client     *Client
 	pretty     bool

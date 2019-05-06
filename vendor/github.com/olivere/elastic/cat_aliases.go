@@ -10,13 +10,13 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // CatAliasesService shows information about currently configured aliases
 // to indices including filter and routing infos.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/cat-aliases.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/cat-aliases.html
 // for details.
 type CatAliasesService struct {
 	client        *Client

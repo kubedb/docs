@@ -10,13 +10,13 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // CatCountService provides quick access to the document count of the entire cluster,
 // or individual indices.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/cat-count.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/cat-count.html
 // for details.
 type CatCountService struct {
 	client        *Client

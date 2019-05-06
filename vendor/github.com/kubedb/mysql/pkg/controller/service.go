@@ -153,3 +153,42 @@ func (c *Controller) ensureStatsService(mysql *api.MySQL) (kutil.VerbType, error
 	}
 	return vt, nil
 }
+
+func (c *Controller) createMySQLGoverningService(mysql *api.MySQL) (string, error) {
+	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql)
+	if rerr != nil {
+		return "", rerr
+	}
+
+	service := &core.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      mysql.GoverningServiceName(),
+			Namespace: mysql.Namespace,
+			Labels:    mysql.OffshootLabels(),
+			// 'tolerate-unready-endpoints' annotation is deprecated.
+			// ref: https://github.com/kubernetes/kubernetes/pull/63742
+			Annotations: map[string]string{
+				"service.alpha.kubernetes.io/tolerate-unready-endpoints": "true",
+			},
+		},
+		Spec: core.ServiceSpec{
+			Type:                     core.ServiceTypeClusterIP,
+			ClusterIP:                core.ClusterIPNone,
+			PublishNotReadyAddresses: true,
+			Ports: []core.ServicePort{
+				{
+					Name: "db",
+					Port: api.MySQLNodePort,
+				},
+			},
+			Selector: mysql.OffshootSelectors(),
+		},
+	}
+	core_util.EnsureOwnerReference(&service.ObjectMeta, ref)
+
+	_, err := c.Client.CoreV1().Services(mysql.Namespace).Create(service)
+	if err != nil && !kerr.IsAlreadyExists(err) {
+		return "", err
+	}
+	return service.Name, nil
+}

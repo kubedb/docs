@@ -10,12 +10,12 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // AliasesService returns the aliases associated with one or more indices, or the
 // indices associated with one or more aliases, or a combination of those filters.
-// See http://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-aliases.html.
+// See http://www.elastic.co/guide/en/elasticsearch/reference/7.0/indices-aliases.html.
 type AliasesService struct {
 	client *Client
 	index  []string

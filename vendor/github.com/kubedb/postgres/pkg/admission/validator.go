@@ -175,11 +175,8 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	if postgres.Spec.Archiver != nil {
 		archiverStorage := postgres.Spec.Archiver.Storage
 		if archiverStorage != nil {
-			if archiverStorage.S3 == nil && archiverStorage.GCS == nil && archiverStorage.Azure == nil && archiverStorage.Swift == nil {
+			if archiverStorage.S3 == nil && archiverStorage.GCS == nil && archiverStorage.Azure == nil && archiverStorage.Swift == nil && archiverStorage.Local == nil {
 				return errors.New("no storage provider is configured")
-			}
-			if !(archiverStorage.Local == nil) {
-				return errors.New("unsupported storage provider")
 			}
 		}
 	}
@@ -235,11 +232,8 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 
 	if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
 		wal := postgres.Spec.Init.PostgresWAL
-		if wal.S3 == nil && wal.GCS == nil && wal.Azure == nil && wal.Swift == nil {
+		if wal.S3 == nil && wal.GCS == nil && wal.Azure == nil && wal.Swift == nil && wal.Local == nil {
 			return errors.New("no storage provider is configured")
-		}
-		if !(wal.Local == nil) {
-			return errors.New("unsupported storage provider")
 		}
 	}
 

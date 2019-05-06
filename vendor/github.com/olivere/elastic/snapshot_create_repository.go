@@ -10,11 +10,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // SnapshotCreateRepositoryService creates a snapshot repository.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/modules-snapshots.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/modules-snapshots.html
 // for details.
 type SnapshotCreateRepositoryService struct {
 	client        *Client

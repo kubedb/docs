@@ -10,14 +10,14 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // IndicesRolloverService rolls an alias over to a new index when the
 // existing index is considered to be too large or too old.
 //
 // It is documented at
-// https://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-rollover-index.html.
+// https://www.elastic.co/guide/en/elasticsearch/reference/7.0/indices-rollover-index.html.
 type IndicesRolloverService struct {
 	client              *Client
 	pretty              bool

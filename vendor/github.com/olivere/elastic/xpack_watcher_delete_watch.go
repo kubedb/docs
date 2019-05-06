@@ -10,11 +10,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // XPackWatcherDeleteWatchService removes a watch.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/watcher-api-delete-watch.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/watcher-api-delete-watch.html.
 type XPackWatcherDeleteWatchService struct {
 	client        *Client
 	pretty        bool
@@ -50,7 +50,7 @@ func (s *XPackWatcherDeleteWatchService) Pretty(pretty bool) *XPackWatcherDelete
 // buildURL builds the URL for the operation.
 func (s *XPackWatcherDeleteWatchService) buildURL() (string, url.Values, error) {
 	// Build URL
-	path, err := uritemplates.Expand("/_xpack/watcher/watch/{id}", map[string]string{
+	path, err := uritemplates.Expand("/_watcher/watch/{id}", map[string]string{
 		"id": s.id,
 	})
 	if err != nil {

@@ -10,11 +10,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // ClusterStatsService is documented at
-// https://www.elastic.co/guide/en/elasticsearch/reference/6.7/cluster-stats.html.
+// https://www.elastic.co/guide/en/elasticsearch/reference/7.0/cluster-stats.html.
 type ClusterStatsService struct {
 	client       *Client
 	pretty       bool

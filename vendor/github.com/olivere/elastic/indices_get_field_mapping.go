@@ -10,13 +10,13 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // IndicesGetFieldMappingService retrieves the mapping definitions for the fields in an index
 //  or index/type.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-get-field-mapping.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/indices-get-field-mapping.html
 // for details.
 type IndicesGetFieldMappingService struct {
 	client            *Client

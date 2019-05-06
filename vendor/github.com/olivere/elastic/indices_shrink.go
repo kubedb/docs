@@ -10,14 +10,14 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // IndicesShrinkService allows you to shrink an existing index into a
 // new index with fewer primary shards.
 //
 // For further details, see
-// https://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-shrink-index.html.
+// https://www.elastic.co/guide/en/elasticsearch/reference/7.0/indices-shrink-index.html.
 type IndicesShrinkService struct {
 	client              *Client
 	pretty              bool

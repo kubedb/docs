@@ -10,13 +10,13 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // CatIndicesService returns the list of indices plus some additional
 // information about them.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/cat-indices.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/cat-indices.html
 // for details.
 type CatIndicesService struct {
 	client        *Client

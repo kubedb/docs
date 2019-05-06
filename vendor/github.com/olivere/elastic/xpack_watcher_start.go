@@ -11,7 +11,7 @@ import (
 )
 
 // XPackWatcherStartService starts the watcher service if it is not already running.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/watcher-api-start.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/watcher-api-start.html.
 type XPackWatcherStartService struct {
 	client *Client
 	pretty bool
@@ -33,7 +33,7 @@ func (s *XPackWatcherStartService) Pretty(pretty bool) *XPackWatcherStartService
 // buildURL builds the URL for the operation.
 func (s *XPackWatcherStartService) buildURL() (string, url.Values, error) {
 	// Build URL path
-	path := "/_xpack/watcher/_start"
+	path := "/_watcher/_start"
 
 	// Add query string parameters
 	params := url.Values{}

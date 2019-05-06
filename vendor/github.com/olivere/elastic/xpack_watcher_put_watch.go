@@ -10,12 +10,12 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // XPackWatcherPutWatchService either registers a new watch in Watcher
 // or update an existing one.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/watcher-api-put-watch.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/watcher-api-put-watch.html.
 type XPackWatcherPutWatchService struct {
 	client        *Client
 	pretty        bool
@@ -65,7 +65,7 @@ func (s *XPackWatcherPutWatchService) Body(body interface{}) *XPackWatcherPutWat
 // buildURL builds the URL for the operation.
 func (s *XPackWatcherPutWatchService) buildURL() (string, url.Values, error) {
 	// Build URL
-	path, err := uritemplates.Expand("/_xpack/watcher/watch/{id}", map[string]string{
+	path, err := uritemplates.Expand("/_watcher/watch/{id}", map[string]string{
 		"id": s.id,
 	})
 	if err != nil {

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/graymeta/stow"
@@ -20,6 +21,8 @@ func WalDataDir(postgres *api.Postgres) string {
 		return filepath.Join(spec.Azure.Prefix, api.DatabaseNamePrefix, postgres.Namespace, postgres.Name, "archive")
 	} else if spec.Swift != nil {
 		return filepath.Join(spec.Swift.Prefix, api.DatabaseNamePrefix, postgres.Namespace, postgres.Name, "archive")
+	} else if spec.Local != nil {
+		return os.Getenv("RESTORE_FILE_PREFIX") //never gets called
 	}
 	return ""
 }
@@ -38,7 +41,10 @@ func (c *Controller) wipeOutWalData(meta metav1.ObjectMeta, spec *api.PostgresSp
 		// no archiver was configured. nothing to remove.
 		return nil
 	}
-
+	if postgres.Spec.Archiver.Storage.Local != nil {
+		// Do not remove local Data.
+		return nil
+	}
 	cfg, err := osm.NewOSMContext(c.Client, *postgres.Spec.Archiver.Storage, postgres.Namespace)
 	if err != nil {
 		return err

@@ -10,13 +10,13 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // CatAllocationService provides a snapshot of how many shards are allocated
 // to each data node and how much disk space they are using.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/cat-allocation.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/cat-allocation.html
 // for details.
 type CatAllocationService struct {
 	client        *Client

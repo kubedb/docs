@@ -10,12 +10,12 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // IndicesGetService retrieves information about one or more indices.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-get-index.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/indices-get-index.html
 // for more details.
 type IndicesGetService struct {
 	client            *Client

@@ -10,11 +10,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // XPackWatcherDeactivateWatchService enables you to deactivate a currently active watch.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/watcher-api-deactivate-watch.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/watcher-api-deactivate-watch.html.
 type XPackWatcherDeactivateWatchService struct {
 	client        *Client
 	pretty        bool
@@ -52,7 +52,7 @@ func (s *XPackWatcherDeactivateWatchService) Pretty(pretty bool) *XPackWatcherDe
 // buildURL builds the URL for the operation.
 func (s *XPackWatcherDeactivateWatchService) buildURL() (string, url.Values, error) {
 	// Build URL
-	path, err := uritemplates.Expand("/_xpack/watcher/watch/{watch_id}/_deactivate", map[string]string{
+	path, err := uritemplates.Expand("/_watcher/watch/{watch_id}/_deactivate", map[string]string{
 		"watch_id": s.watchId,
 	})
 	if err != nil {

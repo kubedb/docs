@@ -12,7 +12,7 @@ import (
 )
 
 // XPackWatcherStatsService returns the current watcher metrics.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/watcher-api-stats.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/watcher-api-stats.html.
 type XPackWatcherStatsService struct {
 	client          *Client
 	pretty          bool
@@ -48,7 +48,7 @@ func (s *XPackWatcherStatsService) Pretty(pretty bool) *XPackWatcherStatsService
 // buildURL builds the URL for the operation.
 func (s *XPackWatcherStatsService) buildURL() (string, url.Values, error) {
 	// Build URL
-	path := "/_xpack/watcher/stats"
+	path := "/_watcher/stats"
 
 	// Add query string parameters
 	params := url.Values{}

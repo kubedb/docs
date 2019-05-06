@@ -10,11 +10,11 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // IndicesExistsTemplateService checks if a given template exists.
-// See http://www.elastic.co/guide/en/elasticsearch/reference/5.2/indices-templates.html#indices-templates-exists
+// See http://www.elastic.co/guide/en/elasticsearch/reference/7.0/indices-templates.html#indices-templates-exists
 // for documentation.
 type IndicesExistsTemplateService struct {
 	client *Client

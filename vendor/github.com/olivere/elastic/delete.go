@@ -10,13 +10,13 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // DeleteService allows to delete a typed JSON document from a specified
 // index based on its id.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-delete.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/docs-delete.html
 // for details.
 type DeleteService struct {
 	client              *Client
@@ -37,10 +37,13 @@ type DeleteService struct {
 func NewDeleteService(client *Client) *DeleteService {
 	return &DeleteService{
 		client: client,
+		typ:    "_doc",
 	}
 }
 
 // Type is the type of the document.
+//
+// Deprecated: Types are in the process of being removed.
 func (s *DeleteService) Type(typ string) *DeleteService {
 	s.typ = typ
 	return s
@@ -100,7 +103,7 @@ func (s *DeleteService) Parent(parent string) *DeleteService {
 
 // Refresh the index after performing the operation.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-refresh.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/docs-refresh.html
 // for details.
 func (s *DeleteService) Refresh(refresh string) *DeleteService {
 	s.refresh = refresh

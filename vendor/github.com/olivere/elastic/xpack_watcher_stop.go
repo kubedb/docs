@@ -11,7 +11,7 @@ import (
 )
 
 // XPackWatcherStopService stops the watcher service if it is running.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/watcher-api-stop.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/watcher-api-stop.html.
 type XPackWatcherStopService struct {
 	client *Client
 	pretty bool
@@ -33,7 +33,7 @@ func (s *XPackWatcherStopService) Pretty(pretty bool) *XPackWatcherStopService {
 // buildURL builds the URL for the operation.
 func (s *XPackWatcherStopService) buildURL() (string, url.Values, error) {
 	// Build URL path
-	path := "/_xpack/watcher/_stop"
+	path := "/_watcher/_stop"
 
 	// Add query string parameters
 	params := url.Values{}

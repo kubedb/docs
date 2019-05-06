@@ -10,11 +10,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // XPackSecurityGetRoleService retrieves a role by its name.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/security-api-get-role.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/security-api-get-role.html.
 type XPackSecurityGetRoleService struct {
 	client *Client
 	pretty bool
@@ -43,7 +43,7 @@ func (s *XPackSecurityGetRoleService) Pretty(pretty bool) *XPackSecurityGetRoleS
 // buildURL builds the URL for the operation.
 func (s *XPackSecurityGetRoleService) buildURL() (string, url.Values, error) {
 	// Build URL
-	path, err := uritemplates.Expand("/_xpack/security/role/{name}", map[string]string{
+	path, err := uritemplates.Expand("/_security/role/{name}", map[string]string{
 		"name": s.name,
 	})
 	if err != nil {

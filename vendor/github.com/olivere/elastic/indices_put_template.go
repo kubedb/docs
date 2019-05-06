@@ -9,11 +9,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // IndicesPutTemplateService creates or updates index mappings.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-templates.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/indices-templates.html.
 type IndicesPutTemplateService struct {
 	client        *Client
 	pretty        bool

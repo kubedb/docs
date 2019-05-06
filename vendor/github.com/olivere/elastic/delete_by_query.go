@@ -11,11 +11,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // DeleteByQueryService deletes documents that match a query.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-delete-by-query.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/docs-delete-by-query.html.
 type DeleteByQueryService struct {
 	client                 *Client
 	index                  []string
@@ -83,6 +83,9 @@ func (s *DeleteByQueryService) Index(index ...string) *DeleteByQueryService {
 }
 
 // Type limits the delete operation to the given types.
+//
+// Deprecated: Types are in the process of being removed. Instead of
+// using a type, prefer to filter on a field of the document.
 func (s *DeleteByQueryService) Type(typ ...string) *DeleteByQueryService {
 	s.typ = append(s.typ, typ...)
 	return s
@@ -243,7 +246,7 @@ func (s *DeleteByQueryService) Query(query Query) *DeleteByQueryService {
 
 // Refresh indicates whether the effected indexes should be refreshed.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-refresh.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/docs-refresh.html
 // for details.
 func (s *DeleteByQueryService) Refresh(refresh string) *DeleteByQueryService {
 	s.refresh = refresh
@@ -306,7 +309,7 @@ func (s *DeleteByQueryService) Size(size int) *DeleteByQueryService {
 // Slices represents the number of slices (default: 1).
 // It used to  be a number, but can be set to "auto" as of 6.7.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-delete-by-query.html#docs-delete-by-query-automatic-slice
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/docs-delete-by-query.html#docs-delete-by-query-automatic-slice
 // for details.
 func (s *DeleteByQueryService) Slices(slices interface{}) *DeleteByQueryService {
 	s.slices = slices
@@ -451,10 +454,10 @@ func (s *DeleteByQueryService) buildURL() (string, url.Values, error) {
 		params.Set("_source", strings.Join(s.xSource, ","))
 	}
 	if len(s.xSourceExclude) > 0 {
-		params.Set("_source_exclude", strings.Join(s.xSourceExclude, ","))
+		params.Set("_source_excludes", strings.Join(s.xSourceExclude, ","))
 	}
 	if len(s.xSourceInclude) > 0 {
-		params.Set("_source_include", strings.Join(s.xSourceInclude, ","))
+		params.Set("_source_includes", strings.Join(s.xSourceInclude, ","))
 	}
 	if s.analyzer != "" {
 		params.Set("analyzer", s.analyzer)

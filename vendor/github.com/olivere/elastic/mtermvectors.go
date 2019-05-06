@@ -11,14 +11,14 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // MultiTermvectorService returns information and statistics on terms in the
 // fields of a particular document. The document could be stored in the
 // index or artificially provided by the user.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-multi-termvectors.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/docs-multi-termvectors.html
 // for documentation.
 type MultiTermvectorService struct {
 	client          *Client

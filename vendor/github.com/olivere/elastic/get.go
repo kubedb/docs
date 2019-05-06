@@ -11,13 +11,13 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // GetService allows to get a typed JSON document from the index based
 // on its id.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-get.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/docs-get.html
 // for details.
 type GetService struct {
 	client                        *Client
@@ -41,7 +41,7 @@ type GetService struct {
 func NewGetService(client *Client) *GetService {
 	return &GetService{
 		client: client,
-		typ:    "_all",
+		typ:    "_doc",
 	}
 }
 
@@ -51,8 +51,9 @@ func (s *GetService) Index(index string) *GetService {
 	return s
 }
 
-// Type is the type of the document (use `_all` to fetch the first document
-// matching the ID across all types).
+// Type is the type of the document
+//
+// Deprecated: Types are in the process of being removed.
 func (s *GetService) Type(typ string) *GetService {
 	s.typ = typ
 	return s
@@ -104,7 +105,7 @@ func (s *GetService) FetchSourceContext(fetchSourceContext *FetchSourceContext) 
 
 // Refresh the shard containing the document before performing the operation.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-refresh.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/docs-refresh.html
 // for details.
 func (s *GetService) Refresh(refresh string) *GetService {
 	s.refresh = refresh
@@ -254,7 +255,7 @@ type GetResult struct {
 	Routing string                 `json:"_routing"` // routing meta field
 	Parent  string                 `json:"_parent"`  // parent meta field
 	Version *int64                 `json:"_version"` // version number, when Version is set to true in SearchService
-	Source  *json.RawMessage       `json:"_source,omitempty"`
+	Source  json.RawMessage        `json:"_source,omitempty"`
 	Found   bool                   `json:"found,omitempty"`
 	Fields  map[string]interface{} `json:"fields,omitempty"`
 	//Error     string                 `json:"error,omitempty"` // used only in MultiGet

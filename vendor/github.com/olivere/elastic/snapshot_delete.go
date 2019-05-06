@@ -10,12 +10,12 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // SnapshotDeleteService deletes a snapshot from a snapshot repository.
 // It is documented at
-// https://www.elastic.co/guide/en/elasticsearch/reference/6.7/modules-snapshots.html.
+// https://www.elastic.co/guide/en/elasticsearch/reference/7.0/modules-snapshots.html.
 type SnapshotDeleteService struct {
 	client     *Client
 	repository string

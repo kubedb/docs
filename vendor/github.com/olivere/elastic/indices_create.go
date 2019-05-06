@@ -9,12 +9,12 @@ import (
 	"errors"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // IndicesCreateService creates a new index.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-create-index.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/indices-create-index.html
 // for details.
 type IndicesCreateService struct {
 	client        *Client

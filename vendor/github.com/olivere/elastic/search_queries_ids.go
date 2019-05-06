@@ -8,7 +8,7 @@ package elastic
 // Note, this query uses the _uid field.
 //
 // For more details, see
-// https://www.elastic.co/guide/en/elasticsearch/reference/6.7/query-dsl-ids-query.html
+// https://www.elastic.co/guide/en/elasticsearch/reference/7.0/query-dsl-ids-query.html
 type IdsQuery struct {
 	types     []string
 	values    []string
@@ -17,6 +17,8 @@ type IdsQuery struct {
 }
 
 // NewIdsQuery creates and initializes a new ids query.
+//
+// Deprecated: Types are in the process of being removed, prefer to filter on a field instead.
 func NewIdsQuery(types ...string) *IdsQuery {
 	return &IdsQuery{
 		types:  types,

@@ -11,11 +11,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // NodesStatsService returns node statistics.
-// See http://www.elastic.co/guide/en/elasticsearch/reference/5.2/cluster-nodes-stats.html
+// See http://www.elastic.co/guide/en/elasticsearch/reference/7.0/cluster-nodes-stats.html
 // for details.
 type NodesStatsService struct {
 	client           *Client

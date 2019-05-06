@@ -2,10 +2,12 @@ package controller
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
+	"github.com/fatih/structs"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/pkg/eventer"
 	apps "k8s.io/api/apps/v1"
@@ -86,7 +88,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		in.Annotations = mysql.Spec.PodTemplate.Controller.Annotations
 		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 
-		in.Spec.Replicas = types.Int32P(1)
+		in.Spec.Replicas = mysql.Spec.Replicas
 		in.Spec.ServiceName = c.GoverningService
 		in.Spec.Selector = &metav1.LabelSelector{
 			MatchLabels: mysql.OffshootSelectors(),
@@ -118,7 +120,8 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 				mysql.Spec.PodTemplate.Spec.InitContainers...,
 			),
 		)
-		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
+
+		container := core.Container{
 			Name:            api.ResourceSingularMySQL,
 			Image:           mysqlVersion.Spec.DB.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
@@ -130,11 +133,30 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 			Ports: []core.ContainerPort{
 				{
 					Name:          "db",
-					ContainerPort: 3306,
+					ContainerPort: api.MySQLNodePort,
 					Protocol:      core.ProtocolTCP,
 				},
 			},
-		})
+		}
+		if mysql.Spec.Topology != nil && mysql.Spec.Topology.Mode != nil &&
+			*mysql.Spec.Topology.Mode == api.MySQLClusterModeGroup {
+			container.Command = []string{
+				"peer-finder",
+			}
+			userProvidedArgs := strings.Join(mysql.Spec.PodTemplate.Spec.Args, " ")
+			container.Args = []string{
+				fmt.Sprintf("-service=%s", c.GoverningService),
+				fmt.Sprintf("-on-start=/on-start.sh %s", userProvidedArgs),
+			}
+			if container.LivenessProbe != nil && structs.IsZero(*container.LivenessProbe) {
+				container.LivenessProbe = nil
+			}
+			if container.ReadinessProbe != nil && structs.IsZero(*container.ReadinessProbe) {
+				container.ReadinessProbe = nil
+			}
+		}
+		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, container)
+
 		if mysql.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
@@ -188,6 +210,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 
 		in.Spec.UpdateStrategy = mysql.Spec.UpdateStrategy
 		in = upsertUserEnv(in, mysql)
+
 		return in
 	})
 }
@@ -249,7 +272,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.Sta
 func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMySQL || container.Name == "exporter" {
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, []core.EnvVar{
+			envs := []core.EnvVar{
 				{
 					Name: "MYSQL_ROOT_PASSWORD",
 					ValueFrom: &core.EnvVarSource{
@@ -272,9 +295,42 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSe
 						},
 					},
 				},
-			}...)
+			}
+			if mysql.Spec.Topology != nil &&
+				mysql.Spec.Topology.Mode != nil &&
+				*mysql.Spec.Topology.Mode == api.MySQLClusterModeGroup &&
+				container.Name == api.ResourceSingularMySQL {
+				envs = append(envs, []core.EnvVar{
+					{
+						Name:  "BASE_NAME",
+						Value: mysql.Name,
+					},
+					{
+						Name:  "GOV_SVC",
+						Value: mysql.GoverningServiceName(),
+					},
+					{
+						Name: "POD_NAMESPACE",
+						ValueFrom: &core.EnvVarSource{
+							FieldRef: &core.ObjectFieldSelector{
+								FieldPath: "metadata.namespace",
+							},
+						},
+					},
+					{
+						Name:  "GROUP_NAME",
+						Value: mysql.Spec.Topology.Group.Name,
+					},
+					{
+						Name:  "BASE_SERVER_ID",
+						Value: strconv.Itoa(int(*mysql.Spec.Topology.Group.BaseServerID)),
+					},
+				}...)
+			}
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envs...)
 		}
 	}
+
 	return statefulSet
 }
 

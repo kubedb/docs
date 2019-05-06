@@ -10,11 +10,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // XPackWatcherExecuteWatchService forces the execution of a stored watch.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/watcher-api-execute-watch.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/watcher-api-execute-watch.html.
 type XPackWatcherExecuteWatchService struct {
 	client     *Client
 	pretty     bool
@@ -69,11 +69,11 @@ func (s *XPackWatcherExecuteWatchService) buildURL() (string, url.Values, error)
 		err  error
 	)
 	if s.id != "" {
-		path, err = uritemplates.Expand("/_xpack/watcher/watch/{id}/_execute", map[string]string{
+		path, err = uritemplates.Expand("/_watcher/watch/{id}/_execute", map[string]string{
 			"id": s.id,
 		})
 	} else {
-		path = "/_xpack/watcher/watch/_execute"
+		path = "/_watcher/watch/_execute"
 	}
 	if err != nil {
 		return "", url.Values{}, err

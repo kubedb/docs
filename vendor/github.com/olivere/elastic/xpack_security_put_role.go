@@ -10,11 +10,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // XPackSecurityPutRoleService retrieves a role by its name.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/security-api-put-role.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/security-api-put-role.html.
 type XPackSecurityPutRoleService struct {
 	client *Client
 	pretty bool
@@ -50,7 +50,7 @@ func (s *XPackSecurityPutRoleService) Body(body interface{}) *XPackSecurityPutRo
 // buildURL builds the URL for the operation.
 func (s *XPackSecurityPutRoleService) buildURL() (string, url.Values, error) {
 	// Build URL
-	path, err := uritemplates.Expand("/_xpack/security/role/{name}", map[string]string{
+	path, err := uritemplates.Expand("/_security/role/{name}", map[string]string{
 		"name": s.name,
 	})
 	if err != nil {

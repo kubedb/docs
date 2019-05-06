@@ -10,7 +10,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // IndicesForcemergeService allows to force merging of one or more indices.
@@ -18,7 +18,7 @@ import (
 // within each shard. The force merge operation allows to reduce the number
 // of segments by merging them.
 //
-// See http://www.elastic.co/guide/en/elasticsearch/reference/5.2/indices-forcemerge.html
+// See http://www.elastic.co/guide/en/elasticsearch/reference/7.0/indices-forcemerge.html
 // for more information.
 type IndicesForcemergeService struct {
 	client             *Client

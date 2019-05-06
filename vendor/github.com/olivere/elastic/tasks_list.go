@@ -11,12 +11,12 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // TasksListService retrieves the list of currently executing tasks
 // on one ore more nodes in the cluster. It is part of the Task Management API
-// documented at https://www.elastic.co/guide/en/elasticsearch/reference/6.7/tasks.html.
+// documented at https://www.elastic.co/guide/en/elasticsearch/reference/7.0/tasks.html.
 //
 // It is supported as of Elasticsearch 2.3.0.
 type TasksListService struct {
@@ -142,7 +142,7 @@ func (s *TasksListService) buildURL() (string, url.Values, error) {
 		params.Set("human", fmt.Sprintf("%v", *s.human))
 	}
 	if len(s.nodeId) > 0 {
-		params.Set("node_id", strings.Join(s.nodeId, ","))
+		params.Set("nodes", strings.Join(s.nodeId, ","))
 	}
 	if s.parentTaskId != "" {
 		params.Set("parent_task_id", s.parentTaskId)

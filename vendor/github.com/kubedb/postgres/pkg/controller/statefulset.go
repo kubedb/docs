@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"path"
 	"strconv"
 	"strings"
 
@@ -107,17 +108,22 @@ func (c *Controller) ensureStatefulSet(
 
 		in = c.upsertMonitoringContainer(in, postgres, postgresVersion)
 		if postgres.Spec.Archiver != nil {
-			archiverStorage := postgres.Spec.Archiver.Storage
-			if archiverStorage != nil {
-				in = upsertArchiveSecret(in, archiverStorage.StorageSecretName)
+			if postgres.Spec.Archiver.Storage != nil {
+				//Creating secret for cloud providers
+				archiverStorage := postgres.Spec.Archiver.Storage
+				if archiverStorage.Local == nil {
+					in = upsertArchiveSecret(in, archiverStorage.StorageSecretName)
+				}
 			}
 		}
 
 		if _, err := meta_util.GetString(postgres.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound {
-			if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
+			initSource := postgres.Spec.Init
+			if initSource != nil && initSource.PostgresWAL != nil && initSource.PostgresWAL.Local == nil {
+				//Getting secret for cloud providers
 				in = upsertInitWalSecret(in, postgres.Spec.Init.PostgresWAL.StorageSecretName)
 			}
-			if postgres.Spec.Init != nil && postgres.Spec.Init.ScriptSource != nil {
+			if initSource != nil && initSource.ScriptSource != nil {
 				in = upsertInitScript(in, postgres.Spec.Init.ScriptSource.VolumeSource)
 			}
 		}
@@ -222,6 +228,14 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion 
 						Value: fmt.Sprintf("s3://%v/%v", archiverStorage.S3.Bucket, WalDataDir(postgres)),
 					},
 				)
+				if archiverStorage.S3.Endpoint != "" {
+					envList = append(envList,
+						core.EnvVar{
+							Name:  "ARCHIVE_S3_ENDPOINT",
+							Value: archiverStorage.S3.Endpoint,
+						},
+					)
+				}
 			} else if archiverStorage.GCS != nil {
 				envList = append(envList,
 					core.EnvVar{
@@ -241,6 +255,13 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion 
 					core.EnvVar{
 						Name:  "ARCHIVE_SWIFT_PREFIX",
 						Value: fmt.Sprintf("swift://%v/%v", archiverStorage.Swift.Container, WalDataDir(postgres)),
+					},
+				)
+			} else if archiverStorage.Local != nil {
+				envList = append(envList,
+					core.EnvVar{
+						Name:  "ARCHIVE_FILE_PREFIX",
+						Value: archiverStorage.Local.MountPath,
 					},
 				)
 			}
@@ -508,6 +529,50 @@ func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *
 }
 
 func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
+	if postgres.Spec.Archiver != nil || postgres.Spec.Init != nil {
+		// Add a PV
+		if postgres.Spec.Archiver != nil &&
+			postgres.Spec.Archiver.Storage != nil &&
+			postgres.Spec.Archiver.Storage.Local != nil {
+			pgLocalVol := postgres.Spec.Archiver.Storage.Local
+			podSpec := statefulSet.Spec.Template.Spec
+			if pgLocalVol != nil {
+				volume := core.Volume{
+					Name:         "local-archive",
+					VolumeSource: pgLocalVol.VolumeSource,
+				}
+				statefulSet.Spec.Template.Spec.Volumes = append(podSpec.Volumes, volume)
+
+				statefulSet.Spec.Template.Spec.Containers[0].VolumeMounts = append(podSpec.Containers[0].VolumeMounts, core.VolumeMount{
+					Name:      "local-archive",
+					MountPath: pgLocalVol.MountPath,
+					//SubPath:  use of SubPath is discouraged
+					// due to the contrasting natures of PV claim and wal-g directory
+				})
+			}
+		}
+		if postgres.Spec.Init != nil &&
+			postgres.Spec.Init.PostgresWAL != nil &&
+			postgres.Spec.Init.PostgresWAL.Local != nil {
+			pgLocalVol := postgres.Spec.Init.PostgresWAL.Local
+			podSpec := statefulSet.Spec.Template.Spec
+			if pgLocalVol != nil {
+				volume := core.Volume{
+					Name:         "local-init",
+					VolumeSource: pgLocalVol.VolumeSource,
+				}
+				statefulSet.Spec.Template.Spec.Volumes = append(podSpec.Volumes, volume)
+
+				statefulSet.Spec.Template.Spec.Containers[0].VolumeMounts = append(podSpec.Containers[0].VolumeMounts, core.VolumeMount{
+					Name:      "local-init",
+					MountPath: pgLocalVol.MountPath,
+					//SubPath: is used to locate existing archive
+					//from given mountPath, therefore isn't mounted.
+				})
+			}
+		}
+	}
+
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularPostgres {
 			volumeMount := core.VolumeMount{
@@ -603,6 +668,14 @@ func walRecoveryConfig(wal *api.PostgresWALSourceSpec) []core.EnvVar {
 				Value: fmt.Sprintf("s3://%v/%v", wal.S3.Bucket, wal.S3.Prefix),
 			},
 		)
+		if wal.S3.Endpoint != "" {
+			envList = append(envList,
+				core.EnvVar{
+					Name:  "RESTORE_S3_ENDPOINT",
+					Value: wal.S3.Endpoint,
+				},
+			)
+		}
 	} else if wal.GCS != nil {
 		envList = append(envList,
 			core.EnvVar{
@@ -622,6 +695,14 @@ func walRecoveryConfig(wal *api.PostgresWALSourceSpec) []core.EnvVar {
 			core.EnvVar{
 				Name:  "RESTORE_SWIFT_PREFIX",
 				Value: fmt.Sprintf("swift://%v/%v", wal.Swift.Container, wal.Swift.Prefix),
+			},
+		)
+	} else if wal.Local != nil {
+		archiveSource := path.Join("/", wal.Local.MountPath, wal.Local.SubPath)
+		envList = append(envList,
+			core.EnvVar{
+				Name:  "RESTORE_FILE_PREFIX",
+				Value: archiveSource,
 			},
 		)
 	}

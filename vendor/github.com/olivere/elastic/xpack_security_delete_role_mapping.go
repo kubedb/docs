@@ -10,11 +10,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // XPackSecurityDeleteRoleMappingService delete a role mapping by its name.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/security-api-delete-role-mapping.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/security-api-delete-role-mapping.html.
 type XPackSecurityDeleteRoleMappingService struct {
 	client *Client
 	pretty bool
@@ -43,7 +43,7 @@ func (s *XPackSecurityDeleteRoleMappingService) Pretty(pretty bool) *XPackSecuri
 // buildURL builds the URL for the operation.
 func (s *XPackSecurityDeleteRoleMappingService) buildURL() (string, url.Values, error) {
 	// Build URL
-	path, err := uritemplates.Expand("/_xpack/security/role_mapping/{name}", map[string]string{
+	path, err := uritemplates.Expand("/_security/role_mapping/{name}", map[string]string{
 		"name": s.name,
 	})
 	if err != nil {

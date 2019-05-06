@@ -10,14 +10,14 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // IndicesPutSettingsService changes specific index level settings in
 // real time.
 //
 // See the documentation at
-// https://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-update-settings.html.
+// https://www.elastic.co/guide/en/elasticsearch/reference/7.0/indices-update-settings.html.
 type IndicesPutSettingsService struct {
 	client            *Client
 	pretty            bool

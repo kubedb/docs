@@ -10,11 +10,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // IndicesStatsService provides stats on various metrics of one or more
-// indices. See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-stats.html.
+// indices. See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/indices-stats.html.
 type IndicesStatsService struct {
 	client           *Client
 	pretty           bool

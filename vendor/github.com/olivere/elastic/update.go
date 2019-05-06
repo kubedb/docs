@@ -10,11 +10,11 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/olivere/elastic/uritemplates"
+	"github.com/olivere/elastic/v7/uritemplates"
 )
 
 // UpdateService updates a document in Elasticsearch.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-update.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/docs-update.html
 // for details.
 type UpdateService struct {
 	client              *Client
@@ -44,6 +44,7 @@ type UpdateService struct {
 func NewUpdateService(client *Client) *UpdateService {
 	builder := &UpdateService{
 		client: client,
+		typ:    "_doc",
 		fields: make([]string, 0),
 	}
 	return builder
@@ -55,7 +56,9 @@ func (b *UpdateService) Index(name string) *UpdateService {
 	return b
 }
 
-// Type is the type of the document (required).
+// Type is the type of the document.
+//
+// Deprecated: Types are in the process of being removed.
 func (b *UpdateService) Type(typ string) *UpdateService {
 	b.typ = typ
 	return b
@@ -113,7 +116,7 @@ func (b *UpdateService) VersionType(versionType string) *UpdateService {
 
 // Refresh the index after performing the update.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-refresh.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/docs-refresh.html
 // for details.
 func (b *UpdateService) Refresh(refresh string) *UpdateService {
 	b.refresh = refresh
@@ -196,12 +199,20 @@ func (s *UpdateService) FetchSourceContext(fetchSourceContext *FetchSourceContex
 // url returns the URL part of the document request.
 func (b *UpdateService) url() (string, url.Values, error) {
 	// Build url
-	path := "/{index}/{type}/{id}/_update"
-	path, err := uritemplates.Expand(path, map[string]string{
-		"index": b.index,
-		"type":  b.typ,
-		"id":    b.id,
-	})
+	var path string
+	var err error
+	if b.typ == "_doc" {
+		path, err = uritemplates.Expand("/{index}/_update/{id}", map[string]string{
+			"index": b.index,
+			"id":    b.id,
+		})
+	} else {
+		path, err = uritemplates.Expand("/{index}/{type}/{id}/_update", map[string]string{
+			"index": b.index,
+			"type":  b.typ,
+			"id":    b.id,
+		})
+	}
 	if err != nil {
 		return "", url.Values{}, err
 	}
