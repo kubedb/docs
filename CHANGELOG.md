@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.12.0](https://github.com/kubedb/operator/tree/0.12.0) (2019-05-06)
+[Full Changelog](https://github.com/kubedb/operator/compare/0.11.0...0.12.0)
+
+**Merged pull requests:**
+
+- Revendor dependencies [\#222](https://github.com/kubedb/operator/pull/222) ([tamalsaha](https://github.com/tamalsaha))
+
 ## [0.11.0](https://github.com/kubedb/operator/tree/0.11.0) (2019-03-18)
 [Full Changelog](https://github.com/kubedb/operator/compare/0.10.0...0.11.0)
 
