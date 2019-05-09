@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 
 	"github.com/appscode/go/crypto/rand"
-	"github.com/ghodss/yaml"
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	esv5 "gopkg.in/olivere/elastic.v5"
+	"sigs.k8s.io/yaml"
 )
 
 type ESClientV5 struct {

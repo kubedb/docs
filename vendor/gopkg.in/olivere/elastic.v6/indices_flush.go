@@ -17,7 +17,7 @@ import (
 // basically frees memory from the index by flushing data to the index
 // storage and clearing the internal transaction log.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/indices-flush.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-flush.html
 // for details.
 type IndicesFlushService struct {
 	client            *Client
@@ -169,5 +169,5 @@ func (s *IndicesFlushService) Do(ctx context.Context) (*IndicesFlushResponse, er
 // -- Result of a flush request.
 
 type IndicesFlushResponse struct {
-	Shards shardsInfo `json:"_shards"`
+	Shards *ShardsInfo `json:"_shards"`
 }

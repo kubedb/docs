@@ -6,7 +6,7 @@ package elastic
 
 // Highlight allows highlighting search results on one or more fields.
 // For details, see:
-// https://www.elastic.co/guide/en/elasticsearch/reference/6.2/search-request-highlighting.html
+// https://www.elastic.co/guide/en/elasticsearch/reference/6.7/search-request-highlighting.html
 type Highlight struct {
 	fields                []*HighlighterField
 	tagsSchema            *string
@@ -125,7 +125,7 @@ func (hl *Highlight) Fragmenter(fragmenter string) *Highlight {
 	return hl
 }
 
-func (hl *Highlight) HighlighQuery(highlightQuery Query) *Highlight {
+func (hl *Highlight) HighlightQuery(highlightQuery Query) *Highlight {
 	hl.highlightQuery = highlightQuery
 	return hl
 }

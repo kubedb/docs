@@ -4,12 +4,17 @@
 
 package elastic
 
-import "errors"
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"strings"
+)
 
-// Script holds all the paramaters necessary to compile or find in cache
+// Script holds all the parameters necessary to compile or find in cache
 // and then execute a script.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/modules-scripting.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/modules-scripting.html
 // for details of scripting.
 type Script struct {
 	script string
@@ -53,10 +58,9 @@ func (s *Script) Type(typ string) *Script {
 	return s
 }
 
-// Lang sets the language of the script. Permitted values are "groovy",
-// "expression", "mustache", "mvel" (default), "javascript", "python".
-// To use certain languages, you need to configure your server and/or
-// add plugins. See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/modules-scripting.html
+// Lang sets the language of the script. The default scripting language
+// is Painless ("painless").
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/modules-scripting.html
 // for details.
 func (s *Script) Lang(lang string) *Script {
 	s.lang = lang
@@ -86,7 +90,11 @@ func (s *Script) Source() (interface{}, error) {
 	source := make(map[string]interface{})
 	// Beginning with 6.0, the type can only be "source" or "id"
 	if s.typ == "" || s.typ == "inline" {
-		source["source"] = s.script
+		src, err := s.rawScriptSource(s.script)
+		if err != nil {
+			return nil, err
+		}
+		source["source"] = src
 	} else {
 		source["id"] = s.script
 	}
@@ -97,6 +105,19 @@ func (s *Script) Source() (interface{}, error) {
 		source["params"] = s.params
 	}
 	return source, nil
+}
+
+// rawScriptSource returns an embeddable script. If it uses a short
+// script form, e.g. "ctx._source.likes++" (without the quotes), it
+// is quoted. Otherwise it returns the raw script that will be directly
+// embedded into the JSON data.
+func (s *Script) rawScriptSource(script string) (interface{}, error) {
+	v := strings.TrimSpace(script)
+	if !strings.HasPrefix(v, "{") && !strings.HasPrefix(v, `"`) {
+		v = fmt.Sprintf("%q", v)
+	}
+	raw := json.RawMessage(v)
+	return &raw, nil
 }
 
 // -- Script Field --

@@ -7,7 +7,7 @@ package elastic
 // CompositeAggregation is a multi-bucket values source based aggregation
 // that can be used to calculate unique composite values from source documents.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/search-aggregations-bucket-composite-aggregation.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/search-aggregations-bucket-composite-aggregation.html
 // for details.
 type CompositeAggregation struct {
 	after           map[string]interface{}
@@ -129,7 +129,7 @@ func (a *CompositeAggregation) Source() (interface{}, error) {
 // need to implement.
 //
 // The different implementations are described in
-// https://www.elastic.co/guide/en/elasticsearch/reference/6.2/search-aggregations-bucket-composite-aggregation.html#_values_source_2.
+// https://www.elastic.co/guide/en/elasticsearch/reference/6.7/search-aggregations-bucket-composite-aggregation.html#_values_source_2.
 type CompositeAggregationValuesSource interface {
 	Source() (interface{}, error)
 }
@@ -139,15 +139,16 @@ type CompositeAggregationValuesSource interface {
 // CompositeAggregationTermsValuesSource is a source for the CompositeAggregation that handles terms
 // it works very similar to a terms aggregation with slightly different syntax
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/search-aggregations-bucket-composite-aggregation.html#_terms
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/search-aggregations-bucket-composite-aggregation.html#_terms
 // for details.
 type CompositeAggregationTermsValuesSource struct {
-	name      string
-	field     string
-	script    *Script
-	valueType string
-	missing   interface{}
-	order     string
+	name          string
+	field         string
+	script        *Script
+	valueType     string
+	missing       interface{}
+	missingBucket *bool
+	order         string
 }
 
 // NewCompositeAggregationTermsValuesSource creates and initializes
@@ -198,8 +199,17 @@ func (a *CompositeAggregationTermsValuesSource) Desc() *CompositeAggregationTerm
 
 // Missing specifies the value to use when the source finds a missing
 // value in a document.
+//
+// Deprecated: Use MissingBucket instead.
 func (a *CompositeAggregationTermsValuesSource) Missing(missing interface{}) *CompositeAggregationTermsValuesSource {
 	a.missing = missing
+	return a
+}
+
+// MissingBucket, if true, will create an explicit null bucket which represents
+// documents with missing values.
+func (a *CompositeAggregationTermsValuesSource) MissingBucket(missingBucket bool) *CompositeAggregationTermsValuesSource {
+	a.missingBucket = &missingBucket
 	return a
 }
 
@@ -230,6 +240,11 @@ func (a *CompositeAggregationTermsValuesSource) Source() (interface{}, error) {
 		values["missing"] = a.missing
 	}
 
+	// missing_bucket
+	if a.missingBucket != nil {
+		values["missing_bucket"] = *a.missingBucket
+	}
+
 	// value_type
 	if a.valueType != "" {
 		values["value_type"] = a.valueType
@@ -249,16 +264,17 @@ func (a *CompositeAggregationTermsValuesSource) Source() (interface{}, error) {
 // CompositeAggregationHistogramValuesSource is a source for the CompositeAggregation that handles histograms
 // it works very similar to a terms histogram with slightly different syntax
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/search-aggregations-bucket-composite-aggregation.html#_histogram
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/search-aggregations-bucket-composite-aggregation.html#_histogram
 // for details.
 type CompositeAggregationHistogramValuesSource struct {
-	name      string
-	field     string
-	script    *Script
-	valueType string
-	missing   interface{}
-	order     string
-	interval  float64
+	name          string
+	field         string
+	script        *Script
+	valueType     string
+	missing       interface{}
+	missingBucket *bool
+	order         string
+	interval      float64
 }
 
 // NewCompositeAggregationHistogramValuesSource creates and initializes
@@ -291,8 +307,17 @@ func (a *CompositeAggregationHistogramValuesSource) ValueType(valueType string) 
 
 // Missing specifies the value to use when the source finds a missing
 // value in a document.
+//
+// Deprecated: Use MissingBucket instead.
 func (a *CompositeAggregationHistogramValuesSource) Missing(missing interface{}) *CompositeAggregationHistogramValuesSource {
 	a.missing = missing
+	return a
+}
+
+// MissingBucket, if true, will create an explicit null bucket which represents
+// documents with missing values.
+func (a *CompositeAggregationHistogramValuesSource) MissingBucket(missingBucket bool) *CompositeAggregationHistogramValuesSource {
+	a.missingBucket = &missingBucket
 	return a
 }
 
@@ -348,6 +373,11 @@ func (a *CompositeAggregationHistogramValuesSource) Source() (interface{}, error
 		values["missing"] = a.missing
 	}
 
+	// missing_bucket
+	if a.missingBucket != nil {
+		values["missing_bucket"] = *a.missingBucket
+	}
+
 	// value_type
 	if a.valueType != "" {
 		values["value_type"] = a.valueType
@@ -370,17 +400,19 @@ func (a *CompositeAggregationHistogramValuesSource) Source() (interface{}, error
 // CompositeAggregationDateHistogramValuesSource is a source for the CompositeAggregation that handles date histograms
 // it works very similar to a date histogram aggregation with slightly different syntax
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/search-aggregations-bucket-composite-aggregation.html#_date_histogram
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/search-aggregations-bucket-composite-aggregation.html#_date_histogram
 // for details.
 type CompositeAggregationDateHistogramValuesSource struct {
-	name      string
-	field     string
-	script    *Script
-	valueType string
-	missing   interface{}
-	order     string
-	interval  interface{}
-	timeZone  string
+	name          string
+	field         string
+	script        *Script
+	valueType     string
+	missing       interface{}
+	missingBucket *bool
+	order         string
+	interval      interface{}
+	format        string
+	timeZone      string
 }
 
 // NewCompositeAggregationDateHistogramValuesSource creates and initializes
@@ -413,8 +445,17 @@ func (a *CompositeAggregationDateHistogramValuesSource) ValueType(valueType stri
 
 // Missing specifies the value to use when the source finds a missing
 // value in a document.
+//
+// Deprecated: Use MissingBucket instead.
 func (a *CompositeAggregationDateHistogramValuesSource) Missing(missing interface{}) *CompositeAggregationDateHistogramValuesSource {
 	a.missing = missing
+	return a
+}
+
+// MissingBucket, if true, will create an explicit null bucket which represents
+// documents with missing values.
+func (a *CompositeAggregationDateHistogramValuesSource) MissingBucket(missingBucket bool) *CompositeAggregationDateHistogramValuesSource {
+	a.missingBucket = &missingBucket
 	return a
 }
 
@@ -440,6 +481,12 @@ func (a *CompositeAggregationDateHistogramValuesSource) Desc() *CompositeAggrega
 // Interval to use for the date histogram, e.g. "1d" or a numeric value like "60".
 func (a *CompositeAggregationDateHistogramValuesSource) Interval(interval interface{}) *CompositeAggregationDateHistogramValuesSource {
 	a.interval = interval
+	return a
+}
+
+// Format to use for the date histogram, e.g. "strict_date_optional_time"
+func (a *CompositeAggregationDateHistogramValuesSource) Format(format string) *CompositeAggregationDateHistogramValuesSource {
+	a.format = format
 	return a
 }
 
@@ -476,6 +523,11 @@ func (a *CompositeAggregationDateHistogramValuesSource) Source() (interface{}, e
 		values["missing"] = a.missing
 	}
 
+	// missing_bucket
+	if a.missingBucket != nil {
+		values["missing_bucket"] = *a.missingBucket
+	}
+
 	// value_type
 	if a.valueType != "" {
 		values["value_type"] = a.valueType
@@ -484,6 +536,10 @@ func (a *CompositeAggregationDateHistogramValuesSource) Source() (interface{}, e
 	// order
 	if a.order != "" {
 		values["order"] = a.order
+	}
+
+	if a.format != "" {
+		values["format"] = a.format
 	}
 
 	// DateHistogram-related properties

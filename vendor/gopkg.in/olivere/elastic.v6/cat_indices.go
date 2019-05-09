@@ -16,7 +16,7 @@ import (
 // CatIndicesService returns the list of indices plus some additional
 // information about them.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/cat-indices.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/cat-indices.html
 // for details.
 type CatIndicesService struct {
 	client        *Client
@@ -137,6 +137,9 @@ func (s *CatIndicesService) buildURL() (string, url.Values, error) {
 	}
 	if s.masterTimeout != "" {
 		params.Set("master_timeout", s.masterTimeout)
+	}
+	if len(s.columns) > 0 {
+		params.Set("h", strings.Join(s.columns, ","))
 	}
 	if s.health != "" {
 		params.Set("health", s.health)

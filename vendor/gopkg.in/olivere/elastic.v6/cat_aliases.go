@@ -16,7 +16,7 @@ import (
 // CatAliasesService shows information about currently configured aliases
 // to indices including filter and routing infos.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/cat-aliases.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/cat-aliases.html
 // for details.
 type CatAliasesService struct {
 	client        *Client
@@ -114,6 +114,9 @@ func (s *CatAliasesService) buildURL() (string, url.Values, error) {
 	}
 	if len(s.sort) > 0 {
 		params.Set("s", strings.Join(s.sort, ","))
+	}
+	if len(s.columns) > 0 {
+		params.Set("h", strings.Join(s.columns, ","))
 	}
 	return path, params, nil
 }

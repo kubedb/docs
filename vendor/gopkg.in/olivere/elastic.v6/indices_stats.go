@@ -14,7 +14,7 @@ import (
 )
 
 // IndicesStatsService provides stats on various metrics of one or more
-// indices. See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/indices-stats.html.
+// indices. See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-stats.html.
 type IndicesStatsService struct {
 	client           *Client
 	pretty           bool
@@ -200,7 +200,7 @@ func (s *IndicesStatsService) Do(ctx context.Context) (*IndicesStatsResponse, er
 // IndicesStatsResponse is the response of IndicesStatsService.Do.
 type IndicesStatsResponse struct {
 	// Shards provides information returned from shards.
-	Shards shardsInfo `json:"_shards"`
+	Shards *ShardsInfo `json:"_shards"`
 
 	// All provides summary stats about all indices.
 	All *IndexStats `json:"_all,omitempty"`
