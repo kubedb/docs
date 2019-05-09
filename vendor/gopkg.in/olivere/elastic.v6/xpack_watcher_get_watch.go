@@ -9,38 +9,40 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"time"
 
 	"github.com/olivere/elastic/uritemplates"
 )
 
-// XpackWatcherGetWatchService is documented at http://www.elastic.co/guide/en/elasticsearch/reference/current/watcher-api-get-watch.html.
-type XpackWatcherGetWatchService struct {
+// XPackWatcherGetWatchService retrieves a watch by its ID.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/watcher-api-get-watch.html.
+type XPackWatcherGetWatchService struct {
 	client *Client
 	pretty bool
 	id     string
 }
 
-// NewXpackWatcherGetWatchService creates a new XpackWatcherGetWatchService.
-func NewXpackWatcherGetWatchService(client *Client) *XpackWatcherGetWatchService {
-	return &XpackWatcherGetWatchService{
+// NewXPackWatcherGetWatchService creates a new XPackWatcherGetWatchService.
+func NewXPackWatcherGetWatchService(client *Client) *XPackWatcherGetWatchService {
+	return &XPackWatcherGetWatchService{
 		client: client,
 	}
 }
 
-// Id is documented as: Watch ID.
-func (s *XpackWatcherGetWatchService) Id(id string) *XpackWatcherGetWatchService {
+// Id is ID of the watch to retrieve.
+func (s *XPackWatcherGetWatchService) Id(id string) *XPackWatcherGetWatchService {
 	s.id = id
 	return s
 }
 
 // Pretty indicates that the JSON response be indented and human readable.
-func (s *XpackWatcherGetWatchService) Pretty(pretty bool) *XpackWatcherGetWatchService {
+func (s *XPackWatcherGetWatchService) Pretty(pretty bool) *XPackWatcherGetWatchService {
 	s.pretty = pretty
 	return s
 }
 
 // buildURL builds the URL for the operation.
-func (s *XpackWatcherGetWatchService) buildURL() (string, url.Values, error) {
+func (s *XPackWatcherGetWatchService) buildURL() (string, url.Values, error) {
 	// Build URL
 	path, err := uritemplates.Expand("/_xpack/watcher/watch/{id}", map[string]string{
 		"id": s.id,
@@ -52,13 +54,13 @@ func (s *XpackWatcherGetWatchService) buildURL() (string, url.Values, error) {
 	// Add query string parameters
 	params := url.Values{}
 	if s.pretty {
-		params.Set("pretty", "1")
+		params.Set("pretty", "true")
 	}
 	return path, params, nil
 }
 
 // Validate checks if the operation is valid.
-func (s *XpackWatcherGetWatchService) Validate() error {
+func (s *XPackWatcherGetWatchService) Validate() error {
 	var invalid []string
 	if s.id == "" {
 		invalid = append(invalid, "Id")
@@ -70,7 +72,7 @@ func (s *XpackWatcherGetWatchService) Validate() error {
 }
 
 // Do executes the operation.
-func (s *XpackWatcherGetWatchService) Do(ctx context.Context) (*XpackWatcherGetWatchResponse, error) {
+func (s *XPackWatcherGetWatchService) Do(ctx context.Context) (*XPackWatcherGetWatchResponse, error) {
 	// Check pre-conditions
 	if err := s.Validate(); err != nil {
 		return nil, err
@@ -93,30 +95,68 @@ func (s *XpackWatcherGetWatchService) Do(ctx context.Context) (*XpackWatcherGetW
 	}
 
 	// Return operation response
-	ret := new(XpackWatcherGetWatchResponse)
+	ret := new(XPackWatcherGetWatchResponse)
 	if err := json.Unmarshal(res.Body, ret); err != nil {
 		return nil, err
 	}
 	return ret, nil
 }
 
-// XpackWatcherGetWatchResponse is the response of XpackWatcherGetWatchService.Do.
-type XpackWatcherGetWatchResponse struct {
-	Found  bool        `json:"found"`
-	Id     string      `json:"_id"`
-	Status WatchStatus `json:"status"`
-	Watch  Watch       `json:"watch"`
+// XPackWatcherGetWatchResponse is the response of XPackWatcherGetWatchService.Do.
+type XPackWatcherGetWatchResponse struct {
+	Found   bool              `json:"found"`
+	Id      string            `json:"_id"`
+	Version int64             `json:"_version,omitempty"`
+	Status  *XPackWatchStatus `json:"status,omitempty"`
+	Watch   *XPackWatch       `json:"watch,omitempty"`
 }
 
-type WatchStatus struct {
-	State   map[string]interface{}            `json:"state"`
-	Actions map[string]map[string]interface{} `json:"actions"`
-	Version int                               `json:"version"`
+type XPackWatchStatus struct {
+	State            *XPackWatchExecutionState          `json:"state,omitempty"`
+	LastChecked      *time.Time                         `json:"last_checked,omitempty"`
+	LastMetCondition *time.Time                         `json:"last_met_condition,omitempty"`
+	Actions          map[string]*XPackWatchActionStatus `json:"actions,omitempty"`
+	ExecutionState   *XPackWatchActionExecutionState    `json:"execution_state,omitempty"`
+	Headers          map[string]string                  `json:"headers,omitempty"`
+	Version          int64                              `json:"version"`
 }
 
-type Watch struct {
-	Input     map[string]map[string]interface{} `json:"input"`
-	Condition map[string]map[string]interface{} `json:"condition"`
-	Trigger   map[string]map[string]interface{} `json:"trigger"`
-	Actions   map[string]map[string]interface{} `json:"actions"`
+type XPackWatchExecutionState struct {
+	Active    bool      `json:"active"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+type XPackWatchActionStatus struct {
+	AckStatus               *XPackWatchActionAckStatus `json:"ack"`
+	LastExecution           *time.Time                 `json:"last_execution,omitempty"`
+	LastSuccessfulExecution *time.Time                 `json:"last_successful_execution,omitempty"`
+	LastThrottle            *XPackWatchActionThrottle  `json:"last_throttle,omitempty"`
+}
+
+type XPackWatchActionAckStatus struct {
+	Timestamp      time.Time `json:"timestamp"`
+	AckStatusState string    `json:"ack_status_state"`
+}
+
+type XPackWatchActionExecutionState struct {
+	Timestamp  time.Time `json:"timestamp"`
+	Successful bool      `json:"successful"`
+	Reason     string    `json:"reason,omitempty"`
+}
+
+type XPackWatchActionThrottle struct {
+	Timestamp time.Time `json:"timestamp"`
+	Reason    string    `json:"reason,omitempty"`
+}
+
+type XPackWatch struct {
+	Trigger                map[string]map[string]interface{}  `json:"trigger"`
+	Input                  map[string]map[string]interface{}  `json:"input"`
+	Condition              map[string]map[string]interface{}  `json:"condition"`
+	Transform              map[string]interface{}             `json:"transform,omitempty"`
+	ThrottlePeriod         string                             `json:"throttle_period,omitempty"`
+	ThrottlePeriodInMillis int64                              `json:"throttle_period_in_millis,omitempty"`
+	Actions                map[string]*XPackWatchActionStatus `json:"actions"`
+	Metadata               map[string]interface{}             `json:"metadata,omitempty"`
+	Status                 *XPackWatchStatus                  `json:"status,omitempty"`
 }

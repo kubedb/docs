@@ -16,7 +16,7 @@ import (
 // CatCountService provides quick access to the document count of the entire cluster,
 // or individual indices.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/cat-count.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/cat-count.html
 // for details.
 type CatCountService struct {
 	client        *Client
@@ -115,6 +115,9 @@ func (s *CatCountService) buildURL() (string, url.Values, error) {
 	}
 	if len(s.sort) > 0 {
 		params.Set("s", strings.Join(s.sort, ","))
+	}
+	if len(s.columns) > 0 {
+		params.Set("h", strings.Join(s.columns, ","))
 	}
 	return path, params, nil
 }

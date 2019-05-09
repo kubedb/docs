@@ -12,7 +12,7 @@ package elastic
 // or use one of the shortcuts e.g. NewMatchPhraseQuery(...).
 //
 // For more details, see
-// https://www.elastic.co/guide/en/elasticsearch/reference/6.2/query-dsl-match-query.html
+// https://www.elastic.co/guide/en/elasticsearch/reference/6.7/query-dsl-match-query.html
 type MatchQuery struct {
 	name                string
 	text                interface{}
@@ -176,7 +176,7 @@ func (q *MatchQuery) Source() (interface{}, error) {
 		query["zero_terms_query"] = q.zeroTermsQuery
 	}
 	if q.cutoffFrequency != nil {
-		query["cutoff_frequency"] = q.cutoffFrequency
+		query["cutoff_frequency"] = *q.cutoffFrequency
 	}
 	if q.boost != nil {
 		query["boost"] = *q.boost

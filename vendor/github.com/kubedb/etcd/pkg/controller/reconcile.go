@@ -184,7 +184,7 @@ func (c *Controller) removeMember(cl *Cluster, toRemove *util.Member) (err error
 }
 
 func (c *Cluster) removePVC(client kubernetes.Interface, pvcName string) error {
-	err := client.Core().PersistentVolumeClaims(c.cluster.Namespace).Delete(pvcName, nil)
+	err := client.CoreV1().PersistentVolumeClaims(c.cluster.Namespace).Delete(pvcName, nil)
 	if err != nil && !kerr.IsNotFound(err) {
 		return fmt.Errorf("remove pvc (%s) failed: %v", pvcName, err)
 	}

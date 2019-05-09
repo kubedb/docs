@@ -19,7 +19,7 @@ import (
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/elasticsearch/pkg/keytool"
 	"github.com/pkg/errors"
-	"k8s.io/client-go/util/cert"
+	"gomodules.xyz/cert"
 )
 
 const (

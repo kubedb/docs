@@ -10,10 +10,10 @@ import (
 	api "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
 	"github.com/kubedb/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"golang.org/x/crypto/bcrypt"
+	"gomodules.xyz/cert"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/util/cert"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
 

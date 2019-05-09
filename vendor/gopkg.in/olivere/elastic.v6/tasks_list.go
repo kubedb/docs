@@ -16,7 +16,7 @@ import (
 
 // TasksListService retrieves the list of currently executing tasks
 // on one ore more nodes in the cluster. It is part of the Task Management API
-// documented at https://www.elastic.co/guide/en/elasticsearch/reference/6.2/tasks.html.
+// documented at https://www.elastic.co/guide/en/elasticsearch/reference/6.7/tasks.html.
 //
 // It is supported as of Elasticsearch 2.3.0.
 type TasksListService struct {
@@ -190,11 +190,13 @@ func (s *TasksListService) Do(ctx context.Context) (*TasksListResponse, error) {
 	if err := s.client.decoder.Decode(res.Body, ret); err != nil {
 		return nil, err
 	}
+	ret.Header = res.Header
 	return ret, nil
 }
 
 // TasksListResponse is the response of TasksListService.Do.
 type TasksListResponse struct {
+	Header       http.Header             `json:"-"`
 	TaskFailures []*TaskOperationFailure `json:"task_failures"`
 	NodeFailures []*FailedNodeException  `json:"node_failures"`
 	// Nodes returns the tasks per node. The key is the node id.
@@ -226,23 +228,24 @@ type DiscoveryNode struct {
 
 // TaskInfo represents information about a currently running task.
 type TaskInfo struct {
-	Node               string      `json:"node"`
-	Id                 int64       `json:"id"` // the task id (yes, this is a long in the Java source)
-	Type               string      `json:"type"`
-	Action             string      `json:"action"`
-	Status             interface{} `json:"status"`      // has separate implementations of Task.Status in Java for reindexing, replication, and "RawTaskStatus"
-	Description        interface{} `json:"description"` // same as Status
-	StartTime          string      `json:"start_time"`
-	StartTimeInMillis  int64       `json:"start_time_in_millis"`
-	RunningTime        string      `json:"running_time"`
-	RunningTimeInNanos int64       `json:"running_time_in_nanos"`
-	Cancellable        bool        `json:"cancellable"`
-	ParentTaskId       string      `json:"parent_task_id"` // like "YxJnVYjwSBm_AUbzddTajQ:12356"
-	Headers            http.Header `json:"headers"`
+	Node               string            `json:"node"`
+	Id                 int64             `json:"id"` // the task id (yes, this is a long in the Java source)
+	Type               string            `json:"type"`
+	Action             string            `json:"action"`
+	Status             interface{}       `json:"status"`      // has separate implementations of Task.Status in Java for reindexing, replication, and "RawTaskStatus"
+	Description        interface{}       `json:"description"` // same as Status
+	StartTime          string            `json:"start_time"`
+	StartTimeInMillis  int64             `json:"start_time_in_millis"`
+	RunningTime        string            `json:"running_time"`
+	RunningTimeInNanos int64             `json:"running_time_in_nanos"`
+	Cancellable        bool              `json:"cancellable"`
+	ParentTaskId       string            `json:"parent_task_id"` // like "YxJnVYjwSBm_AUbzddTajQ:12356"
+	Headers            map[string]string `json:"headers"`
 }
 
 // StartTaskResult is used in cases where a task gets started asynchronously and
 // the operation simply returnes a TaskID to watch for via the Task Management API.
 type StartTaskResult struct {
-	TaskId string `json:"task"`
+	Header http.Header `json:"-"`
+	TaskId string      `json:"task"`
 }

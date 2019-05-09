@@ -68,7 +68,7 @@ func (c Controller) NewCluster(etcd *api.Etcd) {
 		eventCh:   make(chan *clusterEvent, 100),
 		stopCh:    make(chan struct{}),
 		status:    *(etcd.Status.DeepCopy()),
-		eventsCli: c.Controller.Client.Core().Events(etcd.Namespace),
+		eventsCli: c.Controller.Client.CoreV1().Events(etcd.Namespace),
 	}
 
 	go func() {
@@ -295,7 +295,7 @@ func isSpecEqual(s1, s2 api.EtcdSpec) bool {
 	return true
 }
 func (c *Controller) pollPods(cl *Cluster) (running, pending []*v1.Pod, err error) {
-	podList, err := c.Controller.Client.Core().Pods(cl.cluster.Namespace).List(metav1.ListOptions{
+	podList, err := c.Controller.Client.CoreV1().Pods(cl.cluster.Namespace).List(metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(cl.cluster.OffshootLabels()).String(),
 	})
 	if err != nil {
@@ -331,7 +331,7 @@ func (c *Controller) pollPods(cl *Cluster) (running, pending []*v1.Pod, err erro
 
 func (c *Controller) removePod(ns, name string) error {
 	opts := metav1.NewDeleteOptions(podTerminationGracePeriod)
-	err := c.Controller.Client.Core().Pods(ns).Delete(name, opts)
+	err := c.Controller.Client.CoreV1().Pods(ns).Delete(name, opts)
 	if err != nil {
 		/*if !util.IsKubernetesResourceNotFoundError(err) {
 			return err

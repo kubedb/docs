@@ -6,12 +6,14 @@ package elastic
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 )
 
 // ReindexService is a method to copy documents from one index to another.
-// It is documented at https://www.elastic.co/guide/en/elasticsearch/reference/6.2/docs-reindex.html.
+// It is documented at https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-reindex.html.
 type ReindexService struct {
 	client              *Client
 	pretty              bool
@@ -27,6 +29,7 @@ type ReindexService struct {
 	conflicts           string
 	size                *int
 	script              *Script
+	headers             http.Header
 }
 
 // NewReindexService creates a new ReindexService.
@@ -53,9 +56,9 @@ func (s *ReindexService) RequestsPerSecond(requestsPerSecond int) *ReindexServic
 }
 
 // Slices specifies the number of slices this task should be divided into. Defaults to 1.
-// It used to  be a number, but can be set to "auto" as of 6.3.
+// It used to  be a number, but can be set to "auto" as of 6.7.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.3/docs-reindex.html#docs-reindex-slice
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-reindex.html#docs-reindex-slice
 // for details.
 func (s *ReindexService) Slices(slices interface{}) *ReindexService {
 	s.slices = slices
@@ -65,7 +68,7 @@ func (s *ReindexService) Slices(slices interface{}) *ReindexService {
 // Refresh indicates whether Elasticsearch should refresh the effected indexes
 // immediately.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/docs-refresh.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-refresh.html
 // for details.
 func (s *ReindexService) Refresh(refresh string) *ReindexService {
 	s.refresh = refresh
@@ -83,6 +86,15 @@ func (s *ReindexService) Timeout(timeout string) *ReindexService {
 // reindex is complete.
 func (s *ReindexService) WaitForCompletion(waitForCompletion bool) *ReindexService {
 	s.waitForCompletion = &waitForCompletion
+	return s
+}
+
+// Header sets headers on the request
+func (s *ReindexService) Header(name string, value string) *ReindexService {
+	if s.headers == nil {
+		s.headers = http.Header{}
+	}
+	s.headers.Add(name, value)
 	return s
 }
 
@@ -214,7 +226,7 @@ func (s *ReindexService) Validate() error {
 	if s.source == nil {
 		invalid = append(invalid, "Source")
 	} else {
-		if len(s.source.indices) == 0 {
+		if len(s.source.request.indices) == 0 {
 			invalid = append(invalid, "Source.Index")
 		}
 	}
@@ -285,10 +297,11 @@ func (s *ReindexService) Do(ctx context.Context) (*BulkIndexByScrollResponse, er
 
 	// Get HTTP response
 	res, err := s.client.PerformRequest(ctx, PerformRequestOptions{
-		Method: "POST",
-		Path:   path,
-		Params: params,
-		Body:   body,
+		Method:  "POST",
+		Path:    path,
+		Params:  params,
+		Body:    body,
+		Headers: s.headers,
 	})
 	if err != nil {
 		return nil, err
@@ -299,6 +312,7 @@ func (s *ReindexService) Do(ctx context.Context) (*BulkIndexByScrollResponse, er
 	if err := s.client.decoder.Decode(res.Body, ret); err != nil {
 		return nil, err
 	}
+	ret.Header = res.Header
 	return ret, nil
 }
 
@@ -332,10 +346,11 @@ func (s *ReindexService) DoAsync(ctx context.Context) (*StartTaskResult, error) 
 
 	// Get HTTP response
 	res, err := s.client.PerformRequest(ctx, PerformRequestOptions{
-		Method: "POST",
-		Path:   path,
-		Params: params,
-		Body:   body,
+		Method:  "POST",
+		Path:    path,
+		Params:  params,
+		Body:    body,
+		Headers: s.headers,
 	})
 	if err != nil {
 		return nil, err
@@ -346,6 +361,7 @@ func (s *ReindexService) DoAsync(ctx context.Context) (*StartTaskResult, error) 
 	if err := s.client.decoder.Decode(res.Body, ret); err != nil {
 		return nil, err
 	}
+	ret.Header = res.Header
 	return ret, nil
 }
 
@@ -353,85 +369,124 @@ func (s *ReindexService) DoAsync(ctx context.Context) (*StartTaskResult, error) 
 
 // ReindexSource specifies the source of a Reindex process.
 type ReindexSource struct {
-	searchType   string // default in ES is "query_then_fetch"
-	indices      []string
-	types        []string
-	routing      *string
-	preference   *string
-	requestCache *bool
-	scroll       string
-	query        Query
-	sorts        []SortInfo
-	sorters      []Sorter
-	searchSource *SearchSource
-	remoteInfo   *ReindexRemoteInfo
+	searchType string // default in ES is "query_then_fetch"
+	request    *SearchRequest
+	/*
+		indices      []string
+		types        []string
+		routing      *string
+		preference   *string
+		requestCache *bool
+		scroll       string
+		query        Query
+		sorts        []SortInfo
+		sorters      []Sorter
+		searchSource *SearchSource
+	*/
+	remoteInfo *ReindexRemoteInfo
 }
 
 // NewReindexSource creates a new ReindexSource.
 func NewReindexSource() *ReindexSource {
-	return &ReindexSource{}
+	return &ReindexSource{
+		request: NewSearchRequest(),
+	}
+}
+
+// Request specifies the search request used for source.
+func (r *ReindexSource) Request(request *SearchRequest) *ReindexSource {
+	if request == nil {
+		r.request = NewSearchRequest()
+	} else {
+		r.request = request
+	}
+	return r
 }
 
 // SearchType is the search operation type. Possible values are
 // "query_then_fetch" and "dfs_query_then_fetch".
 func (r *ReindexSource) SearchType(searchType string) *ReindexSource {
-	r.searchType = searchType
+	r.request = r.request.SearchType(searchType)
 	return r
 }
 
 func (r *ReindexSource) SearchTypeDfsQueryThenFetch() *ReindexSource {
-	return r.SearchType("dfs_query_then_fetch")
+	r.request = r.request.SearchType("dfs_query_then_fetch")
+	return r
 }
 
 func (r *ReindexSource) SearchTypeQueryThenFetch() *ReindexSource {
-	return r.SearchType("query_then_fetch")
+	r.request = r.request.SearchType("query_then_fetch")
+	return r
 }
 
 func (r *ReindexSource) Index(indices ...string) *ReindexSource {
-	r.indices = append(r.indices, indices...)
+	r.request = r.request.Index(indices...)
 	return r
 }
 
 func (r *ReindexSource) Type(types ...string) *ReindexSource {
-	r.types = append(r.types, types...)
+	r.request = r.request.Type(types...)
 	return r
 }
 
 func (r *ReindexSource) Preference(preference string) *ReindexSource {
-	r.preference = &preference
+	r.request = r.request.Preference(preference)
 	return r
 }
 
 func (r *ReindexSource) RequestCache(requestCache bool) *ReindexSource {
-	r.requestCache = &requestCache
+	r.request = r.request.RequestCache(requestCache)
 	return r
 }
 
 func (r *ReindexSource) Scroll(scroll string) *ReindexSource {
-	r.scroll = scroll
+	r.request = r.request.Scroll(scroll)
 	return r
 }
 
 func (r *ReindexSource) Query(query Query) *ReindexSource {
-	r.query = query
+	r.request = r.request.Query(query)
 	return r
 }
 
 // Sort adds a sort order.
 func (r *ReindexSource) Sort(field string, ascending bool) *ReindexSource {
-	r.sorts = append(r.sorts, SortInfo{Field: field, Ascending: ascending})
+	r.request = r.request.Sort(field, ascending)
 	return r
 }
 
 // SortWithInfo adds a sort order.
 func (r *ReindexSource) SortWithInfo(info SortInfo) *ReindexSource {
-	r.sorts = append(r.sorts, info)
+	r.request = r.request.SortWithInfo(info)
 	return r
 }
 
 // SortBy adds a sort order.
 func (r *ReindexSource) SortBy(sorter ...Sorter) *ReindexSource {
-	r.sorters = append(r.sorters, sorter...)
+	r.request = r.request.SortBy(sorter...)
+	return r
+}
+
+// FetchSource indicates whether the response should contain the stored
+// _source for every hit.
+func (r *ReindexSource) FetchSource(fetchSource bool) *ReindexSource {
+	r.request = r.request.FetchSource(fetchSource)
+	return r
+}
+
+// FetchSourceIncludeExclude specifies that _source should be returned
+// with each hit, where "include" and "exclude" serve as a simple wildcard
+// matcher that gets applied to its fields
+// (e.g. include := []string{"obj1.*","obj2.*"}, exclude := []string{"description.*"}).
+func (r *ReindexSource) FetchSourceIncludeExclude(include, exclude []string) *ReindexSource {
+	r.request = r.request.FetchSourceIncludeExclude(include, exclude)
+	return r
+}
+
+// FetchSourceContext indicates how the _source should be fetched.
+func (r *ReindexSource) FetchSourceContext(fsc *FetchSourceContext) *ReindexSource {
+	r.request = r.request.FetchSourceContext(fsc)
 	return r
 }
 
@@ -443,54 +498,28 @@ func (r *ReindexSource) RemoteInfo(ri *ReindexRemoteInfo) *ReindexSource {
 
 // Source returns a serializable JSON request for the request.
 func (r *ReindexSource) Source() (interface{}, error) {
-	source := make(map[string]interface{})
-
-	if r.query != nil {
-		src, err := r.query.Source()
-		if err != nil {
-			return nil, err
-		}
-		source["query"] = src
-	} else if r.searchSource != nil {
-		src, err := r.searchSource.Source()
-		if err != nil {
-			return nil, err
-		}
-		source["source"] = src
+	src, err := r.request.sourceAsMap()
+	if err != nil {
+		return nil, err
+	}
+	source, ok := src.(map[string]interface{})
+	if !ok {
+		return nil, errors.New("unable to use SearchRequest as map[string]interface{}")
 	}
 
-	if r.searchType != "" {
-		source["search_type"] = r.searchType
+	switch len(r.request.indices) {
+	case 1:
+		source["index"] = r.request.indices[0]
+	default:
+		source["index"] = r.request.indices
 	}
-
-	switch len(r.indices) {
+	switch len(r.request.types) {
 	case 0:
 	case 1:
-		source["index"] = r.indices[0]
+		source["type"] = r.request.types[0]
 	default:
-		source["index"] = r.indices
+		source["type"] = r.request.types
 	}
-
-	switch len(r.types) {
-	case 0:
-	case 1:
-		source["type"] = r.types[0]
-	default:
-		source["type"] = r.types
-	}
-
-	if r.preference != nil && *r.preference != "" {
-		source["preference"] = *r.preference
-	}
-
-	if r.requestCache != nil {
-		source["request_cache"] = fmt.Sprintf("%v", *r.requestCache)
-	}
-
-	if r.scroll != "" {
-		source["scroll"] = r.scroll
-	}
-
 	if r.remoteInfo != nil {
 		src, err := r.remoteInfo.Source()
 		if err != nil {
@@ -498,29 +527,6 @@ func (r *ReindexSource) Source() (interface{}, error) {
 		}
 		source["remote"] = src
 	}
-
-	if len(r.sorters) > 0 {
-		var sortarr []interface{}
-		for _, sorter := range r.sorters {
-			src, err := sorter.Source()
-			if err != nil {
-				return nil, err
-			}
-			sortarr = append(sortarr, src)
-		}
-		source["sort"] = sortarr
-	} else if len(r.sorts) > 0 {
-		var sortarr []interface{}
-		for _, sort := range r.sorts {
-			src, err := sort.Source()
-			if err != nil {
-				return nil, err
-			}
-			sortarr = append(sortarr, src)
-		}
-		source["sort"] = sortarr
-	}
-
 	return source, nil
 }
 
@@ -595,7 +601,7 @@ func (ri *ReindexRemoteInfo) Source() (interface{}, error) {
 // ReindexDestination is the destination of a Reindex API call.
 // It is basically the meta data of a BulkIndexRequest.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/docs-reindex.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-reindex.html
 // fsourcer details.
 type ReindexDestination struct {
 	index       string
@@ -654,7 +660,7 @@ func (r *ReindexDestination) Parent(parent string) *ReindexDestination {
 
 // OpType specifies if this request should follow create-only or upsert
 // behavior. This follows the OpType of the standard document index API.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/docs-index_.html#operation-type
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-index_.html#operation-type
 // for details.
 func (r *ReindexDestination) OpType(opType string) *ReindexDestination {
 	r.opType = opType

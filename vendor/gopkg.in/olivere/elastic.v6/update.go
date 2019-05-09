@@ -14,7 +14,7 @@ import (
 )
 
 // UpdateService updates a document in Elasticsearch.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/docs-update.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-update.html
 // for details.
 type UpdateService struct {
 	client              *Client
@@ -113,7 +113,7 @@ func (b *UpdateService) VersionType(versionType string) *UpdateService {
 
 // Refresh the index after performing the update.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/docs-refresh.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-refresh.html
 // for details.
 func (b *UpdateService) Refresh(refresh string) *UpdateService {
 	b.refresh = refresh
@@ -321,7 +321,7 @@ type UpdateResponse struct {
 	Id            string      `json:"_id,omitempty"`
 	Version       int64       `json:"_version,omitempty"`
 	Result        string      `json:"result,omitempty"`
-	Shards        *shardsInfo `json:"_shards,omitempty"`
+	Shards        *ShardsInfo `json:"_shards,omitempty"`
 	SeqNo         int64       `json:"_seq_no,omitempty"`
 	PrimaryTerm   int64       `json:"_primary_term,omitempty"`
 	Status        int         `json:"status,omitempty"`

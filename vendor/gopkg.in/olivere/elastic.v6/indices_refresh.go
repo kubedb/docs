@@ -14,7 +14,7 @@ import (
 )
 
 // RefreshService explicitly refreshes one or more indices.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.2/indices-refresh.html.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/indices-refresh.html.
 type RefreshService struct {
 	client *Client
 	index  []string
@@ -94,5 +94,5 @@ func (s *RefreshService) Do(ctx context.Context) (*RefreshResult, error) {
 
 // RefreshResult is the outcome of RefreshService.Do.
 type RefreshResult struct {
-	Shards shardsInfo `json:"_shards,omitempty"`
+	Shards *ShardsInfo `json:"_shards,omitempty"`
 }

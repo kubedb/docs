@@ -8,13 +8,13 @@ package elastic
 // has a value in them.
 //
 // For more details, see:
-// https://www.elastic.co/guide/en/elasticsearch/reference/6.2/query-dsl-exists-query.html
+// https://www.elastic.co/guide/en/elasticsearch/reference/6.7/query-dsl-exists-query.html
 type ExistsQuery struct {
 	name      string
 	queryName string
 }
 
-// NewExistsQuery creates and initializes a new dis max query.
+// NewExistsQuery creates and initializes a new exists query.
 func NewExistsQuery(name string) *ExistsQuery {
 	return &ExistsQuery{
 		name: name,

@@ -13,7 +13,7 @@ package elastic
 // a bucket aggregator. One or more bucket aggregators determines by
 // which properties a result set get sliced into.
 //
-// See: https://www.elastic.co/guide/en/elasticsearch/reference/6.2/search-aggregations-metrics-top-hits-aggregation.html
+// See: https://www.elastic.co/guide/en/elasticsearch/reference/6.7/search-aggregations-metrics-top-hits-aggregation.html
 type TopHitsAggregation struct {
 	searchSource *SearchSource
 }
@@ -22,6 +22,14 @@ func NewTopHitsAggregation() *TopHitsAggregation {
 	return &TopHitsAggregation{
 		searchSource: NewSearchSource(),
 	}
+}
+
+func (a *TopHitsAggregation) SearchSource(searchSource *SearchSource) *TopHitsAggregation {
+	a.searchSource = searchSource
+	if a.searchSource == nil {
+		a.searchSource = NewSearchSource()
+	}
+	return a
 }
 
 func (a *TopHitsAggregation) From(from int) *TopHitsAggregation {
@@ -69,8 +77,18 @@ func (a *TopHitsAggregation) DocvalueFields(docvalueFields ...string) *TopHitsAg
 	return a
 }
 
+func (a *TopHitsAggregation) DocvalueFieldsWithFormat(docvalueFields ...DocvalueField) *TopHitsAggregation {
+	a.searchSource = a.searchSource.DocvalueFieldsWithFormat(docvalueFields...)
+	return a
+}
+
 func (a *TopHitsAggregation) DocvalueField(docvalueField string) *TopHitsAggregation {
 	a.searchSource = a.searchSource.DocvalueField(docvalueField)
+	return a
+}
+
+func (a *TopHitsAggregation) DocvalueFieldWithFormat(docvalueField DocvalueField) *TopHitsAggregation {
+	a.searchSource = a.searchSource.DocvalueFieldWithFormat(docvalueField)
 	return a
 }
 
