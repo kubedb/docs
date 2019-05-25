@@ -146,6 +146,7 @@ curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.3.0/
 To see the detailed configuration options, visit [here](https://github.com/kubedb/cli/tree/master/chart/kubedb).
 
 </div>
+</div>
 
 ### Installing in GKE Cluster
 
