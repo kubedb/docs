@@ -16,7 +16,7 @@ github.com/NYTimes/gziphandler
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
-# github.com/appscode/go v0.0.0-20190424183524-60025f1135c9
+# github.com/appscode/go v0.0.0-20190523031839-1468ee3a76e8
 github.com/appscode/go/version
 github.com/appscode/go/runtime
 github.com/appscode/go/flags
@@ -38,7 +38,7 @@ github.com/appscode/go/encoding/yaml
 github.com/appscode/jsonpatch
 # github.com/appscode/osm v0.11.0
 github.com/appscode/osm/context
-# github.com/aws/aws-sdk-go v1.14.12
+# github.com/aws/aws-sdk-go v1.14.33
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/credentials
 github.com/aws/aws-sdk-go/aws/credentials/stscreds
@@ -55,6 +55,7 @@ github.com/aws/aws-sdk-go/service/sts
 github.com/aws/aws-sdk-go/aws/client/metadata
 github.com/aws/aws-sdk-go/aws/corehandlers
 github.com/aws/aws-sdk-go/aws/request
+github.com/aws/aws-sdk-go/internal/sdkuri
 github.com/aws/aws-sdk-go/aws/csm
 github.com/aws/aws-sdk-go/aws/defaults
 github.com/aws/aws-sdk-go/aws/awsutil
@@ -100,7 +101,7 @@ github.com/dgrijalva/jwt-go
 # github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c
 github.com/docker/spdystream
 github.com/docker/spdystream/spdy
-# github.com/emicklei/go-restful v2.9.3+incompatible
+# github.com/emicklei/go-restful v2.9.5+incompatible
 github.com/emicklei/go-restful
 github.com/emicklei/go-restful/log
 # github.com/evanphx/json-patch v4.2.0+incompatible
@@ -189,7 +190,7 @@ github.com/jpillora/go-ogle-analytics
 github.com/json-iterator/go
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
-# github.com/kubedb/apimachinery v0.0.0-20190508221312-5ba915343400
+# github.com/kubedb/apimachinery v0.0.0-20190526014453-48e4bab67179
 github.com/kubedb/apimachinery/client/clientset/versioned/scheme
 github.com/kubedb/apimachinery/apis
 github.com/kubedb/apimachinery/client/clientset/versioned
@@ -271,7 +272,7 @@ github.com/modern-go/concurrent
 github.com/modern-go/reflect2
 # github.com/munnerz/goautoneg v0.0.0-20190414153302-2ae31c8b6b30
 github.com/munnerz/goautoneg
-# github.com/ncw/swift v1.0.41
+# github.com/ncw/swift v1.0.47
 github.com/ncw/swift
 # github.com/olivere/elastic v6.2.17+incompatible
 github.com/olivere/elastic/config
@@ -286,12 +287,12 @@ github.com/pborman/uuid
 github.com/peterbourgon/diskv
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
-# github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829
+# github.com/prometheus/client_golang v0.9.3
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
 # github.com/prometheus/client_model v0.0.0-20190129233127-fd36f4220a90
 github.com/prometheus/client_model/go
-# github.com/prometheus/common v0.4.0
+# github.com/prometheus/common v0.4.1
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/model
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
@@ -304,9 +305,9 @@ github.com/russross/blackfriday
 github.com/satori/go.uuid
 # github.com/sergi/go-diff v1.0.0
 github.com/sergi/go-diff/diffmatchpatch
-# github.com/sirupsen/logrus v1.4.1
+# github.com/sirupsen/logrus v1.4.2
 github.com/sirupsen/logrus
-# github.com/spf13/cobra v0.0.3
+# github.com/spf13/cobra v0.0.4
 github.com/spf13/cobra/doc
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.3
@@ -820,7 +821,7 @@ k8s.io/client-go/tools/remotecommand
 k8s.io/client-go/util/exec
 # k8s.io/component-base v0.0.0-20190508223741-40efa6d42997 => k8s.io/component-base v0.0.0-20190314000054-4a91899592f4
 k8s.io/component-base/cli/flag
-# k8s.io/klog v0.3.0 => k8s.io/klog v0.3.0
+# k8s.io/klog v0.3.1 => k8s.io/klog v0.3.0
 k8s.io/klog
 # k8s.io/kube-aggregator v0.0.0-20190508224022-f9852b6d3a84 => k8s.io/kube-aggregator v0.0.0-20190314000639-da8327669ac5
 k8s.io/kube-aggregator/pkg/apis/apiregistration/v1beta1
@@ -841,7 +842,7 @@ k8s.io/kube-openapi/pkg/schemaconv
 k8s.io/utils/integer
 k8s.io/utils/buffer
 k8s.io/utils/trace
-# kmodules.xyz/client-go v0.0.0-20190508091620-0d215c04352f
+# kmodules.xyz/client-go v0.0.0-20190524133821-9c8a87771aea
 kmodules.xyz/client-go/logs
 kmodules.xyz/client-go/meta
 kmodules.xyz/client-go/tools/cli
@@ -854,6 +855,7 @@ kmodules.xyz/client-go
 kmodules.xyz/client-go/tools/analytics
 kmodules.xyz/client-go/core/v1
 kmodules.xyz/client-go/tools/queue
+kmodules.xyz/client-go/policy/v1beta1
 kmodules.xyz/client-go/apps/v1
 kmodules.xyz/client-go/rbac/v1beta1
 kmodules.xyz/client-go/tools/portforward

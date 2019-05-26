@@ -14,34 +14,52 @@ CLI_ROOT="$GOPATH/src/github.com/kubedb/cli"
 
 pushd $REPO_ROOT
 
-# https://stackoverflow.com/a/677212/244009
-if [[ ! -z "$(command -v onessl)" ]]; then
-  export ONESSL=onessl
-else
-  # ref: https://stackoverflow.com/a/27776822/244009
-  case "$(uname -s)" in
-    Darwin)
-      curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.9.0/onessl-darwin-amd64
-      chmod +x onessl
-      export ONESSL=./onessl
-      ;;
+onessl_found() {
+  # https://stackoverflow.com/a/677212/244009
+  if [ -x "$(command -v onessl)" ]; then
+    onessl wait-until-has -h >/dev/null 2>&1 || {
+      # old version of onessl found
+      echo "Found outdated onessl"
+      return 1
+    }
+    export ONESSL=onessl
+    return 0
+  fi
+  return 1
+}
 
-    Linux)
-      curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.9.0/onessl-linux-amd64
-      chmod +x onessl
-      export ONESSL=./onessl
-      ;;
+onessl_found || {
+  echo "Downloading onessl ..."
+  if [[ "$(uname -m)" == "aarch64" ]]; then
+    curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.10.0/onessl-linux-arm64
+    chmod +x onessl
+    export ONESSL=./onessl
+  else
+    # ref: https://stackoverflow.com/a/27776822/244009
+    case "$(uname -s)" in
+      Darwin)
+        curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.10.0/onessl-darwin-amd64
+        chmod +x onessl
+        export ONESSL=./onessl
+        ;;
 
-    CYGWIN* | MINGW32* | MSYS*)
-      curl -fsSL -o onessl.exe https://github.com/kubepack/onessl/releases/download/0.9.0/onessl-windows-amd64.exe
-      chmod +x onessl.exe
-      export ONESSL=./onessl.exe
-      ;;
-    *)
-      echo 'other OS'
-      ;;
-  esac
-fi
+      Linux)
+        curl -fsSL -o onessl https://github.com/kubepack/onessl/releases/download/0.10.0/onessl-linux-amd64
+        chmod +x onessl
+        export ONESSL=./onessl
+        ;;
+
+      CYGWIN* | MINGW* | MSYS*)
+        curl -fsSL -o onessl.exe https://github.com/kubepack/onessl/releases/download/0.10.0/onessl-windows-amd64.exe
+        chmod +x onessl.exe
+        export ONESSL=./onessl.exe
+        ;;
+      *)
+        echo 'other OS'
+        ;;
+    esac
+  fi
+}
 
 source "$REPO_ROOT/hack/deploy/settings"
 source "$REPO_ROOT/hack/libbuild/common/lib.sh"
