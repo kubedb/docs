@@ -3,9 +3,9 @@ module github.com/kubedb/operator
 go 1.12
 
 require (
-	github.com/appscode/go v0.0.0-20190424183524-60025f1135c9
+	github.com/appscode/go v0.0.0-20190523031839-1468ee3a76e8
 	github.com/coreos/prometheus-operator v0.29.0
-	github.com/kubedb/apimachinery v0.0.0-20190508221312-5ba915343400
+	github.com/kubedb/apimachinery v0.0.0-20190526014453-48e4bab67179
 	github.com/kubedb/elasticsearch v0.0.0-20190508234318-e8fbea4bd0cc
 	github.com/kubedb/etcd v0.0.0-20190509011751-2cb55f3a1759
 	github.com/kubedb/memcached v0.0.0-20190509011145-4a80b9afbbb3
@@ -13,7 +13,8 @@ require (
 	github.com/kubedb/mysql v0.0.0-20190507122034-73ad7c30b884
 	github.com/kubedb/postgres v0.0.0-20190508232535-7e69d665c1ad
 	github.com/kubedb/redis v0.0.0-20190509010457-3699dfb2e19d
-	github.com/spf13/cobra v0.0.3
+	github.com/ncw/swift v1.0.47 // indirect
+	github.com/spf13/cobra v0.0.4
 	github.com/spf13/pflag v1.0.3
 	gopkg.in/olivere/elastic.v5 v5.0.80 // indirect
 	k8s.io/api v0.0.0-20190503110853-61630f889b3c
@@ -21,7 +22,7 @@ require (
 	k8s.io/apimachinery v0.0.0-20190508063446-a3da69d3723c
 	k8s.io/apiserver v0.0.0-20190508223931-4756b09d7af2
 	k8s.io/client-go v11.0.0+incompatible
-	kmodules.xyz/client-go v0.0.0-20190508091620-0d215c04352f
+	kmodules.xyz/client-go v0.0.0-20190524133821-9c8a87771aea
 	kmodules.xyz/custom-resources v0.0.0-20190508103408-464e8324c3ec
 	kmodules.xyz/webhook-runtime v0.0.0-20190508094945-962d01212c5b
 )
