@@ -141,7 +141,7 @@ Here, `{namespace}` & `{postgres-name}` indicates Postgres object whose WAL arch
 Now, let's create the Postgres object that's YAML has shown above,
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/postgres/initialization/replay-postgres-azure.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/initialization/replay-postgres-azure.yaml
 postgres.kubedb.com/replay-postgres created
 ```
 

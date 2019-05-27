@@ -45,7 +45,7 @@ Let's create a ConfigMap with initialization script,
 
 ```console
 $ kubectl create configmap -n demo mg-init-script \
---from-literal=init.js="$(curl -fsSL https://raw.githubusercontent.com/kubedb/mongodb-init-scripts/master/init.js)"
+--from-literal=init.js="$(curl -fsSL https://github.com/kubedb/mongodb-init-scripts/raw/master/init.js)"
 configmap/mg-init-script created
 ```
 
@@ -75,7 +75,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/mongodb/Initialization/demo-1.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mongodb/Initialization/demo-1.yaml
 mongodb.kubedb.com/mgo-init-script created
 ```
 

@@ -53,7 +53,7 @@ shared_buffers=256MB
 Now, create a configMap with this configuration file.
 
 ```console
-$ kubectl create configmap -n demo pg-custom-config --from-literal=user.conf="$(curl -fsSL https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/postgres/custom-config/user.conf)"
+$ kubectl create configmap -n demo pg-custom-config --from-literal=user.conf="$(curl -fsSL https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/custom-config/user.conf)"
 configmap/pg-custom-config created
 ```
 
@@ -79,7 +79,7 @@ metadata:
 Now, create Postgres crd specifying `spec.configSource` field.
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/postgres/custom-config/pg-custom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/custom-config/pg-custom-config.yaml
 postgres.kubedb.com/custom-postgres created
 ```
 

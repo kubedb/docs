@@ -93,7 +93,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/mongodb/configuration/mgo-misc-config.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mongodb/configuration/mgo-misc-config.yaml
 mongodb.kubedb.com/mgo-misc-config created
 ```
 
@@ -183,7 +183,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/mongodb/configuration/snapshot-misc-conf.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mongodb/configuration/snapshot-misc-conf.yaml
 snapshot.kubedb.com/snap-mongodb-config created
 
 

@@ -38,7 +38,7 @@ Let's install KubeDB with operator monitoring enabled.
 **Script:**
 
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/kubedb/cli/0.12.0/hack/deploy/kubedb.sh | bash -s -- \
+$ curl -fsSL https://github.com/kubedb/installer/raw/0.12.0/deploy/kubedb.sh | bash -s -- \
   --monitoring-enable=true \
   --monitoring-agent=prometheus.io/builtin \
   --prometheus-namespace=monitoring \
@@ -296,7 +296,7 @@ data:
 Let's create the ConfigMap we have shown above,
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/monitoring/operator/prom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/monitoring/operator/prom-config.yaml
 configmap/kubedb-operator-prom-config created
 ```
 
@@ -305,7 +305,7 @@ configmap/kubedb-operator-prom-config created
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/third-party-tools/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
+$ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
 clusterrolebinding.rbac.authorization.k8s.io/prometheus created
@@ -372,7 +372,7 @@ Notice that, we have mounted `kubedb-operator-apiserver-cert` secret as a volume
 Now, let's create the deployment,
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/monitoring/operator/prom-deploy.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/monitoring/operator/prom-deploy.yaml
 deployment.apps/prometheus created
 ```
 

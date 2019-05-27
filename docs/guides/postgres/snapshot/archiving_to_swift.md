@@ -142,7 +142,7 @@ To configure Swift backend, following parameters are available:
 Now create this Postgres object with continuous archiving support.
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/postgres/snapshot/wal-postgres-swift.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/snapshot/wal-postgres-swift.yaml
 postgres.kubedb.com/wal-postgres created
 ```
 

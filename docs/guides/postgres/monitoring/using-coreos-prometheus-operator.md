@@ -124,7 +124,7 @@ Here,
 Let's create the PostgreSQL object that we have shown above,
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/postgres/monitoring/coreos-prom-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/monitoring/coreos-prom-postgres.yaml
 postgresql.kubedb.com/coreos-prom-postgres created
 ```
 

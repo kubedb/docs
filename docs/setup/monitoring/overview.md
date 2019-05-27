@@ -112,7 +112,7 @@ $ helm install appscode/kubedb --name kubedb-operator --version 0.12.0 --namespa
 **Script:**
 
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/kubedb/cli/0.12.0/hack/deploy/kubedb.sh | bash -s -- \
+$ curl -fsSL https://github.com/kubedb/installer/raw/0.12.0/deploy/kubedb.sh | bash -s -- \
   --monitoring-enable=true \
   --monitoring-agent=prometheus.io/coreos-operator \
   --prometheus-namespace=monitoring \
