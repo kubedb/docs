@@ -142,7 +142,7 @@ To configure Local backend, following parameters are available:
 Now create this Postgres object with continuous archiving support.
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/postgres/snapshot/wal-postgres-local.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/snapshot/wal-postgres-local.yaml
 postgres.kubedb.com/wal-postgres created
 ```
 

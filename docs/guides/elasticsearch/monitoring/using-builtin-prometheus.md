@@ -68,7 +68,7 @@ Here,
 Let's create the Elasticsearch crd we have shown above.
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/elasticsearch/monitoring/builtin-prom-es.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/monitoring/builtin-prom-es.yaml
 elasticsearch.kubedb.com/builtin-prom-es created
 ```
 
@@ -274,7 +274,7 @@ data:
 Let's create above `ConfigMap`,
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
 
@@ -283,7 +283,7 @@ configmap/prometheus-config created
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/third-party-tools/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
+$ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
 clusterrolebinding.rbac.authorization.k8s.io/prometheus created
@@ -298,7 +298,7 @@ Now, we are ready to deploy Prometheus server. We are going to use following [de
 Let's deploy the Prometheus server.
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/third-party-tools/master/monitoring/prometheus/builtin/artifacts/deployment.yaml
+$ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/deployment.yaml
 deployment.apps/prometheus created
 ```
 

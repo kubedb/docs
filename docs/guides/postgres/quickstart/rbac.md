@@ -65,7 +65,7 @@ spec:
 Create above Postgres object with following command
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/postgres/quickstart/quick-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/quickstart/quick-postgres.yaml
 postgres.kubedb.com/quick-postgres created
 ```
 

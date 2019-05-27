@@ -90,7 +90,7 @@ instant-snapshot   script-postgres   Succeeded   56s
 Now, create the Postgres object.
 
 ```console
-$ kubedb create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/postgres/initialization/recovered-postgres.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/initialization/recovered-postgres.yaml
 postgres.kubedb.com/recovered-postgres created
 ```
 

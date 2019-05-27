@@ -31,7 +31,7 @@ In this tutorial we will use .sql script stored in GitHub repository [kubedb/mys
   $ kubectl create ns demo
   namespace/demo created
   
-  $ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/mysql/quickstart/demo-1.yaml
+  $ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/quickstart/demo-1.yaml
   deployment.extensions/myadmin created
   service/myadmin created
   
@@ -69,7 +69,7 @@ Let's create a ConfigMap with initialization script,
 
 ```console
 $ kubectl create configmap -n demo my-init-script \
---from-literal=init.sql="$(curl -fsSL https://raw.githubusercontent.com/kubedb/mysql-init-scripts/master/init.sql)"
+--from-literal=init.sql="$(curl -fsSL https://github.com/kubedb/mongodb-init-scripts/raw/master/init.sql)"
 configmap/my-init-script created
 ```
 
@@ -99,7 +99,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/mysql/Initialization/demo-1.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/Initialization/demo-1.yaml
 mysql.kubedb.com/mysql-init-script created
 ```
 

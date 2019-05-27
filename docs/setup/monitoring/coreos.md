@@ -38,7 +38,7 @@ Let's install KubeDB operator with monitoring enabled.
 **Script:**
 
 ```console
-$ curl -fsSL https://raw.githubusercontent.com/kubedb/cli/0.12.0/hack/deploy/kubedb.sh | bash -s -- \
+$ curl -fsSL https://github.com/kubedb/installer/raw/0.12.0/deploy/kubedb.sh | bash -s -- \
   --monitoring-enable=true \
   --monitoring-agent=prometheus.io/coreos-operator \
   --prometheus-namespace=monitoring \
@@ -145,7 +145,7 @@ If you don't have any existing Prometheus server running, you have to create a P
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/appscode/third-party-tools/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
+$ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
 clusterrolebinding.rbac.authorization.k8s.io/prometheus created
@@ -184,7 +184,7 @@ Here, `spec.serviceMonitorSelector` is used to select the `ServiceMonitor` crd t
 Let's create the `Prometheus` object we have shown above,
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/monitoring/operator/prometheus.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/monitoring/operator/prometheus.yaml
 prometheus.monitoring.coreos.com/prometheus created
 ```
 

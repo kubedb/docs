@@ -127,7 +127,7 @@ Here,
 Let's create the Memcached object that we have shown above,
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/memcached/monitoring/coreos-prom-memcd.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/memcached/monitoring/coreos-prom-memcd.yaml
 memcached.kubedb.com/coreos-prom-memcd created
 ```
 

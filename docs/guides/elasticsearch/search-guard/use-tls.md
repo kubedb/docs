@@ -63,7 +63,7 @@ spec:
 Let's create the Elasticsearch object we have shown above,
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/elasticsearch/search-guard/ssl-elasticsearch.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/search-guard/ssl-elasticsearch.yaml
 elasticsearch.kubedb.com/ssl-elasticsearch created
 ```
 

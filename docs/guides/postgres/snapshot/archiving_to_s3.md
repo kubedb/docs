@@ -115,7 +115,7 @@ To configure s3 backend, following parameters are available:
 Now create this Postgres object with continuous archiving support.
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/postgres/snapshot/wal-postgres-s3.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/snapshot/wal-postgres-s3.yaml
 postgres.kubedb.com/wal-postgres created
 ```
 

@@ -72,7 +72,7 @@ spec:
 ```
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0//docs/examples/mongodb/clustering/mongo-sharding.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0//docs/examples/mongodb/clustering/mongo-sharding.yaml
 mongodb.kubedb.com/mongo-sh created
 ```
 
@@ -993,7 +993,7 @@ In this tutorial, the dormant database can be resumed by creating original Mongo
 The below command will resume the DormantDatabase `mongo-sh`.
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/mongodb/clustering/mongo-sh.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mongodb/clustering/mongo-sh.yaml
 mongodb.kubedb.com/mongo-sh created
 ```
 

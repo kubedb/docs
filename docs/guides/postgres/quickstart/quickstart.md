@@ -43,7 +43,7 @@ This tutorial will also use a pgAdmin to connect and test PostgreSQL database, o
 Run the following command to install pgAdmin,
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/postgres/quickstart/pgadmin.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/quickstart/pgadmin.yaml
 deployment.apps/pgadmin created
 service/pgadmin created
 
@@ -138,7 +138,7 @@ Here,
 Let's create Postgres crd,
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/postgres/quickstart/quick-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/quickstart/quick-postgres.yaml
 postgres.kubedb.com/quick-postgres created
 ```
 
@@ -427,7 +427,7 @@ In this tutorial, the DormantDatabase `quick-postgres` can be resumed by creatin
 Let's create the original Postgres object,
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/postgres/quickstart/quick-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/quickstart/quick-postgres.yaml
 postgres.kubedb.com/quick-postgres created
 ```
 
