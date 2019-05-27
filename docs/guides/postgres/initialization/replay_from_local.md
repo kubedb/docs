@@ -141,7 +141,7 @@ Here,
 Now, let's create the Postgres object that's YAML has shown above,
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/postgres/initialization/replay-postgres-local.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/initialization/replay-postgres-local.yaml
 postgres.kubedb.com/replay-postgres created
 ```
 

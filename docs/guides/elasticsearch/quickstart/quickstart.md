@@ -115,7 +115,7 @@ Here,
 Let's create Elasticsearch crd that is shown above with following command
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/elasticsearch/quickstart/quick-elasticsearch.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/quickstart/quick-elasticsearch.yaml
 elasticsearch.kubedb.com/quick-elasticsearch created
 ```
 
@@ -526,7 +526,7 @@ In this tutorial, the DormantDatabase `quick-elasticsearch` can be resumed by cr
 The below command will resume the DormantDatabase `quick-elasticsearch`
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/elasticsearch/quickstart/quick-elasticsearch.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/quickstart/quick-elasticsearch.yaml
 elasticsearch.kubedb.com/quick-elasticsearch created
 ```
 

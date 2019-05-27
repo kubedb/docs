@@ -90,7 +90,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/mysql/snapshot/demo-4.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/snapshot/demo-4.yaml
 mysql.kubedb.com/mysql-scheduled created
 ```
 

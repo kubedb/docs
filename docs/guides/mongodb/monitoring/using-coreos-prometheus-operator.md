@@ -125,7 +125,7 @@ Here,
 Let's create the MongoDB object that we have shown above,
 
 ```console
-$ kubectl create -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/mongodb/monitoring/coreos-prom-mgo.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mongodb/monitoring/coreos-prom-mgo.yaml
 mongodb.kubedb.com/coreos-prom-mgo created
 ```
 

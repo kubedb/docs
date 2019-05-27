@@ -84,7 +84,7 @@ metadata:
 Now, create Redis crd specifying `spec.configSource` field.
 
 ```console
-$ kubectl apply -f https://raw.githubusercontent.com/kubedb/cli/0.12.0/docs/examples/redis/custom-config/redis-custom.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/redis/custom-config/redis-custom.yaml
 redis.kubedb.com "custom-redis" created
 ```
 
