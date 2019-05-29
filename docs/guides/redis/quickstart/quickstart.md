@@ -44,7 +44,7 @@ This tutorial will show you how to use KubeDB to run a Redis server.
   demo          Active    10s
   ```
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples](https://github.com/kubedb/cli/tree/master/docs/examples) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
+> Note: The yaml files used in this tutorial are stored in [docs/examples](https://github.com/kubedb/cli/tree/0.10.0/docs/examples) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
 
 ## Find Available RedisVersion
 
