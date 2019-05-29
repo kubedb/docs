@@ -64,7 +64,7 @@ http://192.168.99.100:32231
 
 To log into the pgAdmin, use username __`admin`__ and password __`admin`__.
 
-> Note: Yaml files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/cli/tree/master/docs/examples/postgres) folder in github repository [kubedb/cli](https://github.com/kubedb/cli).
+> Note: Yaml files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/cli/tree/0.8.0/docs/examples/postgres) folder in github repository [kubedb/cli](https://github.com/kubedb/cli).
 
 ## Create a PostgreSQL database
 

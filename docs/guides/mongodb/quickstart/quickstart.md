@@ -19,7 +19,7 @@ This tutorial will show you how to use KubeDB to run a MongoDB database.
   <img alt="lifecycle"  src="/docs/images/mongodb/mgo-lifecycle.png" width="600" height="660">
 </p>
 
-The yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/kubedb/cli/tree/master/docs/examples) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
+The yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/kubedb/cli/tree/0.8.0/docs/examples) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
 
 ## Before You Begin
 
@@ -41,7 +41,7 @@ kube-public   Active    45m
 kube-system   Active    45m
 ```
 
-Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/kubedb/cli/tree/master/docs/examples) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
+Note that the yaml files that are used in this tutorial, stored in [docs/examples](https://github.com/kubedb/cli/tree/0.8.0/docs/examples) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
 
 ## Create a MongoDB database
 
