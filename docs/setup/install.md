@@ -49,7 +49,7 @@ kubedb-operator-65d97f8cf9-8c9tj        2/2       Running   0          1m
 
 #### Customizing Installer
 
-The installer script and associated yaml files can be found in the [/hack/deploy](https://github.com/kubedb/cli/tree/0.12.0/hack/deploy) folder. You can see the full list of flags available to installer using `-h` flag.
+The installer script and associated yaml files can be found in the [/hack/deploy](https://github.com/kubedb/installer/tree/0.12.0/deploy) folder. You can see the full list of flags available to installer using `-h` flag.
 
 ```console
 $ curl -fsSL https://raw.githubusercontent.com/kubedb/cli/0.12.0/hack/deploy/kubedb.sh | bash -s -- -h
@@ -122,7 +122,7 @@ $ curl -fsSL https://raw.githubusercontent.com/kubedb/cli/0.12.0/hack/deploy/kub
 
 ## Using Helm
 
-KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/cli/tree/master/chart/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
+KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/0.12.0/chart/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
 
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
@@ -165,7 +165,7 @@ $ helm upgrade kubedb-catalog appscode/kubedb-catalog --version 0.12.0 \
   --namespace kube-system
 ```
 
-To see the detailed configuration options, visit [here](https://github.com/kubedb/cli/tree/master/chart/kubedb).
+To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/0.12.0/chart/kubedb).
 
 </div>
 </div>
