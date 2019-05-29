@@ -39,8 +39,8 @@ demo    Active  5s
 We need an Elasticsearch object in `Running` phase to perform backup operation. If you do not already have an Elasticsearch instance running, create one first.
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/quickstart/infant-elasticsearch.yaml
-elasticsearch "infant-elasticsearch" created
+$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/quickstart/instant-elasticsearch.yaml
+elasticsearch "instant-elasticsearch" created
 ```
 
 Below the YAML for the Elasticsearch crd we have created above.
@@ -49,7 +49,7 @@ Below the YAML for the Elasticsearch crd we have created above.
 apiVersion: kubedb.com/v1alpha1
 kind: Elasticsearch
 metadata:
-  name: infant-elasticsearch
+  name: instant-elasticsearch
   namespace: demo
 spec:
   version: "6.3-v1"
@@ -61,9 +61,9 @@ Here, we have used `spec.storageType: Ephemeral`. So, we don't need to specify s
 Verify that the Elasticsearch is running,
 
 ```console
-$ kubedb get es -n demo infant-elasticsearch
+$ kubedb get es -n demo instant-elasticsearch
 NAME                   STATUS    AGE
-infant-elasticsearch   Running   11m
+instant-elasticsearch   Running   11m
 ```
 
 ### Populate database
@@ -99,7 +99,7 @@ $ curl -XGET --user "admin:fqvzdvz3" "localhost:9200/test/snapshot/1?pretty"
 }
 ```
 
-Now, we are ready to take backup of this database `infant-elasticsearch`.
+Now, we are ready to take backup of this database `instant-elasticsearch`.
 
 ## Instant backup
 
@@ -116,7 +116,7 @@ metadata:
   labels:
     kubedb.com/kind: Elasticsearch
 spec:
-  databaseName: infant-elasticsearch
+  databaseName: instant-elasticsearch
   storageSecretName: gcs-secret
   gcs:
     bucket: kubedb
@@ -125,13 +125,13 @@ spec:
 Here,
 
 - `metadata.labels` should include the type of database.
-- `spec.databaseName` indicates the Elasticsearch object name, `infant-elasticsearch`, whose snapshot is taken.
+- `spec.databaseName` indicates the Elasticsearch object name, `instant-elasticsearch`, whose snapshot is taken.
 - `spec.storageSecretName` points to the Secret containing the credentials for snapshot storage destination.
 - `spec.gcs.bucket` points to the bucket name used to store the snapshot data.
 
 In this case, `kubedb.com/kind: Elasticsearch` tells KubeDB operator that this Snapshot belongs to an Elasticsearch object. Only Elasticsearch controller will handle this Snapshot object.
 
-> Note: Snapshot and Secret objects must be in the same namespace as Elasticsearch, `infant-elasticsearch`.
+> Note: Snapshot and Secret objects must be in the same namespace as Elasticsearch, `instant-elasticsearch`.
 
 #### Snapshot Storage Secret
 
@@ -193,12 +193,12 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elas
 snapshot.kubedb.com/instant-snapshot created
 ```
 
-Let's see Snapshot list of Elasticsearch `infant-elasticsearch`.
+Let's see Snapshot list of Elasticsearch `instant-elasticsearch`.
 
 ```console
-$ kubectl get snap -n demo --selector=kubedb.com/kind=Elasticsearch,kubedb.com/name=infant-elasticsearch
+$ kubectl get snap -n demo --selector=kubedb.com/kind=Elasticsearch,kubedb.com/name=instant-elasticsearch
 NAME               DATABASENAME           STATUS      AGE
-instant-snapshot   infant-elasticsearch   Succeeded   47s
+instant-snapshot   instant-elasticsearch   Succeeded   47s
 ```
 
 KubeDB operator watches for Snapshot objects using Kubernetes API. When a Snapshot object is created, it will launch a Job that runs the [elasticdump](https://github.com/taskrabbit/elasticsearch-dump) command and uploads the output files to cloud storage using [osm](https://github.com/appscode/osm).
@@ -231,15 +231,15 @@ If you open this `test.data.json` file, you will see the data you have created p
 }
 ```
 
-Let's see the Snapshot list for Elasticsearch `infant-elasticsearch` by running `kubedb describe` command.
+Let's see the Snapshot list for Elasticsearch `instant-elasticsearch` by running `kubedb describe` command.
 
 ```console
-$ kubedb describe es -n demo infant-elasticsearch
-Name:               infant-elasticsearch
+$ kubedb describe es -n demo instant-elasticsearch
+Name:               instant-elasticsearch
 Namespace:          demo
 CreationTimestamp:  Fri, 05 Oct 2018 16:45:56 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha1","kind":"Elasticsearch","metadata":{"annotations":{},"name":"infant-elasticsearch","namespace":"demo"},"spec":{"repl...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha1","kind":"Elasticsearch","metadata":{"annotations":{},"name":"instant-elasticsearch","namespace":"demo"},"spec":{"repl...
 Status:             Running
 Replicas:           1  total
   StorageType:      Ephemeral
@@ -247,10 +247,10 @@ Volume:
   Capacity:  0
 
 StatefulSet:          
-  Name:               infant-elasticsearch
+  Name:               instant-elasticsearch
   CreationTimestamp:  Fri, 05 Oct 2018 16:45:58 +0600
   Labels:               kubedb.com/kind=Elasticsearch
-                        kubedb.com/name=infant-elasticsearch
+                        kubedb.com/name=instant-elasticsearch
                         node.role.client=set
                         node.role.data=set
                         node.role.master=set
@@ -262,7 +262,7 @@ StatefulSet:
 Topology:
   Type                Pod                     StartTime                      Phase
   ----                ---                     ---------                      -----
-  master|client|data  infant-elasticsearch-0  2018-10-05 16:45:58 +0600 +06  Running
+  master|client|data  instant-elasticsearch-0  2018-10-05 16:45:58 +0600 +06  Running
 
 Snapshots:
   Name              Bucket     StartTime                        CompletionTime                   Phase
@@ -316,7 +316,7 @@ metadata:
   labels:
     kubedb.com/kind: Elasticsearch
 spec:
-  databaseName: infant-elasticsearch
+  databaseName: instant-elasticsearch
   storageSecretName: gcs-secret
   gcs:
     bucket: kubedb-dev
@@ -342,7 +342,7 @@ metadata:
   labels:
     kubedb.com/kind: Elasticsearch
 spec:
-  databaseName: infant-elasticsearch
+  databaseName: instant-elasticsearch
   storageSecretName: gcs-secret
   gcs:
     bucket: kubedb-dev
@@ -370,7 +370,7 @@ metadata:
   labels:
     kubedb.com/kind: Elasticsearch
 spec:
-  databaseName: infant-elasticsearch
+  databaseName: instant-elasticsearch
   storageSecretName: gcs-secret
   gcs:
     bucket: kubedb-dev
@@ -395,7 +395,7 @@ metadata:
   labels:
     kubedb.com/kind: Elasticsearch
 spec:
-  databaseName: infant-elasticsearch
+  databaseName: instant-elasticsearch
   storageSecretName: gcs-secret
   gcs:
     bucket: kubedb-dev
@@ -410,8 +410,8 @@ spec:
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-$ kubectl patch -n demo es/infant-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo es/infant-elasticsearch
+$ kubectl patch -n demo es/instant-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl delete -n demo es/instant-elasticsearch
 
 $ kubectl delete ns demo
 ```

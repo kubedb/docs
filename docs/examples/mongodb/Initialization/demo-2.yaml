@@ -14,5 +14,5 @@ spec:
         storage: 1Gi
   init:
     snapshotSource:
-      name: snapshot-infant
+      name: snapshot-instant
       namespace: demo
