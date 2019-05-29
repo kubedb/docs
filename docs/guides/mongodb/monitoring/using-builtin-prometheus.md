@@ -36,7 +36,7 @@ This tutorial will show you how to monitor MongoDB database using builtin [Prome
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/cli/tree/master/docs/examples/mongodb) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
+> Note: YAML files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy MongoDB with Monitoring Enabled
 

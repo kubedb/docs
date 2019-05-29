@@ -38,7 +38,7 @@ We need a Snapshot to perform this initialization. If you don't have a Snapshot 
 
 If you have changed the name of either namespace or snapshot object, please modify the YAMLs used in this tutorial accordingly.
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/cli/tree/master/docs/examples/postgres) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Create PostgreSQL with Snapshot source
 
