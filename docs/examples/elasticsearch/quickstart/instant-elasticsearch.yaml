@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha1
 kind: Elasticsearch
 metadata:
-  name: infant-elasticsearch
+  name: instant-elasticsearch
   namespace: demo
 spec:
   version: "6.3-v1"

@@ -38,7 +38,7 @@ This tutorial will show you how to take snapshots of a KubeDB managed MySQL data
   namespace/demo created
   
   $ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/snapshot/demo-1.yaml
-  mysql.kubedb.com/mysql-infant created
+  mysql.kubedb.com/mysql-instant created
   ```
 
 ## Instant Backups
@@ -84,12 +84,12 @@ To lean how to configure other storage destinations for Snapshots, please visit 
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snap-mysql-infant
+  name: snap-mysql-instant
   namespace: demo
   labels:
     kubedb.com/kind: MySQL
 spec:
-  databaseName: mysql-infant
+  databaseName: mysql-instant
   storageSecretName: my-snap-secret
   gcs:
     bucket: kubedb-qa
@@ -97,15 +97,15 @@ spec:
 
 ```console
 $ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/snapshot/demo-2.yaml
-snapshot.kubedb.com/snap-mysql-infant created
+snapshot.kubedb.com/snap-mysql-instant created
 
 $ kubedb get snap -n demo
 NAME                DATABASENAME   STATUS    AGE
-snap-mysql-infant   mysql-infant   Running   13s
+snap-mysql-instant   mysql-instant   Running   13s
 ```
 
 ```yaml
-$ kubedb get snap -n demo snap-mysql-infant -o yaml
+$ kubedb get snap -n demo snap-mysql-instant -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
@@ -115,14 +115,14 @@ metadata:
   generation: 1
   labels:
     kubedb.com/kind: MySQL
-    kubedb.com/name: mysql-infant
-  name: snap-mysql-infant
+    kubedb.com/name: mysql-instant
+  name: snap-mysql-instant
   namespace: demo
   resourceVersion: "33763"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/snapshots/snap-mysql-infant
+  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/snapshots/snap-mysql-instant
   uid: 8f6d99b6-2abf-11e9-9d44-080027154f61
 spec:
-  databaseName: mysql-infant
+  databaseName: mysql-instant
   gcs:
     bucket: kubedb-qa
   storageSecretName: my-snap-secret
@@ -142,8 +142,8 @@ Here,
 You can also run the `kubedb describe` command to see the recent snapshots taken for a database.
 
 ```console
-$ kubedb describe my -n demo mysql-infant
-Name:               mysql-infant
+$ kubedb describe my -n demo mysql-instant
+Name:               mysql-instant
 Namespace:          demo
 CreationTimestamp:  Thu, 07 Feb 2019 16:02:40 +0600
 Labels:             <none>
@@ -157,18 +157,18 @@ Volume:
   Access Modes:  RWO
 
 StatefulSet:          
-  Name:               mysql-infant
+  Name:               mysql-instant
   CreationTimestamp:  Thu, 07 Feb 2019 16:02:40 +0600
   Labels:               kubedb.com/kind=MySQL
-                        kubedb.com/name=mysql-infant
+                        kubedb.com/name=mysql-instant
   Annotations:        <none>
   Replicas:           824639341548 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:        
-  Name:         mysql-infant
+  Name:         mysql-instant
   Labels:         kubedb.com/kind=MySQL
-                  kubedb.com/name=mysql-infant
+                  kubedb.com/name=mysql-instant
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.96.188.33
@@ -177,9 +177,9 @@ Service:
   Endpoints:    172.17.0.7:3306
 
 Database Secret:
-  Name:         mysql-infant-auth
+  Name:         mysql-instant-auth
   Labels:         kubedb.com/kind=MySQL
-                  kubedb.com/name=mysql-infant
+                  kubedb.com/name=mysql-instant
   Annotations:  <none>
   
 Type:  Opaque
@@ -192,7 +192,7 @@ Data
 Snapshots:
   Name               Bucket        StartTime                        CompletionTime                   Phase
   ----               ------        ---------                        --------------                   -----
-  snap-mysql-infant  gs:kubedb-qa  Thu, 07 Feb 2019 16:03:04 +0600  Thu, 07 Feb 2019 16:03:15 +0600  Succeeded
+  snap-mysql-instant  gs:kubedb-qa  Thu, 07 Feb 2019 16:03:04 +0600  Thu, 07 Feb 2019 16:03:15 +0600  Succeeded
 
 Events:
   Type    Reason              Age   From             Message
@@ -217,7 +217,7 @@ From the above image, you can see that the snapshot output is stored in a folder
 
 You can create a new database from a previously taken Snapshot. Specify the Snapshot name in the `spec.init.snapshotSource` field of a new MySQL object. See the example `mysql-recovered` object below:
 
-> Note: MySQL `mysql-recovered` must have same superuser credentials as MySQL `mysql-infant`.
+> Note: MySQL `mysql-recovered` must have same superuser credentials as MySQL `mysql-instant`.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -228,7 +228,7 @@ metadata:
 spec:
   version: "8.0-v2"
   databaseSecret:
-    secretName: mysql-infant-auth
+    secretName: mysql-instant-auth
   storage:
     storageClassName: "standard"
     accessModes:
@@ -238,7 +238,7 @@ spec:
         storage: 1Gi
   init:
     snapshotSource:
-      name: snap-mysql-infant
+      name: snap-mysql-instant
       namespace: demo
 ```
 
@@ -251,17 +251,17 @@ Here,
 
 - `spec.init.snapshotSource.name` refers to a Snapshot object for a MySQL database in the same namespaces as this new `mysql-recovered` MySQL object.
 
-Now, wait several seconds. KubeDB operator will create a new StatefulSet. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snap-mysql-infant` Snapshot.
+Now, wait several seconds. KubeDB operator will create a new StatefulSet. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snap-mysql-instant` Snapshot.
 
 ```console
 $ kubedb get my -n demo
 NAME              VERSION   STATUS         AGE
-mysql-infant      8.0-v2    Running        27m
+mysql-instant      8.0-v2    Running        27m
 mysql-recovered   8.0-v2    Initializing   5m
 
 $ kubedb get my -n demo
 NAME              VERSION   STATUS    AGE
-mysql-infant      8.0-v2    Running   31m
+mysql-instant      8.0-v2    Running   31m
 mysql-recovered   8.0-v2    Running   9m
 
 $ kubedb describe my -n demo mysql-recovered
@@ -299,9 +299,9 @@ Service:
   Endpoints:    172.17.0.8:3306
 
 Database Secret:
-  Name:         mysql-infant-auth
+  Name:         mysql-instant-auth
   Labels:         kubedb.com/kind=MySQL
-                  kubedb.com/name=mysql-infant
+                  kubedb.com/name=mysql-instant
   Annotations:  <none>
   
 Type:  Opaque
@@ -319,7 +319,7 @@ Events:
   Normal  Successful            30s   KubeDB operator  Successfully created Service
   Normal  Successful            27s   KubeDB operator  Successfully created StatefulSet
   Normal  Successful            27s   KubeDB operator  Successfully created MySQL
-  Normal  Initializing          26s   KubeDB operator  Initializing from Snapshot: "snap-mysql-infant"
+  Normal  Initializing          26s   KubeDB operator  Initializing from Snapshot: "snap-mysql-instant"
   Normal  Successful            26s   KubeDB operator  Successfully patched StatefulSet
   Normal  Successful            26s   KubeDB operator  Successfully patched MySQL
   Normal  SuccessfulInitialize  6s    KubeDB operator  Successfully completed initialization
@@ -344,12 +344,12 @@ Backup and recovery job needs a temporary storage to hold `dump` files before it
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snap-mysql-infant
+  name: snap-mysql-instant
   namespace: demo
   labels:
     kubedb.com/kind: MySQL
 spec:
-  databaseName: mysql-infant
+  databaseName: mysql-instant
   storageSecretName: my-snap-secret
   gcs:
     bucket: kubedb
@@ -370,12 +370,12 @@ You can specify resources for backup or recovery job through `spec.podTemplate.s
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snap-mysql-infant
+  name: snap-mysql-instant
   namespace: demo
   labels:
     kubedb.com/kind: MySQL
 spec:
-  databaseName: mysql-infant
+  databaseName: mysql-instant
   storageSecretName: my-snap-secret
   gcs:
     bucket: kubedb
@@ -398,12 +398,12 @@ If you need to add some annotations to backup or recovery job, you can specify t
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snap-mysql-infant
+  name: snap-mysql-instant
   namespace: demo
   labels:
     kubedb.com/kind: MySQL
 spec:
-  databaseName: mysql-infant
+  databaseName: mysql-instant
   storageSecretName: my-snap-secret
   gcs:
     bucket: kubedb
@@ -423,12 +423,12 @@ KubeDB also allows to pass extra arguments for backup or recovery job. You can p
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snap-mysql-infant
+  name: snap-mysql-instant
   namespace: demo
   labels:
     kubedb.com/kind: MySQL
 spec:
-  databaseName: mysql-infant
+  databaseName: mysql-instant
   storageSecretName: my-snap-secret
   gcs:
     bucket: kubedb
@@ -452,12 +452,12 @@ Backup and recovery jobs use temporary storage to hold `dump` files before it ca
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snap-mysql-infant
+  name: snap-mysql-instant
   namespace: demo
   labels:
     kubedb.com/kind: MySQL
 spec:
-  databaseName: mysql-infant
+  databaseName: mysql-instant
   storageSecretName: my-snap-secret
   gcs:
     bucket: kubedb
@@ -478,12 +478,12 @@ You can specify resources for backup or recovery jobs using `spec.podTemplate.sp
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snap-mysql-infant
+  name: snap-mysql-instant
   namespace: demo
   labels:
     kubedb.com/kind: MySQL
 spec:
-  databaseName: mysql-infant
+  databaseName: mysql-instant
   storageSecretName: my-snap-secret
   gcs:
     bucket: kubedb
@@ -506,12 +506,12 @@ If you need to add some annotations to backup or recovery jobs, you can specify 
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snap-mysql-infant
+  name: snap-mysql-instant
   namespace: demo
   labels:
     kubedb.com/kind: MySQL
 spec:
-  databaseName: mysql-infant
+  databaseName: mysql-instant
   storageSecretName: my-snap-secret
   gcs:
     bucket: kubedb
@@ -531,12 +531,12 @@ KubeDB allows users to pass extra arguments for backup or recovery jobs. You can
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snap-mysql-infant
+  name: snap-mysql-instant
   namespace: demo
   labels:
     kubedb.com/kind: MySQL
 spec:
-  databaseName: mysql-infant
+  databaseName: mysql-instant
   storageSecretName: my-snap-secret
   gcs:
     bucket: kubedb
@@ -551,11 +551,11 @@ spec:
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-kubectl patch -n demo mysql/mysql-infant mysql/mysql-recovered -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo mysql/mysql-infant mysql/mysql-recovered
+kubectl patch -n demo mysql/mysql-instant mysql/mysql-recovered -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo mysql/mysql-instant mysql/mysql-recovered
 
-kubectl patch -n demo drmn/mysql-infant drmn/mysql-recovered -p '{"spec":{"wipeOut":true}}' --type="merge"
-kubectl delete -n demo drmn/mysql-infant drmn/mysql-recovered
+kubectl patch -n demo drmn/mysql-instant drmn/mysql-recovered -p '{"spec":{"wipeOut":true}}' --type="merge"
+kubectl delete -n demo drmn/mysql-instant drmn/mysql-recovered
 
 kubectl delete ns demo
 ```

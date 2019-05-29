@@ -6,7 +6,7 @@ metadata:
   labels:
     kubedb.com/kind: Elasticsearch
 spec:
-  databaseName: infant-elasticsearch
+  databaseName: instant-elasticsearch
   storageSecretName: gcs-secret
   gcs:
     bucket: kubedb-qa

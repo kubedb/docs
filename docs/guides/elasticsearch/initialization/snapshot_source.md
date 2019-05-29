@@ -56,7 +56,7 @@ metadata:
 spec:
   version: "6.3-v1"
   databaseSecret:
-    secretName: infant-elasticsearch-auth
+    secretName: instant-elasticsearch-auth
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -77,15 +77,15 @@ Here,
   - `snapshotSource.name` refers to a Snapshot object `name`.
   - `snapshotSource.namespace` refers to a Snapshot object `namespace`.
 
-Snapshot `instant-snapshot` in `demo` namespace belongs to Elasticsearch `infant-elasticsearch`:
+Snapshot `instant-snapshot` in `demo` namespace belongs to Elasticsearch `instant-elasticsearch`:
 
 ```console
 $ kubectl get snap -n demo instant-snapshot
 NAME               DATABASENAME           STATUS      AGE
-instant-snapshot   infant-elasticsearch   Succeeded   51m
+instant-snapshot   instant-elasticsearch   Succeeded   51m
 ```
 
-> Note: Elasticsearch `recovered-es` must have same superuser credentials as Elasticsearch `infant-elasticsearch`.
+> Note: Elasticsearch `recovered-es` must have same superuser credentials as Elasticsearch `instant-elasticsearch`.
 
 [//]: # (Describe authentication part. This should match with existing one)
 
@@ -155,9 +155,9 @@ Service:
   Endpoints:    192.168.1.14:9300
 
 Database Secret:
-  Name:         infant-elasticsearch-auth
+  Name:         instant-elasticsearch-auth
   Labels:         kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=infant-elasticsearch
+                  kubedb.com/name=instant-elasticsearch
   Annotations:  <none>
   
 Type:  Opaque
@@ -229,18 +229,18 @@ Now, we can connect to the database at `localhost:9200`. Let's find out necessar
 - Username: Run following command to get *username*
 
   ```console
-  $ kubectl get secrets -n demo infant-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
+  $ kubectl get secrets -n demo instant-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
   admin
   ```
 
 - Password: Run following command to get *password*
 
   ```console
-  $ kubectl get secrets -n demo infant-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
+  $ kubectl get secrets -n demo instant-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
   cfgn547j
   ```
 
-We had created an index `test` before taking snapshot of `infant-elasticsearch` database. Let's check this index is present in newly initialized database `recovered-es`.
+We had created an index `test` before taking snapshot of `instant-elasticsearch` database. Let's check this index is present in newly initialized database `recovered-es`.
 
 ```console
 $ curl -XGET --user "admin:cfgn547j" "localhost:9200/test/snapshot/1?pretty"
@@ -268,8 +268,8 @@ We can see from above output that `test` index is present in `recovered-es` data
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-$ kubectl patch -n demo es/infant-elasticsearch es/recovered-es -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo es/infant-elasticsearch es/recovered-es
+$ kubectl patch -n demo es/instant-elasticsearch es/recovered-es -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+$ kubectl delete -n demo es/instant-elasticsearch es/recovered-es
 
 $ kubectl delete ns demo
 ```

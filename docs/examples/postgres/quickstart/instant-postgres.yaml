@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha1
 kind: Postgres
 metadata:
-  name: infant-postgres
+  name: instant-postgres
   namespace: demo
 spec:
   version: "9.6-v2"
