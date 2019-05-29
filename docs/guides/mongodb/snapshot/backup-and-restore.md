@@ -39,7 +39,7 @@ This tutorial will show you how to take snapshots of a KubeDB managed MongoDB da
   namespace/demo created
 
   $ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mongodb/snapshot/demo-1.yaml
-  mongodb.kubedb.com/mgo-infant created
+  mongodb.kubedb.com/mgo-instant created
   ```
 
 ## Instant Backups
@@ -85,12 +85,12 @@ To learn how to configure other storage destinations for Snapshots, please visit
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snapshot-infant
+  name: snapshot-instant
   namespace: demo
   labels:
     kubedb.com/kind: MongoDB
 spec:
-  databaseName: mgo-infant
+  databaseName: mgo-instant
   storageSecretName: mg-snap-secret
   gcs:
     bucket: kubedb-qa
@@ -98,19 +98,19 @@ spec:
 
 ```console
 $ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mongodb/snapshot/demo-2.yaml
-snapshot.kubedb.com/snapshot-infant created
+snapshot.kubedb.com/snapshot-instant created
 
 $ kubedb get snap -n demo
 NAME              DATABASENAME   STATUS    AGE
-snapshot-infant   mgo-infant     Running   10s
+snapshot-instant   mgo-instant     Running   10s
 
 $ kubedb get snap -n demo
 NAME              DATABASENAME   STATUS      AGE
-snapshot-infant   mgo-infant     Succeeded   20s
+snapshot-instant   mgo-instant     Succeeded   20s
 ```
 
 ```yaml
-$ kubedb get snap -n demo snapshot-infant -o yaml
+$ kubedb get snap -n demo snapshot-instant -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
@@ -120,14 +120,14 @@ metadata:
   generation: 1
   labels:
     kubedb.com/kind: MongoDB
-    kubedb.com/name: mgo-infant
-  name: snapshot-infant
+    kubedb.com/name: mgo-instant
+  name: snapshot-instant
   namespace: demo
   resourceVersion: "74570"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/snapshots/snapshot-infant
+  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/snapshots/snapshot-instant
   uid: 0b20a530-29da-11e9-aebf-080027875192
 spec:
-  databaseName: mgo-infant
+  databaseName: mgo-instant
   gcs:
     bucket: kubedb-qa
   storageSecretName: mg-snap-secret
@@ -147,8 +147,8 @@ Here,
 You can also run the `kubedb describe` command to see the recent snapshots taken for a database.
 
 ```console
-$ kubedb describe mg -n demo mgo-infant
-Name:               mgo-infant
+$ kubedb describe mg -n demo mgo-instant
+Name:               mgo-instant
 Namespace:          demo
 CreationTimestamp:  Wed, 06 Feb 2019 12:27:01 +0600
 Labels:             <none>
@@ -162,18 +162,18 @@ Volume:
   Access Modes:  RWO
 
 StatefulSet:
-  Name:               mgo-infant
+  Name:               mgo-instant
   CreationTimestamp:  Wed, 06 Feb 2019 12:27:01 +0600
   Labels:               kubedb.com/kind=MongoDB
-                        kubedb.com/name=mgo-infant
+                        kubedb.com/name=mgo-instant
   Annotations:        <none>
   Replicas:           824638132588 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:
-  Name:         mgo-infant
+  Name:         mgo-instant
   Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mgo-infant
+                  kubedb.com/name=mgo-instant
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.96.65.189
@@ -182,9 +182,9 @@ Service:
   Endpoints:    172.17.0.7:27017
 
 Service:
-  Name:         mgo-infant-gvr
+  Name:         mgo-instant-gvr
   Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mgo-infant
+                  kubedb.com/name=mgo-instant
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
   Type:         ClusterIP
   IP:           None
@@ -193,9 +193,9 @@ Service:
   Endpoints:    172.17.0.7:27017
 
 Database Secret:
-  Name:         mgo-infant-auth
+  Name:         mgo-instant-auth
   Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mgo-infant
+                  kubedb.com/name=mgo-instant
   Annotations:  <none>
   
 Type:  Opaque
@@ -208,7 +208,7 @@ Data
 Snapshots:
   Name             Bucket        StartTime                        CompletionTime                   Phase
   ----             ------        ---------                        --------------                   -----
-  snapshot-infant  gs:kubedb-qa  Wed, 06 Feb 2019 12:40:07 +0600  Wed, 06 Feb 2019 12:40:14 +0600  Succeeded
+  snapshot-instant  gs:kubedb-qa  Wed, 06 Feb 2019 12:40:07 +0600  Wed, 06 Feb 2019 12:40:14 +0600  Succeeded
 
 Events:
   Type     Reason              Age   From              Message
@@ -250,7 +250,7 @@ spec:
         storage: 1Gi
   init:
     snapshotSource:
-      name: snapshot-infant
+      name: snapshot-instant
       namespace: demo
 ```
 
@@ -263,17 +263,17 @@ Here,
 
 - `spec.init.snapshotSource.name` refers to a Snapshot object for a MongoDB database in the same namespaces as this new `mgo-recovered` MongoDB object.
 
-Now, wait several seconds. KubeDB operator will create a new StatefulSet. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snapshot-infant` Snapshot.
+Now, wait several seconds. KubeDB operator will create a new StatefulSet. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snapshot-instant` Snapshot.
 
 ```console
 $ kubedb get mg -n demo
 NAME            VERSION   STATUS         AGE
-mgo-infant      3.4-v3    Running        13m
+mgo-instant      3.4-v3    Running        13m
 mgo-recovered   3.4-v3    Initializing   57s
 
 $ kubedb get mg -n demo
 NAME            VERSION   STATUS    AGE
-mgo-infant      3.4-v3    Running   16m
+mgo-instant      3.4-v3    Running   16m
 mgo-recovered   3.4-v3    Running   45s
 
 $ kubedb describe mg -n demo mgo-recovered
@@ -342,7 +342,7 @@ Events:
   Normal  Successful            56s   MongoDB operator  Successfully created Service
   Normal  Successful            47s   MongoDB operator  Successfully created StatefulSet
   Normal  Successful            47s   MongoDB operator  Successfully created MongoDB
-  Normal  Initializing          46s   MongoDB operator  Initializing from Snapshot: "snapshot-infant"
+  Normal  Initializing          46s   MongoDB operator  Initializing from Snapshot: "snapshot-instant"
   Normal  Successful            46s   MongoDB operator  Successfully patched StatefulSet
   Normal  Successful            46s   MongoDB operator  Successfully patched MongoDB
   Normal  SuccessfulInitialize  39s   MongoDB operator  Successfully completed initialization
@@ -367,12 +367,12 @@ Backup and recovery job needs a temporary storage to hold `dump` files before it
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snapshot-infant
+  name: snapshot-instant
   namespace: demo
   labels:
     kubedb.com/kind: MongoDB
 spec:
-  databaseName: mgo-infant
+  databaseName: mgo-instant
   storageSecretName: mg-snap-secret
   gcs:
     bucket: kubedb
@@ -393,12 +393,12 @@ You can specify resources for backup or recovery job through `spec.podTemplate.s
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snapshot-infant
+  name: snapshot-instant
   namespace: demo
   labels:
     kubedb.com/kind: MongoDB
 spec:
-  databaseName: mgo-infant
+  databaseName: mgo-instant
   storageSecretName: mg-snap-secret
   gcs:
     bucket: kubedb
@@ -421,12 +421,12 @@ If you need to add some annotations to backup or recovery job, you can specify t
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snapshot-infant
+  name: snapshot-instant
   namespace: demo
   labels:
     kubedb.com/kind: MongoDB
 spec:
-  databaseName: mgo-infant
+  databaseName: mgo-instant
   storageSecretName: mg-snap-secret
   gcs:
     bucket: kubedb
@@ -446,12 +446,12 @@ KubeDB also allows to pass extra arguments for backup or recovery job. You can p
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snapshot-infant
+  name: snapshot-instant
   namespace: demo
   labels:
     kubedb.com/kind: MongoDB
 spec:
-  databaseName: mgo-infant
+  databaseName: mgo-instant
   storageSecretName: mg-snap-secret
   gcs:
     bucket: kubedb
@@ -475,12 +475,12 @@ Backup and recovery jobs use temporary storage to hold `dump` files before it ca
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snapshot-infant
+  name: snapshot-instant
   namespace: demo
   labels:
     kubedb.com/kind: MongoDB
 spec:
-  databaseName: mgo-infant
+  databaseName: mgo-instant
   storageSecretName: mg-snap-secret
   gcs:
     bucket: kubedb
@@ -501,12 +501,12 @@ You can specify resources for backup or recovery jobs using `spec.podTemplate.sp
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snapshot-infant
+  name: snapshot-instant
   namespace: demo
   labels:
     kubedb.com/kind: MongoDB
 spec:
-  databaseName: mgo-infant
+  databaseName: mgo-instant
   storageSecretName: mg-snap-secret
   gcs:
     bucket: kubedb
@@ -529,12 +529,12 @@ If you need to add some annotations to backup or recovery jobs, you can specify 
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snapshot-infant
+  name: snapshot-instant
   namespace: demo
   labels:
     kubedb.com/kind: MongoDB
 spec:
-  databaseName: mgo-infant
+  databaseName: mgo-instant
   storageSecretName: mg-snap-secret
   gcs:
     bucket: kubedb
@@ -554,12 +554,12 @@ KubeDB allows users to pass extra arguments for backup or recovery jobs. You can
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
-  name: snapshot-infant
+  name: snapshot-instant
   namespace: demo
   labels:
     kubedb.com/kind: MongoDB
 spec:
-  databaseName: mgo-infant
+  databaseName: mgo-instant
   storageSecretName: mg-snap-secret
   gcs:
     bucket: kubedb
@@ -574,11 +574,11 @@ spec:
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-kubectl patch -n demo mg/mgo-infant mg/mgo-recovered -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo mg/mgo-infant mg/mgo-recovered
+kubectl patch -n demo mg/mgo-instant mg/mgo-recovered -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo mg/mgo-instant mg/mgo-recovered
 
-kubectl patch -n demo drmn/mgo-infant drmn/mgo-recovered -p '{"spec":{"wipeOut":true}}' --type="merge"
-kubectl delete -n demo drmn/mgo-infant drmn/mgo-recovered
+kubectl patch -n demo drmn/mgo-instant drmn/mgo-recovered -p '{"spec":{"wipeOut":true}}' --type="merge"
+kubectl delete -n demo drmn/mgo-instant drmn/mgo-recovered
 
 kubectl delete ns demo
 ```

@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:
-  name: mysql-infant
+  name: mysql-instant
   namespace: demo
 spec:
   version: "8.0-v2"

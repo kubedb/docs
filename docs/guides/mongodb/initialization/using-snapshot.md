@@ -21,7 +21,7 @@ This tutorial will show you how to use KubeDB to initialize a MongoDB database w
 
 - Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
 
-- This tutorial assumes that you have created a namespace `demo` and a snapshot `snapshot-infant`. Follow the steps [here](/docs/guides/mongodb/snapshot/backup-and-restore.md) to create a database and take [instant snapshot](/docs/guides/mongodb/snapshot/backup-and-restore.md#instant-backups), if you have not done so already. If you have changed the name of either namespace or snapshot object, please modify the YAMLs used in this tutorial accordingly.
+- This tutorial assumes that you have created a namespace `demo` and a snapshot `snapshot-instant`. Follow the steps [here](/docs/guides/mongodb/snapshot/backup-and-restore.md) to create a database and take [instant snapshot](/docs/guides/mongodb/snapshot/backup-and-restore.md#instant-backups), if you have not done so already. If you have changed the name of either namespace or snapshot object, please modify the YAMLs used in this tutorial accordingly.
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/cli/tree/master/docs/examples/mongodb) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
 
@@ -46,7 +46,7 @@ spec:
         storage: 1Gi
   init:
     snapshotSource:
-      name: snapshot-infant
+      name: snapshot-instant
       namespace: demo
 ```
 
@@ -59,12 +59,12 @@ Here,
 
 - `spec.init.snapshotSource.name` refers to a Snapshot object for a MongoDB database in the same namespaces as this new `mgo-init-snapshot` MongoDB object.
 
-Now, wait several seconds. KubeDB operator will create a new `StatefulSet`. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snapshot-infant` Snapshot.
+Now, wait several seconds. KubeDB operator will create a new `StatefulSet`. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snapshot-instant` Snapshot.
 
 ```console
 $ kubedb get mg -n demo
 NAME                VERSION   STATUS         AGE
-mgo-infant          3.4-v3    Running        4m
+mgo-instant          3.4-v3    Running        4m
 mgo-init-snapshot   3.4-v3    Initializing   53s
 
 $ kubedb describe mg -n demo mgo-init-snapshot
@@ -133,7 +133,7 @@ Events:
   Normal  Successful            20s   KubeDB operator  Successfully created Service
   Normal  Successful            12s   KubeDB operator  Successfully created StatefulSet
   Normal  Successful            12s   KubeDB operator  Successfully created MongoDB
-  Normal  Initializing          12s   KubeDB operator  Initializing from Snapshot: "snapshot-infant"
+  Normal  Initializing          12s   KubeDB operator  Initializing from Snapshot: "snapshot-instant"
   Normal  Successful            12s   KubeDB operator  Successfully patched StatefulSet
   Normal  Successful            12s   KubeDB operator  Successfully patched MongoDB
   Normal  Successful            4s    KubeDB operator  Successfully patched StatefulSet
@@ -149,11 +149,11 @@ Events:
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-kubectl patch -n demo mg/mgo-infant mg/mgo-init-snapshot -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo mg/mgo-infant mg/mgo-init-snapshot
+kubectl patch -n demo mg/mgo-instant mg/mgo-init-snapshot -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo mg/mgo-instant mg/mgo-init-snapshot
 
-kubectl patch -n demo drmn/mgo-infant drmn/mgo-init-snapshot -p '{"spec":{"wipeOut":true}}' --type="merge"
-kubectl delete -n demo drmn/mgo-infant drmn/mgo-init-snapshot
+kubectl patch -n demo drmn/mgo-instant drmn/mgo-init-snapshot -p '{"spec":{"wipeOut":true}}' --type="merge"
+kubectl delete -n demo drmn/mgo-instant drmn/mgo-init-snapshot
 
 kubectl delete ns demo
 ```

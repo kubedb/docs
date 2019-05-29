@@ -21,7 +21,7 @@ This tutorial will show you how to use KubeDB to initialize a MySQL database wit
 
 - Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
 
-- This tutorial assumes that you have created a namespace `demo` and a snapshot `snapshot-infant`. Follow the steps [here](/docs/guides/mysql/snapshot/backup-and-restore.md) to create a database and take [instant snapshot](/docs/guides/mysql/snapshot/backup-and-restore.md#instant-backups), if you have not done so already. If you have changed the name of either namespace or snapshot object, please modify the YAMLs used in this tutorial accordingly.
+- This tutorial assumes that you have created a namespace `demo` and a snapshot `snapshot-instant`. Follow the steps [here](/docs/guides/mysql/snapshot/backup-and-restore.md) to create a database and take [instant snapshot](/docs/guides/mysql/snapshot/backup-and-restore.md#instant-backups), if you have not done so already. If you have changed the name of either namespace or snapshot object, please modify the YAMLs used in this tutorial accordingly.
 
 > Note: The yaml files that are used in this tutorial are stored in [docs/examples](https://github.com/kubedb/cli/tree/master/docs/examples) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
 
@@ -38,7 +38,7 @@ metadata:
 spec:
   version: "8.0-v2"
   databaseSecret:
-    secretName: mysql-infant-auth
+    secretName: mysql-instant-auth
   storage:
     storageClassName: "standard"
     accessModes:
@@ -48,7 +48,7 @@ spec:
         storage: 1Gi
   init:
     snapshotSource:
-      name: snap-mysql-infant
+      name: snap-mysql-instant
       namespace: demo
 ```
 
@@ -61,17 +61,17 @@ Here,
 
 - `spec.init.snapshotSource.name` refers to a Snapshot object for a MySQL database in the same namespaces as this new `mysql-init-snapshot` MySQL object.
 
-Now, wait several seconds. KubeDB operator will create a new `StatefulSet`. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snap-mysql-infant` Snapshot.
+Now, wait several seconds. KubeDB operator will create a new `StatefulSet`. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snap-mysql-instant` Snapshot.
 
 ```console
 $ kubedb get my -n demo
 NAME                  VERSION   STATUS         AGE
-mysql-infant          8.0-v2    Running        8m
+mysql-instant          8.0-v2    Running        8m
 mysql-init-snapshot   8.0-v2    Initializing   1m
 
 $ kubedb get my -n demo
 NAME                  VERSION   STATUS    AGE
-mysql-infant          8.0-v2    Running   20m
+mysql-instant          8.0-v2    Running   20m
 mysql-init-snapshot   8.0-v2    Running   13m
 
 $ kubedb describe my -n demo mysql-init-snapshot
@@ -109,9 +109,9 @@ Service:
   Endpoints:    172.17.0.5:3306
 
 Database Secret:
-  Name:         mysql-infant-auth
+  Name:         mysql-instant-auth
   Labels:         kubedb.com/kind=MySQL
-                  kubedb.com/name=mysql-infant
+                  kubedb.com/name=mysql-instant
   Annotations:  <none>
   
 Type:  Opaque
@@ -129,7 +129,7 @@ Events:
   Normal  Successful            13m   MySQL operator  Successfully created Service
   Normal  Successful            12m   MySQL operator  Successfully created MySQL
   Normal  Successful            12m   MySQL operator  Successfully created StatefulSet
-  Normal  Initializing          12m   MySQL operator  Initializing from Snapshot: "snap-mysql-infant"
+  Normal  Initializing          12m   MySQL operator  Initializing from Snapshot: "snap-mysql-instant"
   Normal  Successful            12m   MySQL operator  Successfully patched StatefulSet
   Normal  Successful            12m   MySQL operator  Successfully patched MySQL
   Normal  SuccessfulInitialize  6m    Job Controller  Successfully completed initialization
@@ -140,11 +140,11 @@ Events:
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-kubectl patch -n demo mysql/mysql-infant mysql/mysql-init-snapshot -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo mysql/mysql-infant mysql/mysql-init-snapshot
+kubectl patch -n demo mysql/mysql-instant mysql/mysql-init-snapshot -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo mysql/mysql-instant mysql/mysql-init-snapshot
 
-kubectl patch -n demo drmn/mysql-infant drmn/mysql-init-snapshot -p '{"spec":{"wipeOut":true}}' --type="merge"
-kubectl delete -n demo drmn/mysql-infant drmn/mysql-init-snapshot
+kubectl patch -n demo drmn/mysql-instant drmn/mysql-init-snapshot -p '{"spec":{"wipeOut":true}}' --type="merge"
+kubectl delete -n demo drmn/mysql-instant drmn/mysql-init-snapshot
 
 kubectl delete ns demo
 ```
