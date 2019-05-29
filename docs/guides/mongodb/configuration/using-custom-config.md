@@ -33,7 +33,7 @@ KubeDB supports providing custom configuration for MongoDB. This tutorial will s
   demo          Active    10s
   ```
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/cli/tree/master/docs/examples/mongodb) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
+> Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/cli/tree/0.9.0/docs/examples/mongodb) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
 
 ## Overview
 

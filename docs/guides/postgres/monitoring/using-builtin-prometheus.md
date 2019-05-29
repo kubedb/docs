@@ -33,7 +33,7 @@ NAME    STATUS  AGE
 demo    Active  5s
 ```
 
-> Note: Yaml files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/cli/tree/master/docs/examples/postgres) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
+> Note: Yaml files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/cli/tree/0.9.0/docs/examples/postgres) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
 
 This tutorial assumes that you are familiar with PostgreSQL concept.
 

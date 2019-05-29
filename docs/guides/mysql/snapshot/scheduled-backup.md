@@ -33,7 +33,7 @@ This tutorial will show you how to use KubeDB to take scheduled snapshot of a My
   demo          Active    1m
   ```
 
-> Note: The yaml files that are used in this tutorial are stored in [docs/examples](https://github.com/kubedb/cli/tree/master/docs/examples) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
+> Note: The yaml files that are used in this tutorial are stored in [docs/examples](https://github.com/kubedb/cli/tree/0.9.0/docs/examples) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
 
 ## Scheduled Backups
 

@@ -32,7 +32,7 @@ This tutorial will show you how to monitor KubeDB databases using Prometheus via
   demo          Active    10s
   ```
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/cli/tree/master/docs/examples/redis) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
+> Note: The yaml files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/cli/tree/0.9.0/docs/examples/redis) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
 
 ## Deploy CoreOS-Prometheus Operator
 
