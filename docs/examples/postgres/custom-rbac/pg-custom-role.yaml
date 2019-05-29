@@ -1,0 +1,44 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: my-custom-role
+  namespace: demo
+rules:
+  - apiGroups:
+      - apps
+    resourceNames:
+      - quick-postgres
+    resources:
+      - statefulsets
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - list
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - create
+  - apiGroups:
+      - ""
+    resourceNames:
+      - quick-postgres-leader-lock
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - update
+  - apiGroups:
+      - policy
+    resourceNames:
+      - postgres-db
+    resources:
+      - podsecuritypolicies
+    verbs:
+      - use

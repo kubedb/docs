@@ -1,0 +1,23 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: my-custom-role-two
+  namespace: demo
+rules:
+  - apiGroups:
+      - apps
+    resourceNames:
+      - miniute-postgres
+    resources:
+      - statefulsets
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resourceNames:
+      - miniute-postgres-leader-lock
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - update
