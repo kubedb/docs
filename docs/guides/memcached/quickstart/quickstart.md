@@ -19,7 +19,7 @@ This tutorial will show you how to use KubeDB to run a Memcached server.
   <img alt="lifecycle"  src="/docs/images/memcached/memcached-lifecycle.png">
 </p>
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/cli/tree/master/docs/examples/memcached) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
+> Note: The yaml files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/cli/tree/0.11.0/docs/examples/memcached) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
 
 ## Before You Begin
 

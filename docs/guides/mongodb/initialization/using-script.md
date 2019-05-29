@@ -31,7 +31,7 @@ This tutorial will show you how to use KubeDB to initialize a MongoDB database w
 
   In this tutorial we will use .js script stored in GitHub repository [kubedb/mongodb-init-scripts](https://github.com/kubedb/mongodb-init-scripts).
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/cli/tree/master/docs/examples/mongodb) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
+> Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/cli/tree/0.11.0/docs/examples/mongodb) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
 
 ## Prepare Initialization Scripts
 
