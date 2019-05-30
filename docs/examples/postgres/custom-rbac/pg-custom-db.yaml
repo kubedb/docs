@@ -1,0 +1,21 @@
+apiVersion: kubedb.com/v1alpha1
+kind: Postgres
+metadata:
+  name: quick-postgres
+  namespace: demo
+  labels:
+    app.kubernetes.io/component: database
+    kubedb.com/name: quick-postgres
+spec:
+  version: "9.6.7-v4"
+  storageType: Durable
+  podTemplate:
+    spec:
+      serviceAccountName: my-custom-serviceaccount
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Mi
