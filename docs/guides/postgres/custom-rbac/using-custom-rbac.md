@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Using Custom RBAC resources
 
-KubeDB supports providing custom RBAC resources, namely Service Account, Role, and RoleBinding, for PostgreSQL. This tutorial will show you how to use KubeDB to run PostgreSQL database with custom configuration.
+KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to a PostgreSQL instance. This tutorial will show you how to use KubeDB to run PostgreSQL database with custom RBAC resources.
 
 ## Before You Begin
 
@@ -29,11 +29,11 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/cli/tree/master/docs/examples/postgres) folder in GitHub repository [kubedb/cli](https://github.com/kubedb/cli).
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
-KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to PostgreSQL. This control is provided via the `spec.podTemplate.spec.serviceAccountName` field in Postgres CRD. If the name of a custom Service Account defined and deployed by the user is provided in this field, KubeDB will automatically use the access permissions associated with it to run that PosgreSQL.
+KubeDB allows users to provide custom RBAC resources, namely, `ServiceAccount`, `Role`, and `RoleBinding` for PostgreSQL. This is provided via the `spec.podTemplate.spec.serviceAccountName` field in Postgres CRD. If the name of a custom service account is given the user, the KubeDB operator will not dynamically gratn permissions to this service account and use existing access permissions associated with it to run that PosgreSQL database.
 
 This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a PosgreSQL Database named `quick-postges` to provide the bare minimum access permissions.
 
@@ -46,7 +46,7 @@ $ kubectl create serviceaccount -n demo my-custom-serviceaccount
 serviceaccount/my-custom-serviceaccount created
 ```
 
-It should create an empty service account.
+It should create a service account.
 
 ```yaml
 $ kubectl get serviceaccount -n demo my-custom-serviceaccount -o yaml
@@ -119,9 +119,9 @@ rules:
   - use
 ```
 
-Please note that resourceNames `quick-postgres`, and `quick-postgres-leader-lock` are unique to and usable with PostgreSQL Database `quick-postgres` only. Another database `quick-postgres-2`, for exmaple, will require these resourceNames to be `quick-postgres-2`, and `quick-postgres-2-leader-lock`.
+Please note that resourceNames `quick-postgres` and `quick-postgres-leader-lock` are unique to `quick-postgres` PostgreSQL Database. Another database `quick-postgres-2`, for exmaple, will require these resourceNames to be `quick-postgres-2`, and `quick-postgres-2-leader-lock`.
 
-Now create a `RoleBinding` to bind this `Role` with the already created `Service Account`.
+Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
 ```console
 $ kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
@@ -153,7 +153,7 @@ subjects:
 
 ```
 
-Now, create Postgres CRD specifying `spec.podTemplate.spec.serviceAccountName` field with the name `my-custom-serviceaccount`.
+Now, create a Postgres CRD specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/custom-rbac/pg-custom-db.yaml
@@ -187,7 +187,7 @@ spec:
 
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we will see that a pod with the name `quick-postgres-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-postgres-0` has been created.
 
 Check that the statefulset's pod is running
 
@@ -233,7 +233,7 @@ Once we see `LOG: database system is ready to accept connections` in the log, th
 
 ## Reusing Service Account
 
-An existing service account can be reused in another Postgres Database. However, user need to create a new Role specific to that Postgres and bind it to the existing Service Account so that all the necessary access permissions are available to run the new Postgres Database.
+An existing service account can be reused in another Postgres Database. However, users need to create a new Role specific to that Postgres and bind it to the existing service account so that all the necessary access permissions are available to run the new Postgres Database.
 
 For example, to reuse `my-custom-serviceaccount` in a new Database `minute-postgres`, create a role that has all the necessary access permissions for this PostgreSQl Database.
 
@@ -312,7 +312,7 @@ spec:
 
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we will see that a pod with the name `quick-postgres-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `minute-postgres-0` has been created.
 
 Check that the statefulset's pod is running
 
@@ -378,7 +378,7 @@ kubectl delete sa -n demo my-custom-serviceaccount
 kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/uninstall.md).
+If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/uninstall.md).
 
 ## Next Steps
 
