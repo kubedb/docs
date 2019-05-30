@@ -9,6 +9,7 @@ menu:
 menu_name: docs_0.12.0
 section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
 # Using Custom RBAC resources
@@ -128,7 +129,7 @@ rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
 ```
 
-It should bind `my-custom-role` and `my-custom-serviceaccount` successfully. 
+It should bind `my-custom-role` and `my-custom-serviceaccount` successfully.
 
 ```yaml
 $ kc get rolebinding -n demo my-custom-rolebinding -o yaml
@@ -228,7 +229,7 @@ LOG:  database system is ready to accept connections
 LOG:  autovacuum launcher started
 ```
 
-Once we see `LOG:  database system is ready to accept connections` in the log, the database is ready.
+Once we see `LOG: database system is ready to accept connections` in the log, the database is ready.
 
 ## Reusing Service Account
 
@@ -353,7 +354,8 @@ LOG:  database system is ready to accept connections
 LOG:  autovacuum launcher started
 ```
 
-`LOG:  database system is ready to accept connections` in the log signifies that the database is running successfully.
+`LOG: database system is ready to accept connections` in the log signifies that the database is running successfully.
+
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
@@ -381,7 +383,7 @@ If you would like to uninstall KubeDB operator, please follow the steps [here](/
 ## Next Steps
 
 - Learn about [taking instant backup](/docs/guides/postgres/snapshot/instant_backup.md) of PostgreSQL database using KubeDB Snapshot.
-- Learn how to [schedule backup](/docs/guides/postgres/snapshot/scheduled_backup.md)  of PostgreSQL database.
+- Learn how to [schedule backup](/docs/guides/postgres/snapshot/scheduled_backup.md) of PostgreSQL database.
 - Learn about initializing [PostgreSQL with Script](/docs/guides/postgres/initialization/script_source.md).
 - Learn about initializing [PostgreSQL from KubeDB Snapshot](/docs/guides/postgres/initialization/snapshot_source.md).
 - Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)
