@@ -200,7 +200,7 @@ When, `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Valida
 
 Following table show what KubeDB does when you delete Memcached crd for different termination policies,
 
-|              Behaviour              | DoNotTerminate |  Pause   |  Delete  | WipeOut  |
+| Behavior                            | DoNotTerminate |  Pause   |  Delete  | WipeOut  |
 | ----------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
 | 2. Create Dormant Database          |    &#10007;    | &#10003; | &#10007; | &#10007; |

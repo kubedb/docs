@@ -82,6 +82,7 @@ spec:
       annotations:
         passMe: ToStatefulSet
     spec:
+      serviceAccountName: my-custom-sa
       schedulerName: my-scheduler
       nodeSelector:
         disktype: ssd
@@ -123,7 +124,7 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field that specifies the name of the [PostgresVersion](/docs/concepts/catalog/postgres.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PostgresVersion` crd,
+`spec.version` is a required field that specifies the name of the [PostgresVersion](/docs/concepts/catalog/postgres.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PostgresVersion` crds,
 
 - `9.6.7-v2`,`9.6.7-v1`, `9.6.7`, `9.6-v2`, `9.6`
 - `10.2-v2`,`10.2-v1`, `10.2`
@@ -132,7 +133,9 @@ spec:
 
 ### spec.replicas
 
-`spec.replicas` specifies the total number of primary and standby nodes in Postgres database cluster configuration. One pod is selected as Primary and others are acted as standby replicas. To know more about how to setup a HA PostgreSQL cluster in KubeDB, please visit [here](/docs/guides/postgres/clustering/ha_cluster.md).
+`spec.replicas` specifies the total number of primary and standby nodes in Postgres database cluster configuration. One pod is selected as Primary and others act as standby replicas. KubeDB uses Pod Disruption Budget to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
+
+To know more about how to setup a HA PostgreSQL cluster in KubeDB, please visit [here](/docs/guides/postgres/clustering/ha_cluster.md).
 
 ### spec.standbyMode
 
@@ -147,7 +150,7 @@ spec:
 There are three fields under Postgres CRD's `spec.leaderElection`. These values defines how fast the leader election can happen.
 
 - `leaseDurationSeconds`: This is the duration in seconds that non-leader candidates will wait to force acquire leadership. This is measured against time of last observed ack. Default 15 sec.
-- `renewDeadlineSeconds`: This is the duration in seconds that the acting master will retry refreshing leadership before giving up. Normally, LeaseDuration * 2 / 3. Default 10 sec.
+- `renewDeadlineSeconds`: This is the duration in seconds that the acting master will retry refreshing leadership before giving up. Normally, LeaseDuration \* 2 / 3. Default 10 sec.
 - `retryPeriodSeconds`: This is the duration in seconds the LeaderElector clients should wait between tries of actions. Normally, LeaseDuration / 3. Default 2 sec.
 
 If the Cluster machine is powerful, user can reduce the times. But, Do not make it so little, in that case Postgres will restarts very often.
@@ -168,9 +171,9 @@ Follow [this link](/docs/concepts/snapshot/#google-cloud-storage-gcs) to learn h
 
 ### spec.databaseSecret
 
-`spec.databaseSecret` is an optional field that points to a Secret used to hold credentials for `postgres` database. If not set, KubeDB operator creates a new Secret with name `{postgres-name}-auth` that hold *username* and *password* for `postgres` database.
+`spec.databaseSecret` is an optional field that points to a Secret used to hold credentials for `postgres` database. If not set, KubeDB operator creates a new Secret with name `{postgres-name}-auth` that hold _username_ and _password_ for `postgres` database.
 
-If you want to use an existing or custom secret, please specify that when creating the Postgres object using `spec.databaseSecret.secretName`. This Secret should contain superuser *username* as `POSTGRES_USER` key and superuser *password* as `POSTGRES_PASSWORD` key.
+If you want to use an existing or custom secret, please specify that when creating the Postgres object using `spec.databaseSecret.secretName`. This Secret should contain superuser _username_ as `POSTGRES_USER` key and superuser _password_ as `POSTGRES_PASSWORD` key. Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version >= 0.13.0).
 
 Example:
 
@@ -204,22 +207,23 @@ type: Opaque
 
 ### spec.storage
 
-If you don't set `spec.storageType:`  to `Ephemeral` then `spec.storage` field is required. This field specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+If you don't set `spec.storageType:` to `Ephemeral` then `spec.storage` field is required. This field specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
- - `spec.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
- - `spec.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
- - `spec.storage.resources` can be used to request specific quantities of storage. This follows the same resource model used by PVCs.
+- `spec.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
+- `spec.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
+- `spec.storage.resources` can be used to request specific quantities of storage. This follows the same resource model used by PVCs.
 
 To learn how to configure `spec.storage`, please visit the links below:
- - https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
+
+- https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims
 
 ### spec.init
 
 `spec.init` is an optional section that can be used to initialize a newly created Postgres database. PostgreSQL databases can be initialized from these three ways:
 
-  1. Initialize from Script
-  2. Initialize from Snapshot
-  3. Initialize from WAL archive
+1. Initialize from Script
+2. Initialize from Snapshot
+3. Initialize from WAL archive
 
 #### Initialize via Script
 
@@ -291,9 +295,9 @@ spec:
     postgresWAL:
       storageSecretName: s3-secret
       s3:
-        endpoint: 's3.amazonaws.com'
+        endpoint: "s3.amazonaws.com"
         bucket: kubedb
-        prefix: 'kubedb/demo/old-pg/archive'
+        prefix: "kubedb/demo/old-pg/archive"
 ```
 
 In the above example, PostgreSQL database will be initialized from WAL archive.
@@ -304,12 +308,12 @@ For more details tutorial on how to initialize from wal archive, please visit [h
 
 ### spec.backupSchedule
 
-KubeDB supports taking periodic snapshots for Postgres database. This is an optional section in `.spec`. When `spec.backupSchedule` section is added, KubeDB operator immediately takes a backup to validate this information. After that, at each tick kubeDB operator creates a [Snapshot](/docs/concepts/snapshot.md) object. This triggers operator to create a Job to take backup.
+KubeDB supports taking periodic snapshots for Postgres database. This is an optional section in `.spec`. When `spec.backupSchedule` section is added, KubeDB operator immediately takes a backup to validate this information. After that, at each tick KubeDB operator creates a [Snapshot](/docs/concepts/snapshot.md) object. This triggers operator to create a Job to take backup.
 
 You have to specify following fields to take periodic backup of your Postgres database:
 
- - `spec.backupSchedule.cronExpression` is a required [cron expression](https://github.com/robfig/cron/blob/v2/doc.go#L26). This specifies the schedule for backup operations.
- - `spec.backupSchedule.{storage}` is a required field that is used as the destination for storing snapshot data. KubeDB supports cloud storage providers like S3, GCS, Azure, and OpenStack Swift. It also supports any locally mounted Kubernetes volumes, like NFS, Ceph, etc. Only one backend can be used at a time. To learn how to configure this, please visit [here](/docs/concepts/snapshot.md).
+- `spec.backupSchedule.cronExpression` is a required [cron expression](https://github.com/robfig/cron/blob/v2/doc.go#L26). This specifies the schedule for backup operations.
+- `spec.backupSchedule.{storage}` is a required field that is used as the destination for storing snapshot data. KubeDB supports cloud storage providers like S3, GCS, Azure, and OpenStack Swift. It also supports any locally mounted Kubernetes volumes, like NFS, Ceph, etc. Only one backend can be used at a time. To learn how to configure this, please visit [here](/docs/concepts/snapshot.md).
 
 You can also specify a template for pod of backup job through `spec.backupSchedule.podTemplate`. KubeDB will use the information you have provided in `podTemplate` to create the backup job. KubeDB accept following fields to set in `spec.backupSchedule.podTemplate`:
 
@@ -356,6 +360,7 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 - controller
   - annotations (statefulset's annotation)
 - spec:
+  - serviceAccountName
   - env
   - resources
   - initContainers
@@ -373,11 +378,21 @@ KubeDB accept following fields to set in `spec.podTemplate:`
 
 Uses of some field of `spec.podTemplate` is described below,
 
+#### spec.podTemplate.spec.serviceAccountName
+
+`serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
+
+If this field is left empty, the KubeDB operator will create a service account name matching Postgres crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
+
+If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
+
+If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/postgres/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
+
 #### spec.podTemplate.spec.env
 
 `spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the Postgres docker image. To know about supported environment variables, please visit [here](https://hub.docker.com/_/postgres/).
 
-Note that, KubeDB does not allow `POSTGRES_USER` and `POSTGRES_PASSWORD` environment variable to set in `spec.podTemplate.spec.env`. If you want to set the superuser *username* and *password*, please use `spec.databaseSecret` instead described earlier.
+Note that, the KubeDB operator does not allow `POSTGRES_USER` and `POSTGRES_PASSWORD` environment variable to set in `spec.podTemplate.spec.env`. If you want to set the superuser _username_ and _password_, please use `spec.databaseSecret` instead described earlier.
 
 If you try to set `POSTGRES_USER` or `POSTGRES_PASSWORD` environment variable in Postgres crd, KubeDB operator will reject the request with following error,
 
@@ -385,7 +400,7 @@ If you try to set `POSTGRES_USER` or `POSTGRES_PASSWORD` environment variable in
 Error from server (Forbidden): error when creating "./postgres.yaml": admission webhook "postgres.validators.kubedb.com" denied the request: environment variable POSTGRES_PASSWORD is forbidden to use in Postgres spec
 ```
 
-Also, note that KubeDB does not allow to update the environment variables as updating them does not have any effect once the database is created.  If you try to update environment variables, KubeDB operator will reject the request with following error,
+Also, note that KubeDB does not allow to update the environment variables as updating them does not have any effect once the database is created. If you try to update environment variables, KubeDB operator will reject the request with following error,
 
 ```ini
 Error from server (BadRequest): error when applying patch:
@@ -480,7 +495,7 @@ When, `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Valida
 
 Following table show what KubeDB does when you delete Postgres crd for different termination policies,
 
-|                Behaviour                 | DoNotTerminate |  Pause   |  Delete  | WipeOut  |
+| Behavior                                 | DoNotTerminate |  Pause   |  Delete  | WipeOut  |
 | ---------------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation                |    &#10003;    | &#10007; | &#10007; | &#10007; |
 | 2. Create Dormant Database               |    &#10007;    | &#10003; | &#10007; | &#10007; |
