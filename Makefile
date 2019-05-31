@@ -245,17 +245,17 @@ $(BUILD_DIRS):
 .PHONY: install
 install:
 	@cd ../installer; \
-	APPSCODE_ENV=dev KUBEDB_DOCKER_REGISTRY=$(REGISTRY) KUBEDB_OPERATOR_TAG=$(TAG) ./deploy/stash.sh
+	APPSCODE_ENV=dev KUBEDB_DOCKER_REGISTRY=$(REGISTRY) KUBEDB_OPERATOR_TAG=$(TAG) ./deploy/kubedb.sh
 
 .PHONY: uninstall
 uninstall:
 	@cd ../installer; \
-	./deploy/stash.sh --uninstall
+	./deploy/kubedb.sh --uninstall
 
 .PHONY: purge
 purge:
 	@cd ../installer; \
-	./deploy/stash.sh --uninstall --purge
+	./deploy/kubedb.sh --uninstall --purge
 
 .PHONY: dev
 dev: gen fmt push
