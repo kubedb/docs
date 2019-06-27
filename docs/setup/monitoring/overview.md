@@ -14,7 +14,7 @@ aliases:
 
 # Monitoring KubeDB Operator
 
-KubeDB has native support for monitoring via [Prometheus](https://prometheus.io/). You can use builtin [Prometheus](https://github.com/prometheus/prometheus) scrapper or [CoreOS Prometheus Operator](https://github.com/coreos/prometheus-operator) to monitor KubeDB supported databases as well as KubeDB operator itself. This tutorial will show you what metrics KubeDB operator exports and how to enable monitoring for the operator itself.
+KubeDB has native support for monitoring via [Prometheus](https://prometheus.io/). You can use builtin [Prometheus](https://github.com/prometheus/prometheus) scraper or [CoreOS Prometheus Operator](https://github.com/coreos/prometheus-operator) to monitor KubeDB supported databases as well as KubeDB operator itself. This tutorial will show you what metrics KubeDB operator exports and how to enable monitoring for the operator itself.
 
 ## Overview
 

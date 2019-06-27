@@ -14,7 +14,7 @@ aliases:
 
 # Monitoring KubeDB Operator with builtin Prometheus
 
-This tutorial will show you how to configure builtin [Prometheus](https://github.com/prometheus/prometheus) scrapper to monitor KubeDB operator.
+This tutorial will show you how to configure builtin [Prometheus](https://github.com/prometheus/prometheus) scraper to monitor KubeDB operator.
 
 ## Before You Begin
 
