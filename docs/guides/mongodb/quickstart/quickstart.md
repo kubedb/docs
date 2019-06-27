@@ -324,7 +324,7 @@ $ kubedb delete mg mgo-quickstart -n demo
 Error from server (BadRequest): admission webhook "mongodb.validators.kubedb.com" denied the request: mongodb "mgo-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubedb edit mg mgo-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `domantdatabase` when mongodb is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
+Now, run `kubedb edit mg mgo-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when mongodb is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
 
 Learn details of all `TerminationPolicy` [here](docs/concepts/databases/mongodb.md#specterminationpolicy)
 

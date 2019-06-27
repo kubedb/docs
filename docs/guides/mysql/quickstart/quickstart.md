@@ -292,7 +292,7 @@ $ kubedb delete my mysql-quickstart -n demo
 Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" denied the request: mysql "mysql-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubedb edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `domantdatabase` when mysql is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
+Now, run `kubedb edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when mysql is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
 
 Learn details of all `TerminationPolicy` [here](docs/concepts/databases/mysql.md#specterminationpolicy)
 
