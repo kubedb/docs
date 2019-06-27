@@ -67,7 +67,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://raw.githubusercontent.com/kubedb/cli/master/docs/examples/mysql/clustering/demo-1.yaml
+$ kubedb create -f https://raw.githubusercontent.com/kubedb/docs/master/docs/examples/mysql/clustering/demo-1.yaml
 mysql.kubedb.com/my-group created
 ```
 
