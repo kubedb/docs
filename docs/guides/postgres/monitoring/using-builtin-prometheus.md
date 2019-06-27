@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Monitoring PostgreSQL with builtin Prometheus
 
-This tutorial will show you how to monitor PostgreSQL database using builtin [Prometheus](https://github.com/prometheus/prometheus) scrapper.
+This tutorial will show you how to monitor PostgreSQL database using builtin [Prometheus](https://github.com/prometheus/prometheus) scraper.
 
 ## Before You Begin
 
@@ -64,7 +64,7 @@ spec:
 
 Here,
 
-- `spec.monitor.agent: prometheus.io/builtin` specifies that we are going to monitor this server using builtin Prometheus scrapper.
+- `spec.monitor.agent: prometheus.io/builtin` specifies that we are going to monitor this server using builtin Prometheus scraper.
 
 Let's create the PostgreSQL crd we have shown above.
 
