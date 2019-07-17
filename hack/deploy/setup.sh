@@ -9,8 +9,8 @@ export MINIKUBE_RUN=0
 export SELF_HOSTED=1
 export ARGS="" # Forward arguments to installer script
 
-REPO_ROOT="$GOPATH/src/github.com/kubedb/operator"
-CLI_ROOT="$GOPATH/src/github.com/kubedb/cli"
+REPO_ROOT=`git rev-parse --show-toplevel`
+INSTALLER_ROOT="$GOPATH/src/github.com/kubedb/installer"
 
 pushd $REPO_ROOT
 
@@ -66,7 +66,7 @@ source "$REPO_ROOT/hack/libbuild/common/lib.sh"
 
 export KUBE_CA=$($ONESSL get kube-ca | $ONESSL base64)
 export APPSCODE_ENV=${APPSCODE_ENV:-prod}
-export KUBEDB_SCRIPT="curl -fsSL https://raw.githubusercontent.com/kubedb/cli/0.9.0-beta.0/"
+export KUBEDB_SCRIPT="curl -fsSL https://raw.githubusercontent.com/kubedb/installer/$INSTALLER_BRANCH/"
 
 show_help() {
   echo "setup.sh - setup kubedb operator"
@@ -118,22 +118,22 @@ done
 # Update "CLI_BRANCH" in deploy/settings file to pull a particular CLI repo branch.
 if [ "$APPSCODE_ENV" = "dev" ]; then
   detect_tag ''
-  export KUBEDB_SCRIPT="cat $CLI_ROOT/"
+  export KUBEDB_SCRIPT="cat $INSTALLER_ROOT/"
   export CUSTOM_OPERATOR_TAG=$TAG
   echo ""
 
-  if [[ ! -d $CLI_ROOT ]]; then
+  if [[ ! -d $INSTALLER_ROOT ]]; then
     echo ">>> Cloning cli repo"
-    git clone -b $CLI_BRANCH https://github.com/kubedb/cli.git "${CLI_ROOT}"
-    pushd $CLI_ROOT
+    git clone -b $INSTALLER_BRANCH https://github.com/kubedb/installer.git "${INSTALLER_ROOT}"
+    pushd $INSTALLER_ROOT
   else
-    pushd $CLI_ROOT
+    pushd $INSTALLER_ROOT
     detect_tag ''
-    if [[ $git_branch != $CLI_BRANCH ]]; then
+    if [[ $git_branch != $INSTALLER_BRANCH ]]; then
       git fetch --all
-      git checkout $CLI_BRANCH
+      git checkout $INSTALLER_BRANCH
     fi
-    git pull --ff-only origin $CLI_BRANCH #Pull update from remote only if there will be no conflict.
+    git pull --ff-only origin $INSTALLER_BRANCH #Pull update from remote only if there will be no conflict.
   fi
 fi
 
@@ -142,31 +142,31 @@ env | sort | grep -e KUBEDB* -e APPSCODE*
 echo ""
 
 if [ "$SELF_HOSTED" -eq 1 ]; then
-  echo "${KUBEDB_SCRIPT}hack/deploy/kubedb.sh | bash -s -- $ARGS"
-  ${KUBEDB_SCRIPT}hack/deploy/kubedb.sh | bash -s -- ${ARGS}
+  echo "${KUBEDB_SCRIPT}deploy/kubedb.sh | bash -s -- $ARGS"
+  ${KUBEDB_SCRIPT}deploy/kubedb.sh | bash -s -- ${ARGS}
 fi
 
 if [ "$MINIKUBE" -eq 1 ]; then
-  cat $CLI_ROOT/hack/deploy/validating-webhook.yaml | $ONESSL envsubst | kubectl apply -f -
-  cat $CLI_ROOT/hack/deploy/mutating-webhook.yaml | $ONESSL envsubst | kubectl apply -f -
+  cat $INSTALLER_ROOT/deploy/validating-webhook.yaml | $ONESSL envsubst | kubectl apply -f -
+  cat $INSTALLER_ROOT/deploy/mutating-webhook.yaml | $ONESSL envsubst | kubectl apply -f -
   cat $REPO_ROOT/hack/dev/apiregistration.yaml | $ONESSL envsubst | kubectl apply -f -
   # Following line may give error if DBVersions CRD already not created
-  cat $CLI_ROOT/hack/deploy/kubedb-catalog/* | $ONESSL envsubst | kubectl apply -f - || true
+  cat $INSTALLER_ROOT/hack/deploy/kubedb-catalog/* | $ONESSL envsubst | kubectl apply -f - || true
 
   if [ "$MINIKUBE_RUN" -eq 1 ]; then
     $REPO_ROOT/hack/make.py
-    kubedb-operator run --v=3 \
+    operator run --v=3 \
       --secure-port=8443 \
       --enable-status-subresource=true \
       --enable-mutating-webhook=true \
       --enable-validating-webhook=true \
       --kubeconfig="$HOME/.kube/config" \
       --authorization-kubeconfig="$HOME/.kube/config" \
-      --authentication-kubeconfig="$HOME/.kube/config"
+      --authentication-kubeconfig="$HOME/.kube/config"  
   fi
 fi
 
-if [ $(pwd) = "$CLI_ROOT" ]; then
+if [ $(pwd) = "$INSTALLER_ROOT" ]; then
   popd
 fi
 popd
