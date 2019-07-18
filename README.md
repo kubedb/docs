@@ -1,4 +1,4 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/kubedb/operator)](https://goreportcard.com/report/github.com/kubedb/operator)
+[![Go Report Card](https://goreportcard.com/badge/kubedb.dev/operator)](https://goreportcard.com/report/kubedb.dev/operator)
 [![Build Status](https://travis-ci.org/kubedb/operator.svg?branch=master)](https://travis-ci.org/kubedb/operator)
 [![codecov](https://codecov.io/gh/kubedb/operator/branch/master/graph/badge.svg)](https://codecov.io/gh/kubedb/operator)
 [![Docker Pulls](https://img.shields.io/docker/pulls/kubedb/operator.svg)](https://hub.docker.com/r/kubedb/operator/)
