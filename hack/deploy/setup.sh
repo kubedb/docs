@@ -147,11 +147,12 @@ if [ "$SELF_HOSTED" -eq 1 ]; then
 fi
 
 if [ "$MINIKUBE" -eq 1 ]; then
+  #Some enviroment we need 
+  export KUBEDB_DOCKER_REGISTRY=kubedb
+
   cat $INSTALLER_ROOT/deploy/validating-webhook.yaml | $ONESSL envsubst | kubectl apply -f -
   cat $INSTALLER_ROOT/deploy/mutating-webhook.yaml | $ONESSL envsubst | kubectl apply -f -
   cat $REPO_ROOT/hack/dev/apiregistration.yaml | $ONESSL envsubst | kubectl apply -f -
-  # Following line may give error if DBVersions CRD already not created
-  cat $INSTALLER_ROOT/hack/deploy/kubedb-catalog/* | $ONESSL envsubst | kubectl apply -f - || true
 
   if [ "$MINIKUBE_RUN" -eq 1 ]; then
     $REPO_ROOT/hack/make.py

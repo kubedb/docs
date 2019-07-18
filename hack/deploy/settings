@@ -8,3 +8,6 @@ export INSTALLER_BRANCH="release-0.12"
 # if APPSCODE_ENV=dev then git_tag will be used as CUSTOM_OPERATOR_TAG
 export CUSTOM_OPERATOR_TAG="0.9.0-beta.0"
 export KUBEDB_CATALOG=all
+
+#Custom registry by setting DOCKER_REGISTRY enviroment
+export KUBEDB_DOCKER_REGISTRY=${DOCKER_REGISTRY:-kubedb}
