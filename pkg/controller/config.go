@@ -21,6 +21,7 @@ import (
 	myc "kubedb.dev/mysql/pkg/controller"
 	pgc "kubedb.dev/postgres/pkg/controller"
 	rdc "kubedb.dev/redis/pkg/controller"
+	scs "stash.appscode.dev/stash/client/clientset/versioned"
 )
 
 const (
@@ -35,6 +36,7 @@ type OperatorConfig struct {
 	KubeClient       kubernetes.Interface
 	APIExtKubeClient crd_cs.ApiextensionsV1beta1Interface
 	DBClient         cs.Interface
+	StashClient      scs.Interface
 	DynamicClient    dynamic.Interface
 	AppCatalogClient appcat_cs.AppcatalogV1alpha1Interface
 	PromClient       pcm.MonitoringV1Interface
@@ -60,6 +62,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.KubeClient,
 		c.APIExtKubeClient,
 		c.DBClient,
+		c.StashClient,
 		c.DynamicClient,
 		c.AppCatalogClient,
 		c.PromClient,
@@ -70,11 +73,11 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	ctrl.DrmnInformer = dormantdatabase.NewController(ctrl.Controller, nil, ctrl.Config, nil, recorder).InitInformer()
 	ctrl.SnapInformer, ctrl.JobInformer = snapc.NewController(ctrl.Controller, nil, ctrl.Config, nil, recorder).InitInformer()
 
-	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
-	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
+	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
+	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
 	ctrl.edCtrl = edc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
-	ctrl.mgCtrl = mgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
-	ctrl.myCtrl = myc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
+	ctrl.mgCtrl = mgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
+	ctrl.myCtrl = myc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
 	ctrl.rdCtrl = rdc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
 	ctrl.mcCtrl = mcc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
 

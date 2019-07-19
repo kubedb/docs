@@ -23,6 +23,7 @@ import (
 	myc "kubedb.dev/mysql/pkg/controller"
 	pgc "kubedb.dev/postgres/pkg/controller"
 	rdc "kubedb.dev/redis/pkg/controller"
+	scs "stash.appscode.dev/stash/client/clientset/versioned"
 )
 
 type Controller struct {
@@ -46,6 +47,7 @@ func New(
 	client kubernetes.Interface,
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
 	dbClient cs.Interface,
+	stashClient scs.Interface,
 	dynamicClient dynamic.Interface,
 	appCatalogClient appcat_cs.AppcatalogV1alpha1Interface,
 	promClient pcm.MonitoringV1Interface,
@@ -58,6 +60,7 @@ func New(
 			Client:           client,
 			ExtClient:        dbClient,
 			ApiExtKubeClient: apiExtKubeClient,
+			StashClient:      stashClient,
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
 		},
