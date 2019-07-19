@@ -19,6 +19,7 @@ import (
 	kubedbinformers "kubedb.dev/apimachinery/client/informers/externalversions"
 	snapc "kubedb.dev/apimachinery/pkg/controller/snapshot"
 	"kubedb.dev/operator/pkg/controller"
+	scs "stash.appscode.dev/stash/client/clientset/versioned"
 )
 
 type ExtraOptions struct {
@@ -107,6 +108,9 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 		return err
 	}
 	if cfg.DBClient, err = cs.NewForConfig(cfg.ClientConfig); err != nil {
+		return err
+	}
+	if cfg.StashClient, err = scs.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
 	if cfg.DynamicClient, err = dynamic.NewForConfig(cfg.ClientConfig); err != nil {

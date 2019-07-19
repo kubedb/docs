@@ -24,6 +24,7 @@ require (
 	kubedb.dev/mysql v0.0.0-20190718031200-a8804c7654cf
 	kubedb.dev/postgres v0.0.0-20190718033513-8ed3f84d4c6f
 	kubedb.dev/redis v0.0.0-20190718022734-c046a9756237
+	stash.appscode.dev/stash v0.0.0-20190718015558-6bc80ce219d9
 )
 
 replace (

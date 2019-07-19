@@ -951,22 +951,22 @@ sigs.k8s.io/structured-merge-diff/schema
 # sigs.k8s.io/yaml v1.1.0
 sigs.k8s.io/yaml
 # stash.appscode.dev/stash v0.0.0-20190718015558-6bc80ce219d9
-stash.appscode.dev/stash/apis/stash/v1beta1
 stash.appscode.dev/stash/client/clientset/versioned
-stash.appscode.dev/stash/client/informers/externalversions
-stash.appscode.dev/stash/pkg/restic
-stash.appscode.dev/stash/apis
-stash.appscode.dev/stash/apis/stash
-stash.appscode.dev/stash/apis/stash/v1alpha1
 stash.appscode.dev/stash/client/clientset/versioned/typed/repositories/v1alpha1
 stash.appscode.dev/stash/client/clientset/versioned/typed/stash/v1alpha1
 stash.appscode.dev/stash/client/clientset/versioned/typed/stash/v1beta1
+stash.appscode.dev/stash/apis/stash/v1beta1
+stash.appscode.dev/stash/client/informers/externalversions
+stash.appscode.dev/stash/pkg/restic
+stash.appscode.dev/stash/apis/repositories/v1alpha1
+stash.appscode.dev/stash/client/clientset/versioned/scheme
+stash.appscode.dev/stash/apis/stash/v1alpha1
+stash.appscode.dev/stash/apis
+stash.appscode.dev/stash/apis/stash
 stash.appscode.dev/stash/client/informers/externalversions/internalinterfaces
 stash.appscode.dev/stash/client/informers/externalversions/stash
 stash.appscode.dev/stash/client/informers/externalversions/stash/v1beta1
 stash.appscode.dev/stash/client/listers/stash/v1beta1
-stash.appscode.dev/stash/apis/repositories/v1alpha1
-stash.appscode.dev/stash/client/clientset/versioned/scheme
-stash.appscode.dev/stash/client/informers/externalversions/stash/v1alpha1
 stash.appscode.dev/stash/apis/repositories
+stash.appscode.dev/stash/client/informers/externalversions/stash/v1alpha1
 stash.appscode.dev/stash/client/listers/stash/v1alpha1
