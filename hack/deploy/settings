@@ -9,5 +9,5 @@ export INSTALLER_BRANCH="release-0.12"
 export CUSTOM_OPERATOR_TAG="0.9.0-beta.0"
 export KUBEDB_CATALOG=all
 
-#Custom registry by setting DOCKER_REGISTRY enviroment
+# Custom registry by setting DOCKER_REGISTRY enviroment
 export KUBEDB_DOCKER_REGISTRY=${DOCKER_REGISTRY:-kubedb}
