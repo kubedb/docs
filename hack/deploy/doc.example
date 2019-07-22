@@ -5,6 +5,7 @@ To deploy operator in self-hosted:
 To run operator in local machine to connect minikube:
 
     $ ./hack/deploy/setup.sh --minikube (--run)
+    $ ./hack/deploy/install-catalog.sh
 
 To uninstall:
 
