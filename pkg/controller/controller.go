@@ -3,18 +3,6 @@ package controller
 import (
 	"github.com/appscode/go/log"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	catalogapi "github.com/kubedb/apimachinery/apis/catalog/v1alpha1"
-	dbapi "github.com/kubedb/apimachinery/apis/kubedb/v1alpha1"
-	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
-	amc "github.com/kubedb/apimachinery/pkg/controller"
-	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
-	esc "github.com/kubedb/elasticsearch/pkg/controller"
-	edc "github.com/kubedb/etcd/pkg/controller"
-	mcc "github.com/kubedb/memcached/pkg/controller"
-	mgc "github.com/kubedb/mongodb/pkg/controller"
-	myc "github.com/kubedb/mysql/pkg/controller"
-	pgc "github.com/kubedb/postgres/pkg/controller"
-	rdc "github.com/kubedb/redis/pkg/controller"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/dynamic"
@@ -23,6 +11,19 @@ import (
 	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
+	catalogapi "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	dbapi "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	cs "kubedb.dev/apimachinery/client/clientset/versioned"
+	amc "kubedb.dev/apimachinery/pkg/controller"
+	snapc "kubedb.dev/apimachinery/pkg/controller/snapshot"
+	esc "kubedb.dev/elasticsearch/pkg/controller"
+	edc "kubedb.dev/etcd/pkg/controller"
+	mcc "kubedb.dev/memcached/pkg/controller"
+	mgc "kubedb.dev/mongodb/pkg/controller"
+	myc "kubedb.dev/mysql/pkg/controller"
+	pgc "kubedb.dev/postgres/pkg/controller"
+	rdc "kubedb.dev/redis/pkg/controller"
+	scs "stash.appscode.dev/stash/client/clientset/versioned"
 )
 
 type Controller struct {
@@ -46,6 +47,7 @@ func New(
 	client kubernetes.Interface,
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
 	dbClient cs.Interface,
+	stashClient scs.Interface,
 	dynamicClient dynamic.Interface,
 	appCatalogClient appcat_cs.AppcatalogV1alpha1Interface,
 	promClient pcm.MonitoringV1Interface,
@@ -58,6 +60,7 @@ func New(
 			Client:           client,
 			ExtClient:        dbClient,
 			ApiExtKubeClient: apiExtKubeClient,
+			StashClient:      stashClient,
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
 		},

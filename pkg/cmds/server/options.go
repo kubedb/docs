@@ -5,11 +5,6 @@ import (
 	"time"
 
 	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	"github.com/kubedb/apimachinery/apis"
-	cs "github.com/kubedb/apimachinery/client/clientset/versioned"
-	kubedbinformers "github.com/kubedb/apimachinery/client/informers/externalversions"
-	snapc "github.com/kubedb/apimachinery/pkg/controller/snapshot"
-	"github.com/kubedb/operator/pkg/controller"
 	"github.com/spf13/pflag"
 	core "k8s.io/api/core/v1"
 	kext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
@@ -19,6 +14,12 @@ import (
 	"kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/cli"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
+	"kubedb.dev/apimachinery/apis"
+	cs "kubedb.dev/apimachinery/client/clientset/versioned"
+	kubedbinformers "kubedb.dev/apimachinery/client/informers/externalversions"
+	snapc "kubedb.dev/apimachinery/pkg/controller/snapshot"
+	"kubedb.dev/operator/pkg/controller"
+	scs "stash.appscode.dev/stash/client/clientset/versioned"
 )
 
 type ExtraOptions struct {
@@ -107,6 +108,9 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 		return err
 	}
 	if cfg.DBClient, err = cs.NewForConfig(cfg.ClientConfig); err != nil {
+		return err
+	}
+	if cfg.StashClient, err = scs.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
 	if cfg.DynamicClient, err = dynamic.NewForConfig(cfg.ClientConfig); err != nil {
