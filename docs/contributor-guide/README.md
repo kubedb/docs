@@ -78,7 +78,7 @@ type ExtraOptions struct {
 
 ### Implement KubeDB APIServer
 
-![API Server implement Details](./images/APIServer-implement-details.png)
+![API Server implement Details](/images/APIServer-implement-details.png)
 
 ### Config and Start Operators
 
