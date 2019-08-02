@@ -3,8 +3,8 @@ module kubedb.dev/operator
 go 1.12
 
 require (
-	github.com/appscode/go v0.0.0-20190621064509-6b292c9166e3
-	github.com/coreos/prometheus-operator v0.30.0
+	github.com/appscode/go v0.0.0-20190722173419-e454bf744023
+	github.com/coreos/prometheus-operator v0.30.1
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
 	gopkg.in/olivere/elastic.v5 v5.0.80 // indirect
@@ -14,21 +14,21 @@ require (
 	k8s.io/apiserver v0.0.0-20190516230822-f89599b3f645
 	k8s.io/client-go v11.0.0+incompatible
 	kmodules.xyz/client-go v0.0.0-20190715080709-7162a6c90b04
-	kmodules.xyz/custom-resources v0.0.0-20190508103408-464e8324c3ec
+	kmodules.xyz/custom-resources v0.0.0-20190730174012-d0224972f055
 	kmodules.xyz/webhook-runtime v0.0.0-20190715115250-a84fbf77dd30
-	kubedb.dev/apimachinery v0.0.0-20190718012505-6973f90fefd0
-	kubedb.dev/elasticsearch v0.0.0-20190718150743-a410aed9c719
+	kubedb.dev/apimachinery v0.0.0-20190801152009-3ee2a59976e1
+	kubedb.dev/elasticsearch v0.0.0-20190731222758-3dd46b3f441e
 	kubedb.dev/etcd v0.0.0-20190718040006-2a7e758b7ad4
 	kubedb.dev/memcached v0.0.0-20190718030029-dab1a2fca289
-	kubedb.dev/mongodb v0.0.0-20190718144008-1f88cb942953
-	kubedb.dev/mysql v0.0.0-20190718031200-a8804c7654cf
-	kubedb.dev/postgres v0.0.0-20190718033513-8ed3f84d4c6f
+	kubedb.dev/mongodb v0.0.0-20190801152438-fe69a66fdfb0
+	kubedb.dev/mysql v0.0.0-20190731224757-086032c5b517
+	kubedb.dev/postgres v0.0.0-20190731230519-af93201a725c
 	kubedb.dev/redis v0.0.0-20190718022734-c046a9756237
-	stash.appscode.dev/stash v0.0.0-20190718015558-6bc80ce219d9
+	stash.appscode.dev/stash v0.0.0-20190730144328-4ec6caf83810
 )
 
 replace (
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest/autorest v0.5.0
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.2.0+incompatible
 	k8s.io/api => k8s.io/api v0.0.0-20190313235455-40a48860b5ab
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190315093550-53c4693659ed
 	k8s.io/apimachinery => github.com/kmodules/apimachinery v0.0.0-20190508045248-a52a97a7a2bf

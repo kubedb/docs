@@ -269,6 +269,21 @@ lint: $(BUILD_DIRS)
 $(BUILD_DIRS):
 	@mkdir -p $@
 
+.PHONY: install
+install:
+	@cd ../installer; \
+	APPSCODE_ENV=dev KUBEDB_DOCKER_REGISTRY=$(REGISTRY) KUBEDB_OPERATOR_TAG=$(TAG) KUBEDB_CATALOG=all ./deploy/kubedb.sh --operator-name=$(BIN)
+
+.PHONY: uninstall
+uninstall:
+	@cd ../installer; \
+	./deploy/kubedb.sh --uninstall
+
+.PHONY: purge
+purge:
+	@cd ../installer; \
+	./deploy/kubedb.sh --uninstall --purge
+
 .PHONY: dev
 dev: gen fmt push
 

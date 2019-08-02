@@ -22,7 +22,7 @@ github.com/NYTimes/gziphandler
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
-# github.com/appscode/go v0.0.0-20190621064509-6b292c9166e3
+# github.com/appscode/go v0.0.0-20190722173419-e454bf744023
 github.com/appscode/go/version
 github.com/appscode/go/runtime
 github.com/appscode/go/flags
@@ -44,7 +44,7 @@ github.com/appscode/go/encoding/yaml
 github.com/appscode/osm/context
 # github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2
 github.com/armon/circbuf
-# github.com/aws/aws-sdk-go v1.20.20
+# github.com/aws/aws-sdk-go v1.20.21
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/credentials
 github.com/aws/aws-sdk-go/aws/credentials/stscreds
@@ -82,9 +82,9 @@ github.com/aws/aws-sdk-go/aws/credentials/ec2rolecreds
 github.com/aws/aws-sdk-go/aws/credentials/endpointcreds
 github.com/aws/aws-sdk-go/private/protocol/query/queryutil
 github.com/aws/aws-sdk-go/private/protocol/json/jsonutil
-# github.com/beorn7/perks v1.0.0
+# github.com/beorn7/perks v1.0.1
 github.com/beorn7/perks/quantile
-# github.com/census-instrumentation/opencensus-proto v0.2.0
+# github.com/census-instrumentation/opencensus-proto v0.2.1
 github.com/census-instrumentation/opencensus-proto/gen-go/agent/common/v1
 github.com/census-instrumentation/opencensus-proto/gen-go/agent/metrics/v1
 github.com/census-instrumentation/opencensus-proto/gen-go/agent/trace/v1
@@ -108,7 +108,7 @@ github.com/coreos/etcd/pkg/tlsutil
 github.com/coreos/go-semver/semver
 # github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
 github.com/coreos/go-systemd/daemon
-# github.com/coreos/prometheus-operator v0.30.0
+# github.com/coreos/prometheus-operator v0.30.1
 github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1
 github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1
 github.com/coreos/prometheus-operator/pkg/client/versioned/scheme
@@ -196,7 +196,7 @@ github.com/grpc-ecosystem/go-grpc-prometheus
 github.com/grpc-ecosystem/grpc-gateway/runtime
 github.com/grpc-ecosystem/grpc-gateway/utilities
 github.com/grpc-ecosystem/grpc-gateway/internal
-# github.com/hashicorp/golang-lru v0.5.1
+# github.com/hashicorp/golang-lru v0.5.3
 github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
 # github.com/imdario/mergo v0.3.7
@@ -207,7 +207,7 @@ github.com/inconshreveable/mousetrap
 github.com/jmespath/go-jmespath
 # github.com/jpillora/go-ogle-analytics v0.0.0-20161213085824-14b04e0594ef
 github.com/jpillora/go-ogle-analytics
-# github.com/json-iterator/go v1.1.6
+# github.com/json-iterator/go v1.1.7
 github.com/json-iterator/go
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
@@ -226,7 +226,7 @@ github.com/modern-go/concurrent
 github.com/modern-go/reflect2
 # github.com/munnerz/goautoneg v0.0.0-20190414153302-2ae31c8b6b30
 github.com/munnerz/goautoneg
-# github.com/ncw/swift v1.0.47
+# github.com/ncw/swift v1.0.49
 github.com/ncw/swift
 # github.com/olivere/elastic v6.2.17+incompatible
 github.com/olivere/elastic/config
@@ -371,7 +371,7 @@ google.golang.org/appengine/internal/remote_api
 google.golang.org/genproto/googleapis/rpc/status
 google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/protobuf/field_mask
-# google.golang.org/grpc v1.21.1
+# google.golang.org/grpc v1.21.2
 google.golang.org/grpc
 google.golang.org/grpc/codes
 google.golang.org/grpc/credentials
@@ -834,7 +834,7 @@ kmodules.xyz/client-go/apps/v1
 kmodules.xyz/client-go/rbac/v1beta1
 kmodules.xyz/client-go/tools/portforward
 kmodules.xyz/client-go/tools/exec
-# kmodules.xyz/custom-resources v0.0.0-20190508103408-464e8324c3ec
+# kmodules.xyz/custom-resources v0.0.0-20190730174012-d0224972f055
 kmodules.xyz/custom-resources/client/clientset/versioned/scheme
 kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1
 kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1
@@ -853,7 +853,7 @@ kmodules.xyz/offshoot-api/api/v1
 # kmodules.xyz/webhook-runtime v0.0.0-20190715115250-a84fbf77dd30
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.0.0-20190718012505-6973f90fefd0
+# kubedb.dev/apimachinery v0.0.0-20190801152009-3ee2a59976e1
 kubedb.dev/apimachinery/client/clientset/versioned/scheme
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/client/clientset/versioned
@@ -863,17 +863,15 @@ kubedb.dev/apimachinery/apis/catalog/v1alpha1
 kubedb.dev/apimachinery/apis/kubedb/v1alpha1
 kubedb.dev/apimachinery/pkg/controller
 kubedb.dev/apimachinery/pkg/controller/dormantdatabase
+kubedb.dev/apimachinery/pkg/controller/restoresession
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/admission/dormantdatabase
 kubedb.dev/apimachinery/pkg/admission/namespace
 kubedb.dev/apimachinery/pkg/admission/snapshot
-kubedb.dev/apimachinery/apis/authorization/v1alpha1
 kubedb.dev/apimachinery/apis/config/v1alpha1
-kubedb.dev/apimachinery/client/clientset/versioned/typed/authorization/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned/typed/catalog/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned/typed/config/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1
-kubedb.dev/apimachinery/client/informers/externalversions/authorization
 kubedb.dev/apimachinery/client/informers/externalversions/catalog
 kubedb.dev/apimachinery/client/informers/externalversions/internalinterfaces
 kubedb.dev/apimachinery/client/informers/externalversions/kubedb
@@ -883,15 +881,11 @@ kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1
 kubedb.dev/apimachinery/pkg/controller/job
 kubedb.dev/apimachinery/apis/catalog
 kubedb.dev/apimachinery/apis/kubedb
-kubedb.dev/apimachinery/pkg/controller/restoresession
 kubedb.dev/apimachinery/pkg/validator
 kubedb.dev/apimachinery/pkg/admission
-kubedb.dev/apimachinery/apis/authorization
-kubedb.dev/apimachinery/client/informers/externalversions/authorization/v1alpha1
 kubedb.dev/apimachinery/client/informers/externalversions/catalog/v1alpha1
-kubedb.dev/apimachinery/client/listers/authorization/v1alpha1
 kubedb.dev/apimachinery/client/listers/catalog/v1alpha1
-# kubedb.dev/elasticsearch v0.0.0-20190718150743-a410aed9c719
+# kubedb.dev/elasticsearch v0.0.0-20190731222758-3dd46b3f441e
 kubedb.dev/elasticsearch/pkg/controller
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/keytool
@@ -905,13 +899,13 @@ kubedb.dev/etcd/pkg/util
 # kubedb.dev/memcached v0.0.0-20190718030029-dab1a2fca289
 kubedb.dev/memcached/pkg/controller
 kubedb.dev/memcached/pkg/admission
-# kubedb.dev/mongodb v0.0.0-20190718144008-1f88cb942953
+# kubedb.dev/mongodb v0.0.0-20190801152438-fe69a66fdfb0
 kubedb.dev/mongodb/pkg/controller
 kubedb.dev/mongodb/pkg/admission
-# kubedb.dev/mysql v0.0.0-20190718031200-a8804c7654cf
+# kubedb.dev/mysql v0.0.0-20190731224757-086032c5b517
 kubedb.dev/mysql/pkg/controller
 kubedb.dev/mysql/pkg/admission
-# kubedb.dev/postgres v0.0.0-20190718033513-8ed3f84d4c6f
+# kubedb.dev/postgres v0.0.0-20190731230519-af93201a725c
 kubedb.dev/postgres/pkg/controller
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/leader_election
@@ -950,23 +944,23 @@ sigs.k8s.io/structured-merge-diff/value
 sigs.k8s.io/structured-merge-diff/schema
 # sigs.k8s.io/yaml v1.1.0
 sigs.k8s.io/yaml
-# stash.appscode.dev/stash v0.0.0-20190718015558-6bc80ce219d9
+# stash.appscode.dev/stash v0.0.0-20190730144328-4ec6caf83810
 stash.appscode.dev/stash/client/clientset/versioned
+stash.appscode.dev/stash/client/informers/externalversions
 stash.appscode.dev/stash/client/clientset/versioned/typed/repositories/v1alpha1
 stash.appscode.dev/stash/client/clientset/versioned/typed/stash/v1alpha1
 stash.appscode.dev/stash/client/clientset/versioned/typed/stash/v1beta1
-stash.appscode.dev/stash/apis/stash/v1beta1
-stash.appscode.dev/stash/client/informers/externalversions
-stash.appscode.dev/stash/pkg/restic
-stash.appscode.dev/stash/apis/repositories/v1alpha1
-stash.appscode.dev/stash/client/clientset/versioned/scheme
 stash.appscode.dev/stash/apis/stash/v1alpha1
-stash.appscode.dev/stash/apis
-stash.appscode.dev/stash/apis/stash
+stash.appscode.dev/stash/apis/stash/v1beta1
 stash.appscode.dev/stash/client/informers/externalversions/internalinterfaces
 stash.appscode.dev/stash/client/informers/externalversions/stash
 stash.appscode.dev/stash/client/informers/externalversions/stash/v1beta1
 stash.appscode.dev/stash/client/listers/stash/v1beta1
-stash.appscode.dev/stash/apis/repositories
+stash.appscode.dev/stash/pkg/restic
+stash.appscode.dev/stash/apis/repositories/v1alpha1
+stash.appscode.dev/stash/client/clientset/versioned/scheme
+stash.appscode.dev/stash/apis
+stash.appscode.dev/stash/apis/stash
 stash.appscode.dev/stash/client/informers/externalversions/stash/v1alpha1
+stash.appscode.dev/stash/apis/repositories
 stash.appscode.dev/stash/client/listers/stash/v1alpha1

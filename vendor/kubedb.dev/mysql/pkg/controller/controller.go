@@ -21,7 +21,6 @@ import (
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
 	"kubedb.dev/apimachinery/apis"
-	authorization "kubedb.dev/apimachinery/apis/authorization/v1alpha1"
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
@@ -98,8 +97,6 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		catalog.MySQLVersion{}.CustomResourceDefinition(),
 		api.DormantDatabase{}.CustomResourceDefinition(),
 		api.Snapshot{}.CustomResourceDefinition(),
-		authorization.MySQLRole{}.CustomResourceDefinition(),
-		authorization.DatabaseAccessRequest{}.CustomResourceDefinition(),
 		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
 	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)

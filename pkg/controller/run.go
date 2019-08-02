@@ -37,6 +37,29 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.KubeInformerFactory.Start(stopCh)
 	c.KubedbInformerFactory.Start(stopCh)
 
+	go func() {
+		// start StashInformerFactory only if stash crds (ie, "restoreSession") are available.
+		if err := c.BlockOnStashOperator(stopCh); err != nil {
+			log.Errorln("error while waiting for restoreSession.", err)
+			return
+		}
+
+		// start informer factory
+		c.StashInformerFactory.Start(stopCh)
+		for t, v := range c.StashInformerFactory.WaitForCacheSync(stopCh) {
+			if !v {
+				log.Fatalf("%v timed out waiting for caches to sync", t)
+				return
+			}
+		}
+		// only postgres, elasticsearch, mongodb and mysql has restoreSession queue initialized.
+		// Check ctrl.init() (e.g. c.myCtrl.Init())
+		c.pgCtrl.RSQueue.Run(stopCh)
+		c.esCtrl.RSQueue.Run(stopCh)
+		c.mgCtrl.RSQueue.Run(stopCh)
+		c.myCtrl.RSQueue.Run(stopCh)
+	}()
+
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range c.KubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
