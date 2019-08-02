@@ -52,8 +52,8 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 				return
 			}
 		}
-		// only postgres, elasticsearch, mongodb and mysql has restoreSession queue initialized.
-		// Check ctrl.init() (e.g. c.myCtrl.Init())
+		// Only postgres, elasticsearch, mongodb and mysql has restoreSession queue initialized.
+		// Check RSQueue initialization in ctrl.init() (e.g. c.myCtrl.Init()) to know if it expects RS watcher.
 		c.pgCtrl.RSQueue.Run(stopCh)
 		c.esCtrl.RSQueue.Run(stopCh)
 		c.mgCtrl.RSQueue.Run(stopCh)
