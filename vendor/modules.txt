@@ -899,7 +899,7 @@ kubedb.dev/etcd/pkg/util
 # kubedb.dev/memcached v0.0.0-20190718030029-dab1a2fca289
 kubedb.dev/memcached/pkg/controller
 kubedb.dev/memcached/pkg/admission
-# kubedb.dev/mongodb v0.0.0-20190801152438-fe69a66fdfb0
+# kubedb.dev/mongodb v0.0.0-20190802112916-172be98da3bf
 kubedb.dev/mongodb/pkg/controller
 kubedb.dev/mongodb/pkg/admission
 # kubedb.dev/mysql v0.0.0-20190731224757-086032c5b517

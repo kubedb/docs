@@ -469,7 +469,7 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB, opts workloadOption
 			core.Container{
 				Name:            api.ResourceSingularMongoDB,
 				Image:           mongodbVersion.Spec.DB.Image,
-				ImagePullPolicy: core.PullAlways, //todo: delete
+				ImagePullPolicy: core.PullIfNotPresent,
 				Command:         opts.cmd,
 				Args: meta_util.UpsertArgumentList(
 					opts.args, pt.Spec.Args),
@@ -591,7 +591,7 @@ func installInitContainer(
 	installContainer := core.Container{
 		Name:            InitInstallContainerName,
 		Image:           mongodbVersion.Spec.InitContainer.Image,
-		ImagePullPolicy: core.PullAlways, //todo: delete
+		ImagePullPolicy: core.PullIfNotPresent,
 		Command:         []string{"sh"},
 		Args: []string{
 			"-c",

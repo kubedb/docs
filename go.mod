@@ -20,7 +20,7 @@ require (
 	kubedb.dev/elasticsearch v0.0.0-20190731222758-3dd46b3f441e
 	kubedb.dev/etcd v0.0.0-20190718040006-2a7e758b7ad4
 	kubedb.dev/memcached v0.0.0-20190718030029-dab1a2fca289
-	kubedb.dev/mongodb v0.0.0-20190801152438-fe69a66fdfb0
+	kubedb.dev/mongodb v0.0.0-20190802112916-172be98da3bf
 	kubedb.dev/mysql v0.0.0-20190731224757-086032c5b517
 	kubedb.dev/postgres v0.0.0-20190731230519-af93201a725c
 	kubedb.dev/redis v0.0.0-20190718022734-c046a9756237

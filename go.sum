@@ -920,8 +920,8 @@ kubedb.dev/etcd v0.0.0-20190718040006-2a7e758b7ad4 h1:XmxLEF55hRAl9Yjr+JX0FNrPC3
 kubedb.dev/etcd v0.0.0-20190718040006-2a7e758b7ad4/go.mod h1:q0SuOuHFztCOxrcITqcnYot04Uja/rN7Go0IqfkcorY=
 kubedb.dev/memcached v0.0.0-20190718030029-dab1a2fca289 h1:R8iaMT6tma1ysVzWuN+MPbcfbO7PO9AZ36YWpwhILcE=
 kubedb.dev/memcached v0.0.0-20190718030029-dab1a2fca289/go.mod h1:jbCV80hoDBPLDClDzWyxVXnVKjiYBcTM6k4wYb3r/+M=
-kubedb.dev/mongodb v0.0.0-20190801152438-fe69a66fdfb0 h1:FOh2V1DSD661zzv5RNWEDU6IOE2ir4pEAUiHwWfIuG8=
-kubedb.dev/mongodb v0.0.0-20190801152438-fe69a66fdfb0/go.mod h1:2G93Bu5iKkGhthcCBeUNTJBKY+kf/A8F/2ttsntXuhU=
+kubedb.dev/mongodb v0.0.0-20190802112916-172be98da3bf h1:6azLyl7npGEj/bsqoi71SLfMEcgcZN0jvZ/zoAwFpIs=
+kubedb.dev/mongodb v0.0.0-20190802112916-172be98da3bf/go.mod h1:2G93Bu5iKkGhthcCBeUNTJBKY+kf/A8F/2ttsntXuhU=
 kubedb.dev/mysql v0.0.0-20190731224757-086032c5b517 h1:M9lE+1drDcHhhi+qidCTHWJoX2h4g3CVZ7Ej9Git9qg=
 kubedb.dev/mysql v0.0.0-20190731224757-086032c5b517/go.mod h1:71yPDXBEbppstaAtaQjr9KoJR//nuUDrVYhNv/E3fL0=
 kubedb.dev/postgres v0.0.0-20190731230519-af93201a725c h1:VpiHtWEqc7qiQkCgIe9OMtbQuIOCewN6sLF6en1I+6E=

@@ -14,8 +14,8 @@ import (
 // createCaCertificate returns generated caKey, caCert, err in order.
 func createCaCertificate() (*rsa.PrivateKey, *x509.Certificate, error) {
 	cfg := cert.Config{
-		CommonName:   "CA",
-		Organization: []string{"Kubedb:CA"},
+		CommonName:   "ca",
+		Organization: []string{"kubedb:ca"},
 	}
 
 	caKey, err := cert.NewPrivateKey()
