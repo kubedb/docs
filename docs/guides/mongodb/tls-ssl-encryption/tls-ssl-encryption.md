@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
-# Run mongodb with TLS/SSL (Transport Encryption)
+# Run MongoDB with TLS/SSL (Transport Encryption)
 
 KubeDB supports providing TLS/SSL encryption (via, `sslMode` and `clusterAuthMode`) for MongoDB. This tutorial will show you how to use KubeDB to run a MongoDB database with TLS/SSL encryption.
 
@@ -43,9 +43,9 @@ Read about the fields in details in [mongodb concept](/docs/concepts/databases/m
 
 `sslMode` is applicable for all kind of mongodb (i.e., `standalone`, `replicaset` and `sharding`), while `clusterAuthMode` provides [ClusterAuthMode](https://docs.mongodb.com/manual/reference/program/mongod/#cmdoption-mongod-clusterauthmode) for mongodb clusters (i.e., `replicaset` and `sharding`).
 
-When, SSLMode is anything other than `disabled`, kubedb will create a certificate secret where all the required certificates and given including `ca.cert`, `ca.key` and `client.pem`.
+When, SSLMode is anything other than `disabled`, kubedb will create a certificate secret where all the required certificates are given including `ca.cert`, `ca.key` and `client.pem`.
 
-The subject of `client.pem` certificate is added as `root` user in `$external` mongodb database. So, user can use this client certifica for `MONGODB-X509` `authenticationMechanism`.
+The subject of `client.pem` certificate is added as `root` user in `$external` mongodb database. So, user can use this client certificate for `MONGODB-X509` `authenticationMechanism`.
 
 ## TLS/SSL encryption in MongoDB Standalone
 
@@ -396,7 +396,7 @@ ca.cert  ca.key  ca.srl  client.pem  key.txt  mongo.pem  mongod.conf
 mongodb@mongo-sh-tls-mongos-5958559b5d-5vrjm:/$ openssl x509 -in /data/configdb/client.pem -inform PEM -subject -nameopt RFC2253 -noout
 subject= CN=root,O=kubedb:client
 
-# Now use CN=root,O=kubedb:client as root 
+# Now use CN=root,O=kubedb:client as root
 mongodb@mongo-sh-tls-mongos-5958559b5d-5vrjm:/$ mongo --ssl --sslCAFile /data/configdb/ca.cert --sslPEMKeyFile /data/configdb/client.pem admin --host localhost --authenticationMechanism MONGODB-X509 --authenticationDatabase='$external' -u "CN=root,O=kubedb:client"
 
 MongoDB shell version v3.6.13
@@ -468,13 +468,7 @@ $ kubectl patch -n demo mg/mgo-rs-tls -p '{"spec":{"sslMode": "disabled","cluste
 Error from server (Forbidden): admission webhook "mongodb.validators.kubedb.com" denied the request: can't have disabled set to mongodb.spec.sslMode when mongodb.spec.clusterAuthMode is set to x509
 ```
 
-To **Upgrade from Keyfile Authentication to x.509 Authentication**, change the `sslMode` and `clusterAuthMode` in recommended sequence as suggested in [official documentation](https://docs.mongodb.com/manual/tutorial/upgrade-keyfile-to-x509/).  Each time after changing the specs, follow the procedure that is described above to verify the changes of `sslMode` and `clusterAuthMode` inside database.
-
-## Snapshot Configuration
-
-Currently snapshot works without any extra configuration in spec of snapshot, when `sslMode` is set to either of `requireSSL`, `allowSSL` or `disabled`.
-
-Note, Snapshot won't work for `requireSSL` at this moment. Track this issue [here in github](https://github.com/kubedb/project/issues/352).
+To **Upgrade from Keyfile Authentication to x.509 Authentication**, change the `sslMode` and `clusterAuthMode` in recommended sequence as suggested in [official documentation](https://docs.mongodb.com/manual/tutorial/upgrade-keyfile-to-x509/).  Each time after changing the specs, follow the procedure that is described above to verify the changes of `sslMode` and `clusterAuthMode` inside the database.
 
 ## Cleaning up
 

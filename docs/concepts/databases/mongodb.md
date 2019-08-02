@@ -180,9 +180,11 @@ type: Opaque
 
 `spec.certificateSecret` (optional) is a secret name that contains keyfile (a random string)against `key.txt` key. Each mongod instances in the replica set and `shardTopology` uses the contents of the keyfile as the shared password for authenticating other members in the `replicaset`. Only `mongod` instances with the correct keyfile can join the replica set. _User can provide the `certificateSecret` by creating a secret with key `key.txt`. See [here](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/#create-a-keyfile) to create the string for `certificateSecret`._ If `certificateSecret` is not given, KubeDB operator will generate a `certificateSecret` itself.
 
-Since, KubeDB-0.13.0 release, if the mongodb is either of ReplicaSet or Sharding, `certificateSecret` secret contains three key for clusters (`tls.crt`, `tls.key` & `key.txt`). If the mongodb is standalone and `ssloMode` is other than disabled, then `CertificateSecret` is created with keys `tls.crt`, `tls.key`.  
+Since, KubeDB-0.13.0 release, if the mongodb is either of ReplicaSet or Sharding, or if the `sslMode` is anything other than `disabled`,then `certificateSecret` will contain some required tls certificates including `ca.cert`, `ca.key`, `client.pem`.
 
-Here, `tls.key` & `tls.crt` represents Certificate Authority (CA) Key and Certificate respectively.
+Here, `ca.key` & `ca.cert` represents Certificate Authority (CA) Key and Certificate respectively.
+
+KubeDB also creates a `client.pem` certificate for `certificateSecret`. The `subject` of `client.pem` certificate is added as `root` user in `$external` database. So, user can use this client certificate for `MONGODB-X509` `authenticationMechanism`.
 
 To generate the `certificateSecret` Manually,
 
@@ -192,20 +194,20 @@ To generate the `certificateSecret` Manually,
     openssl rand -base64 756 > key.txt
     ```
   
-2. Generate `tls.key` and `tls.crt`
+2. Generate `ca.key` and `ca.cert`
   
   ```bash
-  openssl genrsa -out tls.key 2048
-  openssl req -x509 -new -nodes -key tls.key -days 1024 -out tls.crt -subj "/CN=kubedb.com"
+  openssl genrsa -out ca.key 2048
+  openssl req -x509 -new -nodes -key ca.key -days 1024 -out ca.cert -subj "/CN=ca"
   ```
-  
+
 3. Create Secret
 
   ```bash
   kubectl create secret generic mongodb-demo-cert -n demo \
       --from-file=./key.txt \
-      --from-file=./tls.key \
-      --from-file=./tls.crt
+      --from-file=./ca.key \
+      --from-file=./ca.cert
   ```
 
 Now, use this secret `mongodb-demo-cert` in field `spec.certificateSecret.name`.
