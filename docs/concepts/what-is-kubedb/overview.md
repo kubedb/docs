@@ -16,7 +16,7 @@ section_menu_id: concepts
 Running production quality databases in Kubernetes can be tricky. KubeDB is a framework for writing operators for any database that support the following operational requirements:
 
  - Create a database declaratively using CRD.
- - Take one-off backups or period backups to various cloud stores, eg,, S3, GCS, etc.
+ - Take one-off backups or period backups to various cloud stores, e.g., S3, GCS, etc.
  - Restore from backup or clone any database.
  - Native integration with Prometheus for monitoring via [CoreOS Prometheus Operator](https://github.com/coreos/prometheus-operator).
  - Apply deletion lock to avoid accidental deletion of database.
@@ -24,6 +24,7 @@ Running production quality databases in Kubernetes can be tricky. KubeDB is a fr
  - Use cli to manage databases like kubectl for Kubernetes.
 
 Currently KubeDB includes support for following datastores:
+ 
  - Postgres
  - Elasticsearch
  - MySQL
