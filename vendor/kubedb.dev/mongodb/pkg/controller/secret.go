@@ -75,7 +75,7 @@ func (c *Controller) createDatabaseSecret(mongodb *api.MongoDB) (*core.SecretVol
 		randPassword := ""
 
 		// if the password starts with "-" it will cause error in bash scripts (in mongodb-tools)
-		for randPassword = rand.GeneratePassword(); randPassword[0] == '-'; {
+		for randPassword = rand.GeneratePassword(); randPassword[0] == '-'; randPassword = rand.GeneratePassword() {
 		}
 
 		secret := &core.Secret{
