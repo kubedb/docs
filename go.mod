@@ -13,7 +13,7 @@ require (
 	k8s.io/apimachinery v0.0.0-20190508063446-a3da69d3723c
 	k8s.io/apiserver v0.0.0-20190516230822-f89599b3f645
 	k8s.io/client-go v11.0.0+incompatible
-	kmodules.xyz/client-go v0.0.0-20190715080709-7162a6c90b04
+	kmodules.xyz/client-go v0.0.0-20190802200916-043217632b6a
 	kmodules.xyz/custom-resources v0.0.0-20190730174012-d0224972f055
 	kmodules.xyz/webhook-runtime v0.0.0-20190715115250-a84fbf77dd30
 	kubedb.dev/apimachinery v0.0.0-20190801152009-3ee2a59976e1
