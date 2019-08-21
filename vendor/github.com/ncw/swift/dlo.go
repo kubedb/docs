@@ -2,7 +2,6 @@ package swift
 
 import (
 	"os"
-	"strings"
 )
 
 // DynamicLargeObjectCreateFile represents an open static large object
@@ -40,13 +39,13 @@ func (c *Connection) DynamicLargeObjectDelete(container string, path string) err
 
 // DynamicLargeObjectMove moves a dynamic large object from srcContainer, srcObjectName to dstContainer, dstObjectName
 func (c *Connection) DynamicLargeObjectMove(srcContainer string, srcObjectName string, dstContainer string, dstObjectName string) error {
-	info, headers, err := c.Object(srcContainer, srcObjectName)
+	info, headers, err := c.Object(dstContainer, srcObjectName)
 	if err != nil {
 		return err
 	}
 
 	segmentContainer, segmentPath := parseFullPath(headers["X-Object-Manifest"])
-	if err := c.createDLOManifest(dstContainer, dstObjectName, segmentContainer+"/"+segmentPath, info.ContentType, sanitizeLargeObjectMoveHeaders(headers)); err != nil {
+	if err := c.createDLOManifest(dstContainer, dstObjectName, segmentContainer+"/"+segmentPath, info.ContentType); err != nil {
 		return err
 	}
 
@@ -57,21 +56,9 @@ func (c *Connection) DynamicLargeObjectMove(srcContainer string, srcObjectName s
 	return nil
 }
 
-func sanitizeLargeObjectMoveHeaders(headers Headers) Headers {
-	sanitizedHeaders := make(map[string]string, len(headers))
-	for k, v := range headers {
-		if strings.HasPrefix(k, "X-") { //Some of the fields does not effect the request e,g, X-Timestamp, X-Trans-Id, X-Openstack-Request-Id. Open stack will generate new ones anyway.
-			sanitizedHeaders[k] = v
-		}
-	}
-	return sanitizedHeaders
-}
-
 // createDLOManifest creates a dynamic large object manifest
-func (c *Connection) createDLOManifest(container string, objectName string, prefix string, contentType string, headers Headers) error {
-	if headers == nil {
-		headers = make(Headers)
-	}
+func (c *Connection) createDLOManifest(container string, objectName string, prefix string, contentType string) error {
+	headers := make(Headers)
 	headers["X-Object-Manifest"] = prefix
 	manifest, err := c.ObjectCreate(container, objectName, false, "", contentType, headers)
 	if err != nil {
@@ -91,7 +78,7 @@ func (file *DynamicLargeObjectCreateFile) Close() error {
 }
 
 func (file *DynamicLargeObjectCreateFile) Flush() error {
-	err := file.conn.createDLOManifest(file.container, file.objectName, file.segmentContainer+"/"+file.prefix, file.contentType, file.headers)
+	err := file.conn.createDLOManifest(file.container, file.objectName, file.segmentContainer+"/"+file.prefix, file.contentType)
 	if err != nil {
 		return err
 	}

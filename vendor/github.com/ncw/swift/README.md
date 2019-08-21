@@ -154,6 +154,3 @@ Contributors
 - Andreas Andersen <andreas@softwaredesign.se>
 - kayrus <kay.diam@gmail.com>
 - CodeLingo Bot <bot@codelingo.io>
-- Jérémy Clerc <jeremy.clerc@tagpay.fr>
-- 4xicom <37339705+4xicom@users.noreply.github.com>
-- Bo <bo@4xi.com>
