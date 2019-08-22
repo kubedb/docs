@@ -281,7 +281,7 @@ kubectl exec -it -n demo mysql-quickstart-0 -- mysql -u root --password=l0yKjI1E
 ```
 ---
 
-Now, open your browser and go to the following URL: _http://{minikube-ip}:{myadmin-svc-nodeport}_. To log into the phpMyAdmin, use host __`mysql-quickstart.demo`__ or __`172.17.0.6`__ , username __`root`__ and password __`pefjWeXoAQ9PaRZv`__.
+Now, open your browser and go to the following URL: _http://{minikube-ip}:{myadmin-svc-nodeport}_. To log into the phpMyAdmin, use host __`mysql-quickstart.demo`__ or __`172.17.0.6`__ , username __`root`__ and password __`l0yKjI1E7IMohsGR`__.
 
 ## DoNotTerminate Property
 
