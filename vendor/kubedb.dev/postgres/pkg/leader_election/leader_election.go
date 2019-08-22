@@ -6,9 +6,11 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"os/user"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/appscode/go/ioutil"
@@ -49,7 +51,7 @@ func RunLeaderElection() {
 	parts := strings.Split(hostname, "-")
 	statefulSetName := strings.Join(parts[:len(parts)-1], "-")
 
-	fmt.Println(fmt.Sprintf(`We want "%v" as our leader`, hostname))
+	log.Printf("We want \"%v\" as our leader\n", hostname)
 
 	config, err := restclient.InClusterConfig()
 	if err != nil {
@@ -82,6 +84,35 @@ func RunLeaderElection() {
 	}
 
 	runningFirstTime := true
+	var cmd *exec.Cmd
+	lastLeader := ""
+
+	runWrapperUntilExit := func(role string) {
+		log.Printf("Starting database wrapper script as %s\n", role)
+		// su-exec postgres /scripts/primary/run.sh
+		cmd = exec.Command("su-exec", "postgres", fmt.Sprintf("/scripts/%s/run.sh", role))
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err = cmd.Run()
+		log.Println("DB Wrapper terminated, exiting too. If there was an error, find it below.")
+		cmd = nil
+		if err != nil {
+			log.Println(err)
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+	terminateDB := func() {
+		log.Println("Terminating postgres server and operator")
+		if cmd != nil && cmd.Process != nil {
+			log.Println("Postgres is running, sending SIGTERM")
+			cmd.Process.Signal(syscall.SIGTERM)
+			log.Println("Waiting for postgres to terminate")
+			select {}
+		} else {
+			log.Println("Postgres already exited, nothing to do")
+		}
+	}
 
 	go func() {
 		leaderelection.RunOrDie(context.Background(), leaderelection.LeaderElectionConfig{
@@ -92,13 +123,18 @@ func RunLeaderElection() {
 			RetryPeriod:   time.Duration(retryPeriod) * time.Second,
 			Callbacks: leaderelection.LeaderCallbacks{
 				OnStartedLeading: func(ctx context.Context) {
-					fmt.Println("Got leadership, now do your jobs")
+					log.Println("Got leadership, creating the trigger file")
+					if !ioutil.WriteString("/tmp/pg-failover-trigger", "") {
+						log.Fatalln("Failed to create trigger file")
+					}
 				},
 				OnStoppedLeading: func() {
-					fmt.Println("Lost leadership, now quit")
-					os.Exit(1)
+					log.Println("Lost leadership, initiating a restart to correctly signal the database")
+					terminateDB()
 				},
 				OnNewLeader: func(identity string) {
+					log.Printf("Leader changed from '%s' to '%s'\n", lastLeader, identity)
+					lastLeader = identity
 					statefulSet, err := kubeClient.AppsV1().StatefulSets(namespace).Get(statefulSetName, metav1.GetOptions{})
 					if err != nil {
 						log.Fatalln(err)
@@ -111,6 +147,7 @@ func RunLeaderElection() {
 						log.Fatalln(err)
 					}
 
+					log.Println("Annotating pods for statefulset")
 					for _, pod := range pods.Items {
 						role := RoleReplica
 						if pod.Name == identity {
@@ -127,32 +164,24 @@ func RunLeaderElection() {
 						role = RolePrimary
 					}
 
+					log.Printf("This pod is now a %s\n", role)
+
 					if runningFirstTime {
 						runningFirstTime = false
-						go func() {
-							// su-exec postgres /scripts/primary/run.sh
-							cmd := exec.Command("su-exec", "postgres", fmt.Sprintf("/scripts/%s/run.sh", role))
-							cmd.Stdout = os.Stdout
-							cmd.Stderr = os.Stderr
-
-							if err = cmd.Run(); err != nil {
-								log.Println(err)
-							}
-							os.Exit(1)
-						}()
-					} else {
-						if identity == hostname {
-							if !ioutil.WriteString("/tmp/pg-failover-trigger", "") {
-								log.Fatalln("Failed to create trigger file")
-							}
-						}
+						go runWrapperUntilExit(role)
 					}
 				},
 			},
 		})
+		log.Println("Leader election died, exiting DB")
+		terminateDB()
 	}()
 
-	select {}
+	doneChan := make(chan os.Signal)
+	signal.Notify(doneChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	recvSig := <-doneChan
+	log.Printf("Received signal: %s, exiting\n", recvSig)
+	terminateDB()
 }
 
 func loadEnvVariables() (namespace string, leaseDuration, renewDeadline, retryPeriod int) {

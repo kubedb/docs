@@ -52,8 +52,7 @@ func NewBulkService(client *Client) *BulkService {
 	return builder
 }
 
-// Reset cleans up the request queue
-func (s *BulkService) Reset() {
+func (s *BulkService) reset() {
 	s.requests = make([]BulkableRequest, 0)
 	s.sizeInBytes = 0
 	s.sizeInBytesCursor = 0
@@ -263,7 +262,7 @@ func (s *BulkService) Do(ctx context.Context) (*BulkResponse, error) {
 	}
 
 	// Reset so the request can be reused
-	s.Reset()
+	s.reset()
 
 	return ret, nil
 }
@@ -326,7 +325,6 @@ type BulkResponseItem struct {
 	ForcedRefresh bool          `json:"forced_refresh,omitempty"`
 	Found         bool          `json:"found,omitempty"`
 	Error         *ErrorDetails `json:"error,omitempty"`
-	GetResult     *GetResult    `json:"get,omitempty"`
 }
 
 // Indexed returns all bulk request results of "index" actions.

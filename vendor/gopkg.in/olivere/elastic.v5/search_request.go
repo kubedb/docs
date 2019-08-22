@@ -4,16 +4,13 @@
 
 package elastic
 
-import (
-	"encoding/json"
-	"strings"
-)
+import "strings"
 
 // SearchRequest combines a search request and its
 // query details (see SearchSource).
 // It is used in combination with MultiSearch.
 type SearchRequest struct {
-	searchType        string
+	searchType        string // default in ES is "query_then_fetch"
 	indices           []string
 	types             []string
 	routing           *string
@@ -31,27 +28,36 @@ func NewSearchRequest() *SearchRequest {
 	return &SearchRequest{}
 }
 
-// SearchRequest must be one of dfs_query_then_fetch, query_then_fetch
-// or query_and_fetch (deprecated in 5.3).
+// SearchRequest must be one of "query_then_fetch", "query_and_fetch",
+// "scan", "count", "dfs_query_then_fetch", or "dfs_query_and_fetch".
+// Use one of the constants defined via SearchType.
 func (r *SearchRequest) SearchType(searchType string) *SearchRequest {
 	r.searchType = searchType
 	return r
 }
 
-// SearchTypeDfsQueryThenFetch sets search type to dfs_query_then_fetch.
 func (r *SearchRequest) SearchTypeDfsQueryThenFetch() *SearchRequest {
 	return r.SearchType("dfs_query_then_fetch")
 }
 
-// SearchTypeQueryThenFetch sets search type to query_then_fetch.
+func (r *SearchRequest) SearchTypeDfsQueryAndFetch() *SearchRequest {
+	return r.SearchType("dfs_query_and_fetch")
+}
+
 func (r *SearchRequest) SearchTypeQueryThenFetch() *SearchRequest {
 	return r.SearchType("query_then_fetch")
 }
 
-// SearchTypeQueryAndFetch sets search type to query_and_fetch which
-// was deprecated in 5.3.
 func (r *SearchRequest) SearchTypeQueryAndFetch() *SearchRequest {
 	return r.SearchType("query_and_fetch")
+}
+
+func (r *SearchRequest) SearchTypeScan() *SearchRequest {
+	return r.SearchType("scan")
+}
+
+func (r *SearchRequest) SearchTypeCount() *SearchRequest {
+	return r.SearchType("count")
 }
 
 func (r *SearchRequest) Index(indices ...string) *SearchRequest {
@@ -124,7 +130,17 @@ func (r *SearchRequest) SearchSource(searchSource *SearchSource) *SearchRequest 
 }
 
 func (r *SearchRequest) Source(source interface{}) *SearchRequest {
-	r.source = source
+	switch v := source.(type) {
+	case *SearchSource:
+		src, err := v.Source()
+		if err != nil {
+			// Do not do anything in case of an error
+			return r
+		}
+		r.source = src
+	default:
+		r.source = source
+	}
 	return r
 }
 
@@ -184,34 +200,6 @@ func (r *SearchRequest) header() interface{} {
 // Body is used e.g. by MultiSearch to get information about the search body
 // of one SearchRequest.
 // See https://www.elastic.co/guide/en/elasticsearch/reference/5.6/search-multi-search.html
-func (r *SearchRequest) Body() (string, error) {
-	switch t := r.source.(type) {
-	default:
-		body, err := json.Marshal(r.source)
-		if err != nil {
-			return "", err
-		}
-		return string(body), nil
-	case *SearchSource:
-		src, err := t.Source()
-		if err != nil {
-			return "", err
-		}
-		body, err := json.Marshal(src)
-		if err != nil {
-			return "", err
-		}
-		return string(body), nil
-	case json.RawMessage:
-		return string(t), nil
-	case *json.RawMessage:
-		return string(*t), nil
-	case string:
-		return t, nil
-	case *string:
-		if t != nil {
-			return *t, nil
-		}
-		return "{}", nil
-	}
+func (r *SearchRequest) Body() interface{} {
+	return r.source
 }

@@ -160,8 +160,7 @@ func (s *CountService) Routing(routing string) *CountService {
 	return s
 }
 
-// TerminateAfter indicates the maximum count for each shard, upon reaching
-// which the query execution will terminate early.
+// TerminateAfter specifies the maximum count for each shard
 func (s *CountService) TerminateAfter(terminateAfter int) *CountService {
 	s.terminateAfter = &terminateAfter
 	return s
@@ -317,6 +316,6 @@ func (s *CountService) Do(ctx context.Context) (int64, error) {
 
 // CountResponse is the response of using the Count API.
 type CountResponse struct {
-	Count  int64       `json:"count"`
-	Shards *ShardsInfo `json:"_shards,omitempty"`
+	Count  int64      `json:"count"`
+	Shards shardsInfo `json:"_shards,omitempty"`
 }

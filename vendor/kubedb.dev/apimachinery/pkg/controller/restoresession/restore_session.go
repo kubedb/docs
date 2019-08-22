@@ -20,10 +20,45 @@ func (c *Controller) handleRestoreSession(rs *v1beta1.RestoreSession) error {
 		return nil
 	}
 
-	meta := metav1.ObjectMeta{
-		Name:      rs.Spec.Target.Ref.Name,
-		Namespace: rs.Namespace,
+	var meta metav1.ObjectMeta
+
+	// In case PerconaXtraDB restore using Stash, we can't refer the Appbinding object
+	// in `.spec.target.ref` of RestoreSession object. As a result, the name of the
+	// original PerconaXtraDB object is unknown here. So, we need to check which object
+	// of kind PerconaXtraDB has specified the current RestoreSession object.
+	//
+	// But, for other database we don't need to do this. We can simply use the value of
+	// `.spec.target.ref.name` from current RestoreSession object.
+	switch rs.Labels[api.LabelDatabaseKind] {
+	case api.ResourceKindPerconaXtraDB:
+		pxList, err := c.ExtClient.KubedbV1alpha1().PerconaXtraDBs(rs.Namespace).List(metav1.ListOptions{})
+		if err != nil {
+			return err
+		}
+
+		for _, px := range pxList.Items {
+			if px.Spec.Init != nil && px.Spec.Init.StashRestoreSession != nil &&
+				px.Spec.Init.StashRestoreSession.Name == rs.Name {
+				meta = metav1.ObjectMeta{
+					Name: px.Name,
+				}
+
+				break
+			}
+		}
+
+		if meta.Name == "" {
+			log.Debugf("no existing %v objects in namespace %q has specified %v named %q",
+				api.ResourceKindPerconaXtraDB, rs.Namespace, v1beta1.ResourceKindRestoreSession, rs.Name)
+			return nil
+		}
+	default:
+		meta = metav1.ObjectMeta{
+			Name: rs.Spec.Target.Ref.Name,
+		}
 	}
+
+	meta.Namespace = rs.Namespace
 
 	var phase api.DatabasePhase
 	var reason string

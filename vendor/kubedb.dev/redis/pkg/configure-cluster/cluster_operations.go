@@ -171,9 +171,6 @@ func (c Config) reshard(pod *core.Pod, nodes [][]RedisNode, src, dst, requstedSl
 		if end-start+1 > need {
 			end = start + need - 1
 		}
-		//cmd := []string{"/conf/cluster.sh", "reshard", nodes[src][0].IP, nodes[src][0].ID, nodes[dst][0].IP, nodes[dst][0].ID,
-		//	strconv.Itoa(start), strconv.Itoa(end),
-		//}
 		cmd := c.ReshardCmd(nodes[src][0].IP, nodes[src][0].ID, nodes[dst][0].IP, nodes[dst][0].ID, start, end)
 
 		_, err = exec.ExecIntoPod(c.RestConfig, pod, exec.Command(cmd...))
