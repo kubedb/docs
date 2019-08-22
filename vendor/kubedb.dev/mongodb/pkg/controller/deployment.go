@@ -237,8 +237,8 @@ func (c *Controller) ensureMongosNode(mongodb *api.MongoDB) (kutil.VerbType, err
 
 	if sslMode != api.SSLModeDisabled {
 		args = append(args, []string{
-			fmt.Sprintf("--sslCAFile=/data/configdb/%v", TLSCert),
-			fmt.Sprintf("--sslPEMKeyFile=/data/configdb/%v", MongoServerPem),
+			fmt.Sprintf("--sslCAFile=/data/configdb/%v", api.MongoTLSCertFileName),
+			fmt.Sprintf("--sslPEMKeyFile=/data/configdb/%v", api.MongoServerPemFileName),
 		}...)
 	}
 

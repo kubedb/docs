@@ -15,31 +15,33 @@ import (
 
 // TasksListService retrieves the list of currently executing tasks
 // on one ore more nodes in the cluster. It is part of the Task Management API
-// documented at https://www.elastic.co/guide/en/elasticsearch/reference/5.6/tasks.html.
+// documented at http://www.elastic.co/guide/en/elasticsearch/reference/5.2/tasks-list.html.
 //
 // It is supported as of Elasticsearch 2.3.0.
 type TasksListService struct {
 	client            *Client
 	pretty            bool
-	taskId            []string
+	taskId            []int64
 	actions           []string
 	detailed          *bool
 	nodeId            []string
 	parentNode        string
-	parentTaskId      *string
+	parentTask        *int64
 	waitForCompletion *bool
-	groupBy           string
 }
 
 // NewTasksListService creates a new TasksListService.
 func NewTasksListService(client *Client) *TasksListService {
 	return &TasksListService{
-		client: client,
+		client:  client,
+		taskId:  make([]int64, 0),
+		actions: make([]string, 0),
+		nodeId:  make([]string, 0),
 	}
 }
 
 // TaskId indicates to returns the task(s) with specified id(s).
-func (s *TasksListService) TaskId(taskId ...string) *TasksListService {
+func (s *TasksListService) TaskId(taskId ...int64) *TasksListService {
 	s.taskId = append(s.taskId, taskId...)
 	return s
 }
@@ -70,9 +72,9 @@ func (s *TasksListService) ParentNode(parentNode string) *TasksListService {
 	return s
 }
 
-// ParentTaskId returns tasks with specified parent task id (node_id:task_number). Set to -1 to return all.
-func (s *TasksListService) ParentTaskId(parentTaskId string) *TasksListService {
-	s.parentTaskId = &parentTaskId
+// ParentTask returns tasks with specified parent task id. Set to -1 to return all.
+func (s *TasksListService) ParentTask(parentTask int64) *TasksListService {
+	s.parentTask = &parentTask
 	return s
 }
 
@@ -80,13 +82,6 @@ func (s *TasksListService) ParentTaskId(parentTaskId string) *TasksListService {
 // to complete (default: false).
 func (s *TasksListService) WaitForCompletion(waitForCompletion bool) *TasksListService {
 	s.waitForCompletion = &waitForCompletion
-	return s
-}
-
-// GroupBy groups tasks by nodes or parent/child relationships.
-// As of now, it can either be "nodes" (default) or "parents".
-func (s *TasksListService) GroupBy(groupBy string) *TasksListService {
-	s.groupBy = groupBy
 	return s
 }
 
@@ -102,8 +97,12 @@ func (s *TasksListService) buildURL() (string, url.Values, error) {
 	var err error
 	var path string
 	if len(s.taskId) > 0 {
+		var tasks []string
+		for _, taskId := range s.taskId {
+			tasks = append(tasks, fmt.Sprintf("%d", taskId))
+		}
 		path, err = uritemplates.Expand("/_tasks/{task_id}", map[string]string{
-			"task_id": strings.Join(s.taskId, ","),
+			"task_id": strings.Join(tasks, ","),
 		})
 	} else {
 		path = "/_tasks"
@@ -129,14 +128,11 @@ func (s *TasksListService) buildURL() (string, url.Values, error) {
 	if s.parentNode != "" {
 		params.Set("parent_node", s.parentNode)
 	}
-	if s.parentTaskId != nil {
-		params.Set("parent_task_id", *s.parentTaskId)
+	if s.parentTask != nil {
+		params.Set("parent_task", fmt.Sprintf("%v", *s.parentTask))
 	}
 	if s.waitForCompletion != nil {
 		params.Set("wait_for_completion", fmt.Sprintf("%v", *s.waitForCompletion))
-	}
-	if s.groupBy != "" {
-		params.Set("group_by", s.groupBy)
 	}
 	return path, params, nil
 }
@@ -182,7 +178,7 @@ type TasksListResponse struct {
 }
 
 type TaskOperationFailure struct {
-	TaskId int64         `json:"task_id"` // this is a long in the Java source
+	TaskId int64         `json:"task_id"`
 	NodeId string        `json:"node_id"`
 	Status string        `json:"status"`
 	Reason *ErrorDetails `json:"reason"`
@@ -198,16 +194,14 @@ type DiscoveryNode struct {
 	TransportAddress string                 `json:"transport_address"`
 	Host             string                 `json:"host"`
 	IP               string                 `json:"ip"`
-	Roles            []string               `json:"roles"` // "master", "data", or "ingest"
 	Attributes       map[string]interface{} `json:"attributes"`
 	// Tasks returns the tasks by its id (as a string).
 	Tasks map[string]*TaskInfo `json:"tasks"`
 }
 
-// TaskInfo represents information about a currently running task.
 type TaskInfo struct {
 	Node               string      `json:"node"`
-	Id                 int64       `json:"id"` // the task id (yes, this is a long in the Java source)
+	Id                 int64       `json:"id"` // the task id
 	Type               string      `json:"type"`
 	Action             string      `json:"action"`
 	Status             interface{} `json:"status"`      // has separate implementations of Task.Status in Java for reindexing, replication, and "RawTaskStatus"

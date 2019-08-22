@@ -26,12 +26,17 @@ func (c *Controller) ensureAppBinding(db *api.Etcd) (kutil.VerbType, error) {
 		return kutil.VerbUnchanged, err
 	}
 
+	etcdVersion, err := c.ExtClient.CatalogV1alpha1().EtcdVersions().Get(string(db.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(c.AppCatalogClient, meta, func(in *appcat.AppBinding) *appcat.AppBinding {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 		in.Labels = db.OffshootLabels()
-		in.Annotations = db.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Type = appmeta.Type()
+		in.Spec.Version = etcdVersion.Spec.Version
 		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
 			Scheme: "https",
 			Name:   db.ClientServiceName(),

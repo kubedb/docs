@@ -115,14 +115,14 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		}
 
 		// add phase that database is being initialized
-		mg, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
+		my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
 		}, apis.EnableStatusSubresource)
 		if err != nil {
 			return err
 		}
-		mysql.Status = mg.Status
+		mysql.Status = my.Status
 
 		init := mysql.Spec.Init
 		if init.SnapshotSource != nil {

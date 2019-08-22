@@ -135,7 +135,7 @@ See the [wiki](https://github.com/olivere/elastic/wiki) for more details.
 - [x] Search
 - [x] Search Template
 - [ ] Multi Search Template
-- [x] Search Shards API
+- [ ] Search Shards API
 - [x] Suggesters
   - [x] Term Suggester
   - [x] Phrase Suggester
@@ -144,10 +144,9 @@ See the [wiki](https://github.com/olivere/elastic/wiki) for more details.
 - [x] Multi Search API
 - [x] Count API
 - [ ] Search Exists API
-- [x] Validate API
+- [ ] Validate API
 - [x] Explain API
 - [x] Profile API
-- [x] Field Capabilities API
 - [x] Field Stats API
 
 ### Aggregations
@@ -157,7 +156,7 @@ See the [wiki](https://github.com/olivere/elastic/wiki) for more details.
   - [x] Cardinality
   - [x] Extended Stats
   - [x] Geo Bounds
-  - [x] Geo Centroid
+  - [ ] Geo Centroid
   - [x] Max
   - [x] Min
   - [x] Percentiles
@@ -168,11 +167,9 @@ See the [wiki](https://github.com/olivere/elastic/wiki) for more details.
   - [x] Top Hits
   - [x] Value Count
 - Bucket Aggregations
-  - [x] Adjacency Matrix
   - [x] Children
   - [x] Date Histogram
   - [x] Date Range
-  - [x] Diversified Sampler
   - [x] Filter
   - [x] Filters
   - [x] Geo Distance
@@ -225,7 +222,7 @@ See the [wiki](https://github.com/olivere/elastic/wiki) for more details.
 - [x] Index Templates
 - [ ] Shadow Replica Indices
 - [x] Indices Stats
-- [x] Indices Segments
+- [ ] Indices Segments
 - [ ] Indices Recovery
 - [ ] Indices Shard Stores
 - [ ] Clear Cache

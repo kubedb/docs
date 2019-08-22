@@ -18,13 +18,15 @@ type MultiSearchService struct {
 	requests   []*SearchRequest
 	indices    []string
 	pretty     bool
-	maxConcurrentRequests *int
-	preFilterShardSize    *int
+	routing    string
+	preference string
 }
 
 func NewMultiSearchService(client *Client) *MultiSearchService {
 	builder := &MultiSearchService{
 		client:   client,
+		requests: make([]*SearchRequest, 0),
+		indices:  make([]string, 0),
 	}
 	return builder
 }
@@ -44,16 +46,6 @@ func (s *MultiSearchService) Pretty(pretty bool) *MultiSearchService {
 	return s
 }
 
-func (s *MultiSearchService) MaxConcurrentSearches(max int) *MultiSearchService {
-	s.maxConcurrentRequests = &max
-	return s
-}
-
-func (s *MultiSearchService) PreFilterShardSize(size int) *MultiSearchService {
-	s.preFilterShardSize = &size
-	return s
-}
-
 func (s *MultiSearchService) Do(ctx context.Context) (*MultiSearchResult, error) {
 	// Build url
 	path := "/_msearch"
@@ -62,12 +54,6 @@ func (s *MultiSearchService) Do(ctx context.Context) (*MultiSearchResult, error)
 	params := make(url.Values)
 	if s.pretty {
 		params.Set("pretty", fmt.Sprintf("%v", s.pretty))
-	}
-	if v := s.maxConcurrentRequests; v != nil {
-		params.Set("max_concurrent_searches", fmt.Sprintf("%v", *v))
-	}
-	if v := s.preFilterShardSize; v != nil {
-		params.Set("pre_filter_shard_size", fmt.Sprintf("%v", *v))
 	}
 
 	// Set body
@@ -82,14 +68,14 @@ func (s *MultiSearchService) Do(ctx context.Context) (*MultiSearchResult, error)
 		if err != nil {
 			return nil, err
 		}
-		body, err := sr.Body()
+		body, err := json.Marshal(sr.Body())
 		if err != nil {
 			return nil, err
 		}
 		lines = append(lines, string(header))
-		lines = append(lines, body)
+		lines = append(lines, string(body))
 	}
-	body := strings.Join(lines, "\n") + "\n" // add trailing \n
+	body := strings.Join(lines, "\n") + "\n" // Don't forget trailing \n
 
 	// Get response
 	res, err := s.client.PerformRequest(ctx, "GET", path, params, body)
@@ -105,7 +91,6 @@ func (s *MultiSearchService) Do(ctx context.Context) (*MultiSearchResult, error)
 	return ret, nil
 }
 
-// MultiSearchResult is the outcome of running a multi-search operation.
 type MultiSearchResult struct {
 	Responses []*SearchResult `json:"responses,omitempty"`
 }

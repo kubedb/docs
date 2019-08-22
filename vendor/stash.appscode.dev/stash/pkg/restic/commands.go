@@ -222,7 +222,7 @@ func (w *ResticWrapper) dump(dumpOptions DumpOptions) ([]byte, error) {
 	}
 	if dumpOptions.Host != "" {
 		args = append(args, "--host")
-		args = append(args, dumpOptions.Host)
+		args = append(args, dumpOptions.SourceHost)
 	}
 	if dumpOptions.Path != "" {
 		args = append(args, "--path")
@@ -252,9 +252,12 @@ func (w *ResticWrapper) check() ([]byte, error) {
 	return w.run(Command{Name: ResticCMD, Args: args})
 }
 
-func (w *ResticWrapper) stats() ([]byte, error) {
+func (w *ResticWrapper) stats(snapshotID string) ([]byte, error) {
 	log.Infoln("Reading repository status")
 	args := w.appendCacheDirFlag([]interface{}{"stats"})
+	if snapshotID != "" {
+		args = append(args, snapshotID)
+	}
 	args = w.appendMaxConnectionsFlag(args)
 	args = append(args, "--quiet", "--json")
 	args = w.appendCaCertFlag(args)

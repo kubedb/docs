@@ -26,12 +26,17 @@ func (c *Controller) ensureAppBinding(db *api.Memcached) (kutil.VerbType, error)
 		return kutil.VerbUnchanged, err
 	}
 
+	memcachedVersion, err := c.ExtClient.CatalogV1alpha1().MemcachedVersions().Get(string(db.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(c.AppCatalogClient, meta, func(in *appcat.AppBinding) *appcat.AppBinding {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 		in.Labels = db.OffshootLabels()
-		in.Annotations = db.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Type = appmeta.Type()
+		in.Spec.Version = memcachedVersion.Spec.Version
 		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
 			Name: db.ServiceName(),
 			Port: defaultDBPort.Port,

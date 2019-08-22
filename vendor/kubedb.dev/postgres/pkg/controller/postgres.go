@@ -95,7 +95,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	// ensure appbinding before ensuring Restic scheduler and restore
-	_, err = c.ensureAppBinding(postgres)
+	_, err = c.ensureAppBinding(postgres, postgresVersion)
 	if err != nil {
 		log.Errorln(err)
 		return err

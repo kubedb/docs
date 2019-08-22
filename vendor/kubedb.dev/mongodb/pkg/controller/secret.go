@@ -75,7 +75,7 @@ func (c *Controller) createDatabaseSecret(mongodb *api.MongoDB) (*core.SecretVol
 		randPassword := ""
 
 		// if the password starts with "-" it will cause error in bash scripts (in mongodb-tools)
-		for randPassword = rand.GeneratePassword(); randPassword[0] == '-'; {
+		for randPassword = rand.GeneratePassword(); randPassword[0] == '-'; randPassword = rand.GeneratePassword() {
 		}
 
 		secret := &core.Secret{
@@ -113,11 +113,11 @@ func (c *Controller) createCertificateSecret(mongodb *api.MongoDB) (*core.Secret
 		if err != nil {
 			return nil, err
 		}
-		svrPem, err := createPEMCertificate(mongodb, caKey, caCert)
+		svrPem, err := createServerPEMCertificate(mongodb, caKey, caCert)
 		if err != nil {
 			return nil, err
 		}
-		clientPem, err := createPEMCertificate(mongodb, caKey, caCert)
+		clientPem, err := createClientPEMCertificate(mongodb, caKey, caCert)
 		if err != nil {
 			return nil, err
 		}
@@ -132,16 +132,16 @@ func (c *Controller) createCertificateSecret(mongodb *api.MongoDB) (*core.Secret
 				KeyForKeyFile: base64Token,
 			},
 			Data: map[string][]byte{
-				string(TLSKey):         cert.EncodePrivateKeyPEM(caKey),
-				string(TLSCert):        cert.EncodeCertPEM(caCert),
-				string(MongoClientPem): clientPem,
+				string(api.MongoTLSKeyFileName):    cert.EncodePrivateKeyPEM(caKey),
+				string(api.MongoTLSCertFileName):   cert.EncodeCertPEM(caCert),
+				string(api.MongoClientPemFileName): clientPem,
 			},
 		}
 
 		// add mongo.pem (for standalone) in secret, only if the db id standalone
 		if mongodb.Spec.ReplicaSet == nil &&
 			mongodb.Spec.ShardTopology == nil {
-			secret.Data[string(MongoServerPem)] = svrPem
+			secret.Data[string(api.MongoServerPemFileName)] = svrPem
 		}
 
 		if _, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Create(secret); err != nil {

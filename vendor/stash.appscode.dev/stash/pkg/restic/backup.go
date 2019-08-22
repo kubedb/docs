@@ -53,7 +53,7 @@ func (w *ResticWrapper) RunBackup(backupOption BackupOptions) (*BackupOutput, er
 	backupOutput.RepositoryStats.SnapshotsRemovedOnLastCleanup = removed
 
 	// Read repository statics after cleanup
-	out, err = w.stats()
+	out, err = w.stats("")
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func (w *ResticWrapper) RunParallelBackup(backupOptions []BackupOptions, maxConc
 	}
 
 	// Read repository statics after cleanup
-	out, err = w.stats()
+	out, err = w.stats("")
 	if err != nil {
 		return nil, err
 	}
@@ -207,14 +207,14 @@ func (w *ResticWrapper) runBackup(backupOption BackupOptions) (api_v1beta1.HostB
 		return hostStats, nil
 	}
 
-	// Backup all target directories
-	for _, dir := range backupOption.BackupDirs {
-		out, err := w.backup(dir, backupOption.Host, nil)
+	// Backup all target paths
+	for _, path := range backupOption.BackupPaths {
+		out, err := w.backup(path, backupOption.Host, nil)
 		if err != nil {
 			return hostStats, err
 		}
 		// Extract information from the output of backup command
-		stats, err := extractBackupInfo(out, dir, backupOption.Host)
+		stats, err := extractBackupInfo(out, path, backupOption.Host)
 		if err != nil {
 			return hostStats, err
 		}
