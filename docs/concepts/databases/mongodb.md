@@ -178,9 +178,9 @@ type: Opaque
 
 ### spec.certificateSecret
 
-`spec.certificateSecret` (optional) is a secret name that contains keyfile (a random string)against `key.txt` key. Each mongod instances in the replica set and `shardTopology` uses the contents of the keyfile as the shared password for authenticating other members in the `replicaset`. Only `mongod` instances with the correct keyfile can join the replica set. _User can provide the `certificateSecret` by creating a secret with key `key.txt`. See [here](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/#create-a-keyfile) to create the string for `certificateSecret`._ If `certificateSecret` is not given, KubeDB operator will generate a `certificateSecret` itself.
+`spec.certificateSecret` (optional) is a secret name that contains keyfile (a random string) against `key.txt` key. Each mongod instance in the replica set and `shardTopology` uses the contents of the keyfile as the shared password for authenticating other members in the `replicaset`. Only `mongod` instances with the correct keyfile can join the replica set. _User can provide the `certificateSecret` by creating a secret with key `key.txt`. See [here](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/#create-a-keyfile) to create the string for `certificateSecret`._ If `certificateSecret` is not given, KubeDB operator will generate a `certificateSecret` itself.
 
-Since, KubeDB-0.13.0 release, if the mongodb is either of ReplicaSet or Sharding, or if the `sslMode` is anything other than `disabled`,then `certificateSecret` will contain some required tls certificates including `ca.cert`, `ca.key`, `client.pem`.
+Since, KubeDB v0.13.0 release, if the mongodb is either of ReplicaSet or Sharding, or if the `sslMode` is anything other than `disabled`,then `certificateSecret` will contain some required tls certificates including `ca.cert`, `ca.key`, `client.pem`.
 
 Here, `ca.key` & `ca.cert` represents Certificate Authority (CA) Key and Certificate respectively.
 
@@ -189,13 +189,13 @@ KubeDB also creates a `client.pem` certificate for `certificateSecret`. The `sub
 To generate the `certificateSecret` Manually,
 
 1. Generate key file first
-  
-    ```bash
-    openssl rand -base64 756 > key.txt
-    ```
-  
+
+  ```bash
+  openssl rand -base64 756 > key.txt
+  ```
+
 2. Generate `ca.key` and `ca.cert`
-  
+
   ```bash
   openssl genrsa -out ca.key 2048
   openssl req -x509 -new -nodes -key ca.key -days 1024 -out ca.cert -subj "/CN=ca"
