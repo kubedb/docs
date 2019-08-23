@@ -34,7 +34,7 @@ spec:
   databaseSecret:
     secretName: mgo1-auth
   certificateSecret:
-    secretName: mgo1-keyfile
+    secretName: mongodb-demo-cert
   replicaSet:
     name: rs0
   shardTopology:
@@ -62,6 +62,8 @@ spec:
           requests:
             storage: 1Gi
         storageClassName: standard
+  sslMode: preferSSL
+  clusterAuthMode: x509
   storageType: "Durable"
   storage:
     storageClassName: "standard"
@@ -132,10 +134,10 @@ spec:
 
 `spec.version` is a required field specifying the name of the [MongoDBVersion](/docs/concepts/catalog/mongodb.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MongoDBVersion` crd,
 
-- `3.4-v3`, `3.4-v2`, `3.4-v1`, `3.4`
-- `3.6-v3`, `3.6-v2`, `3.6-v1`, `3.6`
-- `4.0.5-v1`, `4.0-v1`, `4.0.5`, `4.0`
-- `4.1.7-v1`, `4.1.7`
+- `3.4-v4`, `3.4-v3`, `3.4-v2`, `3.4-v1`, `3.4`
+- `3.6-v4`, `3.6-v3`, `3.6-v2`, `3.6-v1`, `3.6`
+- `4.0.5-v2`, `4.0.5-v1`, `4.0-v1`, `4.0.5`, `4.0`
+- `4.1.7-v2`, `4.1.7-v1`, `4.1.7`
 
 ### spec.replicas
 
@@ -155,7 +157,7 @@ Example:
 
 ```console
 $ kubectl create secret generic mgo1-auth -n demo \
---from-literal=user=jhon-doe \
+--from-literal=username=jhon-doe \
 --from-literal=password=6q8u_2jMOW-OOZXk
 secret "mgo1-auth" created
 ```
@@ -164,7 +166,7 @@ secret "mgo1-auth" created
 apiVersion: v1
 data:
   password: NnE4dV8yak1PVy1PT1pYaw==
-  user: amhvbi1kb2U=
+  username: amhvbi1kb2U=
 kind: Secret
 metadata:
   ...
@@ -176,7 +178,39 @@ type: Opaque
 
 ### spec.certificateSecret
 
-`spec.certificateSecret` (optional) is a secret name that contains keyfile (a random string)against `key.txt` key. Each mongod instances in the replica set and `shardTopology` uses the contents of the keyfile as the shared password for authenticating other members in the replicaset. Only mongod instances with the correct keyfile can join the replica set. _User can provide the `certificateSecret` by creating a secret with key `key.txt`. See [here](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/#create-a-keyfile) to create the string for `certificateSecret`._ If `certificateSecret` is not given, KubeDB operator will generate a `certificateSecret` itself.
+`spec.certificateSecret` (optional) is a secret name that contains keyfile (a random string) against `key.txt` key. Each mongod instance in the replica set and `shardTopology` uses the contents of the keyfile as the shared password for authenticating other members in the `replicaset`. Only `mongod` instances with the correct keyfile can join the replica set. _User can provide the `certificateSecret` by creating a secret with key `key.txt`. See [here](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/#create-a-keyfile) to create the string for `certificateSecret`._ If `certificateSecret` is not given, KubeDB operator will generate a `certificateSecret` itself.
+
+Since, KubeDB v0.13.0 release, if the mongodb is either of ReplicaSet or Sharding, or if the `sslMode` is anything other than `disabled`,then `certificateSecret` will contain some required tls certificates including `ca.cert`, `ca.key`, `client.pem`.
+
+Here, `ca.key` & `ca.cert` represents Certificate Authority (CA) Key and Certificate respectively.
+
+KubeDB also creates a `client.pem` certificate for `certificateSecret`. The `subject` of `client.pem` certificate is added as `root` user in `$external` database. So, user can use this client certificate for `MONGODB-X509` `authenticationMechanism`.
+
+To generate the `certificateSecret` Manually,
+
+1. Generate key file first
+
+  ```bash
+  openssl rand -base64 756 > key.txt
+  ```
+
+2. Generate `ca.key` and `ca.cert`
+
+  ```bash
+  openssl genrsa -out ca.key 2048
+  openssl req -x509 -new -nodes -key ca.key -days 1024 -out ca.cert -subj "/CN=ca"
+  ```
+
+3. Create Secret
+
+  ```bash
+  kubectl create secret generic mongodb-demo-cert -n demo \
+      --from-file=./key.txt \
+      --from-file=./ca.key \
+      --from-file=./ca.cert
+  ```
+
+Now, use this secret `mongodb-demo-cert` in field `spec.certificateSecret.name`.
 
 ### spec.replicaSet
 
@@ -241,6 +275,28 @@ Available configurable fields:
 - `configSource` is an optional field to provide custom configuration file for mongos (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/concepts/databases/mongodb/#spec-configsource) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/concepts/databases/mongodb/#spec-podtemplate) in details.
 - `strategy` is the deployment strategy to use to replace existing pods with new ones. This is optional. If not provided, kubernetes will use default deploymentStrategy, ie. `RollingUpdate`. See more about [Deployment Strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
+
+### spec.sslMode
+
+Enables TLS/SSL or mixed TLS/SSL used for all network connections. The value of [`sslMode`](https://docs.mongodb.com/manual/reference/program/mongod/#cmdoption-mongod-sslmode) field can be one of the following:
+
+|    Value     | Description                                                  |
+| :----------: | :----------------------------------------------------------- |
+|  `disabled`  | The server does not use TLS/SSL.                             |
+|  `allowSSL`  | Connections between servers do not use TLS/SSL. For incoming connections, the server accepts both TLS/SSL and non-TLS/non-SSL. |
+| `preferSSL`  | Connections between servers use TLS/SSL. For incoming connections, the server accepts both TLS/SSL and non-TLS/non-SSL. |
+| `requireSSL` | The server uses and accepts only TLS/SSL encrypted connections. |
+
+### spec.clusterAuthMode
+
+The authentication mode used for cluster authentication. This option can have one of the following values:
+
+|     Value     | Description                                                  |
+| :-----------: | :----------------------------------------------------------- |
+|   `keyFile`   | Use a keyfile for authentication. Accept only keyfiles.      |
+| `sendKeyFile` | For rolling upgrade purposes. Send a keyfile for authentication but can accept both keyfiles and x.509 certificates. |
+|  `sendX509`   | For rolling upgrade purposes. Send the x.509 certificate for authentication but can accept both keyfiles and x.509 certificates. |
+|    `x509`     | Recommended. Send the x.509 certificate for authentication and accept only x.509 certificates. |
 
 ### spec.storageType
 

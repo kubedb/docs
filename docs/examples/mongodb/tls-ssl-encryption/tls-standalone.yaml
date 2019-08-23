@@ -1,0 +1,15 @@
+apiVersion: kubedb.com/v1alpha1
+kind: MongoDB
+metadata:
+  name: mgo-tls
+  namespace: demo
+spec:
+  version: "3.6-v4"
+  sslMode: requireSSL
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi

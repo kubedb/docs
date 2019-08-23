@@ -31,15 +31,11 @@ aliases:
 | Builtin Prometheus Discovery                 |   &#10003;   |
 | Using CoreOS Prometheus Operator             |   &#10003;   |
 
-<br/>
-
 ## Life Cycle of a MongoDB Object
 
 <p align="center">
   <img alt="lifecycle"  src="/docs/images/mongodb/mgo-lifecycle.png">
 </p>
-
-<br/>
 
 ## Supported MongoDB Versions
 
@@ -52,33 +48,53 @@ aliases:
 |     0.11.0     | &#10003;  | &#10003;  |     &#10003;     |  &#10003;   |
 |     0.12.0     | &#10003;  | &#10003;  |     &#10003;     |  &#10003;   |
 
-## Supported MongoDBVersion CRD
+## Supported MongoDB
 
 Here, &#10003; means supported and &#10007; means deprecated.
 
-|       NAME       | VERSION | KubeDB: 0.9.0 | KubeDB: 0.10.0 | KubeDB: 0.11.0 | KubeDB: 0.12.0 |
-| :--------------: | :-----: | :-----------: | :------------: | :------------: | :------------: |
-|       3.4        |   3.4   |   &#10007;    |    &#10007;    |    &#10007;    |    &#10007;    |
-|      3.4-v1      |   3.4   |   &#10003;    |    &#10007;    |    &#10007;    |    &#10007;    |
-|      3.4-v2      |   3.4   |   &#10007;    |    &#10003;    |    &#10003;    |    &#10007;    |
-|      3.4-v3      |   3.4   |   &#10007;    |    &#10007;    |    &#10007;    |    &#10003;    |
-|       3.6        |   3.6   |   &#10007;    |    &#10007;    |    &#10007;    |    &#10007;    |
-|      3.6-v1      |   3.6   |   &#10003;    |    &#10007;    |    &#10007;    |    &#10007;    |
-|      3.6-v2      |   3.6   |   &#10007;    |    &#10003;    |    &#10003;    |    &#10007;    |
-|      3.6-v3      |   3.6   |   &#10007;    |    &#10007;    |    &#10007;    |    &#10003;    |
-|    4.0.5, 4.0    |  4.0.5  |   &#10007;    |    &#10003;    |    &#10003;    |    &#10007;    |
-| 4.0.5-v1, 4.0-v1 |  4.0.5  |   &#10007;    |    &#10007;    |    &#10007;    |    &#10003;    |
-|      4.1.7       |  4.1.7  |   &#10007;    |    &#10003;    |    &#10003;    |    &#10007;    |
-|     4.1.7-v1     |  4.1.7  |   &#10007;    |    &#10007;    |    &#10007;    |    &#10003;    |
+|    NAME    | VERSION | KubeDB: 0.9.0 | KubeDB: 0.12.0 | KubeDB: 0.10.0 | KubeDB: 0.11.0 |
+| :--------: | :-----: | :-----------: | :------------: | :------------: | :------------: |
+|    3.4     |   3.4   |   &#10003;    |    &#10003;    |    &#10003;    |    &#10003;    |
+|    3.6     |   3.6   |   &#10003;    |    &#10003;    |    &#10003;    |    &#10003;    |
+| 4.0.5, 4.0 |  4.0.5  |   &#10007;    |    &#10007;    |    &#10003;    |    &#10003;    |
+|   4.1.7    |  4.1.7  |   &#10007;    |    &#10007;    |    &#10003;    |    &#10003;    |
+
+## Latest Supported MongoDBVersion Objects
+
+Supported MongoDBVersion objects for KubeDB-0.13.0 release is,
+
+```bash
+$ kubectl get mongodbversions
+NAME       VERSION   DB_IMAGE                DEPRECATED   AGE
+3.4        3.4       kubedb/mongo:3.4        true         110m
+3.4-v1     3.4       kubedb/mongo:3.4-v1     true         110m
+3.4-v2     3.4       kubedb/mongo:3.4-v2     true         110m
+3.4-v3     3.4       kubedb/mongo:3.4-v3                  110m
+3.4-v4     3.4       kubedb/mongo:3.4-v4                  110m
+3.6        3.6       kubedb/mongo:3.6        true         110m
+3.6-v1     3.6       kubedb/mongo:3.6-v1     true         110m
+3.6-v2     3.6       kubedb/mongo:3.6-v2     true         110m
+3.6-v3     3.6       kubedb/mongo:3.6-v3                  110m
+3.6-v4     3.6       kubedb/mongo:3.6-v4                  110m
+4.0        4.0.5     kubedb/mongo:4.0        true         110m
+4.0-v1     4.0.5     kubedb/mongo:4.0-v1                  110m
+4.0-v2     4.0.5     kubedb/mongo:4.0-v2                  110m
+4.0.5      4.0.5     kubedb/mongo:4.0.5      true         110m
+4.0.5-v1   4.0.5     kubedb/mongo:4.0.5-v1                110m
+4.0.5-v2   4.0.5     kubedb/mongo:4.0.5-v2                110m
+4.1.7      4.1.7     kubedb/mongo:4.1.7      true         110m
+4.1.7-v1   4.1.7     kubedb/mongo:4.1.7-v1                110m
+4.1.7-v2   4.1.7     kubedb/mongo:4.1.7-v2                110m
+```
+
+Here `Deprecated: true` `MongoDBVersions` are not supported in latest release.
 
 ## External tools dependency
 
-|                                     Tool                                     | Version |
-| ---------------------------------------------------------------------------- | :-----: |
-| [peer-finder](https://github.com/kubernetes/contrib/tree/master/peer-finder) | latest  |
-| [osm](https://github.com/appscode/osm)                                       |  0.9.1  |
-
-<br/>
+| Tool                                                   | Version |
+| ------------------------------------------------------ | :-----: |
+| [peer-finder](https://github.com/kmodules/peer-finder) | latest  |
+| [osm](https://github.com/appscode/osm)                 |  0.9.1  |
 
 ## User Guide
 
