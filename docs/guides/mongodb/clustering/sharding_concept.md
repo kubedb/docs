@@ -3,7 +3,7 @@ title: MongoDB Sharding Concept
 menu:
   docs_0.12.0:
     identifier: mg-clustering-sharding-concept
-    name: ReplicaSet Concept
+    name: Sharding Concept
     parent: mg-clustering-mongodb
     weight: 20
 menu_name: docs_0.12.0
