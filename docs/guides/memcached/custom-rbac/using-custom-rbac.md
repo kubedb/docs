@@ -33,9 +33,13 @@ namespace/demo created
 
 ## Overview
 
-KubeDB allows users to provide custom RBAC resources, namely, `ServiceAccount`, `Role`, and `RoleBinding` for Memcached. This is provided via the `spec.podTemplate.spec.serviceAccountName` field in Memcached CRD. If the name of a custom service account is given the user, the KubeDB operator will not dynamically gratn permissions to this service account and use existing access permissions associated with it to run that PosgreSQL database.
+KubeDB allows users to provide custom RBAC resources, namely, `ServiceAccount`, `Role`, and `RoleBinding` for Memcached. This is provided via the `spec.podTemplate.spec.serviceAccountName` field in Memcached crd. If this field is left empty, the KubeDB operator will create a service account name matching Memcached crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
 
-This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a PosgreSQL Database named `quick-postges` to provide the bare minimum access permissions.
+If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
+
+If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
+
+This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a Memcached instance named `quick-memcached` to provide the bare minimum access permissions.
 
 ## Custom RBAC for Memcached
 
@@ -63,7 +67,7 @@ secrets:
 - name: myserviceaccount-token-t8zxd
 ```
 
-Now, we need to create a role that has necessary access permissions for the Memcached Database named `quick-memcached`.
+Now, we need to create a role that has necessary access permissions for the Memcached instance named `quick-memcached`.
 
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/memcached/custom-rbac/mc-custom-role.yaml
@@ -123,7 +127,7 @@ subjects:
 
 ```
 
-Now, create a Memcached CRD specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
+Now, create a Memcached crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/memcached/custom-rbac/mc-custom-db.yaml
@@ -151,7 +155,7 @@ spec:
         requests:
           cpu: 250m
           memory: 64Mi
-  terminationPolicy: DoNotTerminate    
+  terminationPolicy: DoNotTerminate
 
 ```
 
@@ -173,9 +177,9 @@ quick-memcached-d866d6d89-wvg7c   1/1       Running   0          14m
 
 ## Reusing Service Account
 
-An existing service account can be reused in another Memcached Database. No new access permission is required to run the new Memcached Database.
+An existing service account can be reused in another Memcached instance. No new access permission is required to run the new Memcached instance.
 
-Now, create Memcached CRD `minute-memcached` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
+Now, create Memcached crd `minute-memcached` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/memcached/custom-rbac/mc-custom-db-two.yaml
@@ -203,7 +207,7 @@ spec:
         requests:
           cpu: 250m
           memory: 64Mi
-  terminationPolicy: DoNotTerminate  
+  terminationPolicy: DoNotTerminate
 
 ```
 

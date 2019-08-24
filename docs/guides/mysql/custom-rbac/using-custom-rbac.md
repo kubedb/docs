@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Using Custom RBAC resources
 
-KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to a MySQL instance. This tutorial will show you how to use KubeDB to run MySQL database with custom RBAC resources.
+KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to a MySQL instance. This tutorial will show you how to use KubeDB to run MySQL instance with custom RBAC resources.
 
 ## Before You Begin
 
@@ -33,9 +33,13 @@ namespace/demo created
 
 ## Overview
 
-KubeDB allows users to provide custom RBAC resources, namely, `ServiceAccount`, `Role`, and `RoleBinding` for MySQL. This is provided via the `spec.podTemplate.spec.serviceAccountName` field in MySQL CRD. If the name of a custom service account is given the user, the KubeDB operator will not dynamically gratn permissions to this service account and use existing access permissions associated with it to run that PosgreSQL database.
+KubeDB allows users to provide custom RBAC resources, namely, `ServiceAccount`, `Role`, and `RoleBinding` for MySQL. This is provided via the `spec.podTemplate.spec.serviceAccountName` field in MySQL crd.   If this field is left empty, the KubeDB operator will create a service account name matching MySQL crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
 
-This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a PosgreSQL Database named `quick-postges` to provide the bare minimum access permissions.
+If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
+
+If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
+
+This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a MySQL instance named `quick-postges` to provide the bare minimum access permissions.
 
 ## Custom RBAC for MySQL
 
@@ -63,7 +67,7 @@ secrets:
 - name: myserviceaccount-token-t8zxd
 ```
 
-Now, we need to create a role that has necessary access permissions for the MySQL Database named `quick-mysql`.
+Now, we need to create a role that has necessary access permissions for the MySQL instance named `quick-mysql`.
 
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/custom-rbac/my-custom-role.yaml
@@ -123,7 +127,7 @@ subjects:
 
 ```
 
-Now, create a MySQL CRD specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
+Now, create a MySQL crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/custom-rbac/my-custom-db.yaml
@@ -197,9 +201,9 @@ Once we see `MySQL init process done. Ready for start up.` in the log, the datab
 
 ## Reusing Service Account
 
-An existing service account can be reused in another MySQL Database. No new access permission is required to run the new MySQL Database.
+An existing service account can be reused in another MySQL instance. No new access permission is required to run the new MySQL instance.
 
-Now, create MySQL CRD `minute-mysql` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
+Now, create MySQL crd `minute-mysql` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/custom-rbac/my-custom-db-two.yaml
@@ -296,12 +300,12 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 ## Next Steps
 
 - [Quickstart MySQL](/docs/guides/mysql/quickstart/quickstart.md) with KubeDB Operator.
-- [Snapshot and Restore](/docs/guides/mysql/snapshot/backup-and-restore.md) process of MySQL databases using KubeDB.
-- Take [Scheduled Snapshot](/docs/guides/mysql/snapshot/scheduled-backup.md) of MySQL databases using KubeDB.
+- [Snapshot and Restore](/docs/guides/mysql/snapshot/backup-and-restore.md) process of MySQL instances using KubeDB.
+- Take [Scheduled Snapshot](/docs/guides/mysql/snapshot/scheduled-backup.md) of MySQL instances using KubeDB.
 - Initialize [MySQL with Script](/docs/guides/mysql/initialization/using-script.md).
 - Initialize [MySQL with Snapshot](/docs/guides/mysql/initialization/using-snapshot.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mysql/monitoring/using-coreos-prometheus-operator.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
+- Monitor your MySQL instance with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MySQL instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MySQL with KubeDB.
 - Use [kubedb cli](/docs/guides/mysql/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [MySQL object](/docs/concepts/databases/mysql.md).

@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Using Custom RBAC resources
 
-KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to a MongoDB instance. This tutorial will show you how to use KubeDB to run MongoDB database with custom RBAC resources.
+KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to a MongoDB instance. This tutorial will show you how to use KubeDB to run MongoDB instance with custom RBAC resources.
 
 ## Before You Begin
 
@@ -33,9 +33,13 @@ namespace/demo created
 
 ## Overview
 
-KubeDB allows users to provide custom RBAC resources, namely, `ServiceAccount`, `Role`, and `RoleBinding` for MongoDB. This is provided via the `spec.podTemplate.spec.serviceAccountName` field in MongoDB CRD. If the name of a custom service account is given the user, the KubeDB operator will not dynamically gratn permissions to this service account and use existing access permissions associated with it to run that PosgreSQL database.
+KubeDB allows users to provide custom RBAC resources, namely, `ServiceAccount`, `Role`, and `RoleBinding` for MongoDB. This is provided via the `spec.podTemplate.spec.serviceAccountName` field in MongoDB crd.   If this field is left empty, the KubeDB operator will create a service account name matching MongoDB crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
 
-This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a PosgreSQL Database named `quick-postges` to provide the bare minimum access permissions.
+If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
+
+If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
+
+This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a MongoDB instance named `quick-postges` to provide the bare minimum access permissions.
 
 ## Custom RBAC for MongoDB
 
@@ -63,7 +67,7 @@ secrets:
 - name: myserviceaccount-token-t8zxd
 ```
 
-Now, we need to create a role that has necessary access permissions for the MongoDB Database named `quick-mongodb`.
+Now, we need to create a role that has necessary access permissions for the MongoDB instance named `quick-mongodb`.
 
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mongodb/custom-rbac/mg-custom-role.yaml
@@ -123,7 +127,7 @@ subjects:
 
 ```
 
-Now, create a MongoDB CRD specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
+Now, create a MongoDB crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mongodb/custom-rbac/mg-custom-db.yaml
@@ -186,9 +190,9 @@ Once we see `connection accepted` in the log, the database is ready.
 
 ## Reusing Service Account
 
-An existing service account can be reused in another MongoDB Database. No new access permission is required to run the new MongoDB Database.
+An existing service account can be reused in another MongoDB instance. No new access permission is required to run the new MongoDB instance.
 
-Now, create MongoDB CRD `minute-mongodb` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
+Now, create MongoDB crd `minute-mongodb` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mongodb/custom-rbac/mg-custom-db-two.yaml
@@ -273,12 +277,12 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 ## Next Steps
 
 - [Quickstart MongoDB](/docs/guides/mongodb/quickstart/quickstart.md) with KubeDB Operator.
-- [Snapshot and Restore](/docs/guides/mongodb/snapshot/backup-and-restore.md) process of MongoDB databases using KubeDB.
-- Take [Scheduled Snapshot](/docs/guides/mongodb/snapshot/scheduled-backup.md) of MongoDB databases using KubeDB.
+- [Snapshot and Restore](/docs/guides/mongodb/snapshot/backup-and-restore.md) process of MongoDB instances using KubeDB.
+- Take [Scheduled Snapshot](/docs/guides/mongodb/snapshot/scheduled-backup.md) of MongoDB instances using KubeDB.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
 - Initialize [MongoDB with Snapshot](/docs/guides/mongodb/initialization/using-snapshot.md).
-- Monitor your MongoDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mongodb/monitoring/using-coreos-prometheus-operator.md).
-- Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
+- Monitor your MongoDB instance with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mongodb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MongoDB instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
 - Use [kubedb cli](/docs/guides/mongodb/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [MongoDB object](/docs/concepts/databases/mongodb.md).
