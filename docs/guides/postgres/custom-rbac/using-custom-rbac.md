@@ -3,7 +3,7 @@ title: Run PostgreSQL with Custom RBAC resources
 menu:
   docs_0.12.0:
     identifier: pg-custom-rbac-quickstart
-    name: Quickstart
+    name: Custom RBAC
     parent: pg-custom-rbac
     weight: 10
 menu_name: docs_0.12.0
@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Using Custom RBAC resources
 
-KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to a PostgreSQL instance. This tutorial will show you how to use KubeDB to run PostgreSQL database with custom RBAC resources.
+KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to a PostgreSQL instance. This tutorial will show you how to use KubeDB to run PostgreSQL instance with custom RBAC resources.
 
 ## Before You Begin
 
@@ -33,9 +33,13 @@ namespace/demo created
 
 ## Overview
 
-KubeDB allows users to provide custom RBAC resources, namely, `ServiceAccount`, `Role`, and `RoleBinding` for PostgreSQL. This is provided via the `spec.podTemplate.spec.serviceAccountName` field in Postgres CRD. If the name of a custom service account is given the user, the KubeDB operator will not dynamically gratn permissions to this service account and use existing access permissions associated with it to run that PosgreSQL database.
+KubeDB allows users to provide custom RBAC resources, namely, `ServiceAccount`, `Role`, and `RoleBinding` for PostgreSQL. This is provided via the `spec.podTemplate.spec.serviceAccountName` field in Postgres CRD. If this field is left empty, the KubeDB operator will create a service account name matching Postgres crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
 
-This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a PosgreSQL Database named `quick-postges` to provide the bare minimum access permissions.
+If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
+
+If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
+
+This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a PostgreSQL instance named `quick-postges` to provide the bare minimum access permissions.
 
 ## Custom RBAC for PostgreSQL
 
@@ -119,7 +123,7 @@ rules:
   - use
 ```
 
-Please note that resourceNames `quick-postgres` and `quick-postgres-leader-lock` are unique to `quick-postgres` PostgreSQL Database. Another database `quick-postgres-2`, for exmaple, will require these resourceNames to be `quick-postgres-2`, and `quick-postgres-2-leader-lock`.
+Please note that resourceNames `quick-postgres` and `quick-postgres-leader-lock` are unique to `quick-postgres` PostgreSQL instance. Another database `quick-postgres-2`, for exmaple, will require these resourceNames to be `quick-postgres-2`, and `quick-postgres-2-leader-lock`.
 
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
@@ -132,7 +136,7 @@ rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 It should bind `my-custom-role` and `my-custom-serviceaccount` successfully.
 
 ```yaml
-$ kc get rolebinding -n demo my-custom-rolebinding -o yaml
+$ kubectl get rolebinding -n demo my-custom-rolebinding -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -200,7 +204,7 @@ quick-postgres-0   1/1       Running   0          14m
 Check the pod's log to see if the database is ready
 
 ```console
-$ kubectl logs -f -n demo custom-postgres-0
+$ kubectl logs -f -n demo quick-postgres-0
 I0705 12:05:51.697190       1 logs.go:19] FLAG: --alsologtostderr="false"
 I0705 12:05:51.717485       1 logs.go:19] FLAG: --enable-analytics="true"
 I0705 12:05:51.717543       1 logs.go:19] FLAG: --help="false"
@@ -210,9 +214,9 @@ I0705 12:05:51.717573       1 logs.go:19] FLAG: --logtostderr="false"
 I0705 12:05:51.717581       1 logs.go:19] FLAG: --stderrthreshold="0"
 I0705 12:05:51.717589       1 logs.go:19] FLAG: --v="0"
 I0705 12:05:51.717597       1 logs.go:19] FLAG: --vmodule=""
-We want "custom-postgres-0" as our leader
-I0705 12:05:52.753464       1 leaderelection.go:175] attempting to acquire leader lease  demo/custom-postgres-leader-lock...
-I0705 12:05:52.822093       1 leaderelection.go:184] successfully acquired lease demo/custom-postgres-leader-lock
+We want "quick-postgres-0" as our leader
+I0705 12:05:52.753464       1 leaderelection.go:175] attempting to acquire leader lease  demo/quick-postgres-leader-lock...
+I0705 12:05:52.822093       1 leaderelection.go:184] successfully acquired lease demo/quick-postgres-leader-lock
 Got leadership, now do your jobs
 Running as Primary
 sh: locale: not found
@@ -335,9 +339,9 @@ I0705 12:05:51.717573       1 logs.go:19] FLAG: --logtostderr="false"
 I0705 12:05:51.717581       1 logs.go:19] FLAG: --stderrthreshold="0"
 I0705 12:05:51.717589       1 logs.go:19] FLAG: --v="0"
 I0705 12:05:51.717597       1 logs.go:19] FLAG: --vmodule=""
-We want "custom-postgres-0" as our leader
-I0705 12:05:52.753464       1 leaderelection.go:175] attempting to acquire leader lease  demo/custom-postgres-leader-lock...
-I0705 12:05:52.822093       1 leaderelection.go:184] successfully acquired lease demo/custom-postgres-leader-lock
+We want "minute-postgres-0" as our leader
+I0705 12:05:52.753464       1 leaderelection.go:175] attempting to acquire leader lease  demo/minute-postgres-leader-lock...
+I0705 12:05:52.822093       1 leaderelection.go:184] successfully acquired lease demo/minute-postgres-leader-lock
 Got leadership, now do your jobs
 Running as Primary
 sh: locale: not found
@@ -382,11 +386,11 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 
 ## Next Steps
 
-- Learn about [taking instant backup](/docs/guides/postgres/snapshot/instant_backup.md) of PostgreSQL database using KubeDB Snapshot.
-- Learn how to [schedule backup](/docs/guides/postgres/snapshot/scheduled_backup.md) of PostgreSQL database.
+- Learn about [taking instant backup](/docs/guides/postgres/snapshot/instant_backup.md) of PostgreSQL instance using KubeDB Snapshot.
+- Learn how to [schedule backup](/docs/guides/postgres/snapshot/scheduled_backup.md) of PostgreSQL instance.
 - Learn about initializing [PostgreSQL with Script](/docs/guides/postgres/initialization/script_source.md).
 - Learn about initializing [PostgreSQL from KubeDB Snapshot](/docs/guides/postgres/initialization/snapshot_source.md).
 - Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)
-- Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
-- Monitor your PostgreSQL database with KubeDB using [CoreOS Prometheus Operator](/docs/guides/postgres/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PostgreSQL instance with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
+- Monitor your PostgreSQL instance with KubeDB using [CoreOS Prometheus Operator](/docs/guides/postgres/monitoring/using-coreos-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

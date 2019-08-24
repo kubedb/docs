@@ -58,6 +58,7 @@ spec:
       annotations:
         passMe: ToStatefulSet
     spec:
+      serviceAccountName: my-service-account
       schedulerName: my-scheduler
       nodeSelector:
         disktype: ssd
@@ -91,7 +92,7 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [RedisVersion](/docs/concepts/catalog/redis.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `RedisVersion` crd,
+`spec.version` is a required field specifying the name of the [RedisVersion](/docs/concepts/catalog/redis.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `RedisVersion` crds,
 
 - `4.0.11`, `4.0.6-v2`, `4.0.6-v1`, `4.0.6`, `4.0-v2`, `4.0-v1`, `4.0`, `4-v1`, `4`, `5.0.3-v1`, `5.0.3`, `5.0-v1`, `5.0`
 
@@ -109,6 +110,8 @@ If `spec.mode` is set to `"Cluster"`, users can optionally provide a cluster spe
 
 - `spec.cluster.master`: specifies the number of Redis master nodes. It must be greater or equal to 3. If not set, the operator set it to 3.
 - `spec.cluster.replicas`: specifies the number of replica nodes per master. It must be greater than 0. If not set, the operator set it to 1.
+
+KubeDB uses Pod Disruption Budget to ensure that majority of these cluster replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained and no data loss is occurred.
 
 > If `spec.mode` is set to `"Cluster"`, then `spec.replicas` field is ignored.
 
@@ -153,6 +156,7 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - imagePullSecrets
   - nodeSelector
   - affinity
+  - serviceAccountName
   - schedulerName
   - tolerations
   - priorityClassName
@@ -195,6 +199,16 @@ spec.podTemplate.spec.env
 #### spec.podTemplate.spec.nodeSelector
 
 `spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
+
+#### spec.podTemplate.spec.serviceAccountName
+
+  `serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
+
+  If this field is left empty, the KubeDB operator will create a service account name matching Redis crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
+
+  If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
+
+  If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/redis/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
 
 #### spec.podTemplate.spec.resources
 

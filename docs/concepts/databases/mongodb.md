@@ -99,6 +99,7 @@ spec:
       annotations:
         passMe: ToStatefulSet
     spec:
+      serviceAccountName: my-service-account
       schedulerName: my-scheduler
       nodeSelector:
         disktype: ssd
@@ -132,7 +133,7 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [MongoDBVersion](/docs/concepts/catalog/mongodb.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MongoDBVersion` crd,
+`spec.version` is a required field specifying the name of the [MongoDBVersion](/docs/concepts/catalog/mongodb.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MongoDBVersion` crds,
 
 - `3.4-v4`, `3.4-v3`, `3.4-v2`, `3.4-v1`, `3.4`
 - `3.6-v4`, `3.6-v3`, `3.6-v2`, `3.6-v1`, `3.6`
@@ -146,6 +147,8 @@ spec:
 If `spec.shardTopology` is set, then `spec.replicas` needs to be empty. Instead use `spec.shardTopology.<shard/configServer>.replicas`
 
 If both `spec.replicaset` and `spec.shardTopology` is not set, then `spec.replicas` can be value `1`.
+
+KubeDB uses Pod Disruption Budget to ensure that majority of these replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained.
 
 ### spec.databaseSecret
 
@@ -175,6 +178,7 @@ metadata:
   ...
 type: Opaque
 ```
+Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
 ### spec.certificateSecret
 
@@ -239,6 +243,7 @@ When `spec.shardTopology` is set, the following fields needs to be empty, otherw
 - `spec.configSource`
 - `spec.storage`
 
+KubeDB uses Pod Disruption Budget to ensure that majority of the replicas of these shard components are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum and data integrity is maintained.
 #### spec.shardTopology.shard
 
 `shard` represents configuration for Shard component of mongodb.
@@ -435,6 +440,7 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - imagePullSecrets
   - nodeSelector
   - affinity
+  - serviceAccountName
   - schedulerName
   - tolerations
   - priorityClassName
@@ -491,6 +497,16 @@ for: "./mongodb.yaml": admission webhook "mongodb.validators.kubedb.com" denied 
 #### spec.podTemplate.spec.nodeSelector
 
 `spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
+
+#### spec.podTemplate.spec.serviceAccountName
+
+  `serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
+
+  If this field is left empty, the KubeDB operator will create a service account name matching MongoDB crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
+
+  If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
+
+  If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/mongodb/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
 
 #### spec.podTemplate.spec.resources
 

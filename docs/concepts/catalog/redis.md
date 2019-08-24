@@ -47,7 +47,7 @@ spec:
 
 We follow this convention for naming RedisVersion crd:
 
-- Name format: `{Original PosgreSQL image verion}-{modification tag}`
+- Name format: `{Original Redis image verion}-{modification tag}`
 
 We modify original Redis docker image to support Redis clustering and re-tag the image with v1, v2 etc. modification tag. An image with higher modification tag will have more feature than the images with lower modification tag. Hence, it is recommended to use RedisVersion crd with highest modification tag to enjoy the latest features.
 

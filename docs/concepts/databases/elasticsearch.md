@@ -31,6 +31,7 @@ metadata:
 spec:
   version: "6.3-v1"
   replicas: 2
+  maxUnavailable: 0
   authPlugin: "SearchGuard"
   enableSSL: true
   certificateSecret:
@@ -72,6 +73,7 @@ spec:
       annotations:
         passMe: ToStatefulSet
     spec:
+      serviceAccountName: my-service-account
       schedulerName: my-scheduler
       nodeSelector:
         disktype: ssd
@@ -103,7 +105,7 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field that specifies the name of the [ElasticsearchVersion](/docs/concepts/catalog/elasticsearch.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `ElasticsearchVersion` crd,
+`spec.version` is a required field that specifies the name of the [ElasticsearchVersion](/docs/concepts/catalog/elasticsearch.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `ElasticsearchVersion` crds,
 
 - `5.6`, `5.6-v1`, `5.6.4`, `5.6.4-v1`
 - `6.2`, `6.2-v1`, `6.2.4`, `6.2.4-v1`, `6.3`, `6.3-v1`, `6.3.0`, `6.3.0-v1`
@@ -119,16 +121,25 @@ You can specify the following things in `spec.topology` field,
     - `.prefix` is an optional field to be used as the prefix of StatefulSet name.
     - `.storage` is an optional field that specifies how much storage to use for `master` node.
     - `.resources` is an optional field that specifies how much compute resources to request for `master` node.
+    - `.maxUnavailable` is an optional field that specifies the exact number of pods that can be safely evicted before pod disruption budget kicks in.
+KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that no data loss is occurred. Users need to fill up `spec.topology.master.maxUnavailable` field to specify the exact number of replicas that can be evicted before pod disruption budget kicks in.
+
 - `spec.topology.data`
     - `.replicas` is an optional field to specify how many pods we want as `data` node. If not set, this defaults to 1.
     - `.prefix` is an optional field to be used as the prefix of StatefulSet name.
     - `.storage` is an optional field that specifies how much storage to use for `data` node.
     - `.resources` is an optional field that specifies how much compute resources to request for `data` node.
+    - `.maxUnavailable` is an optional field that specifies the exact number of pods that can be safely evicted before pod disruption budget kicks in.
+KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that no data loss is occurred. Users need to fill up `spec.topology.data.maxUnavailable` field to specify the exact number of replicas that can be evicted before pod disruption budget kicks in.
+
 - `spec.topology.client`
     - `.replicas` is an optional field to specify how many pods we want as `client` node. If not set, this defaults to 1.
     - `.prefix` is an optional field to be used as the prefix of StatefulSet name.
     - `.storage` is an optional field that specifies how much storage to use for `client` node.
     - `.resources` is an optional field that specifies how much compute resources to request for `client` node.
+    - `.maxUnavailable` is an optional field that specifies the exact number of pods that can be safely evicted before pod disruption budget kicks in.
+KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that no data loss is occurred. Users need to fill up `spec.topology.client.maxUnavailable` field to specify the exact number of replicas that can be evicted before pod disruption budget kicks in.
+
 
 > Note: Any two of them can't have the same prefix.
 
@@ -200,10 +211,15 @@ If you specify `spec.topology` field then you are not allowed to specify followi
 ### spec.replicas
 
 `spec.replicas` is an optional field that can be used if `spec.topology` is not specified. This field specifies the number of pods in the Elasticsearch cluster. The default value of this field is 1.
+KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that no data loss is occurred. Users need to fill up `spec.maxUnavailable` field to specify the exact number of replicas that can be evicted before pod disruption budget kicks in.
 
 ### spec.authPlugin
 
 `spec.authPlugin` is an optional field that specifies which plugin to use for authentication. Currently, this field accepts `None` or `SearchGuard`. By default, KubeDB uses [Search Guard](https://github.com/floragunncom/search-guard) for authentication. If you specify `None` in this field, KubeDB will disable Search Guard plugin and your database will not be protected anymore.
+
+### spec.maxUnavailable
+
+`spec.maxUnavailable` is an optional field that is used to specify the exact number of cluster replicas that can be safely evicted before pod disruption budget kicks in to prevent unwanted data loss.
 
 ### spec.enableSSL
 
@@ -241,7 +257,7 @@ Following keys are used for search-guard configuration
 - `sg_action_groups.yml:` define permission groups
 - `sg_roles.yml:` define the roles and the associated permissions
 
-If not set, KubeDB operator creates a new Secret `{Elasticsearch name}-auth` with generated credentials and default search-guard configuration. If you want to use an existing secret, please specify that when creating Elasticsearch using `spec.databaseSecret.secretName`.
+If not set, KubeDB operator creates a new Secret `{Elasticsearch name}-auth` with generated credentials and default search-guard configuration. If you want to use an existing secret, please specify that when creating Elasticsearch using `spec.databaseSecret.secretName`. Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
 ### spec.storageType
 
@@ -342,6 +358,7 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - imagePullSecrets
   - nodeSelector
   - affinity
+  - serviceAccountName
   - schedulerName
   - tolerations
   - priorityClassName
@@ -419,6 +436,16 @@ At least one of the following was changed:
 #### spec.podTemplate.spec.nodeSelector
 
 `spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
+
+#### spec.podTemplate.spec.serviceAccountName
+
+  `serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
+
+  If this field is left empty, the KubeDB operator will create a service account name matching Elasticsearch crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
+
+  If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
+
+  If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/elasticsearch/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
 
 #### spec.podTemplate.spec.resources
 
