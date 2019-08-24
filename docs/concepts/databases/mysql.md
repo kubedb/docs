@@ -72,6 +72,7 @@ spec:
       annotations:
         passMe: ToStatefulSet
     spec:
+      serviceAccountName: my-service-account
       schedulerName: my-scheduler
       nodeSelector:
         disktype: ssd
@@ -105,14 +106,14 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [MySQLVersion](/docs/concepts/catalog/mysql.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MySQLVersion` crd,
+`spec.version` is a required field specifying the name of the [MySQLVersion](/docs/concepts/catalog/mysql.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MySQLVersion` crds,
 
 - `8.0.14`, `8.0.3`, `8.0-v2`, `8.0-v1`, `8.0`, `8-v1`, `8`
 - `5.7.25`, `5.7-v2`, `5.7-v1`, `5.7`, `5-v1`, `5`
 
 ### spec.topology
 
-`spec.topology` is an optional field that provides a way to configure HA, fault-tolerant MySQL cluster. This field enables you to specify the clustering mode. Currently, we support only MySQL Group Replication.
+`spec.topology` is an optional field that provides a way to configure HA, fault-tolerant MySQL cluster. This field enables you to specify the clustering mode. Currently, we support only MySQL Group Replication. KubeDB uses Pod Disruption Budget to ensure that majority of the group replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained and no data loss is occurred.
 
 You can specify the following fields in `spec.topology` field,
 
@@ -128,6 +129,8 @@ You can specify the following fields in `spec.topology` field,
 `spec.databaseSecret` is an optional field that points to a Secret used to hold credentials for `mysql` root user. If not set, KubeDB operator creates a new Secret `{mysql-object-name}-auth` for storing the password for `mysql` root user for each MySQL object. If you want to use an existing secret please specify that when creating the MySQL object using `spec.databaseSecret.secretName`.
 
 This secret contains a `user` key and a `password` key which contains the `username` and `password` respectively for `mysql` root user. Here, the value of `user` key is fixed to be `root`.
+
+Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
 Example:
 
@@ -172,8 +175,8 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 `spec.init` is an optional section that can be used to initialize a newly created MySQL database. MySQL databases can be initialized in one of two ways:
 
-  1. Initialize from Script
-  2. Initialize from Snapshot
+ 1. Initialize from Script
+ 2. Initialize from Snapshot
 
 #### Initialize via Script
 
@@ -283,6 +286,7 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - imagePullSecrets
   - nodeSelector
   - affinity
+  - serviceAccountName
   - schedulerName
   - tolerations
   - priorityClassName
@@ -336,6 +340,16 @@ for: "./mysql.yaml": admission webhook "mysql.validators.kubedb.com" denied the 
 #### spec.podTemplate.spec.nodeSelector
 
 `spec.podTemplate.spec.nodeSelector` is an optional field that specifies a map of key-value pairs. For the pod to be eligible to run on a node, the node must have each of the indicated key-value pairs as labels (it can have additional labels as well). To learn more, see [here](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#nodeselector) .
+
+#### spec.podTemplate.spec.serviceAccountName
+
+ `serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
+
+ If this field is left empty, the KubeDB operator will create a service account name matching MySQL crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
+
+ If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
+
+ If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/mysql/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
 
 #### spec.podTemplate.spec.resources
 

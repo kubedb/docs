@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha1
+kind: MongoDB
+metadata:
+  name: minute-mongodb
+  namespace: demo
+spec:
+  version: "3.4-v3"
+  storageType: Durable
+  podTemplate:
+    spec:
+      serviceAccountName: my-custom-serviceaccount
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: DoNotTerminate
