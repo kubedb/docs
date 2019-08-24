@@ -1,12 +1,12 @@
 ---
 title: Run Elasticsearch with Custom RBAC resources
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: es-custom-rbac-quickstart
     name: Custom RBAC
     parent: es-custom-rbac
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 
@@ -29,7 +29,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -71,7 +71,7 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the Elasticsearch instance named `quick-elasticsearch`.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/custom-rbac/es-custom-role.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/custom-rbac/es-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
@@ -131,7 +131,7 @@ subjects:
 Now, create a Elasticsearch crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/custom-rbac/es-custom-db.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/custom-rbac/es-custom-db.yaml
 elasticsearch.kubedb.com/quick-elasticsearch created
 ```
 
@@ -214,7 +214,7 @@ An existing service account can be reused in another Elasticsearch Database. No 
 Now, create Elasticsearch crd `minute-elasticsearch` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/custom-rbac/es-custom-db-two.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/custom-rbac/es-custom-db-two.yaml
 elasticsearch.kubedb.com/quick-elasticsearch created
 ```
 

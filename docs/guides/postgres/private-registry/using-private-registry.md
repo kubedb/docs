@@ -1,12 +1,12 @@
 ---
 title: Run PostgreSQL using Private Registry
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: pg-using-private-registry-private-registry
     name: Quickstart
     parent: pg-private-registry-postgres
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 
@@ -27,7 +27,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Prepare Private Docker Registry
 
@@ -145,7 +145,7 @@ spec:
 Now run the command to create this Postgres object:
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/private-registry/pvt-reg-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/private-registry/pvt-reg-postgres.yaml
 postgres.kubedb.com/pvt-reg-postgres created
 ```
 

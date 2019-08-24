@@ -1,16 +1,16 @@
 ---
 title: Postgres
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: pg-readme-postgres
     name: Postgres
     parent: pg-postgres-guides
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
-url: /docs/0.12.0/guides/postgres/
+url: /docs/v0.13.0-rc.0/guides/postgres/
 aliases:
-  - /docs/0.12.0/guides/postgres/README/
+  - /docs/v0.13.0-rc.0/guides/postgres/README/
 ---
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -61,7 +61,7 @@ aliases:
 
 Here, &#10003; means supported and &#10007; means deprecated.
 
-|   NAME   | VERSION | KubeDB: 0.9.0 | KubeDB: 0.10.0 | KubeDB: 0.11.0 | KubeDB: 0.12.0 |
+|   NAME   | VERSION | KubeDB: 0.9.0 | KubeDB: 0.10.0 | KubeDB: 0.11.0 | KubeDB: v0.13.0-rc.0 |
 | :------: | :-----: | :-----------: | :------------: | :------------: | :------------: |
 |   9.6    |   9.6   |   &#10007;    |    &#10007;    |    &#10007;    |    &#10007;    |
 |  9.6.7   |  9.6.7  |   &#10007;    |    &#10007;    |    &#10007;    |    &#10007;    |

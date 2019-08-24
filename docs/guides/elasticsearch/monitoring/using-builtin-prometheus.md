@@ -1,12 +1,12 @@
 ---
 title: Monitor Elasticsearch using Builtin Prometheus Discovery
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: es-using-builtin-prometheus-monitoring
     name: Builtin Prometheus Discovery
     parent: es-monitoring-elasticsearch
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -35,7 +35,7 @@ This tutorial will show you how to monitor Elasticsearch database using builtin 
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy Elasticsearch with Monitoring Enabled
 
@@ -68,7 +68,7 @@ Here,
 Let's create the Elasticsearch crd we have shown above.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/monitoring/builtin-prom-es.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/monitoring/builtin-prom-es.yaml
 elasticsearch.kubedb.com/builtin-prom-es created
 ```
 
@@ -274,7 +274,7 @@ data:
 Let's create above `ConfigMap`,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
 

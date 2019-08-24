@@ -1,12 +1,12 @@
 ---
 title: KubeDB Uninstall
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: uninstall-kubedb
     name: Uninstall
     parent: setup
     weight: 20
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: setup
 ---
 
@@ -17,7 +17,7 @@ section_menu_id: setup
 To uninstall KubeDB operator, run the following command:
 
 ```console
-$ curl -fsSL https://github.com/kubedb/installer/raw/0.12.0/deploy/kubedb.sh \
+$ curl -fsSL https://github.com/kubedb/installer/raw/v0.13.0-rc.0/deploy/kubedb.sh \
     | bash -s -- --uninstall [--namespace=NAMESPACE]
 
 + kubectl delete deployment -l app=kubedb -n kube-system

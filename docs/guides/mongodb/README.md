@@ -1,16 +1,16 @@
 ---
 title: MongoDB
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: mg-readme-mongodb
     name: MongoDB
     parent: mg-mongodb-guides
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
-url: /docs/0.12.0/guides/mongodb/
+url: /docs/v0.13.0-rc.0/guides/mongodb/
 aliases:
-  - /docs/0.12.0/guides/mongodb/README/
+  - /docs/v0.13.0-rc.0/guides/mongodb/README/
 ---
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -46,13 +46,13 @@ aliases:
 |     0.9.0      | &#10003;  | &#10003;  |     &#10007;     |  &#10007;   |
 |     0.10.0     | &#10003;  | &#10003;  |     &#10003;     |  &#10003;   |
 |     0.11.0     | &#10003;  | &#10003;  |     &#10003;     |  &#10003;   |
-|     0.12.0     | &#10003;  | &#10003;  |     &#10003;     |  &#10003;   |
+|     v0.13.0-rc.0     | &#10003;  | &#10003;  |     &#10003;     |  &#10003;   |
 
 ## Supported MongoDB
 
 Here, &#10003; means supported and &#10007; means deprecated.
 
-|    NAME    | VERSION | KubeDB: 0.9.0 | KubeDB: 0.12.0 | KubeDB: 0.10.0 | KubeDB: 0.11.0 |
+|    NAME    | VERSION | KubeDB: 0.9.0 | KubeDB: v0.13.0-rc.0 | KubeDB: 0.10.0 | KubeDB: 0.11.0 |
 | :--------: | :-----: | :-----------: | :------------: | :------------: | :------------: |
 |    3.4     |   3.4   |   &#10003;    |    &#10003;    |    &#10003;    |    &#10003;    |
 |    3.6     |   3.6   |   &#10003;    |    &#10003;    |    &#10003;    |    &#10003;    |

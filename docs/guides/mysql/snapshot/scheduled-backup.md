@@ -1,12 +1,12 @@
 ---
 title: Scheduled Backup of MySQL
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: my-scheduled-backup-snapshot
     name: Scheduled Backup
     parent: my-snapshot-mysql
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 
@@ -29,7 +29,7 @@ This tutorial will show you how to use KubeDB to take scheduled snapshot of a My
   namespace/demo created
   ```
 
-> Note: The yaml files that are used in this tutorial are stored in [docs/examples](https://github.com/kubedb/docs/tree/0.12.0/docs/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files that are used in this tutorial are stored in [docs/examples](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Scheduled Backups
 
@@ -90,7 +90,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/snapshot/demo-4.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mysql/snapshot/demo-4.yaml
 mysql.kubedb.com/mysql-scheduled created
 ```
 

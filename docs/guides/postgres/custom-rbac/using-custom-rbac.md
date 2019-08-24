@@ -1,12 +1,12 @@
 ---
 title: Run PostgreSQL with Custom RBAC resources
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: pg-custom-rbac-quickstart
     name: Custom RBAC
     parent: pg-custom-rbac
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 
@@ -29,7 +29,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -70,7 +70,7 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the PostgreSQl Database named `quick-postgres`.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/custom-rbac/pg-custom-role.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/custom-rbac/pg-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
@@ -160,7 +160,7 @@ subjects:
 Now, create a Postgres CRD specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/custom-rbac/pg-custom-db.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/custom-rbac/pg-custom-db.yaml
 postgres.kubedb.com/quick-postgres created
 ```
 
@@ -242,7 +242,7 @@ An existing service account can be reused in another Postgres Database. However,
 For example, to reuse `my-custom-serviceaccount` in a new Database `minute-postgres`, create a role that has all the necessary access permissions for this PostgreSQl Database.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/custom-rbac/pg-custom-role-two.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/custom-rbac/pg-custom-role-two.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
@@ -285,7 +285,7 @@ rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding-two created
 Now, create Postgres CRD `minute-postgres` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/custom-rbac/pg-custom-db-two.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/custom-rbac/pg-custom-db-two.yaml
 postgres.kubedb.com/quick-postgres created
 ```
 

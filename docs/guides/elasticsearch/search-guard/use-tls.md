@@ -1,12 +1,12 @@
 ---
 title: Run TLS Secured Elasticsearch
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: es-use-tls-search-guard
     name: Use TLS
     parent: es-search-guard-elasticsearch
     weight: 20
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -34,7 +34,7 @@ NAME    STATUS  AGE
 demo    Active  5s
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Create Elasticsearch
 
@@ -63,7 +63,7 @@ spec:
 Let's create the Elasticsearch object we have shown above,
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/search-guard/ssl-elasticsearch.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/search-guard/ssl-elasticsearch.yaml
 elasticsearch.kubedb.com/ssl-elasticsearch created
 ```
 
