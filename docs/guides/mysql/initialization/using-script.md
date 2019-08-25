@@ -1,12 +1,12 @@
 ---
 title: Initialize MySQL using Script
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: my-using-script-initialization
     name: Using Script
     parent: my-initialization-mysql
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 
@@ -17,7 +17,7 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to initialize a MySQL database with \*.sql, \*.sh and/or \*.sql.gz script.
 In this tutorial we will use .sql script stored in GitHub repository [kubedb/mysql-init-scripts](https://github.com/kubedb/mysql-init-scripts).
 
-> Note: The yaml files that are used in this tutorial are stored in [docs/examples](https://github.com/kubedb/docs/tree/0.12.0/docs/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files that are used in this tutorial are stored in [docs/examples](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Before You Begin
 
@@ -31,7 +31,7 @@ In this tutorial we will use .sql script stored in GitHub repository [kubedb/mys
   $ kubectl create ns demo
   namespace/demo created
   
-  $ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/quickstart/demo-1.yaml
+  $ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mysql/quickstart/demo-1.yaml
   deployment.extensions/myadmin created
   service/myadmin created
   
@@ -99,7 +99,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/Initialization/demo-1.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mysql/Initialization/demo-1.yaml
 mysql.kubedb.com/mysql-init-script created
 ```
 

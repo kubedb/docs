@@ -1,12 +1,12 @@
 ---
 title: Using Custom Configuration in Elasticsearch with Topology
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: es-custom-config-with-topology
     name: With Topology
     parent: es-custom-config
     weight: 20
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -34,7 +34,7 @@ NAME    STATUS  AGE
 demo    Active  5s
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Use Custom Configuration
 
@@ -120,7 +120,7 @@ metadata:
 Now, create an Elasticsearch crd with topology specified,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/custom-config/es-custom-with-topology.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/custom-config/es-custom-with-topology.yaml
 elasticsearch.kubedb.com/custom-elasticsearch created
 ```
 

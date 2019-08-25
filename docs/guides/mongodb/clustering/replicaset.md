@@ -1,12 +1,12 @@
 ---
 title: MongoDB ReplicaSet Guide
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: mg-clustering-replicaset
     name: ReplicaSet Guide
     parent: mg-clustering-mongodb
     weight: 15
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 
@@ -33,7 +33,7 @@ Before proceeding:
   namespace/demo created
   ```
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy MongoDB ReplicaSet
 
@@ -62,7 +62,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mongodb/clustering/demo-1.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mongodb/clustering/demo-1.yaml
 mongodb.kubedb.com/mgo-replicaset created
 ```
 
@@ -525,7 +525,7 @@ In this tutorial, the dormant database can be resumed by creating original Mongo
 The below command will resume the DormantDatabase `mgo-replicaset`.
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mongodb/clustering/demo-1.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mongodb/clustering/demo-1.yaml
 mongodb.kubedb.com/mgo-replicaset created
 ```
 

@@ -1,12 +1,12 @@
 ---
 title: Instant Backup of Elasticsearch
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: es-instant-backup-snapshot
     name: Instant Backup
     parent: es-snapshot-elasticsearch
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -32,14 +32,14 @@ NAME    STATUS  AGE
 demo    Active  5s
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Prepare Database
 
 We need an Elasticsearch object in `Running` phase to perform backup operation. If you do not already have an Elasticsearch instance running, create one first.
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/quickstart/instant-elasticsearch.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/quickstart/instant-elasticsearch.yaml
 elasticsearch "instant-elasticsearch" created
 ```
 
@@ -189,7 +189,7 @@ To learn how to configure other storage destinations for snapshot data, please v
 Now, create the Snapshot object.
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/snapshot/instant-snapshot.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/snapshot/instant-snapshot.yaml
 snapshot.kubedb.com/instant-snapshot created
 ```
 

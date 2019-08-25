@@ -1,12 +1,12 @@
 ---
 title: Run MySQL with Custom RBAC resources
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: my-custom-rbac-quickstart
     name: Custom RBAC
     parent: my-custom-rbac
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 
@@ -29,7 +29,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -70,7 +70,7 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the MySQL instance named `quick-mysql`.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/custom-rbac/my-custom-role.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mysql/custom-rbac/my-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
@@ -130,7 +130,7 @@ subjects:
 Now, create a MySQL crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/custom-rbac/my-custom-db.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mysql/custom-rbac/my-custom-db.yaml
 mysql.kubedb.com/quick-mysql created
 ```
 
@@ -206,7 +206,7 @@ An existing service account can be reused in another MySQL instance. No new acce
 Now, create MySQL crd `minute-mysql` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/custom-rbac/my-custom-db-two.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mysql/custom-rbac/my-custom-db-two.yaml
 mysql.kubedb.com/quick-mysql created
 ```
 

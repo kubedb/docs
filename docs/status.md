@@ -2,16 +2,16 @@
 title: Project Status | KubeDB
 description: KubeDB Project Status
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: roadmap-cli
     name: Status
     parent: welcome
     weight: 15
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: welcome
-url: /docs/0.12.0/welcome/status/
+url: /docs/v0.13.0-rc.0/welcome/status/
 aliases:
-  - /docs/0.12.0/status/
+  - /docs/v0.13.0-rc.0/status/
 ---
 
 # Project Status

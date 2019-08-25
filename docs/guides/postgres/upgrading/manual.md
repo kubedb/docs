@@ -1,12 +1,12 @@
 ---
 title: Upgrading Operator
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: pg-upgrade-manual
     name: Manual
     parent: pg-upgrading-postgres
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/concepts/README.md).

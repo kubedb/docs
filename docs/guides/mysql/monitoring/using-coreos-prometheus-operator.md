@@ -1,12 +1,12 @@
 ---
 title: Monitor MySQL using Coreos Prometheus Operator
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: my-using-coreos-prometheus-operator-monitoring
     name: Coreos Prometheus Operator
     parent: my-monitoring-mysql
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 
@@ -36,7 +36,7 @@ CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) prov
 
 - If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/coreos-operator/README.md#deploy-prometheus-server).
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Find out required labels for ServiceMonitor
 
@@ -125,7 +125,7 @@ Here,
 Let's create the MySQL object that we have shown above,
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/monitoring/coreos-prom-mysql.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mysql/monitoring/coreos-prom-mysql.yaml
 mysql.kubedb.com/coreos-prom-mysql created
 ```
 

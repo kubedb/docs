@@ -1,10 +1,10 @@
 ---
 title: Redis Clustering
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: rd-clustering-redis
     name: Clustering
     parent: rd-redis-guides
     weight: 17
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 ---
