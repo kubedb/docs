@@ -1,12 +1,12 @@
 ---
 title: X-Pack Monitoring of Elasticsearch Cluster in KubeDB
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: es-x-pack-monitoring
     name: Monitoring
     parent: es-x-pack
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -34,7 +34,7 @@ NAME    STATUS  AGE
 demo    Active  5s
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -286,7 +286,7 @@ metadata:
 Now, create Elasticsearch crd specifying  `spec.databaseSecret` and `spec.configSource` field.
 
 ```console
-$ kubectl apply -f kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/x-pack/es-mon-demo.yaml
+$ kubectl apply -f kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/x-pack/es-mon-demo.yaml
 elasticsearch.kubedb.com/es-mon-demo created
 ```
 
@@ -399,7 +399,7 @@ configmap/kibana-config created
 
 Finally, deploy Kibana deployment,
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/elasticsearch/kibana/kibana-deployment.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/kibana/kibana-deployment.yaml
 deployment.apps/kibana created
 ```
 

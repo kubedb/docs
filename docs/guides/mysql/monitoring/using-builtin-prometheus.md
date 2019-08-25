@@ -1,12 +1,12 @@
 ---
 title: Monitor MySQL using Builtin Prometheus Discovery
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: my-using-builtin-prometheus-monitoring
     name: Builtin Prometheus Discovery
     parent: my-monitoring-mysql
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 
@@ -36,7 +36,7 @@ This tutorial will show you how to monitor MySQL database using builtin [Prometh
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy MySQL with Monitoring Enabled
 
@@ -69,7 +69,7 @@ Here,
 Let's create the MySQL crd we have shown above.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/mysql/monitoring/builtin-prom-mysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mysql/monitoring/builtin-prom-mysql.yaml
 mysql.kubedb.com/builtin-prom-mysql created
 ```
 
@@ -274,7 +274,7 @@ data:
 Let's create above `ConfigMap`,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
 

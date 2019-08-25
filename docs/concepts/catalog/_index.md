@@ -2,10 +2,10 @@
 title: KubeDB Catalog | KubeDB
 description: Database Version CRD
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: catalog
     parent: concepts
     name: Catalog
     weight: 20
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 ---

@@ -1,11 +1,11 @@
 ---
 title: Kubedb Edit
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: kubedb-edit
     name: Kubedb Edit
     parent: reference
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: reference
 ---
 ## kubedb edit

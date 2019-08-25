@@ -1,12 +1,12 @@
 ---
 title: Run Redis with Custom RBAC resources
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: rd-custom-rbac-quickstart
     name: Custom RBAC
     parent: rd-custom-rbac
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 
@@ -29,7 +29,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -70,7 +70,7 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the Redis instance named `quick-redis`.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/redis/custom-rbac/rd-custom-role.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/redis/custom-rbac/rd-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
@@ -129,7 +129,7 @@ subjects:
 Now, create a Redis crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/redis/custom-rbac/rd-custom-db.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/redis/custom-rbac/rd-custom-db.yaml
 redis.kubedb.com/quick-redis created
 ```
 
@@ -190,7 +190,7 @@ An existing service account can be reused in another Redis instance. No new acce
 Now, create Redis crd `minute-redis` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/redis/custom-rbac/rd-custom-db-two.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/redis/custom-rbac/rd-custom-db-two.yaml
 redis.kubedb.com/quick-redis created
 ```
 

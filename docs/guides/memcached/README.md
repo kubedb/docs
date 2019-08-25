@@ -1,16 +1,16 @@
 ---
 title: Memcached
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: mc-readme-memcached
     name: Memcached
     parent: mc-memcached-guides
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
-url: /docs/0.12.0/guides/memcached/
+url: /docs/v0.13.0-rc.0/guides/memcached/
 aliases:
-  - /docs/0.12.0/guides/memcached/README/
+  - /docs/v0.13.0-rc.0/guides/memcached/README/
 ---
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -30,15 +30,11 @@ aliases:
 | Builtin Prometheus Discovery     |   &#10003;   |
 | Using CoreOS Prometheus Operator |   &#10003;   |
 
-<br/>
-
 ## Life Cycle of a Memcached Object
 
 <p align="center">
   <img alt="lifecycle"  src="/docs/images/memcached/memcached-lifecycle.png">
 </p>
-
-<br/>
 
 ## Supported Memcached Versions
 
@@ -49,18 +45,19 @@ aliases:
 |     0.9.0      |    &#10003;     |
 |     0.10.0     |    &#10003;     |
 |     0.11.0     |    &#10003;     |
-|     0.12.0     |    &#10003;     |
+|    v0.12.0     |    &#10003;     |
+|  v0.13.0-rc.0  |    &#10003;     |
 
 ## Supported MemcachedVersion CRD
 
 Here, &#10003; means supported and &#10007; means deprecated.
 
-|   NAME   | VERSION | KubeDB: 0.9.0 | KubeDB: 0.10.0 | KubeDB: 0.11.0 | KubeDB: 0.12.0 |
-| :------: | :-----: | :-----------: | :------------: | :------------: | :------------: |
-|   1.5    |   1.5   |   &#10007;    |    &#10007;    |    &#10007;    |    &#10007;    |
-|  1.5-v1  |   1.5   |   &#10003;    |    &#10003;    |    &#10003;    |    &#10003;    |
-|  1.5.4   |  1.5.4  |   &#10007;    |    &#10007;    |    &#10007;    |    &#10007;    |
-| 1.5.4-v1 |  1.5.4  |   &#10003;    |    &#10003;    |    &#10003;    |    &#10003;    |
+|   NAME   | VERSION | KubeDB: 0.9.0 | KubeDB: 0.10.0 | KubeDB: 0.11.0 | KubeDB: 0.12.0 | KubeDB: v0.13.0-rc.0 |
+| :------: | :-----: | :-----------: | :------------: | :------------: | :------------: | :------------------: |
+|   1.5    |   1.5   |   &#10007;    |    &#10007;    |    &#10007;    |    &#10007;    |       &#10007;       |
+|  1.5-v1  |   1.5   |   &#10003;    |    &#10003;    |    &#10003;    |    &#10003;    |       &#10003;       |
+|  1.5.4   |  1.5.4  |   &#10007;    |    &#10007;    |    &#10007;    |    &#10007;    |       &#10007;       |
+| 1.5.4-v1 |  1.5.4  |   &#10003;    |    &#10003;    |    &#10003;    |    &#10003;    |       &#10003;       |
 
 ## User Guide
 

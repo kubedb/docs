@@ -1,12 +1,12 @@
 ---
 title: Using Postgres Streaming Replication
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: pg-streaming-replication-clustering
     name: Streaming Replication
     parent: pg-clustering-postgres
     weight: 15
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 
@@ -30,7 +30,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Create PostgreSQL with Streaming replication
 
@@ -98,7 +98,7 @@ Here,
 Now create this Postgres object with Streaming Replication support
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/clustering/ha-postgres.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/clustering/ha-postgres.yaml
 postgres.kubedb.com/ha-postgres created
 ```
 
@@ -324,7 +324,7 @@ Here,
 Now create this Postgres object
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/clustering/hot-postgres.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/clustering/hot-postgres.yaml
 postgres "hot-postgres" created
 ```
 

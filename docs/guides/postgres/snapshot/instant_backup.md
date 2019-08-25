@@ -1,12 +1,12 @@
 ---
 title: Instant Backup of PostgreSQL
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: pg-instant-backup-snapshot
     name: Instant Backup
     parent: pg-snapshot-postgres
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -34,7 +34,7 @@ NAME    STATUS  AGE
 demo    Active  5s
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Prepare Database
 
@@ -126,7 +126,7 @@ To learn how to configure other storage destinations for snapshot data, please v
 Now, let's create a Snapshot object.
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/snapshot/instant-snapshot.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/snapshot/instant-snapshot.yaml
 snapshot.kubedb.com/instant-snapshot created
 ```
 

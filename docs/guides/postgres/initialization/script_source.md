@@ -1,12 +1,12 @@
 ---
 title: Initialize Postgres using Script Source
 menu:
-  docs_0.12.0:
+  docs_v0.13.0-rc.0:
     identifier: pg-script-source-initialization
     name: Using Script
     parent: pg-initialization-postgres
     weight: 10
-menu_name: docs_0.12.0
+menu_name: docs_v0.13.0-rc.0
 section_menu_id: guides
 ---
 
@@ -33,7 +33,7 @@ NAME    STATUS  AGE
 demo    Active  5s
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/0.12.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Prepare Initialization Scripts
 
@@ -85,7 +85,7 @@ VolumeSource provided in `init.scriptSource` will be mounted in Pod and will be 
 Now, let's create the Postgres crd which YAML we have shown above,
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/0.12.0/docs/examples/postgres/initialization/script-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/initialization/script-postgres.yaml
 postgres.kubedb.com/script-postgres created
 ```
 
