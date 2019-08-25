@@ -1,5 +1,21 @@
 # Change Log
 
+## [v0.13.0-rc.0](https://github.com/kubedb/operator/tree/v0.13.0-rc.0) (2019-08-22)
+[Full Changelog](https://github.com/kubedb/operator/compare/0.12.0...v0.13.0-rc.0)
+
+**Merged pull requests:**
+
+- RestoreSession watcher added [\#233](https://github.com/kubedb/operator/pull/233) ([the-redback](https://github.com/the-redback))
+- Fix dev deployment script for operator \(part-2\) [\#231](https://github.com/kubedb/operator/pull/231) ([tamalsaha](https://github.com/tamalsaha))
+- Fix build [\#230](https://github.com/kubedb/operator/pull/230) ([tamalsaha](https://github.com/tamalsaha))
+- Change package path to kubedb.dev/operator [\#229](https://github.com/kubedb/operator/pull/229) ([tamalsaha](https://github.com/tamalsaha))
+- Fix dev deployment script for operator [\#228](https://github.com/kubedb/operator/pull/228) ([weenxin](https://github.com/weenxin))
+- Fix \#596 validating and mutating yaml file missing when run operator … [\#227](https://github.com/kubedb/operator/pull/227) ([weenxin](https://github.com/weenxin))
+- Fix calling `deploy/kubedb.sh` [\#226](https://github.com/kubedb/operator/pull/226) ([the-redback](https://github.com/the-redback))
+- Add make install, uninstall, purge commands [\#225](https://github.com/kubedb/operator/pull/225) ([tamalsaha](https://github.com/tamalsaha))
+- Add Makefile [\#224](https://github.com/kubedb/operator/pull/224) ([tamalsaha](https://github.com/tamalsaha))
+- Update to k8s 1.14.0 client libraries using go.mod [\#223](https://github.com/kubedb/operator/pull/223) ([tamalsaha](https://github.com/tamalsaha))
+
 ## [0.12.0](https://github.com/kubedb/operator/tree/0.12.0) (2019-05-06)
 [Full Changelog](https://github.com/kubedb/operator/compare/0.11.0...0.12.0)
 
