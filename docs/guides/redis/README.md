@@ -71,6 +71,7 @@ Here, &#10003; means supported and &#10007; means deprecated.
 ## User Guide
 
 - [Quickstart Redis](/docs/guides/redis/quickstart/quickstart.md) with KubeDB Operator.
+- [Deploy Redis Cluster](/docs/guides/redis/clustering/redis-cluster.md) using KubeDB.
 - Monitor your Redis server with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/redis/monitoring/using-coreos-prometheus-operator.md).
 - Monitor your Redis server with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/redis/private-registry/using-private-registry.md) to deploy Redis with KubeDB.
