@@ -1,12 +1,12 @@
 ---
 title: PostgresVersion
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: postgres-version
     name: PostgresVersion
     parent: catalog
     weight: 30
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: concepts
 ---
 

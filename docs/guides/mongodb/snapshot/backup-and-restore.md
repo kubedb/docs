@@ -1,12 +1,12 @@
 ---
 title: Instant Backup of MongoDB
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: mg-backup-and-restore-snapshot
     name: Instant Backup
     parent: mg-snapshot-mongodb
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
@@ -16,7 +16,7 @@ section_menu_id: guides
 
 This tutorial will show you how to take snapshots of a KubeDB managed MongoDB database.
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Before You Begin
 
@@ -38,7 +38,7 @@ This tutorial will show you how to take snapshots of a KubeDB managed MongoDB da
   $ kubectl create ns demo
   namespace/demo created
 
-  $ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mongodb/snapshot/demo-1.yaml
+  $ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/snapshot/demo-1.yaml
   mongodb.kubedb.com/mgo-instant created
   ```
 
@@ -97,7 +97,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mongodb/snapshot/demo-2.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/snapshot/demo-2.yaml
 snapshot.kubedb.com/snapshot-instant created
 
 $ kubedb get snap -n demo
@@ -255,7 +255,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mongodb/snapshot/demo-3.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/snapshot/demo-3.yaml
 mongodb.kubedb.com/mgo-recovered created
 ```
 

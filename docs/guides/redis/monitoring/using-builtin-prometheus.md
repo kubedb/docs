@@ -1,12 +1,12 @@
 ---
 title: Monitoring Redis Using Builtin Prometheus Discovery
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: rd-using-builtin-prometheus-monitoring
     name: Builtin Prometheus Discovery
     parent: rd-monitoring-redis
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
@@ -36,7 +36,7 @@ This tutorial will show you how to monitor Redis server using builtin [Prometheu
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy Redis with Monitoring Enabled
 
@@ -69,7 +69,7 @@ Here,
 Let's create the Redis crd we have shown above.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/redis/monitoring/builtin-prom-redis.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/monitoring/builtin-prom-redis.yaml
 redis.kubedb.com/builtin-prom-redis created
 ```
 
@@ -274,7 +274,7 @@ data:
 Let's create above `ConfigMap`,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
 

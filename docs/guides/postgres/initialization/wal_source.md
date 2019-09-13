@@ -1,12 +1,12 @@
 ---
 title: Initialize Postgres from WAL
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: pg-wal-source-initialization
     name: From WAL
     parent: pg-initialization-postgres
     weight: 25
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 

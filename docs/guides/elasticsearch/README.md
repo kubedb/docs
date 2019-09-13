@@ -1,16 +1,16 @@
 ---
 title: Elasticsearch
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: es-readme-elasticsearch
     name: Elasticsearch
     parent: es-elasticsearch-guides
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
-url: /docs/v0.13.0-rc.0/guides/elasticsearch/
+url: /docs/{{ .version }}/guides/elasticsearch/
 aliases:
-  - /docs/v0.13.0-rc.0/guides/elasticsearch/README/
+  - /docs/{{ .version }}/guides/elasticsearch/README/
 ---
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).

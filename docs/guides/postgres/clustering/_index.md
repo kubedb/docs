@@ -1,10 +1,10 @@
 ---
 title: PostgreSQL Clustering
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: pg-clustering-postgres
     name: Clustering
     parent: pg-postgres-guides
     weight: 20
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 ---

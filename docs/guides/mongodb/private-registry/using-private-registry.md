@@ -1,12 +1,12 @@
 ---
 title: Run MongoDB using Private Registry
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: mg-using-private-registry-private-registry
     name: Quickstart
     parent: mg-private-registry-mongodb
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
@@ -134,7 +134,7 @@ spec:
 Now run the command to deploy this `MongoDB` object:
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mongodb/private-registry/demo-2.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/private-registry/demo-2.yaml
 mongodb.kubedb.com/mgo-pvt-reg created
 ```
 

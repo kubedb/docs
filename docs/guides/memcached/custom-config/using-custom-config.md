@@ -1,12 +1,12 @@
 ---
 title: Run Memcached with Custom Configuration
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: mc-custom-config-quickstart
     name: Quickstart
     parent: mc-custom-config
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -32,7 +32,7 @@ KubeDB supports providing custom configuration for Memcached. This tutorial will
   demo    Active  5s
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -119,7 +119,7 @@ metadata:
 Now, create Memcached crd specifying `spec.configSource` field.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/memcached/custom-config/mc-custom.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/mc-custom.yaml
 memcached.kubedb.com/custom-memcached created
 ```
 

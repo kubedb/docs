@@ -2,12 +2,12 @@
 title: KubeDB Overview
 description: KubeDB Overview
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: overview-concepts
     name: Overview
     parent: what-is-kubedb
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: concepts
 ---
 
