@@ -1,12 +1,12 @@
 ---
 title: Run Memcached with Custom RBAC resources
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: mc-custom-rbac-quickstart
     name: Custom RBAC
     parent: mc-custom-rbac
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
@@ -29,7 +29,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -70,7 +70,7 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the Memcached instance named `quick-memcached`.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/memcached/custom-rbac/mc-custom-role.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-rbac/mc-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
@@ -130,7 +130,7 @@ subjects:
 Now, create a Memcached crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/memcached/custom-rbac/mc-custom-db.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-rbac/mc-custom-db.yaml
 memcached.kubedb.com/quick-memcached created
 ```
 
@@ -182,7 +182,7 @@ An existing service account can be reused in another Memcached instance. No new 
 Now, create Memcached crd `minute-memcached` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/memcached/custom-rbac/mc-custom-db-two.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-rbac/mc-custom-db-two.yaml
 memcached.kubedb.com/quick-memcached created
 ```
 

@@ -1,12 +1,12 @@
 ---
 title: Monitor Memcached using Builtin Prometheus Discovery
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: mc-using-builtin-prometheus-monitoring
     name: Builtin Prometheus Discovery
     parent: mc-monitoring-memcached
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
@@ -36,7 +36,7 @@ This tutorial will show you how to monitor Memcached server using builtin [Prome
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy Memcached server with Monitoring Enabled
 
@@ -72,7 +72,7 @@ Here,
 Let's create the Memcached crd we have shown above.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/memcached/monitoring/builtin-prom-memcd.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/monitoring/builtin-prom-memcd.yaml
 memcached.kubedb.com/builtin-prom-memcd created
 ```
 
@@ -268,7 +268,7 @@ data:
 Let's create above `ConfigMap`,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
 

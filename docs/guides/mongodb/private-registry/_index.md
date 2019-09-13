@@ -1,10 +1,10 @@
 ---
 title: Run MongoDB using Private Registry
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: mg-private-registry-mongodb
     name: Private Registry
     parent: mg-mongodb-guides
     weight: 30
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 ---

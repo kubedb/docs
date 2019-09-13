@@ -1,12 +1,12 @@
 ---
 title: Postgres
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: postgres-db
     name: Postgres
     parent: databases
     weight: 30
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: concepts
 ---
 

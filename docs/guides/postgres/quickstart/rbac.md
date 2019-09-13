@@ -1,12 +1,12 @@
 ---
 title: RBAC for PostgreSQL
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: pg-rbac-quickstart
     name: RBAC
     parent: pg-quickstart-postgres
     weight: 15
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -37,7 +37,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Create a PostgreSQL database
 
@@ -65,7 +65,7 @@ spec:
 Create above Postgres object with following command
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/quickstart/quick-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres.yaml
 postgres.kubedb.com/quick-postgres created
 ```
 

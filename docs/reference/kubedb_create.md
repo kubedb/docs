@@ -1,11 +1,11 @@
 ---
 title: Kubedb Create
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: kubedb-create
     name: Kubedb Create
     parent: reference
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
 ## kubedb create

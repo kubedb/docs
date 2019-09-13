@@ -1,12 +1,12 @@
 ---
 title: Snapshot
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: snapshot-concepts
     name: Snapshot
     parent: concepts
     weight: 35
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: concepts
 ---
 

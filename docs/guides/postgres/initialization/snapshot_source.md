@@ -1,12 +1,12 @@
 ---
 title: Initialize Postgres using Snapshot Source
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: pg-snapshot-source-initialization
     name: From Snapshot
     parent: pg-initialization-postgres
     weight: 15
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 > Don't know how backup works?  Check [tutorial](/docs/guides/postgres/snapshot/instant_backup.md) on Instant Backup.
@@ -38,7 +38,7 @@ We need a Snapshot to perform this initialization. If you don't have a Snapshot 
 
 If you have changed the name of either namespace or snapshot object, please modify the YAMLs used in this tutorial accordingly.
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Create PostgreSQL with Snapshot source
 
@@ -90,7 +90,7 @@ instant-snapshot   script-postgres   Succeeded   56s
 Now, create the Postgres object.
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/initialization/recovered-postgres.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/recovered-postgres.yaml
 postgres.kubedb.com/recovered-postgres created
 ```
 

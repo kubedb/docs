@@ -1,10 +1,10 @@
 ---
 title: PostgreSQL Custom Versions
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: pg-custom-versions-postgres
     name: Custom Versions
     parent: pg-postgres-guides
     weight: 45
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 ---

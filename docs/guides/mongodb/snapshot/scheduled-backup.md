@@ -1,12 +1,12 @@
 ---
 title: Scheduled Backup of MongoDB
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: mg-scheduled-backup-snapshot
     name: Scheduled Backup
     parent: mg-snapshot-mongodb
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
@@ -31,7 +31,7 @@ This tutorial will show you how to use KubeDB to take scheduled snapshot of a Mo
   namespace/demo created
   ```
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Scheduled Backups
 
@@ -95,7 +95,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mongodb/snapshot/demo-4.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/snapshot/demo-4.yaml
 mongodb.kubedb.com/mgo-scheduled created
 ```
 

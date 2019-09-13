@@ -1,12 +1,12 @@
 ---
 title: MySQL Group Replication Overview
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: my-group-replication-overview-mysql
     name: MySQL Group Replication Overview
     parent: my-clustering-mysql
     weight: 15
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 

@@ -1,12 +1,12 @@
 ---
 title: Run MongoDB with Custom RBAC resources
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: mg-custom-rbac-quickstart
     name: Custom RBAC
     parent: mg-custom-rbac
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
@@ -29,7 +29,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -70,7 +70,7 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the MongoDB instance named `quick-mongodb`.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mongodb/custom-rbac/mg-custom-role.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/custom-rbac/mg-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
@@ -130,7 +130,7 @@ subjects:
 Now, create a MongoDB crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mongodb/custom-rbac/mg-custom-db.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/custom-rbac/mg-custom-db.yaml
 mongodb.kubedb.com/quick-mongodb created
 ```
 
@@ -195,7 +195,7 @@ An existing service account can be reused in another MongoDB instance. No new ac
 Now, create MongoDB crd `minute-mongodb` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mongodb/custom-rbac/mg-custom-db-two.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/custom-rbac/mg-custom-db-two.yaml
 mongodb.kubedb.com/quick-mongodb created
 ```
 

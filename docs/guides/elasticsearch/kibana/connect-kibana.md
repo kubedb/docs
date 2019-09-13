@@ -1,12 +1,12 @@
 ---
 title: Using Kibana with KubeDB Elasticsearch
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: es-kibana-connect
     name: Use Kibana
     parent: es-kibana
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -36,7 +36,7 @@ NAME    STATUS  AGE
 demo    Active  5s
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -257,7 +257,7 @@ metadata:
 Now, create Elasticsearch crd specifying  `spec.databaseSecret` and `spec.configSource` field.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/kibana/es-kibana-demo.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/kibana/es-kibana-demo.yaml
 elasticsearch.kubedb.com/es-kibana-demo created
 ```
 
@@ -366,7 +366,7 @@ configmap/kibana-config created
 
 Finally, deploy Kibana deployment,
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/kibana/kibana-deployment.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/kibana/kibana-deployment.yaml
 deployment.apps/kibana created
 ```
 

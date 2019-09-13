@@ -1,16 +1,16 @@
 ---
 title: Memcached
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: mc-readme-memcached
     name: Memcached
     parent: mc-memcached-guides
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
-url: /docs/v0.13.0-rc.0/guides/memcached/
+url: /docs/{{ .version }}/guides/memcached/
 aliases:
-  - /docs/v0.13.0-rc.0/guides/memcached/README/
+  - /docs/{{ .version }}/guides/memcached/README/
 ---
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).

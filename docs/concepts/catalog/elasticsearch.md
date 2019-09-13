@@ -1,12 +1,12 @@
 ---
 title: ElasticsearchVersion
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: elasticsearh-version
     name: ElasticsearchVersion
     parent: catalog
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: concepts
 ---
 

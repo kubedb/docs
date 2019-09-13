@@ -1,9 +1,9 @@
 ---
 title: KubeDB
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: welcome
     name: Welcome
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 ---

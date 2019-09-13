@@ -1,12 +1,12 @@
 ---
 title: MySQL Group Replcation Guide
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: my-group-replication-guide-mysql
     name: MySQL Group Replication Guide
     parent: my-clustering-mysql
     weight: 20
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
@@ -33,7 +33,7 @@ Before proceeding:
   namespace/demo created
   ```
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy MySQL Cluster
 
@@ -67,7 +67,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mysql/clustering/demo-1.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/clustering/demo-1.yaml
 mysql.kubedb.com/my-group created
 ```
 

@@ -1,10 +1,10 @@
 ---
 title: Use Kibana with KubeDB Elasticsearch
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: es-kibana
     name: Kibana
     parent: es-elasticsearch-guides
     weight: 55
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 ---

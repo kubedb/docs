@@ -1,12 +1,12 @@
 ---
 title: CLI | KubeDB
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: es-cli-cli
     name: Quickstart
     parent: es-cli-elasticsearch
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 

@@ -1,16 +1,16 @@
 ---
 title: Concepts | KubeDB
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: concepts-readme
     name: Readme
     parent: concepts
     weight: -1
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: concepts
-url: /docs/v0.13.0-rc.0/concepts/
+url: /docs/{{ .version }}/concepts/
 aliases:
-  - /docs/v0.13.0-rc.0/concepts/README/
+  - /docs/{{ .version }}/concepts/README/
 ---
 
 # Concepts

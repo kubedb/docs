@@ -1,10 +1,10 @@
 ---
 title: CLI | KubeDB
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: pg-cli-postgres
     name: CLI
     parent: pg-postgres-guides
     weight: 55
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 ---

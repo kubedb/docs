@@ -1,12 +1,12 @@
 ---
 title: Scheduled Backup of PostgreSQL
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: pg-scheduled-backup-snapshot
     name: Scheduled Backup
     parent: pg-snapshot-postgres
     weight: 15
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 > Don't know how backup works?  Check [tutorial](/docs/guides/postgres/snapshot/instant_backup.md) on Instant Backup.
@@ -28,7 +28,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Create Postgres with BackupSchedule
 
@@ -89,7 +89,7 @@ Here,
 Let's create a Postgres crd with backupSchedule,
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/snapshot/scheduled-pg.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/snapshot/scheduled-pg.yaml
 postgres.kubedb.com/scheduled-pg created
 ```
 
