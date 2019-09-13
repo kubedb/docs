@@ -478,8 +478,8 @@ You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/
 `terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Elasticsearch` crd or which resources KubeDB should keep or delete when you delete `Elasticsearch` crd. KubeDB provides following four termination policies:
 
 - DoNotTerminate
-- Pause (`Default`)
-- Delete
+- Pause
+- Delete (`Default`)
 - WipeOut
 
 When, `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to provide safety from accidental deletion of database. If admission webhook is enabled, KubeDB prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
