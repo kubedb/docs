@@ -1,12 +1,12 @@
 ---
 title: Monitor PostgreSQL using Builtin Prometheus Discovery
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: pg-using-builtin-prometheus-monitoring
     name: Builtin Prometheus Discovery
     parent: pg-monitoring-postgres
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
@@ -36,7 +36,7 @@ This tutorial will show you how to monitor PostgreSQL database using builtin [Pr
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy PostgreSQL with Monitoring Enabled
 
@@ -69,7 +69,7 @@ Here,
 Let's create the PostgreSQL crd we have shown above.
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/monitoring/builtin-prom-postgres.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/monitoring/builtin-prom-postgres.yaml
 postgres.kubedb.com/builtin-prom-postgres created
 ```
 
@@ -275,7 +275,7 @@ data:
 Let's create above `ConfigMap`,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
 

@@ -1,12 +1,12 @@
 ---
 title: Run Redis using Private Registry
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: rd-using-private-registry-private-registry
     name: Quickstart
     parent: rd-private-registry-redis
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
@@ -126,7 +126,7 @@ spec:
 Now run the command to deploy this `Redis` object:
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/redis/private-registry/demo-2.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/private-registry/demo-2.yaml
 redis.kubedb.com/redis-pvt-reg created
 ```
 

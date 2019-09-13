@@ -1,16 +1,16 @@
 ---
 title: Kubedb
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: kubedb
     name: Kubedb
     parent: reference
     weight: 0
 
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: reference
 aliases:
-  - /docs/v0.13.0-rc.0/reference/
+  - /docs/{{ .version }}/reference/
 
 ---
 ## kubedb

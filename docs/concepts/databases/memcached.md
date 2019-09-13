@@ -1,12 +1,12 @@
 ---
 title: Memcached
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: memcached-db
     name: Memcached
     parent: databases
     weight: 15
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: concepts
 ---
 

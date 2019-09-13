@@ -1,12 +1,12 @@
 ---
 title: Release
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: developer-guide-release
     name: Release Process
     parent: developer-guide
     weight: 20
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: setup
 ---
 

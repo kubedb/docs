@@ -1,12 +1,12 @@
 ---
 title: Monitor PostgreSQL using Coreos Prometheus Operator
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: pg-using-coreos-prometheus-operator-monitoring
     name: Coreos Prometheus Operator
     parent: pg-monitoring-postgres
     weight: 15
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -35,7 +35,7 @@ CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) prov
 
 - If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/coreos-operator/README.md#deploy-prometheus-server).
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Find out required labels for ServiceMonitor
 
@@ -124,7 +124,7 @@ Here,
 Let's create the PostgreSQL object that we have shown above,
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/postgres/monitoring/coreos-prom-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/monitoring/coreos-prom-postgres.yaml
 postgresql.kubedb.com/coreos-prom-postgres created
 ```
 

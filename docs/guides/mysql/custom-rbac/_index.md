@@ -1,10 +1,10 @@
 ---
 title: Run MySQL with Custom RBAC resources
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: my-custom-rbac
     name: Custom RBAC
     parent: my-mysql-guides
     weight: 85
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 ---

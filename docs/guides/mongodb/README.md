@@ -1,16 +1,16 @@
 ---
 title: MongoDB
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: mg-readme-mongodb
     name: MongoDB
     parent: mg-mongodb-guides
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
-url: /docs/v0.13.0-rc.0/guides/mongodb/
+url: /docs/{{ .version }}/guides/mongodb/
 aliases:
-  - /docs/v0.13.0-rc.0/guides/mongodb/README/
+  - /docs/{{ .version }}/guides/mongodb/README/
 ---
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).

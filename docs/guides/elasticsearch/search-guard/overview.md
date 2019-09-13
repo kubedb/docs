@@ -1,12 +1,12 @@
 ---
 title: Search Guard
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: es-search-guard-search-guard
     name: Overview
     parent: es-search-guard-elasticsearch
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 

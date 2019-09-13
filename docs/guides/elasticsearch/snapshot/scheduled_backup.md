@@ -1,12 +1,12 @@
 ---
 title: Scheduled Backup of Elasticsearch
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: es-scheduled-backup-snapshot
     name: Scheduled Backup
     parent: es-snapshot-elasticsearch
     weight: 15
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 > Don't know how backup works?  Check [tutorial](/docs/guides/elasticsearch/snapshot/instant_backup.md) on Instant Backup.
@@ -32,7 +32,7 @@ NAME    STATUS  AGE
 demo    Active  5s
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Create Elasticsearch with BackupSchedule
 
@@ -90,7 +90,7 @@ Here,
 > Note: Secret object must be in the same namespace as Elasticsearch, `scheduled-es`, in this case.
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/snapshot/scheduled-es.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/snapshot/scheduled-es.yaml
 elasticsearch.kubedb.com/scheduled-es created
 ```
 

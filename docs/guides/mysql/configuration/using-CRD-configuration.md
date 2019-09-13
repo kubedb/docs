@@ -1,12 +1,12 @@
 ---
 title: Run MySQL with Custom Configuration
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: my-crd-configuration
     name: Using CRD Config
     parent: my-custom-config
     weight: 15
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
@@ -29,7 +29,7 @@ KubeDB supports providing custom configuration for MySQL via [PodTemplate](/docs
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -95,7 +95,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mysql/configuration/mysql-misc-config.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/configuration/mysql-misc-config.yaml
 mysql.kubedb.com/mysql-misc-config created
 ```
 
@@ -135,7 +135,7 @@ Now, we will check if the database has started with the custom configuration we 
 First, deploy [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin/) to connect with the MySQL database we have just created.
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mysql/quickstart/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/quickstart/demo-1.yaml
 deployment.extensions/myadmin created
 service/myadmin created
 ```
@@ -194,7 +194,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mysql/configuration/snapshot-misc-conf.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/configuration/snapshot-misc-conf.yaml
 snapshot.kubedb.com/snap-mysql-config created
 
 

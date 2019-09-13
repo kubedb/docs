@@ -1,12 +1,12 @@
 ---
 title: Initialize MySQL from Snapshot
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: my-using-snapshot-initialization
     name: From Snapshot
     parent: my-initialization-mysql
     weight: 15
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
@@ -23,7 +23,7 @@ This tutorial will show you how to use KubeDB to initialize a MySQL database wit
 
 - This tutorial assumes that you have created a namespace `demo` and a snapshot `snapshot-instant`. Follow the steps [here](/docs/guides/mysql/snapshot/backup-and-restore.md) to create a database and take [instant snapshot](/docs/guides/mysql/snapshot/backup-and-restore.md#instant-backups), if you have not done so already. If you have changed the name of either namespace or snapshot object, please modify the YAMLs used in this tutorial accordingly.
 
-> Note: The yaml files that are used in this tutorial are stored in [docs/examples](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files that are used in this tutorial are stored in [docs/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Create MySQL with Init-Snapshot
 
@@ -53,7 +53,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/mysql/Initialization/demo-2.yaml
+$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/Initialization/demo-2.yaml
 mysql.kubedb.com/mysql-init-snapshot created
 ```
 

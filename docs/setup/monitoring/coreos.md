@@ -1,15 +1,15 @@
 ---
 title: Monitoring KubeDB Operator Using CoreOS Prometheus Operator
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: operator-monitoring-coreos
     name: Prometheus Operator
     parent: operator-monitoring
     weight: 30
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: setup
 aliases:
-  - /docs/v0.13.0-rc.0/setup/operator-monitoring/
+  - /docs/{{ .version }}/setup/operator-monitoring/
 ---
 
 # Monitoring KubeDB Operator Using CoreOS Prometheus Operator
@@ -38,7 +38,7 @@ Let's install KubeDB operator with monitoring enabled.
 **Script:**
 
 ```console
-$ curl -fsSL https://github.com/kubedb/installer/raw/v0.13.0-rc.0/deploy/kubedb.sh | bash -s -- \
+$ curl -fsSL https://github.com/kubedb/installer/raw/{{< param "info.version" >}}/deploy/kubedb.sh | bash -s -- \
   --monitoring-enable=true \
   --monitoring-agent=prometheus.io/coreos-operator \
   --prometheus-namespace=monitoring \
@@ -48,7 +48,7 @@ $ curl -fsSL https://github.com/kubedb/installer/raw/v0.13.0-rc.0/deploy/kubedb.
 **Helm:**
 
 ```console
-$ helm install appscode/kubedb --name kubedb-operator --version v0.13.0-rc.0 --namespace kube-system \
+$ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.version" >}} --namespace kube-system \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/coreos-operator \
   --set monitoring.prometheus.namespace=monitoring \
@@ -184,7 +184,7 @@ Here, `spec.serviceMonitorSelector` is used to select the `ServiceMonitor` crd t
 Let's create the `Prometheus` object we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/monitoring/operator/prometheus.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/operator/prometheus.yaml
 prometheus.monitoring.coreos.com/prometheus created
 ```
 

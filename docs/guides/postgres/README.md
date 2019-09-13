@@ -1,16 +1,16 @@
 ---
 title: Postgres
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: pg-readme-postgres
     name: Postgres
     parent: pg-postgres-guides
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
-url: /docs/v0.13.0-rc.0/guides/postgres/
+url: /docs/{{ .version }}/guides/postgres/
 aliases:
-  - /docs/v0.13.0-rc.0/guides/postgres/README/
+  - /docs/{{ .version }}/guides/postgres/README/
 ---
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).

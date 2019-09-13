@@ -1,11 +1,11 @@
 ---
 title: Kubedb Version
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: kubedb-version
     name: Kubedb Version
     parent: reference
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
 ## kubedb version

@@ -2,12 +2,12 @@
 title: Database Monitoring Overview
 description: Database Monitoring Overview
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: database-monitoring-overview
     name: Overview
     parent: database-monitoring
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: concepts
 ---
 

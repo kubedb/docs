@@ -1,12 +1,12 @@
 ---
 title: Initialize Elasticsearch from Snapshot
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: es-snapshot-source-initialization
     name: Using Snapshot
     parent: es-initialization-elasticsearch
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
@@ -33,7 +33,7 @@ NAME    STATUS  AGE
 demo    Active  5s
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/v0.13.0-rc.0/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Prepare Snapshot
 
@@ -92,7 +92,7 @@ instant-snapshot   instant-elasticsearch   Succeeded   51m
 Now, create the Elasticsearch object.
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/v0.13.0-rc.0/docs/examples/elasticsearch/initialization/recovered-es.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/initialization/recovered-es.yaml
 elasticsearch.kubedb.com/recovered-es created
 ```
 

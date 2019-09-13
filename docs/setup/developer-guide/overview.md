@@ -1,15 +1,15 @@
 ---
 title: Developer Guide
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: developer-guide-readme
     name: Overview
     parent: developer-guide
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: setup
 aliases:
-  - /docs/v0.13.0-rc.0/setup/developer-guide/
+  - /docs/{{ .version }}/setup/developer-guide/
 ---
 
 # Development Guide

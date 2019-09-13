@@ -1,12 +1,12 @@
 ---
 title: MongoDB Sharding Concept
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: mg-clustering-sharding-concept
     name: Sharding Concept
     parent: mg-clustering-mongodb
     weight: 20
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 

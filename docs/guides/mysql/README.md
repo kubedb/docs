@@ -1,16 +1,16 @@
 ---
 title: MySQL
 menu:
-  docs_v0.13.0-rc.0:
+  docs_{{ .version }}:
     identifier: my-readme-mysql
     name: MySQL
     parent: my-mysql-guides
     weight: 10
-menu_name: docs_v0.13.0-rc.0
+menu_name: docs_{{ .version }}
 section_menu_id: guides
-url: /docs/v0.13.0-rc.0/guides/mysql/
+url: /docs/{{ .version }}/guides/mysql/
 aliases:
-  - /docs/v0.13.0-rc.0/guides/mysql/README/
+  - /docs/{{ .version }}/guides/mysql/README/
 ---
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
