@@ -33,7 +33,7 @@ aliases:
 ## Life Cycle of a Redis Object
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/images/redis/redis-lifecycle.png">
+  <img alt="lifecycle"  src="/docs/images/redis/redis-lifecycle.svg">
 </p>
 
 ## Supported Redis Versions
