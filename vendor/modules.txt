@@ -22,7 +22,7 @@ github.com/NYTimes/gziphandler
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
-# github.com/appscode/go v0.0.0-20190808133642-1d4ef1f1c1e0
+# github.com/appscode/go v0.0.0-20190920081029-7b75ec783e2e
 github.com/appscode/go/version
 github.com/appscode/go/runtime
 github.com/appscode/go/flags
@@ -335,7 +335,7 @@ gomodules.xyz/stow/google
 gomodules.xyz/stow/s3
 gomodules.xyz/stow/local
 gomodules.xyz/stow/swift
-# gomodules.xyz/version v0.0.0-20190507203204-7cec7ee542d3
+# gomodules.xyz/version v0.1.0
 gomodules.xyz/version
 # google.golang.org/api v0.2.0
 google.golang.org/api/storage/v1

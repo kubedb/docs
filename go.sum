@@ -3,9 +3,6 @@ cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 contrib.go.opencensus.io/exporter/ocagent v0.4.1/go.mod h1:b6YwD5Q3Yvj4yk0CDK5vGXexygNzI09aXUdDEakQBgA=
 contrib.go.opencensus.io/exporter/ocagent v0.4.6 h1:xVeoJwnzMbseoL9YWhohR6SN/GncvP1p/fznasLkT/E=
 contrib.go.opencensus.io/exporter/ocagent v0.4.6/go.mod h1:YuG83h+XWwqWjvCqn7vK4KSyLKhThY3+gNGQ37iS2V0=
-git.apache.org/thrift.git v0.0.0-20180902110319-2566ecd5d999/go.mod h1:fPE2ZNJGynbRyZ4dJvy6G277gSllfV2HJqblrnkyeyg=
-git.apache.org/thrift.git v0.0.0-20181218151757-9b75e4fe745a/go.mod h1:fPE2ZNJGynbRyZ4dJvy6G277gSllfV2HJqblrnkyeyg=
-git.apache.org/thrift.git v0.12.0/go.mod h1:fPE2ZNJGynbRyZ4dJvy6G277gSllfV2HJqblrnkyeyg=
 github.com/Azure/azure-pipeline-go v0.1.8/go.mod h1:XA1kFWRVhSK+KNFiOhfv83Fv8L9achrP7OxIzeTn1Yg=
 github.com/Azure/azure-sdk-for-go v23.2.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/azure-sdk-for-go v31.1.0+incompatible h1:5SzgnfAvUBdBwNTN23WLfZoCt/rGhLvd7QdCAaFXgY4=
@@ -49,6 +46,8 @@ github.com/apache/thrift v0.12.0/go.mod h1:cp2SuWMxlEZw2r+iP2GNCdIi4C1qmUzdZFSVb
 github.com/appscode/docker-registry-client v0.0.0-20180426150142-1bb02bb202b0/go.mod h1:W9bsWfSbgJXUXzBZ+tSBV2g+zzT7ANPHQFsSXRHYKsA=
 github.com/appscode/go v0.0.0-20190808133642-1d4ef1f1c1e0 h1:EZp2qE4LUJUG0wMHyUxOg982hVbOFh7qqcM1XIMVGpk=
 github.com/appscode/go v0.0.0-20190808133642-1d4ef1f1c1e0/go.mod h1:iy07dV61Z7QQdCKJCIvUoDL21u6AIceRhZzyleh2ymc=
+github.com/appscode/go v0.0.0-20190920081029-7b75ec783e2e h1:c2EGRz/Xi/CGm+P0v/pbUHDZcGcOqtbl65RyvKcJFJg=
+github.com/appscode/go v0.0.0-20190920081029-7b75ec783e2e/go.mod h1:hUW7Fq0KY2/ntGnYAzemyUpIhLL6bXrTljN6SRY/+Lc=
 github.com/appscode/osm v0.12.0 h1:7Rde+KnOp3EvHscXHS6rfdqiq6IO/2HZ2pKeE4f/sRo=
 github.com/appscode/osm v0.12.0/go.mod h1:+ZXU2HilSSow2o0gsOolJfOTkhqQ2FcGROOum4wEh4w=
 github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2 h1:7Ip0wMmLHLRJdrloDxZfhMm0xrLXZS8+COSu2bXmEQs=
@@ -572,6 +571,8 @@ gomodules.xyz/stow v0.2.0 h1:GYymuy7sxAifaL0IXEmoHApeguXHK0hFT7ZQiYA8KTU=
 gomodules.xyz/stow v0.2.0/go.mod h1:YDDPM4nmJgQhxq4I5aGtLM/xrvJzDSVM/fbc7NGizpY=
 gomodules.xyz/version v0.0.0-20190507203204-7cec7ee542d3 h1:MiBtMikyjuBwD22+QIEsbnMHdRkknM/0N5ig34jSNgQ=
 gomodules.xyz/version v0.0.0-20190507203204-7cec7ee542d3/go.mod h1:Y8xuV02mL/45psyPKG3NCVOwvAOy6T5Kx0l3rCjKSjU=
+gomodules.xyz/version v0.1.0 h1:inGItCg/egI0jPMeIE0SQkiDIJaodOMoCrxYqasQLR0=
+gomodules.xyz/version v0.1.0/go.mod h1:Y8xuV02mL/45psyPKG3NCVOwvAOy6T5Kx0l3rCjKSjU=
 google.golang.org/api v0.0.0-20180910000450-7ca32eb868bf/go.mod h1:4mhQ8q/RsB7i+udVvVy5NUi08OU8ZlA0gRVgrF7VFY0=
 google.golang.org/api v0.0.0-20181220000619-583d854617af/go.mod h1:4mhQ8q/RsB7i+udVvVy5NUi08OU8ZlA0gRVgrF7VFY0=
 google.golang.org/api v0.1.0/go.mod h1:UGEZY7KEX120AnNLIHFMKIo4obdJhkp2tPbaPlQx13Y=

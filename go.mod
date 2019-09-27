@@ -3,7 +3,7 @@ module kubedb.dev/operator
 go 1.12
 
 require (
-	github.com/appscode/go v0.0.0-20190808133642-1d4ef1f1c1e0
+	github.com/appscode/go v0.0.0-20190920081029-7b75ec783e2e
 	github.com/coreos/prometheus-operator v0.30.1
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
@@ -28,8 +28,8 @@ require (
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.34.0
+	git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.4.2+incompatible
-	gomodules.xyz/envsubst => gomodules.xyz/envsubst v0.1.0
 	k8s.io/api => k8s.io/api v0.0.0-20190313235455-40a48860b5ab
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190315093550-53c4693659ed
 	k8s.io/apimachinery => github.com/kmodules/apimachinery v0.0.0-20190508045248-a52a97a7a2bf
