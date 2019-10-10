@@ -2,9 +2,9 @@
 title: Continuous Archiving to MinIO
 menu:
   docs_{{ .version }}:
-    identifier: pg-continuous-archiving-minio
-    name: WAL Archiving to MinIO
-    parent: pg-snapshot-postgres
+    identifier: pg-wal-minio
+    name: To MinIO
+    parent: pg-wal
     weight: 50
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Continuous Archiving to MinIO
 
-[MinIO](https://docs.min.io/) is an open source object storage server compatible with Amazon S3 APIs. **WAL-G** is used to continuously archive PostgreSQL WAL files to MinIO. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/snapshot/continuous_archiving.md) to learn more.
+[MinIO](https://docs.min.io/) is an open source object storage server compatible with Amazon S3 APIs. **WAL-G** is used to continuously archive PostgreSQL WAL files to MinIO. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) to learn more.
 
 ## Before You Begin
 
@@ -181,4 +181,4 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn about initializing [PostgreSQL from WAL](/docs/guides/postgres/initialization/script_source.md) files stored in backup servers.
+- Learn about initializing [PostgreSQL from WAL](/docs/guides/postgres/initialization/wal/wal_source.md) files stored in backup servers.

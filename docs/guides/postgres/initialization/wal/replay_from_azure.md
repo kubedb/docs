@@ -1,21 +1,21 @@
 ---
-title: Initialize Postgres from Swift
+title: Initialize Postgres from WAL in Azure
 menu:
   docs_{{ .version }}:
-    identifier: pg-wal-source-initialization-swift
-    name: From WAL(Swift)
-    parent: pg-initialization-postgres
-    weight: 45
+    identifier: pg-wal-initialization-azure
+    name: From Azure
+    parent: pg-wal-initialization
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
-> Don't know how to take continuous backup?  Check this [tutorial](/docs/guides/postgres/snapshot/continuous_archiving.md) on Continuous Archiving.
+> Don't know how to take continuous backup?  Check this [tutorial](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) on Continuous Archiving.
 
-# PostgreSQL Initialization from Swift
+# PostgreSQL Initialization from Azure
 
-**WAL-G** is used to handle replay, and restoration mechanism. Please refer to [Initialization from WAL files in KubeDB](/docs/guides/postgres/initialization/wal_source.md) to know more about it.
+**WAL-G** is used to handle replay, and restoration mechanism. Please refer to [Initialization from WAL files in KubeDB](/docs/guides/postgres/initialization/wal/wal_source.md) to know more about it.
 
 ## Before You Begin
 
@@ -33,7 +33,7 @@ namespace/demo created
 
 ## Prepare WAL Archive
 
-We need a WAL archive to perform initialization. If you don't have a WAL archive ready, create one by following the tutorial [here](/docs/guides/postgres/snapshot/continuous_archiving.md).
+We need a WAL archive to perform initialization. If you don't have a WAL archive ready, create one by following the tutorial [here](/docs/guides/postgres/snapshot/wal/continuous_archiving.md).
 
 Let's populate the database so that we can verify that the initialized database has the same data. We will `exec` into the database pod and use `psql` command-line tool to create a table.
 
@@ -96,7 +96,7 @@ Now, we are ready to proceed for rest of the tutorial.
 
 User can initialize a new database from this archived WAL files. We have to specify the archive backend in the `spec.init.postgresWAL` field of Postgres object.
 
-The YAML file  in this tutorial creates a Postgres object using WAL files from Swift Storage.
+The YAML file  in this tutorial creates a Postgres object using WAL files from Azure Storage.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -118,19 +118,19 @@ spec:
         storage: 1Gi
   init:
     postgresWAL:
-      storageSecretName: swift-secret
-      swift:
+      storageSecretName: azure-secret
+      azure:
         container: kubedb
         prefix: 'kubedb/demo/wal-postgres/archive'
 ```
 
 Here,
 
-- `spec.init.postgresWAL` specifies storage information that will be used by `WAL-G`
+- `spec.init.postgresWAL` specifies storage information that will be used by`WAL-G`
   - `storageSecretName` points to the Secret containing the credentials for cloud storage destination.
-  - `swift` points to Swift storage configuration.
-  - `swift.container` points to the container/bucket name where archived WAL data is stored.
-  - `swift.prefix` points to the path of archived WAL data.
+  - `azure` points to Azure storage configuration.
+  - `azure.container` points to the container/bucket name where archived WAL data is stored.
+  - `azure.prefix` points to the path of archived WAL data.
 
 **wal-g** receives archived WAL data from a directory inside the container called `/kubedb/{namespace}/{postgres-name}/archive/`.
 
@@ -141,7 +141,7 @@ Here, `{namespace}` & `{postgres-name}` indicates Postgres object whose WAL arch
 Now, let's create the Postgres object that's YAML has shown above,
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/replay-postgres-swift.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/replay-postgres-azure.yaml
 postgres.kubedb.com/replay-postgres created
 ```
 
@@ -204,7 +204,7 @@ kubectl delete -n demo pg/replay-postgres
 kubectl delete ns demo
 ```
 
-Also cleanup the resources created for `wal-postgres` following the guide [here](/docs/guides/postgres/snapshot/continuous_archiving.md#cleaning-up).
+Also cleanup the resources created for `wal-postgres` following the guide [here](/docs/guides/postgres/snapshot/wal/continuous_archiving.md#cleaning-up).
 
 ## Next Steps
 
@@ -212,4 +212,3 @@ Also cleanup the resources created for `wal-postgres` following the guide [here]
 - Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
 - Monitor your PostgreSQL database with KubeDB using [CoreOS Prometheus Operator](/docs/guides/postgres/monitoring/using-coreos-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
-

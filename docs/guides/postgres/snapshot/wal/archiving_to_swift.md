@@ -2,9 +2,9 @@
 title: Continuous Archiving to Swift
 menu:
   docs_{{ .version }}:
-    identifier: pg-continuous-archiving-swift
-    name: WAL Archiving to Swift
-    parent: pg-snapshot-postgres
+    identifier: pg-wal-swift
+    name: To Swift
+    parent: pg-wal
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Continuous Archiving to Swift
 
-**WAL-G** is used to continuously archive PostgreSQL WAL files. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/snapshot/continuous_archiving.md) to learn more about it.
+**WAL-G** is used to continuously archive PostgreSQL WAL files. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) to learn more about it.
 
 ## Before You Begin
 
@@ -182,5 +182,4 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn about initializing [PostgreSQL from WAL](/docs/guides/postgres/initialization/script_source.md) files stored in cloud.
-
+- Learn about initializing [PostgreSQL from WAL](/docs/guides/postgres/initialization/wal/wal_source.md) files stored in cloud.

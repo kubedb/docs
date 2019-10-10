@@ -1,21 +1,21 @@
 ---
-title: Initialize Postgres from S3
+title: Initialize Postgres from WAL in S3
 menu:
   docs_{{ .version }}:
-    identifier: pg-wal-source-initialization-s3
-    name: From WAL(S3)
-    parent: pg-initialization-postgres
-    weight: 30
+    identifier: pg-wal-initialization-s3
+    name: From S3
+    parent: pg-wal-initialization
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
-> Don't know how to take continuous backup?  Check this [tutorial](/docs/guides/postgres/snapshot/continuous_archiving.md) on Continuous Archiving.
+> Don't know how to take continuous backup?  Check this [tutorial](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) on Continuous Archiving.
 
 # PostgreSQL Initialization from S3
 
-**WAL-G** is used to handle replay, and restoration mechanism. Please refer to [Initialization from WAL files in KubeDB](/docs/guides/postgres/initialization/wal_source.md) to know more about it.
+**WAL-G** is used to handle replay, and restoration mechanism. Please refer to [Initialization from WAL files in KubeDB](/docs/guides/postgres/initialization/wal/wal_source.md) to know more about it.
 
 ## Before You Begin
 
@@ -33,7 +33,7 @@ namespace/demo created
 
 ## Prepare WAL Archive
 
-We need a WAL archive to perform initialization. If you don't have a WAL archive ready, create one by following the tutorial [here](/docs/guides/postgres/snapshot/continuous_archiving.md).
+We need a WAL archive to perform initialization. If you don't have a WAL archive ready, create one by following the tutorial [here](/docs/guides/postgres/snapshot/wal/continuous_archiving.md).
 
 Let's populate the database so that we can verify that the initialized database has the same data. We will `exec` into the database pod and use `psql` command-line tool to create a table.
 
@@ -204,7 +204,7 @@ kubectl delete -n demo pg/replay-postgres
 kubectl delete ns demo
 ```
 
-Also cleanup the resources created for `wal-postgres` following the guide [here](/docs/guides/postgres/snapshot/continuous_archiving.md#cleaning-up).
+Also cleanup the resources created for `wal-postgres` following the guide [here](/docs/guides/postgres/snapshot/wal/continuous_archiving.md#cleaning-up).
 
 ## Next Steps
 
@@ -212,4 +212,3 @@ Also cleanup the resources created for `wal-postgres` following the guide [here]
 - Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
 - Monitor your PostgreSQL database with KubeDB using [CoreOS Prometheus Operator](/docs/guides/postgres/monitoring/using-coreos-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
-

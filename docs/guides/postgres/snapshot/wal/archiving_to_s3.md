@@ -2,9 +2,9 @@
 title: Continuous Archiving to S3
 menu:
   docs_{{ .version }}:
-    identifier: pg-continuous-archiving-s3
-    name: WAL Archiving to S3
-    parent: pg-snapshot-postgres
+    identifier: pg-wal-s3
+    name: To S3
+    parent: pg-wal
     weight: 25
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Continuous Archiving to S3
 
-**WAL-G** is used to continuously archive PostgreSQL WAL files. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/snapshot/continuous_archiving.md) to learn more about it.
+**WAL-G** is used to continuously archive PostgreSQL WAL files. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) to learn more about it.
 
 ## Before You Begin
 
@@ -153,5 +153,4 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn about initializing [PostgreSQL from WAL](/docs/guides/postgres/initialization/script_source.md) files stored in cloud.
-
+- Learn about initializing [PostgreSQL from WAL](/docs/guides/postgres/initialization/wal/wal_source.md) files stored in cloud.
