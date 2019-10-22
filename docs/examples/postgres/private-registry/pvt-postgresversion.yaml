@@ -1,14 +1,14 @@
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PostgresVersion
 metadata:
-  name: "pvt-9.6"
+  name: "pvt-10.2"
   labels:
     app: kubedb
 spec:
-  version: "9.6"
+  version: "10.2"
   db:
-    image: "<YOUR_PRIVATE_REGISTRY>/postgres:9.6-v2"
+    image: "<YOUR_PRIVATE_REGISTRY>/postgres:10.2-v5"
   exporter:
-    image: "<YOUR_PRIVATE_REGISTRY>/postgres_exporter:v0.4.6"
+    image: "<YOUR_PRIVATE_REGISTRY>/postgres_exporter:v0.4.7"
   tools:
-    image: "<YOUR_PRIVATE_REGISTRY>/postgres-tools:9.6-v2"
+    image: "<YOUR_PRIVATE_REGISTRY>/postgres-tools:10.2-v3"

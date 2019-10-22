@@ -43,7 +43,7 @@ metadata:
   name: wal-postgres-minio
   namespace: demo
 spec:
-  version: "9.6.7-v4"
+  version: "10.2-v5"
   replicas: 2
   updateStrategy:
     type: RollingUpdate

@@ -31,7 +31,7 @@ metadata:
   name: p1
   namespace: demo
 spec:
-  version: "9.6-v2"
+  version: "10.2-v5"
   replicas: 2
   standbyMode: Hot
   streamingMode: asynchronous
@@ -126,11 +126,38 @@ spec:
 
 `spec.version` is a required field that specifies the name of the [PostgresVersion](/docs/concepts/catalog/postgres.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PostgresVersion` crds,
 
-- `9.6.7-v2`,`9.6.7-v1`, `9.6.7`, `9.6-v2`, `9.6`
-- `10.2-v2`,`10.2-v1`, `10.2`
-- `10.6`
-- `11.1`
-
+```bash
+$ kubectl get pgversion
+NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
+10.2       10.2      kubedb/postgres:10.2       true         44m
+10.2-v1    10.2      kubedb/postgres:10.2-v2    true         44m
+10.2-v2    10.2      kubedb/postgres:10.2-v3                 44m
+10.2-v3    10.2      kubedb/postgres:10.2-v4                 44m
+10.2-v4    10.2      kubedb/postgres:10.2-v5                 44m
+10.2-v5    10.2      kubedb/postgres:10.2-v6                 44m
+10.6       10.6      kubedb/postgres:10.6                    44m
+10.6-v1    10.6      kubedb/postgres:10.6-v1                 44m
+10.6-v2    10.6      kubedb/postgres:10.6-v2                 44m
+10.6-v3    10.6      kubedb/postgres:10.6-v3                 44m
+11.1       11.1      kubedb/postgres:11.1                    44m
+11.1-v1    11.1      kubedb/postgres:11.1-v1                 44m
+11.1-v2    11.1      kubedb/postgres:11.1-v2                 44m
+11.1-v3    11.1      kubedb/postgres:11.1-v3                 44m
+11.2       11.2      kubedb/postgres:11.2                    44m
+11.2-v1    11.2      kubedb/postgres:11.2-v1                 44m
+9.6        9.6       kubedb/postgres:9.6        true         44m
+9.6-v1     9.6       kubedb/postgres:9.6-v2     true         44m
+9.6-v2     9.6       kubedb/postgres:9.6-v3                  44m
+9.6-v3     9.6       kubedb/postgres:9.6-v4                  44m
+9.6-v4     9.6       kubedb/postgres:9.6-v5                  44m
+9.6-v5     9.6       kubedb/postgres:9.6-v6                  44m
+9.6.7      9.6.7     kubedb/postgres:9.6.7      true         44m
+9.6.7-v1   9.6.7     kubedb/postgres:9.6.7-v2   true         44m
+9.6.7-v2   9.6.7     kubedb/postgres:9.6.7-v3                44m
+9.6.7-v3   9.6.7     kubedb/postgres:9.6.7-v4                44m
+9.6.7-v4   9.6.7     kubedb/postgres:9.6.7-v5                44m
+9.6.7-v5   9.6.7     kubedb/postgres:9.6.7-v6                44m
+```
 ### spec.replicas
 
 `spec.replicas` specifies the total number of primary and standby nodes in Postgres database cluster configuration. One pod is selected as Primary and others act as standby replicas. KubeDB uses Pod Disruption Budget to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
@@ -239,7 +266,7 @@ kind: Postgres
 metadata:
   name: postgres-db
 spec:
-  version: "9.6-v2"
+  version: "10.2-v5"
   init:
     scriptSource:
       configMap:
@@ -261,7 +288,7 @@ kind: Postgres
 metadata:
   name: postgres-db
 spec:
-  version: "9.6-v2"
+  version: "10.2-v5"
   databaseSecret:
     secretName: postgres-old-auth
   init:
@@ -288,7 +315,7 @@ kind: Postgres
 metadata:
   name: postgres-db
 spec:
-  version: "9.6-v2"
+  version: "10.2-v5"
   databaseSecret:
     secretName: postgres-old
   init:

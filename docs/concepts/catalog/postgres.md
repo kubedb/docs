@@ -28,18 +28,18 @@ As with all other Kubernetes objects, a PostgresVersion needs `apiVersion`, `kin
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PostgresVersion
 metadata:
-  name: "10.2-v2"
+  name: "10.2-v5"
   labels:
     app: kubedb
 spec:
   version: "10.2"
   deprecated: false
   db:
-    image: "kubedb/postgres:10.2-v2"
+    image: "kubedb/postgres:10.2-v6"
   exporter:
-    image: "kubedb/postgres_exporter:v0.4.6"
+    image: "kubedb/postgres_exporter:v0.4.7"
   tools:
-    image: "kubedb/postgres-tools:10.2-v2"
+    image: "kubedb/postgres-tools:10.2-v3"
   podSecurityPolicies:
     databasePolicyName: "postgres-db"
     snapshotterPolicyName: "postgres-snapshot"

@@ -77,7 +77,7 @@ metadata:
   name: pg-original
   namespace: demo
 spec:
-  version: "10.2-v4"
+  version: "10.2-v5"
   replicas: 1
   terminationPolicy: Delete
   storage:
@@ -107,8 +107,8 @@ Now, wait for the database to go into `Running` state.
 
 ```console
 $ kubectl get pg -n demo pg-original
-NAME          VERSION   STATUS    AGE
-pg-original   10.2-v2    Running   1m
+NAME          VERSION    STATUS    AGE
+pg-original   10.2-v5    Running   1m
 ```
 
 **Insert Sample Data:**
@@ -197,7 +197,7 @@ metadata:
   name: pitr-1
   namespace: demo
 spec:
-  version: "10.2-v4"
+  version: "10.2-v5"
   replicas: 1
   terminationPolicy: Delete
   storage:
@@ -228,8 +228,8 @@ Now, wait for the Postgres crd `pitr-1` to go into `Running` state.
 
 ```console
 $ kubectl get pg -n demo pitr-1
-NAME     VERSION   STATUS    AGE
-pitr-1   10.2-v2    Running   2m
+NAME     VERSION    STATUS    AGE
+pitr-1   10.2-v5    Running   2m
 ```
 
 Once, the database is running, `exec` into the database pod and check if the recovered database contains only first sample data.
@@ -264,7 +264,7 @@ metadata:
   name: pitr-2
   namespace: demo
 spec:
-  version: "10.2-v4"
+  version: "10.2-v5"
   replicas: 1
   terminationPolicy: Delete
   storage:
@@ -295,8 +295,8 @@ Now, wait for the Postgres crd `pitr-2` to go into `Running` state.
 
 ```console
 $ kubectl get pg -n demo pitr-2
-NAME     VERSION   STATUS    AGE
-pitr-2   10.2-v2    Running   2m
+NAME     VERSION    STATUS    AGE
+pitr-2   10.2-v5    Running   2m
 ```
 
 Once, the database is running, `exec` into the database pod and check if the recovered database contains only the first two sample data.
