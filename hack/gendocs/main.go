@@ -7,6 +7,7 @@ import (
 
 	"github.com/appscode/go/runtime"
 	"github.com/spf13/cobra/doc"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"kubedb.dev/operator/pkg/cmds"
 )
 
@@ -23,5 +24,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	doc.GenMarkdownTree(rootCmd, dir)
+	utilruntime.Must(doc.GenMarkdownTree(rootCmd, dir))
 }

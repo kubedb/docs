@@ -6,11 +6,6 @@ import (
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 )
 
-const (
-	mutatingWebhook   = "mutators.kubedb.com"
-	validatingWebhook = "validators.kubedb.com"
-)
-
 // Blocks caller. Intended to be called as a Go routine.
 func (c *Controller) Run(stopCh <-chan struct{}) {
 	go c.StartAndRunControllers(stopCh)
