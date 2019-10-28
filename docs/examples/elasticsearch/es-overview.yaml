@@ -4,9 +4,8 @@ metadata:
   name: e1
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   replicas: 2
-  authPlugin: "SearchGuard"
   enableSSL: true
   certificateSecret:
     secretName: e1-certs

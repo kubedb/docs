@@ -49,7 +49,7 @@ To learn about various options of `create` command, please visit [here](/docs/re
 ```console
 $ kubedb get elasticsearch
 NAME                 VERSION   STATUS    AGE
-elasticsearch-demo   5.6-v1    Running   1m
+elasticsearch-demo   7.3.2     Running   1m
 ```
 
 To get YAML of an object, use `--output=yaml` flag.
@@ -69,7 +69,6 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha1/namespaces/default/elasticsearches/elasticsearch-demo
   uid: 90a54c9e-cb05-11e8-8d51-9eed48c5e947
 spec:
-  authPlugin: SearchGuard
   certificateSecret:
     secretName: elasticsearch-demo-cert
   databaseSecret:
@@ -94,7 +93,7 @@ spec:
   terminationPolicy: Pause
   updateStrategy:
     type: RollingUpdate
-  version: 5.6-v1
+  version: 7.3.2
 status:
   observedGeneration: 3$4212299729528774793
   phase: Running

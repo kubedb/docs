@@ -61,15 +61,15 @@ metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
       {"apiVersion":"monitoring.coreos.com/v1","kind":"Prometheus","metadata":{"annotations":{},"labels":{"prometheus":"prometheus"},"name":"prometheus","namespace":"monitoring"},"spec":{"replicas":1,"resources":{"requests":{"memory":"400Mi"}},"serviceAccountName":"prometheus","serviceMonitorSelector":{"matchLabels":{"k8s-app":"prometheus"}}}}
-  creationTimestamp: 2019-01-03T13:41:51Z
+  creationTimestamp: "2019-10-02T09:48:29Z"
   generation: 1
   labels:
     prometheus: prometheus
   name: prometheus
   namespace: monitoring
-  resourceVersion: "44402"
+  resourceVersion: "74613"
   selfLink: /apis/monitoring.coreos.com/v1/namespaces/monitoring/prometheuses/prometheus
-  uid: 5324ad98-0f5d-11e9-b230-080027f306f3
+  uid: ca0db414-e4f9-11e9-b2b2-42010a940225
 spec:
   replicas: 1
   resources:
@@ -94,7 +94,7 @@ metadata:
   name: coreos-prom-es
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -133,17 +133,17 @@ Now, wait for the database to go into `Running` state.
 ```console
 $ kubectl get es -n demo coreos-prom-es
 NAME             VERSION   STATUS    AGE
-coreos-prom-es   6.3-v1    Running   5m
+coreos-prom-es   7.3.2     Running   85s
 ```
 
 KubeDB will create a separate stats service with name `{Elasticsearch crd name}-stats` for monitoring purpose.
 
 ```console
 $ kubectl get svc -n demo --selector="kubedb.com/name=coreos-prom-es"
-NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-coreos-prom-es          ClusterIP   10.98.20.18     <none>        9200/TCP    10m
-coreos-prom-es-master   ClusterIP   10.106.65.154   <none>        9300/TCP    10m
-coreos-prom-es-stats    ClusterIP   10.103.197.7    <none>        56790/TCP   9m35s
+NAME                    TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)     AGE
+coreos-prom-es          ClusterIP   10.0.1.56    <none>        9200/TCP    77s
+coreos-prom-es-master   ClusterIP   10.0.7.18    <none>        9300/TCP    77s
+coreos-prom-es-stats    ClusterIP   10.0.5.58    <none>        56790/TCP   19s
 ```
 
 Here, `coreos-prom-es-stats` service has been created for monitoring purpose.
@@ -156,13 +156,14 @@ Name:              coreos-prom-es-stats
 Namespace:         demo
 Labels:            kubedb.com/kind=Elasticsearch
                    kubedb.com/name=coreos-prom-es
+                   kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/coreos-operator
 Selector:          kubedb.com/kind=Elasticsearch,kubedb.com/name=coreos-prom-es
 Type:              ClusterIP
-IP:                10.103.197.7
+IP:                10.0.5.58
 Port:              prom-http  56790/TCP
 TargetPort:        prom-http/TCP
-Endpoints:         172.17.0.7:56790
+Endpoints:         10.4.0.50:56790
 Session Affinity:  None
 Events:            <none>
 ```
@@ -184,16 +185,22 @@ $ kubectl get servicemonitor -n monitoring kubedb-demo-coreos-prom-es -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  creationTimestamp: 2019-01-03T14:19:50Z
+  creationTimestamp: "2019-10-02T09:51:04Z"
   generation: 1
   labels:
     k8s-app: prometheus
     monitoring.appscode.com/service: coreos-prom-es-stats.demo
   name: kubedb-demo-coreos-prom-es
   namespace: monitoring
-  resourceVersion: "47254"
+  ownerReferences:
+  - apiVersion: v1
+    blockOwnerDeletion: true
+    kind: Service
+    name: coreos-prom-es-stats
+    uid: 25f91fcc-e4fa-11e9-b2b2-42010a940225
+  resourceVersion: "75305"
   selfLink: /apis/monitoring.coreos.com/v1/namespaces/monitoring/servicemonitors/kubedb-demo-coreos-prom-es
-  uid: a1be4c48-0f62-11e9-b230-080027f306f3
+  uid: 2601a2ba-e4fa-11e9-b2b2-42010a940225
 spec:
   endpoints:
   - honorLabels: true
@@ -207,6 +214,7 @@ spec:
     matchLabels:
       kubedb.com/kind: Elasticsearch
       kubedb.com/name: coreos-prom-es
+      kubedb.com/role: stats
 ```
 
 Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in Elasticsearch crd.
