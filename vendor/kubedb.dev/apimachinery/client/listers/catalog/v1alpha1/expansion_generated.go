@@ -42,9 +42,17 @@ type MySQLVersionListerExpansion interface{}
 // PerconaXtraDBVersionLister.
 type PerconaXtraDBVersionListerExpansion interface{}
 
+// PgBouncerVersionListerExpansion allows custom methods to be added to
+// PgBouncerVersionLister.
+type PgBouncerVersionListerExpansion interface{}
+
 // PostgresVersionListerExpansion allows custom methods to be added to
 // PostgresVersionLister.
 type PostgresVersionListerExpansion interface{}
+
+// ProxySQLVersionListerExpansion allows custom methods to be added to
+// ProxySQLVersionLister.
+type ProxySQLVersionListerExpansion interface{}
 
 // RedisVersionListerExpansion allows custom methods to be added to
 // RedisVersionLister.

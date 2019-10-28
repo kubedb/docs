@@ -22,7 +22,7 @@ func (bb BackupBlueprint) CustomResourceDefinition() *apiextensions.CustomResour
 		Singular:      ResourceSingularBackupBlueprint,
 		Kind:          ResourceKindBackupBlueprint,
 		ShortNames:    []string{"bb"},
-		Categories:    []string{"stash", "appscode", "backup"},
+		Categories:    []string{"stash", "appscode"},
 		ResourceScope: string(apiextensions.ClusterScoped),
 		Versions: []apiextensions.CustomResourceDefinitionVersion{
 			{
@@ -36,7 +36,7 @@ func (bb BackupBlueprint) CustomResourceDefinition() *apiextensions.CustomResour
 		},
 		SpecDefinitionName:    "stash.appscode.dev/stash/apis/stash/v1beta1.BackupBlueprint",
 		EnableValidation:      true,
-		GetOpenAPIDefinitions: GetOpenAPIDefinitions,
+		GetOpenAPIDefinitions: GetOpenAPIDefinitionsWithRetentionPolicy,
 		AdditionalPrinterColumns: []apiextensions.CustomResourceColumnDefinition{
 			{
 				Name:     "Task",

@@ -1,9 +1,12 @@
 package v1alpha1
 
 import (
+	"fmt"
+
+	"kubedb.dev/apimachinery/apis"
+
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	crdutils "kmodules.xyz/client-go/apiextensions/v1beta1"
-	"kubedb.dev/apimachinery/apis"
 )
 
 var _ apis.ResourceInfo = &PerconaXtraDBVersion{}
@@ -59,11 +62,6 @@ func (p PerconaXtraDBVersion) CustomResourceDefinition() *apiextensions.CustomRe
 				JSONPath: ".spec.db.image",
 			},
 			{
-				Name:     "PROXYSQL_IMAGE",
-				Type:     "string",
-				JSONPath: ".spec.proxysql.image",
-			},
-			{
 				Name:     "Deprecated",
 				Type:     "boolean",
 				JSONPath: ".spec.deprecated",
@@ -75,4 +73,18 @@ func (p PerconaXtraDBVersion) CustomResourceDefinition() *apiextensions.CustomRe
 			},
 		},
 	})
+}
+
+func (p PerconaXtraDBVersion) ValidateSpecs() error {
+	if p.Spec.Version == "" ||
+		p.Spec.DB.Image == "" ||
+		p.Spec.Exporter.Image == "" ||
+		p.Spec.InitContainer.Image == "" {
+		return fmt.Errorf(`atleast one of the following specs is not set for perconaxtradbversion "%v":
+spec.version,
+spec.db.image,
+spec.exporter.image,
+spec.initContainer.image.`, p.Name)
+	}
+	return nil
 }

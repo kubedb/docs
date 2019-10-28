@@ -6,7 +6,6 @@ import (
 
 	"github.com/appscode/go/crypto/rand"
 	esv6 "gopkg.in/olivere/elastic.v6"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -58,55 +57,6 @@ func (c *ESClientV6) GetAllNodesInfo() ([]NodeInfo, error) {
 		nodesInfo = append(nodesInfo, info)
 	}
 	return nodesInfo, err
-}
-
-func (c *ESClientV6) GetElasticsearchSummary(indexName string) (*api.ElasticsearchSummary, error) {
-	esSummary := &api.ElasticsearchSummary{
-		IdCount: make(map[string]int64),
-	}
-
-	// Get analyzer
-	analyzerData, err := c.client.IndexGetSettings(indexName).Do(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	dataByte, err := json.Marshal(analyzerData[indexName].Settings["index"])
-	if err != nil {
-		return nil, err
-	}
-
-	if err := json.Unmarshal(dataByte, &esSummary.Setting); err != nil {
-		return nil, err
-	}
-
-	// get mappings
-	mappingData, err := c.client.GetMapping().Index(indexName).Do(context.Background())
-	if err != nil {
-		return nil, err
-	}
-	esSummary.Mapping = mappingData
-
-	// Count Ids
-	mappingDataBype, err := json.Marshal(mappingData[indexName])
-	if err != nil {
-		return nil, err
-	}
-	type esTypes struct {
-		Mappings map[string]interface{} `json:"mappings"`
-	}
-	var esType esTypes
-	if err := json.Unmarshal(mappingDataBype, &esType); err != nil {
-		return nil, err
-	}
-	for key := range esType.Mappings {
-		counts, err := c.client.Count(indexName).Type(key).Do(context.Background())
-		if err != nil {
-			return nil, err
-		}
-		esSummary.IdCount[key] = counts
-	}
-	return esSummary, nil
 }
 
 func (c *ESClientV6) Stop() {

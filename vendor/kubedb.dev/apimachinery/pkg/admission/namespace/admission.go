@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sync"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+
 	admission "k8s.io/api/admission/v1beta1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,7 +16,6 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 )
 
 type NamespaceValidator struct {
@@ -103,9 +104,9 @@ func (a *NamespaceValidator) Admit(req *admission.AdmissionRequest) *admission.A
 						if err != nil {
 							return err
 						}
-						if !found ||
-							terminationPolicy == string(api.TerminationPolicyPause) ||
-							terminationPolicy == string(api.TerminationPolicyDoNotTerminate) {
+						if found &&
+							(terminationPolicy == string(api.TerminationPolicyPause) ||
+								terminationPolicy == string(api.TerminationPolicyDoNotTerminate)) {
 							return fmt.Errorf("%s %s/%s has termination policy `%s`", u.GetKind(), u.GetNamespace(), u.GetName(), terminationPolicy)
 						}
 						return nil

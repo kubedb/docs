@@ -5,7 +5,6 @@ import (
 	kwatch "k8s.io/apimachinery/pkg/watch"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
-	"kubedb.dev/apimachinery/apis"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 )
@@ -14,7 +13,7 @@ func (c *Controller) initWatcher() {
 	c.etcdInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Etcds().Informer()
 	c.etcdQueue = queue.New("Etcd", c.MaxNumRequeues, c.NumThreads, c.runEtcd)
 	c.etcdLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Etcds().Lister()
-	c.etcdInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.etcdQueue.GetQueue(), apis.EnableStatusSubresource))
+	c.etcdInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.etcdQueue.GetQueue(), true))
 }
 
 func (c *Controller) runEtcd(key string) error {

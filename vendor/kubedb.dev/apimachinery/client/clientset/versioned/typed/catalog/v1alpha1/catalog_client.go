@@ -19,10 +19,11 @@ limitations under the License.
 package v1alpha1
 
 import (
-	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
-	rest "k8s.io/client-go/rest"
 	v1alpha1 "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/scheme"
+
+	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
+	rest "k8s.io/client-go/rest"
 )
 
 type CatalogV1alpha1Interface interface {
@@ -33,7 +34,9 @@ type CatalogV1alpha1Interface interface {
 	MongoDBVersionsGetter
 	MySQLVersionsGetter
 	PerconaXtraDBVersionsGetter
+	PgBouncerVersionsGetter
 	PostgresVersionsGetter
+	ProxySQLVersionsGetter
 	RedisVersionsGetter
 }
 
@@ -66,8 +69,16 @@ func (c *CatalogV1alpha1Client) PerconaXtraDBVersions() PerconaXtraDBVersionInte
 	return newPerconaXtraDBVersions(c)
 }
 
+func (c *CatalogV1alpha1Client) PgBouncerVersions() PgBouncerVersionInterface {
+	return newPgBouncerVersions(c)
+}
+
 func (c *CatalogV1alpha1Client) PostgresVersions() PostgresVersionInterface {
 	return newPostgresVersions(c)
+}
+
+func (c *CatalogV1alpha1Client) ProxySQLVersions() ProxySQLVersionInterface {
+	return newProxySQLVersions(c)
 }
 
 func (c *CatalogV1alpha1Client) RedisVersions() RedisVersionInterface {

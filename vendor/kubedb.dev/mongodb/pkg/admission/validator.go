@@ -5,6 +5,10 @@ import (
 	"strings"
 	"sync"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	cs "kubedb.dev/apimachinery/client/clientset/versioned"
+	amv "kubedb.dev/apimachinery/pkg/validator"
+
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
@@ -17,9 +21,6 @@ import (
 	"k8s.io/client-go/rest"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	amv "kubedb.dev/apimachinery/pkg/validator"
 )
 
 type MongoDBValidator struct {
@@ -252,6 +253,11 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 		if mongodbVersion.Spec.Deprecated {
 			return fmt.Errorf("mongoDB %s/%s is using deprecated version %v. Skipped processing",
 				mongodb.Namespace, mongodb.Name, mongodbVersion.Name)
+		}
+
+		if err := mongodbVersion.ValidateSpecs(); err != nil {
+			return fmt.Errorf("mongodb %s/%s is using invalid mongodbVersion %v. Skipped processing. reason: %v", mongodb.Namespace,
+				mongodb.Name, mongodbVersion.Name, err)
 		}
 	}
 

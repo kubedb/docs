@@ -3,10 +3,11 @@ package controller
 import (
 	"path/filepath"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+
 	core "k8s.io/api/core/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 )
 
 // Initially mount configmap `mongodb.conf` on initialConfigDirectoryPath "/configdb-readonly".

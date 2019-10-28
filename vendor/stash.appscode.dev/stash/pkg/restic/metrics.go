@@ -6,53 +6,102 @@ import (
 	"strings"
 	"time"
 
+	"stash.appscode.dev/stash/apis"
+	api_v1beta1 "stash.appscode.dev/stash/apis/stash/v1beta1"
+	cs "stash.appscode.dev/stash/client/clientset/versioned"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
-	api_v1beta1 "stash.appscode.dev/stash/apis/stash/v1beta1"
+	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/rest"
+	appcatalog "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	appcatalog_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 )
 
-// BackupMetrics defines prometheus metrics for backup setup and individual host backup
+const (
+	MetricsLabelDriver     = "driver"
+	MetricsLabelKind       = "kind"
+	MetricsLabelAppGroup   = "group"
+	MetricsLabelName       = "name"
+	MetricsLabelNamespace  = "namespace"
+	MetricsLabelRepository = "repository"
+	MetricsLabelBackend    = "backend"
+	MetricsLabelBucket     = "bucket"
+	MetricsLabelPrefix     = "prefix"
+)
+
+// BackupMetrics defines prometheus metrics for backup process
 type BackupMetrics struct {
-	// BackupSetupMetrics indicates whether backup was successfully setup for the target
-	BackupSetupMetrics prometheus.Gauge
-	// HostBackupMetrics shows metrics related to last backup session of a host
-	HostBackupMetrics *HostBackupMetrics
+	// BackupSessionMetrics shows metrics related to entire backup session
+	BackupSessionMetrics *BackupSessionMetrics
+	// BackupHostMetrics shows backup metrics for individual hosts
+	BackupHostMetrics *BackupHostMetrics
 }
 
-// RestoreMetrics defines metrics for restore process for individual hosts
-type RestoreMetrics struct {
-	// RestoreSuccess show whether the current restore session succeeded or not
-	RestoreSuccess prometheus.Gauge
-	// SessionDuration show total time taken to complete the restore session
+// BackupSessionMetrics defines metrics for entire backup session
+type BackupSessionMetrics struct {
+	// SessionSuccess indicates whether the entire backup session was succeeded or not
+	SessionSuccess prometheus.Gauge
+	// SessionDuration indicates total time taken to complete the entire backup session
 	SessionDuration prometheus.Gauge
+	// HostCount indicates the total number of hosts that was backed up in this backup session
+	HostCount prometheus.Gauge
 }
 
-// HostBackupMetrics defines Prometheus metrics for backup individual hosts
-type HostBackupMetrics struct {
-	// BackupSuccess show whether the current backup for a host succeeded or not
+// BackupHostMetrics defines Prometheus metrics for individual hosts backup
+type BackupHostMetrics struct {
+	// BackupSuccess indicates whether the backup for a host succeeded or not
 	BackupSuccess prometheus.Gauge
-	// SessionDuration show total time taken to complete the backup session
-	SessionDuration prometheus.Gauge
-	// DataSize shows total size of the target data to backup (in bytes)
+	// BackupDuration indicates total time taken to complete the backup process for a host
+	BackupDuration prometheus.Gauge
+	// DataSize indicates total size of the target data to backup for a host (in bytes)
 	DataSize prometheus.Gauge
-	// DataUploaded shows the amount of data uploaded to the repository in this session (in bytes)
+	// DataUploaded indicates the amount of data uploaded to the repository for a host (in bytes)
 	DataUploaded prometheus.Gauge
-	// DataProcessingTime shows total time taken to backup the target data
+	// DataProcessingTime indicates total time taken to backup the target data for a host
 	DataProcessingTime prometheus.Gauge
 	// FileMetrics shows information of backup files
 	FileMetrics *FileMetrics
 }
 
-// FileMetrics defines Prometheus metrics for target files of a backup process
+// FileMetrics defines Prometheus metrics for target files of a backup process for a host
 type FileMetrics struct {
-	// TotalFiles shows total number of files that has been backed up
+	// TotalFiles shows total number of files that has been backed up for a host
 	TotalFiles prometheus.Gauge
-	// NewFiles shows total number of new files that has been created since last backup
+	// NewFiles shows total number of new files that has been created since last backup for a host
 	NewFiles prometheus.Gauge
-	// ModifiedFiles shows total number of files that has been modified since last backup
+	// ModifiedFiles shows total number of files that has been modified since last backup for a host
 	ModifiedFiles prometheus.Gauge
-	// UnmodifiedFiles shows total number of files that has not been changed since last backup
+	// UnmodifiedFiles shows total number of files that has not been changed since last backup for a host
 	UnmodifiedFiles prometheus.Gauge
+}
+
+// RestoreMetrics defines metrics for restore process
+type RestoreMetrics struct {
+	// RestoreSessionMetrics shows metrics related to entire restore session
+	RestoreSessionMetrics *RestoreSessionMetrics
+	// RestoreHostMetrics shows restore metrics for individual hosts
+	RestoreHostMetrics *RestoreHostMetrics
+}
+
+// RestoreSessionMetrics defines metrics related to entire restore session
+type RestoreSessionMetrics struct {
+	// SessionSuccess indicates whether the restore session succeeded or not
+	SessionSuccess prometheus.Gauge
+	// SessionDuration indicates the total time taken to complete the entire restore session
+	SessionDuration prometheus.Gauge
+	// HostCount indicates the number of hosts that was restored in this restore session
+	HostCount prometheus.Gauge
+}
+
+// RestoreHostMetrics defines restore metrics for individual hosts
+type RestoreHostMetrics struct {
+	// RestoreSuccess indicates whether restore was succeeded or not for a host
+	RestoreSuccess prometheus.Gauge
+	// RestoreDuration indicates the time taken to complete the restore process for a host
+	RestoreDuration prometheus.Gauge
 }
 
 // RepositoryMetrics defines Prometheus metrics for Repository state after each backup
@@ -67,16 +116,15 @@ type RepositoryMetrics struct {
 	SnapshotsRemovedOnLastCleanup prometheus.Gauge
 }
 
-func newBackupMetrics(labels prometheus.Labels) *BackupMetrics {
-
+func newBackupSessionMetrics(labels prometheus.Labels) *BackupMetrics {
 	return &BackupMetrics{
-		HostBackupMetrics: &HostBackupMetrics{
-			BackupSuccess: prometheus.NewGauge(
+		BackupSessionMetrics: &BackupSessionMetrics{
+			SessionSuccess: prometheus.NewGauge(
 				prometheus.GaugeOpts{
 					Namespace:   "stash",
 					Subsystem:   "backup",
 					Name:        "session_success",
-					Help:        "Indicates whether the current backup session succeeded or not",
+					Help:        "Indicates whether the entire backup session was succeeded or not",
 					ConstLabels: labels,
 				},
 			),
@@ -84,8 +132,42 @@ func newBackupMetrics(labels prometheus.Labels) *BackupMetrics {
 				prometheus.GaugeOpts{
 					Namespace:   "stash",
 					Subsystem:   "backup",
-					Name:        "session_duration_total_seconds",
-					Help:        "Total time taken to complete the backup session",
+					Name:        "session_duration_seconds",
+					Help:        "Indicates total time taken to complete the entire backup session",
+					ConstLabels: labels,
+				},
+			),
+			HostCount: prometheus.NewGauge(
+				prometheus.GaugeOpts{
+					Namespace:   "stash",
+					Subsystem:   "backup",
+					Name:        "host_count_total",
+					Help:        "Indicates the total number of hosts that was backed up in this backup session",
+					ConstLabels: labels,
+				},
+			),
+		},
+	}
+}
+
+func newBackupHostMetrics(labels prometheus.Labels) *BackupMetrics {
+	return &BackupMetrics{
+		BackupHostMetrics: &BackupHostMetrics{
+			BackupSuccess: prometheus.NewGauge(
+				prometheus.GaugeOpts{
+					Namespace:   "stash",
+					Subsystem:   "backup",
+					Name:        "host_backup_success",
+					Help:        "Indicates whether the backup for a host succeeded or not",
+					ConstLabels: labels,
+				},
+			),
+			BackupDuration: prometheus.NewGauge(
+				prometheus.GaugeOpts{
+					Namespace:   "stash",
+					Subsystem:   "backup",
+					Name:        "host_backup_duration_seconds",
+					Help:        "Indicates total time taken to complete the backup process for a host",
 					ConstLabels: labels,
 				},
 			),
@@ -93,8 +175,8 @@ func newBackupMetrics(labels prometheus.Labels) *BackupMetrics {
 				prometheus.GaugeOpts{
 					Namespace:   "stash",
 					Subsystem:   "backup",
-					Name:        "data_size_bytes",
-					Help:        "Total size of the target data to backup (in bytes)",
+					Name:        "host_data_size_bytes",
+					Help:        "Total size of the target data to backup for a host (in bytes)",
 					ConstLabels: labels,
 				},
 			),
@@ -102,8 +184,8 @@ func newBackupMetrics(labels prometheus.Labels) *BackupMetrics {
 				prometheus.GaugeOpts{
 					Namespace:   "stash",
 					Subsystem:   "backup",
-					Name:        "data_uploaded_bytes",
-					Help:        "Amount of data uploaded to the repository in this session (in bytes)",
+					Name:        "host_data_uploaded_bytes",
+					Help:        "Amount of data uploaded to the repository for a host (in bytes)",
 					ConstLabels: labels,
 				},
 			),
@@ -111,8 +193,8 @@ func newBackupMetrics(labels prometheus.Labels) *BackupMetrics {
 				prometheus.GaugeOpts{
 					Namespace:   "stash",
 					Subsystem:   "backup",
-					Name:        "data_processing_time_seconds",
-					Help:        "Total time taken to backup the target data",
+					Name:        "host_data_processing_time_seconds",
+					Help:        "Total time taken to process the target data for a host",
 					ConstLabels: labels,
 				},
 			),
@@ -121,8 +203,8 @@ func newBackupMetrics(labels prometheus.Labels) *BackupMetrics {
 					prometheus.GaugeOpts{
 						Namespace:   "stash",
 						Subsystem:   "backup",
-						Name:        "files_total",
-						Help:        "Total number of files that has been backed up",
+						Name:        "host_files_total",
+						Help:        "Total number of files that has been backed up for a host",
 						ConstLabels: labels,
 					},
 				),
@@ -130,8 +212,8 @@ func newBackupMetrics(labels prometheus.Labels) *BackupMetrics {
 					prometheus.GaugeOpts{
 						Namespace:   "stash",
 						Subsystem:   "backup",
-						Name:        "files_new",
-						Help:        "Total number of new files that has been created since last backup",
+						Name:        "host_files_new",
+						Help:        "Total number of new files that has been created since last backup for a host",
 						ConstLabels: labels,
 					},
 				),
@@ -139,8 +221,8 @@ func newBackupMetrics(labels prometheus.Labels) *BackupMetrics {
 					prometheus.GaugeOpts{
 						Namespace:   "stash",
 						Subsystem:   "backup",
-						Name:        "files_modified",
-						Help:        "Total number of files that has been modified since last backup",
+						Name:        "host_files_modified",
+						Help:        "Total number of files that has been modified since last backup for a host",
 						ConstLabels: labels,
 					},
 				),
@@ -148,28 +230,13 @@ func newBackupMetrics(labels prometheus.Labels) *BackupMetrics {
 					prometheus.GaugeOpts{
 						Namespace:   "stash",
 						Subsystem:   "backup",
-						Name:        "files_unmodified",
-						Help:        "Total number of files that has not been changed since last backup",
+						Name:        "host_files_unmodified",
+						Help:        "Total number of files that has not been changed since last backup for a host",
 						ConstLabels: labels,
 					},
 				),
 			},
 		},
-	}
-}
-
-func newBackupSetupMetrics(labels prometheus.Labels) *BackupMetrics {
-
-	return &BackupMetrics{
-		BackupSetupMetrics: prometheus.NewGauge(
-			prometheus.GaugeOpts{
-				Namespace:   "stash",
-				Subsystem:   "backup",
-				Name:        "setup_success",
-				Help:        "Indicates whether backup was successfully setup for the target",
-				ConstLabels: labels,
-			},
-		),
 	}
 }
 
@@ -215,152 +282,271 @@ func newRepositoryMetrics(labels prometheus.Labels) *RepositoryMetrics {
 	}
 }
 
-func newRestoreMetrics(labels prometheus.Labels) *RestoreMetrics {
-
+func newRestoreSessionMetrics(labels prometheus.Labels) *RestoreMetrics {
 	return &RestoreMetrics{
-		RestoreSuccess: prometheus.NewGauge(
-			prometheus.GaugeOpts{
-				Namespace:   "stash",
-				Subsystem:   "restore",
-				Name:        "session_success",
-				Help:        "Indicates whether the current restore session succeeded or not",
-				ConstLabels: labels,
-			},
-		),
-		SessionDuration: prometheus.NewGauge(
-			prometheus.GaugeOpts{
-				Namespace:   "stash",
-				Subsystem:   "restore",
-				Name:        "session_duration_total_seconds",
-				Help:        "Total time taken to complete the restore session",
-				ConstLabels: labels,
-			},
-		),
+		RestoreSessionMetrics: &RestoreSessionMetrics{
+			SessionSuccess: prometheus.NewGauge(
+				prometheus.GaugeOpts{
+					Namespace:   "stash",
+					Subsystem:   "restore",
+					Name:        "session_success",
+					Help:        "Indicates whether the entire restore session was succeeded or not",
+					ConstLabels: labels,
+				},
+			),
+			SessionDuration: prometheus.NewGauge(
+				prometheus.GaugeOpts{
+					Namespace:   "stash",
+					Subsystem:   "restore",
+					Name:        "session_duration_seconds",
+					Help:        "Indicates the total time taken to complete the entire restore session",
+					ConstLabels: labels,
+				},
+			),
+			HostCount: prometheus.NewGauge(
+				prometheus.GaugeOpts{
+					Namespace:   "stash",
+					Subsystem:   "restore",
+					Name:        "host_count_total",
+					Help:        "Indicates the total number of hosts that was restored in this restore session",
+					ConstLabels: labels,
+				},
+			),
+		},
 	}
 }
 
-// HandleBackupSetupMetrics generate and send Prometheus metrics for backup setup
-func HandleBackupSetupMetrics(metricOpt MetricsOptions, setupErr error) error {
-	labels := metricLabels(metricOpt.Labels)
-	metrics := newBackupSetupMetrics(labels)
-
-	if setupErr == nil {
-		metrics.BackupSetupMetrics.Set(1)
-	} else {
-		metrics.BackupSetupMetrics.Set(0)
+func newRestoreHostMetrics(labels prometheus.Labels) *RestoreMetrics {
+	return &RestoreMetrics{
+		RestoreHostMetrics: &RestoreHostMetrics{
+			RestoreSuccess: prometheus.NewGauge(
+				prometheus.GaugeOpts{
+					Namespace:   "stash",
+					Subsystem:   "restore",
+					Name:        "host_restore_success",
+					Help:        "Indicates whether the restore process was succeeded for a host",
+					ConstLabels: labels,
+				},
+			),
+			RestoreDuration: prometheus.NewGauge(
+				prometheus.GaugeOpts{
+					Namespace:   "stash",
+					Subsystem:   "restore",
+					Name:        "host_restore_duration_seconds",
+					Help:        "Indicates the total time taken to complete the restore process for a host",
+					ConstLabels: labels,
+				},
+			),
+		},
 	}
+}
 
+// SendBackupSessionMetrics send backup session metrics to the Pushgateway
+func (metricOpt *MetricsOptions) SendBackupSessionMetrics(config *rest.Config, backupConfig *api_v1beta1.BackupConfiguration, status api_v1beta1.BackupSessionStatus) error {
 	// create metric registry
 	registry := prometheus.NewRegistry()
-	registry.MustRegister(
-		metrics.BackupSetupMetrics,
-	)
-	// send metrics
+
+	// generate metrics labels
+	labels, err := backupMetricLabels(config, backupConfig, metricOpt.Labels)
+	if err != nil {
+		return err
+	}
+	// create metrics
+	metrics := newBackupSessionMetrics(labels)
+
+	if status.Phase == api_v1beta1.BackupSessionSucceeded {
+		// mark entire backup session as succeeded
+		metrics.BackupSessionMetrics.SessionSuccess.Set(1)
+
+		// set total time taken to complete the backup session
+		duration, err := time.ParseDuration(status.SessionDuration)
+		if err != nil {
+			return err
+		}
+		metrics.BackupSessionMetrics.SessionDuration.Set(duration.Seconds())
+
+		// set total number of host that was backed up in this backup session
+		if status.TotalHosts != nil {
+			metrics.BackupSessionMetrics.HostCount.Set(float64(*status.TotalHosts))
+		}
+
+		// register metrics to the registry
+		registry.MustRegister(
+			metrics.BackupSessionMetrics.SessionSuccess,
+			metrics.BackupSessionMetrics.SessionDuration,
+			metrics.BackupSessionMetrics.HostCount,
+		)
+	} else {
+		// mark entire backup session as failed
+		metrics.BackupSessionMetrics.SessionSuccess.Set(0)
+		registry.MustRegister(metrics.BackupSessionMetrics.SessionSuccess)
+	}
+	// send metrics to the pushgateway
 	return metricOpt.sendMetrics(registry, metricOpt.JobName)
 }
 
-// HandleMetrics generate and send Prometheus metrics for backup process
-func (backupOutput *BackupOutput) HandleMetrics(metricOpt *MetricsOptions, backupErr error) error {
+// SendBackupSessionMetrics send backup metrics for individual hosts to the Pushgateway
+func (metricOpt *MetricsOptions) SendBackupHostMetrics(config *rest.Config, backupConfig *api_v1beta1.BackupConfiguration, backupOutput *BackupOutput) error {
+	if backupOutput == nil {
+		return fmt.Errorf("invalid backup output. Backup output shouldn't be nil")
+	}
 
 	// create metric registry
 	registry := prometheus.NewRegistry()
 
-	if backupOutput == nil {
-		if backupErr != nil {
-			labels := metricLabels(metricOpt.Labels)
-			metrics := newBackupMetrics(labels)
-			metrics.HostBackupMetrics.BackupSuccess.Set(0)
-			registry.MustRegister(metrics.HostBackupMetrics.BackupSuccess)
-			return metricOpt.sendMetrics(registry, metricOpt.JobName)
-		}
-		return fmt.Errorf("invalid backup output")
+	labels, err := backupMetricLabels(config, backupConfig, metricOpt.Labels)
+	if err != nil {
+		return err
 	}
 
 	// create metrics for individual hosts
 	for _, hostStats := range backupOutput.HostBackupStats {
 		// add host name as label
-		metricOpt.Labels = append(metricOpt.Labels, fmt.Sprintf("Host=%s", hostStats.Hostname))
-		labels := metricLabels(metricOpt.Labels)
-		metrics := newBackupMetrics(labels)
+		hostLabel := map[string]string{
+			"hostname": hostStats.Hostname,
+		}
+		metrics := newBackupHostMetrics(upsertLabel(labels, hostLabel))
 
-		if backupErr == nil && hostStats.Error == "" {
+		if hostStats.Error == "" {
 			// set metrics values from backupOutput
 			err := metrics.setValues(hostStats)
 			if err != nil {
 				return err
 			}
-			metrics.HostBackupMetrics.BackupSuccess.Set(1)
+			metrics.BackupHostMetrics.BackupSuccess.Set(1)
+
+			registry.MustRegister(
+				// register backup session metrics
+				metrics.BackupHostMetrics.BackupSuccess,
+				metrics.BackupHostMetrics.BackupDuration,
+				metrics.BackupHostMetrics.FileMetrics.TotalFiles,
+				metrics.BackupHostMetrics.FileMetrics.NewFiles,
+				metrics.BackupHostMetrics.FileMetrics.ModifiedFiles,
+				metrics.BackupHostMetrics.FileMetrics.UnmodifiedFiles,
+				metrics.BackupHostMetrics.DataSize,
+				metrics.BackupHostMetrics.DataUploaded,
+				metrics.BackupHostMetrics.DataProcessingTime,
+			)
 		} else {
-			metrics.HostBackupMetrics.BackupSuccess.Set(0)
+			metrics.BackupHostMetrics.BackupSuccess.Set(0)
+
+			registry.MustRegister(
+				// register backup session metrics
+				metrics.BackupHostMetrics.BackupSuccess,
+			)
 		}
+	}
+
+	// create repository metrics
+	if backupOutput.RepositoryStats.Integrity != nil {
+		repoMetricLabels, err := repoMetricLabels(config, backupConfig, metricOpt.Labels)
+		if err != nil {
+			return err
+		}
+
+		repoMetrics := newRepositoryMetrics(repoMetricLabels)
+		err = repoMetrics.setValues(backupOutput.RepositoryStats)
+		if err != nil {
+			return err
+		}
+
+		// register repository metrics
 		registry.MustRegister(
-			// register backup session metrics
-			metrics.HostBackupMetrics.BackupSuccess,
-			metrics.HostBackupMetrics.SessionDuration,
-			metrics.HostBackupMetrics.FileMetrics.TotalFiles,
-			metrics.HostBackupMetrics.FileMetrics.NewFiles,
-			metrics.HostBackupMetrics.FileMetrics.ModifiedFiles,
-			metrics.HostBackupMetrics.FileMetrics.UnmodifiedFiles,
-			metrics.HostBackupMetrics.DataSize,
-			metrics.HostBackupMetrics.DataUploaded,
-			metrics.HostBackupMetrics.DataProcessingTime,
+			repoMetrics.RepoIntegrity,
+			repoMetrics.RepoSize,
+			repoMetrics.SnapshotCount,
+			repoMetrics.SnapshotsRemovedOnLastCleanup,
 		)
 	}
-
-	// crete repository metrics
-	repoMetrics := newRepositoryMetrics(metricLabels(metricOpt.Labels))
-	err := repoMetrics.setValues(backupOutput.RepositoryStats)
-	if err != nil {
-		return err
-	}
-
-	// register repository metrics
-	registry.MustRegister(
-		repoMetrics.RepoIntegrity,
-		repoMetrics.RepoSize,
-		repoMetrics.SnapshotCount,
-		repoMetrics.SnapshotsRemovedOnLastCleanup,
-	)
 
 	return metricOpt.sendMetrics(registry, metricOpt.JobName)
 }
 
-func (restoreOutput *RestoreOutput) HandleMetrics(metricOpt *MetricsOptions, restoreErr error) error {
+// SendRestoreSessionMetrics send restore session metrics to the Pushgateway
+func (metricOpt *MetricsOptions) SendRestoreSessionMetrics(config *rest.Config, restoreSession *api_v1beta1.RestoreSession) error {
 	// create metric registry
 	registry := prometheus.NewRegistry()
 
-	if restoreOutput == nil {
-		if restoreErr != nil {
-			labels := metricLabels(metricOpt.Labels)
-			metrics := newRestoreMetrics(labels)
-			metrics.RestoreSuccess.Set(0)
-			registry.MustRegister(metrics.RestoreSuccess)
-			return metricOpt.sendMetrics(registry, metricOpt.JobName)
+	// generate metrics labels
+	labels, err := restoreMetricLabels(config, restoreSession, metricOpt.Labels)
+	if err != nil {
+		return err
+	}
+	// create metrics
+	metrics := newRestoreSessionMetrics(labels)
+	status := restoreSession.Status
+
+	if status.Phase == api_v1beta1.RestoreSessionSucceeded {
+		// mark entire restore session as succeeded
+		metrics.RestoreSessionMetrics.SessionSuccess.Set(1)
+
+		// set total time taken to complete the restore session
+		duration, err := time.ParseDuration(status.SessionDuration)
+		if err != nil {
+			return err
 		}
-		return fmt.Errorf("invalid restore output")
+		metrics.RestoreSessionMetrics.SessionDuration.Set(duration.Seconds())
+
+		// set total number of host that was restored in this restore session
+		if status.TotalHosts != nil {
+			metrics.RestoreSessionMetrics.HostCount.Set(float64(*status.TotalHosts))
+		}
+
+		// register metrics to the registry
+		registry.MustRegister(
+			metrics.RestoreSessionMetrics.SessionSuccess,
+			metrics.RestoreSessionMetrics.SessionDuration,
+			metrics.RestoreSessionMetrics.HostCount,
+		)
+	} else {
+		// mark entire restore session as failed
+		metrics.RestoreSessionMetrics.SessionSuccess.Set(0)
+		registry.MustRegister(metrics.RestoreSessionMetrics.SessionSuccess)
+	}
+	// send metrics to the pushgateway
+	return metricOpt.sendMetrics(registry, metricOpt.JobName)
+}
+
+// SendRestoreHostMetrics send restore metrics for individual hosts to the Pushgateway
+func (metricOpt *MetricsOptions) SendRestoreHostMetrics(config *rest.Config, restoreSession *api_v1beta1.RestoreSession, restoreOutput *RestoreOutput) error {
+	if restoreOutput == nil {
+		return fmt.Errorf("invalid restore output. Restore output shouldn't be nil")
+	}
+
+	// create metric registry
+	registry := prometheus.NewRegistry()
+
+	labels, err := restoreMetricLabels(config, restoreSession, metricOpt.Labels)
+	if err != nil {
+		return err
 	}
 
 	// create metrics for each host
 	for _, hostStats := range restoreOutput.HostRestoreStats {
 		// add host name as label
-		metricOpt.Labels = append(metricOpt.Labels, fmt.Sprintf("Host=%s", hostStats.Hostname))
-		labels := metricLabels(metricOpt.Labels)
-		metrics := newRestoreMetrics(labels)
+		hostLabel := map[string]string{
+			"hostname": hostStats.Hostname,
+		}
+		metrics := newRestoreHostMetrics(upsertLabel(labels, hostLabel))
 
-		if restoreErr == nil && hostStats.Error == "" {
+		if hostStats.Error == "" {
 			duration, err := time.ParseDuration(hostStats.Duration)
 			if err != nil {
 				return err
 			}
-			metrics.SessionDuration.Set(duration.Seconds())
-			metrics.RestoreSuccess.Set(1)
+			metrics.RestoreHostMetrics.RestoreDuration.Set(duration.Seconds())
+			metrics.RestoreHostMetrics.RestoreSuccess.Set(1)
+
+			registry.MustRegister(
+				metrics.RestoreHostMetrics.RestoreSuccess,
+				metrics.RestoreHostMetrics.RestoreDuration,
+			)
 		} else {
-			metrics.RestoreSuccess.Set(0)
+			metrics.RestoreHostMetrics.RestoreSuccess.Set(0)
+			registry.MustRegister(
+				metrics.RestoreHostMetrics.RestoreSuccess,
+			)
 		}
-		registry.MustRegister(
-			metrics.SessionDuration,
-			metrics.RestoreSuccess,
-		)
 	}
 
 	return metricOpt.sendMetrics(registry, metricOpt.JobName)
@@ -402,26 +588,26 @@ func (backupMetrics *BackupMetrics) setValues(hostOutput api_v1beta1.HostBackupS
 		totalUnmodifiedFiles = totalUnmodifiedFiles + *v.FileStats.UnmodifiedFiles
 	}
 
-	backupMetrics.HostBackupMetrics.DataSize.Set(totalDataSize)
-	backupMetrics.HostBackupMetrics.DataUploaded.Set(totalUploadSize)
-	backupMetrics.HostBackupMetrics.DataProcessingTime.Set(float64(totalProcessingTime))
-	backupMetrics.HostBackupMetrics.FileMetrics.TotalFiles.Set(float64(totalFiles))
-	backupMetrics.HostBackupMetrics.FileMetrics.NewFiles.Set(float64(totalNewFiles))
-	backupMetrics.HostBackupMetrics.FileMetrics.ModifiedFiles.Set(float64(totalModifiedFiles))
-	backupMetrics.HostBackupMetrics.FileMetrics.UnmodifiedFiles.Set(float64(totalUnmodifiedFiles))
+	backupMetrics.BackupHostMetrics.DataSize.Set(totalDataSize)
+	backupMetrics.BackupHostMetrics.DataUploaded.Set(totalUploadSize)
+	backupMetrics.BackupHostMetrics.DataProcessingTime.Set(float64(totalProcessingTime))
+	backupMetrics.BackupHostMetrics.FileMetrics.TotalFiles.Set(float64(totalFiles))
+	backupMetrics.BackupHostMetrics.FileMetrics.NewFiles.Set(float64(totalNewFiles))
+	backupMetrics.BackupHostMetrics.FileMetrics.ModifiedFiles.Set(float64(totalModifiedFiles))
+	backupMetrics.BackupHostMetrics.FileMetrics.UnmodifiedFiles.Set(float64(totalUnmodifiedFiles))
 
 	duration, err := time.ParseDuration(hostOutput.Duration)
 	if err != nil {
 		return err
 	}
-	backupMetrics.HostBackupMetrics.SessionDuration.Set(duration.Seconds())
+	backupMetrics.BackupHostMetrics.BackupDuration.Set(duration.Seconds())
 
 	return nil
 }
 
 func (repoMetrics *RepositoryMetrics) setValues(repoStats RepositoryStats) error {
 	// set repository metrics values
-	if *repoStats.Integrity {
+	if repoStats.Integrity != nil && *repoStats.Integrity {
 		repoMetrics.RepoIntegrity.Set(1)
 	} else {
 		repoMetrics.RepoIntegrity.Set(0)
@@ -457,13 +643,170 @@ func (metricOpt *MetricsOptions) sendMetrics(registry *prometheus.Registry, jobN
 	return nil
 }
 
-func metricLabels(labels []string) prometheus.Labels {
-	promLabels := prometheus.Labels{}
-	for _, v := range labels {
-		parts := strings.Split(v, "=")
-		if len(parts) == 2 {
-			promLabels[parts[0]] = parts[1]
+func backupMetricLabels(config *rest.Config, backupConfig *api_v1beta1.BackupConfiguration, userProvidedLabels []string) (prometheus.Labels, error) {
+	// add user provided labels
+	promLabels := parseUserProvidedLabels(userProvidedLabels)
+
+	// insert target information as metrics label
+	if backupConfig != nil {
+		if backupConfig.Spec.Driver == api_v1beta1.VolumeSnapshotter {
+			promLabels = upsertLabel(promLabels, volumeSnapshotterLabels())
+		} else {
+			promLabels[MetricsLabelDriver] = string(api_v1beta1.ResticSnapshotter)
+			// insert backup target specific labels
+			if backupConfig.Spec.Target != nil {
+				labels, err := targetLabels(config, backupConfig.Spec.Target.Ref, backupConfig.Namespace)
+				if err != nil {
+					return nil, err
+				}
+				promLabels = upsertLabel(promLabels, labels)
+			}
+			promLabels[MetricsLabelRepository] = backupConfig.Spec.Repository.Name
+		}
+		promLabels[MetricsLabelNamespace] = backupConfig.Namespace
+	}
+	return promLabels, nil
+}
+
+func restoreMetricLabels(config *rest.Config, restoreSession *api_v1beta1.RestoreSession, userProvidedLabels []string) (prometheus.Labels, error) {
+	// add user provided labels
+	promLabels := parseUserProvidedLabels(userProvidedLabels)
+
+	// insert target information as metrics label
+	if restoreSession != nil {
+		if restoreSession.Spec.Driver == api_v1beta1.VolumeSnapshotter {
+			promLabels = upsertLabel(promLabels, volumeSnapshotterLabels())
+		} else {
+			promLabels[MetricsLabelDriver] = string(api_v1beta1.ResticSnapshotter)
+			// insert restore target specific metrics
+			if restoreSession.Spec.Target != nil {
+				labels, err := targetLabels(config, restoreSession.Spec.Target.Ref, restoreSession.Namespace)
+				if err != nil {
+					return nil, err
+				}
+				promLabels = upsertLabel(promLabels, labels)
+			}
+			promLabels[MetricsLabelRepository] = restoreSession.Spec.Repository.Name
+		}
+		promLabels[MetricsLabelNamespace] = restoreSession.Namespace
+	}
+	return promLabels, nil
+}
+
+func repoMetricLabels(clientConfig *rest.Config, backupConfig *api_v1beta1.BackupConfiguration, userProvidedLabels []string) (prometheus.Labels, error) {
+	// add user provided labels
+	promLabels := parseUserProvidedLabels(userProvidedLabels)
+
+	// insert repository information as label
+	if backupConfig != nil && backupConfig.Spec.Target != nil {
+		stashClient, err := cs.NewForConfig(clientConfig)
+		if err != nil {
+			return nil, err
+		}
+		repository, err := stashClient.StashV1alpha1().Repositories(backupConfig.Namespace).Get(backupConfig.Spec.Repository.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		provider, err := repository.Spec.Backend.Provider()
+		if err != nil {
+			return nil, err
+		}
+		bucket, err := repository.Spec.Backend.Container()
+		if err != nil {
+			return nil, err
+		}
+		prefix, err := repository.Spec.Backend.Prefix()
+		if err != nil {
+			return nil, err
+		}
+
+		promLabels[MetricsLabelName] = repository.Name
+		promLabels[MetricsLabelNamespace] = repository.Namespace
+		promLabels[MetricsLabelBackend] = provider
+		if bucket != "" {
+			promLabels[MetricsLabelBucket] = bucket
+		}
+		if prefix != "" {
+			promLabels[MetricsLabelPrefix] = prefix
 		}
 	}
-	return promLabels
+	return promLabels, nil
+}
+
+func upsertLabel(original, new map[string]string) map[string]string {
+	labels := make(map[string]string)
+	// copy old original labels
+	for k, v := range original {
+		labels[k] = v
+	}
+	// insert new labels
+	for k, v := range new {
+		labels[k] = v
+	}
+	return labels
+}
+
+// targetLabels returns backup/restore target specific labels
+func targetLabels(config *rest.Config, target api_v1beta1.TargetRef, namespace string) (map[string]string, error) {
+
+	labels := make(map[string]string)
+	switch target.Kind {
+	case apis.KindAppBinding:
+		appGroup, appKind, err := getAppGroupKind(config, target.Name, namespace)
+		if err != nil {
+			return nil, err
+		}
+		labels[MetricsLabelKind] = appKind
+		labels[MetricsLabelAppGroup] = appGroup
+	default:
+		labels[MetricsLabelKind] = target.Kind
+		gv, err := schema.ParseGroupVersion(target.APIVersion)
+		if err != nil {
+			return nil, err
+		}
+		labels[MetricsLabelAppGroup] = gv.Group
+	}
+	labels[MetricsLabelName] = target.Name
+	return labels, nil
+}
+
+// volumeSnpashotterLabels returns volume snapshot specific labels
+func volumeSnapshotterLabels() map[string]string {
+	return map[string]string{
+		MetricsLabelDriver:   string(api_v1beta1.VolumeSnapshotter),
+		MetricsLabelKind:     apis.KindPersistentVolumeClaim,
+		MetricsLabelAppGroup: core.GroupName,
+	}
+}
+
+func getAppGroupKind(clientConfig *rest.Config, name, namespace string) (string, string, error) {
+	appClient, err := appcatalog_cs.NewForConfig(clientConfig)
+	if err != nil {
+		return "", "", err
+	}
+	appbinding, err := appClient.AppcatalogV1alpha1().AppBindings(namespace).Get(name, metav1.GetOptions{})
+	if err != nil {
+		return "", "", err
+	}
+	// if app type is provided then use app group and app resource name.
+	// otherwise, default to AppBinding's group,resources name
+	targetAppGroup, targetAppResource := appbinding.AppGroupResource()
+	if targetAppGroup == "" && targetAppResource == "" {
+		targetAppGroup = appbinding.GroupVersionKind().Group
+		targetAppResource = appcatalog.ResourceApps
+	}
+	return targetAppGroup, targetAppResource, nil
+}
+
+// parseUserProvidedLabels parses the labels provided by user as an array of key-value pair
+// and returns labels in Prometheus labels format
+func parseUserProvidedLabels(userLabels []string) prometheus.Labels {
+	labels := prometheus.Labels{}
+	for _, v := range userLabels {
+		parts := strings.Split(v, "=")
+		if len(parts) == 2 {
+			labels[parts[0]] = parts[1]
+		}
+	}
+	return labels
 }

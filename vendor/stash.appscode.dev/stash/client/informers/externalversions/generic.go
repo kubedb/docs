@@ -21,10 +21,11 @@ package externalversions
 import (
 	"fmt"
 
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
-	cache "k8s.io/client-go/tools/cache"
 	v1alpha1 "stash.appscode.dev/stash/apis/stash/v1alpha1"
 	v1beta1 "stash.appscode.dev/stash/apis/stash/v1beta1"
+
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
+	cache "k8s.io/client-go/tools/cache"
 )
 
 // GenericInformer is type of SharedIndexInformer which will locate and delegate to other
@@ -62,6 +63,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Stash().V1alpha1().Restics().Informer()}, nil
 
 		// Group=stash.appscode.com, Version=v1beta1
+	case v1beta1.SchemeGroupVersion.WithResource("backupbatches"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Stash().V1beta1().BackupBatches().Informer()}, nil
 	case v1beta1.SchemeGroupVersion.WithResource("backupblueprints"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Stash().V1beta1().BackupBlueprints().Informer()}, nil
 	case v1beta1.SchemeGroupVersion.WithResource("backupconfigurations"):

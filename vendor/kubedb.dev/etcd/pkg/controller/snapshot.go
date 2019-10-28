@@ -9,7 +9,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	core_util "kmodules.xyz/client-go/core/v1"
-	"kubedb.dev/apimachinery/apis"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	amv "kubedb.dev/apimachinery/pkg/validator"
@@ -33,7 +32,7 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 		in.Phase = phase
 		in.Reason = reason
 		return in
-	}, apis.EnableStatusSubresource)
+	})
 	return err
 }
 

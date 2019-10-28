@@ -7,7 +7,6 @@ import (
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	hashutil "k8s.io/kubernetes/pkg/util/hash"
 	crdutils "kmodules.xyz/client-go/apiextensions/v1beta1"
-	"stash.appscode.dev/stash/apis"
 )
 
 func (r Restic) GetSpecHash() string {
@@ -23,7 +22,7 @@ func (c Restic) CustomResourceDefinition() *apiextensions.CustomResourceDefiniti
 		Singular:      ResourceSingularRestic,
 		Kind:          ResourceKindRestic,
 		ShortNames:    []string{"rst"},
-		Categories:    []string{"storage", "appscode", "all"},
+		Categories:    []string{"stash", "appscode", "all"},
 		ResourceScope: string(apiextensions.NamespaceScoped),
 		Versions: []apiextensions.CustomResourceDefinitionVersion{
 			{
@@ -38,7 +37,7 @@ func (c Restic) CustomResourceDefinition() *apiextensions.CustomResourceDefiniti
 		SpecDefinitionName:      "stash.appscode.dev/stash/apis/stash/v1alpha1.Restic",
 		EnableValidation:        true,
 		GetOpenAPIDefinitions:   GetOpenAPIDefinitions,
-		EnableStatusSubresource: apis.EnableStatusSubresource,
+		EnableStatusSubresource: true,
 		AdditionalPrinterColumns: []apiextensions.CustomResourceColumnDefinition{
 			{
 				Name:     "Selector",

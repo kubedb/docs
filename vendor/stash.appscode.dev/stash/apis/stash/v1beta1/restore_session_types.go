@@ -1,7 +1,6 @@
 package v1beta1
 
 import (
-	"github.com/appscode/go/encoding/json/types"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ofst "kmodules.xyz/offshoot-api/api/v1"
@@ -17,6 +16,12 @@ const (
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:path=restoresessions,singular=restoresession,shortName=restore,categories={stash,appscode,all}
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Repository",type="string",JSONPath=".spec.repository.name"
+// +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type RestoreSession struct {
 	metav1.TypeMeta   `json:",inline,omitempty"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -43,12 +48,17 @@ type RestoreSessionSpec struct {
 	// +optional
 	Rules []Rule `json:"rules,omitempty"`
 	// RuntimeSettings allow to specify Resources, NodeSelector, Affinity, Toleration, ReadinessProbe etc.
-	//+optional
+	// +optional
 	RuntimeSettings ofst.RuntimeSettings `json:"runtimeSettings,omitempty"`
 	// Temp directory configuration for functions/sidecar
 	// An `EmptyDir` will always be mounted at /tmp with this settings
-	//+optional
+	// +optional
 	TempDir EmptyDirSettings `json:"tempDir,omitempty"`
+	// InterimVolumeTemplate specifies a template for a volume to hold targeted data temporarily
+	// before uploading to backend or inserting into target. It is only usable for job model.
+	// Don't specify it in sidecar model.
+	// +optional
+	InterimVolumeTemplate *core.PersistentVolumeClaim `json:"interimVolumeTemplate,omitempty"`
 }
 
 type Rule struct {
@@ -96,16 +106,12 @@ const (
 )
 
 type RestoreSessionStatus struct {
-	// observedGeneration is the most recent generation observed for this resource. It corresponds to the
-	// resource's generation, which is updated on mutation by the API Server.
-	// +optional
-	ObservedGeneration *types.IntHash `json:"observedGeneration,omitempty"`
 	// Phase indicates the overall phase of the restore process for this RestoreSession. Phase will be "Succeeded" only if
 	// phase of all hosts are "Succeeded". If any of the host fail to complete restore, Phase will be "Failed".
 	// +optional
 	Phase RestoreSessionPhase `json:"phase,omitempty"`
 	// TotalHosts specifies total number of hosts that will be restored for this RestoreSession
-	// +Optional
+	// +optional
 	TotalHosts *int32 `json:"totalHosts,omitempty"`
 	// SessionDuration specify total time taken to complete current restore session (sum of restore duration of all hosts)
 	// +optional

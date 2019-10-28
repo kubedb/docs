@@ -5,6 +5,10 @@ import (
 	"path/filepath"
 	"strconv"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/pkg/eventer"
+	configure_cluster "kubedb.dev/redis/pkg/configure-cluster"
+
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
@@ -19,9 +23,6 @@ import (
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/pkg/eventer"
-	configure_cluster "kubedb.dev/redis/pkg/configure-cluster"
 )
 
 const (
@@ -368,8 +369,9 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.Sta
 				}
 				statefulSet.Spec.VolumeClaimTemplates = core_util.UpsertVolumeClaim(statefulSet.Spec.VolumeClaimTemplates, claim)
 			}
+
+			break
 		}
-		break
 	}
 	return statefulSet
 }
@@ -418,8 +420,8 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.S
 				// send custom config file path as argument
 				configPath := filepath.Join(CONFIG_MOUNT_PATH, RedisConfigRelativePath)
 				args := statefulSet.Spec.Template.Spec.Containers[i].Args
-				if len(args) == 0 || args[len(args)-1] != configPath {
-					args = append(args, configPath)
+				if len(args) == 0 || args[0] != configPath {
+					args = append([]string{configPath}, args...)
 				}
 				statefulSet.Spec.Template.Spec.Containers[i].Args = args
 				break

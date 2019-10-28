@@ -155,6 +155,11 @@ func ValidateEtcd(client kubernetes.Interface, extClient cs.Interface, etcd *api
 			return fmt.Errorf("etcd %s/%s is using deprecated version %v. Skipped processing",
 				etcd.Namespace, etcd.Name, etcdVersion.Name)
 		}
+
+		if err := etcdVersion.ValidateSpecs(); err != nil {
+			return fmt.Errorf("etcd %s/%s is using invalid etcdVersion %v. Skipped processing. reason: %v", etcd.Namespace,
+				etcd.Name, etcdVersion.Name, err)
+		}
 	}
 
 	backupScheduleSpec := etcd.Spec.BackupSchedule

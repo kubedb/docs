@@ -3,6 +3,8 @@ package job
 import (
 	"time"
 
+	amc "kubedb.dev/apimachinery/pkg/controller"
+
 	batch "k8s.io/api/batch/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -12,7 +14,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"kmodules.xyz/client-go/tools/queue"
-	amc "kubedb.dev/apimachinery/pkg/controller"
 )
 
 type Controller struct {

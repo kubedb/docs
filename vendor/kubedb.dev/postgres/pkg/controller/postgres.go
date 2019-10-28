@@ -3,6 +3,12 @@ package controller
 import (
 	"fmt"
 
+	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"kubedb.dev/apimachinery/pkg/eventer"
+	validator "kubedb.dev/postgres/pkg/admission"
+
 	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
@@ -18,12 +24,6 @@ import (
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
 	storage "kmodules.xyz/objectstore-api/osm"
-	"kubedb.dev/apimachinery/apis"
-	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
-	"kubedb.dev/apimachinery/pkg/eventer"
-	validator "kubedb.dev/postgres/pkg/admission"
 )
 
 func (c *Controller) create(postgres *api.Postgres) error {
@@ -49,7 +49,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
-		}, apis.EnableStatusSubresource)
+		})
 		if err != nil {
 			return err
 		}
@@ -113,7 +113,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
-		}, apis.EnableStatusSubresource)
+		})
 		if err != nil {
 			return err
 		}
@@ -136,7 +136,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = types.NewIntHash(postgres.Generation, meta_util.GenerationHash(postgres))
 		return in
-	}, apis.EnableStatusSubresource)
+	})
 	if err != nil {
 		return err
 	}
@@ -254,7 +254,7 @@ func (c *Controller) initializeFromSnapshot(postgres *api.Postgres) error {
 	if err != nil {
 		return err
 	}
-	secret, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
+	_, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
 	if err != nil {
 		return err
 	}
@@ -418,7 +418,7 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 		in.Phase = phase
 		in.Reason = reason
 		return in
-	}, apis.EnableStatusSubresource)
+	})
 	return err
 }
 

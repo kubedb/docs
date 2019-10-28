@@ -5,13 +5,14 @@ import (
 	"strings"
 	"time"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/elasticsearch/pkg/util/es"
+
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/portforward"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/elasticsearch/pkg/util/es"
 )
 
 func (c *Controller) getAllIndices(elasticsearch *api.Elasticsearch) (string, error) {

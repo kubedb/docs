@@ -14,16 +14,14 @@ const (
 	nodeFlagMaster = "master"
 	nodeFlagSlave  = "slave"
 	nodeFlagMyself = "myself"
-
-	nodeRoleMaster = nodeFlagMaster
-	nodeRoleSlave  = nodeFlagSlave
+	nodeFlagFail   = "fail"
 )
 
 func getMyConf(nodesConf string) (myConf string) {
 	myConf = ""
 	nodes := strings.Split(nodesConf, "\n")
 	for _, node := range nodes {
-		if strings.Contains(node, "myself") {
+		if strings.Contains(node, nodeFlagMyself) {
 			myConf = strings.TrimSpace(node)
 			break
 		}
@@ -51,22 +49,13 @@ func getNodeId(nodeConf string) string {
 
 func getNodeRole(nodeConf string) (nodeRole string) {
 	nodeRole = ""
-	if strings.Contains(nodeConf, "master") {
-		nodeRole = "master"
-	} else if strings.Contains(nodeConf, "slave") {
-		nodeRole = "slave"
+	if strings.Contains(nodeConf, nodeFlagMaster) {
+		nodeRole = nodeFlagMaster
+	} else if strings.Contains(nodeConf, nodeFlagSlave) {
+		nodeRole = nodeFlagSlave
 	}
 
 	return nodeRole
-}
-
-func getMasterID(nodeConf string) (masterID string) {
-	masterID = ""
-	if getNodeRole(nodeConf) == "slave" {
-		masterID = strings.Split(nodeConf, " ")[3]
-	}
-
-	return masterID
 }
 
 // processNodesConf stores nodes info into a map from nodesConf in the order they are in nodes.conf file
@@ -84,19 +73,19 @@ func processNodesConf(nodesConf string) map[string]*RedisNode {
 		node = strings.TrimSpace(node)
 		parts := strings.Split(strings.TrimSpace(node), " ")
 
-		if strings.Contains(parts[2], "noaddr") {
+		if strings.Contains(parts[2], nodeFlagNoAddr) {
 			continue
 		}
 
-		if strings.Contains(parts[2], "master") {
+		if strings.Contains(parts[2], nodeFlagMaster) {
 			nd := RedisNode{
 				ID:   parts[0],
 				IP:   strings.Split(parts[1], ":")[0],
 				Port: api.RedisNodePort,
-				Role: "master",
+				Role: nodeFlagMaster,
 				Down: false,
 			}
-			if strings.Contains(parts[2], "fail") {
+			if strings.Contains(parts[2], nodeFlagFail) {
 				nd.Down = true
 			}
 			nd.SlotsCnt = 0
@@ -127,19 +116,19 @@ func processNodesConf(nodesConf string) map[string]*RedisNode {
 		node = strings.TrimSpace(node)
 		parts := strings.Split(strings.TrimSpace(node), " ")
 
-		if strings.Contains(parts[2], "noaddr") {
+		if strings.Contains(parts[2], nodeFlagNoAddr) {
 			continue
 		}
 
-		if strings.Contains(parts[2], "slave") {
+		if strings.Contains(parts[2], nodeFlagSlave) {
 			nd := RedisNode{
 				ID:   parts[0],
 				IP:   strings.Split(parts[1], ":")[0],
 				Port: api.RedisNodePort,
-				Role: "slave",
+				Role: nodeFlagSlave,
 				Down: false,
 			}
-			if strings.Contains(parts[2], "fail") {
+			if strings.Contains(parts[2], nodeFlagFail) {
 				nd.Down = true
 			}
 
@@ -163,7 +152,7 @@ func countNodesInNodesConf(nodesConf, nodeFlag string) int {
 
 	nodes := strings.Split(nodesConf, "\n")
 	for _, node := range nodes {
-		if strings.Contains(node, "noaddr") {
+		if strings.Contains(node, nodeFlagNoAddr) {
 			continue
 		}
 
@@ -183,13 +172,8 @@ func min(a, b int) int {
 	return b
 }
 
-func splitOff(input *string, delim string) (val string) {
-	parts := strings.SplitN(*input, delim, 2)
-
-	if len(parts) == 2 {
+func splitOff(input *string, delim string) {
+	if parts := strings.SplitN(*input, delim, 2); len(parts) == 2 {
 		*input = parts[0]
-		val = parts[1]
 	}
-
-	return val
 }

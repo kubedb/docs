@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"sync"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	cs "kubedb.dev/apimachinery/client/clientset/versioned"
+
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
@@ -17,8 +20,6 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 )
 
 type MemcachedMutator struct {
@@ -76,7 +77,7 @@ func (a *MemcachedMutator) Admit(req *admission.AdmissionRequest) *admission.Adm
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	mod, err := setDefaultValues(a.client, a.extClient, obj.(*api.Memcached).DeepCopy())
+	mod, err := setDefaultValues(a.extClient, obj.(*api.Memcached).DeepCopy())
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mod != nil {
@@ -94,7 +95,7 @@ func (a *MemcachedMutator) Admit(req *admission.AdmissionRequest) *admission.Adm
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a Memcached database
-func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, memcached *api.Memcached) (runtime.Object, error) {
+func setDefaultValues(extClient cs.Interface, memcached *api.Memcached) (runtime.Object, error) {
 	if memcached.Spec.Version == "" {
 		return nil, fmt.Errorf(`object 'Version' is missing in '%v'`, memcached.Spec)
 	}

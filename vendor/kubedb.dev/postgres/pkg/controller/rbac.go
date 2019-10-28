@@ -1,6 +1,9 @@
 package controller
 
 import (
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	le "kubedb.dev/postgres/pkg/leader_election"
+
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	policy_v1beta1 "k8s.io/api/policy/v1beta1"
@@ -12,8 +15,6 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	rbac_util "kmodules.xyz/client-go/rbac/v1beta1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	le "kubedb.dev/postgres/pkg/leader_election"
 )
 
 func (c *Controller) ensureRole(db *api.Postgres, pspName string) error {

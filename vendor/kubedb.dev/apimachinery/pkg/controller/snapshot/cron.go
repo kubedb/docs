@@ -6,6 +6,11 @@ import (
 	"sync"
 	"time"
 
+	apiCatalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	cs "kubedb.dev/apimachinery/client/clientset/versioned"
+	"kubedb.dev/apimachinery/pkg/eventer"
+
 	"github.com/appscode/go/log"
 	cmap "github.com/orcaman/concurrent-map"
 	cron "github.com/robfig/cron/v3"
@@ -20,10 +25,6 @@ import (
 	"k8s.io/client-go/tools/record"
 	discovery_util "kmodules.xyz/client-go/discovery"
 	meta_util "kmodules.xyz/client-go/meta"
-	apiCatalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	"kubedb.dev/apimachinery/pkg/eventer"
 )
 
 type CronControllerInterface interface {
@@ -168,9 +169,9 @@ func (s *snapshotInvoker) createScheduledSnapshot() error {
 		return fmt.Errorf("failed to get DB Catalog %v/%v. Reason: %v", catalogKind, catalogMetaObject, err)
 	}
 
-	if val, found, err := unstructured.NestedBool(updatedCatalog.UnstructuredContent(), "scheduleSpec", "deprecated"); err != nil {
+	if deprecated, found, err := unstructured.NestedBool(updatedCatalog.UnstructuredContent(), "scheduleSpec", "deprecated"); err != nil {
 		return fmt.Errorf("failed to get scheduleSpec.Deprecated value. Reason: %v", err)
-	} else if found && val == true {
+	} else if found && deprecated {
 		return fmt.Errorf("%v %s/%s is using deprecated version %v. Skipped processing scheduler",
 			dbKind, s.dbMetaObject.GetNamespace(), s.dbMetaObject.GetName(), catalogMetaObject)
 	}
@@ -190,12 +191,6 @@ func (s *snapshotInvoker) createScheduledSnapshot() error {
 
 	if len(snapshotList.Items) > 0 {
 		return errors.New("skipping scheduled Backup. One is still active")
-	}
-
-	// Set label. Elastic controller will detect this using label selector
-	labelMap = map[string]string{
-		api.LabelDatabaseKind: dbKind,
-		api.LabelDatabaseName: s.dbMetaObject.GetName(),
 	}
 
 	now := time.Now().UTC()

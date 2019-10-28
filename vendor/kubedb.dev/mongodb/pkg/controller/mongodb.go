@@ -3,6 +3,11 @@ package controller
 import (
 	"fmt"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"kubedb.dev/apimachinery/pkg/eventer"
+	validator "kubedb.dev/mongodb/pkg/admission"
+
 	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
@@ -16,11 +21,6 @@ import (
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
 	storage "kmodules.xyz/objectstore-api/osm"
-	"kubedb.dev/apimachinery/apis"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
-	"kubedb.dev/apimachinery/pkg/eventer"
-	validator "kubedb.dev/mongodb/pkg/admission"
 )
 
 func (c *Controller) create(mongodb *api.MongoDB) error {
@@ -46,7 +46,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		mg, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
-		}, apis.EnableStatusSubresource)
+		})
 		if err != nil {
 			return err
 		}
@@ -125,7 +125,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		mg, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
-		}, apis.EnableStatusSubresource)
+		})
 		if err != nil {
 			return err
 		}
@@ -148,7 +148,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = types.NewIntHash(mongodb.Generation, meta_util.GenerationHash(mongodb))
 		return in
-	}, apis.EnableStatusSubresource)
+	})
 	if err != nil {
 		return err
 	}
@@ -244,7 +244,7 @@ func (c *Controller) initializeFromSnapshot(mongodb *api.MongoDB) error {
 	if err != nil {
 		return err
 	}
-	secret, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
+	_, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
 	if err != nil && !kerr.IsAlreadyExists(err) {
 		return err
 	}

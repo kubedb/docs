@@ -14,12 +14,13 @@ import (
 	"path/filepath"
 	"time"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/elasticsearch/pkg/keytool"
+
 	"github.com/appscode/go/crypto/rand"
 	"github.com/appscode/go/ioutil"
 	"github.com/pkg/errors"
 	"gomodules.xyz/cert"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/elasticsearch/pkg/keytool"
 )
 
 const (
@@ -283,6 +284,9 @@ func NewSignedCert(cfg cert.Config, key *rsa.PrivateKey, caCert *x509.Certificat
 		},
 	}
 	certTmpl.ExtraExtensions[0].Value, err = marshalSANs(cfg.AltNames.DNSNames, nil, cfg.AltNames.IPs)
+	if err != nil {
+		return nil, err
+	}
 
 	certDERBytes, err := x509.CreateCertificate(cryptorand.Reader, &certTmpl, caCert, key.Public(), caKey)
 	if err != nil {

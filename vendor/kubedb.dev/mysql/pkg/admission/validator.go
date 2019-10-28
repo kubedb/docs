@@ -5,6 +5,11 @@ import (
 	"strings"
 	"sync"
 
+	cat_api "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	cs "kubedb.dev/apimachinery/client/clientset/versioned"
+	amv "kubedb.dev/apimachinery/pkg/validator"
+
 	"github.com/appscode/go/log"
 	"github.com/coreos/go-semver/semver"
 	"github.com/google/uuid"
@@ -19,10 +24,6 @@ import (
 	"k8s.io/client-go/rest"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
-	cat_api "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	amv "kubedb.dev/apimachinery/pkg/validator"
 )
 
 type MySQLValidator struct {
@@ -114,7 +115,7 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 				oldMySQL.Spec.DatabaseSecret = mysql.Spec.DatabaseSecret
 			}
 
-			if err := validateUpdate(mysql, oldMySQL, req.Kind.Kind); err != nil {
+			if err := validateUpdate(mysql, oldMySQL); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
 		}
@@ -297,6 +298,11 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 			return fmt.Errorf("mysql %s/%s is using deprecated version %v. Skipped processing", mysql.Namespace, mysql.Name, mysqlVersion.Name)
 		}
 
+		if err := mysqlVersion.ValidateSpecs(); err != nil {
+			return fmt.Errorf("mysql %s/%s is using invalid mysqlVersion %v. Skipped processing. reason: %v", mysql.Namespace,
+				mysql.Name, mysqlVersion.Name, err)
+		}
+
 		if mysql.Spec.Topology != nil && mysql.Spec.Topology.Mode != nil &&
 			*mysql.Spec.Topology.Mode == api.MySQLClusterModeGroup {
 			if err = validateGroupServerVersion(myVer.Spec.Version); err != nil {
@@ -388,12 +394,12 @@ func matchWithDormantDatabase(extClient cs.Interface, mysql *api.MySQL) error {
 	return nil
 }
 
-func validateUpdate(obj, oldObj runtime.Object, kind string) error {
+func validateUpdate(obj, oldObj runtime.Object) error {
 	preconditions := getPreconditionFunc()
 	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
-			return fmt.Errorf("%v.%v", err, preconditionFailedError(kind))
+			return fmt.Errorf("%v.%v", err, preconditionFailedError())
 		}
 		return err
 	}
@@ -424,7 +430,7 @@ var preconditionSpecFields = []string{
 	"spec.podTemplate.spec.nodeSelector",
 }
 
-func preconditionFailedError(kind string) error {
+func preconditionFailedError() error {
 	str := preconditionSpecFields
 	strList := strings.Join(str, "\n\t")
 	return fmt.Errorf(strings.Join([]string{`At least one of the following was changed:

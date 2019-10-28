@@ -4,6 +4,11 @@ import (
 	"fmt"
 	"time"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"kubedb.dev/apimachinery/pkg/eventer"
+	validator "kubedb.dev/elasticsearch/pkg/admission"
+
 	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
@@ -23,11 +28,6 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 	policy_util "kmodules.xyz/client-go/policy/v1beta1"
 	storage "kmodules.xyz/objectstore-api/osm"
-	"kubedb.dev/apimachinery/apis"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
-	"kubedb.dev/apimachinery/pkg/eventer"
-	validator "kubedb.dev/elasticsearch/pkg/admission"
 )
 
 func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
@@ -53,7 +53,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		es, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
-		}, apis.EnableStatusSubresource)
+		})
 		if err != nil {
 			return err
 		}
@@ -113,7 +113,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		mg, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
-		}, apis.EnableStatusSubresource)
+		})
 		if err != nil {
 			return err
 		}
@@ -136,7 +136,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = types.NewIntHash(elasticsearch.Generation, meta_util.GenerationHash(elasticsearch))
 		return in
-	}, apis.EnableStatusSubresource)
+	})
 	if err != nil {
 		return err
 	}
@@ -191,6 +191,9 @@ func (c *Controller) ensureElasticsearchNode(elasticsearch *api.Elasticsearch) (
 	if err = c.ensureDatabaseSecret(elasticsearch); err != nil {
 		return kutil.VerbUnchanged, err
 	}
+	if err = c.ensureDatabaseConfigForXPack(elasticsearch); err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	if c.EnableRBAC {
 		// Ensure Service account, role, rolebinding, and PSP for database statefulsets
@@ -235,7 +238,7 @@ func (c *Controller) ensureElasticsearchNode(elasticsearch *api.Elasticsearch) (
 }
 
 func (c *Controller) ensureBackupScheduler(elasticsearch *api.Elasticsearch) error {
-	elasticsearchVersion, err := c.ExtClient.CatalogV1alpha1().ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{})
+	elasticsearchVersion, err := c.esVersionLister.Get(string(elasticsearch.Spec.Version))
 	if err != nil {
 		return fmt.Errorf("failed to get ElasticsearchVersion %v for %v/%v. Reason: %v", elasticsearch.Spec.Version, elasticsearch.Namespace, elasticsearch.Name, err)
 	}
@@ -284,7 +287,7 @@ func (c *Controller) initializeFromSnapshot(elasticsearch *api.Elasticsearch) er
 	if err != nil {
 		return err
 	}
-	secret, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
+	_, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
 	if err != nil {
 		return err
 	}
@@ -428,7 +431,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasti
 }
 
 func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
-	elasticsearch, err := c.ExtClient.KubedbV1alpha1().Elasticsearches(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	elasticsearch, err := c.esLister.Elasticsearches(meta.Namespace).Get(meta.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -437,7 +440,7 @@ func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error)
 }
 
 func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
-	elasticsearch, err := c.ExtClient.KubedbV1alpha1().Elasticsearches(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	elasticsearch, err := c.esLister.Elasticsearches(meta.Namespace).Get(meta.Name)
 	if err != nil {
 		return err
 	}
@@ -445,12 +448,12 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 		in.Phase = phase
 		in.Reason = reason
 		return in
-	}, apis.EnableStatusSubresource)
+	})
 	return err
 }
 
 func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
-	elasticsearch, err := c.ExtClient.KubedbV1alpha1().Elasticsearches(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	elasticsearch, err := c.esLister.Elasticsearches(meta.Namespace).Get(meta.Name)
 	if err != nil {
 		return err
 	}

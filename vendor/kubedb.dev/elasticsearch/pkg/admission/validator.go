@@ -5,7 +5,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/appscode/go/arrays"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	cs "kubedb.dev/apimachinery/client/clientset/versioned"
+	amv "kubedb.dev/apimachinery/pkg/validator"
+
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
@@ -18,9 +21,6 @@ import (
 	"k8s.io/client-go/rest"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	amv "kubedb.dev/apimachinery/pkg/validator"
 )
 
 type ElasticsearchValidator struct {
@@ -36,11 +36,6 @@ var forbiddenEnvVars = []string{
 	"NODE_NAME",
 	"NODE_MASTER",
 	"NODE_DATA",
-}
-
-var supportedAuthPlugin = []api.ElasticsearchAuthPlugin{
-	api.ElasticsearchAuthPluginNone,
-	api.ElasticsearchAuthPluginSearchGuard,
 }
 
 func (a *ElasticsearchValidator) Resource() (plural schema.GroupVersionResource, singular string) {
@@ -95,7 +90,7 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 					break
 				}
 				return hookapi.StatusInternalServerError(err)
-			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
+			} else if obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
 				return hookapi.StatusBadRequest(fmt.Errorf(`elasticsearch "%v/%v" can't be paused. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
 			}
 		}
@@ -124,7 +119,7 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 				oldElasticsearch.Spec.CertificateSecret = elasticsearch.Spec.CertificateSecret
 			}
 
-			if err := validateUpdate(elasticsearch, oldElasticsearch, req.Kind.Kind); err != nil {
+			if err := validateUpdate(elasticsearch, oldElasticsearch); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
 		}
@@ -236,6 +231,11 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 			return fmt.Errorf("elasticsearch %s/%s is using deprecated version %v. Skipped processing", elasticsearch.Namespace,
 				elasticsearch.Name, elasticsearchVersion.Name)
 		}
+
+		if err := elasticsearchVersion.ValidateSpecs(); err != nil {
+			return fmt.Errorf("elasticsearch %s/%s is using invalid elasticsearchVersion %v. Skipped processing. reason: %v", elasticsearch.Namespace,
+				elasticsearch.Name, elasticsearchVersion.Name, err)
+		}
 	}
 
 	backupScheduleSpec := elasticsearch.Spec.BackupSchedule
@@ -257,10 +257,8 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		return fmt.Errorf(`'spec.terminationPolicy: Pause' can not be used for 'Ephemeral' storage`)
 	}
 
-	if elasticsearch.Spec.AuthPlugin == "" {
-		return fmt.Errorf(`'spec.authPlugin' is missing`)
-	} else if ok, _ := arrays.Contains(supportedAuthPlugin, elasticsearch.Spec.AuthPlugin); !ok {
-		return fmt.Errorf(`'spec.authPlugin: %s' is not supported`, elasticsearch.Spec.AuthPlugin)
+	if elasticsearch.Spec.DisableSecurity && elasticsearch.Spec.EnableSSL {
+		return fmt.Errorf(`to enable 'spec.enableSSL', 'spec.disableSecurity' needs to be set to false`)
 	}
 
 	monitorSpec := elasticsearch.Spec.Monitor
@@ -321,12 +319,12 @@ func matchWithDormantDatabase(extClient cs.Interface, elasticsearch *api.Elastic
 	return nil
 }
 
-func validateUpdate(obj, oldObj runtime.Object, kind string) error {
+func validateUpdate(obj, oldObj runtime.Object) error {
 	preconditions := getPreconditionFunc()
 	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
-			return fmt.Errorf("%v.%v", err, preconditionFailedError(kind))
+			return fmt.Errorf("%v.%v", err, preconditionFailedError())
 		}
 		return err
 	}
@@ -362,7 +360,7 @@ var preconditionSpecFields = []string{
 	"spec.podTemplate.spec.nodeSelector",
 }
 
-func preconditionFailedError(kind string) error {
+func preconditionFailedError() error {
 	str := preconditionSpecFields
 	strList := strings.Join(str, "\n\t")
 	return fmt.Errorf(strings.Join([]string{`At least one of the following was changed:

@@ -1,6 +1,8 @@
 package controller
 
 import (
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	policy_v1beta1 "k8s.io/api/policy/v1beta1"
@@ -12,7 +14,6 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	rbac_util "kmodules.xyz/client-go/rbac/v1beta1"
 	v1 "kmodules.xyz/offshoot-api/api/v1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 )
 
 func (c *Controller) createServiceAccount(db *api.MongoDB, saName string) error {

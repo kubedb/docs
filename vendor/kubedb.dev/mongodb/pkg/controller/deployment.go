@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"strconv"
 
+	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/pkg/eventer"
+
 	"github.com/appscode/go/types"
 	"github.com/fatih/structs"
 	apps "k8s.io/api/apps/v1"
@@ -18,9 +22,6 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	ofst "kmodules.xyz/offshoot-api/api/v1"
-	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/pkg/eventer"
 )
 
 func (c *Controller) checkDeployment(mongodb *api.MongoDB, deployName string) error {
@@ -122,25 +123,7 @@ func (c *Controller) ensureDeployment(
 		if mongodb.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 				in.Spec.Template.Spec.Containers,
-				core.Container{
-					Name: "exporter",
-					Args: append([]string{
-						fmt.Sprintf("--web.listen-address=:%d", mongodb.Spec.Monitor.Prometheus.Port),
-						fmt.Sprintf("--web.metrics-path=%v", mongodb.StatsService().Path()),
-						"--mongodb.uri=mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@127.0.0.1:27017",
-					}, mongodb.Spec.Monitor.Args...),
-					Image: mongodbVersion.Spec.Exporter.Image,
-					Ports: []core.ContainerPort{
-						{
-							Name:          api.PrometheusExporterPortName,
-							Protocol:      core.ProtocolTCP,
-							ContainerPort: mongodb.Spec.Monitor.Prometheus.Port,
-						},
-					},
-					Env:             mongodb.Spec.Monitor.Env,
-					Resources:       mongodb.Spec.Monitor.Resources,
-					SecurityContext: mongodb.Spec.Monitor.SecurityContext,
-				},
+				getExporterContainer(mongodb, mongodbVersion),
 			)
 		}
 

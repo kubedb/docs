@@ -5,6 +5,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 
 	"github.com/appscode/go/crypto/rand"
 	"golang.org/x/crypto/bcrypt"
@@ -12,13 +17,11 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	core_util "kmodules.xyz/client-go/core/v1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 )
 
 const (
 	AdminUser          = "admin"
+	ElasticUser        = "elastic"
 	KeyAdminUserName   = "ADMIN_USERNAME"
 	KeyAdminPassword   = "ADMIN_PASSWORD"
 	ReadAllUser        = "readall"
@@ -28,6 +31,10 @@ const (
 )
 
 func (c *Controller) ensureCertSecret(elasticsearch *api.Elasticsearch) error {
+	if elasticsearch.Spec.DisableSecurity {
+		return nil
+	}
+
 	certSecretVolumeSource := elasticsearch.Spec.CertificateSecret
 	if certSecretVolumeSource == nil {
 		var err error
@@ -63,7 +70,7 @@ func (c *Controller) ensureDatabaseSecret(elasticsearch *api.Elasticsearch) erro
 		elasticsearch.Spec.DatabaseSecret = es.Spec.DatabaseSecret
 		return nil
 	}
-	return c.upgradeDatabaseSecret(elasticsearch)
+	return nil
 }
 
 func (c *Controller) findCertSecret(elasticsearch *api.Elasticsearch) (*core.Secret, error) {
@@ -97,8 +104,15 @@ func (c *Controller) createCertSecret(elasticsearch *api.Elasticsearch) (*core.S
 		}, nil
 	}
 
+	esVersion, err := c.esVersionLister.Get(string(elasticsearch.Spec.Version))
+	if err != nil {
+		return nil, err
+	}
+
 	certPath := fmt.Sprintf("%v/%v", certsDir, rand.Characters(3))
-	os.Mkdir(certPath, os.ModePerm)
+	if err := os.MkdirAll(certPath, os.ModePerm); err != nil {
+		return nil, err
+	}
 
 	caKey, caCert, pass, err := createCaCertificate(certPath)
 	if err != nil {
@@ -108,9 +122,11 @@ func (c *Controller) createCertSecret(elasticsearch *api.Elasticsearch) (*core.S
 	if err != nil {
 		return nil, err
 	}
-	err = createAdminCertificate(certPath, caKey, caCert, pass)
-	if err != nil {
-		return nil, err
+	if esVersion.Spec.AuthPlugin == v1alpha1.ElasticsearchAuthPluginSearchGuard {
+		err = createAdminCertificate(certPath, caKey, caCert, pass)
+		if err != nil {
+			return nil, err
+		}
 	}
 	root, err := ioutil.ReadFile(filepath.Join(certPath, rootKeyStore))
 	if err != nil {
@@ -120,30 +136,33 @@ func (c *Controller) createCertSecret(elasticsearch *api.Elasticsearch) (*core.S
 	if err != nil {
 		return nil, err
 	}
-	sgadmin, err := ioutil.ReadFile(filepath.Join(certPath, sgAdminKeyStore))
-	if err != nil {
-		return nil, err
-	}
 
 	data := map[string][]byte{
-		rootKeyStore:    root,
-		nodeKeyStore:    node,
-		sgAdminKeyStore: sgadmin,
+		rootKeyStore: root,
+		nodeKeyStore: node,
 	}
 
-	if elasticsearch.Spec.EnableSSL {
-		if err := createClientCertificate(certPath, elasticsearch, caKey, caCert, pass); err != nil {
-			return nil, err
-		}
-
-		client, err := ioutil.ReadFile(filepath.Join(certPath, clientKeyStore))
+	if esVersion.Spec.AuthPlugin == v1alpha1.ElasticsearchAuthPluginSearchGuard {
+		sgadmin, err := ioutil.ReadFile(filepath.Join(certPath, sgAdminKeyStore))
 		if err != nil {
 			return nil, err
 		}
 
-		data[rootCert] = cert.EncodeCertPEM(caCert)
-		data[clientKeyStore] = client
+		data[sgAdminKeyStore] = sgadmin
+
 	}
+
+	if err := createClientCertificate(certPath, elasticsearch, caKey, caCert, pass); err != nil {
+		return nil, err
+	}
+
+	client, err := ioutil.ReadFile(filepath.Join(certPath, clientKeyStore))
+	if err != nil {
+		return nil, err
+	}
+
+	data[rootCert] = cert.EncodeCertPEM(caCert)
+	data[clientKeyStore] = client
 
 	name := fmt.Sprintf("%v-cert", elasticsearch.OffshootName())
 	secret := &core.Secret{
@@ -214,6 +233,41 @@ INDICES_KUBEDB_SNAPSHOT:
   - "indices:admin/mappings/get"
 `
 
+var action_group_es7 = `
+_sg_meta:
+  type: "actiongroups"
+  config_version: 2
+
+UNLIMITED:
+  allowed_actions:
+    - "*"
+
+READ:
+  allowed_actions:
+    - "indices:data/read*"
+    - "indices:admin/mappings/fields/get*"
+
+CLUSTER_COMPOSITE_OPS_RO:
+  allowed_actions:
+    - "indices:data/read/mget"
+    - "indices:data/read/msearch"
+    - "indices:data/read/mtv"
+    - "indices:data/read/coordinate-msearch*"
+    - "indices:admin/aliases/exists*"
+    - "indices:admin/aliases/get*"
+
+CLUSTER_KUBEDB_SNAPSHOT:
+  allowed_actions:
+    - "indices:data/read/scroll*"
+    - "cluster:monitor/main"
+
+INDICES_KUBEDB_SNAPSHOT:
+  allowed_actions:
+    - "indices:admin/get"
+    - "indices:monitor/settings/get"
+    - "indices:admin/mappings/get"
+`
+
 var config = `
 searchguard:
   dynamic:
@@ -228,7 +282,37 @@ searchguard:
           type: internal
 `
 
+var config_es7 = `
+_sg_meta:
+  type: "config"
+  config_version: 2
+sg_config:
+  dynamic:
+    authc:
+      basic_internal_auth_domain:
+        http_enabled: true
+        transport_enabled: true
+        order: 4
+        http_authenticator:
+          type: basic
+          challenge: true
+        authentication_backend:
+          type: internal
+`
+
 var internal_user = `
+admin:
+  hash: %s
+
+readall:
+  hash: %s
+`
+
+var internal_user_es7 = `
+_sg_meta:
+  type: "internalusers"
+  config_version: 2
+
 admin:
   hash: %s
 
@@ -259,6 +343,37 @@ sg_readall:
         - INDICES_KUBEDB_SNAPSHOT
 `
 
+var roles_es7 = `
+_sg_meta:
+  type: "roles"
+  config_version: 2
+sg_all_access:
+  cluster_permissions:
+  - UNLIMITED
+  index_permissions:
+  - index_patterns:
+    - "*"
+    allowed_actions:
+    - "UNLIMITED"
+  tenant_permissions:
+  - tenant_patterns:
+    - adm_tenant
+    - test_tenant_ro
+    allowed_actions:
+    - SGS_KIBANA_ALL_WRITE
+sg_readall:
+  cluster_permissions:
+  - "CLUSTER_COMPOSITE_OPS_RO"
+  - "CLUSTER_KUBEDB_SNAPSHOT"
+  index_permissions:
+  - index_patterns:
+    - "*"
+    allowed_actions:
+    - "READ"
+    - "INDICES_KUBEDB_SNAPSHOT"
+  tenant_permissions: []
+`
+
 var roles_mapping = `
 sg_all_access:
   users:
@@ -267,6 +382,36 @@ sg_all_access:
 sg_readall:
   users:
     - readall
+`
+
+var roles_mapping_es7 = `
+_sg_meta:
+  type: "rolesmapping"
+  config_version: 2
+
+sg_all_access:
+  users:
+    - admin
+
+sg_readall:
+  users:
+    - readall
+`
+
+var tenants = `
+_sg_meta:
+  type: "tenants"
+  config_version: 2
+test_tenant_ro:
+  reserved: false
+  hidden: false
+  description: "test_tenant_ro. Migrated from v6"
+  static: false
+adm_tenant:
+  reserved: false
+  hidden: false
+  description: "adm_tenant. Migrated from v6"
+  static: false
 `
 
 func (c *Controller) createDatabaseSecret(elasticsearch *api.Elasticsearch) (*core.SecretVolumeSource, error) {
@@ -280,6 +425,41 @@ func (c *Controller) createDatabaseSecret(elasticsearch *api.Elasticsearch) (*co
 		}, nil
 	}
 
+	esVersion, err := c.esVersionLister.Get(string(elasticsearch.Spec.Version))
+	if err != nil {
+		return nil, err
+	}
+
+	var data map[string][]byte
+
+	if esVersion.Spec.AuthPlugin == v1alpha1.ElasticsearchAuthPluginSearchGuard {
+		data, err = getSecretDataForSG(esVersion)
+		if err != nil {
+			return nil, err
+		}
+	} else if esVersion.Spec.AuthPlugin == v1alpha1.ElasticsearchAuthPluginXpack {
+		data = getSecretDataForXPack()
+	}
+
+	name := fmt.Sprintf("%v-auth", elasticsearch.OffshootName())
+	secret := &core.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:   name,
+			Labels: elasticsearch.OffshootLabels(),
+		},
+		Type: core.SecretTypeOpaque,
+		Data: data,
+	}
+	if _, err := c.Client.CoreV1().Secrets(elasticsearch.Namespace).Create(secret); err != nil {
+		return nil, err
+	}
+
+	return &core.SecretVolumeSource{
+		SecretName: secret.Name,
+	}, nil
+}
+
+func getSecretDataForSG(esVersion *v1alpha1.ElasticsearchVersion) (map[string][]byte, error) {
 	adminPassword := rand.Characters(8)
 	hashedAdminPassword, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)
 	if err != nil {
@@ -303,42 +483,23 @@ func (c *Controller) createDatabaseSecret(elasticsearch *api.Elasticsearch) (*co
 		"sg_roles.yml":          []byte(roles),
 		"sg_roles_mapping.yml":  []byte(roles_mapping),
 	}
-
-	name := fmt.Sprintf("%v-auth", elasticsearch.OffshootName())
-	secret := &core.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:   name,
-			Labels: elasticsearch.OffshootLabels(),
-		},
-		Type: core.SecretTypeOpaque,
-		Data: data,
-	}
-	if _, err := c.Client.CoreV1().Secrets(elasticsearch.Namespace).Create(secret); err != nil {
-		return nil, err
+	if strings.HasPrefix(esVersion.Spec.Version, "7.") {
+		data["sg_action_groups.yml"] = []byte(action_group_es7)
+		data["sg_config.yml"] = []byte(config_es7)
+		data["sg_internal_users.yml"] = []byte(fmt.Sprintf(internal_user_es7, hashedAdminPassword, hashedReadallPassword))
+		data["sg_roles.yml"] = []byte(roles_es7)
+		data["sg_roles_mapping.yml"] = []byte(roles_mapping_es7)
+		data["sg_tenants.yml"] = []byte(tenants)
 	}
 
-	return &core.SecretVolumeSource{
-		SecretName: secret.Name,
-	}, nil
+	return data, nil
 }
 
-// This is done to fix 0.8.0 -> 0.9.0 upgrade due to
-// https://github.com/kubedb/elasticsearch/pull/181/files#diff-10ddaf307bbebafda149db10a28b9c24R23 commit
-func (c *Controller) upgradeDatabaseSecret(elasticsearch *api.Elasticsearch) error {
-	meta := metav1.ObjectMeta{
-		Name:      elasticsearch.Spec.DatabaseSecret.SecretName,
-		Namespace: elasticsearch.Namespace,
-	}
+func getSecretDataForXPack() map[string][]byte {
+	adminPassword := rand.Characters(8)
 
-	_, _, err := core_util.CreateOrPatchSecret(c.Client, meta, func(in *core.Secret) *core.Secret {
-		in.StringData = make(map[string]string)
-		if _, ok := in.Data[KeyAdminUserName]; !ok {
-			in.StringData[KeyAdminUserName] = AdminUser
-		}
-		if _, ok := in.Data[KeyReadAllUserName]; !ok {
-			in.StringData[KeyReadAllUserName] = ReadAllUser
-		}
-		return in
-	})
-	return err
+	return map[string][]byte{
+		KeyAdminUserName: []byte(ElasticUser),
+		KeyAdminPassword: []byte(adminPassword),
+	}
 }

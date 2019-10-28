@@ -3,6 +3,8 @@ package controller
 import (
 	"fmt"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,7 +13,6 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/monitoring-agent-api/agents"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 )
 
 func (c *Controller) newMonitorController(mysql *api.MySQL) (mona.Agent, error) {

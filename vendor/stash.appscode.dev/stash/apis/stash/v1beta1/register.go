@@ -1,10 +1,11 @@
 package v1beta1
 
 import (
+	"stash.appscode.dev/stash/apis/stash"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"stash.appscode.dev/stash/apis/stash"
 )
 
 var SchemeGroupVersion = schema.GroupVersion{Group: stash.GroupName, Version: "v1beta1"}
@@ -32,18 +33,20 @@ func Resource(resource string) schema.GroupResource {
 // Adds the list of known types to api.Scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
-		&Function{},
-		&FunctionList{},
-		&BackupConfiguration{},
-		&BackupConfigurationList{},
-		&BackupSession{},
-		&BackupSessionList{},
-		&BackupBlueprint{},
+		&BackupBatchList{},
+		&BackupBatch{},
 		&BackupBlueprintList{},
-		&RestoreSession{},
+		&BackupBlueprint{},
+		&BackupConfigurationList{},
+		&BackupConfiguration{},
+		&BackupSessionList{},
+		&BackupSession{},
+		&FunctionList{},
+		&Function{},
 		&RestoreSessionList{},
-		&Task{},
+		&RestoreSession{},
 		&TaskList{},
+		&Task{},
 	)
 
 	scheme.AddKnownTypes(SchemeGroupVersion,

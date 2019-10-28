@@ -3,15 +3,15 @@ package job
 import (
 	"fmt"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"kubedb.dev/apimachinery/pkg/eventer"
+
 	"github.com/appscode/go/log"
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"kubedb.dev/apimachinery/apis"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
-	"kubedb.dev/apimachinery/pkg/eventer"
 )
 
 func (c *Controller) completeJob(job *batch.Job) error {
@@ -53,7 +53,7 @@ func (c *Controller) handleBackupJob(job *batch.Job) error {
 				t := metav1.Now()
 				in.CompletionTime = &t
 				return in
-			}, apis.EnableStatusSubresource); err != nil {
+			}); err != nil {
 				c.eventRecorder.Eventf(
 					snapshot,
 					core.EventTypeWarning,

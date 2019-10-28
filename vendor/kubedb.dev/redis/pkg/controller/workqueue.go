@@ -1,19 +1,19 @@
 package controller
 
 import (
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+
 	"github.com/appscode/go/log"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
-	"kubedb.dev/apimachinery/apis"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 )
 
 func (c *Controller) initWatcher() {
 	c.rdInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Redises().Informer()
 	c.rdQueue = queue.New("Redis", c.MaxNumRequeues, c.NumThreads, c.runRedis)
 	c.rdLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Redises().Lister()
-	c.rdInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.rdQueue.GetQueue(), apis.EnableStatusSubresource))
+	c.rdInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.rdQueue.GetQueue(), true))
 }
 
 func (c *Controller) runRedis(key string) error {
@@ -36,7 +36,7 @@ func (c *Controller) runRedis(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				redis, _, err = util.PatchRedis(c.ExtClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
+				_, _, err = util.PatchRedis(c.ExtClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, api.GenericKey)
 					return in
 				})

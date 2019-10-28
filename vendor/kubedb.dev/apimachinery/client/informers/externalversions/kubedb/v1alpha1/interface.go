@@ -40,8 +40,12 @@ type Interface interface {
 	MySQLs() MySQLInformer
 	// PerconaXtraDBs returns a PerconaXtraDBInformer.
 	PerconaXtraDBs() PerconaXtraDBInformer
+	// PgBouncers returns a PgBouncerInformer.
+	PgBouncers() PgBouncerInformer
 	// Postgreses returns a PostgresInformer.
 	Postgreses() PostgresInformer
+	// ProxySQLs returns a ProxySQLInformer.
+	ProxySQLs() ProxySQLInformer
 	// Redises returns a RedisInformer.
 	Redises() RedisInformer
 	// Snapshots returns a SnapshotInformer.
@@ -99,9 +103,19 @@ func (v *version) PerconaXtraDBs() PerconaXtraDBInformer {
 	return &perconaXtraDBInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
+// PgBouncers returns a PgBouncerInformer.
+func (v *version) PgBouncers() PgBouncerInformer {
+	return &pgBouncerInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
 // Postgreses returns a PostgresInformer.
 func (v *version) Postgreses() PostgresInformer {
 	return &postgresInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// ProxySQLs returns a ProxySQLInformer.
+func (v *version) ProxySQLs() ProxySQLInformer {
+	return &proxySQLInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Redises returns a RedisInformer.

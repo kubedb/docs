@@ -1,6 +1,11 @@
 package controller
 
 import (
+	cs "kubedb.dev/apimachinery/client/clientset/versioned"
+	amc "kubedb.dev/apimachinery/pkg/controller"
+	"kubedb.dev/apimachinery/pkg/controller/dormantdatabase"
+	"kubedb.dev/apimachinery/pkg/eventer"
+
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -9,11 +14,7 @@ import (
 	"k8s.io/client-go/rest"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/discovery"
-	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
-	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	amc "kubedb.dev/apimachinery/pkg/controller"
-	"kubedb.dev/apimachinery/pkg/controller/dormantdatabase"
-	"kubedb.dev/apimachinery/pkg/eventer"
+	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 )
 
 const (
@@ -29,7 +30,7 @@ type OperatorConfig struct {
 	APIExtKubeClient crd_cs.ApiextensionsV1beta1Interface
 	DBClient         cs.Interface
 	DynamicClient    dynamic.Interface
-	AppCatalogClient appcat_cs.AppcatalogV1alpha1Interface
+	AppCatalogClient appcat_cs.Interface
 	PromClient       pcm.MonitoringV1Interface
 }
 

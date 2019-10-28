@@ -15,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
-	"kubedb.dev/apimachinery/apis"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	dbutil "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"kubedb.dev/etcd/pkg/util"
@@ -381,6 +380,6 @@ func (c *Controller) updateCRStatus(cl *Cluster) error {
 		in.Phase = cl.status.Phase
 		in.ObservedGeneration = types.NewIntHash(cl.cluster.Generation, meta_util.GenerationHash(cl.cluster))
 		return in
-	}, apis.EnableStatusSubresource)
+	})
 	return err
 }

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -11,7 +13,6 @@ import (
 	"kmodules.xyz/client-go/tools/analytics"
 	storage "kmodules.xyz/objectstore-api/osm"
 	ofst "kmodules.xyz/offshoot-api/api/v1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 )
 
 const (

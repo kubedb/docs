@@ -7,18 +7,23 @@ import (
 )
 
 const (
-	ResourceKindRestic       = "Restic"
-	ResourceSingularRestic   = "restic"
-	ResourcePluralRestic     = "restics"
-	ResourceKindRecovery     = "Recovery"
-	ResourceSingularRecovery = "recovery"
-	ResourcePluralRecovery   = "recoveries"
+	ResourceKindRestic     = "Restic"
+	ResourceSingularRestic = "restic"
+	ResourcePluralRestic   = "restics"
 )
 
 // +genclient
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:path=restics,singular=restic,shortName=rst,categories={stash,appscode,all}
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Selector",type="string",JSONPath=".spec.selector"
+// +kubebuilder:printcolumn:name="Schedule",type="string",JSONPath=".spec.schedule"
+// +kubebuilder:printcolumn:name="Backup-Type",type="string",JSONPath=".spec.type",priority=10
+// +kubebuilder:printcolumn:name="Paused",type="boolean",JSONPath=".spec.paused"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type Restic struct {
 	metav1.TypeMeta   `json:",inline,omitempty"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -85,7 +90,7 @@ const (
 )
 
 type RetentionPolicy struct {
-	Name        string   `json:"name,omitempty"`
+	Name        string   `json:"name"`
 	KeepLast    int      `json:"keepLast,omitempty"`
 	KeepHourly  int      `json:"keepHourly,omitempty"`
 	KeepDaily   int      `json:"keepDaily,omitempty"`
@@ -93,6 +98,6 @@ type RetentionPolicy struct {
 	KeepMonthly int      `json:"keepMonthly,omitempty"`
 	KeepYearly  int      `json:"keepYearly,omitempty"`
 	KeepTags    []string `json:"keepTags,omitempty"`
-	Prune       bool     `json:"prune,omitempty"`
+	Prune       bool     `json:"prune"`
 	DryRun      bool     `json:"dryRun,omitempty"`
 }

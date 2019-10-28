@@ -17,6 +17,7 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/leaderelection"
@@ -106,7 +107,7 @@ func RunLeaderElection() {
 		log.Println("Terminating postgres server and operator")
 		if cmd != nil && cmd.Process != nil {
 			log.Println("Postgres is running, sending SIGTERM")
-			cmd.Process.Signal(syscall.SIGTERM)
+			utilruntime.Must(cmd.Process.Signal(syscall.SIGTERM))
 			log.Println("Waiting for postgres to terminate")
 			select {}
 		} else {
@@ -153,10 +154,15 @@ func RunLeaderElection() {
 						if pod.Name == identity {
 							role = RolePrimary
 						}
-						_, _, err = core_util.PatchPod(kubeClient, &pod, func(in *core.Pod) *core.Pod {
+						if _, _, err := core_util.PatchPod(kubeClient, &pod, func(in *core.Pod) *core.Pod {
 							in.Labels["kubedb.com/role"] = role
 							return in
-						})
+						}); err != nil {
+							// not sure if panic-ing will make the situation better or worse. but, as we are going to
+							// reimplement the postgres clustering part, lets keep it as it is right now
+							fmt.Println("got error while updating pod label:", err)
+						}
+
 					}
 
 					role := RoleReplica
@@ -177,7 +183,7 @@ func RunLeaderElection() {
 		terminateDB()
 	}()
 
-	doneChan := make(chan os.Signal)
+	doneChan := make(chan os.Signal, 1)
 	signal.Notify(doneChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	recvSig := <-doneChan
 	log.Printf("Received signal: %s, exiting\n", recvSig)

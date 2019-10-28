@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"net"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+
 	"github.com/pkg/errors"
 	"gomodules.xyz/cert"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 )
 
 // createCaCertificate returns generated caKey, caCert, err in order.
@@ -35,7 +36,7 @@ func createCaCertificate() (*rsa.PrivateKey, *x509.Certificate, error) {
 }
 
 // createPEMCertificate returns generated Key, Cert, err in order.
-func createPEMCertificate(mongodb *api.MongoDB, caKey *rsa.PrivateKey, caCert *x509.Certificate, cfg cert.Config) ([]byte, error) {
+func createPEMCertificate(caKey *rsa.PrivateKey, caCert *x509.Certificate, cfg cert.Config) ([]byte, error) {
 	privateKey, err := cert.NewPrivateKey()
 	if err != nil {
 		return nil, errors.New("failed to generate key for client certificate")
@@ -73,7 +74,7 @@ func createServerPEMCertificate(mongodb *api.MongoDB, caKey *rsa.PrivateKey, caC
 			x509.ExtKeyUsageClientAuth,
 		},
 	}
-	return createPEMCertificate(mongodb, caKey, caCert, cfg)
+	return createPEMCertificate(caKey, caCert, cfg)
 }
 
 // createPEMCertificate returns generated Key, Cert, err in order.
@@ -96,5 +97,5 @@ func createClientPEMCertificate(mongodb *api.MongoDB, caKey *rsa.PrivateKey, caC
 			x509.ExtKeyUsageClientAuth,
 		},
 	}
-	return createPEMCertificate(mongodb, caKey, caCert, cfg)
+	return createPEMCertificate(caKey, caCert, cfg)
 }

@@ -3,6 +3,9 @@ package controller
 import (
 	"fmt"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/pkg/eventer"
+
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -14,14 +17,13 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	ofst "kmodules.xyz/offshoot-api/api/v1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/pkg/eventer"
 )
 
 var (
 	NodeRoleMaster = "node.role.master"
 	NodeRoleClient = "node.role.client"
 	NodeRoleData   = "node.role.data"
+	NodeRoleSet    = "set"
 
 	defaultClientPort = core.ServicePort{
 		Name:       api.ElasticsearchRestPortName,
@@ -53,7 +55,6 @@ func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.Verb
 			"Successfully %s Service",
 			vt1,
 		)
-
 	}
 
 	// Check if service name exists
@@ -118,7 +119,7 @@ func (c *Controller) createService(elasticsearch *api.Elasticsearch) (kutil.Verb
 		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
-		in.Spec.Selector[NodeRoleClient] = "set"
+		in.Spec.Selector[NodeRoleClient] = NodeRoleSet
 		in.Spec.Ports = ofst.MergeServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultClientPort}),
 			elasticsearch.Spec.ServiceTemplate.Spec.Ports,
@@ -159,7 +160,7 @@ func (c *Controller) createMasterService(elasticsearch *api.Elasticsearch) (kuti
 		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
-		in.Spec.Selector[NodeRoleMaster] = "set"
+		in.Spec.Selector[NodeRoleMaster] = NodeRoleSet
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultPeerPort})
 		return in
 	})
