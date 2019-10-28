@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/rest"
 	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
-	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
+	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	catalogapi "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	dbapi "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
@@ -49,7 +49,7 @@ func New(
 	dbClient cs.Interface,
 	stashClient scs.Interface,
 	dynamicClient dynamic.Interface,
-	appCatalogClient appcat_cs.AppcatalogV1alpha1Interface,
+	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	cronController snapc.CronControllerInterface,
 	opt amc.Config,

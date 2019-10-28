@@ -177,7 +177,7 @@ $(OUTBIN): .go/$(OUTBIN).stamp
 	    "
 	@if [ $(COMPRESS) = yes ] && [ $(OS) != darwin ]; then          \
 		echo "compressing $(OUTBIN)";                               \
-		docker run                                                  \
+		@docker run                                                 \
 		    -i                                                      \
 		    --rm                                                    \
 		    -u $$(id -u):$$(id -g)                                  \
@@ -264,7 +264,7 @@ lint: $(BUILD_DIRS)
 	    --env GO111MODULE=on                                    \
 	    --env GOFLAGS="-mod=vendor"                             \
 	    $(BUILD_IMAGE)                                          \
-	    golangci-lint run --enable $(ADDTL_LINTERS)
+	    golangci-lint run --enable $(ADDTL_LINTERS) --timeout=10m --skip-files="generated.*\.go$\" --skip-dirs-use-default --skip-dirs=client,vendor
 
 $(BUILD_DIRS):
 	@mkdir -p $@
@@ -317,3 +317,19 @@ release:
 .PHONY: clean
 clean:
 	rm -rf .go bin
+
+# To test stash integration
+.PHONY: stash-install
+stash-install:
+	@curl -fsSL https://github.com/stashed/installer/raw/v0.9.0-rc.2/deploy/stash.sh | bash
+	@curl -fsSL https://github.com/stashed/catalog/raw/master/deploy/script.sh | bash -s -- --docker-registry=stashed
+
+.PHONY: stash-uninstall
+stash-uninstall:
+	@curl -fsSL https://github.com/stashed/catalog/raw/v0.9.0-rc.2/deploy/script.sh | bash -s -- --uninstall || true
+	@curl -fsSL https://github.com/stashed/installer/raw/master/deploy/stash.sh | bash -s -- --uninstall
+
+.PHONY: stash-purge
+stash-purge:
+	@cd /tmp
+	@curl -fsSL https://github.com/stashed/installer/raw/master/deploy/stash.sh | bash -s -- --uninstall --purge
