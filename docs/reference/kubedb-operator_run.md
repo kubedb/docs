@@ -47,6 +47,7 @@ kubedb-operator run [flags]
       --authentication-kubeconfig string                        kubeconfig file pointing at the 'core' kubernetes server with enough rights to create tokenaccessreviews.authentication.k8s.io.
       --authentication-skip-lookup                              If false, the authentication-kubeconfig will be used to lookup missing authentication configuration from the cluster.
       --authentication-token-webhook-cache-ttl duration         The duration to cache responses from the webhook token authenticator. (default 10s)
+      --authentication-tolerate-lookup-failure                  If true, failures to look up missing authentication configuration from the cluster are not considered fatal. Note that this can result in authentication that treats all requests as anonymous.
       --authorization-always-allow-paths strings                A list of HTTP paths to skip during authorization, i.e. these are authorized without contacting the 'core' kubernetes server.
       --authorization-kubeconfig string                         kubeconfig file pointing at the 'core' kubernetes server with enough rights to create subjectaccessreviews.authorization.k8s.io.
       --authorization-webhook-cache-authorized-ttl duration     The duration to cache 'authorized' responses from the webhook authorizer. (default 10s)
@@ -57,8 +58,6 @@ kubedb-operator run [flags]
       --client-ca-file string                                   If set, any request presenting a client certificate signed by one of the authorities in the client-ca-file is authenticated with an identity corresponding to the CommonName of the client certificate.
       --contention-profiling                                    Enable lock contention profiling, if profiling is enabled
       --enable-mutating-webhook                                 If true, enables mutating webhooks for KubeDB CRDs.
-      --enable-status-subresource                               If true, uses sub resource for KubeDB crds.
-      --enable-swagger-ui                                       Enables swagger ui on the apiserver at /swagger-ui
       --enable-validating-webhook                               If true, enables validating webhooks for KubeDB CRDs.
       --governing-service string                                Governing service for database statefulset (default "kubedb")
   -h, --help                                                    help for run
@@ -92,7 +91,7 @@ kubedb-operator run [flags]
       --log-flush-frequency duration     Maximum number of seconds between log flushes (default 5s)
       --log_backtrace_at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
       --log_dir string                   If non-empty, write log files in this directory
-      --logtostderr                      log to standard error instead of files
+      --logtostderr                      log to standard error instead of files (default true)
       --stderrthreshold severity         logs at or above this threshold go to stderr
       --use-kubeapiserver-fqdn-for-aks   if true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522 (default true)
   -v, --v Level                          log level for V logs

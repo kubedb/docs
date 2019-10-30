@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+
 	"github.com/appscode/go/encoding/json/types"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -52,8 +54,13 @@ type ElasticsearchSpec struct {
 	// Secret with SSL certificates
 	CertificateSecret *core.SecretVolumeSource `json:"certificateSecret,omitempty"`
 
+	// disable security of authPlugin (ie, xpack or searchguard). It disables authentication security of user.
+	// If unset, default is false
+	DisableSecurity bool `json:"disableSecurity,omitempty"`
+
 	// Authentication plugin used by Elasticsearch cluster. If unset, defaults to SearchGuard.
-	AuthPlugin ElasticsearchAuthPlugin `json:"authPlugin,omitempty"`
+	// Deprecated: Use elasticsearchVersion.Spec.AuthPlugin instead
+	AuthPlugin v1alpha1.ElasticsearchAuthPlugin `json:"authPlugin,omitempty"`
 
 	// Database authentication secret
 	DatabaseSecret *core.SecretVolumeSource `json:"databaseSecret,omitempty"`
@@ -144,20 +151,3 @@ type ElasticsearchList struct {
 	// Items is a list of Elasticsearch CRD objects
 	Items []Elasticsearch `json:"items,omitempty"`
 }
-
-// +k8s:deepcopy-gen=false
-// +k8s:gen-deepcopy=false
-// Following structure is used for audit summary report
-type ElasticsearchSummary struct {
-	IdCount map[string]int64 `json:"idCount"`
-	Mapping interface{}      `json:"mapping"`
-	Setting interface{}      `json:"setting"`
-}
-
-type ElasticsearchAuthPlugin string
-
-const (
-	ElasticsearchAuthPluginSearchGuard ElasticsearchAuthPlugin = "SearchGuard" // Default
-	ElasticsearchAuthPluginNone        ElasticsearchAuthPlugin = "None"
-	ElasticsearchAuthPluginXpack       ElasticsearchAuthPlugin = "X-Pack"
-)

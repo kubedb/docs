@@ -3,6 +3,9 @@ package v1alpha1
 import (
 	"fmt"
 
+	"kubedb.dev/apimachinery/apis"
+	"kubedb.dev/apimachinery/apis/kubedb"
+
 	"github.com/appscode/go/types"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -11,8 +14,6 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
-	"kubedb.dev/apimachinery/apis"
-	"kubedb.dev/apimachinery/apis/kubedb"
 )
 
 var _ apis.ResourceInfo = &MySQL{}
@@ -33,7 +34,7 @@ func (m MySQL) OffshootLabels() map[string]string {
 	out[meta_util.NameLabelKey] = ResourceSingularMySQL
 	out[meta_util.VersionLabelKey] = string(m.Spec.Version)
 	out[meta_util.InstanceLabelKey] = m.Name
-	out[meta_util.ComponentLabelKey] = "database"
+	out[meta_util.ComponentLabelKey] = ComponentDatabase
 	out[meta_util.ManagedByLabelKey] = GenericKey
 	return meta_util.FilterKeys(GenericKey, out, m.Labels)
 }
@@ -65,6 +66,14 @@ func (m MySQL) GoverningServiceName() string {
 // Snapshot service account name.
 func (m MySQL) SnapshotSAName() string {
 	return fmt.Sprintf("%v-snapshot", m.OffshootName())
+}
+
+func (m MySQL) PeerName(idx int) string {
+	return fmt.Sprintf("%s-%d.%s.%s", m.OffshootName(), idx, m.GoverningServiceName(), m.Namespace)
+}
+
+func (m MySQL) GetDatabaseSecretName() string {
+	return m.Spec.DatabaseSecret.SecretName
 }
 
 type mysqlApp struct {
@@ -100,7 +109,7 @@ func (m mysqlStatsService) ServiceMonitorName() string {
 }
 
 func (m mysqlStatsService) Path() string {
-	return "/metrics"
+	return DefaultStatsPath
 }
 
 func (m mysqlStatsService) Scheme() string {
@@ -113,7 +122,7 @@ func (m MySQL) StatsService() mona.StatsAccessor {
 
 func (m MySQL) StatsServiceLabels() map[string]string {
 	lbl := meta_util.FilterKeys(GenericKey, m.OffshootSelectors(), m.Labels)
-	lbl[LabelRole] = "stats"
+	lbl[LabelRole] = RoleStats
 	return lbl
 }
 
@@ -146,7 +155,7 @@ func (m MySQL) CustomResourceDefinition() *apiextensions.CustomResourceDefinitio
 		SpecDefinitionName:      "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.MySQL",
 		EnableValidation:        true,
 		GetOpenAPIDefinitions:   GetOpenAPIDefinitions,
-		EnableStatusSubresource: apis.EnableStatusSubresource,
+		EnableStatusSubresource: true,
 		AdditionalPrinterColumns: []apiextensions.CustomResourceColumnDefinition{
 			{
 				Name:     "Version",
@@ -193,11 +202,7 @@ func (m *MySQLSpec) SetDefaults() {
 		m.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 	}
 	if m.TerminationPolicy == "" {
-		if m.StorageType == StorageTypeEphemeral {
-			m.TerminationPolicy = TerminationPolicyDelete
-		} else {
-			m.TerminationPolicy = TerminationPolicyPause
-		}
+		m.TerminationPolicy = TerminationPolicyDelete
 	}
 
 	if m.Topology != nil && m.Topology.Mode != nil && *m.Topology.Mode == MySQLClusterModeGroup {

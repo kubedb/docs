@@ -1,3 +1,18 @@
+/*
+Copyright The KubeDB Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package controller
 
 import (
@@ -5,6 +20,11 @@ import (
 	"path"
 	"strconv"
 	"strings"
+
+	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/pkg/eventer"
+	"kubedb.dev/postgres/pkg/leader_election"
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
@@ -20,10 +40,6 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/analytics"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
-	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/pkg/eventer"
-	"kubedb.dev/postgres/pkg/leader_election"
 )
 
 func (c *Controller) ensureStatefulSet(
@@ -128,7 +144,7 @@ func (c *Controller) ensureStatefulSet(
 			}
 		}
 
-		in = upsertShm(in, postgres)
+		in = upsertShm(in)
 		in = upsertDataVolume(in, postgres)
 		in = upsertCustomConfig(in, postgres)
 
@@ -234,11 +250,20 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion 
 						Value: fmt.Sprintf("s3://%v/%v", archiverStorage.S3.Bucket, WalDataDir(postgres)),
 					},
 				)
-				if archiverStorage.S3.Endpoint != "" {
+				if archiverStorage.S3.Endpoint != "" && !strings.HasSuffix(archiverStorage.S3.Endpoint, ".amazonaws.com") {
+					//means it is a  compatible storage
 					envList = append(envList,
 						core.EnvVar{
 							Name:  "ARCHIVE_S3_ENDPOINT",
 							Value: archiverStorage.S3.Endpoint,
+						},
+					)
+				}
+				if archiverStorage.S3.Region != "" {
+					envList = append(envList,
+						core.EnvVar{
+							Name:  "ARCHIVE_S3_REGION",
+							Value: archiverStorage.S3.Region,
 						},
 					)
 				}
@@ -510,7 +535,7 @@ func upsertInitWalSecret(statefulSet *apps.StatefulSet, secretName string) *apps
 	return statefulSet
 }
 
-func upsertShm(statefulSet *apps.StatefulSet, postgress *api.Postgres) *apps.StatefulSet {
+func upsertShm(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularPostgres {
 			volumeMount := core.VolumeMount{
@@ -702,11 +727,19 @@ func walRecoveryConfig(wal *api.PostgresWALSourceSpec) []core.EnvVar {
 				Value: fmt.Sprintf("s3://%v/%v", wal.S3.Bucket, wal.S3.Prefix),
 			},
 		)
-		if wal.S3.Endpoint != "" {
+		if wal.S3.Endpoint != "" && !strings.HasSuffix(wal.S3.Endpoint, ".amazonaws.com") {
 			envList = append(envList,
 				core.EnvVar{
 					Name:  "RESTORE_S3_ENDPOINT",
 					Value: wal.S3.Endpoint,
+				},
+			)
+		}
+		if wal.S3.Region != "" {
+			envList = append(envList,
+				core.EnvVar{
+					Name:  "RESTORE_S3_REGION",
+					Value: wal.S3.Region,
 				},
 			)
 		}

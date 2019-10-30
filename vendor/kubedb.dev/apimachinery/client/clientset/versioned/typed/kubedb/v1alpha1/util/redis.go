@@ -3,16 +3,16 @@ package util
 import (
 	"fmt"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	cs "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
+
 	"github.com/golang/glog"
-	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/jsonmergepatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kutil "kmodules.xyz/client-go"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	cs "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
 )
 
 func CreateOrPatchRedis(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Redis) *api.Redis) (*api.Redis, kutil.VerbType, error) {
@@ -86,12 +86,7 @@ func UpdateRedisStatus(
 	c cs.KubedbV1alpha1Interface,
 	in *api.Redis,
 	transform func(*api.RedisStatus) *api.RedisStatus,
-	useSubresource ...bool,
 ) (result *api.Redis, err error) {
-	if len(useSubresource) > 1 {
-		return nil, errors.Errorf("invalid value passed for useSubresource: %v", useSubresource)
-	}
-
 	apply := func(x *api.Redis) *api.Redis {
 		return &api.Redis{
 			TypeMeta:   x.TypeMeta,
@@ -101,36 +96,31 @@ func UpdateRedisStatus(
 		}
 	}
 
-	if len(useSubresource) == 1 && useSubresource[0] {
-		attempt := 0
-		cur := in.DeepCopy()
-		err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
-			attempt++
-			var e2 error
-			result, e2 = c.Redises(in.Namespace).UpdateStatus(apply(cur))
-			if kerr.IsConflict(e2) {
-				latest, e3 := c.Redises(in.Namespace).Get(in.Name, metav1.GetOptions{})
-				switch {
-				case e3 == nil:
-					cur = latest
-					return false, nil
-				case kutil.IsRequestRetryable(e3):
-					return false, nil
-				default:
-					return false, e3
-				}
-			} else if err != nil && !kutil.IsRequestRetryable(e2) {
-				return false, e2
+	attempt := 0
+	cur := in.DeepCopy()
+	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+		attempt++
+		var e2 error
+		result, e2 = c.Redises(in.Namespace).UpdateStatus(apply(cur))
+		if kerr.IsConflict(e2) {
+			latest, e3 := c.Redises(in.Namespace).Get(in.Name, metav1.GetOptions{})
+			switch {
+			case e3 == nil:
+				cur = latest
+				return false, nil
+			case kutil.IsRequestRetryable(e3):
+				return false, nil
+			default:
+				return false, e3
 			}
-			return e2 == nil, nil
-		})
-
-		if err != nil {
-			err = fmt.Errorf("failed to update status of Redis %s/%s after %d attempts due to %v", in.Namespace, in.Name, attempt, err)
+		} else if err != nil && !kutil.IsRequestRetryable(e2) {
+			return false, e2
 		}
-		return
-	}
+		return e2 == nil, nil
+	})
 
-	result, _, err = PatchRedisObject(c, in, apply(in))
+	if err != nil {
+		err = fmt.Errorf("failed to update status of Redis %s/%s after %d attempts due to %v", in.Namespace, in.Name, attempt, err)
+	}
 	return
 }

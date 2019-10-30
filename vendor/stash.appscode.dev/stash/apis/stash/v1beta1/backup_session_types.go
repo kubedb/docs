@@ -1,8 +1,6 @@
 package v1beta1
 
 import (
-	"github.com/appscode/go/encoding/json/types"
-	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -16,6 +14,13 @@ const (
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:path=backupsessions,singular=backupsession,categories={stash,appscode,all}
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Invoker-Type",type="string",JSONPath=".spec.invoker.kind"
+// +kubebuilder:printcolumn:name="Invoker-Name",type="string",JSONPath=".spec.invoker.name"
+// +kubebuilder:printcolumn:name="Phase",type="string",JSONPath=".status.phase"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type BackupSession struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -24,8 +29,9 @@ type BackupSession struct {
 }
 
 type BackupSessionSpec struct {
-	// BackupConfiguration indicates the target BackupConfiguration crd
-	BackupConfiguration core.LocalObjectReference `json:"backupConfiguration,omitempty"`
+	// Invoker refers to the BackupConfiguration or BackupBatch being used to invoke this backup session
+	// +optional
+	Invoker BackupInvokerRef `json:"invoker,omitempty"`
 }
 
 type BackupSessionPhase string
@@ -47,16 +53,12 @@ const (
 )
 
 type BackupSessionStatus struct {
-	// ObservedGeneration is the most recent generation observed for this resource. It corresponds to the
-	// resource's generation, which is updated on mutation by the API Server.
-	// +optional
-	ObservedGeneration *types.IntHash `json:"observedGeneration,omitempty"`
 	// Phase indicates the overall phase of the backup process for this BackupSession. Phase will be "Succeeded" only if
 	// phase of all hosts are "Succeeded". If any of the host fail to complete backup, Phase will be "Failed".
 	// +optional
 	Phase BackupSessionPhase `json:"phase,omitempty"`
 	// TotalHosts specifies total number of hosts that will be backed up for this BackupSession
-	// +Optional
+	// +optional
 	TotalHosts *int32 `json:"totalHosts,omitempty"`
 	// SessionDuration specify total time taken to complete current backup session (sum of backup duration of all hosts)
 	// +optional

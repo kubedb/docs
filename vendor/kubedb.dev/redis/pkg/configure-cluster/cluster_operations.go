@@ -1,3 +1,18 @@
+/*
+Copyright The KubeDB Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package configure_cluster
 
 import (
@@ -56,15 +71,6 @@ func (c Config) ping(pod *core.Pod, ip string) (string, error) {
 	return strings.TrimSpace(pong), nil
 }
 
-func (c Config) migrateKey(pod *core.Pod, srcNodeIP, dstNodeIP, dstNodePort, key, dbID, timeout string) error {
-	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(MigrateKeyCmd(srcNodeIP, dstNodeIP, dstNodePort, key, dbID, timeout)...))
-	if err != nil {
-		return errors.Wrapf(err, "Failed to migrate key %q from %q to %q", key, pod.Status.PodIP, dstNodeIP)
-	}
-
-	return nil
-}
-
 func (c Config) getClusterNodes(pod *core.Pod, ip string) (string, error) {
 	out, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterNodesCmd(ip)...))
 	if err != nil {
@@ -99,46 +105,6 @@ func (c Config) clusterFailover(pod *core.Pod, ip string) error {
 	}
 
 	return nil
-}
-
-func (c Config) clusterSetSlotImporting(pod *core.Pod, dstNodeIP, slot, srcNodeID string) error {
-	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterSetSlotImportingCmd(dstNodeIP, slot, srcNodeID)...))
-	if err != nil {
-		return errors.Wrapf(err, "Failed to set slot %q in destination node %q as 'importing' from source node with ID %q",
-			slot, dstNodeIP, srcNodeID)
-	}
-
-	return nil
-}
-
-func (c Config) clusterSetSlotMigrating(pod *core.Pod, srcNodeIP, slot, dstNodeID string) error {
-	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterSetSlotMigratingCmd(srcNodeIP, slot, dstNodeID)...))
-	if err != nil {
-		return errors.Wrapf(err, "Failed to set slot %q in source node %q as 'migrating' to destination node with ID %q",
-			slot, srcNodeIP, dstNodeID)
-	}
-
-	return nil
-}
-
-func (c Config) clusterSetSlotNode(pod *core.Pod, toNodeIP, slot, dstNodeID string) error {
-	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterSetSlotNodeCmd(toNodeIP, slot, dstNodeID)...))
-	if err != nil {
-		return errors.Wrapf(err, "Failed to set slot %q in node %q as 'node' to destination node with ID %q",
-			slot, toNodeIP, dstNodeID)
-	}
-
-	return nil
-}
-
-func (c Config) clusterGetKeysInSlot(pod *core.Pod, srcNodeIP, slot string) (string, error) {
-	out, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(ClusterGetKeysInSlotCmd(srcNodeIP, slot)...))
-	if err != nil {
-		return "", errors.Wrapf(err, "Failed to get key at slot %q from node %q",
-			slot, srcNodeIP)
-	}
-
-	return strings.TrimSpace(out), nil
 }
 
 func (c Config) clusterReplicate(pod *core.Pod, receivingNodeIP, masterNodeID string) error {

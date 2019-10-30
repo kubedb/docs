@@ -11,9 +11,11 @@ import (
 	"strings"
 	"time"
 
+	"stash.appscode.dev/stash/apis/stash/v1alpha1"
+
 	"github.com/appscode/go/log"
 	"github.com/armon/circbuf"
-	"stash.appscode.dev/stash/apis/stash/v1alpha1"
+	storage "kmodules.xyz/objectstore-api/api/v1"
 )
 
 const (
@@ -59,7 +61,7 @@ func (w *ResticWrapper) deleteSnapshots(snapshotIDs []string) ([]byte, error) {
 	return w.run(Command{Name: ResticCMD, Args: args})
 }
 
-func (w *ResticWrapper) initRepositoryIfAbsent() ([]byte, error) {
+func (w *ResticWrapper) initRepositoryIfAbsent() error {
 	log.Infoln("Ensuring restic repository in the backend")
 	args := w.appendCacheDirFlag([]interface{}{"snapshots", "--json"})
 	args = w.appendCaCertFlag(args)
@@ -69,9 +71,12 @@ func (w *ResticWrapper) initRepositoryIfAbsent() ([]byte, error) {
 		args = w.appendCaCertFlag(args)
 		args = w.appendMaxConnectionsFlag(args)
 
-		return w.run(Command{Name: ResticCMD, Args: args})
+		_, err := w.run(Command{Name: ResticCMD, Args: args})
+		if err != nil {
+			return err
+		}
 	}
-	return nil, nil
+	return nil
 }
 
 func (w *ResticWrapper) backup(path, host string, tags []string) ([]byte, error) {
@@ -286,11 +291,11 @@ func (w *ResticWrapper) appendMaxConnectionsFlag(args []interface{}) []interface
 	var maxConOption string
 	if w.config.MaxConnections > 0 {
 		switch w.config.Provider {
-		case ProviderGCS:
+		case storage.ProviderGCS:
 			maxConOption = fmt.Sprintf("gs.connections=%d", w.config.MaxConnections)
-		case ProviderAzure:
+		case storage.ProviderAzure:
 			maxConOption = fmt.Sprintf("azure.connections=%d", w.config.MaxConnections)
-		case ProviderB2:
+		case storage.ProviderB2:
 			maxConOption = fmt.Sprintf("b2.connections=%d", w.config.MaxConnections)
 		}
 	}

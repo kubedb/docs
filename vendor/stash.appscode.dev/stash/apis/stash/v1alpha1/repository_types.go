@@ -1,7 +1,6 @@
 package v1alpha1
 
 import (
-	"github.com/appscode/go/encoding/json/types"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	store "kmodules.xyz/objectstore-api/api/v1"
 )
@@ -16,6 +15,14 @@ const (
 // +k8s:openapi-gen=true
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// +kubebuilder:object:root=true
+// +kubebuilder:resource:path=repositories,singular=repository,shortName=repo,categories={stash,appscode}
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Integrity",type="boolean",JSONPath=".status.integrity"
+// +kubebuilder:printcolumn:name="Size",type="string",JSONPath=".status.size"
+// +kubebuilder:printcolumn:name="Snapshot-Count",type="integer",JSONPath=".status.snapshotCount"
+// +kubebuilder:printcolumn:name="Last-Successful-Backup",type="date",format="date-time",JSONPath=".status.lastBackupTime"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type Repository struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -32,10 +39,10 @@ type RepositorySpec struct {
 }
 
 type RepositoryStatus struct {
-	// observedGeneration is the most recent generation observed for this resource. It corresponds to the
-	// resource's generation, which is updated on mutation by the API Server.
+	// ObservedGeneration is the most recent generation observed for this Repository. It corresponds to the
+	// Repository's generation, which is updated on mutation by the API Server.
 	// +optional
-	ObservedGeneration *types.IntHash `json:"observedGeneration,omitempty"`
+	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 	// FirstBackupTime indicates the timestamp when the first backup was taken
 	FirstBackupTime *metav1.Time `json:"firstBackupTime,omitempty"`
 	// LastBackupTime indicates the timestamp when the latest backup was taken

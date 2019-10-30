@@ -4,9 +4,10 @@ import (
 	"sync"
 	"time"
 
+	api_v1beta1 "stash.appscode.dev/stash/apis/stash/v1beta1"
+
 	"github.com/appscode/go/types"
 	"k8s.io/apimachinery/pkg/util/errors"
-	api_v1beta1 "stash.appscode.dev/stash/apis/stash/v1beta1"
 )
 
 // RunBackup takes backup, cleanup old snapshots, check repository integrity etc.
@@ -16,7 +17,7 @@ func (w *ResticWrapper) RunBackup(backupOption BackupOptions) (*BackupOutput, er
 	startTime := time.Now()
 
 	// Initialize restic repository if it does not exist
-	_, err := w.initRepositoryIfAbsent()
+	err := w.initRepositoryIfAbsent()
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +81,7 @@ func (w *ResticWrapper) RunBackup(backupOption BackupOptions) (*BackupOutput, er
 func (w *ResticWrapper) RunParallelBackup(backupOptions []BackupOptions, maxConcurrency int) (*BackupOutput, error) {
 
 	// Initialize restic repository if it does not exist
-	_, err := w.initRepositoryIfAbsent()
+	err := w.initRepositoryIfAbsent()
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +200,7 @@ func (w *ResticWrapper) runBackup(backupOption BackupOptions) (api_v1beta1.HostB
 			return hostStats, err
 		}
 		// Extract information from the output of backup command
-		snapStats, err := extractBackupInfo(out, backupOption.StdinFileName, backupOption.Host)
+		snapStats, err := extractBackupInfo(out, backupOption.StdinFileName)
 		if err != nil {
 			return hostStats, err
 		}
@@ -214,7 +215,7 @@ func (w *ResticWrapper) runBackup(backupOption BackupOptions) (api_v1beta1.HostB
 			return hostStats, err
 		}
 		// Extract information from the output of backup command
-		stats, err := extractBackupInfo(out, path, backupOption.Host)
+		stats, err := extractBackupInfo(out, path)
 		if err != nil {
 			return hostStats, err
 		}
@@ -249,5 +250,4 @@ func (backupOutput *BackupOutput) upsertHostBackupStats(hostStats api_v1beta1.Ho
 
 	// no entry for this host. add a new entry
 	backupOutput.HostBackupStats = append(backupOutput.HostBackupStats, hostStats)
-	return
 }

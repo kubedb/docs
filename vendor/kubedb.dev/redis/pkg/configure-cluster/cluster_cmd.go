@@ -1,3 +1,18 @@
+/*
+Copyright The KubeDB Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package configure_cluster
 
 import (
@@ -13,7 +28,6 @@ type ResetType string
 
 const (
 	// Reset types for Redis node
-	resetTypeHard ResetType = "hard"
 	resetTypeSoft ResetType = "soft"
 )
 
@@ -123,11 +137,6 @@ func (v version5) ReshardCmd(srcIP, srcID, dstIP, dstID string, slotStart, slotE
 /*******************************************
 	redis-cli cluster commands (general)
 *******************************************/
-// https://redis.io/commands/cluster-info
-func ClusterInfoCmd() []string {
-	return []string{"redis-cli", "-c", "cluster", "info"}
-}
-
 // https://redis.io/commands/cluster-nodes
 func ClusterNodesCmd(ip string) []string {
 	return []string{"redis-cli", "-c", "-h", ip, "cluster", "nodes"}
@@ -148,24 +157,6 @@ func ClusterFailoverCmd(ip string) []string {
 	return []string{"redis-cli", "-c", "-h", ip, "cluster", "failover"}
 }
 
-// https://redis.io/commands/cluster-setslot
-func ClusterSetSlotImportingCmd(dstNodeIP, slot, srcNodeID string) []string {
-	return []string{"redis-cli", "-c", "-h", dstNodeIP, "cluster", "setslot", slot, "importing", srcNodeID}
-}
-
-func ClusterSetSlotMigratingCmd(srcNodeIP, slot, dstNodeID string) []string {
-	return []string{"redis-cli", "-c", "-h", srcNodeIP, "cluster", "setslot", slot, "migrating", dstNodeID}
-}
-
-func ClusterSetSlotNodeCmd(toNodeIP, slot, dstNodeID string) []string {
-	return []string{"redis-cli", "-c", "-h", toNodeIP, "cluster", "setslot", slot, "node", dstNodeID}
-}
-
-// https://redis.io/commands/cluster-getkeysinslot
-func ClusterGetKeysInSlotCmd(srcNodeIP, slot string) []string {
-	return []string{"redis-cli", "-c", "-h", srcNodeIP, "cluster", "getkeysinslot", slot, "1"}
-}
-
 // https://redis.io/commands/cluster-replicate
 func ClusterReplicateCmd(ip, masterNodeID string) []string {
 	return []string{"redis-cli", "-c", "-h", ip, "cluster", "replicate", masterNodeID}
@@ -178,9 +169,4 @@ func ClusterReplicateCmd(ip, masterNodeID string) []string {
 // https://redis.io/commands/ping
 func PingCmd(ip string) []string {
 	return []string{"redis-cli", "-h", ip, "ping"}
-}
-
-// https://redis.io/commands/migrate
-func MigrateKeyCmd(srcNodeIP, dstNodeIP, dstNodePort, key, dbID, timeout string) []string {
-	return []string{"redis-cli", "-h", srcNodeIP, "migrate", dstNodeIP, dstNodePort, key, dbID, timeout}
 }

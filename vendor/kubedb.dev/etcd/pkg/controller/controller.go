@@ -1,6 +1,31 @@
+/*
+Copyright The KubeDB Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package controller
 
 import (
+	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	cs "kubedb.dev/apimachinery/client/clientset/versioned"
+	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
+	amc "kubedb.dev/apimachinery/pkg/controller"
+	"kubedb.dev/apimachinery/pkg/controller/dormantdatabase"
+	snapc "kubedb.dev/apimachinery/pkg/controller/snapshot"
+	"kubedb.dev/apimachinery/pkg/eventer"
+
 	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
@@ -22,17 +47,7 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
-	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
-	"kubedb.dev/apimachinery/apis"
-	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
-	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
-	amc "kubedb.dev/apimachinery/pkg/controller"
-	"kubedb.dev/apimachinery/pkg/controller/dormantdatabase"
-	snapc "kubedb.dev/apimachinery/pkg/controller/snapshot"
-	"kubedb.dev/apimachinery/pkg/eventer"
+	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 )
 
 type Event struct {
@@ -69,7 +84,7 @@ func New(
 	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
 	extClient cs.Interface,
 	dc dynamic.Interface,
-	appCatalogClient appcat_cs.AppcatalogV1alpha1Interface,
+	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	cronController snapc.CronControllerInterface,
 	opt amc.Config,
@@ -191,7 +206,7 @@ func (c *Controller) pushFailureEvent(etcd *api.Etcd, reason string) {
 		in.Reason = reason
 		in.ObservedGeneration = types.NewIntHash(etcd.Generation, meta_util.GenerationHash(etcd))
 		return in
-	}, apis.EnableStatusSubresource)
+	})
 	if err != nil {
 		if ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd); rerr == nil {
 			c.recorder.Eventf(

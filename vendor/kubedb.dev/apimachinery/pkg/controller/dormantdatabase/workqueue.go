@@ -1,18 +1,18 @@
 package dormantdatabase
 
 import (
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+
 	"github.com/appscode/go/log"
 	"k8s.io/apimachinery/pkg/labels"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
-	"kubedb.dev/apimachinery/apis"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 )
 
 func (c *Controller) addEventHandler(selector labels.Selector) {
 	c.DrmnQueue = queue.New("DormantDatabase", c.MaxNumRequeues, c.NumThreads, c.runDormantDatabase)
-	c.DrmnInformer.AddEventHandler(queue.NewFilteredHandler(queue.NewObservableHandler(c.DrmnQueue.GetQueue(), apis.EnableStatusSubresource), selector))
+	c.DrmnInformer.AddEventHandler(queue.NewFilteredHandler(queue.NewObservableHandler(c.DrmnQueue.GetQueue(), true), selector))
 	c.ddbLister = c.KubedbInformerFactory.Kubedb().V1alpha1().DormantDatabases().Lister()
 }
 
@@ -36,7 +36,7 @@ func (c *Controller) runDormantDatabase(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				dormantDatabase, _, err = util.PatchDormantDatabase(c.ExtClient.KubedbV1alpha1(), dormantDatabase, func(in *api.DormantDatabase) *api.DormantDatabase {
+				_, _, err = util.PatchDormantDatabase(c.ExtClient.KubedbV1alpha1(), dormantDatabase, func(in *api.DormantDatabase) *api.DormantDatabase {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, api.GenericKey)
 					return in
 				})
@@ -47,6 +47,10 @@ func (c *Controller) runDormantDatabase(key string) error {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
 				return in
 			})
+			if err != nil {
+				log.Errorln(err)
+				return err
+			}
 			if err := c.create(dormantDatabase); err != nil {
 				log.Errorln(err)
 				return err

@@ -1,3 +1,18 @@
+/*
+Copyright The KubeDB Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package controller
 
 import (
@@ -5,6 +20,10 @@ import (
 	"fmt"
 	"reflect"
 	"time"
+
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	dbutil "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"kubedb.dev/etcd/pkg/util"
 
 	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
@@ -15,10 +34,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
-	"kubedb.dev/apimachinery/apis"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	dbutil "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
-	"kubedb.dev/etcd/pkg/util"
 )
 
 var (
@@ -381,6 +396,6 @@ func (c *Controller) updateCRStatus(cl *Cluster) error {
 		in.Phase = cl.status.Phase
 		in.ObservedGeneration = types.NewIntHash(cl.cluster.Generation, meta_util.GenerationHash(cl.cluster))
 		return in
-	}, apis.EnableStatusSubresource)
+	})
 	return err
 }

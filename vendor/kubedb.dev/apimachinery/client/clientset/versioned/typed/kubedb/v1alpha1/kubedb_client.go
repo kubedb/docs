@@ -19,10 +19,11 @@ limitations under the License.
 package v1alpha1
 
 import (
-	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
-	rest "k8s.io/client-go/rest"
 	v1alpha1 "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/scheme"
+
+	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
+	rest "k8s.io/client-go/rest"
 )
 
 type KubedbV1alpha1Interface interface {
@@ -35,7 +36,9 @@ type KubedbV1alpha1Interface interface {
 	MongoDBsGetter
 	MySQLsGetter
 	PerconaXtraDBsGetter
+	PgBouncersGetter
 	PostgresesGetter
+	ProxySQLsGetter
 	RedisesGetter
 	SnapshotsGetter
 }
@@ -77,8 +80,16 @@ func (c *KubedbV1alpha1Client) PerconaXtraDBs(namespace string) PerconaXtraDBInt
 	return newPerconaXtraDBs(c, namespace)
 }
 
+func (c *KubedbV1alpha1Client) PgBouncers(namespace string) PgBouncerInterface {
+	return newPgBouncers(c, namespace)
+}
+
 func (c *KubedbV1alpha1Client) Postgreses(namespace string) PostgresInterface {
 	return newPostgreses(c, namespace)
+}
+
+func (c *KubedbV1alpha1Client) ProxySQLs(namespace string) ProxySQLInterface {
+	return newProxySQLs(c, namespace)
 }
 
 func (c *KubedbV1alpha1Client) Redises(namespace string) RedisInterface {

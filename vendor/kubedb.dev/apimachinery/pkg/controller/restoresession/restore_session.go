@@ -1,11 +1,12 @@
 package restoresession
 
 import (
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/pkg/eventer"
+
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/pkg/eventer"
 	"stash.appscode.dev/stash/apis/stash/v1beta1"
 )
 

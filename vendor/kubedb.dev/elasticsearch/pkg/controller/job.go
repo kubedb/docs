@@ -1,7 +1,25 @@
+/*
+Copyright The KubeDB Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package controller
 
 import (
 	"fmt"
+
+	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 
 	batch "k8s.io/api/batch/v1"
 	core "k8s.io/api/core/v1"
@@ -9,11 +27,10 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/analytics"
 	storage "kmodules.xyz/objectstore-api/osm"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 )
 
 func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot *api.Snapshot) (*batch.Job, error) {
-	elasticsearchVersion, err := c.ExtClient.CatalogV1alpha1().ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{})
+	elasticsearchVersion, err := c.esVersionLister.Get(string(elasticsearch.Spec.Version))
 	if err != nil {
 		return nil, err
 	}
@@ -53,6 +70,14 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 	folderName, err := snapshot.Location()
 	if err != nil {
 		return nil, err
+	}
+
+	usernameKey := KeyAdminUserName
+	passwordKey := KeyAdminPassword
+
+	if elasticsearchVersion.Spec.AuthPlugin == v1alpha1.ElasticsearchAuthPluginXpack {
+		usernameKey = KeyAdminUserName
+		passwordKey = KeyAdminPassword
 	}
 
 	job := &batch.Job{
@@ -101,7 +126,7 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 											LocalObjectReference: core.LocalObjectReference{
 												Name: elasticsearch.Spec.DatabaseSecret.SecretName,
 											},
-											Key: KeyAdminUserName,
+											Key: usernameKey,
 										},
 									},
 								},
@@ -112,13 +137,13 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 											LocalObjectReference: core.LocalObjectReference{
 												Name: elasticsearch.Spec.DatabaseSecret.SecretName,
 											},
-											Key: KeyAdminPassword,
+											Key: passwordKey,
 										},
 									},
 								},
 								{
 									Name:  "AUTH_PLUGIN",
-									Value: fmt.Sprintf("%s", elasticsearch.Spec.AuthPlugin),
+									Value: string(elasticsearch.Spec.AuthPlugin),
 								},
 								{
 									Name:  analytics.Key,
@@ -200,11 +225,11 @@ func (c *Controller) createRestoreJob(elasticsearch *api.Elasticsearch, snapshot
 }
 
 func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) {
-	elasticsearch, err := c.ExtClient.KubedbV1alpha1().Elasticsearches(snapshot.Namespace).Get(snapshot.Spec.DatabaseName, metav1.GetOptions{})
+	elasticsearch, err := c.esLister.Elasticsearches(snapshot.Namespace).Get(snapshot.Spec.DatabaseName)
 	if err != nil {
 		return nil, err
 	}
-	elasticsearchVersion, err := c.ExtClient.CatalogV1alpha1().ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{})
+	elasticsearchVersion, err := c.esVersionLister.Get(string(elasticsearch.Spec.Version))
 	if err != nil {
 		return nil, err
 	}
@@ -244,6 +269,14 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 	folderName, err := snapshot.Location()
 	if err != nil {
 		return nil, err
+	}
+
+	usernameKey := KeyReadAllUserName
+	passwordKey := KeyReadAllPassword
+
+	if elasticsearchVersion.Spec.AuthPlugin == v1alpha1.ElasticsearchAuthPluginXpack {
+		usernameKey = KeyAdminUserName
+		passwordKey = KeyAdminPassword
 	}
 
 	indices, err := c.getAllIndices(elasticsearch)
@@ -298,7 +331,7 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 											LocalObjectReference: core.LocalObjectReference{
 												Name: elasticsearch.Spec.DatabaseSecret.SecretName,
 											},
-											Key: KeyReadAllUserName,
+											Key: usernameKey,
 										},
 									},
 								},
@@ -309,13 +342,13 @@ func (c *Controller) GetSnapshotter(snapshot *api.Snapshot) (*batch.Job, error) 
 											LocalObjectReference: core.LocalObjectReference{
 												Name: elasticsearch.Spec.DatabaseSecret.SecretName,
 											},
-											Key: KeyReadAllPassword,
+											Key: passwordKey,
 										},
 									},
 								},
 								{
 									Name:  "AUTH_PLUGIN",
-									Value: fmt.Sprintf("%s", elasticsearch.Spec.AuthPlugin),
+									Value: string(elasticsearch.Spec.AuthPlugin),
 								},
 								{
 									Name:  analytics.Key,

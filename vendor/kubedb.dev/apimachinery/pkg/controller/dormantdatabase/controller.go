@@ -3,6 +3,12 @@ package dormantdatabase
 import (
 	"time"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	cs "kubedb.dev/apimachinery/client/clientset/versioned"
+	kubedb_informers "kubedb.dev/apimachinery/client/informers/externalversions/kubedb/v1alpha1"
+	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
+	amc "kubedb.dev/apimachinery/pkg/controller"
+
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -10,11 +16,6 @@ import (
 	"k8s.io/client-go/tools/record"
 	crdutils "kmodules.xyz/client-go/apiextensions/v1beta1"
 	"kmodules.xyz/client-go/tools/queue"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	kubedb_informers "kubedb.dev/apimachinery/client/informers/externalversions/kubedb/v1alpha1"
-	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
-	amc "kubedb.dev/apimachinery/pkg/controller"
 )
 
 type Controller struct {

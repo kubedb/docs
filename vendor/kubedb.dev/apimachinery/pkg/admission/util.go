@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strings"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	meta_util "kmodules.xyz/client-go/meta"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 )
 
 func ValidateUpdate(obj, oldObj runtime.Object, kind string) error {

@@ -3,6 +3,8 @@ package v1beta1
 import (
 	"reflect"
 
+	"kmodules.xyz/client-go/discovery"
+
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	policy "k8s.io/api/policy/v1beta1"
@@ -13,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	kutil "kmodules.xyz/client-go"
-	"kmodules.xyz/client-go/discovery"
 )
 
 func CreateOrPatchPodDisruptionBudget(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodDisruptionBudget) *policy.PodDisruptionBudget) (*policy.PodDisruptionBudget, kutil.VerbType, error) {

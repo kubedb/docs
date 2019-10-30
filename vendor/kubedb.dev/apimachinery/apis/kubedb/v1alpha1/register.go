@@ -1,10 +1,11 @@
 package v1alpha1
 
 import (
+	"kubedb.dev/apimachinery/apis/kubedb"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"kubedb.dev/apimachinery/apis/kubedb"
 )
 
 var SchemeGroupVersion = schema.GroupVersion{Group: kubedb.GroupName, Version: "v1alpha1"}
@@ -37,10 +38,14 @@ func Resource(resource string) schema.GroupResource {
 // Adds the list of known types to api.Scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
-		&Postgres{},
-		&PostgresList{},
+		&DormantDatabase{},
+		&DormantDatabaseList{},
 		&Elasticsearch{},
 		&ElasticsearchList{},
+		&Etcd{},
+		&EtcdList{},
+		&MariaDB{},
+		&MariaDBList{},
 		&Memcached{},
 		&MemcachedList{},
 		&MongoDB{},
@@ -49,16 +54,16 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&MySQLList{},
 		&PerconaXtraDB{},
 		&PerconaXtraDBList{},
-		&MariaDB{},
-		&MariaDBList{},
+		&PgBouncer{},
+		&PgBouncerList{},
+		&Postgres{},
+		&PostgresList{},
+		&ProxySQL{},
+		&ProxySQLList{},
 		&Redis{},
 		&RedisList{},
-		&Etcd{},
-		&EtcdList{},
-		&Snapshot{},
 		&SnapshotList{},
-		&DormantDatabase{},
-		&DormantDatabaseList{},
+		&Snapshot{},
 	)
 
 	scheme.AddKnownTypes(SchemeGroupVersion,

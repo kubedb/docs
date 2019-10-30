@@ -1,16 +1,21 @@
+/*
+Copyright The KubeDB Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package controller
 
 import (
-	"github.com/appscode/go/log"
-	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
-	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
-	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
-	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1"
 	catalogapi "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	dbapi "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
@@ -23,6 +28,17 @@ import (
 	myc "kubedb.dev/mysql/pkg/controller"
 	pgc "kubedb.dev/postgres/pkg/controller"
 	rdc "kubedb.dev/redis/pkg/controller"
+
+	"github.com/appscode/go/log"
+	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
+	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	scs "stash.appscode.dev/stash/client/clientset/versioned"
 )
 
@@ -49,7 +65,7 @@ func New(
 	dbClient cs.Interface,
 	stashClient scs.Interface,
 	dynamicClient dynamic.Interface,
-	appCatalogClient appcat_cs.AppcatalogV1alpha1Interface,
+	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	cronController snapc.CronControllerInterface,
 	opt amc.Config,

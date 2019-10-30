@@ -3,6 +3,9 @@ package v1alpha1
 import (
 	"fmt"
 
+	"kubedb.dev/apimachinery/apis"
+	"kubedb.dev/apimachinery/apis/kubedb"
+
 	"github.com/appscode/go/types"
 	apps "k8s.io/api/apps/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
@@ -10,8 +13,6 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
-	"kubedb.dev/apimachinery/apis"
-	"kubedb.dev/apimachinery/apis/kubedb"
 )
 
 var _ apis.ResourceInfo = &Postgres{}
@@ -32,7 +33,7 @@ func (p Postgres) OffshootLabels() map[string]string {
 	out[meta_util.NameLabelKey] = ResourceSingularPostgres
 	out[meta_util.VersionLabelKey] = string(p.Spec.Version)
 	out[meta_util.InstanceLabelKey] = p.Name
-	out[meta_util.ComponentLabelKey] = "database"
+	out[meta_util.ComponentLabelKey] = ComponentDatabase
 	out[meta_util.ManagedByLabelKey] = GenericKey
 	return meta_util.FilterKeys(GenericKey, out, p.Labels)
 }
@@ -95,7 +96,7 @@ func (p postgresStatsService) ServiceMonitorName() string {
 }
 
 func (p postgresStatsService) Path() string {
-	return "/metrics"
+	return DefaultStatsPath
 }
 
 func (p postgresStatsService) Scheme() string {
@@ -108,7 +109,7 @@ func (p Postgres) StatsService() mona.StatsAccessor {
 
 func (p Postgres) StatsServiceLabels() map[string]string {
 	lbl := meta_util.FilterKeys(GenericKey, p.OffshootSelectors(), p.Labels)
-	lbl[LabelRole] = "stats"
+	lbl[LabelRole] = RoleStats
 	return lbl
 }
 
@@ -145,7 +146,7 @@ func (p Postgres) CustomResourceDefinition() *apiextensions.CustomResourceDefini
 		SpecDefinitionName:      "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Postgres",
 		EnableValidation:        true,
 		GetOpenAPIDefinitions:   GetOpenAPIDefinitions,
-		EnableStatusSubresource: apis.EnableStatusSubresource,
+		EnableStatusSubresource: true,
 		AdditionalPrinterColumns: []apiextensions.CustomResourceColumnDefinition{
 			{
 				Name:     "Version",
@@ -192,11 +193,7 @@ func (p *PostgresSpec) SetDefaults() {
 		p.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 	}
 	if p.TerminationPolicy == "" {
-		if p.StorageType == StorageTypeEphemeral {
-			p.TerminationPolicy = TerminationPolicyDelete
-		} else {
-			p.TerminationPolicy = TerminationPolicyPause
-		}
+		p.TerminationPolicy = TerminationPolicyDelete
 	}
 	if p.Init != nil && p.Init.PostgresWAL != nil && p.Init.PostgresWAL.PITR != nil {
 		pitr := p.Init.PostgresWAL.PITR

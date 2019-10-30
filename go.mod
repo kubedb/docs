@@ -3,8 +3,8 @@ module kubedb.dev/operator
 go 1.12
 
 require (
-	github.com/appscode/go v0.0.0-20190808133642-1d4ef1f1c1e0
-	github.com/coreos/prometheus-operator v0.30.1
+	github.com/appscode/go v0.0.0-20191025021232-311ac347b3ef
+	github.com/coreos/prometheus-operator v0.31.1
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.3
 	k8s.io/api v0.0.0-20190503110853-61630f889b3c
@@ -12,18 +12,18 @@ require (
 	k8s.io/apimachinery v0.0.0-20190508063446-a3da69d3723c
 	k8s.io/apiserver v0.0.0-20190516230822-f89599b3f645
 	k8s.io/client-go v11.0.0+incompatible
-	kmodules.xyz/client-go v0.0.0-20190808141354-bbb9e14f60ab
-	kmodules.xyz/custom-resources v0.0.0-20190808144301-114abf10dfe2
+	kmodules.xyz/client-go v0.0.0-20191023042933-b12d1ccfaf57
+	kmodules.xyz/custom-resources v0.0.0-20190927035424-65fe358bb045
 	kmodules.xyz/webhook-runtime v0.0.0-20190808145328-4186c470d56b
-	kubedb.dev/apimachinery v0.13.0-rc.0
-	kubedb.dev/elasticsearch v0.13.0-rc.0
-	kubedb.dev/etcd v0.5.0-rc.0
-	kubedb.dev/memcached v0.6.0-rc.0
-	kubedb.dev/mongodb v0.6.0-rc.0
-	kubedb.dev/mysql v0.6.0-rc.0
-	kubedb.dev/postgres v0.13.0-rc.0
-	kubedb.dev/redis v0.6.0-rc.0
-	stash.appscode.dev/stash v0.9.0-rc.0
+	kubedb.dev/apimachinery v0.13.0-rc.2
+	kubedb.dev/elasticsearch v0.13.0-rc.1.0.20191030000328-b7012bc5d210
+	kubedb.dev/etcd v0.5.0-rc.1.0.20191030024915-cf75e74fc547
+	kubedb.dev/memcached v0.6.0-rc.1.0.20191030000830-7b79fbfed004
+	kubedb.dev/mongodb v0.6.0-rc.1.0.20191030003732-cc545e04a884
+	kubedb.dev/mysql v0.6.0-rc.0.0.20191030004636-132b2a0eff45
+	kubedb.dev/postgres v0.13.0-rc.0.0.20191030004721-aa1d98d07b28
+	kubedb.dev/redis v0.6.0-rc.0.0.20191030003703-6ccd651c0777
+	stash.appscode.dev/stash v0.9.0-rc.2
 )
 
 replace (

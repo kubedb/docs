@@ -1,3 +1,18 @@
+/*
+Copyright The KubeDB Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package configure_cluster
 
 import (
@@ -5,12 +20,13 @@ import (
 	"strings"
 	"time"
 
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/rest"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 )
 
 // ConfigureRedisCluster() configures a cluster.
@@ -185,7 +201,7 @@ func (c Config) ensureFirstPodAsMaster(pods [][]*core.Pod) error {
 				return err
 			}
 
-			if getNodeRole(getMyConf(nodesConf)) != nodeRoleMaster {
+			if getNodeRole(getMyConf(nodesConf)) != nodeFlagMaster {
 				// role != "master" means this node is not serving as master
 				if err = c.clusterFailover(execPod, contactingNodeIP); err != nil {
 					return err
@@ -300,7 +316,10 @@ func (c Config) ensureExtraSlavesBeRemoved(pods [][]*core.Pod) error {
 		nodes [][]RedisNode
 	)
 
-	nodes, err = c.getOrderedNodes(pods)
+	if nodes, err = c.getOrderedNodes(pods); err != nil {
+		return err
+	}
+
 	for i := range nodes {
 		for j := c.Cluster.Replicas + 1; j < len(nodes[i]); j++ {
 			execPod := pods[0][0]
@@ -345,7 +364,9 @@ func (c Config) ensureExtraMastersBeRemoved(pods [][]*core.Pod) error {
 		slotsRequired     int
 	)
 
-	nodes, err = c.getOrderedNodes(pods)
+	if nodes, err = c.getOrderedNodes(pods); err != nil {
+		return err
+	}
 
 	// count number of masters
 	existingMasterCnt = 0
@@ -462,7 +483,10 @@ func (c Config) ensureNewMastersBeAdded(pods [][]*core.Pod) error {
 		nodes             [][]RedisNode
 	)
 
-	nodes, err = c.getOrderedNodes(pods)
+	if nodes, err = c.getOrderedNodes(pods); err != nil {
+		return err
+	}
+
 	existingMasterCnt = 0
 	for i := range nodes {
 		if len(nodes[i]) > 0 {
@@ -510,7 +534,10 @@ func (c Config) rebalanceSlots(pods [][]*core.Pod) error {
 		slotsPerMaster, slotsRequired int
 	)
 
-	nodes, err = c.getOrderedNodes(pods)
+	if nodes, err = c.getOrderedNodes(pods); err != nil {
+		return err
+	}
+
 	existingMasterCnt = 0
 	for i := range nodes {
 		if len(nodes[i]) > 0 {
@@ -589,7 +616,10 @@ func (c Config) ensureNewSlavesBeAdded(pods [][]*core.Pod) error {
 		nodes             [][]RedisNode
 	)
 
-	nodes, err = c.getOrderedNodes(pods)
+	if nodes, err = c.getOrderedNodes(pods); err != nil {
+		return err
+	}
+
 	existingMasterCnt = 0
 	for i := range nodes {
 		if len(nodes[i]) > 0 {

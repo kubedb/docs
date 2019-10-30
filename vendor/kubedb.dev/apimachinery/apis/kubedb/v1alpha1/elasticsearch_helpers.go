@@ -3,14 +3,16 @@ package v1alpha1
 import (
 	"fmt"
 
+	"kubedb.dev/apimachinery/apis"
+	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	"kubedb.dev/apimachinery/apis/kubedb"
+
 	apps "k8s.io/api/apps/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	crdutils "kmodules.xyz/client-go/apiextensions/v1beta1"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
-	"kubedb.dev/apimachinery/apis"
-	"kubedb.dev/apimachinery/apis/kubedb"
 )
 
 var _ apis.ResourceInfo = &Elasticsearch{}
@@ -31,7 +33,7 @@ func (e Elasticsearch) OffshootLabels() map[string]string {
 	out[meta_util.NameLabelKey] = ResourceSingularElasticsearch
 	out[meta_util.VersionLabelKey] = string(e.Spec.Version)
 	out[meta_util.InstanceLabelKey] = e.Name
-	out[meta_util.ComponentLabelKey] = "database"
+	out[meta_util.ComponentLabelKey] = ComponentDatabase
 	out[meta_util.ManagedByLabelKey] = GenericKey
 	return meta_util.FilterKeys(GenericKey, out, e.Labels)
 }
@@ -110,7 +112,7 @@ func (e elasticsearchStatsService) ServiceMonitorName() string {
 }
 
 func (e elasticsearchStatsService) Path() string {
-	return "/metrics"
+	return DefaultStatsPath
 }
 
 func (e elasticsearchStatsService) Scheme() string {
@@ -123,7 +125,7 @@ func (e Elasticsearch) StatsService() mona.StatsAccessor {
 
 func (e Elasticsearch) StatsServiceLabels() map[string]string {
 	lbl := meta_util.FilterKeys(GenericKey, e.OffshootSelectors(), e.Labels)
-	lbl[LabelRole] = "stats"
+	lbl[LabelRole] = RoleStats
 	return lbl
 }
 
@@ -156,7 +158,7 @@ func (e Elasticsearch) CustomResourceDefinition() *apiextensions.CustomResourceD
 		SpecDefinitionName:      "kubedb.dev/apimachinery/apis/kubedb/v1alpha1.Elasticsearch",
 		EnableValidation:        true,
 		GetOpenAPIDefinitions:   GetOpenAPIDefinitions,
-		EnableStatusSubresource: apis.EnableStatusSubresource,
+		EnableStatusSubresource: true,
 		AdditionalPrinterColumns: []apiextensions.CustomResourceColumnDefinition{
 			{
 				Name:     "Version",
@@ -196,9 +198,10 @@ func (e *ElasticsearchSpec) SetDefaults() {
 	// perform defaulting
 	e.BackupSchedule.SetDefaults()
 
-	if e.AuthPlugin == "" {
-		e.AuthPlugin = ElasticsearchAuthPluginSearchGuard
+	if !e.DisableSecurity && e.AuthPlugin == v1alpha1.ElasticsearchAuthPluginNone {
+		e.DisableSecurity = true
 	}
+	e.AuthPlugin = ""
 	if e.StorageType == "" {
 		e.StorageType = StorageTypeDurable
 	}
@@ -206,11 +209,7 @@ func (e *ElasticsearchSpec) SetDefaults() {
 		e.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 	}
 	if e.TerminationPolicy == "" {
-		if e.StorageType == StorageTypeEphemeral {
-			e.TerminationPolicy = TerminationPolicyDelete
-		} else {
-			e.TerminationPolicy = TerminationPolicyPause
-		}
+		e.TerminationPolicy = TerminationPolicyDelete
 	}
 }
 

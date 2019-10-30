@@ -26,7 +26,6 @@ func (c *Controller) addEventHandler(selector labels.Selector) {
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
-			return
 		},
 	}, selector))
 }

@@ -1,8 +1,28 @@
+/*
+Copyright The KubeDB Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package controller
 
 import (
 	"fmt"
 	"strconv"
+	"strings"
+
+	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
@@ -19,9 +39,6 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	ofst "kmodules.xyz/offshoot-api/api/v1"
-	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/pkg/eventer"
 )
 
 const (
@@ -496,25 +513,8 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB, opts workloadOption
 		if mongodb.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 				in.Spec.Template.Spec.Containers,
-				core.Container{
-					Name: "exporter",
-					Args: append([]string{
-						fmt.Sprintf("--web.listen-address=:%d", mongodb.Spec.Monitor.Prometheus.Port),
-						fmt.Sprintf("--web.metrics-path=%v", mongodb.StatsService().Path()),
-						"--mongodb.uri=mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@127.0.0.1:27017",
-					}, mongodb.Spec.Monitor.Args...),
-					Image: mongodbVersion.Spec.Exporter.Image,
-					Ports: []core.ContainerPort{
-						{
-							Name:          api.PrometheusExporterPortName,
-							Protocol:      core.ProtocolTCP,
-							ContainerPort: mongodb.Spec.Monitor.Prometheus.Port,
-						},
-					},
-					Env:             mongodb.Spec.Monitor.Env,
-					Resources:       mongodb.Spec.Monitor.Resources,
-					SecurityContext: mongodb.Spec.Monitor.SecurityContext,
-				})
+				getExporterContainer(mongodb, mongodbVersion),
+			)
 		}
 
 		in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(in.Spec.Template.Spec.Volumes, opts.volume...)
@@ -794,4 +794,32 @@ func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 		return err
 	}
 	return nil
+}
+
+func getExporterContainer(mongodb *api.MongoDB, mongodbVersion *v1alpha1.MongoDBVersion) core.Container {
+	metricsPath := fmt.Sprintf("--web.metrics-path=%v", mongodb.StatsService().Path())
+	// change metric path for percona-mongodb-exporter
+	if strings.Contains(mongodbVersion.Spec.Exporter.Image, "percona") {
+		metricsPath = fmt.Sprintf("--web.telemetry-path=%v", mongodb.StatsService().Path())
+	}
+
+	return core.Container{
+		Name: "exporter",
+		Args: append([]string{
+			"--mongodb.uri=mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@localhost:27017/admin",
+			fmt.Sprintf("--web.listen-address=:%d", mongodb.Spec.Monitor.Prometheus.Port),
+			metricsPath,
+		}, mongodb.Spec.Monitor.Args...),
+		Image: mongodbVersion.Spec.Exporter.Image,
+		Ports: []core.ContainerPort{
+			{
+				Name:          api.PrometheusExporterPortName,
+				Protocol:      core.ProtocolTCP,
+				ContainerPort: mongodb.Spec.Monitor.Prometheus.Port,
+			},
+		},
+		Env:             mongodb.Spec.Monitor.Env,
+		Resources:       mongodb.Spec.Monitor.Resources,
+		SecurityContext: mongodb.Spec.Monitor.SecurityContext,
+	}
 }

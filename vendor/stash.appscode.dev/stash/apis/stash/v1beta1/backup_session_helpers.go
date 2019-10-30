@@ -7,7 +7,6 @@ import (
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	hashutil "k8s.io/kubernetes/pkg/util/hash"
 	crdutils "kmodules.xyz/client-go/apiextensions/v1beta1"
-	"stash.appscode.dev/stash/apis"
 )
 
 func (bs BackupSession) GetSpecHash() string {
@@ -22,7 +21,7 @@ func (bs BackupSession) CustomResourceDefinition() *apiextensions.CustomResource
 		Plural:        ResourcePluralBackupSession,
 		Singular:      ResourceSingularBackupSession,
 		Kind:          ResourceKindBackupSession,
-		Categories:    []string{"stash", "backup", "appscode"},
+		Categories:    []string{"stash", "appscode", "all"},
 		ResourceScope: string(apiextensions.NamespaceScoped),
 		Versions: []apiextensions.CustomResourceDefinitionVersion{
 			{
@@ -37,12 +36,17 @@ func (bs BackupSession) CustomResourceDefinition() *apiextensions.CustomResource
 		SpecDefinitionName:      "stash.appscode.dev/stash/apis/stash/v1beta1.BackupSession",
 		EnableValidation:        true,
 		GetOpenAPIDefinitions:   GetOpenAPIDefinitions,
-		EnableStatusSubresource: apis.EnableStatusSubresource,
+		EnableStatusSubresource: true,
 		AdditionalPrinterColumns: []apiextensions.CustomResourceColumnDefinition{
 			{
-				Name:     "BackupConfiguration",
+				Name:     "Invoker-Type",
 				Type:     "string",
-				JSONPath: ".spec.backupConfiguration.name",
+				JSONPath: ".spec.invoker.kind",
+			},
+			{
+				Name:     "Invoker-Name",
+				Type:     "string",
+				JSONPath: ".spec.invoker.name",
 			},
 			{
 				Name:     "Phase",
