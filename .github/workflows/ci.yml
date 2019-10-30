@@ -34,4 +34,4 @@ jobs:
 
     - name: Check links
       run: |
-        liche -v -r docs -d $(pwd) -c 10 --exclude='^('"$(pwd)"'/docs/addons/.*/guides/.*)|(http://localhost.*)|(http://[a-z0-9]+.[a-z0-9]+.svc:.*)$'
+        liche -v -r docs -d $(pwd) -c 10 --exclude='^('"$(pwd)"'/docs/addons/.*/guides/.*)|(http://localhost.*)|(http://127.0.0.1.*)|(http://192.168.99.100.*)|(http://[a-z0-9]+.[a-z0-9]+.svc:.*)$'
