@@ -707,8 +707,8 @@ k8s.io/client-go/tools/metrics
 k8s.io/client-go/transport
 k8s.io/client-go/tools/watch
 k8s.io/client-go/tools/reference
-k8s.io/client-go/tools/leaderelection
 k8s.io/client-go/listers/core/v1
+k8s.io/client-go/tools/leaderelection
 k8s.io/client-go/informers/auditregistration/v1alpha1
 k8s.io/client-go/tools/auth
 k8s.io/client-go/tools/clientcmd/api/latest
@@ -847,10 +847,10 @@ kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alph
 kmodules.xyz/custom-resources/apis/appcatalog
 kmodules.xyz/custom-resources/client/informers/externalversions
 kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1/util
+kmodules.xyz/custom-resources/client/listers/appcatalog/v1alpha1
 kmodules.xyz/custom-resources/client/informers/externalversions/appcatalog
 kmodules.xyz/custom-resources/client/informers/externalversions/internalinterfaces
 kmodules.xyz/custom-resources/client/informers/externalversions/appcatalog/v1alpha1
-kmodules.xyz/custom-resources/client/listers/appcatalog/v1alpha1
 # kmodules.xyz/monitoring-agent-api v0.0.0-20190808150221-601a4005b7f7
 kmodules.xyz/monitoring-agent-api/api/v1
 kmodules.xyz/monitoring-agent-api/agents
@@ -917,6 +917,9 @@ kubedb.dev/mongodb/pkg/admission
 # kubedb.dev/mysql v0.6.0-rc.0.0.20191030004636-132b2a0eff45
 kubedb.dev/mysql/pkg/controller
 kubedb.dev/mysql/pkg/admission
+# kubedb.dev/pgbouncer v0.0.0-20191030130947-6c1a78a0ea78
+kubedb.dev/pgbouncer/pkg/controller
+kubedb.dev/pgbouncer/pkg/admission
 # kubedb.dev/postgres v0.13.0-rc.0.0.20191030004721-aa1d98d07b28
 kubedb.dev/postgres/pkg/controller
 kubedb.dev/postgres/pkg/admission

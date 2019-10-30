@@ -26,6 +26,7 @@ import (
 	mcc "kubedb.dev/memcached/pkg/controller"
 	mgc "kubedb.dev/mongodb/pkg/controller"
 	myc "kubedb.dev/mysql/pkg/controller"
+	pgb "kubedb.dev/pgbouncer/pkg/controller"
 	pgc "kubedb.dev/postgres/pkg/controller"
 	rdc "kubedb.dev/redis/pkg/controller"
 
@@ -49,13 +50,14 @@ type Controller struct {
 	cronController snapc.CronControllerInterface
 
 	// DB controllers
-	mgCtrl *mgc.Controller
-	myCtrl *myc.Controller
-	pgCtrl *pgc.Controller
-	esCtrl *esc.Controller
-	edCtrl *edc.Controller
-	rdCtrl *rdc.Controller
-	mcCtrl *mcc.Controller
+	mgCtrl  *mgc.Controller
+	myCtrl  *myc.Controller
+	pgCtrl  *pgc.Controller
+	esCtrl  *esc.Controller
+	edCtrl  *edc.Controller
+	rdCtrl  *rdc.Controller
+	mcCtrl  *mcc.Controller
+	pgbCtrl *pgb.Controller
 }
 
 func New(
@@ -97,6 +99,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		dbapi.MongoDB{}.CustomResourceDefinition(),
 		dbapi.Redis{}.CustomResourceDefinition(),
 		dbapi.Memcached{}.CustomResourceDefinition(),
+		dbapi.PgBouncer{}.CustomResourceDefinition(),
 		dbapi.DormantDatabase{}.CustomResourceDefinition(),
 		dbapi.Snapshot{}.CustomResourceDefinition(),
 
@@ -107,6 +110,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		catalogapi.MongoDBVersion{}.CustomResourceDefinition(),
 		catalogapi.RedisVersion{}.CustomResourceDefinition(),
 		catalogapi.MemcachedVersion{}.CustomResourceDefinition(),
+		catalogapi.PgBouncerVersion{}.CustomResourceDefinition(),
 
 		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
