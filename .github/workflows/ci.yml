@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - 'release-*'
+    tags-ignore:
+      - '*.*'
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v1
+
+    - name: Install link checker
+      env:
+        GO111MODULE: on
+      run: |
+        export GOBIN=$(go env GOPATH)/bin
+        mkdir -p $GOBIN
+        go get github.com/raviqqe/liche@0.1.1
+        sudo mv $GOBIN/* /usr/local/bin
+
+    - name: Check links
+      run: |
+        liche -v -r docs -d $(pwd) -c 10 --exclude='^('"$(pwd)"'/docs/addons/.*/guides/.*)|(http://localhost.*)|(http://127.0.0.1.*)|(http://192.168.99.100.*)|(http://[a-z0-9]+.[a-z0-9]+.svc:.*)$'
