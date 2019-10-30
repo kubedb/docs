@@ -22,7 +22,7 @@ github.com/NYTimes/gziphandler
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
-# github.com/appscode/go v0.0.0-20191016085057-e186b6c94a3b
+# github.com/appscode/go v0.0.0-20191025021232-311ac347b3ef
 github.com/appscode/go/version
 github.com/appscode/go/runtime
 github.com/appscode/go/flags
@@ -864,7 +864,7 @@ kmodules.xyz/offshoot-api/api/v1
 # kmodules.xyz/webhook-runtime v0.0.0-20190808145328-4186c470d56b
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.13.0-rc.2.0.20191023230340-0b18633aea51
+# kubedb.dev/apimachinery v0.13.0-rc.2
 kubedb.dev/apimachinery/client/clientset/versioned/scheme
 kubedb.dev/apimachinery/client/clientset/versioned
 kubedb.dev/apimachinery/client/informers/externalversions
@@ -897,31 +897,31 @@ kubedb.dev/apimachinery/pkg/validator
 kubedb.dev/apimachinery/pkg/admission
 kubedb.dev/apimachinery/apis/config
 kubedb.dev/apimachinery/client/informers/externalversions/catalog/v1alpha1
-# kubedb.dev/elasticsearch v0.13.0-rc.1.0.20191024180521-1d0c368a6dee
+# kubedb.dev/elasticsearch v0.13.0-rc.1.0.20191030000328-b7012bc5d210
 kubedb.dev/elasticsearch/pkg/controller
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/keytool
 kubedb.dev/elasticsearch/pkg/util/es
 kubedb.dev/elasticsearch/third_party/golang/crypto/pkcs12
 kubedb.dev/elasticsearch/third_party/golang/crypto/pkcs12/internal/rc2
-# kubedb.dev/etcd v0.5.0-rc.1.0.20191019020625-3d2645de4f46
+# kubedb.dev/etcd v0.5.0-rc.1.0.20191030024915-cf75e74fc547
 kubedb.dev/etcd/pkg/controller
 kubedb.dev/etcd/pkg/admission
 kubedb.dev/etcd/pkg/util
-# kubedb.dev/memcached v0.6.0-rc.1.0.20191024080258-2afa406f4280
+# kubedb.dev/memcached v0.6.0-rc.1.0.20191030000830-7b79fbfed004
 kubedb.dev/memcached/pkg/controller
 kubedb.dev/memcached/pkg/admission
-# kubedb.dev/mongodb v0.6.0-rc.1.0.20191028045018-eecdb2cb067c
+# kubedb.dev/mongodb v0.6.0-rc.1.0.20191030003732-cc545e04a884
 kubedb.dev/mongodb/pkg/controller
 kubedb.dev/mongodb/pkg/admission
-# kubedb.dev/mysql v0.6.0-rc.0.0.20191024191029-aab6050e0a8d
+# kubedb.dev/mysql v0.6.0-rc.0.0.20191030004636-132b2a0eff45
 kubedb.dev/mysql/pkg/controller
 kubedb.dev/mysql/pkg/admission
-# kubedb.dev/postgres v0.13.0-rc.0.0.20191024191234-fd3560063955
+# kubedb.dev/postgres v0.13.0-rc.0.0.20191030004721-aa1d98d07b28
 kubedb.dev/postgres/pkg/controller
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/leader_election
-# kubedb.dev/redis v0.6.0-rc.0.0.20191024191130-5ce5e5e07696
+# kubedb.dev/redis v0.6.0-rc.0.0.20191030003703-6ccd651c0777
 kubedb.dev/redis/pkg/controller
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster

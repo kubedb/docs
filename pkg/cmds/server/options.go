@@ -1,8 +1,28 @@
+/*
+Copyright The KubeDB Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package server
 
 import (
 	"flag"
 	"time"
+
+	cs "kubedb.dev/apimachinery/client/clientset/versioned"
+	kubedbinformers "kubedb.dev/apimachinery/client/informers/externalversions"
+	snapc "kubedb.dev/apimachinery/pkg/controller/snapshot"
+	"kubedb.dev/operator/pkg/controller"
 
 	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/spf13/pflag"
@@ -14,10 +34,6 @@ import (
 	"kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/cli"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	kubedbinformers "kubedb.dev/apimachinery/client/informers/externalversions"
-	snapc "kubedb.dev/apimachinery/pkg/controller/snapshot"
-	"kubedb.dev/operator/pkg/controller"
 	scs "stash.appscode.dev/stash/client/clientset/versioned"
 	stashInformers "stash.appscode.dev/stash/client/informers/externalversions"
 )

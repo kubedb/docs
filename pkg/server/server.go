@@ -1,9 +1,38 @@
+/*
+Copyright The KubeDB Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package server
 
 import (
 	"fmt"
 	"os"
 	"strings"
+
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/pkg/admission/dormantdatabase"
+	"kubedb.dev/apimachinery/pkg/admission/namespace"
+	"kubedb.dev/apimachinery/pkg/admission/snapshot"
+	"kubedb.dev/apimachinery/pkg/eventer"
+	esAdmsn "kubedb.dev/elasticsearch/pkg/admission"
+	edAdmsn "kubedb.dev/etcd/pkg/admission"
+	mcAdmsn "kubedb.dev/memcached/pkg/admission"
+	mgAdmsn "kubedb.dev/mongodb/pkg/admission"
+	myAdmsn "kubedb.dev/mysql/pkg/admission"
+	"kubedb.dev/operator/pkg/controller"
+	pgAdmsn "kubedb.dev/postgres/pkg/admission"
+	rdAdmsn "kubedb.dev/redis/pkg/admission"
 
 	admission "k8s.io/api/admission/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -20,19 +49,6 @@ import (
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	hooks "kmodules.xyz/webhook-runtime/admission/v1beta1"
 	admissionreview "kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/pkg/admission/dormantdatabase"
-	"kubedb.dev/apimachinery/pkg/admission/namespace"
-	"kubedb.dev/apimachinery/pkg/admission/snapshot"
-	"kubedb.dev/apimachinery/pkg/eventer"
-	esAdmsn "kubedb.dev/elasticsearch/pkg/admission"
-	edAdmsn "kubedb.dev/etcd/pkg/admission"
-	mcAdmsn "kubedb.dev/memcached/pkg/admission"
-	mgAdmsn "kubedb.dev/mongodb/pkg/admission"
-	myAdmsn "kubedb.dev/mysql/pkg/admission"
-	"kubedb.dev/operator/pkg/controller"
-	pgAdmsn "kubedb.dev/postgres/pkg/admission"
-	rdAdmsn "kubedb.dev/redis/pkg/admission"
 )
 
 const (

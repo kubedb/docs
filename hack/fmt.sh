@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Copyright 2019 AppsCode Inc.
+# Copyright The KubeDB Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ export GOFLAGS="-mod=vendor"
 TARGETS="$@"
 
 echo "Running reimport.py"
-cmd="reimport.py ${TARGETS}"
+cmd="reimport3.py ${REPO_PKG} ${TARGETS}"
 $cmd
 echo
 
