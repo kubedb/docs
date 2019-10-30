@@ -765,6 +765,8 @@ kubedb.dev/mongodb v0.6.0-rc.1.0.20191030003732-cc545e04a884 h1:2tJIaMbE94CVrpjL
 kubedb.dev/mongodb v0.6.0-rc.1.0.20191030003732-cc545e04a884/go.mod h1:qn2Gg9Xk5wLirauT5Y+SdNHe+8vf8S0w1zD6cJrlXgc=
 kubedb.dev/mysql v0.6.0-rc.0.0.20191030004636-132b2a0eff45 h1:83/HWgY0pNxsxtlfQyEjb+4Q7rTlSDfACPmrO7sfAAU=
 kubedb.dev/mysql v0.6.0-rc.0.0.20191030004636-132b2a0eff45/go.mod h1:cV7n9zb3SBVBrkBf3xJhGAPFFWxhCsghBbj41UWjqAc=
+kubedb.dev/pgbouncer v0.0.0-20191030130947-6c1a78a0ea78 h1:+ccijqfFbJ2plyYutR3Uhj4Ev0gF68gLsSEW30UphBM=
+kubedb.dev/pgbouncer v0.0.0-20191030130947-6c1a78a0ea78/go.mod h1:SqlvNYwc39QtMBMgJgoak9MFPBi99Mep76ac/PF5WtY=
 kubedb.dev/postgres v0.13.0-rc.0.0.20191030004721-aa1d98d07b28 h1:yZfMQnAkvh9SdqdXLtIfyCGoIxnxpwt7WHN/fWGd9hA=
 kubedb.dev/postgres v0.13.0-rc.0.0.20191030004721-aa1d98d07b28/go.mod h1:81NSkGLUj1iyvPlDVX9HnkZSBgSp1/tz7+kXMQ56VYo=
 kubedb.dev/redis v0.6.0-rc.0.0.20191030003703-6ccd651c0777 h1:fxBBTdlTqwy0t8omv1eDdt8hydLe9qOIBvtaK5dnZkA=

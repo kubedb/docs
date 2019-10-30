@@ -21,6 +21,7 @@ require (
 	kubedb.dev/memcached v0.6.0-rc.1.0.20191030000830-7b79fbfed004
 	kubedb.dev/mongodb v0.6.0-rc.1.0.20191030003732-cc545e04a884
 	kubedb.dev/mysql v0.6.0-rc.0.0.20191030004636-132b2a0eff45
+	kubedb.dev/pgbouncer v0.0.0-20191030130947-6c1a78a0ea78
 	kubedb.dev/postgres v0.13.0-rc.0.0.20191030004721-aa1d98d07b28
 	kubedb.dev/redis v0.6.0-rc.0.0.20191030003703-6ccd651c0777
 	stash.appscode.dev/stash v0.9.0-rc.2
