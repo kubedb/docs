@@ -27,11 +27,18 @@ jobs:
       env:
         GO111MODULE: on
       run: |
-        export GOBIN=$(go env GOPATH)/bin
+        export GOPATH=$(go env GOPATH)
+        export GOBIN=$GOPATH/bin
         mkdir -p $GOBIN
-        go get github.com/raviqqe/liche@0.1.1
+        mkdir -p $GOPATH/github.com/raviqqe
+        pushd $GOPATH/github.com/raviqqe
+        git clone https://github.com/appscodelabs/liche
+        cd liche
+        git checkout ignore-private-hosts
+        go install -v ./...
         sudo mv $GOBIN/* /usr/local/bin
+        popd
 
     - name: Check links
       run: |
-        liche -v -r docs -d $(pwd) -c 10 --exclude='^('"$(pwd)"'/docs/addons/.*/guides/.*)|(http://localhost.*)|(http://127.0.0.1.*)|(http://192.168.99.100.*)|(http://[a-z0-9]+.[a-z0-9]+.svc:.*)$'
+        liche -r docs -d $(pwd) -c 10 -p -x '^'"$(pwd)"'/docs/addons/.*/guides/.*$'
