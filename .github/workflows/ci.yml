@@ -34,11 +34,11 @@ jobs:
         pushd $GOPATH/github.com/raviqqe
         git clone https://github.com/appscodelabs/liche
         cd liche
-        git checkout ignore-private-hosts
+        git checkout master
         go install -v ./...
         sudo mv $GOBIN/* /usr/local/bin
         popd
 
     - name: Check links
       run: |
-        liche -r docs -d $(pwd) -c 10 -p
+        liche -r docs -d $(pwd) -c 10 -p -h -l
