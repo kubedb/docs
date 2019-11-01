@@ -14,7 +14,7 @@ section_menu_id: concepts
 
 ## What is MySQLVersion
 
-`MySQLVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [MySQL](https://www.mysql.org/) database deployed with KubeDB in Kubernetes native way.
+`MySQLVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [MySQL](https://www.mysql.com) database deployed with KubeDB in Kubernetes native way.
 
 When you install KubeDB, `MySQLVersion` crd will be created automatically for every supported MySQL versions. You have to specify the name of `MySQLVersion` crd in `spec.version` field of [MySQL](/docs/concepts/databases/mysql.md) crd. Then, KubeDB will use the docker images specified in the `MySQLVersion` crd to create your expected database.
 

@@ -251,15 +251,10 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 ## Next Steps
 
 - [Quickstart Memcached](/docs/guides/memcached/quickstart/quickstart.md) with KubeDB Operator.
-- [Snapshot and Restore](/docs/guides/memcached/snapshot/backup-and-restore.md) process of Memcached databases using KubeDB.
-- Take [Scheduled Snapshot](/docs/guides/memcached/snapshot/scheduled-backup.md) of Memcached databases using KubeDB.
-- Initialize [Memcached with Script](/docs/guides/memcached/initialization/using-script.md).
-- Initialize [Memcached with Snapshot](/docs/guides/memcached/initialization/using-snapshot.md).
 - Monitor your Memcached database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/memcached/monitoring/using-coreos-prometheus-operator.md).
 - Monitor your Memcached database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/memcached/private-registry/using-private-registry.md) to deploy Memcached with KubeDB.
 - Use [kubedb cli](/docs/guides/memcached/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [Memcached object](/docs/concepts/databases/memcached.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
