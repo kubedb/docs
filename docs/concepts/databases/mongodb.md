@@ -253,9 +253,9 @@ Available configurable fields:
 - `shards` represents number of shards for a mongodb deployment. Each shard is deployed as a [replicaset](/docs/guides/mongodb/clustering/replication_concept.md).
 - `replicas` represents number of replicas of each shard replicaset.
 - `prefix` represents the prefix of each shard node.
-- `configSource` is an optional field to provide custom configuration file for shards (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/concepts/databases/mongodb/#spec-configsource) in details.
-- `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/concepts/databases/mongodb/#spec-podtemplate) in details.
-- `storage` to specify pvc spec for each node of sharding. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.podTemplate](/docs/concepts/databases/mongodb/#spec-storage) in details.
+- `configSource` is an optional field to provide custom configuration file for shards (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/concepts/databases/mongodb.md#specconfigsource) in details.
+- `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/concepts/databases/mongodb.md#specpodtemplate) in details.
+- `storage` to specify pvc spec for each node of sharding. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/concepts/databases/mongodb.md#specstorage) in details.
 
 #### spec.shardTopology.configServer
 
@@ -265,9 +265,9 @@ Available configurable fields:
 
 - `replicas` represents number of replicas for configServer replicaset. Here, configServer is deployed as a replicaset of mongodb.
 - `prefix` represents the prefix of configServer nodes.
-- `configSource` is an optional field to provide custom configuration file for configSource (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/concepts/databases/mongodb/#spec-configsource) in details.
-- `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/concepts/databases/mongodb/#spec-podtemplate) in details.
-- `storage` to specify pvc spec for each node of configServer. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.podTemplate](/docs/concepts/databases/mongodb/#spec-storage) in details.
+- `configSource` is an optional field to provide custom configuration file for configSource (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/concepts/databases/mongodb.md#specconfigsource) in details.
+- `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/concepts/databases/mongodb.md#specpodtemplate) in details.
+- `storage` to specify pvc spec for each node of configServer. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/concepts/databases/mongodb.md#specstorage) in details.
 
 #### spec.shardTopology.mongos
 
@@ -277,8 +277,8 @@ Available configurable fields:
 
 - `replicas` represents number of replicas of `Mongos` instance. Here, Mongos is deployed as stateless (deployment) instance.
 - `prefix` represents the prefix of mongos nodes.
-- `configSource` is an optional field to provide custom configuration file for mongos (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/concepts/databases/mongodb/#spec-configsource) in details.
-- `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/concepts/databases/mongodb/#spec-podtemplate) in details.
+- `configSource` is an optional field to provide custom configuration file for mongos (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/concepts/databases/mongodb.md#specconfigsource) in details.
+- `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/concepts/databases/mongodb.md#specpodtemplate) in details.
 - `strategy` is the deployment strategy to use to replace existing pods with new ones. This is optional. If not provided, kubernetes will use default deploymentStrategy, ie. `RollingUpdate`. See more about [Deployment Strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
 
 ### spec.sslMode
@@ -349,7 +349,7 @@ spec:
         name: mongodb-init-script
 ```
 
-In the above example, KubeDB operator will launch a Job to execute all js script of `mongodb-init-script` in alphabetical order once StatefulSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mongodb/initialization/script_source.md).
+In the above example, KubeDB operator will launch a Job to execute all js script of `mongodb-init-script` in alphabetical order once StatefulSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mongodb/initialization/using-snapshot.md).
 
 #### Initialize from Snapshots
 
@@ -373,7 +373,7 @@ spec:
 
 In the above example, MongoDB database will be initialized from Snapshot `snapshot-xyz` in `demo` namespace. Here, KubeDB operator will launch a Job to initialize MongoDB once StatefulSet pods are running.
 
-For more details tutorial on how to initialize from snapshot, please visit [here](/docs/guides/mongodb/initialization/snapshot_source.md).
+For more details tutorial on how to initialize from snapshot, please visit [here](/docs/guides/mongodb/initialization/using-snapshot.md).
 
 ### spec.backupSchedule
 
@@ -418,7 +418,7 @@ MongoDB managed by KubeDB can be monitored with builtin-Prometheus and CoreOS-Pr
 
 > Please note that, the configfile name needs to be `mongod.conf` for mongodb.
 
-To learn more about how to use a custom configuration file see [here](/docs/guides/mongodb/custom-config/using-custom-config.md).
+To learn more about how to use a custom configuration file see [here](/docs/guides/mongodb/configuration/using-custom-config.md).
 
 NB. If `spec.shardTopology` is set, then `spec.configsource` needs to be empty. Instead use `spec.shardTopology.<shard/configServer/mongos>.configSource`
 

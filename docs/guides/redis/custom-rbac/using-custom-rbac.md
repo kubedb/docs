@@ -268,15 +268,10 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 ## Next Steps
 
 - [Quickstart Redis](/docs/guides/redis/quickstart/quickstart.md) with KubeDB Operator.
-- [Snapshot and Restore](/docs/guides/redis/snapshot/backup-and-restore.md) process of Redis instances using KubeDB.
-- Take [Scheduled Snapshot](/docs/guides/redis/snapshot/scheduled-backup.md) of Redis instances using KubeDB.
-- Initialize [Redis with Script](/docs/guides/redis/initialization/using-script.md).
-- Initialize [Redis with Snapshot](/docs/guides/redis/initialization/using-snapshot.md).
 - Monitor your Redis instance with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/redis/monitoring/using-coreos-prometheus-operator.md).
 - Monitor your Redis instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/redis/private-registry/using-private-registry.md) to deploy Redis with KubeDB.
 - Use [kubedb cli](/docs/guides/redis/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [Redis object](/docs/concepts/databases/redis.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
