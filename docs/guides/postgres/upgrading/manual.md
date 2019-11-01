@@ -390,7 +390,7 @@ Some other fields in CRD also got deprecated and some are added. The good thing 
 
 ## Upgrade CRD objects
 
-Note that, Once the DB version is updated, kubedb-operator will update the statefulsets too. This update strategy can be modified by `spec.updateStrategy`. Read [here](https://kubedb.com/docs/0.9.0/concepts/databases/postgres/#spec-updatestrategy) for details about updateStrategy.
+Note that, Once the DB version is updated, kubedb-operator will update the statefulsets too. This update strategy can be modified by `spec.updateStrategy`. Read [here](/docs/concepts/databases/postgres.md#specupdatestrategy) for details about updateStrategy.
 
 Now, Before updating CRD, find Available PostgresVersion.
 

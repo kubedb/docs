@@ -16,7 +16,7 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to run a Redis server.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/images/redis/redis-lifecycle.png">
+  <img alt="lifecycle"  src="/docs/images/redis/redis-lifecycle.svg">
 </p>
 
 ## Before You Begin

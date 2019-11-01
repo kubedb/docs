@@ -199,7 +199,7 @@ spec:
         name: mysql-init-script
 ```
 
-In the above example, KubeDB operator will launch a Job to execute all js script of `mysql-init-script` in alphabetical order once StatefulSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mysql/initialization/script-source.md).
+In the above example, KubeDB operator will launch a Job to execute all js script of `mysql-init-script` in alphabetical order once StatefulSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mysql/initialization/using-script.md).
 
 #### Initialize from Snapshots
 
@@ -225,7 +225,7 @@ In the above example, MySQL database will be initialized from Snapshot `snapshot
 
 When initializing from Snapshot, root user credentials must have to match with the previous one. For example, let's say, Snapshot `snapshot-xyz` is for MySQL `mysql-old`. In this case, new MySQL `mysql-db` should use the same credentials for root user of `mysql-old`. Otherwise, the restoration process will fail.
 
-For more details tutorial on how to initialize from snapshot, please visit [here](/docs/guides/mysql/initialization/snapshot-source.md).
+For more details tutorial on how to initialize from snapshot, please visit [here](/docs/guides/mysql/initialization/using-snapshot.md).
 
 ### spec.backupSchedule
 

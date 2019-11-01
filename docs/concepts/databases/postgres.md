@@ -167,7 +167,7 @@ If the Cluster machine is powerful, user can reduce the times. But, Do not make 
 
 Continuous archiving data will be stored in a folder called `{bucket}/{prefix}/kubedb/{namespace}/{postgres-name}/archive/`.
 
-Follow [this link](/docs/concepts/snapshot/#google-cloud-storage-gcs) to learn how to create secret for S3 or GCS. To know more about how to configure Postgres to archive WAL data continuously in AWS S3 bucket, please visit [here](/docs/guides/postgres/snapshot/continuous_archiving.md).
+Follow [this link](/docs/concepts/snapshot.md#google-cloud-storage-gcs) to learn how to create secret for S3 or GCS. To know more about how to configure Postgres to archive WAL data continuously in AWS S3 bucket, please visit [here](/docs/guides/postgres/snapshot/continuous_archiving.md).
 
 ### spec.databaseSecret
 
