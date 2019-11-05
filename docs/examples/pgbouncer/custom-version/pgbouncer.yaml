@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1alpha1
+kind: PgBouncer
+metadata:
+  name: pgbouncer-server
+  namespace: demo
+spec:
+  version: "1.11.0-dev"
+  replicas: 1
+  databases:
+    - alias: "postgres"
+      databaseName: "postgres"
+      databaseRef:
+        name: "quick-postgres"
+  connectionPool:
+    port: 2580
+    reservePoolSize: 5
+  userListSecretRef:
+    name: db-user-pass
