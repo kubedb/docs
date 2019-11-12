@@ -96,7 +96,6 @@ func New(
 func (c *Controller) EnsureCustomResourceDefinitions() error {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 	crds := []*crd_api.CustomResourceDefinition{
-		dbapi.DormantDatabase{}.CustomResourceDefinition(),
 		dbapi.Elasticsearch{}.CustomResourceDefinition(),
 		dbapi.Etcd{}.CustomResourceDefinition(),
 		dbapi.Memcached{}.CustomResourceDefinition(),
@@ -107,7 +106,6 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		dbapi.Postgres{}.CustomResourceDefinition(),
 		dbapi.ProxySQL{}.CustomResourceDefinition(),
 		dbapi.Redis{}.CustomResourceDefinition(),
-		dbapi.Snapshot{}.CustomResourceDefinition(),
 
 		catalogapi.ElasticsearchVersion{}.CustomResourceDefinition(),
 		catalogapi.EtcdVersion{}.CustomResourceDefinition(),
