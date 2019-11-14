@@ -28,7 +28,6 @@ René Cannaò is the founder of ProxySQL and MySQL DBA.
 
 Here is the architecture of ProxySQL. It treats as gateway for the traffic coming from applications/clients. Clients connect to the ProxySQL instead of the backend database and send requests. Then the requests are evaluated by ProxySQL and corresponding actions are performed. To evaluate the client requests and perform an action, there are rules defined in ProxySQL.
 
-
 <p align="center">
     <img alt="proxysql-query-filtering"  src="/docs/images/proxysql/proxysql-architecture.png">
 </p>
