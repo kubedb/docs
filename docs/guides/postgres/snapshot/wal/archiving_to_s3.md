@@ -73,8 +73,8 @@ Storage Secret for **WAL-G** is needed with the following 2 keys:
 
 | Key                     | Description                               |
 | ----------------------- | ----------------------------------------- |
-| `AWS_ACCESS_KEY_ID`     | `Required`. AWS / Minio access key ID     |
-| `AWS_SECRET_ACCESS_KEY` | `Required`. AWS / Minio secret access key |
+| `AWS_ACCESS_KEY_ID`     | `Required`. AWS access key ID     |
+| `AWS_SECRET_ACCESS_KEY` | `Required`. AWS secret access key |
 
 ```console
 $ echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
@@ -108,7 +108,6 @@ To configure s3 backend, following parameters are available:
 
 | Parameter                           | Description                                                  |
 | ----------------------------------- | ------------------------------------------------------------ |
-| `spec.archiver.storage.s3.endpoint` | `Required`. For S3, use `s3.amazonaws.com`                   |
 | `spec.archiver.storage.s3.bucket`   | `Required`. Name of Bucket                                   |
 | `spec.archiver.storage.s3.prefix`   | `Optional`. Path prefix into bucket where snapshot will be stores |
 
