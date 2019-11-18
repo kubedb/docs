@@ -26,7 +26,10 @@ To use `kubedb`, you will need to install KubeDB [operator](https://github.com/k
     <a class="nav-link active" id="script-tab" data-toggle="tab" href="#script" role="tab" aria-controls="script" aria-selected="true">Script</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" id="helm-tab" data-toggle="tab" href="#helm" role="tab" aria-controls="helm" aria-selected="false">Helm</a>
+    <a class="nav-link" id="helm2-tab" data-toggle="tab" href="#helm2" role="tab" aria-controls="helm2" aria-selected="false">Helm 2</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" id="helm3-tab" data-toggle="tab" href="#helm3" role="tab" aria-controls="helm3" aria-selected="false">Helm 3</a>
   </li>
 </ul>
 <div class="tab-content" id="installerTabContent">
@@ -118,9 +121,9 @@ $ curl -fsSL https://github.com/kubedb/installer/raw/{{< param "info.version" >}
 ```
 
 </div>
-<div class="tab-pane fade" id="helm" role="tabpanel" aria-labelledby="helm-tab">
+<div class="tab-pane fade" id="helm2" role="tabpanel" aria-labelledby="helm2-tab">
 
-## Using Helm
+## Using Helm 2
 
 KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.version" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
 
@@ -163,6 +166,53 @@ $ helm install appscode/kubedb-catalog --name kubedb-catalog --version {{< param
 # Step 3(b): Or, if previously installed, upgrade KubeDB catalog of database versions
 $ helm upgrade kubedb-catalog appscode/kubedb-catalog --version {{< param "info.version" >}} \
   --namespace kube-system
+```
+
+To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.version" >}}/charts/kubedb).
+
+</div>
+<div class="tab-pane fade" id="helm3" role="tabpanel" aria-labelledby="helm3-tab">
+
+## Using Helm 3
+
+KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.version" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
+
+```console
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update
+$ helm search repo appscode/kubedb
+NAME                    CHART VERSION APP VERSION   DESCRIPTION
+appscode/kubedb         {{< param "info.version" >}}  {{< param "info.version" >}}  KubeDB by AppsCode - Production ready databases on Kubern...
+appscode/kubedb-catalog {{< param "info.version" >}}  {{< param "info.version" >}}  KubeDB Catalog by AppsCode - Catalog for database versions
+
+# Step 1: Install kubedb operator chart
+$ helm install kubedb-operator appscode/kubedb --version {{< param "info.version" >}} --namespace kube-system
+
+# Step 2: wait until crds are registered
+$ kubectl get crds -l app=kubedb -w
+NAME                               AGE
+dormantdatabases.kubedb.com        6s
+elasticsearches.kubedb.com         12s
+elasticsearchversions.kubedb.com   8s
+etcds.kubedb.com                   8s
+etcdversions.kubedb.com            8s
+memcacheds.kubedb.com              6s
+memcachedversions.kubedb.com       6s
+mongodbs.kubedb.com                7s
+mongodbversions.kubedb.com         6s
+mysqls.kubedb.com                  7s
+mysqlversions.kubedb.com           7s
+postgreses.kubedb.com              8s
+postgresversions.kubedb.com        7s
+redises.kubedb.com                 6s
+redisversions.kubedb.com           6s
+snapshots.kubedb.com               6s
+
+# Step 3(a): Install KubeDB catalog of database versions
+$ helm install kubedb-catalog appscode/kubedb-catalog --version {{< param "info.version" >}} --namespace kube-system
+
+# Step 3(b): Or, if previously installed, upgrade KubeDB catalog of database versions
+$ helm upgrade kubedb-catalog appscode/kubedb-catalog --version {{< param "info.version" >}} --namespace kube-system
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.version" >}}/charts/kubedb).
