@@ -1,9 +1,9 @@
 ---
-title: Load Balance Using ProxySQL
+title: ProxySQL
 menu:
   docs_{{ .version }}:
-    identifier: load-balance-using-proxysql
-    name: Load Balance Using ProxySQL
+    identifier: proxysql-guide
+    name: ProxySQL
     parent: guides
     weight: 10
 menu_name: docs_{{ .version }}

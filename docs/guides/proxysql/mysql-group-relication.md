@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: load-balance-mysql-group-replication-using-proxysql
     name: Load Balance MySQL Group Replication Using ProxySQL
-    parent: load-balance-using-proxysql
+    parent: proxysql-guide
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
