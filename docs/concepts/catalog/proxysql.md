@@ -36,7 +36,7 @@ spec:
   proxysql:
     image: "${KUBEDB_CATALOG_REGISTRY}/proxysql:2.0.4"
   exporter:
-    image: "${KUBEDB_CATALOG_REGISTRY}/mysqld-exporter:v0.11.0"
+    image: "${KUBEDB_CATALOG_REGISTRY}/proxysql-exporter:1.1.0"
   podSecurityPolicies:
     databasePolicyName: proxysql-db
 ```

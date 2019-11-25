@@ -29,7 +29,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   ```console
   $ kubectl get proxysqlversions  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,PROXYSQL_IMAGE:.spec.proxysql.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME     VERSION   PROXYSQL_IMAGE          EXPORTER_IMAGE                   DEPRECATED
-  2.0.4    2.0.4     kubedb/proxysql:2.0.4   kubedb/proxysql-exporter:v0.11.0   <none>
+  2.0.4    2.0.4     kubedb/proxysql:2.0.4   kubedb/proxysql-exporter:1.1.0   <none>
   ```
 
   Docker hub repositories:
@@ -52,7 +52,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
     db:
       image: "PRIVATE_DOCKER_REGISTRY/proxysql:2.0.4"
     exporter:
-      image: "PRIVATE_DOCKER_REGISTRY/proxysql-exporter:2.0.4"
+      image: "PRIVATE_DOCKER_REGISTRY/proxysql-exporter:1.1.0"
   ...
   ```
 
