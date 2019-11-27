@@ -4,8 +4,8 @@ menu:
   docs_{{ .version }}:
     identifier: load-balance-mysql-group-replication-using-proxysql
     name: Load Balance MySQL Group Replication Using ProxySQL
-    parent: proxysql-guide
-    weight: 15
+    parent: proxysql-quickstart
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -572,3 +572,12 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 kubectl delete proxysql -n demo proxy-my-group
 kubectl delete my -n demo my-group
 ```
+
+## Next Steps
+
+- Monitor ProxySQL with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/proxysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
+- Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
+- Detail concepts of ProxySQL object [here](/docs/concepts/database-proxy/proxysql.md).
+- Detail concepts of ProxySQLVersion object [here](/docs/concepts/catalog/proxysql.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

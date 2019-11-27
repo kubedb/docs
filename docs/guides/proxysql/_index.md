@@ -2,7 +2,7 @@
 title: ProxySQL
 menu:
   docs_{{ .version }}:
-    identifier: proxysql-guide
+    identifier: proxysql-guides
     name: ProxySQL
     parent: guides
     weight: 10

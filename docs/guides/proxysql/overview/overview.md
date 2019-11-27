@@ -1,3 +1,15 @@
+---
+title: About ProxySQL
+menu:
+  docs_{{ .version }}:
+    identifier: about-proxysql
+    name: About ProxySQL
+    parent: proxysql-overview
+    weight: 10
+menu_name: docs_{{ .version }}
+section_menu_id: guides
+---
+
 # Introduction
 
 Highly available and better performance are a crucial for database. To keep pace with the growing traffic/connection/data size, often we add multiple database servers and use replication among themselves. For smooth service, we often want to route the read and write intelligently.
@@ -361,3 +373,11 @@ You can see all the variables, by running the following query,
 ```sql
 ProxySQLAdmin> SELECT * FROM global_variables ORDER BY variable_name;
 ```
+
+## Next Steps
+
+- Configure ProxySQL for Group Replication [here](/docs/guides/proxysql/overview/configure-proxysql.md)
+- Detail concepts of ProxySQL object [here](/docs/concepts/database-proxy/proxysql.md).
+- Detail concepts of ProxySQLVersion object [here](/docs/concepts/catalog/proxysql.md).
+- Quickstart ProxySQL to Load Balance MySQL Group Replication with KubeDB Operator [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

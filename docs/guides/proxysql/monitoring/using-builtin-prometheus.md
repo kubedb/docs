@@ -2,10 +2,10 @@
 title: Monitor ProxySQL using Builtin Prometheus Discovery
 menu:
   docs_{{ .version }}:
-    identifier: monitor-proxysql-using-builtin-prometheus-monitoring
+    identifier: monitor-proxysql-using-builtin-prometheus
     name: Builtin Prometheus Discovery
-    parent: proxysql-guide
-    weight: 35
+    parent: proxysql-monitoring
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -404,6 +404,6 @@ $ kubectl delete ns monitoring
 
 ## Next Steps
 
-- Monitor your ProxySQL database with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/proxysql/using-coreos-prometheus-operator.md).
-- Use [private Docker registry](/docs/guides/proxysql/using-private-registry.md) to deploy ProxySQL with KubeDB.
+- Monitor your ProxySQL database with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/proxysql/monitoring/using-coreos-prometheus-operator.md).
+- Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

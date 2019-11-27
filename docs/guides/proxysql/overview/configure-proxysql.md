@@ -1,3 +1,15 @@
+---
+title: Configure ProxySQL
+menu:
+  docs_{{ .version }}:
+    identifier: configure-proxysql
+    name: Configure ProxySQL
+    parent: proxysql-overview
+    weight: 15
+menu_name: docs_{{ .version }}
+section_menu_id: guides
+---
+
 # Configure ProxySQL
 
 Now ProxySQL has native support for Galera Cluster and Group Replication. ProxySQL can,
@@ -245,3 +257,12 @@ transactions_behind: 0
  error: NULL
 ...
 ```
+
+## Next Steps
+
+- Overview of ProxySQL [here](/docs/guides/proxysql/overview/overview.md).
+- Detail concepts of ProxySQL object [here](/docs/concepts/database-proxy/proxysql.md).
+- Detail concepts of ProxySQLVersion object [here](/docs/concepts/catalog/proxysql.md).
+- Quickstart ProxySQL to Load Balance MySQL Group Replication with KubeDB Operator [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+-

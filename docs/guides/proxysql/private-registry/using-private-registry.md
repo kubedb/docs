@@ -2,10 +2,10 @@
 title: Run ProxySQL using Private Registry
 menu:
   docs_{{ .version }}:
-    identifier: using-private-registry-proxysql
+    identifier: proxysql-using-private-registry
     name: Run ProxySQL using Private Registry
-    parent: proxysql-guide
-    weight: 30
+    parent: proxysql-private-registry
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -141,8 +141,8 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Monitor your ProxySQL with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/proxysql/using-coreos-prometheus-operator.md).
-- Monitor your ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/using-builtin-prometheus.md).
-- Detail concepts of [ProxySQL object](/docs/concepts/databases/proxysql.md).
-- Detail concepts of [ProxySQLVersion object](/docs/concepts/catalog/proxysql.md).
+- Monitor your ProxySQL with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/proxysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
+- Detail concepts of ProxySQL object [here](/docs/concepts/database-proxy/proxysql.md).
+- Detail concepts of ProxySQLVersion object [here](/docs/concepts/catalog/proxysql.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
