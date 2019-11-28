@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha1
 kind: ProxySQL
 metadata:
-  name: proxy-my-group
+  name: custom-proxysql
   namespace: demo
 spec:
   version: "2.0.4"
@@ -13,5 +13,8 @@ spec:
       kind: MySQL
       name: my-group
     replicas: 3
+  configSource:
+    configMap:
+      name: my-custom-config
   updateStrategy:
     type: RollingUpdate

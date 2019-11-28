@@ -333,6 +333,7 @@ $ kubectl delete ns demo
 ## Next Steps
 
 - Monitor your ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
+- Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-custom-config.md).
 - Detail concepts of ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
 - Detail concepts of ProxySQLVersion CRD [here](/docs/concepts/catalog/proxysql.md).
 - Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
