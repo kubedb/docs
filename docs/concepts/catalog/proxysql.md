@@ -16,9 +16,9 @@ section_menu_id: concepts
 
 `ProxySQLVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [ProxySQL](https://www.proxysql.com/) deployed with KubeDB in Kubernetes native way.
 
-When you install KubeDB, `ProxySQLVersion` object will be created automatically for supported ProxySQL versions. You have to specify the name of `ProxySQLVersion` object in `.spec.version` field of [ProxySQL](/docs/concepts/databases/proxysql.md) object. Then, KubeDB will use the docker images specified in the `ProxySQLVersion` object to create your expected database.
+When you install KubeDB, the `ProxySQLVersion` object will be created automatically for supported ProxySQL versions. You have to specify the name of `ProxySQLVersion` object in `.spec.version` field of [ProxySQL](/docs/concepts/databases/proxysql.md) object. Then, KubeDB will use the docker images specified in the `ProxySQLVersion` object to create your expected database.
 
-Using a separate crd for this purpose allows us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the ProxySQL.
+Using a separate CRD for this purpose allows us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the ProxySQL.
 
 ## ProxySQLVersion Specification
 
@@ -49,7 +49,7 @@ We follow this convention for naming ProxySQLVersion object:
 
 - Name format: `{Original ProxySQL image version}-{modification tag}`
 
-We modify original ProxySQL docker image to support additional features. An image with higher modification tag will have more feature than the images with lower modification tag. Hence, it is recommended to use ProxySQLVersion object with highest modification tag to take advantage of the latest features.
+We modify the original ProxySQL docker image to support additional features. An image with a higher modification tag will have more features than the images with a lower modification tag. Hence, it is recommended to use ProxySQLVersion object with the highest modification tag to take advantage of the latest features.
 
 ### .spec.version
 
@@ -75,5 +75,5 @@ The default value of this field is `false`. If `.spec.deprecated` is set `true`,
 
 ## Next Steps
 
-- Learn about ProxySQL crd [here](/docs/concepts/databases/proxysql.md).
-- Deploy your first ProxySQL to load balance MySQL Group Replication with KubeDB by following the guide [here](/docs/guides/proxysql/mysql-group-relication.md).
+- Learn about ProxySQL CRD [here](/docs/concepts/databases/proxysql.md).
+- Deploy your first ProxySQL to load balance MySQL Group Replication with KubeDB by following the guide [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).

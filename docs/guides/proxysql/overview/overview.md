@@ -12,11 +12,11 @@ section_menu_id: guides
 
 # Introduction
 
-Highly available and better performance are a crucial for database. To keep pace with the growing traffic/connection/data size, often we add multiple database servers and use replication among themselves. For smooth service, we often want to route the read and write intelligently.
+High availability and better performance are crucial for the database. To keep pace with the growing traffic/connection/data size, often we add multiple database servers and use replication among themselves. For smooth service, we often want to route the read and write intelligently.
 
-Say we may have some secondary (slave) servers along with primary (master) servers and we want to split the read traffic to the slaves and the write traffic to the masters. On top of that what will happen if the replication delays or some server crashes?
+Say we may have some secondary (slave) servers along with primary (master) servers and we want to split the read traffic to the slaves and the write traffic to the masters. On top of that, what will happen if the replication delays or some server crashes?
 
-[ProxySQL](http://www.proxysql.com/) comes in hand in such situation.
+[ProxySQL](http://www.proxysql.com/) comes in hand in such a situation.
 
 ## What is ProxySQL
 
@@ -24,13 +24,13 @@ ProxySQL is a high performance, high availability, protocol aware proxy for MySQ
 
 [ProxySQL](http://www.proxysql.com/) is an open-source MySQL proxy server. It can improve performance by distributing traffic among multiple database servers. It also improves the availability by automatically failing over if servers fail.
 
-ProxySQL is an intelligent router for Galera and Group Replication. It has the ability to defer reads, writes and route the write traffic to the primary and read traffic to the secondary. ProxySQL routes the traffic to backend MySQL, Percona server, MariaDB (in fact MySQL and MySQL forks).
+ProxySQL is an intelligent router for Galera and Group Replication. It can defer reads, writes and route the write traffic to the primary and read traffic to the secondary. ProxySQL routes the traffic to backend MySQL, Percona Server, MariaDB (in fact MySQL and MySQL forks).
 
 <p align="center">
     <img alt="proxysql-query-filtering"  src="/docs/images/proxysql/proxysql.svg">
 </p>
 
-In event of any failure, ProxySQL can identify and forward traffic to available one. It continuously monitors the failed node and include into the group when the failed node comes back.
+In the event of any failure, ProxySQL can identify and forward traffic to an available one. It continuously monitors the failed node and includes into the group when the failed node comes back.
 
 ## Founder
 
@@ -38,7 +38,7 @@ René Cannaò is the founder of ProxySQL and MySQL DBA.
 
 ## Architecture
 
-Here is the architecture of ProxySQL. It treats as gateway for the traffic coming from applications/clients. Clients connect to the ProxySQL instead of the backend database and send requests. Then the requests are evaluated by ProxySQL and corresponding actions are performed. To evaluate the client requests and perform an action, there are rules defined in ProxySQL.
+Here is the architecture of ProxySQL. It treats as a gateway for the traffic coming from applications/clients. Clients connect to the ProxySQL instead of the backend database and send requests. Then the requests are evaluated by ProxySQL and corresponding actions are performed. To evaluate the client requests and perform an action, there are rules defined in ProxySQL.
 
 <p align="center">
     <img alt="proxysql-query-filtering"  src="/docs/images/proxysql/proxysql-architecture.png">
@@ -46,30 +46,30 @@ Here is the architecture of ProxySQL. It treats as gateway for the traffic comin
 
 ## Features
 
-ProxySQL has several features. Bellow are some of the notable of them.
+ProxySQL has several features. Below are some of the notable of them.
 
 - Complex query routing and read/write split
 - Load balancing
-- Real time statistics
+- Real-time statistics
 - Monitoring
 - High availability and scalability
 - Seamless failover
 - Runtime reconfiguration
 - Scheduler
-- Support for Galera/PXC and Group Replication
+- Support for Galera and Group Replication
 - Support for millions of users
 - Support for tens of thousands of database servers
 - Native ProxySQL Clustering solution
 
 ## Inside of ProxySQL
 
-The details about ProxySQL is huge and can be [here](https://github.com/sysown/proxysql/wiki/). Here we will discuss about some of them.
+The details about ProxySQL is huge and can be [here](https://github.com/sysown/proxysql/wiki/). Here we will discuss some of them.
 
 ### Admin Interface
 
-After starting ProxySQL, it uses a package-provided configuration file (default is `/etc/proxysql.cnf`) to initialize default values for all of its configuration variables. After this initialization, ProxySQL stores its configuration in a database which you can manage and modify via the admin interface from the command line.
+After starting ProxySQL, it uses a package-provided configuration file (default is `/etc/proxysql.cnf`) to initialize default values for all of its configuration variables. After this initialization, ProxySQL stores its configuration in a database that you can manage and modify via the admin interface from the command line.
 
-First, access the administration interface. You’ll be prompted for password which, on a default installation, is `admin`.
+First, access the administration interface. You’ll be prompted for a password which, on a default installation, is `admin`.
 
 ```bash
 $ mysql --user=admin --password=admin --host=127.0.0.1 --port=6032 --prompt='ProxySQLAdmin> '
@@ -79,9 +79,9 @@ $ mysql --user=admin --password=admin --host=127.0.0.1 --port=6032 --prompt='Pro
 - `--password` specifies the password for the user we are connecting to.
 - `--host` tells **`mysql`** to connect to the local ProxySQL instance. We need to define this explicitly because ProxySQL doesn’t listen on the socket file that **`mysql`** assumes by default.
 - `--port` specifies the admin port to connect to and it is `6032`.
-- `--prompt` is just an optional flag. Normally the default prompt for mysql is `mysql> `, but here we are changing it to `ProxySQLAdmin> `. So, when you connect to the admin interface, you will see like `ProxySQLAdmin> ` in the prompt.
+- `--prompt` is just an optional flag. Normally the default prompt for `mysql` is `mysql> `, but here we are changing it to `ProxySQLAdmin> `. So, when you connect to the admin interface, you will see like `ProxySQLAdmin> ` in the prompt.
 
-From the admin interface, we can see that there are a few database available.
+From the admin interface, we can see that there are a few databases available.
 
 ```bash
 ProxySQLAdmin> show databases;
@@ -97,10 +97,10 @@ ProxySQLAdmin> show databases;
 5 rows in set (0.00 sec)
 ```
 
-`main`: the in-memory configuration database.
-`disk`: the disk-based mirror of "main".
-`stats`: contains runtime metrics collected from the internal functioning.
-`monitor`: contains monitoring metrics related to the backend servers to which ProxySQL connects.
+- `main`: the in-memory configuration database.
+- `disk`: the disk-based mirror of "main".
+- `stats`: contains runtime metrics collected from the internal functioning.
+- `monitor`: contains monitoring metrics related to the backend servers to which ProxySQL connects.
 
 #### Main - Runtime
 
@@ -137,7 +137,7 @@ ProxySQLAdmin> SHOW TABLES FROM main;
 22 rows in set (0.00 sec)
 ```
 
-For group replication here we have shortly described the following tables: `mysql_group_replication_hostgroups`, `mysql_galera_hostgroups`, `mysql_servers`, `mysql_users`, `mysql_query_rules` and `global_variables`.
+For Group Replication, the following tables are the concern here: `mysql_group_replication_hostgroups`, `mysql_galera_hostgroups`, `mysql_servers`, `mysql_users`, `mysql_query_rules` and `global_variables`.
 
 ##### mysql_group_replication_hostgroups
 
@@ -163,19 +163,19 @@ Create Table: CREATE TABLE mysql_group_replication_hostgroups (
 1 row in set (0.00 sec)
 ```
 
-- **`writer_hostgroup`** - by default all the traffic are sent to this group, nodes having `read_only=0` are in this hostgroup
-- **`backup_writer_hostgroup`** - if number of cluster nodes with `read_only=0` is greater than the value of `max_writers`, ProxySQL will put the additional nodes in this group
-- **`reader_hostgroup`** - it is the hostgroup to which read traffic be sent, nodes having `read_only=1` are assigned to this hostgroup
+- **`writer_hostgroup`** - by default all the traffic are sent to this group, nodes having `read_only=0` are in this host group
+- **`backup_writer_hostgroup`** - if the number of cluster nodes with `read_only=0` is greater than the value of `max_writers`, ProxySQL will put the additional nodes in this group
+- **`reader_hostgroup`** - it is the host group to which read traffic be sent, nodes having `read_only=1` are assigned to this host group
 - **`offline_hostgroup`** - when ProxySQL's monitoring determines a node is `OFFLINE`, it will be put into the offline_hostgroup
-- **`active`** - when enabled, ProxySQL monitors the hostgroups and moves nodes to the appropriate hostgroups
+- **`active`** - when enabled, ProxySQL monitors the host groups and moves nodes to the appropriate host groups
 - **`max_writers`** -the maximum number of nodes that should be in the `writer_hostgroup`, extra nodes will be put into the `backup_writer_hostgroup`
 - **`writer_is_also_reader`** - tells ProxySQL that if a node should be added to the `reader_hostgroup` as well as the `writer_hostgroup` after being promoted
 - **`max_transactions_behind`** - determines the maximum number of transactions behind the writers that ProxySQL should allow before shunning the node to prevent stale reads (this is determined by querying the `transactions_behind` field of the `sys.gr_member_routing_candidate_status` table in MySQL)
-- **`comment`** - text field that can be used for any purposed defined by the user. Could be a description of what the cluster stores, a reminder of when the hostgroup was added or disabled, or a JSON processed by some checker script
+- **`comment`** - text field that can be used for any purposed defined by the user. Could be a description of what the cluster stores, a reminder of when the host group was added or disabled, or a JSON processed by some checker script
 
 ##### mysql_galera_hostgroups
 
-This table is available from ProxySQL 2.x. It defines the hostgroups for MySQL servers using Galera Cluster such as Percona XtraDB Cluster, MariaDB Galera Cluster.
+This table is available from ProxySQL 2.x. It defines the host groups for MySQL servers using Galera Cluster such as Percona XtraDB Cluster, MariaDB Galera Cluster.
 
 ```sql
 ProxySQLAdmin> show create table mysql_galera_hostgroups\G
@@ -197,19 +197,19 @@ Create Table: CREATE TABLE mysql_galera_hostgroups (
 1 row in set (0.00 sec)
 ```
 
-- **`writer_hostgroup`** - by default all the traffic are sent to this group, nodes having `read_only=0` are in this hostgroup
-- **`backup_writer_hostgroup`** - if number of cluster nodes with `read_only=0` is greater than the value of `max_writers`, ProxySQL will put the additional nodes in this group
-- **`reader_hostgroup`** - it is the hostgroup to which read traffic be sent, nodes having `read_only=1` are assigned to this hostgroup
+- **`writer_hostgroup`** - by default all the traffic are sent to this group, nodes having `read_only=0` are in this host group
+- **`backup_writer_hostgroup`** - if the number of cluster nodes with `read_only=0` is greater than the value of `max_writers`, ProxySQL will put the additional nodes in this group
+- **`reader_hostgroup`** - it is the host group to which read traffic be sent, nodes having `read_only=1` are assigned to this host group
 - **`offline_hostgroup`** - when ProxySQL's monitoring determines a host is `OFFLINE`, it will be put into the offline_hostgroup
-- **`active`** - when enabled, ProxySQL monitors the hostgroups and moves nodes to the appropriate hostgroups
+- **`active`** - when enabled, ProxySQL monitors the host groups and moves nodes to the appropriate host groups
 - **`max_writers`** - the maximum number of nodes that should be in the `writer_hostgroup`, extra nodes will be put into the `backup_writer_hostgroup`
 - **`writer_is_also_reader`** - tells ProxySQL that if a node should be added to the `reader_hostgroup` as well as the `writer_hostgroup` after being promoted
-- **`max_transactions_behind`** - determines the maximum number of writesets behind the cluster that ProxySQL should allow before shunning the node to prevent stale reads (this is determined by querying the `wsrep_local_recv_queue` Galera variable)
-- **`comment`** - text field that can be used for any purposed defined by the user. Could be a description of what the cluster stores, a reminder of when the hostgroup was added or disabled, or a JSON processed by some checker script
+- **`max_transactions_behind`** - determines the maximum number of write sets behind the cluster that ProxySQL should allow before shunning the node to prevent stale reads (this is determined by querying the `wsrep_local_recv_queue` Galera variable)
+- **`comment`** - text field that can be used for any purposed defined by the user. Could be a description of what the cluster stores, a reminder of when the host group was added or disabled, or a JSON processed by some checker script
 
 ##### mysql_servers
 
-Table **`mysql_servers`** contains all the backend MySQL servers' information. It's schema definition is as follows:
+Table **`mysql_servers`** contains all the backend MySQL servers' information. Its schema definition is as follows:
 
 ```sql
 ProxySQLAdmin> SHOW CREATE TABLE mysql_servers\G
@@ -232,25 +232,25 @@ Create Table: CREATE TABLE mysql_servers (
 1 row in set (0.00 sec)
 ```
 
-- **`hostgroup_id`**: the hostgroup in which this server resides. Same server can be part of more than one hostgroup
+- **`hostgroup_id`**: the host group in which this server resides. The same server can be part of more than one host group
 - **`hostname`**, **`port`**: the TCP endpoint of the server
 - **`gtid_port`**: the port at which ProxySQL Binlog Reader listens on for GTID tracking
 - **`status`**:
-  - `ONLINE` - server is fully operational
-  - `SHUNNED` - either too many connection errors in a time or replication lag exceeded the allowed threshold and therefore the sever is temporarily out
-  - `OFFLINE_SOFT` - in this mode, new connections aren't accepted anymore, until the existing connections became inactive. That means connections are kept in use until the current transaction is completed. This allows to gracefully detach a backend server.
-  - `OFFLINE_HARD` - in this mode, the existing connections are dropped, while new connections aren't accepted either. It means deleting the server from a hostgroup, or taking it out of the hostgroup temporarily
-- **`weight`** - probability of choosing a server from a hostgroup with larger weight value is high.
+ - `ONLINE` - server is fully operational
+ - `SHUNNED` - either too many connection errors in time or replication lag exceeded the allowed threshold and therefore the server is temporarily out
+ - `OFFLINE_SOFT` - in this mode, new connections aren't accepted anymore, until the existing connections became inactive. That means connections are kept in use until the current transaction is completed. This allows to gracefully detach a backend server.
+ - `OFFLINE_HARD` - in this mode, the existing connections are dropped, while new connections aren't accepted either. It means deleting the server from a host group, or taking it out of the host group temporarily
+- **`weight`** - the probability of choosing a server from a host group with a larger weight value is high.
 - **`compression`** - value greater than 0, new connections to that server will use compression
 - **`max_connections`** - the maximum number of connections ProxySQL will open to this server
-- **`max_replication_lag`** - value must be in range, 0 <= `max_replication_lag` <= 126144000. In that range, ProxySQL will regularly monitor replication lag and if it goes beyond such threshold it will temporary shun the host until replication catch ups
+- **`max_replication_lag`** - value must be in range, 0 <= `max_replication_lag` <= 126144000. In that range, ProxySQL will regularly monitor replication lag and if it goes beyond such threshold it will temporary shun the host until replication catch-ups
 - **`use_ssl`** - if set to 1, connections use SSL.
 - **`max_latency_ms`** - if a host has a greater ping time than `max_latency_ms`, it is excluded from the connection pool (although the server stays `ONLINE`)
-- **`comment`** - user defined text field
+- **`comment`** - user-defined text field
 
 ##### mysql_users
 
-This table describes the users of MySQL that are used connect to the backend server.
+This table describes the users of MySQL that are used to connect to the backend server.
 
 ```sql
 ProxySQLAdmin> SHOW CREATE TABLE mysql_users\G
@@ -277,15 +277,15 @@ Create Table: CREATE TABLE mysql_users (
 
 - **`username`**, **`password`** - credentials for connecting to the MySQL or ProxySQL instance
 - **`active`** - if active = 0, the user will be tracked in the database, but will be never loaded in the in-memory data structures
-- **`default_hostgroup`** - if no matching rule is found for the queries sent by this user, the traffic is sent to the default hostgroup
+- **`default_hostgroup`** - if no matching rule is found for the queries sent by this user, the traffic is sent to the default host group
 - **`default_schema`** - the schema to which the connection should change by default
 - **`schema_locked`** - not supported yet (TODO: check)
-- **`transaction_persistent`** - if set for this user, transactions started within a hostgroup will remain within that hostgroup regardless of any other rules
-- **`fast_forward`** - if set, it bypasses the query processing layer (rewriting, caching) and pass through the query directly as is to the backend server
+- **`transaction_persistent`** - if set for this user, transactions started within a host group will remain within that host group regardless of any other rules
+- **`fast_forward`** - if set, it bypasses the query processing layer (rewriting, caching) and passes through the query directly as is to the backend server
 - **`frontend`** - if set, this (username, password) pair is used to authenticate to ProxySQL
-- **`backend`** - if set, this (username, password) pair is used to authenticate to the MySQL servers against any hostgroup
+- **`backend`** - if set, this (username, password) pair is used to authenticate to the MySQL servers against any host group
 - **`max_connections`** - defines the maximum number of allowable connections for a user.
-- **`comment`** - user defined text field to describe something
+- **`comment`** - user-defined text field to describe something
 
 ##### mysql_query_rules
 
@@ -332,7 +332,7 @@ Create Table: CREATE TABLE mysql_query_rules (
 1 row in set (0.00 sec)
 ```
 
-Some these field, important to set a query rule, are shortly described bellow:
+Some these field, important to set a query rule, are shortly described below:
 
 - **`rule_id`** - the unique id of the rule
 - **`active`** - only active rules are applied
@@ -340,21 +340,21 @@ Some these field, important to set a query rule, are shortly described bellow:
 - **`client_addr`** - match traffic from a specific source
 - **`match_digest`** - regular expression that matches the query digest
 - **`match_pattern`** - regular expression that matches the query text
-- **`destination_hostgroup`** - route matched queries to this hostgroup
+- **`destination_hostgroup`** - route matched queries to this host group
 - **`timeout`** - the maximum timeout in milliseconds within which the matched or rewritten query should be executed. If `timeout` is not specified, global variable `mysql-default_query_timeout` applies
 - **`retries`** - the maximum number of times a query needs to be re-executed in case of detected failure during the execution of the query. If not specified, global variable `mysql-query_retries_on_failure` applies
-- **`log`** - query will be logged
+- **`log`** - If set to 1, the query will be logged
 - **`apply`** - if set to 1, no further queries will be evaluated after this rule is matched and processed
 - **`comment`** - a descriptive comment of the query rule
 
 ##### global_variables
 
-The table `global_variables` is two columns table like key-value store. It defines global variables used by ProxySQL.
+The table `global_variables` is two columns table like a key-value store. It defines global variables used by ProxySQL.
 
 There are 2 classes of global variables currently:
 
-`admin` - these are prefixed with `admin-` and relevant for admin module allow tweaking the admin interface
-`mysql` - these are prefixed with `mysql-` and relevant for MySQL modules allow tweaking of MySQL-related features. These include configuring variables to handle MySQL traffic, monitor operations (further prefixed with `mysql-monitor_`), query caching.
+- **`admin`** - these are prefixed with `admin-` and relevant for admin module allow tweaking the admin interface
+- **`mysql`** - these are prefixed with `mysql-` and relevant for MySQL modules allow tweaking of MySQL-related features. These include configuring variables to handle MySQL traffic, monitor operations (further prefixed with `mysql-monitor_`), query caching.
 
 For more information, please see section [global variables](https://github.com/sysown/proxysql/wiki/global_variables.md).
 
@@ -377,7 +377,7 @@ ProxySQLAdmin> SELECT * FROM global_variables ORDER BY variable_name;
 ## Next Steps
 
 - Configure ProxySQL for Group Replication [here](/docs/guides/proxysql/overview/configure-proxysql.md)
-- Detail concepts of ProxySQL object [here](/docs/concepts/database-proxy/proxysql.md).
-- Detail concepts of ProxySQLVersion object [here](/docs/concepts/catalog/proxysql.md).
+- Detail concepts of ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
+- Detail concepts of ProxySQLVersion CRD [here](/docs/concepts/catalog/proxysql.md).
 - Quickstart ProxySQL to Load Balance MySQL Group Replication with KubeDB Operator [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

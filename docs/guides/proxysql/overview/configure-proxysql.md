@@ -14,7 +14,7 @@ section_menu_id: guides
 
 Now ProxySQL has native support for Galera Cluster and Group Replication. ProxySQL can,
 
-- monitor of the backend servers in real time
+- monitor of the backend servers in real-time
 - redirect the traffic transparently
 - reconfigure automatically
 
@@ -24,16 +24,16 @@ Here we will discuss how ProxySQL works with Group Replication.
 
 ### Group Replication
 
-Group Replication is a plugin for the standard MySQL 5.7 and higher Server developed by Oracle. It is a synchronous replication, with built-in conflict detection/handling and consistency guarantees. It allows you to move from a stand-alone instance of MySQL, which is a single point of failure, to a natively distributed highly available MySQL group made up of N MySQL instances (the group members). The servers keep strong coordination through message passing to build fault-tolerant system.
+Group Replication is a plugin for the standard MySQL 5.7 and higher Server developed by Oracle. It is synchronous replication, with built-in conflict detection/handling and consistency guarantees. It allows you to move from a stand-alone instance of MySQL, which is a single point of failure, to a natively distributed highly available MySQL group made up of N MySQL instances (the group members). The servers keep strong coordination through message passing to build a fault-tolerant system.
 
 Groups can operate in a single-primary mode, where only one server accepts updates at a time. Groups can be deployed in multi-primary mode, where all servers can accept updates.
 
 If we say specifically about the Group Replication,
 
 - Multi-primary / active-active clustered MySQL solution
-  - Single-primary is the default one
+- Single-primary is the default one
 - Synchronous replication
-- InnoDB compilant
+- InnoDB compliant
 - State transfer based on GTID matching across all servers
 - Fault-tolerant
 - Built-in membership service keeps the view of the group consistent
@@ -58,7 +58,7 @@ Say we have a replication group of 3 MySQL servers.
 | mysql-1 | 3306 |
 | mysql-2 | 3306 |
 
-Add these 3 members into the [mysql_servers](/docs/guides/proxysql/overview.md#mysql_servers) table:
+Add these 3 members into the [mysql_servers](/docs/guides/proxysql/overview/overview.md#mysql_servers) table:
 
 ```sql
 ProxySQLAdmin> INSERT INTO mysql_servers (hostgroup_id,hostname,port) VALUES (2,'mysql-0',3306);
@@ -91,7 +91,7 @@ ProxySQLAdmin> LOAD mysql servers to runtime;
 Query OK, 0 rows affected (0.00 sec)
 ```
 
-Now, define the hostgroups for group replication in [mysql_group_replication_hostgroup](/docs/guides/proxysql/overview.md#mysql_group_replication_hostgroups) like following:
+Now, define the hostgroups for group replication in [mysql_group_replication_hostgroup](/docs/guides/proxysql/overview/overview.md#mysql_group_replication_hostgroups) like following:
 
 | writer_hostgroup | backup_writer_hostgroup | reader_hostgroup | offline_hostgroup | active | max_writers | writer_is_also_reader | max_transactions_behind |
 | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
@@ -108,7 +108,7 @@ VALUES (2,4,3,1,1,1,1,0);
 To apply this change we have to do additional tasks because of how ProxySQL’s configuration system works.
 
 - **memory** which is altered when making modifications from the command-line interface.
-- **runtime** which is used by ProxySQL as the effective configuration.
+- **runtime** which is used by ProxySQL as an effective configuration.
 - **disk** which is used to make a configuration persist across restarts.
 
 The change we made is in memory. To apply the change, we have to load the change from memory to runtime realm, then save them to disk to make them persist.
@@ -118,7 +118,7 @@ ProxySQLAdmin> LOAD admin variables to disk;
 ProxySQLAdmin> LOAD admin variables to runtime;
 ```
 
-The following view and helper functions also need to be added to the replication group in order for Group Replication to be compatible with ProxySQL’s monitoring:
+The following view and helper functions also need to be added to the replication group so that the replication group can be compatible with ProxySQL’s monitoring:
 
 - CREATE VIEW gr_member_routing_candidate_status
 - CREATE FUNCTION gr_member_in_primary_partition
@@ -136,7 +136,7 @@ Execute it from the primary member,
 $ mysql --user=root --password={MYSQL_ROOT_PASSWORD} --host={PRIMARY_GROUP_MEMBER} < addition_to_sys.sql
 ```
 
-To verify that the above VIEW an FUNCTIONs are added successfully, we can run the following statement from every member of the group,
+To verify that the above FUNCTIONs are added successfully, we can run the following statement from every member of the group,
 
 ```sql
 --- Status of the primary node (mysql_node1)
@@ -156,7 +156,7 @@ mysql> SELECT * FROM sys.gr_member_routing_candidate_status;
 +------------------+-----------+---------------------+----------------------+
 ```
 
-Once deployed ProxySQL will query the view in order to retrieve the status of each of the group members (the view can also be used for troubleshooting purposes).
+Once deployed ProxySQL will query the view to retrieve the status of each of the group members (the view can also be used for troubleshooting purposes).
 
 ProxySQL needs a dedicated user to communicate with the MySQL nodes to be able to assess their condition. So create a new user for this purpose. We called it **proxysql** here. Also use a strong password for this user. Then grant the read permission on the `sys` database to this user so that it can monitor the group. If you want applications connect to this user **proxysql** to access the other databases, then grant appropriate permissions too.
 
@@ -203,7 +203,7 @@ ProxySQLAdmin>  SELECT hostgroup_id, hostname, status  FROM runtime_mysql_server
 
 Allow applications to connect to ProxySQL with the **proxysql** user, and send traffic to the backend servers.
 
-To do so, we need to set configuration variables in the [mysql_users](/docs/guides/proxysql/overview.md#mysql_users) table, which holds user credentials along with the default hostgroup information (which is 2 here for `writer_hostgroup`).
+To do so, we need to set configuration variables in the [mysql_users](/docs/guides/proxysql/overview/overview.md#mysql_users) table, which holds user credentials along with the default hostgroup information (which is 2 here for `writer_hostgroup`).
 
 ```sql
 ProxySQLAdmin> INSERT INTO mysql_users(username, password, active, default_hostgroup, max_connections) VALUES ('$MYSQL_PROXY_USER', '$MYSQL_PROXY_PASSWORD', 1, 2, 200);
@@ -211,7 +211,7 @@ ProxySQLAdmin> LOAD MYSQL USERS TO RUNTIME;
 ProxySQLAdmin> SAVE MYSQL USERS TO DISK;
 ```
 
-If you take a little monitoring effort on server load, you might see that all traffic comes to the writer group (2 this case). Even when you setup single-primary for MySQL Group Replication, ProxySQL does not “automatically” route read traffics to reader nodes. Routing and balancing load are the DBA job, so it needs to be done with [mysql_query_rules](/docs/guides/proxysql/overview.md#mysql_query_rules) table.
+If you take a little monitoring effort on server load, you might see that all traffic comes to the writer group (2 this case). Even when you setup single-primary for MySQL Group Replication, ProxySQL does not “automatically” route read traffics to reader nodes. Routing and balancing load are the DBA job, so it needs to be done with [mysql_query_rules](/docs/guides/proxysql/overview/overview.md#mysql_query_rules) table.
 
 Learn more about splitting the traffic from [ProxySQL Wiki entry](https://github.com/sysown/proxysql/wiki/ProxySQL-Read-Write-Split-(HOWTO)). For example we can use the following simple rules:
 
@@ -261,8 +261,7 @@ transactions_behind: 0
 ## Next Steps
 
 - Overview of ProxySQL [here](/docs/guides/proxysql/overview/overview.md).
-- Detail concepts of ProxySQL object [here](/docs/concepts/database-proxy/proxysql.md).
-- Detail concepts of ProxySQLVersion object [here](/docs/concepts/catalog/proxysql.md).
+- Detail concepts of ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
+- Detail concepts of ProxySQLVersion CRD [here](/docs/concepts/catalog/proxysql.md).
 - Quickstart ProxySQL to Load Balance MySQL Group Replication with KubeDB Operator [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
--

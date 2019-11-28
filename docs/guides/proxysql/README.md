@@ -20,7 +20,7 @@ aliases:
 |                        Features                         | Availability |
 | ------------------------------------------------------- | :----------: |
 | Load balance MySQL Group Replication                    |   &#10003;   |
-| Load balance PerconaXtraDB                              |   &#10007;   |
+| Load balance PerconaXtraDB Cluster                      |   &#10007;   |
 | Custom Configuration                                    |   &#10003;   |
 | Using Custom docker image                               |   &#10003;   |
 | Builtin Prometheus Discovery                            |   &#10003;   |
@@ -51,9 +51,9 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - Overview of ProxySQL [here](/docs/guides/proxysql/overview/overview.md).
 - Configure ProxySQL for Group Replication [here](/docs/guides/proxysql/overview/configure-proxysql.md).
 - Quickstart ProxySQL to Load Balance MySQL Group Replication with KubeDB Operator [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).
-- Monitor your ProxySQL with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/proxysql/monitoring/using-coreos-prometheus-operator.md).
 - Monitor your ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
+- Monitor your ProxySQL with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/proxysql/monitoring/using-coreos-prometheus-operator.md).
 - Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
-- Detail concepts of ProxySQL object [here](/docs/concepts/database-proxy/proxysql.md).
-- Detail concepts of ProxySQLVersion object [here](/docs/concepts/catalog/proxysql.md).
+- Detail concepts of ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
+- Detail concepts of ProxySQLVersion CRD [here](/docs/concepts/catalog/proxysql.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

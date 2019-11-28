@@ -78,7 +78,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysql.kubedb.com/my-group created
 ```
 
-Now, wait for the database to go into `Running` state.
+Now, wait for the database to go into the `Running` state.
 
 ```console
 $ kubectl get my -n demo my-group
@@ -123,7 +123,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 proxysql.kubedb.com/builtin-prom-proxysql created
 ```
 
-Now, wait for the ProxySQL object to go into `Running` state.
+Now, wait for the ProxySQL object to go into the `Running` state.
 
 ```console
 $ kubectl get proxysql -n demo builtin-prom-proxysql
@@ -131,7 +131,7 @@ NAME                    VERSION   STATUS    AGE
 builtin-prom-proxysql   2.0.4     Running   3m
 ```
 
-KubeDB will create a separate stats service with name `{ProxySQL object name}-stats` for monitoring purpose.
+KubeDB will create a separate stats service with the name `{ProxySQL object name}-stats` for monitoring purposes.
 
 ```console
 $ kubectl get svc -n demo --selector="proxysql.kubedb.com/name=builtin-prom-proxysql"
@@ -140,7 +140,7 @@ builtin-prom-proxysql         ClusterIP   10.101.12.24    <none>        6033/TCP
 builtin-prom-proxysql-stats   ClusterIP   10.97.112.192   <none>        42004/TCP   23m
 ```
 
-Here, `builtin-prom-proxysql-stats` service has been created for monitoring purpose. Let's describe the service.
+Here, `builtin-prom-proxysql-stats` service has been created for monitoring purposes. Let's describe the service.
 
 ```console
 $ kubectl describe svc -n demo builtin-prom-proxysql-stats
@@ -164,7 +164,7 @@ Session Affinity:  None
 Events:            <none>
 ```
 
-You can see that the service contains following annotations.
+You can see that the service contains the following annotations.
 
 ```console
 prometheus.io/path: /metrics
@@ -176,7 +176,7 @@ The Prometheus server will discover the service endpoint using these specificati
 
 ## Configure Prometheus Server
 
-Now, we have to configure a Prometheus scrapping job to scrape the metrics using this service. We are going to configure scrapping job similar to this [kubernetes-service-endpoints](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin#kubernetes-service-endpoints) job that scrapes metrics from endpoints of a service.
+Now, we have to configure a Prometheus scrapping job to scrape the metrics using this service. We are going to configure scraping jobs similar to this [kubernetes-service-endpoints](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin#kubernetes-service-endpoints) job that scrapes metrics from endpoints of a service.
 
 Let's configure a Prometheus scrapping job to collect metrics from this service.
 
@@ -240,9 +240,9 @@ Let's configure a Prometheus scrapping job to collect metrics from this service.
 
 ### Configure Existing Prometheus Server
 
-If you already have a Prometheus server running, you have to add above scrapping job in the `ConfigMap` used to configure the Prometheus server. Then, you have to restart it for the updated configuration to take effect.
+If you already have a Prometheus server running, you have to add the above scrapping job in the `ConfigMap` used to configure the Prometheus server. Then, you have to restart it for the updated configuration to take effect.
 
->If you don't use a persistent volume for Prometheus storage, you will lose your previously scrapped data on restart.
+>If you don't use a persistent volume for Prometheus storage, you will lose your previously scraped data on restart.
 
 ### Deploy New Prometheus Server
 
@@ -332,7 +332,7 @@ configmap/prometheus-config created
 
 **Create RBAC:**
 
-If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
+If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuff for Prometheus,
 
 ```console
 $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
@@ -345,7 +345,7 @@ clusterrolebinding.rbac.authorization.k8s.io/prometheus created
 
 **Deploy Prometheus:**
 
-Now, we are ready to deploy Prometheus server. We are going to use following [deployment](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/builtin/artifacts/deployment.yaml) to deploy Prometheus server.
+Now, we are ready to deploy the Prometheus server. We are going to use the following [deployment](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/builtin/artifacts/deployment.yaml) to deploy the Prometheus server.
 
 Let's deploy the Prometheus server.
 
@@ -366,7 +366,7 @@ NAME                          READY   STATUS    RESTARTS   AGE
 prometheus-789c9695fc-v8gjg   1/1     Running   0          27s
 ```
 
-Now, run following command on a separate terminal to forward 9090 port of `prometheus-789c9695fc-v8gjg` pod,
+Now, run the following command on a separate terminal to forward 9090 port of `prometheus-789c9695fc-v8gjg` pod,
 
 ```console
 $ kubectl port-forward -n monitoring prometheus-8568c86d86-95zhn 9090
@@ -380,13 +380,13 @@ Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:909
   <img alt="Prometheus Target" height="100%" src="/docs/images/proxysql/proxysql-builtin-prom-target.png" style="padding:10px">
 </p>
 
-Check the labels marked with red rectangle. These labels confirm that the metrics are coming from `ProxySQL` database `builtin-prom-proxysql` through stats service `builtin-prom-proxysql-stats`.
+Check the labels marked with the red rectangles. These labels confirm that the metrics are coming from `ProxySQL` database `builtin-prom-proxysql` through stats service `builtin-prom-proxysql-stats`.
 
-Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create beautiful dashboard with collected metrics.
+Now, you can view the collected metrics and create a graph from the homepage of this Prometheus dashboard. You can also use this Prometheus server as a data source for [Grafana](https://grafana.com/) and create a beautiful dashboard with collected metrics.
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run following commands
+To clean up the Kubernetes resources created by this tutorial, run following commands
 
 ```console
 $ kubectl delete -n monitoring deployment.apps/prometheus

@@ -20,7 +20,7 @@ section_menu_id: concepts
 
 ## ProxySQL Spec
 
-As with all other Kubernetes objects, a ProxySQL needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example ProxySQL object.
+As with all other Kubernetes objects, a ProxySQL needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example of the ProxySQL object.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -90,7 +90,7 @@ spec:
 
 ### .spec.version
 
-`.spec.version` is a required field specifying the name of the [ProxySQLVersion](/docs/concepts/catalog/proxysql.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `ProxySQLVersion` crd,
+`.spec.version` is a required field specifying the name of the [ProxySQLVersion](/docs/concepts/catalog/proxysql.md) CRD where the docker images are specified. Currently, when you install KubeDB, it creates the following `ProxySQLVersion` CRD,
 
 - `2.0.4`
 
@@ -100,15 +100,15 @@ spec:
 
 You can specify the following fields in `.spec.backend` field,
 
-- `.spec.backend.ref` lets one to locate the typed referenced object. In this case, it is the MySQL/PerconaXtraDB/MariaDB object in the same namespace as the ProxySQL object.
+- `.spec.backend.ref` lets one locate the typed referenced object. In this case, it is the MySQL/PerconaXtraDB/MariaDB object in the same namespace as the ProxySQL object.
 
-  - `apiGroup` is the group for the resource being referenced. Here it is `"kubedb.com"`.
-  - `kind` is the type of resource being referenced. Here it is `"MySQL"`.
-  - `name` is the name of resource being referenced. Here it is `"my-group"`.
+ - `apiGroup` is the group for the resource being referenced. Here it is `"kubedb.com"`.
+ - `kind` is the type of resource being referenced. Here it is `"MySQL"`.
+ - `name` specifies the name of the resource being referenced. Here it is `"my-group"`.
 
 ### .spec.proxysqlSecret
 
-`.spec.proxysqlSecret` is an optional field that points to a Secret used to hold credentials for `proxysql` user. If not set, KubeDB operator creates a new Secret `{proxysql-object-name}-auth` for storing the password for `proxysql` user for each ProxySQL object. If you want to use an existing secret please specify that when creating the ProxySQL object using `.spec.proxysqlSecret.secretName`.
+`.spec.proxysqlSecret` is an optional field that points to a Secret used to hold credentials for `proxysql` user. If not set, the KubeDB operator creates a new Secret `{proxysql-object-name}-auth` for storing the password for `proxysql` user for each ProxySQL object. If you want to use an existing secret please specify that when creating the ProxySQL object using `.spec.proxysqlSecret.secretName`.
 
 This secret contains a `proxysqluser` key and a `proxysqlpass` key which contains the username and password respectively for `proxysql` user. If no Secret is found, KubeDB sets the value of `proxysqluser` key to be `proxysql`.
 
@@ -194,7 +194,7 @@ Uses of some field of `.spec.podTemplate` is described below,
 
 Note that, KubeDB does not allow `MYSQL_ROOT_PASSWORD` environment variable to set in `.spec.env`.
 
-If you try to set any of the forbidden environment variables i.e. `MYSQL_ROOT_PASSWORD` in ProxySQL object, Kubed operator will reject the request with following error,
+If you try to set any of the forbidden environment variables i.e. `MYSQL_ROOT_PASSWORD` in ProxySQL object, Kubed operator will reject the request with the following error,
 
 ```ini
 Error from server (Forbidden): error when creating "./proxysql.yaml": admission webhook "proxysql.validators.kubedb.com" denied the request: environment variable MYSQL_ROOT_PASSWORD is forbidden to use in ProxySQL spec
@@ -202,7 +202,7 @@ Error from server (Forbidden): error when creating "./proxysql.yaml": admission 
 
 #### .spec.podTemplate.spec.imagePullSecrets
 
-`KubeDB` provides the flexibility of deploying ProxySQL from a private Docker registry. `.spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker image if you are using a private docker registry. To learn how to deploy SQL from a private registry, please visit [here](/docs/guides/proxysql/using-private-registry.md).
+`KubeDB` provides the flexibility of deploying ProxySQL from a private Docker registry. `.spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker images if you are using a private docker registry. To learn how to deploy SQL from a private registry, please visit [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
 
 #### .spec.podTemplate.spec.nodeSelector
 
@@ -210,9 +210,9 @@ Error from server (Forbidden): error when creating "./proxysql.yaml": admission 
 
 #### .spec.podTemplate.spec.serviceAccountName
 
- `serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
+ `serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine-tune role-based access control.
 
- If this field is left empty, the KubeDB operator will create a service account name matching ProxySQL object name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
+ If this field is left empty, the KubeDB operator will create a service account name matching the ProxySQL object name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
 
  If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
 
@@ -224,25 +224,25 @@ Error from server (Forbidden): error when creating "./proxysql.yaml": admission 
 
 ### .spec.serviceTemplate
 
-You can also provide a template for the services created by KubeDB operator for ProxySQL database through `.spec.serviceTemplate`. This will allow you to set the type and other properties of the services.
+You can also provide a template for the services created by KubeDB operator for the ProxySQL through `.spec.serviceTemplate`. This will allow you to set the type and other properties of the services.
 
 KubeDB allows following fields to set in `.spec.serviceTemplate`:
 
 - metadata:
-  - annotations
+- annotations
 - spec:
-  - type
-  - ports
-  - clusterIP
-  - externalIPs
-  - loadBalancerIP
-  - loadBalancerSourceRanges
-  - externalTrafficPolicy
-  - healthCheckNodePort
+- type
+- ports
+- clusterIP
+- externalIPs
+- loadBalancerIP
+- loadBalancerSourceRanges
+- externalTrafficPolicy
+- healthCheckNodePort
 
 ### .spec.updateStrategy
 
-You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for ProxySQL thorough `.spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from old KubeDB version to new one should behave.
+You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for ProxySQL thorough `.spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In the future, we will use this field to determine how automatic migration from the old KubeDB version to a new one should behave.
 
 ## Next Steps
 

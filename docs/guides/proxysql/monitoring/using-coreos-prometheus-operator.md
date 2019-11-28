@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Monitoring ProxySQL Using CoreOS Prometheus Operator
 
-CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use CoreOS Prometheus operator to monitor ProxySQL deployed with KubeDB.
+CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) provides simple and Kubernetes native ways to deploy and configure the Prometheus server. This tutorial will show you how to use the CoreOS Prometheus operator to monitor ProxySQL deployed with KubeDB.
 
 ## Before You Begin
 
@@ -23,8 +23,8 @@ CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) prov
 - To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/concepts/database-monitoring/overview.md).
 
 - To keep Prometheus resources isolated, we are going to use two different namespaces called,
-  - `monitoring` to deploy respective monitoring resources
-  - `demo` to deploy respective resources from KubeDB
+- `monitoring` to deploy respective monitoring resources
+- `demo` to deploy respective resources from KubeDB
 
   ```console
   $ kubectl create ns monitoring
@@ -128,7 +128,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysql.kubedb.com/my-group created
 ```
 
-Now, wait for the database to go into `Running` state.
+Now, wait for the database to go into the `Running` state.
 
 ```console
 $ kubectl get my -n demo my-group
@@ -170,8 +170,8 @@ spec:
 
 Here,
 
-- `.spec.monitor.agent:  prometheus.io/coreos-operator` indicates that we are going to monitor this server using CoreOS prometheus operator.
-- `.spec.monitor.prometheus.port` specifies the port at which ProxySQL exporter will serve the metrics and from this port Prometheus server collects them.
+- `.spec.monitor.agent: prometheus.io/coreos-operator` indicates that we are going to monitor this server using the CoreOS Prometheus operator.
+- `.spec.monitor.prometheus.port` specifies the port at which ProxySQL exporter will serve the metrics and from this port, the Prometheus server collects them.
 - `.spec.monitor.prometheus.namespace: monitoring` specifies that KubeDB should create `ServiceMonitor` in `monitoring` namespace.
 - `.spec.monitor.prometheus.labels` specifies that KubeDB should create `ServiceMonitor` with these labels.
 - `.spec.monitor.prometheus.interval` indicates that the Prometheus server should scrape metrics from ProxySQL exporter with 10 seconds interval.
@@ -189,7 +189,7 @@ NAME                   VERSION   STATUS    AGE
 coreos-prom-proxysql   2.0.4     Running   14s
 ```
 
-KubeDB will create a separate stats service with name `{ProxySQL object name}-stats` for monitoring purpose.
+KubeDB will create a separate stats service with the name `{ProxySQL object name}-stats` for monitoring purposes.
 
 ```console
 $ kubectl get svc -n demo --selector="proxysql.kubedb.com/name=coreos-prom-proxysql"
@@ -198,7 +198,7 @@ coreos-prom-proxysql         ClusterIP   10.101.10.235   <none>        6033/TCP 
 coreos-prom-proxysql-stats   ClusterIP   10.111.242.54   <none>        42004/TCP   68s
 ```
 
-Here, `coreos-prom-proxysql-stats` service has been created for monitoring purpose.
+Here, `coreos-prom-proxysql-stats` service has been created for monitoring purposes.
 
 Let's describe this stats service.
 
@@ -221,7 +221,7 @@ Session Affinity:  None
 Events:            <none>
 ```
 
-Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these information to target its endpoints.
+Notice the `Labels` and `Port` fields. `ServiceMonitor` will use this information to target its endpoints.
 
 KubeDB will also create a `ServiceMonitor` object in `monitoring` namespace that select the endpoints of `coreos-prom-proxysql-stats` service. Verify that the `ServiceMonitor` object has been created.
 
@@ -271,9 +271,9 @@ spec:
       proxysql.kubedb.com/name: coreos-prom-proxysql
 ```
 
-Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in ProxySQL object.
+Notice that the `ServiceMonitor` has `k8s-app: prometheus` label that we had specified in ProxySQL object.
 
-Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `coreos-prom-proxysql-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
+Also, notice that the `ServiceMonitor` has a selector that matches the labels we have seen in the `coreos-prom-proxysql-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
 
 ## Verify Monitoring Metrics
 
@@ -285,9 +285,9 @@ NAME                      READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-0   3/3     Running   1          56m
 ```
 
-Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
+Prometheus server is listening to port `9090` of `Prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access the Prometheus dashboard.
 
-Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
+Run the following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
 
 ```console
 $ kubectl port-forward -n monitoring prometheus-prometheus-0 9090
@@ -301,11 +301,11 @@ Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:909
   <img alt="Prometheus Target" src="/docs/images/proxysql/proxysql-coreos-prom-target.png" style="padding:10px">
 </p>
 
-Check the `endpoint` and `service` labels marked by red rectangle. It verifies that the target is our expected database. Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create beautiful dashboard with collected metrics.
+Check the `endpoint` and `service` labels marked by the red rectangles. It verifies that the target is our expected database. Now, you can view the collected metrics and create a graph from the homepage of this Prometheus dashboard. You can also use this Prometheus server as a data source for [Grafana](https://grafana.com/) and create a beautiful dashboard with collected metrics.
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run following commands
+To clean up the Kubernetes resources created by this tutorial, run following commands
 
 ```console
 # cleanup prometheus resources
@@ -333,7 +333,7 @@ $ kubectl delete ns demo
 ## Next Steps
 
 - Monitor your ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
-- Detail concepts of ProxySQL object [here](/docs/concepts/databases/proxysql.md).
-- Detail concepts of ProxySQLVersion object [here](/docs/concepts/catalog/proxysql.md).
-- Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/using-private-registry.md).
+- Detail concepts of ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
+- Detail concepts of ProxySQLVersion CRD [here](/docs/concepts/catalog/proxysql.md).
+- Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
