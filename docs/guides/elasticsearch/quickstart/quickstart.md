@@ -347,7 +347,7 @@ type: Opaque
 
 > Note: Cert Secret name format: `{elasticsearch-name}-cert`
 
-To know more about how to create TLS secure Elasticsearch database with KubeDB, please visit [here](/docs/guides/elasticsearch/search-guard/use-tls.md).
+To learn more about how to create TLS secure Elasticsearch database with KubeDB, please visit [here](/docs/guides/elasticsearch/search-guard/use-tls.md).
 
 ## Connect with Elasticsearch Database
 

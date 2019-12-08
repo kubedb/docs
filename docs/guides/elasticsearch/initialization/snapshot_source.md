@@ -10,6 +10,8 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
+{{< notice type="warning" message="This doc has been deprecated and will be removed in a future release. We recommend using [Stash](/docs/guides/elasticsearch/snapshot/stash.md) to backup & restore Elasticsearch database." >}}
+
 > Don't know how backup works?  Check [tutorial](/docs/guides/elasticsearch/snapshot/instant_backup.md) on Instant Backup.
 
 # Initialize Elasticsearch with Snapshot
