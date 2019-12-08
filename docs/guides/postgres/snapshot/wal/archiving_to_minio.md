@@ -78,9 +78,9 @@ Storage Secret for **WAL-G** is needed with the following 2 keys:
 
 | Key                     | Description                               |
 | ----------------------- | ----------------------------------------- |
-| `AWS_ACCESS_KEY_ID`     | `Required`. AWS / MinIO access key ID     |
-| `AWS_SECRET_ACCESS_KEY` | `Required`. AWS / MinIO secret access key |
-| `CA_CERT_DATA`          | `Optional`. AWS / MinIO certificate data  |
+| `AWS_ACCESS_KEY_ID`     | `Required`. MinIO access key ID     |
+| `AWS_SECRET_ACCESS_KEY` | `Required`. MinIO secret access key |
+| `CA_CERT_DATA`          | `Optional`. MinIO certificate data  |
 
 for MinIO server secured with custom CA,
 necessary certificates have to provided in the storage secret as `CA_CERT_DATA` to establish secure connection.
@@ -147,8 +147,8 @@ To configure s3 backend, following parameters are available:
 
 | Parameter                           | Description                                                        |
 | ----------------------------------- | ------------------------------------------------------------------ |
-| `spec.archiver.storage.s3.endpoint` | `Required`. For MinIO, use the URL to your server                  |
-| `spec.archiver.storage.s3.bucket`   | `Required`. Name of Bucket                                         |
+| `spec.archiver.storage.s3.endpoint` | `Required`. The URL to your MinIO server                  |
+| `spec.archiver.storage.s3.bucket`   | `Required`. Name of your Bucket                                         |
 | `spec.archiver.storage.s3.prefix`   | `Optional`. Path prefix into bucket where WAL files will be stored |
 
 Now create this Postgres object with continuous archiving support.
