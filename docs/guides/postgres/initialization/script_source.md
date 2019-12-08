@@ -62,7 +62,7 @@ metadata:
   name: script-postgres
   namespace: demo
 spec:
-  version: "9.6-v4"
+  version: "10.2-v5"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -93,8 +93,8 @@ Now, wait until Postgres goes in `Running` state. Verify that the database is in
 
 ```console
  $ kubectl get pg -n demo script-postgres
-NAME              VERSION   STATUS    AGE
-script-postgres   9.6-v2    Running   39s
+NAME              VERSION    STATUS    AGE
+script-postgres   10.2-v5    Running   39s
 ```
 
 You can use `kubedb describe` command to view which resources has been created by KubeDB for this Postgres object.

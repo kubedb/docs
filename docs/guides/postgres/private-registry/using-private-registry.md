@@ -40,15 +40,32 @@ namespace/demo created
   NAME       VERSION   DB_IMAGE                   TOOLS_IMAGE                      EXPORTER_IMAGE                    DEPRECATED
   10.2       10.2      kubedb/postgres:10.2       kubedb/postgres-tools:10.2       kubedb/operator:0.8.0             true
   10.2-v1    10.2      kubedb/postgres:10.2-v2    kubedb/postgres-tools:10.2-v2    kubedb/postgres_exporter:v0.4.6   true
-  10.2-v2    10.2      kubedb/postgres:10.2-v3    kubedb/postgres-tools:10.2-v2    kubedb/postgres_exporter:v0.4.7   <none>
+  10.2-v2    10.2      kubedb/postgres:10.2-v3    kubedb/postgres-tools:10.2-v3    kubedb/postgres_exporter:v0.4.7   <none>
+  10.2-v3    10.2      kubedb/postgres:10.2-v4    kubedb/postgres-tools:10.2-v3    kubedb/postgres_exporter:v0.4.7   <none>
+  10.2-v4    10.2      kubedb/postgres:10.2-v5    kubedb/postgres-tools:10.2-v3    kubedb/postgres_exporter:v0.4.7   <none>
+  10.2-v5    10.2      kubedb/postgres:10.2-v6    kubedb/postgres-tools:10.2-v3    kubedb/postgres_exporter:v0.4.7   <none>
   10.6       10.6      kubedb/postgres:10.6       kubedb/postgres-tools:10.6       kubedb/postgres_exporter:v0.4.7   <none>
+  10.6-v1    10.6      kubedb/postgres:10.6-v1    kubedb/postgres-tools:10.6       kubedb/postgres_exporter:v0.4.7   <none>
+  10.6-v2    10.6      kubedb/postgres:10.6-v2    kubedb/postgres-tools:10.6       kubedb/postgres_exporter:v0.4.7   <none>
+  10.6-v3    10.6      kubedb/postgres:10.6-v3    kubedb/postgres-tools:10.6       kubedb/postgres_exporter:v0.4.7   <none>
   11.1       11.1      kubedb/postgres:11.1       kubedb/postgres-tools:11.1       kubedb/postgres_exporter:v0.4.7   <none>
+  11.1-v1    11.1      kubedb/postgres:11.1-v1    kubedb/postgres-tools:11.1       kubedb/postgres_exporter:v0.4.7   <none>
+  11.1-v2    11.1      kubedb/postgres:11.1-v2    kubedb/postgres-tools:11.1       kubedb/postgres_exporter:v0.4.7   <none>
+  11.1-v3    11.1      kubedb/postgres:11.1-v3    kubedb/postgres-tools:11.1       kubedb/postgres_exporter:v0.4.7   <none>
+  11.2       11.2      kubedb/postgres:11.2       kubedb/postgres-tools:11.2       kubedb/postgres_exporter:v0.4.7   <none>
+  11.2-v1    11.2      kubedb/postgres:11.2-v1    kubedb/postgres-tools:11.2       kubedb/postgres_exporter:v0.4.7   <none>
   9.6        9.6       kubedb/postgres:9.6        kubedb/postgres-tools:9.6        kubedb/operator:0.8.0             true
   9.6-v1     9.6       kubedb/postgres:9.6-v2     kubedb/postgres-tools:9.6-v2     kubedb/postgres_exporter:v0.4.6   true
-  9.6-v2     9.6       kubedb/postgres:9.6-v3     kubedb/postgres-tools:9.6-v2     kubedb/postgres_exporter:v0.4.7   <none>
+  9.6-v2     9.6       kubedb/postgres:9.6-v3     kubedb/postgres-tools:9.6-v3     kubedb/postgres_exporter:v0.4.7   <none>
+  9.6-v3     9.6       kubedb/postgres:9.6-v4     kubedb/postgres-tools:9.6-v3     kubedb/postgres_exporter:v0.4.7   <none>
+  9.6-v4     9.6       kubedb/postgres:9.6-v5     kubedb/postgres-tools:9.6-v3     kubedb/postgres_exporter:v0.4.7   <none>
+  9.6-v5     9.6       kubedb/postgres:9.6-v6     kubedb/postgres-tools:9.6-v3     kubedb/postgres_exporter:v0.4.7   <none>
   9.6.7      9.6.7     kubedb/postgres:9.6.7      kubedb/postgres-tools:9.6.7      kubedb/operator:0.8.0             true
   9.6.7-v1   9.6.7     kubedb/postgres:9.6.7-v2   kubedb/postgres-tools:9.6.7-v2   kubedb/postgres_exporter:v0.4.6   true
-  9.6.7-v2   9.6.7     kubedb/postgres:9.6.7-v3   kubedb/postgres-tools:9.6.7-v2   kubedb/postgres_exporter:v0.4.7   <none>
+  9.6.7-v2   9.6.7     kubedb/postgres:9.6.7-v3   kubedb/postgres-tools:9.6.7-v3   kubedb/postgres_exporter:v0.4.7   <none>
+  9.6.7-v3   9.6.7     kubedb/postgres:9.6.7-v4   kubedb/postgres-tools:9.6.7-v3   kubedb/postgres_exporter:v0.4.7   <none>
+  9.6.7-v4   9.6.7     kubedb/postgres:9.6.7-v5   kubedb/postgres-tools:9.6.7-v3   kubedb/postgres_exporter:v0.4.7   <none>
+  9.6.7-v5   9.6.7     kubedb/postgres:9.6.7-v6   kubedb/postgres-tools:9.6.7-v3   kubedb/postgres_exporter:v0.4.7   <none>
   ```
 
   Docker hub repositories:
@@ -95,29 +112,29 @@ Here, is an example of PostgresVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` wi
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PostgresVersion
 metadata:
-  name: "pvt-9.6"
+  name: "pvt-10.2"
   labels:
     app: kubedb
 spec:
-  version: "9.6"
+  version: "10.2"
   db:
-    image: "<YOUR_PRIVATE_REGISTRY>/postgres:9.6-v3"
+    image: "<YOUR_PRIVATE_REGISTRY>/postgres:10.2-v5"
   exporter:
-    image: "<YOUR_PRIVATE_REGISTRY>/postgres_exporter:v0.4.6"
+    image: "<YOUR_PRIVATE_REGISTRY>/postgres_exporter:v0.4.7"
   tools:
-    image: "<YOUR_PRIVATE_REGISTRY>/postgres-tools:9.6-v2"
+    image: "<YOUR_PRIVATE_REGISTRY>/postgres-tools:10.2-v3"
 ```
 
 Now, create the PostgresVersion crd,
 
 ```console
 $ kubectl apply -f pvt-postgresversion.yaml
-postgresversion.kubedb.com/pvt-9.6 created
+postgresversion.kubedb.com/pvt-10.2 created
 ```
 
 ## Deploy PostgreSQL database from Private Registry
 
-While deploying PostgreSQL from private repository, you have to add `myregistrykey` secret in Postgres `spec.podTemplate.spec.imagePullSecrets` and specify `pvt-9.6` in `spec.version` field.
+While deploying PostgreSQL from private repository, you have to add `myregistrykey` secret in Postgres `spec.podTemplate.spec.imagePullSecrets` and specify `pvt-10.2` in `spec.version` field.
 
 Below is the Postgres object we will create in this tutorial
 
@@ -128,7 +145,7 @@ metadata:
   name: pvt-reg-postgres
   namespace: demo
 spec:
-  version: "pvt-9.6"
+  version: "pvt-10.2"
   storage:
     storageClassName: "standard"
     accessModes:

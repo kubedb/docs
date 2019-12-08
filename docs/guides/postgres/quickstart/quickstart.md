@@ -84,22 +84,39 @@ When you have installed KubeDB, it has created `PostgresVersion` crd for all sup
 ```console
 $ kubectl get postgresversions
 NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
-10.2       10.2      kubedb/postgres:10.2       true         1h
-10.2-v1    10.2      kubedb/postgres:10.2-v2    true         1h
-10.2-v2    10.2      kubedb/postgres:10.2-v3                 1h
-10.6       10.6      kubedb/postgres:10.6                    1h
-11.1       11.1      kubedb/postgres:11.1                    1h
-9.6        9.6       kubedb/postgres:9.6        true         1h
-9.6-v1     9.6       kubedb/postgres:9.6-v2     true         1h
-9.6-v2     9.6       kubedb/postgres:9.6-v3                  2h
-9.6.7      9.6.7     kubedb/postgres:9.6.7      true         1h
-9.6.7-v1   9.6.7     kubedb/postgres:9.6.7-v2   true         1h
-9.6.7-v2   9.6.7     kubedb/postgres:9.6.7-v3                1h
+10.2       10.2      kubedb/postgres:10.2       true         54m
+10.2-v1    10.2      kubedb/postgres:10.2-v2    true         54m
+10.2-v2    10.2      kubedb/postgres:10.2-v3                 54m
+10.2-v3    10.2      kubedb/postgres:10.2-v4                 54m
+10.2-v4    10.2      kubedb/postgres:10.2-v5                 54m
+10.2-v5    10.2      kubedb/postgres:10.2-v6                 54m
+10.6       10.6      kubedb/postgres:10.6                    54m
+10.6-v1    10.6      kubedb/postgres:10.6-v1                 54m
+10.6-v2    10.6      kubedb/postgres:10.6-v2                 54m
+10.6-v3    10.6      kubedb/postgres:10.6-v3                 54m
+11.1       11.1      kubedb/postgres:11.1                    54m
+11.1-v1    11.1      kubedb/postgres:11.1-v1                 54m
+11.1-v2    11.1      kubedb/postgres:11.1-v2                 54m
+11.1-v3    11.1      kubedb/postgres:11.1-v3                 54m
+11.2       11.2      kubedb/postgres:11.2                    54m
+11.2-v1    11.2      kubedb/postgres:11.2-v1                 54m
+9.6        9.6       kubedb/postgres:9.6        true         54m
+9.6-v1     9.6       kubedb/postgres:9.6-v2     true         54m
+9.6-v2     9.6       kubedb/postgres:9.6-v3                  54m
+9.6-v3     9.6       kubedb/postgres:9.6-v4                  54m
+9.6-v4     9.6       kubedb/postgres:9.6-v5                  54m
+9.6-v5     9.6       kubedb/postgres:9.6-v6                  54m
+9.6.7      9.6.7     kubedb/postgres:9.6.7      true         54m
+9.6.7-v1   9.6.7     kubedb/postgres:9.6.7-v2   true         54m
+9.6.7-v2   9.6.7     kubedb/postgres:9.6.7-v3                54m
+9.6.7-v3   9.6.7     kubedb/postgres:9.6.7-v4                54m
+9.6.7-v4   9.6.7     kubedb/postgres:9.6.7-v5                54m
+9.6.7-v5   9.6.7     kubedb/postgres:9.6.7-v6                54m
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this PostgresVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PostgresVersion.
 
-In this tutorial, we will use `10.2-v2` PostgresVersion crd to create PostgreSQL database. To know more about what is `PostgresVersion` crd and why there is `10.2` and `10.2-v2` variation, please visit [here](/docs/concepts/catalog/postgres.md). You can also see supported PostgresVersion [here](/docs/guides/postgres/README.md#supported-postgresversion-crd).
+In this tutorial, we will use `10.2-v5` PostgresVersion crd to create PostgreSQL database. To know more about what is `PostgresVersion` crd and why there is `10.2` and `10.2-v5` variation, please visit [here](/docs/concepts/catalog/postgres.md). You can also see supported PostgresVersion [here](/docs/guides/postgres/README.md#supported-postgresversion-crd).
 
 ## Create a PostgreSQL database
 
@@ -114,7 +131,7 @@ metadata:
   name: quick-postgres
   namespace: demo
 spec:
-  version: "10.2-v2"
+  version: "10.2-v5"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -151,7 +168,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 ```console
 $  kubectl get pg -n demo quick-postgres -o wide
 NAME             VERSION   STATUS     AGE
-quick-postgres   10.2-v2   Creating   13s
+quick-postgres   10.2-v5   Creating   13s
 ```
 
 Let's describe Postgres object `quick-postgres`
@@ -406,7 +423,7 @@ spec:
         terminationPolicy: Pause
         updateStrategy:
           type: RollingUpdate
-        version: 10.2-v2
+        version: 10.2-v5
 status:
   observedGeneration: 1$8378748355133368567
   pausingTime: "2019-02-07T11:05:56Z"

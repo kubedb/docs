@@ -4,7 +4,7 @@ metadata:
   name: recovered-postgres
   namespace: demo
 spec:
-  version: "9.6-v4"
+  version: "10.2-v5"
   databaseSecret:
     secretName: script-postgres-auth
   storage:
