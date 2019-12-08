@@ -12,29 +12,29 @@ section_menu_id: guides
 
 # Use Stash to Backup PostgreSQL
 
-[Stash](https://appscode.com/products/stash) by [AppsCode](https://appscode.com) is a dedicated project which has been designed from ground up for the backup purpose of Kubernetes resources. Stash v0.9.0+ supports backup and restoration of PostgreSQL databases. KubeDB v0.13.0+ comes with built-in support for Stash. Now, we recommend to use Stash for backup and restore your PostgreSQL databases instead of KubeDB's native method.
+[Stash](https://appscode.com/products/stash) by [AppsCode](https://appscode.com) is a Kubernetes operator for backup and recovery of Kubernetes stateful workloads. Stash v0.9.0+ supports backup and restoration of PostgreSQL databases. KubeDB v0.13.0+ comes with built-in support for Stash. We recommend to use Stash for backup and restore your PostgreSQL databases instead of KubeDB's native method.
 
 This guide will give you an overview of why you should use Stash to backup and restore your PostgreSQL databases.
 
 ## Why use Stash
 
-Stash provides the following advantages over KubeDB's native backup method:
+As a dedicated backup and recovery tool, Stash has the following key benefits:
 
 - **Automatic Cleanup:** Stash lets you provide a retention policy for the snapshots. So, you don't have to worry about running out of space for your backed up data. Stash will automatically delete the old snapshots according to the retention policy.
 
-- **Deduplication:** Stash does not upload the entire targeted data on each backup. Instead, it uploads only the changes since the last backup. This hugely reduces network usage and backup time.
+- **Deduplication:** Stash does not upload the entire targeted data on each backup. Instead, it uploads only the changes since the last backup. This reduces network bandwidth usage and backup time.
 
 - **Encryption:** Stash keeps all the data in backend encrypted. Hence, your data is safe even if your backend gets compromised.
 
 - **Instant Backup:** Stash lets you trigger a backup instantly. This is particularly useful when you want to perform some experimental operations on your database and you want to make sure that you have backed up the current state of your database.
 
-- **Templated Backup:** You can also configure a common backup template for your databases. Then, you can enable backup for a particular database by adding some annotations to the respective `AppBinding` crd. In Stash parlance, we call it **Auto-Backup**.
+- **Auto Backup:** You can also configure a common backup template for your databases. Then, you can enable backup for a particular database by adding some annotations to the respective `AppBinding` crd. In Stash parlance, we call it **Auto-Backup**.
 
-- **Rich Prometheus Metrics:** Stash provides rich Prometheus metrics for both backup and restore processes. Hence, you can always keep eye on the backup process and configure an alert in case something goes wrong.
+- **Rich Prometheus Metrics:** Stash provides rich Prometheus metrics for both backup and restore processes. So, you can always keep an eye on the backup process and configure an alert in case something goes wrong.
 
 - **Independent of Database Life Cycle:** You can enable or disable backup for your databases without interrupting your services.
 
-- **Customizability:** Stash gives you the ability to customize the backup process. You can pass various arguments to the backup and restore command. You can also create your own backup or restore flow through addon mechanism.
+- **Customizability:** Stash gives you the ability to customize the backup process. You can pass various arguments to the backup and restore command. You can also create your own backup or restore flow through Stash addon mechanism.
 
 ## How to use Stash
 
