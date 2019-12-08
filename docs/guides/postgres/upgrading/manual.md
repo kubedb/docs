@@ -397,22 +397,40 @@ Now, Before updating CRD, find Available PostgresVersion.
 ```console
 $ kubectl get postgresversions
 NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
-10.2       10.2      kubedb/postgres:10.2       true         57m
-10.2-v1    10.2      kubedb/postgres:10.2-v2    true         57m
-10.2-v2    10.2      kubedb/postgres:10.2-v3                 6m
-10.6       10.6      kubedb/postgres:10.6                    6m
-11.1       11.1      kubedb/postgres:11.1                    6m
-9.6        9.6       kubedb/postgres:9.6        true         57m
-9.6-v1     9.6       kubedb/postgres:9.6-v2     true         57m
-9.6-v2     9.6       kubedb/postgres:9.6-v3                  6m
-9.6.7      9.6.7     kubedb/postgres:9.6.7      true         57m
-9.6.7-v1   9.6.7     kubedb/postgres:9.6.7-v2   true         57m
-9.6.7-v2   9.6.7     kubedb/postgres:9.6.7-v3                6m
+10.2       10.2      kubedb/postgres:10.2       true         56m
+10.2-v1    10.2      kubedb/postgres:10.2-v2    true         56m
+10.2-v2    10.2      kubedb/postgres:10.2-v3                 56m
+10.2-v3    10.2      kubedb/postgres:10.2-v4                 56m
+10.2-v4    10.2      kubedb/postgres:10.2-v5                 56m
+10.2-v5    10.2      kubedb/postgres:10.2-v6                 56m
+10.6       10.6      kubedb/postgres:10.6                    56m
+10.6-v1    10.6      kubedb/postgres:10.6-v1                 56m
+10.6-v2    10.6      kubedb/postgres:10.6-v2                 56m
+10.6-v3    10.6      kubedb/postgres:10.6-v3                 56m
+11.1       11.1      kubedb/postgres:11.1                    56m
+11.1-v1    11.1      kubedb/postgres:11.1-v1                 56m
+11.1-v2    11.1      kubedb/postgres:11.1-v2                 56m
+11.1-v3    11.1      kubedb/postgres:11.1-v3                 56m
+11.2       11.2      kubedb/postgres:11.2                    56m
+11.2-v1    11.2      kubedb/postgres:11.2-v1                 56m
+9.6        9.6       kubedb/postgres:9.6        true         56m
+9.6-v1     9.6       kubedb/postgres:9.6-v2     true         56m
+9.6-v2     9.6       kubedb/postgres:9.6-v3                  56m
+9.6-v3     9.6       kubedb/postgres:9.6-v4                  56m
+9.6-v4     9.6       kubedb/postgres:9.6-v5                  56m
+9.6-v5     9.6       kubedb/postgres:9.6-v6                  56m
+9.6.7      9.6.7     kubedb/postgres:9.6.7      true         56m
+9.6.7-v1   9.6.7     kubedb/postgres:9.6.7-v2   true         56m
+9.6.7-v2   9.6.7     kubedb/postgres:9.6.7-v3                56m
+9.6.7-v3   9.6.7     kubedb/postgres:9.6.7-v4                56m
+9.6.7-v4   9.6.7     kubedb/postgres:9.6.7-v5                56m
+9.6.7-v5   9.6.7     kubedb/postgres:9.6.7-v6                56m
+
 ```
 
-Notice the `DEPRECATED` column. Here, `true` means that this PostgresVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PostgresVersion. To know more about what is `PostgresVersion` crd and why there is `10.2` and `10.2-v2` variation, please visit [here](/docs/concepts/catalog/postgres.md).
+Notice the `DEPRECATED` column. Here, `true` means that this PostgresVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PostgresVersion. To know more about what is `PostgresVersion` crd and why there is `10.2` and `10.2-v5` variation, please visit [here](/docs/concepts/catalog/postgres.md).
 
-Now, Update the CRD and set `Spec.version` to `9.6-v2`.
+Now, Update the CRD and set `Spec.version` to `10.2-v5`.
 
 ```console
 kubectl edit pg -n demo scheduled-pg
@@ -473,7 +491,7 @@ spec:
   terminationPolicy: Pause
   updateStrategy:
     type: RollingUpdate
-  version: 9.6-v2
+  version: 10.2-v5
 status:
   observedGeneration: 5$4214054550087021099
   phase: Running

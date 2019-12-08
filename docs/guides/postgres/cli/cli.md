@@ -48,11 +48,11 @@ To learn about various options of `create` command, please visit [here](/docs/re
 
 ```console
 $ kubedb get postgres
-NAME            VERSION   STATUS    AGE
-postgres-demo   9.6-v2    Running   13m
-postgres-dev    9.6-v2    Running   11m
-postgres-prod   9.6-v2    Running   11m
-postgres-qa     9.6-v2    Running   10m
+NAME            VERSION    STATUS    AGE
+postgres-demo   10.2-v5    Running   13m
+postgres-dev    10.2-v5    Running   11m
+postgres-prod   10.2-v5    Running   11m
+postgres-qa     10.2-v5    Running   10m
 ```
 
 To get YAML of an object, use `--output=yaml` flag.
@@ -67,7 +67,7 @@ metadata:
 spec:
   databaseSecret:
     secretName: postgres-demo-auth
-  version: "9.6-v2"
+  version: "10.2-v5"
 status:
   creationTime: 2017-12-12T05:46:16Z
   phase: Running

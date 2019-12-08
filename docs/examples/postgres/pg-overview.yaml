@@ -4,7 +4,7 @@ metadata:
   name: p1
   namespace: demo
 spec:
-  version: "9.6-v2"
+  version: "10.2-v5"
   replicas: 2
   standbyMode: Hot
   streamingMode: asynchronous

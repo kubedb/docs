@@ -68,7 +68,7 @@ spec:
   exporter:
     image: "kubedb/postgres_exporter:v0.4.6"
   tools:
-    image: "kubedb/postgres-tools:10.2-v2"
+    image: "kubedb/postgres-tools:10.2-v3"
 ```
 
 Once we add this PostgresVersion we can use it in a new Postgres like:

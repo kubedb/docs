@@ -7,6 +7,6 @@ spec:
   db:
     image: "myco/postgres:timescale-0.9.1"
   exporter:
-    image: "kubedb/operator:v0.13.0-rc.0"
+    image: "kubedb/postgres_exporter:v0.4.7"
   tools:
-    image: "kubedb/postgres-tools:10.2-v2"
+    image: "kubedb/postgres-tools:10.2-v3"
