@@ -1,21 +1,21 @@
 ---
-title: Initialize Postgres from MinIO
+title: Initialize Postgres from WAL in Swift
 menu:
   docs_{{ .version }}:
-    identifier: pg-wal-source-initialization-minio
-    name: From WAL(MiniIO)
-    parent: pg-initialization-postgres
-    weight: 55
+    identifier: pg-wal-initialization-swift
+    name: From Swift
+    parent: pg-wal-initialization
+    weight: 35
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
-> Don't know how to take continuous backup? Check this [tutorial](/docs/guides/postgres/snapshot/continuous_archiving.md) on Continuous Archiving.
+> Don't know how to take continuous backup?  Check this [tutorial](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) on Continuous Archiving.
 
-# PostgreSQL Initialization from MinIO
+# PostgreSQL Initialization from Swift
 
-**WAL-G** is used to handle replay, and restoration mechanism. Please refer to [Initialization from WAL files in KubeDB](/docs/guides/postgres/initialization/wal_source.md) to know more.
+**WAL-G** is used to handle replay, and restoration mechanism. Please refer to [Initialization from WAL files in KubeDB](/docs/guides/postgres/initialization/wal/wal_source.md) to know more about it.
 
 ## Before You Begin
 
@@ -33,23 +33,22 @@ namespace/demo created
 
 ## Prepare WAL Archive
 
-We need a WAL archive to perform initialization. If you don't have a WAL archive ready, get started by following the tutorial [here](/docs/guides/postgres/snapshot/continuous_archiving.md).
-MinIO specific archiving guides can be found [here](/docs/guides/postgres/snapshot/archiving_to_minio.md).
+We need a WAL archive to perform initialization. If you don't have a WAL archive ready, create one by following the tutorial [here](/docs/guides/postgres/snapshot/wal/continuous_archiving.md).
 
 Let's populate the database so that we can verify that the initialized database has the same data. We will `exec` into the database pod and use `psql` command-line tool to create a table.
 
 At first, find out the primary replica using the following command,
 
 ```console
-$ kubectl get pods -n demo --selector="kubedb.com/name=wal-postgres-minio","kubedb.com/role=primary"
+$ kubectl get pods -n demo --selector="kubedb.com/name=wal-postgres","kubedb.com/role=primary"
 NAME             READY     STATUS    RESTARTS   AGE
-wal-postgres-minio-0   1/1       Running   0          8m
+wal-postgres-0   1/1       Running   0          8m
 ```
 
 Now, let's `exec` into the pod and create a table,
 
 ```console
-$ kubectl exec -it -n demo wal-postgres-minio-0 sh
+$ kubectl exec -it -n demo wal-postgres-0 sh
 # login as "postgres" superuser.
 / # psql -U postgres
 psql (11.1)
@@ -89,7 +88,7 @@ postgres=# \q
 / # exit
 ```
 
-Now, we are ready to proceed to the rest of the tutorial.
+Now, we are ready to proceed for rest of the tutorial.
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -97,7 +96,7 @@ Now, we are ready to proceed to the rest of the tutorial.
 
 User can initialize a new database from this archived WAL files. We have to specify the archive backend in the `spec.init.postgresWAL` field of Postgres object.
 
-The YAML file in this tutorial creates a Postgres object using WAL files from Amazon S3.
+The YAML file  in this tutorial creates a Postgres object using WAL files from Swift Storage.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -109,46 +108,40 @@ spec:
   version: "11.1-v2"
   replicas: 2
   databaseSecret:
-    secretName: wal-postgres-minio-auth
+    secretName: wal-postgres-auth
   storage:
     storageClassName: "standard"
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
   init:
     postgresWAL:
-      storageSecretName: s3-secret
-      s3:
-        bucket: kubedb
-        prefix: "kubedb/demo/wal-postgres-minio/archive"
-        endpoint: https://minio-service.storage.svc:443/
+      storageSecretName: swift-secret
+      swift:
+        container: kubedb
+        prefix: 'kubedb/demo/wal-postgres/archive'
 ```
 
 Here,
 
 - `spec.init.postgresWAL` specifies storage information that will be used by `WAL-G`
   - `storageSecretName` points to the Secret containing the credentials for cloud storage destination.
-  - `s3` points to S3 storage configuration.
-  - `s3.bucket` points to the bucket name where archived WAL data is stored.
-  - `s3.prefix` points to the path of archived WAL data.
-  - `storage.s3.endpoint` points to the storage location where the bucket can be found.
+  - `swift` points to Swift storage configuration.
+  - `swift.container` points to the container/bucket name where archived WAL data is stored.
+  - `swift.prefix` points to the path of archived WAL data.
 
-**Archiver Storage Secret**
-
-Storage Secret should contain credentials that were used to create the archive.
-
-**wal-g** receives archived WAL data from a directory inside the bucket called `/kubedb/{namespace}/{postgres-name}/archive/`.
+**wal-g** receives archived WAL data from a directory inside the container called `/kubedb/{namespace}/{postgres-name}/archive/`.
 
 Here, `{namespace}` & `{postgres-name}` indicates Postgres object whose WAL archived data will be replayed.
 
-> Note: Postgres `replay-postgres` must have same superuser credentials as archived Postgres. In our case, it is `wal-postgres-minio`.
+> Note: Postgres `replay-postgres` must have same superuser credentials as archived Postgres. In our case, it is `wal-postgres`.
 
 Now, let's create the Postgres object that's YAML has shown above,
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/replay-postgres-minio.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/replay-postgres-swift.yaml
 postgres.kubedb.com/replay-postgres created
 ```
 
@@ -198,7 +191,7 @@ postgres=# \q
 / # exit
 ```
 
-So, we can see that our new database `replay-postgres` has been initialized successfully and contains the data we had inserted into `wal-postgres-minio`.
+So, we can see that our new database `replay-postgres` has been initialized successfully and contains the data we had inserted into `wal-postgres`.
 
 ## Cleaning up
 
@@ -211,7 +204,7 @@ kubectl delete -n demo pg/replay-postgres
 kubectl delete ns demo
 ```
 
-Also cleanup the resources created for `wal-postgres-minio` following the guide [here](/docs/guides/postgres/snapshot/archiving_to_minio.md#cleaning-up).
+Also cleanup the resources created for `wal-postgres` following the guide [here](/docs/guides/postgres/snapshot/wal/continuous_archiving.md#cleaning-up).
 
 ## Next Steps
 

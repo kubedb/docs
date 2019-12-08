@@ -4,8 +4,8 @@ menu:
   docs_{{ .version }}:
     identifier: pg-pitr
     name: Point-in-Time Recovery
-    parent: pg-initialization-postgres
-    weight: 20
+    parent: pg-wal-initialization
+    weight: 45
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -23,7 +23,7 @@ KubeDB supports Point-in-Time Recovery (PITR) from WAL archive. You can recover 
 
 - If you are not familiar with Point-in-Time Recovery please read the doc from [here](https://www.postgresql.org/docs/current/continuous-archiving.html).
 
-- You also need to be familiar with WAL Archiving of PostgreSQL database with KubeDB. If you are not familiar with it, please read the guide from [here](/docs/guides/postgres/snapshot/continuous_archiving.md).
+- You also need to be familiar with WAL Archiving of PostgreSQL database with KubeDB. If you are not familiar with it, please read the guide from [here](/docs/guides/postgres/snapshot/wal/continuous_archiving.md).
 
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 

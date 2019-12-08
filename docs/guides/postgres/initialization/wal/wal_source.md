@@ -1,17 +1,17 @@
 ---
-title: Initialize Postgres from WAL
+title: Postgres Initialization from WAL
 menu:
   docs_{{ .version }}:
-    identifier: pg-wal-source-initialization
-    name: From WAL
-    parent: pg-initialization-postgres
-    weight: 25
+    identifier: pg-wal-initialization-overview
+    name: Overview
+    parent: pg-wal-initialization
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
-> Don't know how to take continuous backup?  Check this [tutorial](/docs/guides/postgres/snapshot/continuous_archiving.md) on Continuous Archiving.
+> Don't know how to take continuous backup?  Check this [tutorial](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) on Continuous Archiving.
 
 # PostgreSQL Initialization from WAL files
 
@@ -46,12 +46,12 @@ To know more about continuous archiving, please refer to the [ofiicial postgres 
 
 ## Next Steps
 
-- Learn about restoring from [Amazon S3](/docs/guides/postgres/initialization/replay_from_s3.md).
-- Learn about restoring from [S3 MinIO](/docs/guides/postgres/initialization/replay_from_minio.md).
-- Learn about restoring from [Google Cloud Storage](/docs/guides/postgres/initialization/replay_from_gcs.md).
-- Learn about restoring from [Azure Storage](/docs/guides/postgres/initialization/replay_from_azure.md).
-- Learn about restoring from [OpenStack Object Storage (Swift)](/docs/guides/postgres/initialization/replay_from_swift.md).
-- Learn about restoring from [Local Storage](/docs/guides/postgres/initialization/replay_from_local.md).
+- Learn about restoring from [Amazon S3](/docs/guides/postgres/initialization/wal/replay_from_s3.md).
+- Learn about restoring from [S3 MinIO](/docs/guides/postgres/initialization/wal/replay_from_minio.md).
+- Learn about restoring from [Google Cloud Storage](/docs/guides/postgres/initialization/wal/replay_from_gcs.md).
+- Learn about restoring from [Azure Storage](/docs/guides/postgres/initialization/wal/replay_from_azure.md).
+- Learn about restoring from [OpenStack Object Storage (Swift)](/docs/guides/postgres/initialization/wal/replay_from_swift.md).
+- Learn about restoring from [Local Storage](/docs/guides/postgres/initialization/wal/replay_from_local.md).
 - Learn about initializing [PostgreSQL with Script](/docs/guides/postgres/initialization/script_source.md).
 - Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
 - Monitor your PostgreSQL database with KubeDB using [CoreOS Prometheus Operator](/docs/guides/postgres/monitoring/using-coreos-prometheus-operator.md).

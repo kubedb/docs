@@ -135,7 +135,7 @@ spec:
 
 `spec.replicas` specifies the total number of primary and standby nodes in Postgres database cluster configuration. One pod is selected as Primary and others act as standby replicas. KubeDB uses Pod Disruption Budget to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
 
-To know more about how to setup a HA PostgreSQL cluster in KubeDB, please visit [here](/docs/guides/postgres/clustering/ha_cluster.md).
+To learn more about how to setup a HA PostgreSQL cluster in KubeDB, please visit [here](/docs/guides/postgres/clustering/ha_cluster.md).
 
 ### spec.standbyMode
 
@@ -167,7 +167,7 @@ If the Cluster machine is powerful, user can reduce the times. But, Do not make 
 
 Continuous archiving data will be stored in a folder called `{bucket}/{prefix}/kubedb/{namespace}/{postgres-name}/archive/`.
 
-Follow [this link](/docs/concepts/snapshot.md#google-cloud-storage-gcs) to learn how to create secret for S3 or GCS. To know more about how to configure Postgres to archive WAL data continuously in AWS S3 bucket, please visit [here](/docs/guides/postgres/snapshot/continuous_archiving.md).
+Follow [this link](/docs/concepts/snapshot.md#google-cloud-storage-gcs) to learn how to create secret for S3 or GCS. To learn more about how to configure Postgres to archive WAL data continuously in AWS S3 bucket, please visit [here](/docs/guides/postgres/snapshot/wal/continuous_archiving.md).
 
 ### spec.databaseSecret
 
@@ -304,7 +304,7 @@ In the above example, PostgreSQL database will be initialized from WAL archive.
 
 When initializing from WAL archive, superuser credentials must have to match with the previous one. For example, let's say, we want to initialize this database from `postgres-old` WAL archive. In this case, superuser credentials of new Postgres should be the same as `postgres-old`. Otherwise, the restoration process will be failed.
 
-For more details tutorial on how to initialize from wal archive, please visit [here](/docs/guides/postgres/initialization/wal_source.md).
+For more details tutorial on how to initialize from wal archive, please visit [here](/docs/guides/postgres/initialization/wal/wal_source.md).
 
 ### spec.backupSchedule
 

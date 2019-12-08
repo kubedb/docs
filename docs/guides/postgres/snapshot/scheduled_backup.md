@@ -9,6 +9,9 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
+{{< notice type="warning" message="This doc has been deprecated and will be removed in a future release. We recommend using [Stash](/docs/guides/postgres/snapshot/stash.md) to backup & restore PostgreSQL database." >}}
+
 > Don't know how backup works?  Check [tutorial](/docs/guides/postgres/snapshot/instant_backup.md) on Instant Backup.
 
 # Database Scheduled Snapshots
@@ -298,7 +301,7 @@ kubectl delete ns demo
 
 - Learn about [taking instant backup](/docs/guides/postgres/snapshot/instant_backup.md) of PostgreSQL database using KubeDB Snapshot.
 - Learn about initializing [PostgreSQL from KubeDB Snapshot](/docs/guides/postgres/initialization/snapshot_source.md).
-- Setup [Continuous Archiving](/docs/guides/postgres/snapshot/continuous_archiving.md) in PostgreSQL using `wal-g`
+- Setup [Continuous Archiving](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) in PostgreSQL using `wal-g`
 - Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)
 - Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
 - Monitor your PostgreSQL database with KubeDB using [CoreOS Prometheus Operator](/docs/guides/postgres/monitoring/using-coreos-prometheus-operator.md).

@@ -10,6 +10,8 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
+{{< notice type="warning" message="This doc has been deprecated and will be removed in a future release. We recommend using [Stash](/docs/guides/mongodb/snapshot/stash.md) to backup & restore MongoDB database." >}}
+
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
 # Database Snapshots

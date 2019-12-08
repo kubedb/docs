@@ -1,21 +1,21 @@
 ---
-title: Initialize Postgres from Azure
+title: Initialize Postgres from WAL in Local Storage
 menu:
   docs_{{ .version }}:
-    identifier: pg-wal-source-initialization-azure
-    name: From WAL(Azure)
-    parent: pg-initialization-postgres
-    weight: 35
+    identifier: pg-wal-initialization-local
+    name: From Local Storage
+    parent: pg-wal-initialization
+    weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
-> Don't know how to take continuous backup?  Check this [tutorial](/docs/guides/postgres/snapshot/continuous_archiving.md) on Continuous Archiving.
+> Don't know how to take continuous backup?  Check this [tutorial](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) on Continuous Archiving.
 
-# PostgreSQL Initialization from Azure
+# PostgreSQL Initialization from Local Storage
 
-**WAL-G** is used to handle replay, and restoration mechanism. Please refer to [Initialization from WAL files in KubeDB](/docs/guides/postgres/initialization/wal_source.md) to know more about it.
+**WAL-G** is used to handle replay, and restoration mechanism. Please refer to [Initialization from WAL files in KubeDB](/docs/guides/postgres/initialization/wal/wal_source.md) to know more about it.
 
 ## Before You Begin
 
@@ -33,7 +33,7 @@ namespace/demo created
 
 ## Prepare WAL Archive
 
-We need a WAL archive to perform initialization. If you don't have a WAL archive ready, create one by following the tutorial [here](/docs/guides/postgres/snapshot/continuous_archiving.md).
+We need a WAL archive to perform initialization. If you don't have a WAL archive ready, create one by following the tutorial [here](/docs/guides/postgres/snapshot/wal/continuous_archiving.md).
 
 Let's populate the database so that we can verify that the initialized database has the same data. We will `exec` into the database pod and use `psql` command-line tool to create a table.
 
@@ -96,7 +96,7 @@ Now, we are ready to proceed for rest of the tutorial.
 
 User can initialize a new database from this archived WAL files. We have to specify the archive backend in the `spec.init.postgresWAL` field of Postgres object.
 
-The YAML file  in this tutorial creates a Postgres object using WAL files from Azure Storage.
+The YAML file  in this tutorial creates a Postgres object using WAL files from Local Storage.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -115,33 +115,33 @@ spec:
     - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 50Mi
   init:
     postgresWAL:
-      storageSecretName: azure-secret
-      azure:
-        container: kubedb
-        prefix: 'kubedb/demo/wal-postgres/archive'
+      local:
+        mountPath: /tmp/replay-postgres
+        subPath: wal-postgres-0
+        persistentVolumeClaim:
+          claimName: pgbackup
+
 ```
 
 Here,
 
-- `spec.init.postgresWAL` specifies storage information that will be used by`WAL-G`
-  - `storageSecretName` points to the Secret containing the credentials for cloud storage destination.
-  - `azure` points to Azure storage configuration.
-  - `azure.container` points to the container/bucket name where archived WAL data is stored.
-  - `azure.prefix` points to the path of archived WAL data.
+- `spec.init.postgresWAL` specifies storage information that will be used by `WAL-G`
+- `spec.init.postgresWAL.local` points to Local Storage configuration.
+- `spec.init.postgresWAL.mountPath` points to a path where Local Storage containing archived WAL data will be mounted.
+- `spec.init.postgresWAL.subPath` points to the path inside the mountPath where archived WAL data can be found. It is usually the name of the archiver's primary pod.
+- `spec.init.postgresWAL.persistentVolumeClaim.claimName` points to the same local volume that was used to store WAL files.
 
-**wal-g** receives archived WAL data from a directory inside the container called `/kubedb/{namespace}/{postgres-name}/archive/`.
-
-Here, `{namespace}` & `{postgres-name}` indicates Postgres object whose WAL archived data will be replayed.
+**wal-g** receives archived WAL data from a directory `{mountPath}/{subPath}` inside the pod.
 
 > Note: Postgres `replay-postgres` must have same superuser credentials as archived Postgres. In our case, it is `wal-postgres`.
 
 Now, let's create the Postgres object that's YAML has shown above,
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/replay-postgres-azure.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/replay-postgres-local.yaml
 postgres.kubedb.com/replay-postgres created
 ```
 
@@ -204,7 +204,7 @@ kubectl delete -n demo pg/replay-postgres
 kubectl delete ns demo
 ```
 
-Also cleanup the resources created for `wal-postgres` following the guide [here](/docs/guides/postgres/snapshot/continuous_archiving.md#cleaning-up).
+Also cleanup the resources created for `wal-postgres` following the guide [here](/docs/guides/postgres/snapshot/wal/archiving_to_local.md#cleaning-up).
 
 ## Next Steps
 
@@ -212,4 +212,3 @@ Also cleanup the resources created for `wal-postgres` following the guide [here]
 - Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
 - Monitor your PostgreSQL database with KubeDB using [CoreOS Prometheus Operator](/docs/guides/postgres/monitoring/using-coreos-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
-
