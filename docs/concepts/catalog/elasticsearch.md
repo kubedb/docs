@@ -22,7 +22,7 @@ Using a separate crd for specifying respective docker images, and pod security p
 
 ## ElasticsearchVersion Specification
 
-As with all other Kubernetes objects, a ElasticsearchVersion needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section.
+As with all other Kubernetes objects, an ElasticsearchVersion needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section.
 
 ```yaml
 apiVersion: catalog.kubedb.com/v1alpha1

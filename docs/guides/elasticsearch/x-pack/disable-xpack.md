@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Disable X-Pack Plugin
 
-Databases are precious. Definitely, you will not want to left your production database unprotected. Hence, KubeDB automates xpack configuration. It provides you authentication, authorization and TLS security. However, you can disable X-Pack security. You have to set `spec.enableSecurity` field of Elasticsearch object to `false`.
+You data is precious. Definitely, you will not want to leave your production database unprotected. Hence, KubeDB automates Elasticsearch X-Pack configuration. It provides you authentication, authorization and TLS security. However, you can disable X-Pack security. You have to set `spec.disableSecurity` field of Elasticsearch object to `true`.
 
 This tutorial will show you how to disable X-Pack security for Elasticsearch database in KubeDB.
 
@@ -39,11 +39,11 @@ demo    Active  5s
 
 ## X-Pack enabled ElasticsearchVersion
 
-To deploy with X-Pack, you need to use the specific elasticsearchversion where `X-Pack` is used as `authPlugin`.
+To deploy with X-Pack, you need to use an `ElasticsearchVersion` where `X-Pack` is used as `authPlugin`.
 
 Here, we are going to use ElasticsearchVersion `7.3.2`.
 
-> To change authPlugin, it is recommended to create another `ElasticsearchVersion` CRD. Then, use that `elasticsearchVersion` to install a elasticsearch without authentication, or with other authPlugin.
+> To change authPlugin, it is recommended to create another `ElasticsearchVersion` CRD. Then, use that `ElasticsearchVersion` to install an Elasticsearch without authentication, or with other authPlugin.
 
 ```console
 $ kubectl get elasticsearchversions 7.3.2 -o yaml
@@ -83,7 +83,7 @@ spec:
 
 ## Create Elasticsearch
 
-In order to disable X-Pack, you have to set `spec.enableSecurity` field of `Elasticsearch` object to `false`.
+In order to disable X-Pack, you have to set `spec.disableSecurity` field of `Elasticsearch` object to `true`.
 
 Below is the YAML of `Elasticsearch` object that will be created in this tutorial.
 
@@ -95,7 +95,7 @@ metadata:
   namespace: demo
 spec:
   version: "7.3.2"
-  enableSecurity: false
+  disableSecurity: true
   storage:
     storageClassName: "standard"
     accessModes:

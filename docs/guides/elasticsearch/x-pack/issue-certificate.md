@@ -37,10 +37,6 @@ To keep things isolated, this tutorial uses a separate namespace called `demo` t
 ```console
 $ kubectl create ns demo
 namespace/demo created
-
-$ kubectl get ns demo
-NAME    STATUS  AGE
-demo    Active  5s
 ```
 
 You also need to have [*OpenSSL*](https://www.openssl.org/source/) and Java *keytool* for generating all required artifacts.
@@ -134,7 +130,7 @@ You need to follow these steps
 
 ## Generate keystore
 
-Steps to generate certificate and keystore for Elasticsearch
+Here are the steps for generating certificate and keystore for Elasticsearch:
 
 1. Get certificate configuration file
 2. Generate private key and certificate signing request (CSR)
@@ -298,7 +294,7 @@ secret/custom-certificate-es-ssl-cert created
 
 Use this Secret `custom-certificate-es-ssl-cert` in your Elasticsearch object.
 
-## Create a Elasticsearch database
+## Create an Elasticsearch database
 
 Below is the Elasticsearch object created in this tutorial.
 

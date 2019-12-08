@@ -9,6 +9,7 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
 # X-Pack Monitoring with KubeDB Elasticsearch
@@ -398,6 +399,7 @@ configmap/kibana-config created
 ```
 
 Finally, deploy Kibana deployment,
+
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/kibana/kibana-deployment.yaml
 deployment.apps/kibana created

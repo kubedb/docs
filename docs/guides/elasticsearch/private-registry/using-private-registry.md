@@ -77,7 +77,7 @@ If you wish to follow other ways to pull private images see [official docs](http
 
 ## Create ElasticsearchVersion CRD
 
-KubeDB uses images specified in ElasticsearchVersion crd for database, backup and exporting prometheus metrics. You have to create a ElasticsearchVersion crd specifying images from your private registry. Then, you have to point this ElasticsearchVersion crd in `spec.version` field of Elasticsearch object. For more details about ElasticsearchVersion crd, please visit [here](/docs/concepts/catalog/elasticsearch.md).
+KubeDB uses images specified in ElasticsearchVersion crd for database, backup and exporting prometheus metrics. You have to create an ElasticsearchVersion crd specifying images from your private registry. Then, you have to point this ElasticsearchVersion crd in `spec.version` field of Elasticsearch object. For more details about ElasticsearchVersion crd, please visit [here](/docs/concepts/catalog/elasticsearch.md).
 
 Here, is an example of ElasticsearchVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` with your private registry.
 

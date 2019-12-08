@@ -74,7 +74,7 @@ ssl-elasticsearch   7.3.2     Running   5m54s
 
 ## Connect to Elasticsearch Database
 
-As we have enabled TLS for our Elasticsearch cluster, only HTTPS calls are allowed to Elasticsearch server. So, we need to provide certificate to connect with Elasticsearch. If you do not provide certificate manually through `spec.certificateSecret` field of Elasticsearch object, KubeDB will create a secret `{elasticsearch name}-cert` with necessary certificates.
+As we have enabled TLS for our Elasticsearch cluster, only HTTPS calls are allowed to the Elasticsearch server. So, we need to provide certificate to connect with Elasticsearch. If you do not provide certificate manually through `spec.certificateSecret` field of Elasticsearch object, KubeDB will create a secret `{elasticsearch name}-cert` with necessary certificates.
 
 Let's check the certificates that has been created for Elasticsearch `ssl-elasticsearch` by KubeDB operator.
 

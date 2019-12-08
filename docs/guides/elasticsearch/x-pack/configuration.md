@@ -14,8 +14,7 @@ section_menu_id: guides
 
 # X-Pack Configuration
 
-X-Pack is an Elastic Stack extension that provides security along with other features. In KubeDB, X-Pack authentication can be used with elasticsearch `6.8` and `7.2`.
-In this guide, we will show, how to use xpack authentication or disable it.
+X-Pack is an Elastic Stack extension that provides security along with other features. In KubeDB, X-Pack authentication can be used with elasticsearch `6.8` and `7.2+`. In this guide, we will show, how to use xpack authentication or disable it.
 
 ## Before You Begin
 
@@ -38,14 +37,14 @@ demo    Active  5s
 
 ## X-Pack AuthPlugin
 
-In 0.13.0 release, A new field is introduced to ElasticsearchVersions crd, named `authPlugin`. Prior this release, `authPlugin` was part of Elasticsearch CRD spec, which is deprecated since 0.13.0.
+In 0.13.0 release, a new field is introduced to `ElasticsearchVersions` crd, named `authPlugin`. In prior this releases, `authPlugin` was part of `Elasticsearch` CRD spec, which is deprecated since 0.13.0-rc.1.
 
-ElasticsearchVersion CRD's `spec.authPlugin` is an required field, which specifies which plugin to use for authentication. Currently, this field accepts any one of `X-Pack` or `SearchGuard`.
+The `spec.authPlugin` is an required field in ElasticsearchVersion CRD, which specifies which plugin to use for authentication. Currently, this field accepts either `X-Pack` or `SearchGuard`.
 
-To see, which authPlugin is used in the target ElasticsearchVersion, you can simply get the full yaml representation of ElasticsearchVersion.
+To see, which authPlugin is used in the target ElasticsearchVersion, run the following command:
 
 ```console
-$ kubectl get elasticsearchversions 7.3.2 -o yaml
+kubectl get elasticsearchversions 7.3.2 -o yaml
 ```
 
 ```yaml
@@ -82,15 +81,15 @@ spec:
 
 ## Changing authPlugin
 
-To change authPlugin, it is recommended to create another ElasticsearchVersion CRD. Then, use that elasticsearchVersion to install a elasticsearch with other authPlugin.
+To change authPlugin, it is recommended to create a new ElasticsearchVersion CRD. Then, use that elasticsearchVersion to install an Elasticsearch server with that authPlugin.
 
 ## Deploy with X-Pack
 
-To deploy with X-Pack, you need to use the specific elasticsearchversion where `X-Pack` is used as `authPlugin`.
+To deploy with X-Pack, you need to use an `ElasticsearchVersion` where `X-Pack` is set to `authPlugin`.
 
 Here, we are going to use ElasticsearchVersion `7.3.2`, which is mentioned earlier in this guide.
 
-So, the sample yaml looks like,
+Now, let's create an Elasticsearch server using the following yaml.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -132,7 +131,6 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/elasticsearches/config-elasticsearch
   uid: 13263dfa-e35d-11e9-85c8-42010a8c002f
 spec:
-  EnableSecurity: true
   certificateSecret:
     secretName: config-elasticsearch-cert
   databaseSecret:
@@ -178,7 +176,7 @@ $ kubectl create secret -n demo generic config-elasticsearch-auth \
 secret/config-elasticsearch-auth created
 ```
 
-> Use this Secret `config-elasticsearch-auth` in `spec.databaseSecret` field of your Elasticsearch object while creating the elasticsearch for the 1st time. Changing the password after creating, won't work at this moment.
+> Use this Secret `config-elasticsearch-auth` in `spec.databaseSecret` field of your Elasticsearch object while creating the elasticsearch for the 1st time. Changing the password after creating, won't work at this time.
 
 ## Connect to Elasticsearch Database
 

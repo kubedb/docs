@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Using Custom RBAC resources
 
-KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to a Elasticsearch instance. This tutorial will show you how to use KubeDB to run Elasticsearch instance with custom RBAC resources.
+KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to an Elasticsearch instance. This tutorial will show you how to use KubeDB to run Elasticsearch instance with custom RBAC resources.
 
 ## Before You Begin
 
@@ -39,7 +39,7 @@ If a service account name is given, but there's no existing service account by t
 
 If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
 
-This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a Elasticsearch Database named `quick-elasticsearch` to provide the bare minimum access permissions.
+This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for an Elasticsearch Database named `quick-elasticsearch` to provide the bare minimum access permissions.
 
 ## Custom RBAC for Elasticsearch
 
@@ -126,7 +126,7 @@ subjects:
   namespace: demo
 ```
 
-Now, create a Elasticsearch crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
+Now, create an Elasticsearch crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/custom-rbac/es-custom-db.yaml

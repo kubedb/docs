@@ -340,7 +340,7 @@ secret/sg-elasticsearch-cert created
 
 Use this Secret `sg-elasticsearch-cert` in your Elasticsearch object.
 
-## Create a Elasticsearch database
+## Create an Elasticsearch database
 
 Below is the Elasticsearch object created in this tutorial.
 
