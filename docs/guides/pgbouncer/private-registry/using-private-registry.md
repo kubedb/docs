@@ -47,15 +47,13 @@ namespace/demo created
   1.8.1    1.8.1     kubedb/pgbouncer:1.8.1    kubedb/pgbouncer_exporter:v0.1.1   false
   1.9.0    1.9.0     kubedb/pgbouncer:1.9.0    kubedb/pgbouncer_exporter:v0.1.1   false
   latest   latest    kubedb/pgbouncer:latest   kubedb/pgbouncer_exporter:v0.1.1   false
-```
+  ```
 
   Docker hub repositories:
 
 - [kubedb/operator](https://hub.docker.com/r/kubedb/operator)
 - [kubedb/pgbouncer](https://hub.docker.com/r/kubedb/pgbouncer)
 - [kubedb/pgbouncer_exporter](https://hub.docker.com/r/kubedb/pgbouncer_exporter)
-
-
 
 ## Create ImagePullSecret
 
@@ -85,7 +83,7 @@ Follow the steps to [install KubeDB operator](/docs/setup/install.md) properly i
 
 KubeDB uses images specified in PgBouncerVersion crd for pgbouncer server, and prometheus metrics exporter. You have to create a PgBouncerVersion crd specifying images from your private registry. Then, you have to point this PgBouncerVersion crd in `spec.version` field of Postgres object. For more details about PgBouncerVersion crd, please visit [here](/docs/concepts/catalog/pgbouncer.md).
 
-Here, is an example of PgBouncerVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` with your private registy.
+Here, is an example of PgBouncerVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` with your private registry.
 
 ```yaml
 apiVersion: catalog.kubedb.com/v1alpha1
@@ -112,9 +110,9 @@ pgbouncerversion.kubedb.com/pvt-1.11.0 created
 
 ## Deploy PgBouncer from Private Registry
 
-While deploying PgBouncer from private repository, you have to add `myregistrykey` secret in Postgres `spec.podTemplate.spec.imagePullSecrets` and specify `pvt-9.6` in `spec.version` field.
+While deploying PgBouncer from private repository, you have to add `myregistrykey` secret in PgBouncer `spec.podTemplate.spec.imagePullSecrets` and specify `pvt-1.11.0` in `spec.version` field.
 
-Below is the Postgres object we will create in this tutorial
+Below is the PgBouncer object we will create in this tutorial
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -130,7 +128,7 @@ spec:
     databaseRef:
       name: "quick-postgres"
   connectionPool:
-    maxClientConn: 20
+    maxClientConnections: 20
     reservePoolSize: 5
     adminUsers:
     - admin
@@ -156,8 +154,6 @@ $ kubectl get pods -n demo --selector="kubedb.com/name=pvt-reg-pgbouncer"
 NAME                 READY     STATUS    RESTARTS   AGE
 pvt-reg-pgbouncer-0   1/1       Running   0          3m
 ```
-
-
 
 ## Cleaning up
 

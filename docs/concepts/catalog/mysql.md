@@ -14,9 +14,9 @@ section_menu_id: concepts
 
 ## What is MySQLVersion
 
-`MySQLVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [MySQL](https://www.mysql.com) database deployed with KubeDB in Kubernetes native way.
+`MySQLVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [MySQL](https://www.mysql.com) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, `MySQLVersion` crd will be created automatically for every supported MySQL versions. You have to specify the name of `MySQLVersion` crd in `spec.version` field of [MySQL](/docs/concepts/databases/mysql.md) crd. Then, KubeDB will use the docker images specified in the `MySQLVersion` crd to create your expected database.
+When you install KubeDB, `MySQLVersion` custom resource will be created automatically for every supported MySQL versions. You have to specify the name of `MySQLVersion` crd in `spec.version` field of [MySQL](/docs/concepts/databases/mysql.md) crd. Then, KubeDB will use the docker images specified in the `MySQLVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator.  This will also allow the users to use a custom image for the database.
 
@@ -52,7 +52,7 @@ We follow this convention for naming MySQLVersion crd:
 
 - Name format: `{Original MySQL image version}-{modification tag}`
 
-We modify original MySQL docker image to support additional features. An image with higher modification tag will have more feature than the images with lower modification tag. Hence, it is recommended to use MySQLVersion crd with highest modification tag to take advantage of the latest features.
+We modify original MySQL docker image to support additional features. An image with higher modification tag will have more features than the images with lower modification tag. Hence, it is recommended to use MySQLVersion crd with highest modification tag to take advantage of the latest features.
 
 ### spec.version
 
@@ -62,7 +62,7 @@ We modify original MySQL docker image to support additional features. An image w
 
 `spec.deprecated` is an optional field that specifies whether the docker images specified here is supported by the current KubeDB operator. For example, we have modified `kubedb/mysql:8.0` docker image to support custom configuration and re-tagged as `kubedb/mysql:8.0-v2`. Now, KubeDB `0.9.0-rc.0` supports providing custom configuration which required `kubedb/mysql:8.0-v2` docker image. So, we have marked `kubedb/mysql:8.0` as deprecated for KubeDB `0.9.0-rc.0`.
 
-The default value of this field is `false`. If `spec.depcrecated` is set `true`, KubeDB operator will not create the database and other respective resources for this version.
+The default value of this field is `false`. If `spec.deprecated` is set `true`, KubeDB operator will not create the database and other respective resources for this version.
 
 ### spec.db.image
 

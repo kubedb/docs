@@ -84,7 +84,7 @@ spec:
 
 `spec.replicas` is an optional field that specifies the number of desired Instances/Replicas of Memcached server. If you do not specify .spec.replicas, then it defaults to 1.
 
-KubeDB uses Pod Disruption Budget to ensure that majority of these replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained.
+KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained.
 
 ### spec.version
 
@@ -196,6 +196,9 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
   - loadBalancerSourceRanges
   - externalTrafficPolicy
   - healthCheckNodePort
+  - sessionAffinityConfig
+
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
 ### spec.updateStrategy
 

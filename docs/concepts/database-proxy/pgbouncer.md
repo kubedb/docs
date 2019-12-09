@@ -16,11 +16,11 @@ section_menu_id: concepts
 
 ## What is PgBouncer
 
-`PgBouncer` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [PgBouncer](https://www.pgbouncer.github.io/) in a Kubernetes native way. You only need to describe the desired configurations in a pgbouncer object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`PgBouncer` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [PgBouncer](https://www.pgbouncer.github.io/) in a Kubernetes native way. You only need to describe the desired configurations in a `PgBouncer` object, and the KubeDB operator will create Kubernetes resources in the desired state for you.
 
 ## PgBouncer Spec
 
-As with all other Kubernetes objects, a PgBouncer needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section.
+Like any official Kubernetes resource, a `PgBouncer` object has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections.
 
 Below is an example PgBouncer object.
 
@@ -43,7 +43,7 @@ spec:
     databaseRef:
       name: "quick-postgres"
   connectionPool:
-    maxClientConn: 20
+    maxClientConnections: 20
     reservePoolSize: 5
     adminUsers:
     - admin
@@ -73,27 +73,27 @@ spec:
 
 ### spec.replicas
 
-`spec.replicas` specifies the total number of available pgbouncer server nodes for each crd. KubeDB uses Pod Disruption Budget to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
+`spec.replicas` specifies the total number of available pgbouncer server nodes for each crd. KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
 
 ### spec.databases
 
 `spec.databases` specifies an array of postgres databases that pgbouncer should add to its connection pool. It contains three `required` fields and two `optional` fields for each database connection.
 
-* `spec.databases.alias`:  specifies an alias for the target database located in a postgres server specified by an appbinding.
-* `spec.databases.databaseName`:  specifies the name of the target database.
-* `spec.databases.databaseRef`:  specifies the name and namespace of the AppBinding that contains the path to a PostgreSQL server where the target database can be found.
-* `spec.databases.username` (optional):  specifies the user with whom this particular database should have an exclusive connection. By default, if this field is left empty, all users will be able to use the database.
-* `spec.databases.password` (optional):  specifies the password of the user with whom this perticular database should have an exclusive connection. 
+- `spec.databases.alias`:  specifies an alias for the target database located in a postgres server specified by an appbinding.
+- `spec.databases.databaseName`:  specifies the name of the target database.
+- `spec.databases.databaseRef`:  specifies the name and namespace of the AppBinding that contains the path to a PostgreSQL server where the target database can be found.
+- `spec.databases.username` (optional):  specifies the user with whom this particular database should have an exclusive connection. By default, if this field is left empty, all users will be able to use the database.
+- `spec.databases.password` (optional):  specifies the password of the user with whom this perticular database should have an exclusive connection.
 
 ConnectionPool is used to configure pgbouncer connection-pool. All the fields here are accompanied by default values and can be left unspecified if no customisation is required by the user.
 
-* `spec.connectionPool.listenPort`: specifies the port on which pgbouncer should listen to connect with clients. The default is 5432.
+- `spec.connectionPool.listenPort`: specifies the port on which pgbouncer should listen to connect with clients. The default is 5432.
 
-* `spec.connectionPool.listenAddress`: specifies the adress from which pgbouncer should allow client connection from. The default is "*" (all addresses).
+- `spec.connectionPool.listenAddress`: specifies the adress from which pgbouncer should allow client connection from. The default is `*` (all addresses).
 
-* `spec.connectionPool.adminUsers`: specifies the values of admin_users. Comma seperated names of admin users are listed here.
+- `spec.connectionPool.adminUsers`: specifies the values of admin_users. Comma seperated names of admin users are listed here.
 
-* `spec.connectionPool.poolMode`: specifies the value of pool_mode. Specifies when a server connection can be reused by other clients.
+- `spec.connectionPool.poolMode`: specifies the value of pool_mode. Specifies when a server connection can be reused by other clients.
 
   - session
 
@@ -107,15 +107,15 @@ ConnectionPool is used to configure pgbouncer connection-pool. All the fields he
 
     Server is released back to pool after query finishes. Long transactions spanning multiple statements are disallowed in this mode.
 
-* `spec.connectionPool.maxClientConn`: specifies the value of max_client_conn. When increased then the file descriptor limits should also be increased. Note that actual number of file descriptors used is more than max_client_conn. Theoretical maximum used is:
+- `spec.connectionPool.maxClientConnections`: specifies the value of max_client_conn. When increased then the file descriptor limits should also be increased. Note that actual number of file descriptors used is more than max_client_conn. Theoretical maximum used is:
 
-  ```
+  ```console
   max_client_conn + (max pool_size * total databases * total users)
   ```
 
   if each user connects under its own username to server. If a database user is specified in connect string (all users connect under same username), the theoretical maximum is:
 
-  ```
+  ```console
   max_client_conn + (max pool_size * total databases)
   ```
 
@@ -125,38 +125,38 @@ ConnectionPool is used to configure pgbouncer connection-pool. All the fields he
 
   Default: 100
 
-* `spec.connectionPool.defaultPoolSize`: specifies the value of default_pool_size. Used to determine how many server connections to allow per user/database pair. Can be overridden in the per-database configuration.
+- `spec.connectionPool.defaultPoolSize`: specifies the value of default_pool_size. Used to determine how many server connections to allow per user/database pair. Can be overridden in the per-database configuration.
 
   Default: 20
 
-* `spec.connectionPool.minPoolSize`: specifies the value of min_pool_size. PgBouncer adds more server connections to pool if below this number. Improves behavior when usual load comes suddenly back after period of total inactivity.
+- `spec.connectionPool.minPoolSize`: specifies the value of min_pool_size. PgBouncer adds more server connections to pool if below this number. Improves behavior when usual load comes suddenly back after period of total inactivity.
 
   Default: 0 (disabled)
 
-* `spec.connectionPool.reservePoolSize`: specifies the value of reserve_pool_size. Used to determine how many additional connections to allow to a pool. 0 disables.
+- `spec.connectionPool.reservePoolSize`: specifies the value of reserve_pool_size. Used to determine how many additional connections to allow to a pool. 0 disables.
 
   Default: 0 (disabled)
 
-* `spec.connectionPool.reservePoolTimeout`: specifies the value of reserve_pool_timeout. If a client has not been serviced in this many seconds, pgbouncer enables use of additional connections from reserve pool. 0 disables.
+- `spec.connectionPool.reservePoolTimeout`: specifies the value of reserve_pool_timeout. If a client has not been serviced in this many seconds, pgbouncer enables use of additional connections from reserve pool. 0 disables.
 
   Default: 5.0
 
-* `spec.connectionPool.maxDbConnections`: specifies the value of max_db_connections. PgBouncer does not allow more than this many connections per-database (regardless of pool - i.e. user). It should be noted that when you hit the limit, closing a client connection to one pool will not immediately allow a server connection to be established for another pool, because the server connection for the first pool is still open. Once the server connection closes (due to idle timeout), a new server connection will immediately be opened for the waiting pool.
+- `spec.connectionPool.maxDbConnections`: specifies the value of max_db_connections. PgBouncer does not allow more than this many connections per-database (regardless of pool - i.e. user). It should be noted that when you hit the limit, closing a client connection to one pool will not immediately allow a server connection to be established for another pool, because the server connection for the first pool is still open. Once the server connection closes (due to idle timeout), a new server connection will immediately be opened for the waiting pool.
 
   Default: unlimited
 
-* `spec.connectionPool.maxUserConnections`: specifies the value of max_user_connections. PgBouncer does not allow more than this many connections per-user (regardless of pool - i.e. user). It should be noted that when you hit the limit, closing a client connection to one pool will not immediately allow a server connection to be established for another pool, because the server connection for the first pool is still open. Once the server connection closes (due to idle timeout), a new server connection will immediately be opened for the waiting pool.
+- `spec.connectionPool.maxUserConnections`: specifies the value of max_user_connections. PgBouncer does not allow more than this many connections per-user (regardless of pool - i.e. user). It should be noted that when you hit the limit, closing a client connection to one pool will not immediately allow a server connection to be established for another pool, because the server connection for the first pool is still open. Once the server connection closes (due to idle timeout), a new server connection will immediately be opened for the waiting pool.
   Default: unlimited
 
-* `spec.connectionPool.statsPeriod`: sets how often the averages shown in various `SHOW` commands are updated and how often aggregated statistics are written to the log. 
+- `spec.connectionPool.statsPeriod`: sets how often the averages shown in various `SHOW` commands are updated and how often aggregated statistics are written to the log.
   Default: 60
 
-* `spec.connectionPool.authType`: specifies how to authenticate users. PgBouncer supports several authentication methods including pam, md5, scram-sha-256, trust , or any. However hba, and cert are not supported.
+- `spec.connectionPool.authType`: specifies how to authenticate users. PgBouncer supports several authentication methods including pam, md5, scram-sha-256, trust , or any. However hba, and cert are not supported.
 
-* `spec.connectionPool.authUser`: looks up any user not specified in auth_file from pg_shadow.
+- `spec.connectionPool.authUser`: looks up any user not specified in auth_file from pg_shadow.
   Default: not set.
 
-* `spec.connectionPool.IgnoreStartupParameters`: specifies comma-separated startup parameters that pgbouncer knows are handled by admin and it can ignore them.
+- `spec.connectionPool.IgnoreStartupParameters`: specifies comma-separated startup parameters that pgbouncer knows are handled by admin and it can ignore them.
 
 ### spec.userListSecretRef:
 
@@ -244,8 +244,9 @@ KubeDB allows the following fields to set in `spec.serviceTemplate`:
   - loadBalancerSourceRanges
   - externalTrafficPolicy
   - healthCheckNodePort
+  - sessionAffinityConfig
 
-See [official v1.13 API documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.13/#servicespec-v1-core) to understand these fields in detail.
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
 ## Next Steps
 

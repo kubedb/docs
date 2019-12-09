@@ -49,20 +49,20 @@ data:
         target_label: __address__
         regex: ([^:]+)(?::\d+)?;(\d+)
         replacement: $1:$2
-      # add service namespace as label to the scrapped metrics
+      # add service namespace as label to the scraped metrics
       - source_labels: [__meta_kubernetes_namespace]
         separator: ;
         regex: (.*)
         target_label: namespace
         replacement: $1
         action: replace
-      # add service name as a label to the scrapped metrics
+      # add service name as a label to the scraped metrics
       - source_labels: [__meta_kubernetes_service_name]
         separator: ;
         regex: (.*)
         target_label: service
         replacement: $1
         action: replace
-      # add stats service's labels to the scrapped metrics
+      # add stats service's labels to the scraped metrics
       - action: labelmap
         regex: __meta_kubernetes_service_label_(.+)

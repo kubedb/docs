@@ -40,7 +40,7 @@ This tutorial will show you how to monitor PgBouncer using builtin [Prometheus](
 
 ## Deploy PgBouncer with Monitoring Enabled
 
-At first, we will need a PgBouncer with monitoring enabled. This PgBouncer needs to be connected to PostgreSQL database(s). You can get a PgBouncr setup with active connection(s) to PostgreSQL by following the [quickstart](/docs/guides/pgbouncer/quickstart/quickstart.md) guide. PgBouncer object is that guide didn't come with monitoring. So we are going to have to add monitoring to it. Bellow is the PgBouncer object that contains built-in monitoring:
+At first, we will need a PgBouncer with monitoring enabled. This PgBouncer needs to be connected to PostgreSQL database(s). You can get a PgBouncer setup with active connection(s) to PostgreSQL by following the [quickstart](/docs/guides/pgbouncer/quickstart/quickstart.md) guide. PgBouncer object in that guide didn't come with monitoring. So we are going to enable monitoring in it. Below is the PgBouncer object that contains built-in monitoring:
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -57,7 +57,7 @@ spec:
     databaseRef:
       name: "quick-postgres"
   connectionPool:
-    maxClientConn: 20
+    maxClientConnections: 20
     reservePoolSize: 5
     adminUsers:
     - admin
@@ -174,21 +174,21 @@ Let's configure a Prometheus scrapping job to collect metrics from this service.
     target_label: __address__
     regex: ([^:]+)(?::\d+)?;(\d+)
     replacement: $1:$2
-  # add service namespace as label to the scrapped metrics
+  # add service namespace as label to the scraped metrics
   - source_labels: [__meta_kubernetes_namespace]
     separator: ;
     regex: (.*)
     target_label: namespace
     replacement: $1
     action: replace
-  # add service name as a label to the scrapped metrics
+  # add service name as a label to the scraped metrics
   - source_labels: [__meta_kubernetes_service_name]
     separator: ;
     regex: (.*)
     target_label: service
     replacement: $1
     action: replace
-  # add stats service's labels to the scrapped metrics
+  # add stats service's labels to the scraped metrics
   - action: labelmap
     regex: __meta_kubernetes_service_label_(.+)
 ```
@@ -197,7 +197,7 @@ Let's configure a Prometheus scrapping job to collect metrics from this service.
 
 If you already have a Prometheus server running, you have to add above scrapping job in the `ConfigMap` used to configure the Prometheus server. Then, you have to restart it for the updated configuration to take effect.
 
->If you don't use a persistent volume for Prometheus storage, you will lose your previously scrapped data on restart.
+> If you don't use a persistent volume for Prometheus storage, you will lose your previously scraped data on restart.
 
 ### Deploy New Prometheus Server
 
@@ -259,21 +259,21 @@ data:
         target_label: __address__
         regex: ([^:]+)(?::\d+)?;(\d+)
         replacement: $1:$2
-      # add service namespace as label to the scrapped metrics
+      # add service namespace as label to the scraped metrics
       - source_labels: [__meta_kubernetes_namespace]
         separator: ;
         regex: (.*)
         target_label: namespace
         replacement: $1
         action: replace
-      # add service name as a label to the scrapped metrics
+      # add service name as a label to the scraped metrics
       - source_labels: [__meta_kubernetes_service_name]
         separator: ;
         regex: (.*)
         target_label: service
         replacement: $1
         action: replace
-      # add stats service's labels to the scrapped metrics
+      # add stats service's labels to the scraped metrics
       - action: labelmap
         regex: __meta_kubernetes_service_label_(.+)
 ```

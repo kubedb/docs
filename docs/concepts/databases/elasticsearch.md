@@ -470,6 +470,9 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
   - loadBalancerSourceRanges
   - externalTrafficPolicy
   - healthCheckNodePort
+  - sessionAffinityConfig
+
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
 ### spec.updateStrategy
 

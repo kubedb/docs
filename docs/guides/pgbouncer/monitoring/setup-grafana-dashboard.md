@@ -1,5 +1,5 @@
 ---
-title: Monitor PgBouncer using Coreos Prometheus Operator
+title: Monitor PgBouncer using Prometheus Operator
 menu:
   docs_{{ .version }}:
     identifier: pb-setup-grafana-dashboard-monitoring
@@ -9,6 +9,7 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
 # Visualize PgBouncer Using Grafana Dashboard
@@ -23,13 +24,23 @@ This tutorial will show you how to import our dashboard on Grafana to monitor Pg
 
 - To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/concepts/database-monitoring/overview.md).
 
-- You need to have monitoring enabled using either [Builtin Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md) or [CoreOS Prometheus Operator](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md) 
+- You need to have monitoring enabled using either [Builtin Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md) or [CoreOS Prometheus Operator](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
+
+- To keep everything isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
+
+  ```console
+  $ kubectl create ns monitoring
+  namespace/monitoring created
+
+  $ kubectl create ns demo
+  namespace/demo created
+  ```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy Grafana
 
-After you have made sure that you have a PgBouncer server running with Monitoring enabled, you're ready to deploy your very own Grafana server. If you still have not deployed PgBouncer server with Monitoring enabled, then do so using [Builtin Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md) or [CoreOS Prometheus Operator](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
+After you have made sure that you have a PgBouncer server running with Monitoring enabled, you're ready to deploy your very own Grafana server. If you still have not deployed PgBouncer server with monitoring enabled, then do so using [Builtin Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md) or [CoreOS Prometheus Operator](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
 
 However, if you already have a Grafana server running in your cluster, feel free to skip this part. Otherwise, create one using:
 
@@ -47,23 +58,21 @@ NAME                       READY   STATUS    RESTARTS   AGE
 grafana-7cbd6b6f87-w9dkh   1/1     Running   0          57s
 ```
 
-## Home Dashboard
+## View Dashboard
+
 Now, we have to expose the Grafana pod so that we can access it from a browser.
 
 ```console
 $ kubectl port-forward -n monitoring grafana-7cbd6b6f87-w9dkh 3000
 Forwarding from 127.0.0.1:3000 -> 3000
 Forwarding from [::1]:3000 -> 3000
-
 ```
 
-Grafana should now be available on [localhost](http://localhost:3000/). Use default credentials `(username: admin, password: admin)` to login to Home Dashboard.
-
-
+Grafana should now be available on [localhost](http://localhost:3000/). Use default credentials `(username: admin, password: admin)` to login to Grafana Dashboard.
 
 ## Add Data Source
 
-First, we need to know the name of the service that exposes our prometheus server pods. In  this tutorial, we have used a service named `prometheus-operated` that exposes our prometheus metrics on port 9090. 
+First, we need to know the name of the service that exposes our prometheus server pods. In  this tutorial, we have used a service named `prometheus-operated` that exposes our prometheus metrics on port 9090.
 
 ```console
 $ kubectl get service -n monitoring

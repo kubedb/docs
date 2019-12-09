@@ -9,6 +9,7 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
 # Running PgBouncer
@@ -34,7 +35,7 @@ namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
->We have designed this tutorial to demonstrate a production setup of KubeDB managed PgBouncer. If you just want to try out KubeDB, you can bypass some of the safety features following the tips [here](/docs/guides/pgbouncer/quickstart/quickstart.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed PgBouncer. If you just want to try out KubeDB, you can bypass some of the safety features following the tips [here](/docs/guides/pgbouncer/quickstart/quickstart.md#tips-for-testing).
 
 ## Find Available PgBouncerVersion
 
@@ -53,27 +54,26 @@ $ kubectl get pgbouncerversions
     1.8.1    1.8.1                false        75m
     1.9.0    1.9.0                false        75m
     latest   latest               false        75m
-
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this PgBouncerVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PgBouncerVersion.
 
 In this tutorial, we will use `1.11.0` PgBouncerVersion crd to create PgBouncer. To know more about what `PgBouncerVersion` crd is, please visit [here](/docs/concepts/catalog/pgbouncer.md). You can also see supported PgBouncerVersion [here](/docs/guides/pgbouncer/README.md#supported-pgbouncerversion-crd).
 
-# Get PostgreSQL Server ready
+## Get PostgreSQL Server ready
 
-PgBouncer is a connection-pooling middleware for PostgreSQL, therefore you will need to have a PostgreSQL server up and running for PgBouncer to connect to.
+PgBouncer is a connection-pooling middleware for PostgreSQL. Therefore you will need to have a PostgreSQL server up and running for PgBouncer to connect to.
 
 Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deployed using this guide [here](/docs/guides/postgres/quickstart/quickstart.md).
 
 In this tutorial, we will use a Postgres named `quick-postgres` in the `demo` namespace.
 
-```bash
+```console
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/quick-postgres.yaml
 postgres.kubedb.com/quick-postgres created
 ```
 
-KubeDB craetes all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `quick-postgres`. Database secret `quick-postgres-auth` holds this user's username and password. Following is the yaml file for it.
+KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `quick-postgres`. Database secret `quick-postgres-auth` holds this user's username and password. Following is the yaml file for it.
 
 ```yaml
 $kubectl get secrets -n demo quick-postgres-auth -o yaml
@@ -101,9 +101,9 @@ metadata:
 type: Opaque
 ```
 
-For the purpose of this tutorial, we will need to extract the username and password from databse secret `quick-postgres-auth`.
+For the purpose of this tutorial, we will need to extract the username and password from database secret `quick-postgres-auth`.
 
-```bash
+```console
 $kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
 qTOzudbzusls6NTZ⏎
 
@@ -111,18 +111,17 @@ $ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\POSTGRES_
 postgres⏎
 ```
 
-Now, to test connection with this database using the creadentials obtained above, we will expose the service port associated with `quick-postgres`  to localhost.
+Now, to test connection with this database using the credentials obtained above, we will expose the service port associated with `quick-postgres`  to localhost.
 
-```bash
+```console
 $ kubectl port-forward -n demo svc/quick-postgres 5432
 Forwarding from 127.0.0.1:5432 -> 5432
 Forwarding from [::1]:5432 -> 5432
-
 ```
 
-With that done , we should now be able to connect to `postgres` databse using username `postgres`, and password `qTOzudbzusls6NTZ`.
+With that done , we should now be able to connect to `postgres` database using username `postgres`, and password `qTOzudbzusls6NTZ`.
 
-```bash
+```console
 $ export PGPASSWORD=qTOzudbzusls6NTZ
 $ psql --host=localhost --port=5432 --username=postgres postgres
 psql (11.5 (Ubuntu 11.5-1.pgdg18.04+1), server 11.1)
@@ -133,7 +132,7 @@ postgres=#
 
 After establishing connection successfully, we will create a table in `postgres` database and populate it with data.
 
-```bash
+```console
 postgres=# CREATE TABLE COMPANY( NAME TEXT NOT NULL, EMPLOYEE INT NOT NULL);
 CREATE TABLE
 postgres=# INSERT INTO COMPANY (name, employee) VALUES ('Apple',10);
@@ -144,7 +143,7 @@ INSERT 0 1
 
 After data insertion, we need to verify that our data have been inserted successfully.
 
-```bash
+```console
 postgres=# SELECT * FROM company ORDER BY name;
   name  | employee
 --------+----------
@@ -156,9 +155,9 @@ postgres=# \q
 
 If no error occurs, `quick-postgres` is ready to be used by PgBouncer.
 
-You can also use any other tool to deploy your PostgreSQL server and create a databse `postgres` for user `postgres`.
+You can also use any other tool to deploy your PostgreSQL server and create a database `postgres` for user `postgres`.
 
-Should you choose not to use KubeDB to deploy Postgres, create AppBinding(s) to point PgBouncer to your PostgreSQL server(s) where your target databases are located. Click [here]() for detailed instructions on custom AppBindings for PgBouncer.
+Should you choose not to use KubeDB to deploy Postgres, create AppBinding(s) to point PgBouncer to your PostgreSQL server(s) where your target databases are located. Click [here](/docs/concepts/appbinding.md) for detailed instructions on how to manually create AppBindings for Postgres.
 
 ## Create a PgBouncer Server
 
@@ -181,7 +180,7 @@ spec:
     databaseRef:
       name: "quick-postgres"
   connectionPool:
-    maxClientConn: 20
+    maxClientConnections: 20
     reservePoolSize: 5
     adminUsers:
     - admin
@@ -195,42 +194,40 @@ Here,
 - `spec.version` is name of the PgBouncerVersion crd where the docker images are specified. In this tutorial, a PgBouncer with base image version 1.11.0 is created.
 - `spec.replicas` specifies the number of replica pgbouncer server pods to be created for the PgBouncer object.
 - `spec.databases` specifies the databases that are going to be served via PgBouncer.
-- `spec.connectionPool` specifies the configurations for connection pool. 
-- `spec.userListSecretRef` specifies the secret that contains the standard pgbouncer userlist file.
+- `spec.connectionPool` specifies the configurations for connection pool.
+- `spec.userListSecretRef` specifies the secret that contains the standard pgbouncer `userlist` file.
 
-### spec.databases:
+### spec.databases
 
 Databases contain three `required` fields and two `optional` fields.
 
-* `spec.databases.alias`:  specifies an alias for the target database located in a postgres server specified by an appbinding.
-* `spec.databases.databaseName`:  specifies the name of the target database.
-* `spec.databases.databaseRef`:  specifies the name and namespace of the appBinding that contains the path to a PostgreSQL server where the target database can be found.
-* `spec.databases.username` (optional):  specifies the user with whom this perticular database should have an exclusive connection. By default, if this field is left empty, all users will be able to use the database.
-* `spec.databases.password` (optional):  specifies password to authenticate the user with whom this particular database should have an exclusive connection.
+- `spec.databases.alias`:  specifies an alias for the target database located in a postgres server specified by an appbinding.
+- `spec.databases.databaseName`:  specifies the name of the target database.
+- `spec.databases.databaseRef`:  specifies the name and namespace of the appBinding that contains the path to a PostgreSQL server where the target database can be found.
+- `spec.databases.username` (optional):  specifies the user with whom this particular database should have an exclusive connection. By default, if this field is left empty, all users will be able to use the database.
+- `spec.databases.password` (optional):  specifies password to authenticate the user with whom this particular database should have an exclusive connection.
 
-### spec.connectionPool:
+### spec.connectionPool
 
- ConnectionPool is used to configure pgbouncer connection-pool. All the fields here are accompanied by default values and can be left unspecified if no customisation is required by the user.
+ ConnectionPool is used to configure pgbouncer connection pool. All the fields here are accompanied by default values and can be left unspecified if no customization is required by the user.
 
-* `spec.connectionPool.listenPort`: specifies the port on which pgbouncer should listen to connect with clients. The default is 5432.
-* `spec.connectionPool.listenAddress`: specifies the adress from which pgbouncer should allow client connection from. The default is '*' (all addresses).
-* `spec.connectionPool.adminUsers`: specifies the values of admin_users. Comma seperated names of admin users are listed here.
-* `spec.connectionPool.authType`: specifies how to authenticate users.
-* `spec.connectionPool.poolMode`: specifies the value of pool_mode.
-* `spec.connectionPool.maxClientConn`: specifies the value of max_client_conn.
-* `spec.connectionPool.defaultPoolSize`: specifies the value of default_pool_size.
-* `spec.connectionPool.minPoolSize`: specifies the value of min_pool_size.
-* `spec.connectionPool.reservePoolSize`: specifies the value of reserve_pool_size.
-* `spec.connectionPool.reservePoolTimeout`: specifies the value of reserve_pool_timeout.
-* `spec.connectionPool.maxDbConnections`: specifies the value of max_db_connections.
-* `spec.connectionPool.maxUserConnections`: specifies the value of max_user_connections. 
+- `spec.connectionPool.port`: specifies the port on which pgbouncer should listen to connect with clients. The default is 5432.
+- `spec.connectionPool.adminUsers`: specifies the values of admin_users. An array of names of admin users are listed here.
+- `spec.connectionPool.authType`: specifies how to authenticate users.
+- `spec.connectionPool.poolMode`: specifies the value of pool_mode.
+- `spec.connectionPool.maxClientConnections`: specifies the value of max_client_conn.
+- `spec.connectionPool.defaultPoolSize`: specifies the value of default_pool_size.
+- `spec.connectionPool.minPoolSize`: specifies the value of min_pool_size.
+- `spec.connectionPool.reservePoolSize`: specifies the value of reserve_pool_size.
+- `spec.connectionPool.reservePoolTimeout`: specifies the value of reserve_pool_timeout.
+- `spec.connectionPool.maxDbConnections`: specifies the value of max_db_connections.
+- `spec.connectionPool.maxUserConnections`: specifies the value of max_user_connections.
 
-### spec.userListSecretRef:
+### spec.userListSecretRef
 
-UserList field is used to specify a secret that contains the list of authorised users along with their passwords. Basically this secret is created from the standard pgbouncer userlist file.
+UserList field is used to specify a secret that contains the list of authorized users along with their passwords. Basically this secret is created from the standard pgbouncer userlist file.
 
 - `spec.userListSecretRef.name`: specifies the name of the secret containing userlist in the same namespace as the PgBouncer crd.
-
 
 In this tutorial we will use a standard userlist text file to create a secret for spec.userListSecretRef. In the userlist text file we have added `pgbouncer` as user and  `qTOzudbzusls6NTZ` as corresponding password. The file looks like this:
 
@@ -241,17 +238,15 @@ In this tutorial we will use a standard userlist text file to create a secret fo
 
 We will need user `myuser` with password  `mypass` later in this tutorial.
 
-```bash
+```console
 $ kubectl create secret -n demo generic db-user-pass --from-file=https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/userlist.txt
 
 secret/db-user-pass created
 ```
 
+Now that we've been introduced to the pgBouncer crd, let's create it,
 
-
-Now that we've been introduced to our pgBouncer crd, let's create it,
-
-```bash
+```console
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server.yaml
 
 pgbouncer.kubedb.com/pgbouncer-server created
@@ -261,7 +256,7 @@ pgbouncer.kubedb.com/pgbouncer-server created
 
 To connect via pgBouncer we have to expose its service to localhost.
 
-```bash
+```console
 $ kubectl port-forward -n demo svc/pgbouncer-server 5432
 
 Forwarding from 127.0.0.1:5432 -> 5432
@@ -280,9 +275,9 @@ postgres=# \q
 
 If everything goes well, we'll be connected to the `postgres` database and be able to execute commands. Lets confirm if the company data we inserted in the  `postgres` database before are available via PgBouncer:
 
-```bash
+```console
 $ env PGPASSWORD=qTOzudbzusls6NTZ psql --host=localhost --port=5432 --username=postgres postgres --command='SELECT * FROM company ORDER BY name;'
-  name  | employee 
+  name  | employee
 --------+----------
  Apple  |       10
  Google |       15
@@ -295,14 +290,14 @@ We will add a new user and a new database to our PostgreSQL server `quick-postgr
 
 First lets create a new user `myuser` with password `mypass`
 
-```bash
+```console
 $ env PGPASSWORD=qTOzudbzusls6NTZ psql --host=localhost --port=5432 --username=postgres postgres --command="create user myuser with encrypted password 'mypass'"
 CREATE ROLE
 ```
 
 And then create a new database `mydb`
 
-```bash
+```console
 $ env PGPASSWORD=qTOzudbzusls6NTZ psql --host=localhost --port=5432 --username=postgres postgres --command="CREATE DATABASE mydb;"
 CREATE DATABASE
 ```
@@ -330,26 +325,25 @@ spec:
     databaseRef:
       name: "quick-postgres"
   connectionPool:
-    maxClientConn: 20
+    maxClientConnections: 20
     reservePoolSize: 5
     adminUsers:
     - admin
     - admin1
   userListSecretRef:
     name: db-user-pass
-
 ```
 
 We have given our newly added database an alias `tmpdb`.  We will now apply this modified file.
 
-```bash
+```console
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-mod.yaml
 pgbouncer.kubedb.com/pgbouncer-server configured
 ```
 
 Lets try to connect to `mydb` via PgBouncer.
 
-```bash
+```console
 $ env PGPASSWORD=mypass psql --host=localhost --port=5432 --username=myuser tmpdb
 psql (11.5 (Ubuntu 11.5-1.pgdg18.04+1), server 11.1)
 Type "help" for help.
@@ -359,7 +353,7 @@ tmpdb=>
 
 We can now switch our connection between our existing databases `postgres` and `mydb` as well.
 
-```bash
+```console
 tmpdb=>\c postgres
 psql (11.5 (Ubuntu 11.5-1.pgdg18.04+1), server 11.1)
 You are now connected to database "postgres" as user "myuser".
@@ -369,22 +363,19 @@ You are now connected to database "mydb" as user "myuser".
 tmpdb=>\q
 ```
 
-
-
 KubeDB operator watches for PgBouncer objects using Kubernetes api. When a PgBouncer object is created, KubeDB operator will create a new StatefulSet and a ClusterIP Service with the matching name. KubeDB operator will also create a governing service for StatefulSet with the name `kubedb`, if one is not already present.
 
 KubeDB operator sets the `status.phase` to `Running` once the connection-pooling mechanism is ready.
 
-```bash
+```console
 $ kubectl get pb -n demo pgbouncer-server -o wide
 NAME               VERSION   STATUS    AGE
 pgbouncer-server   1.11.0    Running   2h
-
 ```
 
 Let's describe PgBouncer object `pgbouncer-server`
 
-```bash
+```console
 $ kubedb describe pb -n demo pgbouncer-server
 Name:         pgbouncer-demo
 Namespace:    demo
@@ -441,12 +432,11 @@ Status:
   Observed Generation:  1$6208915667192219204
   Phase:                Running
 Events:                 <none>
-
 ```
 
 KubeDB has created a service for the PgBouncer object.
 
-```bash
+```console
 $ kubectl get service -n demo --selector=kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-server
 NAME               TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 pgbouncer-server   ClusterIP   10.97.188.32   <none>        5432/TCP   2h
@@ -468,8 +458,6 @@ kubectl delete secret -n demo db-user-pass
 
 kubectl delete ns demo
 ```
-
-
 
 ## Next Steps
 

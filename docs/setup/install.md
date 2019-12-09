@@ -268,7 +268,7 @@ wget -O kubedb https://github.com/kubedb/cli/releases/download/{{< param "info.v
 
 If you prefer to install KubeDB cli from source code, you will need to set up a GO development environment following [these instructions](https://golang.org/doc/code.html). Then, install `kubedb` CLI using `go get` from source code.
 
-```bash
+```console
 go get github.com/kubedb/cli/...
 ```
 

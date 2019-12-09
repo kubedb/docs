@@ -14,11 +14,11 @@ section_menu_id: concepts
 
 ## What is PgBouncerVersion
 
-`PgBouncerVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [PgBouncer](https://pgbouncer.github.io/) server deployed with KubeDB in Kubernetes native way.
+`PgBouncerVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [PgBouncer](https://pgbouncer.github.io/) server deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, `PgBouncerVersion` crd will be created automatically for every supported PgBouncer release versions. You have to specify the name of `PgBouncerVersion` crd in `spec.version` field of [PgBouncer](/docs/concepts/database-proxy/pgbouncer.md) crd. Then, KubeDB will use the docker images specified in the `PgBouncerVersion` crd to create your expected database.
+When you install KubeDB, `PgBouncerVersion` custom resource will be created automatically for every supported PgBouncer release versions. You have to specify the name of `PgBouncerVersion` crd in `spec.version` field of [PgBouncer](/docs/concepts/database-proxy/pgbouncer.md) crd. Then, KubeDB will use the docker images specified in the `PgBouncerVersion` crd to create your expected PgBouncer instance.
 
-Using a separate crd for specifying respective docker images names allow us to modify the images independent of KubeDB operator. This will also allow the users to use a custom pgbouncer image for their server. For more details about how to use custom image with PgBouncer in KubeDB, please visit [here](/docs/guides/pgbouncer/custom-versions/setup.md).
+Using a separate crd for specifying respective docker image names allow us to modify the images independent of KubeDB operator. This will also allow the users to use a custom PgBouncer image for their server. For more details about how to use custom image with PgBouncer in KubeDB, please visit [here](/docs/guides/pgbouncer/custom-versions/setup.md).
 
 ## PgBouncerVersion Specification
 
@@ -45,9 +45,10 @@ spec:
 `metadata.name` is a required field that specifies the name of the `PgBouncerVersion` crd. You have to specify this name in `spec.version` field of [PgBouncer](/docs/concepts/database-proxy/pgbouncer.md) crd.
 
 We follow this convention for naming PgBouncerVersion crd:
+
 - Name format: `{Original pgbouncer image version}-{modification tag}`
 
-We plan to modify original PgBouncer docker images to support additional features. Re-tagging the image with v1, v2 etc. modification tag helps separating newer iterations from the older ones. An image with higher modification tag will have more feature than the images with lower modification tag. Hence, it is recommended to use PgBouncerVersion crd with highest modification tag to take advantage of the latest features.
+We plan to modify original PgBouncer docker images to support additional features. Re-tagging the image with v1, v2 etc. modification tag helps separating newer iterations from the older ones. An image with higher modification tag will have more features than the images with lower modification tag. Hence, it is recommended to use PgBouncerVersion crd with highest modification tag to take advantage of the latest features.
 
 ### spec.version
 
@@ -57,11 +58,11 @@ We plan to modify original PgBouncer docker images to support additional feature
 
 `spec.deprecated` is an optional field that specifies whether the docker images specified here is supported by the current KubeDB operator.
 
-The default value of this field is `false`. If `spec.depcrecated` is set `true`, KubeDB operator will not create the server and other respective resources for this version.
+The default value of this field is `false`. If `spec.deprecated` is set `true`, KubeDB operator will not create the server and other respective resources for this version.
 
 ### spec.server.image
 
-`spec.server.image` is a required field that specifies the docker image which will be used to create Statfulset by KubeDB operator to create expected PgBouncer server.
+`spec.server.image` is a required field that specifies the docker image which will be used to create Statefulset by KubeDB operator to create expected PgBouncer server.
 
 ### spec.exporter.image
 

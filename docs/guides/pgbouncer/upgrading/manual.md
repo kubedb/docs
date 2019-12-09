@@ -9,6 +9,7 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
 # KubeDB Upgrade Manual
@@ -81,13 +82,9 @@ kubedb-catalog 	2       	Fri Feb  8 12:12:45 2019	DEPLOYED	kubedb-catalog-0.11.0
 kubedb-operator	2       	Fri Feb  8 12:11:57 2019	DEPLOYED	kubedb-0.11.0        	0.11.0      	kube-system
 ```
 
-
-
 ## Upgrade CRD objects
 
-Note that, if any server becomes stale for using deprecated pgbouncerversion, upgrading to a non-deprecated pgbouncerversion will solve the issue as kubedb-operator will update the statefulsets too.  WE donot have any deprecated pgbouncerversion for any pgbouncer release version. 
-
-
+Note that, if any server becomes stale for using deprecated PgBouncerVersion, upgrading to a non-deprecated PgBouncerVersion will solve the issue as kubedb-operator will update the Statefulsets too.
 
 ## Next Steps
 

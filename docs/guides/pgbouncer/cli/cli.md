@@ -64,7 +64,7 @@ kind: PgBouncer
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha1","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-demo","namespace":"demo"},"spec":{"connectionPool":{"adminUsers":["admin","admin1"],"maxClientConn":20,"reservePoolSize":5},"databases":[{"alias":"postgres","databaseName":"postgres","databaseRef":{"name":"quick-postgres"}},{"alias":"tmpdb","databaseName":"mydb","databaseRef":{"name":"quick-postgres"}}],"monitor":{"agent":"prometheus.io/builtin"},"replicas":1,"userListSecretRef":{"name":"db-user-pass"},"version":"1.12.0"}}
+      {"apiVersion":"kubedb.com/v1alpha1","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-demo","namespace":"demo"},"spec":{"connectionPool":{"adminUsers":["admin","admin1"],"maxClientConnections":20,"reservePoolSize":5},"databases":[{"alias":"postgres","databaseName":"postgres","databaseRef":{"name":"quick-postgres"}},{"alias":"tmpdb","databaseName":"mydb","databaseRef":{"name":"quick-postgres"}}],"monitor":{"agent":"prometheus.io/builtin"},"replicas":1,"userListSecretRef":{"name":"db-user-pass"},"version":"1.12.0"}}
   creationTimestamp: "2019-10-31T10:34:04Z"
   finalizers:
   - kubedb.com
@@ -113,7 +113,6 @@ spec:
 status:
   observedGeneration: 1$6208915667192219204
   phase: Running
-
 ```
 
 To get JSON of an object, use `--output=json` flag.
@@ -179,7 +178,6 @@ service/pgbouncer-demo
 service/pgbouncer-demo-stats
 statefulset.apps/pgbouncer-demo
 pgbouncer.kubedb.com/pgbouncer-demo
-
 ```
 
 To learn about various options of `get` command, please visit [here](/docs/reference/kubedb_get.md).

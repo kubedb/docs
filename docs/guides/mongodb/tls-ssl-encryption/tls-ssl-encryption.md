@@ -24,7 +24,7 @@ KubeDB supports providing TLS/SSL encryption (via, `sslMode` and `clusterAuthMod
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```bash
+  ```console
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -71,14 +71,14 @@ spec:
 
 ### Deploy MongoDB Standalone
 
-```bash
+```console
 $ kubectl create -f ./docs/examples/mongodb/tls-ssl-encryption/tls-standalone.yaml
 mongodb.kubedb.com/mgo-tls created
 ```
 
 Now, wait until `mgo-tls created` has status `Running`. i.e,
 
-```bash
+```console
 $ kubectl get mg -n demo
 NAME      VERSION   STATUS    AGE
 mgo-tls   3.6-v4    Running   20s
@@ -88,7 +88,7 @@ mgo-tls   3.6-v4    Running   20s
 
 Now, connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/) and verify if `SSLMode` has been set up as intended (i.e, `requireSSL`).
 
-```bash
+```console
 $ kubectl describe secret -n demo mgo-tls-cert
 Name:         mgo-tls-cert
 Namespace:    demo
@@ -112,7 +112,7 @@ key.txt:     1008 bytes
 mongo.pem:   2863 bytes
 ```
 
-```bash
+```console
 $ kubectl exec -it mgo-tls-0 -n demo bash
 mongodb@mgo-tls-0: # you are into container
 
@@ -187,14 +187,14 @@ spec:
 
 ### Deploy MongoDB Replicaset
 
-```bash
+```console
 $ kubectl create -f ./docs/examples/mongodb/tls-ssl-encryption/tls-replicaset.yaml
 mongodb.kubedb.com/mgo-rs-tls created
 ```
 
 Now, wait until `mgo-rs-tls created` has status `Running`. i.e,
 
-```bash
+```console
 $ kubectl get mg -n demo
 NAME         VERSION   STATUS    AGE
 mgo-rs-tls   3.6-v4    Running   2m31s
@@ -204,7 +204,7 @@ mgo-rs-tls   3.6-v4    Running   2m31s
 
 Now, connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/) and verify if `SSLMode` and `ClusterAuthMode` has been set up as intended.
 
-```bash
+```console
 $ kubectl describe secret -n demo mgo-rs-tls-cert
 Name:         mgo-rs-tls-cert
 Namespace:    demo
@@ -227,7 +227,7 @@ client.pem:  2867 bytes
 key.txt:     1008 bytes
 ```
 
-```bash
+```console
 $ kubectl exec -it mgo-rs-tls-0 -n demo bash
 mongodb@mgo-rs-tls-0: # you are into container
 
@@ -341,14 +341,14 @@ spec:
 
 ### Deploy MongoDB Sharding
 
-```bash
+```console
 $ kubectl create -f ./docs/examples/mongodb/tls-ssl-encryption/tls-sharding.yaml
 mongodb.kubedb.com/mongo-sh-tls created
 ```
 
 Now, wait until `mongo-sh-tls created` has status `Running`. ie,
 
-```bash
+```console
 $ kubectl get mg -n demo
 NAME           VERSION   STATUS    AGE
 mongo-sh-tls   3.6-v4    Running   9m34s
@@ -358,7 +358,7 @@ mongo-sh-tls   3.6-v4    Running   9m34s
 
 Now, connect to `mongos` component of this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/) and verify if `SSLMode` and `ClusterAuthMode` has been set up as intended.
 
-```bash
+```console
 $ kubectl describe secret -n demo mongo-sh-tls-cert
 Name:         mongo-sh-tls-cert
 Namespace:    demo
@@ -381,7 +381,7 @@ client.pem:  2879 bytes
 key.txt:     1008 bytes
 ```
 
-```bash
+```console
 $ kubectl get po -n demo -l mongodb.kubedb.com/node.mongos=mongo-sh-tls-mongos
 NAME                                   READY   STATUS    RESTARTS   AGE
 mongo-sh-tls-mongos-5958559b5d-5vrjm   1/1     Running   0          87s
@@ -463,7 +463,7 @@ User can update `sslMode` & `ClusterAuthMode` if needed. Some changes may be inv
 
 Good thing is, **KubeDB webhook will throw error for invalid SSL specs while creating/updating the mongodb crd object.** i.e.,
 
-```bash
+```console
 $ kubectl patch -n demo mg/mgo-rs-tls -p '{"spec":{"sslMode": "disabled","clusterAuthMode": "x509"}}' --type="merge"
 Error from server (Forbidden): admission webhook "mongodb.validators.kubedb.com" denied the request: can't have disabled set to mongodb.spec.sslMode when mongodb.spec.clusterAuthMode is set to x509
 ```
@@ -474,7 +474,7 @@ To **Upgrade from Keyfile Authentication to x.509 Authentication**, change the `
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```bash
+```console
 kubectl patch -n demo mg/mgo-rs-tls mg/mgo-tls mg/mongo-sh-tls -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-rs-tls mg/mgo-tls mg/mongo-sh-tls
 

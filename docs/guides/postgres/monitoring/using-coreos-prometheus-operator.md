@@ -1,14 +1,15 @@
 ---
-title: Monitor PostgreSQL using Coreos Prometheus Operator
+title: Monitor PostgreSQL using Prometheus Operator
 menu:
   docs_{{ .version }}:
     identifier: pg-using-coreos-prometheus-operator-monitoring
-    name: Coreos Prometheus Operator
+    name: Prometheus Operator
     parent: pg-monitoring-postgres
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
 # Monitoring PostgreSQL Using CoreOS Prometheus Operator

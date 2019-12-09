@@ -14,9 +14,9 @@ section_menu_id: concepts
 
 ## What is MemcachedVersion
 
-`MemcachedVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Memcached](https://memcached.org) database deployed with KubeDB in Kubernetes native way.
+`MemcachedVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Memcached](https://memcached.org) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, `MemcachedVersion` crd will be created automatically for every supported Memcached versions. You have to specify the name of `MemcachedVersion` crd in `spec.version` field of [Memcached](/docs/concepts/databases/memcached.md) crd. Then, KubeDB will use the docker images specified in the `MemcachedVersion` crd to create your expected database.
+When you install KubeDB, `MemcachedVersion` custom resource will be created automatically for every supported Memcached versions. You have to specify the name of `MemcachedVersion` crd in `spec.version` field of [Memcached](/docs/concepts/databases/memcached.md) crd. Then, KubeDB will use the docker images specified in the `MemcachedVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the database.
 
@@ -49,7 +49,7 @@ We follow this convention for naming MemcachedVersion crd:
 
 - Name format: `{Original Memcached image version}-{modification tag}`
 
-We modify original Memcached docker image to support additional features. An image with higher modification tag will have more feature than the images with lower modification tag. Hence, it is recommended to use MemcachedVersion crd with highest modification tag to take advantage of the latest features.
+We modify original Memcached docker image to support additional features. An image with higher modification tag will have more features than the images with lower modification tag. Hence, it is recommended to use MemcachedVersion crd with highest modification tag to take advantage of the latest features.
 
 ### spec.version
 
@@ -59,7 +59,7 @@ We modify original Memcached docker image to support additional features. An ima
 
 `spec.deprecated` is an optional field that specifies whether the docker images specified here is supported by the current KubeDB operator. For example, we have modified `kubedb/memcached:1.5.4` docker image to support custom configuration and re-tagged as `kubedb/memcached:1.5.4-v1`. Now, KubeDB `0.9.0-rc.0` supports providing custom configuration which required `kubedb/memcached:1.5.4-v1` docker image. So, we have marked `kubedb/memcached:1.5.4` as deprecated for KubeDB `0.9.0-rc.0`.
 
-The default value of this field is `false`. If `spec.depcrecated` is set `true`, KubeDB operator will not create the database and other respective resources for this version.
+The default value of this field is `false`. If `spec.deprecated` is set `true`, KubeDB operator will not create the database and other respective resources for this version.
 
 ### spec.db.image
 

@@ -12,7 +12,7 @@ spec:
       databaseRef:
         name: "quick-postgres"
   connectionPool:
-    maxClientConn: 20
+    maxClientConnections: 20
     reservePoolSize: 5
     adminUsers:
       - admin

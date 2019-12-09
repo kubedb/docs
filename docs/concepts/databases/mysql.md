@@ -113,7 +113,7 @@ spec:
 
 ### spec.topology
 
-`spec.topology` is an optional field that provides a way to configure HA, fault-tolerant MySQL cluster. This field enables you to specify the clustering mode. Currently, we support only MySQL Group Replication. KubeDB uses Pod Disruption Budget to ensure that majority of the group replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained and no data loss is occurred.
+`spec.topology` is an optional field that provides a way to configure HA, fault-tolerant MySQL cluster. This field enables you to specify the clustering mode. Currently, we support only MySQL Group Replication. KubeDB uses `PodDisruptionBudget` to ensure that majority of the group replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained and no data loss is occurred.
 
 You can specify the following fields in `spec.topology` field,
 
@@ -372,6 +372,9 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
   - loadBalancerSourceRanges
   - externalTrafficPolicy
   - healthCheckNodePort
+  - sessionAffinityConfig
+
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
 ### spec.updateStrategy
 
