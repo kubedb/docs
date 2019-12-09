@@ -1,2 +1,2 @@
 path:
-  logs: /data/elasticsearch/common-logdir
+  logs: /usr/share/elasticsearch/data/elasticsearch/common-logdir

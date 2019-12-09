@@ -68,7 +68,7 @@ metadata:
   name: scheduled-es
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -101,8 +101,13 @@ When Elasticsearch starts running successfully, KubeDB operator creates a Snapsh
 
 ```console
 $ kubectl get snap -n demo --selector="kubedb.com/kind=Elasticsearch,kubedb.com/name=scheduled-es"
-NAME                           DATABASENAME   STATUS    AGE
-scheduled-es-20181005-120106   scheduled-es   Running   3s
+NAME                           DATABASENAME   STATUS      AGE
+scheduled-es-20191002-093224   scheduled-es   Succeeded   4m19s
+scheduled-es-20191002-093324   scheduled-es   Succeeded   3m19s
+scheduled-es-20191002-093424   scheduled-es   Succeeded   2m19s
+scheduled-es-20191002-093524   scheduled-es   Succeeded   79s
+scheduled-es-20191002-093624   scheduled-es   Running     19s
+
 ```
 
 ## Update Elasticsearch to disable periodic backups
@@ -162,7 +167,7 @@ metadata:
   name: scheduled-es
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -196,7 +201,7 @@ metadata:
   name: scheduled-es
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -232,7 +237,7 @@ metadata:
   name: scheduled-es
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -265,7 +270,7 @@ metadata:
   name: scheduled-es
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -290,10 +295,10 @@ spec:
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-$ kubectl patch -n demo es/scheduled-es -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo es/scheduled-es
+kubectl patch -n demo es/scheduled-es -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo es/scheduled-es
 
-$ kubectl delete ns demo
+kubectl delete ns demo
 ```
 
 ## Next Steps

@@ -48,7 +48,7 @@ metadata:
   name: builtin-prom-es
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -77,17 +77,17 @@ Now, wait for the database to go into `Running` state.
 ```console
 $ kubectl get es -n demo builtin-prom-es
 NAME              VERSION   STATUS    AGE
-builtin-prom-es   6.3-v1    Running   3m
+builtin-prom-es   7.3.2     Running   4m
 ```
 
 KubeDB will create a separate stats service with name `{Elasticsearch crd name}-stats` for monitoring purpose.
 
 ```console
 $ kubectl get svc -n demo --selector="kubedb.com/name=builtin-prom-es"
-NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-builtin-prom-es          ClusterIP   10.100.74.189   <none>        9200/TCP    4m53s
-builtin-prom-es-master   ClusterIP   10.100.71.238   <none>        9300/TCP    4m53s
-builtin-prom-es-stats    ClusterIP   10.106.247.73   <none>        56790/TCP   2m33s
+NAME                     TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)     AGE
+builtin-prom-es          ClusterIP   10.0.14.79   <none>        9200/TCP    4m10s
+builtin-prom-es-master   ClusterIP   10.0.1.39    <none>        9300/TCP    4m10s
+builtin-prom-es-stats    ClusterIP   10.0.3.147   <none>        56790/TCP   3m14s
 ```
 
 Here, `builtin-prom-es-stats` service has been created for monitoring purpose. Let's describe the service.
@@ -98,16 +98,17 @@ Name:              builtin-prom-es-stats
 Namespace:         demo
 Labels:            kubedb.com/kind=Elasticsearch
                    kubedb.com/name=builtin-prom-es
+                   kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
                    prometheus.io/path: /metrics
                    prometheus.io/port: 56790
                    prometheus.io/scrape: true
 Selector:          kubedb.com/kind=Elasticsearch,kubedb.com/name=builtin-prom-es
 Type:              ClusterIP
-IP:                10.106.247.73
+IP:                10.0.3.147
 Port:              prom-http  56790/TCP
 TargetPort:        prom-http/TCP
-Endpoints:         172.17.0.5:56790
+Endpoints:         10.4.0.49:56790
 Session Affinity:  None
 Events:            <none>
 ```

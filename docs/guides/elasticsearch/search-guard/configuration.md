@@ -349,7 +349,7 @@ If you do not use these two features of Snapshot, you can ignore adding these.
 
 Use this Secret `config-elasticsearch-auth` in `spec.databaseSecret` field of your Elasticsearch object.
 
-## Create a Elasticsearch database
+## Create an Elasticsearch database
 
 Below is the Elasticsearch object created in this tutorial.
 

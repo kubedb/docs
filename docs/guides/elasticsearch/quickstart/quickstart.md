@@ -60,23 +60,31 @@ When you have installed KubeDB, it has created `ElasticsearchVersion` crd for al
 ```console
 $ kubectl get elasticsearchversions
 NAME       VERSION   DB_IMAGE                        DEPRECATED   AGE
-5.6        5.6       kubedb/elasticsearch:5.6        true         21m
-5.6-v1     5.6       kubedb/elasticsearch:5.6-v1                  21m
-5.6.4      5.6.4     kubedb/elasticsearch:5.6.4      true         21m
-5.6.4-v1   5.6.4     kubedb/elasticsearch:5.6.4-v1                21m
-6.2        6.2       kubedb/elasticsearch:6.2        true         21m
-6.2-v1     6.2       kubedb/elasticsearch:6.2-v1                  21m
-6.2.4      6.2.4     kubedb/elasticsearch:6.2.4      true         21m
-6.2.4-v1   6.2.4     kubedb/elasticsearch:6.2.4-v1                21m
-6.3        6.3       kubedb/elasticsearch:6.3        true         21m
-6.3-v1     6.3       kubedb/elasticsearch:6.3-v1                  21m
-6.3.0      6.3.0     kubedb/elasticsearch:6.3.0      true         21m
-6.3.0-v1   6.3.0     kubedb/elasticsearch:6.3.0-v1                20m
+5.6        5.6       kubedb/elasticsearch:5.6        true         45m
+5.6-v1     5.6       kubedb/elasticsearch:5.6-v1                  45m
+5.6.4      5.6.4     kubedb/elasticsearch:5.6.4      true         45m
+5.6.4-v1   5.6.4     kubedb/elasticsearch:5.6.4-v1                45m
+6.2        6.2       kubedb/elasticsearch:6.2        true         45m
+6.2-v1     6.2       kubedb/elasticsearch:6.2-v1                  45m
+6.2.4      6.2.4     kubedb/elasticsearch:6.2.4      true         45m
+6.2.4-v1   6.2.4     kubedb/elasticsearch:6.2.4-v1                45m
+6.3        6.3       kubedb/elasticsearch:6.3        true         45m
+6.3-v1     6.3       kubedb/elasticsearch:6.3-v1                  45m
+6.3.0      6.3.0     kubedb/elasticsearch:6.3.0      true         45m
+6.3.0-v1   6.3.0     kubedb/elasticsearch:6.3.0-v1                45m
+6.4        6.4       kubedb/elasticsearch:6.4                     45m
+6.4.0      6.4.0     kubedb/elasticsearch:6.4.0                   45m
+6.5        6.5.3     kubedb/elasticsearch:6.5                     45m
+6.5.3      6.5.3     kubedb/elasticsearch:6.5.3                   45m
+6.8        6.8.0     kubedb/elasticsearch:6.8                     45m
+6.8.0      6.8.0     kubedb/elasticsearch:6.8.0                   45m
+7.2        7.2       kubedb/elasticsearch:7.2                     45m
+7.3.2      7.3.2     kubedb/elasticsearch:7.3.2                   45m
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this ElasticsearchVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated ElasticsearchVersion.
 
-In this tutorial, we will use `6.3-v1` ElasticsearchVersion crd to create Elasticsearch database. To know more about what is `ElasticsearchVersion` crd and why there is `6.3` and `6.3-v1` variation, please visit [here](/docs/concepts/catalog/elasticsearch.md). You can also see supported ElasticsearchVersion in KubeDB 0.11.0 from [here](/docs/guides/elasticsearch/README.md#supported-elasticsearchversion-crd).
+In this tutorial, we will use `7.3.2` ElasticsearchVersion crd to create Elasticsearch database. To know more about what is `ElasticsearchVersion` crd and why there is `6.3` and `7.3.2` variation, please visit [here](/docs/concepts/catalog/elasticsearch.md). You can also see supported ElasticsearchVersion in KubeDB 0.11.0 from [here](/docs/guides/elasticsearch/README.md#supported-elasticsearchversion-crd).
 
 ## Create an Elasticsearch database
 
@@ -91,7 +99,7 @@ metadata:
   name: quick-elasticsearch
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -128,7 +136,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 ```console
 $ kubectl get es -n demo quick-elasticsearch
 NAME                  VERSION   STATUS    AGE
-quick-elasticsearch   6.3-v1    Running   3m
+quick-elasticsearch   7.3.2    Running   3m
 ```
 
 Let's describe Elasticsearch object `quick-elasticsearch`
@@ -266,12 +274,12 @@ To learn about how to configure an Elasticsearch cluster, please visit [here](/d
 
 Please note that KubeDB operator has created two new Secrets for Elasticsearch object.
 
-1. `quick-elasticsearch-auth` for storing the passwords and [search-guard](https://github.com/floragunncom/search-guard) configuration.
+1. `quick-elasticsearch-auth` for storing the passwords and xpack configuration.
 2. `quick-elasticsearch-cert` for storing certificates used for SSL connection.
 
 #### Secret for authentication & configuration
 
-Auth secret is used to authenticate user for Elasticsearch database and configure Search Guard plugin.
+Auth secret is used to authenticate user for Elasticsearch database and configure xpack plugin.
 
 ```console
 $ kubectl get secret -n demo quick-elasticsearch-auth -o yaml
@@ -305,18 +313,18 @@ type: Opaque
 
 This Secret contains:
 
-- `ADMIN_USERNAME` *username* for superuser used in search-guard configuration as an internal user.
+- `ADMIN_USERNAME` *username* for superuser used in x-pack configuration as an internal user.
 - `ADMIN_PASSWORD` *password* for the superuser.
 - `READALL_USERNAME` *username* for `readall` user with read-only permission only.
 - `READALL_PASSWORD` *password* for the `readall` user.
-- Followings are used as search-guard configuration
+- Followings are used as x-pack configuration
   - `sg_action_groups.yml`
   - `sg_config.yml`
   - `sg_internal_users.yml`
   - `sg_roles.yml`
   - `sg_roles_mapping.yml`
 
-To know more about search-guard configuration, please visit [here](/docs/guides/elasticsearch/search-guard/configuration.md).
+To know more about x-pack configuration, please visit [here](/docs/guides/elasticsearch/x-pack/configuration.md).
 
 #### Secret for certificates
 
@@ -332,7 +340,7 @@ data:
   key_pass: ZWR0aGd3
   node.jks: <base64 encoded node certificate in jks format>
   root.jks: <base64 encoded root CA in jks format>
-  sgadmin.jks: <base64 encoded admin certificate used to change the Search Guard configuration>
+  sgadmin.jks: <base64 encoded admin certificate used to change the xpack configuration>
 kind: Secret
 metadata:
   creationTimestamp: 2018-09-28T05:33:35Z
@@ -347,7 +355,7 @@ type: Opaque
 
 > Note: Cert Secret name format: `{elasticsearch-name}-cert`
 
-To learn more about how to create TLS secure Elasticsearch database with KubeDB, please visit [here](/docs/guides/elasticsearch/search-guard/use-tls.md).
+To learn more about how to create TLS secure Elasticsearch database with KubeDB, please visit [here](/docs/guides/elasticsearch/x-pack/use-tls.md).
 
 ## Connect with Elasticsearch Database
 
@@ -370,7 +378,7 @@ Now, we can connect to the database at `localhost:9200`. Let's find out necessar
 
   ```console
   $ kubectl get secrets -n demo quick-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
-  admin
+  elastic
   ```
 
 - Password: Run following command to get *password*
@@ -383,7 +391,7 @@ Now, we can connect to the database at `localhost:9200`. Let's find out necessar
 Now let's check health of our Elasticsearch database.
 
 ```console
-curl --user "admin:cbciwcfh" "localhost:9200/_cluster/health?pretty"
+curl --user "elastic:cbciwcfh" "localhost:9200/_cluster/health?pretty"
 ```
 
 ```json
@@ -474,7 +482,7 @@ spec:
     metadata:
       annotations:
         kubectl.kubernetes.io/last-applied-configuration: |
-          {"apiVersion":"kubedb.com/v1alpha1","kind":"Elasticsearch","metadata":{"annotations":{},"name":"quick-elasticsearch","namespace":"demo"},"spec":{"terminationPolicy":true,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","version":"6.3-v1"}}
+          {"apiVersion":"kubedb.com/v1alpha1","kind":"Elasticsearch","metadata":{"annotations":{},"name":"quick-elasticsearch","namespace":"demo"},"spec":{"terminationPolicy":true,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","version":7.3.2}}
       creationTimestamp: 2018-09-28T05:33:29Z
       name: quick-elasticsearch
       namespace: demo
@@ -504,7 +512,7 @@ spec:
         terminationPolicy: Pause
         updateStrategy:
           type: RollingUpdate
-        version: 6.3-v1
+        version: 7.3.2
 status:
   observedGeneration: 1$10263513872796756591
   pausingTime: 2018-09-28T08:56:24Z
@@ -526,7 +534,7 @@ In this tutorial, the DormantDatabase `quick-elasticsearch` can be resumed by cr
 The below command will resume the DormantDatabase `quick-elasticsearch`
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/quickstart/quick-elasticsearch.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/quickstart/quick-elasticsearch.yaml
 elasticsearch.kubedb.com/quick-elasticsearch created
 ```
 

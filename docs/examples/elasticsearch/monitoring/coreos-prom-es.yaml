@@ -4,7 +4,7 @@ metadata:
   name: coreos-prom-es
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"

@@ -55,7 +55,8 @@ metadata:
   name: instant-elasticsearch
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
+  replicas: 1
   storageType: Ephemeral
 ```
 
@@ -65,26 +66,88 @@ Verify that the Elasticsearch is running,
 
 ```console
 $ kubedb get es -n demo instant-elasticsearch
-NAME                   STATUS    AGE
-instant-elasticsearch   Running   11m
+NAME                    VERSION   STATUS    AGE
+instant-elasticsearch   7.3.2     Running   41s
 ```
 
 ### Populate database
 
-Let's insert some data so that we can verify that the snapshot contains those data. Check how to connect with the database from [here](/docs/guides/elasticsearch/quickstart/quickstart.md#connect-with-elasticsearch-database).
+Let's insert some data so that we can verify that the snapshot contains those data.
+
+**Connection information:**
+
+- Address: `localhost:9200`
+- Username: Run following command to get *username*
+
+  ```console
+  $ kubectl get secrets -n demo instant-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
+  elastic
+  ```
+
+- Password: Run following command to get *password*
+
+  ```console
+  $ kubectl get secrets -n demo instant-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
+  dy76ez7v
+  ```
+
+Let's forward `9200` port of our database pod. Run following command on a separate terminal,
 
 ```console
-$ curl -XPUT --user "admin:fqvzdvz3" "localhost:9200/test/snapshot/1?pretty" -H 'Content-Type: application/json' -d'
+$ kubectl port-forward -n demo instant-elasticsearch-0 9200
+Forwarding from 127.0.0.1:9200 -> 9200
+Forwarding from [::1]:9200 -> 9200
+```
+
+Now let's check health of our Elasticsearch database.
+
+```json
+$ curl --user "elastic:dy76ez7v" "localhost:9200/_cluster/health?pretty"
 {
+  "cluster_name" : "instant-elasticsearch",
+  "status" : "green",
+  "timed_out" : false,
+  "number_of_nodes" : 1,
+  "number_of_data_nodes" : 1,
+  "active_primary_shards" : 0,
+  "active_shards" : 0,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 0,
+  "delayed_unassigned_shards" : 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch" : 0,
+  "task_max_waiting_in_queue_millis" : 0,
+  "active_shards_percent_as_number" : 100.0
+}
+```
+
+```json
+$ curl -XPUT --user "elastic:dy76ez7v" "localhost:9200/test/snapshot2/2?pretty" -H 'Content-Type: application/json' -d' {
     "title": "Snapshot",
     "text":  "Testing instand backup",
     "date":  "2018/02/13"
+}'
+
+{
+  "_index" : "test",
+  "_type" : "snapshot",
+  "_id" : "1",
+  "_version" : 1,
+  "result" : "created",
+  "_shards" : {
+    "total" : 2,
+    "successful" : 1,
+    "failed" : 0
+  },
+  "_seq_no" : 0,
+  "_primary_term" : 1
 }
-'
+
 ```
 
 ```console
-$ curl -XGET --user "admin:fqvzdvz3" "localhost:9200/test/snapshot/1?pretty"
+$ curl -XGET --user "elastic:dy76ez7v" "localhost:9200/test/snapshot/1?pretty"
 ```
 
 ```json
@@ -93,6 +156,8 @@ $ curl -XGET --user "admin:fqvzdvz3" "localhost:9200/test/snapshot/1?pretty"
   "_type" : "snapshot",
   "_id" : "1",
   "_version" : 1,
+  "_seq_no" : 1,
+  "_primary_term" : 1,
   "found" : true,
   "_source" : {
     "title" : "Snapshot",
@@ -136,7 +201,7 @@ In this case, `kubedb.com/kind: Elasticsearch` tells KubeDB operator that this S
 
 > Note: Snapshot and Secret objects must be in the same namespace as Elasticsearch, `instant-elasticsearch`.
 
-#### Snapshot Storage Secret
+### Snapshot Storage Secret
 
 Storage Secret should contain credentials that will be used to access storage destination.
 In this tutorial, snapshot data will be stored in a Google Cloud Storage (GCS) bucket.
@@ -174,7 +239,7 @@ metadata:
 type: Opaque
 ```
 
-#### Snapshot storage backend
+### Snapshot storage backend
 
 KubeDB supports various cloud providers (_S3_, _GCS_, _Azure_, _OpenStack_ _Swift_ and/or locally mounted volumes) as snapshot storage backend. In this tutorial, _GCS_ backend is used.
 
@@ -200,8 +265,8 @@ Let's see Snapshot list of Elasticsearch `instant-elasticsearch`.
 
 ```console
 $ kubectl get snap -n demo --selector=kubedb.com/kind=Elasticsearch,kubedb.com/name=instant-elasticsearch
-NAME               DATABASENAME           STATUS      AGE
-instant-snapshot   instant-elasticsearch   Succeeded   47s
+NAME               DATABASENAME            STATUS      AGE
+instant-snapshot   instant-elasticsearch   Succeeded   26s
 ```
 
 KubeDB operator watches for Snapshot objects using Kubernetes API. When a Snapshot object is created, it will launch a Job that runs the [elasticdump](https://github.com/taskrabbit/elasticsearch-dump) command and uploads the output files to cloud storage using [osm](https://github.com/appscode/osm).
@@ -236,55 +301,128 @@ If you open this `test.data.json` file, you will see the data you have created p
 
 Let's see the Snapshot list for Elasticsearch `instant-elasticsearch` by running `kubedb describe` command.
 
-```console
+```yaml
 $ kubedb describe es -n demo instant-elasticsearch
 Name:               instant-elasticsearch
 Namespace:          demo
-CreationTimestamp:  Fri, 05 Oct 2018 16:45:56 +0600
+CreationTimestamp:  Wed, 02 Oct 2019 11:26:44 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha1","kind":"Elasticsearch","metadata":{"annotations":{},"name":"instant-elasticsearch","namespace":"demo"},"spec":{"repl...
+Annotations:        <none>
 Status:             Running
 Replicas:           1  total
   StorageType:      Ephemeral
-Volume:
-  Capacity:  0
+No volumes.
 
 StatefulSet:          
   Name:               instant-elasticsearch
-  CreationTimestamp:  Fri, 05 Oct 2018 16:45:58 +0600
-  Labels:               kubedb.com/kind=Elasticsearch
+  CreationTimestamp:  Wed, 02 Oct 2019 11:26:45 +0600
+  Labels:               app.kubernetes.io/component=database
+                        app.kubernetes.io/instance=instant-elasticsearch
+                        app.kubernetes.io/managed-by=kubedb.com
+                        app.kubernetes.io/name=elasticsearch
+                        app.kubernetes.io/version=7.3.2
+                        kubedb.com/kind=Elasticsearch
                         kubedb.com/name=instant-elasticsearch
                         node.role.client=set
                         node.role.data=set
                         node.role.master=set
   Annotations:        <none>
-  Replicas:           824639991608 desired | 1 total
+  Replicas:           824638718776 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
-...
+Service:
+  Name:         instant-elasticsearch
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=instant-elasticsearch
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
+                  kubedb.com/name=instant-elasticsearch
+  Annotations:  <none>
+  Type:         ClusterIP
+  IP:           10.0.1.145
+  Port:         http  9200/TCP
+  TargetPort:   http/TCP
+  Endpoints:    10.4.0.19:9200
+
+Service:
+  Name:         instant-elasticsearch-master
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=instant-elasticsearch
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
+                  kubedb.com/name=instant-elasticsearch
+  Annotations:  <none>
+  Type:         ClusterIP
+  IP:           10.0.1.247
+  Port:         transport  9300/TCP
+  TargetPort:   transport/TCP
+  Endpoints:    10.4.0.19:9300
+
+Database Secret:
+  Name:         instant-elasticsearch-auth
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=instant-elasticsearch
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
+                  kubedb.com/name=instant-elasticsearch
+  Annotations:  <none>
+
+Type:  Opaque
+
+Data
+====
+  ADMIN_PASSWORD:  8 bytes
+  ADMIN_USERNAME:  7 bytes
+
+Certificate Secret:
+  Name:         instant-elasticsearch-cert
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=instant-elasticsearch
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
+                  kubedb.com/name=instant-elasticsearch
+  Annotations:  <none>
+
+Type:  Opaque
+
+Data
+====
+  client.jks:  3053 bytes
+  key_pass:    6 bytes
+  node.jks:    3014 bytes
+  root.jks:    863 bytes
+  root.pem:    1139 bytes
+
 Topology:
-  Type                Pod                     StartTime                      Phase
-  ----                ---                     ---------                      -----
-  master|client|data  instant-elasticsearch-0  2018-10-05 16:45:58 +0600 +06  Running
+  Type                Pod                      StartTime                      Phase
+  ----                ---                      ---------                      -----
+  master|client|data  instant-elasticsearch-0  2019-10-02 11:26:45 +0600 +06  Running
 
 Snapshots:
-  Name              Bucket     StartTime                        CompletionTime                   Phase
-  ----              ------     ---------                        --------------                   -----
-  instant-snapshot  gs:kubedb  Fri, 05 Oct 2018 17:27:55 +0600  Fri, 05 Oct 2018 17:28:10 +0600  Succeeded
+  Name              Bucket        StartTime                        CompletionTime                   Phase
+  ----              ------        ---------                        --------------                   -----
+  instant-snapshot  gs:kubedb-qa  Wed, 02 Oct 2019 11:38:19 +0600  Wed, 02 Oct 2019 11:38:37 +0600  Succeeded
 
 Events:
   Type    Reason              Age   From                    Message
   ----    ------              ----  ----                    -------
-  Normal  Successful          44m   Elasticsearch operator  Successfully created Service
-  Normal  Successful          44m   Elasticsearch operator  Successfully created Service
-  Normal  Successful          44m   Elasticsearch operator  Successfully created StatefulSet
-  Normal  Successful          44m   Elasticsearch operator  Successfully created Elasticsearch
-  Normal  Successful          44m   Elasticsearch operator  Successfully patched StatefulSet
-  Normal  Successful          43m   Elasticsearch operator  Successfully patched Elasticsearch
-  Normal  Successful          43m   Elasticsearch operator  Successfully patched StatefulSet
-  Normal  Successful          43m   Elasticsearch operator  Successfully patched Elasticsearch
-  Normal  Starting            2m    Job Controller          Backup running
-  Normal  SuccessfulSnapshot  2m    Job Controller          Successfully completed snapshot
+  Normal  Successful          12m   Elasticsearch operator  Successfully created Service
+  Normal  Successful          12m   Elasticsearch operator  Successfully created Service
+  Normal  Successful          12m   Elasticsearch operator  Successfully created StatefulSet
+  Normal  Successful          11m   Elasticsearch operator  Successfully created Elasticsearch
+  Normal  Successful          11m   Elasticsearch operator  Successfully created appbinding
+  Normal  Successful          11m   Elasticsearch operator  Successfully patched StatefulSet
+  Normal  Successful          11m   Elasticsearch operator  Successfully patched Elasticsearch
+  Normal  Starting            49s   Elasticsearch operator  Backup running
+  Normal  SuccessfulSnapshot  31s   Elasticsearch operator  Successfully completed snapshot
 ```
 
 From the above output, we can see in `Snapshots:` section that we have one successful snapshot.
@@ -413,10 +551,10 @@ spec:
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-$ kubectl patch -n demo es/instant-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo es/instant-elasticsearch
+kubectl patch -n demo es/instant-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo es/instant-elasticsearch
 
-$ kubectl delete ns demo
+kubectl delete ns demo
 ```
 
 ## Next Steps

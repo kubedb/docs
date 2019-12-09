@@ -1,14 +1,15 @@
 ---
-title: X-Pack Monitoring of Elasticsearch Cluster in KubeDB
+title: X-Pack Monitoring of Elasticsearch Cluster with SearchGuard Auth
 menu:
   docs_{{ .version }}:
-    identifier: es-x-pack-monitoring
+    identifier: es-x-pack-monitoring-with-searchguard
     name: Monitoring
-    parent: es-x-pack
-    weight: 10
+    parent: es-search-guard-elasticsearch
+    weight: 50
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
 # X-Pack Monitoring with KubeDB Elasticsearch
@@ -299,7 +300,7 @@ metadata:
   name: es-mon-demo
   namespace: demo
 spec:
-  version: "6.3.0-v1"
+  version: 7.3.2
   replicas: 1
   databaseSecret:
     secretName: es-auth
@@ -337,7 +338,7 @@ Once everything is created, Elasticsearch will go to Running state. Check that E
 ```console
 $ kubectl get es -n demo es-mon-demo
 NAME          VERSION    STATUS    AGE
-es-mon-demo   6.3.0-v1   Running   1m
+es-mon-demo   7.3.2   Running   1m
 ```
 
 Now, check elasticsearch log to see if the cluster is ready to accept requests,
@@ -398,6 +399,7 @@ configmap/kibana-config created
 ```
 
 Finally, deploy Kibana deployment,
+
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/kibana/kibana-deployment.yaml
 deployment.apps/kibana created

@@ -4,7 +4,7 @@ metadata:
   name: es-mon-demo
   namespace: demo
 spec:
-  version: "6.3.0-v1"
+  version: 7.3.2
   replicas: 1
   databaseSecret:
     secretName: es-auth

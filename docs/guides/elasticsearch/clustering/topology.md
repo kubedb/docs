@@ -47,7 +47,7 @@ metadata:
   name: multi-node-es
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   replicas: 3
   storageType: Durable
   storage:
@@ -72,15 +72,21 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 elasticsearch.kubedb.com/multi-node-es created
 ```
 
+```console
+$ kubectl get es -n demo
+NAME            VERSION   STATUS    AGE
+multi-node-es   7.3.2     Running   7m38s
+```
+
 Let's describe Elasticsearch object `multi-node-es` while Running
 
-```console
+```yaml
 $ kubedb describe es -n demo multi-node-es
 Name:               multi-node-es
 Namespace:          demo
-CreationTimestamp:  Fri, 05 Oct 2018 12:51:43 +0600
+CreationTimestamp:  Wed, 02 Oct 2019 10:37:14 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha1","kind":"Elasticsearch","metadata":{"annotations":{},"name":"multi-node-es","namespace":"demo"},"spec":{"replicas":3...
+Annotations:        <none>
 Status:             Running
 Replicas:           3  total
   StorageType:      Durable
@@ -91,41 +97,61 @@ Volume:
 
 StatefulSet:          
   Name:               multi-node-es
-  CreationTimestamp:  Fri, 05 Oct 2018 12:51:45 +0600
-  Labels:               kubedb.com/kind=Elasticsearch
+  CreationTimestamp:  Wed, 02 Oct 2019 10:37:15 +0600
+  Labels:               app.kubernetes.io/component=database
+                        app.kubernetes.io/instance=multi-node-es
+                        app.kubernetes.io/managed-by=kubedb.com
+                        app.kubernetes.io/name=elasticsearch
+                        app.kubernetes.io/version=7.3.2
+                        kubedb.com/kind=Elasticsearch
                         kubedb.com/name=multi-node-es
                         node.role.client=set
                         node.role.data=set
                         node.role.master=set
   Annotations:        <none>
-  Replicas:           824639906344 desired | 3 total
+  Replicas:           824641370200 desired | 3 total
   Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:        
   Name:         multi-node-es
-  Labels:         kubedb.com/kind=Elasticsearch
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=multi-node-es
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
                   kubedb.com/name=multi-node-es
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.101.96.68
+  IP:           10.0.13.4
   Port:         http  9200/TCP
   TargetPort:   http/TCP
-  Endpoints:    192.168.1.18:9200,192.168.1.19:9200,192.168.1.20:9200
+  Endpoints:    10.4.0.10:9200,10.4.1.7:9200,10.4.1.8:9200
 
 Service:        
   Name:         multi-node-es-master
-  Labels:         kubedb.com/kind=Elasticsearch
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=multi-node-es
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
                   kubedb.com/name=multi-node-es
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.103.195.123
+  IP:           10.0.11.165
   Port:         transport  9300/TCP
   TargetPort:   transport/TCP
-  Endpoints:    192.168.1.18:9300,192.168.1.19:9300,192.168.1.20:9300
+  Endpoints:    10.4.0.10:9300,10.4.1.7:9300,10.4.1.8:9300
 
 Database Secret:
   Name:         multi-node-es-auth
-  Labels:         kubedb.com/kind=Elasticsearch
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=multi-node-es
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
                   kubedb.com/name=multi-node-es
   Annotations:  <none>
   
@@ -133,19 +159,17 @@ Type:  Opaque
   
 Data
 ====
-  ADMIN_USERNAME:         5 bytes
-  READALL_USERNAME:       7 bytes
-  sg_action_groups.yml:   430 bytes
-  sg_roles.yml:           312 bytes
-  ADMIN_PASSWORD:         8 bytes
-  READALL_PASSWORD:       8 bytes
-  sg_config.yml:          242 bytes
-  sg_internal_users.yml:  156 bytes
-  sg_roles_mapping.yml:   73 bytes
+  ADMIN_PASSWORD:  8 bytes
+  ADMIN_USERNAME:  7 bytes
 
 Certificate Secret:
   Name:         multi-node-es-cert
-  Labels:         kubedb.com/kind=Elasticsearch
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=multi-node-es
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
                   kubedb.com/name=multi-node-es
   Annotations:  <none>
   
@@ -153,29 +177,29 @@ Type:  Opaque
   
 Data
 ====
-  key_pass:     6 bytes
-  node.jks:     3009 bytes
-  root.jks:     864 bytes
-  sgadmin.jks:  3010 bytes
+  node.jks:    3007 bytes
+  root.jks:    863 bytes
+  root.pem:    1139 bytes
+  client.jks:  3038 bytes
+  key_pass:    6 bytes
 
 Topology:
   Type                Pod              StartTime                      Phase
   ----                ---              ---------                      -----
-  master|client|data  multi-node-es-0  2018-10-05 12:51:46 +0600 +06  Running
-  client|data|master  multi-node-es-1  2018-10-05 12:52:03 +0600 +06  Running
-  master|client|data  multi-node-es-2  2018-10-05 12:52:33 +0600 +06  Running
+  master|client|data  multi-node-es-0  2019-10-02 10:41:16 +0600 +06  Running
+  client|data|master  multi-node-es-1  2019-10-02 10:41:36 +0600 +06  Running
+  master|client|data  multi-node-es-2  2019-10-02 10:42:04 +0600 +06  Running
 
 No Snapshots.
 
 Events:
   Type    Reason      Age   From                    Message
   ----    ------      ----  ----                    -------
-  Normal  Successful  4m    Elasticsearch operator  Successfully created Service
-  Normal  Successful  4m    Elasticsearch operator  Successfully created Service
+  Normal  Successful  7m    Elasticsearch operator  Successfully created Service
+  Normal  Successful  7m    Elasticsearch operator  Successfully created Service
   Normal  Successful  2m    Elasticsearch operator  Successfully created StatefulSet
-  Normal  Successful  2m    Elasticsearch operator  Successfully created Elasticsearch
-  Normal  Successful  2m    Elasticsearch operator  Successfully patched StatefulSet
-  Normal  Successful  1m    Elasticsearch operator  Successfully patched Elasticsearch
+  Normal  Successful  1m    Elasticsearch operator  Successfully created Elasticsearch
+  Normal  Successful  1m    Elasticsearch operator  Successfully created appbinding
   Normal  Successful  1m    Elasticsearch operator  Successfully patched StatefulSet
   Normal  Successful  1m    Elasticsearch operator  Successfully patched Elasticsearch
 ```
@@ -195,7 +219,7 @@ metadata:
   name: topology-es
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   storageType: Durable
   topology:
     master:
@@ -245,10 +269,10 @@ When this object is created, Elasticsearch database has started with 5 pods unde
 
 ```console
 $ kubectl get statefulset -n demo --show-labels --selector="kubedb.com/kind=Elasticsearch,kubedb.com/name=topology-es"
-NAME                 DESIRED   CURRENT   AGE       LABELS
-client-topology-es   2         2         1m        kubedb.com/kind=Elasticsearch,kubedb.com/name=topology-es,node.role.client=set
-data-topology-es     2         2         48s       kubedb.com/kind=Elasticsearch,kubedb.com/name=topology-es,node.role.data=set
-master-topology-es   1         1         1m        kubedb.com/kind=Elasticsearch,kubedb.com/name=topology-es,node.role.master=set
+NAME                 READY   AGE     LABELS
+client-topology-es   2/2     2m44s   app.kubernetes.io/component=database,app.kubernetes.io/instance=topology-es,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearch,app.kubernetes.io/version=7.3.2,kubedb.com/kind=Elasticsearch,kubedb.com/name=topology-es,node.role.client=set
+data-topology-es     2/2     81s     app.kubernetes.io/component=database,app.kubernetes.io/instance=topology-es,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearch,app.kubernetes.io/version=7.3.2,kubedb.com/kind=Elasticsearch,kubedb.com/name=topology-es,node.role.data=set
+master-topology-es   1/1     109s    app.kubernetes.io/component=database,app.kubernetes.io/instance=topology-es,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearch,app.kubernetes.io/version=7.3.2,kubedb.com/kind=Elasticsearch,kubedb.com/name=topology-es,node.role.master=set
 ```
 
 Three StatefulSets are created for *client*, *data* and *master* node respectively.
@@ -330,68 +354,98 @@ Let's describe this Elasticsearch
 $ kubedb describe es -n demo topology-es
 Name:               topology-es
 Namespace:          demo
-CreationTimestamp:  Fri, 05 Oct 2018 14:40:24 +0600
+CreationTimestamp:  Wed, 02 Oct 2019 10:46:12 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha1","kind":"Elasticsearch","metadata":{"annotations":{},"name":"topology-es","namespace":"demo"},"spec":{"storageType":...
-Status:             Creating
+Annotations:        <none>
+Status:             Running
   StorageType:      Durable
 No volumes.
 
 StatefulSet:          
   Name:               client-topology-es
-  CreationTimestamp:  Fri, 05 Oct 2018 14:40:26 +0600
-  Labels:               kubedb.com/kind=Elasticsearch
+  CreationTimestamp:  Wed, 02 Oct 2019 10:46:13 +0600
+  Labels:               app.kubernetes.io/component=database
+                        app.kubernetes.io/instance=topology-es
+                        app.kubernetes.io/managed-by=kubedb.com
+                        app.kubernetes.io/name=elasticsearch
+                        app.kubernetes.io/version=7.3.2
+                        kubedb.com/kind=Elasticsearch
                         kubedb.com/name=topology-es
                         node.role.client=set
   Annotations:        <none>
-  Replicas:           824640231228 desired | 2 total
+  Replicas:           824638512252 desired | 2 total
   Pods Status:        2 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 StatefulSet:          
   Name:               data-topology-es
-  CreationTimestamp:  Fri, 05 Oct 2018 14:41:21 +0600
-  Labels:               kubedb.com/kind=Elasticsearch
+  CreationTimestamp:  Wed, 02 Oct 2019 10:47:36 +0600
+  Labels:               app.kubernetes.io/component=database
+                        app.kubernetes.io/instance=topology-es
+                        app.kubernetes.io/managed-by=kubedb.com
+                        app.kubernetes.io/name=elasticsearch
+                        app.kubernetes.io/version=7.3.2
+                        kubedb.com/kind=Elasticsearch
                         kubedb.com/name=topology-es
                         node.role.data=set
   Annotations:        <none>
-  Replicas:           824640232652 desired | 2 total
+  Replicas:           824639227260 desired | 2 total
   Pods Status:        2 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 StatefulSet:          
   Name:               master-topology-es
-  CreationTimestamp:  Fri, 05 Oct 2018 14:41:00 +0600
-  Labels:               kubedb.com/kind=Elasticsearch
+  CreationTimestamp:  Wed, 02 Oct 2019 10:47:08 +0600
+  Labels:               app.kubernetes.io/component=database
+                        app.kubernetes.io/instance=topology-es
+                        app.kubernetes.io/managed-by=kubedb.com
+                        app.kubernetes.io/name=elasticsearch
+                        app.kubernetes.io/version=7.3.2
+                        kubedb.com/kind=Elasticsearch
                         kubedb.com/name=topology-es
                         node.role.master=set
   Annotations:        <none>
-  Replicas:           824641372604 desired | 1 total
+  Replicas:           824639229484 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:        
   Name:         topology-es
-  Labels:         kubedb.com/kind=Elasticsearch
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=topology-es
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
                   kubedb.com/name=topology-es
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.98.164.122
+  IP:           10.0.0.102
   Port:         http  9200/TCP
   TargetPort:   http/TCP
-  Endpoints:    192.168.1.26:9200,192.168.1.27:9200
+  Endpoints:    10.4.0.11:9200,10.4.1.9:9200
 
 Service:        
   Name:         topology-es-master
-  Labels:         kubedb.com/kind=Elasticsearch
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=topology-es
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
                   kubedb.com/name=topology-es
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.111.168.40
+  IP:           10.0.12.178
   Port:         transport  9300/TCP
   TargetPort:   transport/TCP
-  Endpoints:    192.168.1.28:9300
+  Endpoints:    10.4.1.10:9300
 
 Database Secret:
   Name:         topology-es-auth
-  Labels:         kubedb.com/kind=Elasticsearch
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=topology-es
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
                   kubedb.com/name=topology-es
   Annotations:  <none>
   
@@ -399,19 +453,17 @@ Type:  Opaque
   
 Data
 ====
-  ADMIN_USERNAME:         5 bytes
-  READALL_PASSWORD:       8 bytes
-  sg_internal_users.yml:  156 bytes
-  ADMIN_PASSWORD:         8 bytes
-  READALL_USERNAME:       7 bytes
-  sg_action_groups.yml:   430 bytes
-  sg_config.yml:          242 bytes
-  sg_roles.yml:           312 bytes
-  sg_roles_mapping.yml:   73 bytes
+  ADMIN_PASSWORD:  8 bytes
+  ADMIN_USERNAME:  7 bytes
 
 Certificate Secret:
   Name:         topology-es-cert
-  Labels:         kubedb.com/kind=Elasticsearch
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=topology-es
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
                   kubedb.com/name=topology-es
   Annotations:  <none>
   
@@ -419,30 +471,37 @@ Type:  Opaque
   
 Data
 ====
-  key_pass:     6 bytes
-  node.jks:     3008 bytes
-  root.jks:     864 bytes
-  sgadmin.jks:  3010 bytes
+  client.jks:  3032 bytes
+  key_pass:    6 bytes
+  node.jks:    3005 bytes
+  root.jks:    863 bytes
+  root.pem:    1139 bytes
 
 Topology:
   Type    Pod                   StartTime                      Phase
   ----    ---                   ---------                      -----
-  client  client-topology-es-0  2018-10-05 14:40:27 +0600 +06  Running
-  client  client-topology-es-1  2018-10-05 14:40:44 +0600 +06  Running
-  data    data-topology-es-0    2018-10-05 14:41:22 +0600 +06  Running
-  data    data-topology-es-1    2018-10-05 14:41:49 +0600 +06  Running
-  master  master-topology-es-0  2018-10-05 14:41:01 +0600 +06  Running
+  client  client-topology-es-0  2019-10-02 10:46:19 +0600 +06  Running
+  client  client-topology-es-1  2019-10-02 10:46:47 +0600 +06  Running
+  data    data-topology-es-0    2019-10-02 10:47:42 +0600 +06  Running
+  data    data-topology-es-1    2019-10-02 10:48:02 +0600 +06  Running
+  master  master-topology-es-0  2019-10-02 10:47:14 +0600 +06  Running
 
 No Snapshots.
 
 Events:
   Type    Reason      Age   From                    Message
   ----    ------      ----  ----                    -------
-  Normal  Successful  2m    Elasticsearch operator  Successfully created Service
-  Normal  Successful  2m    Elasticsearch operator  Successfully created Service
+  Normal  Successful  3m    Elasticsearch operator  Successfully created Service
+  Normal  Successful  3m    Elasticsearch operator  Successfully created Service
+  Normal  Successful  2m    Elasticsearch operator  Successfully created StatefulSet
   Normal  Successful  1m    Elasticsearch operator  Successfully created StatefulSet
   Normal  Successful  1m    Elasticsearch operator  Successfully created StatefulSet
-  Normal  Successful  18s   Elasticsearch operator  Successfully created StatefulSet
+  Normal  Successful  48s   Elasticsearch operator  Successfully created Elasticsearch
+  Normal  Successful  48s   Elasticsearch operator  Successfully created appbinding
+  Normal  Successful  47s   Elasticsearch operator  Successfully patched StatefulSet
+  Normal  Successful  47s   Elasticsearch operator  Successfully patched StatefulSet
+  Normal  Successful  47s   Elasticsearch operator  Successfully patched StatefulSet
+  Normal  Successful  17s   Elasticsearch operator  Successfully patched Elasticsearch
 ```
 
 Here, we can see from `Topology` section that 2 pods working as *client*, 2 pods working as *data* and 1 pod working as *master*.
@@ -457,10 +516,10 @@ Two services are also created for this Elasticsearch object.
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-$ kubectl patch -n demo es/multi-node-es es/topology-es -p '{"spec":{"terminationPolicy": "WipeOut"}}' --type="merge"
-$ kubectl delete -n demo es/multi-node-es es/topology-es
+kubectl patch -n demo es/multi-node-es es/topology-es -p '{"spec":{"terminationPolicy": "WipeOut"}}' --type="merge"
+kubectl delete -n demo es/multi-node-es es/topology-es
 
-$ kubectl delete ns demo
+kubectl delete ns demo
 ```
 
 ## Next Steps

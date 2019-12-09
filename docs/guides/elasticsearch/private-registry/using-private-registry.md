@@ -44,14 +44,16 @@ For Elasticsearch, push the following images to your private registry.
 - [kubedb/elasticsearch](https://hub.docker.com/r/kubedb/elasticsearch)
 - [kubedb/elasticsearch-tools](https://hub.docker.com/r/kubedb/elasticsearch-tools)
 - [kubedb/elasticsearch_exporter](https://hub.docker.com/r/kubedb/elasticsearch_exporter)
+- [kubedb/yq](https://hub.docker.com/r/kubedb/yq)
 
 ```console
 $ export DOCKER_REGISTRY=<your-registry>
 
 $ docker pull kubedb/operator:{{< param "info.version" >}} ; docker tag kubedb/operator:{{< param "info.version" >}} $DOCKER_REGISTRY/operator:{{< param "info.version" >}} ; docker push $DOCKER_REGISTRY/operator:{{< param "info.version" >}}
-$ docker pull kubedb/elasticsearch:6.3-v1 ; docker tag kubedb/elasticsearch:6.3-v1 $DOCKER_REGISTRY/elasticsearch:6.3-v1 ; docker push $DOCKER_REGISTRY/elasticsearch:6.3-v1
-$ docker pull kubedb/elasticsearch-tools:6.3-v1 ; docker tag kubedb/elasticsearch-tools:6.3-v1 $DOCKER_REGISTRY/elasticsearch-tools:6.3-v1 ; docker push $DOCKER_REGISTRY/elasticsearch-tools:6.3-v1
+$ docker pull kubedb/elasticsearch:7.3.2 ; docker tag kubedb/elasticsearch:7.3.2 $DOCKER_REGISTRY/elasticsearch:7.3.2 ; docker push $DOCKER_REGISTRY/elasticsearch:7.3.2
+$ docker pull kubedb/elasticsearch-tools:7.3.2 ; docker tag kubedb/elasticsearch-tools:7.3.2 $DOCKER_REGISTRY/elasticsearch-tools:7.3.2 ; docker push $DOCKER_REGISTRY/elasticsearch-tools:7.3.2
 $ docker pull kubedb/elasticsearch_exporter:1.0.2 ; docker tag kubedb/elasticsearch_exporter:1.0.2 $DOCKER_REGISTRY/elasticsearch_exporter:1.0.2 ; docker push $DOCKER_REGISTRY/elasticsearch_exporter:1.0.2
+$ docker pull kubedb/yq:2.4.0 ; docker tag kubedb/yq:2.4.0 $DOCKER_REGISTRY/yq:2.4.0 ; docker push $DOCKER_REGISTRY/yq:2.4.0
 ```
 
 ## Create ImagePullSecret
@@ -66,7 +68,6 @@ $ kubectl create secret docker-registry myregistrykey \
   --docker-username=DOCKER_USER \
   --docker-email=DOCKER_EMAIL \
   --docker-password=DOCKER_PASSWORD
-
 secret "myregistrykey" created.
 ```
 
@@ -76,7 +77,7 @@ If you wish to follow other ways to pull private images see [official docs](http
 
 ## Create ElasticsearchVersion CRD
 
-KubeDB uses images specified in ElasticsearchVersion crd for database, backup and exporting prometheus metrics. You have to create a ElasticsearchVersion crd specifying images from your private registry. Then, you have to point this ElasticsearchVersion crd in `spec.version` field of Elasticsearch object. For more details about ElasticsearchVersion crd, please visit [here](/docs/concepts/catalog/elasticsearch.md).
+KubeDB uses images specified in ElasticsearchVersion crd for database, backup and exporting prometheus metrics. You have to create an ElasticsearchVersion crd specifying images from your private registry. Then, you have to point this ElasticsearchVersion crd in `spec.version` field of Elasticsearch object. For more details about ElasticsearchVersion crd, please visit [here](/docs/concepts/catalog/elasticsearch.md).
 
 Here, is an example of ElasticsearchVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` with your private registry.
 
@@ -84,24 +85,31 @@ Here, is an example of ElasticsearchVersion crd. Replace `<YOUR_PRIVATE_REGISTRY
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: ElasticsearchVersion
 metadata:
-  name: "pvt-6.3"
+  name: "pvt-7.3.2"
   labels:
     app: kubedb
 spec:
-  version: "6.3"
+  version: 7.3.2
+  authPlugin: X-Pack
   db:
-    image: "<YOUR_PRIVATE_REGISTRY>/elasticsearch:6.3-v1"
+    image: <private-docker-registry>/elasticsearch:7.3.2
   exporter:
-    image: "<YOUR_PRIVATE_REGISTRY>/elasticsearch_exporter:1.0.2"
+    image: <private-docker-registry>/elasticsearch_exporter:1.0.2
+  initContainer:
+    image: <private-docker-registry>/busybox
+    yqImage: <private-docker-registry>/yq:2.4.0
   tools:
-    image: "<YOUR_PRIVATE_REGISTRY>/elasticsearch-tools:6.3-v1"
+    image: <private-docker-registry>/elasticsearch-tools:7.3.2
+  podSecurityPolicies:
+    databasePolicyName: elasticsearch-db
+    snapshotterPolicyName: elasticsearch-snapshot
 ```
 
 Now, create the ElasticsearchVersion crd,
 
 ```console
 $ kubectl apply -f pvt-elasticsearchversion.yaml
-elasticsearchversion.kubedb.com/pvt-6.3 created
+elasticsearchversion.kubedb.com/pvt-7.3.2 created
 ```
 
 ## Install KubeDB operator
@@ -121,7 +129,7 @@ metadata:
   name: pvt-reg-elasticsearch
   namespace: demo
 spec:
-  version: "pvt-6.3"
+  version: "pvt-7.3.2"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -146,8 +154,8 @@ To check if the images pulled successfully from the repository, see if the Elast
 
 ```console
 $ kubectl get es -n demo pvt-reg-elasticsearch -o wide
-NAME                    VERSION   STATUS       AGE
-pvt-reg-elasticsearch   pvt-6.3   Running      33m
+NAME                    VERSION     STATUS       AGE
+pvt-reg-elasticsearch   pvt-7.3.2   Running      33m
 ```
 
 ## Snapshot
@@ -159,10 +167,10 @@ You can specify `imagePullSecret` for Snapshot objects in `spec.podTemplate.spec
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-$ kubectl patch -n demo es/pvt-reg-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo es/pvt-reg-elasticsearch
+kubectl patch -n demo es/pvt-reg-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo es/pvt-reg-elasticsearch
 
-$ kubectl delete ns demo
+kubectl delete ns demo
 ```
 
 ## Next Steps
@@ -176,3 +184,4 @@ $ kubectl delete ns demo
 - Detail concepts of [Elasticsearch object](/docs/concepts/databases/elasticsearch.md).
 - Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+`
