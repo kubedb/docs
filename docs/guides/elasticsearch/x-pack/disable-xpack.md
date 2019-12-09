@@ -163,7 +163,7 @@ $ curl "localhost:9200/_cluster/health?pretty"
 Additionally, to query the settings about xpack,
 
 ```json
-$ curl --user "elastic:ruobj2eo" "localhost:9200/_nodes/_all/settings?pretty"
+$ curl "localhost:9200/_nodes/_all/settings?pretty"
 {
   "_nodes" : {
     "total" : 1,
@@ -172,29 +172,32 @@ $ curl --user "elastic:ruobj2eo" "localhost:9200/_nodes/_all/settings?pretty"
   },
   "cluster_name" : "es-xpack-disabled",
   "nodes" : {
-    "gsxyBqC3SwC2XtoldPO-0w" : {
+    "GpHq4kaERoq8_43zXup_mA" : {
       "name" : "es-xpack-disabled-0",
-      "transport_address" : "10.4.1.96:9300",
-      "host" : "10.4.1.96",
-      "ip" : "10.4.1.96",
+      "transport_address" : "10.244.1.7:9300",
+      "host" : "10.244.1.7",
+      "ip" : "10.244.1.7",
       "version" : "7.3.2",
       "build_flavor" : "default",
       "build_type" : "docker",
-      "build_hash" : "508c38a",
+      "build_hash" : "1c1faf1",
       "roles" : [
+        "ingest",
         "master",
-        "data",
-        "ingest"
+        "data"
       ],
       "attributes" : {
-        "ml.machine_memory" : "7841263616",
+        "ml.machine_memory" : "16683249664",
         "xpack.installed" : "true",
         "ml.max_open_jobs" : "20"
       },
       "settings" : {
         "cluster" : {
           "initial_master_nodes" : "es-xpack-disabled-0",
-          "name" : "es-xpack-disabled"
+          "name" : "es-xpack-disabled",
+          "election" : {
+            "strategy" : "supports_voting_only"
+          }
         },
         "node" : {
           "name" : "es-xpack-disabled-0",
@@ -203,7 +206,7 @@ $ curl --user "elastic:ruobj2eo" "localhost:9200/_nodes/_all/settings?pretty"
               "installed" : "true"
             },
             "ml" : {
-              "machine_memory" : "7841263616",
+              "machine_memory" : "16683249664",
               "max_open_jobs" : "20"
             }
           },
@@ -241,17 +244,17 @@ $ curl --user "elastic:ruobj2eo" "localhost:9200/_nodes/_all/settings?pretty"
 }
 ```
 
-As you can see, `xpack.security.enabled` is set to false.
+Here, `xpack.security.enabled` is set to `false`. As a result, `xpack` security configurations are missing from the node settings.
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-$ kubectl patch -n demo es/es-xpack-disabled -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo es/es-xpack-disabled
+kubectl patch -n demo es/es-xpack-disabled -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo es/es-xpack-disabled
 
-$ kubectl delete ns demo
+kubectl delete ns demo
 ```
 
 ## Next Steps

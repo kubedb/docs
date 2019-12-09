@@ -5,7 +5,7 @@ metadata:
   namespace: demo
 spec:
   version: "7.3.2"
-  enableSecurity: false
+  disableSecurity: true
   storage:
     storageClassName: "standard"
     accessModes:
