@@ -59,7 +59,7 @@ aliases:
 
 Supported PostgresVersion objects for KubeDB-{{< param "info.version" >}} release,
 
-```bash
+```console
 $ kubectl get postgresversions
 NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
 10.2       10.2      kubedb/postgres:10.2       true         75m

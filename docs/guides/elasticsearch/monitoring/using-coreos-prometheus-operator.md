@@ -1,14 +1,15 @@
 ---
-title: Monitoring Elasticsearch using Coreos Prometheus Operator
+title: Monitoring Elasticsearch using Prometheus Operator
 menu:
   docs_{{ .version }}:
     identifier: es-using-coreos-prometheus-operator-monitoring
-    name: Coreos Prometheus Operator
+    name: Prometheus Operator
     parent: es-monitoring-elasticsearch
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
 # Monitoring Elasticsearch Using CoreOS Prometheus Operator

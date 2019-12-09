@@ -148,7 +148,7 @@ If `spec.shardTopology` is set, then `spec.replicas` needs to be empty. Instead 
 
 If both `spec.replicaset` and `spec.shardTopology` is not set, then `spec.replicas` can be value `1`.
 
-KubeDB uses Pod Disruption Budget to ensure that majority of these replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained.
+KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained.
 
 ### spec.databaseSecret
 
@@ -194,20 +194,20 @@ To generate the `certificateSecret` Manually,
 
 1. Generate key file first
 
-  ```bash
+  ```console
   openssl rand -base64 756 > key.txt
   ```
 
 2. Generate `ca.key` and `ca.cert`
 
-  ```bash
+  ```console
   openssl genrsa -out ca.key 2048
   openssl req -x509 -new -nodes -key ca.key -days 1024 -out ca.cert -subj "/CN=ca"
   ```
 
 3. Create Secret
 
-  ```bash
+  ```console
   kubectl create secret generic mongodb-demo-cert -n demo \
       --from-file=./key.txt \
       --from-file=./ca.key \
@@ -243,7 +243,7 @@ When `spec.shardTopology` is set, the following fields needs to be empty, otherw
 - `spec.configSource`
 - `spec.storage`
 
-KubeDB uses Pod Disruption Budget to ensure that majority of the replicas of these shard components are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum and data integrity is maintained.
+KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas of these shard components are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum and data integrity is maintained.
 #### spec.shardTopology.shard
 
 `shard` represents configuration for Shard component of mongodb.
@@ -529,6 +529,9 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
   - loadBalancerSourceRanges
   - externalTrafficPolicy
   - healthCheckNodePort
+  - sessionAffinityConfig
+
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
 ### spec.updateStrategy
 

@@ -9,6 +9,7 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
 # Using Custom Configuration in Elasticsearch with Topology

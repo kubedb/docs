@@ -106,7 +106,7 @@ Follow the steps to [install KubeDB operator](/docs/setup/install.md) properly i
 
 KubeDB uses images specified in PostgresVersion crd for database, backup and exporting prometheus metrics. You have to create a PostgresVersion crd specifying images from your private registry. Then, you have to point this PostgresVersion crd in `spec.version` field of Postgres object. For more details about PostgresVersion crd, please visit [here](/docs/concepts/catalog/postgres.md).
 
-Here, is an example of PostgresVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` with your private registy.
+Here, is an example of PostgresVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` with your private registry.
 
 ```yaml
 apiVersion: catalog.kubedb.com/v1alpha1

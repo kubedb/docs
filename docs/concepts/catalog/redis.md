@@ -14,9 +14,9 @@ section_menu_id: concepts
 
 ## What is RedisVersion
 
-`RedisVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Redis](https://redis.io/) database deployed with KubeDB in Kubernetes native way.
+`RedisVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Redis](https://redis.io/) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, `RedisVersion` crd will be created automatically for every supported Redis versions. You have to specify the name of `RedisVersion` crd in `spec.version` field of [Redis](/docs/concepts/databases/redis.md) crd. Then, KubeDB will use the docker images specified in the `RedisVersion` crd to create your expected database.
+When you install KubeDB, `RedisVersion` custom resource will be created automatically for every supported Redis versions. You have to specify the name of `RedisVersion` crd in `spec.version` field of [Redis](/docs/concepts/databases/redis.md) crd. Then, KubeDB will use the docker images specified in the `RedisVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the database.
 
@@ -49,7 +49,7 @@ We follow this convention for naming RedisVersion crd:
 
 - Name format: `{Original Redis image verion}-{modification tag}`
 
-We modify original Redis docker image to support Redis clustering and re-tag the image with v1, v2 etc. modification tag. An image with higher modification tag will have more feature than the images with lower modification tag. Hence, it is recommended to use RedisVersion crd with highest modification tag to enjoy the latest features.
+We modify original Redis docker image to support Redis clustering and re-tag the image with v1, v2 etc. modification tag. An image with higher modification tag will have more features than the images with lower modification tag. Hence, it is recommended to use RedisVersion crd with highest modification tag to enjoy the latest features.
 
 ### spec.version
 
@@ -59,7 +59,7 @@ We modify original Redis docker image to support Redis clustering and re-tag the
 
 `spec.deprecated` is an optional field that specifies whether the docker images specified here is supported by the current KubeDB operator.
 
-The default value of this field is `false`. If `spec.depcrecated` is set to `true`, KubeDB operator will skip processing this CRD object and will add a event to the CRD object specifying that the DB version is deprecated.
+The default value of this field is `false`. If `spec.deprecated` is set to `true`, KubeDB operator will skip processing this CRD object and will add a event to the CRD object specifying that the DB version is deprecated.
 
 ### spec.db.image
 
