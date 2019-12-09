@@ -1,10 +1,10 @@
 ---
-title: X-Pack Monitoring of Elasticsearch Cluster in KubeDB
+title: X-Pack Monitoring of Elasticsearch Cluster with SearchGuard Auth
 menu:
   docs_{{ .version }}:
-    identifier: es-x-pack-monitoring
+    identifier: es-x-pack-monitoring-with-searchguard
     name: Monitoring
-    parent: es-x-pack
+    parent: es-search-guard-elasticsearch
     weight: 50
 menu_name: docs_{{ .version }}
 section_menu_id: guides
