@@ -25,10 +25,10 @@ kubedb create -f FILENAME
 ### Examples
 
 ```
-  # Create a elasticsearch using the data in elastic.json.
+  # Create an Elasticsearch using the data in elastic.json.
   kubedb create -f ./elastic.json
   
-  # Create a elasticsearch based on the JSON passed into stdin.
+  # Create an Elasticsearch based on the JSON passed into stdin.
   cat elastic.json | kubedb create -f -
 ```
 

@@ -25,7 +25,7 @@ kubedb delete ([-f FILENAME] | TYPE [(NAME | -l label | --all)])
 ### Examples
 
 ```
-  # Delete a elasticsearch using the type and name specified in elastic.json.
+  # Delete an Elasticsearch using the type and name specified in elastic.json.
   kubedb delete -f ./elastic.json
   
   # Delete a postgres based on the type and name in the JSON passed into stdin.

@@ -4,6 +4,6 @@ metadata:
   name: instant-elasticsearch
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   replicas: 1
   storageType: Ephemeral

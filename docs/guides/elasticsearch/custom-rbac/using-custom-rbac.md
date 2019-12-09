@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Using Custom RBAC resources
 
-KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to a Elasticsearch instance. This tutorial will show you how to use KubeDB to run Elasticsearch instance with custom RBAC resources.
+KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to an Elasticsearch instance. This tutorial will show you how to use KubeDB to run Elasticsearch instance with custom RBAC resources.
 
 ## Before You Begin
 
@@ -39,7 +39,7 @@ If a service account name is given, but there's no existing service account by t
 
 If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
 
-This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a Elasticsearch Database named `quick-elasticsearch` to provide the bare minimum access permissions.
+This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for an Elasticsearch Database named `quick-elasticsearch` to provide the bare minimum access permissions.
 
 ## Custom RBAC for Elasticsearch
 
@@ -57,15 +57,14 @@ $ kubectl get serviceaccount -n demo my-custom-serviceaccount -o yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: "2019-05-31T08:43:48Z"
+  creationTimestamp: "2019-10-02T05:18:37Z"
   name: my-custom-serviceaccount
   namespace: demo
-  resourceVersion: "12305"
+  resourceVersion: "15521"
   selfLink: /api/v1/namespaces/demo/serviceaccounts/my-custom-serviceaccount
-  uid: 35550bca-8380-11e9-8efb-08002790c45e
+  uid: 16cf2f6c-e4d4-11e9-b2b2-42010a940225
 secrets:
-- name: my-custom-serviceaccount-token-6xj8k
-
+- name: my-custom-serviceaccount-token-ptt25
 ```
 
 Now, we need to create a role that has necessary access permissions for the Elasticsearch instance named `quick-elasticsearch`.
@@ -111,12 +110,12 @@ $ kubectl get rolebinding -n demo my-custom-rolebinding -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  creationTimestamp: "kubectl get rolebinding -n demo my-custom-rolebinding -o yaml"
+  creationTimestamp: "2019-10-02T05:19:37Z"
   name: my-custom-rolebinding
   namespace: demo
-  resourceVersion: "1405"
+  resourceVersion: "15726"
   selfLink: /apis/rbac.authorization.k8s.io/v1/namespaces/demo/rolebindings/my-custom-rolebinding
-  uid: 123afc02-8297-11e9-8d10-080027a8b217
+  uid: 3a5e9277-e4d4-11e9-b2b2-42010a940225
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -125,10 +124,9 @@ subjects:
 - kind: ServiceAccount
   name: my-custom-serviceaccount
   namespace: demo
-
 ```
 
-Now, create a Elasticsearch crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
+Now, create an Elasticsearch crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/custom-rbac/es-custom-db.yaml
@@ -144,7 +142,7 @@ metadata:
   name: quick-elasticsearch
   namespace: demo
 spec:
-  version: "8.0-v2"
+  version: 7.3.2
   storageType: Durable
   podTemplate:
     spec:
@@ -157,7 +155,12 @@ spec:
       requests:
         storage: 1Gi
   terminationPolicy: DoNotTerminate
+```
 
+```console
+$ kubectl get es -n demo
+NAME                  VERSION   STATUS    AGE
+quick-elasticsearch   7.3.2     Running   74s
 ```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-elasticsearch-0` has been created.
@@ -166,46 +169,9 @@ Check that the statefulset's pod is running
 
 ```console
 $ kubectl get pod -n demo quick-elasticsearch-0
-NAME                READY     STATUS    RESTARTS   AGE
-quick-elasticsearch-0   1/1       Running   0          14m
+NAME                    READY   STATUS    RESTARTS   AGE
+quick-elasticsearch-0   1/1     Running   0          93s
 ```
-
-Check the pod's log to see if the database is ready
-
-```console
-$ kubectl logs -f -n demo quick-elasticsearch-0
-+ set -o errexit
-+ set -o pipefail
-+ sync
-...
-Starting runit...
-....................
-..................
-Search Guard Version: 6.3.0-23.1
-Connected as CN=sgadmin,O=Elasticsearch Operator
-Contacting elasticsearch cluster 'elasticsearch' and wait for YELLOW clusterstate ...
-Clustername: quick-elasticsearch
-Clusterstate: GREEN
-Number of nodes: 3
-Number of data nodes: 3
-searchguard index does not exists, attempt to create it ... done (0-all replicas)
-Populate config from /elasticsearch/plugins/search-guard-6/sgconfig/
-Will update 'sg/config' with /elasticsearch/plugins/search-guard-6/sgconfig/sg_config.yml
-   SUCC: Configuration for 'config' created or updated
-Will update 'sg/roles' with /elasticsearch/plugins/search-guard-6/sgconfig/sg_roles.yml
-   SUCC: Configuration for 'roles' created or updated
-Will update 'sg/rolesmapping' with /elasticsearch/plugins/search-guard-6/sgconfig/sg_roles_mapping.yml
-   SUCC: Configuration for 'rolesmapping' created or updated
-Will update 'sg/internalusers' with /elasticsearch/plugins/search-guard-6/sgconfig/sg_internal_users.yml
-   SUCC: Configuration for 'internalusers' created or updated
-Will update 'sg/actiongroups' with /elasticsearch/plugins/search-guard-6/sgconfig/sg_action_groups.yml
-   SUCC: Configuration for 'actiongroups' created or updated
-[2019-05-31T09:10:31,537][INFO ][c.f.s.c.IndexBaseConfigurationRepository] Search Guard License Info: No license needed because enterprise modules are not enabled
-Done with success
-
-```
-
-Once we see `Done with success` in the log, the database is ready.
 
 ## Reusing Service Account
 
@@ -227,7 +193,7 @@ metadata:
   name: minute-elasticsearch
   namespace: demo
 spec:
-  version: "8.0-v2"
+  version: 7.3.2
   storageType: Durable
   podTemplate:
     spec:
@@ -240,7 +206,13 @@ spec:
       requests:
         storage: 1Gi
   terminationPolicy: DoNotTerminate
+```
 
+```console
+$ kubectl get es -n demo
+NAME                   VERSION   STATUS    AGE
+minute-elasticsearch   7.3.2     Running   59s
+quick-elasticsearch    7.3.2     Running   3m17s
 ```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `minute-elasticsearch-0` has been created.
@@ -249,46 +221,9 @@ Check that the statefulset's pod is running
 
 ```console
 $ kubectl get pod -n demo minute-elasticsearch-0
-NAME                READY     STATUS    RESTARTS   AGE
-minute-elasticsearch-0   1/1       Running   0          14m
+NAME                     READY   STATUS    RESTARTS   AGE
+minute-elasticsearch-0   1/1     Running   0          71s
 ```
-
-Check the pod's log to see if the database is ready
-
-```console
-$ kubectl logs -f -n demo minute-elasticsearch-0
-+ set -o errexit
-+ set -o pipefail
-+ sync
-...
-Starting runit...
-....................
-..................
-Search Guard Version: 6.3.0-23.1
-Connected as CN=sgadmin,O=Elasticsearch Operator
-Contacting elasticsearch cluster 'elasticsearch' and wait for YELLOW clusterstate ...
-Clustername: quick-elasticsearch
-Clusterstate: GREEN
-Number of nodes: 3
-Number of data nodes: 3
-searchguard index does not exists, attempt to create it ... done (0-all replicas)
-Populate config from /elasticsearch/plugins/search-guard-6/sgconfig/
-Will update 'sg/config' with /elasticsearch/plugins/search-guard-6/sgconfig/sg_config.yml
-   SUCC: Configuration for 'config' created or updated
-Will update 'sg/roles' with /elasticsearch/plugins/search-guard-6/sgconfig/sg_roles.yml
-   SUCC: Configuration for 'roles' created or updated
-Will update 'sg/rolesmapping' with /elasticsearch/plugins/search-guard-6/sgconfig/sg_roles_mapping.yml
-   SUCC: Configuration for 'rolesmapping' created or updated
-Will update 'sg/internalusers' with /elasticsearch/plugins/search-guard-6/sgconfig/sg_internal_users.yml
-   SUCC: Configuration for 'internalusers' created or updated
-Will update 'sg/actiongroups' with /elasticsearch/plugins/search-guard-6/sgconfig/sg_action_groups.yml
-   SUCC: Configuration for 'actiongroups' created or updated
-[2019-05-31T09:10:31,537][INFO ][c.f.s.c.IndexBaseConfigurationRepository] Search Guard License Info: No license needed because enterprise modules are not enabled
-Done with success
-
-```
-
-`Done with success` in the log signifies that the database is running successfully.
 
 ## Cleaning up
 

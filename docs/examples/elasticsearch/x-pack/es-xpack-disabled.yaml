@@ -1,12 +1,11 @@
 apiVersion: kubedb.com/v1alpha1
 kind: Elasticsearch
 metadata:
-  name: ssl-elasticsearch
+  name: es-xpack-disabled
   namespace: demo
 spec:
-  version: "6.3-v1"
-  replicas: 2
-  enableSSL: true
+  version: "7.3.2"
+  disableSecurity: true
   storage:
     storageClassName: "standard"
     accessModes:

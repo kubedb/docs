@@ -1,14 +1,22 @@
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: ElasticsearchVersion
 metadata:
-  name: "pvt-6.3"
+  name: "pvt-7.3.2"
   labels:
     app: kubedb
 spec:
-  version: "6.3"
+spec:
+  version: 7.3.2
+  authPlugin: X-Pack
   db:
-    image: "<YOUR_PRIVATE_REGISTRY>/elasticsearch:6.3-v1"
+    image: <private-docker-registry>/elasticsearch:7.3.2
   exporter:
-    image: "<YOUR_PRIVATE_REGISTRY>/elasticsearch_exporter:1.0.2"
+    image: <private-docker-registry>/elasticsearch_exporter:1.0.2
+  initContainer:
+    image: <private-docker-registry>/busybox
+    yqImage: <private-docker-registry>/yq:2.4.0
+  podSecurityPolicies:
+    databasePolicyName: elasticsearch-db
+    snapshotterPolicyName: elasticsearch-snapshot
   tools:
-    image: "<YOUR_PRIVATE_REGISTRY>/elasticsearch-tools:6.3-v1"
+    image: <private-docker-registry>/elasticsearch-tools:7.3.2

@@ -44,6 +44,6 @@ In order to backup Elasticsearch database using Stash, follow the following step
 
 - **Install Elasticsearch Addon:** Then, you have to install Elasticsearch addon for Stash. Please, follow the steps from [here](https://appscode.com/products/stash/latest/addons/elasticsearch/setup/install/).
 
-- **Understand the Backup and Restore Flow:** Now, you can read the following guide from [here](https://appscode.com/products/stash/latest/addons/elasticsearch/overview/) to understand how backup and restore of a Elasticsearch database works in Stash.
+- **Understand the Backup and Restore Flow:** Now, you can read the following guide from [here](https://appscode.com/products/stash/latest/addons/elasticsearch/overview/) to understand how backup and restore of an Elasticsearch database works in Stash.
 
 - **Get Started:** Now, follow the guidelines of your desired database version to go through the steps of backup and restore process from [here](https://appscode.com/products/stash/latest/addons/elasticsearch/).

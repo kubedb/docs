@@ -1,12 +1,13 @@
 apiVersion: kubedb.com/v1alpha1
 kind: Elasticsearch
 metadata:
-  name: ssl-elasticsearch
+  name: custom-certificate-es-ssl
   namespace: demo
 spec:
-  version: "6.3-v1"
-  replicas: 2
+  version: "7.3.2"
   enableSSL: true
+  certificateSecret:
+    secretName: custom-certificate-es-ssl-cert
   storage:
     storageClassName: "standard"
     accessModes:

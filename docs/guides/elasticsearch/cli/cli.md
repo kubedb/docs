@@ -20,7 +20,7 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 
 ### How to Create objects
 
-`kubedb create` creates a database CRD object in `default` namespace by default. Following command will create a Elasticsearch object as specified in `elasticsearch.yaml`.
+`kubedb create` creates a database CRD object in `default` namespace by default. Following command will create an Elasticsearch object as specified in `elasticsearch.yaml`.
 
 ```console
 $ kubedb create -f elasticsearch-demo.yaml
@@ -49,7 +49,7 @@ To learn about various options of `create` command, please visit [here](/docs/re
 ```console
 $ kubedb get elasticsearch
 NAME                 VERSION   STATUS    AGE
-elasticsearch-demo   5.6-v1    Running   1m
+elasticsearch-demo   7.3.2     Running   1m
 ```
 
 To get YAML of an object, use `--output=yaml` flag.
@@ -69,7 +69,6 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha1/namespaces/default/elasticsearches/elasticsearch-demo
   uid: 90a54c9e-cb05-11e8-8d51-9eed48c5e947
 spec:
-  authPlugin: SearchGuard
   certificateSecret:
     secretName: elasticsearch-demo-cert
   databaseSecret:
@@ -94,7 +93,7 @@ spec:
   terminationPolicy: Pause
   updateStrategy:
     type: RollingUpdate
-  version: 5.6-v1
+  version: 7.3.2
 status:
   observedGeneration: 3$4212299729528774793
   phase: Running
@@ -393,14 +392,14 @@ To learn about various options of `edit` command, please visit [here](/docs/refe
 
 ### How to Delete Objects
 
-`kubedb delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Elasticsearch `elasticsearch-dev` in default namespace
+`kubedb delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete an Elasticsearch `elasticsearch-dev` in default namespace
 
 ```console
 $ kubedb delete elasticsearch elasticsearch-demo
 elasticsearch.kubedb.com "elasticsearch-demo" deleted
 ```
 
-You can also use YAML files to delete objects. The following command will delete a elasticsearch using the type and name specified in `elasticsearch.yaml`.
+You can also use YAML files to delete objects. The following command will delete an Elasticsearch using the type and name specified in `elasticsearch.yaml`.
 
 ```console
 $ kubedb delete -f elasticsearch-demo.yaml
@@ -436,5 +435,5 @@ $ kubectl delete elasticsearch <name>
 
 ## Next Steps
 
-- Learn how to use KubeDB to run a Elasticsearch database [here](/docs/guides/elasticsearch/README.md).
+- Learn how to use KubeDB to run an Elasticsearch database [here](/docs/guides/elasticsearch/README.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -46,7 +46,7 @@ Content of `master-config.yml`,
 node:
   name:  es-node-master
 path:
-  data: ["/data/elasticsearch/master-datadir"]
+  data: ["/usr/share/elasticsearch/data/master-datadir"]
 ```
 
 Content of `data-config.yml`,
@@ -55,7 +55,7 @@ Content of `data-config.yml`,
 node:
   name:  es-node-data
 path:
-  data: ["/data/elasticsearch/data-datadir"]
+  data: ["/usr/share/elasticsearch/data/data-datadir"]
 http:
   compression: false
 ```
@@ -64,7 +64,7 @@ Content of `common-config.yml`,
 
 ```yaml
 path:
-  logs: /data/elasticsearch/common-logdir
+  logs: /usr/share/elasticsearch/data/common-logdir
 ```
 
 This time we have added an additional field `http.compression: false` in `data-config.yml` file. By default, this field is set to `true`.
@@ -81,31 +81,29 @@ configmap/es-custom-config created
 
 Check that the configMap has these configuration files,
 
-```console
+```yaml
 $ kubectl get configmap -n demo es-custom-config -o yaml
 apiVersion: v1
 data:
   common-config.yml: |
     path:
-      logs: /data/elasticsearch/common-logdir
+      logs: /usr/share/elasticsearch/data/common-logdir
   data-config.yml: |-
     node:
       name:  es-node-data
     path:
-      data: ["/data/elasticsearch/data-datadir"]
+      data: ["/usr/share/elasticsearch/data/data-datadir"]
     http:
       compression: false
   master-config.yml: |-
     node:
       name:  es-node-master
     path:
-      data: ["/data/elasticsearch/master-datadir"]
+      data: ["/usr/share/elasticsearch/data/master-datadir"]
 kind: ConfigMap
 metadata:
-  ...
   name: es-custom-config
   namespace: demo
-  ...
 ```
 
 Now, create an Elasticsearch crd without topology,
@@ -124,7 +122,7 @@ metadata:
   name: custom-elasticsearch
   namespace: demo
 spec:
-  version: "6.2.4-v1"
+  version: 7.3.2
   replicas: 2
   configSource:
     configMap:
@@ -144,33 +142,36 @@ Check resources created in `demo` namespace by KubeDB,
 
 ```console
 $ kubectl get all -n demo -l=kubedb.com/name=custom-elasticsearch
-NAME                         READY     STATUS    RESTARTS   AGE
-pod/custom-elasticsearch-0   1/1       Running   0          6m
-pod/custom-elasticsearch-1   1/1       Running   0          5m
+NAME                         READY   STATUS    RESTARTS   AGE
+pod/custom-elasticsearch-0   1/1     Running   0          74s
+pod/custom-elasticsearch-1   1/1     Running   0          55s
 
-NAME                                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-service/custom-elasticsearch          ClusterIP   10.110.0.164   <none>        9200/TCP   6m
-service/custom-elasticsearch-master   ClusterIP   10.97.53.188   <none>        9300/TCP   6m
+NAME                                  TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
+service/custom-elasticsearch          ClusterIP   10.0.6.32    <none>        9200/TCP   75s
+service/custom-elasticsearch-master   ClusterIP   10.0.5.155   <none>        9300/TCP   75s
 
-NAME                                    DESIRED   CURRENT   AGE
-statefulset.apps/custom-elasticsearch   2         2         6m
+NAME                                    READY   AGE
+statefulset.apps/custom-elasticsearch   2/2     74s
+
+NAME                                                      AGE
+appbinding.appcatalog.appscode.com/custom-elasticsearch   5s
 ```
 
 Check secrets created by KubeDB,
 
 ```console
 $ kubectl get secret -n demo -l=kubedb.com/name=custom-elasticsearch
-NAME                        TYPE      DATA      AGE
-custom-elasticsearch-auth   Opaque    9         6m
-custom-elasticsearch-cert   Opaque    4         6m
+NAME                        TYPE     DATA   AGE
+custom-elasticsearch-auth   Opaque   2      99s
+custom-elasticsearch-cert   Opaque   5      99s
 ```
 
 Once everything is created, Elasticsearch will go to `Running` state. Check that Elasticsearch is in running state.
 
 ```console
 $ kubectl get es -n demo custom-elasticsearch
-NAME                   VERSION    STATUS    AGE
-custom-elasticsearch   6.2.4-v1   Running   7m
+NAME                   VERSION   STATUS    AGE
+custom-elasticsearch   7.3.2     Running   110s
 ```
 
 ## Verify Configuration
@@ -194,20 +195,20 @@ Now, we can connect to the database at `localhost:9200`. Let's find out necessar
 
   ```console
   $ kubectl get secrets -n demo custom-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
-    admin
+    elastic
   ```
 
 - Password: Run following command to get *password*
 
   ```console
   $ kubectl get secrets -n demo custom-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
-    fqc6rkha
+    oopcbph6
   ```
 
 Now, we will query for settings of all nodes in an Elasticsearch cluster,
 
 ```console
-$ curl --user "admin:fqc6rkha" "localhost:9200/_nodes/_all/settings"
+$ curl --user "elastic:oopcbph6" "localhost:9200/_nodes/_all/settings?pretty"
 ```
 
 This will return a large JSON with nodes settings information. Here is the prettified JSON response,
@@ -223,14 +224,12 @@ This will return a large JSON with nodes settings information. Here is the prett
     "nodes": {
         "qhH6AJ9JTU6SlYHKF3kwOQ": {
             "name": "es-node-master",
-            ...
             "roles": [
                 "master",
                 "data",
                 "ingest"
             ],
             "settings": {
-                ...
                 "node": {
                     "name": "es-node-master",
                     "data": "true",
@@ -239,29 +238,24 @@ This will return a large JSON with nodes settings information. Here is the prett
                 },
                 "path": {
                     "data": [
-                        "/data/elasticsearch/master-datadir"
+                        "/usr/share/elasticsearch/data/master-datadir"
                     ],
-                    "logs": "/data/elasticsearch/common-logdir",
+                    "logs": "/usr/share/elasticsearch/data/common-logdir",
                     "home": "/elasticsearch"
                 },
-                ...
                 "http": {
-                    ...
                     "compression": "false",
-                    ...
                 },
             }
         },
         "mNgVB7i6RkOPtRmXzjqPFA": {
             "name": "es-node-master",
-            ...
             "roles": [
                 "master",
                 "data",
                 "ingest"
             ],
             "settings": {
-               ...
                 "node": {
                     "name": "es-node-master",
                     "data": "true",
@@ -270,18 +264,14 @@ This will return a large JSON with nodes settings information. Here is the prett
                 },
                 "path": {
                     "data": [
-                        "/data/elasticsearch/master-datadir"
+                        "/usr/share/elasticsearch/data/master-datadir"
                     ],
-                    "logs": "/data/elasticsearch/common-logdir",
+                    "logs": "/usr/share/elasticsearch/data/common-logdir",
                     "home": "/elasticsearch"
                 },
-                ...
                 "http": {
-                    ...
                     "compression": "false",
-                    ...
                 },
-               ...
             }
         }
     }
@@ -299,12 +289,12 @@ Also note that, the `"path.logs"` field of each node is set to the value we have
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-$ kubectl patch -n demo es/custom-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo es/custom-elasticsearch
+kubectl patch -n demo es/custom-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo es/custom-elasticsearch
 
-$ kubectl delete  -n demo configmap/es-custom-config
+kubectl delete  -n demo configmap/es-custom-config
 
-$ kubectl delete ns demo
+kubectl delete ns demo
 ```
 
 To uninstall KubeDB follow this [guide](/docs/setup/uninstall.md).

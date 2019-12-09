@@ -25,7 +25,7 @@ kubedb describe (-f FILENAME | TYPE [NAME_PREFIX | -l label] | TYPE/NAME)
 ### Examples
 
 ```
-  # Describe a elasticsearch
+  # Describe an Elasticsearch
   kubedb describe elasticsearches elasticsearch-demo
   
   # Describe a postgres

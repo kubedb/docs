@@ -56,7 +56,7 @@ metadata:
   name: recovered-es
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: 7.3.2
   databaseSecret:
     secretName: instant-elasticsearch-auth
   storageType: Durable
@@ -83,8 +83,8 @@ Snapshot `instant-snapshot` in `demo` namespace belongs to Elasticsearch `instan
 
 ```console
 $ kubectl get snap -n demo instant-snapshot
-NAME               DATABASENAME           STATUS      AGE
-instant-snapshot   instant-elasticsearch   Succeeded   51m
+NAME               DATABASENAME            STATUS      AGE
+instant-snapshot   instant-elasticsearch   Succeeded   2m21s
 ```
 
 > Note: Elasticsearch `recovered-es` must have same superuser credentials as Elasticsearch `instant-elasticsearch`.
@@ -100,16 +100,25 @@ elasticsearch.kubedb.com/recovered-es created
 
 When Elasticsearch database is ready, KubeDB operator launches a Kubernetes Job to initialize this database using the data from Snapshot `instant-snapshot`.
 
+```console
+$ kubectl get es -n demo recovered-es
+NAME           VERSION   STATUS         AGE
+recovered-es   7.3.2     Initializing   100s
+
+$ kubectl get es -n demo recovered-es
+NAME           VERSION   STATUS    AGE
+recovered-es   7.3.2     Running   7m6s
+```
+
 As a final step of initialization, KubeDB Job controller adds `kubedb.com/initialized` annotation in initialized Elasticsearch object. This prevents further invocation of initialization process.
 
 ```console
 $ kubedb describe es -n demo recovered-es
 Name:               recovered-es
 Namespace:          demo
-CreationTimestamp:  Mon, 08 Oct 2018 12:37:19 +0600
+CreationTimestamp:  Wed, 02 Oct 2019 14:54:59 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha1","kind":"Elasticsearch","metadata":{"annotations":{},"name":"recovered-es","namespace":"demo"},"spec":{"databaseSecr...
-                    kubedb.com/initialized
+Annotations:        kubedb.com/initialized=
 Status:             Running
 Replicas:           1  total
 Init:
@@ -124,41 +133,82 @@ Volume:
 
 StatefulSet:          
   Name:               recovered-es
-  CreationTimestamp:  Mon, 08 Oct 2018 12:37:21 +0600
-  Labels:               kubedb.com/kind=Elasticsearch
+  CreationTimestamp:  Wed, 02 Oct 2019 14:55:00 +0600
+  Labels:               app.kubernetes.io/component=database
+                        app.kubernetes.io/instance=recovered-es
+                        app.kubernetes.io/managed-by=kubedb.com
+                        app.kubernetes.io/name=elasticsearch
+                        app.kubernetes.io/version=7.3.2
+                        kubedb.com/kind=Elasticsearch
                         kubedb.com/name=recovered-es
                         node.role.client=set
                         node.role.data=set
                         node.role.master=set
   Annotations:        <none>
-  Replicas:           824638233976 desired | 1 total
+  Replicas:           824635596440 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:        
   Name:         recovered-es
-  Labels:         kubedb.com/kind=Elasticsearch
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=recovered-es
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
                   kubedb.com/name=recovered-es
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.104.209.94
+  IP:           10.0.1.27
   Port:         http  9200/TCP
   TargetPort:   http/TCP
-  Endpoints:    192.168.1.14:9200
+  Endpoints:    10.4.1.53:9200
 
 Service:        
   Name:         recovered-es-master
-  Labels:         kubedb.com/kind=Elasticsearch
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=recovered-es
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
                   kubedb.com/name=recovered-es
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.110.233.136
+  IP:           10.0.2.159
   Port:         transport  9300/TCP
   TargetPort:   transport/TCP
-  Endpoints:    192.168.1.14:9300
+  Endpoints:    10.4.1.53:9300
+
+Certificate Secret:
+  Name:         recovered-es-cert
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=recovered-es
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
+                  kubedb.com/name=recovered-es
+  Annotations:  <none>
+  
+Type:  Opaque
+  
+Data
+====
+  root.jks:    863 bytes
+  root.pem:    1139 bytes
+  client.jks:  3035 bytes
+  key_pass:    6 bytes
+  node.jks:    3004 bytes
 
 Database Secret:
   Name:         instant-elasticsearch-auth
-  Labels:         kubedb.com/kind=Elasticsearch
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=instant-elasticsearch
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=elasticsearch
+                  app.kubernetes.io/version=7.3.2
+                  kubedb.com/kind=Elasticsearch
                   kubedb.com/name=instant-elasticsearch
   Annotations:  <none>
   
@@ -166,49 +216,31 @@ Type:  Opaque
   
 Data
 ====
-  ADMIN_PASSWORD:         8 bytes
-  ADMIN_USERNAME:         5 bytes
-  sg_action_groups.yml:   430 bytes
-  sg_internal_users.yml:  156 bytes
-  sg_roles.yml:           312 bytes
-  sg_roles_mapping.yml:   73 bytes
-  READALL_PASSWORD:       8 bytes
-  READALL_USERNAME:       7 bytes
-  sg_config.yml:          242 bytes
-
-Certificate Secret:
-  Name:         recovered-es-cert
-  Labels:         kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=recovered-es
-  Annotations:  <none>
-  
-Type:  Opaque
-  
-Data
-====
-  sgadmin.jks:  3011 bytes
-  key_pass:     6 bytes
-  node.jks:     3008 bytes
-  root.jks:     864 bytes
+  ADMIN_PASSWORD:  8 bytes
+  ADMIN_USERNAME:  7 bytes
 
 Topology:
   Type                Pod             StartTime                      Phase
   ----                ---             ---------                      -----
-  master|client|data  recovered-es-0  2018-10-08 12:37:22 +0600 +06  Running
+  master|client|data  recovered-es-0  2019-10-02 14:55:06 +0600 +06  Running
 
 No Snapshots.
 
 Events:
   Type    Reason                Age   From                    Message
   ----    ------                ----  ----                    -------
-  Normal  Successful            35m   Elasticsearch operator  Successfully created Service
-  Normal  Successful            35m   Elasticsearch operator  Successfully created Service
-  Normal  Successful            35m   Elasticsearch operator  Successfully created StatefulSet
-  Normal  Successful            34m   Elasticsearch operator  Successfully created Elasticsearch
-  Normal  Initializing          34m   Elasticsearch operator  Initializing from Snapshot: "instant-snapshot"
-  Normal  Successful            34m   Elasticsearch operator  Successfully patched StatefulSet
-  Normal  Successful            34m   Elasticsearch operator  Successfully patched Elasticsearch
-  Normal  SuccessfulInitialize  33m   Job Controller          Successfully completed initialization
+  Normal  Successful            2m    Elasticsearch operator  Successfully created Service
+  Normal  Successful            2m    Elasticsearch operator  Successfully created Service
+  Normal  Successful            2m    Elasticsearch operator  Successfully created StatefulSet
+  Normal  Successful            1m    Elasticsearch operator  Successfully created Elasticsearch
+  Normal  Successful            1m    Elasticsearch operator  Successfully created appbinding
+  Normal  Initializing          1m    Elasticsearch operator  Initializing from Snapshot: "instant-snapshot"
+  Normal  Successful            1m    Elasticsearch operator  Successfully patched StatefulSet
+  Normal  Successful            1m    Elasticsearch operator  Successfully patched Elasticsearch
+  Normal  SuccessfulInitialize  59s   Elasticsearch operator  Successfully completed initialization
+  Normal  Successful            59s   Elasticsearch operator  Successfully patched StatefulSet
+  Normal  Successful            29s   Elasticsearch operator  Successfully patched Elasticsearch
+  Normal  Successful            29s   Elasticsearch operator  Successfully patched StatefulSet
 ```
 
 ## Verify initialization
@@ -232,33 +264,51 @@ Now, we can connect to the database at `localhost:9200`. Let's find out necessar
 
   ```console
   $ kubectl get secrets -n demo instant-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
-  admin
+  elastic
   ```
 
 - Password: Run following command to get *password*
 
   ```console
   $ kubectl get secrets -n demo instant-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
-  cfgn547j
+  dy76ez7v
   ```
 
 We had created an index `test` before taking snapshot of `instant-elasticsearch` database. Let's check this index is present in newly initialized database `recovered-es`.
 
 ```console
-$ curl -XGET --user "admin:cfgn547j" "localhost:9200/test/snapshot/1?pretty"
+$ curl -XGET --user "elastic:dy76ez7v" "localhost:9200/test/_search?pretty"
 ```
 
 ```json
 {
-  "_index" : "test",
-  "_type" : "snapshot",
-  "_id" : "1",
-  "_version" : 33,
-  "found" : true,
-  "_source" : {
-    "title" : "Snapshot",
-    "text" : "Testing instand backup",
-    "date" : "2018/02/13"
+  "took" : 3,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 1,
+      "relation" : "eq"
+    },
+    "max_score" : 1.0,
+    "hits" : [
+      {
+        "_index" : "test",
+        "_type" : "_doc",
+        "_id" : "1",
+        "_score" : 1.0,
+        "_source" : {
+          "title" : "Snapshot",
+          "text" : "Testing instand backup",
+          "date" : "2018/02/13"
+        }
+      }
+    ]
   }
 }
 ```
@@ -270,10 +320,10 @@ We can see from above output that `test` index is present in `recovered-es` data
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```console
-$ kubectl patch -n demo es/instant-elasticsearch es/recovered-es -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo es/instant-elasticsearch es/recovered-es
+kubectl patch -n demo es/instant-elasticsearch es/recovered-es -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo es/instant-elasticsearch es/recovered-es
 
-$ kubectl delete ns demo
+kubectl delete ns demo
 ```
 
 ## Next Steps
