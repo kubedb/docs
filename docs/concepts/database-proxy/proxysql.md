@@ -20,7 +20,7 @@ section_menu_id: concepts
 
 ## ProxySQL Spec
 
-As with all other Kubernetes objects, a ProxySQL needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example of the ProxySQL object.
+Like any official Kubernetes resource, a `ProxySQL` object has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections. Below is an example of the ProxySQL object.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -152,7 +152,7 @@ ProxySQL managed by KubeDB can be monitored with builtin-Prometheus and CoreOS-P
 
 KubeDB allows providing a template for proxysql pod through `.spec.podTemplate`. KubeDB operator will pass the information provided in `.spec.podTemplate` to the StatefulSet created for ProxySQL.
 
-KubeDB accept following fields to set in `.spec.podTemplate:`
+KubeDB accept following fields to set in `.spec.podTemplate`:
 
 - metadata:
   - annotations (pod's annotation)
@@ -259,10 +259,13 @@ KubeDB allows following fields to set in `.spec.serviceTemplate`:
 - loadBalancerSourceRanges
 - externalTrafficPolicy
 - healthCheckNodePort
+- sessionAffinityConfig
+
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
 ### .spec.updateStrategy
 
-You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for ProxySQL thorough `.spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In the future, we will use this field to determine how automatic migration from the old KubeDB version to a new one should behave.
+You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for ProxySQL thorough `.spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In the future, we will use this field to determine how automatic migration from the old ProxySQL version to a new one should behave.
 
 ## Next Steps
 

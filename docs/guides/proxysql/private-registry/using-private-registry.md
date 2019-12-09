@@ -61,7 +61,7 @@ KubeDB operator supports using a private Docker registry. This tutorial will sho
   ```console
   $ kubectl create ns demo
   namespace/demo created
-   ```
+  ```
 
 ## Create ImagePullSecret
 
@@ -77,10 +77,6 @@ $ kubectl create secret docker-registry -n demo myregistrykey \
   --docker-password=DOCKER_PASSWORD
 secret/myregistrykey created
 ```
-
-ImagePullSecrets is a type of a Kubernetes Secret whose sole purpose is to pull private images from a Docker registry. It allows you to specify the URL of the Docker registry, credentials for logging in and the image name of your private docker image.
-
-Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
 ## Install KubeDB operator
 

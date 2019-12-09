@@ -12,7 +12,7 @@ section_menu_id: guides
 
 # Configure ProxySQL
 
-Now ProxySQL has native support for Galera Cluster and Group Replication. ProxySQL can,
+ProxySQL has native support for Galera Cluster and Group Replication. ProxySQL can,
 
 - monitor of the backend servers in real-time
 - redirect the traffic transparently
@@ -26,9 +26,7 @@ Here we will discuss how ProxySQL works with Group Replication.
 
 Group Replication is a plugin for the standard MySQL 5.7 and higher Server developed by Oracle. It is synchronous replication, with built-in conflict detection/handling and consistency guarantees. It allows you to move from a stand-alone instance of MySQL, which is a single point of failure, to a natively distributed highly available MySQL group made up of N MySQL instances (the group members). The servers keep strong coordination through message passing to build a fault-tolerant system.
 
-Groups can operate in a single-primary mode, where only one server accepts updates at a time. Groups can be deployed in multi-primary mode, where all servers can accept updates.
-
-If we say specifically about the Group Replication,
+Groups can operate in a single-primary mode, where only one server accepts updates at a time. Groups can be deployed in multi-primary mode, where all servers can accept updates. Group Replication has the following features:
 
 - Multi-primary / active-active clustered MySQL solution
 - Single-primary is the default one
@@ -132,7 +130,7 @@ The following view and helper functions also need to be added to the replication
 
 Execute it from the primary member,
 
-```bash
+```console
 $ mysql --user=root --password={MYSQL_ROOT_PASSWORD} --host={PRIMARY_GROUP_MEMBER} < addition_to_sys.sql
 ```
 

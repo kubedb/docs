@@ -50,7 +50,7 @@ Here, &#10003; means supported and &#10007; means deprecated.
 
 - Overview of ProxySQL [here](/docs/guides/proxysql/overview/overview.md).
 - Configure ProxySQL for Group Replication [here](/docs/guides/proxysql/overview/configure-proxysql.md).
-- Quickstart ProxySQL to Load Balance MySQL Group Replication with KubeDB Operator [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).
+- Learn to use ProxySQL to Load Balance MySQL Group Replication with KubeDB Operator [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).
 - Monitor your ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
 - Monitor your ProxySQL with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/proxysql/monitoring/using-coreos-prometheus-operator.md).
 - Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).

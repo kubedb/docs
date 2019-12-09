@@ -1,9 +1,9 @@
 ---
-title: Monitor ProxySQL using Coreos Prometheus Operator
+title: Monitor ProxySQL using Prometheus Operator
 menu:
   docs_{{ .version }}:
     identifier: monitor-proxysql-using-coreos-prometheus-operator
-    name: Coreos Prometheus Operator
+    name: Prometheus Operator
     parent: proxysql-monitoring
     weight: 15
 menu_name: docs_{{ .version }}

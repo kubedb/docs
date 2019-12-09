@@ -12,7 +12,7 @@ section_menu_id: guides
 
 # Introduction
 
-High availability and better performance are crucial for the database. To keep pace with the growing traffic/connection/data size, often we add multiple database servers and use replication among themselves. For smooth service, we often want to route the read and write intelligently.
+High availability and better performance are crucial for any database. To keep pace with the growing traffic/connection/data size, often we add multiple database servers and use replication among themselves. For smooth service, we often want to route the read and write intelligently.
 
 Say we may have some secondary (slave) servers along with primary (master) servers and we want to split the read traffic to the slaves and the write traffic to the masters. On top of that, what will happen if the replication delays or some server crashes?
 
@@ -31,10 +31,6 @@ ProxySQL is an intelligent router for Galera and Group Replication. It can defer
 </p>
 
 In the event of any failure, ProxySQL can identify and forward traffic to an available one. It continuously monitors the failed node and includes into the group when the failed node comes back.
-
-## Founder
-
-René Cannaò is the founder of ProxySQL and MySQL DBA.
 
 ## Architecture
 
@@ -71,7 +67,7 @@ After starting ProxySQL, it uses a package-provided configuration file (default 
 
 First, access the administration interface. You’ll be prompted for a password which, on a default installation, is `admin`.
 
-```bash
+```console
 $ mysql --user=admin --password=admin --host=127.0.0.1 --port=6032 --prompt='ProxySQLAdmin> '
 ```
 
@@ -83,7 +79,7 @@ $ mysql --user=admin --password=admin --host=127.0.0.1 --port=6032 --prompt='Pro
 
 From the admin interface, we can see that there are a few databases available.
 
-```bash
+```console
 ProxySQLAdmin> show databases;
 +-----+---------------+-------------------------------------+
 | seq | name          | file                                |

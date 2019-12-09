@@ -99,7 +99,7 @@ metadata:
   ...
 ```
 
-> **Note:** For this tutorial there must be a MySQL object with name `my-group` (Group Replication supported) running in the `demo` namespace  in the cluster. You can deploy one by following section [create MySQL object with Group Replication](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md#Create-MySQL-Object).
+> **Note:** For this tutorial there must be a MySQL object with name `my-group` (Group Replication supported) running in the `demo` namespace in the cluster. You can deploy one by following section [create MySQL object with Group Replication](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md#Create-MySQL-Object).
 
 Now, create ProxySQL object specifying `.spec.configSource` field.
 

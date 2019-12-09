@@ -106,7 +106,7 @@ Now, we are ready to configure our Prometheus server to scrape those metrics.
 
 ## Configure Prometheus Server
 
-Now, we have to configure a Prometheus scrapping job to scrape the metrics using this service. We are going to configure scrapping job similar to this [kubernetes-service-endpoints](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin#kubernetes-service-endpoints) job. However, as we are going to collect metrics from a TLS secured endpoint that exports kubernetes extension apiserver metrics, we have to add following configurations:
+Now, we have to configure a Prometheus scraping job to scrape the metrics using this service. We are going to configure scraping job similar to this [kubernetes-service-endpoints](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin#kubernetes-service-endpoints) job. However, as we are going to collect metrics from a TLS secured endpoint that exports kubernetes extension apiserver metrics, we have to add following configurations:
 - [tls_config](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tls_config) section to establish TLS secured connection.
 - `bearer_token_file` to authorize Prometheus server to KubeDB extension apiserver.
 
@@ -122,7 +122,7 @@ kubedb-operator-apiserver-cert   kubernetes.io/tls   2      3h33m
 
 We are going to mount this secret in `/etc/prometheus/secret/kubedb-operator-apiserver-cert` directory of Prometheus deployment.
 
-Let's configure a Prometheus scrapping job to collect the operator metrics.
+Let's configure a Prometheus scraping job to collect the operator metrics.
 
 ```yaml
 - job_name: kubedb-operator
@@ -156,12 +156,12 @@ Let's configure a Prometheus scrapping job to collect the operator metrics.
     regex: (.+)
     target_label: __metrics_path__
     action: replace
-  # read the scrapping scheme from "prometheus.io/scheme: <scheme>" annotation
+  # read the scraping scheme from "prometheus.io/scheme: <scheme>" annotation
   - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
     action: replace
     target_label: __scheme__
     regex: (https?)
-  # read the port from "prometheus.io/port: <port>" annotation and update scrapping address accordingly
+  # read the port from "prometheus.io/port: <port>" annotation and update scraping address accordingly
   - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
     action: replace
     target_label: __address__
@@ -187,7 +187,7 @@ Note that, `bearer_token_file` denotes the `ServiceAccount` token of the Prometh
 
 ### Configure Existing Prometheus Server
 
-If you already have a Prometheus server running, update the respective `ConfigMap` and add above scrapping job.
+If you already have a Prometheus server running, update the respective `ConfigMap` and add above scraping job.
 
 Then, you have to mount `kubedb-operator-apiserver-cert` secret in Prometheus deployment. Add the secret as volume:
 
@@ -218,7 +218,7 @@ If you don't have any existing Prometheus server running, you have to deploy one
 
 **Create ConfigMap:**
 
-At first, create a ConfigMap with the scrapping configuration. Bellow, the YAML of ConfigMap that we are going to create in this tutorial.
+At first, create a ConfigMap with the scraping configuration. Bellow, the YAML of ConfigMap that we are going to create in this tutorial.
 
 ```yaml
 apiVersion: v1
@@ -266,12 +266,12 @@ data:
         regex: (.+)
         target_label: __metrics_path__
         action: replace
-      # read the scrapping scheme from "prometheus.io/scheme: <scheme>" annotation
+      # read the scraping scheme from "prometheus.io/scheme: <scheme>" annotation
       - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
         action: replace
         target_label: __scheme__
         regex: (https?)
-      # read the port from "prometheus.io/port: <port>" annotation and update scrapping address accordingly
+      # read the port from "prometheus.io/port: <port>" annotation and update scraping address accordingly
       - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
         action: replace
         target_label: __address__

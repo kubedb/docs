@@ -176,9 +176,9 @@ The Prometheus server will discover the service endpoint using these specificati
 
 ## Configure Prometheus Server
 
-Now, we have to configure a Prometheus scrapping job to scrape the metrics using this service. We are going to configure scraping jobs similar to this [kubernetes-service-endpoints](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin#kubernetes-service-endpoints) job that scrapes metrics from endpoints of a service.
+Now, we have to configure a Prometheus scraping job to scrape the metrics using this service. We are going to configure scraping jobs similar to this [kubernetes-service-endpoints](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin#kubernetes-service-endpoints) job that scrapes metrics from endpoints of a service.
 
-Let's configure a Prometheus scrapping job to collect metrics from this service.
+Let's configure a Prometheus scraping job to collect metrics from this service.
 
 ```yaml
 - job_name: 'kubedb-databases'
@@ -213,36 +213,36 @@ Let's configure a Prometheus scrapping job to collect metrics from this service.
     action: replace
     target_label: __metrics_path__
     regex: (.+)
-  # read the port from "prometheus.io/port: <port>" annotation and update scrapping address accordingly
+  # read the port from "prometheus.io/port: <port>" annotation and update scraping address accordingly
   - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
     action: replace
     target_label: __address__
     regex: ([^:]+)(?::\d+)?;(\d+)
     replacement: $1:$2
-  # add service namespace as label to the scrapped metrics
+  # add service namespace as label to the scraped metrics
   - source_labels: [__meta_kubernetes_namespace]
     separator: ;
     regex: (.*)
     target_label: namespace
     replacement: $1
     action: replace
-  # add service name as a label to the scrapped metrics
+  # add service name as a label to the scraped metrics
   - source_labels: [__meta_kubernetes_service_name]
     separator: ;
     regex: (.*)
     target_label: service
     replacement: $1
     action: replace
-  # add stats service's labels to the scrapped metrics
+  # add stats service's labels to the scraped metrics
   - action: labelmap
     regex: __meta_kubernetes_service_label_(.+)
 ```
 
 ### Configure Existing Prometheus Server
 
-If you already have a Prometheus server running, you have to add the above scrapping job in the `ConfigMap` used to configure the Prometheus server. Then, you have to restart it for the updated configuration to take effect.
+If you already have a Prometheus server running, you have to add the above scraping job in the `ConfigMap` used to configure the Prometheus server. Then, you have to restart it for the updated configuration to take effect.
 
->If you don't use a persistent volume for Prometheus storage, you will lose your previously scraped data on restart.
+> If you don't use a persistent volume for Prometheus storage, you will lose your previously scraped data on restart.
 
 ### Deploy New Prometheus Server
 
@@ -250,7 +250,7 @@ If you don't have any existing Prometheus server running, you have to deploy one
 
 **Create ConfigMap:**
 
-At first, create a ConfigMap with the scrapping configuration. Bellow, the YAML of ConfigMap that we are going to create in this tutorial.
+At first, create a ConfigMap with the scraping configuration. Bellow, the YAML of ConfigMap that we are going to create in this tutorial.
 
 ```yaml
 apiVersion: v1
@@ -298,27 +298,27 @@ data:
         action: replace
         target_label: __metrics_path__
         regex: (.+)
-      # read the port from "prometheus.io/port: <port>" annotation and update scrapping address accordingly
+      # read the port from "prometheus.io/port: <port>" annotation and update scraping address accordingly
       - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
         action: replace
         target_label: __address__
         regex: ([^:]+)(?::\d+)?;(\d+)
         replacement: $1:$2
-      # add service namespace as label to the scrapped metrics
+      # add service namespace as label to the scraped metrics
       - source_labels: [__meta_kubernetes_namespace]
         separator: ;
         regex: (.*)
         target_label: namespace
         replacement: $1
         action: replace
-      # add service name as a label to the scrapped metrics
+      # add service name as a label to the scraped metrics
       - source_labels: [__meta_kubernetes_service_name]
         separator: ;
         regex: (.*)
         target_label: service
         replacement: $1
         action: replace
-      # add stats service's labels to the scrapped metrics
+      # add stats service's labels to the scraped metrics
       - action: labelmap
         regex: __meta_kubernetes_service_label_(.+)
 ```
