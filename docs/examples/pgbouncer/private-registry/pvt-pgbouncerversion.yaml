@@ -1,0 +1,13 @@
+apiVersion: catalog.kubedb.com/v1alpha1
+kind: PostgresVersion
+metadata:
+  name: "pvt-1.11.0"
+  labels:
+    app: kubedb
+spec:
+  deprecated: false
+  version: "1.11.0"
+  server:
+    image: "<YOUR_PRIVATE_REGISTRY>/pgbouncer:custom-1.11.0"
+  exporter:
+    image: "<YOUR_PRIVATE_REGISTRY>/pgbouncer_exporter:v0.1.1"

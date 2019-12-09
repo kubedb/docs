@@ -134,7 +134,7 @@ secrets:
   - kubedb-operator-apiserver-cert
 ```
 
->Warning: Updating Prometheus crd specification will cause restart of your Prometheus server. If you don't use a persistent volume for Prometheus storage, you will lost your previously scrapped data.
+>Warning: Updating Prometheus crd specification will cause restart of your Prometheus server. If you don't use a persistent volume for Prometheus storage, you will lost your previously scraped data.
 
 ### Deploy New Prometheus Server
 

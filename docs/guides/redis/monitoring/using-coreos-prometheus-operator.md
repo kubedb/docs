@@ -1,14 +1,15 @@
 ---
-title: Monitoring Redis using Coreos Prometheus Operator
+title: Monitoring Redis using Prometheus Operator
 menu:
   docs_{{ .version }}:
     identifier: rd-using-coreos-prometheus-operator-monitoring
-    name: Coreos Prometheus Operator
+    name: Prometheus Operator
     parent: rd-monitoring-redis
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
 # Monitoring Redis Using CoreOS Prometheus Operator

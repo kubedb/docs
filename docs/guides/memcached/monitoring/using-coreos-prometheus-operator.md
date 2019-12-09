@@ -1,14 +1,15 @@
 ---
-title: Monitor Memcached using Coreos Prometheus Operator
+title: Monitor Memcached using Prometheus Operator
 menu:
   docs_{{ .version }}:
     identifier: mc-using-coreos-prometheus-operator-monitoring
-    name: Coreos Prometheus Operator
+    name: Prometheus Operator
     parent: mc-monitoring-memcached
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
 # Monitoring Memcached Using CoreOS Prometheus Operator

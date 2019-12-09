@@ -1,9 +1,9 @@
 ---
-title: Monitor MongoDB using Coreos Prometheus Operator
+title: Monitor MongoDB using Prometheus Operator
 menu:
   docs_{{ .version }}:
     identifier: mg-using-coreos-prometheus-operator-monitoring
-    name: Coreos Prometheus Operator
+    name: Prometheus Operator
     parent: mg-monitoring-mongodb
     weight: 15
 menu_name: docs_{{ .version }}

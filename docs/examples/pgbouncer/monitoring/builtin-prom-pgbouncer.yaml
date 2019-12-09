@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha1
+kind: PgBouncer
+metadata:
+  name: pgbouncer-server
+  namespace: demo
+spec:
+  version: "1.11.0"
+  replicas: 1
+  databases:
+    - alias: "postgres"
+      databaseName: "postgres"
+      databaseRef:
+        name: "quick-postgres"
+  connectionPool:
+    maxClientConnections: 20
+    reservePoolSize: 5
+    adminUsers:
+      - admin
+      - admin1
+  userListSecretRef:
+    name: db-user-pass
+  monitor:
+    agent: prometheus.io/builtin

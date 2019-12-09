@@ -126,7 +126,7 @@ spec:
 
 `spec.version` is a required field that specifies the name of the [PostgresVersion](/docs/concepts/catalog/postgres.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PostgresVersion` crds,
 
-```bash
+```console
 $ kubectl get pgversion
 NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
 10.2       10.2      kubedb/postgres:10.2       true         44m
@@ -160,7 +160,7 @@ NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
 ```
 ### spec.replicas
 
-`spec.replicas` specifies the total number of primary and standby nodes in Postgres database cluster configuration. One pod is selected as Primary and others act as standby replicas. KubeDB uses Pod Disruption Budget to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
+`spec.replicas` specifies the total number of primary and standby nodes in Postgres database cluster configuration. One pod is selected as Primary and others act as standby replicas. KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
 
 To learn more about how to setup a HA PostgreSQL cluster in KubeDB, please visit [here](/docs/guides/postgres/clustering/ha_cluster.md).
 
@@ -482,8 +482,9 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
   - loadBalancerSourceRanges
   - externalTrafficPolicy
   - healthCheckNodePort
+  - sessionAffinityConfig
 
-See [official v1.13 API documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.13/#servicespec-v1-core) to understand these fields in detail.
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
 ### spec.replicaServiceTemplate
 
@@ -503,7 +504,7 @@ The fileds of `spec.replicaServiceTemplate` is similar to `spec.serviceTemplate`
   - externalTrafficPolicy
   - healthCheckNodePort
 
-See [official v1.13 API documentation](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.13/#servicespec-v1-core) to understand these fields in detail.
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
 ### spec.updateStrategy
 

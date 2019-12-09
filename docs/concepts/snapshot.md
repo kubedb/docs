@@ -12,6 +12,8 @@ section_menu_id: concepts
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
+{{< notice type="warning" message="This doc has been deprecated and will be removed in a future release. We recommend using [Stash](/docs/guides/elasticsearch/snapshot/stash.md) to backup & restore Elasticsearch database." >}}
+
 # Snapshot
 
 ## What is Snapshot

@@ -14,9 +14,9 @@ section_menu_id: concepts
 
 ## What is PostgresVersion
 
-`PostgresVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [PostgreSQL](https://www.postgresql.org/) database deployed with KubeDB in Kubernetes native way.
+`PostgresVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [PostgreSQL](https://www.postgresql.org/) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, `PostgresVersion` crd will be created automatically for every supported PostgreSQL versions. You have to specify the name of `PostgresVersion` crd in `spec.version` field of [Postgres](/docs/concepts/databases/postgres.md) crd. Then, KubeDB will use the docker images specified in the `PostgresVersion` crd to create your expected database.
+When you install KubeDB, `PostgresVersion` custom resource will be created automatically for every supported PostgreSQL versions. You have to specify the name of `PostgresVersion` crd in `spec.version` field of [Postgres](/docs/concepts/databases/postgres.md) crd. Then, KubeDB will use the docker images specified in the `PostgresVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the database. For more details about how to use custom image with Postgres in KubeDB, please visit [here](/docs/guides/postgres/custom-versions/setup.md).
 
@@ -52,7 +52,7 @@ spec:
 We follow this convention for naming PostgresVersion crd:
 - Name format: `{Original PostgreSQL image version}-{modification tag}`
 
-We modify original PostgreSQL docker image to support additional features like WAL archiving, clustering etc. and re-tag the image with v1, v2 etc. modification tag. An image with higher modification tag will have more feature than the images with lower modification tag. Hence, it is recommended to use PostgresVersion crd with highest modification tag to take advantage of the latest features.
+We modify original PostgreSQL docker image to support additional features like WAL archiving, clustering etc. and re-tag the image with v1, v2 etc. modification tag. An image with higher modification tag will have more features than the images with lower modification tag. Hence, it is recommended to use PostgresVersion crd with highest modification tag to take advantage of the latest features.
 
 ### spec.version
 
@@ -62,11 +62,11 @@ We modify original PostgreSQL docker image to support additional features like W
 
 `spec.deprecated` is an optional field that specifies whether the docker images specified here is supported by the current KubeDB operator. For example, we have modified `kubedb/postgres:10.2` docker image to support custom configuration and re-tagged as `kubedb/postgres:10.2-v2`. Now, KubeDB `0.9.0-rc.0` supports providing custom configuration which required `kubedb/postgres:10.2-v2` docker image. So, we have marked `kubedb/postgres:10.2` as deprecated in KubeDB `0.9.0-rc.0`.
 
-The default value of this field is `false`. If `spec.depcrecated` is set `true`, KubeDB operator will not create the database and other respective resources for this version.
+The default value of this field is `false`. If `spec.deprecated` is set `true`, KubeDB operator will not create the database and other respective resources for this version.
 
 ### spec.db.image
 
-`spec.db.image` is a required field that specifies the docker image which will be used to create Statfulset by KubeDB operator to create expected PostgreSQL database.
+`spec.db.image` is a required field that specifies the docker image which will be used to create Statefulset by KubeDB operator to create expected PostgreSQL database.
 
 ### spec.exporter.image
 

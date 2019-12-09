@@ -167,14 +167,14 @@ Let's configure a Prometheus scrapping job to collect the operator metrics.
     target_label: __address__
     regex: ([^:]+)(?::\d+)?;(\d+)
     replacement: $1:$2
-  # add service namespace as label to the scrapped metrics
+  # add service namespace as label to the scraped metrics
   - source_labels: [__meta_kubernetes_namespace]
     separator: ;
     regex: (.*)
     target_label: namespace
     replacement: $1
     action: replace
-  # add service name as label to the scrapped metrics
+  # add service name as label to the scraped metrics
   - source_labels: [__meta_kubernetes_service_name]
     separator: ;
     regex: (.*)
@@ -210,7 +210,7 @@ volumeMounts:
   mountPath: /etc/prometheus/secret/kubedb-operator-apiserver-cert
 ```
 
->Warning: Updating deployment will cause restart of your Prometheus server. If you don't use a persistent volume for Prometheus storage, you will lose your previously scrapped data.
+>Warning: Updating deployment will cause restart of your Prometheus server. If you don't use a persistent volume for Prometheus storage, you will lose your previously scraped data.
 
 ### Deploy New Prometheus Server
 
@@ -277,14 +277,14 @@ data:
         target_label: __address__
         regex: ([^:]+)(?::\d+)?;(\d+)
         replacement: $1:$2
-      # add service namespace as label to the scrapped metrics
+      # add service namespace as label to the scraped metrics
       - source_labels: [__meta_kubernetes_namespace]
         separator: ;
         regex: (.*)
         target_label: namespace
         replacement: $1
         action: replace
-      # add service name as label to the scrapped metrics
+      # add service name as label to the scraped metrics
       - source_labels: [__meta_kubernetes_service_name]
         separator: ;
         regex: (.*)
