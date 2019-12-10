@@ -6,6 +6,6 @@ menu:
     identifier: catalog
     parent: concepts
     name: Catalog
-    weight: 20
+    weight: 25
 menu_name: docs_{{ .version }}
 ---

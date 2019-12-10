@@ -43,12 +43,12 @@ data:
         regex: (.+)
         target_label: __metrics_path__
         action: replace
-      # read the scrapping scheme from "prometheus.io/scheme: <scheme>" annotation
+      # read the scraping scheme from "prometheus.io/scheme: <scheme>" annotation
       - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
         action: replace
         target_label: __scheme__
         regex: (https?)
-      # read the port from "prometheus.io/port: <port>" annotation and update scrapping address accordingly
+      # read the port from "prometheus.io/port: <port>" annotation and update scraping address accordingly
       - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
         action: replace
         target_label: __address__

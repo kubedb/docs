@@ -1,0 +1,20 @@
+apiVersion: kubedb.com/v1alpha1
+kind: ProxySQL
+metadata:
+  name: custom-proxysql
+  namespace: demo
+spec:
+  version: "2.0.4"
+  replicas: 1
+  mode: GroupReplication
+  backend:
+    ref:
+      apiGroup: "kubedb.com"
+      kind: MySQL
+      name: my-group
+    replicas: 3
+  configSource:
+    configMap:
+      name: my-custom-config
+  updateStrategy:
+    type: RollingUpdate
