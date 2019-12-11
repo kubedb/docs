@@ -63,7 +63,6 @@ kubedb.sh [options]
 options:
 -h, --help                             show brief help
 -n, --namespace=NAMESPACE              specify namespace (default: kube-system)
-    --rbac                             create RBAC roles and bindings (default: true)
     --docker-registry                  docker registry used to pull KubeDB images (default: appscode)
     --image-pull-secret                name of secret used to pull KubeDB operator images
     --run-on-master                    run KubeDB operator on master
@@ -83,7 +82,7 @@ If you would like to run KubeDB operator pod in `master` instances, pass the `--
 
 ```console
 $ curl -fsSL https://github.com/kubedb/installer/raw/{{< param "info.version" >}}/deploy/kubedb.sh \
-    | bash -s -- --run-on-master [--rbac]
+    | bash -s -- --run-on-master
 ```
 
 KubeDB operator will be installed in a `kube-system` namespace by default. If you would like to run KubeDB operator pod in `kubedb` namespace, pass the `--namespace=kubedb` flag:
@@ -91,7 +90,7 @@ KubeDB operator will be installed in a `kube-system` namespace by default. If yo
 ```console
 $ kubectl create namespace kubedb
 $ curl -fsSL https://github.com/kubedb/installer/raw/{{< param "info.version" >}}/deploy/kubedb.sh \
-    | bash -s -- --namespace=kubedb [--run-on-master] [--rbac]
+    | bash -s -- --namespace=kubedb [--run-on-master]
 ```
 
 If you are using a private Docker registry, you need to pull required images from KubeDB's [Docker Hub account](https://hub.docker.com/r/kubedb/).
@@ -101,23 +100,21 @@ To pass the address of your private registry and optionally a image pull secret 
 ```console
 $ kubectl create namespace kubedb
 $ curl -fsSL https://github.com/kubedb/installer/raw/{{< param "info.version" >}}/deploy/kubedb.sh \
-    | bash -s -- --docker-registry=MY_REGISTRY [--image-pull-secret=SECRET_NAME] [--rbac]
+    | bash -s -- --docker-registry=MY_REGISTRY [--image-pull-secret=SECRET_NAME]
 ```
 
 KubeDB implements [validating and mutating admission webhooks](https://kubernetes.io/docs/admin/admission-controllers/#validatingadmissionwebhook-alpha-in-18-beta-in-19) for KubeDB CRDs. This is enabled by default for Kubernetes 1.9.0 or later releases. To disable this feature, pass the `--enable-validating-webhook=false` and `--enable-mutating-webhook=false` flag respectively.
 
 ```console
 $ curl -fsSL https://github.com/kubedb/installer/raw/{{< param "info.version" >}}/deploy/kubedb.sh \
-    | bash -s -- --enable-validating-webhook=false --enable-mutating-webhook=false [--rbac]
+    | bash -s -- --enable-validating-webhook=false --enable-mutating-webhook=false
 ```
-
-KubeDB 0.11.0 or later releases can use status sub resource for CustomResourceDefintions. This is enabled by default for Kubernetes 1.11.0 or later releases. To disable this feature, pass the `--enable-status-subresource=false` flag.
 
 KubeDB 0.11.0 or later installs a catalog of database versions. To disable this pass the `--install-catalog=false` flag.
 
 ```console
 $ curl -fsSL https://github.com/kubedb/installer/raw/{{< param "info.version" >}}/deploy/kubedb.sh \
-    | bash -s -- --install-catalog=false [--rbac]
+    | bash -s -- --install-catalog=false
 ```
 
 </div>
