@@ -94,7 +94,7 @@ CLUSTER_COMPOSITE_OPS:
     - CLUSTER_COMPOSITE_OPS_RO
 ```
 
-**sg_roles.yaml:**
+**sg_roles.yml:**
 
 ```yaml
 sg_all_access:
@@ -242,7 +242,7 @@ Verify that the ConfigMap has desired configuration,
 $ kubectl get configmap -n demo es-custom-config -o yaml
 apiVersion: v1
 data:
-  common-config.yaml: |-
+  common-config.yml: |-
     xpack.security.enabled: false
     searchguard.restapi.roles_enabled: ["sg_all_access","sg_kibana_user"]
 kind: ConfigMap
