@@ -1,3 +1,19 @@
+/*
+Copyright The KubeDB Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package util
 
 import (
@@ -6,11 +22,11 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
 
+	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/golang/glog"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/jsonmergepatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kutil "kmodules.xyz/client-go"
 )
@@ -48,7 +64,7 @@ func PatchPgBouncerObject(c cs.KubedbV1alpha1Interface, cur, mod *api.PgBouncer)
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	patch, err := jsonmergepatch.CreateThreeWayJSONMergePatch(curJson, modJson, curJson)
+	patch, err := jsonpatch.CreateMergePatch(curJson, modJson)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}

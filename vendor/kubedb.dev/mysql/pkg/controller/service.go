@@ -26,8 +26,6 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
@@ -86,13 +84,10 @@ func (c *Controller) createService(mysql *api.MySQL) (kutil.VerbType, error) {
 		Namespace: mysql.Namespace,
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = mysql.OffshootLabels()
 		in.Annotations = mysql.Spec.ServiceTemplate.Annotations
 
@@ -132,10 +127,7 @@ func (c *Controller) ensureStatsService(mysql *api.MySQL) (kutil.VerbType, error
 		return kutil.VerbUnchanged, err
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
 	// reconcile stats Service
 	meta := metav1.ObjectMeta{
@@ -143,7 +135,7 @@ func (c *Controller) ensureStatsService(mysql *api.MySQL) (kutil.VerbType, error
 		Namespace: mysql.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = mysql.StatsServiceLabels()
 		in.Spec.Selector = mysql.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
@@ -171,10 +163,7 @@ func (c *Controller) ensureStatsService(mysql *api.MySQL) (kutil.VerbType, error
 }
 
 func (c *Controller) createMySQLGoverningService(mysql *api.MySQL) (string, error) {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql)
-	if rerr != nil {
-		return "", rerr
-	}
+	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
 	service := &core.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -182,7 +171,7 @@ func (c *Controller) createMySQLGoverningService(mysql *api.MySQL) (string, erro
 			Namespace: mysql.Namespace,
 			Labels:    mysql.OffshootLabels(),
 			// 'tolerate-unready-endpoints' annotation is deprecated.
-			// ref: https://github.com/kubernetes/kubernetes/pull/63742
+			// owner: https://github.com/kubernetes/kubernetes/pull/63742
 			Annotations: map[string]string{
 				"service.alpha.kubernetes.io/tolerate-unready-endpoints": "true",
 			},
@@ -200,7 +189,7 @@ func (c *Controller) createMySQLGoverningService(mysql *api.MySQL) (string, erro
 			Selector: mysql.OffshootSelectors(),
 		},
 	}
-	core_util.EnsureOwnerReference(&service.ObjectMeta, ref)
+	core_util.EnsureOwnerReference(&service.ObjectMeta, owner)
 
 	_, err := c.Client.CoreV1().Services(mysql.Namespace).Create(service)
 	if err != nil && !kerr.IsAlreadyExists(err) {

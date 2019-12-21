@@ -199,8 +199,8 @@ func validateGroupServerVersion(version string) error {
 // We calculate a unique server-id for each server using baseServerID field in MySQL CRD.
 // Moreover we can use maximum of 9 servers in a group. So the baseServerID should be in
 // range [0, (2^32 - 1) - 9]
-func validateGroupBaseServerID(baseServerID uint) error {
-	if uint(0) < baseServerID && baseServerID <= api.MySQLMaxBaseServerID {
+func validateGroupBaseServerID(baseServerID int64) error {
+	if 0 < baseServerID && baseServerID <= api.MySQLMaxBaseServerID {
 		return nil
 	}
 	return fmt.Errorf("invalid baseServerId specified, should be in range [1, %d]", api.MySQLMaxBaseServerID)

@@ -29,7 +29,7 @@ func (c *Controller) initWatcher() {
 	c.etcdInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Etcds().Informer()
 	c.etcdQueue = queue.New("Etcd", c.MaxNumRequeues, c.NumThreads, c.runEtcd)
 	c.etcdLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Etcds().Lister()
-	c.etcdInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.etcdQueue.GetQueue(), true))
+	c.etcdInformer.AddEventHandler(queue.NewReconcilableHandler(c.etcdQueue.GetQueue()))
 }
 
 func (c *Controller) runEtcd(key string) error {

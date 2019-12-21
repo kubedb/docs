@@ -5,11 +5,12 @@
 package elastic
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/olivere/elastic/v7/uritemplates"
 )
@@ -29,6 +30,12 @@ type BulkService struct {
 	client  *Client
 	retrier Retrier
 
+	pretty     *bool       // pretty format the returned JSON response
+	human      *bool       // return human readable values for statistics
+	errorTrace *bool       // include the stack trace of returned errors
+	filterPath []string    // list of filters used to reduce the response
+	headers    http.Header // custom request-level HTTP headers
+
 	index               string
 	typ                 string
 	requests            []BulkableRequest
@@ -37,7 +44,6 @@ type BulkService struct {
 	refresh             string
 	routing             string
 	waitForActiveShards string
-	pretty              bool
 
 	// estimated bulk size in bytes, up to the request index sizeInBytesCursor
 	sizeInBytes       int64
@@ -50,6 +56,46 @@ func NewBulkService(client *Client) *BulkService {
 		client: client,
 	}
 	return builder
+}
+
+// Pretty tells Elasticsearch whether to return a formatted JSON response.
+func (s *BulkService) Pretty(pretty bool) *BulkService {
+	s.pretty = &pretty
+	return s
+}
+
+// Human specifies whether human readable values should be returned in
+// the JSON response, e.g. "7.5mb".
+func (s *BulkService) Human(human bool) *BulkService {
+	s.human = &human
+	return s
+}
+
+// ErrorTrace specifies whether to include the stack trace of returned errors.
+func (s *BulkService) ErrorTrace(errorTrace bool) *BulkService {
+	s.errorTrace = &errorTrace
+	return s
+}
+
+// FilterPath specifies a list of filters used to reduce the response.
+func (s *BulkService) FilterPath(filterPath ...string) *BulkService {
+	s.filterPath = filterPath
+	return s
+}
+
+// Header adds a header to the request.
+func (s *BulkService) Header(name string, value string) *BulkService {
+	if s.headers == nil {
+		s.headers = http.Header{}
+	}
+	s.headers.Add(name, value)
+	return s
+}
+
+// Headers specifies the headers of the request.
+func (s *BulkService) Headers(headers http.Header) *BulkService {
+	s.headers = headers
+	return s
 }
 
 // Reset cleans up the request queue
@@ -123,18 +169,10 @@ func (s *BulkService) WaitForActiveShards(waitForActiveShards string) *BulkServi
 	return s
 }
 
-// Pretty tells Elasticsearch whether to return a formatted JSON response.
-func (s *BulkService) Pretty(pretty bool) *BulkService {
-	s.pretty = pretty
-	return s
-}
-
 // Add adds bulkable requests, i.e. BulkIndexRequest, BulkUpdateRequest,
 // and/or BulkDeleteRequest.
 func (s *BulkService) Add(requests ...BulkableRequest) *BulkService {
-	for _, r := range requests {
-		s.requests = append(s.requests, r)
-	}
+	s.requests = append(s.requests, requests...)
 	return s
 }
 
@@ -172,7 +210,8 @@ func (s *BulkService) NumberOfActions() int {
 
 func (s *BulkService) bodyAsString() (string, error) {
 	// Pre-allocate to reduce allocs
-	buf := bytes.NewBuffer(make([]byte, 0, s.EstimatedSizeInBytes()))
+	var buf strings.Builder
+	buf.Grow(int(s.EstimatedSizeInBytes()))
 
 	for _, req := range s.requests {
 		source, err := req.Source()
@@ -226,9 +265,18 @@ func (s *BulkService) Do(ctx context.Context) (*BulkResponse, error) {
 	path += "_bulk"
 
 	// Parameters
-	params := make(url.Values)
-	if s.pretty {
-		params.Set("pretty", fmt.Sprintf("%v", s.pretty))
+	params := url.Values{}
+	if v := s.pretty; v != nil {
+		params.Set("pretty", fmt.Sprint(*v))
+	}
+	if v := s.human; v != nil {
+		params.Set("human", fmt.Sprint(*v))
+	}
+	if v := s.errorTrace; v != nil {
+		params.Set("error_trace", fmt.Sprint(*v))
+	}
+	if len(s.filterPath) > 0 {
+		params.Set("filter_path", strings.Join(s.filterPath, ","))
 	}
 	if s.pipeline != "" {
 		params.Set("pipeline", s.pipeline)
@@ -254,6 +302,7 @@ func (s *BulkService) Do(ctx context.Context) (*BulkResponse, error) {
 		Body:        body,
 		ContentType: "application/x-ndjson",
 		Retrier:     s.retrier,
+		Headers:     s.headers,
 	})
 	if err != nil {
 		return nil, err

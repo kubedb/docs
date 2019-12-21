@@ -25,12 +25,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	core_util "kmodules.xyz/client-go/core/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
 	rbac_util "kmodules.xyz/client-go/rbac/v1beta1"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 // WaitUntilPaused is an Interface of *amc.Controller
@@ -92,12 +91,9 @@ func (c *Controller) waitUntilRBACStuffDeleted(postgres *api.Postgres) error {
 // WipeOutDatabase is an Interface of *amc.Controller.
 // It verifies and deletes secrets and other left overs of DBs except Snapshot and PVC.
 func (c *Controller) WipeOutDatabase(drmn *api.DormantDatabase) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, drmn)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(drmn, api.SchemeGroupVersion.WithKind(api.ResourceKindDormantDatabase))
 
-	if err := c.wipeOutDatabase(drmn.ObjectMeta, drmn.GetDatabaseSecrets(), ref); err != nil {
+	if err := c.wipeOutDatabase(drmn.ObjectMeta, drmn.GetDatabaseSecrets(), owner); err != nil {
 		return errors.Wrap(err, "error in wiping out database.")
 	}
 
@@ -109,7 +105,7 @@ func (c *Controller) WipeOutDatabase(drmn *api.DormantDatabase) error {
 }
 
 // wipeOutDatabase is a generic function to call from WipeOutDatabase and postgres pause method.
-func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, ref *core.ObjectReference) error {
+func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, ref *metav1.OwnerReference) error {
 	secretUsed, err := c.secretsUsedByPeers(meta)
 	if err != nil {
 		return errors.Wrap(err, "error in getting used secret list")
@@ -172,7 +168,7 @@ func (c *Controller) createDormantDatabase(postgres *api.Postgres) (*api.Dormant
 		},
 		Spec: api.DormantDatabaseSpec{
 			Origin: api.Origin{
-				ObjectMeta: metav1.ObjectMeta{
+				PartialObjectMeta: ofst.PartialObjectMeta{
 					Name:              postgres.Name,
 					Namespace:         postgres.Namespace,
 					Labels:            postgres.Labels,

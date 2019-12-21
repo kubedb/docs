@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package controller
 
 import (
@@ -25,7 +26,6 @@ import (
 	"kubedb.dev/apimachinery/pkg/controller/dormantdatabase"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
-	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	core "k8s.io/api/core/v1"
@@ -39,7 +39,6 @@ import (
 	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
-	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -175,7 +174,7 @@ func (c *Controller) pushFailureEvent(memcached *api.Memcached, reason string) {
 	mc, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
-		in.ObservedGeneration = types.NewIntHash(memcached.Generation, meta_util.GenerationHash(memcached))
+		in.ObservedGeneration = memcached.Generation
 		return in
 	})
 	if err != nil {

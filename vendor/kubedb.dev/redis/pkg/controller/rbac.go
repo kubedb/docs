@@ -23,17 +23,13 @@ import (
 	rbac "k8s.io/api/rbac/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	core_util "kmodules.xyz/client-go/core/v1"
 	rbac_util "kmodules.xyz/client-go/rbac/v1beta1"
 )
 
 func (c *Controller) createServiceAccount(db *api.Redis, saName string) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, db)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
+
 	// Create new ServiceAccount
 	_, _, err := core_util.CreateOrPatchServiceAccount(
 		c.Client,
@@ -42,7 +38,7 @@ func (c *Controller) createServiceAccount(db *api.Redis, saName string) error {
 			Namespace: db.Namespace,
 		},
 		func(in *core.ServiceAccount) *core.ServiceAccount {
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Labels = db.OffshootLabels()
 			return in
 		},
@@ -51,10 +47,7 @@ func (c *Controller) createServiceAccount(db *api.Redis, saName string) error {
 }
 
 func (c *Controller) ensureRole(db *api.Redis, name string, pspName string) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, db)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
 	// Create new Role for Redis and it's Snapshot
 	_, _, err := rbac_util.CreateOrPatchRole(
@@ -64,7 +57,7 @@ func (c *Controller) ensureRole(db *api.Redis, name string, pspName string) erro
 			Namespace: db.Namespace,
 		},
 		func(in *rbac.Role) *rbac.Role {
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Labels = db.OffshootLabels()
 			in.Rules = []rbac.PolicyRule{}
 			if pspName != "" {
@@ -83,10 +76,8 @@ func (c *Controller) ensureRole(db *api.Redis, name string, pspName string) erro
 }
 
 func (c *Controller) createRoleBinding(db *api.Redis, roleName string, saName string) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, db)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
+
 	// Ensure new RoleBindings for ElasticSearch and it's Snapshot
 	_, _, err := rbac_util.CreateOrPatchRoleBinding(
 		c.Client,
@@ -95,7 +86,7 @@ func (c *Controller) createRoleBinding(db *api.Redis, roleName string, saName st
 			Namespace: db.Namespace,
 		},
 		func(in *rbac.RoleBinding) *rbac.RoleBinding {
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Labels = db.OffshootLabels()
 			in.RoleRef = rbac.RoleRef{
 				APIGroup: rbac.GroupName,
@@ -142,7 +133,7 @@ func (c *Controller) ensureRBACStuff(redis *api.Redis) error {
 		}
 	} else if err != nil {
 		return err
-	} else if !core_util.IsOwnedBy(sa, redis) {
+	} else if owned, _ := core_util.IsOwnedBy(sa, redis); !owned {
 		// user provided the service account, so do nothing.
 		return nil
 	}

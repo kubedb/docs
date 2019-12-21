@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"sync"
 
+	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -118,7 +119,12 @@ func setDefaultValues(extClient cs.Interface, mongodb *api.MongoDB, op admission
 		return nil, errors.New(`'spec.version' is missing`)
 	}
 
-	mongodb.SetDefaults()
+	mgVersion, err := getMongoDBVersion(extClient, mongodb.Spec.Version)
+	if err != nil {
+		return nil, err
+	}
+
+	mongodb.SetDefaults(mgVersion)
 
 	if err := setDefaultsFromDormantDB(extClient, mongodb, op); err != nil {
 		return nil, err
@@ -156,7 +162,11 @@ func setDefaultsFromDormantDB(extClient cs.Interface, mongodb *api.MongoDB, op a
 
 	// Check Origin Spec
 	ddbOriginSpec := dormantDb.Spec.Origin.Spec.MongoDB
-	ddbOriginSpec.SetDefaults()
+	mgVersion, err := getMongoDBVersion(extClient, ddbOriginSpec.Version)
+	if err != nil {
+		return err
+	}
+	ddbOriginSpec.SetDefaults(mgVersion)
 
 	// If DatabaseSecret of new object is not given,
 	// Take dormantDatabaseSecretName
@@ -250,6 +260,16 @@ func getDormantDB(extClient cs.Interface, mongodb *api.MongoDB) (*api.DormantDat
 		return nil, errors.New(fmt.Sprintf(`invalid MongoDB: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, mongodb.Namespace, mongodb.Name, dormantDb.Namespace, dormantDb.Name))
 	}
 	return dormantDb, nil
+}
+
+// getMongoDBVersion returns MongoDBVersion.
+// If MongoDBVersion doesn't exists return 0 valued MongoDBVersion (not nil)
+func getMongoDBVersion(extClient cs.Interface, ver string) (*v1alpha1.MongoDBVersion, error) {
+	mgVersion, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(ver, metav1.GetOptions{})
+	if err != nil && kerr.IsNotFound(err) {
+		return &v1alpha1.MongoDBVersion{}, nil
+	}
+	return mgVersion, err
 }
 
 func setSecurityContextFromDormantDB(mongodb *api.MongoDB, ddbOriginSpec *api.MongoDBSpec) {

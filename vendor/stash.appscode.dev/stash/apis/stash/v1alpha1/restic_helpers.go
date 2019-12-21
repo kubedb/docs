@@ -1,70 +1,37 @@
+/*
+Copyright The Stash Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package v1alpha1
 
 import (
 	"hash/fnv"
 	"strconv"
 
+	"stash.appscode.dev/stash/api/crds"
+
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	hashutil "k8s.io/kubernetes/pkg/util/hash"
-	crdutils "kmodules.xyz/client-go/apiextensions/v1beta1"
 )
+
+func (_ Restic) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
+	return crds.MustCustomResourceDefinition(SchemeGroupVersion.WithResource(ResourcePluralRestic))
+}
 
 func (r Restic) GetSpecHash() string {
 	hash := fnv.New64a()
 	hashutil.DeepHashObject(hash, r.Spec)
 	return strconv.FormatUint(hash.Sum64(), 10)
-}
-
-func (c Restic) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
-	return crdutils.NewCustomResourceDefinition(crdutils.Config{
-		Group:         SchemeGroupVersion.Group,
-		Plural:        ResourcePluralRestic,
-		Singular:      ResourceSingularRestic,
-		Kind:          ResourceKindRestic,
-		ShortNames:    []string{"rst"},
-		Categories:    []string{"stash", "appscode", "all"},
-		ResourceScope: string(apiextensions.NamespaceScoped),
-		Versions: []apiextensions.CustomResourceDefinitionVersion{
-			{
-				Name:    SchemeGroupVersion.Version,
-				Served:  true,
-				Storage: true,
-			},
-		},
-		Labels: crdutils.Labels{
-			LabelsMap: map[string]string{"app": "stash"},
-		},
-		SpecDefinitionName:      "stash.appscode.dev/stash/apis/stash/v1alpha1.Restic",
-		EnableValidation:        true,
-		GetOpenAPIDefinitions:   GetOpenAPIDefinitions,
-		EnableStatusSubresource: true,
-		AdditionalPrinterColumns: []apiextensions.CustomResourceColumnDefinition{
-			{
-				Name:     "Selector",
-				Type:     "string",
-				JSONPath: ".spec.selector",
-			},
-			{
-				Name:     "Schedule",
-				Type:     "string",
-				JSONPath: ".spec.schedule",
-			},
-			{
-				Name:     "Backup-Type",
-				Type:     "string",
-				JSONPath: ".spec.type",
-				Priority: 10,
-			},
-			{
-				Name:     "Paused",
-				Type:     "boolean",
-				JSONPath: ".spec.paused",
-			},
-			{
-				Name:     "Age",
-				Type:     "date",
-				JSONPath: ".metadata.creationTimestamp",
-			},
-		},
-	})
 }

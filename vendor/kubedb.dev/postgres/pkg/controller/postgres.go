@@ -24,7 +24,6 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/postgres/pkg/admission"
 
-	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
@@ -32,8 +31,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
@@ -149,7 +146,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 
 	pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = types.NewIntHash(postgres.Generation, meta_util.GenerationHash(postgres))
+		in.ObservedGeneration = postgres.Generation
 		return in
 	})
 	if err != nil {
@@ -204,11 +201,9 @@ func (c *Controller) ensurePostgresNode(postgres *api.Postgres, postgresVersion 
 		return kutil.VerbUnchanged, err
 	}
 
-	if c.EnableRBAC {
-		// Ensure Service account, role, rolebinding, and PSP for database statefulsets
-		if err := c.ensureDatabaseRBAC(postgres); err != nil {
-			return kutil.VerbUnchanged, err
-		}
+	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
+	if err := c.ensureDatabaseRBAC(postgres); err != nil {
+		return kutil.VerbUnchanged, err
 	}
 
 	vt, err := c.ensureCombinedNode(postgres, postgresVersion)
@@ -286,15 +281,12 @@ func (c *Controller) initializeFromSnapshot(postgres *api.Postgres) error {
 }
 
 func (c *Controller) terminate(postgres *api.Postgres) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(postgres, api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres))
 
 	// If TerminationPolicy is "pause", keep everything (ie, PVCs,Secrets,Snapshots) intact.
 	// In operator, create dormantdatabase
 	if postgres.Spec.TerminationPolicy == api.TerminationPolicyPause {
-		if err := c.removeOwnerReferenceFromOffshoots(postgres, ref); err != nil {
+		if err := c.removeOwnerReferenceFromOffshoots(postgres); err != nil {
 			return err
 		}
 
@@ -319,7 +311,7 @@ func (c *Controller) terminate(postgres *api.Postgres) error {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots,WAL-data).
 		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets, wal-data intact.
 		// In both these cases, don't create dormantdatabase
-		if err := c.setOwnerReferenceToOffshoots(postgres, ref); err != nil {
+		if err := c.setOwnerReferenceToOffshoots(postgres, owner); err != nil {
 			return err
 		}
 	}
@@ -335,7 +327,7 @@ func (c *Controller) terminate(postgres *api.Postgres) error {
 	return nil
 }
 
-func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, ref *core.ObjectReference) error {
+func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, owner *metav1.OwnerReference) error {
 	selector := labels.SelectorFromSet(postgres.OffshootSelectors())
 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
@@ -346,10 +338,10 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, ref *c
 			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 			postgres.Namespace,
 			selector,
-			ref); err != nil {
+			owner); err != nil {
 			return err
 		}
-		if err := c.wipeOutDatabase(postgres.ObjectMeta, postgres.Spec.GetSecrets(), ref); err != nil {
+		if err := c.wipeOutDatabase(postgres.ObjectMeta, postgres.Spec.GetSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 		// if wal archiver was configured, remove wal data from backend
@@ -363,7 +355,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, ref *c
 			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 			postgres.Namespace,
 			selector,
-			ref); err != nil {
+			postgres); err != nil {
 			return err
 		}
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
@@ -371,7 +363,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, ref *c
 			core.SchemeGroupVersion.WithResource("secrets"),
 			postgres.Namespace,
 			postgres.Spec.GetSecrets(),
-			ref); err != nil {
+			postgres); err != nil {
 			return err
 		}
 	}
@@ -381,10 +373,10 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, ref *c
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		postgres.Namespace,
 		selector,
-		ref)
+		owner)
 }
 
-func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *api.Postgres, ref *core.ObjectReference) error {
+func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *api.Postgres) error {
 	// First, Get LabelSelector for Other Components
 	labelSelector := labels.SelectorFromSet(postgres.OffshootSelectors())
 
@@ -393,7 +385,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *api.Postgres, r
 		api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 		postgres.Namespace,
 		labelSelector,
-		ref); err != nil {
+		postgres); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
@@ -401,7 +393,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *api.Postgres, r
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		postgres.Namespace,
 		labelSelector,
-		ref); err != nil {
+		postgres); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
@@ -409,7 +401,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *api.Postgres, r
 		core.SchemeGroupVersion.WithResource("secrets"),
 		postgres.Namespace,
 		postgres.Spec.GetSecrets(),
-		ref); err != nil {
+		postgres); err != nil {
 		return err
 	}
 	return nil

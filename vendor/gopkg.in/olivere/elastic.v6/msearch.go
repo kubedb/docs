@@ -8,18 +8,26 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 )
 
 // MultiSearch executes one or more searches in one roundtrip.
 type MultiSearchService struct {
-	client                *Client
+	client *Client
+
+	pretty     *bool       // pretty format the returned JSON response
+	human      *bool       // return human readable values for statistics
+	errorTrace *bool       // include the stack trace of returned errors
+	filterPath []string    // list of filters used to reduce the response
+	headers    http.Header // custom request-level HTTP headers
+
 	requests              []*SearchRequest
 	indices               []string
-	pretty                bool
 	maxConcurrentRequests *int
 	preFilterShardSize    *int
+	restTotalHitsAsInt    *bool
 }
 
 func NewMultiSearchService(client *Client) *MultiSearchService {
@@ -29,6 +37,46 @@ func NewMultiSearchService(client *Client) *MultiSearchService {
 	return builder
 }
 
+// Pretty tells Elasticsearch whether to return a formatted JSON response.
+func (s *MultiSearchService) Pretty(pretty bool) *MultiSearchService {
+	s.pretty = &pretty
+	return s
+}
+
+// Human specifies whether human readable values should be returned in
+// the JSON response, e.g. "7.5mb".
+func (s *MultiSearchService) Human(human bool) *MultiSearchService {
+	s.human = &human
+	return s
+}
+
+// ErrorTrace specifies whether to include the stack trace of returned errors.
+func (s *MultiSearchService) ErrorTrace(errorTrace bool) *MultiSearchService {
+	s.errorTrace = &errorTrace
+	return s
+}
+
+// FilterPath specifies a list of filters used to reduce the response.
+func (s *MultiSearchService) FilterPath(filterPath ...string) *MultiSearchService {
+	s.filterPath = filterPath
+	return s
+}
+
+// Header adds a header to the request.
+func (s *MultiSearchService) Header(name string, value string) *MultiSearchService {
+	if s.headers == nil {
+		s.headers = http.Header{}
+	}
+	s.headers.Add(name, value)
+	return s
+}
+
+// Headers specifies the headers of the request.
+func (s *MultiSearchService) Headers(headers http.Header) *MultiSearchService {
+	s.headers = headers
+	return s
+}
+
 func (s *MultiSearchService) Add(requests ...*SearchRequest) *MultiSearchService {
 	s.requests = append(s.requests, requests...)
 	return s
@@ -36,11 +84,6 @@ func (s *MultiSearchService) Add(requests ...*SearchRequest) *MultiSearchService
 
 func (s *MultiSearchService) Index(indices ...string) *MultiSearchService {
 	s.indices = append(s.indices, indices...)
-	return s
-}
-
-func (s *MultiSearchService) Pretty(pretty bool) *MultiSearchService {
-	s.pretty = pretty
 	return s
 }
 
@@ -54,20 +97,44 @@ func (s *MultiSearchService) PreFilterShardSize(size int) *MultiSearchService {
 	return s
 }
 
+// RestTotalHitsAsInt is a flag that is temporarily available for ES 7.x
+// servers to return total hits as an int64 instead of a response structure.
+//
+// Warning: Using it indicates that you are using elastic.v6 with ES 7.x,
+// which is an unsupported scenario. Use at your own risk.
+// This option will also be removed with ES 8.x.
+// See https://www.elastic.co/guide/en/elasticsearch/reference/7.0/breaking-changes-7.0.html#hits-total-now-object-search-response.
+func (s *MultiSearchService) RestTotalHitsAsInt(v bool) *MultiSearchService {
+	s.restTotalHitsAsInt = &v
+	return s
+}
+
 func (s *MultiSearchService) Do(ctx context.Context) (*MultiSearchResult, error) {
 	// Build url
 	path := "/_msearch"
 
 	// Parameters
-	params := make(url.Values)
-	if s.pretty {
-		params.Set("pretty", fmt.Sprintf("%v", s.pretty))
+	params := url.Values{}
+	if v := s.pretty; v != nil {
+		params.Set("pretty", fmt.Sprint(*v))
+	}
+	if v := s.human; v != nil {
+		params.Set("human", fmt.Sprint(*v))
+	}
+	if v := s.errorTrace; v != nil {
+		params.Set("error_trace", fmt.Sprint(*v))
+	}
+	if len(s.filterPath) > 0 {
+		params.Set("filter_path", strings.Join(s.filterPath, ","))
 	}
 	if v := s.maxConcurrentRequests; v != nil {
-		params.Set("max_concurrent_searches", fmt.Sprintf("%v", *v))
+		params.Set("max_concurrent_searches", fmt.Sprint(*v))
 	}
 	if v := s.preFilterShardSize; v != nil {
-		params.Set("pre_filter_shard_size", fmt.Sprintf("%v", *v))
+		params.Set("pre_filter_shard_size", fmt.Sprint(*v))
+	}
+	if v := s.restTotalHitsAsInt; v != nil {
+		params.Set("rest_total_hits_as_int", fmt.Sprint(*v))
 	}
 
 	// Set body
@@ -93,10 +160,11 @@ func (s *MultiSearchService) Do(ctx context.Context) (*MultiSearchResult, error)
 
 	// Get response
 	res, err := s.client.PerformRequest(ctx, PerformRequestOptions{
-		Method: "GET",
-		Path:   path,
-		Params: params,
-		Body:   body,
+		Method:  "GET",
+		Path:    path,
+		Params:  params,
+		Body:    body,
+		Headers: s.headers,
 	})
 	if err != nil {
 		return nil, err
@@ -112,5 +180,6 @@ func (s *MultiSearchService) Do(ctx context.Context) (*MultiSearchResult, error)
 
 // MultiSearchResult is the outcome of running a multi-search operation.
 type MultiSearchResult struct {
-	Responses []*SearchResult `json:"responses,omitempty"`
+	TookInMillis int64           `json:"took,omitempty"` // search time in milliseconds
+	Responses    []*SearchResult `json:"responses,omitempty"`
 }

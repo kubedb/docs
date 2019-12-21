@@ -26,8 +26,6 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
@@ -91,11 +89,7 @@ func (c *Controller) createService(mongodb *api.MongoDB) (kutil.VerbType, error)
 		Name:      mongodb.OffshootName(),
 		Namespace: mongodb.Namespace,
 	}
-
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(mongodb, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
 	selector := mongodb.OffshootSelectors()
 	if mongodb.Spec.ShardTopology != nil {
@@ -103,7 +97,7 @@ func (c *Controller) createService(mongodb *api.MongoDB) (kutil.VerbType, error)
 	}
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = mongodb.OffshootLabels()
 		in.Annotations = mongodb.Spec.ServiceTemplate.Annotations
 
@@ -143,10 +137,7 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 		return kutil.VerbUnchanged, err
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(mongodb, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
 	// create/patch stats Service
 	meta := metav1.ObjectMeta{
@@ -154,7 +145,7 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 		Namespace: mongodb.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = mongodb.StatsServiceLabels()
 		in.Spec.Selector = mongodb.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
@@ -171,7 +162,7 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
-			ref,
+			mongodb,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s stats service",
@@ -182,10 +173,7 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 }
 
 func (c *Controller) ensureMongoGvrSvc(mongodb *api.MongoDB) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(mongodb, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
 	svcFunc := func(svcName string, labels, selectors map[string]string) error {
 
@@ -200,7 +188,7 @@ func (c *Controller) ensureMongoGvrSvc(mongodb *api.MongoDB) error {
 		}
 
 		_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Labels = labels
 			// 'tolerate-unready-endpoints' annotation is deprecated.
 			// Use: spec.PublishNotReadyAddresses
@@ -224,7 +212,7 @@ func (c *Controller) ensureMongoGvrSvc(mongodb *api.MongoDB) error {
 
 		if err == nil {
 			c.recorder.Eventf(
-				ref,
+				mongodb,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,
 				"Successfully %s stats service",

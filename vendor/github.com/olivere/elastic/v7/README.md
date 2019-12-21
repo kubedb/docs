@@ -37,7 +37,7 @@ You have installed Elasticsearch 7.0.0 and want to use Elastic.
 As listed above, you should use Elastic 7.0 (code is in `release-branch.v7`).
 
 To use the required version of Elastic in your application, you
-shoud use [Go modules](https://github.com/golang/go/wiki/Modules)
+should use [Go modules](https://github.com/golang/go/wiki/Modules)
 to manage dependencies. Make sure to use a version such as `7.0.0` or later.
 
 To use Elastic, import:
@@ -356,8 +356,10 @@ Here are a few tips on how to get used to Elastic:
   - [x] Geo Distance Query
   - [x] Geo Polygon Query
 - Specialized queries
+  - [x] Distance Feature Query
   - [x] More Like This Query
   - [x] Script Query
+  - [x] Script Score Query
   - [x] Percolate Query
 - Span queries
   - [ ] Span Term Query

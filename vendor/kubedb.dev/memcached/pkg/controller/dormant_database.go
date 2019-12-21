@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package controller
 
 import (
@@ -23,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 func (c *Controller) WaitUntilPaused(drmn *api.DormantDatabase) error {
@@ -103,7 +105,7 @@ func (c *Controller) createDormantDatabase(memcached *api.Memcached) (*api.Dorma
 		},
 		Spec: api.DormantDatabaseSpec{
 			Origin: api.Origin{
-				ObjectMeta: metav1.ObjectMeta{
+				PartialObjectMeta: ofst.PartialObjectMeta{
 					Name:              memcached.Name,
 					Namespace:         memcached.Namespace,
 					Labels:            memcached.Labels,

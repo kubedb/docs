@@ -11,36 +11,37 @@ import (
 // SearchSource enables users to build the search source.
 // It resembles the SearchSourceBuilder in Elasticsearch.
 type SearchSource struct {
-	query                    Query
-	postQuery                Query
-	sliceQuery               Query
-	from                     int
-	size                     int
-	explain                  *bool
-	version                  *bool
-	sorters                  []Sorter
-	trackScores              *bool
-	trackTotalHits           *bool
-	searchAfterSortValues    []interface{}
-	minScore                 *float64
-	timeout                  string
-	terminateAfter           *int
-	storedFieldNames         []string
-	docvalueFields           DocvalueFields
-	scriptFields             []*ScriptField
-	fetchSourceContext       *FetchSourceContext
-	aggregations             map[string]Aggregation
-	highlight                *Highlight
+	query                    Query                  // query
+	postQuery                Query                  // post_filter
+	sliceQuery               Query                  // slice
+	from                     int                    // from
+	size                     int                    // size
+	explain                  *bool                  // explain
+	version                  *bool                  // version
+	seqNoAndPrimaryTerm      *bool                  // seq_no_primary_term
+	sorters                  []Sorter               // sort
+	trackScores              *bool                  // track_scores
+	trackTotalHits           *bool                  // track_total_hits
+	searchAfterSortValues    []interface{}          // search_after
+	minScore                 *float64               // min_score
+	timeout                  string                 // timeout
+	terminateAfter           *int                   // terminate_after
+	storedFieldNames         []string               // stored_fields
+	docvalueFields           DocvalueFields         // docvalue_fields
+	scriptFields             []*ScriptField         // script_fields
+	fetchSourceContext       *FetchSourceContext    // _source
+	aggregations             map[string]Aggregation // aggregations / aggs
+	highlight                *Highlight             // highlight
 	globalSuggestText        string
-	suggesters               []Suggester
-	rescores                 []*Rescore
+	suggesters               []Suggester // suggest
+	rescores                 []*Rescore  // rescore
 	defaultRescoreWindowSize *int
-	indexBoosts              map[string]float64
-	stats                    []string
+	indexBoosts              map[string]float64 // indices_boost
+	stats                    []string           // stats
 	innerHits                map[string]*InnerHit
-	collapse                 *CollapseBuilder
-	profile                  bool
-	// TODO extBuilders []SearchExtBuilder
+	collapse                 *CollapseBuilder // collapse
+	profile                  bool             // profile
+	// TODO extBuilders []SearchExtBuilder // ext
 }
 
 // NewSearchSource initializes a new SearchSource.
@@ -78,7 +79,7 @@ func (s *SearchSource) PostFilter(postFilter Query) *SearchSource {
 // Slice allows partitioning the documents in multiple slices.
 // It is e.g. used to slice a scroll operation, supported in
 // Elasticsearch 5.0 or later.
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/search-request-scroll.html#sliced-scroll
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.8/search-request-scroll.html#sliced-scroll
 // for details.
 func (s *SearchSource) Slice(sliceQuery Query) *SearchSource {
 	s.sliceQuery = sliceQuery
@@ -114,6 +115,13 @@ func (s *SearchSource) Explain(explain bool) *SearchSource {
 // a version associated to it.
 func (s *SearchSource) Version(version bool) *SearchSource {
 	s.version = &version
+	return s
+}
+
+// SeqNoAndPrimaryTerm indicates whether SearchHits should be returned with the
+// sequence number and primary term of the last modification of the document.
+func (s *SearchSource) SeqNoAndPrimaryTerm(enabled bool) *SearchSource {
+	s.seqNoAndPrimaryTerm = &enabled
 	return s
 }
 
@@ -169,7 +177,7 @@ func (s *SearchSource) TrackScores(trackScores bool) *SearchSource {
 // TrackTotalHits indicates if the total hit count for the query should be tracked.
 // Defaults to true.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/index-modules-index-sorting.html#early-terminate
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.8/index-modules-index-sorting.html#early-terminate
 // for details.
 func (s *SearchSource) TrackTotalHits(trackTotalHits bool) *SearchSource {
 	s.trackTotalHits = &trackTotalHits
@@ -179,7 +187,7 @@ func (s *SearchSource) TrackTotalHits(trackTotalHits bool) *SearchSource {
 // SearchAfter allows a different form of pagination by using a live cursor,
 // using the results of the previous page to help the retrieval of the next.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/search-request-search-after.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.8/search-request-search-after.html
 func (s *SearchSource) SearchAfter(sortValues ...interface{}) *SearchSource {
 	s.searchAfterSortValues = append(s.searchAfterSortValues, sortValues...)
 	return s
@@ -389,6 +397,9 @@ func (s *SearchSource) Source() (interface{}, error) {
 	}
 	if s.version != nil {
 		source["version"] = *s.version
+	}
+	if v := s.seqNoAndPrimaryTerm; v != nil {
+		source["seq_no_primary_term"] = *v
 	}
 	if s.explain != nil {
 		source["explain"] = *s.explain

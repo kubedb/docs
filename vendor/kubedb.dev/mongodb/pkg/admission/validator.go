@@ -119,7 +119,11 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 
 			mongodb := obj.(*api.MongoDB).DeepCopy()
 			oldMongoDB := oldObject.(*api.MongoDB).DeepCopy()
-			oldMongoDB.SetDefaults()
+			mgVersion, err := getMongoDBVersion(a.extClient, oldMongoDB.Spec.Version)
+			if err != nil {
+				return hookapi.StatusInternalServerError(err)
+			}
+			oldMongoDB.SetDefaults(mgVersion)
 			// Allow changing Database Secret only if there was no secret have set up yet.
 			if oldMongoDB.Spec.DatabaseSecret == nil {
 				oldMongoDB.Spec.DatabaseSecret = mongodb.Spec.DatabaseSecret
@@ -325,7 +329,11 @@ func matchWithDormantDatabase(extClient cs.Interface, mongodb *api.MongoDB) erro
 
 	// Check Origin Spec
 	drmnOriginSpec := dormantDb.Spec.Origin.Spec.MongoDB
-	drmnOriginSpec.SetDefaults()
+	mgVersion, err := getMongoDBVersion(extClient, drmnOriginSpec.Version)
+	if err != nil {
+		return err
+	}
+	drmnOriginSpec.SetDefaults(mgVersion)
 	originalSpec := mongodb.Spec
 
 	// Skip checking UpdateStrategy

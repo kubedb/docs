@@ -21,8 +21,6 @@ import (
 
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -37,10 +35,7 @@ func (c *Controller) ensureAppBinding(db *api.Etcd) (kutil.VerbType, error) {
 		Namespace: db.Namespace,
 	}
 
-	ref, err := reference.GetReference(clientsetscheme.Scheme, db)
-	if err != nil {
-		return kutil.VerbUnchanged, err
-	}
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindEtcd))
 
 	etcdVersion, err := c.ExtClient.CatalogV1alpha1().EtcdVersions().Get(string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
@@ -48,7 +43,7 @@ func (c *Controller) ensureAppBinding(db *api.Etcd) (kutil.VerbType, error) {
 	}
 
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(c.AppCatalogClient.AppcatalogV1alpha1(), meta, func(in *appcat.AppBinding) *appcat.AppBinding {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootLabels()
 
 		in.Spec.Type = appmeta.Type()

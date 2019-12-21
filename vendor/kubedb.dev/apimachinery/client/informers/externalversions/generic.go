@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The KubeDB Authors.
+Copyright The KubeDB Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	v1alpha1 "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	dbav1alpha1 "kubedb.dev/apimachinery/apis/dba/v1alpha1"
 	kubedbv1alpha1 "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -75,6 +76,28 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().ProxySQLVersions().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("redisversions"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().RedisVersions().Informer()}, nil
+
+		// Group=dba.kubedb.com, Version=v1alpha1
+	case dbav1alpha1.SchemeGroupVersion.WithResource("elasticsearchmodificationrequests"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Dba().V1alpha1().ElasticsearchModificationRequests().Informer()}, nil
+	case dbav1alpha1.SchemeGroupVersion.WithResource("etcdmodificationrequests"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Dba().V1alpha1().EtcdModificationRequests().Informer()}, nil
+	case dbav1alpha1.SchemeGroupVersion.WithResource("memcachedmodificationrequests"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Dba().V1alpha1().MemcachedModificationRequests().Informer()}, nil
+	case dbav1alpha1.SchemeGroupVersion.WithResource("mongodbmodificationrequests"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Dba().V1alpha1().MongoDBModificationRequests().Informer()}, nil
+	case dbav1alpha1.SchemeGroupVersion.WithResource("mysqlmodificationrequests"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Dba().V1alpha1().MySQLModificationRequests().Informer()}, nil
+	case dbav1alpha1.SchemeGroupVersion.WithResource("perconaxtradbmodificationrequests"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Dba().V1alpha1().PerconaXtraDBModificationRequests().Informer()}, nil
+	case dbav1alpha1.SchemeGroupVersion.WithResource("pgbouncermodificationrequests"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Dba().V1alpha1().PgBouncerModificationRequests().Informer()}, nil
+	case dbav1alpha1.SchemeGroupVersion.WithResource("postgresmodificationrequests"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Dba().V1alpha1().PostgresModificationRequests().Informer()}, nil
+	case dbav1alpha1.SchemeGroupVersion.WithResource("proxysqlmodificationrequests"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Dba().V1alpha1().ProxySQLModificationRequests().Informer()}, nil
+	case dbav1alpha1.SchemeGroupVersion.WithResource("redismodificationrequests"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Dba().V1alpha1().RedisModificationRequests().Informer()}, nil
 
 		// Group=kubedb.com, Version=v1alpha1
 	case kubedbv1alpha1.SchemeGroupVersion.WithResource("dormantdatabases"):

@@ -25,11 +25,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	core_util "kmodules.xyz/client-go/core/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 // WaitUntilPaused is an Interface of *amc.Controller
@@ -77,18 +76,15 @@ func (c *Controller) waitUntilRBACStuffDeleted(mysql *api.MySQL) error {
 // WipeOutDatabase is an Interface of *amc.Controller.
 // It verifies and deletes secrets and other left overs of DBs except Snapshot and PVC.
 func (c *Controller) WipeOutDatabase(drmn *api.DormantDatabase) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, drmn)
-	if rerr != nil {
-		return rerr
-	}
-	if err := c.wipeOutDatabase(drmn.ObjectMeta, drmn.GetDatabaseSecrets(), ref); err != nil {
+	owner := metav1.NewControllerRef(drmn, api.SchemeGroupVersion.WithKind(api.ResourceKindDormantDatabase))
+	if err := c.wipeOutDatabase(drmn.ObjectMeta, drmn.GetDatabaseSecrets(), owner); err != nil {
 		return errors.Wrap(err, "error in wiping out database.")
 	}
 	return nil
 }
 
 // wipeOutDatabase is a generic function to call from WipeOutDatabase and mysql pause method.
-func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, ref *core.ObjectReference) error {
+func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, owner *metav1.OwnerReference) error {
 	secretUsed, err := c.secretsUsedByPeers(meta)
 	if err != nil {
 		return errors.Wrap(err, "error in getting used secret list")
@@ -111,7 +107,7 @@ func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, r
 		core.SchemeGroupVersion.WithResource("secrets"),
 		meta.Namespace,
 		unusedSecrets.List(),
-		ref)
+		owner)
 }
 
 func (c *Controller) deleteMatchingDormantDatabase(mysql *api.MySQL) error {
@@ -152,7 +148,7 @@ func (c *Controller) createDormantDatabase(mysql *api.MySQL) (*api.DormantDataba
 		},
 		Spec: api.DormantDatabaseSpec{
 			Origin: api.Origin{
-				ObjectMeta: metav1.ObjectMeta{
+				PartialObjectMeta: ofst.PartialObjectMeta{
 					Name:              mysql.Name,
 					Namespace:         mysql.Namespace,
 					Labels:            mysql.Labels,

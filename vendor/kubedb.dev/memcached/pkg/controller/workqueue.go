@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package controller
 
 import (
@@ -28,7 +29,7 @@ func (c *Controller) initWatcher() {
 	c.mcInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Memcacheds().Informer()
 	c.mcQueue = queue.New("Memcached", c.MaxNumRequeues, c.NumThreads, c.runMemcached)
 	c.mcLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Memcacheds().Lister()
-	c.mcInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.mcQueue.GetQueue(), true))
+	c.mcInformer.AddEventHandler(queue.NewReconcilableHandler(c.mcQueue.GetQueue()))
 }
 
 func (c *Controller) runMemcached(key string) error {

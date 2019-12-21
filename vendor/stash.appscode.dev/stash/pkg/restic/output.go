@@ -1,3 +1,19 @@
+/*
+Copyright The Stash Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package restic
 
 import (
@@ -13,6 +29,8 @@ import (
 	api_v1beta1 "stash.appscode.dev/stash/apis/stash/v1beta1"
 )
 
+const FileModeRWXAll = 0777
+
 type BackupOutput struct {
 	// HostBackupStats shows backup statistics of a host
 	HostBackupStats []api_v1beta1.HostBackupStats `json:"hostBackupStats,omitempty"`
@@ -26,9 +44,9 @@ type RepositoryStats struct {
 	// Size show size of repository after last backup
 	Size string `json:"size,omitempty"`
 	// SnapshotCount shows number of snapshots stored in the repository
-	SnapshotCount int `json:"snapshotCount,omitempty"`
+	SnapshotCount int64 `json:"snapshotCount,omitempty"`
 	// SnapshotsRemovedOnLastCleanup shows number of old snapshots cleaned up according to retention policy on last backup session
-	SnapshotsRemovedOnLastCleanup int `json:"snapshotsRemovedOnLastCleanup,omitempty"`
+	SnapshotsRemovedOnLastCleanup int64 `json:"snapshotsRemovedOnLastCleanup,omitempty"`
 }
 
 type RestoreOutput struct {
@@ -43,11 +61,21 @@ func (out *BackupOutput) WriteOutput(fileName string) error {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(fileName), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(fileName), FileModeRWXAll); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(fileName, jsonOutput, 0755); err != nil {
+	// check if the output file already exist. if it does not, then owner should chmod to make the file writable to other users
+	newFile := false
+	if _, err := os.Stat(fileName); os.IsNotExist(err) {
+		newFile = true
+	}
+
+	if err := ioutil.WriteFile(fileName, jsonOutput, FileModeRWXAll); err != nil { // this does not make the file writable to other users
 		return err
+	}
+	// change the file permission to make it writable to other users
+	if newFile {
+		return os.Chmod(fileName, FileModeRWXAll)
 	}
 	return nil
 }
@@ -57,11 +85,21 @@ func (out *RestoreOutput) WriteOutput(fileName string) error {
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(fileName), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(fileName), FileModeRWXAll); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(fileName, jsonOutput, 0755); err != nil {
+	// check if the output file already exist. if it does not, then owner should chmod to make the file writable to other users
+	newFile := false
+	if _, err := os.Stat(fileName); os.IsNotExist(err) {
+		newFile = true
+	}
+
+	if err := ioutil.WriteFile(fileName, jsonOutput, FileModeRWXAll); err != nil { // this does not make the file writable to other users
 		return err
+	}
+	// change the file permission to make it writable to other users
+	if newFile {
+		return os.Chmod(fileName, FileModeRWXAll)
 	}
 	return nil
 }
@@ -128,7 +166,7 @@ func extractBackupInfo(output []byte, path string) (api_v1beta1.SnapshotStats, e
 	snapshotStats.FileStats.TotalFiles = jsonOutput.TotalFilesProcessed
 
 	snapshotStats.Uploaded = formatBytes(jsonOutput.DataAdded)
-	snapshotStats.Size = formatBytes(jsonOutput.TotalBytesProcessed)
+	snapshotStats.TotalSize = formatBytes(jsonOutput.TotalBytesProcessed)
 	snapshotStats.ProcessingTime = formatSeconds(uint64(jsonOutput.TotalDuration))
 	snapshotStats.Name = jsonOutput.SnapshotID
 
@@ -152,18 +190,18 @@ func extractCheckInfo(out []byte) bool {
 
 // ExtractCleanupInfo extract information from output of "restic forget" command and
 // save valuable information into backupOutput
-func extractCleanupInfo(out []byte) (int, int, error) {
+func extractCleanupInfo(out []byte) (int64, int64, error) {
 	var fg []ForgetGroup
 	err := json.Unmarshal(out, &fg)
 	if err != nil {
 		return 0, 0, err
 	}
 
-	keep := 0
-	removed := 0
+	var keep int64
+	var removed int64
 	for i := 0; i < len(fg); i++ {
-		keep += len(fg[i].Keep)
-		removed += len(fg[i].Remove)
+		keep += int64(len(fg[i].Keep))
+		removed += int64(len(fg[i].Remove))
 	}
 
 	return keep, removed, nil
@@ -182,11 +220,11 @@ func extractStatsInfo(out []byte) (string, error) {
 
 type BackupSummary struct {
 	MessageType         string  `json:"message_type"` // "summary"
-	FilesNew            *int    `json:"files_new"`
-	FilesChanged        *int    `json:"files_changed"`
-	FilesUnmodified     *int    `json:"files_unmodified"`
+	FilesNew            *int64  `json:"files_new"`
+	FilesChanged        *int64  `json:"files_changed"`
+	FilesUnmodified     *int64  `json:"files_unmodified"`
 	DataAdded           uint64  `json:"data_added"`
-	TotalFilesProcessed *int    `json:"total_files_processed"`
+	TotalFilesProcessed *int64  `json:"total_files_processed"`
 	TotalBytesProcessed uint64  `json:"total_bytes_processed"`
 	TotalDuration       float64 `json:"total_duration"` // in seconds
 	SnapshotID          string  `json:"snapshot_id"`

@@ -24,7 +24,6 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/elasticsearch/pkg/admission"
 
-	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	appsv1 "k8s.io/api/apps/v1"
@@ -35,8 +34,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
@@ -149,7 +146,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 
 	es, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = types.NewIntHash(elasticsearch.Generation, meta_util.GenerationHash(elasticsearch))
+		in.ObservedGeneration = elasticsearch.Generation
 		return in
 	})
 	if err != nil {
@@ -210,11 +207,9 @@ func (c *Controller) ensureElasticsearchNode(elasticsearch *api.Elasticsearch) (
 		return kutil.VerbUnchanged, err
 	}
 
-	if c.EnableRBAC {
-		// Ensure Service account, role, rolebinding, and PSP for database statefulsets
-		if err := c.ensureDatabaseRBAC(elasticsearch); err != nil {
-			return kutil.VerbUnchanged, err
-		}
+	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
+	if err := c.ensureDatabaseRBAC(elasticsearch); err != nil {
+		return kutil.VerbUnchanged, err
 	}
 
 	vt := kutil.VerbUnchanged
@@ -320,15 +315,12 @@ func (c *Controller) initializeFromSnapshot(elasticsearch *api.Elasticsearch) er
 }
 
 func (c *Controller) terminate(elasticsearch *api.Elasticsearch) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 	// If TerminationPolicy is "pause", keep everything (ie, PVCs,Secrets,Snapshots) intact.
 	// In operator, create dormantdatabase
 	if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyPause {
-		if err := c.removeOwnerReferenceFromOffshoots(elasticsearch, ref); err != nil {
+		if err := c.removeOwnerReferenceFromOffshoots(elasticsearch); err != nil {
 			return err
 		}
 
@@ -353,7 +345,7 @@ func (c *Controller) terminate(elasticsearch *api.Elasticsearch) error {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
 		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
 		// In both these cases, don't create dormantdatabase
-		if err := c.setOwnerReferenceToOffshoots(elasticsearch, ref); err != nil {
+		if err := c.setOwnerReferenceToOffshoots(elasticsearch, owner); err != nil {
 			return err
 		}
 	}
@@ -369,7 +361,7 @@ func (c *Controller) terminate(elasticsearch *api.Elasticsearch) error {
 	return nil
 }
 
-func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsearch, ref *core.ObjectReference) error {
+func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsearch, owner *metav1.OwnerReference) error {
 	selector := labels.SelectorFromSet(elasticsearch.OffshootSelectors())
 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
@@ -380,10 +372,10 @@ func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsear
 			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 			elasticsearch.Namespace,
 			selector,
-			ref); err != nil {
+			owner); err != nil {
 			return err
 		}
-		if err := c.wipeOutDatabase(elasticsearch.ObjectMeta, elasticsearch.Spec.GetSecrets(), ref); err != nil {
+		if err := c.wipeOutDatabase(elasticsearch.ObjectMeta, elasticsearch.Spec.GetSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
@@ -393,7 +385,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsear
 			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 			elasticsearch.Namespace,
 			selector,
-			ref); err != nil {
+			elasticsearch); err != nil {
 			return err
 		}
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
@@ -401,7 +393,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsear
 			core.SchemeGroupVersion.WithResource("secrets"),
 			elasticsearch.Namespace,
 			elasticsearch.Spec.GetSecrets(),
-			ref); err != nil {
+			elasticsearch); err != nil {
 			return err
 		}
 	}
@@ -411,10 +403,10 @@ func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsear
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		elasticsearch.Namespace,
 		selector,
-		ref)
+		owner)
 }
 
-func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasticsearch, ref *core.ObjectReference) error {
+func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasticsearch) error {
 	// First, Get LabelSelector for Other Components
 	labelSelector := labels.SelectorFromSet(elasticsearch.OffshootSelectors())
 
@@ -423,7 +415,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasti
 		api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 		elasticsearch.Namespace,
 		labelSelector,
-		ref); err != nil {
+		elasticsearch); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
@@ -431,7 +423,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasti
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		elasticsearch.Namespace,
 		labelSelector,
-		ref); err != nil {
+		elasticsearch); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
@@ -439,7 +431,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasti
 		core.SchemeGroupVersion.WithResource("secrets"),
 		elasticsearch.Namespace,
 		elasticsearch.Spec.GetSecrets(),
-		ref); err != nil {
+		elasticsearch); err != nil {
 		return err
 	}
 	return nil
@@ -481,19 +473,16 @@ func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation
 }
 
 func (c *Controller) createPodDisruptionBudget(sts *appsv1.StatefulSet, maxUnavailable *intstr.IntOrString) error {
-	ref, err := reference.GetReference(clientsetscheme.Scheme, sts)
-	if err != nil {
-		return err
-	}
+	owner := metav1.NewControllerRef(sts, appsv1.SchemeGroupVersion.WithKind("StatefulSet"))
 
 	m := metav1.ObjectMeta{
 		Name:      sts.Name,
 		Namespace: sts.Namespace,
 	}
-	_, _, err = policy_util.CreateOrPatchPodDisruptionBudget(c.Client, m,
+	_, _, err := policy_util.CreateOrPatchPodDisruptionBudget(c.Client, m,
 		func(in *policyv1beta1.PodDisruptionBudget) *policyv1beta1.PodDisruptionBudget {
 			in.Labels = sts.Labels
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 			in.Spec.Selector = &metav1.LabelSelector{
 				MatchLabels: sts.Spec.Template.Labels,

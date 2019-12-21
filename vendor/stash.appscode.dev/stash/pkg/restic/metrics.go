@@ -1,3 +1,19 @@
+/*
+Copyright The Stash Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package restic
 
 import (
@@ -13,6 +29,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
 	core "k8s.io/api/core/v1"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
@@ -557,14 +574,14 @@ func (backupMetrics *BackupMetrics) setValues(hostOutput api_v1beta1.HostBackupS
 		totalDataSize        float64
 		totalUploadSize      float64
 		totalProcessingTime  uint64
-		totalFiles           int
-		totalNewFiles        int
-		totalModifiedFiles   int
-		totalUnmodifiedFiles int
+		totalFiles           int64
+		totalNewFiles        int64
+		totalModifiedFiles   int64
+		totalUnmodifiedFiles int64
 	)
 
 	for _, v := range hostOutput.Snapshots {
-		dataSizeBytes, err := convertSizeToBytes(v.Size)
+		dataSizeBytes, err := convertSizeToBytes(v.TotalSize)
 		if err != nil {
 			return err
 		}
@@ -753,11 +770,14 @@ func targetLabels(config *rest.Config, target api_v1beta1.TargetRef, namespace s
 	switch target.Kind {
 	case apis.KindAppBinding:
 		appGroup, appKind, err := getAppGroupKind(config, target.Name, namespace)
-		if err != nil {
+		// For PerconaXtradDB cluster restore, AppBinding will not exist during restore.
+		// In this case, we can not add AppBinding specific labels.
+		if err == nil {
+			labels[MetricsLabelKind] = appKind
+			labels[MetricsLabelAppGroup] = appGroup
+		} else if !kerr.IsNotFound(err) {
 			return nil, err
 		}
-		labels[MetricsLabelKind] = appKind
-		labels[MetricsLabelAppGroup] = appGroup
 	default:
 		labels[MetricsLabelKind] = target.Kind
 		gv, err := schema.ParseGroupVersion(target.APIVersion)
@@ -770,7 +790,7 @@ func targetLabels(config *rest.Config, target api_v1beta1.TargetRef, namespace s
 	return labels, nil
 }
 
-// volumeSnpashotterLabels returns volume snapshot specific labels
+// volumeSnapshotterLabels returns volume snapshot specific labels
 func volumeSnapshotterLabels() map[string]string {
 	return map[string]string{
 		MetricsLabelDriver:   string(api_v1beta1.VolumeSnapshotter),

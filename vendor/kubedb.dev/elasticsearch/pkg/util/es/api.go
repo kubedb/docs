@@ -43,6 +43,9 @@ type ESClient interface {
 	GetIndexNames() ([]string, error)
 	GetAllNodesInfo() ([]NodeInfo, error)
 	Stop()
+	Ping(string) (int, error)
+	WaitForGreenStatus(string) error
+	WaitForYellowStatus(string) error
 }
 
 type NodeSetting struct {

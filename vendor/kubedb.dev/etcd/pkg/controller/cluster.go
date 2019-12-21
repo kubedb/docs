@@ -25,7 +25,6 @@ import (
 	dbutil "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"kubedb.dev/etcd/pkg/util"
 
-	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -33,7 +32,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	meta_util "kmodules.xyz/client-go/meta"
 )
 
 var (
@@ -394,7 +392,7 @@ func (c *Controller) updateCRStatus(cl *Cluster) error {
 	}
 	_, err := dbutil.UpdateEtcdStatus(c.Controller.ExtClient.KubedbV1alpha1(), cl.cluster, func(in *api.EtcdStatus) *api.EtcdStatus {
 		in.Phase = cl.status.Phase
-		in.ObservedGeneration = types.NewIntHash(cl.cluster.Generation, meta_util.GenerationHash(cl.cluster))
+		in.ObservedGeneration = cl.cluster.Generation
 		return in
 	})
 	return err

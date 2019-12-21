@@ -24,8 +24,6 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
 
@@ -70,14 +68,11 @@ func (c *Controller) ensureDatabaseConfigForXPack(elasticsearch *api.Elasticsear
 			Name:      fmt.Sprintf("%v-%v", elasticsearch.OffshootName(), DatabaseConfigMapSuffix),
 			Namespace: elasticsearch.Namespace,
 		}
-		ref, err := reference.GetReference(clientsetscheme.Scheme, elasticsearch)
-		if err != nil {
-			return err
-		}
+		owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 		if _, _, err := core_util.CreateOrPatchConfigMap(c.Client, cmMeta, func(in *core.ConfigMap) *core.ConfigMap {
 			in.Labels = core_util.UpsertMap(in.Labels, elasticsearch.OffshootLabels())
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Data = map[string]string{
 				ConfigFileName: xpack_config,
 			}

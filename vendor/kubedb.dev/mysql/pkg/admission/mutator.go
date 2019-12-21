@@ -133,7 +133,7 @@ func setDefaultValues(extClient cs.Interface, mysql *api.MySQL) (runtime.Object,
 		}
 
 		if mysql.Spec.Topology.Group.BaseServerID == nil {
-			mysql.Spec.Topology.Group.BaseServerID = types.UIntP(api.MySQLDefaultBaseServerID)
+			mysql.Spec.Topology.Group.BaseServerID = types.Int64P(api.MySQLDefaultBaseServerID)
 		}
 	}
 

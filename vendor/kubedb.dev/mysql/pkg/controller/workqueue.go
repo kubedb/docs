@@ -28,7 +28,7 @@ func (c *Controller) initWatcher() {
 	c.myInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().MySQLs().Informer()
 	c.myQueue = queue.New("MySQL", c.MaxNumRequeues, c.NumThreads, c.runMySQL)
 	c.myLister = c.KubedbInformerFactory.Kubedb().V1alpha1().MySQLs().Lister()
-	c.myInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.myQueue.GetQueue(), true))
+	c.myInformer.AddEventHandler(queue.NewReconcilableHandler(c.myQueue.GetQueue()))
 }
 
 func (c *Controller) runMySQL(key string) error {

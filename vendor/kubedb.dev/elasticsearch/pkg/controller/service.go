@@ -26,8 +26,6 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
@@ -123,13 +121,10 @@ func (c *Controller) createService(elasticsearch *api.Elasticsearch) (kutil.Verb
 		Namespace: elasticsearch.Namespace,
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = elasticsearch.OffshootLabels()
 		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
 
@@ -164,13 +159,10 @@ func (c *Controller) createMasterService(elasticsearch *api.Elasticsearch) (kuti
 		Namespace: elasticsearch.Namespace,
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = elasticsearch.OffshootLabels()
 		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
 
@@ -194,10 +186,7 @@ func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil
 		return kutil.VerbUnchanged, err
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, elasticsearch)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 	// reconcile statsService
 	meta := metav1.ObjectMeta{
@@ -205,7 +194,7 @@ func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil
 		Namespace: elasticsearch.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = elasticsearch.StatsServiceLabels()
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{

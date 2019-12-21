@@ -7,7 +7,9 @@ package elastic
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/olivere/elastic/uritemplates"
 )
@@ -15,11 +17,17 @@ import (
 // IndexService adds or updates a typed JSON document in a specified index,
 // making it searchable.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-index_.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.8/docs-index_.html
 // for details.
 type IndexService struct {
-	client              *Client
-	pretty              bool
+	client *Client
+
+	pretty     *bool       // pretty format the returned JSON response
+	human      *bool       // return human readable values for statistics
+	errorTrace *bool       // include the stack trace of returned errors
+	filterPath []string    // list of filters used to reduce the response
+	headers    http.Header // custom request-level HTTP headers
+
 	id                  string
 	index               string
 	typ                 string
@@ -34,6 +42,8 @@ type IndexService struct {
 	refresh             string
 	waitForActiveShards string
 	pipeline            string
+	ifSeqNo             *int64
+	ifPrimaryTerm       *int64
 	bodyJson            interface{}
 	bodyString          string
 }
@@ -43,6 +53,46 @@ func NewIndexService(client *Client) *IndexService {
 	return &IndexService{
 		client: client,
 	}
+}
+
+// Pretty tells Elasticsearch whether to return a formatted JSON response.
+func (s *IndexService) Pretty(pretty bool) *IndexService {
+	s.pretty = &pretty
+	return s
+}
+
+// Human specifies whether human readable values should be returned in
+// the JSON response, e.g. "7.5mb".
+func (s *IndexService) Human(human bool) *IndexService {
+	s.human = &human
+	return s
+}
+
+// ErrorTrace specifies whether to include the stack trace of returned errors.
+func (s *IndexService) ErrorTrace(errorTrace bool) *IndexService {
+	s.errorTrace = &errorTrace
+	return s
+}
+
+// FilterPath specifies a list of filters used to reduce the response.
+func (s *IndexService) FilterPath(filterPath ...string) *IndexService {
+	s.filterPath = filterPath
+	return s
+}
+
+// Header adds a header to the request.
+func (s *IndexService) Header(name string, value string) *IndexService {
+	if s.headers == nil {
+		s.headers = http.Header{}
+	}
+	s.headers.Add(name, value)
+	return s
+}
+
+// Headers specifies the headers of the request.
+func (s *IndexService) Headers(headers http.Header) *IndexService {
+	s.headers = headers
+	return s
 }
 
 // Id is the document ID.
@@ -81,7 +131,7 @@ func (s *IndexService) Pipeline(pipeline string) *IndexService {
 
 // Refresh the index after performing the operation.
 //
-// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-refresh.html
+// See https://www.elastic.co/guide/en/elasticsearch/reference/6.8/docs-refresh.html
 // for details.
 func (s *IndexService) Refresh(refresh string) *IndexService {
 	s.refresh = refresh
@@ -142,9 +192,17 @@ func (s *IndexService) VersionType(versionType string) *IndexService {
 	return s
 }
 
-// Pretty indicates that the JSON response be indented and human readable.
-func (s *IndexService) Pretty(pretty bool) *IndexService {
-	s.pretty = pretty
+// IfSeqNo indicates to only perform the index operation if the last
+// operation that has changed the document has the specified sequence number.
+func (s *IndexService) IfSeqNo(seqNo int64) *IndexService {
+	s.ifSeqNo = &seqNo
+	return s
+}
+
+// IfPrimaryTerm indicates to only perform the index operation if the
+// last operation that has changed the document has the specified primary term.
+func (s *IndexService) IfPrimaryTerm(primaryTerm int64) *IndexService {
+	s.ifPrimaryTerm = &primaryTerm
 	return s
 }
 
@@ -175,7 +233,7 @@ func (s *IndexService) buildURL() (string, string, url.Values, error) {
 		})
 	} else {
 		// Automatic ID generation
-		// See https://www.elastic.co/guide/en/elasticsearch/reference/6.7/docs-index_.html#index-creation
+		// See https://www.elastic.co/guide/en/elasticsearch/reference/6.8/docs-index_.html#index-creation
 		method = "POST"
 		path, err = uritemplates.Expand("/{index}/{type}/", map[string]string{
 			"index": s.index,
@@ -188,8 +246,17 @@ func (s *IndexService) buildURL() (string, string, url.Values, error) {
 
 	// Add query string parameters
 	params := url.Values{}
-	if s.pretty {
-		params.Set("pretty", "true")
+	if v := s.pretty; v != nil {
+		params.Set("pretty", fmt.Sprint(*v))
+	}
+	if v := s.human; v != nil {
+		params.Set("human", fmt.Sprint(*v))
+	}
+	if v := s.errorTrace; v != nil {
+		params.Set("error_trace", fmt.Sprint(*v))
+	}
+	if len(s.filterPath) > 0 {
+		params.Set("filter_path", strings.Join(s.filterPath, ","))
 	}
 	if s.waitForActiveShards != "" {
 		params.Set("wait_for_active_shards", s.waitForActiveShards)
@@ -223,6 +290,12 @@ func (s *IndexService) buildURL() (string, string, url.Values, error) {
 	}
 	if s.versionType != "" {
 		params.Set("version_type", s.versionType)
+	}
+	if v := s.ifSeqNo; v != nil {
+		params.Set("if_seq_no", fmt.Sprintf("%d", *v))
+	}
+	if v := s.ifPrimaryTerm; v != nil {
+		params.Set("if_primary_term", fmt.Sprintf("%d", *v))
 	}
 	return method, path, params, nil
 }
@@ -268,10 +341,11 @@ func (s *IndexService) Do(ctx context.Context) (*IndexResponse, error) {
 
 	// Get HTTP response
 	res, err := s.client.PerformRequest(ctx, PerformRequestOptions{
-		Method: method,
-		Path:   path,
-		Params: params,
-		Body:   body,
+		Method:  method,
+		Path:    path,
+		Params:  params,
+		Body:    body,
+		Headers: s.headers,
 	})
 	if err != nil {
 		return nil, err

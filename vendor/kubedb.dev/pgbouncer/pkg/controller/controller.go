@@ -24,7 +24,6 @@ import (
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
-	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	core "k8s.io/api/core/v1"
@@ -40,7 +39,6 @@ import (
 	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
-	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat_util "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -198,7 +196,7 @@ func (c *Controller) pushFailureEvent(pgbouncer *api.PgBouncer, reason string) {
 	pg, err := kutildb.UpdatePgBouncerStatus(c.ExtClient.KubedbV1alpha1(), pgbouncer, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
-		in.ObservedGeneration = types.NewIntHash(pgbouncer.Generation, meta_util.GenerationHash(pgbouncer))
+		in.ObservedGeneration = pgbouncer.Generation
 		return in
 	})
 	if err != nil {

@@ -27,8 +27,6 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
@@ -116,13 +114,10 @@ func (c *Controller) createConfigMap(redis *api.Redis) (*core.ConfigMap, kutil.V
 		Namespace: redis.Namespace,
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, redis)
-	if rerr != nil {
-		return nil, kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(redis, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
 	return core_util.CreateOrPatchConfigMap(c.Client, meta, func(in *core.ConfigMap) *core.ConfigMap {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = redis.OffshootSelectors()
 		in.Annotations = redis.Spec.ServiceTemplate.Annotations
 

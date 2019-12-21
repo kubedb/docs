@@ -203,15 +203,13 @@ func (c *Controller) createRestoreJob(mongodb *api.MongoDB, snapshot *api.Snapsh
 		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, volume)
 	}
 
-	if c.EnableRBAC {
-		if snapshot.Spec.PodTemplate.Spec.ServiceAccountName == "" {
-			if err := c.ensureSnapshotRBAC(mongodb); err != nil {
-				return nil, err
-			}
-			job.Spec.Template.Spec.ServiceAccountName = mongodb.SnapshotSAName()
-		} else {
-			job.Spec.Template.Spec.ServiceAccountName = snapshot.Spec.PodTemplate.Spec.ServiceAccountName
+	if snapshot.Spec.PodTemplate.Spec.ServiceAccountName == "" {
+		if err := c.ensureSnapshotRBAC(mongodb); err != nil {
+			return nil, err
 		}
+		job.Spec.Template.Spec.ServiceAccountName = mongodb.SnapshotSAName()
+	} else {
+		job.Spec.Template.Spec.ServiceAccountName = snapshot.Spec.PodTemplate.Spec.ServiceAccountName
 	}
 
 	return c.Client.BatchV1().Jobs(mongodb.Namespace).Create(job)
@@ -390,15 +388,13 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 		})
 	}
 
-	if c.EnableRBAC {
-		if snapshot.Spec.PodTemplate.Spec.ServiceAccountName == "" {
-			job.Spec.Template.Spec.ServiceAccountName = mongodb.SnapshotSAName()
-			if err := c.ensureSnapshotRBAC(mongodb); err != nil {
-				return nil, err
-			}
-		} else {
-			job.Spec.Template.Spec.ServiceAccountName = snapshot.Spec.PodTemplate.Spec.ServiceAccountName
+	if snapshot.Spec.PodTemplate.Spec.ServiceAccountName == "" {
+		job.Spec.Template.Spec.ServiceAccountName = mongodb.SnapshotSAName()
+		if err := c.ensureSnapshotRBAC(mongodb); err != nil {
+			return nil, err
 		}
+	} else {
+		job.Spec.Template.Spec.ServiceAccountName = snapshot.Spec.PodTemplate.Spec.ServiceAccountName
 	}
 
 	return job, nil

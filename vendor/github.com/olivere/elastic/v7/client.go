@@ -26,7 +26,7 @@ import (
 
 const (
 	// Version is the current version of Elastic.
-	Version = "7.0.6"
+	Version = "7.0.9"
 
 	// DefaultURL is the default endpoint of Elasticsearch on the local machine.
 	// It is used e.g. when initializing a new Client without a specific URL.
@@ -97,6 +97,9 @@ var (
 
 	// noRetries is a retrier that does not retry.
 	noRetries = NewStopRetrier()
+
+	// noDeprecationLog is a no-op for logging deprecations.
+	noDeprecationLog = func(*http.Request, *http.Response) {}
 )
 
 // Doer is an interface to perform HTTP requests.
@@ -117,12 +120,13 @@ type Client struct {
 	conns   []*conn      // all connections
 	cindex  int          // index into conns
 
-	mu                        sync.RWMutex    // guards the next block
-	urls                      []string        // set of URLs passed initially to the client
-	running                   bool            // true if the client's background processes are running
-	errorlog                  Logger          // error log for critical messages
-	infolog                   Logger          // information log for e.g. response times
-	tracelog                  Logger          // trace log for debugging
+	mu                        sync.RWMutex // guards the next block
+	urls                      []string     // set of URLs passed initially to the client
+	running                   bool         // true if the client's background processes are running
+	errorlog                  Logger       // error log for critical messages
+	infolog                   Logger       // information log for e.g. response times
+	tracelog                  Logger       // trace log for debugging
+	deprecationlog            func(*http.Request, *http.Response)
 	scheme                    string          // http or https
 	healthcheckEnabled        bool            // healthchecks enabled or disabled
 	healthcheckTimeoutStartup time.Duration   // time the healthcheck waits for a response from Elasticsearch on startup
@@ -143,6 +147,7 @@ type Client struct {
 	gzipEnabled               bool            // gzip compression enabled or disabled (default)
 	requiredPlugins           []string        // list of required plugins
 	retrier                   Retrier         // strategy for retries
+	headers                   http.Header     // a list of default headers to add to each request
 }
 
 // NewClient creates a new client to work with Elasticsearch.
@@ -244,6 +249,7 @@ func NewSimpleClient(options ...ClientOptionFunc) (*Client, error) {
 		sendGetBodyAs:             DefaultSendGetBodyAs,
 		gzipEnabled:               DefaultGzipEnabled,
 		retrier:                   noRetries, // no retries by default
+		deprecationlog:            noDeprecationLog,
 	}
 
 	// Run the options on it
@@ -329,6 +335,7 @@ func DialContext(ctx context.Context, options ...ClientOptionFunc) (*Client, err
 		sendGetBodyAs:             DefaultSendGetBodyAs,
 		gzipEnabled:               DefaultGzipEnabled,
 		retrier:                   noRetries, // no retries by default
+		deprecationlog:            noDeprecationLog,
 	}
 
 	// Run the options on it
@@ -720,6 +727,15 @@ func SetRetrier(retrier Retrier) ClientOptionFunc {
 	}
 }
 
+// SetHeaders adds a list of default HTTP headers that will be added to
+// each requests executed by PerformRequest.
+func SetHeaders(headers http.Header) ClientOptionFunc {
+	return func(c *Client) error {
+		c.headers = headers
+		return nil
+	}
+}
+
 // String returns a string representation of the client status.
 func (c *Client) String() string {
 	c.connsMu.Lock()
@@ -800,6 +816,8 @@ func (c *Client) Stop() {
 
 	c.infof("elastic: client stopped")
 }
+
+var logDeprecation = func(*http.Request, *http.Response) {}
 
 // errorf logs to the error log.
 func (c *Client) errorf(format string, args ...interface{}) {
@@ -958,13 +976,7 @@ func (c *Client) sniffNode(ctx context.Context, url string) []*conn {
 	if err != nil {
 		return nodes
 	}
-	if res == nil {
-		return nodes
-	}
-
-	if res.Body != nil {
-		defer res.Body.Close()
-	}
+	defer res.Body.Close()
 
 	var info NodesInfoResponse
 	if err := json.NewDecoder(res.Body).Decode(&info); err == nil {
@@ -999,7 +1011,7 @@ func (c *Client) extractHostname(scheme, address string) string {
 	if idx := strings.Index(s, "/"); idx >= 0 {
 		s = s[idx+1:]
 	}
-	if strings.Index(s, ":") < 0 {
+	if !strings.Contains(s, ":") {
 		return ""
 	}
 	return fmt.Sprintf("%s://%s", scheme, s)
@@ -1164,11 +1176,9 @@ func (c *Client) startupHealthcheck(parentCtx context.Context, timeout time.Dura
 		case <-parentCtx.Done():
 			lastErr = parentCtx.Err()
 			done = true
-			break
 		case <-time.After(1 * time.Second):
 			if time.Since(start) > timeout {
 				done = true
-				break
 			}
 		}
 	}
@@ -1269,6 +1279,7 @@ func (c *Client) PerformRequest(ctx context.Context, opt PerformRequestOptions) 
 	if opt.Retrier != nil {
 		retrier = opt.Retrier
 	}
+	defaultHeaders := c.headers
 	c.mu.RUnlock()
 
 	var err error
@@ -1318,16 +1329,21 @@ func (c *Client) PerformRequest(ctx context.Context, opt PerformRequestOptions) 
 			c.errorf("elastic: cannot create request for %s %s: %v", strings.ToUpper(opt.Method), conn.URL()+pathWithParams, err)
 			return nil, err
 		}
-
 		if basicAuth {
 			req.SetBasicAuth(basicAuthUsername, basicAuthPassword)
 		}
 		if opt.ContentType != "" {
 			req.Header.Set("Content-Type", opt.ContentType)
 		}
-
 		if len(opt.Headers) > 0 {
 			for key, value := range opt.Headers {
+				for _, v := range value {
+					req.Header.Add(key, v)
+				}
+			}
+		}
+		if len(defaultHeaders) > 0 {
+			for key, value := range defaultHeaders {
 				for _, v := range value {
 					req.Header.Add(key, v)
 				}
@@ -1369,16 +1385,17 @@ func (c *Client) PerformRequest(ctx context.Context, opt PerformRequestOptions) 
 			time.Sleep(wait)
 			continue // try again
 		}
-		if res.Body != nil {
-			defer res.Body.Close()
-		}
+		defer res.Body.Close()
 
 		// Tracing
 		c.dumpResponse(res)
 
 		// Log deprecation warnings as errors
-		if s := res.Header.Get("Warning"); s != "" {
-			c.errorf(s)
+		if len(res.Header["Warning"]) > 0 {
+			c.deprecationlog((*http.Request)(req), res)
+			for _, warning := range res.Header["Warning"] {
+				c.errorf("Deprecation warning: %s", warning)
+			}
 		}
 
 		// Check for errors
@@ -1472,9 +1489,9 @@ func (c *Client) Reindex() *ReindexService {
 
 // TermVectors returns information and statistics on terms in the fields
 // of a particular document.
-func (c *Client) TermVectors(index, typ string) *TermvectorsService {
+func (c *Client) TermVectors(index string) *TermvectorsService {
 	builder := NewTermvectorsService(c)
-	builder = builder.Index(index).Type(typ)
+	builder = builder.Index(index)
 	return builder
 }
 
@@ -1941,32 +1958,30 @@ func (c *Client) XPackSecurityChangePassword(username string) *XPackSecurityChan
 	return NewXPackSecurityChangePasswordService(c).Username(username)
 }
 
-/*
-// XPackSecurityGetUser gets a native user.
-func (c *Client) XPackSecurityGetUser(userName string) *XPackSecurityGetUserService {
-	return NewXPackSecurityGetUserService(c).Name(userName)
+// XPackSecurityGetUser gets details about one or more users.
+func (c *Client) XPackSecurityGetUser(usernames ...string) *XPackSecurityGetUserService {
+	return NewXPackSecurityGetUserService(c).Usernames(usernames...)
 }
 
-// XPackSecurityPutUser adds or updates a native user.
-func (c *Client) XPackSecurityPutUser(userName string) *XPackSecurityPutUserService {
-	return NewXPackSecurityPutUserService(c).Name(userName)
+// XPackSecurityPutUser adds or updates a user.
+func (c *Client) XPackSecurityPutUser(username string) *XPackSecurityPutUserService {
+	return NewXPackSecurityPutUserService(c).Username(username)
 }
 
-// XPackSecurityEnableUser enables a native user.
-func (c *Client) XPackSecurityEnableUser(userName string) *XPackSecurityEnableUserService {
-	return NewXPackSecurityEnableUserService(c).Name(userName)
+// XPackSecurityEnableUser enables a user.
+func (c *Client) XPackSecurityEnableUser(username string) *XPackSecurityEnableUserService {
+	return NewXPackSecurityEnableUserService(c).Username(username)
 }
 
-// XPackSecurityEnableUser disables a native user.
-func (c *Client) XPackSecurityDisableUser(userName string) *XPackSecurityDisableUserService {
-	return NewXPackSecurityDisableUserService(c).Name(userName)
+// XPackSecurityDisableUser disables a user.
+func (c *Client) XPackSecurityDisableUser(username string) *XPackSecurityDisableUserService {
+	return NewXPackSecurityDisableUserService(c).Username(username)
 }
 
-// XPackSecurityDeleteUser deletes a native user.
-func (c *Client) XPackSecurityDeleteUser(userName string) *XPackSecurityDeleteUserService {
-	return NewXPackSecurityDeleteUserService(c).Name(userName)
+// XPackSecurityDeleteUser deletes a user.
+func (c *Client) XPackSecurityDeleteUser(username string) *XPackSecurityDeleteUserService {
+	return NewXPackSecurityDeleteUserService(c).Username(username)
 }
-*/
 
 // -- X-Pack Watcher --
 

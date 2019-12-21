@@ -39,7 +39,6 @@ import (
 )
 
 type ExtraOptions struct {
-	EnableRBAC                  bool
 	OperatorNamespace           string
 	RestrictToOperatorNamespace bool
 	GoverningService            string
@@ -62,7 +61,6 @@ func (s ExtraOptions) WatchNamespace() string {
 
 func NewExtraOptions() *ExtraOptions {
 	return &ExtraOptions{
-		EnableRBAC:        true,
 		OperatorNamespace: meta.Namespace(),
 		GoverningService:  "kubedb",
 		ResyncPeriod:      10 * time.Minute,
@@ -78,7 +76,6 @@ func NewExtraOptions() *ExtraOptions {
 
 func (s *ExtraOptions) AddGoFlags(fs *flag.FlagSet) {
 	fs.StringVar(&s.GoverningService, "governing-service", s.GoverningService, "Governing service for database statefulset")
-	fs.BoolVar(&s.EnableRBAC, "rbac", s.EnableRBAC, "Enable RBAC for operator & offshoot Kubernetes objects")
 
 	fs.Float64Var(&s.QPS, "qps", s.QPS, "The maximum QPS to the master from this client")
 	fs.IntVar(&s.Burst, "burst", s.Burst, "The maximum burst for throttle")
@@ -99,7 +96,6 @@ func (s *ExtraOptions) AddFlags(fs *pflag.FlagSet) {
 func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 	var err error
 
-	cfg.EnableRBAC = s.EnableRBAC
 	cfg.OperatorNamespace = s.OperatorNamespace
 	cfg.GoverningService = s.GoverningService
 

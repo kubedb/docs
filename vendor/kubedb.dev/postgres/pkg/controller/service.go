@@ -26,8 +26,6 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
@@ -122,13 +120,10 @@ func (c *Controller) createService(postgres *api.Postgres) (kutil.VerbType, erro
 		Namespace: postgres.Namespace,
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(postgres, api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres))
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = postgres.OffshootLabels()
 		in.Annotations = postgres.Spec.ServiceTemplate.Annotations
 
@@ -167,13 +162,10 @@ func (c *Controller) createReplicasService(postgres *api.Postgres) (kutil.VerbTy
 		Namespace: postgres.Namespace,
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(postgres, api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres))
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = postgres.OffshootLabels()
 		in.Annotations = postgres.Spec.ReplicaServiceTemplate.Annotations
 
@@ -218,10 +210,7 @@ func (c *Controller) ensureStatsService(postgres *api.Postgres) (kutil.VerbType,
 		return kutil.VerbUnchanged, err
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, postgres)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(postgres, api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres))
 
 	// reconcile stats service
 	meta := metav1.ObjectMeta{
@@ -229,7 +218,7 @@ func (c *Controller) ensureStatsService(postgres *api.Postgres) (kutil.VerbType,
 		Namespace: postgres.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = postgres.StatsServiceLabels()
 		in.Spec.Selector = postgres.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
@@ -246,7 +235,7 @@ func (c *Controller) ensureStatsService(postgres *api.Postgres) (kutil.VerbType,
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
-			ref,
+			postgres,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s stats service",

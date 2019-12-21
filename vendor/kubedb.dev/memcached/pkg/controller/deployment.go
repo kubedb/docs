@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package controller
 
 import (
@@ -25,8 +26,6 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -91,10 +90,7 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 		Namespace: memcached.Namespace,
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, memcached)
-	if rerr != nil {
-		return nil, kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(memcached, api.SchemeGroupVersion.WithKind(api.ResourceKindMemcached))
 
 	memcachedVersion, err := c.ExtClient.CatalogV1alpha1().MemcachedVersions().Get(string(memcached.Spec.Version), metav1.GetOptions{})
 	if err != nil {
@@ -104,7 +100,7 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 	return app_util.CreateOrPatchDeployment(c.Client, deploymentMeta, func(in *apps.Deployment) *apps.Deployment {
 		in.Labels = memcached.OffshootLabels()
 		in.Annotations = memcached.Spec.PodTemplate.Controller.Annotations
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 		in.Spec.Replicas = memcached.Spec.Replicas
 		in.Spec.Template.Labels = in.Labels
@@ -165,11 +161,7 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 		in.Spec.Template.Spec.PriorityClassName = memcached.Spec.PodTemplate.Spec.PriorityClassName
 		in.Spec.Template.Spec.Priority = memcached.Spec.PodTemplate.Spec.Priority
 		in.Spec.Template.Spec.SecurityContext = memcached.Spec.PodTemplate.Spec.SecurityContext
-
-		if c.EnableRBAC {
-			in.Spec.Template.Spec.ServiceAccountName = memcached.Spec.PodTemplate.Spec.ServiceAccountName
-		}
-
+		in.Spec.Template.Spec.ServiceAccountName = memcached.Spec.PodTemplate.Spec.ServiceAccountName
 		in.Spec.Strategy = memcached.Spec.UpdateStrategy
 
 		return in

@@ -26,8 +26,10 @@ import (
 	mcc "kubedb.dev/memcached/pkg/controller"
 	mgc "kubedb.dev/mongodb/pkg/controller"
 	myc "kubedb.dev/mysql/pkg/controller"
+	pxc "kubedb.dev/percona-xtradb/pkg/controller"
 	pgb "kubedb.dev/pgbouncer/pkg/controller"
 	pgc "kubedb.dev/postgres/pkg/controller"
+	prc "kubedb.dev/proxysql/pkg/controller"
 	rdc "kubedb.dev/redis/pkg/controller"
 
 	"github.com/appscode/go/log"
@@ -50,14 +52,16 @@ type Controller struct {
 	cronController snapc.CronControllerInterface
 
 	// DB controllers
+	edCtrl  *edc.Controller
+	esCtrl  *esc.Controller
+	mcCtrl  *mcc.Controller
 	mgCtrl  *mgc.Controller
 	myCtrl  *myc.Controller
-	pgCtrl  *pgc.Controller
-	esCtrl  *esc.Controller
-	edCtrl  *edc.Controller
-	rdCtrl  *rdc.Controller
-	mcCtrl  *mcc.Controller
 	pgbCtrl *pgb.Controller
+	pgCtrl  *pgc.Controller
+	prCtrl  *prc.Controller
+	pxCtrl  *pxc.Controller
+	rdCtrl  *rdc.Controller
 }
 
 func New(
@@ -92,25 +96,29 @@ func New(
 func (c *Controller) EnsureCustomResourceDefinitions() error {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 	crds := []*crd_api.CustomResourceDefinition{
+		dbapi.DormantDatabase{}.CustomResourceDefinition(),
 		dbapi.Elasticsearch{}.CustomResourceDefinition(),
 		dbapi.Etcd{}.CustomResourceDefinition(),
-		dbapi.Postgres{}.CustomResourceDefinition(),
-		dbapi.MySQL{}.CustomResourceDefinition(),
-		dbapi.MongoDB{}.CustomResourceDefinition(),
-		dbapi.Redis{}.CustomResourceDefinition(),
 		dbapi.Memcached{}.CustomResourceDefinition(),
+		dbapi.MongoDB{}.CustomResourceDefinition(),
+		dbapi.MySQL{}.CustomResourceDefinition(),
+		dbapi.PerconaXtraDB{}.CustomResourceDefinition(),
 		dbapi.PgBouncer{}.CustomResourceDefinition(),
-		dbapi.DormantDatabase{}.CustomResourceDefinition(),
+		dbapi.Postgres{}.CustomResourceDefinition(),
+		dbapi.ProxySQL{}.CustomResourceDefinition(),
+		dbapi.Redis{}.CustomResourceDefinition(),
 		dbapi.Snapshot{}.CustomResourceDefinition(),
 
 		catalogapi.ElasticsearchVersion{}.CustomResourceDefinition(),
 		catalogapi.EtcdVersion{}.CustomResourceDefinition(),
-		catalogapi.PostgresVersion{}.CustomResourceDefinition(),
-		catalogapi.MySQLVersion{}.CustomResourceDefinition(),
-		catalogapi.MongoDBVersion{}.CustomResourceDefinition(),
-		catalogapi.RedisVersion{}.CustomResourceDefinition(),
 		catalogapi.MemcachedVersion{}.CustomResourceDefinition(),
+		catalogapi.MongoDBVersion{}.CustomResourceDefinition(),
+		catalogapi.MySQLVersion{}.CustomResourceDefinition(),
+		catalogapi.PerconaXtraDBVersion{}.CustomResourceDefinition(),
 		catalogapi.PgBouncerVersion{}.CustomResourceDefinition(),
+		catalogapi.PostgresVersion{}.CustomResourceDefinition(),
+		catalogapi.ProxySQLVersion{}.CustomResourceDefinition(),
+		catalogapi.RedisVersion{}.CustomResourceDefinition(),
 
 		appcat.AppBinding{}.CustomResourceDefinition(),
 	}

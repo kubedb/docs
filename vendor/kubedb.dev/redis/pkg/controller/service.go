@@ -26,8 +26,6 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
@@ -86,13 +84,10 @@ func (c *Controller) createService(redis *api.Redis) (kutil.VerbType, error) {
 		Namespace: redis.Namespace,
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, redis)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(redis, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = redis.OffshootSelectors()
 		in.Annotations = redis.Spec.ServiceTemplate.Annotations
 
@@ -132,10 +127,7 @@ func (c *Controller) ensureStatsService(redis *api.Redis) (kutil.VerbType, error
 		return kutil.VerbUnchanged, err
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, redis)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(redis, api.SchemeGroupVersion.WithKind(api.ResourceCodeRedis))
 
 	// reconcile stats Service
 	meta := metav1.ObjectMeta{
@@ -143,7 +135,7 @@ func (c *Controller) ensureStatsService(redis *api.Redis) (kutil.VerbType, error
 		Namespace: redis.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = redis.StatsServiceLabels()
 		in.Spec.Selector = redis.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{

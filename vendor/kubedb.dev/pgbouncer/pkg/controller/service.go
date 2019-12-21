@@ -26,8 +26,6 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
@@ -86,13 +84,10 @@ func (c *Controller) createOrPatchService(pgbouncer *api.PgBouncer) (kutil.VerbT
 		Namespace: pgbouncer.Namespace,
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, pgbouncer)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(pgbouncer, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
 
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = pgbouncer.OffshootLabels()
 
 		in.Spec.Selector = pgbouncer.OffshootSelectors()
@@ -155,10 +150,8 @@ func (c *Controller) ensureStatsService(pgbouncer *api.PgBouncer) (kutil.VerbTyp
 		return kutil.VerbUnchanged, err
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, pgbouncer)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(pgbouncer, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
+
 	var statsPort int32
 	if pgbouncer.Spec.Monitor.Prometheus != nil && pgbouncer.Spec.Monitor.Prometheus.Port != 0 {
 		statsPort = pgbouncer.Spec.Monitor.Prometheus.Port
@@ -172,7 +165,7 @@ func (c *Controller) ensureStatsService(pgbouncer *api.PgBouncer) (kutil.VerbTyp
 		Namespace: pgbouncer.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = pgbouncer.StatsServiceLabels()
 		in.Spec.Selector = pgbouncer.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
@@ -190,7 +183,7 @@ func (c *Controller) ensureStatsService(pgbouncer *api.PgBouncer) (kutil.VerbTyp
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
-			ref,
+			pgbouncer,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s stats service",

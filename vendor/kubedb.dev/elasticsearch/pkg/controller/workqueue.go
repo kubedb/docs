@@ -29,7 +29,7 @@ func (c *Controller) initWatcher() {
 	c.esQueue = queue.New("Elasticsearch", c.MaxNumRequeues, c.NumThreads, c.runElasticsearch)
 	c.esLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Elasticsearches().Lister()
 	c.esVersionLister = c.KubedbInformerFactory.Catalog().V1alpha1().ElasticsearchVersions().Lister()
-	c.esInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.esQueue.GetQueue(), true))
+	c.esInformer.AddEventHandler(queue.NewReconcilableHandler(c.esQueue.GetQueue()))
 }
 
 func (c *Controller) runElasticsearch(key string) error {
