@@ -193,15 +193,13 @@ func (c *Controller) createRestoreJob(mysql *api.MySQL, snapshot *api.Snapshot) 
 		job.Spec.Template.Spec.Volumes = append(job.Spec.Template.Spec.Volumes, volume)
 	}
 
-	if c.EnableRBAC {
-		if snapshot.Spec.PodTemplate.Spec.ServiceAccountName == "" {
-			job.Spec.Template.Spec.ServiceAccountName = mysql.SnapshotSAName()
-			if err := c.ensureSnapshotRBAC(mysql); err != nil {
-				return nil, err
-			}
-		} else {
-			job.Spec.Template.Spec.ServiceAccountName = snapshot.Spec.PodTemplate.Spec.ServiceAccountName
+	if snapshot.Spec.PodTemplate.Spec.ServiceAccountName == "" {
+		job.Spec.Template.Spec.ServiceAccountName = mysql.SnapshotSAName()
+		if err := c.ensureSnapshotRBAC(mysql); err != nil {
+			return nil, err
 		}
+	} else {
+		job.Spec.Template.Spec.ServiceAccountName = snapshot.Spec.PodTemplate.Spec.ServiceAccountName
 	}
 
 	return c.Client.BatchV1().Jobs(mysql.Namespace).Create(job)
@@ -377,16 +375,13 @@ func (c *Controller) getSnapshotterJob(snapshot *api.Snapshot) (*batch.Job, erro
 		})
 	}
 
-	if c.EnableRBAC {
-		if snapshot.Spec.PodTemplate.Spec.ServiceAccountName == "" {
-			job.Spec.Template.Spec.ServiceAccountName = mysql.SnapshotSAName()
-			if err := c.ensureSnapshotRBAC(mysql); err != nil {
-				return nil, err
-			}
-		} else {
-			job.Spec.Template.Spec.ServiceAccountName = snapshot.Spec.PodTemplate.Spec.ServiceAccountName
+	if snapshot.Spec.PodTemplate.Spec.ServiceAccountName == "" {
+		job.Spec.Template.Spec.ServiceAccountName = mysql.SnapshotSAName()
+		if err := c.ensureSnapshotRBAC(mysql); err != nil {
+			return nil, err
 		}
-
+	} else {
+		job.Spec.Template.Spec.ServiceAccountName = snapshot.Spec.PodTemplate.Spec.ServiceAccountName
 	}
 
 	return job, nil

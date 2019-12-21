@@ -32,8 +32,6 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -208,10 +206,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 		Namespace: redis.Namespace,
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, redis)
-	if rerr != nil {
-		return nil, kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(redis, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
 	redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{})
 	if err != nil {
@@ -221,7 +216,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Labels = redis.OffshootLabels()
 		in.Annotations = redis.Spec.PodTemplate.Controller.Annotations
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 		if redis.Spec.Mode == api.RedisModeStandalone {
 			in.Spec.Replicas = types.Int32P(1)
@@ -324,11 +319,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 		in.Spec.Template.Spec.PriorityClassName = redis.Spec.PodTemplate.Spec.PriorityClassName
 		in.Spec.Template.Spec.Priority = redis.Spec.PodTemplate.Spec.Priority
 		in.Spec.Template.Spec.SecurityContext = redis.Spec.PodTemplate.Spec.SecurityContext
-
-		if c.EnableRBAC {
-			in.Spec.Template.Spec.ServiceAccountName = redis.Spec.PodTemplate.Spec.ServiceAccountName
-		}
-
+		in.Spec.Template.Spec.ServiceAccountName = redis.Spec.PodTemplate.Spec.ServiceAccountName
 		in.Spec.UpdateStrategy = redis.Spec.UpdateStrategy
 		in = upsertUserEnv(in, redis)
 		in = upsertCustomConfig(in, redis)

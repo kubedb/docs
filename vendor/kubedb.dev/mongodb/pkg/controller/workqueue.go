@@ -28,7 +28,7 @@ func (c *Controller) initWatcher() {
 	c.mgInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().MongoDBs().Informer()
 	c.mgQueue = queue.New("MongoDB", c.MaxNumRequeues, c.NumThreads, c.runMongoDB)
 	c.mgLister = c.KubedbInformerFactory.Kubedb().V1alpha1().MongoDBs().Lister()
-	c.mgInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.mgQueue.GetQueue(), true))
+	c.mgInformer.AddEventHandler(queue.NewReconcilableHandler(c.mgQueue.GetQueue()))
 }
 
 func (c *Controller) runMongoDB(key string) error {

@@ -30,8 +30,6 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -95,20 +93,17 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		Namespace: mysql.Namespace,
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql)
-	if rerr != nil {
-		return nil, kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
 	mysqlVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{})
 	if err != nil {
-		return nil, kutil.VerbUnchanged, rerr
+		return nil, kutil.VerbUnchanged, err
 	}
 
 	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Labels = mysql.OffshootLabels()
 		in.Annotations = mysql.Spec.PodTemplate.Controller.Annotations
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 		in.Spec.Replicas = mysql.Spec.Replicas
 		in.Spec.ServiceName = c.GoverningService
@@ -188,7 +183,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 				Args: []string{
 					"-c",
 					// DATA_SOURCE_NAME=user:password@tcp(localhost:5555)/dbname
-					// ref: https://github.com/prometheus/mysqld_exporter#setting-the-mysql-servers-data-source-name
+					// owner: https://github.com/prometheus/mysqld_exporter#setting-the-mysql-servers-data-source-name
 					fmt.Sprintf(`export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"
 						/bin/mysqld_exporter --web.listen-address=:%v --web.telemetry-path=%v %v`,
 						mysql.Spec.Monitor.Prometheus.Port, mysql.StatsService().Path(), strings.Join(mysql.Spec.Monitor.Args, " ")),
@@ -225,11 +220,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		in.Spec.Template.Spec.PriorityClassName = mysql.Spec.PodTemplate.Spec.PriorityClassName
 		in.Spec.Template.Spec.Priority = mysql.Spec.PodTemplate.Spec.Priority
 		in.Spec.Template.Spec.SecurityContext = mysql.Spec.PodTemplate.Spec.SecurityContext
-
-		if c.EnableRBAC {
-			in.Spec.Template.Spec.ServiceAccountName = mysql.Spec.PodTemplate.Spec.ServiceAccountName
-		}
-
+		in.Spec.Template.Spec.ServiceAccountName = mysql.Spec.PodTemplate.Spec.ServiceAccountName
 		in.Spec.UpdateStrategy = mysql.Spec.UpdateStrategy
 		in = upsertUserEnv(in, mysql)
 

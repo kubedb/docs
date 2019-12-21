@@ -28,8 +28,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
@@ -71,13 +69,10 @@ func createService(kubecli kubernetes.Interface, svcName, clusterIP string, port
 		Namespace: etcd.Namespace,
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(etcd, api.SchemeGroupVersion.WithKind(api.ResourceKindEtcd))
 
 	_, _, err := core_util.CreateOrPatchService(kubecli, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = etcd.OffshootLabels()
 		in.Annotations = etcd.Spec.ServiceTemplate.Annotations
 		if in.Annotations == nil {
@@ -136,10 +131,7 @@ func (c *Controller) ensureStatsService(etcd *api.Etcd) (kutil.VerbType, error) 
 		return kutil.VerbUnchanged, err
 	}
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(etcd, api.SchemeGroupVersion.WithKind(api.ResourceKindEtcd))
 
 	// reconcile stats Service
 	meta := metav1.ObjectMeta{
@@ -147,7 +139,7 @@ func (c *Controller) ensureStatsService(etcd *api.Etcd) (kutil.VerbType, error) 
 		Namespace: etcd.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = etcd.StatsServiceLabels()
 		in.Spec.Selector = etcd.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
@@ -162,7 +154,7 @@ func (c *Controller) ensureStatsService(etcd *api.Etcd) (kutil.VerbType, error) 
 	})
 	if err != nil {
 		c.recorder.Eventf(
-			ref,
+			etcd,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to reconcile stats service. Reason: %v",
@@ -171,7 +163,7 @@ func (c *Controller) ensureStatsService(etcd *api.Etcd) (kutil.VerbType, error) 
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
-			ref,
+			etcd,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s stats service",

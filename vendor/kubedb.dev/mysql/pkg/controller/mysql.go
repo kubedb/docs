@@ -23,15 +23,12 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/mysql/pkg/admission"
 
-	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -75,11 +72,9 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	}
 	c.GoverningService = governingService
 
-	if c.EnableRBAC {
-		// Ensure Service account, role, rolebinding, and PSP for database statefulsets
-		if err := c.ensureDatabaseRBAC(mysql); err != nil {
-			return err
-		}
+	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
+	if err := c.ensureDatabaseRBAC(mysql); err != nil {
+		return err
 	}
 
 	// ensure database Service
@@ -154,7 +149,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 
 	my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = types.NewIntHash(mysql.Generation, meta_util.GenerationHash(mysql))
+		in.ObservedGeneration = mysql.Generation
 		return in
 	})
 	if err != nil {
@@ -270,15 +265,12 @@ func (c *Controller) initializeFromSnapshot(mysql *api.MySQL) error {
 }
 
 func (c *Controller) terminate(mysql *api.MySQL) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mysql)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
 	// If TerminationPolicy is "pause", keep everything (ie, PVCs,Secrets,Snapshots) intact.
 	// In operator, create dormantdatabase
 	if mysql.Spec.TerminationPolicy == api.TerminationPolicyPause {
-		if err := c.removeOwnerReferenceFromOffshoots(mysql, ref); err != nil {
+		if err := c.removeOwnerReferenceFromOffshoots(mysql); err != nil {
 			return err
 		}
 
@@ -303,7 +295,7 @@ func (c *Controller) terminate(mysql *api.MySQL) error {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
 		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
 		// In both these cases, don't create dormantdatabase
-		if err := c.setOwnerReferenceToOffshoots(mysql, ref); err != nil {
+		if err := c.setOwnerReferenceToOffshoots(mysql, owner); err != nil {
 			return err
 		}
 	}
@@ -319,7 +311,7 @@ func (c *Controller) terminate(mysql *api.MySQL) error {
 	return nil
 }
 
-func (c *Controller) setOwnerReferenceToOffshoots(mysql *api.MySQL, ref *core.ObjectReference) error {
+func (c *Controller) setOwnerReferenceToOffshoots(mysql *api.MySQL, owner *metav1.OwnerReference) error {
 	selector := labels.SelectorFromSet(mysql.OffshootSelectors())
 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
@@ -330,10 +322,10 @@ func (c *Controller) setOwnerReferenceToOffshoots(mysql *api.MySQL, ref *core.Ob
 			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 			mysql.Namespace,
 			selector,
-			ref); err != nil {
+			owner); err != nil {
 			return err
 		}
-		if err := c.wipeOutDatabase(mysql.ObjectMeta, mysql.Spec.GetSecrets(), ref); err != nil {
+		if err := c.wipeOutDatabase(mysql.ObjectMeta, mysql.Spec.GetSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
@@ -343,7 +335,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(mysql *api.MySQL, ref *core.Ob
 			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 			mysql.Namespace,
 			selector,
-			ref); err != nil {
+			mysql); err != nil {
 			return err
 		}
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
@@ -351,7 +343,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(mysql *api.MySQL, ref *core.Ob
 			core.SchemeGroupVersion.WithResource("secrets"),
 			mysql.Namespace,
 			mysql.Spec.GetSecrets(),
-			ref); err != nil {
+			mysql); err != nil {
 			return err
 		}
 	}
@@ -361,10 +353,10 @@ func (c *Controller) setOwnerReferenceToOffshoots(mysql *api.MySQL, ref *core.Ob
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		mysql.Namespace,
 		selector,
-		ref)
+		owner)
 }
 
-func (c *Controller) removeOwnerReferenceFromOffshoots(mysql *api.MySQL, ref *core.ObjectReference) error {
+func (c *Controller) removeOwnerReferenceFromOffshoots(mysql *api.MySQL) error {
 	// First, Get LabelSelector for Other Components
 	labelSelector := labels.SelectorFromSet(mysql.OffshootSelectors())
 
@@ -373,7 +365,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(mysql *api.MySQL, ref *co
 		api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 		mysql.Namespace,
 		labelSelector,
-		ref); err != nil {
+		mysql); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
@@ -381,7 +373,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(mysql *api.MySQL, ref *co
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		mysql.Namespace,
 		labelSelector,
-		ref); err != nil {
+		mysql); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
@@ -389,7 +381,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(mysql *api.MySQL, ref *co
 		core.SchemeGroupVersion.WithResource("secrets"),
 		mysql.Namespace,
 		mysql.Spec.GetSecrets(),
-		ref); err != nil {
+		mysql); err != nil {
 		return err
 	}
 	return nil

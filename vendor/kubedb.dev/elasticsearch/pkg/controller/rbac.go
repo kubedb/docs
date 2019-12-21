@@ -23,17 +23,12 @@ import (
 	rbac "k8s.io/api/rbac/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	core_util "kmodules.xyz/client-go/core/v1"
 	rbac_util "kmodules.xyz/client-go/rbac/v1beta1"
 )
 
 func (c *Controller) ensureRole(db *api.Elasticsearch, name string, pspName string) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, db)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 	// Create new Roles
 	_, _, err := rbac_util.CreateOrPatchRole(
@@ -43,7 +38,7 @@ func (c *Controller) ensureRole(db *api.Elasticsearch, name string, pspName stri
 			Namespace: db.Namespace,
 		},
 		func(in *rbac.Role) *rbac.Role {
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Labels = db.OffshootLabels()
 			in.Rules = []rbac.PolicyRule{}
 			if pspName != "" {
@@ -62,10 +57,8 @@ func (c *Controller) ensureRole(db *api.Elasticsearch, name string, pspName stri
 }
 
 func (c *Controller) createRoleBinding(db *api.Elasticsearch, roleName string, saName string) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, db)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+
 	// Ensure new RoleBindings
 	_, _, err := rbac_util.CreateOrPatchRoleBinding(
 		c.Client,
@@ -74,7 +67,7 @@ func (c *Controller) createRoleBinding(db *api.Elasticsearch, roleName string, s
 			Namespace: db.Namespace,
 		},
 		func(in *rbac.RoleBinding) *rbac.RoleBinding {
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Labels = db.OffshootLabels()
 			in.RoleRef = rbac.RoleRef{
 				APIGroup: rbac.GroupName,
@@ -95,10 +88,8 @@ func (c *Controller) createRoleBinding(db *api.Elasticsearch, roleName string, s
 }
 
 func (c *Controller) createServiceAccount(db *api.Elasticsearch, saName string) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, db)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+
 	// Create new ServiceAccount
 	_, _, err := core_util.CreateOrPatchServiceAccount(
 		c.Client,
@@ -107,7 +98,7 @@ func (c *Controller) createServiceAccount(db *api.Elasticsearch, saName string) 
 			Namespace: db.Namespace,
 		},
 		func(in *core.ServiceAccount) *core.ServiceAccount {
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Labels = db.OffshootLabels()
 			return in
 		},
@@ -143,7 +134,7 @@ func (c *Controller) ensureDatabaseRBAC(elasticsearch *api.Elasticsearch) error 
 		}
 	} else if err != nil {
 		return err
-	} else if !core_util.IsOwnedBy(sa, elasticsearch) {
+	} else if owned, _ := core_util.IsOwnedBy(sa, elasticsearch); !owned {
 		// user provided the service account, so do nothing.
 		return nil
 	}

@@ -23,14 +23,11 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/redis/pkg/admission"
 
-	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -77,11 +74,9 @@ func (c *Controller) create(redis *api.Redis) error {
 		}
 	}
 
-	if c.EnableRBAC {
-		// Ensure ClusterRoles for statefulsets
-		if err := c.ensureRBACStuff(redis); err != nil {
-			return err
-		}
+	// Ensure ClusterRoles for statefulsets
+	if err := c.ensureRBACStuff(redis); err != nil {
+		return err
 	}
 
 	// ensure database Service
@@ -114,7 +109,7 @@ func (c *Controller) create(redis *api.Redis) error {
 
 	rd, err := util.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), redis, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = types.NewIntHash(redis.Generation, meta_util.GenerationHash(redis))
+		in.ObservedGeneration = redis.Generation
 		return in
 	})
 	if err != nil {
@@ -162,15 +157,10 @@ func (c *Controller) create(redis *api.Redis) error {
 }
 
 func (c *Controller) terminate(redis *api.Redis) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, redis)
-	if rerr != nil {
-		return rerr
-	}
-
 	// If TerminationPolicy is "terminate", keep everything (ie, PVCs,Secrets,Snapshots) intact.
 	// In operator, create dormantdatabase
 	if redis.Spec.TerminationPolicy == api.TerminationPolicyPause {
-		if err := c.removeOwnerReferenceFromOffshoots(redis, ref); err != nil {
+		if err := c.removeOwnerReferenceFromOffshoots(redis); err != nil {
 			return err
 		}
 
@@ -195,7 +185,7 @@ func (c *Controller) terminate(redis *api.Redis) error {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
 		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
 		// In both these cases, don't create dormantdatabase
-		if err := c.setOwnerReferenceToOffshoots(redis, ref); err != nil {
+		if err := c.setOwnerReferenceToOffshoots(redis); err != nil {
 			return err
 		}
 	}
@@ -209,7 +199,8 @@ func (c *Controller) terminate(redis *api.Redis) error {
 	return nil
 }
 
-func (c *Controller) setOwnerReferenceToOffshoots(redis *api.Redis, ref *core.ObjectReference) error {
+func (c *Controller) setOwnerReferenceToOffshoots(redis *api.Redis) error {
+	owner := metav1.NewControllerRef(redis, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 	selector := labels.SelectorFromSet(redis.OffshootSelectors())
 
 	// delete PVC for both "wipeOut" and "delete" TerminationPolicy.
@@ -218,10 +209,10 @@ func (c *Controller) setOwnerReferenceToOffshoots(redis *api.Redis, ref *core.Ob
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		redis.Namespace,
 		selector,
-		ref)
+		owner)
 }
 
-func (c *Controller) removeOwnerReferenceFromOffshoots(redis *api.Redis, ref *core.ObjectReference) error {
+func (c *Controller) removeOwnerReferenceFromOffshoots(redis *api.Redis) error {
 	// First, Get LabelSelector for Other Components
 	labelSelector := labels.SelectorFromSet(redis.OffshootSelectors())
 
@@ -230,5 +221,5 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(redis *api.Redis, ref *co
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		redis.Namespace,
 		labelSelector,
-		ref)
+		redis)
 }

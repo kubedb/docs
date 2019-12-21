@@ -23,15 +23,12 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/mongodb/pkg/admission"
 
-	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -73,11 +70,9 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		return fmt.Errorf(`failed to create governing Service for "%v/%v". Reason: %v`, mongodb.Namespace, mongodb.Name, err)
 	}
 
-	if c.EnableRBAC {
-		// Ensure Service account, role, rolebinding, and PSP for database statefulsets
-		if err := c.ensureDatabaseRBAC(mongodb); err != nil {
-			return err
-		}
+	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
+	if err := c.ensureDatabaseRBAC(mongodb); err != nil {
+		return err
 	}
 
 	// ensure database Service
@@ -161,7 +156,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 
 	mg, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = types.NewIntHash(mongodb.Generation, meta_util.GenerationHash(mongodb))
+		in.ObservedGeneration = mongodb.Generation
 		return in
 	})
 	if err != nil {
@@ -277,15 +272,12 @@ func (c *Controller) initializeFromSnapshot(mongodb *api.MongoDB) error {
 }
 
 func (c *Controller) terminate(mongodb *api.MongoDB) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, mongodb)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(mongodb, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
 	// If TerminationPolicy is "pause", keep everything (ie, PVCs,Secrets,Snapshots) intact.
 	// In operator, create dormantdatabase
 	if mongodb.Spec.TerminationPolicy == api.TerminationPolicyPause {
-		if err := c.removeOwnerReferenceFromOffshoots(mongodb, ref); err != nil {
+		if err := c.removeOwnerReferenceFromOffshoots(mongodb, mongodb); err != nil {
 			return err
 		}
 
@@ -310,7 +302,7 @@ func (c *Controller) terminate(mongodb *api.MongoDB) error {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
 		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
 		// In both these cases, don't create dormantdatabase
-		if err := c.setOwnerReferenceToOffshoots(mongodb, ref); err != nil {
+		if err := c.setOwnerReferenceToOffshoots(mongodb, owner); err != nil {
 			return err
 		}
 	}
@@ -326,7 +318,7 @@ func (c *Controller) terminate(mongodb *api.MongoDB) error {
 	return nil
 }
 
-func (c *Controller) setOwnerReferenceToOffshoots(mongodb *api.MongoDB, ref *core.ObjectReference) error {
+func (c *Controller) setOwnerReferenceToOffshoots(mongodb *api.MongoDB, owner *metav1.OwnerReference) error {
 	selector := labels.SelectorFromSet(mongodb.OffshootSelectors())
 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
@@ -337,10 +329,10 @@ func (c *Controller) setOwnerReferenceToOffshoots(mongodb *api.MongoDB, ref *cor
 			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 			mongodb.Namespace,
 			selector,
-			ref); err != nil {
+			owner); err != nil {
 			return err
 		}
-		if err := c.wipeOutDatabase(mongodb.ObjectMeta, mongodb.Spec.GetSecrets(), ref); err != nil {
+		if err := c.wipeOutDatabase(mongodb.ObjectMeta, mongodb.Spec.GetSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
@@ -350,7 +342,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(mongodb *api.MongoDB, ref *cor
 			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 			mongodb.Namespace,
 			selector,
-			ref); err != nil {
+			mongodb); err != nil {
 			return err
 		}
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
@@ -358,7 +350,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(mongodb *api.MongoDB, ref *cor
 			core.SchemeGroupVersion.WithResource("secrets"),
 			mongodb.Namespace,
 			mongodb.Spec.GetSecrets(),
-			ref); err != nil {
+			mongodb); err != nil {
 			return err
 		}
 	}
@@ -368,10 +360,10 @@ func (c *Controller) setOwnerReferenceToOffshoots(mongodb *api.MongoDB, ref *cor
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		mongodb.Namespace,
 		selector,
-		ref)
+		owner)
 }
 
-func (c *Controller) removeOwnerReferenceFromOffshoots(mongodb *api.MongoDB, ref *core.ObjectReference) error {
+func (c *Controller) removeOwnerReferenceFromOffshoots(mongodb *api.MongoDB, owner metav1.Object) error {
 	// First, Get LabelSelector for Other Components
 	labelSelector := labels.SelectorFromSet(mongodb.OffshootSelectors())
 
@@ -380,7 +372,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(mongodb *api.MongoDB, ref
 		api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 		mongodb.Namespace,
 		labelSelector,
-		ref); err != nil {
+		owner); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
@@ -388,7 +380,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(mongodb *api.MongoDB, ref
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		mongodb.Namespace,
 		labelSelector,
-		ref); err != nil {
+		owner); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
@@ -396,7 +388,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(mongodb *api.MongoDB, ref
 		core.SchemeGroupVersion.WithResource("secrets"),
 		mongodb.Namespace,
 		mongodb.Spec.GetSecrets(),
-		ref); err != nil {
+		owner); err != nil {
 		return err
 	}
 	return nil

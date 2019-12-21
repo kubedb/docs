@@ -27,8 +27,10 @@ import (
 	mcc "kubedb.dev/memcached/pkg/controller"
 	mgc "kubedb.dev/mongodb/pkg/controller"
 	myc "kubedb.dev/mysql/pkg/controller"
+	pxc "kubedb.dev/percona-xtradb/pkg/controller"
 	pgb "kubedb.dev/pgbouncer/pkg/controller"
 	pgc "kubedb.dev/postgres/pkg/controller"
+	prc "kubedb.dev/proxysql/pkg/controller"
 	rdc "kubedb.dev/redis/pkg/controller"
 
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
@@ -92,14 +94,17 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	ctrl.SnapInformer, ctrl.JobInformer = snapc.NewController(ctrl.Controller, nil, ctrl.Config, nil, recorder).InitInformer()
 	ctrl.RSInformer = restoresession.NewController(ctrl.Controller, nil, ctrl.Config, nil, recorder).InitInformer()
 
-	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
-	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
 	ctrl.edCtrl = edc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
+	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
+	ctrl.mcCtrl = mcc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
 	ctrl.mgCtrl = mgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
 	ctrl.myCtrl = myc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
-	ctrl.rdCtrl = rdc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
-	ctrl.mcCtrl = mcc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
 	ctrl.pgbCtrl = pgb.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
+	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
+	ctrl.prCtrl = prc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, ctrl.Config, recorder)
+	ctrl.pxCtrl = pxc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
+
+	ctrl.rdCtrl = rdc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
 
 	if err := ctrl.Init(); err != nil {
 		return nil, err
@@ -124,7 +129,7 @@ func (c *Controller) Init() error {
 		}
 	}
 
-	if err := c.pgCtrl.Init(); err != nil {
+	if err := c.edCtrl.Init(); err != nil {
 		return err
 	}
 
@@ -132,7 +137,7 @@ func (c *Controller) Init() error {
 		return err
 	}
 
-	if err := c.edCtrl.Init(); err != nil {
+	if err := c.mcCtrl.Init(); err != nil {
 		return err
 	}
 
@@ -144,11 +149,23 @@ func (c *Controller) Init() error {
 		return err
 	}
 
-	if err := c.rdCtrl.Init(); err != nil {
+	if err := c.pgbCtrl.Init(); err != nil {
 		return err
 	}
 
-	if err := c.mcCtrl.Init(); err != nil {
+	if err := c.pgCtrl.Init(); err != nil {
+		return err
+	}
+
+	if err := c.prCtrl.Init(); err != nil {
+		return err
+	}
+
+	if err := c.pxCtrl.Init(); err != nil {
+		return err
+	}
+
+	if err := c.rdCtrl.Init(); err != nil {
 		return err
 	}
 	return nil

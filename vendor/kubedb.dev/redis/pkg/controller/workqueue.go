@@ -28,7 +28,7 @@ func (c *Controller) initWatcher() {
 	c.rdInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Redises().Informer()
 	c.rdQueue = queue.New("Redis", c.MaxNumRequeues, c.NumThreads, c.runRedis)
 	c.rdLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Redises().Lister()
-	c.rdInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.rdQueue.GetQueue(), true))
+	c.rdInformer.AddEventHandler(queue.NewReconcilableHandler(c.rdQueue.GetQueue()))
 }
 
 func (c *Controller) runRedis(key string) error {

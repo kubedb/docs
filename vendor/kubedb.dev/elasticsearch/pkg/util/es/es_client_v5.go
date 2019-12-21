@@ -76,3 +76,16 @@ func (c *ESClientV5) GetAllNodesInfo() ([]NodeInfo, error) {
 func (c *ESClientV5) Stop() {
 	c.client.Stop()
 }
+
+func (c *ESClientV5) Ping(url string) (int, error) {
+	_, code, err := c.client.Ping(url).Do(context.Background())
+	return code, err
+}
+
+func (c *ESClientV5) WaitForGreenStatus(timeout string) error {
+	return c.client.WaitForGreenStatus(timeout)
+}
+
+func (c *ESClientV5) WaitForYellowStatus(timeout string) error {
+	return c.client.WaitForYellowStatus(timeout)
+}

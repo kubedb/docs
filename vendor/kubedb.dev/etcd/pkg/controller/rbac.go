@@ -23,8 +23,6 @@ import (
 	rbac "k8s.io/api/rbac/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	core_util "kmodules.xyz/client-go/core/v1"
 	rbac_util "kmodules.xyz/client-go/rbac/v1beta1"
 )
@@ -40,10 +38,7 @@ func (c *Controller) deleteRole(etcd *api.Etcd) error {
 }
 
 func (c *Controller) ensureRole(etcd *api.Etcd) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(etcd, api.SchemeGroupVersion.WithKind(api.ResourceKindEtcd))
 
 	// Create new Roles
 	_, _, err := rbac_util.CreateOrPatchRole(
@@ -53,7 +48,7 @@ func (c *Controller) ensureRole(etcd *api.Etcd) error {
 			Namespace: etcd.Namespace,
 		},
 		func(in *rbac.Role) *rbac.Role {
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Rules = []rbac.PolicyRule{
 				{
 					APIGroups:     []string{apps.GroupName},
@@ -84,10 +79,8 @@ func (c *Controller) deleteServiceAccount(etcd *api.Etcd) error {
 }
 
 func (c *Controller) createServiceAccount(etcd *api.Etcd) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(etcd, api.SchemeGroupVersion.WithKind(api.ResourceKindEtcd))
+
 	// Create new ServiceAccount
 	_, _, err := core_util.CreateOrPatchServiceAccount(
 		c.Client,
@@ -96,7 +89,7 @@ func (c *Controller) createServiceAccount(etcd *api.Etcd) error {
 			Namespace: etcd.Namespace,
 		},
 		func(in *core.ServiceAccount) *core.ServiceAccount {
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			return in
 		},
 	)
@@ -114,10 +107,8 @@ func (c *Controller) deleteRoleBinding(etcd *api.Etcd) error {
 }
 
 func (c *Controller) createRoleBinding(etcd *api.Etcd) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(etcd, api.SchemeGroupVersion.WithKind(api.ResourceKindEtcd))
+
 	// Ensure new RoleBindings
 	_, _, err := rbac_util.CreateOrPatchRoleBinding(
 		c.Client,
@@ -126,7 +117,7 @@ func (c *Controller) createRoleBinding(etcd *api.Etcd) error {
 			Namespace: etcd.Namespace,
 		},
 		func(in *rbac.RoleBinding) *rbac.RoleBinding {
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.RoleRef = rbac.RoleRef{
 				APIGroup: rbac.GroupName,
 				Kind:     "Role",

@@ -27,8 +27,6 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
@@ -163,19 +161,16 @@ func (c *Controller) ensureConfigMapFromCRD(pgbouncer *api.PgBouncer) (kutil.Ver
 		Name:      pgbouncer.OffshootName(),
 		Namespace: pgbouncer.Namespace,
 	}
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, pgbouncer)
-	if rerr != nil {
-		return kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(pgbouncer, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
 
 	cfg, err := c.generateConfig(pgbouncer)
 	if err != nil {
-		return kutil.VerbUnchanged, rerr
+		return kutil.VerbUnchanged, err
 	}
 
 	_, vt, err := core_util.CreateOrPatchConfigMap(c.Client, configMapMeta, func(in *core.ConfigMap) *core.ConfigMap {
 		in.Labels = pgbouncer.OffshootLabels()
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Data = map[string]string{
 			pbConfigFile: cfg,
 		}

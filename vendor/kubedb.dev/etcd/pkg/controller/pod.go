@@ -22,13 +22,10 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/etcd/pkg/util"
 
-	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -59,10 +56,7 @@ func (c *Controller) createPod(cluster *api.Etcd, members util.MemberSet, m *uti
 	}
 	token := cluster.Name
 
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, cluster)
-	if rerr != nil {
-		return nil, kutil.VerbUnchanged, rerr
-	}
+	owner := metav1.NewControllerRef(cluster, api.SchemeGroupVersion.WithKind(api.ResourceKindEtcd))
 
 	initContainers := []core.Container{
 		{
@@ -130,7 +124,7 @@ func (c *Controller) createPod(cluster *api.Etcd, members util.MemberSet, m *uti
 	}
 
 	return core_util.CreateOrPatchPod(c.Controller.Client, podMeta, func(in *core.Pod) *core.Pod {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = core_util.UpsertMap(in.Labels, cluster.OffshootLabels())
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
 			util.EtcdVersionAnnotationKey: string(cluster.Spec.Version),
@@ -279,7 +273,7 @@ func (c *Controller) upgradeOneMember(cl *Cluster, member *util.Member) error {
 		return fmt.Errorf("fail to update the etcd member (%s): %v", member.Name, err)
 	}
 	cl.logger.Infof("finished upgrading the etcd member %v", member.Name)
-	_, err = cl.eventsCli.Create(util.MemberUpgradedEvent(member.Name, types.StrYo(util.GetEtcdVersion(oldpod)), cl.cluster.Spec.Version, cl.cluster))
+	_, err = cl.eventsCli.Create(util.MemberUpgradedEvent(member.Name, util.GetEtcdVersion(oldpod), cl.cluster.Spec.Version, cl.cluster))
 	if err != nil {
 		cl.logger.Errorf("failed to create member upgraded event: %v", err)
 	}
@@ -395,11 +389,8 @@ func createPodPvc(client kubernetes.Interface, m *util.Member, etcd *api.Etcd) (
 			},
 			Spec: *etcd.Spec.Storage,
 		}
-		ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd)
-		if rerr != nil {
-			return nil, rerr
-		}
-		core_util.EnsureOwnerReference(&pvc.ObjectMeta, ref)
+		owner := metav1.NewControllerRef(etcd, api.SchemeGroupVersion.WithKind(api.ResourceKindEtcd))
+		core_util.EnsureOwnerReference(&pvc.ObjectMeta, owner)
 		return client.CoreV1().PersistentVolumeClaims(etcd.Namespace).Create(pvc)
 	}
 	return nil, nil

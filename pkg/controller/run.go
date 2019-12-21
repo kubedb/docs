@@ -64,10 +64,11 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 		}
 		// Only postgres, elasticsearch, mongodb and mysql has restoreSession queue initialized.
 		// Check RSQueue initialization in ctrl.init() (e.g. c.myCtrl.Init()) to know if it expects RS watcher.
-		c.pgCtrl.RSQueue.Run(stopCh)
 		c.esCtrl.RSQueue.Run(stopCh)
 		c.mgCtrl.RSQueue.Run(stopCh)
 		c.myCtrl.RSQueue.Run(stopCh)
+		c.pgCtrl.RSQueue.Run(stopCh)
+		c.pxCtrl.RSQueue.Run(stopCh)
 	}()
 
 	// Wait for all involved caches to be synced, before processing items from the queue is started
@@ -84,13 +85,15 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 		}
 	}
 
-	c.pgCtrl.RunControllers(stopCh)
-	c.esCtrl.RunControllers(stopCh)
 	c.edCtrl.RunControllers(stopCh)
+	c.esCtrl.RunControllers(stopCh)
+	c.mcCtrl.RunControllers(stopCh)
 	c.mgCtrl.RunControllers(stopCh)
 	c.myCtrl.RunControllers(stopCh)
+	c.pgCtrl.RunControllers(stopCh)
+	c.prCtrl.RunControllers(stopCh)
+	c.pxCtrl.RunControllers(stopCh)
 	c.rdCtrl.RunControllers(stopCh)
-	c.mcCtrl.RunControllers(stopCh)
 
 	<-stopCh
 	log.Infoln("Stopping KubeDB controller")

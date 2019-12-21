@@ -1,7 +1,24 @@
+/*
+Copyright The Stash Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package restic
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -138,27 +155,27 @@ func (w *ResticWrapper) cleanup(retentionPolicy v1alpha1.RetentionPolicy, host s
 
 	if retentionPolicy.KeepLast > 0 {
 		args = append(args, string(v1alpha1.KeepLast))
-		args = append(args, strconv.Itoa(retentionPolicy.KeepLast))
+		args = append(args, strconv.FormatInt(retentionPolicy.KeepLast, 10))
 	}
 	if retentionPolicy.KeepHourly > 0 {
 		args = append(args, string(v1alpha1.KeepHourly))
-		args = append(args, strconv.Itoa(retentionPolicy.KeepHourly))
+		args = append(args, strconv.FormatInt(retentionPolicy.KeepHourly, 10))
 	}
 	if retentionPolicy.KeepDaily > 0 {
 		args = append(args, string(v1alpha1.KeepDaily))
-		args = append(args, strconv.Itoa(retentionPolicy.KeepDaily))
+		args = append(args, strconv.FormatInt(retentionPolicy.KeepDaily, 10))
 	}
 	if retentionPolicy.KeepWeekly > 0 {
 		args = append(args, string(v1alpha1.KeepWeekly))
-		args = append(args, strconv.Itoa(retentionPolicy.KeepWeekly))
+		args = append(args, strconv.FormatInt(retentionPolicy.KeepWeekly, 10))
 	}
 	if retentionPolicy.KeepMonthly > 0 {
 		args = append(args, string(v1alpha1.KeepMonthly))
-		args = append(args, strconv.Itoa(retentionPolicy.KeepMonthly))
+		args = append(args, strconv.FormatInt(retentionPolicy.KeepMonthly, 10))
 	}
 	if retentionPolicy.KeepYearly > 0 {
 		args = append(args, string(v1alpha1.KeepYearly))
-		args = append(args, strconv.Itoa(retentionPolicy.KeepYearly))
+		args = append(args, strconv.FormatInt(retentionPolicy.KeepYearly, 10))
 	}
 	for _, tag := range retentionPolicy.KeepTags {
 		args = append(args, string(v1alpha1.KeepTag))
@@ -353,7 +370,7 @@ func (w *ResticWrapper) run(commands ...Command) ([]byte, error) {
 func formatError(err error, stdErr string) error {
 	parts := strings.Split(strings.TrimSuffix(stdErr, "\n"), "\n")
 	if len(parts) > 1 {
-		return fmt.Errorf("%s, reason: %s", err, parts[len(parts)-1:][0])
+		return errors.New(strings.Join(parts[1:], " "))
 	}
 	return err
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The KubeDB Authors.
+Copyright The KubeDB Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import (
 
 	versioned "kubedb.dev/apimachinery/client/clientset/versioned"
 	catalog "kubedb.dev/apimachinery/client/informers/externalversions/catalog"
+	dba "kubedb.dev/apimachinery/client/informers/externalversions/dba"
 	internalinterfaces "kubedb.dev/apimachinery/client/informers/externalversions/internalinterfaces"
 	kubedb "kubedb.dev/apimachinery/client/informers/externalversions/kubedb"
 
@@ -175,11 +176,16 @@ type SharedInformerFactory interface {
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
 	Catalog() catalog.Interface
+	Dba() dba.Interface
 	Kubedb() kubedb.Interface
 }
 
 func (f *sharedInformerFactory) Catalog() catalog.Interface {
 	return catalog.New(f, f.namespace, f.tweakListOptions)
+}
+
+func (f *sharedInformerFactory) Dba() dba.Interface {
+	return dba.New(f, f.namespace, f.tweakListOptions)
 }
 
 func (f *sharedInformerFactory) Kubedb() kubedb.Interface {

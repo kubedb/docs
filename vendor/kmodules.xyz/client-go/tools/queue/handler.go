@@ -1,3 +1,19 @@
+/*
+Copyright The Kmodules Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package queue
 
 import (
@@ -67,34 +83,6 @@ func NewReconcilableHandler(queue workqueue.RateLimitingInterface) cache.Resourc
 		},
 		enqueueUpdate: func(old, nu interface{}) bool {
 			return (nu.(metav1.Object)).GetDeletionTimestamp() != nil || !meta_util.AlreadyReconciled(nu)
-		},
-		enqueueDelete: true,
-	}
-}
-
-// Deprecated, should not be used after we drop support for Kubernetes 1.10. Use NewReconcilableHandler
-func NewObservableHandler(queue workqueue.RateLimitingInterface, enableStatusSubresource bool) cache.ResourceEventHandler {
-	return &QueueingEventHandler{
-		queue: queue,
-		enqueueAdd: func(o interface{}) bool {
-			return !meta_util.AlreadyObserved(o, enableStatusSubresource)
-		},
-		enqueueUpdate: func(old, nu interface{}) bool {
-			return (nu.(metav1.Object)).GetDeletionTimestamp() != nil ||
-				!meta_util.AlreadyObserved2(old, nu, enableStatusSubresource)
-		},
-		enqueueDelete: true,
-	}
-}
-
-// Deprecated, should not be used after we drop support for Kubernetes 1.10. Use NewReconcilableHandler
-func NewObservableUpdateHandler(queue workqueue.RateLimitingInterface, enableStatusSubresource bool) cache.ResourceEventHandler {
-	return &QueueingEventHandler{
-		queue:      queue,
-		enqueueAdd: nil,
-		enqueueUpdate: func(old, nu interface{}) bool {
-			return (nu.(metav1.Object)).GetDeletionTimestamp() != nil ||
-				!meta_util.AlreadyObserved2(old, nu, enableStatusSubresource)
 		},
 		enqueueDelete: true,
 	}

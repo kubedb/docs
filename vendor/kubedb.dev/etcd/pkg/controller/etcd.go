@@ -23,7 +23,6 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/etcd/pkg/admission"
 
-	. "github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	core "k8s.io/api/core/v1"
@@ -153,7 +152,7 @@ func (c *Controller) handleEtcdEvent(event *Event) error {
 
 	db, err := util.UpdateEtcdStatus(c.ExtClient.KubedbV1alpha1(), etcd, func(in *api.EtcdStatus) *api.EtcdStatus {
 		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = NewIntHash(etcd.Generation, meta_util.GenerationHash(etcd))
+		in.ObservedGeneration = etcd.Generation
 		return in
 	})
 
@@ -260,15 +259,12 @@ func (c *Controller) initialize(etcd *api.Etcd) error {
 }
 
 func (c *Controller) terminate(etcd *api.Etcd) error {
-	ref, rerr := reference.GetReference(clientsetscheme.Scheme, etcd)
-	if rerr != nil {
-		return rerr
-	}
+	owner := metav1.NewControllerRef(etcd, api.SchemeGroupVersion.WithKind(api.ResourceKindEtcd))
 
 	// If TerminationPolicy is "terminate", keep everything (ie, PVCs,Secrets,Snapshots) intact.
 	// In operator, create dormantdatabase
 	if etcd.Spec.TerminationPolicy == api.TerminationPolicyPause {
-		if err := c.removeOwnerReferenceFromOffshoots(etcd, ref); err != nil {
+		if err := c.removeOwnerReferenceFromOffshoots(etcd); err != nil {
 			return err
 		}
 		if _, err := c.createDormantDatabase(etcd); err != nil {
@@ -292,7 +288,7 @@ func (c *Controller) terminate(etcd *api.Etcd) error {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
 		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
 		// In both these cases, don't create dormantdatabase
-		if err := c.setOwnerReferenceToOffshoots(etcd, ref); err != nil {
+		if err := c.setOwnerReferenceToOffshoots(etcd, owner); err != nil {
 			return err
 		}
 	}
@@ -308,7 +304,7 @@ func (c *Controller) terminate(etcd *api.Etcd) error {
 	return nil
 }
 
-func (c *Controller) setOwnerReferenceToOffshoots(etcd *api.Etcd, ref *core.ObjectReference) error {
+func (c *Controller) setOwnerReferenceToOffshoots(etcd *api.Etcd, owner *metav1.OwnerReference) error {
 	selector := labels.SelectorFromSet(etcd.OffshootSelectors())
 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
@@ -319,7 +315,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(etcd *api.Etcd, ref *core.Obje
 			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 			etcd.Namespace,
 			selector,
-			ref); err != nil {
+			owner); err != nil {
 			return err
 		}
 	} else {
@@ -329,7 +325,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(etcd *api.Etcd, ref *core.Obje
 			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 			etcd.Namespace,
 			selector,
-			ref); err != nil {
+			etcd); err != nil {
 			return err
 		}
 	}
@@ -339,10 +335,10 @@ func (c *Controller) setOwnerReferenceToOffshoots(etcd *api.Etcd, ref *core.Obje
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		etcd.Namespace,
 		selector,
-		ref)
+		owner)
 }
 
-func (c *Controller) removeOwnerReferenceFromOffshoots(etcd *api.Etcd, ref *core.ObjectReference) error {
+func (c *Controller) removeOwnerReferenceFromOffshoots(etcd *api.Etcd) error {
 	// First, Get LabelSelector for Other Components
 	labelSelector := labels.SelectorFromSet(etcd.OffshootSelectors())
 
@@ -351,7 +347,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(etcd *api.Etcd, ref *core
 		api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
 		etcd.Namespace,
 		labelSelector,
-		ref); err != nil {
+		etcd); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
@@ -359,7 +355,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(etcd *api.Etcd, ref *core
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		etcd.Namespace,
 		labelSelector,
-		ref); err != nil {
+		etcd); err != nil {
 		return err
 	}
 	return nil

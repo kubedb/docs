@@ -1,3 +1,19 @@
+/*
+Copyright The Stash Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package v1beta1
 
 import (
@@ -18,12 +34,12 @@ const (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // +kubebuilder:object:root=true
-// +kubebuilder:resource:path=functions,singular=function,shortName=fn,categories={stash,appscode}
+// +kubebuilder:resource:path=functions,singular=function,scope=Cluster,shortName=fn,categories={stash,appscode}
 // +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
 type Function struct {
 	metav1.TypeMeta   `json:",inline"`
-	metav1.ObjectMeta `json:"metadata,omitempty"`
-	Spec              FunctionSpec `json:"spec,omitempty"`
+	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Spec              FunctionSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
 }
 
 type FunctionSpec struct {
@@ -32,7 +48,7 @@ type FunctionSpec struct {
 	// This field is optional to allow higher level config management to default or override
 	// container images in workload controllers like Deployments and StatefulSets.
 	// +optional
-	Image string `json:"image,omitempty"`
+	Image string `json:"image,omitempty" protobuf:"bytes,1,opt,name=image"`
 	// Entrypoint array. Not executed within a shell.
 	// The docker image's ENTRYPOINT is used if this is not provided.
 	// Variable references $(VAR_NAME) are expanded using the container's environment. If a variable
@@ -42,7 +58,7 @@ type FunctionSpec struct {
 	// Cannot be updated.
 	// More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell
 	// +optional
-	Command []string `json:"command,omitempty"`
+	Command []string `json:"command,omitempty" protobuf:"bytes,2,rep,name=command"`
 	// Arguments to the entrypoint.
 	// The docker image's CMD is used if this is not provided.
 	// Variable references $(VAR_NAME) are expanded using the container's environment. If a variable
@@ -52,13 +68,13 @@ type FunctionSpec struct {
 	// Cannot be updated.
 	// More info: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/#running-a-command-in-a-shell
 	// +optional
-	Args []string `json:"args,omitempty"`
+	Args []string `json:"args,omitempty" protobuf:"bytes,3,rep,name=args"`
 	// Container's working directory.
 	// If not specified, the container runtime's default will be used, which
 	// might be configured in the container image.
 	// Cannot be updated.
 	// +optional
-	WorkingDir string `json:"workingDir,omitempty"`
+	WorkingDir string `json:"workingDir,omitempty" protobuf:"bytes,4,opt,name=workingDir"`
 	// List of ports to expose from the container. Exposing a port here gives
 	// the system additional information about the network connections a
 	// container uses, but is primarily informational. Not specifying a port here
@@ -69,31 +85,31 @@ type FunctionSpec struct {
 	// +optional
 	// +patchMergeKey=containerPort
 	// +patchStrategy=merge
-	Ports []core.ContainerPort `json:"ports,omitempty" patchStrategy:"merge" patchMergeKey:"containerPort"`
+	Ports []core.ContainerPort `json:"ports,omitempty" patchStrategy:"merge" patchMergeKey:"containerPort" protobuf:"bytes,5,rep,name=ports"`
 	// Pod volumes to mount into the container's filesystem.
 	// Cannot be updated.
 	// +optional
 	// +patchMergeKey=mountPath
 	// +patchStrategy=merge
-	VolumeMounts []core.VolumeMount `json:"volumeMounts,omitempty" patchStrategy:"merge" patchMergeKey:"mountPath"`
+	VolumeMounts []core.VolumeMount `json:"volumeMounts,omitempty" patchStrategy:"merge" patchMergeKey:"mountPath" protobuf:"bytes,6,rep,name=volumeMounts"`
 	// volumeDevices is the list of block devices to be used by the container.
 	// This is an alpha feature and may change in the future.
 	// +patchMergeKey=devicePath
 	// +patchStrategy=merge
 	// +optional
-	VolumeDevices []core.VolumeDevice `json:"volumeDevices,omitempty" patchStrategy:"merge" patchMergeKey:"devicePath"`
+	VolumeDevices []core.VolumeDevice `json:"volumeDevices,omitempty" patchStrategy:"merge" patchMergeKey:"devicePath" protobuf:"bytes,7,rep,name=volumeDevices"`
 	// RuntimeSettings allow to specify Resources, LivenessProbe, ReadinessProbe, Lifecycle, SecurityContext etc.
 	// +optional
-	RuntimeSettings *ofst.ContainerRuntimeSettings `json:"runtimeSettings,omitempty"`
+	RuntimeSettings *ofst.ContainerRuntimeSettings `json:"runtimeSettings,omitempty" protobuf:"bytes,8,opt,name=runtimeSettings"`
 	// Name of PodSecurityPolicy(PSP) required by this function
 	// +optional
-	PodSecurityPolicyName string `json:"podSecurityPolicyName,omitempty"`
+	PodSecurityPolicyName string `json:"podSecurityPolicyName,omitempty" protobuf:"bytes,9,opt,name=podSecurityPolicyName"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 type FunctionList struct {
 	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Function `json:"items,omitempty"`
+	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+	Items           []Function `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
 }

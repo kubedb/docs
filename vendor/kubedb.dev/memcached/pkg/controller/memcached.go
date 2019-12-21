@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package controller
 
 import (
@@ -23,7 +24,6 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/memcached/pkg/admission"
 
-	"github.com/appscode/go/encoding/json/types"
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -60,11 +60,9 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		memcached.Status = mc.Status
 	}
 
-	if c.EnableRBAC {
-		// Ensure ClusterRoles for deployments
-		if err := c.ensureRBACStuff(memcached); err != nil {
-			return err
-		}
+	// Ensure ClusterRoles for deployments
+	if err := c.ensureRBACStuff(memcached); err != nil {
+		return err
 	}
 
 	// ensure database Service
@@ -97,7 +95,7 @@ func (c *Controller) create(memcached *api.Memcached) error {
 
 	mc, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = types.NewIntHash(memcached.Generation, meta_util.GenerationHash(memcached))
+		in.ObservedGeneration = memcached.Generation
 		return in
 	})
 	if err != nil {

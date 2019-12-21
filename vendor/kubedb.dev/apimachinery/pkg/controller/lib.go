@@ -1,3 +1,19 @@
+/*
+Copyright The KubeDB Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package controller
 
 import (
@@ -21,8 +37,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/tools/reference"
 	core_util "kmodules.xyz/client-go/core/v1"
 	policy_util "kmodules.xyz/client-go/policy/v1beta1"
 	"kmodules.xyz/objectstore-api/osm"
@@ -209,19 +223,16 @@ func (c *Controller) GetVolumeForSnapshot(st api.StorageType, pvcSpec *core.Pers
 }
 
 func (c *Controller) CreateStatefulSetPodDisruptionBudget(sts *appsv1.StatefulSet) error {
-	ref, err := reference.GetReference(clientsetscheme.Scheme, sts)
-	if err != nil {
-		return err
-	}
+	owner := metav1.NewControllerRef(sts, appsv1.SchemeGroupVersion.WithKind("StatefulSet"))
 
 	m := metav1.ObjectMeta{
 		Name:      sts.Name,
 		Namespace: sts.Namespace,
 	}
-	_, _, err = policy_util.CreateOrPatchPodDisruptionBudget(c.Client, m,
+	_, _, err := policy_util.CreateOrPatchPodDisruptionBudget(c.Client, m,
 		func(in *policyv1beta1.PodDisruptionBudget) *policyv1beta1.PodDisruptionBudget {
 			in.Labels = sts.Labels
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 			in.Spec.Selector = &metav1.LabelSelector{
 				MatchLabels: sts.Spec.Template.Labels,
@@ -237,20 +248,17 @@ func (c *Controller) CreateStatefulSetPodDisruptionBudget(sts *appsv1.StatefulSe
 }
 
 func (c *Controller) CreateDeploymentPodDisruptionBudget(deployment *appsv1.Deployment) error {
-	ref, err := reference.GetReference(clientsetscheme.Scheme, deployment)
-	if err != nil {
-		return err
-	}
+	owner := metav1.NewControllerRef(deployment, appsv1.SchemeGroupVersion.WithKind("Deployment"))
 
 	m := metav1.ObjectMeta{
 		Name:      deployment.Name,
 		Namespace: deployment.Namespace,
 	}
 
-	_, _, err = policy_util.CreateOrPatchPodDisruptionBudget(c.Client, m,
+	_, _, err := policy_util.CreateOrPatchPodDisruptionBudget(c.Client, m,
 		func(in *policyv1beta1.PodDisruptionBudget) *policyv1beta1.PodDisruptionBudget {
 			in.Labels = deployment.Labels
-			core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 			in.Spec.Selector = &metav1.LabelSelector{
 				MatchLabels: deployment.Spec.Template.Labels,

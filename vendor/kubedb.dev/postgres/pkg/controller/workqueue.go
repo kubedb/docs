@@ -28,7 +28,7 @@ func (c *Controller) initWatcher() {
 	c.pgInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Postgreses().Informer()
 	c.pgQueue = queue.New("Postgres", c.MaxNumRequeues, c.NumThreads, c.runPostgres)
 	c.pgLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Postgreses().Lister()
-	c.pgInformer.AddEventHandler(queue.NewObservableUpdateHandler(c.pgQueue.GetQueue(), true))
+	c.pgInformer.AddEventHandler(queue.NewReconcilableHandler(c.pgQueue.GetQueue()))
 }
 
 func (c *Controller) runPostgres(key string) error {
