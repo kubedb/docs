@@ -85,9 +85,6 @@ jobs:
     - name: Install stash and addons
       run: |
         export KUBECONFIG="$(kind get kubeconfig-path)"
-        if [ -x "$(command -v helm)" ]; then
-            helm init --client-only
-        fi
         make stash-install
 
     - name: Run e2e tests
