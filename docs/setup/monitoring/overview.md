@@ -99,24 +99,37 @@ You can enable operator monitoring through some flags while installing or upgrad
 
 You have to provides these flags while installing or upgrading or updating KubeDB operator. Here, are examples for both script and Helm installation process are given which enable monitoring with `prometheus.io/coreos-operator` Prometheuse server for `operator` metrics.
 
-**Helm:**
+**Helm 3:**
 
 ```console
-$ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.version" >}} --namespace kube-system \
+$ helm install kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
+  --namespace kube-system \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/coreos-operator \
   --set monitoring.prometheus.namespace=monitoring \
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus
 ```
 
-**Script:**
+**Helm 2:**
 
 ```console
-$ curl -fsSL https://github.com/kubedb/installer/raw/{{< param "info.version" >}}/deploy/kubedb.sh | bash -s -- \
-  --monitoring-enable=true \
-  --monitoring-agent=prometheus.io/coreos-operator \
-  --prometheus-namespace=monitoring \
-  --servicemonitor-label=k8s-app=prometheus
+$ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.version" >}} \
+  --namespace kube-system \
+  --set monitoring.enabled=true \
+  --set monitoring.agent=prometheus.io/coreos-operator \
+  --set monitoring.prometheus.namespace=monitoring \
+  --set monitoring.serviceMonitor.labels.k8s-app=prometheus
+```
+
+**YAML (with Helm 3):**
+
+```console
+$ helm template kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
+  --namespace kube-system \
+  --set monitoring.enabled=true \
+  --set monitoring.agent=prometheus.io/coreos-operator \
+  --set monitoring.prometheus.namespace=monitoring \
+  --set monitoring.serviceMonitor.labels.k8s-app=prometheus | kubectl apply -f -
 ```
 
 ## Next Steps

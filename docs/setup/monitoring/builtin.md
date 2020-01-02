@@ -35,24 +35,39 @@ Enable Prometheus monitoring using `prometheus.io/builtin` agent while installin
 
 Let's install KubeDB with operator monitoring enabled.
 
-**Script:**
+**Helm 3:**
 
 ```console
-$ curl -fsSL https://github.com/kubedb/installer/raw/{{< param "info.version" >}}/deploy/kubedb.sh | bash -s -- \
-  --monitoring-enable=true \
-  --monitoring-agent=prometheus.io/builtin \
-  --prometheus-namespace=monitoring \
-  --servicemonitor-label=k8s-app=prometheus
-```
-
-**Helm:**
-
-```console
-$ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.version" >}} --namespace kube-system \
+$ helm install kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
+  --namespace kube-system \
+  --no-hooks \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/builtin \
   --set monitoring.prometheus.namespace=monitoring \
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus
+```
+
+**Helm 2:**
+
+```console
+$ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.version" >}} \
+  --namespace kube-system \
+  --set monitoring.enabled=true \
+  --set monitoring.agent=prometheus.io/builtin \
+  --set monitoring.prometheus.namespace=monitoring \
+  --set monitoring.serviceMonitor.labels.k8s-app=prometheus
+```
+
+**YAML (with Helm 3):**
+
+```console
+$ helm template kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
+  --namespace kube-system \
+  --no-hooks \
+  --set monitoring.enabled=true \
+  --set monitoring.agent=prometheus.io/builtin \
+  --set monitoring.prometheus.namespace=monitoring \
+  --set monitoring.serviceMonitor.labels.k8s-app=prometheus | kubectl apply -f -
 ```
 
 This will add necessary annotations to `kubedb-operator` service created in `kube-system` namespace. Prometheus server will scrape metrics using those annotations. Let's check which annotations are added to the service,
