@@ -16,7 +16,7 @@ section_menu_id: concepts
 
 `PgBouncerVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [PgBouncer](https://pgbouncer.github.io/) server deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, `PgBouncerVersion` custom resource will be created automatically for every supported PgBouncer release versions. You have to specify the name of `PgBouncerVersion` crd in `spec.version` field of [PgBouncer](/docs/concepts/database-proxy/pgbouncer.md) crd. Then, KubeDB will use the docker images specified in the `PgBouncerVersion` crd to create your expected PgBouncer instance.
+When you install KubeDB, a `PgBouncerVersion` custom resource will be created automatically for every supported PgBouncer release versions. You have to specify the name of `PgBouncerVersion` crd in `spec.version` field of [PgBouncer](/docs/concepts/database-proxy/pgbouncer.md) crd. Then, KubeDB will use the docker images specified in the `PgBouncerVersion` crd to create your expected PgBouncer instance.
 
 Using a separate crd for specifying respective docker image names allow us to modify the images independent of KubeDB operator. This will also allow the users to use a custom PgBouncer image for their server. For more details about how to use custom image with PgBouncer in KubeDB, please visit [here](/docs/guides/pgbouncer/custom-versions/setup.md).
 

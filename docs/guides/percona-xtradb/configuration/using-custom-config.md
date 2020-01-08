@@ -23,7 +23,7 @@ KubeDB supports providing custom configuration for PerconaXtraDB. This tutorial 
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```bash
+  ```console
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -45,7 +45,7 @@ In this tutorial, we will configure [max_connections](https://dev.mysql.com/doc/
 
 At first, let's create `my-config.cnf` file setting `max_connections` and `read_buffer_size` parameters.
 
-```bash
+```console
 $ cat <<EOF > my-config.cnf
 [mysqld]
 max_connections = 200
@@ -62,14 +62,14 @@ Here, `read_buffer_size` is set to 1MB in bytes.
 
 Now, create a ConfigMap with this configuration file.
 
-```bash
+```console
  $ kubectl create configmap -n demo my-custom-config --from-file=./my-config.cnf
 configmap/my-custom-config created
 ```
 
 Verify the ConfigMap has the configuration file.
 
-```bash
+```console
 $ kubectl get configmap -n demo my-custom-config -o yaml
 ```
 
@@ -91,7 +91,7 @@ metadata:
 
 Now, create PerconaXtraDB object specifying `.spec.configSource` field.
 
-```bash
+```console
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/custom-config.yaml
 perconaxtradb.kubedb.com/custom-px created
 ```
@@ -127,7 +127,7 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset,
 
 Check that the StatefulSet's Pod is running
 
-```bash
+```console
 $ kubectl get pod -n demo
 NAME          READY     STATUS    RESTARTS   AGE
 custom-px-0   1/1       Running   0          44s
@@ -135,7 +135,7 @@ custom-px-0   1/1       Running   0          44s
 
 Check the Pod's log to see if the database is ready
 
-```bash
+```console
 $ kubectl logs -f -n demo custom-px-0
 ...
 2019-12-24T13:43:51.050366Z 0 [Note] mysqld: ready for connections.
@@ -146,7 +146,7 @@ Once we see `[Note] mysqld: ready for connections.` in the log, the database is 
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
-```bash
+```console
 $ kubectl get secret -n demo  custom-px-auth -o jsonpath='{.data.password}'| base64 -d
 5ujF0R5wnUh5_gDk⏎
 
@@ -173,7 +173,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```bash
+```console
 $ kubectl patch -n demo px/custom-px -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo px/custom-px
 

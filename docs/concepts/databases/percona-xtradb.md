@@ -89,7 +89,7 @@ spec:
 
 ### .spec.version
 
-`.spec.version` is a required field specifying the name of the [PerconaXtraDBVersion](/docs/concepts/catalog/percona-xtradb.md) object where the docker images are specified. Currently, when you install KubeDB, it creates the following `PerconaXtraDBVersion` object,
+`.spec.version` is a required field specifying the name of the [PerconaXtraDBVersion](/docs/concepts/catalog/percona-xtradb.md) object where the docker images are specified. Currently, when you install KubeDB, it creates the following `PerconaXtraDBVersion` resources,
 
 - `5.7`
 - `5.7-cluster`
@@ -98,7 +98,7 @@ spec:
 
 `.spec.replicas` specifies the number of instances to deploy for PerconaXtraDB. If set to 1, KubeDB will deploy a standalone Percona server. If set to value larger than 1, deploy PerconaXtraDB cluster with specified number of masters.
 
-To know more about how to setup a cluster in KubeDB, please visit [here](/docs/guides/percona-xtradb/percona-xtradb-cluster.md).
+To learn more about how to setup a Percona XtraDB cluster using KubeDB, please visit [here](/docs/guides/percona-xtradb/clustering/percona-xtradb-cluster.md).
 
 ### .spec.databaseSecret
 
@@ -110,7 +110,7 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 
 Example:
 
-```bash
+```console
 $ kubectl create secret generic demo-px-auth -n demo \
     --from-literal=username=root \
     --from-literal=password=6q8u_2jMOW-OOZXk
@@ -196,11 +196,11 @@ spec:
       name: "snapshot-xyz"
 ```
 
-In the above example, PerconaXtraDB cluster will be initialized from Snapshot `snapshot-xyz`. Here, KubeDB operator will nothing but Stash operator will launch necessary Jobs to initialize once StatefulSet Pods are running.
+In the above example, PerconaXtraDB cluster will be initialized from Snapshot `snapshot-xyz`. Here, Stash operator will launch necessary Jobs to initialize once StatefulSet Pods are running.
 
 When initializing from Snapshot, root user credentials must have to match with the previous one. For example, let's say, Snapshot `snapshot-xyz` is for PerconaXtraDB `px-old`. In this case, new PerconaXtraDB `px-new` should use the same credentials for root user of `px-old`. Otherwise, the restoration process will fail.
 
-For more details tutorial on how to initialize from snapshot, please visit [here](/docs/guides/percona/using-snapshot.md).
+For more details tutorial on how to initialize from snapshot, please visit [here](/docs/guides/percona-xtradb/snapshot/stash.md).
 
 ### .spec.monitor
 
@@ -211,7 +211,7 @@ PerconaXtraDB managed by KubeDB can be monitored with builtin-Prometheus and Cor
 
 ### .spec.configSource
 
-`.spec.configSource` is an optional field that allows users to provide custom configuration for PerconaXtraDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/percona-xtradb/using-custom-config.md).
+`.spec.configSource` is an optional field that allows users to provide custom configuration for PerconaXtraDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
 
 ### .spec.podTemplate
 
@@ -279,7 +279,7 @@ for: "./percona-xtradb.yaml": admission webhook "perconaxtradb.validators.kubedb
 
 #### .spec.podTemplate.spec.imagePullSecrets
 
-`KubeDB` provides the flexibility of deploying PerconaXtraDB from a private Docker registry. `.spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling Docker image if you are using a private docker registry. To learn how to deploy PerconaXtraDB from a private registry, please visit [here](/docs/guides/percona-xtradb/using-private-registry.md).
+`KubeDB` provides the flexibility of deploying PerconaXtraDB from a private Docker registry. `.spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling Docker image if you are using a private docker registry. To learn how to deploy PerconaXtraDB from a private registry, please visit [here](/docs/guides/percona-xtradb/private-registry/using-private-registry.md).
 
 #### .spec.podTemplate.spec.nodeSelector
 
@@ -316,10 +316,13 @@ KubeDB allows following fields to set in `.spec.serviceTemplate`:
   - loadBalancerSourceRanges
   - externalTrafficPolicy
   - healthCheckNodePort
+  - sessionAffinityConfig
+
+See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
 ### .spec.updateStrategy
 
-You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for PeronaXtraDB thorough `.spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from old KubeDB version to new one should behave.
+You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for PeronaXtraDB thorough `.spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from an old PerconaXtraDB version to a new one should behave.
 
 ### .spec.terminationPolicy
 

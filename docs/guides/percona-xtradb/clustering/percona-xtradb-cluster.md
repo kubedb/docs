@@ -284,7 +284,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 Now, you are ready to check newly created group status. Connect and run the following commands from any of the hosts and you will get the same results.
 
-```bash
+```console
 $ kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-2.demo-cluster-gvr.demo -e "show status like 'wsrep%'"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------------------------+-------------------------------------------------+
@@ -364,7 +364,7 @@ Here,
 
 Let's chech the cluster view,
 
-```bash
+```console
 $kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-2.demo-cluster-gvr.demo -e "select * from performance_schema.pxc_cluster_view;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------+--------------------------------------+--------+-------------+---------+
@@ -428,7 +428,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 To test the cluster behavior during node failure, we will force one of the Primary Pods to restart. When it comes back to the cluster, it becomes the `JOINER` node and one of the existing nodes becomes the `DONOR` node. Then the `JOINER` node becomes `"Synced"` by receiving an IST/SST from the `DONOR` node. Let's see,
 
-```bash
+```console
 kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-2.demo-cluster-gvr.demo -e "select * from performance_schema.pxc_cluster_view;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------+--------------------------------------+--------+-------------+---------+
@@ -557,7 +557,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 Now, check the data,
 
-```bash
+```console
 # read data from 'demo-cluster-0'
 $ kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-0.demo-cluster-gvr.demo -e "SELECT * FROM playground.equipment;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -590,7 +590,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 Clean what you created in this tutorial.
 
-```bash
+```console
 $ kubectl delete -n demo px/demo-cluster
 perconaxtradb.kubedb.com "demo-cluster" deleted
 

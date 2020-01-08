@@ -1,9 +1,9 @@
 ---
-title: Percona-XtraDB
+title: MySQL
 menu:
   docs_{{ .version }}:
-    identifier: percona-xtradb-guides
-    name: Percona-XtraDB
+    identifier: my-mysql-guides
+    name: MySQL
     parent: guides
     weight: 10
 menu_name: docs_{{ .version }}
