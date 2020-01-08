@@ -29,7 +29,7 @@ It is offers,
   - SST (State Snapshot Transfers) means when a new node (joiner) wants to join the cluster, it gets a full copy of data from a node (donor) of the cluster to be synchronized.
 - **Consistent View of Data:** For a multi-master solution, the consistency of data is an important aspect. When you query on any of these nodes, you should able to see the same result for that given particular query.
 - **Support Geo-Distributed Setup:** Percona XtraDB Cluster supports geo-distributed setup of nodes. That means your cluster can reside in different data centers and they can talk to other.
-- **Comapatible with Master-Slave Setup:** Percona XtraDB Cluster nodes can be used as master and slave in traditional master-slave setup.
+- **Compatible with Master-Slave Setup:** Percona XtraDB Cluster nodes can be used as master and slave in traditional master-slave setup.
 - **Read/Write Scalability:** Percona XtraDB Cluster routes queries automatically and any read query can be satisfied by a single node.
 
 Here, we will talk about Percona XtraDB Cluster 5.7 (PXC-5.7).

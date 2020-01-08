@@ -9,6 +9,7 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
+
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
 # PerconaXtraDB QuickStart
@@ -87,13 +88,13 @@ perconaxtradb.kubedb.com/demo-quickstart created
 Here,
 
 - `.spec.version` is the name of the PerconaXtraDBVersion object where the docker images are specified. In this tutorial, a PerconaXtraDB of version 5.7 is going to be created.
-- `.spec.storageType` specifies the type of storage that will be used for PerconaXtraDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create PerconaXtraDB database using `EmptyDir` volume. In this case, you don't have to specify `.spec.storage` field. This is useful for testing purpose.
+- `.spec.storageType` specifies the type of storage that will be used for PerconaXtraDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create PerconaXtraDB database using `EmptyDir` volume. In this case, you don't have to specify `.spec.storage` field. This is useful for testing purposes.
 - `.spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `.spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PerconaXtraDB` object or which resources KubeDB should keep or delete when you delete `PerconaXtraDB` object. If admission webhook is enabled, It prevents users from deleting the database as long as the `.spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/percona-xtradb.md#specterminationpolicy)
 
 > Note: `.spec.storage` section is used to create PVC for database Pod. It will create PVC with storage size specified in `.spec.storage.resources.requests` field. Don't specify limits here. PVC does not get resized automatically.
 
-KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes api. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a ClusterIP Service with the matching PerconaXtraDB object name. KubeDB operator will also create a governing service for StatefulSets with the name ``<percona-xtradb-object-name>-gvr`, if one is not already present. No PerconaXtraDB specific RBAC permission is required in [RBAC enabled clusters](/docs/setup/install.md#using-yaml).
+KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes api. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching PerconaXtraDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<percona-xtradb-object-name>-gvr`, if one is not already present.
 
 ```console
 $ kubedb describe px -n demo demo-quickstart
@@ -299,7 +300,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 ## DoNotTerminate Property
 
-When, `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidatingWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, it prevents users from deleting the database as long as the `.spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
+When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidatingWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, it prevents users from deleting the database as long as the `.spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```console
 $ kubedb delete px demo-quickstart -n demo

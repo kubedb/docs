@@ -20,7 +20,7 @@ This tutorial will show you how to use KubeDB to provision a Percona XtraDB Clus
 
 Before proceeding:
 
-- Read [Percona XtraDB Cluster](/docs/guides/percona-xtradb/clustering/overview.md).
+- Read [Percona XtraDB Cluster](/docs/guides/percona-xtradb/overview/overview.md).
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [Minikube](https://github.com/kubernetes/minikube).
 
@@ -73,7 +73,7 @@ Here,
 - `.spec.replicas` specifies the number of required nodes.
 - `.spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a ClusterIP Service with the matching `PerconaXtraDB` object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<percona-xtradb-object-name>-gvr`. No PerconaXtraDB specific RBAC permission is required in [RBAC enabled clusters](/docs/setup/install.md#using-yaml).
+KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching `PerconaXtraDB` object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<percona-xtradb-object-name>-gvr`.
 
 ```console
 $ kubedb describe px -n demo demo-cluster
@@ -249,7 +249,7 @@ demo-cluster-2 ........... 10.244.2.9 ............ demo-cluster-2.demo-cluster-g
 
 Now you can connect to the database using the above info.
 
-> Ignore the warning message. It is happening for using password in the command.
+> Ignore the warning message. It is happening for using password on the command line interface.
 
 ```console
 # connect to the 1st server
@@ -362,7 +362,7 @@ Here,
 - Cluster size is 3
 - Every node is acting as "Primary"
 
-Let's chech the cluster view,
+Let's check the cluster view,
 
 ```console
 $kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-2.demo-cluster-gvr.demo -e "select * from performance_schema.pxc_cluster_view;"

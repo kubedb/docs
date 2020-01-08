@@ -17,7 +17,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 ## Before You Begin
 
-- Read [concept of PerconaXtraDBVersion Catalog](/docs/concepts/catalog/percona-xtradb.md) to learn detail concepts of `PerconaXtraDBVersion` object.
+- Read about [PerconaXtraDBVersion](/docs/concepts/catalog/percona-xtradb.md) to learn how it is used.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [Minikube](https://github.com/kubernetes/minikube).
 
@@ -29,7 +29,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   $ kubectl get perconaxtradbversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME          VERSION   DB_IMAGE                            EXPORTER_IMAGE                   DEPRECATED
   5.7           5.7       kubedb/percona:5.7                  kubedb/mysqld-exporter:v0.11.0   <none>
-  5.7-cluster   5.7       kubedb/percona-xtradb-cluster:5.7   kubedb/mysqld-exporter:v0.11.0   <none>
+  5.7-private   5.7       kubedb/percona-xtradb-cluster:5.7   kubedb/mysqld-exporter:v0.11.0   <none>
   ```
 
   Docker hub repositories:
@@ -44,15 +44,15 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: PerconaXtraDBVersion
   metadata:
-    name: "5.7-cluster"
+    name: "5.7-private"
     labels:
       app: kubedb
   spec:
     version: "5.7"
     db:
-      image: "PRIVATE_DOCKER_REGISTRY/percona-xtradb-cluster:5.7"
+      image: "<private-docker-registry>/percona-xtradb-cluster:5.7"
     exporter:
-      image: "PRIVATE_DOCKER_REGISTRY/mysqld-exporter:v0.11.0"
+      image: "<private-docker-registry>/mysqld-exporter:v0.11.0"
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -97,7 +97,7 @@ metadata:
   name: px-pvt-reg
   namespace: demo
 spec:
-  version: "5.7-cluster"
+  version: "5.7-private"
   replicas: 3
   storageType: Durable
   storage:
@@ -114,7 +114,6 @@ spec:
   updateStrategy:
     type: "RollingUpdate"
   terminationPolicy: WipeOut
-
 ```
 
 Now run the command to deploy this `PerconaXtraDB` object:

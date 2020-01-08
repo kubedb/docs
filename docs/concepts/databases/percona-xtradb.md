@@ -241,7 +241,7 @@ KubeDB accept following fields to set in `.spec.podTemplate:`
   - readinessProbe
   - lifecycle
 
-Uses of some field of `.spec.podTemplate` is described below,
+Usage of some field of `.spec.podTemplate` is described below,
 
 #### .spec.podTemplate.spec.args
 
@@ -322,7 +322,7 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v
 
 ### .spec.updateStrategy
 
-You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for PeronaXtraDB thorough `.spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from an old PerconaXtraDB version to a new one should behave.
+You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for PerconaXtraDB thorough `.spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from an old PerconaXtraDB version to a new one should behave.
 
 ### .spec.terminationPolicy
 
@@ -333,7 +333,7 @@ You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/
 - Delete (`Default`)
 - WipeOut
 
-When, `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `.spec.terminationPolicy` is set to `DoNotTerminate`.
+When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `.spec.terminationPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete PerconaXtraDB object for different termination policies,
 

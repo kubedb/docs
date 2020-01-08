@@ -176,7 +176,7 @@ KubeDB accept following fields to set in `.spec.podTemplate`:
   - readinessProbe
   - lifecycle
 
-Uses of some field of `.spec.podTemplate` is described below,
+Usage of some field of `.spec.podTemplate` is described below,
 
 #### .spec.podTemplate.spec.args
 
