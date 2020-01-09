@@ -17,7 +17,7 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to run a PerconaXtraDB database.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/images/mysql/mysql-lifecycle.png">
+  <img alt="lifecycle"  src="/docs/images/percona-xtradb/Lifecycle_of_a_PerconaXtraDB.svg">
 </p>
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/percona-xtradb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/percona-xtradb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
@@ -249,9 +249,9 @@ status:
 
 KubeDB operator has created a new Secret called `demo-quickstart-auth` *(format: {percona-xtradb-object-name}-auth)* for storing the password for `mysql` superuser. This secret contains a `username` key which contains the **"username"** for `mysql` superuser and a `password` key which contains the **"password"** for the superuser.
 
-If you want to use an existing secret please specify that when creating the PerconaXtraDB object using `.spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/concepts/databases/percona-xtradb.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the PerconaXtraDB object using `.spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys (`username` and `password`) in `.data` section and also make sure of using `root` as value of `username` key. For more details see [here](/docs/concepts/databases/percona-xtradb.md#specdatabasesecret).
 
-Now, you can connect to this database from the phpMyAdmin dashboard using the database pod IP and and `mysql` user password.
+Now, you can connect to this database using the database pod IP and and `root` user password.
 
 ```console
 $ kubectl get pods demo-quickstart-0 -n demo -o yaml | grep "podIP"
@@ -482,10 +482,12 @@ If you are just testing some basic functionalities, you might want to avoid addi
 ## Next Steps
 
 - How to run [PerconaXtraDB Cluster](/docs/guides/percona-xtradb/clustering/percona-xtradb-cluster.md).
+- Initialize [PerconaXtraDB with Script](/docs/guides/percona-xtradb/initialization/using-script.md).
 - Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/percona-xtradb/monitoring/using-coreos-prometheus-operator.md).
 - Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/percona-xtradb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/percona-xtradb/private-registry/using-private-registry.md) to deploy PerconaXtraDB with KubeDB.
 - How to use [custom configuration](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
+- How to use [custom rbac resource](/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac.md) for PerconaXtraDB.
 - Use Stash to [Backup PerconaXtraDB](/docs/guides/percona-xtradb/snapshot/stash.md).
 - Detail concepts of [PerconaXtraDB object](/docs/concepts/databases/percona-xtradb.md).
 - Detail concepts of [PerconaXtraDBVersion object](/docs/concepts/catalog/percona-xtradb.md).
