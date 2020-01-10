@@ -16,7 +16,7 @@ section_menu_id: concepts
 
 `ElasticsearchVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Elasticsearch](https://www.elastic.co/products/elasticsearch) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, `ElasticsearchVersion` custom resource will be created automatically for every supported Elasticsearch versions. You have to specify the name of `ElasticsearchVersion` crd in `spec.version` field of [Elasticsearch](/docs/concepts/databases/elasticsearch.md) crd. Then, KubeDB will use the docker images specified in the `ElasticsearchVersion` crd to create your expected database.
+When you install KubeDB, an `ElasticsearchVersion` custom resource will be created automatically for every supported Elasticsearch versions. You have to specify the name of `ElasticsearchVersion` crd in `spec.version` field of [Elasticsearch](/docs/concepts/databases/elasticsearch.md) crd. Then, KubeDB will use the docker images specified in the `ElasticsearchVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for database.
 

@@ -88,7 +88,7 @@ KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are 
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [MemcachedVersion](/docs/concepts/catalog/memcached.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MemcachedVersion` crd,
+`spec.version` is a required field specifying the name of the [MemcachedVersion](/docs/concepts/catalog/memcached.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MemcachedVersion` resources,
 
 - `1.5.4`, `1.5.4-v1`, `1.5`, `1.5-v1`
 
@@ -213,7 +213,7 @@ You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/
 - Delete (`Default`)
 - WipeOut
 
-When, `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete Memcached crd for different termination policies,
 

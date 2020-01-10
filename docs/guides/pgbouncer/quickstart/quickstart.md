@@ -363,7 +363,7 @@ You are now connected to database "mydb" as user "myuser".
 tmpdb=>\q
 ```
 
-KubeDB operator watches for PgBouncer objects using Kubernetes api. When a PgBouncer object is created, KubeDB operator will create a new StatefulSet and a ClusterIP Service with the matching name. KubeDB operator will also create a governing service for StatefulSet with the name `kubedb`, if one is not already present.
+KubeDB operator watches for PgBouncer objects using Kubernetes api. When a PgBouncer object is created, KubeDB operator will create a new StatefulSet and a Service with the matching name. KubeDB operator will also create a governing service for StatefulSet with the name `kubedb`, if one is not already present.
 
 KubeDB operator sets the `status.phase` to `Running` once the connection-pooling mechanism is ready.
 

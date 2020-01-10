@@ -16,7 +16,7 @@ section_menu_id: concepts
 
 `MongoDBVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [MongoDB](https://www.mongodb.com/) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, `MongoDBVersion` custom resource will be created automatically for every supported MongoDB versions. You have to specify the name of `MongoDBVersion` crd in `spec.version` field of [MongoDB](/docs/concepts/databases/mongodb.md) crd. Then, KubeDB will use the docker images specified in the `MongoDBVersion` crd to create your expected database.
+When you install KubeDB, a `MongoDBVersion` custom resource will be created automatically for every supported MongoDB versions. You have to specify the name of `MongoDBVersion` crd in `spec.version` field of [MongoDB](/docs/concepts/databases/mongodb.md) crd. Then, KubeDB will use the docker images specified in the `MongoDBVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator.This will also allow the users to use a custom image for the database.
 

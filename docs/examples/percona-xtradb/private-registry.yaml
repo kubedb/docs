@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha1
+kind: PerconaXtraDB
+metadata:
+  name: px-pvt-reg
+  namespace: demo
+spec:
+  version: "5.7-cluster"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Mi
+  podTemplate:
+    spec:
+      imagePullSecrets:
+      - name: myregistrykey
+  updateStrategy:
+    type: "RollingUpdate"
+  terminationPolicy: WipeOut

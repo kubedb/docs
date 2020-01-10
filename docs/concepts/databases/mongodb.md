@@ -133,7 +133,7 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [MongoDBVersion](/docs/concepts/catalog/mongodb.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MongoDBVersion` crds,
+`spec.version` is a required field specifying the name of the [MongoDBVersion](/docs/concepts/catalog/mongodb.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MongoDBVersion` resources,
 
 - `3.4-v4`, `3.4-v3`, `3.4-v2`, `3.4-v1`, `3.4`
 - `3.6-v4`, `3.6-v3`, `3.6-v2`, `3.6-v1`, `3.6`
@@ -546,7 +546,7 @@ You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/
 - Delete (`Default`)
 - WipeOut
 
-When, `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete MongoDB crd for different termination policies,
 

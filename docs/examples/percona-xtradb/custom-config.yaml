@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha1
+kind: PerconaXtraDB
+metadata:
+  name: custom-px
+  namespace: demo
+spec:
+  version: "5.7"
+  replicas: 1
+  configSource:
+    configMap:
+      name: my-custom-config
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Mi
+  updateStrategy:
+    type: "RollingUpdate"
+  terminationPolicy: DoNotTerminate

@@ -106,7 +106,7 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [MySQLVersion](/docs/concepts/catalog/mysql.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MySQLVersion` crds,
+`spec.version` is a required field specifying the name of the [MySQLVersion](/docs/concepts/catalog/mysql.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MySQLVersion` resources,
 
 - `8.0.14`, `8.0.3`, `8.0-v2`, `8.0-v1`, `8.0`, `8-v1`, `8`
 - `5.7.25`, `5.7-v2`, `5.7-v1`, `5.7`, `5-v1`, `5`
@@ -389,7 +389,7 @@ You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/
 - Delete (`Default`)
 - WipeOut
 
-When, `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
+When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, `DoNotTerminate` prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
 
 Following table show what KubeDB does when you delete MySQL crd for different termination policies,
 
