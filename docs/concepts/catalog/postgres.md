@@ -16,7 +16,7 @@ section_menu_id: concepts
 
 `PostgresVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [PostgreSQL](https://www.postgresql.org/) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, `PostgresVersion` custom resource will be created automatically for every supported PostgreSQL versions. You have to specify the name of `PostgresVersion` crd in `spec.version` field of [Postgres](/docs/concepts/databases/postgres.md) crd. Then, KubeDB will use the docker images specified in the `PostgresVersion` crd to create your expected database.
+When you install KubeDB, a `PostgresVersion` custom resource will be created automatically for every supported PostgreSQL versions. You have to specify the name of `PostgresVersion` crd in `spec.version` field of [Postgres](/docs/concepts/databases/postgres.md) crd. Then, KubeDB will use the docker images specified in the `PostgresVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the database. For more details about how to use custom image with Postgres in KubeDB, please visit [here](/docs/guides/postgres/custom-versions/setup.md).
 

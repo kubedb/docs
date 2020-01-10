@@ -16,7 +16,7 @@ section_menu_id: concepts
 
 `MemcachedVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Memcached](https://memcached.org) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, `MemcachedVersion` custom resource will be created automatically for every supported Memcached versions. You have to specify the name of `MemcachedVersion` crd in `spec.version` field of [Memcached](/docs/concepts/databases/memcached.md) crd. Then, KubeDB will use the docker images specified in the `MemcachedVersion` crd to create your expected database.
+When you install KubeDB, a `MemcachedVersion` custom resource will be created automatically for every supported Memcached versions. You have to specify the name of `MemcachedVersion` crd in `spec.version` field of [Memcached](/docs/concepts/databases/memcached.md) crd. Then, KubeDB will use the docker images specified in the `MemcachedVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the database.
 

@@ -39,7 +39,7 @@ demo    Active  5s
 
 PostgreSQL supports initialization with `.sh`, `.sql` and `.sql.gz` files. In this tutorial, we will use `data.sql` script from [postgres-init-scripts](https://github.com/kubedb/postgres-init-scripts.git) git repository to create a TABLE `dashboard` in `data` Schema.
 
-As [gitRepo](https://kubernetes.io/docs/concepts/storage/volumes/#gitrepo) volume has been deprecated, we will use a ConfigMap as script source. You can use any Kubernetes supported [volume](https://kubernetes.io/docs/concepts/storage/volumes) as script source.
+We will use a ConfigMap as script source. You can use any Kubernetes supported [volume](https://kubernetes.io/docs/concepts/storage/volumes) as script source.
 
 At first, we will create a ConfigMap from `data.sql` file. Then, we will provide this ConfigMap as script source in `init.scriptSource` of Postgres crd spec.
 

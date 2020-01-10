@@ -90,7 +90,7 @@ spec:
 
 ### .spec.version
 
-`.spec.version` is a required field specifying the name of the [ProxySQLVersion](/docs/concepts/catalog/proxysql.md) CRD where the docker images are specified. Currently, when you install KubeDB, it creates the following `ProxySQLVersion` CRD,
+`.spec.version` is a required field specifying the name of the [ProxySQLVersion](/docs/concepts/catalog/proxysql.md) CRD where the docker images are specified. Currently, when you install KubeDB, it creates the following `ProxySQLVersion` resources,
 
 - `2.0.4`
 
@@ -176,7 +176,7 @@ KubeDB accept following fields to set in `.spec.podTemplate`:
   - readinessProbe
   - lifecycle
 
-Uses of some field of `.spec.podTemplate` is described below,
+Usage of some field of `.spec.podTemplate` is described below,
 
 #### .spec.podTemplate.spec.args
 
@@ -265,7 +265,7 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v
 
 ### .spec.updateStrategy
 
-You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for ProxySQL thorough `.spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In the future, we will use this field to determine how automatic migration from the old ProxySQL version to a new one should behave.
+You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for ProxySQL thorough `.spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In the future, we will use this field to determine how automatic migration from an old ProxySQL version to a new one should behave.
 
 ## Next Steps
 

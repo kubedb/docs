@@ -115,7 +115,7 @@ spec:
 Here,
 
 - `spec.version` is name of the ElasticsearchVersion crd. In this tutorial, an Elasticsearch 6.3 database is created.
-- `spec.storageType` specifies the type of storage that will be used for Elasticsearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Elasticsearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purpose.
+- `spec.storageType` specifies the type of storage that will be used for Elasticsearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Elasticsearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
 - `spec.terminationPolicy` specifies what KubeDB should do when user try to delete Elasticsearch crd. Termination policy `DoNotTerminate` prevents a user from deleting this object if admission webhook is enabled.
 

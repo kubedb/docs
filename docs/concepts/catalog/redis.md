@@ -16,7 +16,7 @@ section_menu_id: concepts
 
 `RedisVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Redis](https://redis.io/) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, `RedisVersion` custom resource will be created automatically for every supported Redis versions. You have to specify the name of `RedisVersion` crd in `spec.version` field of [Redis](/docs/concepts/databases/redis.md) crd. Then, KubeDB will use the docker images specified in the `RedisVersion` crd to create your expected database.
+When you install KubeDB, a `RedisVersion` custom resource will be created automatically for every supported Redis versions. You have to specify the name of `RedisVersion` crd in `spec.version` field of [Redis](/docs/concepts/databases/redis.md) crd. Then, KubeDB will use the docker images specified in the `RedisVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the database.
 
