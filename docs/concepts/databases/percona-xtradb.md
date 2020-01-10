@@ -175,7 +175,7 @@ spec:
         name: my-init-script
 ```
 
-In the above example, KubeDB operator will launch a Job to execute all js script of `my-init-script` in alphabetical order once StatefulSet Pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/percona-xtradb/using-script.md).
+In the above example, KubeDB operator will launch a Job to execute all js script of `my-init-script` in alphabetical order once StatefulSet Pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/percona-xtradb/initialization/using-script.md).
 
 #### Initialize from Stash Backup
 

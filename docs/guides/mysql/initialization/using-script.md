@@ -61,7 +61,7 @@ In this tutorial we will use .sql script stored in GitHub repository [kubedb/mys
 
 MySQL supports initialization with `.sh`, `.sql` and `.sql.gz` files. In this tutorial, we will use `init.sql` script from [mysql-init-scripts](https://github.com/kubedb/mysql-init-scripts) git repository to create a TABLE `kubedb_table` in `mysql` database.
 
-As [gitRepo](https://kubernetes.io/docs/concepts/storage/volumes/#gitrepo) volume has been deprecated, we will use a ConfigMap as script source. You can use any Kubernetes supported [volume](https://kubernetes.io/docs/concepts/storage/volumes) as script source.
+We will use a ConfigMap as script source. You can use any Kubernetes supported [volume](https://kubernetes.io/docs/concepts/storage/volumes) as script source.
 
 At first, we will create a ConfigMap from `init.sql` file. Then, we will provide this ConfigMap as script source in `init.scriptSource` of MySQL crd spec.
 

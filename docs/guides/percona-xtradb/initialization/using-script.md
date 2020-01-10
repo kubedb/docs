@@ -27,7 +27,7 @@ In this tutorial we will use .sql script stored in GitHub repository [kubedb/per
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial
 
-  ```bash
+  ```console
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -36,13 +36,13 @@ In this tutorial we will use .sql script stored in GitHub repository [kubedb/per
 
 PerconaXtraDB supports initialization with `.sh`, `.sql` and `.sql.gz` files. In this tutorial, we will use `init.sql` script from [percona-xtradb-init-scripts](https://github.com/kubedb/percona-xtradb-init-scripts) git repository to create a TABLE `kubedb_table` in the `mysql` database.
 
-Since [gitRepo](https://kubernetes.io/docs/concepts/storage/volumes/#gitrepo) volume has been deprecated, we will use a ConfigMap as script source. You can use any Kubernetes supported [volume](https://kubernetes.io/docs/concepts/storage/volumes) as script source.
+We will use a ConfigMap as script source. You can use any Kubernetes supported [volume](https://kubernetes.io/docs/concepts/storage/volumes) as script source.
 
 At first, we will create a ConfigMap from `init.sql` file. Then, we will provide this ConfigMap as script source in `.spec.init.scriptSource` of PerconaXtraDB object spec.
 
 Let's create a ConfigMap with initialization script,
 
-```bash
+```console
 $ kubectl create configmap -n demo px-init-script \
 --from-literal=init.sql="$(curl -fsSL https://github.com/kubedb/percona-xtradb-init-scripts/raw/master/init.sql)"
 configmap/px-init-script created
@@ -78,7 +78,7 @@ spec:
   terminationPolicy: DoNotTerminate
 ```
 
-```bash
+```console
 $ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/px-init-script.yaml
 perconaxtradb.kubedb.com/px-init-script created
 ```
@@ -87,9 +87,9 @@ Here,
 
 - `.spec.init.scriptSource` specifies a script source used to initialize the database before database server starts. The scripts will be executed alphabetically. In this tutorial, a sample `.sql` script from the git repository `https://github.com/kubedb/percona-xtradb-init-scripts.git` is used to create a test database. You can use other [volume sources](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes) instead of `ConfigMap`. The \*.sql, \*sql.gz and/or \*.sh scripts that are stored inside the directory `/docker-entrypoint-initdb.d` will be executed alphabetically. The scripts inside child folders will be skipped.
 
-KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a ClusterIP Service with the matching PerconaXtraDB object name. KubeDB operator will also create a governing service for StatefulSets with the name ``<percona-xtradb-object-name>-gvr`, if one is not already present. No PerconaXtraDB specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/install.md#using-yaml).
+KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching PerconaXtraDB object name. KubeDB operator will also create a governing service for StatefulSets with the name ``<percona-xtradb-object-name>-gvr`, if one is not already present.
 
-```bash
+```console
 $ kubedb describe px -n demo px-init-script
 Name:         px-init-script
 Namespace:    demo
@@ -181,7 +181,7 @@ px-init-script-gvr   ClusterIP   None            <none>        3306/TCP   6m47s
 
 KubeDB operator sets the `.status.phase` to `Running` once the database is successfully created. Run the following command to see the modified PerconaXtraDB object:
 
-```bash
+```console
 $ kubedb get px -n demo px-init-script -o yaml
 ```
 
@@ -258,7 +258,7 @@ If you want to use an existing secret please specify that when creating the Perc
 
 Now, you can connect to this database using the database pod IP and and `root` user password.
 
-```bash
+```console
 $ kubectl get pods px-init-script-0 -n demo -o yaml | grep podIP
   podIP: 10.244.2.52
 
@@ -273,7 +273,7 @@ To connect you just need to specify the host name for the database we created (e
 
 > Do not worry about the warning messages in the following output. Those are coming for providing a password on the command line
 
-```bash
+```console
 # connect to the server
 $ kubectl exec -it -n demo px-init-script-0 -- mysql -u root --password=B0BMhl1ECz1C0uIN --host=px-init-script.demo.svc -e "select 1;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -322,7 +322,7 @@ As you can see here, the initial script has successfully created a table named `
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```bash
+```console
 kubectl patch -n demo px/px-init-script -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo px/px-init-script
 

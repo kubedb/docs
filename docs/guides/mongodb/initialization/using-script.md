@@ -37,7 +37,7 @@ This tutorial will show you how to use KubeDB to initialize a MongoDB database w
 
 MongoDB supports initialization with `.sh` and `.js` files. In this tutorial, we will use `init.js` script from [mongodb-init-scripts](https://github.com/kubedb/mongodb-init-scripts) git repository to insert data inside `kubedb` DB.
 
-As [gitRepo](https://kubernetes.io/docs/concepts/storage/volumes/#gitrepo) volume has been deprecated, we will use a ConfigMap as script source. You can use any Kubernetes supported [volume](https://kubernetes.io/docs/concepts/storage/volumes) as script source.
+We will use a ConfigMap as script source. You can use any Kubernetes supported [volume](https://kubernetes.io/docs/concepts/storage/volumes) as script source.
 
 At first, we will create a ConfigMap from `init.js` file. Then, we will provide this ConfigMap as script source in `init.scriptSource` of MongoDB crd spec.
 
