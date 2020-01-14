@@ -19,7 +19,7 @@ ProxySQL supports load balancing for MySQL Group Replication. This guide will sh
 Before proceeding:
 
 - Read [mysql group replication concept](/docs/guides/mysql/clustering/overview.md) to learn about MySQL Group Replication.
-- You need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [Minikube](https://github.com/kubernetes/minikube).
+- You need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 - Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
 - You have to be familiar with the [ProxySQL](/docs/concepts/database-proxy/proxysql.md) CRD.
 

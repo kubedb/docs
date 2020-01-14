@@ -18,7 +18,7 @@ This tutorial will show you how to upgrade KubeDB from previous version to 0.11.
 
 ## Before You Begin
 
-At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [minikube](https://github.com/kubernetes/minikube).
+At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
 Now, install KubeDB 0.9.0 cli on your workstation and KubeDB operator in your cluster following the steps [here](https://kubedb.com/docs/0.9.0/setup/install/).
 
