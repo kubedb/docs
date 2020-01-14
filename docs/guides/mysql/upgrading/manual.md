@@ -39,7 +39,7 @@ You should check the supported MySQL [upgrade paths](https://dev.mysql.com/doc/r
 
 ### PHP Compatibility Note for MySQL 8.0+
 
-At the moment of writing, PHP [doesn't support](https://secure.php.net/manual/en/mysqli.requirements.php) the new `caching_sha2_password` authentication method on MySQL 8+ (tested on PHP 7.2 and 7.3). You will get errors like:
+At the moment of writing, PHP [doesn't support](https://www.php.net/manual/en/mysqli.requirements.php) the new `caching_sha2_password` authentication method on MySQL 8+ (tested on PHP 7.2 and 7.3). You will get errors like:
 
 ```
 mysqli_real_connect(): The server requested authentication method unknown to the client [caching_sha2_password]
