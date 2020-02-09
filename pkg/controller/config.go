@@ -100,7 +100,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	ctrl.pgbCtrl = pgb.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
 	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
 	ctrl.prCtrl = prc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, ctrl.Config, recorder)
-	ctrl.pxCtrl = pxc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
+	ctrl.pxCtrl = pxc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
 	ctrl.rdCtrl = rdc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
 
 	if err := ctrl.Init(); err != nil {
@@ -126,21 +126,14 @@ func (c *Controller) Init() error {
 		}
 	}
 
-	if err := c.edCtrl.Init(); err != nil {
-		return err
-	}
-
 	if err := c.esCtrl.Init(); err != nil {
 		return err
 	}
 
-<<<<<<< HEAD
 	if err := c.mcCtrl.Init(); err != nil {
 		return err
 	}
 
-=======
->>>>>>> Remove DormantDatabase and Snapshot crd
 	if err := c.mgCtrl.Init(); err != nil {
 		return err
 	}
