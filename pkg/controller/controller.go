@@ -20,9 +20,7 @@ import (
 	dbapi "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
-	snapc "kubedb.dev/apimachinery/pkg/controller/snapshot"
 	esc "kubedb.dev/elasticsearch/pkg/controller"
-	edc "kubedb.dev/etcd/pkg/controller"
 	mcc "kubedb.dev/memcached/pkg/controller"
 	mgc "kubedb.dev/mongodb/pkg/controller"
 	myc "kubedb.dev/mysql/pkg/controller"
@@ -48,11 +46,9 @@ import (
 type Controller struct {
 	amc.Config
 	*amc.Controller
-	promClient     pcm.MonitoringV1Interface
-	cronController snapc.CronControllerInterface
+	promClient pcm.MonitoringV1Interface
 
 	// DB controllers
-	edCtrl  *edc.Controller
 	esCtrl  *esc.Controller
 	mcCtrl  *mcc.Controller
 	mgCtrl  *mgc.Controller
@@ -73,7 +69,6 @@ func New(
 	dynamicClient dynamic.Interface,
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
-	cronController snapc.CronControllerInterface,
 	opt amc.Config,
 ) *Controller {
 	return &Controller{
@@ -86,9 +81,8 @@ func New(
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
 		},
-		Config:         opt,
-		promClient:     promClient,
-		cronController: cronController,
+		Config:     opt,
+		promClient: promClient,
 	}
 }
 
@@ -96,7 +90,6 @@ func New(
 func (c *Controller) EnsureCustomResourceDefinitions() error {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 	crds := []*crd_api.CustomResourceDefinition{
-		dbapi.DormantDatabase{}.CustomResourceDefinition(),
 		dbapi.Elasticsearch{}.CustomResourceDefinition(),
 		dbapi.Etcd{}.CustomResourceDefinition(),
 		dbapi.Memcached{}.CustomResourceDefinition(),
@@ -107,7 +100,6 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		dbapi.Postgres{}.CustomResourceDefinition(),
 		dbapi.ProxySQL{}.CustomResourceDefinition(),
 		dbapi.Redis{}.CustomResourceDefinition(),
-		dbapi.Snapshot{}.CustomResourceDefinition(),
 
 		catalogapi.ElasticsearchVersion{}.CustomResourceDefinition(),
 		catalogapi.EtcdVersion{}.CustomResourceDefinition(),
@@ -122,5 +114,5 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 
 		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
-	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
+	return apiext_util.RegisterCRDs(c.Client.Discovery(), c.ApiExtKubeClient, crds)
 }

@@ -1,0 +1,37 @@
+# Copyright 2019 AppsCode Inc.
+# Copyright 2016 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+SHELL=/bin/bash -o pipefail
+
+# To test stash integration
+.PHONY: stash-install
+stash-install:
+	helm repo add appscode https://charts.appscode.com/stable/; \
+	helm repo update; \
+	helm install stash-operator appscode/stash \
+		--version v0.9.0-rc.4 \
+		--namespace kube-system; \
+	kubectl wait --for=condition=Ready pods -n kube-system -l app=stash --timeout=5m; \
+	kubectl wait --for=condition=Available apiservice -l app=stash --timeout=5m
+	curl -fsSL https://github.com/stashed/catalog/raw/v0.2.0/deploy/script.sh | bash -s -- --catalog=stash-mongodb --docker-registry=stashed
+
+.PHONY: stash-uninstall
+stash-uninstall:
+	curl -fsSL https://github.com/stashed/catalog/raw/v0.2.0/deploy/script.sh | bash -s -- --catalog=stash-mongodb --uninstall || true
+	helm uninstall stash --namespace=kube-system || true
+
+.PHONY: stash-purge
+stash-purge: stash-uninstall
+	kubectl delete crds -l app=stash

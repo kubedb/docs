@@ -18,9 +18,7 @@ package controller
 import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
-	"kubedb.dev/apimachinery/pkg/controller/dormantdatabase"
 	"kubedb.dev/apimachinery/pkg/controller/restoresession"
-	snapc "kubedb.dev/apimachinery/pkg/controller/snapshot"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
@@ -30,6 +28,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
+	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	scs "stash.appscode.dev/stash/client/clientset/versioned"
@@ -51,7 +50,6 @@ type OperatorConfig struct {
 	AppCatalogClient appcat_cs.Interface
 	DynamicClient    dynamic.Interface
 	PromClient       pcm.MonitoringV1Interface
-	CronController   snapc.CronControllerInterface
 }
 
 func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
@@ -65,6 +63,12 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 	recorder := eventer.NewEventRecorder(c.KubeClient, "Postgres operator")
+
+	topology, err := core_util.DetectTopology(c.KubeClient)
+	if err != nil {
+		return nil, err
+	}
+
 	ctrl := New(
 		c.ClientConfig,
 		c.KubeClient,
@@ -74,8 +78,8 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.DynamicClient,
 		c.AppCatalogClient,
 		c.PromClient,
-		c.CronController,
 		c.Config,
+		topology,
 		recorder,
 	)
 
@@ -83,9 +87,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		options.LabelSelector = ctrl.selector.String()
 	}
 
-	// Initialize Job and Snapshot Informer. Later EventHandler will be added to these informers.
-	ctrl.DrmnInformer = dormantdatabase.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions, recorder).InitInformer()
-	ctrl.SnapInformer, ctrl.JobInformer = snapc.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions, recorder).InitInformer()
+	// Initialize RestoreSession Informer. Later EventHandler will be added to these informers.
 	ctrl.RSInformer = restoresession.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions, recorder).InitInformer()
 
 	if err := ctrl.EnsureCustomResourceDefinitions(); err != nil {

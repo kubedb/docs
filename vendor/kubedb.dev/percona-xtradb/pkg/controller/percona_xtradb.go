@@ -26,10 +26,11 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	kutil "kmodules.xyz/client-go"
+	core_util "kmodules.xyz/client-go/core/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
 )
@@ -44,13 +45,7 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		)
 		log.Errorln(err)
 		// stop Scheduler in case there is any.
-		c.cronController.StopBackupScheduling(px.ObjectMeta)
 		return nil
-	}
-
-	// Delete Matching DormantDatabase if exists any
-	if err := c.deleteMatchingDormantDatabase(px); err != nil {
-		return fmt.Errorf(`failed to delete dormant Database : "%v/%v". Reason: %v`, px.Namespace, px.Name, err)
 	}
 
 	if px.Status.Phase == "" {
@@ -64,9 +59,10 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		px.Status = perconaxtradb.Status
 	}
 
+	// For Percona XtraDB Cluster (px.spec.replicas > 1),
 	// Set status as "Initializing" until specified restoresession object be succeeded, if provided
 	if _, err := meta_util.GetString(px.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		px.Spec.Init != nil && px.Spec.Init.StashRestoreSession != nil {
+		px.IsCluster() && px.Spec.Init != nil && px.Spec.Init.StashRestoreSession != nil {
 
 		if px.Status.Phase == api.DatabasePhaseInitializing {
 			return nil
@@ -129,6 +125,35 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		)
 	}
 
+	_, err = c.ensureAppBinding(px)
+	if err != nil {
+		log.Errorln(err)
+		return err
+	}
+
+	// For Standalone Percona XtraDB (px.spec.replicas = 1),
+	// Set status as "Initializing" until specified restoresession object be succeeded, if provided
+	if _, err := meta_util.GetString(px.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
+		!px.IsCluster() && px.Spec.Init != nil && px.Spec.Init.StashRestoreSession != nil {
+
+		if px.Status.Phase == api.DatabasePhaseInitializing {
+			return nil
+		}
+
+		// add phase that database is being initialized
+		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+			in.Phase = api.DatabasePhaseInitializing
+			return in
+		})
+		if err != nil {
+			return err
+		}
+		px.Status = perconaxtradb.Status
+
+		log.Debugf("PerconaXtraDB %v/%v is waiting for restoreSession to be succeeded", px.Namespace, px.Name)
+		return nil
+	}
+
 	per, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = px.Generation
@@ -164,39 +189,37 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		return nil
 	}
 
-	_, err = c.ensureAppBinding(px)
-	if err != nil {
-		log.Errorln(err)
+	return nil
+}
+
+func (c *Controller) halt(db *api.PerconaXtraDB) error {
+	if db.Spec.Halted && db.Spec.TerminationPolicy != api.TerminationPolicyHalt {
+		return errors.New("can't halt db. 'spec.terminationPolicy' is not 'Halt'")
+	}
+	log.Infof("Halting PerconaXtraDB %v/%v", db.Namespace, db.Name)
+	if err := c.haltDatabase(db); err != nil {
 		return err
 	}
-
+	if err := c.waitUntilPaused(db); err != nil {
+		return err
+	}
+	log.Infof("update status of PerconaXtraDB %v/%v to Halted.", db.Namespace, db.Name)
+	if _, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), db, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+		in.Phase = api.DatabasePhaseHalted
+		in.ObservedGeneration = db.Generation
+		return in
+	}); err != nil {
+		return err
+	}
 	return nil
 }
 
 func (c *Controller) terminate(px *api.PerconaXtraDB) error {
-	// If TerminationPolicy is "pause", keep everything (ie, PVCs,Secrets,Snapshots) intact.
-	// In operator, create dormantdatabase
-	if px.Spec.TerminationPolicy == api.TerminationPolicyPause {
+	// If TerminationPolicy is "halt", keep PVCs and Secrets intact.
+	// TerminationPolicyPause is deprecated and will be removed in future.
+	if px.Spec.TerminationPolicy == api.TerminationPolicyHalt || px.Spec.TerminationPolicy == api.TerminationPolicyPause {
 		if err := c.removeOwnerReferenceFromOffshoots(px); err != nil {
 			return err
-		}
-
-		if _, err := c.createDormantDatabase(px); err != nil {
-			if kerr.IsAlreadyExists(err) {
-				// if already exists, check if it is database of another Kind and return error in that case.
-				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
-				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
-				// So reuse that DormantDB!
-				ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(px.Namespace).Get(px.Name, metav1.GetOptions{})
-				if err != nil {
-					return err
-				}
-				if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindPerconaXtraDB {
-					return fmt.Errorf(`DormantDatabase "%v" of kind %v already exists`, px.Name, val)
-				}
-			} else {
-				return fmt.Errorf(`failed to create DormantDatabase: "%v/%v". Reason: %v`, px.Namespace, px.Name, err)
-			}
 		}
 	} else {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
@@ -207,10 +230,8 @@ func (c *Controller) terminate(px *api.PerconaXtraDB) error {
 		}
 	}
 
-	c.cronController.StopBackupScheduling(px.ObjectMeta)
-
 	if px.Spec.Monitor != nil {
-		if _, err := c.deleteMonitor(px); err != nil {
+		if err := c.deleteMonitor(px); err != nil {
 			log.Errorln(err)
 			return nil
 		}
@@ -225,27 +246,11 @@ func (c *Controller) setOwnerReferenceToOffshoots(px *api.PerconaXtraDB) error {
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
 	if px.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		if err := dynamic_util.EnsureOwnerReferenceForSelector(
-			c.DynamicClient,
-			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
-			px.Namespace,
-			selector,
-			owner); err != nil {
-			return err
-		}
 		if err := c.wipeOutDatabase(px.ObjectMeta, px.Spec.GetSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
-		// Make sure snapshot and secret's ownerreference is removed.
-		if err := dynamic_util.RemoveOwnerReferenceForSelector(
-			c.DynamicClient,
-			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
-			px.Namespace,
-			selector,
-			px); err != nil {
-			return err
-		}
+		// Make sure secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
@@ -270,14 +275,6 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(px *api.PerconaXtraDB) er
 
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
 		c.DynamicClient,
-		api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
-		px.Namespace,
-		labelSelector,
-		px); err != nil {
-		return err
-	}
-	if err := dynamic_util.RemoveOwnerReferenceForSelector(
-		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		px.Namespace,
 		labelSelector,
@@ -293,4 +290,39 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(px *api.PerconaXtraDB) er
 		return err
 	}
 	return nil
+}
+
+func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
+	px, err := c.pxLister.PerconaXtraDBs(meta.Namespace).Get(meta.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return px, nil
+}
+
+func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
+	px, err := c.pxLister.PerconaXtraDBs(meta.Namespace).Get(meta.Name)
+	if err != nil {
+		return err
+	}
+	_, err = util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+		in.Phase = phase
+		in.Reason = reason
+		return in
+	})
+	return err
+}
+
+func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
+	px, err := c.pxLister.PerconaXtraDBs(meta.Namespace).Get(meta.Name)
+	if err != nil {
+		return err
+	}
+
+	_, _, err = util.PatchPerconaXtraDB(c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
+		in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
+		return in
+	})
+	return err
 }

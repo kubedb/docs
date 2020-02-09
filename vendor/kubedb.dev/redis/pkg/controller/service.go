@@ -118,7 +118,7 @@ func (c *Controller) createService(redis *api.Redis) (kutil.VerbType, error) {
 func (c *Controller) ensureStatsService(redis *api.Redis) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
 	if redis.GetMonitoringVendor() != mona.VendorPrometheus {
-		log.Infoln("spec.monitor.agent is not coreos-operator or builtin.")
+		log.Infoln("spec.monitor.agent is not operator or builtin.")
 		return kutil.VerbUnchanged, nil
 	}
 
@@ -142,7 +142,7 @@ func (c *Controller) ensureStatsService(redis *api.Redis) (kutil.VerbType, error
 			{
 				Name:       api.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
-				Port:       redis.Spec.Monitor.Prometheus.Port,
+				Port:       redis.Spec.Monitor.Prometheus.Exporter.Port,
 				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
 			},
 		})

@@ -142,7 +142,7 @@ func (c *Controller) ensureStatsService(memcached *api.Memcached) (kutil.VerbTyp
 			{
 				Name:       api.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
-				Port:       memcached.Spec.Monitor.Prometheus.Port,
+				Port:       memcached.Spec.Monitor.Prometheus.Exporter.Port,
 				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
 			},
 		})

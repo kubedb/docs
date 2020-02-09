@@ -24,15 +24,20 @@ import (
 	kubedbinformers "kubedb.dev/apimachinery/client/informers/externalversions"
 
 	"github.com/appscode/go/log/golog"
-	batch "k8s.io/api/batch/v1"
+	cm "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
+	cmInformers "github.com/jetstack/cert-manager/pkg/client/informers/externalversions"
+	ext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	externalInformers "k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
+	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	appcat_in "kmodules.xyz/custom-resources/client/informers/externalversions"
@@ -54,27 +59,30 @@ type Controller struct {
 	AppCatalogClient appcat_cs.Interface
 	// StashClient for stash
 	StashClient scs.Interface
+	//CertManagerClient for cert-manger
+	CertManagerClient cm.Interface
+	// externalClient for crd
+	ExternalClient ext_cs.Interface
+	// Cluster topology when the operator started
+	ClusterTopology *core_util.Topology
 }
 
 type Config struct {
 	// Informer factory
-	KubeInformerFactory   informers.SharedInformerFactory
-	KubedbInformerFactory kubedbinformers.SharedInformerFactory
-	StashInformerFactory  stashInformers.SharedInformerFactory
-	AppCatInformerFactory appcat_in.SharedInformerFactory
+	KubeInformerFactory        informers.SharedInformerFactory
+	KubedbInformerFactory      kubedbinformers.SharedInformerFactory
+	StashInformerFactory       stashInformers.SharedInformerFactory
+	AppCatInformerFactory      appcat_in.SharedInformerFactory
+	ExternalInformerFactory    externalInformers.SharedInformerFactory
+	CertManagerInformerFactory cmInformers.SharedInformerFactory
 
-	// DormantDb queue
-	DrmnQueue    *queue.Worker
-	DrmnInformer cache.SharedIndexInformer
-	// job queue
-	JobQueue    *queue.Worker
-	JobInformer cache.SharedIndexInformer
-	// snapshot queue
-	SnapQueue    *queue.Worker
-	SnapInformer cache.SharedIndexInformer
 	// restoreSession queue
 	RSQueue    *queue.Worker
 	RSInformer cache.SharedIndexInformer
+
+	// Secret
+	SecretInformer cache.SharedIndexInformer
+	SecretLister   corelisters.SecretLister
 
 	OperatorNamespace       string
 	GoverningService        string
@@ -89,20 +97,8 @@ type Config struct {
 	EnableMutatingWebhook   bool
 }
 
-type Snapshotter interface {
-	ValidateSnapshot(*api.Snapshot) error
+type DBHelper interface {
 	GetDatabase(metav1.ObjectMeta) (runtime.Object, error)
-	GetSnapshotter(*api.Snapshot) (*batch.Job, error)
-	WipeOutSnapshot(*api.Snapshot) error
 	SetDatabaseStatus(metav1.ObjectMeta, api.DatabasePhase, string) error
 	UpsertDatabaseAnnotation(metav1.ObjectMeta, map[string]string) error
-}
-
-type Deleter interface {
-	// WaitUntilPaused will block until db pods and service are deleted. PV/PVC will remain intact.
-	WaitUntilPaused(*api.DormantDatabase) error
-	// WipeOutDatabase won't need to handle snapshots and PVCs.
-	// All other elements of database will be Wipedout on WipeOutDatabase function.
-	// Ex: secrets, wal-g data and other staff that is required.
-	WipeOutDatabase(*api.DormantDatabase) error
 }

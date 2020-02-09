@@ -53,12 +53,13 @@ func (c *Controller) addOrUpdateMonitor(memcached *api.Memcached) (kutil.VerbTyp
 	return agent.CreateOrUpdate(memcached.StatsService(), memcached.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(memcached *api.Memcached) (kutil.VerbType, error) {
+func (c *Controller) deleteMonitor(memcached *api.Memcached) error {
 	agent, err := c.newMonitorController(memcached)
 	if err != nil {
-		return kutil.VerbUnchanged, err
+		return err
 	}
-	return agent.Delete(memcached.StatsService())
+	_, err = agent.Delete(memcached.StatsService())
+	return err
 }
 
 func (c *Controller) getOldAgent(memcached *api.Memcached) mona.Agent {

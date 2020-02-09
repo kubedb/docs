@@ -152,7 +152,7 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 			{
 				Name:       api.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
-				Port:       mongodb.Spec.Monitor.Prometheus.Port,
+				Port:       mongodb.Spec.Monitor.Prometheus.Exporter.Port,
 				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
 			},
 		})
@@ -235,10 +235,19 @@ func (c *Controller) ensureMongoGvrSvc(mongodb *api.MongoDB) error {
 			}
 		}
 		// create configsvr governing service
-		return svcFunc(mongodb.GvrSvcName(
+		if err := svcFunc(mongodb.GvrSvcName(
 			mongodb.ConfigSvrNodeName()),
 			mongodb.ConfigSvrLabels(),
 			mongodb.ConfigSvrSelectors(),
+		); err != nil {
+			return err
+		}
+
+		// create mongos governing service
+		return svcFunc(mongodb.GvrSvcName(
+			mongodb.MongosNodeName()),
+			mongodb.MongosLabels(),
+			mongodb.MongosSelectors(),
 		)
 	}
 	// create mongodb governing service

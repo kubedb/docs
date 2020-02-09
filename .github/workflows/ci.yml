@@ -51,6 +51,7 @@ jobs:
       id: kind
       uses: engineerd/setup-kind@v0.1.0
       with:
+        version: v0.7.0
         config: hack/kubernetes/kind.yaml
 
     - name: Prepare cluster for testing
@@ -60,17 +61,18 @@ jobs:
         USERNAME: 1gtm
         REGISTRY_SECRET: regcred
       run: |
-        export KUBECONFIG="$(kind get kubeconfig-path)"
-        echo
         echo "waiting for nodes to be ready ..."
         kubectl wait --for=condition=Ready nodes --all --timeout=5m
         kubectl get nodes
         echo
         echo "installing local-path provisioner ..."
         kubectl delete storageclass --all
-        kubectl apply -f https://github.com/rancher/local-path-provisioner/raw/v0.0.11/deploy/local-path-storage.yaml
+        kubectl apply -f https://github.com/rancher/local-path-provisioner/raw/v0.0.12/deploy/local-path-storage.yaml
         kubectl wait --for=condition=Ready pods -n local-path-storage --all --timeout=5m
         kubectl apply -f hack/kubernetes/storageclass/standard.yaml
+        echo
+        echo "install helm 3"
+        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
         echo
         echo "create docker-registry secret"
         kubectl create secret docker-registry ${REGISTRY_SECRET} --namespace=kube-system --docker-server=https://index.docker.io/v1/ --docker-username=${USERNAME} --docker-password=${DOCKER_TOKEN}
@@ -84,10 +86,6 @@ jobs:
 
     - name: Install stash and addons
       run: |
-        export KUBECONFIG="$(kind get kubeconfig-path)"
-        if [ -x "$(command -v helm)" ]; then
-            helm init --client-only
-        fi
         make stash-install
 
     - name: Run e2e tests
@@ -97,7 +95,6 @@ jobs:
         TEST_CREDENTIALS: ${{ secrets.TEST_CREDENTIALS }}
         GOOGLE_SERVICE_ACCOUNT_JSON_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON_KEY }}
       run: |
-        export KUBECONFIG="$(kind get kubeconfig-path)"
         echo "preparing test credentials"
         mkdir -p hack/config
         echo -n "$TEST_CREDENTIALS" > hack/config/.env

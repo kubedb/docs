@@ -78,7 +78,7 @@ func (c *Controller) ensurePerconaXtraDB(px *api.PerconaXtraDB) (kutil.VerbType,
 			Command: []string{
 				"rm",
 				"-rf",
-				api.PerconaXtraDBDataLostFoundPath,
+				"/var/lib/mysql/lost+found",
 			},
 			VolumeMounts: []core.VolumeMount{
 				{
@@ -122,7 +122,7 @@ func (c *Controller) ensurePerconaXtraDB(px *api.PerconaXtraDB) (kutil.VerbType,
 	var volumes []core.Volume
 	var volumeMounts []core.VolumeMount
 
-	if px.Spec.Init != nil && px.Spec.Init.ScriptSource != nil {
+	if !px.IsCluster() && px.Spec.Init != nil && px.Spec.Init.ScriptSource != nil {
 		volumes = append(volumes, core.Volume{
 			Name:         "initial-script",
 			VolumeSource: px.Spec.Init.ScriptSource.VolumeSource,
@@ -271,6 +271,21 @@ func (c *Controller) ensureStatefulSet(
 	livenessProbe := pt.Spec.LivenessProbe
 	if livenessProbe != nil && structs.IsZero(*livenessProbe) {
 		livenessProbe = nil
+	}
+
+	if readinessProbe != nil {
+		readinessProbe.InitialDelaySeconds = 60
+		readinessProbe.PeriodSeconds = 10
+		readinessProbe.TimeoutSeconds = 50
+		readinessProbe.SuccessThreshold = 1
+		readinessProbe.FailureThreshold = 3
+	}
+	if livenessProbe != nil {
+		livenessProbe.InitialDelaySeconds = 60
+		livenessProbe.PeriodSeconds = 10
+		livenessProbe.TimeoutSeconds = 50
+		livenessProbe.SuccessThreshold = 1
+		livenessProbe.FailureThreshold = 3
 	}
 
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {

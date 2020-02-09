@@ -13,10 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package controller
 
 import (
 	"fmt"
+	"path/filepath"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -28,6 +30,8 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/kubernetes"
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -35,9 +39,11 @@ import (
 )
 
 const (
-	//securityContextCode = int64(65535)
-	configMountPath   = "/etc/config"
-	userListMountPath = "/var/run/pgbouncer/secret"
+	configMountPath             = "/etc/config"
+	UserListMountPath           = "/var/run/pgbouncer/secret"
+	ServingServerCertMountPath  = "/var/run/pgbouncer/tls/serving/server"
+	ServingClientCertMountPath  = "/var/run/pgbouncer/tls/serving/client"
+	UpstreamServerCertMountPath = "/var/run/pgbouncer/tls/upstream/server"
 )
 
 func (c *Controller) ensureStatefulSet(
@@ -49,16 +55,21 @@ func (c *Controller) ensureStatefulSet(
 		if kerr.IsNotFound(err) {
 			_, err := c.ensureConfigMapFromCRD(pgbouncer)
 			if err != nil {
+				log.Infoln(err)
 				return kutil.VerbUnchanged, err
 			}
 
 		} else {
+			log.Infoln(err)
 			return kutil.VerbUnchanged, err
 		}
 	}
+
 	if err := c.checkStatefulSet(pgbouncer); err != nil {
+		log.Infoln(err)
 		return kutil.VerbUnchanged, err
 	}
+
 	statefulSetMeta := metav1.ObjectMeta{
 		Name:      pgbouncer.OffshootName(),
 		Namespace: pgbouncer.Namespace,
@@ -105,23 +116,33 @@ func (c *Controller) ensureStatefulSet(
 		}
 		volumeMounts = append(volumeMounts, configMapVolumeMount)
 
-		//if pgbouncer.Spec.UserListSecretRef != nil && pgbouncer.Spec.UserListSecretRef.Name != "" {
-		//	secretVolume, secretVolumeMount, err := c.getVolumeAndVolumeMountForUserList(pgbouncer)
-		//	if err == nil {
-		//		volumes = append(volumes, *secretVolume)
-		//		//Add to volumeMounts to mount the volume
-		//		volumeMounts = append(volumeMounts, *secretVolumeMount)
-		//	} else if kerr.IsNotFound(err) {
-		//
-		//		log.Infoln("UserList secret " + pgbouncer.Spec.UserListSecretRef.Name + " is not available")
-		//
-		//	}
-		//	//We are not concerned about other errors
-		//}
 		secretVolume, secretVolumeMount, err := c.getVolumeAndVolumeMountForDefaultUserList(pgbouncer)
 		if err == nil {
 			volumes = append(volumes, *secretVolume)
 			volumeMounts = append(volumeMounts, *secretVolumeMount)
+		}
+
+		if pgbouncer.Spec.TLS != nil {
+			//TLS is enabled
+			//mount client crt (CT is short for client-tls)
+			if pgbouncer.Spec.TLS.IssuerRef != nil {
+				servingServerSecretVolume, servingServerSecretVolumeMount, err := c.getVolumeAndVolumeMountForServingServerCertificate(pgbouncer)
+				if err == nil {
+					volumes = append(volumes, *servingServerSecretVolume)
+					volumeMounts = append(volumeMounts, *servingServerSecretVolumeMount)
+				}
+				servingClientSecretVolume, servingClientVolumeMount, err := c.getVolumeAndVolumeMountForServingClientCertificate(pgbouncer)
+				if err == nil {
+					volumes = append(volumes, *servingClientSecretVolume)
+					volumeMounts = append(volumeMounts, *servingClientVolumeMount)
+				}
+				//add exporter certificate volume
+				exporterSecretVolume, _, err := c.getVolumeAndVolumeMountForExporterClientCertificate(pgbouncer)
+				if err == nil {
+					volumes = append(volumes, *exporterSecretVolume)
+				}
+
+			}
 		}
 
 		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, pgbouncer.Spec.PodTemplate.Spec.InitContainers)
@@ -142,10 +163,7 @@ func (c *Controller) ensureStatefulSet(
 
 				Image:           image,
 				ImagePullPolicy: core.PullIfNotPresent,
-				//SecurityContext: &core.SecurityContext{
-				//	RunAsUser: aws.Int64(securityContextCode),
-				//},
-				VolumeMounts: volumeMounts,
+				VolumeMounts:    volumeMounts,
 
 				Resources:      pgbouncer.Spec.PodTemplate.Spec.Resources,
 				LivenessProbe:  pgbouncer.Spec.PodTemplate.Spec.LivenessProbe,
@@ -162,13 +180,16 @@ func (c *Controller) ensureStatefulSet(
 		in.Spec.Template.Spec.ImagePullSecrets = pgbouncer.Spec.PodTemplate.Spec.ImagePullSecrets
 		in.Spec.Template.Spec.PriorityClassName = pgbouncer.Spec.PodTemplate.Spec.PriorityClassName
 		in.Spec.Template.Spec.Priority = pgbouncer.Spec.PodTemplate.Spec.Priority
-		in.Spec.Template.Spec.SecurityContext = pgbouncer.Spec.PodTemplate.Spec.SecurityContext
+		if in.Spec.Template.Spec.SecurityContext != nil {
+			in.Spec.Template.Spec.SecurityContext = pgbouncer.Spec.PodTemplate.Spec.SecurityContext
+		}
 		in = c.upsertMonitoringContainer(in, pgbouncer, pgbouncerVersion)
 
 		return in
 	})
 
 	if err != nil {
+		log.Infoln(err)
 		return kutil.VerbUnchanged, err
 	}
 
@@ -189,6 +210,7 @@ func (c *Controller) ensureStatefulSet(
 
 	// ensure pdb
 	if err := c.CreateStatefulSetPodDisruptionBudget(statefulSet); err != nil {
+		log.Infoln(err)
 		return vt, err
 	}
 
@@ -196,7 +218,7 @@ func (c *Controller) ensureStatefulSet(
 }
 
 func (c *Controller) CheckStatefulSetPodStatus(statefulSet *apps.StatefulSet) error {
-	err := core_util.WaitUntilPodRunningBySelector(
+	err := WaitUntilPodRunningBySelector(
 		c.Client,
 		statefulSet.Namespace,
 		statefulSet.Spec.Selector,
@@ -210,7 +232,7 @@ func (c *Controller) CheckStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 
 func (c *Controller) checkStatefulSet(pgbouncer *api.PgBouncer) error {
 	//Name validation for StatefulSet
-	// Check whether a non-kubedb managed StatefulSet by this name already exists
+	// Check whether PgBouncer's StatefulSet (not managed by KubeDB) already exists
 	name := pgbouncer.OffshootName()
 	// SatatefulSet for PgBouncer database
 	statefulSet, err := c.Client.AppsV1().StatefulSets(pgbouncer.Namespace).Get(name, metav1.GetOptions{})
@@ -289,21 +311,42 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, pg
 	if pgbouncer.GetMonitoringVendor() == mona.VendorPrometheus {
 		var monitorArgs []string
 		if pgbouncer.Spec.Monitor != nil {
-			monitorArgs = pgbouncer.Spec.Monitor.Args
+			monitorArgs = pgbouncer.Spec.Monitor.Prometheus.Exporter.Args
 		}
 
 		adminSecretSpec := c.GetDefaultSecretSpec(pgbouncer)
-		adminSecret, err := c.Client.CoreV1().Secrets(adminSecretSpec.Namespace).Get(adminSecretSpec.Name, metav1.GetOptions{})
+		err := c.isSecretExists(adminSecretSpec.ObjectMeta)
 		if err != nil {
 			log.Infoln(err)
+			return statefulSet //Dont make changes if error occurs
 		}
-		adminPassword := string(adminSecret.Data[pbAdminPassword])
+
+		dataSource := fmt.Sprintf("postgres://%s:@localhost:%d/%s?sslmode=disable", pbAdminUser, *pgbouncer.Spec.ConnectionPool.Port, pbAdminDatabase)
+
+		var volumeMounts []core.VolumeMount
+		if pgbouncer.Spec.TLS != nil {
+			// TLS is enabled
+			if pgbouncer.Spec.TLS.IssuerRef != nil {
+				// mount exporter client-cert in exporter container
+				_, ctClientVolumeMount, err := c.getVolumeAndVolumeMountForExporterClientCertificate(pgbouncer)
+				if err == nil {
+					volumeMounts = append(volumeMounts, *ctClientVolumeMount)
+				}
+				// update dataSource
+				dataSource = fmt.Sprintf("postgres://%s:@localhost:%d/%s?sslmode=verify-full"+
+					"&sslrootcert=%s&sslcert=%s&sslkey=%s",
+					pbAdminUser, *pgbouncer.Spec.ConnectionPool.Port, pbAdminDatabase,
+					filepath.Join(ServingClientCertMountPath, "ca.crt"),
+					filepath.Join(ServingClientCertMountPath, "tls.crt"),
+					filepath.Join(ServingClientCertMountPath, "tls.key"))
+
+			}
+		}
 
 		container := core.Container{
 			Name: "exporter",
-			//TODO: decide what to do with Args
 			Args: append([]string{
-				fmt.Sprintf("--web.listen-address=:%d", api.PrometheusExporterPortNumber),
+				fmt.Sprintf("--web.listen-address=:%d", pgbouncer.Spec.Monitor.Prometheus.Exporter.Port),
 			}, monitorArgs...),
 			Image:           pgbouncerVersion.Spec.Exporter.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
@@ -311,27 +354,38 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, pg
 				{
 					Name:          api.PrometheusExporterPortName,
 					Protocol:      core.ProtocolTCP,
-					ContainerPort: int32(api.PrometheusExporterPortNumber),
+					ContainerPort: pgbouncer.Spec.Monitor.Prometheus.Exporter.Port,
 				},
 			},
-			Env:             pgbouncer.Spec.Monitor.Env,
-			Resources:       pgbouncer.Spec.Monitor.Resources,
-			SecurityContext: pgbouncer.Spec.Monitor.SecurityContext,
+			Env:             pgbouncer.Spec.Monitor.Prometheus.Exporter.Env,
+			Resources:       pgbouncer.Spec.Monitor.Prometheus.Exporter.Resources,
+			SecurityContext: pgbouncer.Spec.Monitor.Prometheus.Exporter.SecurityContext,
+			VolumeMounts:    volumeMounts,
 		}
 
 		envList := []core.EnvVar{
 			{
 				Name:  "DATA_SOURCE_NAME",
-				Value: fmt.Sprintf("postgres://%s:%s@localhost:%d/%s?sslmode=disable", pbAdminUser, adminPassword, *pgbouncer.Spec.ConnectionPool.Port, pbAdminDatabase),
+				Value: dataSource,
 			},
-
-			//format = "postgres://YourUserName:YourPassword@YourHost:5432/databseName";
+			{
+				Name: "PGPASSWORD",
+				ValueFrom: &core.EnvVarSource{
+					SecretKeyRef: &core.SecretKeySelector{
+						LocalObjectReference: core.LocalObjectReference{
+							Name: adminSecretSpec.Name,
+						},
+						Key: pbAdminPassword,
+					},
+				},
+			},
 		}
 		container.Env = core_util.UpsertEnvVars(container.Env, envList...)
 		containers := statefulSet.Spec.Template.Spec.Containers
 		containers = core_util.UpsertContainer(containers, container)
 		statefulSet.Spec.Template.Spec.Containers = containers
 	}
+
 	return statefulSet
 }
 
@@ -358,4 +412,32 @@ func upsertEnv(statefulSet *apps.StatefulSet, pgbouncer *api.PgBouncer, envs []c
 	}
 
 	return statefulSet
+}
+
+func WaitUntilPodRunningBySelector(kubeClient kubernetes.Interface, namespace string, selector *metav1.LabelSelector, count int) error {
+	r, err := metav1.LabelSelectorAsSelector(selector)
+	if err != nil {
+		return err
+	}
+
+	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
+		podList, err := kubeClient.CoreV1().Pods(namespace).List(metav1.ListOptions{
+			LabelSelector: r.String(),
+		})
+		if err != nil {
+			return true, nil
+		}
+
+		if len(podList.Items) != count {
+			return true, nil
+		}
+
+		for _, pod := range podList.Items {
+			runningAndReady, _ := core_util.PodRunningAndReady(pod)
+			if !runningAndReady {
+				return false, nil
+			}
+		}
+		return true, nil
+	})
 }

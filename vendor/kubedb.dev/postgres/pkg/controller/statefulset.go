@@ -24,7 +24,7 @@ import (
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/pkg/eventer"
-	"kubedb.dev/postgres/pkg/leader_election"
+	"kubedb.dev/pg-leader-election/pkg/leader_election"
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"

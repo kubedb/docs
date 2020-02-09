@@ -16,25 +16,19 @@ limitations under the License.
 package admission
 
 import (
-	"fmt"
 	"sync"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
-	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	kutil "kmodules.xyz/client-go"
-	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
@@ -95,7 +89,7 @@ func (a *MySQLMutator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	mysqlMod, err := setDefaultValues(a.extClient, obj.(*api.MySQL).DeepCopy())
+	mysqlMod, err := setDefaultValues(obj.(*api.MySQL).DeepCopy())
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mysqlMod != nil {
@@ -113,9 +107,16 @@ func (a *MySQLMutator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a MySQL database
-func setDefaultValues(extClient cs.Interface, mysql *api.MySQL) (runtime.Object, error) {
+func setDefaultValues(mysql *api.MySQL) (runtime.Object, error) {
 	if mysql.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
+	}
+
+	if mysql.Spec.Halted {
+		if mysql.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
+			return nil, errors.New(`Can't halt, since termination policy is 'DoNotTerminate'`)
+		}
+		mysql.Spec.TerminationPolicy = api.TerminationPolicyHalt
 	}
 
 	if mysql.Spec.Topology != nil && mysql.Spec.Topology.Mode != nil &&
@@ -139,85 +140,11 @@ func setDefaultValues(extClient cs.Interface, mysql *api.MySQL) (runtime.Object,
 
 	mysql.SetDefaults()
 
-	if err := setDefaultsFromDormantDB(extClient, mysql); err != nil {
-		return nil, err
-	}
-
 	// If monitoring spec is given without port,
 	// set default Listening port
 	setMonitoringPort(mysql)
 
 	return mysql, nil
-}
-
-// setDefaultsFromDormantDB takes values from Similar Dormant Database
-func setDefaultsFromDormantDB(extClient cs.Interface, mysql *api.MySQL) error {
-	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(mysql.Namespace).Get(mysql.Name, metav1.GetOptions{})
-	if err != nil {
-		if !kerr.IsNotFound(err) {
-			return err
-		}
-		return nil
-	}
-
-	// Check DatabaseKind
-	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindMySQL {
-		return errors.New(fmt.Sprintf(`invalid MySQL: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, mysql.Namespace, mysql.Name, dormantDb.Namespace, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	ddbOriginSpec := dormantDb.Spec.Origin.Spec.MySQL
-	ddbOriginSpec.SetDefaults()
-
-	// If DatabaseSecret of new object is not given,
-	// Take dormantDatabaseSecretName
-	if mysql.Spec.DatabaseSecret == nil {
-		mysql.Spec.DatabaseSecret = ddbOriginSpec.DatabaseSecret
-	}
-
-	// If Monitoring Spec of new object is not given,
-	// Take Monitoring Settings from Dormant
-	if mysql.Spec.Monitor == nil {
-		mysql.Spec.Monitor = ddbOriginSpec.Monitor
-	} else {
-		ddbOriginSpec.Monitor = mysql.Spec.Monitor
-	}
-
-	// If Backup Scheduler of new object is not given,
-	// Take Backup Scheduler Settings from Dormant
-	if mysql.Spec.BackupSchedule == nil {
-		mysql.Spec.BackupSchedule = ddbOriginSpec.BackupSchedule
-	} else {
-		ddbOriginSpec.BackupSchedule = mysql.Spec.BackupSchedule
-	}
-
-	// Skip checking UpdateStrategy
-	ddbOriginSpec.UpdateStrategy = mysql.Spec.UpdateStrategy
-
-	// Skip checking ServiceAccountName
-	ddbOriginSpec.PodTemplate.Spec.ServiceAccountName = mysql.Spec.PodTemplate.Spec.ServiceAccountName
-
-	// Skip checking TerminationPolicy
-	ddbOriginSpec.TerminationPolicy = mysql.Spec.TerminationPolicy
-
-	if !meta_util.Equal(ddbOriginSpec, &mysql.Spec) {
-		diff := meta_util.Diff(ddbOriginSpec, &mysql.Spec)
-		log.Errorf("mysql spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff)
-		return errors.New(fmt.Sprintf("mysql spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff))
-	}
-
-	if _, err := meta_util.GetString(mysql.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		mysql.Spec.Init != nil &&
-		(mysql.Spec.Init.SnapshotSource != nil || mysql.Spec.Init.StashRestoreSession != nil) {
-		mysql.Annotations = core_util.UpsertMap(mysql.Annotations, map[string]string{
-			api.AnnotationInitialized: "",
-		})
-	}
-
-	// Delete  Matching dormantDatabase in Controller
-
-	return nil
 }
 
 // Assign Default Monitoring Port if MonitoringSpec Exists
@@ -228,8 +155,11 @@ func setMonitoringPort(mysql *api.MySQL) {
 		if mysql.Spec.Monitor.Prometheus == nil {
 			mysql.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
 		}
-		if mysql.Spec.Monitor.Prometheus.Port == 0 {
-			mysql.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
+		if mysql.Spec.Monitor.Prometheus.Exporter == nil {
+			mysql.Spec.Monitor.Prometheus.Exporter = &mona.PrometheusExporterSpec{}
+		}
+		if mysql.Spec.Monitor.Prometheus.Exporter.Port == 0 {
+			mysql.Spec.Monitor.Prometheus.Exporter.Port = api.PrometheusExporterPortNumber
 		}
 	}
 }

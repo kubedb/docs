@@ -23,12 +23,9 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
-	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
@@ -93,7 +90,7 @@ func (a *MemcachedMutator) Admit(req *admission.AdmissionRequest) *admission.Adm
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	mod, err := setDefaultValues(a.extClient, obj.(*api.Memcached).DeepCopy())
+	mod, err := setDefaultValues(obj.(*api.Memcached).DeepCopy())
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mod != nil {
@@ -111,9 +108,16 @@ func (a *MemcachedMutator) Admit(req *admission.AdmissionRequest) *admission.Adm
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a Memcached database
-func setDefaultValues(extClient cs.Interface, memcached *api.Memcached) (runtime.Object, error) {
+func setDefaultValues(memcached *api.Memcached) (runtime.Object, error) {
 	if memcached.Spec.Version == "" {
 		return nil, fmt.Errorf(`object 'Version' is missing in '%v'`, memcached.Spec)
+	}
+
+	if memcached.Spec.Halted {
+		if memcached.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
+			return nil, errors.New(`Can't halt, since termination policy is 'DoNotTerminate'`)
+		}
+		memcached.Spec.TerminationPolicy = api.TerminationPolicyHalt
 	}
 
 	if memcached.Spec.Replicas == nil {
@@ -121,63 +125,11 @@ func setDefaultValues(extClient cs.Interface, memcached *api.Memcached) (runtime
 	}
 	memcached.SetDefaults()
 
-	if err := setDefaultsFromDormantDB(extClient, memcached); err != nil {
-		return nil, err
-	}
-
 	// If monitoring spec is given without port,
 	// set default Listening port
 	setMonitoringPort(memcached)
 
 	return memcached, nil
-}
-
-// setDefaultsFromDormantDB takes values from Similar Dormant Database
-func setDefaultsFromDormantDB(extClient cs.Interface, memcached *api.Memcached) error {
-	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(memcached.Namespace).Get(memcached.Name, metav1.GetOptions{})
-	if err != nil {
-		if !kerr.IsNotFound(err) {
-			return err
-		}
-		return nil
-	}
-
-	// Check DatabaseKind
-	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindMemcached {
-		return errors.New(fmt.Sprintf(`invalid Memcached: "%v/%v". Exists DormantDatabase "%v%v" of different Kind`, memcached.Namespace, memcached.Name, dormantDb.Namespace, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	ddbOriginSpec := dormantDb.Spec.Origin.Spec.Memcached
-	ddbOriginSpec.SetDefaults()
-
-	// If Monitoring Spec of new object is not given,
-	// Take Monitoring Settings from Dormant
-	if memcached.Spec.Monitor == nil {
-		memcached.Spec.Monitor = ddbOriginSpec.Monitor
-	} else {
-		ddbOriginSpec.Monitor = memcached.Spec.Monitor
-	}
-
-	// Skip checking UpdateStrategy
-	ddbOriginSpec.UpdateStrategy = memcached.Spec.UpdateStrategy
-
-	// Skip checking ServiceAccountName
-	ddbOriginSpec.PodTemplate.Spec.ServiceAccountName = memcached.Spec.PodTemplate.Spec.ServiceAccountName
-
-	// Skip checking TerminationPolicy
-	ddbOriginSpec.TerminationPolicy = memcached.Spec.TerminationPolicy
-
-	if !meta_util.Equal(ddbOriginSpec, &memcached.Spec) {
-		diff := meta_util.Diff(ddbOriginSpec, &memcached.Spec)
-		log.Errorf("memcached spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff)
-		return errors.New(fmt.Sprintf("memcached spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff))
-	}
-
-	// Delete  Matching dormantDatabase in Controller
-
-	return nil
 }
 
 // Assign Default Monitoring Port if MonitoringSpec Exists
@@ -188,8 +140,11 @@ func setMonitoringPort(memcached *api.Memcached) {
 		if memcached.Spec.Monitor.Prometheus == nil {
 			memcached.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
 		}
-		if memcached.Spec.Monitor.Prometheus.Port == 0 {
-			memcached.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
+		if memcached.Spec.Monitor.Prometheus.Exporter == nil {
+			memcached.Spec.Monitor.Prometheus.Exporter = &mona.PrometheusExporterSpec{}
+		}
+		if memcached.Spec.Monitor.Prometheus.Exporter.Port == 0 {
+			memcached.Spec.Monitor.Prometheus.Exporter.Port = api.PrometheusExporterPortNumber
 		}
 	}
 }

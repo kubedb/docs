@@ -92,7 +92,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		api.ProxySQL{}.CustomResourceDefinition(),
 		catalog.ProxySQLVersion{}.CustomResourceDefinition(),
 	}
-	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
+	return apiext_util.RegisterCRDs(c.Client.Discovery(), c.ApiExtKubeClient, crds)
 }
 
 // Init initializes proxysql, DormantDB amd RestoreSession watcher

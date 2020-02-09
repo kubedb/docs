@@ -17,7 +17,7 @@ limitations under the License.
 package controller
 
 import (
-	"fmt"
+	"errors"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
@@ -26,10 +26,7 @@ import (
 
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kutil "kmodules.xyz/client-go"
-	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (c *Controller) create(memcached *api.Memcached) error {
@@ -42,11 +39,6 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		)
 		log.Errorln(err)
 		return nil // user error so just record error and don't retry.
-	}
-
-	// Delete Matching DormantDatabase if exists any
-	if err := c.deleteMatchingDormantDatabase(memcached); err != nil {
-		return fmt.Errorf(`failed to delete dormant Database : "%v/%v". Reason: %v`, memcached.Namespace, memcached.Name, err)
 	}
 
 	if memcached.Status.Phase == "" {
@@ -136,29 +128,31 @@ func (c *Controller) create(memcached *api.Memcached) error {
 	return nil
 }
 
-func (c *Controller) terminate(memcached *api.Memcached) error {
-	// If TerminationPolicy is "terminate", keep everything (ie, PVCs,Secrets,Snapshots) intact.
-	// In operator, create dormantdatabase
-	if memcached.Spec.TerminationPolicy == api.TerminationPolicyPause {
-
-		if _, err := c.createDormantDatabase(memcached); err != nil {
-			if kerr.IsAlreadyExists(err) {
-				// if already exists, check if it is database of another Kind and return error in that case.
-				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
-				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
-				// So reuse that DormantDB!
-				ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(memcached.Namespace).Get(memcached.Name, metav1.GetOptions{})
-				if err != nil {
-					return err
-				}
-				if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindMemcached {
-					return fmt.Errorf(`DormantDatabase "%v/%v" of kind %v already exists`, memcached.Namespace, memcached.Name, val)
-				}
-			} else {
-				return fmt.Errorf(`failed to create DormantDatabase: "%v/%v". Reason: %v`, memcached.Namespace, memcached.Name, err)
-			}
-		}
+func (c *Controller) halt(db *api.Memcached) error {
+	if db.Spec.Halted && db.Spec.TerminationPolicy != api.TerminationPolicyHalt {
+		return errors.New("can't halt db. 'spec.terminationPolicy' is not 'Halt'")
 	}
+	log.Infof("Halting Memcached %v/%v", db.Namespace, db.Name)
+	if err := c.haltDatabase(db); err != nil {
+		return err
+	}
+	if err := c.waitUntilPaused(db); err != nil {
+		return err
+	}
+	log.Infof("update status of Memcached %v/%v to Halted.", db.Namespace, db.Name)
+	if _, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), db, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+		in.Phase = api.DatabasePhaseHalted
+		in.ObservedGeneration = db.Generation
+		return in
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Controller) terminate(memcached *api.Memcached) error {
+	// If TerminationPolicy is "terminate", keep everything (ie, PVCs,Secrets,Snapshots) intact
+
 	// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
 	// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
 	// In both these cases, don't create dormantdatabase
@@ -167,7 +161,7 @@ func (c *Controller) terminate(memcached *api.Memcached) error {
 	// In future. if we add any secrets or other component, handle here
 
 	if memcached.Spec.Monitor != nil {
-		if _, err := c.deleteMonitor(memcached); err != nil {
+		if err := c.deleteMonitor(memcached); err != nil {
 			log.Errorln(err)
 			return nil
 		}

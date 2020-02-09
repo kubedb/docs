@@ -18,12 +18,9 @@ package controller
 import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
-	"kubedb.dev/apimachinery/pkg/controller/dormantdatabase"
 	"kubedb.dev/apimachinery/pkg/controller/restoresession"
-	snapc "kubedb.dev/apimachinery/pkg/controller/snapshot"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	esc "kubedb.dev/elasticsearch/pkg/controller"
-	edc "kubedb.dev/etcd/pkg/controller"
 	mcc "kubedb.dev/memcached/pkg/controller"
 	mgc "kubedb.dev/mongodb/pkg/controller"
 	myc "kubedb.dev/mysql/pkg/controller"
@@ -39,6 +36,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
+	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	scs "stash.appscode.dev/stash/client/clientset/versioned"
@@ -60,7 +58,6 @@ type OperatorConfig struct {
 	DynamicClient    dynamic.Interface
 	AppCatalogClient appcat_cs.Interface
 	PromClient       pcm.MonitoringV1Interface
-	CronController   snapc.CronControllerInterface
 }
 
 func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
@@ -76,6 +73,11 @@ func (c *OperatorConfig) New() (*Controller, error) {
 
 	recorder := eventer.NewEventRecorder(c.KubeClient, "KubeDB operator")
 
+	topology, err := core_util.DetectTopology(c.KubeClient)
+	if err != nil {
+		return nil, err
+	}
+
 	// define all the controllers
 	ctrl := New(
 		c.ClientConfig,
@@ -86,25 +88,20 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.DynamicClient,
 		c.AppCatalogClient,
 		c.PromClient,
-		c.CronController,
 		c.Config,
 	)
 
-	ctrl.DrmnInformer = dormantdatabase.NewController(ctrl.Controller, nil, ctrl.Config, nil, recorder).InitInformer()
-	ctrl.SnapInformer, ctrl.JobInformer = snapc.NewController(ctrl.Controller, nil, ctrl.Config, nil, recorder).InitInformer()
 	ctrl.RSInformer = restoresession.NewController(ctrl.Controller, nil, ctrl.Config, nil, recorder).InitInformer()
 
-	ctrl.edCtrl = edc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
-	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
-	ctrl.mcCtrl = mcc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
-	ctrl.mgCtrl = mgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
-	ctrl.myCtrl = myc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
-	ctrl.pgbCtrl = pgb.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
-	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
+	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
+	ctrl.mcCtrl = mcc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
+	ctrl.mgCtrl = mgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
+	ctrl.myCtrl = myc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
+	ctrl.pgbCtrl = pgb.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
+	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
 	ctrl.prCtrl = prc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, ctrl.Config, recorder)
-	ctrl.pxCtrl = pxc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, c.CronController, ctrl.Config, recorder)
-
-	ctrl.rdCtrl = rdc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
+	ctrl.pxCtrl = pxc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
+	ctrl.rdCtrl = rdc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
 
 	if err := ctrl.Init(); err != nil {
 		return nil, err
@@ -127,10 +124,6 @@ func (c *Controller) Init() error {
 		if err := reg_util.UpdateValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig); err != nil {
 			return err
 		}
-	}
-
-	if err := c.edCtrl.Init(); err != nil {
-		return err
 	}
 
 	if err := c.esCtrl.Init(); err != nil {

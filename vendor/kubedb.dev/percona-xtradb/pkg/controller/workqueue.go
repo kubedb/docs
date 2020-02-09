@@ -65,10 +65,23 @@ func (c *Controller) runPerconaXtraDB(key string) error {
 			if err != nil {
 				return err
 			}
-			if err := c.create(px); err != nil {
-				log.Errorln(err)
-				c.pushFailureEvent(px, err.Error())
-				return err
+
+			if px.Spec.Paused {
+				return nil
+			}
+
+			if px.Spec.Halted {
+				if err := c.halt(px); err != nil {
+					log.Errorln(err)
+					c.pushFailureEvent(px, err.Error())
+					return err
+				}
+			} else {
+				if err := c.create(px); err != nil {
+					log.Errorln(err)
+					c.pushFailureEvent(px, err.Error())
+					return err
+				}
 			}
 		}
 	}

@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package admission
 
 import (
@@ -33,9 +34,8 @@ import (
 )
 
 const (
-	defaultListenPort    = int32(5432)
-	DefaultListenAddress = "*"
-	defaultPoolMode      = "session"
+	defaultListenPort = int32(5432)
+	defaultPoolMode   = "session"
 )
 
 type PgBouncerMutator struct {
@@ -111,7 +111,6 @@ func (a *PgBouncerMutator) Admit(req *admission.AdmissionRequest) *admission.Adm
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a PgBouncer database
 func setDefaultValues(pgbouncer *api.PgBouncer) runtime.Object {
-	//func setDefaultValues(client kubernetes.Interface, extClient cs.Interface, pgbouncer *api.PgBouncer) (runtime.Object, error) {
 	if pgbouncer.Spec.Replicas == nil {
 		pgbouncer.Spec.Replicas = types.Int32P(1)
 	}
@@ -128,8 +127,7 @@ func setDefaultValues(pgbouncer *api.PgBouncer) runtime.Object {
 	}
 	pgbouncer.SetDefaults()
 
-	// If monitoring spec is given without port,
-	// set default Listening port
+	// If monitoring spec is given without port, set default Listening port
 	setMonitoringPort(pgbouncer)
 
 	return pgbouncer
@@ -143,8 +141,11 @@ func setMonitoringPort(pgbouncer *api.PgBouncer) {
 		if pgbouncer.Spec.Monitor.Prometheus == nil {
 			pgbouncer.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
 		}
-		if pgbouncer.Spec.Monitor.Prometheus.Port == 0 {
-			pgbouncer.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
+		if pgbouncer.Spec.Monitor.Prometheus.Exporter == nil {
+			pgbouncer.Spec.Monitor.Prometheus.Exporter = &mona.PrometheusExporterSpec{}
+		}
+		if pgbouncer.Spec.Monitor.Prometheus.Exporter.Port == 0 {
+			pgbouncer.Spec.Monitor.Prometheus.Exporter.Port = api.PrometheusExporterPortNumber
 		}
 	}
 }

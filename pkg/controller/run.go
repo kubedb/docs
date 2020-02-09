@@ -35,8 +35,6 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 	}
 
 	<-stopCh
-
-	c.cronController.StopCron()
 }
 
 // StartAndRunControllers starts InformetFactory and runs queue.worker
@@ -85,7 +83,6 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 		}
 	}
 
-	c.edCtrl.RunControllers(stopCh)
 	c.esCtrl.RunControllers(stopCh)
 	c.mcCtrl.RunControllers(stopCh)
 	c.mgCtrl.RunControllers(stopCh)

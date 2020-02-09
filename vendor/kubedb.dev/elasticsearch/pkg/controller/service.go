@@ -50,6 +50,41 @@ var (
 	}
 )
 
+func (c *Controller) ensureElasticGvrSvc(elasticsearch *api.Elasticsearch) error {
+	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+
+	// Check if service name exists with different db kind
+	if err := c.checkService(elasticsearch, elasticsearch.GvrSvcName()); err != nil {
+		return err
+	}
+
+	meta := metav1.ObjectMeta{
+		Name:      elasticsearch.GvrSvcName(),
+		Namespace: elasticsearch.Namespace,
+	}
+
+	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+		in.Labels = elasticsearch.OffshootLabels()
+		in.Spec.Selector = elasticsearch.OffshootSelectors()
+		in.Spec.Type = core.ServiceTypeClusterIP
+		in.Spec.ClusterIP = core.ClusterIPNone
+		in.Spec.Ports = []core.ServicePort{defaultPeerPort, defaultClientPort}
+		return in
+	})
+
+	if err == nil {
+		c.recorder.Eventf(
+			elasticsearch,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %s governing service",
+			vt,
+		)
+	}
+	return err
+}
+
 func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
 	// Check if service name exists
 	err := c.checkService(elasticsearch, elasticsearch.OffshootName())
@@ -201,7 +236,7 @@ func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil
 			{
 				Name:       api.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
-				Port:       elasticsearch.Spec.Monitor.Prometheus.Port,
+				Port:       elasticsearch.Spec.Monitor.Prometheus.Exporter.Port,
 				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
 			},
 		})

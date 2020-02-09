@@ -106,15 +106,14 @@ func (c *Controller) createRoleBinding(db *api.MySQL, roleName string, saName st
 	return err
 }
 
-func (c *Controller) getPolicyNames(db *api.MySQL) (string, string, error) {
+func (c *Controller) getPolicyNames(db *api.MySQL) (string, error) {
 	dbVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	dbPolicyName := dbVersion.Spec.PodSecurityPolicies.DatabasePolicyName
-	snapshotPolicyName := dbVersion.Spec.PodSecurityPolicies.SnapshotterPolicyName
 
-	return dbPolicyName, snapshotPolicyName, nil
+	return dbPolicyName, nil
 }
 
 func (c *Controller) ensureDatabaseRBAC(mysql *api.MySQL) error {
@@ -140,7 +139,7 @@ func (c *Controller) ensureDatabaseRBAC(mysql *api.MySQL) error {
 	}
 
 	// Create New Role
-	pspName, _, err := c.getPolicyNames(mysql)
+	pspName, err := c.getPolicyNames(mysql)
 	if err != nil {
 		return err
 	}
@@ -150,32 +149,6 @@ func (c *Controller) ensureDatabaseRBAC(mysql *api.MySQL) error {
 
 	// Create New RoleBinding
 	if err := c.createRoleBinding(mysql, mysql.OffshootName(), saName); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c *Controller) ensureSnapshotRBAC(mysql *api.MySQL) error {
-	_, snapshotPolicyName, err := c.getPolicyNames(mysql)
-	if err != nil {
-		return err
-	}
-
-	// Create New SNapshot ServiceAccount
-	if err := c.createServiceAccount(mysql, mysql.SnapshotSAName()); err != nil {
-		if !kerr.IsAlreadyExists(err) {
-			return err
-		}
-	}
-
-	// Create New Role for Snapshot
-	if err := c.ensureRole(mysql, mysql.SnapshotSAName(), snapshotPolicyName); err != nil {
-		return err
-	}
-
-	// Create New RoleBinding for Snapshot
-	if err := c.createRoleBinding(mysql, mysql.SnapshotSAName(), mysql.SnapshotSAName()); err != nil {
 		return err
 	}
 

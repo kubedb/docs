@@ -106,15 +106,14 @@ func (c *Controller) createServiceAccount(db *api.Elasticsearch, saName string) 
 	return err
 }
 
-func (c *Controller) getPolicyNames(db *api.Elasticsearch) (string, string, error) {
+func (c *Controller) getPolicyNames(db *api.Elasticsearch) (string, error) {
 	dbVersion, err := c.esVersionLister.Get(string(db.Spec.Version))
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 	dbPolicyName := dbVersion.Spec.PodSecurityPolicies.DatabasePolicyName
-	snapshotPolicyName := dbVersion.Spec.PodSecurityPolicies.SnapshotterPolicyName
 
-	return dbPolicyName, snapshotPolicyName, nil
+	return dbPolicyName, nil
 }
 
 func (c *Controller) ensureDatabaseRBAC(elasticsearch *api.Elasticsearch) error {
@@ -140,7 +139,7 @@ func (c *Controller) ensureDatabaseRBAC(elasticsearch *api.Elasticsearch) error 
 	}
 
 	// Create New Role
-	pspName, _, err := c.getPolicyNames(elasticsearch)
+	pspName, err := c.getPolicyNames(elasticsearch)
 	if err != nil {
 		return err
 	}
@@ -151,32 +150,6 @@ func (c *Controller) ensureDatabaseRBAC(elasticsearch *api.Elasticsearch) error 
 	// Create New RoleBinding
 	if err := c.createRoleBinding(elasticsearch, elasticsearch.OffshootName(), saName); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (c *Controller) ensureSnapshotRBAC(elasticsearch *api.Elasticsearch) error {
-	_, snapshotPolicyName, err := c.getPolicyNames(elasticsearch)
-	if err != nil {
-		return err
-	}
-
-	// Create New Role for Snapshot
-	if err := c.ensureRole(elasticsearch, elasticsearch.SnapshotSAName(), snapshotPolicyName); err != nil {
-		return err
-	}
-
-	// Create New RoleBinding for Snapshot
-	if err := c.createRoleBinding(elasticsearch, elasticsearch.SnapshotSAName(), elasticsearch.SnapshotSAName()); err != nil {
-		return err
-	}
-
-	// Create New Snapshot ServiceAccount
-	if err := c.createServiceAccount(elasticsearch, elasticsearch.SnapshotSAName()); err != nil {
-		if !kerr.IsAlreadyExists(err) {
-			return err
-		}
 	}
 
 	return nil

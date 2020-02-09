@@ -52,12 +52,13 @@ func (c *Controller) addOrUpdateMonitor(elasticsearch *api.Elasticsearch) (kutil
 	return agent.CreateOrUpdate(elasticsearch.StatsService(), elasticsearch.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
+func (c *Controller) deleteMonitor(elasticsearch *api.Elasticsearch) error {
 	agent, err := c.newMonitorController(elasticsearch)
 	if err != nil {
-		return kutil.VerbUnchanged, err
+		return err
 	}
-	return agent.Delete(elasticsearch.StatsService())
+	_, err = agent.Delete(elasticsearch.StatsService())
+	return err
 }
 
 func (c *Controller) getOldAgent(elasticsearch *api.Elasticsearch) mona.Agent {

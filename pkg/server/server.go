@@ -21,12 +21,9 @@ import (
 	"strings"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/pkg/admission/dormantdatabase"
 	"kubedb.dev/apimachinery/pkg/admission/namespace"
-	"kubedb.dev/apimachinery/pkg/admission/snapshot"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	esAdmsn "kubedb.dev/elasticsearch/pkg/admission"
-	edAdmsn "kubedb.dev/etcd/pkg/admission"
 	mcAdmsn "kubedb.dev/memcached/pkg/admission"
 	mgAdmsn "kubedb.dev/mongodb/pkg/admission"
 	myAdmsn "kubedb.dev/mysql/pkg/admission"
@@ -95,6 +92,9 @@ type KubeDBServer struct {
 }
 
 func (op *KubeDBServer) Run(stopCh <-chan struct{}) error {
+	if err := op.Operator.MigrateObservedGeneration(); err != nil {
+		return fmt.Errorf("failed  to migrate observedGeneration to int64 for existing objects. Reason: %v", err)
+	}
 	go op.Operator.Run(stopCh)
 	return op.GenericAPIServer.PrepareRun().Run(stopCh)
 }
@@ -139,7 +139,6 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 			&myAdmsn.MySQLMutator{},
 			&pgAdmsn.PostgresMutator{},
 			&esAdmsn.ElasticsearchMutator{},
-			&edAdmsn.EtcdMutator{},
 			&rdAdmsn.RedisMutator{},
 			&mcAdmsn.MemcachedMutator{},
 		}
@@ -147,12 +146,9 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 	if c.OperatorConfig.EnableValidatingWebhook {
 		c.ExtraConfig.AdmissionHooks = append(c.ExtraConfig.AdmissionHooks,
 			&mgAdmsn.MongoDBValidator{},
-			&snapshot.SnapshotValidator{},
-			&dormantdatabase.DormantDatabaseValidator{},
 			&myAdmsn.MySQLValidator{},
 			&pgAdmsn.PostgresValidator{},
 			&esAdmsn.ElasticsearchValidator{},
-			&edAdmsn.EtcdValidator{},
 			&rdAdmsn.RedisValidator{},
 			&mcAdmsn.MemcachedValidator{},
 			&namespace.NamespaceValidator{

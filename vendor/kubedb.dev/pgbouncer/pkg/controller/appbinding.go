@@ -13,68 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package controller
 
 import (
+	"fmt"
 	"strings"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-
-//func (c *Controller) ensureAppBinding(db *api.PgBouncer) (kutil.VerbType, error) {
-//	appmeta := db.AppBindingMeta()
-//
-//	meta := metav1.ObjectMeta{
-//		Name:      appmeta.Name(),
-//		Namespace: db.Namespace,
-//	}
-//
-//	ref, err := reference.GetReference(clientsetscheme.Scheme, db)
-//	if err != nil {
-//		return kutil.VerbUnchanged, err
-//	}
-//
-//	_, vt, err := appcat_util.CreateOrPatchAppBinding(c.AppCatalogClient.AppcatalogV1alpha1(), meta, func(in *appcat.AppBinding) *appcat.AppBinding {
-//		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
-//		in.Labels = db.OffshootLabels()
-//		in.Annotations = db.Spec.ServiceTemplate.Annotations
-//
-//		in.Spec.Type = appmeta.Type()
-//		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
-//		in.Spec.SecretTransforms = []appcat.SecretTransform{
-//			{
-//				RenameKey: &appcat.RenameKeyTransform{
-//					From: PostgresUser,
-//					To:   appcat.KeyUsername,
-//				},
-//			},
-//			{
-//				RenameKey: &appcat.RenameKeyTransform{
-//					From: PostgresPassword,
-//					To:   appcat.KeyPassword,
-//				},
-//			},
-//		}
-//		return in
-//	})
-//
-//	if err != nil {
-//		return kutil.VerbUnchanged, err
-//	} else if vt != kutil.VerbUnchanged {
-//		c.recorder.Eventf(
-//			db,
-//			core.EventTypeNormal,
-//			eventer.EventReasonSuccessful,
-//			"Successfully %s appbinding",
-//			vt,
-//		)
-//	}
-//	return vt, nil
-//}
 
 func (c *Controller) manageAppBindingEvent(key string) error {
 	//wait for pgboncer to ber ready
@@ -128,4 +80,30 @@ func (c *Controller) checkAppBindingsInPgBouncerSpec(appBindingInfo map[string]s
 		}
 	}
 	return nil
+}
+
+func (c *Controller) getCABundlesFromAppBindingsInPgBouncerSpec(pgbouncer *api.PgBouncer) (string, error) {
+	isCAForAppBindingInserted := map[string]bool{}
+	var myCAStrings string
+	if pgbouncer.Spec.Databases != nil && len(pgbouncer.Spec.Databases) > 0 {
+		for _, db := range pgbouncer.Spec.Databases {
+			appBinding, err := c.AppCatalogClient.AppcatalogV1alpha1().AppBindings(db.DatabaseRef.Namespace).Get(db.DatabaseRef.Name, metav1.GetOptions{})
+			if err != nil {
+				if kerr.IsNotFound(err) {
+					log.Infoln(err)
+					continue //because non blocking err
+				}
+				return "", err
+			}
+			if !isCAForAppBindingInserted[appBinding.Namespace+"-"+appBinding.Name] && len(appBinding.Spec.ClientConfig.CABundle) > 0 {
+				isCAForAppBindingInserted[appBinding.Namespace+"-"+appBinding.Name] = true
+				myCAStrings = myCAStrings + fmt.Sprintln(string(appBinding.Spec.ClientConfig.CABundle))
+			}
+		}
+	}
+	if len(myCAStrings) > 0 {
+		return myCAStrings, nil
+	}
+
+	return "", nil
 }

@@ -100,8 +100,6 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Dba().V1alpha1().RedisModificationRequests().Informer()}, nil
 
 		// Group=kubedb.com, Version=v1alpha1
-	case kubedbv1alpha1.SchemeGroupVersion.WithResource("dormantdatabases"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().DormantDatabases().Informer()}, nil
 	case kubedbv1alpha1.SchemeGroupVersion.WithResource("elasticsearches"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().Elasticsearches().Informer()}, nil
 	case kubedbv1alpha1.SchemeGroupVersion.WithResource("etcds"):
@@ -124,8 +122,6 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().ProxySQLs().Informer()}, nil
 	case kubedbv1alpha1.SchemeGroupVersion.WithResource("redises"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().Redises().Informer()}, nil
-	case kubedbv1alpha1.SchemeGroupVersion.WithResource("snapshots"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().Snapshots().Informer()}, nil
 
 	}
 

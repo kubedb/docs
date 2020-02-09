@@ -13,9 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package controller
 
 import (
+	core "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/cache"
 	"kmodules.xyz/client-go/tools/queue"
 )
 
@@ -32,17 +35,10 @@ const (
 )
 
 func (c *Controller) initWatcher() {
-	c.pgInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().PgBouncers().Informer()
-	c.pgQueue = queue.New("PgBouncer", c.MaxNumRequeues, c.NumThreads, c.managePgBouncerEvent)
+	c.pbInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().PgBouncers().Informer()
+	c.pbQueue = queue.New("PgBouncer", c.MaxNumRequeues, c.NumThreads, c.managePgBouncerEvent)
 	c.pbLister = c.KubedbInformerFactory.Kubedb().V1alpha1().PgBouncers().Lister()
-	c.pgInformer.AddEventHandler(queue.NewReconcilableHandler(c.pgQueue.GetQueue()))
-}
-
-func (c *Controller) initSecretWatcher() {
-	c.secretInformer = c.KubeInformerFactory.Core().V1().Secrets().Informer()
-	c.secretQueue = queue.New("Secret", c.MaxNumRequeues, c.NumThreads, c.manageUserSecretEvent)
-	c.secretLister = c.KubeInformerFactory.Core().V1().Secrets().Lister()
-	c.secretInformer.AddEventHandler(queue.DefaultEventHandler(c.secretQueue.GetQueue()))
+	c.pbInformer.AddEventHandler(queue.NewReconcilableHandler(c.pbQueue.GetQueue()))
 }
 
 func (c *Controller) initAppBindingWatcher() {
@@ -50,4 +46,33 @@ func (c *Controller) initAppBindingWatcher() {
 	c.appBindingQueue = queue.New("AppBinding", c.MaxNumRequeues, c.NumThreads, c.manageAppBindingEvent)
 	c.appBindingLister = c.AppCatInformerFactory.Appcatalog().V1alpha1().AppBindings().Lister()
 	c.appBindingInformer.AddEventHandler(queue.DefaultEventHandler(c.appBindingQueue.GetQueue()))
+}
+
+func (c *Controller) initSecretWatcher() {
+	c.SecretInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			if secret, ok := obj.(*core.Secret); ok {
+				pgbouncer, err := c.PgBouncerForSecret(secret)
+				if err == nil && pgbouncer != nil {
+					queue.Enqueue(c.pbQueue.GetQueue(), pgbouncer)
+				}
+			}
+		},
+		UpdateFunc: func(oldObj interface{}, newObj interface{}) {
+			if secret, ok := newObj.(*core.Secret); ok {
+				pgbouncer, err := c.PgBouncerForSecret(secret)
+				if err == nil && pgbouncer != nil {
+					queue.Enqueue(c.pbQueue.GetQueue(), pgbouncer)
+				}
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			if secret, ok := obj.(*core.Secret); ok {
+				pgbouncer, err := c.PgBouncerForSecret(secret)
+				if err == nil && pgbouncer != nil {
+					queue.Enqueue(c.pbQueue.GetQueue(), pgbouncer)
+				}
+			}
+		},
+	})
 }

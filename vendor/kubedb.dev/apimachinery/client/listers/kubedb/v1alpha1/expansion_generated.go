@@ -18,14 +18,6 @@ limitations under the License.
 
 package v1alpha1
 
-// DormantDatabaseListerExpansion allows custom methods to be added to
-// DormantDatabaseLister.
-type DormantDatabaseListerExpansion interface{}
-
-// DormantDatabaseNamespaceListerExpansion allows custom methods to be added to
-// DormantDatabaseNamespaceLister.
-type DormantDatabaseNamespaceListerExpansion interface{}
-
 // ElasticsearchListerExpansion allows custom methods to be added to
 // ElasticsearchLister.
 type ElasticsearchListerExpansion interface{}
@@ -113,11 +105,3 @@ type RedisListerExpansion interface{}
 // RedisNamespaceListerExpansion allows custom methods to be added to
 // RedisNamespaceLister.
 type RedisNamespaceListerExpansion interface{}
-
-// SnapshotListerExpansion allows custom methods to be added to
-// SnapshotLister.
-type SnapshotListerExpansion interface{}
-
-// SnapshotNamespaceListerExpansion allows custom methods to be added to
-// SnapshotNamespaceLister.
-type SnapshotNamespaceListerExpansion interface{}

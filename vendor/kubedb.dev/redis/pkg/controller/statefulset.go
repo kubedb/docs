@@ -289,21 +289,21 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
 				Args: append([]string{
-					fmt.Sprintf("--web.listen-address=:%v", redis.Spec.Monitor.Prometheus.Port),
+					fmt.Sprintf("--web.listen-address=:%v", redis.Spec.Monitor.Prometheus.Exporter.Port),
 					fmt.Sprintf("--web.telemetry-path=%v", redis.StatsService().Path()),
-				}, redis.Spec.Monitor.Args...),
+				}, redis.Spec.Monitor.Prometheus.Exporter.Args...),
 				Image:           redisVersion.Spec.Exporter.Image,
 				ImagePullPolicy: core.PullIfNotPresent,
 				Ports: []core.ContainerPort{
 					{
 						Name:          api.PrometheusExporterPortName,
 						Protocol:      core.ProtocolTCP,
-						ContainerPort: redis.Spec.Monitor.Prometheus.Port,
+						ContainerPort: redis.Spec.Monitor.Prometheus.Exporter.Port,
 					},
 				},
-				Env:             redis.Spec.Monitor.Env,
-				Resources:       redis.Spec.Monitor.Resources,
-				SecurityContext: redis.Spec.Monitor.SecurityContext,
+				Env:             redis.Spec.Monitor.Prometheus.Exporter.Env,
+				Resources:       redis.Spec.Monitor.Prometheus.Exporter.Resources,
+				SecurityContext: redis.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 			})
 		}
 

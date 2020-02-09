@@ -66,10 +66,23 @@ func (c *Controller) runMemcached(key string) error {
 			if err != nil {
 				return err
 			}
-			if err := c.create(memcached); err != nil {
-				log.Errorln(err)
-				c.pushFailureEvent(memcached, err.Error())
-				return err
+
+			if memcached.Spec.Paused {
+				return nil
+			}
+
+			if memcached.Spec.Halted {
+				if err := c.halt(memcached); err != nil {
+					log.Errorln(err)
+					c.pushFailureEvent(memcached, err.Error())
+					return err
+				}
+			} else {
+				if err := c.create(memcached); err != nil {
+					log.Errorln(err)
+					c.pushFailureEvent(memcached, err.Error())
+					return err
+				}
 			}
 		}
 	}

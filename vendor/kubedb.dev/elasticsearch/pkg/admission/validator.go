@@ -24,7 +24,6 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
-	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -106,7 +105,7 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 				}
 				return hookapi.StatusInternalServerError(err)
 			} else if obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
-				return hookapi.StatusBadRequest(fmt.Errorf(`elasticsearch "%v/%v" can't be paused. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
+				return hookapi.StatusBadRequest(fmt.Errorf(`elasticsearch "%v/%v" can't be terminated. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
 			}
 		}
 	default:
@@ -253,13 +252,6 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		}
 	}
 
-	backupScheduleSpec := elasticsearch.Spec.BackupSchedule
-	if backupScheduleSpec != nil {
-		if err := amv.ValidateBackupSchedule(client, backupScheduleSpec, elasticsearch.Namespace); err != nil {
-			return err
-		}
-	}
-
 	if elasticsearch.Spec.UpdateStrategy.Type == "" {
 		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
 	}
@@ -268,8 +260,8 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
-	if elasticsearch.Spec.StorageType == api.StorageTypeEphemeral && elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyPause {
-		return fmt.Errorf(`'spec.terminationPolicy: Pause' can not be used for 'Ephemeral' storage`)
+	if elasticsearch.Spec.StorageType == api.StorageTypeEphemeral && elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+		return fmt.Errorf(`'spec.terminationPolicy: Halt' can not be set for 'Ephemeral' storage`)
 	}
 
 	if elasticsearch.Spec.DisableSecurity && elasticsearch.Spec.EnableSSL {
@@ -281,54 +273,6 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
 			return err
 		}
-	}
-
-	if err := matchWithDormantDatabase(extClient, elasticsearch); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func matchWithDormantDatabase(extClient cs.Interface, elasticsearch *api.Elasticsearch) error {
-	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(elasticsearch.Namespace).Get(elasticsearch.Name, metav1.GetOptions{})
-	if err != nil {
-		if !kerr.IsNotFound(err) {
-			return err
-		}
-		return nil
-	}
-
-	// Check DatabaseKind
-	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindElasticsearch {
-		return errors.New(fmt.Sprintf(`invalid Elasticsearch: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, elasticsearch.Namespace, elasticsearch.Name, dormantDb.Namespace, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Elasticsearch
-	drmnOriginSpec.SetDefaults()
-	originalSpec := elasticsearch.Spec
-
-	// Skip checking UpdateStrategy
-	drmnOriginSpec.UpdateStrategy = originalSpec.UpdateStrategy
-
-	// Skip checking ServiceAccountName
-	drmnOriginSpec.PodTemplate.Spec.ServiceAccountName = elasticsearch.Spec.PodTemplate.Spec.ServiceAccountName
-
-	// Skip checking TerminationPolicy
-	drmnOriginSpec.TerminationPolicy = originalSpec.TerminationPolicy
-
-	// Skip checking Monitoring
-	drmnOriginSpec.Monitor = originalSpec.Monitor
-
-	// Skip Checking BackUP Scheduler
-	drmnOriginSpec.BackupSchedule = originalSpec.BackupSchedule
-
-	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
-		diff := meta_util.Diff(drmnOriginSpec, &originalSpec)
-		log.Errorf("elasticsearch spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff)
-		return errors.New(fmt.Sprintf("elasticsearch spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff))
 	}
 
 	return nil

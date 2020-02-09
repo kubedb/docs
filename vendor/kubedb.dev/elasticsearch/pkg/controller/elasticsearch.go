@@ -29,7 +29,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,7 +38,6 @@ import (
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
 	policy_util "kmodules.xyz/client-go/policy/v1beta1"
-	storage "kmodules.xyz/objectstore-api/osm"
 )
 
 func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
@@ -51,14 +49,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 			err.Error(),
 		)
 		log.Errorln(err)
-		// stop Scheduler in case there is any.
-		c.cronController.StopBackupScheduling(elasticsearch.ObjectMeta)
 		return nil
-	}
-
-	// Delete Matching DormantDatabase if exists any
-	if err := c.deleteMatchingDormantDatabase(elasticsearch); err != nil {
-		return fmt.Errorf(`failed to delete dormant Database : "%v/%v". Reason: %v`, elasticsearch.Namespace, elasticsearch.Name, err)
 	}
 
 	if elasticsearch.Status.Phase == "" {
@@ -73,9 +64,8 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	// create Governing Service
-	governingService := c.GoverningService
-	if err := c.CreateGoverningService(governingService, elasticsearch.Namespace); err != nil {
-		return fmt.Errorf(`failed to create Service: "%v/%v". Reason: %v`, elasticsearch.Namespace, governingService, err)
+	if err := c.ensureElasticGvrSvc(elasticsearch); err != nil {
+		return fmt.Errorf(`failed to create governing Service for "%v/%v". Reason: %v`, elasticsearch.Namespace, elasticsearch.Name, err)
 	}
 
 	// ensure database Service
@@ -114,8 +104,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	if _, err := meta_util.GetString(elasticsearch.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		elasticsearch.Spec.Init != nil &&
-		(elasticsearch.Spec.Init.SnapshotSource != nil || elasticsearch.Spec.Init.StashRestoreSession != nil) {
+		elasticsearch.Spec.Init != nil && elasticsearch.Spec.Init.StashRestoreSession != nil {
 
 		if elasticsearch.Status.Phase == api.DatabasePhaseInitializing {
 			return nil
@@ -132,13 +121,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		elasticsearch.Status = mg.Status
 
 		init := elasticsearch.Spec.Init
-		if init.SnapshotSource != nil {
-			err = c.initializeFromSnapshot(elasticsearch)
-			if err != nil {
-				return fmt.Errorf("failed to complete initialization. Reason: %v", err)
-			}
-			return err
-		} else if init.StashRestoreSession != nil {
+		if init.StashRestoreSession != nil {
 			log.Debugf("Elasticsearch %v/%v is waiting for restoreSession to be succeeded", elasticsearch.Namespace, elasticsearch.Name)
 			return nil
 		}
@@ -153,18 +136,6 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return err
 	}
 	elasticsearch.Status = es.Status
-
-	// Ensure Schedule backup
-	if err := c.ensureBackupScheduler(elasticsearch); err != nil {
-		c.recorder.Eventf(
-			elasticsearch,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToSchedule,
-			err.Error(),
-		)
-		log.Errorln(err)
-		// Don't return error. Continue processing rest.
-	}
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(elasticsearch); err != nil {
@@ -247,99 +218,36 @@ func (c *Controller) ensureElasticsearchNode(elasticsearch *api.Elasticsearch) (
 	return vt, nil
 }
 
-func (c *Controller) ensureBackupScheduler(elasticsearch *api.Elasticsearch) error {
-	elasticsearchVersion, err := c.esVersionLister.Get(string(elasticsearch.Spec.Version))
-	if err != nil {
-		return fmt.Errorf("failed to get ElasticsearchVersion %v for %v/%v. Reason: %v", elasticsearch.Spec.Version, elasticsearch.Namespace, elasticsearch.Name, err)
+func (c *Controller) halt(db *api.Elasticsearch) error {
+	if db.Spec.Halted && db.Spec.TerminationPolicy != api.TerminationPolicyHalt {
+		return errors.New("can't halt db. 'spec.terminationPolicy' is not 'Halt'")
 	}
-	// Setup Schedule backup
-	if elasticsearch.Spec.BackupSchedule != nil {
-		err := c.cronController.ScheduleBackup(elasticsearch, elasticsearch.Spec.BackupSchedule, elasticsearchVersion)
-		if err != nil {
-			return fmt.Errorf("failed to schedule snapshot for %v/%v. Reason: %v", elasticsearch.Namespace, elasticsearch.Name, err)
-		}
-	} else {
-		c.cronController.StopBackupScheduling(elasticsearch.ObjectMeta)
-	}
-	return nil
-}
-
-func (c *Controller) initializeFromSnapshot(elasticsearch *api.Elasticsearch) error {
-	snapshotSource := elasticsearch.Spec.Init.SnapshotSource
-	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshotSource.Name)
-	if _, err := c.Client.BatchV1().Jobs(snapshotSource.Namespace).Get(jobName, metav1.GetOptions{}); err != nil {
-		if !kerr.IsNotFound(err) {
-			return err
-		}
-	} else {
-		return nil
-	}
-
-	// Event for notification that kubernetes objects are creating
-	c.recorder.Eventf(
-		elasticsearch,
-		core.EventTypeNormal,
-		eventer.EventReasonInitializing,
-		`Initializing from Snapshot: "%v"`,
-		snapshotSource.Name,
-	)
-
-	namespace := snapshotSource.Namespace
-	if namespace == "" {
-		namespace = elasticsearch.Namespace
-	}
-	snapshot, err := c.ExtClient.KubedbV1alpha1().Snapshots(namespace).Get(snapshotSource.Name, metav1.GetOptions{})
-	if err != nil {
+	log.Infof("Halting Elasticsearch %v/%v", db.Namespace, db.Name)
+	if err := c.haltDatabase(db); err != nil {
 		return err
 	}
-
-	secret, err := storage.NewOSMSecret(c.Client, snapshot.OSMSecretName(), snapshot.Namespace, snapshot.Spec.Backend)
-	if err != nil {
+	if err := c.waitUntilPaused(db); err != nil {
 		return err
 	}
-	_, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
-	if err != nil {
+	log.Infof("update status of Elasticsearch %v/%v to Halted.", db.Namespace, db.Name)
+	if _, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), db, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+		in.Phase = api.DatabasePhaseHalted
+		in.ObservedGeneration = db.Generation
+		return in
+	}); err != nil {
 		return err
 	}
-
-	job, err := c.createRestoreJob(elasticsearch, snapshot)
-	if err != nil {
-		return err
-	}
-
-	if err := c.SetJobOwnerReference(snapshot, job); err != nil {
-		return err
-	}
-
 	return nil
 }
 
 func (c *Controller) terminate(elasticsearch *api.Elasticsearch) error {
 	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
-	// If TerminationPolicy is "pause", keep everything (ie, PVCs,Secrets,Snapshots) intact.
-	// In operator, create dormantdatabase
-	if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyPause {
+	// If TerminationPolicy is "halt", keep PVCs,Secrets intact.
+	// TerminationPolicyPause is deprecated and will be removed in future.
+	if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyHalt || elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyPause {
 		if err := c.removeOwnerReferenceFromOffshoots(elasticsearch); err != nil {
 			return err
-		}
-
-		if _, err := c.createDormantDatabase(elasticsearch); err != nil {
-			if kerr.IsAlreadyExists(err) {
-				// if already exists, check if it is database of another Kind and return error in that case.
-				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
-				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
-				// So reuse that DormantDB!
-				ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(elasticsearch.Namespace).Get(elasticsearch.Name, metav1.GetOptions{})
-				if err != nil {
-					return err
-				}
-				if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindElasticsearch {
-					return fmt.Errorf(`DormantDatabase "%s/%s" of kind %v already exists`, elasticsearch.Namespace, elasticsearch.Name, val)
-				}
-			} else {
-				return fmt.Errorf(`failed to create DormantDatabase: "%s/%s". Reason: %v`, elasticsearch.Namespace, elasticsearch.Name, err)
-			}
 		}
 	} else {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
@@ -350,10 +258,8 @@ func (c *Controller) terminate(elasticsearch *api.Elasticsearch) error {
 		}
 	}
 
-	c.cronController.StopBackupScheduling(elasticsearch.ObjectMeta)
-
 	if elasticsearch.Spec.Monitor != nil {
-		if _, err := c.deleteMonitor(elasticsearch); err != nil {
+		if err := c.deleteMonitor(elasticsearch); err != nil {
 			log.Errorln(err)
 			return nil
 		}
@@ -367,27 +273,11 @@ func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsear
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
 	if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		if err := dynamic_util.EnsureOwnerReferenceForSelector(
-			c.DynamicClient,
-			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
-			elasticsearch.Namespace,
-			selector,
-			owner); err != nil {
-			return err
-		}
 		if err := c.wipeOutDatabase(elasticsearch.ObjectMeta, elasticsearch.Spec.GetSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
-		// Make sure snapshot and secret's ownerreference is removed.
-		if err := dynamic_util.RemoveOwnerReferenceForSelector(
-			c.DynamicClient,
-			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
-			elasticsearch.Namespace,
-			selector,
-			elasticsearch); err != nil {
-			return err
-		}
+		// Make sure secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
@@ -410,14 +300,6 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasti
 	// First, Get LabelSelector for Other Components
 	labelSelector := labels.SelectorFromSet(elasticsearch.OffshootSelectors())
 
-	if err := dynamic_util.RemoveOwnerReferenceForSelector(
-		c.DynamicClient,
-		api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
-		elasticsearch.Namespace,
-		labelSelector,
-		elasticsearch); err != nil {
-		return err
-	}
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),

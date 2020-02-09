@@ -106,7 +106,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 		in.Spec.Replicas = mysql.Spec.Replicas
-		in.Spec.ServiceName = c.GoverningService
+		in.Spec.ServiceName = mysql.GoverningServiceName()
 		in.Spec.Selector = &metav1.LabelSelector{
 			MatchLabels: mysql.OffshootSelectors(),
 		}
@@ -154,6 +154,12 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 					Protocol:      core.ProtocolTCP,
 				},
 			},
+			VolumeMounts: []core.VolumeMount{
+				{
+					Name:      "tmp",
+					MountPath: "/tmp",
+				},
+			},
 		}
 		if mysql.Spec.Topology != nil && mysql.Spec.Topology.Mode != nil &&
 			*mysql.Spec.Topology.Mode == api.MySQLClusterModeGroup {
@@ -162,7 +168,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 			}
 			userProvidedArgs := strings.Join(mysql.Spec.PodTemplate.Spec.Args, " ")
 			container.Args = []string{
-				fmt.Sprintf("-service=%s", c.GoverningService),
+				fmt.Sprintf("-service=%s", mysql.GoverningServiceName()),
 				fmt.Sprintf("-on-start=/on-start.sh %s", userProvidedArgs),
 			}
 			if container.LivenessProbe != nil && structs.IsZero(*container.LivenessProbe) {
@@ -172,7 +178,43 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 				container.ReadinessProbe = nil
 			}
 		}
+
+		// TODO: probe for standalone needs to be set from mutator
+		probe := core.Probe{
+			Handler: core.Handler{
+				Exec: &core.ExecAction{
+					Command: []string{
+						"bash",
+						"-c",
+						`
+export MYSQL_PWD=${MYSQL_ROOT_PASSWORD}
+mysql -h localhost -nsLNE -e "select 1;" 2>/dev/null | grep -v "*"
+`,
+					},
+				},
+			},
+		}
+		if mysql.Spec.Topology == nil {
+			container.ReadinessProbe = &probe
+			container.LivenessProbe = &probe
+		}
+		if container.ReadinessProbe != nil {
+			container.ReadinessProbe.InitialDelaySeconds = 60
+			container.ReadinessProbe.PeriodSeconds = 10
+			container.ReadinessProbe.TimeoutSeconds = 50
+			container.ReadinessProbe.SuccessThreshold = 1
+			container.ReadinessProbe.FailureThreshold = 3
+		}
+
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, container)
+		in.Spec.Template.Spec.Volumes = []core.Volume{
+			{
+				Name: "tmp",
+				VolumeSource: core.VolumeSource{
+					EmptyDir: &core.EmptyDirVolumeSource{},
+				},
+			},
+		}
 
 		if mysql.GetMonitoringVendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
@@ -186,19 +228,19 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 					// owner: https://github.com/prometheus/mysqld_exporter#setting-the-mysql-servers-data-source-name
 					fmt.Sprintf(`export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"
 						/bin/mysqld_exporter --web.listen-address=:%v --web.telemetry-path=%v %v`,
-						mysql.Spec.Monitor.Prometheus.Port, mysql.StatsService().Path(), strings.Join(mysql.Spec.Monitor.Args, " ")),
+						mysql.Spec.Monitor.Prometheus.Exporter.Port, mysql.StatsService().Path(), strings.Join(mysql.Spec.Monitor.Prometheus.Exporter.Args, " ")),
 				},
 				Image: mysqlVersion.Spec.Exporter.Image,
 				Ports: []core.ContainerPort{
 					{
 						Name:          api.PrometheusExporterPortName,
 						Protocol:      core.ProtocolTCP,
-						ContainerPort: mysql.Spec.Monitor.Prometheus.Port,
+						ContainerPort: mysql.Spec.Monitor.Prometheus.Exporter.Port,
 					},
 				},
-				Env:             mysql.Spec.Monitor.Env,
-				Resources:       mysql.Spec.Monitor.Resources,
-				SecurityContext: mysql.Spec.Monitor.SecurityContext,
+				Env:             mysql.Spec.Monitor.Prometheus.Exporter.Env,
+				Resources:       mysql.Spec.Monitor.Prometheus.Exporter.Resources,
+				SecurityContext: mysql.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 			})
 		}
 		// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
@@ -219,14 +261,15 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 		in.Spec.Template.Spec.ImagePullSecrets = mysql.Spec.PodTemplate.Spec.ImagePullSecrets
 		in.Spec.Template.Spec.PriorityClassName = mysql.Spec.PodTemplate.Spec.PriorityClassName
 		in.Spec.Template.Spec.Priority = mysql.Spec.PodTemplate.Spec.Priority
-		in.Spec.Template.Spec.SecurityContext = mysql.Spec.PodTemplate.Spec.SecurityContext
+		if in.Spec.Template.Spec.SecurityContext == nil {
+			in.Spec.Template.Spec.SecurityContext = mysql.Spec.PodTemplate.Spec.SecurityContext
+		}
 		in.Spec.Template.Spec.ServiceAccountName = mysql.Spec.PodTemplate.Spec.ServiceAccountName
 		in.Spec.UpdateStrategy = mysql.Spec.UpdateStrategy
 		in = upsertUserEnv(in, mysql)
 
 		return in
 	})
-
 }
 
 func upsertDataVolume(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
