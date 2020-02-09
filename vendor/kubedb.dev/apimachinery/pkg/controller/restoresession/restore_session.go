@@ -48,6 +48,13 @@ func (c *Controller) handleRestoreSession(rs *v1beta1.RestoreSession) error {
 	// `.spec.target.ref.name` from current RestoreSession object.
 	switch rs.Labels[api.LabelDatabaseKind] {
 	case api.ResourceKindPerconaXtraDB:
+		if rs.Spec.Target.Replicas == nil {
+			meta = metav1.ObjectMeta{
+				Name: rs.Spec.Target.Ref.Name,
+			}
+
+			break
+		}
 		pxList, err := c.ExtClient.KubedbV1alpha1().PerconaXtraDBs(rs.Namespace).List(metav1.ListOptions{})
 		if err != nil {
 			return err

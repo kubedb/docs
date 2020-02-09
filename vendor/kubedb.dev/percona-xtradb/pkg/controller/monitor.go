@@ -52,12 +52,13 @@ func (c *Controller) addOrUpdateMonitor(px *api.PerconaXtraDB) (kutil.VerbType, 
 	return agent.CreateOrUpdate(px.StatsService(), px.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(px *api.PerconaXtraDB) (kutil.VerbType, error) {
+func (c *Controller) deleteMonitor(px *api.PerconaXtraDB) error {
 	agent, err := c.newMonitorController(px)
 	if err != nil {
-		return kutil.VerbUnchanged, err
+		return err
 	}
-	return agent.Delete(px.StatsService())
+	_, err = agent.Delete(px.StatsService())
+	return err
 }
 
 func (c *Controller) getOldAgent(px *api.PerconaXtraDB) mona.Agent {

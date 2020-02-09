@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package admission
 
 import (
@@ -24,6 +25,7 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
 	"github.com/appscode/go/log"
+	cm_api "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1alpha2"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -134,8 +136,20 @@ func ValidatePgBouncer(client kubernetes.Interface, extClient cs.Interface, pgbo
 	if pgbouncer.Spec.Replicas == nil || *pgbouncer.Spec.Replicas < 1 {
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be greater than zero`, pgbouncer.Spec.Replicas)
 	}
-	if string(pgbouncer.Spec.Version) == "" {
+
+	if pgbouncer.Spec.Version == "" {
 		return fmt.Errorf(`spec.Version can't be empty`)
+	}
+
+	if pgbouncer.Spec.TLS != nil {
+		if pgbouncer.Spec.TLS != nil {
+			if *pgbouncer.Spec.TLS.IssuerRef.APIGroup != cm_api.SchemeGroupVersion.Group {
+				return fmt.Errorf(`spec.tls.client.issuerRef.apiGroup must be %s`, cm_api.SchemeGroupVersion.Group)
+			}
+			if (pgbouncer.Spec.TLS.IssuerRef.Kind != cm_api.IssuerKind) && (pgbouncer.Spec.TLS.IssuerRef.Kind != cm_api.ClusterIssuerKind) {
+				return fmt.Errorf(`spec.tls.client.issuerRef.issuerKind must be either %s or %s`, cm_api.IssuerKind, cm_api.ClusterIssuerKind)
+			}
+		}
 	}
 
 	if strictValidation {

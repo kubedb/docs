@@ -16,23 +16,17 @@ limitations under the License.
 package admission
 
 import (
-	"fmt"
 	"sync"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
-	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	kutil "kmodules.xyz/client-go"
-	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
@@ -98,7 +92,7 @@ func (a *PerconaXtraDBMutator) Admit(req *admission.AdmissionRequest) *admission
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	perconaxtradbMod, err := setDefaultValues(a.extClient, obj.(*api.PerconaXtraDB).DeepCopy())
+	perconaxtradbMod, err := setDefaultValues(obj.(*api.PerconaXtraDB).DeepCopy())
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if perconaxtradbMod != nil {
@@ -116,81 +110,25 @@ func (a *PerconaXtraDBMutator) Admit(req *admission.AdmissionRequest) *admission
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a MySQL database
-func setDefaultValues(extClient cs.Interface, px *api.PerconaXtraDB) (runtime.Object, error) {
+func setDefaultValues(px *api.PerconaXtraDB) (runtime.Object, error) {
 	if px.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
 	}
 
-	px.SetDefaults()
-
-	if err := setDefaultsFromDormantDB(extClient, px); err != nil {
-		return nil, err
+	if px.Spec.Halted {
+		if px.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
+			return nil, errors.New(`Can't halt, since termination policy is 'DoNotTerminate'`)
+		}
+		px.Spec.TerminationPolicy = api.TerminationPolicyHalt
 	}
+
+	px.SetDefaults()
 
 	// If monitoring spec is given without port,
 	// set default Listening port
 	setMonitoringPort(px)
 
 	return px, nil
-}
-
-// setDefaultsFromDormantDB takes values from Similar Dormant Database
-func setDefaultsFromDormantDB(extClient cs.Interface, px *api.PerconaXtraDB) error {
-	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(px.Namespace).Get(px.Name, metav1.GetOptions{})
-	if err != nil {
-		if !kerr.IsNotFound(err) {
-			return err
-		}
-		return nil
-	}
-
-	// Check DatabaseKind
-	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindPerconaXtraDB {
-		return errors.New(fmt.Sprintf(`invalid PerconaXtraDB: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, px.Namespace, px.Name, dormantDb.Namespace, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	ddbOriginSpec := dormantDb.Spec.Origin.Spec.PerconaXtraDB
-	ddbOriginSpec.SetDefaults()
-
-	// If DatabaseSecret of new object is not given,
-	// Take dormantDatabaseSecretName
-	if px.Spec.DatabaseSecret == nil {
-		px.Spec.DatabaseSecret = ddbOriginSpec.DatabaseSecret
-	}
-
-	// If Monitoring Spec of new object is not given,
-	// Take Monitoring Settings from Dormant
-	if px.Spec.Monitor == nil {
-		px.Spec.Monitor = ddbOriginSpec.Monitor
-	} else {
-		ddbOriginSpec.Monitor = px.Spec.Monitor
-	}
-
-	// Skip checking UpdateStrategy
-	ddbOriginSpec.UpdateStrategy = px.Spec.UpdateStrategy
-
-	// Skip checking TerminationPolicy
-	ddbOriginSpec.TerminationPolicy = px.Spec.TerminationPolicy
-
-	if !meta_util.Equal(ddbOriginSpec, &px.Spec) {
-		diff := meta_util.Diff(ddbOriginSpec, &px.Spec)
-		log.Errorf("percona-xtradb spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff)
-		return errors.New(fmt.Sprintf("percona-xtradb spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff))
-	}
-
-	if _, err := meta_util.GetString(px.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		px.Spec.Init != nil &&
-		(px.Spec.Init.SnapshotSource != nil || px.Spec.Init.StashRestoreSession != nil) {
-		px.Annotations = core_util.UpsertMap(px.Annotations, map[string]string{
-			api.AnnotationInitialized: "",
-		})
-	}
-
-	// Delete  Matching dormantDatabase in Controller
-
-	return nil
 }
 
 // Assign Default Monitoring Port if MonitoringSpec Exists
@@ -201,8 +139,11 @@ func setMonitoringPort(px *api.PerconaXtraDB) {
 		if px.Spec.Monitor.Prometheus == nil {
 			px.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
 		}
-		if px.Spec.Monitor.Prometheus.Port == 0 {
-			px.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
+		if px.Spec.Monitor.Prometheus.Exporter == nil {
+			px.Spec.Monitor.Prometheus.Exporter = &mona.PrometheusExporterSpec{}
+		}
+		if px.Spec.Monitor.Prometheus.Exporter.Port == 0 {
+			px.Spec.Monitor.Prometheus.Exporter.Port = api.PrometheusExporterPortNumber
 		}
 	}
 }

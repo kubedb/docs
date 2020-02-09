@@ -52,12 +52,13 @@ func (c *Controller) addOrUpdateMonitor(redis *api.Redis) (kutil.VerbType, error
 	return agent.CreateOrUpdate(redis.StatsService(), redis.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(redis *api.Redis) (kutil.VerbType, error) {
+func (c *Controller) deleteMonitor(redis *api.Redis) error {
 	agent, err := c.newMonitorController(redis)
 	if err != nil {
-		return kutil.VerbUnchanged, err
+		return err
 	}
-	return agent.Delete(redis.StatsService())
+	_, err = agent.Delete(redis.StatsService())
+	return err
 }
 
 func (c *Controller) getOldAgent(redis *api.Redis) mona.Agent {

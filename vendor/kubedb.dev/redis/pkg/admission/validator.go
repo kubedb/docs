@@ -24,7 +24,6 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
-	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -101,7 +100,7 @@ func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
-				return hookapi.StatusBadRequest(fmt.Errorf(`redis "%v/%v" can't be paused. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
+				return hookapi.StatusBadRequest(fmt.Errorf(`redis "%v/%v" can't be terminated. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
 			}
 		}
 	default:
@@ -194,8 +193,8 @@ func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *a
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
-	if redis.Spec.StorageType == api.StorageTypeEphemeral && redis.Spec.TerminationPolicy == api.TerminationPolicyPause {
-		return fmt.Errorf(`'spec.terminationPolicy: Pause' can not be used for 'Ephemeral' storage`)
+	if redis.Spec.StorageType == api.StorageTypeEphemeral && redis.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+		return fmt.Errorf(`'spec.terminationPolicy: Halt' can not be used for 'Ephemeral' storage`)
 	}
 
 	if err := amv.ValidateEnvVar(redis.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindRedis); err != nil {
@@ -207,50 +206,6 @@ func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *a
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
 			return err
 		}
-	}
-
-	if err := matchWithDormantDatabase(extClient, redis); err != nil {
-		return err
-	}
-	return nil
-}
-
-func matchWithDormantDatabase(extClient cs.Interface, redis *api.Redis) error {
-	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(redis.Namespace).Get(redis.Name, metav1.GetOptions{})
-	if err != nil {
-		if !kerr.IsNotFound(err) {
-			return err
-		}
-		return nil
-	}
-
-	// Check DatabaseKind
-	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindRedis {
-		return errors.New(fmt.Sprintf(`invalid Redis: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, redis.Namespace, redis.Name, dormantDb.Namespace, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Redis
-	drmnOriginSpec.SetDefaults()
-	originalSpec := redis.Spec
-
-	// Skip checking UpdateStrategy
-	drmnOriginSpec.UpdateStrategy = originalSpec.UpdateStrategy
-
-	// Skip checking ServiceAccountName
-	drmnOriginSpec.PodTemplate.Spec.ServiceAccountName = originalSpec.PodTemplate.Spec.ServiceAccountName
-
-	// Skip checking TerminationPolicy
-	drmnOriginSpec.TerminationPolicy = originalSpec.TerminationPolicy
-
-	// Skip checking Monitoring
-	drmnOriginSpec.Monitor = originalSpec.Monitor
-
-	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
-		diff := meta_util.Diff(drmnOriginSpec, &originalSpec)
-		log.Errorf("redis spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff)
-		return errors.New(fmt.Sprintf("redis spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff))
 	}
 
 	return nil

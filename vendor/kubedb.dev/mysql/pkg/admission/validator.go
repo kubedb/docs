@@ -25,7 +25,6 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
-	"github.com/appscode/go/log"
 	"github.com/coreos/go-semver/semver"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -107,7 +106,7 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
-				return hookapi.StatusBadRequest(fmt.Errorf(`mysql "%v/%v" can't be paused. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
+				return hookapi.StatusBadRequest(fmt.Errorf(`mysql "%v/%v" can't be terminated. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
 			}
 		}
 	default:
@@ -327,17 +326,10 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 	}
 
 	if mysql.Spec.Init != nil &&
-		mysql.Spec.Init.SnapshotSource != nil &&
+		mysql.Spec.Init.StashRestoreSession != nil &&
 		databaseSecret == nil {
-		return fmt.Errorf("for Snapshot init, 'spec.databaseSecret.secretName' of %v/%v needs to be similar to older database of snapshot %v/%v",
-			mysql.Namespace, mysql.Name, mysql.Spec.Init.SnapshotSource.Namespace, mysql.Spec.Init.SnapshotSource.Name)
-	}
-
-	backupScheduleSpec := mysql.Spec.BackupSchedule
-	if backupScheduleSpec != nil {
-		if err := amv.ValidateBackupSchedule(client, backupScheduleSpec, mysql.Namespace); err != nil {
-			return err
-		}
+		return fmt.Errorf("for Snapshot init, 'spec.databaseSecret.secretName' of %v/%v needs to be similar to older database of restoesession %v",
+			mysql.Namespace, mysql.Name, mysql.Spec.Init.StashRestoreSession.Name)
 	}
 
 	if mysql.Spec.UpdateStrategy.Type == "" {
@@ -348,8 +340,8 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
-	if mysql.Spec.StorageType == api.StorageTypeEphemeral && mysql.Spec.TerminationPolicy == api.TerminationPolicyPause {
-		return fmt.Errorf(`'spec.terminationPolicy: Pause' can not be used for 'Ephemeral' storage`)
+	if mysql.Spec.StorageType == api.StorageTypeEphemeral && mysql.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+		return fmt.Errorf(`'spec.terminationPolicy: Halt' can not be used for 'Ephemeral' storage`)
 	}
 
 	monitorSpec := mysql.Spec.Monitor
@@ -357,53 +349,6 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
 			return err
 		}
-	}
-
-	if err := matchWithDormantDatabase(extClient, mysql); err != nil {
-		return err
-	}
-	return nil
-}
-
-func matchWithDormantDatabase(extClient cs.Interface, mysql *api.MySQL) error {
-	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(mysql.Namespace).Get(mysql.Name, metav1.GetOptions{})
-	if err != nil {
-		if !kerr.IsNotFound(err) {
-			return err
-		}
-		return nil
-	}
-
-	// Check DatabaseKind
-	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindMySQL {
-		return errors.New(fmt.Sprintf(`invalid MySQL: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, mysql.Namespace, mysql.Name, dormantDb.Namespace, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	drmnOriginSpec := dormantDb.Spec.Origin.Spec.MySQL
-	drmnOriginSpec.SetDefaults()
-	originalSpec := mysql.Spec
-
-	// Skip checking UpdateStrategy
-	drmnOriginSpec.UpdateStrategy = originalSpec.UpdateStrategy
-
-	// Skip checking TerminationPolicy
-	drmnOriginSpec.TerminationPolicy = originalSpec.TerminationPolicy
-
-	// Skip checking ServiceAccountName
-	drmnOriginSpec.PodTemplate.Spec.ServiceAccountName = originalSpec.PodTemplate.Spec.ServiceAccountName
-
-	// Skip checking Monitoring
-	drmnOriginSpec.Monitor = originalSpec.Monitor
-
-	// Skip Checking Backup Scheduler
-	drmnOriginSpec.BackupSchedule = originalSpec.BackupSchedule
-
-	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
-		diff := meta_util.Diff(drmnOriginSpec, &originalSpec)
-		log.Errorf("mysql spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff)
-		return errors.New(fmt.Sprintf("mysql spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff))
 	}
 
 	return nil

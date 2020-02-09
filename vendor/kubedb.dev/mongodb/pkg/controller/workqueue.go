@@ -20,6 +20,8 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 
 	"github.com/appscode/go/log"
+	core "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/cache"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
 )
@@ -45,6 +47,7 @@ func (c *Controller) runMongoDB(key string) error {
 		// Note that you also have to check the uid if you have a local controlled resource, which
 		// is dependent on the actual instance, to detect that a MongoDB was recreated with the same name
 		mongodb := obj.(*api.MongoDB).DeepCopy()
+
 		if mongodb.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(mongodb.ObjectMeta, api.GenericKey) {
 				if err := c.terminate(mongodb); err != nil {
@@ -65,12 +68,54 @@ func (c *Controller) runMongoDB(key string) error {
 			if err != nil {
 				return err
 			}
-			if err := c.create(mongodb); err != nil {
-				log.Errorln(err)
-				c.pushFailureEvent(mongodb, err.Error())
-				return err
+
+			if mongodb.Spec.Paused {
+				return nil
+			}
+
+			if mongodb.Spec.Halted {
+				if err := c.halt(mongodb); err != nil {
+					log.Errorln(err)
+					c.pushFailureEvent(mongodb, err.Error())
+					return err
+				}
+			} else {
+				if err := c.create(mongodb); err != nil {
+					log.Errorln(err)
+					c.pushFailureEvent(mongodb, err.Error())
+					return err
+				}
 			}
 		}
 	}
 	return nil
+}
+
+func (c *Controller) initSecretWatcher() {
+	c.SecretInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			if secret, ok := obj.(*core.Secret); ok {
+				db, err := c.MongoDBForSecret(secret)
+				if err == nil && db != nil {
+					queue.Enqueue(c.mgQueue.GetQueue(), db)
+				}
+			}
+		},
+		UpdateFunc: func(oldObj interface{}, newObj interface{}) {
+			if secret, ok := newObj.(*core.Secret); ok {
+				db, err := c.MongoDBForSecret(secret)
+				if err == nil && db != nil {
+					queue.Enqueue(c.mgQueue.GetQueue(), db)
+				}
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			if secret, ok := obj.(*core.Secret); ok {
+				db, err := c.MongoDBForSecret(secret)
+				if err == nil && db != nil {
+					queue.Enqueue(c.mgQueue.GetQueue(), db)
+				}
+			}
+		},
+	})
 }

@@ -29,7 +29,6 @@ import (
 func (c *Controller) MigrateObservedGeneration() error {
 	var errs []error
 	for _, gvr := range []schema.GroupVersionResource{
-		v1alpha1.SchemeGroupVersion.WithResource(v1alpha1.ResourcePluralDormantDatabase),
 		v1alpha1.SchemeGroupVersion.WithResource(v1alpha1.ResourcePluralElasticsearch),
 		v1alpha1.SchemeGroupVersion.WithResource(v1alpha1.ResourcePluralEtcd),
 		// v1alpha1.SchemeGroupVersion.WithResource(v1alpha1.ResourcePluralMariaDB),

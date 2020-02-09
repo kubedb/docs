@@ -225,7 +225,7 @@ func (c *Controller) ensureStatsService(postgres *api.Postgres) (kutil.VerbType,
 			{
 				Name:       api.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
-				Port:       postgres.Spec.Monitor.Prometheus.Port,
+				Port:       postgres.Spec.Monitor.Prometheus.Exporter.Port,
 				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
 			},
 		})

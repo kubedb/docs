@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package controller
 
 import (
@@ -21,11 +22,13 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	ext_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
+	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 )
@@ -45,6 +48,7 @@ type OperatorConfig struct {
 	AppCatalogClient appcat_cs.Interface
 	DynamicClient    dynamic.Interface
 	PromClient       pcm.MonitoringV1Interface
+	ExternalClient   ext_cs.Interface
 }
 
 func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
@@ -57,6 +61,10 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	if err := discovery.IsDefaultSupportedVersion(c.KubeClient); err != nil {
 		return nil, err
 	}
+	topology, err := core_util.DetectTopology(c.KubeClient)
+	if err != nil {
+		return nil, err
+	}
 	recorder := eventer.NewEventRecorder(c.KubeClient, "PgBouncer operator")
 	ctrl := New(
 		c.ClientConfig,
@@ -67,6 +75,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.AppCatalogClient,
 		c.PromClient,
 		c.Config,
+		topology,
 		recorder,
 	)
 

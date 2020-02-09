@@ -34,6 +34,27 @@ import (
 	appcat_util "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1/util"
 )
 
+func getGarbdConfig(db *api.PerconaXtraDB) ([]byte, error) {
+	if !db.IsCluster() {
+		return nil, nil
+	}
+
+	var peers []string
+	for i := 0; i < int(*db.Spec.Replicas); i += 1 {
+		peers = append(peers, db.PeerName(i))
+	}
+
+	return json.Marshal(config_api.GaleraArbitratorConfiguration{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: config_api.SchemeGroupVersion.String(),
+			Kind:       config_api.ResourceKindGaleraArbitratorConfiguration,
+		},
+		Address:   fmt.Sprintf("gcomm://%s", strings.Join(peers, ",")),
+		Group:     db.Name,
+		SSTMethod: config_api.GarbdXtrabackupSSTMethod,
+	})
+}
+
 func (c *Controller) ensureAppBinding(db *api.PerconaXtraDB) (kutil.VerbType, error) {
 	appmeta := db.AppBindingMeta()
 
@@ -44,20 +65,7 @@ func (c *Controller) ensureAppBinding(db *api.PerconaXtraDB) (kutil.VerbType, er
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPerconaXtraDB))
 
-	var peers []string
-	for i := 0; i < int(*db.Spec.Replicas); i += 1 {
-		peers = append(peers, db.PeerName(i))
-	}
-
-	garbdCnfJson, err := json.Marshal(config_api.GaleraArbitratorConfiguration{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: config_api.SchemeGroupVersion.String(),
-			Kind:       config_api.ResourceKindGaleraArbitratorConfiguration,
-		},
-		Address:   fmt.Sprintf("gcomm://%s", strings.Join(peers, ",")),
-		Group:     db.Name,
-		SSTMethod: config_api.GarbdXtrabackupSSTMethod,
-	})
+	garbdCnfJson, err := getGarbdConfig(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -86,8 +94,10 @@ func (c *Controller) ensureAppBinding(db *api.PerconaXtraDB) (kutil.VerbType, er
 			Name: db.Spec.DatabaseSecret.SecretName,
 		}
 
-		in.Spec.Parameters = &runtime.RawExtension{
-			Raw: garbdCnfJson,
+		if db.IsCluster() {
+			in.Spec.Parameters = &runtime.RawExtension{
+				Raw: garbdCnfJson,
+			}
 		}
 
 		return in

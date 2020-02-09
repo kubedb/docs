@@ -16,6 +16,8 @@ limitations under the License.
 
 package apis
 
+import "time"
+
 const (
 	StashDockerRegistry = "STASH_DOCKER_REGISTRY"
 	StashDockerImage    = "STASH_DOCKER_IMAGE"
@@ -91,4 +93,81 @@ const (
 	PostRestoreHook = "postRestore"
 	PreTaskHook     = "pre-task-hook"
 	PostTaskHook    = "post-task-hook"
+)
+
+const (
+	PrefixStashBackup         = "stash-backup"
+	PrefixStashRestore        = "stash-restore"
+	PrefixStashVolumeSnapshot = "stash-vs"
+
+	StashContainer       = "stash"
+	StashInitContainer   = "stash-init"
+	LocalVolumeName      = "stash-local"
+	ScratchDirVolumeName = "stash-scratchdir"
+	TmpDirVolumeName     = "tmp-dir"
+	TmpDirMountPath      = "/tmp"
+	PodinfoVolumeName    = "stash-podinfo"
+
+	RecoveryJobPrefix   = "stash-recovery-"
+	ScaledownCronPrefix = "stash-scaledown-cron-"
+	CheckJobPrefix      = "stash-check-"
+
+	AnnotationRestic     = "restic"
+	AnnotationRecovery   = "recovery"
+	AnnotationOperation  = "operation"
+	AnnotationOldReplica = "old-replica"
+
+	OperationRecovery = "recovery"
+	OperationCheck    = "check"
+
+	AppLabelStash        = "stash"
+	AppLabelStashV1Beta1 = "stash-v1beta1"
+	OperationScaleDown   = "scale-down"
+
+	RepositoryFinalizer = "stash"
+	SnapshotIDLength    = 8
+
+	ModelSidecar        = "sidecar"
+	ModelCronJob        = "cronjob"
+	LabelApp            = "app"
+	LabelInvokerType    = StashKey + "/invoker-type"
+	LabelInvokerName    = StashKey + "/invoker-name"
+	StashSecretVolume   = "stash-secret-volume"
+	StashSecretMountDir = "/etc/stash/repository/secret"
+
+	KeyPodName    = "POD_NAME"
+	KeyNodeName   = "NODE_NAME"
+	KeyPodOrdinal = "POD_ORDINAL"
+
+	RetryInterval    = 50 * time.Millisecond
+	ReadinessTimeout = 2 * time.Minute
+)
+
+const (
+	CallerWebhook       = "webhook"
+	CallerController    = "controller"
+	PushgatewayLocalURL = "http://localhost:56789"
+	DefaultHost         = "host-0"
+)
+
+// Prometheus metrics related constants
+const (
+	PromJobStashBackup  = "stash-backup"
+	PromJobStashRestore = "stash-restore"
+)
+
+// RBAC related constants
+const (
+	KindRole        = "Role"
+	KindClusterRole = "ClusterRole"
+
+	StashBackupJobClusterRole            = "stash-backup-job"
+	StashRestoreJobClusterRole           = "stash-restore-job"
+	StashCronJobClusterRole              = "stash-cron-job"
+	StashSidecarClusterRole              = "stash-sidecar"
+	StashRestoreInitContainerClusterRole = "stash-restore-init-container"
+
+	StashVolumeSnapshotterClusterRole      = "stash-vs-job"
+	StashVolumeSnapshotRestorerClusterRole = "stash-vs-restorer-job"
+	StashStorageClassReaderClusterRole     = "stash-sc-reader"
 )

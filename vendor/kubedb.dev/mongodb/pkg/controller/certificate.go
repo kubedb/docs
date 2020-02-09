@@ -16,101 +16,116 @@ limitations under the License.
 package controller
 
 import (
-	"crypto/rsa"
-	"crypto/x509"
 	"fmt"
-	"net"
+	"strings"
 
+	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 
-	"github.com/pkg/errors"
-	"gomodules.xyz/cert"
+	"gomodules.xyz/version"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// createCaCertificate returns generated caKey, caCert, err in order.
-func createCaCertificate() (*rsa.PrivateKey, *x509.Certificate, error) {
-	cfg := cert.Config{
-		CommonName:   "ca",
-		Organization: []string{"kubedb:ca"},
+func (c *Controller) checkTLS(mongodb *api.MongoDB) error {
+	if mongodb.Spec.TLS == nil {
+		return nil
 	}
 
-	caKey, err := cert.NewPrivateKey()
+	if mongodb.Spec.ReplicaSet == nil && mongodb.Spec.ShardTopology == nil {
+		_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(mongodb.Name+api.MongoDBServerSecretSuffix, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+	} else if mongodb.Spec.ReplicaSet != nil && mongodb.Spec.ShardTopology == nil {
+		// ReplicaSet
+		for i := 0; i < int(*mongodb.Spec.Replicas); i++ {
+			_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(fmt.Sprintf("%v-%d", mongodb.Name, i), metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	} else if mongodb.Spec.ShardTopology != nil {
+		// for config server
+		for i := 0; i < int(mongodb.Spec.ShardTopology.ConfigServer.Replicas); i++ {
+			_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(fmt.Sprintf("%v-%d", mongodb.ConfigSvrNodeName(), i), metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+		}
+
+		//for shards
+		for i := 0; i < int(mongodb.Spec.ShardTopology.Shard.Shards); i++ {
+			shardName := mongodb.ShardNodeName(int32(i))
+			for j := 0; j < int(mongodb.Spec.ShardTopology.Shard.Replicas); j++ {
+				_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(fmt.Sprintf("%v-%d", shardName, j), metav1.GetOptions{})
+				if err != nil {
+					return err
+				}
+			}
+		}
+		//for mongos
+		for i := 0; i < int(mongodb.Spec.ShardTopology.Mongos.Replicas); i++ {
+			_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(fmt.Sprintf("%v-%d", mongodb.MongosNodeName(), i), metav1.GetOptions{})
+			if err != nil {
+				return err
+			}
+		}
+	}
+	// for stash/user
+	_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(mongodb.Name+api.MongoDBExternalClientSecretSuffix+api.MongoDBPEMSecretSuffix, metav1.GetOptions{})
 	if err != nil {
-		return nil, nil, errors.New("failed to generate key for CA certificate")
+		return err
 	}
-
-	caCert, err := cert.NewSelfSignedCACert(cfg, caKey)
+	// for prometheus exporter
+	_, err = c.Client.CoreV1().Secrets(mongodb.Namespace).Get(mongodb.Name+api.MongoDBExporterClientSecretSuffix, metav1.GetOptions{})
 	if err != nil {
-		return nil, nil, errors.New("failed to generate CA certificate")
+		return err
 	}
-
-	//caKeyByte := cert.EncodePrivateKeyPEM(caKey)
-	//caCertByte := cert.EncodeCertPEM(caCert)
-
-	return caKey, caCert, nil
+	return nil
 }
 
-// createPEMCertificate returns generated Key, Cert, err in order.
-func createPEMCertificate(caKey *rsa.PrivateKey, caCert *x509.Certificate, cfg cert.Config) ([]byte, error) {
-	privateKey, err := cert.NewPrivateKey()
+func (c *Controller) getTLSArgs(mongoDB *api.MongoDB, mgVersion *v1alpha1.MongoDBVersion) ([]string, error) {
+	var sslArgs []string
+	sslMode := string(mongoDB.Spec.SSLMode)
+	breakingVer, err := version.NewVersion("4.2")
 	if err != nil {
-		return nil, errors.New("failed to generate key for client certificate")
+		return nil, err
 	}
-
-	certificate, err := cert.NewSignedCert(cfg, privateKey, caCert, caKey)
+	currentVer, err := version.NewVersion(mgVersion.Spec.Version)
 	if err != nil {
-		return nil, errors.New("failed to sign client certificate")
+		return nil, err
 	}
 
-	keyBytes := cert.EncodePrivateKeyPEM(privateKey)
-	certBytes := cert.EncodeCertPEM(certificate)
-	pemBytes := append(certBytes, keyBytes...)
+	//xREF: https://github.com/docker-library/mongo/issues/367
+	if currentVer.GreaterThanOrEqual(breakingVer) {
+		var tlsMode = sslMode
+		if strings.Contains(sslMode, "SSL") {
+			tlsMode = strings.Replace(sslMode, "SSL", "TLS", 1)
+		} //ie. requireSSL => requireTLS
 
-	return pemBytes, nil
-}
+		sslArgs = []string{
+			fmt.Sprintf("--tlsMode=%v", tlsMode),
+		}
 
-// createServerPEMCertificate returns generated Key, Cert, err in order.
-// xref: https://docs.mongodb.com/manual/core/security-x.509/#member-x-509-certificates
-func createServerPEMCertificate(mongodb *api.MongoDB, caKey *rsa.PrivateKey, caCert *x509.Certificate) ([]byte, error) {
-	cfg := cert.Config{
-		CommonName:   mongodb.OffshootName(),
-		Organization: []string{"kubedb:server"},
-		AltNames: cert.AltNames{
-			DNSNames: []string{
-				"localhost",
-				fmt.Sprintf("%v.%v.svc", mongodb.OffshootName(), mongodb.Namespace),
-				mongodb.OffshootName(),
-				mongodb.ServiceName(),
-			},
-			IPs: []net.IP{net.ParseIP("127.0.0.1")},
-		},
-		Usages: []x509.ExtKeyUsage{
-			x509.ExtKeyUsageServerAuth,
-			x509.ExtKeyUsageClientAuth,
-		},
+		if mongoDB.Spec.SSLMode != api.SSLModeDisabled {
+			//xREF: https://github.com/docker-library/mongo/issues/367
+			sslArgs = append(sslArgs, []string{
+				fmt.Sprintf("--tlsCAFile=%v/%v", api.MongoCertDirectory, api.TLSCACertFileName),
+				fmt.Sprintf("--tlsCertificateKeyFile=%v/%v", api.MongoCertDirectory, api.MongoPemFileName),
+			}...)
+		}
+	} else {
+		sslArgs = []string{
+			fmt.Sprintf("--sslMode=%v", sslMode),
+		}
+		if mongoDB.Spec.SSLMode != api.SSLModeDisabled {
+			sslArgs = append(sslArgs, []string{
+				fmt.Sprintf("--sslCAFile=%v/%v", api.MongoCertDirectory, api.TLSCACertFileName),
+				fmt.Sprintf("--sslPEMKeyFile=%v/%v", api.MongoCertDirectory, api.MongoPemFileName),
+			}...)
+		}
 	}
-	return createPEMCertificate(caKey, caCert, cfg)
-}
 
-// createPEMCertificate returns generated Key, Cert, err in order.
-// xref: https://docs.mongodb.com/manual/tutorial/configure-x509-client-authentication/
-func createClientPEMCertificate(mongodb *api.MongoDB, caKey *rsa.PrivateKey, caCert *x509.Certificate) ([]byte, error) {
-	cfg := cert.Config{
-		CommonName:   "root",
-		Organization: []string{"kubedb:client"},
-		AltNames: cert.AltNames{
-			DNSNames: []string{
-				"localhost",
-				fmt.Sprintf("%v.%v.svc", mongodb.OffshootName(), mongodb.Namespace),
-				mongodb.OffshootName(),
-				mongodb.ServiceName(),
-			},
-			IPs: []net.IP{net.ParseIP("127.0.0.1")},
-		},
-		Usages: []x509.ExtKeyUsage{
-			x509.ExtKeyUsageServerAuth,
-			x509.ExtKeyUsageClientAuth,
-		},
-	}
-	return createPEMCertificate(caKey, caCert, cfg)
+	return sslArgs, nil
 }

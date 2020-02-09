@@ -151,41 +151,38 @@ func (r *Redis) SetDefaults() {
 	if r == nil {
 		return
 	}
-	r.Spec.SetDefaults()
+
+	// perform defaulting
+	if r.Spec.Mode == "" {
+		r.Spec.Mode = RedisModeStandalone
+	} else if r.Spec.Mode == RedisModeCluster {
+		if r.Spec.Cluster == nil {
+			r.Spec.Cluster = &RedisClusterSpec{}
+		}
+		if r.Spec.Cluster.Master == nil {
+			r.Spec.Cluster.Master = types.Int32P(3)
+		}
+		if r.Spec.Cluster.Replicas == nil {
+			r.Spec.Cluster.Replicas = types.Int32P(1)
+		}
+	}
+	if r.Spec.StorageType == "" {
+		r.Spec.StorageType = StorageTypeDurable
+	}
+	if r.Spec.UpdateStrategy.Type == "" {
+		r.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
+	}
+	if r.Spec.TerminationPolicy == "" {
+		r.Spec.TerminationPolicy = TerminationPolicyDelete
+	} else if r.Spec.TerminationPolicy == TerminationPolicyPause {
+		r.Spec.TerminationPolicy = TerminationPolicyHalt
+	}
 
 	if r.Spec.PodTemplate.Spec.ServiceAccountName == "" {
 		r.Spec.PodTemplate.Spec.ServiceAccountName = r.OffshootName()
 	}
-}
 
-func (r *RedisSpec) SetDefaults() {
-	if r == nil {
-		return
-	}
-
-	// perform defaulting
-	if r.Mode == "" {
-		r.Mode = RedisModeStandalone
-	} else if r.Mode == RedisModeCluster {
-		if r.Cluster == nil {
-			r.Cluster = &RedisClusterSpec{}
-		}
-		if r.Cluster.Master == nil {
-			r.Cluster.Master = types.Int32P(3)
-		}
-		if r.Cluster.Replicas == nil {
-			r.Cluster.Replicas = types.Int32P(1)
-		}
-	}
-	if r.StorageType == "" {
-		r.StorageType = StorageTypeDurable
-	}
-	if r.UpdateStrategy.Type == "" {
-		r.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
-	}
-	if r.TerminationPolicy == "" {
-		r.TerminationPolicy = TerminationPolicyDelete
-	}
+	r.Spec.Monitor.SetDefaults()
 }
 
 func (e *RedisSpec) GetSecrets() []string {

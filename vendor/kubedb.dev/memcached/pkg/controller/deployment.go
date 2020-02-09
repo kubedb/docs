@@ -131,21 +131,21 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name: "exporter",
 				Args: append([]string{
-					fmt.Sprintf("--web.listen-address=:%v", memcached.Spec.Monitor.Prometheus.Port),
+					fmt.Sprintf("--web.listen-address=:%v", memcached.Spec.Monitor.Prometheus.Exporter.Port),
 					fmt.Sprintf("--web.telemetry-path=%v", memcached.StatsService().Path()),
-				}, memcached.Spec.Monitor.Args...),
+				}, memcached.Spec.Monitor.Prometheus.Exporter.Args...),
 				Image:           memcachedVersion.Spec.Exporter.Image,
 				ImagePullPolicy: core.PullIfNotPresent,
 				Ports: []core.ContainerPort{
 					{
 						Name:          api.PrometheusExporterPortName,
 						Protocol:      core.ProtocolTCP,
-						ContainerPort: memcached.Spec.Monitor.Prometheus.Port,
+						ContainerPort: memcached.Spec.Monitor.Prometheus.Exporter.Port,
 					},
 				},
-				Env:             memcached.Spec.Monitor.Env,
-				Resources:       memcached.Spec.Monitor.Resources,
-				SecurityContext: memcached.Spec.Monitor.SecurityContext,
+				Env:             memcached.Spec.Monitor.Prometheus.Exporter.Env,
+				Resources:       memcached.Spec.Monitor.Prometheus.Exporter.Resources,
+				SecurityContext: memcached.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 			})
 		}
 		in = upsertUserEnv(in, memcached)

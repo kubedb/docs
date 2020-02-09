@@ -22,9 +22,7 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
 	amc "kubedb.dev/apimachinery/pkg/controller"
-	drmnc "kubedb.dev/apimachinery/pkg/controller/dormantdatabase"
 	"kubedb.dev/apimachinery/pkg/controller/restoresession"
-	snapc "kubedb.dev/apimachinery/pkg/controller/snapshot"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -53,8 +51,6 @@ type Controller struct {
 
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
-	// Cron Controller
-	cronController snapc.CronControllerInterface
 	// Event Recorder
 	recorder record.EventRecorder
 	// labelselector for event-handler of Snapshot, Dormant and Job
@@ -66,8 +62,7 @@ type Controller struct {
 	pxLister   api_listers.PerconaXtraDBLister
 }
 
-var _ amc.Snapshotter = &Controller{}
-var _ amc.Deleter = &Controller{}
+var _ amc.DBHelper = &Controller{}
 
 func New(
 	clientConfig *rest.Config,
@@ -78,7 +73,6 @@ func New(
 	dynamicClient dynamic.Interface,
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
-	cronController snapc.CronControllerInterface,
 	opt amc.Config,
 	recorder record.EventRecorder,
 ) *Controller {
@@ -92,10 +86,9 @@ func New(
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
 		},
-		Config:         opt,
-		promClient:     promClient,
-		cronController: cronController,
-		recorder:       recorder,
+		Config:     opt,
+		promClient: promClient,
+		recorder:   recorder,
 		selector: labels.SelectorFromSet(map[string]string{
 			api.LabelDatabaseKind: api.ResourceKindPerconaXtraDB,
 		}),
@@ -108,17 +101,14 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 	crds := []*crd_api.CustomResourceDefinition{
 		api.PerconaXtraDB{}.CustomResourceDefinition(),
 		catalog.PerconaXtraDBVersion{}.CustomResourceDefinition(),
-		api.DormantDatabase{}.CustomResourceDefinition(),
-		api.Snapshot{}.CustomResourceDefinition(),
 		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
-	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
+	return apiext_util.RegisterCRDs(c.Client.Discovery(), c.ApiExtKubeClient, crds)
 }
 
-// Init initializes percona-xtradb, DormantDB amd RestoreSession watcher
+// Init initializes percona-xtradb, DormantDB amd RestoreSessionForCluster watcher
 func (c *Controller) Init() error {
 	c.initWatcher()
-	c.DrmnQueue = drmnc.NewController(c.Controller, c, c.Config, nil, c.recorder).AddEventHandlerFunc(c.selector)
 	c.RSQueue = restoresession.NewController(c.Controller, c, c.Config, nil, c.recorder).AddEventHandlerFunc(c.selector)
 
 	return nil
@@ -126,12 +116,8 @@ func (c *Controller) Init() error {
 
 // RunControllers runs queue.worker
 func (c *Controller) RunControllers(stopCh <-chan struct{}) {
-	// Start Cron
-	c.cronController.StartCron()
-
 	// Watch x  TPR objects
 	c.pxQueue.Run(stopCh)
-	c.DrmnQueue.Run(stopCh)
 }
 
 // Blocks caller. Intended to be called as a Go routine.
@@ -148,7 +134,6 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 	}
 
 	<-stopCh
-	c.cronController.StopCron()
 }
 
 // StartAndRunControllers starts InformetFactory and runs queue.worker

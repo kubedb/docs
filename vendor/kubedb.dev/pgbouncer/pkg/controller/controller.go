@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package controller
 
 import (
@@ -33,12 +34,12 @@ import (
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
-	corev1_listers "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
+	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat_util "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -57,28 +58,14 @@ type Controller struct {
 	selector labels.Selector
 
 	// PgBouncer
-	pgQueue    *queue.Worker
-	pgInformer cache.SharedIndexInformer
+	pbQueue    *queue.Worker
+	pbInformer cache.SharedIndexInformer
 	pbLister   api_listers.PgBouncerLister
-	// Secret
-	secretQueue    *queue.Worker
-	secretInformer cache.SharedIndexInformer
-	secretLister   corev1_listers.SecretLister
-
+	// AppBinding
 	appBindingQueue    *queue.Worker
 	appBindingInformer cache.SharedIndexInformer
 	appBindingLister   appcat_listers.AppBindingLister
 }
-
-func (c *Controller) WaitUntilPaused(*api.DormantDatabase) error {
-	panic("implement me")
-}
-
-func (c *Controller) WipeOutDatabase(*api.DormantDatabase) error {
-	panic("implement me")
-}
-
-var _ amc.Deleter = &Controller{}
 
 func New(
 	clientConfig *rest.Config,
@@ -89,6 +76,7 @@ func New(
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	opt amc.Config,
+	topology *core_util.Topology,
 	recorder record.EventRecorder,
 ) *Controller {
 	return &Controller{
@@ -99,6 +87,7 @@ func New(
 			ApiExtKubeClient: apiExtKubeClient,
 			DynamicClient:    dc,
 			AppCatalogClient: appCatalogClient,
+			ClusterTopology:  topology,
 		},
 		Config:     opt,
 		promClient: promClient,
@@ -116,8 +105,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		catalog.PgBouncerVersion{}.CustomResourceDefinition(),
 		appcat_util.AppBinding{}.CustomResourceDefinition(),
 	}
-	err := apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
-	return err
+	return apiext_util.RegisterCRDs(c.Client.Discovery(), c.ApiExtKubeClient, crds)
 }
 
 // InitInformer initializes PgBouncer, DormantDB amd Snapshot watcher
@@ -125,13 +113,14 @@ func (c *Controller) Init() error {
 	c.initWatcher()
 	c.initSecretWatcher()
 	c.initAppBindingWatcher()
+
 	return nil
 }
 
 // RunControllers runs queue.worker
 func (c *Controller) RunControllers(stopCh <-chan struct{}) {
-	c.pgQueue.Run(stopCh)
-	c.secretQueue.Run(stopCh)
+	c.pbQueue.Run(stopCh)
+	//c.secretQueue.Run(stopCh)
 	c.appBindingQueue.Run(stopCh)
 }
 
@@ -157,23 +146,31 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.KubeInformerFactory.Start(stopCh)
 	c.KubedbInformerFactory.Start(stopCh)
 	c.AppCatInformerFactory.Start(stopCh)
+	//c.CertManagerInformerFactory.Start(stopCh)
+	c.ExternalInformerFactory.Start(stopCh)
 
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range c.KubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for caches to sync", t)
+			log.Fatalf("%v timed out waiting for core caches to sync", t)
 			return
 		}
 	}
 	for t, v := range c.KubedbInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for caches to sync", t)
+			log.Fatalf("%v timed out waiting for kubedb caches to sync", t)
 			return
 		}
 	}
 	for t, v := range c.AppCatInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
 			log.Fatalf("%v timed out waiting for appCatalog caches to sync", t)
+			return
+		}
+	}
+	for t, v := range c.ExternalInformerFactory.WaitForCacheSync(stopCh) {
+		if !v {
+			log.Fatalf("%v timed out waiting for external caches to sync", t)
 			return
 		}
 	}

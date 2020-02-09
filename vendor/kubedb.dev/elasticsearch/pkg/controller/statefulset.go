@@ -94,7 +94,7 @@ func (c *Controller) ensureStatefulSet(
 
 		in.Spec.Replicas = types.Int32P(replicas)
 
-		in.Spec.ServiceName = c.GoverningService
+		in.Spec.ServiceName = elasticsearch.GvrSvcName()
 		in.Spec.Selector = &metav1.LabelSelector{
 			MatchLabels: core_util.UpsertMap(labels, elasticsearch.OffshootSelectors()),
 		}
@@ -765,7 +765,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, el
 				fmt.Sprintf("--es.uri=%s", getURI(elasticsearch, esVersion)),
 				fmt.Sprintf("--web.listen-address=:%d", api.PrometheusExporterPortNumber),
 				fmt.Sprintf("--web.telemetry-path=%s", elasticsearch.StatsService().Path()),
-			}, elasticsearch.Spec.Monitor.Args...),
+			}, elasticsearch.Spec.Monitor.Prometheus.Exporter.Args...),
 			Image:           esVersion.Spec.Exporter.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
@@ -775,7 +775,9 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, el
 					ContainerPort: int32(api.PrometheusExporterPortNumber),
 				},
 			},
-			Resources: elasticsearch.Spec.Monitor.Resources,
+			Env:             elasticsearch.Spec.Monitor.Prometheus.Exporter.Env,
+			Resources:       elasticsearch.Spec.Monitor.Prometheus.Exporter.Resources,
+			SecurityContext: elasticsearch.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 		}
 		envList := []core.EnvVar{
 			{

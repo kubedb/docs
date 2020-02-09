@@ -12,26 +12,26 @@ require (
 	k8s.io/apimachinery v0.16.5-beta.1
 	k8s.io/apiserver v0.0.0-20191114103151-9ca1dc586682
 	k8s.io/client-go v12.0.0+incompatible
-	kmodules.xyz/client-go v0.0.0-20191219184245-880ab4b0e5db
+	kmodules.xyz/client-go v0.0.0-20200207062238-c552fd719556
 	kmodules.xyz/custom-resources v0.0.0-20191130062942-f41b54f62419
+	kmodules.xyz/offshoot-api v0.0.0-20200207061254-705ac16690ec // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20191127075323-d4bfdee6974d
-	kubedb.dev/apimachinery v0.13.0-rc.2.0.20191221024943-29ed98ef1f22
-	kubedb.dev/elasticsearch v0.13.0-rc.1.0.20191221042852-97790e1ee35f
-	kubedb.dev/etcd v0.5.0-rc.1.0.20191221071928-6033cb6e90e5
-	kubedb.dev/memcached v0.6.0-rc.1.0.20191221020856-f5eec5e496b9
-	kubedb.dev/mongodb v0.6.0-rc.1.0.20191221042053-e90cd386f529
-	kubedb.dev/mysql v0.6.0-rc.0.0.20191221040233-bc8ec7734747
-	kubedb.dev/percona-xtradb v0.0.0-20191221031009-fb0d7a35fd78
-	kubedb.dev/pgbouncer v0.0.0-20191221062146-ab104a9fd466
-	kubedb.dev/postgres v0.13.0-rc.0.0.20191221054817-afdc5fda4cf2
-	kubedb.dev/proxysql v0.0.0-20191221030919-b0922173caa8
-	kubedb.dev/redis v0.6.0-rc.0.0.20191221020135-1707e0c7a9d4
-	stash.appscode.dev/stash v0.9.0-rc.2.0.20191220142029-ca6885400de1
+	kubedb.dev/apimachinery v0.13.0-rc.3.0.20200209044157-d39a1db65004
+	kubedb.dev/elasticsearch v0.13.0-rc.1.0.20200129154009-e51555d54720
+	kubedb.dev/memcached v0.6.0-rc.1.0.20200126185242-e61dd2e6e440
+	kubedb.dev/mongodb v0.6.0-rc.1.0.20200209032954-0f20ff3acefa
+	kubedb.dev/mysql v0.6.0-rc.0.0.20200130012612-f4a67e958427
+	kubedb.dev/percona-xtradb v0.0.0-20200129155859-e69742decadf
+	kubedb.dev/pgbouncer v0.0.0-20200209052735-cd4d27211151
+	kubedb.dev/postgres v0.13.0-rc.0.0.20200126185722-15f0611d5ed8
+	kubedb.dev/proxysql v0.0.0-20200129164527-f4d1c0249f53
+	kubedb.dev/redis v0.6.0-rc.0.0.20200130225128-c1db4c438bb4
+	stash.appscode.dev/stash v0.9.0-rc.4
 )
 
 replace (
 	cloud.google.com/go => cloud.google.com/go v0.38.0
-	git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
+	git.apache.org/thrift.git => github.com/apache/thrift v0.13.0
 	github.com/Azure/azure-sdk-for-go => github.com/Azure/azure-sdk-for-go v32.5.0+incompatible
 	github.com/Azure/go-ansiterm => github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.0.0+incompatible

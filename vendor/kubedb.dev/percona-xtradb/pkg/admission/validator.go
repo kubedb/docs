@@ -24,7 +24,6 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
-	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -152,6 +151,9 @@ func validateCluster(px *api.PerconaXtraDB) error {
 			return errors.Errorf(`'spec.px.clusterName' "%s" shouldn't have more than %d characters'`,
 				clusterName, api.PerconaXtraDBMaxClusterNameLength)
 		}
+		if px.Spec.Init != nil && px.Spec.Init.ScriptSource != nil {
+			return fmt.Errorf("`.spec.init.scriptSource` is not supported for cluster. For PerconaXtraDB cluster initialization see https://stash.run/docs/latest/addons/percona-xtradb/guides/5.7/clusterd/")
+		}
 	}
 
 	return nil
@@ -226,10 +228,10 @@ func ValidatePerconaXtraDB(client kubernetes.Interface, extClient cs.Interface, 
 	}
 
 	if px.Spec.Init != nil &&
-		px.Spec.Init.SnapshotSource != nil &&
+		px.Spec.Init.StashRestoreSession != nil &&
 		databaseSecret == nil {
-		return fmt.Errorf("for Snapshot init, 'spec.databaseSecret.secretName' of %v/%v needs to be similar to older database of snapshot %v/%v",
-			px.Namespace, px.Name, px.Spec.Init.SnapshotSource.Namespace, px.Spec.Init.SnapshotSource.Name)
+		return fmt.Errorf("for Stash RestoreSession init, 'spec.databaseSecret.secretName' of %v/%v needs to be similar to older database of restoression %v",
+			px.Namespace, px.Name, px.Spec.Init.StashRestoreSession.Name)
 	}
 
 	if px.Spec.UpdateStrategy.Type == "" {
@@ -249,47 +251,6 @@ func ValidatePerconaXtraDB(client kubernetes.Interface, extClient cs.Interface, 
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
 			return err
 		}
-	}
-
-	if err := matchWithDormantDatabase(extClient, px); err != nil {
-		return err
-	}
-	return nil
-}
-
-func matchWithDormantDatabase(extClient cs.Interface, px *api.PerconaXtraDB) error {
-	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(px.Namespace).Get(px.Name, metav1.GetOptions{})
-	if err != nil {
-		if !kerr.IsNotFound(err) {
-			return err
-		}
-		return nil
-	}
-
-	// Check DatabaseKind
-	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindPerconaXtraDB {
-		return errors.New(fmt.Sprintf(`invalid PerconaXtraDB: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, px.Namespace, px.Name, dormantDb.Namespace, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	drmnOriginSpec := dormantDb.Spec.Origin.Spec.PerconaXtraDB
-	drmnOriginSpec.SetDefaults()
-	originalSpec := px.Spec
-
-	// Skip checking UpdateStrategy
-	drmnOriginSpec.UpdateStrategy = originalSpec.UpdateStrategy
-
-	// Skip checking TerminationPolicy
-	drmnOriginSpec.TerminationPolicy = originalSpec.TerminationPolicy
-
-	// Skip checking Monitoring
-	drmnOriginSpec.Monitor = originalSpec.Monitor
-
-	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
-		diff := meta_util.Diff(drmnOriginSpec, &originalSpec)
-		log.Errorf("percona-xtradb spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff)
-		return errors.New(fmt.Sprintf("percona-xtradb spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff))
 	}
 
 	return nil

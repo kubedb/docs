@@ -52,12 +52,13 @@ func (c *Controller) addOrUpdateMonitor(mysql *api.MySQL) (kutil.VerbType, error
 	return agent.CreateOrUpdate(mysql.StatsService(), mysql.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(mysql *api.MySQL) (kutil.VerbType, error) {
+func (c *Controller) deleteMonitor(mysql *api.MySQL) error {
 	agent, err := c.newMonitorController(mysql)
 	if err != nil {
-		return kutil.VerbUnchanged, err
+		return err
 	}
-	return agent.Delete(mysql.StatsService())
+	_, err = agent.Delete(mysql.StatsService())
+	return err
 }
 
 func (c *Controller) getOldAgent(mysql *api.MySQL) mona.Agent {

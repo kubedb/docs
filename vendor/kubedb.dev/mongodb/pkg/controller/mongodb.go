@@ -32,7 +32,6 @@ import (
 	kutil "kmodules.xyz/client-go"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
-	storage "kmodules.xyz/objectstore-api/osm"
 )
 
 func (c *Controller) create(mongodb *api.MongoDB) error {
@@ -44,14 +43,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 			err.Error(),
 		)
 		log.Errorln(err)
-		// stop Scheduler in case there is any.
-		c.cronController.StopBackupScheduling(mongodb.ObjectMeta)
 		return nil
-	}
-
-	// Delete Matching DormantDatabase if exists any
-	if err := c.deleteMatchingDormantDatabase(mongodb); err != nil {
-		return fmt.Errorf(`failed to delete dormant Database : "%v/%v". Reason: %v`, mongodb.Namespace, mongodb.Name, err)
 	}
 
 	if mongodb.Status.Phase == "" {
@@ -89,9 +81,19 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	sslMode := mongodb.Spec.SSLMode
 	if (sslMode != api.SSLModeDisabled && sslMode != "") ||
 		mongodb.Spec.ReplicaSet != nil || mongodb.Spec.ShardTopology != nil {
-		if err := c.ensureCertSecret(mongodb); err != nil {
+		if err := c.ensureKeyFileSecret(mongodb); err != nil {
 			return err
 		}
+	}
+
+	// create or patch Certificates
+	if err := c.checkTLS(mongodb); err != nil {
+		if kerr.IsNotFound(err) {
+			return nil
+		}
+
+		log.Infoln(err)
+		return err
 	}
 
 	// ensure database StatefulSet
@@ -124,8 +126,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	if _, err := meta_util.GetString(mongodb.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		mongodb.Spec.Init != nil &&
-		(mongodb.Spec.Init.SnapshotSource != nil || mongodb.Spec.Init.StashRestoreSession != nil) {
+		mongodb.Spec.Init != nil && mongodb.Spec.Init.StashRestoreSession != nil {
 
 		if mongodb.Status.Phase == api.DatabasePhaseInitializing {
 			return nil
@@ -142,13 +143,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		mongodb.Status = mg.Status
 
 		init := mongodb.Spec.Init
-		if init.SnapshotSource != nil {
-			err = c.initializeFromSnapshot(mongodb)
-			if err != nil {
-				return fmt.Errorf("failed to complete initialization. Reason: %v", err)
-			}
-			return err
-		} else if init.StashRestoreSession != nil {
+		if init.StashRestoreSession != nil {
 			log.Debugf("MongoDB %v/%v is waiting for restoreSession to be succeeded", mongodb.Namespace, mongodb.Name)
 			return nil
 		}
@@ -163,18 +158,6 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		return err
 	}
 	mongodb.Status = mg.Status
-
-	// Ensure Schedule backup
-	if err := c.ensureBackupScheduler(mongodb); err != nil {
-		c.recorder.Eventf(
-			mongodb,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToSchedule,
-			err.Error(),
-		)
-		log.Errorln(err)
-		// Don't return error. Continue processing rest.
-	}
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(mongodb); err != nil {
@@ -204,113 +187,48 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	return nil
 }
 
-func (c *Controller) ensureBackupScheduler(mongodb *api.MongoDB) error {
-	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to get MongoDBVersion %v for %v/%v. Reason: %v", mongodb.Spec.Version, mongodb.Namespace, mongodb.Name, err)
+func (c *Controller) halt(db *api.MongoDB) error {
+	if db.Spec.Halted && db.Spec.TerminationPolicy != api.TerminationPolicyHalt {
+		return errors.New("can't halt db. 'spec.terminationPolicy' is not 'Halt'")
 	}
-	// Setup Schedule backup
-	if mongodb.Spec.BackupSchedule != nil {
-		err := c.cronController.ScheduleBackup(mongodb, mongodb.Spec.BackupSchedule, mongodbVersion)
-		if err != nil {
-			return fmt.Errorf("failed to schedule snapshot for %v/%v. Reason: %v", mongodb.Namespace, mongodb.Name, err)
-		}
-	} else {
-		c.cronController.StopBackupScheduling(mongodb.ObjectMeta)
+	log.Infof("Halting MongoDB %v/%v", db.Namespace, db.Name)
+	if err := c.haltDatabase(db); err != nil {
+		return err
+	}
+	if err := c.waitUntilPaused(db); err != nil {
+		return err
+	}
+	log.Infof("update status of MongoDB %v/%v to Halted.", db.Namespace, db.Name)
+	if _, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), db, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		in.Phase = api.DatabasePhaseHalted
+		in.ObservedGeneration = db.Generation
+		return in
+	}); err != nil {
+		return err
 	}
 	return nil
 }
 
-func (c *Controller) initializeFromSnapshot(mongodb *api.MongoDB) error {
-	snapshotSource := mongodb.Spec.Init.SnapshotSource
-	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshotSource.Name)
-	if _, err := c.Client.BatchV1().Jobs(snapshotSource.Namespace).Get(jobName, metav1.GetOptions{}); err != nil {
-		if !kerr.IsNotFound(err) {
+func (c *Controller) terminate(db *api.MongoDB) error {
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
+
+	// If TerminationPolicy is "halt", keep PVCs and Secrets intact.
+	// TerminationPolicyPause is deprecated and will be removed in future.
+	if db.Spec.TerminationPolicy == api.TerminationPolicyHalt || db.Spec.TerminationPolicy == api.TerminationPolicyPause {
+		if err := c.removeOwnerReferenceFromOffshoots(db); err != nil {
 			return err
-		}
-	} else {
-		return nil
-	}
-
-	// Event for notification that kubernetes objects are creating
-	c.recorder.Eventf(
-		mongodb,
-		core.EventTypeNormal,
-		eventer.EventReasonInitializing,
-		`Initializing from Snapshot: "%v"`,
-		snapshotSource.Name,
-	)
-
-	namespace := snapshotSource.Namespace
-	if namespace == "" {
-		namespace = mongodb.Namespace
-	}
-	snapshot, err := c.ExtClient.KubedbV1alpha1().Snapshots(namespace).Get(snapshotSource.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-
-	secret, err := storage.NewOSMSecret(c.Client, snapshot.OSMSecretName(), snapshot.Namespace, snapshot.Spec.Backend)
-	if err != nil {
-		return err
-	}
-	_, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
-	if err != nil && !kerr.IsAlreadyExists(err) {
-		return err
-	}
-
-	job, err := c.createRestoreJob(mongodb, snapshot)
-	if err != nil {
-		return err
-	}
-
-	if err := c.SetJobOwnerReference(snapshot, job); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c *Controller) terminate(mongodb *api.MongoDB) error {
-	owner := metav1.NewControllerRef(mongodb, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
-
-	// If TerminationPolicy is "pause", keep everything (ie, PVCs,Secrets,Snapshots) intact.
-	// In operator, create dormantdatabase
-	if mongodb.Spec.TerminationPolicy == api.TerminationPolicyPause {
-		if err := c.removeOwnerReferenceFromOffshoots(mongodb, mongodb); err != nil {
-			return err
-		}
-
-		if _, err := c.createDormantDatabase(mongodb); err != nil {
-			if kerr.IsAlreadyExists(err) {
-				// if already exists, check if it is database of another Kind and return error in that case.
-				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
-				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
-				// So reuse that DormantDB!
-				ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(mongodb.Namespace).Get(mongodb.Name, metav1.GetOptions{})
-				if err != nil {
-					return err
-				}
-				if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindMongoDB {
-					return fmt.Errorf(`DormantDatabase "%v/%v" of kind %v already exists`, mongodb.Namespace, mongodb.Name, val)
-				}
-			} else {
-				return fmt.Errorf(`failed to create DormantDatabase: "%v/%v". Reason: %v`, mongodb.Namespace, mongodb.Name, err)
-			}
 		}
 	} else {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
 		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
 		// In both these cases, don't create dormantdatabase
-		if err := c.setOwnerReferenceToOffshoots(mongodb, owner); err != nil {
+		if err := c.setOwnerReferenceToOffshoots(db, owner); err != nil {
 			return err
 		}
 	}
 
-	c.cronController.StopBackupScheduling(mongodb.ObjectMeta)
-
-	if mongodb.Spec.Monitor != nil {
-		if _, err := c.deleteMonitor(mongodb); err != nil {
+	if db.Spec.Monitor != nil {
+		if err := c.deleteMonitor(db); err != nil {
 			log.Errorln(err)
 			return nil
 		}
@@ -318,39 +236,24 @@ func (c *Controller) terminate(mongodb *api.MongoDB) error {
 	return nil
 }
 
-func (c *Controller) setOwnerReferenceToOffshoots(mongodb *api.MongoDB, owner *metav1.OwnerReference) error {
-	selector := labels.SelectorFromSet(mongodb.OffshootSelectors())
+func (c *Controller) setOwnerReferenceToOffshoots(db *api.MongoDB, owner *metav1.OwnerReference) error {
+	selector := labels.SelectorFromSet(db.OffshootSelectors())
 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
-	if mongodb.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		if err := dynamic_util.EnsureOwnerReferenceForSelector(
-			c.DynamicClient,
-			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
-			mongodb.Namespace,
-			selector,
-			owner); err != nil {
-			return err
-		}
-		if err := c.wipeOutDatabase(mongodb.ObjectMeta, mongodb.Spec.GetSecrets(), owner); err != nil {
+	if db.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
+		// wipeOut restoreSession
+		if err := c.wipeOutDatabase(db.ObjectMeta, db.Spec.GetSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
-		// Make sure snapshot and secret's ownerreference is removed.
-		if err := dynamic_util.RemoveOwnerReferenceForSelector(
-			c.DynamicClient,
-			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
-			mongodb.Namespace,
-			selector,
-			mongodb); err != nil {
-			return err
-		}
+		// Make sure secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
-			mongodb.Namespace,
-			mongodb.Spec.GetSecrets(),
-			mongodb); err != nil {
+			db.Namespace,
+			db.Spec.GetSecrets(),
+			db); err != nil {
 			return err
 		}
 	}
@@ -358,37 +261,29 @@ func (c *Controller) setOwnerReferenceToOffshoots(mongodb *api.MongoDB, owner *m
 	return dynamic_util.EnsureOwnerReferenceForSelector(
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
-		mongodb.Namespace,
+		db.Namespace,
 		selector,
 		owner)
 }
 
-func (c *Controller) removeOwnerReferenceFromOffshoots(mongodb *api.MongoDB, owner metav1.Object) error {
+func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.MongoDB) error {
 	// First, Get LabelSelector for Other Components
-	labelSelector := labels.SelectorFromSet(mongodb.OffshootSelectors())
+	labelSelector := labels.SelectorFromSet(db.OffshootSelectors())
 
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
 		c.DynamicClient,
-		api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
-		mongodb.Namespace,
-		labelSelector,
-		owner); err != nil {
-		return err
-	}
-	if err := dynamic_util.RemoveOwnerReferenceForSelector(
-		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
-		mongodb.Namespace,
+		db.Namespace,
 		labelSelector,
-		owner); err != nil {
+		db); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
-		mongodb.Namespace,
-		mongodb.Spec.GetSecrets(),
-		owner); err != nil {
+		db.Namespace,
+		db.Spec.GetSecrets(),
+		db); err != nil {
 		return err
 	}
 	return nil

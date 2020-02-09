@@ -16,21 +16,18 @@ limitations under the License.
 package controller
 
 import (
-	"fmt"
-
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/redis/pkg/admission"
 
 	"github.com/appscode/go/log"
+	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	kutil "kmodules.xyz/client-go"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
-	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (c *Controller) create(redis *api.Redis) error {
@@ -43,11 +40,6 @@ func (c *Controller) create(redis *api.Redis) error {
 		)
 		log.Errorln(err)
 		return nil // user error so just record error and don't retry.
-	}
-
-	// Delete Matching DormantDatabase if exists any
-	if err := c.deleteMatchingDormantDatabase(redis); err != nil {
-		return fmt.Errorf(`failed to delete dormant Database : "%v/%v". Reason: %v`, redis.Namespace, redis.Name, err)
 	}
 
 	if redis.Status.Phase == "" {
@@ -156,30 +148,33 @@ func (c *Controller) create(redis *api.Redis) error {
 	return nil
 }
 
+func (c *Controller) halt(db *api.Redis) error {
+	if db.Spec.Halted && db.Spec.TerminationPolicy != api.TerminationPolicyHalt {
+		return errors.New("can't halt db. 'spec.terminationPolicy' is not 'Halt'")
+	}
+	log.Infof("Halting Redis %v/%v", db.Namespace, db.Name)
+	if err := c.haltDatabase(db); err != nil {
+		return err
+	}
+	if err := c.waitUntilPaused(db); err != nil {
+		return err
+	}
+	log.Infof("update status of Redis %v/%v to Halted.", db.Namespace, db.Name)
+	if _, err := util.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), db, func(in *api.RedisStatus) *api.RedisStatus {
+		in.Phase = api.DatabasePhaseHalted
+		in.ObservedGeneration = db.Generation
+		return in
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (c *Controller) terminate(redis *api.Redis) error {
-	// If TerminationPolicy is "terminate", keep everything (ie, PVCs,Secrets,Snapshots) intact.
-	// In operator, create dormantdatabase
-	if redis.Spec.TerminationPolicy == api.TerminationPolicyPause {
+	// If TerminationPolicy is "halt", keep PVCs,Secrets intact.
+	if redis.Spec.TerminationPolicy == api.TerminationPolicyPause || redis.Spec.TerminationPolicy == api.TerminationPolicyHalt {
 		if err := c.removeOwnerReferenceFromOffshoots(redis); err != nil {
 			return err
-		}
-
-		if _, err := c.createDormantDatabase(redis); err != nil {
-			if kerr.IsAlreadyExists(err) {
-				// if already exists, check if it is database of another Kind and return error in that case.
-				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
-				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
-				// So reuse that DormantDB!
-				ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(redis.Namespace).Get(redis.Name, metav1.GetOptions{})
-				if err != nil {
-					return err
-				}
-				if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindRedis {
-					return fmt.Errorf(`DormantDatabase "%v/%v" of kind %v already exists`, redis.Namespace, redis.Name, val)
-				}
-			} else {
-				return fmt.Errorf(`failed to create DormantDatabase: "%v/%v". Reason: %v`, redis.Namespace, redis.Name, err)
-			}
 		}
 	} else {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
@@ -191,7 +186,7 @@ func (c *Controller) terminate(redis *api.Redis) error {
 	}
 
 	if redis.Spec.Monitor != nil {
-		if _, err := c.deleteMonitor(redis); err != nil {
+		if err := c.deleteMonitor(redis); err != nil {
 			log.Errorln(err)
 			return nil
 		}

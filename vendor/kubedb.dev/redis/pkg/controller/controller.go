@@ -22,7 +22,6 @@ import (
 	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
 	amc "kubedb.dev/apimachinery/pkg/controller"
-	"kubedb.dev/apimachinery/pkg/controller/dormantdatabase"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -39,6 +38,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
+	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -61,8 +61,6 @@ type Controller struct {
 	rdLister   api_listers.RedisLister
 }
 
-var _ amc.Deleter = &Controller{}
-
 func New(
 	clientConfig *rest.Config,
 	client kubernetes.Interface,
@@ -72,6 +70,7 @@ func New(
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	opt amc.Config,
+	topology *core_util.Topology,
 	recorder record.EventRecorder,
 ) *Controller {
 	return &Controller{
@@ -82,6 +81,7 @@ func New(
 			ApiExtKubeClient: apiExtKubeClient,
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
+			ClusterTopology:  topology,
 		},
 		Config:     opt,
 		promClient: promClient,
@@ -98,17 +98,14 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 	crds := []*crd_api.CustomResourceDefinition{
 		api.Redis{}.CustomResourceDefinition(),
 		catalog.RedisVersion{}.CustomResourceDefinition(),
-		api.DormantDatabase{}.CustomResourceDefinition(),
-		api.Snapshot{}.CustomResourceDefinition(),
 		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
-	return apiext_util.RegisterCRDs(c.ApiExtKubeClient, crds)
+	return apiext_util.RegisterCRDs(c.Client.Discovery(), c.ApiExtKubeClient, crds)
 }
 
 // InitInformer initializes Redis, DormantDB amd Snapshot watcher
 func (c *Controller) Init() error {
 	c.initWatcher()
-	c.DrmnQueue = dormantdatabase.NewController(c.Controller, c, c.Config, nil, c.recorder).AddEventHandlerFunc(c.selector)
 
 	return nil
 }
@@ -117,7 +114,6 @@ func (c *Controller) Init() error {
 func (c *Controller) RunControllers(stopCh <-chan struct{}) {
 	// Watch x  TPR objects
 	c.rdQueue.Run(stopCh)
-	c.DrmnQueue.Run(stopCh)
 }
 
 // Blocks caller. Intended to be called as a Go routine.

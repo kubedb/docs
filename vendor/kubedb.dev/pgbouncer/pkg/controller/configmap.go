@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package controller
 
 import (
@@ -92,61 +93,64 @@ func (c *Controller) generateConfig(pgbouncer *api.PgBouncer) (string, error) {
 				} else {
 					log.Error(err)
 				}
-				continue //Dont add pgbouncer databse base for this non existent appbinding
+				continue //Dont add pgbouncer databse base for this non existent appBinding
 			}
-			//if appBinding.Spec.ClientConfig.Service != nil {
-			//	name = appBinding.Spec.ClientConfig.Service.Name
-			//	namespace = appBinding.Namespace
-			//	hostPort = appBinding.Spec.ClientConfig.Service.Port
-			//}
 			var hostname string
 			if appBinding.Spec.ClientConfig.URL == nil {
 				if appBinding.Spec.ClientConfig.Service != nil {
-					//urlString, err := appBinding.URL()
-					//if err != nil {
-					//	log.Errorln(err)
-					//}
-					//parsedURL, err := pq.ParseURL(urlString)
-					//if err != nil {
-					//	log.Errorln(err)
-					//}
-					//println(":::Parsed URL= ", parsedURL)
-					//parsedURL = strings.ReplaceAll(parsedURL, " sslmode=disable","")
-					//dbinfo = dbinfo +fmt.Sprintln(db.Alias +" = " + parsedURL +" dbname="+db.DbName )
 					hostname = appBinding.Spec.ClientConfig.Service.Name + "." + namespace + ".svc"
 					hostPort := appBinding.Spec.ClientConfig.Service.Port
 					buf.WriteString(fmt.Sprint(db.Alias, "= host=", hostname, " port=", hostPort, " dbname=", db.DatabaseName))
-					//dbinfo = dbinfo +fmt.Sprintln(db.Alias +"x = host=" + hostname +" port="+strconv.Itoa(int(hostPort))+" dbname="+db.DbName )
 				}
 			} else {
-				//Reminder URL should contain host=localhost port=5432
+				// Reminder URL should contain host=localhost port=5432
+				// TODO: Test against RDS
 				buf.WriteString(fmt.Sprint(db.Alias + " = " + *(appBinding.Spec.ClientConfig.URL) + " dbname=" + db.DatabaseName))
 			}
-			if db.UserName != "" {
-				buf.WriteString(fmt.Sprint(" user=", db.UserName))
-			}
-			if db.Password != "" {
-				buf.WriteString(fmt.Sprint(" password=", db.Password))
+			if db.DatabaseSecretRef != nil {
+				secret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(db.DatabaseSecretRef.Name, metav1.GetOptions{})
+				if err == nil {
+					buf.WriteString(fmt.Sprint(" user=", string(secret.Data["username"])))
+					buf.WriteString(fmt.Sprint(" password=", string(secret.Data["password"])))
+				}
 			}
 			buf.WriteRune('\n')
 		}
 	}
 
 	buf.WriteString("\n[pgbouncer]\n")
-	buf.WriteString("logfile = /tmp/pgbouncer.log\n") // TODO: send log to stdout ?
+	buf.WriteString("logfile = /tmp/pgbouncer.log\n")
 	buf.WriteString("pidfile = /tmp/pgbouncer.pid\n")
+
+	if pgbouncer.Spec.TLS != nil {
+		if pgbouncer.Spec.TLS.IssuerRef != nil {
+			//SSL is enabled
+			buf.WriteString("client_tls_sslmode = verify-full\n")
+			buf.WriteString(fmt.Sprintln("client_tls_ca_file = " + filepath.Join(ServingServerCertMountPath, "ca.crt")))
+			buf.WriteString(fmt.Sprintln("client_tls_key_file = " + filepath.Join(ServingServerCertMountPath, "tls.key")))
+			buf.WriteString(fmt.Sprintln("client_tls_cert_file = " + filepath.Join(ServingServerCertMountPath, "tls.crt")))
+		}
+	}
+	upstreamServerCAExists, err := c.isUpStreamServerCAExist(pgbouncer)
+	if err != nil {
+		log.Infoln(err)
+		return "", err
+	}
+	if upstreamServerCAExists {
+		buf.WriteString("server_tls_sslmode = verify-full\n")
+		buf.WriteString(fmt.Sprintln("server_tls_ca_file = " + filepath.Join(UserListMountPath, api.PgBouncerUpstreamServerCA)))
+	}
 
 	secretFileName, err := c.getUserListFileName(pgbouncer)
 	if err != nil {
+		log.Infoln(err)
 		return "", err
-	}
-	if secretFileName == "" {
-		secretFileName = pbAdminData
 	}
 
 	if pgbouncer.Spec.ConnectionPool == nil || (pgbouncer.Spec.ConnectionPool != nil && pgbouncer.Spec.ConnectionPool.AuthType != "any") {
-		buf.WriteString(fmt.Sprintln("auth_file = ", filepath.Join(userListMountPath, secretFileName)))
+		buf.WriteString(fmt.Sprintln("auth_file = ", filepath.Join(UserListMountPath, secretFileName)))
 	}
+	//TODO: what about auth type md5 and or something else?
 	if pgbouncer.Spec.ConnectionPool != nil {
 		err := cfgtpl.Execute(&buf, pgbouncer.Spec.ConnectionPool)
 		if err != nil {
@@ -176,6 +180,7 @@ func (c *Controller) ensureConfigMapFromCRD(pgbouncer *api.PgBouncer) (kutil.Ver
 		}
 		return in
 	})
+
 	return vt, err
 }
 
@@ -185,8 +190,20 @@ func (c *Controller) getUserListFileName(pgbouncer *api.PgBouncer) (string, erro
 	if err != nil {
 		return "", err
 	}
-	if _, exists := defaultSecret.Data[pbUserData]; exists {
+	if data, exists := defaultSecret.Data[pbUserData]; exists && data != nil {
 		return pbUserData, nil
 	}
 	return pbAdminData, nil
+}
+
+func (c *Controller) isUpStreamServerCAExist(pgbouncer *api.PgBouncer) (bool, error) {
+	defaultSecretSpec := c.GetDefaultSecretSpec(pgbouncer)
+	defaultSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(defaultSecretSpec.Name, metav1.GetOptions{})
+	if err != nil {
+		return false, err
+	}
+	if _, exists := defaultSecret.Data[api.PgBouncerUpstreamServerCA]; exists {
+		return true, nil
+	}
+	return false, nil
 }

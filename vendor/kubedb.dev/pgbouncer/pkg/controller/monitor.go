@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package controller
 
 import (
@@ -50,14 +51,6 @@ func (c *Controller) addOrUpdateMonitor(pgbouncer *api.PgBouncer) (kutil.VerbTyp
 		return kutil.VerbUnchanged, err
 	}
 	return agent.CreateOrUpdate(pgbouncer.StatsService(), pgbouncer.Spec.Monitor)
-}
-
-func (c *Controller) deleteMonitor(pgbouncer *api.PgBouncer) (kutil.VerbType, error) {
-	agent, err := c.newMonitorController(pgbouncer)
-	if err != nil {
-		return kutil.VerbUnchanged, err
-	}
-	return agent.Delete(pgbouncer.StatsService())
 }
 
 func (c *Controller) getOldAgent(pgbouncer *api.PgBouncer) mona.Agent {

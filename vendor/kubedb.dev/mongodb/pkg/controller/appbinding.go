@@ -72,22 +72,22 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 
 	var caBundle []byte
 	if (db.Spec.SSLMode == api.SSLModeRequireSSL || db.Spec.SSLMode == api.SSLModePreferSSL) &&
-		db.Spec.CertificateSecret != nil {
-		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(db.Spec.CertificateSecret.SecretName, metav1.GetOptions{})
+		db.Spec.TLS != nil {
+
+		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(db.Name+api.MongoDBExternalClientSecretSuffix, metav1.GetOptions{})
 		if err != nil {
 			return kutil.VerbUnchanged, errors.Wrapf(err, "failed to read certificate secret for MongoDB %s/%s", db.Namespace, db.Name)
 		}
-		v, ok := certSecret.Data[api.MongoTLSCertFileName]
+		v, ok := certSecret.Data[api.TLSCACertFileName]
 		if !ok {
 			return kutil.VerbUnchanged, errors.Errorf("ca.cert is missing in certificate secret for MongoDB %s/%s", db.Namespace, db.Name)
 		}
 		caBundle = v
-
 	}
 
-	secretName := db.Spec.DatabaseSecret.SecretName
+	clientPEMSecretName := db.Spec.DatabaseSecret.SecretName
 	if caBundle != nil {
-		secretName = db.Spec.CertificateSecret.SecretName
+		clientPEMSecretName = db.Name + api.MongoDBExternalClientSecretSuffix + api.MongoDBPEMSecretSuffix
 	}
 
 	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(db.Spec.Version), metav1.GetOptions{})
@@ -110,7 +110,7 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
 
 		in.Spec.Secret = &core.LocalObjectReference{
-			Name: secretName,
+			Name: clientPEMSecretName,
 		}
 
 		if jsonBytes != nil {

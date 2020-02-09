@@ -13,6 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package controller
 
 import (
@@ -25,6 +26,7 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -84,14 +86,12 @@ func (c *Controller) createOrPatchService(pgbouncer *api.PgBouncer) (kutil.VerbT
 		Namespace: pgbouncer.Namespace,
 	}
 
-	owner := metav1.NewControllerRef(pgbouncer, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
-
 	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+		ref := metav1.NewControllerRef(pgbouncer, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
+		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 		in.Labels = pgbouncer.OffshootLabels()
 
 		in.Spec.Selector = pgbouncer.OffshootSelectors()
-		//in.Spec.Selector[NodeRole] = "primary"
 		in.Spec.Ports = upsertServicePort(in, pgbouncer)
 
 		if pgbouncer.Spec.ServiceTemplate.Spec.ClusterIP != "" {
@@ -112,14 +112,6 @@ func (c *Controller) createOrPatchService(pgbouncer *api.PgBouncer) (kutil.VerbT
 	return ok, err
 }
 
-//func upsertServicePort(pgbouncer *api.PgBouncer) []core.ServicePort {
-//	return []core.ServicePort{
-//		{
-//			Name: PgBouncerPortName,
-//			Port: *pgbouncer.Spec.ConnectionPool.ListenPort,
-//		},
-//	}
-//}
 func upsertServicePort(in *core.Service, pgbouncer *api.PgBouncer) []core.ServicePort {
 	if pgbouncer.Spec.ConnectionPool == nil {
 		return ofst.MergeServicePorts(
@@ -150,30 +142,21 @@ func (c *Controller) ensureStatsService(pgbouncer *api.PgBouncer) (kutil.VerbTyp
 		return kutil.VerbUnchanged, err
 	}
 
-	owner := metav1.NewControllerRef(pgbouncer, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
-
-	var statsPort int32
-	if pgbouncer.Spec.Monitor.Prometheus != nil && pgbouncer.Spec.Monitor.Prometheus.Port != 0 {
-		statsPort = pgbouncer.Spec.Monitor.Prometheus.Port
-	} else {
-		statsPort = int32(9090)
-	}
-
 	// reconcile stats service
 	meta := metav1.ObjectMeta{
 		Name:      pgbouncer.StatsService().ServiceName(),
 		Namespace: pgbouncer.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+		ref := metav1.NewControllerRef(pgbouncer, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
+		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 		in.Labels = pgbouncer.StatsServiceLabels()
 		in.Spec.Selector = pgbouncer.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
-				Name:     api.PrometheusExporterPortName,
-				Protocol: core.ProtocolTCP,
-				//Port:       pgbouncer.Spec.Monitor.Prometheus.Port,
-				Port:       statsPort,
+				Name:       api.PrometheusExporterPortName,
+				Protocol:   core.ProtocolTCP,
+				Port:       pgbouncer.Spec.Monitor.Prometheus.Exporter.Port,
 				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
 			},
 		})
@@ -191,4 +174,19 @@ func (c *Controller) ensureStatsService(pgbouncer *api.PgBouncer) (kutil.VerbTyp
 		)
 	}
 	return vt, nil
+}
+
+func (c *Controller) PgBouncerForService(s *core.Service) (*api.PgBouncer, error) {
+	pgbouncers, err := c.pbLister.PgBouncers(s.Namespace).List(labels.Everything())
+	if err != nil {
+		return nil, err
+	}
+
+	for _, pgbouncer := range pgbouncers {
+		if metav1.IsControlledBy(s, pgbouncer) {
+			return pgbouncer, nil
+		}
+	}
+
+	return nil, nil
 }

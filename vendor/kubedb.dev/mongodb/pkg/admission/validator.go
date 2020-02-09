@@ -24,7 +24,6 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
-	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -34,11 +33,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
 type MongoDBValidator struct {
+	ClusterTopology *core_util.Topology
+
 	client      kubernetes.Interface
 	extClient   cs.Interface
 	lock        sync.RWMutex
@@ -102,7 +104,7 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
-				return hookapi.StatusBadRequest(fmt.Errorf(`mongodb "%v/%v" can't be paused. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
+				return hookapi.StatusBadRequest(fmt.Errorf(`mongodb "%v/%v" can't be terminated. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
 			}
 		}
 	default:
@@ -123,15 +125,10 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 			if err != nil {
 				return hookapi.StatusInternalServerError(err)
 			}
-			oldMongoDB.SetDefaults(mgVersion)
+			oldMongoDB.SetDefaults(mgVersion, a.ClusterTopology)
 			// Allow changing Database Secret only if there was no secret have set up yet.
 			if oldMongoDB.Spec.DatabaseSecret == nil {
 				oldMongoDB.Spec.DatabaseSecret = mongodb.Spec.DatabaseSecret
-			}
-
-			// Allow changing Database ReplicaSet Keyfile only if there was no secret have set up yet.
-			if oldMongoDB.Spec.CertificateSecret == nil {
-				oldMongoDB.Spec.CertificateSecret = mongodb.Spec.CertificateSecret
 			}
 
 			if err := validateUpdate(mongodb, oldMongoDB); err != nil {
@@ -220,7 +217,7 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 	if mongodb.Spec.StorageType != api.StorageTypeDurable && mongodb.Spec.StorageType != api.StorageTypeEphemeral {
 		return fmt.Errorf(`'spec.storageType' %s is invalid`, mongodb.Spec.StorageType)
 	}
-	// Validate storage for topology or non-topology
+	// Validate storage for ClusterTopology or non-ClusterTopology
 	if top != nil {
 		if mongodb.Spec.Storage != nil {
 			return fmt.Errorf("doesn't support 'spec.storage' when spec.shardTopology is set")
@@ -249,16 +246,14 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 	}
 
 	if strictValidation {
-		databaseSecret := mongodb.Spec.DatabaseSecret
-		if databaseSecret != nil {
-			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+		if mongodb.Spec.DatabaseSecret != nil {
+			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(mongodb.Spec.DatabaseSecret.SecretName, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
 
-		certSecret := mongodb.Spec.CertificateSecret
-		if certSecret != nil {
-			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(certSecret.SecretName, metav1.GetOptions{}); err != nil {
+		if mongodb.Spec.KeyFile != nil {
+			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(mongodb.Spec.KeyFile.SecretName, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
@@ -280,13 +275,6 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 		}
 	}
 
-	backupScheduleSpec := mongodb.Spec.BackupSchedule
-	if backupScheduleSpec != nil {
-		if err := amv.ValidateBackupSchedule(client, backupScheduleSpec, mongodb.Namespace); err != nil {
-			return err
-		}
-	}
-
 	if mongodb.Spec.UpdateStrategy.Type == "" {
 		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
 	}
@@ -295,8 +283,8 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
-	if mongodb.Spec.StorageType == api.StorageTypeEphemeral && mongodb.Spec.TerminationPolicy == api.TerminationPolicyPause {
-		return fmt.Errorf(`'spec.terminationPolicy: Pause' can not be used for 'Ephemeral' storage`)
+	if mongodb.Spec.StorageType == api.StorageTypeEphemeral && mongodb.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+		return fmt.Errorf(`'spec.terminationPolicy: Halt' can not be used for 'Ephemeral' storage`)
 	}
 
 	monitorSpec := mongodb.Spec.Monitor
@@ -304,70 +292,6 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
 			return err
 		}
-	}
-
-	if err := matchWithDormantDatabase(extClient, mongodb); err != nil {
-		return err
-	}
-	return nil
-}
-
-func matchWithDormantDatabase(extClient cs.Interface, mongodb *api.MongoDB) error {
-	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(mongodb.Namespace).Get(mongodb.Name, metav1.GetOptions{})
-	if err != nil {
-		if !kerr.IsNotFound(err) {
-			return err
-		}
-		return nil
-	}
-
-	// Check DatabaseKind
-	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindMongoDB {
-		return errors.New(fmt.Sprintf(`invalid MongoDB: "%v/%v". Exists DormantDatabase "%v" of different Kind`, mongodb.Namespace, mongodb.Name, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	drmnOriginSpec := dormantDb.Spec.Origin.Spec.MongoDB
-	mgVersion, err := getMongoDBVersion(extClient, drmnOriginSpec.Version)
-	if err != nil {
-		return err
-	}
-	drmnOriginSpec.SetDefaults(mgVersion)
-	originalSpec := mongodb.Spec
-
-	// Skip checking UpdateStrategy
-	drmnOriginSpec.UpdateStrategy = originalSpec.UpdateStrategy
-
-	// Skip checking TerminationPolicy
-	drmnOriginSpec.TerminationPolicy = originalSpec.TerminationPolicy
-
-	// Skip checking Monitoring
-	drmnOriginSpec.Monitor = originalSpec.Monitor
-
-	// Skip Checking BackUP Scheduler
-	drmnOriginSpec.BackupSchedule = originalSpec.BackupSchedule
-
-	if drmnOriginSpec.ShardTopology != nil && originalSpec.ShardTopology != nil {
-		// Skip checking Mongos deployment strategy
-		drmnOriginSpec.ShardTopology.Mongos.Strategy = originalSpec.ShardTopology.Mongos.Strategy
-		// Skip checking ServiceAccountName of ConfigServer
-		drmnOriginSpec.ShardTopology.ConfigServer.PodTemplate.Spec.ServiceAccountName = originalSpec.ShardTopology.ConfigServer.PodTemplate.Spec.ServiceAccountName
-		// Skip checking ServiceAccountName of Mongos
-		drmnOriginSpec.ShardTopology.Mongos.PodTemplate.Spec.ServiceAccountName = originalSpec.ShardTopology.Mongos.PodTemplate.Spec.ServiceAccountName
-		// Skip checking ServiceAccountName of Shard
-		drmnOriginSpec.ShardTopology.Shard.PodTemplate.Spec.ServiceAccountName = originalSpec.ShardTopology.Shard.PodTemplate.Spec.ServiceAccountName
-	}
-
-	if drmnOriginSpec.PodTemplate != nil && originalSpec.PodTemplate != nil {
-		// Skip checking ServiceAccountName
-		drmnOriginSpec.PodTemplate.Spec.ServiceAccountName = originalSpec.PodTemplate.Spec.ServiceAccountName
-	}
-
-	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
-		diff := meta_util.Diff(drmnOriginSpec, &originalSpec)
-		log.Errorf("mongodb spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff)
-		return errors.New(fmt.Sprintf("mongodb spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff))
 	}
 
 	return nil

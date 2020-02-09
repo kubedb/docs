@@ -25,7 +25,6 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
-	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -104,7 +103,7 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
-				return hookapi.StatusBadRequest(fmt.Errorf(`postgres "%v/%v" can't be paused. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
+				return hookapi.StatusBadRequest(fmt.Errorf(`postgres "%v/%v" can't be terminated. To delete, change spec.terminationPolicy`, req.Namespace, req.Name))
 			}
 		}
 	default:
@@ -245,23 +244,16 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	// end <==============
 
 	if postgres.Spec.Init != nil &&
-		postgres.Spec.Init.SnapshotSource != nil &&
+		postgres.Spec.Init.StashRestoreSession != nil &&
 		databaseSecret == nil {
-		return fmt.Errorf("in Snapshot init, 'spec.databaseSecret.secretName' of %v/%v needs to be similar to older database of snapshot %v",
-			postgres.Namespace, postgres.Name, postgres.Spec.Init.SnapshotSource.Name)
+		return fmt.Errorf("in StashRestore init, 'spec.databaseSecret.secretName' of %v/%v needs to be similar to older database of restoresession %v",
+			postgres.Namespace, postgres.Name, postgres.Spec.Init.StashRestoreSession.Name)
 	}
 
 	if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
 		wal := postgres.Spec.Init.PostgresWAL
 		if wal.S3 == nil && wal.GCS == nil && wal.Azure == nil && wal.Swift == nil && wal.Local == nil {
 			return errors.New("no storage provider is configured")
-		}
-	}
-
-	backupScheduleSpec := postgres.Spec.BackupSchedule
-	if backupScheduleSpec != nil {
-		if err := amv.ValidateBackupSchedule(client, backupScheduleSpec, postgres.Namespace); err != nil {
-			return err
 		}
 	}
 
@@ -273,8 +265,8 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
-	if postgres.Spec.StorageType == api.StorageTypeEphemeral && postgres.Spec.TerminationPolicy == api.TerminationPolicyPause {
-		return fmt.Errorf(`'spec.terminationPolicy: Pause' can not be used for 'Ephemeral' storage`)
+	if postgres.Spec.StorageType == api.StorageTypeEphemeral && postgres.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+		return fmt.Errorf(`'spec.terminationPolicy: Halt' can not be used for 'Ephemeral' storage`)
 	}
 
 	monitorSpec := postgres.Spec.Monitor
@@ -282,56 +274,6 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
 			return err
 		}
-	}
-
-	if err := matchWithDormantDatabase(extClient, postgres); err != nil {
-		return err
-	}
-	return nil
-}
-
-func matchWithDormantDatabase(extClient cs.Interface, postgres *api.Postgres) error {
-	// Check if DormantDatabase exists or not
-	dormantDb, err := extClient.KubedbV1alpha1().DormantDatabases(postgres.Namespace).Get(postgres.Name, metav1.GetOptions{})
-	if err != nil {
-		if !kerr.IsNotFound(err) {
-			return err
-		}
-		return nil
-	}
-
-	// Check DatabaseKind
-	if value, _ := meta_util.GetStringValue(dormantDb.Labels, api.LabelDatabaseKind); value != api.ResourceKindPostgres {
-		return errors.New(fmt.Sprintf(`invalid Postgres: "%v/%v". Exists DormantDatabase "%v/%v" of different Kind`, postgres.Namespace, postgres.Name, dormantDb.Namespace, dormantDb.Name))
-	}
-
-	// Check Origin Spec
-	drmnOriginSpec := dormantDb.Spec.Origin.Spec.Postgres
-	drmnOriginSpec.SetDefaults()
-	originalSpec := postgres.Spec
-
-	// Skip checking UpdateStrategy
-	drmnOriginSpec.UpdateStrategy = originalSpec.UpdateStrategy
-
-	// Skip checking ServiceAccountName
-	drmnOriginSpec.PodTemplate.Spec.ServiceAccountName = originalSpec.PodTemplate.Spec.ServiceAccountName
-
-	// Skip checking TerminationPolicy
-	drmnOriginSpec.TerminationPolicy = originalSpec.TerminationPolicy
-
-	// Skip checking Monitoring
-	drmnOriginSpec.Monitor = originalSpec.Monitor
-
-	// Skip Checking Backup Scheduler
-	drmnOriginSpec.BackupSchedule = originalSpec.BackupSchedule
-
-	// Skip Checking LeaderElectionConfigs
-	drmnOriginSpec.LeaderElection = originalSpec.LeaderElection
-
-	if !meta_util.Equal(drmnOriginSpec, &originalSpec) {
-		diff := meta_util.Diff(drmnOriginSpec, &originalSpec)
-		log.Errorf("postgres spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff)
-		return errors.New(fmt.Sprintf("postgres spec mismatches with OriginSpec in DormantDatabases. Diff: %v", diff))
 	}
 
 	return nil
@@ -373,7 +315,6 @@ var preconditionSpecFields = []string{
 	"spec.storageType",
 	"spec.storage",
 	"spec.init",
-	"spec.podTemplate.spec.nodeSelector",
 }
 
 func preconditionFailedError() error {

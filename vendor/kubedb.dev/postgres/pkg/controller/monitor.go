@@ -52,12 +52,13 @@ func (c *Controller) addOrUpdateMonitor(postgres *api.Postgres) (kutil.VerbType,
 	return agent.CreateOrUpdate(postgres.StatsService(), postgres.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(postgres *api.Postgres) (kutil.VerbType, error) {
+func (c *Controller) deleteMonitor(postgres *api.Postgres) error {
 	agent, err := c.newMonitorController(postgres)
 	if err != nil {
-		return kutil.VerbUnchanged, err
+		return err
 	}
-	return agent.Delete(postgres.StatsService())
+	_, err = agent.Delete(postgres.StatsService())
+	return err
 }
 
 func (c *Controller) getOldAgent(postgres *api.Postgres) mona.Agent {

@@ -24,8 +24,6 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// DormantDatabases returns a DormantDatabaseInformer.
-	DormantDatabases() DormantDatabaseInformer
 	// Elasticsearches returns a ElasticsearchInformer.
 	Elasticsearches() ElasticsearchInformer
 	// Etcds returns a EtcdInformer.
@@ -48,8 +46,6 @@ type Interface interface {
 	ProxySQLs() ProxySQLInformer
 	// Redises returns a RedisInformer.
 	Redises() RedisInformer
-	// Snapshots returns a SnapshotInformer.
-	Snapshots() SnapshotInformer
 }
 
 type version struct {
@@ -61,11 +57,6 @@ type version struct {
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) Interface {
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
-}
-
-// DormantDatabases returns a DormantDatabaseInformer.
-func (v *version) DormantDatabases() DormantDatabaseInformer {
-	return &dormantDatabaseInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Elasticsearches returns a ElasticsearchInformer.
@@ -121,9 +112,4 @@ func (v *version) ProxySQLs() ProxySQLInformer {
 // Redises returns a RedisInformer.
 func (v *version) Redises() RedisInformer {
 	return &redisInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// Snapshots returns a SnapshotInformer.
-func (v *version) Snapshots() SnapshotInformer {
-	return &snapshotInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

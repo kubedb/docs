@@ -52,12 +52,13 @@ func (c *Controller) addOrUpdateMonitor(mongodb *api.MongoDB) (kutil.VerbType, e
 	return agent.CreateOrUpdate(mongodb.StatsService(), mongodb.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(mongodb *api.MongoDB) (kutil.VerbType, error) {
+func (c *Controller) deleteMonitor(mongodb *api.MongoDB) error {
 	agent, err := c.newMonitorController(mongodb)
 	if err != nil {
-		return kutil.VerbUnchanged, err
+		return err
 	}
-	return agent.Delete(mongodb.StatsService())
+	_, err = agent.Delete(mongodb.StatsService())
+	return err
 }
 
 func (c *Controller) getOldAgent(mongodb *api.MongoDB) mona.Agent {

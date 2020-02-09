@@ -36,7 +36,7 @@ type Controller struct {
 	*amc.Controller
 	amc.Config
 	// SnapshotDoer interface
-	snapshotter amc.Snapshotter
+	snapshotter amc.DBHelper
 	// tweakListOptions for watcher
 	tweakListOptions func(*metav1.ListOptions)
 	// Event Recorder
@@ -48,12 +48,11 @@ type Controller struct {
 // NewController creates a new Controller
 func NewController(
 	controller *amc.Controller,
-	snapshotter amc.Snapshotter,
+	snapshotter amc.DBHelper,
 	config amc.Config,
 	tweakListOptions func(*metav1.ListOptions),
 	eventRecorder record.EventRecorder,
 ) *Controller {
-	// return new DormantDatabase Controller
 	return &Controller{
 		Controller:       controller,
 		snapshotter:      snapshotter,

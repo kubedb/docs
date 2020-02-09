@@ -65,10 +65,23 @@ func (c *Controller) runRedis(key string) error {
 			if err != nil {
 				return err
 			}
-			if err := c.create(redis); err != nil {
-				log.Errorln(err)
-				c.pushFailureEvent(redis, err.Error())
-				return err
+
+			if redis.Spec.Paused {
+				return nil
+			}
+
+			if redis.Spec.Halted {
+				if err := c.halt(redis); err != nil {
+					log.Errorln(err)
+					c.pushFailureEvent(redis, err.Error())
+					return err
+				}
+			} else {
+				if err := c.create(redis); err != nil {
+					log.Errorln(err)
+					c.pushFailureEvent(redis, err.Error())
+					return err
+				}
 			}
 		}
 	}

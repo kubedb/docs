@@ -31,11 +31,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
-	storage "kmodules.xyz/objectstore-api/osm"
 )
 
 func (c *Controller) create(postgres *api.Postgres) error {
@@ -47,14 +47,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 			err.Error(),
 		)
 		log.Errorln(err)
-		// stop Scheduler in case there is any.
-		c.cronController.StopBackupScheduling(postgres.ObjectMeta)
 		return nil // user error so just record error and don't retry.
-	}
-
-	// Delete Matching DormantDatabase if exists any
-	if err := c.deleteMatchingDormantDatabase(postgres); err != nil {
-		return fmt.Errorf(`failed to delete dormant Database : "%v/%v". Reason: %v`, postgres.Namespace, postgres.Name, err)
 	}
 
 	if postgres.Status.Phase == "" {
@@ -114,8 +107,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	if _, err := meta_util.GetString(postgres.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		postgres.Spec.Init != nil &&
-		(postgres.Spec.Init.SnapshotSource != nil || postgres.Spec.Init.StashRestoreSession != nil) {
+		postgres.Spec.Init != nil && postgres.Spec.Init.StashRestoreSession != nil {
 
 		if postgres.Status.Phase == api.DatabasePhaseInitializing {
 			return nil
@@ -132,13 +124,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		postgres.Status = pg.Status
 
 		init := postgres.Spec.Init
-		if init.SnapshotSource != nil {
-			err = c.initializeFromSnapshot(postgres)
-			if err != nil {
-				return fmt.Errorf("failed to complete initialization. Reason: %v", err)
-			}
-			return err
-		} else if init.StashRestoreSession != nil {
+		if init.StashRestoreSession != nil {
 			log.Debugf("Postgres %v/%v is waiting for restoreSession to be succeeded", postgres.Namespace, postgres.Name)
 			return nil
 		}
@@ -153,18 +139,6 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		return err
 	}
 	postgres.Status = pg.Status
-
-	// Ensure Schedule backup
-	if err := c.ensureBackupScheduler(postgres); err != nil {
-		c.recorder.Eventf(
-			postgres,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToSchedule,
-			err.Error(),
-		)
-		log.Errorln(err)
-		// Don't return error. Continue processing rest.
-	}
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(postgres); err != nil {
@@ -214,67 +188,23 @@ func (c *Controller) ensurePostgresNode(postgres *api.Postgres, postgresVersion 
 	return vt, nil
 }
 
-func (c *Controller) ensureBackupScheduler(postgres *api.Postgres) error {
-	postgresVersion, err := c.ExtClient.CatalogV1alpha1().PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return fmt.Errorf("failed to get PostgresVersion %v for %v/%v. Reason: %v", postgres.Spec.Version, postgres.Namespace, postgres.Name, err)
+func (c *Controller) halt(db *api.Postgres) error {
+	if db.Spec.Halted && db.Spec.TerminationPolicy != api.TerminationPolicyHalt {
+		return errors.New("can't halt db. 'spec.terminationPolicy' is not 'Halt'")
 	}
-	// Setup Schedule backup
-	if postgres.Spec.BackupSchedule != nil {
-		err := c.cronController.ScheduleBackup(postgres, postgres.Spec.BackupSchedule, postgresVersion)
-		if err != nil {
-			return fmt.Errorf("failed to schedule snapshot. Reason: %v", err)
-		}
-	} else {
-		c.cronController.StopBackupScheduling(postgres.ObjectMeta)
-	}
-	return nil
-}
-
-func (c *Controller) initializeFromSnapshot(postgres *api.Postgres) error {
-	snapshotSource := postgres.Spec.Init.SnapshotSource
-	jobName := fmt.Sprintf("%s-%s", api.DatabaseNamePrefix, snapshotSource.Name)
-	if _, err := c.Client.BatchV1().Jobs(snapshotSource.Namespace).Get(jobName, metav1.GetOptions{}); err != nil {
-		if !kerr.IsNotFound(err) {
-			return err
-		}
-	} else {
-		return nil
-	}
-
-	// Event for notification that kubernetes objects are creating
-	c.recorder.Eventf(
-		postgres,
-		core.EventTypeNormal,
-		eventer.EventReasonInitializing,
-		`Initializing from Snapshot: "%v"`,
-		snapshotSource.Name,
-	)
-
-	namespace := snapshotSource.Namespace
-	if namespace == "" {
-		namespace = postgres.Namespace
-	}
-	snapshot, err := c.ExtClient.KubedbV1alpha1().Snapshots(namespace).Get(snapshotSource.Name, metav1.GetOptions{})
-	if err != nil {
+	log.Infof("Halting Postgres %v/%v", db.Namespace, db.Name)
+	if err := c.haltDatabase(db); err != nil {
 		return err
 	}
-
-	secret, err := storage.NewOSMSecret(c.Client, snapshot.OSMSecretName(), snapshot.Namespace, snapshot.Spec.Backend)
-	if err != nil {
+	if err := c.waitUntilPaused(db); err != nil {
 		return err
 	}
-	_, err = c.Client.CoreV1().Secrets(secret.Namespace).Create(secret)
-	if err != nil {
-		return err
-	}
-
-	job, err := c.createRestoreJob(postgres, snapshot)
-	if err != nil {
-		return err
-	}
-
-	if err := c.SetJobOwnerReference(snapshot, job); err != nil {
+	log.Infof("update status of Postgres %v/%v to Halted.", db.Namespace, db.Name)
+	if _, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), db, func(in *api.PostgresStatus) *api.PostgresStatus {
+		in.Phase = api.DatabasePhaseHalted
+		in.ObservedGeneration = db.Generation
+		return in
+	}); err != nil {
 		return err
 	}
 	return nil
@@ -283,29 +213,11 @@ func (c *Controller) initializeFromSnapshot(postgres *api.Postgres) error {
 func (c *Controller) terminate(postgres *api.Postgres) error {
 	owner := metav1.NewControllerRef(postgres, api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres))
 
-	// If TerminationPolicy is "pause", keep everything (ie, PVCs,Secrets,Snapshots) intact.
-	// In operator, create dormantdatabase
-	if postgres.Spec.TerminationPolicy == api.TerminationPolicyPause {
+	// If TerminationPolicy is "halt", keep PVCs and Secrets intact.
+	// TerminationPolicyPause is deprecated and will be removed in future.
+	if postgres.Spec.TerminationPolicy == api.TerminationPolicyHalt || postgres.Spec.TerminationPolicy == api.TerminationPolicyPause {
 		if err := c.removeOwnerReferenceFromOffshoots(postgres); err != nil {
 			return err
-		}
-
-		if _, err := c.createDormantDatabase(postgres); err != nil {
-			if kerr.IsAlreadyExists(err) {
-				// if already exists, check if it is database of another Kind and return error in that case.
-				// If the Kind is same, we can safely assume that the DormantDB was not deleted in before,
-				// Probably because, User is more faster (create-delete-create-again-delete...) than operator!
-				// So reuse that DormantDB!
-				ddb, err := c.ExtClient.KubedbV1alpha1().DormantDatabases(postgres.Namespace).Get(postgres.Name, metav1.GetOptions{})
-				if err != nil {
-					return err
-				}
-				if val, _ := meta_util.GetStringValue(ddb.Labels, api.LabelDatabaseKind); val != api.ResourceKindPostgres {
-					return fmt.Errorf(`DormantDatabase "%s/%s" of kind %v already exists`, postgres.Namespace, postgres.Name, val)
-				}
-			} else {
-				return fmt.Errorf(`failed to create DormantDatabase: "%s/%s". Reason: %v`, postgres.Namespace, postgres.Name, err)
-			}
 		}
 	} else {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots,WAL-data).
@@ -316,10 +228,8 @@ func (c *Controller) terminate(postgres *api.Postgres) error {
 		}
 	}
 
-	c.cronController.StopBackupScheduling(postgres.ObjectMeta)
-
 	if postgres.Spec.Monitor != nil {
-		if _, err := c.deleteMonitor(postgres); err != nil {
+		if err := c.deleteMonitor(postgres); err != nil {
 			log.Errorln(err)
 			return nil
 		}
@@ -333,31 +243,38 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, owner 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
 	if postgres.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		if err := dynamic_util.EnsureOwnerReferenceForSelector(
-			c.DynamicClient,
-			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
-			postgres.Namespace,
-			selector,
-			owner); err != nil {
-			return err
+		// at first, pause the database transactions by deleting the statefulsets. otherwise wiping out may not be accurate.
+		// because, while operator is trying to delete the wal data, the database pod may still trying to push new data.
+		policy := metav1.DeletePropagationForeground
+		if err := c.Client.
+			AppsV1().
+			StatefulSets(postgres.Namespace).
+			DeleteCollection(
+				&metav1.DeleteOptions{PropagationPolicy: &policy},
+				metav1.ListOptions{LabelSelector: selector.String()},
+			); err != nil && !kerr.IsNotFound(err) {
+			return errors.Wrap(err, "error in deletion of statefulsets")
+		}
+		// Let's give statefulsets some time to breath and then be deleted.
+		if err := wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
+			podList, err := c.Client.CoreV1().Pods(postgres.Namespace).List(metav1.ListOptions{
+				LabelSelector: selector.String(),
+			})
+			return len(podList.Items) == 0, err
+		}); err != nil {
+			fmt.Printf("got error while waiting for db pods to be deleted: %v. coninuing with further deletion steps.\n", err.Error())
 		}
 		if err := c.wipeOutDatabase(postgres.ObjectMeta, postgres.Spec.GetSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 		// if wal archiver was configured, remove wal data from backend
 		if postgres.Spec.Archiver != nil {
-			return c.wipeOutWalData(postgres.ObjectMeta, &postgres.Spec)
+			if err := c.wipeOutWalData(postgres.ObjectMeta, &postgres.Spec); err != nil {
+				return err
+			}
 		}
 	} else {
-		// Make sure snapshot and secret's ownerreference is removed.
-		if err := dynamic_util.RemoveOwnerReferenceForSelector(
-			c.DynamicClient,
-			api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
-			postgres.Namespace,
-			selector,
-			postgres); err != nil {
-			return err
-		}
+		// Make sure secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
@@ -380,14 +297,6 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *api.Postgres) e
 	// First, Get LabelSelector for Other Components
 	labelSelector := labels.SelectorFromSet(postgres.OffshootSelectors())
 
-	if err := dynamic_util.RemoveOwnerReferenceForSelector(
-		c.DynamicClient,
-		api.SchemeGroupVersion.WithResource(api.ResourcePluralSnapshot),
-		postgres.Namespace,
-		labelSelector,
-		postgres); err != nil {
-		return err
-	}
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
