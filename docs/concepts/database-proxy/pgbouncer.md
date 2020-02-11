@@ -38,6 +38,8 @@ spec:
     databaseName: "postgres"
     databaseRef:
       name: "quick-postgres"
+    databaseSecretRef:
+      - "one-specific-user"
   - alias: "tmpdb"
     databaseName: "mydb"
     databaseRef:
@@ -82,8 +84,7 @@ spec:
 - `spec.databases.alias`:  specifies an alias for the target database located in a postgres server specified by an appbinding.
 - `spec.databases.databaseName`:  specifies the name of the target database.
 - `spec.databases.databaseRef`:  specifies the name and namespace of the AppBinding that contains the path to a PostgreSQL server where the target database can be found.
-- `spec.databases.username` (optional):  specifies the user with whom this particular database should have an exclusive connection. By default, if this field is left empty, all users will be able to use the database.
-- `spec.databases.password` (optional):  specifies the password of the user with whom this perticular database should have an exclusive connection.
+- `spec.databases.databaseSecretRef` (optional): points to a secret that contains the credentials (username and password) of an existing user of this database. It is used to bind a single user to this specific database connection..
 
 ConnectionPool is used to configure pgbouncer connection-pool. All the fields here are accompanied by default values and can be left unspecified if no customisation is required by the user.
 
