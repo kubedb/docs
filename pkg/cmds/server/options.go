@@ -32,11 +32,11 @@ import (
 	coreinformers "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/kubernetes"
 	corelisters "k8s.io/client-go/listers/core/v1"
-	appcatinformers "kmodules.xyz/custom-resources/client/informers/externalversions"
 	"k8s.io/client-go/tools/cache"
 	"kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/cli"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
+	appcatinformers "kmodules.xyz/custom-resources/client/informers/externalversions"
 	scs "stash.appscode.dev/stash/client/clientset/versioned"
 	stashInformers "stash.appscode.dev/stash/client/informers/externalversions"
 )
