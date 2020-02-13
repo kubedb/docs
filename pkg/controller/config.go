@@ -89,6 +89,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.AppCatalogClient,
 		c.PromClient,
 		c.Config,
+		topology,
 	)
 
 	ctrl.RSInformer = restoresession.NewController(ctrl.Controller, nil, ctrl.Config, nil, recorder).InitInformer()

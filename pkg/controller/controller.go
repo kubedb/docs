@@ -38,6 +38,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
+	core_util "kmodules.xyz/client-go/core/v1"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	scs "stash.appscode.dev/stash/client/clientset/versioned"
@@ -70,6 +71,7 @@ func New(
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	opt amc.Config,
+	topology *core_util.Topology,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
@@ -80,6 +82,7 @@ func New(
 			StashClient:      stashClient,
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
+			ClusterTopology:  topology,
 		},
 		Config:     opt,
 		promClient: promClient,
