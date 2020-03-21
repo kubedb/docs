@@ -1,5 +1,20 @@
 # Change Log
 
+## [Unreleased](https://github.com/kubedb/operator/tree/HEAD)
+
+[Full Changelog](https://github.com/kubedb/operator/compare/v0.13.0-rc.0...HEAD)
+
+**Merged pull requests:**
+
+- Initialize topology for MonogDB webhooks [\#243](https://github.com/kubedb/operator/pull/243) ([tamalsaha](https://github.com/tamalsaha))
+- Fix nil pointer exception [\#242](https://github.com/kubedb/operator/pull/242) ([tamalsaha](https://github.com/tamalsaha))
+- Add license scan report and status [\#241](https://github.com/kubedb/operator/pull/241) ([fossabot](https://github.com/fossabot))
+- Update client-go to kubernetes-1.16.3 [\#239](https://github.com/kubedb/operator/pull/239) ([tamalsaha](https://github.com/tamalsaha))
+- Always create RBAC resources [\#238](https://github.com/kubedb/operator/pull/238) ([tamalsaha](https://github.com/tamalsaha))
+- Update operator dependencies [\#237](https://github.com/kubedb/operator/pull/237) ([tamalsaha](https://github.com/tamalsaha))
+- Bundle PgBouncer operator [\#236](https://github.com/kubedb/operator/pull/236) ([tamalsaha](https://github.com/tamalsaha))
+- Fix linter errors [\#235](https://github.com/kubedb/operator/pull/235) ([the-redback](https://github.com/the-redback))
+
 ## [v0.13.0-rc.0](https://github.com/kubedb/operator/tree/v0.13.0-rc.0) (2019-08-22)
 [Full Changelog](https://github.com/kubedb/operator/compare/0.12.0...v0.13.0-rc.0)
 
