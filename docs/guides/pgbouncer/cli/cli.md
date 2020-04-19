@@ -305,30 +305,30 @@ Various fields of a KubeDb object can't be edited using `edit` command. The foll
 
 ### How to Delete Objects
 
-`kubedb delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a PgBouncer `pgbouncer-dev` in default namespace
+`kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a PgBouncer `pgbouncer-dev` in default namespace
 
 ```console
-$ kubedb delete pgbouncer pgbouncer-dev
+$ kubectl delete pgbouncer pgbouncer-dev
 pgbouncer "pgbouncer-dev" deleted
 ```
 
 You can also use YAML files to delete objects. The following command will delete a PgBouncer using the type and name specified in `pgbouncer.yaml`.
 
 ```console
-$ kubedb delete -f pgbouncer.yaml
+$ kubectl delete -f pgbouncer.yaml
 PgBouncer "pgbouncer-dev" deleted
 ```
 
-`kubedb delete` command also takes input from `stdin`.
+`kubectl delete` command also takes input from `stdin`.
 
 ```console
-cat pgbouncer.yaml | kubedb delete -f -
+cat pgbouncer.yaml | kubectl delete -f -
 ```
 
 To delete objects with matching labels, use `--selector` flag. The following command will delete PgBouncers with label `pgbouncer.kubedb.com/name=pgbouncer-demo`.
 
 ```console
-kubedb delete pgbouncer -l pgbouncer.kubedb.com/name=pgbouncer-demo
+kubectl delete pgbouncer -l pgbouncer.kubedb.com/name=pgbouncer-demo
 ```
 
 To learn about various options of `delete` command, please visit [here](/docs/reference/kubedb_delete.md).

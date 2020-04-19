@@ -321,7 +321,7 @@ bye
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```console
-$ kubedb delete mg mgo-quickstart -n demo
+$ kubectl delete mg mgo-quickstart -n demo
 Error from server (BadRequest): admission webhook "mongodb.validators.kubedb.com" denied the request: mongodb "mgo-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
@@ -334,7 +334,7 @@ Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/mongodb
 When [TerminationPolicy](/docs/concepts/databases/mongodb.md#specterminationpolicy) is set to `Pause`, it will pause the MongoDB database instead of deleting it. Here, If you delete the MongoDB object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `mgo-quickstart` MongoDB database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```console
-$ kubedb delete mg mgo-quickstart -n demo
+$ kubectl delete mg mgo-quickstart -n demo
 mongodb.kubedb.com "mgo-quickstart" deleted
 
 $ kubectl get drmn -n demo mgo-quickstart

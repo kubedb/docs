@@ -245,7 +245,7 @@ OK
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```console
-$ kubedb delete rd redis-quickstart -n demo
+$ kubectl delete rd redis-quickstart -n demo
 Error from server (BadRequest): admission webhook "redis.validators.kubedb.com" denied the request: redis "redis-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
@@ -258,7 +258,7 @@ Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/redis.m
 When [TerminationPolicy](/docs/concepts/databases/redis.md#specterminationpolicy) is set to `Pause`, it will pause the Redis server instead of deleting it. Here, If you delete the Redis object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `redis-quickstart` Redis server has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```console
-$ kubedb delete rd redis-quickstart -n demo
+$ kubectl delete rd redis-quickstart -n demo
 redis.kubedb.com "redis-quickstart" deleted
 
 $ kubectl get drmn -n demo redis-quickstart
@@ -369,7 +369,7 @@ If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
 ```console
-$ kubedb delete drmn redis-quickstart -n demo
+$ kubectl delete drmn redis-quickstart -n demo
 dormantdatabase.kubedb.com "redis-quickstart" deleted
 ```
 

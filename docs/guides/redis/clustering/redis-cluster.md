@@ -390,7 +390,7 @@ status:
   ...
   phase: Running
 
-$ kubedb delete rd redis-cluster -n demo
+$ kubectl delete rd redis-cluster -n demo
 redis.kubedb.com "redis-cluster" deleted
 ```
 

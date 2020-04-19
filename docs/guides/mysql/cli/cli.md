@@ -306,30 +306,30 @@ To learn about various options of `edit` command, please visit [here](/docs/refe
 
 ### How to Delete Objects
 
-`kubedb delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a MySQL `mysql-dev` in default namespace
+`kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a MySQL `mysql-dev` in default namespace
 
 ```console
-$ kubedb delete mysql mysql-dev
+$ kubectl delete mysql mysql-dev
 mysql.kubedb.com "mysql-dev" deleted
 ```
 
 You can also use YAML files to delete objects. The following command will delete a mysql using the type and name specified in `mysql.yaml`.
 
 ```console
-$ kubedb delete -f mysql-demo.yaml
+$ kubectl delete -f mysql-demo.yaml
 mysql.kubedb.com "mysql-dev" deleted
 ```
 
-`kubedb delete` command also takes input from `stdin`.
+`kubectl delete` command also takes input from `stdin`.
 
 ```console
-cat mysql-demo.yaml | kubedb delete -f -
+cat mysql-demo.yaml | kubectl delete -f -
 ```
 
 To delete database with matching labels, use `--selector` flag. The following command will delete mysql with label `mysql.kubedb.com/name=mysql-demo`.
 
 ```console
-kubedb delete mysql -l mysql.kubedb.com/name=mysql-demo
+kubectl delete mysql -l mysql.kubedb.com/name=mysql-demo
 ```
 
 To learn about various options of `delete` command, please visit [here](/docs/reference/kubedb_delete.md).

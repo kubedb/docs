@@ -816,7 +816,7 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 Since the MongoDB object created in this tutorial has `spec.terminationPolicy` set to `Pause` (default), if you delete the MongoDB object, KubeDB operator will create a dormant database while deleting the StatefulSet and its pods but leaves the PVCs unchanged.
 
 ```console
-$ kubedb delete mg mongo-sh -n demo
+$ kubectl delete mg mongo-sh -n demo
 mongodb.kubedb.com "mongo-sh" deleted
 
 $ kubectl get drmn -n demo mongo-sh
@@ -1073,7 +1073,7 @@ mongos> sh.status()
 You can wipe out a DormantDatabase while deleting the object by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `MongoDB` database (i.e, PVCs, Secrets, Snapshots). It will also delete snapshot data stored in the Cloud Storage buckets.
 
 ```console
-$ kubedb delete mg mongo-sh -n demo
+$ kubectl delete mg mongo-sh -n demo
 mongodb.kubedb.com "mongo-sh" deleted
 ```
 

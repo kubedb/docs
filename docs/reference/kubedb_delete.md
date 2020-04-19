@@ -8,7 +8,7 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubedb delete
+## kubectl delete
 
 Delete resources by filenames, stdin, resources and names, or by resources and label selector
 
@@ -19,23 +19,23 @@ Delete resources by filenames, stdin, resources and names, or by resources and l
  Note that the delete command does NOT do resource version checks
 
 ```
-kubedb delete ([-f FILENAME] | TYPE [(NAME | -l label | --all)])
+kubectl delete ([-f FILENAME] | TYPE [(NAME | -l label | --all)])
 ```
 
 ### Examples
 
 ```
   # Delete an Elasticsearch using the type and name specified in elastic.json.
-  kubedb delete -f ./elastic.json
+  kubectl delete -f ./elastic.json
   
   # Delete a postgres based on the type and name in the JSON passed into stdin.
-  cat postgres.json | kubedb delete -f -
+  cat postgres.json | kubectl delete -f -
   
   # Delete elasticsearch with label elasticsearch.kubedb.com/name=elasticsearch-demo.
-  kubedb delete elasticsearch -l elasticsearch.kubedb.com/name=elasticsearch-demo
+  kubectl delete elasticsearch -l elasticsearch.kubedb.com/name=elasticsearch-demo
   
   # Delete all mysql objects
-  kubedb delete mysql --all
+  kubectl delete mysql --all
 ```
 
 ### Options

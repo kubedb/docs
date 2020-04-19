@@ -262,30 +262,30 @@ To learn about various options of `edit` command, please visit [here](/docs/refe
 
 ### How to Delete Objects
 
-`kubedb delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Memcached `memcached-dev` in default namespace
+`kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Memcached `memcached-dev` in default namespace
 
 ```console
-$ kubedb delete memcached memcached-dev
+$ kubectl delete memcached memcached-dev
 memcached.kubedb.com "memcached-dev" deleted
 ```
 
 You can also use YAML files to delete objects. The following command will delete a memcached using the type and name specified in `memcached.yaml`.
 
 ```console
-$ kubedb delete -f memcached-demo.yaml
+$ kubectl delete -f memcached-demo.yaml
 memcached.kubedb.com "memcached-dev" deleted
 ```
 
-`kubedb delete` command also takes input from `stdin`.
+`kubectl delete` command also takes input from `stdin`.
 
 ```console
-cat memcached-demo.yaml | kubedb delete -f -
+cat memcached-demo.yaml | kubectl delete -f -
 ```
 
 To delete database with matching labels, use `--selector` flag. The following command will delete memcached with label `memcached.kubedb.com/name=memcached-demo`.
 
 ```console
-kubedb delete memcached -l memcached.kubedb.com/name=memcached-demo
+kubectl delete memcached -l memcached.kubedb.com/name=memcached-demo
 ```
 
 To learn about various options of `delete` command, please visit [here](/docs/reference/kubedb_delete.md).

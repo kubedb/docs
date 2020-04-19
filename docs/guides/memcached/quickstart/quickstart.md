@@ -225,7 +225,7 @@ quit
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```console
-$ kubedb delete mc memcd-quickstart -n demo
+$ kubectl delete mc memcd-quickstart -n demo
 Error from server (BadRequest): admission webhook "memcached.validators.kubedb.com" denied the request: memcached "memcd-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
@@ -238,7 +238,7 @@ Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/memcach
 When [TerminationPolicy](/docs/concepts/databases/memcached.md#specterminationpolicy) is set to `Pause`, it will pause the Memcached server instead of deleting it. Here, you delete the Memcached object, KubeDB operator will delete the Deployment and its pods. In KubeDB parlance, we say that `memcd-quickstart` Memcached server has entered into dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```console
-$ kubedb delete mc memcd-quickstart -n demo
+$ kubectl delete mc memcd-quickstart -n demo
 memcached.kubedb.com "memcd-quickstart" deleted
 
 $ kubectl get drmn -n demo memcd-quickstart
@@ -322,7 +322,7 @@ memcached.kubedb.com/memcd-quickstart created
 You can wipe out a DormantDatabase while deleting the objet by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `Memcached` database.
 
 ```yaml
-$ kubedb delete mc memcd-quickstart -n demo
+$ kubectl delete mc memcd-quickstart -n demo
 memcached "memcd-quickstart" deleted
 
 $ kubectl edit drmn -n demo memcd-quickstart
@@ -347,7 +347,7 @@ If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
 ```console
-$ kubedb delete drmn memcd-quickstart -n demo
+$ kubectl delete drmn memcd-quickstart -n demo
 dormantdatabase "memcd-quickstart" deleted
 ```
 

@@ -289,7 +289,7 @@ Now, open your browser and go to the following URL: _http://{minikube-ip}:{myadm
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```console
-$ kubedb delete my mysql-quickstart -n demo
+$ kubectl delete my mysql-quickstart -n demo
 Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" denied the request: mysql "mysql-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
@@ -302,7 +302,7 @@ Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/mysql.m
 When [TerminationPolicy](/docs/concepts/databases/mysql.md#specterminationpolicy) is set to `Pause`, it will pause the MySQL database instead of deleting it. Here, If you delete the MySQL object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `mgo-quickstart` MySQL database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```console
-$ kubedb delete my mysql-quickstart -n demo
+$ kubectl delete my mysql-quickstart -n demo
 mysql.kubedb.com "mysql-quickstart" deleted
 
 $ kubectl get drmn -n demo mysql-quickstart
@@ -393,7 +393,7 @@ Now, if you exec into the database, you can see that the datas are intact.
 You can wipe out a DormantDatabase while deleting the objet by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `MySQL` database (i.e, PVCs, Secrets, Snapshots). It will also delete snapshot data stored in the Cloud Storage buckets.
 
 ```yaml
-$ kubedb delete my mysql-quickstart -n demo
+$ kubectl delete my mysql-quickstart -n demo
 mysql.kubedb.com "mysql-quickstart" deleted
 
 $ kubectl edit drmn -n demo mysql-quickstart
@@ -418,7 +418,7 @@ If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
 ```console
-$ kubedb delete drmn mysql-quickstart -n demo
+$ kubectl delete drmn mysql-quickstart -n demo
 dormantdatabase.kubedb.com "mysql-quickstart" deleted
 ```
 

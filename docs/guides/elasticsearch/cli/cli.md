@@ -392,30 +392,30 @@ To learn about various options of `edit` command, please visit [here](/docs/refe
 
 ### How to Delete Objects
 
-`kubedb delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete an Elasticsearch `elasticsearch-dev` in default namespace
+`kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete an Elasticsearch `elasticsearch-dev` in default namespace
 
 ```console
-$ kubedb delete elasticsearch elasticsearch-demo
+$ kubectl delete elasticsearch elasticsearch-demo
 elasticsearch.kubedb.com "elasticsearch-demo" deleted
 ```
 
 You can also use YAML files to delete objects. The following command will delete an Elasticsearch using the type and name specified in `elasticsearch.yaml`.
 
 ```console
-$ kubedb delete -f elasticsearch-demo.yaml
+$ kubectl delete -f elasticsearch-demo.yaml
 elasticsearch.kubedb.com "elasticsearch-demo" deleted
 ```
 
-`kubedb delete` command also takes input from `stdin`.
+`kubectl delete` command also takes input from `stdin`.
 
 ```console
-cat elasticsearch.yaml | kubedb delete -f -
+cat elasticsearch.yaml | kubectl delete -f -
 ```
 
 To delete database with matching labels, use `--selector` flag. The following command will delete elasticsearch with label `elasticsearch.kubedb.com/name=elasticsearch-demo`.
 
 ```console
-$ kubedb delete elasticsearch -l elasticsearch.kubedb.com/name=elasticsearch-demo
+$ kubectl delete elasticsearch -l elasticsearch.kubedb.com/name=elasticsearch-demo
 ```
 
 To learn about various options of `delete` command, please visit [here](/docs/reference/kubedb_delete.md).

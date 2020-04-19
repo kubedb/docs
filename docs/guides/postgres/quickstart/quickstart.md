@@ -340,7 +340,7 @@ KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or lat
 In this tutorial, Postgres `quick-postgres` is created with `spec.terminationPolicy: DoNotTerminate`. So if you try to delete this Postgres object, admission webhook will nullify the delete operation.
 
 ```console
-$  kubedb delete pg -n demo quick-postgres
+$  kubectl delete pg -n demo quick-postgres
 Error from server (BadRequest): admission webhook "postgres.validators.kubedb.com" denied the request: postgres "quick-postgres" can't be paused. To delete, change spec.terminationPolicy
 ```
 

@@ -303,7 +303,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidatingWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, it prevents users from deleting the database as long as the `.spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```console
-$ kubedb delete px demo-quickstart -n demo
+$ kubectl delete px demo-quickstart -n demo
 Error from server (BadRequest): admission webhook "perconaxtradb.validators.kubedb.com" denied the request: percona-xtradb "demo/demo-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
@@ -316,7 +316,7 @@ Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/percona
 When [TerminationPolicy](/docs/concepts/databases/percona-xtradb.md#specterminationpolicy) is set to `Pause`, it will pause the PerconaXtraDB database instead of deleting it. Here, If you delete the PerconaXtraDB object, KubeDB operator will delete the StatefulSet and its Pods but leaves the PVCs and Secret unchanged. In KubeDB parlance, we say that `demo-quickstart` PerconaXtraDB database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```console
-$ kubedb delete px demo-quickstart -n demo
+$ kubectl delete px demo-quickstart -n demo
 perconaxtradb.kubedb.com "demo-quickstart" deleted
 
 $ kubectl get drmn -n demo demo-quickstart
@@ -429,8 +429,8 @@ Now, if you exec into the database, you can see that the data are intact.
 You can wipe out a DormantDatabase while deleting the objet by setting `.spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `PerconaXtraDB` database (i.e, PVCs, Secrets, etc.).
 
 ```yaml
-$ kubedb delete px demo-quickstart -n demo
-kubedb delete px demo-quickstart -n demo
+$ kubectl delete px demo-quickstart -n demo
+kubectl delete px demo-quickstart -n demo
 
 $ kubectl edit drmn -n demo demo-quickstart
 apiVersion: kubedb.com/v1alpha1
@@ -454,7 +454,7 @@ If `.spec.wipeOut` is not set to true while deleting the `DormantDatabase` objec
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `DormantDatabase`,
 
 ```console
-$ kubedb delete drmn demo-quickstart -n demo
+$ kubectl delete drmn demo-quickstart -n demo
 dormantdatabase.kubedb.com "demo-quickstart" deleted
 ```
 

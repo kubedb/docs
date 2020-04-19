@@ -269,30 +269,30 @@ To learn about various options of `edit` command, please visit [here](/docs/refe
 
 ### How to Delete Objects
 
-`kubedb delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Redis `redis-dev` in default namespace
+`kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Redis `redis-dev` in default namespace
 
 ```console
-$ kubedb delete redis redis-dev
+$ kubectl delete redis redis-dev
 redis.kubedb.com "redis-dev" deleted
 ```
 
 You can also use YAML files to delete objects. The following command will delete a redis using the type and name specified in `redis.yaml`.
 
 ```console
-$ kubedb delete -f redis-demo.yaml
+$ kubectl delete -f redis-demo.yaml
 redis.kubedb.com "redis-dev" deleted
 ```
 
-`kubedb delete` command also takes input from `stdin`.
+`kubectl delete` command also takes input from `stdin`.
 
 ```console
-cat redis-demo.yaml | kubedb delete -f -
+cat redis-demo.yaml | kubectl delete -f -
 ```
 
 To delete database with matching labels, use `--selector` flag. The following command will delete redis with label `redis.kubedb.com/name=redis-demo`.
 
 ```console
-kubedb delete redis -l redis.kubedb.com/name=redis-demo
+kubectl delete redis -l redis.kubedb.com/name=redis-demo
 ```
 
 To learn about various options of `delete` command, please visit [here](/docs/reference/kubedb_delete.md).

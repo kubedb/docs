@@ -280,30 +280,30 @@ To learn about various options of `edit` command, please visit [here](/docs/refe
 
 ### How to Delete Objects
 
-`kubedb delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Postgres `postgres-dev` in default namespace
+`kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Postgres `postgres-dev` in default namespace
 
 ```console
-$ kubedb delete postgres postgres-dev
+$ kubectl delete postgres postgres-dev
 postgres "postgres-dev" deleted
 ```
 
 You can also use YAML files to delete objects. The following command will delete a postgres using the type and name specified in `postgres.yaml`.
 
 ```console
-$ kubedb delete -f postgres.yaml
+$ kubectl delete -f postgres.yaml
 postgres "postgres-dev" deleted
 ```
 
-`kubedb delete` command also takes input from `stdin`.
+`kubectl delete` command also takes input from `stdin`.
 
 ```console
-cat postgres.yaml | kubedb delete -f -
+cat postgres.yaml | kubectl delete -f -
 ```
 
 To delete database with matching labels, use `--selector` flag. The following command will delete postgres with label `postgres.kubedb.com/name=postgres-demo`.
 
 ```console
-kubedb delete postgres -l postgres.kubedb.com/name=postgres-demo
+kubectl delete postgres -l postgres.kubedb.com/name=postgres-demo
 ```
 
 To learn about various options of `delete` command, please visit [here](/docs/reference/kubedb_delete.md).

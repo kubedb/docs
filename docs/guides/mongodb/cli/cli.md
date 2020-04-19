@@ -338,30 +338,30 @@ To learn about various options of `edit` command, please visit [here](/docs/refe
 
 ### How to Delete Objects
 
-`kubedb delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a MongoDB `mongodb-dev` in default namespace
+`kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a MongoDB `mongodb-dev` in default namespace
 
 ```console
-$ kubedb delete mongodb mongodb-dev
+$ kubectl delete mongodb mongodb-dev
 mongodb.kubedb.com "mongodb-dev" deleted
 ```
 
 You can also use YAML files to delete objects. The following command will delete a mongodb using the type and name specified in `mongodb.yaml`.
 
 ```console
-$ kubedb delete -f mongodb-demo.yaml
+$ kubectl delete -f mongodb-demo.yaml
 mongodb.kubedb.com "mongodb-dev" deleted
 ```
 
-`kubedb delete` command also takes input from `stdin`.
+`kubectl delete` command also takes input from `stdin`.
 
 ```console
-cat mongodb-demo.yaml | kubedb delete -f -
+cat mongodb-demo.yaml | kubectl delete -f -
 ```
 
 To delete database with matching labels, use `--selector` flag. The following command will delete mongodb with label `mongodb.kubedb.com/name=mongodb-demo`.
 
 ```console
-kubedb delete mongodb -l mongodb.kubedb.com/name=mongodb-demo
+kubectl delete mongodb -l mongodb.kubedb.com/name=mongodb-demo
 ```
 
 To learn about various options of `delete` command, please visit [here](/docs/reference/kubedb_delete.md).
