@@ -187,7 +187,7 @@ $ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 snapshot.kubedb.com/snap-mongodb-config created
 
 
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME              DATABASENAME      STATUS      AGE
 snap-mgo-config   mgo-misc-config   Succeeded   50m
 ```
@@ -221,7 +221,7 @@ status:
 ```
 
 ```console
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME                              DATABASENAME      STATUS      AGE
 mgo-misc-config-20181002-105247   mgo-misc-config   Succeeded   3m
 mgo-misc-config-20181002-105349   mgo-misc-config   Succeeded   2m

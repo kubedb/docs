@@ -163,19 +163,19 @@ Events:
   Normal  Successful  15m   PerconaXtraDB operator  Successfully patched StatefulSet demo/demo-quickstart
   Normal  Successful  15m   PerconaXtraDB operator  Successfully patched PerconaXtraDB
 
-$ kubedb get statefulset -n demo
+$ kubectl get statefulset -n demo
 NAME              READY   AGE
 demo-quickstart   1/1     18m
 
-$ kubedb get pvc -n demo
+$ kubectl get pvc -n demo
 NAME                     STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-demo-quickstart-0   Bound    pvc-b1a12fb2-cc4f-45d1-9d3c-921181d0d8cc   50Mi       RWO            standard       23m
 
-$ kubedb get pv -n demo
+$ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                         STORAGECLASS   REASON   AGE
 pvc-b1a12fb2-cc4f-45d1-9d3c-921181d0d8cc   50Mi       RWO            Delete           Bound    demo/data-demo-quickstart-0   standard                23m
 
-$ kubedb get service -n demo
+$ kubectl get service -n demo
 NAME                  TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
 demo-quickstart       ClusterIP   10.96.88.71   <none>        3306/TCP   19m
 demo-quickstart-gvr   ClusterIP   None          <none>        3306/TCP   19m
@@ -184,7 +184,7 @@ demo-quickstart-gvr   ClusterIP   None          <none>        3306/TCP   19m
 KubeDB operator sets the `.status.phase` to `"Running"` once the database is successfully created. Run the following command to see the modified `PerconaXtraDB` object:
 
 ```console
-$ kubedb get px -n demo demo-quickstart -o yaml
+$ kubectl get px -n demo demo-quickstart -o yaml
 ```
 
 And the output is as follows:
@@ -319,26 +319,26 @@ When [TerminationPolicy](/docs/concepts/databases/percona-xtradb.md#specterminat
 $ kubedb delete px demo-quickstart -n demo
 perconaxtradb.kubedb.com "demo-quickstart" deleted
 
-$ kubedb get drmn -n demo demo-quickstart
+$ kubectl get drmn -n demo demo-quickstart
 NAME              STATUS   AGE
 demo-quickstart   Paused   4m21s
 
-$ kubedb get secret -n demo
+$ kubectl get secret -n demo
 NAME                   TYPE                                  DATA   AGE
 default-token-9m5pd    kubernetes.io/service-account-token   3      50m
 demo-quickstart-auth   Opaque                                2      50m
 
-$ kubedb get pvc -n demo
+$ kubectl get pvc -n demo
 NAME                     STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-demo-quickstart-0   Bound    pvc-b1a12fb2-cc4f-45d1-9d3c-921181d0d8cc   50Mi       RWO            standard       51m
 
-$ kubedb get pv -n demo
+$ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                         STORAGECLASS   REASON   AGE
 pvc-b1a12fb2-cc4f-45d1-9d3c-921181d0d8cc   50Mi       RWO            Delete           Bound    demo/data-demo-quickstart-0   standard                50m
 ```
 
 ```yaml
-$ kubedb get drmn -n demo demo-quickstart -o yaml
+$ kubectl get drmn -n demo demo-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

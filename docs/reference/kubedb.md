@@ -65,7 +65,7 @@ kubedb [flags]
 * [kubedb delete](/docs/reference/kubedb_delete.md)	 - Delete resources by filenames, stdin, resources and names, or by resources and label selector
 * [kubedb describe](/docs/reference/kubedb_describe.md)	 - Show details of a specific resource or group of resources
 * [kubedb edit](/docs/reference/kubedb_edit.md)	 - Edit a resource on the server
-* [kubedb get](/docs/reference/kubedb_get.md)	 - Display one or many resources
+* [kubectl get](/docs/reference/kubedb_get.md)	 - Display one or many resources
 * [kubedb version](/docs/reference/kubedb_version.md)	 - Prints binary version number.
 
 

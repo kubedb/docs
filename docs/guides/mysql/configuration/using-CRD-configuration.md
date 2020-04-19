@@ -198,7 +198,7 @@ $ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 snapshot.kubedb.com/snap-mysql-config created
 
 
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME                DATABASENAME        STATUS      AGE
 snap-mysql-config   mysql-misc-config   Succeeded   1m
 ```
@@ -236,7 +236,7 @@ status:
 ```
 
 ```console
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME                                DATABASENAME        STATUS      AGE
 mysql-misc-config-20181002-105247   mysql-misc-config   Succeeded   3m
 mysql-misc-config-20181002-105349   mysql-misc-config   Succeeded   2m

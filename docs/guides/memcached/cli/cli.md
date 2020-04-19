@@ -44,10 +44,10 @@ To learn about various options of `create` command, please visit [here](/docs/re
 
 ### How to List Objects
 
-`kubedb get` command allows users to list or find any KubeDB object. To list all Memcached objects in `default` namespace, run the following command:
+`kubectl get` command allows users to list or find any KubeDB object. To list all Memcached objects in `default` namespace, run the following command:
 
 ```console
-$ kubedb get memcached
+$ kubectl get memcached
 NAME             VERSION    STATUS    AGE
 memcached-demo   1.5.4-v1   Running   40s
 memcached-dev    1.5.4-v1   Running   40s
@@ -58,7 +58,7 @@ memcached-qa     1.5.4-v1   Running   40s
 To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
-$ kubedb get memcached memcached-demo --output=yaml
+$ kubectl get memcached memcached-demo --output=yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Memcached
 metadata:
@@ -101,13 +101,13 @@ status:
 To get JSON of an object, use `--output=json` flag.
 
 ```console
-kubedb get memcached memcached-demo --output=json
+kubectl get memcached memcached-demo --output=json
 ```
 
 To list all KubeDB objects, use following command:
 
 ```console
-$ kubedb get all -o wide
+$ kubectl get all -o wide
 NAME                    VERSION     STATUS   AGE
 mc/memcached-demo       1.5.4-v1    Running  3h
 mc/memcached-dev        1.5.4-v1    Running  3h
@@ -117,7 +117,7 @@ mc/memcached-qa         1.5.4-v1    Running  3h
 
 Flag `--output=wide` is used to print additional information.
 
-List command supports short names for each object types. You can use it like `kubedb get <short-name>`. Below are the short name for KubeDB objects:
+List command supports short names for each object types. You can use it like `kubectl get <short-name>`. Below are the short name for KubeDB objects:
 
 - Memcached: `mc`
 - DormantDatabase: `drmn`
@@ -125,7 +125,7 @@ List command supports short names for each object types. You can use it like `ku
 You can print labels with objects. The following command will list all Memcached with their corresponding labels.
 
 ```console
-$ kubedb get mc --show-labels
+$ kubectl get mc --show-labels
 NAME             VERSION    STATUS    AGE       LABELS
 memcached-demo   1.5.4-v1   Running   2m        kubedb=cli-demo
 ```
@@ -133,7 +133,7 @@ memcached-demo   1.5.4-v1   Running   2m        kubedb=cli-demo
 To print only object name, run the following command:
 
 ```console
-$ kubedb get all -o name
+$ kubectl get all -o name
 memcached/memcached-demo
 memcached/memcached-dev
 memcached/memcached-prod

@@ -134,23 +134,23 @@ Events:
   Normal  Successful  6s     PerconaXtraDB operator  Successfully patched StatefulSet demo/demo-cluster
   Normal  Successful  6s     PerconaXtraDB operator  Successfully patched PerconaXtraDB
 
-$ kubedb get statefulset -n demo
+$ kubectl get statefulset -n demo
 NAME           READY   AGE
 demo-cluster   3/3     5m17s
 
-$ kubedb get pvc -n demo
+$ kubectl get pvc -n demo
 NAME                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-demo-cluster-0   Bound    pvc-afba39ba-1244-4566-be12-bb6ffcb25f31   50Mi       RWO            standard       26m
 data-demo-cluster-1   Bound    pvc-b1f64867-b5f4-46e4-b635-ada6fc2cdeaf   50Mi       RWO            standard       4m16s
 data-demo-cluster-2   Bound    pvc-11fe5fb3-f58f-4c37-befc-f326e87cef51   50Mi       RWO            standard       2m15s
 
-$ kubedb get pv -n demo
+$ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                      STORAGECLASS   REASON   AGE
 pvc-11fe5fb3-f58f-4c37-befc-f326e87cef51   50Mi       RWO            Delete           Bound    demo/data-demo-cluster-2   standard                2m40s
 pvc-afba39ba-1244-4566-be12-bb6ffcb25f31   50Mi       RWO            Delete           Bound    demo/data-demo-cluster-0   standard                26m
 pvc-b1f64867-b5f4-46e4-b635-ada6fc2cdeaf   50Mi       RWO            Delete           Bound    demo/data-demo-cluster-1   standard                4m34s
 
-$ kubedb get service -n demo
+$ kubectl get service -n demo
 NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 demo-cluster       ClusterIP   10.97.246.185   <none>        3306/TCP   7m10s
 demo-cluster-gvr   ClusterIP   None            <none>        3306/TCP   7m10s
@@ -159,7 +159,7 @@ demo-cluster-gvr   ClusterIP   None            <none>        3306/TCP   7m10s
 KubeDB operator sets the `.status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `PerconaXtraDB` object:
 
 ```yaml
-$ kubedb get px -n demo demo-cluster -o yaml
+$ kubectl get px -n demo demo-cluster -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: PerconaXtraDB
 metadata:

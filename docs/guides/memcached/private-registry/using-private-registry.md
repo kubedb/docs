@@ -137,7 +137,7 @@ memcd-pvt-reg-694d4d44df-bwtk8   1/1       Running   0         25s
 memcd-pvt-reg-694d4d44df-zhj4l   1/1       Running   0         26s
 memcd-pvt-reg-694d4d44df-tkqc4   1/1       Running   0         27s
 
-$ kubedb get mc -n demo
+$ kubectl get mc -n demo
 NAME            VERSION    STATUS    AGE
 memcd-pvt-reg   1.5.4-v1   Running   59s
 ```

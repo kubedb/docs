@@ -44,10 +44,10 @@ To learn about various options of `create` command, please visit [here](/docs/re
 
 ### How to List Objects
 
-`kubedb get` command allows users to list or find any KubeDB object. To list all PgBouncer objects in `default` namespace, run the following command:
+`kubectl get` command allows users to list or find any KubeDB object. To list all PgBouncer objects in `default` namespace, run the following command:
 
 ```console
-$ kubedb get pgbouncer
+$ kubectl get pgbouncer
 NAME            VERSION   STATUS    AGE
 pgbouncer-demo   1.11.0    Running   13m
 pgbouncer-dev    1.11.0    Running   11m
@@ -58,7 +58,7 @@ pgbouncer-qa     1.11.0    Running   10m
 To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
-$ kubedb get pgbouncer pgbouncer-demo --output=yaml
+$ kubectl get pgbouncer pgbouncer-demo --output=yaml
 apiVersion: kubedb.com/v1alpha1
 kind: PgBouncer
 metadata:
@@ -118,13 +118,13 @@ status:
 To get JSON of an object, use `--output=json` flag.
 
 ```console
-kubedb get pgbouncer pgbouncer-demo --output=json
+kubectl get pgbouncer pgbouncer-demo --output=json
 ```
 
 To list all KubeDB objects, use following command:
 
 ```console
-$ kubedb get all -n demo -o wide
+$ kubectl get all -n demo -o wide
 NAME                   READY   STATUS    RESTARTS   AGE     IP           NODE          NOMINATED NODE   READINESS GATES
 pod/pgbouncer-demo-0   2/2     Running   0          5m53s   10.244.1.3   kind-worker   <none>           <none>
 
@@ -143,7 +143,7 @@ pgbouncer.kubedb.com/pgbouncer-demo   1.12.0      Running         5m54s
 
 Flag `--output=wide` is used to print additional information.
 
-List command supports short names for each object types. You can use it like `kubedb get <short-name>`. Below are the short name for KubeDB objects:
+List command supports short names for each object types. You can use it like `kubectl get <short-name>`. Below are the short name for KubeDB objects:
 
 - Postgres: `pg`
 - PgBouncer: `pb`
@@ -153,7 +153,7 @@ List command supports short names for each object types. You can use it like `ku
 You can print labels with objects. The following command will list all Snapshots with their corresponding labels.
 
 ```console
-$ kubedb get pb -n demo --show-labels
+$ kubectl get pb -n demo --show-labels
 NAME                            DATABASE                STATUS      AGE       LABELS
 pgbouncer-demo                  pb/pgbouncer-demo       Succeeded   11m       kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-demo
 pgbouncer-tmp                   pb/postgres-demo        Succeeded   1h        kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-tmp
@@ -162,7 +162,7 @@ pgbouncer-tmp                   pb/postgres-demo        Succeeded   1h        ku
 You can also filter list using `--selector` flag.
 
 ```console
-$ kubedb get pb --selector='kubedb.com/kind=PgBouncer' --show-labels
+$ kubectl get pb --selector='kubedb.com/kind=PgBouncer' --show-labels
 NAME                            DATABASE           STATUS      AGE       LABELS
 pgbouncer-demo                  pb/pgbouncer-demo  Succeeded   11m       kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-demo
 pgbouncer-dev                   pb/postgres-demo   Succeeded   1h        kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-dev
@@ -171,7 +171,7 @@ pgbouncer-dev                   pb/postgres-demo   Succeeded   1h        kubedb.
 To print only object name, run the following command:
 
 ```console
-$ kubedb get all -n demo -o name
+$ kubectl get all -n demo -o name
 pod/pgbouncer-demo-0
 service/kubedb
 service/pgbouncer-demo

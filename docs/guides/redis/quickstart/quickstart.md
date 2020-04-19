@@ -108,7 +108,7 @@ Here,
 KubeDB operator watches for `Redis` objects using Kubernetes api. When a `Redis` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present.
 
 ```console
-$ kubedb get rd -n demo
+$ kubectl get rd -n demo
 NAME               VERSION   STATUS    AGE
 redis-quickstart   4.0-v1    Running   1m
 
@@ -178,7 +178,7 @@ redis-quickstart   ClusterIP   10.108.149.205   <none>        6379/TCP   2m
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified Redis object:
 
 ```yaml
-$ kubedb get rd -n demo redis-quickstart -o yaml
+$ kubectl get rd -n demo redis-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Redis
 metadata:
@@ -261,17 +261,17 @@ When [TerminationPolicy](/docs/concepts/databases/redis.md#specterminationpolicy
 $ kubedb delete rd redis-quickstart -n demo
 redis.kubedb.com "redis-quickstart" deleted
 
-$ kubedb get drmn -n demo redis-quickstart
+$ kubectl get drmn -n demo redis-quickstart
 NAME               STATUS    AGE
 redis-quickstart   Pausing   17s
 
-$ kubedb get drmn -n demo redis-quickstart
+$ kubectl get drmn -n demo redis-quickstart
 NAME               STATUS    AGE
 redis-quickstart   Paused    1m
 ```
 
 ```yaml
-$ kubedb get drmn -n demo redis-quickstart -o yaml
+$ kubectl get drmn -n demo redis-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

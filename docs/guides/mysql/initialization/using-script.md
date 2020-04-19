@@ -192,7 +192,7 @@ mysql-init-script   ClusterIP      10.102.60.242   <none>        3306/TCP       
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MySQL object:
 
 ```yaml
-$ kubedb get my -n demo mysql-init-script -o yaml
+$ kubectl get my -n demo mysql-init-script -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:

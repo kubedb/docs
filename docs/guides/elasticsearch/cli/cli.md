@@ -44,10 +44,10 @@ To learn about various options of `create` command, please visit [here](/docs/re
 
 ### How to List Objects
 
-`kubedb get` command allows users to list or find any KubeDB object. To list all Elasticsearch objects in `default` namespace, run the following command:
+`kubectl get` command allows users to list or find any KubeDB object. To list all Elasticsearch objects in `default` namespace, run the following command:
 
 ```console
-$ kubedb get elasticsearch
+$ kubectl get elasticsearch
 NAME                 VERSION   STATUS    AGE
 elasticsearch-demo   7.3.2     Running   1m
 ```
@@ -55,7 +55,7 @@ elasticsearch-demo   7.3.2     Running   1m
 To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
-$ kubedb get elasticsearch elasticsearch-demo --output=yaml
+$ kubectl get elasticsearch elasticsearch-demo --output=yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Elasticsearch
 metadata:
@@ -102,13 +102,13 @@ status:
 To get JSON of an object, use `--output=json` flag.
 
 ```console
-$ kubedb get elasticsearch elasticsearch-demo --output=json
+$ kubectl get elasticsearch elasticsearch-demo --output=json
 ```
 
 To list all KubeDB objects, use following command:
 
 ```console
-$ kubedb get all -o wide
+$ kubectl get all -o wide
 NAME                       READY     STATUS    RESTARTS   AGE       IP              NODE              NOMINATED NODE
 pod/elasticsearch-demo-0   1/1       Running   0          2m        192.168.1.105   4gb-pool-crtbqq   <none>
 
@@ -146,7 +146,7 @@ snap/snapshot-20171212-114700            es/elasticsearch-demo        gs:bucket-
 
 Flag `--output=wide` is used to print additional information.
 
-List command supports short names for each object types. You can use it like `kubedb get <short-name>`. Below are the short name for KubeDB objects:
+List command supports short names for each object types. You can use it like `kubectl get <short-name>`. Below are the short name for KubeDB objects:
 
 - Elasticsearch: `es`
 - Snapshot: `snap`
@@ -155,7 +155,7 @@ List command supports short names for each object types. You can use it like `ku
 You can print labels with objects. The following command will list all Snapshots with their corresponding labels.
 
 ```console
-$ kubedb get snap --show-labels
+$ kubectl get snap --show-labels
 NAME                                 DATABASE                     STATUS      AGE       LABELS
 elasticsearch-demo-20170605-073557   es/elasticsearch-demo        Succeeded   11m       kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo
 snapshot-20171212-114700             es/elasticsearch-demo        Succeeded   1h        kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo
@@ -164,7 +164,7 @@ snapshot-20171212-114700             es/elasticsearch-demo        Succeeded   1h
 You can also filter list using `--selector` flag.
 
 ```console
-$ kubedb get snap --selector='kubedb.com/kind=Elasticsearch' --show-labels
+$ kubectl get snap --selector='kubedb.com/kind=Elasticsearch' --show-labels
 NAME                                 DATABASE                STATUS      AGE       LABELS
 elasticsearch-demo-20171212-073557   es/elasticsearch-demo   Succeeded   14m       kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo
 snapshot-20171212-114700             es/elasticsearch-demo   Succeeded   2h        kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo
@@ -173,7 +173,7 @@ snapshot-20171212-114700             es/elasticsearch-demo   Succeeded   2h     
 To print only object name, run the following command:
 
 ```console
-$ kubedb get all -o name
+$ kubectl get all -o name
 pod/elasticsearch-demo-0
 service/elasticsearch-demo
 service/elasticsearch-demo-master

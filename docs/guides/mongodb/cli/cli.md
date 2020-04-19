@@ -44,10 +44,10 @@ To learn about various options of `create` command, please visit [here](/docs/re
 
 ### How to List Objects
 
-`kubedb get` command allows users to list or find any KubeDB object. To list all MongoDB objects in `default` namespace, run the following command:
+`kubectl get` command allows users to list or find any KubeDB object. To list all MongoDB objects in `default` namespace, run the following command:
 
 ```console
-$ kubedb get mongodb
+$ kubectl get mongodb
 NAME           VERSION   STATUS    AGE
 mongodb-demo   3.4-v3    Running   13m
 mongodb-dev    3.4-v3    Running   11m
@@ -58,7 +58,7 @@ mongodb-qa     3.4-v3    Running   10m
 To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
-$ kubedb get mongodb mongodb-demo --output=yaml
+$ kubectl get mongodb mongodb-demo --output=yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
@@ -124,13 +124,13 @@ status:
 To get JSON of an object, use `--output=json` flag.
 
 ```console
-kubedb get mongodb mongodb-demo --output=json
+kubectl get mongodb mongodb-demo --output=json
 ```
 
 To list all KubeDB objects, use following command:
 
 ```console
-$ kubedb get kubedb -o wide
+$ kubectl get kubedb -o wide
 NAME                VERSION     STATUS  AGE
 mg/mongodb-demo     3.4         Running 3h
 mg/mongodb-dev      3.4         Running 3h
@@ -144,7 +144,7 @@ snap/snapshot-20171212-114700       mg/mongodb-demo         gs:bucket-name      
 
 Flag `--output=wide` is used to print additional information.
 
-List command supports short names for each object types. You can use it like `kubedb get <short-name>`. Below are the short name for KubeDB objects:
+List command supports short names for each object types. You can use it like `kubectl get <short-name>`. Below are the short name for KubeDB objects:
 
 - MongoDB: `mg`
 - Snapshot: `snap`
@@ -153,7 +153,7 @@ List command supports short names for each object types. You can use it like `ku
 You can print labels with objects. The following command will list all Snapshots with their corresponding labels.
 
 ```console
-$ kubedb get snap --show-labels
+$ kubectl get snap --show-labels
 NAME                            DATABASE                STATUS      AGE       LABELS
 mongodb-demo-20170605-073557    mg/mongodb-demo         Succeeded   11m       kubedb.com/kind=MongoDB,kubedb.com/name=mongodb-demo
 snapshot-20171212-114700        mg/mongodb-demo         Succeeded   1h        kubedb.com/kind=MongoDB,kubedb.com/name=mongodb-demo
@@ -162,7 +162,7 @@ snapshot-20171212-114700        mg/mongodb-demo         Succeeded   1h        ku
 You can also filter list using `--selector` flag.
 
 ```console
-$ kubedb get snap --selector='kubedb.com/kind=MongoDB' --show-labels
+$ kubectl get snap --selector='kubedb.com/kind=MongoDB' --show-labels
 NAME                            DATABASE           STATUS      AGE       LABELS
 mongodb-demo-20171212-073557    mg/mongodb-demo    Succeeded   14m       kubedb.com/kind=MongoDB,kubedb.com/name=mongodb-demo
 snapshot-20171212-114700        mg/mongodb-demo    Succeeded   2h        kubedb.com/kind=MongoDB,kubedb.com/name=mongodb-demo
@@ -171,7 +171,7 @@ snapshot-20171212-114700        mg/mongodb-demo    Succeeded   2h        kubedb.
 To print only object name, run the following command:
 
 ```console
-$ kubedb get all -o name
+$ kubectl get all -o name
 mongodb/mongodb-demo
 mongodb/mongodb-dev
 mongodb/mongodb-prod

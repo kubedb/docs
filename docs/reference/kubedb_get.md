@@ -1,14 +1,14 @@
 ---
-title: Kubedb Get
+title: kubectl get
 menu:
   docs_{{ .version }}:
     identifier: kubedb-get
-    name: Kubedb Get
+    name: kubectl get
     parent: reference
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubedb get
+## kubectl get
 
 Display one or many resources
 
@@ -19,29 +19,29 @@ Display one or many resources.
 Use "kubedb api-resources" for a complete list of supported resources.
 
 ```
-kubedb get [(-o|--output=)json|yaml|wide|custom-columns=...|custom-columns-file=...|go-template=...|go-template-file=...|jsonpath=...|jsonpath-file=...] (TYPE[.VERSION][.GROUP] [NAME | -l label] | TYPE[.VERSION][.GROUP]/NAME ...) [flags]
+kubectl get [(-o|--output=)json|yaml|wide|custom-columns=...|custom-columns-file=...|go-template=...|go-template-file=...|jsonpath=...|jsonpath-file=...] (TYPE[.VERSION][.GROUP] [NAME | -l label] | TYPE[.VERSION][.GROUP]/NAME ...) [flags]
 ```
 
 ### Examples
 
 ```
   # List all elasticsearch in ps output format.
-  kubedb get es
+  kubectl get es
   
   # List all elasticsearch in ps output format with more information (such as version).
-  kubedb get elasticsearches -o wide
+  kubectl get elasticsearches -o wide
   
   # List a single postgres with specified NAME in ps output format.
-  kubedb get postgres database
+  kubectl get postgres database
   
   # List a single snapshot in JSON output format.
-  kubedb get -o json snapshot snapshot-xyz
+  kubectl get -o json snapshot snapshot-xyz
   
   # List all postgreses and elastics together in ps output format.
-  kubedb get postgreses,elastics
+  kubectl get postgreses,elastics
   
   # List one or more resources by their type and names.
-  kubedb get es/es-db postgres/pg-db
+  kubectl get es/es-db postgres/pg-db
   
   Valid resource types include:
   * all

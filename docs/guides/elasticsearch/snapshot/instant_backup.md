@@ -65,7 +65,7 @@ Here, we have used `spec.storageType: Ephemeral`. So, we don't need to specify s
 Verify that the Elasticsearch is running,
 
 ```console
-$ kubedb get es -n demo instant-elasticsearch
+$ kubectl get es -n demo instant-elasticsearch
 NAME                    VERSION   STATUS    AGE
 instant-elasticsearch   7.3.2     Running   41s
 ```

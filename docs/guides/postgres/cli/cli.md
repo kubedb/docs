@@ -44,10 +44,10 @@ To learn about various options of `create` command, please visit [here](/docs/re
 
 ### How to List Objects
 
-`kubedb get` command allows users to list or find any KubeDB object. To list all Postgres objects in `default` namespace, run the following command:
+`kubectl get` command allows users to list or find any KubeDB object. To list all Postgres objects in `default` namespace, run the following command:
 
 ```console
-$ kubedb get postgres
+$ kubectl get postgres
 NAME            VERSION    STATUS    AGE
 postgres-demo   10.2-v5    Running   13m
 postgres-dev    10.2-v5    Running   11m
@@ -58,7 +58,7 @@ postgres-qa     10.2-v5    Running   10m
 To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
-$ kubedb get postgres postgres-demo --output=yaml
+$ kubectl get postgres postgres-demo --output=yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Postgres
 metadata:
@@ -76,13 +76,13 @@ status:
 To get JSON of an object, use `--output=json` flag.
 
 ```console
-kubedb get postgres postgres-demo --output=json
+kubectl get postgres postgres-demo --output=json
 ```
 
 To list all KubeDB objects, use following command:
 
 ```console
-$ kubedb get all -o wide
+$ kubectl get all -o wide
 
 NAME                    VERSION     STATUS      AGE
 es/elasticsearch-demo   2.3.1       Running     17m
@@ -101,7 +101,7 @@ snap/snapshot-xyz                   es/elasticsearch-demo   local:/directory    
 
 Flag `--output=wide` is used to print additional information.
 
-List command supports short names for each object types. You can use it like `kubedb get <short-name>`. Below are the short name for KubeDB objects:
+List command supports short names for each object types. You can use it like `kubectl get <short-name>`. Below are the short name for KubeDB objects:
 
 - Postgres: `pg`
 - Snapshot: `snap`
@@ -110,7 +110,7 @@ List command supports short names for each object types. You can use it like `ku
 You can print labels with objects. The following command will list all Snapshots with their corresponding labels.
 
 ```console
-$ kubedb get snap --show-labels
+$ kubectl get snap --show-labels
 NAME                            DATABASE                STATUS      AGE       LABELS
 postgres-demo-20170605-073557   pg/postgres-demo        Succeeded   11m       kubedb.com/kind=Postgres,kubedb.com/name=postgres-demo
 snapshot-20171212-114700        pg/postgres-demo        Succeeded   1h        kubedb.com/kind=Postgres,kubedb.com/name=postgres-demo
@@ -120,7 +120,7 @@ snapshot-xyz                    es/elasticsearch-demo   Succeeded   6m        ku
 You can also filter list using `--selector` flag.
 
 ```console
-$ kubedb get snap --selector='kubedb.com/kind=Postgres' --show-labels
+$ kubectl get snap --selector='kubedb.com/kind=Postgres' --show-labels
 NAME                            DATABASE           STATUS      AGE       LABELS
 postgres-demo-20171212-073557   pg/postgres-demo   Succeeded   14m       kubedb.com/kind=Postgres,kubedb.com/name=postgres-demo
 snapshot-20171212-114700        pg/postgres-demo   Succeeded   2h        kubedb.com/kind=Postgres,kubedb.com/name=postgres-demo
@@ -129,7 +129,7 @@ snapshot-20171212-114700        pg/postgres-demo   Succeeded   2h        kubedb.
 To print only object name, run the following command:
 
 ```console
-$ kubedb get all -o name
+$ kubectl get all -o name
 postgres/postgres-demo
 postgres/postgres-dev
 postgres/postgres-prod

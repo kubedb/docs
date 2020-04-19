@@ -182,7 +182,7 @@ px-init-script-gvr   ClusterIP   None            <none>        3306/TCP   6m47s
 KubeDB operator sets the `.status.phase` to `Running` once the database is successfully created. Run the following command to see the modified PerconaXtraDB object:
 
 ```console
-$ kubedb get px -n demo px-init-script -o yaml
+$ kubectl get px -n demo px-init-script -o yaml
 ```
 
 Output:

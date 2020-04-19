@@ -113,10 +113,10 @@ spec:
     storageSecretName: mg-snap-secret
 ```
 
-Once the `spec.backupSchedule` is added, KubeDB operator will create a new Snapshot object on each tick of the cron expression. This triggers KubeDB operator to create a Job as it would for any regular instant backup process. You can see the snapshots as they are created using `kubedb get snap` command.
+Once the `spec.backupSchedule` is added, KubeDB operator will create a new Snapshot object on each tick of the cron expression. This triggers KubeDB operator to create a Job as it would for any regular instant backup process. You can see the snapshots as they are created using `kubectl get snap` command.
 
 ```console
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME                            DATABASENAME    STATUS      AGE
 mgo-scheduled-20180924-112630   mgo-scheduled   Succeeded   3m
 mgo-scheduled-20180924-112741   mgo-scheduled   Succeeded   2m

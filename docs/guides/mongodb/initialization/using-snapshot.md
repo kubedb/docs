@@ -65,7 +65,7 @@ Here,
 Now, wait several seconds. KubeDB operator will create a new `StatefulSet`. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snapshot-instant` Snapshot.
 
 ```console
-$ kubedb get mg -n demo
+$ kubectl get mg -n demo
 NAME                VERSION   STATUS         AGE
 mgo-instant          3.4-v3    Running        4m
 mgo-init-snapshot   3.4-v3    Initializing   53s

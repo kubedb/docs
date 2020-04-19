@@ -198,7 +198,7 @@ mgo-quickstart-gvr   ClusterIP   None             <none>        27017/TCP   18m
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MongoDB object:
 
 ```yaml
-$ kubedb get mg -n demo mgo-quickstart -o yaml
+$ kubectl get mg -n demo mgo-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
@@ -337,17 +337,17 @@ When [TerminationPolicy](/docs/concepts/databases/mongodb.md#specterminationpoli
 $ kubedb delete mg mgo-quickstart -n demo
 mongodb.kubedb.com "mgo-quickstart" deleted
 
-$ kubedb get drmn -n demo mgo-quickstart
+$ kubectl get drmn -n demo mgo-quickstart
 NAME             STATUS    AGE
 mgo-quickstart   Pausing   39s
 
-$ kubedb get drmn -n demo mgo-quickstart
+$ kubectl get drmn -n demo mgo-quickstart
 NAME             STATUS    AGE
 mgo-quickstart   Paused    21s
 ```
 
 ```yaml
-$ kubedb get drmn -n demo mgo-quickstart -o yaml
+$ kubectl get drmn -n demo mgo-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

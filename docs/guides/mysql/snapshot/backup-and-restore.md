@@ -102,13 +102,13 @@ spec:
 $ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/snapshot/demo-2.yaml
 snapshot.kubedb.com/snap-mysql-instant created
 
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME                DATABASENAME   STATUS    AGE
 snap-mysql-instant   mysql-instant   Running   13s
 ```
 
 ```yaml
-$ kubedb get snap -n demo snap-mysql-instant -o yaml
+$ kubectl get snap -n demo snap-mysql-instant -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
@@ -257,12 +257,12 @@ Here,
 Now, wait several seconds. KubeDB operator will create a new StatefulSet. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snap-mysql-instant` Snapshot.
 
 ```console
-$ kubedb get my -n demo
+$ kubectl get my -n demo
 NAME              VERSION   STATUS         AGE
 mysql-instant      8.0-v2    Running        27m
 mysql-recovered   8.0-v2    Initializing   5m
 
-$ kubedb get my -n demo
+$ kubectl get my -n demo
 NAME              VERSION   STATUS    AGE
 mysql-instant      8.0-v2    Running   31m
 mysql-recovered   8.0-v2    Running   9m

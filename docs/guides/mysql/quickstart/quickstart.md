@@ -212,7 +212,7 @@ mysql-quickstart   ClusterIP      10.104.50.139   <none>        3306/TCP       1
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MySQL object:
 
 ```yaml
-$ kubedb get my -n demo mysql-quickstart -o yaml
+$ kubectl get my -n demo mysql-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:
@@ -305,17 +305,17 @@ When [TerminationPolicy](/docs/concepts/databases/mysql.md#specterminationpolicy
 $ kubedb delete my mysql-quickstart -n demo
 mysql.kubedb.com "mysql-quickstart" deleted
 
-$ kubedb get drmn -n demo mysql-quickstart
+$ kubectl get drmn -n demo mysql-quickstart
 NAME               STATUS    AGE
 mysql-quickstart   Pausing   14s
 
-$ kubedb get drmn -n demo mysql-quickstart
+$ kubectl get drmn -n demo mysql-quickstart
 NAME               STATUS    AGE
 mysql-quickstart   Paused    39s
 ```
 
 ```yaml
-$ kubedb get drmn -n demo mysql-quickstart -o yaml
+$ kubectl get drmn -n demo mysql-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

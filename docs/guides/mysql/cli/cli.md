@@ -44,10 +44,10 @@ To learn about various options of `create` command, please visit [here](/docs/re
 
 ### How to List Objects
 
-`kubedb get` command allows users to list or find any KubeDB object. To list all MySQL objects in `default` namespace, run the following command:
+`kubectl get` command allows users to list or find any KubeDB object. To list all MySQL objects in `default` namespace, run the following command:
 
 ```console
-$ kubedb get mysql
+$ kubectl get mysql
 NAME         VERSION   STATUS    AGE
 mysql-demo   8.0-v2    Running   2m
 mysql-dev    8.0-v2    Running   1m
@@ -58,7 +58,7 @@ mysql-qa     8.0-v2    Running   1m
 To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
-$ kubedb get mysql mysql-demo --output=yaml
+$ kubectl get mysql mysql-demo --output=yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:
@@ -103,13 +103,13 @@ status:
 To get JSON of an object, use `--output=json` flag.
 
 ```console
-kubedb get mysql mysql-demo --output=json
+kubectl get mysql mysql-demo --output=json
 ```
 
 To list all KubeDB objects, use following command:
 
 ```console
-$ kubedb get all -o wide
+$ kubectl get all -o wide
 NAME                          VERSION   STATUS    AGE
 mysql.kubedb.com/mysql-demo   8.0-v2    Running   3m
 mysql.kubedb.com/mysql-dev    8.0-v2    Running   2m
@@ -123,7 +123,7 @@ snap/snapshot-20171212-114700       my/mysql-demo         gs:bucket-name      Su
 
 Flag `--output=wide` is used to print additional information.
 
-List command supports short names for each object types. You can use it like `kubedb get <short-name>`. Below are the short name for KubeDB objects:
+List command supports short names for each object types. You can use it like `kubectl get <short-name>`. Below are the short name for KubeDB objects:
 
 - MySQL: `my`
 - Snapshot: `snap`
@@ -132,7 +132,7 @@ List command supports short names for each object types. You can use it like `ku
 You can print labels with objects. The following command will list all Snapshots with their corresponding labels.
 
 ```console
-$ kubedb get snap --show-labels
+$ kubectl get snap --show-labels
 NAME                          DATABASE              STATUS      AGE       LABELS
 mysql-demo-20170605-073557    my/mysql-demo         Succeeded   11m       kubedb.com/kind=MySQL,kubedb.com/name=mysql-demo
 snapshot-20171212-114700      my/mysql-demo         Succeeded   1h        kubedb.com/kind=MySQL,kubedb.com/name=mysql-demo
@@ -141,7 +141,7 @@ snapshot-20171212-114700      my/mysql-demo         Succeeded   1h        kubedb
 You can also filter list using `--selector` flag.
 
 ```console
-$ kubedb get snap --selector='kubedb.com/kind=MySQL' --show-labels
+$ kubectl get snap --selector='kubedb.com/kind=MySQL' --show-labels
 NAME                          DATABASE         STATUS      AGE       LABELS
 mysql-demo-20171212-073557    my/mysql-demo    Succeeded   14m       kubedb.com/kind=MySQL,kubedb.com/name=mysql-demo
 snapshot-20171212-114700      my/mysql-demo    Succeeded   2h        kubedb.com/kind=MySQL,kubedb.com/name=mysql-demo
@@ -150,7 +150,7 @@ snapshot-20171212-114700      my/mysql-demo    Succeeded   2h        kubedb.com/
 To print only object name, run the following command:
 
 ```console
-$ kubedb get all -o name
+$ kubectl get all -o name
 mysql/mysql-demo
 mysql/mysql-dev
 mysql/mysql-prod

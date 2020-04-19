@@ -193,7 +193,7 @@ my-group-gvr   ClusterIP   None            <none>        3306/TCP   59m
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `MySQL` object:
 
 ```yaml
-$ kubedb get  my -n demo my-group -o yaml
+$ kubectl get  my -n demo my-group -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:

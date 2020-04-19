@@ -92,7 +92,7 @@ Here,
 KubeDB operator watches for `Memcached` objects using Kubernetes api. When a `Memcached` object is created, KubeDB operator will create a new Deployment and a ClusterIP Service with the matching Memcached object name.
 
 ```console
-$ kubedb get mc -n demo
+$ kubectl get mc -n demo
 NAME               VERSION    STATUS    AGE
 memcd-quickstart   1.5.4-v1   Running   2m
 
@@ -140,7 +140,7 @@ Events:
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified Memcached object:
 
 ```yaml
-$ kubedb get mc -n demo memcd-quickstart -o yaml
+$ kubectl get mc -n demo memcd-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Memcached
 metadata:
@@ -241,17 +241,17 @@ When [TerminationPolicy](/docs/concepts/databases/memcached.md#specterminationpo
 $ kubedb delete mc memcd-quickstart -n demo
 memcached.kubedb.com "memcd-quickstart" deleted
 
-$ kubedb get drmn -n demo memcd-quickstart
+$ kubectl get drmn -n demo memcd-quickstart
 NAME               STATUS    AGE
 memcd-quickstart   Pausing   21s
 
-$ kubedb get drmn -n demo memcd-quickstart
+$ kubectl get drmn -n demo memcd-quickstart
 NAME               STATUS    AGE
 memcd-quickstart   Paused    2m
 ```
 
 ```yaml
-$ kubedb get drmn -n demo memcd-quickstart -o yaml
+$ kubectl get drmn -n demo memcd-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

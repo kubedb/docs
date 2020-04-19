@@ -174,7 +174,7 @@ mgo-replicaset-gvr   ClusterIP   None            <none>        27017/TCP   119s
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MongoDB object:
 
 ```yaml
-$ kubedb get mg -n demo mgo-replicaset -o yaml
+$ kubectl get mg -n demo mgo-replicaset -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
@@ -420,17 +420,17 @@ Since the MongoDB object created in this tutorial has `spec.terminationPolicy` s
 $ kubedb delete mg mgo-replicaset -n demo
 mongodb.kubedb.com "mgo-replicaset" deleted
 
-$ kubedb get drmn -n demo mgo-replicaset
+$ kubectl get drmn -n demo mgo-replicaset
 NAME             STATUS    AGE
 mgo-replicaset   Pausing   25s
 
-$ kubedb get drmn -n demo mgo-replicaset
+$ kubectl get drmn -n demo mgo-replicaset
 NAME             STATUS    AGE
 mgo-replicaset   Paused    1m
 ```
 
 ```yaml
-$ kubedb get drmn -n demo mgo-replicaset -o yaml
+$ kubectl get drmn -n demo mgo-replicaset -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

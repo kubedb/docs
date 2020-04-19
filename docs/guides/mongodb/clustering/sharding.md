@@ -179,7 +179,7 @@ mongo-sh-shard2-gvr      ClusterIP   None             <none>        27017/TCP   
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. It has also defaulted some field of crd object. Run the following command to see the modified MongoDB object:
 
 ```yaml
-$ kubedb get mg -n demo mongo-sh -o yaml
+$ kubectl get mg -n demo mongo-sh -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
@@ -819,17 +819,17 @@ Since the MongoDB object created in this tutorial has `spec.terminationPolicy` s
 $ kubedb delete mg mongo-sh -n demo
 mongodb.kubedb.com "mongo-sh" deleted
 
-$ kubedb get drmn -n demo mongo-sh
+$ kubectl get drmn -n demo mongo-sh
 NAME       STATUS    AGE
 mongo-sh   Pausing   13s
 
-$ kubedb get drmn -n demo mongo-sh
+$ kubectl get drmn -n demo mongo-sh
 NAME       STATUS   AGE
 mongo-sh   Paused   52s
 ```
 
 ```yaml
-$ kubedb get drmn -n demo mongo-sh -o yaml
+$ kubectl get drmn -n demo mongo-sh -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

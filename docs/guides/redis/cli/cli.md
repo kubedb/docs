@@ -44,10 +44,10 @@ To learn about various options of `create` command, please visit [here](/docs/re
 
 ### How to List Objects
 
-`kubedb get` command allows users to list or find any KubeDB object. To list all Redis objects in `default` namespace, run the following command:
+`kubectl get` command allows users to list or find any KubeDB object. To list all Redis objects in `default` namespace, run the following command:
 
 ```console
-$ kubedb get redis
+$ kubectl get redis
 NAME         VERSION   STATUS    AGE
 redis-demo   4.0-v1    Running   13s
 redis-dev    4.0-v1    Running   13s
@@ -58,7 +58,7 @@ redis-qa     4.0-v1    Running   13s
 To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
-$ kubedb get redis redis-demo --output=yaml
+$ kubectl get redis redis-demo --output=yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Redis
 metadata:
@@ -104,13 +104,13 @@ status:
 To get JSON of an object, use `--output=json` flag.
 
 ```console
-kubedb get redis redis-demo --output=json
+kubectl get redis redis-demo --output=json
 ```
 
 To list all KubeDB objects, use following command:
 
 ```console
-$ kubedb get all -o wide
+$ kubectl get all -o wide
 NAME                          VERSION   STATUS    AGE
 redis.kubedb.com/redis-demo   4.0-v1    Running   3m
 redis.kubedb.com/redis-dev    4.0-v1    Running   3m
@@ -120,7 +120,7 @@ redis.kubedb.com/redis-qa     4.0-v1    Running   3m
 
 Flag `--output=wide` is used to print additional information.
 
-List command supports short names for each object types. You can use it like `kubedb get <short-name>`. Below are the short name for KubeDB objects:
+List command supports short names for each object types. You can use it like `kubectl get <short-name>`. Below are the short name for KubeDB objects:
 
 - Redis: `rd`
 - DormantDatabase: `drmn`
@@ -128,7 +128,7 @@ List command supports short names for each object types. You can use it like `ku
 You can print labels with objects. The following command will list all Redis with their corresponding labels.
 
 ```console
-$ kubedb get rd --show-labels
+$ kubectl get rd --show-labels
 NAME         VERSION   STATUS    AGE       LABELS
 redis-demo   4.0-v1    Running   4m        kubedb=cli-demo
 ```
@@ -136,7 +136,7 @@ redis-demo   4.0-v1    Running   4m        kubedb=cli-demo
 To print only object name, run the following command:
 
 ```console
-$ kubedb get all -o name
+$ kubectl get all -o name
 redis/redis-demo
 redis/redis-dev
 redis/redis-prod

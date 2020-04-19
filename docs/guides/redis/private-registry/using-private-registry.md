@@ -141,7 +141,7 @@ redis-pvt-reg-0   0/1       ContainerCreating   0          0s
 redis-pvt-reg-0   1/1       Running             0          2m
 
 
-$ kubedb get rd -n demo
+$ kubectl get rd -n demo
 NAME            VERSION   STATUS    AGE
 redis-pvt-reg   4.0-v1    Running   40s
 ```

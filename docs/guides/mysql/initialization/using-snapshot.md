@@ -67,12 +67,12 @@ Here,
 Now, wait several seconds. KubeDB operator will create a new `StatefulSet`. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snap-mysql-instant` Snapshot.
 
 ```console
-$ kubedb get my -n demo
+$ kubectl get my -n demo
 NAME                  VERSION   STATUS         AGE
 mysql-instant          8.0-v2    Running        8m
 mysql-init-snapshot   8.0-v2    Initializing   1m
 
-$ kubedb get my -n demo
+$ kubectl get my -n demo
 NAME                  VERSION   STATUS    AGE
 mysql-instant          8.0-v2    Running   20m
 mysql-init-snapshot   8.0-v2    Running   13m

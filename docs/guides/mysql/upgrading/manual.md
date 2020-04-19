@@ -20,7 +20,7 @@ If you want to upgrade your existing MySQL databases, you can follow the procedu
 To get an overview of the MySQL versions currently running in your cluster, run the following command with the KubeDB CLI:
 
 ```console
-$ kubedb get mysql --all-namespaces
+$ kubectl get mysql --all-namespaces
 NAMESPACE   NAME            VERSION   STATUS         AGE
 ns1         database-ns1    5.7-v1    Running        59d
 ns2         database-ns2    5.7-v1    Running        38d
@@ -103,7 +103,7 @@ mysql.kubedb.com/database edited
 Check if the version of the database has changed:
 
 ```console
-$ kubedb get mysql/DB_NAME -n YOUR_NAMESPACE
+$ kubectl get mysql/DB_NAME -n YOUR_NAMESPACE
 NAMESPACE   NAME            VERSION   STATUS         AGE
 ns1         database-ns1    8.0.14   Running        59d
 ```

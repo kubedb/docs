@@ -149,7 +149,7 @@ mgo-pvt-reg-0   0/1       ContainerCreating   0          0s
 mgo-pvt-reg-0   1/1       Running             0          5m
 
 
-$ kubedb get mg -n demo
+$ kubectl get mg -n demo
 NAME          VERSION   STATUS    AGE
 mgo-pvt-reg   3.4-v3    Running   38s
 ```

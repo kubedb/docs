@@ -178,7 +178,7 @@ mgo-init-script-gvr   ClusterIP   None           <none>        27017/TCP   52s
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MongoDB object:
 
 ```yaml
-$ kubedb get mg -n demo mgo-init-script -o yaml
+$ kubectl get mg -n demo mgo-init-script -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
