@@ -8,7 +8,7 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubedb describe
+## kubectl dba describe
 
 Show details of a specific resource or group of resources
 
@@ -19,20 +19,20 @@ Show details of a specific resource or group of resources. This command joins ma
 Use "kubedb api-resources" for a complete list of supported resources.
 
 ```
-kubedb describe (-f FILENAME | TYPE [NAME_PREFIX | -l label] | TYPE/NAME)
+kubectl dba describe (-f FILENAME | TYPE [NAME_PREFIX | -l label] | TYPE/NAME)
 ```
 
 ### Examples
 
 ```
   # Describe an Elasticsearch
-  kubedb describe elasticsearches elasticsearch-demo
+  kubectl dba describe elasticsearches elasticsearch-demo
   
   # Describe a postgres
-  kubedb describe pg/postgres-demo
+  kubectl dba describe pg/postgres-demo
   
   # Describe all dormantdatabases
-  kubedb describe drmn
+  kubectl dba describe drmn
   
   Valid resource types include:
   * all

@@ -76,7 +76,7 @@ Here,
 KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching `PerconaXtraDB` object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<percona-xtradb-object-name>-gvr`.
 
 ```console
-$ kubedb describe px -n demo demo-cluster
+$ kubectl dba describe px -n demo demo-cluster
 Name:         demo-cluster
 Namespace:    demo
 Labels:       <none>

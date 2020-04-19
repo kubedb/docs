@@ -97,10 +97,10 @@ NAME              VERSION    STATUS    AGE
 script-postgres   10.2-v5    Running   39s
 ```
 
-You can use `kubedb describe` command to view which resources has been created by KubeDB for this Postgres object.
+You can use `kubectl dba describe` command to view which resources has been created by KubeDB for this Postgres object.
 
 ```console
-$ kubedb describe pg -n demo script-postgres
+$ kubectl dba describe pg -n demo script-postgres
 Name:               script-postgres
 Namespace:          demo
 CreationTimestamp:  Fri, 21 Sep 2018 15:53:27 +0600

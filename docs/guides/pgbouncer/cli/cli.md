@@ -184,7 +184,7 @@ To learn about various options of `get` command, please visit [here](/docs/refer
 
 ### How to Describe Objects
 
-`kubedb describe` command allows users to describe any KubeDB object. The following command will describe PgBouncer `pgbouncer-demo` with relevant information.
+`kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe PgBouncer `pgbouncer-demo` with relevant information.
 
 ```console
 Name:         pgbouncer-demo
@@ -236,7 +236,7 @@ Events:
 
 ```
 
-`kubedb describe` command provides following basic information about a database.
+`kubectl dba describe` command provides following basic information about a database.
 
 - StatefulSet
 - Storage (Persistent Volume)
@@ -251,25 +251,25 @@ To hide events on KubeDB object, use flag `--show-events=false`
 To describe all PgBouncer objects in `default` namespace, use following command
 
 ```console
-kubedb describe pb
+kubectl dba describe pb
 ```
 
 To describe all PgBouncer objects from every namespace, provide `--all-namespaces` flag.
 
 ```console
-kubedb describe pb --all-namespaces
+kubectl dba describe pb --all-namespaces
 ```
 
 To describe all KubeDB objects from every namespace, use the following command:
 
 ```console
-kubedb describe all --all-namespaces
+kubectl dba describe all --all-namespaces
 ```
 
 You can also describe KubeDb objects with matching labels. The following command will describe all Elasticsearch & PgBouncer objects with specified labels from every namespace.
 
 ```console
-kubedb describe pg,es --all-namespaces --selector='group=dev'
+kubectl dba describe pg,es --all-namespaces --selector='group=dev'
 ```
 
 To learn about various options of `describe` command, please visit [here](/docs/reference/kubedb_describe.md).

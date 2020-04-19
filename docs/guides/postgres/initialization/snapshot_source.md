@@ -102,7 +102,7 @@ When PostgreSQL database is ready, KubeDB operator launches a Kubernetes Job to 
 As a final step of initialization, KubeDB Job controller adds `kubedb.com/initialized` annotation in initialized Postgres object. This prevents further invocation of initialization process.
 
 ```console
-$ kubedb describe pg -n demo recovered-postgres -S=false -W=false
+$ kubectl dba describe pg -n demo recovered-postgres -S=false -W=false
 Name:           recovered-postgres
 Namespace:      demo
 StartTimestamp: Thu, 08 Feb 2018 17:23:21 +0600

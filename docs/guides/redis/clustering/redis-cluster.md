@@ -82,7 +82,7 @@ Here,
 KubeDB operator watches for `Redis` objects using Kubernetes API. When a `Redis` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for StatefulSets named `kubedb`, if one is not already present.
 
 ```console
-$ kubedb describe rd -n demo redis-cluster
+$ kubectl dba describe rd -n demo redis-cluster
 Name:               redis-cluster
 Namespace:          demo
 CreationTimestamp:  Tue, 19 Feb 2019 19:28:59 +0600

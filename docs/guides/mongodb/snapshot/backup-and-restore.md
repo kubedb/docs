@@ -146,10 +146,10 @@ Here,
 - `spec.storageSecretName` points to the Secret containing the credentials for snapshot storage destination.
 - `spec.gcs.bucket` points to the bucket name used to store the snapshot data.
 
-You can also run the `kubedb describe` command to see the recent snapshots taken for a database.
+You can also run the `kubectl dba describe` command to see the recent snapshots taken for a database.
 
 ```console
-$ kubedb describe mg -n demo mgo-instant
+$ kubectl dba describe mg -n demo mgo-instant
 Name:               mgo-instant
 Namespace:          demo
 CreationTimestamp:  Wed, 06 Feb 2019 12:27:01 +0600
@@ -278,7 +278,7 @@ NAME            VERSION   STATUS    AGE
 mgo-instant      3.4-v3    Running   16m
 mgo-recovered   3.4-v3    Running   45s
 
-$ kubedb describe mg -n demo mgo-recovered
+$ kubectl dba describe mg -n demo mgo-recovered
 Name:               mgo-recovered
 Namespace:          demo
 CreationTimestamp:  Wed, 06 Feb 2019 12:43:00 +0600

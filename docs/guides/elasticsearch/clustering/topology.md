@@ -82,7 +82,7 @@ multi-node-es   7.3.2     Running   7m38s
 Let's describe Elasticsearch object `multi-node-es` while Running
 
 ```yaml
-$ kubedb describe es -n demo multi-node-es
+$ kubectl dba describe es -n demo multi-node-es
 Name:               multi-node-es
 Namespace:          demo
 CreationTimestamp:  Wed, 02 Oct 2019 10:37:14 +0600
@@ -352,7 +352,7 @@ Three StatefulSets are created for *client*, *data* and *master* node respective
 Let's describe this Elasticsearch
 
 ```console
-$ kubedb describe es -n demo topology-es
+$ kubectl dba describe es -n demo topology-es
 Name:               topology-es
 Namespace:          demo
 CreationTimestamp:  Wed, 02 Oct 2019 10:46:12 +0600

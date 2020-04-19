@@ -70,7 +70,7 @@ NAME                VERSION   STATUS         AGE
 mgo-instant          3.4-v3    Running        4m
 mgo-init-snapshot   3.4-v3    Initializing   53s
 
-$ kubedb describe mg -n demo mgo-init-snapshot
+$ kubectl dba describe mg -n demo mgo-init-snapshot
 Name:               mgo-init-snapshot
 Namespace:          demo
 CreationTimestamp:  Wed, 06 Feb 2019 15:51:44 +0600

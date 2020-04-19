@@ -96,7 +96,7 @@ $ kubectl get mc -n demo
 NAME               VERSION    STATUS    AGE
 memcd-quickstart   1.5.4-v1   Running   2m
 
-$ kubedb describe mc -n demo memcd-quickstart
+$ kubectl dba describe mc -n demo memcd-quickstart
 Name:               memcd-quickstart
 Namespace:          demo
 CreationTimestamp:  Wed, 03 Oct 2018 15:40:38 +0600

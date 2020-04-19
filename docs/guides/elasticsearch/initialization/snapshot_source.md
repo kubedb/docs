@@ -113,7 +113,7 @@ recovered-es   7.3.2     Running   7m6s
 As a final step of initialization, KubeDB Job controller adds `kubedb.com/initialized` annotation in initialized Elasticsearch object. This prevents further invocation of initialization process.
 
 ```console
-$ kubedb describe es -n demo recovered-es
+$ kubectl dba describe es -n demo recovered-es
 Name:               recovered-es
 Namespace:          demo
 CreationTimestamp:  Wed, 02 Oct 2019 14:54:59 +0600

@@ -175,7 +175,7 @@ quick-postgres   10.2-v5   Creating   13s
 Let's describe Postgres object `quick-postgres`
 
 ```console
-$ kubedb describe pg -n demo quick-postgres
+$ kubectl dba describe pg -n demo quick-postgres
 Name:               quick-postgres
 Namespace:          demo
 CreationTimestamp:  Thu, 07 Feb 2019 17:03:11 +0600

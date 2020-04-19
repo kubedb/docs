@@ -190,10 +190,10 @@ CREATE TABLE dashboard (
 ALTER TABLE dashboard OWNER TO postgres;
 ```
 
-You can see the Snapshot list for Postgres `script-postgres` by running `kubedb describe` command.
+You can see the Snapshot list for Postgres `script-postgres` by running `kubectl dba describe` command.
 
 ```console
-$ kubedb describe pg -n demo script-postgres
+$ kubectl dba describe pg -n demo script-postgres
 Name:               script-postgres
 Namespace:          demo
 CreationTimestamp:  Tue, 04 Sep 2018 11:55:22 +0600

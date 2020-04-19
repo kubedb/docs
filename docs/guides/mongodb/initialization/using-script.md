@@ -86,7 +86,7 @@ Here,
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-crd-name>-gvr`, if one is not already present. No MongoDB specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/install.md#using-yaml).
 
 ```console
-$ kubedb describe mg -n demo mgo-init-script
+$ kubectl dba describe mg -n demo mgo-init-script
 Name:               mgo-init-script
 Namespace:          demo
 CreationTimestamp:  Wed, 06 Feb 2019 15:43:54 +0600

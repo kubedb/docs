@@ -110,7 +110,7 @@ Here,
 KubeDB operator watches for `MySQL` objects using Kubernetes api. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present. No MySQL specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/install.md#using-yaml).
 
 ```console
-$ kubedb describe my -n demo mysql-init-script
+$ kubectl dba describe my -n demo mysql-init-script
 Name:               mysql-init-script
 Namespace:          demo
 CreationTimestamp:  Thu, 27 Sep 2018 17:06:37 +0600

@@ -201,10 +201,10 @@ To learn about various options of `get` command, please visit [here](/docs/refer
 
 ### How to Describe Objects
 
-`kubedb describe` command allows users to describe any KubeDB object. The following command will describe Elasticsearch database `elasticsearch-demo` with relevant information.
+`kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe Elasticsearch database `elasticsearch-demo` with relevant information.
 
 ```console
-$ kubedb describe es elasticsearch-demo
+$ kubectl dba describe es elasticsearch-demo
 Name:               elasticsearch-demo
 Namespace:          default
 CreationTimestamp:  Mon, 08 Oct 2018 20:22:19 +0600
@@ -307,7 +307,7 @@ Events:
   Normal  Successful  4m    Elasticsearch operator  Successfully patched Elasticsearch
 ```
 
-`kubedb describe` command provides following basic information about a database.
+`kubectl dba describe` command provides following basic information about a database.
 
 - StatefulSet
 - Storage (Persistent Volume)
@@ -324,25 +324,25 @@ To hide events on KubeDB object, use flag `--show-events=false`
 To describe all Elasticsearch objects in `default` namespace, use following command
 
 ```console
-$ kubedb describe es
+$ kubectl dba describe es
 ```
 
 To describe all Elasticsearch objects from every namespace, provide `--all-namespaces` flag.
 
 ```console
-$ kubedb describe es --all-namespaces
+$ kubectl dba describe es --all-namespaces
 ```
 
 To describe all KubeDB objects from every namespace, use the following command:
 
 ```console
-$ kubedb describe all --all-namespaces
+$ kubectl dba describe all --all-namespaces
 ```
 
 You can also describe KubeDb objects with matching labels. The following command will describe all Elasticsearch objects with specified labels from every namespace.
 
 ```console
-$ kubedb describe es --all-namespaces --selector='group=dev'
+$ kubectl dba describe es --all-namespaces --selector='group=dev'
 ```
 
 To learn about various options of `describe` command, please visit [here](/docs/reference/kubedb_describe.md).

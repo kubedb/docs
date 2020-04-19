@@ -299,10 +299,10 @@ If you open this `test.data.json` file, you will see the data you have created p
 }
 ```
 
-Let's see the Snapshot list for Elasticsearch `instant-elasticsearch` by running `kubedb describe` command.
+Let's see the Snapshot list for Elasticsearch `instant-elasticsearch` by running `kubectl dba describe` command.
 
 ```yaml
-$ kubedb describe es -n demo instant-elasticsearch
+$ kubectl dba describe es -n demo instant-elasticsearch
 Name:               instant-elasticsearch
 Namespace:          demo
 CreationTimestamp:  Wed, 02 Oct 2019 11:26:44 +0600

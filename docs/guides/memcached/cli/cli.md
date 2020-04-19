@@ -144,10 +144,10 @@ To learn about various options of `get` command, please visit [here](/docs/refer
 
 ### How to Describe Objects
 
-`kubedb describe` command allows users to describe any KubeDB object. The following command will describe Memcached server `memcached-demo` with relevant information.
+`kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe Memcached server `memcached-demo` with relevant information.
 
 ```console
-$ kubedb describe mc memcached-demo
+$ kubectl dba describe mc memcached-demo
 Name:               memcached-demo
 Namespace:          default
 CreationTimestamp:  Thu, 04 Oct 2018 11:58:57 +0600
@@ -190,7 +190,7 @@ Events:
   Normal  Successful  2m    Memcached operator  Successfully patched Memcached
 ```
 
-`kubedb describe` command provides following basic information about a Memcached server.
+`kubectl dba describe` command provides following basic information about a Memcached server.
 
 - Deployment
 - Service
@@ -201,25 +201,25 @@ To hide events on KubeDB object, use flag `--show-events=false`
 To describe all Memcached objects in `default` namespace, use following command
 
 ```console
-kubedb describe mc
+kubectl dba describe mc
 ```
 
 To describe all Memcached objects from every namespace, provide `--all-namespaces` flag.
 
 ```console
-kubedb describe mc --all-namespaces
+kubectl dba describe mc --all-namespaces
 ```
 
 To describe all KubeDB objects from every namespace, use the following command:
 
 ```console
-kubedb describe all --all-namespaces
+kubectl dba describe all --all-namespaces
 ```
 
 You can also describe KubeDB objects with matching labels. The following command will describe all Memcached objects with specified labels from every namespace.
 
 ```console
-kubedb describe mc --all-namespaces --selector='group=dev'
+kubectl dba describe mc --all-namespaces --selector='group=dev'
 ```
 
 To learn about various options of `describe` command, please visit [here](/docs/reference/kubedb_describe.md).

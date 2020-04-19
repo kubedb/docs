@@ -184,10 +184,10 @@ To learn about various options of `get` command, please visit [here](/docs/refer
 
 ### How to Describe Objects
 
-`kubedb describe` command allows users to describe any KubeDB object. The following command will describe MongoDB database `mongodb-demo` with relevant information.
+`kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe MongoDB database `mongodb-demo` with relevant information.
 
 ```console
-$ kubedb describe mg mongodb-demo
+$ kubectl dba describe mg mongodb-demo
 Name:               mongodb-demo
 Namespace:          default
 CreationTimestamp:  Wed, 06 Feb 2019 16:31:04 +0600
@@ -258,7 +258,7 @@ Events:
   Normal  Successful  2m    KubeDB operator  Successfully patched MongoDB
 ```
 
-`kubedb describe` command provides following basic information about a MongoDB database.
+`kubectl dba describe` command provides following basic information about a MongoDB database.
 
 - StatefulSet
 - Storage (Persistent Volume)
@@ -272,25 +272,25 @@ To hide events on KubeDB object, use flag `--show-events=false`
 To describe all MongoDB objects in `default` namespace, use following command
 
 ```console
-kubedb describe mg
+kubectl dba describe mg
 ```
 
 To describe all MongoDB objects from every namespace, provide `--all-namespaces` flag.
 
 ```console
-kubedb describe mg --all-namespaces
+kubectl dba describe mg --all-namespaces
 ```
 
 To describe all KubeDB objects from every namespace, use the following command:
 
 ```console
-kubedb describe all --all-namespaces
+kubectl dba describe all --all-namespaces
 ```
 
 You can also describe KubeDb objects with matching labels. The following command will describe all MongoDB objects with specified labels from every namespace.
 
 ```console
-kubedb describe mg --all-namespaces --selector='group=dev'
+kubectl dba describe mg --all-namespaces --selector='group=dev'
 ```
 
 To learn about various options of `describe` command, please visit [here](/docs/reference/kubedb_describe.md).

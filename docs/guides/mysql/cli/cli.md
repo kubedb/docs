@@ -163,10 +163,10 @@ To learn about various options of `get` command, please visit [here](/docs/refer
 
 ### How to Describe Objects
 
-`kubedb describe` command allows users to describe any KubeDB object. The following command will describe MySQL database `mysql-demo` with relevant information.
+`kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe MySQL database `mysql-demo` with relevant information.
 
 ```console
-$ kubedb describe my mysql-demo
+$ kubectl dba describe my mysql-demo
 Name:               mysql-demo
 Namespace:          default
 CreationTimestamp:  Thu, 27 Sep 2018 19:07:23 +0600
@@ -227,7 +227,7 @@ Events:
   Normal  Successful  3m    MySQL operator  Successfully patched MySQL
 ```
 
-`kubedb describe` command provides following basic information about a MySQL database.
+`kubectl dba describe` command provides following basic information about a MySQL database.
 
 - StatefulSet
 - Storage (Persistent Volume)
@@ -241,25 +241,25 @@ To hide events on KubeDB object, use flag `--show-events=false`
 To describe all MySQL objects in `default` namespace, use following command
 
 ```console
-kubedb describe my
+kubectl dba describe my
 ```
 
 To describe all MySQL objects from every namespace, provide `--all-namespaces` flag.
 
 ```console
-kubedb describe my --all-namespaces
+kubectl dba describe my --all-namespaces
 ```
 
 To describe all KubeDB objects from every namespace, use the following command:
 
 ```console
-kubedb describe all --all-namespaces
+kubectl dba describe all --all-namespaces
 ```
 
 You can also describe KubeDB objects with matching labels. The following command will describe all MySQL objects with specified labels from every namespace.
 
 ```console
-kubedb describe my --all-namespaces --selector='group=dev'
+kubectl dba describe my --all-namespaces --selector='group=dev'
 ```
 
 To learn about various options of `describe` command, please visit [here](/docs/reference/kubedb_describe.md).

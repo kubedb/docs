@@ -77,7 +77,7 @@ NAME                  VERSION   STATUS    AGE
 mysql-instant          8.0-v2    Running   20m
 mysql-init-snapshot   8.0-v2    Running   13m
 
-$ kubedb describe my -n demo mysql-init-snapshot
+$ kubectl dba describe my -n demo mysql-init-snapshot
 Name:               mysql-init-snapshot
 Namespace:          demo
 CreationTimestamp:  Thu, 27 Sep 2018 17:54:16 +0600

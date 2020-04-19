@@ -147,10 +147,10 @@ To learn about various options of `get` command, please visit [here](/docs/refer
 
 ### How to Describe Objects
 
-`kubedb describe` command allows users to describe any KubeDB object. The following command will describe Redis server `redis-demo` with relevant information.
+`kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe Redis server `redis-demo` with relevant information.
 
 ```console
-$ kubedb describe rd redis-demo
+$ kubectl dba describe rd redis-demo
 Name:               redis-demo
 Namespace:          default
 CreationTimestamp:  Mon, 01 Oct 2018 14:14:27 +0600
@@ -197,7 +197,7 @@ Events:
   Normal  Successful  5m    Redis operator  Successfully patched Redis
 ```
 
-`kubedb describe` command provides following basic information about a Redis server.
+`kubectl dba describe` command provides following basic information about a Redis server.
 
 - StatefulSet
 - Storage (Persistent Volume)
@@ -209,25 +209,25 @@ To hide events on KubeDB object, use flag `--show-events=false`
 To describe all Redis objects in `default` namespace, use following command
 
 ```console
-kubedb describe rd
+kubectl dba describe rd
 ```
 
 To describe all Redis objects from every namespace, provide `--all-namespaces` flag.
 
 ```console
-kubedb describe rd --all-namespaces
+kubectl dba describe rd --all-namespaces
 ```
 
 To describe all KubeDB objects from every namespace, use the following command:
 
 ```console
-kubedb describe all --all-namespaces
+kubectl dba describe all --all-namespaces
 ```
 
 You can also describe KubeDB objects with matching labels. The following command will describe all Redis objects with specified labels from every namespace.
 
 ```console
-kubedb describe rd --all-namespaces --selector='group=dev'
+kubectl dba describe rd --all-namespaces --selector='group=dev'
 ```
 
 To learn about various options of `describe` command, please visit [here](/docs/reference/kubedb_describe.md).

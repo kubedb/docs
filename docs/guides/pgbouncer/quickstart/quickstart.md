@@ -376,7 +376,7 @@ pgbouncer-server   1.11.0    Running   2h
 Let's describe PgBouncer object `pgbouncer-server`
 
 ```console
-$ kubedb describe pb -n demo pgbouncer-server
+$ kubectl dba describe pb -n demo pgbouncer-server
 Name:         pgbouncer-demo
 Namespace:    demo
 Labels:       <none>

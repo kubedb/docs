@@ -112,7 +112,7 @@ $ kubectl get rd -n demo
 NAME               VERSION   STATUS    AGE
 redis-quickstart   4.0-v1    Running   1m
 
-$ kubedb describe rd -n demo redis-quickstart
+$ kubectl dba describe rd -n demo redis-quickstart
 Name:               redis-quickstart
 Namespace:          demo
 CreationTimestamp:  Mon, 01 Oct 2018 12:01:23 +0600

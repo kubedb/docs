@@ -143,7 +143,7 @@ quick-elasticsearch   7.3.2    Running   3m
 Let's describe Elasticsearch object `quick-elasticsearch`
 
 ```console
-$ kubedb describe es -n demo quick-elasticsearch
+$ kubectl dba describe es -n demo quick-elasticsearch
 Name:               quick-elasticsearch
 Namespace:          demo
 CreationTimestamp:  Fri, 28 Sep 2018 11:33:29 +0600
@@ -260,7 +260,7 @@ Two services for each Elasticsearch object.
 
 KubeDB supports Elasticsearch clustering where pods can be any of these three roles: *master*, *data* or *client*.
 
-If you see `Topology` section in `kubedb describe` result, you will know role(s) of each Pod.
+If you see `Topology` section in `kubectl dba describe` result, you will know role(s) of each Pod.
 
 ```console
 Topology:
