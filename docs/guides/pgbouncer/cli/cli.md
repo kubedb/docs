@@ -20,24 +20,24 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 
 ### How to Create objects
 
-`kubedb create` creates a pgbouncer CRD object in `default` namespace by default. Following command will create a PgBouncer object as specified in `pgbouncer.yaml`.
+`kubectl create` creates a pgbouncer CRD object in `default` namespace by default. Following command will create a PgBouncer object as specified in `pgbouncer.yaml`.
 
 ```console
-$ kubedb create -f pgbouncer-demo.yaml
+$ kubectl create -f pgbouncer-demo.yaml
 pgbouncer "pgbouncer-demo" created
 ```
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
 ```console
-$ kubedb create -f pgbouncer-demo.yaml --namespace=kube-system
+$ kubectl create -f pgbouncer-demo.yaml --namespace=kube-system
 pgbouncer "pgbouncer-demo" created
 ```
 
-`kubedb create` command also considers `stdin` as input.
+`kubectl create` command also considers `stdin` as input.
 
 ```console
-cat pgbouncer-demo.yaml | kubedb create -f -
+cat pgbouncer-demo.yaml | kubectl create -f -
 ```
 
 To learn about various options of `create` command, please visit [here](/docs/reference/kubedb_create.md).

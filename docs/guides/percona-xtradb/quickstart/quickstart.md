@@ -81,7 +81,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/quickstart.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/quickstart.yaml
 perconaxtradb.kubedb.com/demo-quickstart created
 ```
 
@@ -418,7 +418,7 @@ In this tutorial, the dormant database can be resumed by creating original `Perc
 The below command will resume the DormantDatabase `demo-quickstart` that was created before.
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/quickstart.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/quickstart.yaml
 perconaxtradb.kubedb.com/demo-quickstart created
 ```
 

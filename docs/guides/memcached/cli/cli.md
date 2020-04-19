@@ -20,24 +20,24 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 
 ### How to Create objects
 
-`kubedb create` creates a database CRD object in `default` namespace by default. Following command will create a Memcached object as specified in `memcached.yaml`.
+`kubectl create` creates a database CRD object in `default` namespace by default. Following command will create a Memcached object as specified in `memcached.yaml`.
 
 ```console
-$ kubedb create -f memcached-demo.yaml
+$ kubectl create -f memcached-demo.yaml
 memcached.kubedb.com/memcached-demo created
 ```
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
 ```console
-$ kubedb create -f memcached-demo.yaml --namespace=kube-system
+$ kubectl create -f memcached-demo.yaml --namespace=kube-system
 memcached.kubedb.com/memcached-demo created
 ```
 
-`kubedb create` command also considers `stdin` as input.
+`kubectl create` command also considers `stdin` as input.
 
 ```console
-cat memcached-demo.yaml | kubedb create -f -
+cat memcached-demo.yaml | kubectl create -f -
 ```
 
 To learn about various options of `create` command, please visit [here](/docs/reference/kubedb_create.md).

@@ -20,24 +20,24 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 
 ### How to Create objects
 
-`kubedb create` creates a database CRD object in `default` namespace by default. Following command will create a Redis object as specified in `redis.yaml`.
+`kubectl create` creates a database CRD object in `default` namespace by default. Following command will create a Redis object as specified in `redis.yaml`.
 
 ```console
-$ kubedb create -f redis-demo.yaml
+$ kubectl create -f redis-demo.yaml
 redis.kubedb.com/redis-demo created
 ```
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
 ```console
-$ kubedb create -f redis-demo.yaml --namespace=kube-system
+$ kubectl create -f redis-demo.yaml --namespace=kube-system
 redis.kubedb.com/redis-demo created
 ```
 
-`kubedb create` command also considers `stdin` as input.
+`kubectl create` command also considers `stdin` as input.
 
 ```console
-cat redis-demo.yaml | kubedb create -f -
+cat redis-demo.yaml | kubectl create -f -
 ```
 
 To learn about various options of `create` command, please visit [here](/docs/reference/kubedb_create.md).

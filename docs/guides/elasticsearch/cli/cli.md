@@ -20,24 +20,24 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 
 ### How to Create objects
 
-`kubedb create` creates a database CRD object in `default` namespace by default. Following command will create an Elasticsearch object as specified in `elasticsearch.yaml`.
+`kubectl create` creates a database CRD object in `default` namespace by default. Following command will create an Elasticsearch object as specified in `elasticsearch.yaml`.
 
 ```console
-$ kubedb create -f elasticsearch-demo.yaml
+$ kubectl create -f elasticsearch-demo.yaml
 elasticsearch.kubedb.com/elasticsearch-demo created
 ```
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
 ```console
-$ kubedb create -f elasticsearch-demo.yaml --namespace=kube-system
+$ kubectl create -f elasticsearch-demo.yaml --namespace=kube-system
 elasticsearch.kubedb.com/elasticsearch-demo created
 ```
 
-`kubedb create` command also considers `stdin` as input.
+`kubectl create` command also considers `stdin` as input.
 
 ```console
-cat elasticsearch-demo.yaml | kubedb create -f -
+cat elasticsearch-demo.yaml | kubectl create -f -
 ```
 
 To learn about various options of `create` command, please visit [here](/docs/reference/kubedb_create.md).

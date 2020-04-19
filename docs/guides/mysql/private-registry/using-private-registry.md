@@ -130,7 +130,7 @@ spec:
 Now run the command to deploy this `MySQL` object:
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/private-registry/demo-2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/private-registry/demo-2.yaml
 mysql.kubedb.com/mysql-pvt-reg created
 ```
 

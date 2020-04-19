@@ -8,7 +8,7 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubedb create
+## kubectl create
 
 Create a resource from a file or from stdin.
 
@@ -19,17 +19,17 @@ Create a resource from a file or from stdin.
  JSON and YAML formats are accepted.
 
 ```
-kubedb create -f FILENAME
+kubectl create -f FILENAME
 ```
 
 ### Examples
 
 ```
   # Create an Elasticsearch using the data in elastic.json.
-  kubedb create -f ./elastic.json
+  kubectl create -f ./elastic.json
   
   # Create an Elasticsearch based on the JSON passed into stdin.
-  cat elastic.json | kubedb create -f -
+  cat elastic.json | kubectl create -f -
 ```
 
 ### Options

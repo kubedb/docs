@@ -126,7 +126,7 @@ spec:
 Now run the command to deploy this `Redis` object:
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/private-registry/demo-2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/private-registry/demo-2.yaml
 redis.kubedb.com/redis-pvt-reg created
 ```
 

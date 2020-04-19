@@ -118,7 +118,7 @@ spec:
 Now run the command to deploy this `ProxySQL` object:
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/private-registry.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/private-registry.yaml
 proxysql.kubedb.com/proxysql-pvt-reg created
 ```
 

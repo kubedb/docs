@@ -119,7 +119,7 @@ spec:
 Now run the command to deploy this `PerconaXtraDB` object:
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/private-registry.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/private-registry.yaml
 perconaxtradb.kubedb.com/px-pvt-reg created
 ```
 

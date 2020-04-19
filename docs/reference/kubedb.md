@@ -61,7 +61,7 @@ kubedb [flags]
 ### SEE ALSO
 
 * [kubedb api-resources](/docs/reference/kubedb_api-resources.md)	 - Print the supported API resources on the server
-* [kubedb create](/docs/reference/kubedb_create.md)	 - Create a resource from a file or from stdin.
+* [kubectl create](/docs/reference/kubedb_create.md)	 - Create a resource from a file or from stdin.
 * [kubedb delete](/docs/reference/kubedb_delete.md)	 - Delete resources by filenames, stdin, resources and names, or by resources and label selector
 * [kubedb describe](/docs/reference/kubedb_describe.md)	 - Show details of a specific resource or group of resources
 * [kubedb edit](/docs/reference/kubedb_edit.md)	 - Edit a resource on the server

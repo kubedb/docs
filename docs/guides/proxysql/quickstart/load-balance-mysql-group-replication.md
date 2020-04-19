@@ -72,7 +72,7 @@ spec:
 Create the above `MySQL` object,
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-my-group.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-my-group.yaml
 mysql.kubedb.com/my-group created
 ```
 
@@ -209,7 +209,7 @@ spec:
 Now, create this,
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-proxy-my-group.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-proxy-my-group.yaml
 proxysql.kubedb.com/proxy-my-group created
 ```
 

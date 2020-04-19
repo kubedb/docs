@@ -20,24 +20,24 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 
 ### How to Create objects
 
-`kubedb create` creates a database CRD object in `default` namespace by default. Following command will create a MongoDB object as specified in `mongodb.yaml`.
+`kubectl create` creates a database CRD object in `default` namespace by default. Following command will create a MongoDB object as specified in `mongodb.yaml`.
 
 ```console
-$ kubedb create -f mongodb-demo.yaml
+$ kubectl create -f mongodb-demo.yaml
 mongodb.kubedb.com/mongodb-demo created
 ```
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
 ```console
-$ kubedb create -f mongodb-demo.yaml --namespace=kube-system
+$ kubectl create -f mongodb-demo.yaml --namespace=kube-system
 mongodb.kubedb.com/mongodb-demo
 ```
 
-`kubedb create` command also considers `stdin` as input.
+`kubectl create` command also considers `stdin` as input.
 
 ```console
-cat mongodb-demo.yaml | kubedb create -f -
+cat mongodb-demo.yaml | kubectl create -f -
 ```
 
 To learn about various options of `create` command, please visit [here](/docs/reference/kubedb_create.md).
