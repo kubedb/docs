@@ -226,12 +226,12 @@ To learn about various options of `describe` command, please visit [here](/docs/
 
 ### How to Edit Objects
 
-`kubedb edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
+`kubectl edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
 
 Lets edit an existing running Memcached object to setup [Monitoring](/docs/guides/memcached/monitoring/using-builtin-prometheus.md). The following command will open Memcached `memcached-demo` in editor.
 
 ```console
-$ kubedb edit mc memcached-demo
+$ kubectl edit mc memcached-demo
 
 #spec:
 #  monitor:
@@ -256,7 +256,7 @@ If Deployment exists for a Memcached server, following fields can't be modified 
 - spec.podTemplate.spec.nodeSelector
 - spec.podTemplate.spec.env
 
-For DormantDatabase, `spec.origin` can't be edited using `kubedb edit`
+For DormantDatabase, `spec.origin` can't be edited using `kubectl edit`
 
 To learn about various options of `edit` command, please visit [here](/docs/reference/kubedb_edit.md).
 

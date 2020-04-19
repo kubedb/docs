@@ -249,7 +249,7 @@ $ kubedb delete rd redis-quickstart -n demo
 Error from server (BadRequest): admission webhook "redis.validators.kubedb.com" denied the request: redis "redis-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubedb edit rd redis-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when redis is deleted and keeps PVCs intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database. 
+Now, run `kubectl edit rd redis-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when redis is deleted and keeps PVCs intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database. 
 
 Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/redis.md#specterminationpolicy)
 
@@ -347,7 +347,7 @@ Now, if you exec into the database, you can see that the datas are intact.
 You can wipe out a DormantDatabase while deleting the objet by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `Redis` database (i.e, PVCs, Secrets).
 
 ```console
-$ kubedb edit drmn -n demo redis-quickstart
+$ kubectl edit drmn -n demo redis-quickstart
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

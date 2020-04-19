@@ -39,7 +39,7 @@ You should check the supported MySQL [upgrade paths](https://dev.mysql.com/doc/r
 
 ### PHP Compatibility Note for MySQL 8.0+
 
-At the moment of writing, PHP [doesn't support](https://www.php.net/manual/en/mysqli.requirements.php) the new `caching_sha2_password` authentication method on MySQL 8+ (tested on PHP 7.2 and 7.3). You will get errors like:
+At the moment of writing, PHP [doesn't support](https://php.net/manual/en/mysqli.requirements.php) the new `caching_sha2_password` authentication method on MySQL 8+ (tested on PHP 7.2 and 7.3). You will get errors like:
 
 ```
 mysqli_real_connect(): The server requested authentication method unknown to the client [caching_sha2_password]
@@ -85,7 +85,7 @@ The upgrade consists of two steps:
 First, we'll edit the kubedb instance. Open the instance editor:
 
 ```console
-kubedb edit mysql/DB_NAME -n YOUR_NAMESPACE
+kubectl edit mysql/DB_NAME -n YOUR_NAMESPACE
 ```
 
 Replace `version: "X.X.X"` with the version you need, for example 8.0.14:

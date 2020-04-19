@@ -325,7 +325,7 @@ $ kubedb delete mg mgo-quickstart -n demo
 Error from server (BadRequest): admission webhook "mongodb.validators.kubedb.com" denied the request: mongodb "mgo-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubedb edit mg mgo-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when mongodb is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
+Now, run `kubectl edit mg mgo-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when mongodb is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
 
 Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/mongodb.md#specterminationpolicy).
 
@@ -449,7 +449,7 @@ Now, if you exec into the database, you can see that the datas are intact.
 You can wipe out a DormantDatabase while deleting the object by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `MongoDB` database (i.e, PVCs, Secrets, Snapshots). It will also delete snapshot data stored in the Cloud Storage buckets.
 
 ```yaml
-$ kubedb edit drmn -n demo mgo-quickstart
+$ kubectl edit drmn -n demo mgo-quickstart
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

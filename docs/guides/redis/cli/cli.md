@@ -234,12 +234,12 @@ To learn about various options of `describe` command, please visit [here](/docs/
 
 ### How to Edit Objects
 
-`kubedb edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
+`kubectl edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
 
 Lets edit an existing running Redis object to setup [Monitoring](/docs/guides/redis/monitoring/using-builtin-prometheus.md). The following command will open Redis `redis-demo` in editor.
 
 ```console
-$ kubedb edit rd redis-demo
+$ kubectl edit rd redis-demo
 #spec:
 #  monitor:
 #    agent: prometheus.io/builtin
@@ -263,7 +263,7 @@ If StatefulSets exists for a Redis server, following fields can't be modified as
 - spec.podTemplate.spec.nodeSelector
 - spec.podTemplate.spec.env
 
-For DormantDatabase, `spec.origin` can't be edited using `kubedb edit`
+For DormantDatabase, `spec.origin` can't be edited using `kubectl edit`
 
 To learn about various options of `edit` command, please visit [here](/docs/reference/kubedb_edit.md).
 

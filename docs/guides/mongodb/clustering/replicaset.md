@@ -536,7 +536,7 @@ Now, If you again exec into `pod` and look for previous data, you will see that,
 You can wipe out a DormantDatabase while deleting the object by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `MongoDB` database (i.e, PVCs, Secrets, Snapshots). It will also delete snapshot data stored in the Cloud Storage buckets.
 
 ```yaml
-$ kubedb edit drmn -n demo mgo-replicaset
+$ kubectl edit drmn -n demo mgo-replicaset
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

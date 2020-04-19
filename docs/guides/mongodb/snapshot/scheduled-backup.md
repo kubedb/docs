@@ -104,7 +104,7 @@ mongodb.kubedb.com/mgo-scheduled created
 It is also possible to add  backup scheduler to an existing `MongoDB`. You just have to edit the `MongoDB` CRD and add below spec:
 
 ```yaml
-$ kubedb edit mg {db-name} -n demo
+$ kubectl edit mg {db-name} -n demo
 spec:
   backupSchedule:
     cronExpression: '@every 1m'
@@ -135,7 +135,7 @@ From the above image, you can see that the snapshot output is stored in a folder
 To remove scheduler, edit the MongoDB object  to remove `spec.backupSchedule` section.
 
 ```yaml
-$ kubedb edit mg mgo-scheduled -n demo
+$ kubectl edit mg mgo-scheduled -n demo
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:

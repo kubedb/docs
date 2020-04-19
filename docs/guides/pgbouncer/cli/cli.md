@@ -276,12 +276,12 @@ To learn about various options of `describe` command, please visit [here](/docs/
 
 ### How to Edit Objects
 
-`kubedb edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
+`kubectl edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
 
 Lets edit an existing running PgBouncer object to setup [Monitoring](/docs/guides/pgbouncer/monitoring/using-coreos-prometheus-operator.md). The following command will open PgBouncer `pgbouncer-demo` in editor.
 
 ```console
-$ kubedb edit pb pgbouncer-demo
+$ kubectl edit pb pgbouncer-demo
 
 # Add following to Spec to configure monitoring:
   monitor:

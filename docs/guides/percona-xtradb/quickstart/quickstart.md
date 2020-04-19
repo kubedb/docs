@@ -307,7 +307,7 @@ $ kubedb delete px demo-quickstart -n demo
 Error from server (BadRequest): admission webhook "perconaxtradb.validators.kubedb.com" denied the request: percona-xtradb "demo/demo-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
-Now, run `$ kubedb edit px demo-quickstart -n demo` to set `.spec.terminationPolicy` to `Pause` (for which KubeDB operator creates `dormantdatabase` when the PerconaXtraDB object is deleted and it keeps PVC, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
+Now, run `$ kubectl edit px demo-quickstart -n demo` to set `.spec.terminationPolicy` to `Pause` (for which KubeDB operator creates `dormantdatabase` when the PerconaXtraDB object is deleted and it keeps PVC, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
 
 Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/percona-xtradb.md#specterminationpolicy).
 
@@ -432,7 +432,7 @@ You can wipe out a DormantDatabase while deleting the objet by setting `.spec.wi
 $ kubedb delete px demo-quickstart -n demo
 kubedb delete px demo-quickstart -n demo
 
-$ kubedb edit drmn -n demo demo-quickstart
+$ kubectl edit drmn -n demo demo-quickstart
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

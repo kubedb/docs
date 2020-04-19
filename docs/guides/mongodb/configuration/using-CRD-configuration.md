@@ -197,7 +197,7 @@ snap-mgo-config   mgo-misc-config   Succeeded   50m
 To configure BackupScheduler, add the require changes in PodTemplate just like snapshot object.
 
 ```yaml
-$ kubedb edit mg mgo-misc-config -n demo
+$ kubectl edit mg mgo-misc-config -n demo
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:

@@ -1078,7 +1078,7 @@ mongodb.kubedb.com "mongo-sh" deleted
 ```
 
 ```yaml
-$ kubedb edit drmn -n demo mongo-sh
+$ kubectl edit drmn -n demo mongo-sh
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

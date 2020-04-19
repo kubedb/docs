@@ -8,7 +8,7 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubedb edit
+## kubectl edit
 
 Edit a resource on the server
 
@@ -19,17 +19,17 @@ Edit a resource from the default editor.
  The edit command allows you to directly edit any API resource you can retrieve via the command line tools. It will open the editor defined by your KUBEDB_EDITOR, or EDITOR environment variables, or fall back to 'nano'
 
 ```
-kubedb edit (RESOURCE/NAME | -f FILENAME)
+kubectl edit (RESOURCE/NAME | -f FILENAME)
 ```
 
 ### Examples
 
 ```
   # Edit the elasticsearch named 'elasticsearch-demo':
-  kubedb edit es/elasticsearch-demo
+  kubectl edit es/elasticsearch-demo
   
   # Use an alternative editor
-  KUBEDB_EDITOR="nano" kubedb edit es/elasticsearch-demo
+  KUBEDB_EDITOR="nano" kubectl edit es/elasticsearch-demo
 ```
 
 ### Options

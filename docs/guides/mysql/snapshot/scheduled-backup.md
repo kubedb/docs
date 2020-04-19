@@ -99,7 +99,7 @@ mysql.kubedb.com/mysql-scheduled created
 It is also possible to add  backup scheduler to an existing `MySQL`. You just have to edit the `MySQL` CRD and add below spec:
 
 ```yaml
-$ kubedb edit my {db-name} -n demo
+$ kubectl edit my {db-name} -n demo
 spec:
   backupSchedule:
     cronExpression: '@every 1m'
@@ -130,7 +130,7 @@ From the above image, you can see that the snapshot output is stored in a folder
 To remove scheduler, edit the MySQL object  to remove `spec.backupSchedule` section.
 
 ```yaml
-$ kubedb edit my mysql-scheduled -n demo
+$ kubectl edit my mysql-scheduled -n demo
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:

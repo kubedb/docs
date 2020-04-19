@@ -208,7 +208,7 @@ snap-mysql-config   mysql-misc-config   Succeeded   1m
 To configure BackupScheduler, add the require changes in PodTemplate just like snapshot object.
 
 ```yaml
-$ kubedb edit my mysql-misc-config -n demo
+$ kubectl edit my mysql-misc-config -n demo
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:

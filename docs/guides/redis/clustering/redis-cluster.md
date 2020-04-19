@@ -376,7 +376,7 @@ Notice that 172.17.0.8 is the new master and  172.17.0.4 is the replica of  172.
 Clean what you created in this tutorial.
 
 ```yaml
-$ kubedb edit rd -n demo redis-cluster -o yaml
+$ kubectl edit rd -n demo redis-cluster -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Redis
 metadata:
