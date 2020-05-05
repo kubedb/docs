@@ -254,7 +254,7 @@ kubectl delete -n monitoring servicemonitor kubedb-operator-servicemonitor
 kubectl delete ns monitoring
 ```
 
-To uninstall KubeDB operator follow this [guide](/docs/setup/uninstall.md).
+To uninstall KubeDB operator follow this [guide](/docs/setup/operator/uninstall.md).
 
 ## Next Steps
 

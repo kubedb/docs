@@ -77,7 +77,7 @@ If you wish to follow other ways to pull private images see [official docs](http
 ## Install KubeDB operator
 
 When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to appropriate value.
-Follow the steps to [install KubeDB operator](/docs/setup/install.md) properly in cluster so that to points to the DOCKER_REGISTRY you wish to pull images from.
+Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in cluster so that to points to the DOCKER_REGISTRY you wish to pull images from.
 
 ## Create PgBouncerVersion CRD
 
@@ -165,7 +165,7 @@ kubectl delete -n demo pb/pvt-reg-pgbouncer
 kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
 
 ## Next Steps
 

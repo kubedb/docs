@@ -20,7 +20,7 @@ Before proceeding:
 
 - Read [mysql group replication concept](/docs/guides/mysql/clustering/overview.md) to learn about MySQL Group Replication.
 - You need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
-- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 - You have to be familiar with the [ProxySQL](/docs/concepts/database-proxy/proxysql.md) CRD.
 
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial. Create `demo` namespace if you haven't created yet.
@@ -72,7 +72,7 @@ spec:
 Create the above `MySQL` object,
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-my-group.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-my-group.yaml
 mysql.kubedb.com/my-group created
 ```
 
@@ -209,7 +209,7 @@ spec:
 Now, create this,
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-proxy-my-group.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-proxy-my-group.yaml
 proxysql.kubedb.com/proxy-my-group created
 ```
 

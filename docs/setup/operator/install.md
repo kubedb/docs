@@ -1,10 +1,10 @@
 ---
-title: Install
+title: Install KubeDB Operator
 menu:
   docs_{{ .version }}:
-    identifier: install-kubedb
+    identifier: install-operator
     name: Install
-    parent: setup
+    parent: operator-setup
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: setup
@@ -36,7 +36,7 @@ To use `kubedb`, you will need to install KubeDB [operator](https://github.com/k
 
 ## Using Helm 3
 
-KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.version" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
+KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.version" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `kubedb-operator`:
 
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
@@ -52,7 +52,6 @@ $ helm install kubedb-operator appscode/kubedb --version {{< param "info.version
 # Step 2: wait until crds are registered
 $ kubectl get crds -l app=kubedb -w
 NAME                               AGE
-dormantdatabases.kubedb.com        6s
 elasticsearches.kubedb.com         12s
 elasticsearchversions.kubedb.com   8s
 etcds.kubedb.com                   8s
@@ -67,7 +66,6 @@ postgreses.kubedb.com              8s
 postgresversions.kubedb.com        7s
 redises.kubedb.com                 6s
 redisversions.kubedb.com           6s
-snapshots.kubedb.com               6s
 
 # Step 3(a): Install KubeDB catalog of database versions
 $ helm install kubedb-catalog appscode/kubedb-catalog --version {{< param "info.version" >}} --namespace kube-system
@@ -83,7 +81,7 @@ To see the detailed configuration options, visit [here](https://github.com/kubed
 
 ## Using Helm 2
 
-KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.version" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `my-release`:
+KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.version" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `kubedb-operator`:
 
 ```console
 $ helm repo add appscode https://charts.appscode.com/stable/
@@ -100,7 +98,6 @@ $ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.
 # Step 2: wait until crds are registered
 $ kubectl get crds -l app=kubedb -w
 NAME                               AGE
-dormantdatabases.kubedb.com        6s
 elasticsearches.kubedb.com         12s
 elasticsearchversions.kubedb.com   8s
 etcds.kubedb.com                   8s
@@ -115,7 +112,6 @@ postgreses.kubedb.com              8s
 postgresversions.kubedb.com        7s
 redises.kubedb.com                 6s
 redisversions.kubedb.com           6s
-snapshots.kubedb.com               6s
 
 # Step 3(a): Install KubeDB catalog of database versions
 $ helm install appscode/kubedb-catalog --name kubedb-catalog --version {{< param "info.version" >}} \
@@ -152,7 +148,6 @@ $ helm template kubedb-operator appscode/kubedb \
 # Step 2: wait until crds are registered
 $ kubectl get crds -l app=kubedb -w
 NAME                               AGE
-dormantdatabases.kubedb.com        6s
 elasticsearches.kubedb.com         12s
 elasticsearchversions.kubedb.com   8s
 etcds.kubedb.com                   8s
@@ -167,7 +162,6 @@ postgreses.kubedb.com              8s
 postgresversions.kubedb.com        7s
 redises.kubedb.com                 6s
 redisversions.kubedb.com           6s
-snapshots.kubedb.com               6s
 
 # Step: Install/Upgrade KubeDB catalog of database versions
 $ helm template kubedb-catalog appscode/kubedb-catalog \
@@ -209,44 +203,31 @@ $ kubectl get crd -l app=kubedb
 
 Now, you are ready to [create your first database](/docs/guides/README.md) using KubeDB.
 
-## Install KubeDB CLI
-
-KubeDB provides a CLI to work with database objects. Download pre-built binaries from [kubedb/cli Github releases](https://github.com/kubedb/cli/releases) and put the binary to some directory in your `PATH`. To install on Linux 64-bit and MacOS 64-bit you can run the following commands:
-
-```console
-# Linux amd 64-bit
-wget -O kubedb https://github.com/kubedb/cli/releases/download/{{< param "info.version" >}}/kubedb-linux-amd64 \
-  && chmod +x kubedb \
-  && sudo mv kubedb /usr/local/bin/
-
-# Mac 64-bit
-wget -O kubedb https://github.com/kubedb/cli/releases/download/{{< param "info.version" >}}/kubedb-darwin-amd64 \
-  && chmod +x kubedb \
-  && sudo mv kubedb /usr/local/bin/
-```
-
-If you prefer to install KubeDB cli from source code, you will need to set up a GO development environment following [these instructions](https://golang.org/doc/code.html). Then, install `kubedb` CLI using `go get` from source code.
-
-```console
-go get github.com/kubedb/cli/...
-```
-
-Please note that this will install KubeDB cli from master branch which might include breaking and/or undocumented changes.
-
-
 ## Configuring RBAC
 
 KubeDB installer will create 3 user facing cluster roles:
 
 | ClusterRole       | Aggregates To | Desription |
 | ----------------- | --------------| ---------- |
-| kubedb:core:admin | admin         | Allows edit access to all `KubeDB` CRDs, intended to be granted within a namespace using a RoleBinding. This grants ability to wipeout dormant database and delete their record. |
-| kubedb:core:edit  | edit          | Allows edit access to all `KubeDB` CRDs except `DormantDatabase` CRD, intended to be granted within a namespace using a RoleBinding. |
+| kubedb:core:admin | admin         | Allows edit access to all `KubeDB` CRDs, intended to be granted within a namespace using a RoleBinding. This grants ability to wipeout databases and delete their record. |
+| kubedb:core:edit  | edit          | Allows edit access to all `KubeDB` CRDs, intended to be granted within a namespace using a RoleBinding. |
 | kubedb:core:view  | view          | Allows read-only access to `KubeDB` CRDs, intended to be granted within a namespace using a RoleBinding. |
 
 These user facing roles supports [ClusterRole Aggregation](https://kubernetes.io/docs/admin/authorization/rbac/#aggregated-clusterroles) feature in Kubernetes 1.9 or later clusters.
 
+## Detect KubeDB operator version
+To detect KubeDB operator version, exec into the operator pod and run `/operator version` command.
 
-## Upgrade KubeDB
+```console
+$ kubectl exec -it deploy/kubedb-operator -n kube-system -- /operator version
 
-To upgrade KubeDB cli, just replace the old cli with the new version. To upgrade KubeDB operator, please follow the instruction for the corresponding release.
+Version = {{< param "info.version" >}}
+VersionStrategy = tag
+GitTag = {{< param "info.version" >}}
+GitBranch = release-0.13
+CommitHash = 1e407192f56c449b4445d6514c26b7545dcda38d
+CommitTimestamp = 2019-08-22T12:10:07
+GoVersion = go1.12.9
+Compiler = gcc
+Platform = linux/amd64
+```

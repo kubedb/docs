@@ -433,7 +433,7 @@ kubectl delete -n monitoring secret kubedb-operator-apiserver-cert
 kubectl delete ns monitoring
 ```
 
-To uninstall KubeDB follow this [guide](/docs/setup/uninstall.md).
+To uninstall KubeDB follow this [guide](/docs/setup/operator/uninstall.md).
 
 ## Next Steps
 

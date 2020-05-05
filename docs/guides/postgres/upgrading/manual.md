@@ -359,7 +359,7 @@ For Bash script installation, uninstall first, then install again with 0.11.0 sc
 At this state, the operator is skipping this `scheduled-pg` Postgres. Because, Postgres version `9.6-v1` is deprecated in `kubedb 0.11.0`. You can see the skipped event message in postgres database event.
 
 ```console
-$ kubedb describe pg -n demo scheduled-pg
+$ kubectl dba describe pg -n demo scheduled-pg
 ....
 
 Events:

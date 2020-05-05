@@ -21,7 +21,7 @@ Streaming Replication provides *asynchronous* replication to one or more *standb
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster.
 If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -98,7 +98,7 @@ Here,
 Now create this Postgres object with Streaming Replication support
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/clustering/ha-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/clustering/ha-postgres.yaml
 postgres.kubedb.com/ha-postgres created
 ```
 
@@ -324,7 +324,7 @@ Here,
 Now create this Postgres object
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/clustering/hot-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/clustering/hot-postgres.yaml
 postgres "hot-postgres" created
 ```
 

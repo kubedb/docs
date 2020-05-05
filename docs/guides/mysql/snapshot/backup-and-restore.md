@@ -24,7 +24,7 @@ This tutorial will show you how to take snapshots of a KubeDB managed MySQL data
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
@@ -40,7 +40,7 @@ This tutorial will show you how to take snapshots of a KubeDB managed MySQL data
   $ kubectl create ns demo
   namespace/demo created
   
-  $ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/snapshot/demo-1.yaml
+  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/snapshot/demo-1.yaml
   mysql.kubedb.com/mysql-instant created
   ```
 
@@ -99,16 +99,16 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/snapshot/demo-2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/snapshot/demo-2.yaml
 snapshot.kubedb.com/snap-mysql-instant created
 
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME                DATABASENAME   STATUS    AGE
 snap-mysql-instant   mysql-instant   Running   13s
 ```
 
 ```yaml
-$ kubedb get snap -n demo snap-mysql-instant -o yaml
+$ kubectl get snap -n demo snap-mysql-instant -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
@@ -142,10 +142,10 @@ Here,
 - `spec.storageSecretName` points to the Secret containing the credentials for snapshot storage destination.
 - `spec.gcs.bucket` points to the bucket name used to store the snapshot data.
 
-You can also run the `kubedb describe` command to see the recent snapshots taken for a database.
+You can also run the `kubectl dba describe` command to see the recent snapshots taken for a database.
 
 ```console
-$ kubedb describe my -n demo mysql-instant
+$ kubectl dba describe my -n demo mysql-instant
 Name:               mysql-instant
 Namespace:          demo
 CreationTimestamp:  Thu, 07 Feb 2019 16:02:40 +0600
@@ -246,7 +246,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/snapshot/demo-3.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/snapshot/demo-3.yaml
 mysql.kubedb.com/mysql-recovered created
 ```
 
@@ -257,17 +257,17 @@ Here,
 Now, wait several seconds. KubeDB operator will create a new StatefulSet. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snap-mysql-instant` Snapshot.
 
 ```console
-$ kubedb get my -n demo
+$ kubectl get my -n demo
 NAME              VERSION   STATUS         AGE
 mysql-instant      8.0-v2    Running        27m
 mysql-recovered   8.0-v2    Initializing   5m
 
-$ kubedb get my -n demo
+$ kubectl get my -n demo
 NAME              VERSION   STATUS    AGE
 mysql-instant      8.0-v2    Running   31m
 mysql-recovered   8.0-v2    Running   9m
 
-$ kubedb describe my -n demo mysql-recovered
+$ kubectl dba describe my -n demo mysql-recovered
 Name:               mysql-recovered
 Namespace:          demo
 CreationTimestamp:  Thu, 07 Feb 2019 16:04:04 +0600

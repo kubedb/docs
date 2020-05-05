@@ -1,14 +1,14 @@
 ---
-title: Kubedb Version
+title: Kubectl-Dba Version
 menu:
-  docs_{{ .version }}:
-    identifier: kubedb-version
-    name: Kubedb Version
+  docs_0.12.0:
+    identifier: kubectl-dba-version
+    name: Kubectl-Dba Version
     parent: reference
-menu_name: docs_{{ .version }}
+menu_name: docs_0.12.0
 section_menu_id: reference
 ---
-## kubedb version
+## kubectl-dba version
 
 Prints binary version number.
 
@@ -17,14 +17,15 @@ Prints binary version number.
 Prints binary version number.
 
 ```
-kubedb version [flags]
+kubectl-dba version [flags]
 ```
 
 ### Options
 
 ```
-  -h, --help    help for version
-      --short   Print just the version number.
+      --check string   Check version constraint
+  -h, --help           help for version
+      --short          Print just the version number.
 ```
 
 ### Options inherited from parent commands
@@ -59,5 +60,5 @@ kubedb version [flags]
 
 ### SEE ALSO
 
-* [kubedb](/docs/reference/kubedb.md)	 - Command line interface for KubeDB
+* [kubectl-dba](/docs/reference/kubectl-dba.md)	 - kubectl plugin for KubeDB
 

@@ -24,7 +24,7 @@ This tutorial will show you how to use KubeDB to run a Redis server.
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
@@ -92,7 +92,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-1.yaml
 redis.kubedb.com/redis-quickstart created
 ```
 
@@ -108,11 +108,11 @@ Here,
 KubeDB operator watches for `Redis` objects using Kubernetes api. When a `Redis` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present.
 
 ```console
-$ kubedb get rd -n demo
+$ kubectl get rd -n demo
 NAME               VERSION   STATUS    AGE
 redis-quickstart   4.0-v1    Running   1m
 
-$ kubedb describe rd -n demo redis-quickstart
+$ kubectl dba describe rd -n demo redis-quickstart
 Name:               redis-quickstart
 Namespace:          demo
 CreationTimestamp:  Mon, 01 Oct 2018 12:01:23 +0600
@@ -178,7 +178,7 @@ redis-quickstart   ClusterIP   10.108.149.205   <none>        6379/TCP   2m
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified Redis object:
 
 ```yaml
-$ kubedb get rd -n demo redis-quickstart -o yaml
+$ kubectl get rd -n demo redis-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Redis
 metadata:
@@ -245,11 +245,11 @@ OK
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```console
-$ kubedb delete rd redis-quickstart -n demo
+$ kubectl delete rd redis-quickstart -n demo
 Error from server (BadRequest): admission webhook "redis.validators.kubedb.com" denied the request: redis "redis-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubedb edit rd redis-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when redis is deleted and keeps PVCs intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database. 
+Now, run `kubectl edit rd redis-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when redis is deleted and keeps PVCs intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database. 
 
 Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/redis.md#specterminationpolicy)
 
@@ -258,20 +258,20 @@ Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/redis.m
 When [TerminationPolicy](/docs/concepts/databases/redis.md#specterminationpolicy) is set to `Pause`, it will pause the Redis server instead of deleting it. Here, If you delete the Redis object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `redis-quickstart` Redis server has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```console
-$ kubedb delete rd redis-quickstart -n demo
+$ kubectl delete rd redis-quickstart -n demo
 redis.kubedb.com "redis-quickstart" deleted
 
-$ kubedb get drmn -n demo redis-quickstart
+$ kubectl get drmn -n demo redis-quickstart
 NAME               STATUS    AGE
 redis-quickstart   Pausing   17s
 
-$ kubedb get drmn -n demo redis-quickstart
+$ kubectl get drmn -n demo redis-quickstart
 NAME               STATUS    AGE
 redis-quickstart   Paused    1m
 ```
 
 ```yaml
-$ kubedb get drmn -n demo redis-quickstart -o yaml
+$ kubectl get drmn -n demo redis-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:
@@ -336,7 +336,7 @@ In this tutorial, the dormant database can be resumed by creating original `Redi
 The below command will resume the DormantDatabase `redis-quickstart`.
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-1.yaml
 redis.kubedb.com/redis-quickstart created
 ```
 
@@ -347,7 +347,7 @@ Now, if you exec into the database, you can see that the datas are intact.
 You can wipe out a DormantDatabase while deleting the objet by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `Redis` database (i.e, PVCs, Secrets).
 
 ```console
-$ kubedb edit drmn -n demo redis-quickstart
+$ kubectl edit drmn -n demo redis-quickstart
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:
@@ -369,7 +369,7 @@ If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
 ```console
-$ kubedb delete drmn redis-quickstart -n demo
+$ kubectl delete drmn redis-quickstart -n demo
 dormantdatabase.kubedb.com "redis-quickstart" deleted
 ```
 

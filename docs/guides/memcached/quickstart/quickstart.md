@@ -26,7 +26,7 @@ This tutorial will show you how to use KubeDB to run a Memcached server.
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
@@ -78,7 +78,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/quickstart/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/quickstart/demo-1.yaml
 memcached.kubedb.com/memcd-quickstart created
 ```
 
@@ -92,11 +92,11 @@ Here,
 KubeDB operator watches for `Memcached` objects using Kubernetes api. When a `Memcached` object is created, KubeDB operator will create a new Deployment and a ClusterIP Service with the matching Memcached object name.
 
 ```console
-$ kubedb get mc -n demo
+$ kubectl get mc -n demo
 NAME               VERSION    STATUS    AGE
 memcd-quickstart   1.5.4-v1   Running   2m
 
-$ kubedb describe mc -n demo memcd-quickstart
+$ kubectl dba describe mc -n demo memcd-quickstart
 Name:               memcd-quickstart
 Namespace:          demo
 CreationTimestamp:  Wed, 03 Oct 2018 15:40:38 +0600
@@ -140,7 +140,7 @@ Events:
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified Memcached object:
 
 ```yaml
-$ kubedb get mc -n demo memcd-quickstart -o yaml
+$ kubectl get mc -n demo memcd-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Memcached
 metadata:
@@ -225,11 +225,11 @@ quit
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```console
-$ kubedb delete mc memcd-quickstart -n demo
+$ kubectl delete mc memcd-quickstart -n demo
 Error from server (BadRequest): admission webhook "memcached.validators.kubedb.com" denied the request: memcached "memcd-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubedb edit mc memcd-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when memcached is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database. 
+Now, run `kubectl edit mc memcd-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when memcached is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database. 
 
 Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/memcached.md#specterminationpolicy)
 
@@ -238,20 +238,20 @@ Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/memcach
 When [TerminationPolicy](/docs/concepts/databases/memcached.md#specterminationpolicy) is set to `Pause`, it will pause the Memcached server instead of deleting it. Here, you delete the Memcached object, KubeDB operator will delete the Deployment and its pods. In KubeDB parlance, we say that `memcd-quickstart` Memcached server has entered into dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```console
-$ kubedb delete mc memcd-quickstart -n demo
+$ kubectl delete mc memcd-quickstart -n demo
 memcached.kubedb.com "memcd-quickstart" deleted
 
-$ kubedb get drmn -n demo memcd-quickstart
+$ kubectl get drmn -n demo memcd-quickstart
 NAME               STATUS    AGE
 memcd-quickstart   Pausing   21s
 
-$ kubedb get drmn -n demo memcd-quickstart
+$ kubectl get drmn -n demo memcd-quickstart
 NAME               STATUS    AGE
 memcd-quickstart   Paused    2m
 ```
 
 ```yaml
-$ kubedb get drmn -n demo memcd-quickstart -o yaml
+$ kubectl get drmn -n demo memcd-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:
@@ -313,7 +313,7 @@ In this tutorial, the dormant database can be resumed by creating `Memcached` da
 The below command resumes the dormant database `memcd-quickstart`.
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/quickstart/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/quickstart/demo-1.yaml
 memcached.kubedb.com/memcd-quickstart created
 ```
 
@@ -322,10 +322,10 @@ memcached.kubedb.com/memcd-quickstart created
 You can wipe out a DormantDatabase while deleting the objet by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `Memcached` database.
 
 ```yaml
-$ kubedb delete mc memcd-quickstart -n demo
+$ kubectl delete mc memcd-quickstart -n demo
 memcached "memcd-quickstart" deleted
 
-$ kubedb edit drmn -n demo memcd-quickstart
+$ kubectl edit drmn -n demo memcd-quickstart
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:
@@ -347,7 +347,7 @@ If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
 ```console
-$ kubedb delete drmn memcd-quickstart -n demo
+$ kubectl delete drmn memcd-quickstart -n demo
 dormantdatabase "memcd-quickstart" deleted
 ```
 

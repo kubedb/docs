@@ -24,7 +24,7 @@ This tutorial will show you how to take snapshots of a KubeDB managed MongoDB da
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
@@ -40,7 +40,7 @@ This tutorial will show you how to take snapshots of a KubeDB managed MongoDB da
   $ kubectl create ns demo
   namespace/demo created
 
-  $ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/snapshot/demo-1.yaml
+  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/snapshot/demo-1.yaml
   mongodb.kubedb.com/mgo-instant created
   ```
 
@@ -99,20 +99,20 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/snapshot/demo-2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/snapshot/demo-2.yaml
 snapshot.kubedb.com/snapshot-instant created
 
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME              DATABASENAME   STATUS    AGE
 snapshot-instant   mgo-instant     Running   10s
 
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME              DATABASENAME   STATUS      AGE
 snapshot-instant   mgo-instant     Succeeded   20s
 ```
 
 ```yaml
-$ kubedb get snap -n demo snapshot-instant -o yaml
+$ kubectl get snap -n demo snapshot-instant -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Snapshot
 metadata:
@@ -146,10 +146,10 @@ Here,
 - `spec.storageSecretName` points to the Secret containing the credentials for snapshot storage destination.
 - `spec.gcs.bucket` points to the bucket name used to store the snapshot data.
 
-You can also run the `kubedb describe` command to see the recent snapshots taken for a database.
+You can also run the `kubectl dba describe` command to see the recent snapshots taken for a database.
 
 ```console
-$ kubedb describe mg -n demo mgo-instant
+$ kubectl dba describe mg -n demo mgo-instant
 Name:               mgo-instant
 Namespace:          demo
 CreationTimestamp:  Wed, 06 Feb 2019 12:27:01 +0600
@@ -257,7 +257,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/snapshot/demo-3.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/snapshot/demo-3.yaml
 mongodb.kubedb.com/mgo-recovered created
 ```
 
@@ -268,17 +268,17 @@ Here,
 Now, wait several seconds. KubeDB operator will create a new StatefulSet. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snapshot-instant` Snapshot.
 
 ```console
-$ kubedb get mg -n demo
+$ kubectl get mg -n demo
 NAME            VERSION   STATUS         AGE
 mgo-instant      3.4-v3    Running        13m
 mgo-recovered   3.4-v3    Initializing   57s
 
-$ kubedb get mg -n demo
+$ kubectl get mg -n demo
 NAME            VERSION   STATUS    AGE
 mgo-instant      3.4-v3    Running   16m
 mgo-recovered   3.4-v3    Running   45s
 
-$ kubedb describe mg -n demo mgo-recovered
+$ kubectl dba describe mg -n demo mgo-recovered
 Name:               mgo-recovered
 Namespace:          demo
 CreationTimestamp:  Wed, 06 Feb 2019 12:43:00 +0600

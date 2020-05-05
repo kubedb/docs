@@ -24,7 +24,7 @@ Before proceeding:
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
@@ -67,7 +67,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/clustering/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/clustering/demo-1.yaml
 redis.kubedb.com/redis-cluster created
 ```
 
@@ -82,7 +82,7 @@ Here,
 KubeDB operator watches for `Redis` objects using Kubernetes API. When a `Redis` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for StatefulSets named `kubedb`, if one is not already present.
 
 ```console
-$ kubedb describe rd -n demo redis-cluster
+$ kubectl dba describe rd -n demo redis-cluster
 Name:               redis-cluster
 Namespace:          demo
 CreationTimestamp:  Tue, 19 Feb 2019 19:28:59 +0600
@@ -184,7 +184,7 @@ redis-cluster   ClusterIP   10.100.246.86   <none>        6379/TCP   2m39s
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `Redis` object:
 
 ```yaml
-$ kubedb get rd -n demo redis-cluster -o yaml
+$ kubectl get rd -n demo redis-cluster -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Redis
 metadata:
@@ -376,7 +376,7 @@ Notice that 172.17.0.8 is the new master and  172.17.0.4 is the replica of  172.
 Clean what you created in this tutorial.
 
 ```yaml
-$ kubedb edit rd -n demo redis-cluster -o yaml
+$ kubectl edit rd -n demo redis-cluster -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Redis
 metadata:
@@ -390,7 +390,7 @@ status:
   ...
   phase: Running
 
-$ kubedb delete rd redis-cluster -n demo
+$ kubectl delete rd redis-cluster -n demo
 redis.kubedb.com "redis-cluster" deleted
 ```
 

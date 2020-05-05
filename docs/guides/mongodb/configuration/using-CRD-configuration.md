@@ -20,7 +20,7 @@ KubeDB supports providing custom configuration for MongoDB via [PodTemplate](/do
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -93,7 +93,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/mgo-misc-config.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/mgo-misc-config.yaml
 mongodb.kubedb.com/mgo-misc-config created
 ```
 
@@ -183,11 +183,11 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/snapshot-misc-conf.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/snapshot-misc-conf.yaml
 snapshot.kubedb.com/snap-mongodb-config created
 
 
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME              DATABASENAME      STATUS      AGE
 snap-mgo-config   mgo-misc-config   Succeeded   50m
 ```
@@ -197,7 +197,7 @@ snap-mgo-config   mgo-misc-config   Succeeded   50m
 To configure BackupScheduler, add the require changes in PodTemplate just like snapshot object.
 
 ```yaml
-$ kubedb edit mg mgo-misc-config -n demo
+$ kubectl edit mg mgo-misc-config -n demo
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
@@ -221,7 +221,7 @@ status:
 ```
 
 ```console
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME                              DATABASENAME      STATUS      AGE
 mgo-misc-config-20181002-105247   mgo-misc-config   Succeeded   3m
 mgo-misc-config-20181002-105349   mgo-misc-config   Succeeded   2m
@@ -244,7 +244,7 @@ kubectl delete -n demo drmn/mgo-misc-config
 kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
 
 ## Next Steps
 

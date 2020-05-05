@@ -16,38 +16,36 @@ section_menu_id: guides
 
 ## KubeDB CLI
 
-KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used to manage any KubeDB object. `kubedb` cli also performs various validations to improve ux. To install KubeDB cli on your workstation, follow the steps [here](/docs/setup/install.md).
+KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used to manage any KubeDB object. `kubedb` cli also performs various validations to improve ux. To install KubeDB cli on your workstation, follow the steps [here](/docs/setup/README.md).
 
 ### How to Create objects
 
-`kubedb create` creates a database CRD object in `default` namespace by default. Following command will create a Postgres object as specified in `postgres.yaml`.
+`kubectl create` creates a database CRD object in `default` namespace by default. Following command will create a Postgres object as specified in `postgres.yaml`.
 
 ```console
-$ kubedb create -f postgres-demo.yaml
+$ kubectl create -f postgres-demo.yaml
 postgres "postgres-demo" created
 ```
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
 ```console
-$ kubedb create -f postgres-demo.yaml --namespace=kube-system
+$ kubectl create -f postgres-demo.yaml --namespace=kube-system
 postgres "postgres-demo" created
 ```
 
-`kubedb create` command also considers `stdin` as input.
+`kubectl create` command also considers `stdin` as input.
 
 ```console
-cat postgres-demo.yaml | kubedb create -f -
+cat postgres-demo.yaml | kubectl create -f -
 ```
-
-To learn about various options of `create` command, please visit [here](/docs/reference/kubedb_create.md).
 
 ### How to List Objects
 
-`kubedb get` command allows users to list or find any KubeDB object. To list all Postgres objects in `default` namespace, run the following command:
+`kubectl get` command allows users to list or find any KubeDB object. To list all Postgres objects in `default` namespace, run the following command:
 
 ```console
-$ kubedb get postgres
+$ kubectl get postgres
 NAME            VERSION    STATUS    AGE
 postgres-demo   10.2-v5    Running   13m
 postgres-dev    10.2-v5    Running   11m
@@ -58,7 +56,7 @@ postgres-qa     10.2-v5    Running   10m
 To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
-$ kubedb get postgres postgres-demo --output=yaml
+$ kubectl get postgres postgres-demo --output=yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Postgres
 metadata:
@@ -76,13 +74,13 @@ status:
 To get JSON of an object, use `--output=json` flag.
 
 ```console
-kubedb get postgres postgres-demo --output=json
+kubectl get postgres postgres-demo --output=json
 ```
 
 To list all KubeDB objects, use following command:
 
 ```console
-$ kubedb get all -o wide
+$ kubectl get all -o wide
 
 NAME                    VERSION     STATUS      AGE
 es/elasticsearch-demo   2.3.1       Running     17m
@@ -101,7 +99,7 @@ snap/snapshot-xyz                   es/elasticsearch-demo   local:/directory    
 
 Flag `--output=wide` is used to print additional information.
 
-List command supports short names for each object types. You can use it like `kubedb get <short-name>`. Below are the short name for KubeDB objects:
+List command supports short names for each object types. You can use it like `kubectl get <short-name>`. Below are the short name for KubeDB objects:
 
 - Postgres: `pg`
 - Snapshot: `snap`
@@ -110,7 +108,7 @@ List command supports short names for each object types. You can use it like `ku
 You can print labels with objects. The following command will list all Snapshots with their corresponding labels.
 
 ```console
-$ kubedb get snap --show-labels
+$ kubectl get snap --show-labels
 NAME                            DATABASE                STATUS      AGE       LABELS
 postgres-demo-20170605-073557   pg/postgres-demo        Succeeded   11m       kubedb.com/kind=Postgres,kubedb.com/name=postgres-demo
 snapshot-20171212-114700        pg/postgres-demo        Succeeded   1h        kubedb.com/kind=Postgres,kubedb.com/name=postgres-demo
@@ -120,7 +118,7 @@ snapshot-xyz                    es/elasticsearch-demo   Succeeded   6m        ku
 You can also filter list using `--selector` flag.
 
 ```console
-$ kubedb get snap --selector='kubedb.com/kind=Postgres' --show-labels
+$ kubectl get snap --selector='kubedb.com/kind=Postgres' --show-labels
 NAME                            DATABASE           STATUS      AGE       LABELS
 postgres-demo-20171212-073557   pg/postgres-demo   Succeeded   14m       kubedb.com/kind=Postgres,kubedb.com/name=postgres-demo
 snapshot-20171212-114700        pg/postgres-demo   Succeeded   2h        kubedb.com/kind=Postgres,kubedb.com/name=postgres-demo
@@ -129,7 +127,7 @@ snapshot-20171212-114700        pg/postgres-demo   Succeeded   2h        kubedb.
 To print only object name, run the following command:
 
 ```console
-$ kubedb get all -o name
+$ kubectl get all -o name
 postgres/postgres-demo
 postgres/postgres-dev
 postgres/postgres-prod
@@ -139,14 +137,12 @@ snapshot/snapshot-20170505-114700
 snapshot/snapshot-xyz
 ```
 
-To learn about various options of `get` command, please visit [here](/docs/reference/kubedb_get.md).
-
 ### How to Describe Objects
 
-`kubedb describe` command allows users to describe any KubeDB object. The following command will describe PostgreSQL database `postgres-demo` with relevant information.
+`kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe PostgreSQL database `postgres-demo` with relevant information.
 
 ```console
-$ kubedb describe pg postgres-demo
+$ kubectl dba describe pg postgres-demo
 Name:           postgres-demo
 Namespace:      default
 StartTimestamp: Tue, 12 Dec 2017 11:46:16 +0600
@@ -197,7 +193,7 @@ Events:
   55s        55s       Postgres operator  Normal  Creating             Creating Kubernetes objects
 ```
 
-`kubedb describe` command provides following basic information about a database.
+`kubectl dba describe` command provides following basic information about a database.
 
 - StatefulSet
 - Storage (Persistent Volume)
@@ -212,37 +208,37 @@ To hide events on KubeDB object, use flag `--show-events=false`
 To describe all Postgres objects in `default` namespace, use following command
 
 ```console
-kubedb describe pg
+kubectl dba describe pg
 ```
 
 To describe all Postgres objects from every namespace, provide `--all-namespaces` flag.
 
 ```console
-kubedb describe pg --all-namespaces
+kubectl dba describe pg --all-namespaces
 ```
 
 To describe all KubeDB objects from every namespace, use the following command:
 
 ```console
-kubedb describe all --all-namespaces
+kubectl dba describe all --all-namespaces
 ```
 
 You can also describe KubeDb objects with matching labels. The following command will describe all Elasticsearch & Postgres objects with specified labels from every namespace.
 
 ```console
-kubedb describe pg,es --all-namespaces --selector='group=dev'
+kubectl dba describe pg,es --all-namespaces --selector='group=dev'
 ```
 
-To learn about various options of `describe` command, please visit [here](/docs/reference/kubedb_describe.md).
+To learn about various options of `describe` command, please visit [here](/docs/reference/kubectl-dba_describe.md).
 
 ### How to Edit Objects
 
-`kubedb edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
+`kubectl edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
 
 Lets edit an existing running Postgres object to setup [Scheduled Backup](/docs/guides/postgres/snapshot/scheduled_backup.md). The following command will open Postgres `postgres-demo` in editor.
 
 ```console
-$ kubedb edit pg postgres-demo
+$ kubectl edit pg postgres-demo
 
 # Add following under Spec to configure periodic backups
 # backupSchedule:
@@ -274,39 +270,35 @@ If StatefulSets or Deployments exists for a database, following fields can't be 
 - _spec.podTemplate.spec.nodeSelector_
 - _spec.init_
 
-For DormantDatabase, _spec.origin_ can't be edited using `kubedb edit`
-
-To learn about various options of `edit` command, please visit [here](/docs/reference/kubedb_edit.md).
+For DormantDatabase, _spec.origin_ can't be edited using `kubectl edit`
 
 ### How to Delete Objects
 
-`kubedb delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Postgres `postgres-dev` in default namespace
+`kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Postgres `postgres-dev` in default namespace
 
 ```console
-$ kubedb delete postgres postgres-dev
+$ kubectl delete postgres postgres-dev
 postgres "postgres-dev" deleted
 ```
 
 You can also use YAML files to delete objects. The following command will delete a postgres using the type and name specified in `postgres.yaml`.
 
 ```console
-$ kubedb delete -f postgres.yaml
+$ kubectl delete -f postgres.yaml
 postgres "postgres-dev" deleted
 ```
 
-`kubedb delete` command also takes input from `stdin`.
+`kubectl delete` command also takes input from `stdin`.
 
 ```console
-cat postgres.yaml | kubedb delete -f -
+cat postgres.yaml | kubectl delete -f -
 ```
 
 To delete database with matching labels, use `--selector` flag. The following command will delete postgres with label `postgres.kubedb.com/name=postgres-demo`.
 
 ```console
-kubedb delete postgres -l postgres.kubedb.com/name=postgres-demo
+kubectl delete postgres -l postgres.kubedb.com/name=postgres-demo
 ```
-
-To learn about various options of `delete` command, please visit [here](/docs/reference/kubedb_delete.md).
 
 ## Using Kubectl
 

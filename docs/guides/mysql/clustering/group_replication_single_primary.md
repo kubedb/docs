@@ -24,7 +24,7 @@ Before proceeding:
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
@@ -67,7 +67,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/clustering/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/clustering/demo-1.yaml
 mysql.kubedb.com/my-group created
 ```
 
@@ -83,7 +83,7 @@ Here,
 KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mysql-object-name>-gvr`.
 
 ```console
-$ kubedb describe my -n demo my-group
+$ kubectl dba describe my -n demo my-group
 Name:               my-group
 Namespace:          demo
 CreationTimestamp:  Fri, 26 Apr 2019 15:59:00 +0600
@@ -193,7 +193,7 @@ my-group-gvr   ClusterIP   None            <none>        3306/TCP   59m
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `MySQL` object:
 
 ```yaml
-$ kubedb get  my -n demo my-group -o yaml
+$ kubectl get  my -n demo my-group -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:

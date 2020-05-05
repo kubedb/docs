@@ -20,7 +20,7 @@ KubeDB supports PostgreSQL database initialization. This tutorial will show you 
 
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -97,10 +97,10 @@ NAME              VERSION    STATUS    AGE
 script-postgres   10.2-v5    Running   39s
 ```
 
-You can use `kubedb describe` command to view which resources has been created by KubeDB for this Postgres object.
+You can use `kubectl dba describe` command to view which resources has been created by KubeDB for this Postgres object.
 
 ```console
-$ kubedb describe pg -n demo script-postgres
+$ kubectl dba describe pg -n demo script-postgres
 Name:               script-postgres
 Namespace:          demo
 CreationTimestamp:  Fri, 21 Sep 2018 15:53:27 +0600

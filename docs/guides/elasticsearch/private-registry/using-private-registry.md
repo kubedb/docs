@@ -115,7 +115,7 @@ elasticsearchversion.kubedb.com/pvt-7.3.2 created
 
 ## Install KubeDB operator
 
-When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to appropriate value. Follow the guide for customizing installer to see how to pass those flags from [here](/docs/setup/install.md#customizing-installer).
+When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to appropriate value. Follow the guide for customizing installer to see how to pass those flags from [here](/docs/setup/README.md#customizing-installer).
 
 ## Deploy Elasticsearch database from Private Registry
 

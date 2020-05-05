@@ -99,7 +99,7 @@ NB: If you are using `kubectl` 1.9.0, update to 1.9.1 or later to avoid this [is
 
 ## Install KubeDB operator
 
-When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to appropriate value. Follow the steps to [install KubeDB operator](/docs/setup/install.md) properly in cluster so that to points to the DOCKER_REGISTRY you wish to pull images from.
+When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to appropriate value. Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in cluster so that to points to the DOCKER_REGISTRY you wish to pull images from.
 
 ## Deploy MySQL database from Private Registry
 
@@ -130,7 +130,7 @@ spec:
 Now run the command to deploy this `MySQL` object:
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/private-registry/demo-2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/private-registry/demo-2.yaml
 mysql.kubedb.com/mysql-pvt-reg created
 ```
 

@@ -18,8 +18,11 @@ aliases:
 
 Setup contains instructions for installing the KubeDB to work with database objects.
 
-- [Install KubeDB](/docs/setup/install.md). Installation instructions for KubeDB.
-- [Uninstall KubeDB](/docs/setup/uninstall.md). Instructions for uninstalling KubeDB.
+- KubeDB operator
+  - [Install KubeDB operator](/docs/setup/operator/install.md). Installation instructions for KubeDB operator.
+  - [Uninstall KubeDB operator](/docs/setup/operator/uninstall.md). Instructions for uninstallating KubeDB operator.
+- Kubectl Plugin
+  - [Install Kubectl Plugin](/docs/setup/cli/install.md). Installation instructions for KubeDB `kubectl` plugin.
 - Developer Guide
-  - [Overview](/docs/setup/developer-guide/overview.md). Outlines everything you need to know from setting up your dev environment to how to build and test KubeDB.
-  - [Release process](/docs/setup/developer-guide/release.md). Steps for releasing a new version of KubeDB.
+  - [Overview](/docs/setup/developer-guide/overview.md). Outlines everything you need to know from setting up your dev environment to how to build and test KubeDB operator.
+  - [Release process](/docs/setup/developer-guide/release.md). Steps for releasing a new version of KubeDB operator.
