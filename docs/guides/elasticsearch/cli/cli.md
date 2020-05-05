@@ -16,38 +16,36 @@ section_menu_id: guides
 
 ## KubeDB CLI
 
-KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used to manage any KubeDB object. `kubedb` cli also performs various validations to improve ux. To install KubeDB cli on your workstation, follow the steps [here](/docs/setup/install.md).
+KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used to manage any KubeDB object. `kubedb` cli also performs various validations to improve ux. To install KubeDB cli on your workstation, follow the steps [here](/docs/setup/README.md).
 
 ### How to Create objects
 
-`kubedb create` creates a database CRD object in `default` namespace by default. Following command will create an Elasticsearch object as specified in `elasticsearch.yaml`.
+`kubectl create` creates a database CRD object in `default` namespace by default. Following command will create an Elasticsearch object as specified in `elasticsearch.yaml`.
 
 ```console
-$ kubedb create -f elasticsearch-demo.yaml
+$ kubectl create -f elasticsearch-demo.yaml
 elasticsearch.kubedb.com/elasticsearch-demo created
 ```
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
 ```console
-$ kubedb create -f elasticsearch-demo.yaml --namespace=kube-system
+$ kubectl create -f elasticsearch-demo.yaml --namespace=kube-system
 elasticsearch.kubedb.com/elasticsearch-demo created
 ```
 
-`kubedb create` command also considers `stdin` as input.
+`kubectl create` command also considers `stdin` as input.
 
 ```console
-cat elasticsearch-demo.yaml | kubedb create -f -
+cat elasticsearch-demo.yaml | kubectl create -f -
 ```
-
-To learn about various options of `create` command, please visit [here](/docs/reference/kubedb_create.md).
 
 ### How to List Objects
 
-`kubedb get` command allows users to list or find any KubeDB object. To list all Elasticsearch objects in `default` namespace, run the following command:
+`kubectl get` command allows users to list or find any KubeDB object. To list all Elasticsearch objects in `default` namespace, run the following command:
 
 ```console
-$ kubedb get elasticsearch
+$ kubectl get elasticsearch
 NAME                 VERSION   STATUS    AGE
 elasticsearch-demo   7.3.2     Running   1m
 ```
@@ -55,7 +53,7 @@ elasticsearch-demo   7.3.2     Running   1m
 To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
-$ kubedb get elasticsearch elasticsearch-demo --output=yaml
+$ kubectl get elasticsearch elasticsearch-demo --output=yaml
 apiVersion: kubedb.com/v1alpha1
 kind: Elasticsearch
 metadata:
@@ -102,13 +100,13 @@ status:
 To get JSON of an object, use `--output=json` flag.
 
 ```console
-$ kubedb get elasticsearch elasticsearch-demo --output=json
+$ kubectl get elasticsearch elasticsearch-demo --output=json
 ```
 
 To list all KubeDB objects, use following command:
 
 ```console
-$ kubedb get all -o wide
+$ kubectl get all -o wide
 NAME                       READY     STATUS    RESTARTS   AGE       IP              NODE              NOMINATED NODE
 pod/elasticsearch-demo-0   1/1       Running   0          2m        192.168.1.105   4gb-pool-crtbqq   <none>
 
@@ -146,7 +144,7 @@ snap/snapshot-20171212-114700            es/elasticsearch-demo        gs:bucket-
 
 Flag `--output=wide` is used to print additional information.
 
-List command supports short names for each object types. You can use it like `kubedb get <short-name>`. Below are the short name for KubeDB objects:
+List command supports short names for each object types. You can use it like `kubectl get <short-name>`. Below are the short name for KubeDB objects:
 
 - Elasticsearch: `es`
 - Snapshot: `snap`
@@ -155,7 +153,7 @@ List command supports short names for each object types. You can use it like `ku
 You can print labels with objects. The following command will list all Snapshots with their corresponding labels.
 
 ```console
-$ kubedb get snap --show-labels
+$ kubectl get snap --show-labels
 NAME                                 DATABASE                     STATUS      AGE       LABELS
 elasticsearch-demo-20170605-073557   es/elasticsearch-demo        Succeeded   11m       kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo
 snapshot-20171212-114700             es/elasticsearch-demo        Succeeded   1h        kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo
@@ -164,7 +162,7 @@ snapshot-20171212-114700             es/elasticsearch-demo        Succeeded   1h
 You can also filter list using `--selector` flag.
 
 ```console
-$ kubedb get snap --selector='kubedb.com/kind=Elasticsearch' --show-labels
+$ kubectl get snap --selector='kubedb.com/kind=Elasticsearch' --show-labels
 NAME                                 DATABASE                STATUS      AGE       LABELS
 elasticsearch-demo-20171212-073557   es/elasticsearch-demo   Succeeded   14m       kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo
 snapshot-20171212-114700             es/elasticsearch-demo   Succeeded   2h        kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo
@@ -173,7 +171,7 @@ snapshot-20171212-114700             es/elasticsearch-demo   Succeeded   2h     
 To print only object name, run the following command:
 
 ```console
-$ kubedb get all -o name
+$ kubectl get all -o name
 pod/elasticsearch-demo-0
 service/elasticsearch-demo
 service/elasticsearch-demo-master
@@ -197,14 +195,12 @@ elasticsearchversion.catalog.kubedb.com/6.4.0
 elasticsearch.kubedb.com/elasticsearch-demo
 ```
 
-To learn about various options of `get` command, please visit [here](/docs/reference/kubedb_get.md).
-
 ### How to Describe Objects
 
-`kubedb describe` command allows users to describe any KubeDB object. The following command will describe Elasticsearch database `elasticsearch-demo` with relevant information.
+`kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe Elasticsearch database `elasticsearch-demo` with relevant information.
 
 ```console
-$ kubedb describe es elasticsearch-demo
+$ kubectl dba describe es elasticsearch-demo
 Name:               elasticsearch-demo
 Namespace:          default
 CreationTimestamp:  Mon, 08 Oct 2018 20:22:19 +0600
@@ -218,7 +214,7 @@ Volume:
   Capacity:      1Gi
   Access Modes:  RWO
 
-StatefulSet:          
+StatefulSet:
   Name:               elasticsearch-demo
   CreationTimestamp:  Mon, 08 Oct 2018 20:22:22 +0600
   Labels:               kubedb.com/kind=Elasticsearch
@@ -230,7 +226,7 @@ StatefulSet:
   Replicas:           824642046536 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
-Service:        
+Service:
   Name:         elasticsearch-demo
   Labels:         kubedb.com/kind=Elasticsearch
                   kubedb.com/name=elasticsearch-demo
@@ -241,7 +237,7 @@ Service:
   TargetPort:   http/TCP
   Endpoints:    192.168.1.105:9200
 
-Service:        
+Service:
   Name:         elasticsearch-demo-master
   Labels:         kubedb.com/kind=Elasticsearch
                   kubedb.com/name=elasticsearch-demo
@@ -257,9 +253,9 @@ Certificate Secret:
   Labels:         kubedb.com/kind=Elasticsearch
                   kubedb.com/name=elasticsearch-demo
   Annotations:  <none>
-  
+
 Type:  Opaque
-  
+
 Data
 ====
   key_pass:     6 bytes
@@ -272,9 +268,9 @@ Database Secret:
   Labels:         kubedb.com/kind=Elasticsearch
                   kubedb.com/name=elasticsearch-demo
   Annotations:  <none>
-  
+
 Type:  Opaque
-  
+
 Data
 ====
   sg_roles.yml:           312 bytes
@@ -307,7 +303,7 @@ Events:
   Normal  Successful  4m    Elasticsearch operator  Successfully patched Elasticsearch
 ```
 
-`kubedb describe` command provides following basic information about a database.
+`kubectl dba describe` command provides following basic information about a database.
 
 - StatefulSet
 - Storage (Persistent Volume)
@@ -324,37 +320,37 @@ To hide events on KubeDB object, use flag `--show-events=false`
 To describe all Elasticsearch objects in `default` namespace, use following command
 
 ```console
-$ kubedb describe es
+$ kubectl dba describe es
 ```
 
 To describe all Elasticsearch objects from every namespace, provide `--all-namespaces` flag.
 
 ```console
-$ kubedb describe es --all-namespaces
+$ kubectl dba describe es --all-namespaces
 ```
 
 To describe all KubeDB objects from every namespace, use the following command:
 
 ```console
-$ kubedb describe all --all-namespaces
+$ kubectl dba describe all --all-namespaces
 ```
 
 You can also describe KubeDb objects with matching labels. The following command will describe all Elasticsearch objects with specified labels from every namespace.
 
 ```console
-$ kubedb describe es --all-namespaces --selector='group=dev'
+$ kubectl dba describe es --all-namespaces --selector='group=dev'
 ```
 
-To learn about various options of `describe` command, please visit [here](/docs/reference/kubedb_describe.md).
+To learn about various options of `describe` command, please visit [here](/docs/reference/kubectl-dba_describe.md).
 
 ### How to Edit Objects
 
-`kubedb edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
+`kubectl edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
 
 Lets edit an existing running Elasticsearch object to setup [Scheduled Backup](/docs/guides/elasticsearch/snapshot/scheduled_backup.md). The following command will open Elasticsearch `elasticsearch-demo` in editor.
 
 ```console
-$ kubedb edit es elasticsearch-demo
+$ kubectl edit es elasticsearch-demo
 
 # Add following under Spec to configure periodic backups
 #  backupSchedule:
@@ -386,39 +382,35 @@ Elasticsearch:
 - spec.podTemplate.spec.nodeSelector
 - spec.podTemplate.spec.env
 
-For DormantDatabase, `spec.origin` can't be edited using `kubedb edit`
-
-To learn about various options of `edit` command, please visit [here](/docs/reference/kubedb_edit.md).
+For DormantDatabase, `spec.origin` can't be edited using `kubectl edit`
 
 ### How to Delete Objects
 
-`kubedb delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete an Elasticsearch `elasticsearch-dev` in default namespace
+`kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete an Elasticsearch `elasticsearch-dev` in default namespace
 
 ```console
-$ kubedb delete elasticsearch elasticsearch-demo
+$ kubectl delete elasticsearch elasticsearch-demo
 elasticsearch.kubedb.com "elasticsearch-demo" deleted
 ```
 
 You can also use YAML files to delete objects. The following command will delete an Elasticsearch using the type and name specified in `elasticsearch.yaml`.
 
 ```console
-$ kubedb delete -f elasticsearch-demo.yaml
+$ kubectl delete -f elasticsearch-demo.yaml
 elasticsearch.kubedb.com "elasticsearch-demo" deleted
 ```
 
-`kubedb delete` command also takes input from `stdin`.
+`kubectl delete` command also takes input from `stdin`.
 
 ```console
-cat elasticsearch.yaml | kubedb delete -f -
+cat elasticsearch.yaml | kubectl delete -f -
 ```
 
 To delete database with matching labels, use `--selector` flag. The following command will delete elasticsearch with label `elasticsearch.kubedb.com/name=elasticsearch-demo`.
 
 ```console
-$ kubedb delete elasticsearch -l elasticsearch.kubedb.com/name=elasticsearch-demo
+$ kubectl delete elasticsearch -l elasticsearch.kubedb.com/name=elasticsearch-demo
 ```
-
-To learn about various options of `delete` command, please visit [here](/docs/reference/kubedb_delete.md).
 
 ## Using Kubectl
 

@@ -20,7 +20,7 @@ If you want to upgrade your existing MySQL databases, you can follow the procedu
 To get an overview of the MySQL versions currently running in your cluster, run the following command with the KubeDB CLI:
 
 ```console
-$ kubedb get mysql --all-namespaces
+$ kubectl get mysql --all-namespaces
 NAMESPACE   NAME            VERSION   STATUS         AGE
 ns1         database-ns1    5.7-v1    Running        59d
 ns2         database-ns2    5.7-v1    Running        38d
@@ -39,7 +39,7 @@ You should check the supported MySQL [upgrade paths](https://dev.mysql.com/doc/r
 
 ### PHP Compatibility Note for MySQL 8.0+
 
-At the moment of writing, PHP [doesn't support](https://www.php.net/manual/en/mysqli.requirements.php) the new `caching_sha2_password` authentication method on MySQL 8+ (tested on PHP 7.2 and 7.3). You will get errors like:
+At the moment of writing, PHP [doesn't support](https://php.net/manual/en/mysqli.requirements.php) the new `caching_sha2_password` authentication method on MySQL 8+ (tested on PHP 7.2 and 7.3). You will get errors like:
 
 ```
 mysqli_real_connect(): The server requested authentication method unknown to the client [caching_sha2_password]
@@ -85,7 +85,7 @@ The upgrade consists of two steps:
 First, we'll edit the kubedb instance. Open the instance editor:
 
 ```console
-kubedb edit mysql/DB_NAME -n YOUR_NAMESPACE
+kubectl edit mysql/DB_NAME -n YOUR_NAMESPACE
 ```
 
 Replace `version: "X.X.X"` with the version you need, for example 8.0.14:
@@ -103,7 +103,7 @@ mysql.kubedb.com/database edited
 Check if the version of the database has changed:
 
 ```console
-$ kubedb get mysql/DB_NAME -n YOUR_NAMESPACE
+$ kubectl get mysql/DB_NAME -n YOUR_NAMESPACE
 NAMESPACE   NAME            VERSION   STATUS         AGE
 ns1         database-ns1    8.0.14   Running        59d
 ```

@@ -95,7 +95,7 @@ NB: If you are using `kubectl` 1.9.0, update to 1.9.1 or later to avoid this [is
 
 ## Install KubeDB operator
 
-When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to appropriate value. Follow the steps to [install KubeDB operator](/docs/setup/install.md) properly in cluster so that to points to the DOCKER_REGISTRY you wish to pull images from.
+When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to appropriate value. Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in cluster so that to points to the DOCKER_REGISTRY you wish to pull images from.
 
 ## Deploy Redis server from Private Registry
 
@@ -126,7 +126,7 @@ spec:
 Now run the command to deploy this `Redis` object:
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/private-registry/demo-2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/private-registry/demo-2.yaml
 redis.kubedb.com/redis-pvt-reg created
 ```
 
@@ -141,7 +141,7 @@ redis-pvt-reg-0   0/1       ContainerCreating   0          0s
 redis-pvt-reg-0   1/1       Running             0          2m
 
 
-$ kubedb get rd -n demo
+$ kubectl get rd -n demo
 NAME            VERSION   STATUS    AGE
 redis-pvt-reg   4.0-v1    Running   40s
 ```

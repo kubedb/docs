@@ -19,7 +19,7 @@ This tutorial will show you how to monitor PerconaXtraDB database using builtin 
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - If you are not familiar with how to configure Prometheus to scrape metrics from various Kubernetes resources, please read the tutorial from [here](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin).
 

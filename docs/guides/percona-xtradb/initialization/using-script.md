@@ -23,7 +23,7 @@ In this tutorial we will use .sql script stored in GitHub repository [kubedb/per
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB CLI on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB CLI on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial
 
@@ -79,7 +79,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/px-init-script.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/px-init-script.yaml
 perconaxtradb.kubedb.com/px-init-script created
 ```
 
@@ -90,7 +90,7 @@ Here,
 KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching PerconaXtraDB object name. KubeDB operator will also create a governing service for StatefulSets with the name ``<percona-xtradb-object-name>-gvr`, if one is not already present.
 
 ```console
-$ kubedb describe px -n demo px-init-script
+$ kubectl dba describe px -n demo px-init-script
 Name:         px-init-script
 Namespace:    demo
 Labels:       <none>
@@ -182,7 +182,7 @@ px-init-script-gvr   ClusterIP   None            <none>        3306/TCP   6m47s
 KubeDB operator sets the `.status.phase` to `Running` once the database is successfully created. Run the following command to see the modified PerconaXtraDB object:
 
 ```console
-$ kubedb get px -n demo px-init-script -o yaml
+$ kubectl get px -n demo px-init-script -o yaml
 ```
 
 Output:

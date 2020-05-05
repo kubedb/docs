@@ -22,7 +22,7 @@ KubeDB supports Elasticsearch database initialization.
 
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -113,7 +113,7 @@ recovered-es   7.3.2     Running   7m6s
 As a final step of initialization, KubeDB Job controller adds `kubedb.com/initialized` annotation in initialized Elasticsearch object. This prevents further invocation of initialization process.
 
 ```console
-$ kubedb describe es -n demo recovered-es
+$ kubectl dba describe es -n demo recovered-es
 Name:               recovered-es
 Namespace:          demo
 CreationTimestamp:  Wed, 02 Oct 2019 14:54:59 +0600

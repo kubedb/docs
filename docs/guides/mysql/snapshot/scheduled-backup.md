@@ -22,7 +22,7 @@ This tutorial will show you how to use KubeDB to take scheduled snapshot of a My
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
@@ -92,14 +92,14 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/snapshot/demo-4.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/snapshot/demo-4.yaml
 mysql.kubedb.com/mysql-scheduled created
 ```
 
 It is also possible to add  backup scheduler to an existing `MySQL`. You just have to edit the `MySQL` CRD and add below spec:
 
 ```yaml
-$ kubedb edit my {db-name} -n demo
+$ kubectl edit my {db-name} -n demo
 spec:
   backupSchedule:
     cronExpression: '@every 1m'
@@ -108,10 +108,10 @@ spec:
     storageSecretName: my-snap-secret
 ```
 
-Once the `spec.backupSchedule` is added, KubeDB operator will create a new Snapshot object on each tick of the cron expression. This triggers KubeDB operator to create a Job as it would for any regular instant backup process. You can see the snapshots as they are created using `kubedb get snap` command.
+Once the `spec.backupSchedule` is added, KubeDB operator will create a new Snapshot object on each tick of the cron expression. This triggers KubeDB operator to create a Job as it would for any regular instant backup process. You can see the snapshots as they are created using `kubectl get snap` command.
 
 ```console
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME                              DATABASENAME      STATUS      AGE
 mysql-scheduled-20180927-083539   mysql-scheduled   Succeeded   3m
 mysql-scheduled-20180927-083639   mysql-scheduled   Succeeded   2m
@@ -130,7 +130,7 @@ From the above image, you can see that the snapshot output is stored in a folder
 To remove scheduler, edit the MySQL object  to remove `spec.backupSchedule` section.
 
 ```yaml
-$ kubedb edit my mysql-scheduled -n demo
+$ kubectl edit my mysql-scheduled -n demo
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:

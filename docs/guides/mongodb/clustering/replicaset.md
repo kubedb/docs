@@ -24,7 +24,7 @@ Before proceeding:
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
@@ -62,7 +62,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/demo-1.yaml
 mongodb.kubedb.com/mgo-replicaset created
 ```
 
@@ -78,7 +78,7 @@ Here,
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-name>-gvr`.
 
 ```console
-$ kubedb describe mg -n demo mgo-replicaset
+$ kubectl dba describe mg -n demo mgo-replicaset
 Name:               mgo-replicaset
 Namespace:          demo
 CreationTimestamp:  Wed, 06 Feb 2019 16:08:15 +0600
@@ -174,7 +174,7 @@ mgo-replicaset-gvr   ClusterIP   None            <none>        27017/TCP   119s
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MongoDB object:
 
 ```yaml
-$ kubedb get mg -n demo mgo-replicaset -o yaml
+$ kubectl get mg -n demo mgo-replicaset -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
@@ -417,20 +417,20 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 Since the MongoDB object created in this tutorial has `spec.terminationPolicy` set to `Pause` (default), if you delete the MongoDB object, KubeDB operator will create a dormant database while deleting the StatefulSet and its pods but leaves the PVCs unchanged.
 
 ```console
-$ kubedb delete mg mgo-replicaset -n demo
+$ kubectl delete mg mgo-replicaset -n demo
 mongodb.kubedb.com "mgo-replicaset" deleted
 
-$ kubedb get drmn -n demo mgo-replicaset
+$ kubectl get drmn -n demo mgo-replicaset
 NAME             STATUS    AGE
 mgo-replicaset   Pausing   25s
 
-$ kubedb get drmn -n demo mgo-replicaset
+$ kubectl get drmn -n demo mgo-replicaset
 NAME             STATUS    AGE
 mgo-replicaset   Paused    1m
 ```
 
 ```yaml
-$ kubedb get drmn -n demo mgo-replicaset -o yaml
+$ kubectl get drmn -n demo mgo-replicaset -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:
@@ -525,7 +525,7 @@ In this tutorial, the dormant database can be resumed by creating original Mongo
 The below command will resume the DormantDatabase `mgo-replicaset`.
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/demo-1.yaml
 mongodb.kubedb.com/mgo-replicaset created
 ```
 
@@ -536,7 +536,7 @@ Now, If you again exec into `pod` and look for previous data, you will see that,
 You can wipe out a DormantDatabase while deleting the object by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `MongoDB` database (i.e, PVCs, Secrets, Snapshots). It will also delete snapshot data stored in the Cloud Storage buckets.
 
 ```yaml
-$ kubedb edit drmn -n demo mgo-replicaset
+$ kubectl edit drmn -n demo mgo-replicaset
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

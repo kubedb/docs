@@ -20,7 +20,7 @@ KubeDB supports Point-in-Time Recovery (PITR) from WAL archive. You can recover 
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - If you are not familiar with Point-in-Time Recovery please read the doc from [here](https://www.postgresql.org/docs/current/continuous-archiving.html).
 

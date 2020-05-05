@@ -20,7 +20,7 @@ This tutorial will show you how to use X-Pack monitoring in an Elasticsearch clu
 
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 As KubeDB uses [Search Guard](https://search-guard.com/) plugin for authentication and authorization, you have to know how to configure Search Guard for both Elasticsearch cluster and Kibana. If you don't know, please visit [here](https://docs.search-guard.com/latest/main-concepts).
 
@@ -502,4 +502,4 @@ $ kubectl delete -n demo deployment/kibana
 $ kubectl delete ns demo
 ```
 
-To uninstall KubeDB follow this [guide](/docs/setup/uninstall.md).
+To uninstall KubeDB follow this [guide](/docs/setup/operator/uninstall.md).

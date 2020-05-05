@@ -22,7 +22,7 @@ If you don't know how KubeDB handles custom configuration for an Elasticsearch c
 
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -298,4 +298,4 @@ kubectl delete  -n demo configmap/es-custom-config
 kubectl delete ns demo
 ```
 
-To uninstall KubeDB follow this [guide](/docs/setup/uninstall.md).
+To uninstall KubeDB follow this [guide](/docs/setup/operator/uninstall.md).

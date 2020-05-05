@@ -89,7 +89,7 @@ NB: If you are using `kubectl` 1.9.0, update to 1.9.1 or later to avoid this [is
 
 ## Install KubeDB operator
 
-When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to appropriate value. Follow the steps to [install KubeDB operator](/docs/setup/install.md) properly in cluster so that to points to the DOCKER_REGISTRY you wish to pull images from.
+When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to appropriate value. Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in cluster so that to points to the DOCKER_REGISTRY you wish to pull images from.
 
 ## Deploy Memcached server from Private Registry
 
@@ -121,7 +121,7 @@ spec:
 Now run the command to deploy this `Memcached` object:
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/private-registry/demo-2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/private-registry/demo-2.yaml
 memcached.kubedb.com/memcd-pvt-reg created
 ```
 
@@ -137,7 +137,7 @@ memcd-pvt-reg-694d4d44df-bwtk8   1/1       Running   0         25s
 memcd-pvt-reg-694d4d44df-zhj4l   1/1       Running   0         26s
 memcd-pvt-reg-694d4d44df-tkqc4   1/1       Running   0         27s
 
-$ kubedb get mc -n demo
+$ kubectl get mc -n demo
 NAME            VERSION    STATUS    AGE
 memcd-pvt-reg   1.5.4-v1   Running   59s
 ```

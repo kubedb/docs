@@ -94,7 +94,7 @@ NB: If you are using `kubectl` 1.9.0, update to 1.9.1 or later to avoid this [is
 
 ## Install KubeDB operator
 
-When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to appropriate value. Follow the steps to [install KubeDB operator](/docs/setup/install.md) properly in cluster so that to points to the DOCKER_REGISTRY you wish to pull images from.
+When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to appropriate value. Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in cluster so that to points to the DOCKER_REGISTRY you wish to pull images from.
 
 ## Create Demo namespace
 
@@ -134,7 +134,7 @@ spec:
 Now run the command to deploy this `MongoDB` object:
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/private-registry/demo-2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/private-registry/demo-2.yaml
 mongodb.kubedb.com/mgo-pvt-reg created
 ```
 
@@ -149,7 +149,7 @@ mgo-pvt-reg-0   0/1       ContainerCreating   0          0s
 mgo-pvt-reg-0   1/1       Running             0          5m
 
 
-$ kubedb get mg -n demo
+$ kubectl get mg -n demo
 NAME          VERSION   STATUS    AGE
 mgo-pvt-reg   3.4-v3    Running   38s
 ```

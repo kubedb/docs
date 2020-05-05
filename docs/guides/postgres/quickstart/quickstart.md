@@ -24,7 +24,7 @@ This tutorial will show you how to use KubeDB to run a PostgreSQL database.
 
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -175,7 +175,7 @@ quick-postgres   10.2-v5   Creating   13s
 Let's describe Postgres object `quick-postgres`
 
 ```console
-$ kubedb describe pg -n demo quick-postgres
+$ kubectl dba describe pg -n demo quick-postgres
 Name:               quick-postgres
 Namespace:          demo
 CreationTimestamp:  Thu, 07 Feb 2019 17:03:11 +0600
@@ -340,7 +340,7 @@ KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or lat
 In this tutorial, Postgres `quick-postgres` is created with `spec.terminationPolicy: DoNotTerminate`. So if you try to delete this Postgres object, admission webhook will nullify the delete operation.
 
 ```console
-$  kubedb delete pg -n demo quick-postgres
+$  kubectl delete pg -n demo quick-postgres
 Error from server (BadRequest): admission webhook "postgres.validators.kubedb.com" denied the request: postgres "quick-postgres" can't be paused. To delete, change spec.terminationPolicy
 ```
 

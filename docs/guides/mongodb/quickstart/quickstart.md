@@ -24,7 +24,7 @@ This tutorial will show you how to use KubeDB to run a MongoDB database.
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
@@ -90,7 +90,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/quickstart/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/quickstart/demo-1.yaml
 mongodb.kubedb.com/mgo-quickstart created
 ```
 
@@ -106,7 +106,7 @@ Here,
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-name>-gvr`.
 
 ```console
-$ kubedb describe mg -n demo mgo-quickstart
+$ kubectl dba describe mg -n demo mgo-quickstart
 Name:               mgo-quickstart
 Namespace:          demo
 CreationTimestamp:  Wed, 06 Feb 2019 11:25:26 +0600
@@ -198,7 +198,7 @@ mgo-quickstart-gvr   ClusterIP   None             <none>        27017/TCP   18m
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MongoDB object:
 
 ```yaml
-$ kubedb get mg -n demo mgo-quickstart -o yaml
+$ kubectl get mg -n demo mgo-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
@@ -321,11 +321,11 @@ bye
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```console
-$ kubedb delete mg mgo-quickstart -n demo
+$ kubectl delete mg mgo-quickstart -n demo
 Error from server (BadRequest): admission webhook "mongodb.validators.kubedb.com" denied the request: mongodb "mgo-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubedb edit mg mgo-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when mongodb is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
+Now, run `kubectl edit mg mgo-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when mongodb is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
 
 Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/mongodb.md#specterminationpolicy).
 
@@ -334,20 +334,20 @@ Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/mongodb
 When [TerminationPolicy](/docs/concepts/databases/mongodb.md#specterminationpolicy) is set to `Pause`, it will pause the MongoDB database instead of deleting it. Here, If you delete the MongoDB object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `mgo-quickstart` MongoDB database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```console
-$ kubedb delete mg mgo-quickstart -n demo
+$ kubectl delete mg mgo-quickstart -n demo
 mongodb.kubedb.com "mgo-quickstart" deleted
 
-$ kubedb get drmn -n demo mgo-quickstart
+$ kubectl get drmn -n demo mgo-quickstart
 NAME             STATUS    AGE
 mgo-quickstart   Pausing   39s
 
-$ kubedb get drmn -n demo mgo-quickstart
+$ kubectl get drmn -n demo mgo-quickstart
 NAME             STATUS    AGE
 mgo-quickstart   Paused    21s
 ```
 
 ```yaml
-$ kubedb get drmn -n demo mgo-quickstart -o yaml
+$ kubectl get drmn -n demo mgo-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:
@@ -438,7 +438,7 @@ In this tutorial, the dormant database can be resumed by creating original Mongo
 The below command will resume the DormantDatabase `mgo-quickstart`.
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/quickstart/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/quickstart/demo-1.yaml
 mongodb.kubedb.com/mgo-quickstart created
 ```
 
@@ -449,7 +449,7 @@ Now, if you exec into the database, you can see that the datas are intact.
 You can wipe out a DormantDatabase while deleting the object by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `MongoDB` database (i.e, PVCs, Secrets, Snapshots). It will also delete snapshot data stored in the Cloud Storage buckets.
 
 ```yaml
-$ kubedb edit drmn -n demo mgo-quickstart
+$ kubectl edit drmn -n demo mgo-quickstart
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

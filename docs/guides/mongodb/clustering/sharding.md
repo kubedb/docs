@@ -24,7 +24,7 @@ Before proceeding:
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
@@ -179,7 +179,7 @@ mongo-sh-shard2-gvr      ClusterIP   None             <none>        27017/TCP   
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. It has also defaulted some field of crd object. Run the following command to see the modified MongoDB object:
 
 ```yaml
-$ kubedb get mg -n demo mongo-sh -o yaml
+$ kubectl get mg -n demo mongo-sh -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
@@ -816,20 +816,20 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 Since the MongoDB object created in this tutorial has `spec.terminationPolicy` set to `Pause` (default), if you delete the MongoDB object, KubeDB operator will create a dormant database while deleting the StatefulSet and its pods but leaves the PVCs unchanged.
 
 ```console
-$ kubedb delete mg mongo-sh -n demo
+$ kubectl delete mg mongo-sh -n demo
 mongodb.kubedb.com "mongo-sh" deleted
 
-$ kubedb get drmn -n demo mongo-sh
+$ kubectl get drmn -n demo mongo-sh
 NAME       STATUS    AGE
 mongo-sh   Pausing   13s
 
-$ kubedb get drmn -n demo mongo-sh
+$ kubectl get drmn -n demo mongo-sh
 NAME       STATUS   AGE
 mongo-sh   Paused   52s
 ```
 
 ```yaml
-$ kubedb get drmn -n demo mongo-sh -o yaml
+$ kubectl get drmn -n demo mongo-sh -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:
@@ -1073,12 +1073,12 @@ mongos> sh.status()
 You can wipe out a DormantDatabase while deleting the object by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `MongoDB` database (i.e, PVCs, Secrets, Snapshots). It will also delete snapshot data stored in the Cloud Storage buckets.
 
 ```console
-$ kubedb delete mg mongo-sh -n demo
+$ kubectl delete mg mongo-sh -n demo
 mongodb.kubedb.com "mongo-sh" deleted
 ```
 
 ```yaml
-$ kubedb edit drmn -n demo mongo-sh
+$ kubectl edit drmn -n demo mongo-sh
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:

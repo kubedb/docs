@@ -84,7 +84,7 @@ If you wish to follow other ways to pull private images see [official docs](http
 
 ## Install KubeDB operator
 
-When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to the appropriate value. Follow the steps to [install KubeDB operator](/docs/setup/install.md) properly in the cluster so that to points to the DOCKER_REGISTRY you wish to pull images from.
+When installing KubeDB operator, set the flags `--docker-registry` and `--image-pull-secret` to the appropriate value. Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in the cluster so that to points to the DOCKER_REGISTRY you wish to pull images from.
 
 ## Deploy ProxySQL from Private Registry
 
@@ -118,7 +118,7 @@ spec:
 Now run the command to deploy this `ProxySQL` object:
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/private-registry.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/private-registry.yaml
 proxysql.kubedb.com/proxysql-pvt-reg created
 ```
 

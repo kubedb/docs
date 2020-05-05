@@ -20,7 +20,7 @@ KubeDB Elasticsearch supports multi-node database cluster.
 
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -82,7 +82,7 @@ multi-node-es   7.3.2     Running   7m38s
 Let's describe Elasticsearch object `multi-node-es` while Running
 
 ```yaml
-$ kubedb describe es -n demo multi-node-es
+$ kubectl dba describe es -n demo multi-node-es
 Name:               multi-node-es
 Namespace:          demo
 CreationTimestamp:  Wed, 02 Oct 2019 10:37:14 +0600
@@ -352,7 +352,7 @@ Three StatefulSets are created for *client*, *data* and *master* node respective
 Let's describe this Elasticsearch
 
 ```console
-$ kubedb describe es -n demo topology-es
+$ kubectl dba describe es -n demo topology-es
 Name:               topology-es
 Namespace:          demo
 CreationTimestamp:  Wed, 02 Oct 2019 10:46:12 +0600

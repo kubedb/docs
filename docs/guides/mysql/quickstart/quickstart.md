@@ -26,7 +26,7 @@ This tutorial will show you how to use KubeDB to run a MySQL database.
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
@@ -115,7 +115,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/quickstart/demo-2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/quickstart/demo-2.yaml
 mysql.kubedb.com/mysql-quickstart created
 ```
 
@@ -131,7 +131,7 @@ Here,
 KubeDB operator watches for `MySQL` objects using Kubernetes api. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present.
 
 ```console
-$ kubedb describe my -n demo mysql-quickstart
+$ kubectl dba describe my -n demo mysql-quickstart
 Name:               mysql-quickstart
 Namespace:          demo
 CreationTimestamp:  Wed, 06 Feb 2019 17:17:55 +0600
@@ -212,7 +212,7 @@ mysql-quickstart   ClusterIP      10.104.50.139   <none>        3306/TCP       1
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MySQL object:
 
 ```yaml
-$ kubedb get my -n demo mysql-quickstart -o yaml
+$ kubectl get my -n demo mysql-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:
@@ -289,11 +289,11 @@ Now, open your browser and go to the following URL: _http://{minikube-ip}:{myadm
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```console
-$ kubedb delete my mysql-quickstart -n demo
+$ kubectl delete my mysql-quickstart -n demo
 Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" denied the request: mysql "mysql-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubedb edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when mysql is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
+Now, run `kubectl edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when mysql is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
 
 Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/mysql.md#specterminationpolicy).
 
@@ -302,20 +302,20 @@ Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/mysql.m
 When [TerminationPolicy](/docs/concepts/databases/mysql.md#specterminationpolicy) is set to `Pause`, it will pause the MySQL database instead of deleting it. Here, If you delete the MySQL object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `mgo-quickstart` MySQL database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```console
-$ kubedb delete my mysql-quickstart -n demo
+$ kubectl delete my mysql-quickstart -n demo
 mysql.kubedb.com "mysql-quickstart" deleted
 
-$ kubedb get drmn -n demo mysql-quickstart
+$ kubectl get drmn -n demo mysql-quickstart
 NAME               STATUS    AGE
 mysql-quickstart   Pausing   14s
 
-$ kubedb get drmn -n demo mysql-quickstart
+$ kubectl get drmn -n demo mysql-quickstart
 NAME               STATUS    AGE
 mysql-quickstart   Paused    39s
 ```
 
 ```yaml
-$ kubedb get drmn -n demo mysql-quickstart -o yaml
+$ kubectl get drmn -n demo mysql-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:
@@ -382,7 +382,7 @@ In this tutorial, the dormant database can be resumed by creating original `MySQ
 The below command will resume the DormantDatabase `mysql-quickstart` that was created before.
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/quickstart/demo-2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/quickstart/demo-2.yaml
 mysql.kubedb.com/mysql-quickstart created
 ```
 
@@ -393,10 +393,10 @@ Now, if you exec into the database, you can see that the datas are intact.
 You can wipe out a DormantDatabase while deleting the objet by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `MySQL` database (i.e, PVCs, Secrets, Snapshots). It will also delete snapshot data stored in the Cloud Storage buckets.
 
 ```yaml
-$ kubedb delete my mysql-quickstart -n demo
+$ kubectl delete my mysql-quickstart -n demo
 mysql.kubedb.com "mysql-quickstart" deleted
 
-$ kubedb edit drmn -n demo mysql-quickstart
+$ kubectl edit drmn -n demo mysql-quickstart
 apiVersion: kubedb.com/v1alpha1
 kind: DormantDatabase
 metadata:
@@ -418,7 +418,7 @@ If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
 ```console
-$ kubedb delete drmn mysql-quickstart -n demo
+$ kubectl delete drmn mysql-quickstart -n demo
 dormantdatabase.kubedb.com "mysql-quickstart" deleted
 ```
 

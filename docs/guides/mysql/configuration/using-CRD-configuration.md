@@ -20,7 +20,7 @@ KubeDB supports providing custom configuration for MySQL via [PodTemplate](/docs
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+- Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -95,7 +95,7 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/configuration/mysql-misc-config.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/configuration/mysql-misc-config.yaml
 mysql.kubedb.com/mysql-misc-config created
 ```
 
@@ -194,11 +194,11 @@ spec:
 ```
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/configuration/snapshot-misc-conf.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/configuration/snapshot-misc-conf.yaml
 snapshot.kubedb.com/snap-mysql-config created
 
 
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME                DATABASENAME        STATUS      AGE
 snap-mysql-config   mysql-misc-config   Succeeded   1m
 ```
@@ -208,7 +208,7 @@ snap-mysql-config   mysql-misc-config   Succeeded   1m
 To configure BackupScheduler, add the require changes in PodTemplate just like snapshot object.
 
 ```yaml
-$ kubedb edit my mysql-misc-config -n demo
+$ kubectl edit my mysql-misc-config -n demo
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:
@@ -236,7 +236,7 @@ status:
 ```
 
 ```console
-$ kubedb get snap -n demo
+$ kubectl get snap -n demo
 NAME                                DATABASENAME        STATUS      AGE
 mysql-misc-config-20181002-105247   mysql-misc-config   Succeeded   3m
 mysql-misc-config-20181002-105349   mysql-misc-config   Succeeded   2m
@@ -263,7 +263,7 @@ kubectl delete service -n demo myadmin
 kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
 
 ## Next Steps
 

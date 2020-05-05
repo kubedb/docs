@@ -22,7 +22,7 @@ KubeDB supports PostgreSQL database initialization. This tutorial will show you 
 
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -93,7 +93,7 @@ instant-snapshot   script-postgres   Succeeded   56s
 Now, create the Postgres object.
 
 ```console
-$ kubedb create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/recovered-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/recovered-postgres.yaml
 postgres.kubedb.com/recovered-postgres created
 ```
 
@@ -102,7 +102,7 @@ When PostgreSQL database is ready, KubeDB operator launches a Kubernetes Job to 
 As a final step of initialization, KubeDB Job controller adds `kubedb.com/initialized` annotation in initialized Postgres object. This prevents further invocation of initialization process.
 
 ```console
-$ kubedb describe pg -n demo recovered-postgres -S=false -W=false
+$ kubectl dba describe pg -n demo recovered-postgres -S=false -W=false
 Name:           recovered-postgres
 Namespace:      demo
 StartTimestamp: Thu, 08 Feb 2018 17:23:21 +0600

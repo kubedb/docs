@@ -22,7 +22,7 @@ KubeDB operator maintains another Custom Resource Definition (CRD) for database 
 
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -65,7 +65,7 @@ Here, we have used `spec.storageType: Ephemeral`. So, we don't need to specify s
 Verify that the Elasticsearch is running,
 
 ```console
-$ kubedb get es -n demo instant-elasticsearch
+$ kubectl get es -n demo instant-elasticsearch
 NAME                    VERSION   STATUS    AGE
 instant-elasticsearch   7.3.2     Running   41s
 ```
@@ -299,10 +299,10 @@ If you open this `test.data.json` file, you will see the data you have created p
 }
 ```
 
-Let's see the Snapshot list for Elasticsearch `instant-elasticsearch` by running `kubedb describe` command.
+Let's see the Snapshot list for Elasticsearch `instant-elasticsearch` by running `kubectl dba describe` command.
 
 ```yaml
-$ kubedb describe es -n demo instant-elasticsearch
+$ kubectl dba describe es -n demo instant-elasticsearch
 Name:               instant-elasticsearch
 Namespace:          demo
 CreationTimestamp:  Wed, 02 Oct 2019 11:26:44 +0600

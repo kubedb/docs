@@ -24,7 +24,7 @@ This tutorial will show how to take instant backup of PostgreSQL database deploy
 
 At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/install.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -190,10 +190,10 @@ CREATE TABLE dashboard (
 ALTER TABLE dashboard OWNER TO postgres;
 ```
 
-You can see the Snapshot list for Postgres `script-postgres` by running `kubedb describe` command.
+You can see the Snapshot list for Postgres `script-postgres` by running `kubectl dba describe` command.
 
 ```console
-$ kubedb describe pg -n demo script-postgres
+$ kubectl dba describe pg -n demo script-postgres
 Name:               script-postgres
 Namespace:          demo
 CreationTimestamp:  Tue, 04 Sep 2018 11:55:22 +0600
