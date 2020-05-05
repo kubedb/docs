@@ -1,62 +1,31 @@
 ---
-title: Kubedb Describe
+title: Kubectl-Dba Version
 menu:
-  docs_{{ .version }}:
-    identifier: kubedb-describe
-    name: Kubedb Describe
+  docs_0.12.0:
+    identifier: kubectl-dba-version
+    name: Kubectl-Dba Version
     parent: reference
-menu_name: docs_{{ .version }}
+menu_name: docs_0.12.0
 section_menu_id: reference
 ---
-## kubectl dba describe
+## kubectl-dba version
 
-Show details of a specific resource or group of resources
+Prints binary version number.
 
 ### Synopsis
 
-Show details of a specific resource or group of resources. This command joins many API calls together to form a detailed description of a given resource or group of resources.
-
-Use "kubedb api-resources" for a complete list of supported resources.
+Prints binary version number.
 
 ```
-kubectl dba describe (-f FILENAME | TYPE [NAME_PREFIX | -l label] | TYPE/NAME)
-```
-
-### Examples
-
-```
-  # Describe an Elasticsearch
-  kubectl dba describe elasticsearches elasticsearch-demo
-  
-  # Describe a postgres
-  kubectl dba describe pg/postgres-demo
-  
-  # Describe all dormantdatabases
-  kubectl dba describe drmn
-  
-  Valid resource types include:
-  * all
-  * etcds
-  * elasticsearches
-  * postgreses
-  * mysqls
-  * mongodbs
-  * redises
-  * memcacheds
-  * snapshots
-  * dormantdatabases
+kubectl-dba version [flags]
 ```
 
 ### Options
 
 ```
-      --all-namespaces     If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.
-  -f, --filename strings   Filename, directory, or URL to files containing the resource to describe
-  -h, --help               help for describe
-  -k, --kustomize string   Process the kustomization directory. This flag can't be used together with -f or -R.
-  -R, --recursive          Process the directory used in -f, --filename recursively. Useful when you want to manage related manifests organized within the same directory.
-  -l, --selector string    Selector (label query) to filter on, supports '=', '==', and '!='.(e.g. -l key1=value1,key2=value2)
-      --show-events        If true, display events related to the described object. (default true)
+      --check string   Check version constraint
+  -h, --help           help for version
+      --short          Print just the version number.
 ```
 
 ### Options inherited from parent commands
@@ -91,6 +60,5 @@ kubectl dba describe (-f FILENAME | TYPE [NAME_PREFIX | -l label] | TYPE/NAME)
 
 ### SEE ALSO
 
-* [kubedb](/docs/reference/kubedb.md)	 - Command line interface for KubeDB
-
+* [kubectl-dba](/docs/reference/kubectl-dba.md)	 - kubectl plugin for KubeDB
 
