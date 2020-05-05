@@ -40,8 +40,6 @@ mysql.kubedb.com/mysql-demo created
 cat mysql-demo.yaml | kubectl create -f -
 ```
 
-To learn about various options of `create` command, please visit [here](/docs/reference/kubedb_create.md).
-
 ### How to List Objects
 
 `kubectl get` command allows users to list or find any KubeDB object. To list all MySQL objects in `default` namespace, run the following command:
@@ -159,8 +157,6 @@ snapshot/mysql-demo-20170605-073557
 snapshot/snapshot-20170505-114700
 ```
 
-To learn about various options of `get` command, please visit [here](/docs/reference/kubedb_get.md).
-
 ### How to Describe Objects
 
 `kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe MySQL database `mysql-demo` with relevant information.
@@ -205,9 +201,9 @@ Database Secret:
   Labels:         kubedb.com/kind=MySQL
                   kubedb.com/name=mysql-demo
   Annotations:  <none>
-  
+
 Type:  Opaque
-  
+
 Data
 ====
   password:  16 bytes
@@ -262,7 +258,7 @@ You can also describe KubeDB objects with matching labels. The following command
 kubectl dba describe my --all-namespaces --selector='group=dev'
 ```
 
-To learn about various options of `describe` command, please visit [here](/docs/reference/kubedb_describe.md).
+To learn about various options of `describe` command, please visit [here](/docs/reference/kubectl-dba_describe.md).
 
 ### How to Edit Objects
 
@@ -302,8 +298,6 @@ If StatefulSets exists for a MySQL database, following fields can't be modified 
 
 For DormantDatabase, `spec.origin` can't be edited using `kubectl edit`
 
-To learn about various options of `edit` command, please visit [here](/docs/reference/kubedb_edit.md).
-
 ### How to Delete Objects
 
 `kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a MySQL `mysql-dev` in default namespace
@@ -331,8 +325,6 @@ To delete database with matching labels, use `--selector` flag. The following co
 ```console
 kubectl delete mysql -l mysql.kubedb.com/name=mysql-demo
 ```
-
-To learn about various options of `delete` command, please visit [here](/docs/reference/kubedb_delete.md).
 
 ## Using Kubectl
 

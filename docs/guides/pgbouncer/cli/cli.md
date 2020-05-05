@@ -40,8 +40,6 @@ pgbouncer "pgbouncer-demo" created
 cat pgbouncer-demo.yaml | kubectl create -f -
 ```
 
-To learn about various options of `create` command, please visit [here](/docs/reference/kubedb_create.md).
-
 ### How to List Objects
 
 `kubectl get` command allows users to list or find any KubeDB object. To list all PgBouncer objects in `default` namespace, run the following command:
@@ -180,8 +178,6 @@ statefulset.apps/pgbouncer-demo
 pgbouncer.kubedb.com/pgbouncer-demo
 ```
 
-To learn about various options of `get` command, please visit [here](/docs/reference/kubedb_get.md).
-
 ### How to Describe Objects
 
 `kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe PgBouncer `pgbouncer-demo` with relevant information.
@@ -272,7 +268,7 @@ You can also describe KubeDb objects with matching labels. The following command
 kubectl dba describe pg,es --all-namespaces --selector='group=dev'
 ```
 
-To learn about various options of `describe` command, please visit [here](/docs/reference/kubedb_describe.md).
+To learn about various options of `describe` command, please visit [here](/docs/reference/kubectl-dba_describe.md).
 
 ### How to Edit Objects
 
@@ -330,8 +326,6 @@ To delete objects with matching labels, use `--selector` flag. The following com
 ```console
 kubectl delete pgbouncer -l pgbouncer.kubedb.com/name=pgbouncer-demo
 ```
-
-To learn about various options of `delete` command, please visit [here](/docs/reference/kubedb_delete.md).
 
 ## Using Kubectl
 

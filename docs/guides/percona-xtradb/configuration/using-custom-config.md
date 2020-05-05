@@ -183,7 +183,7 @@ $ rm ./my-config.cnf
 $ kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
 
 ## Next Steps
 

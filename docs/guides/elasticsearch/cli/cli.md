@@ -40,8 +40,6 @@ elasticsearch.kubedb.com/elasticsearch-demo created
 cat elasticsearch-demo.yaml | kubectl create -f -
 ```
 
-To learn about various options of `create` command, please visit [here](/docs/reference/kubedb_create.md).
-
 ### How to List Objects
 
 `kubectl get` command allows users to list or find any KubeDB object. To list all Elasticsearch objects in `default` namespace, run the following command:
@@ -197,8 +195,6 @@ elasticsearchversion.catalog.kubedb.com/6.4.0
 elasticsearch.kubedb.com/elasticsearch-demo
 ```
 
-To learn about various options of `get` command, please visit [here](/docs/reference/kubedb_get.md).
-
 ### How to Describe Objects
 
 `kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe Elasticsearch database `elasticsearch-demo` with relevant information.
@@ -218,7 +214,7 @@ Volume:
   Capacity:      1Gi
   Access Modes:  RWO
 
-StatefulSet:          
+StatefulSet:
   Name:               elasticsearch-demo
   CreationTimestamp:  Mon, 08 Oct 2018 20:22:22 +0600
   Labels:               kubedb.com/kind=Elasticsearch
@@ -230,7 +226,7 @@ StatefulSet:
   Replicas:           824642046536 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
-Service:        
+Service:
   Name:         elasticsearch-demo
   Labels:         kubedb.com/kind=Elasticsearch
                   kubedb.com/name=elasticsearch-demo
@@ -241,7 +237,7 @@ Service:
   TargetPort:   http/TCP
   Endpoints:    192.168.1.105:9200
 
-Service:        
+Service:
   Name:         elasticsearch-demo-master
   Labels:         kubedb.com/kind=Elasticsearch
                   kubedb.com/name=elasticsearch-demo
@@ -257,9 +253,9 @@ Certificate Secret:
   Labels:         kubedb.com/kind=Elasticsearch
                   kubedb.com/name=elasticsearch-demo
   Annotations:  <none>
-  
+
 Type:  Opaque
-  
+
 Data
 ====
   key_pass:     6 bytes
@@ -272,9 +268,9 @@ Database Secret:
   Labels:         kubedb.com/kind=Elasticsearch
                   kubedb.com/name=elasticsearch-demo
   Annotations:  <none>
-  
+
 Type:  Opaque
-  
+
 Data
 ====
   sg_roles.yml:           312 bytes
@@ -345,7 +341,7 @@ You can also describe KubeDb objects with matching labels. The following command
 $ kubectl dba describe es --all-namespaces --selector='group=dev'
 ```
 
-To learn about various options of `describe` command, please visit [here](/docs/reference/kubedb_describe.md).
+To learn about various options of `describe` command, please visit [here](/docs/reference/kubectl-dba_describe.md).
 
 ### How to Edit Objects
 
@@ -388,8 +384,6 @@ Elasticsearch:
 
 For DormantDatabase, `spec.origin` can't be edited using `kubectl edit`
 
-To learn about various options of `edit` command, please visit [here](/docs/reference/kubedb_edit.md).
-
 ### How to Delete Objects
 
 `kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete an Elasticsearch `elasticsearch-dev` in default namespace
@@ -417,8 +411,6 @@ To delete database with matching labels, use `--selector` flag. The following co
 ```console
 $ kubectl delete elasticsearch -l elasticsearch.kubedb.com/name=elasticsearch-demo
 ```
-
-To learn about various options of `delete` command, please visit [here](/docs/reference/kubedb_delete.md).
 
 ## Using Kubectl
 

@@ -40,8 +40,6 @@ memcached.kubedb.com/memcached-demo created
 cat memcached-demo.yaml | kubectl create -f -
 ```
 
-To learn about various options of `create` command, please visit [here](/docs/reference/kubedb_create.md).
-
 ### How to List Objects
 
 `kubectl get` command allows users to list or find any KubeDB object. To list all Memcached objects in `default` namespace, run the following command:
@@ -140,8 +138,6 @@ memcached/memcached-prod
 memcached/memcached-qa
 ```
 
-To learn about various options of `get` command, please visit [here](/docs/reference/kubedb_get.md).
-
 ### How to Describe Objects
 
 `kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe Memcached server `memcached-demo` with relevant information.
@@ -222,7 +218,7 @@ You can also describe KubeDB objects with matching labels. The following command
 kubectl dba describe mc --all-namespaces --selector='group=dev'
 ```
 
-To learn about various options of `describe` command, please visit [here](/docs/reference/kubedb_describe.md).
+To learn about various options of `describe` command, please visit [here](/docs/reference/kubectl-dba_describe.md).
 
 ### How to Edit Objects
 
@@ -258,8 +254,6 @@ If Deployment exists for a Memcached server, following fields can't be modified 
 
 For DormantDatabase, `spec.origin` can't be edited using `kubectl edit`
 
-To learn about various options of `edit` command, please visit [here](/docs/reference/kubedb_edit.md).
-
 ### How to Delete Objects
 
 `kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Memcached `memcached-dev` in default namespace
@@ -287,8 +281,6 @@ To delete database with matching labels, use `--selector` flag. The following co
 ```console
 kubectl delete memcached -l memcached.kubedb.com/name=memcached-demo
 ```
-
-To learn about various options of `delete` command, please visit [here](/docs/reference/kubedb_delete.md).
 
 ## Using Kubectl
 

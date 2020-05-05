@@ -263,7 +263,7 @@ kubectl delete sa -n demo my-custom-serviceaccount
 kubectl delete ns demo
 ```
 
-If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/uninstall.md).
+If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
 
 ## Next Steps
 
