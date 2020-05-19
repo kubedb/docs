@@ -28,12 +28,15 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
 type ElasticsearchMutator struct {
+	ClusterTopology *core_util.Topology
+
 	client      kubernetes.Interface
 	extClient   cs.Interface
 	lock        sync.RWMutex
@@ -88,7 +91,7 @@ func (a *ElasticsearchMutator) Admit(req *admission.AdmissionRequest) *admission
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	mod, err := setDefaultValues(obj.(*api.Elasticsearch).DeepCopy())
+	mod, err := setDefaultValues(obj.(*api.Elasticsearch).DeepCopy(), a.ClusterTopology)
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mod != nil {
@@ -106,7 +109,7 @@ func (a *ElasticsearchMutator) Admit(req *admission.AdmissionRequest) *admission
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a Elasticsearch database
-func setDefaultValues(elasticsearch *api.Elasticsearch) (runtime.Object, error) {
+func setDefaultValues(elasticsearch *api.Elasticsearch, clusterTopology *core_util.Topology) (runtime.Object, error) {
 	if elasticsearch.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
 	}
@@ -136,7 +139,7 @@ func setDefaultValues(elasticsearch *api.Elasticsearch) (runtime.Object, error) 
 			elasticsearch.Spec.Replicas = types.Int32P(1)
 		}
 	}
-	elasticsearch.SetDefaults()
+	elasticsearch.SetDefaults(clusterTopology)
 
 	// If monitoring spec is given without port,
 	// set default Listening port

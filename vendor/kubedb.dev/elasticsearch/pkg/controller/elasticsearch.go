@@ -53,7 +53,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	if elasticsearch.Status.Phase == "" {
-		es, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+		es, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
 		})
@@ -111,7 +111,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		}
 
 		// add phase that database is being initialized
-		mg, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+		mg, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
 		})
@@ -127,7 +127,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		}
 	}
 
-	es, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+	es, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = elasticsearch.Generation
 		return in
@@ -230,7 +230,7 @@ func (c *Controller) halt(db *api.Elasticsearch) error {
 		return err
 	}
 	log.Infof("update status of Elasticsearch %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), db, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+	if _, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
@@ -333,7 +333,7 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 	if err != nil {
 		return err
 	}
-	_, err = util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+	_, err = util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.Phase = phase
 		in.Reason = reason
 		return in

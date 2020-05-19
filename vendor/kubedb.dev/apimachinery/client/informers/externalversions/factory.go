@@ -25,9 +25,9 @@ import (
 
 	versioned "kubedb.dev/apimachinery/client/clientset/versioned"
 	catalog "kubedb.dev/apimachinery/client/informers/externalversions/catalog"
-	dba "kubedb.dev/apimachinery/client/informers/externalversions/dba"
 	internalinterfaces "kubedb.dev/apimachinery/client/informers/externalversions/internalinterfaces"
 	kubedb "kubedb.dev/apimachinery/client/informers/externalversions/kubedb"
+	ops "kubedb.dev/apimachinery/client/informers/externalversions/ops"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -176,18 +176,18 @@ type SharedInformerFactory interface {
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
 	Catalog() catalog.Interface
-	Dba() dba.Interface
 	Kubedb() kubedb.Interface
+	Ops() ops.Interface
 }
 
 func (f *sharedInformerFactory) Catalog() catalog.Interface {
 	return catalog.New(f, f.namespace, f.tweakListOptions)
 }
 
-func (f *sharedInformerFactory) Dba() dba.Interface {
-	return dba.New(f, f.namespace, f.tweakListOptions)
-}
-
 func (f *sharedInformerFactory) Kubedb() kubedb.Interface {
 	return kubedb.New(f, f.namespace, f.tweakListOptions)
+}
+
+func (f *sharedInformerFactory) Ops() ops.Interface {
+	return ops.New(f, f.namespace, f.tweakListOptions)
 }

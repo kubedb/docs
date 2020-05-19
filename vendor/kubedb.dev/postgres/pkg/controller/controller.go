@@ -43,7 +43,7 @@ import (
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-	scs "stash.appscode.dev/stash/client/clientset/versioned"
+	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 )
 
 type Controller struct {
@@ -195,7 +195,7 @@ func (c *Controller) pushFailureEvent(postgres *api.Postgres, reason string) {
 		reason,
 	)
 
-	pg, err := kutildb.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
+	pg, err := kutildb.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
 		in.ObservedGeneration = postgres.Generation

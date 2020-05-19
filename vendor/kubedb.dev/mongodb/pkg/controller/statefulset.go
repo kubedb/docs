@@ -66,8 +66,6 @@ const (
 
 	InitInstallContainerName   = "copy-config"
 	InitBootstrapContainerName = "bootstrap"
-
-	ShardAffinityTemplateVar = "SHARD_INDEX"
 )
 
 type workloadOptions struct {
@@ -913,7 +911,7 @@ func parseAffinityTemplate(podTemplate *ofst.PodTemplateSpec, nodeNum int32) (*o
 	}
 
 	templateMap := map[string]string{
-		ShardAffinityTemplateVar: fmt.Sprint(nodeNum),
+		api.MongoDBShardAffinityTemplateVar: strconv.Itoa(int(nodeNum)),
 	}
 
 	jsonObj, err := json.Marshal(podTemplate)

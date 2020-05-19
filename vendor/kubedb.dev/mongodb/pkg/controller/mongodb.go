@@ -47,7 +47,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	if mongodb.Status.Phase == "" {
-		mg, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		mg, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
 		})
@@ -133,7 +133,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		}
 
 		// add phase that database is being initialized
-		mg, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		mg, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
 		})
@@ -149,7 +149,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		}
 	}
 
-	mg, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+	mg, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = mongodb.Generation
 		return in
@@ -199,7 +199,7 @@ func (c *Controller) halt(db *api.MongoDB) error {
 		return err
 	}
 	log.Infof("update status of MongoDB %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), db, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+	if _, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in

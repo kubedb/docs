@@ -31,7 +31,7 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-	scs "stash.appscode.dev/stash/client/clientset/versioned"
+	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 )
 
 const (

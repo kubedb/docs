@@ -162,7 +162,7 @@ func (c *Controller) pushFailureEvent(proxysql *api.ProxySQL, reason string) {
 		reason,
 	)
 
-	proxysqlUpd, err := util.UpdateProxySQLStatus(c.ExtClient.KubedbV1alpha1(), proxysql, func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
+	proxysqlUpd, err := util.UpdateProxySQLStatus(c.ExtClient.KubedbV1alpha1(), proxysql.ObjectMeta, func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
 		in.ObservedGeneration = proxysql.Generation

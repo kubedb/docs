@@ -33,11 +33,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
 type ElasticsearchValidator struct {
+	ClusterTopology *core_util.Topology
+
 	client      kubernetes.Interface
 	extClient   cs.Interface
 	lock        sync.RWMutex
@@ -122,7 +125,7 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 
 			elasticsearch := obj.(*api.Elasticsearch).DeepCopy()
 			oldElasticsearch := oldObject.(*api.Elasticsearch).DeepCopy()
-			oldElasticsearch.SetDefaults()
+			oldElasticsearch.SetDefaults(a.ClusterTopology)
 			// Allow changing Database Secret only if there was no secret have set up yet.
 			if oldElasticsearch.Spec.DatabaseSecret == nil {
 				oldElasticsearch.Spec.DatabaseSecret = elasticsearch.Spec.DatabaseSecret

@@ -23,7 +23,7 @@ import (
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"stash.appscode.dev/stash/apis/stash/v1beta1"
+	"stash.appscode.dev/apimachinery/apis/stash/v1beta1"
 )
 
 func (c *Controller) handleRestoreSession(rs *v1beta1.RestoreSession) error {

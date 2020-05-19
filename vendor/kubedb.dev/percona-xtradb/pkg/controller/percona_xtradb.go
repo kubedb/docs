@@ -49,7 +49,7 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 	}
 
 	if px.Status.Phase == "" {
-		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
 		})
@@ -68,7 +68,7 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 			return nil
 		}
 
-		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
 		})
@@ -141,7 +141,7 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		}
 
 		// add phase that database is being initialized
-		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
 		})
@@ -154,7 +154,7 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		return nil
 	}
 
-	per, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+	per, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = px.Generation
 		return in
@@ -204,7 +204,7 @@ func (c *Controller) halt(db *api.PerconaXtraDB) error {
 		return err
 	}
 	log.Infof("update status of PerconaXtraDB %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), db, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+	if _, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
@@ -306,7 +306,7 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 	if err != nil {
 		return err
 	}
-	_, err = util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+	_, err = util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 		in.Phase = phase
 		in.Reason = reason
 		return in

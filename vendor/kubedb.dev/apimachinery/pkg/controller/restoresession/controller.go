@@ -26,10 +26,10 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"kmodules.xyz/client-go/tools/queue"
-	"stash.appscode.dev/stash/apis/stash/v1beta1"
-	scs "stash.appscode.dev/stash/client/clientset/versioned"
-	stashinformers "stash.appscode.dev/stash/client/informers/externalversions/stash/v1beta1"
-	stashLister "stash.appscode.dev/stash/client/listers/stash/v1beta1"
+	"stash.appscode.dev/apimachinery/apis/stash/v1beta1"
+	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
+	stashinformers "stash.appscode.dev/apimachinery/client/informers/externalversions/stash/v1beta1"
+	stashLister "stash.appscode.dev/apimachinery/client/listers/stash/v1beta1"
 )
 
 type Controller struct {

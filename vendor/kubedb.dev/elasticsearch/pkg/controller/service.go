@@ -32,12 +32,14 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-var (
+const (
 	NodeRoleMaster = "node.role.master"
 	NodeRoleClient = "node.role.client"
 	NodeRoleData   = "node.role.data"
 	NodeRoleSet    = "set"
+)
 
+var (
 	defaultClientPort = core.ServicePort{
 		Name:       api.ElasticsearchRestPortName,
 		Port:       api.ElasticsearchRestPort,
@@ -200,9 +202,11 @@ func (c *Controller) createMasterService(elasticsearch *api.Elasticsearch) (kuti
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = elasticsearch.OffshootLabels()
 		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
-
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
 		in.Spec.Selector[NodeRoleMaster] = NodeRoleSet
+
+		in.Spec.Type = core.ServiceTypeClusterIP
+		in.Spec.ClusterIP = core.ClusterIPNone
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultPeerPort})
 		return in
 	})

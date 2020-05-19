@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_util "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1/util"
 )
@@ -48,6 +49,7 @@ func (c *Controller) ensureAppBinding(db *api.MySQL) (kutil.VerbType, error) {
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(c.AppCatalogClient.AppcatalogV1alpha1(), meta, func(in *appcat.AppBinding) *appcat.AppBinding {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootLabels()
+		in.Annotations = meta_util.FilterKeys(api.GenericKey, in.Annotations, db.Annotations)
 
 		in.Spec.Type = appmeta.Type()
 		in.Spec.Version = mysqlVersion.Spec.Version

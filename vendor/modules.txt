@@ -20,7 +20,7 @@ github.com/NYTimes/gziphandler
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
-# github.com/appscode/go v0.0.0-20191119085241-0887d8ec2ecc
+# github.com/appscode/go v0.0.0-20200323182826-54e98e09185a
 github.com/appscode/go/analytics
 github.com/appscode/go/arrays
 github.com/appscode/go/context
@@ -871,9 +871,10 @@ k8s.io/utils/integer
 k8s.io/utils/path
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# kmodules.xyz/client-go v0.0.0-20200207062238-c552fd719556
+# kmodules.xyz/client-go v0.0.0-20200518125232-435dcc370844
 kmodules.xyz/client-go
 kmodules.xyz/client-go/admissionregistration/v1beta1
+kmodules.xyz/client-go/api/v1
 kmodules.xyz/client-go/apiextensions/v1beta1
 kmodules.xyz/client-go/apiregistration/v1beta1
 kmodules.xyz/client-go/apps/v1
@@ -889,7 +890,7 @@ kmodules.xyz/client-go/tools/cli
 kmodules.xyz/client-go/tools/clientcmd
 kmodules.xyz/client-go/tools/exec
 kmodules.xyz/client-go/tools/queue
-# kmodules.xyz/constants v0.0.0-20191024095500-cd4313df4aa6
+# kmodules.xyz/constants v0.0.0-20200506032633-a21e58ceec72
 kmodules.xyz/constants/aws
 kmodules.xyz/constants/azure
 kmodules.xyz/constants/google
@@ -913,80 +914,80 @@ kmodules.xyz/monitoring-agent-api/agents/coreosprometheusoperator
 kmodules.xyz/monitoring-agent-api/agents/prometheus
 kmodules.xyz/monitoring-agent-api/agents/prometheusbuiltin
 kmodules.xyz/monitoring-agent-api/api/v1
-# kmodules.xyz/objectstore-api v0.0.0-20191127144749-5881939b57f0
+# kmodules.xyz/objectstore-api v0.0.0-20200214040336-fe8f39a4210d
 kmodules.xyz/objectstore-api/api/v1
 kmodules.xyz/objectstore-api/osm
-# kmodules.xyz/offshoot-api v0.0.0-20200207061254-705ac16690ec
+# kmodules.xyz/offshoot-api v0.0.0-20200216080509-45ee6418d1c1
 kmodules.xyz/offshoot-api/api/v1
 # kmodules.xyz/prober v0.0.0-20191216013129-7c91e2b0edb2
 kmodules.xyz/prober/api/v1
 # kmodules.xyz/webhook-runtime v0.0.0-20191127075323-d4bfdee6974d
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.13.0-rc.3.0.20200209044157-d39a1db65004
+# kubedb.dev/apimachinery v0.14.0-beta.0
 kubedb.dev/apimachinery/api/crds
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/catalog
 kubedb.dev/apimachinery/apis/catalog/v1alpha1
 kubedb.dev/apimachinery/apis/config
 kubedb.dev/apimachinery/apis/config/v1alpha1
-kubedb.dev/apimachinery/apis/dba
-kubedb.dev/apimachinery/apis/dba/v1alpha1
 kubedb.dev/apimachinery/apis/kubedb
 kubedb.dev/apimachinery/apis/kubedb/v1alpha1
+kubedb.dev/apimachinery/apis/ops
+kubedb.dev/apimachinery/apis/ops/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned
 kubedb.dev/apimachinery/client/clientset/versioned/scheme
 kubedb.dev/apimachinery/client/clientset/versioned/typed/catalog/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned/typed/config/v1alpha1
-kubedb.dev/apimachinery/client/clientset/versioned/typed/dba/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util
+kubedb.dev/apimachinery/client/clientset/versioned/typed/ops/v1alpha1
 kubedb.dev/apimachinery/client/informers/externalversions
 kubedb.dev/apimachinery/client/informers/externalversions/catalog
 kubedb.dev/apimachinery/client/informers/externalversions/catalog/v1alpha1
-kubedb.dev/apimachinery/client/informers/externalversions/dba
-kubedb.dev/apimachinery/client/informers/externalversions/dba/v1alpha1
 kubedb.dev/apimachinery/client/informers/externalversions/internalinterfaces
 kubedb.dev/apimachinery/client/informers/externalversions/kubedb
 kubedb.dev/apimachinery/client/informers/externalversions/kubedb/v1alpha1
+kubedb.dev/apimachinery/client/informers/externalversions/ops
+kubedb.dev/apimachinery/client/informers/externalversions/ops/v1alpha1
 kubedb.dev/apimachinery/client/listers/catalog/v1alpha1
-kubedb.dev/apimachinery/client/listers/dba/v1alpha1
 kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1
+kubedb.dev/apimachinery/client/listers/ops/v1alpha1
 kubedb.dev/apimachinery/pkg/admission/namespace
 kubedb.dev/apimachinery/pkg/controller
 kubedb.dev/apimachinery/pkg/controller/restoresession
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.13.0-rc.1.0.20200129154009-e51555d54720
+# kubedb.dev/elasticsearch v0.13.0-rc.1.0.20200520074231-0bca1a049199
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
 kubedb.dev/elasticsearch/pkg/keytool
 kubedb.dev/elasticsearch/third_party/golang/crypto/pkcs12
 kubedb.dev/elasticsearch/third_party/golang/crypto/pkcs12/internal/rc2
-# kubedb.dev/memcached v0.6.0-rc.1.0.20200126185242-e61dd2e6e440
+# kubedb.dev/memcached v0.6.0-rc.1.0.20200519123238-18917f8d2562
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.6.0-rc.1.0.20200209032954-0f20ff3acefa
+# kubedb.dev/mongodb v0.6.0-rc.1.0.20200519121154-010d029483d7
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.6.0-rc.0.0.20200130012612-f4a67e958427
+# kubedb.dev/mysql v0.6.0-rc.0.0.20200519113147-cfee601b89df
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.0.0-20200129155859-e69742decadf
+# kubedb.dev/percona-xtradb v0.0.0-20200519131118-52fc205905ef
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
 # kubedb.dev/pg-leader-election v0.1.1
 kubedb.dev/pg-leader-election/pkg/leader_election
-# kubedb.dev/pgbouncer v0.0.0-20200209052735-cd4d27211151
+# kubedb.dev/pgbouncer v0.0.0-20200519130312-7cd92ba4ef58
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.13.0-rc.0.0.20200126185722-15f0611d5ed8
+# kubedb.dev/postgres v0.13.0-rc.0.0.20200519115546-6af125961046
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.0.0-20200129164527-f4d1c0249f53
+# kubedb.dev/proxysql v0.0.0-20200519133001-987fbf6010b8
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.6.0-rc.0.0.20200130225128-c1db4c438bb4
+# kubedb.dev/redis v0.6.0-rc.0.0.20200519111602-429141b4ef77
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster
 kubedb.dev/redis/pkg/controller
@@ -1021,25 +1022,25 @@ sigs.k8s.io/structured-merge-diff/typed
 sigs.k8s.io/structured-merge-diff/value
 # sigs.k8s.io/yaml v1.1.0 => sigs.k8s.io/yaml v1.1.0
 sigs.k8s.io/yaml
-# stash.appscode.dev/stash v0.9.0-rc.4
-stash.appscode.dev/stash/api/crds
-stash.appscode.dev/stash/apis
-stash.appscode.dev/stash/apis/repositories
-stash.appscode.dev/stash/apis/repositories/v1alpha1
-stash.appscode.dev/stash/apis/stash
-stash.appscode.dev/stash/apis/stash/v1alpha1
-stash.appscode.dev/stash/apis/stash/v1beta1
-stash.appscode.dev/stash/client/clientset/versioned
-stash.appscode.dev/stash/client/clientset/versioned/scheme
-stash.appscode.dev/stash/client/clientset/versioned/typed/repositories/v1alpha1
-stash.appscode.dev/stash/client/clientset/versioned/typed/stash/v1alpha1
-stash.appscode.dev/stash/client/clientset/versioned/typed/stash/v1beta1
-stash.appscode.dev/stash/client/clientset/versioned/typed/stash/v1beta1/util
-stash.appscode.dev/stash/client/informers/externalversions
-stash.appscode.dev/stash/client/informers/externalversions/internalinterfaces
-stash.appscode.dev/stash/client/informers/externalversions/stash
-stash.appscode.dev/stash/client/informers/externalversions/stash/v1alpha1
-stash.appscode.dev/stash/client/informers/externalversions/stash/v1beta1
-stash.appscode.dev/stash/client/listers/stash/v1alpha1
-stash.appscode.dev/stash/client/listers/stash/v1beta1
-stash.appscode.dev/stash/pkg/restic
+# stash.appscode.dev/apimachinery v0.9.0-rc.6
+stash.appscode.dev/apimachinery/api/crds
+stash.appscode.dev/apimachinery/apis
+stash.appscode.dev/apimachinery/apis/repositories
+stash.appscode.dev/apimachinery/apis/repositories/v1alpha1
+stash.appscode.dev/apimachinery/apis/stash
+stash.appscode.dev/apimachinery/apis/stash/v1alpha1
+stash.appscode.dev/apimachinery/apis/stash/v1beta1
+stash.appscode.dev/apimachinery/client/clientset/versioned
+stash.appscode.dev/apimachinery/client/clientset/versioned/scheme
+stash.appscode.dev/apimachinery/client/clientset/versioned/typed/repositories/v1alpha1
+stash.appscode.dev/apimachinery/client/clientset/versioned/typed/stash/v1alpha1
+stash.appscode.dev/apimachinery/client/clientset/versioned/typed/stash/v1beta1
+stash.appscode.dev/apimachinery/client/clientset/versioned/typed/stash/v1beta1/util
+stash.appscode.dev/apimachinery/client/informers/externalversions
+stash.appscode.dev/apimachinery/client/informers/externalversions/internalinterfaces
+stash.appscode.dev/apimachinery/client/informers/externalversions/stash
+stash.appscode.dev/apimachinery/client/informers/externalversions/stash/v1alpha1
+stash.appscode.dev/apimachinery/client/informers/externalversions/stash/v1beta1
+stash.appscode.dev/apimachinery/client/listers/stash/v1alpha1
+stash.appscode.dev/apimachinery/client/listers/stash/v1beta1
+stash.appscode.dev/apimachinery/pkg/restic

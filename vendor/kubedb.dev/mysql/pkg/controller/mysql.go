@@ -48,7 +48,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	}
 
 	if mysql.Status.Phase == "" {
-		my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
+		my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
 		})
@@ -116,7 +116,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		}
 
 		// add phase that database is being initialized
-		my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
+		my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
 		})
@@ -132,7 +132,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		}
 	}
 
-	my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
+	my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = mysql.Generation
 		return in
@@ -182,7 +182,7 @@ func (c *Controller) halt(db *api.MySQL) error {
 		return err
 	}
 	log.Infof("update status of MySQL %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), db, func(in *api.MySQLStatus) *api.MySQLStatus {
+	if _, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
@@ -285,7 +285,7 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 	if err != nil {
 		return err
 	}
-	_, err = util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQLStatus) *api.MySQLStatus {
+	_, err = util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = phase
 		in.Reason = reason
 		return in

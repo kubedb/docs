@@ -51,7 +51,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	if postgres.Status.Phase == "" {
-		pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
+		pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
 		})
@@ -114,7 +114,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		}
 
 		// add phase that database is being initialized
-		pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
+		pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
 		})
@@ -130,7 +130,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		}
 	}
 
-	pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
+	pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = postgres.Generation
 		return in
@@ -200,7 +200,7 @@ func (c *Controller) halt(db *api.Postgres) error {
 		return err
 	}
 	log.Infof("update status of Postgres %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), db, func(in *api.PostgresStatus) *api.PostgresStatus {
+	if _, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
@@ -330,7 +330,7 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 	if err != nil {
 		return err
 	}
-	_, err = util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.PostgresStatus) *api.PostgresStatus {
+	_, err = util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = phase
 		in.Reason = reason
 		return in
