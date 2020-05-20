@@ -24,11 +24,11 @@ stash-install:
 		--version v0.9.0-rc.4 \
 		--namespace kube-system; \
 	kubectl wait --for=condition=Available apiservice -l app.kubernetes.io/name=stash --timeout=5m
-	curl -fsSL https://github.com/stashed/catalog/raw/v0.2.0/deploy/script.sh | bash -s -- --catalog=stash-mongodb --docker-registry=stashed
+	curl -fsSL https://github.com/stashed/catalog/raw/v0.3.0/deploy/script.sh | bash -s -- --catalog=stash-mongodb --docker-registry=stashed
 
 .PHONY: stash-uninstall
 stash-uninstall:
-	curl -fsSL https://github.com/stashed/catalog/raw/v0.2.0/deploy/script.sh | bash -s -- --catalog=stash-mongodb --uninstall || true
+	curl -fsSL https://github.com/stashed/catalog/raw/v0.3.0/deploy/script.sh | bash -s -- --catalog=stash-mongodb --uninstall || true
 	helm uninstall stash --namespace=kube-system || true
 
 .PHONY: stash-purge
