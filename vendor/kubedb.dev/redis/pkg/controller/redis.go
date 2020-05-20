@@ -43,7 +43,7 @@ func (c *Controller) create(redis *api.Redis) error {
 	}
 
 	if redis.Status.Phase == "" {
-		rd, err := util.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), redis, func(in *api.RedisStatus) *api.RedisStatus {
+		rd, err := util.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
 		})
@@ -99,7 +99,7 @@ func (c *Controller) create(redis *api.Redis) error {
 		)
 	}
 
-	rd, err := util.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), redis, func(in *api.RedisStatus) *api.RedisStatus {
+	rd, err := util.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = redis.Generation
 		return in
@@ -160,7 +160,7 @@ func (c *Controller) halt(db *api.Redis) error {
 		return err
 	}
 	log.Infof("update status of Redis %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), db, func(in *api.RedisStatus) *api.RedisStatus {
+	if _, err := util.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in

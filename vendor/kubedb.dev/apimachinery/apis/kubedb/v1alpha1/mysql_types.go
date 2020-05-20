@@ -31,12 +31,14 @@ const (
 	ResourcePluralMySQL   = "mysqls"
 )
 
+// +kubebuilder:validation:Enum=GroupReplication
 type MySQLClusterMode string
 
 const (
 	MySQLClusterModeGroup MySQLClusterMode = "GroupReplication"
 )
 
+// +kubebuilder:validation:Enum=Single-Primary;Multi-Primary
 type MySQLGroupMode string
 
 const (
@@ -109,21 +111,25 @@ type MySQLSpec struct {
 	// Template.
 	UpdateStrategy apps.StatefulSetUpdateStrategy `json:"updateStrategy,omitempty" protobuf:"bytes,13,opt,name=updateStrategy"`
 
-	// Indicates that the database is paused and controller will not sync any changes made to this spec.
+	// Indicates that the database server need to be encrypted connections(ssl)
 	// +optional
-	Paused bool `json:"paused,omitempty" protobuf:"varint,14,opt,name=paused"`
-
-	// Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.
-	// +optional
-	Halted bool `json:"halted,omitempty" protobuf:"varint,15,opt,name=halted"`
+	RequireSSL bool `json:"requireSSL,omitempty" protobuf:"varint,14,opt,name=requireSSL"`
 
 	// TLS contains tls configurations for client and server.
 	// +optional
-	TLS *TLSConfig `json:"tls,omitempty" protobuf:"bytes,16,opt,name=tls"`
+	TLS *TLSConfig `json:"tls,omitempty" protobuf:"bytes,15,opt,name=tls"`
+
+	// Indicates that the database is paused and controller will not sync any changes made to this spec.
+	// +optional
+	Paused bool `json:"paused,omitempty" protobuf:"varint,16,opt,name=paused"`
+
+	// Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.
+	// +optional
+	Halted bool `json:"halted,omitempty" protobuf:"varint,17,opt,name=halted"`
 
 	// TerminationPolicy controls the delete operation for database
 	// +optional
-	TerminationPolicy TerminationPolicy `json:"terminationPolicy,omitempty" protobuf:"bytes,17,opt,name=terminationPolicy,casttype=TerminationPolicy"`
+	TerminationPolicy TerminationPolicy `json:"terminationPolicy,omitempty" protobuf:"bytes,18,opt,name=terminationPolicy,casttype=TerminationPolicy"`
 }
 
 type MySQLClusterTopology struct {

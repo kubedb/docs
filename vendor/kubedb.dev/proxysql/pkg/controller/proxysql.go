@@ -42,7 +42,7 @@ func (c *Controller) create(proxysql *api.ProxySQL) error {
 	}
 
 	if proxysql.Status.Phase == "" {
-		proxysqlUpd, err := util.UpdateProxySQLStatus(c.ExtClient.KubedbV1alpha1(), proxysql, func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
+		proxysqlUpd, err := util.UpdateProxySQLStatus(c.ExtClient.KubedbV1alpha1(), proxysql.ObjectMeta, func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
 		})
@@ -94,7 +94,7 @@ func (c *Controller) create(proxysql *api.ProxySQL) error {
 		)
 	}
 
-	proxysqlUpd, err := util.UpdateProxySQLStatus(c.ExtClient.KubedbV1alpha1(), proxysql, func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
+	proxysqlUpd, err := util.UpdateProxySQLStatus(c.ExtClient.KubedbV1alpha1(), proxysql.ObjectMeta, func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = proxysql.Generation
 		return in

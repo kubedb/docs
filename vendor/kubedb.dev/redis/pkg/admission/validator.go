@@ -33,11 +33,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
 type RedisValidator struct {
+	ClusterTopology *core_util.Topology
+
 	client      kubernetes.Interface
 	extClient   cs.Interface
 	lock        sync.RWMutex
@@ -116,7 +119,7 @@ func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			}
 			redis := obj.(*api.Redis).DeepCopy()
 			oldRedis := oldObject.(*api.Redis).DeepCopy()
-			oldRedis.SetDefaults()
+			oldRedis.SetDefaults(a.ClusterTopology)
 			if err := validateUpdate(redis, oldRedis); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}

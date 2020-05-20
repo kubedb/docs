@@ -42,7 +42,7 @@ func (c *Controller) create(memcached *api.Memcached) error {
 	}
 
 	if memcached.Status.Phase == "" {
-		mc, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+		mc, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
 		})
@@ -85,7 +85,7 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		)
 	}
 
-	mc, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), memcached, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+	mc, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = memcached.Generation
 		return in
@@ -140,7 +140,7 @@ func (c *Controller) halt(db *api.Memcached) error {
 		return err
 	}
 	log.Infof("update status of Memcached %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), db, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+	if _, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in

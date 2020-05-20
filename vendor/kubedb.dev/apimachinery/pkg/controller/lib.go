@@ -36,7 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	core_util "kmodules.xyz/client-go/core/v1"
 	policy_util "kmodules.xyz/client-go/policy/v1beta1"
-	"stash.appscode.dev/stash/apis/stash/v1beta1"
+	"stash.appscode.dev/apimachinery/apis/stash/v1beta1"
 )
 
 const UtilVolumeName = "util-volume"

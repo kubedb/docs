@@ -190,7 +190,7 @@ func (c *Controller) pushFailureEvent(pgbouncer *api.PgBouncer, reason string) {
 		reason,
 	)
 
-	pg, err := kutildb.UpdatePgBouncerStatus(c.ExtClient.KubedbV1alpha1(), pgbouncer, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
+	pg, err := kutildb.UpdatePgBouncerStatus(c.ExtClient.KubedbV1alpha1(), pgbouncer.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
 		in.ObservedGeneration = pgbouncer.Generation

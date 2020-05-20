@@ -16,8 +16,10 @@ limitations under the License.
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"strconv"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -27,6 +29,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
+	"gomodules.xyz/envsubst"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -213,6 +216,21 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 		return nil, kutil.VerbUnchanged, err
 	}
 
+	var affinity *core.Affinity
+
+	if redis.Spec.Mode == api.RedisModeCluster {
+		// https://play.golang.org/p/TZPjGg8T0Zn
+		re := regexp.MustCompile(fmt.Sprintf(`^%s(\d+)$`, redis.BaseNameForShard()))
+		matches := re.FindStringSubmatch(statefulSetName)
+		if len(matches) == 0 {
+			return nil, kutil.VerbUnchanged, fmt.Errorf("failed to detect shard index for statefulset %s", statefulSetName)
+		}
+		affinity, err = parseAffinityTemplate(redis.Spec.PodTemplate.Spec.Affinity.DeepCopy(), matches[1])
+		if err != nil {
+			return nil, kutil.VerbUnchanged, err
+		}
+	}
+
 	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Labels = redis.OffshootLabels()
 		in.Annotations = redis.Spec.PodTemplate.Controller.Annotations
@@ -310,7 +328,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 		in = upsertDataVolume(in, redis)
 
 		in.Spec.Template.Spec.NodeSelector = redis.Spec.PodTemplate.Spec.NodeSelector
-		in.Spec.Template.Spec.Affinity = redis.Spec.PodTemplate.Spec.Affinity
+		in.Spec.Template.Spec.Affinity = affinity
 		if redis.Spec.PodTemplate.Spec.SchedulerName != "" {
 			in.Spec.Template.Spec.SchedulerName = redis.Spec.PodTemplate.Spec.SchedulerName
 		}
@@ -435,4 +453,27 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.S
 		}
 	}
 	return statefulSet
+}
+
+func parseAffinityTemplate(affinity *core.Affinity, shardIndex string) (*core.Affinity, error) {
+	if affinity == nil {
+		return affinity, nil
+	}
+
+	templateMap := map[string]string{
+		api.RedisShardAffinityTemplateVar: shardIndex,
+	}
+
+	jsonObj, err := json.Marshal(affinity)
+	if err != nil {
+		return affinity, err
+	}
+
+	resolved, err := envsubst.EvalMap(string(jsonObj), templateMap)
+	if err != nil {
+		return affinity, err
+	}
+
+	err = json.Unmarshal([]byte(resolved), affinity)
+	return affinity, err
 }

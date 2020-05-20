@@ -100,7 +100,7 @@ func TryUpdateEtcd(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transfo
 
 func UpdateEtcdStatus(
 	c cs.KubedbV1alpha1Interface,
-	in *api.Etcd,
+	meta metav1.ObjectMeta,
 	transform func(*api.EtcdStatus) *api.EtcdStatus,
 ) (result *api.Etcd, err error) {
 	apply := func(x *api.Etcd) *api.Etcd {
@@ -108,18 +108,21 @@ func UpdateEtcdStatus(
 			TypeMeta:   x.TypeMeta,
 			ObjectMeta: x.ObjectMeta,
 			Spec:       x.Spec,
-			Status:     *transform(in.Status.DeepCopy()),
+			Status:     *transform(x.Status.DeepCopy()),
 		}
 	}
 
 	attempt := 0
-	cur := in.DeepCopy()
+	cur, err := c.Etcds(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		var e2 error
-		result, e2 = c.Etcds(in.Namespace).UpdateStatus(apply(cur))
+		result, e2 = c.Etcds(meta.Namespace).UpdateStatus(apply(cur))
 		if kerr.IsConflict(e2) {
-			latest, e3 := c.Etcds(in.Namespace).Get(in.Name, metav1.GetOptions{})
+			latest, e3 := c.Etcds(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 			switch {
 			case e3 == nil:
 				cur = latest
@@ -136,7 +139,7 @@ func UpdateEtcdStatus(
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to update status of Etcd %s/%s after %d attempts due to %v", in.Namespace, in.Name, attempt, err)
+		err = fmt.Errorf("failed to update status of Etcd %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }

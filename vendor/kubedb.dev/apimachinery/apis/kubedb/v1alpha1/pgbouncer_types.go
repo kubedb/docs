@@ -77,7 +77,6 @@ type PgBouncerSpec struct {
 	// TLS contains tls configurations for client and server.
 	// +optional
 	TLS *TLSConfig `json:"tls,omitempty" protobuf:"bytes,9,opt,name=tls"`
-
 	// Indicates that the database is paused and controller will not sync any changes made to this spec.
 	// +optional
 	Paused bool `json:"paused,omitempty" protobuf:"varint,10,opt,name=paused"`

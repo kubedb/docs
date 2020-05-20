@@ -168,7 +168,7 @@ func (c *Controller) pushFailureEvent(redis *api.Redis, reason string) {
 		reason,
 	)
 
-	rd, err := kutildb.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), redis, func(in *api.RedisStatus) *api.RedisStatus {
+	rd, err := kutildb.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
 		in.ObservedGeneration = redis.Generation

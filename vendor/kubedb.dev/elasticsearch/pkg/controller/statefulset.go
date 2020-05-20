@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -26,6 +27,8 @@ import (
 
 	"github.com/appscode/go/log"
 	"github.com/appscode/go/types"
+	"github.com/pkg/errors"
+	"gomodules.xyz/envsubst"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -51,7 +54,7 @@ func (c *Controller) ensureStatefulSet(
 	labels map[string]string,
 	replicas int32,
 	envList []core.EnvVar,
-	isClient bool,
+	nodeRole string,
 	maxUnavailable *intstr.IntOrString,
 ) (kutil.VerbType, error) {
 
@@ -71,6 +74,15 @@ func (c *Controller) ensureStatefulSet(
 
 	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
+	// Make a new map "labelSelector", so that it remains
+	// unchanged even if the "labels" changes.
+	// It contains:
+	//	-	kubedb.com/kind: ResourceKindElasticsearch
+	//	-	kubedb.com/name: elasticsearch.Name
+	//	-	node.role.<master/data/client>: set
+	labelSelector := elasticsearch.OffshootSelectors()
+	labelSelector = core_util.UpsertMap(labelSelector, labels)
+
 	initContainers := []core.Container{
 		{
 			Name:            "init-sysctl",
@@ -87,6 +99,11 @@ func (c *Controller) ensureStatefulSet(
 		initContainers = append(initContainers, upsertXpackInitContainer(elasticsearch, esVersion, envList))
 	}
 
+	affinity, err := parseAffinityTemplate(elasticsearch.Spec.PodTemplate.Spec.Affinity.DeepCopy(), nodeRole)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Labels = core_util.UpsertMap(labels, elasticsearch.OffshootLabels())
 		in.Annotations = elasticsearch.Spec.PodTemplate.Controller.Annotations
@@ -96,9 +113,9 @@ func (c *Controller) ensureStatefulSet(
 
 		in.Spec.ServiceName = elasticsearch.GvrSvcName()
 		in.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: core_util.UpsertMap(labels, elasticsearch.OffshootSelectors()),
+			MatchLabels: labelSelector,
 		}
-		in.Spec.Template.Labels = core_util.UpsertMap(labels, elasticsearch.OffshootSelectors())
+		in.Spec.Template.Labels = labelSelector
 		in.Spec.Template.Annotations = elasticsearch.Spec.PodTemplate.Annotations
 		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
 			in.Spec.Template.Spec.InitContainers,
@@ -126,11 +143,11 @@ func (c *Controller) ensureStatefulSet(
 			})
 		in = upsertEnv(in, elasticsearch, esVersion, envList)
 		in = upsertUserEnv(in, elasticsearch)
-		in = upsertPort(in, isClient)
+		in = upsertPorts(in)
 		in = upsertCustomConfig(in, elasticsearch, esVersion)
 
 		in.Spec.Template.Spec.NodeSelector = elasticsearch.Spec.PodTemplate.Spec.NodeSelector
-		in.Spec.Template.Spec.Affinity = elasticsearch.Spec.PodTemplate.Spec.Affinity
+		in.Spec.Template.Spec.Affinity = affinity
 		if elasticsearch.Spec.PodTemplate.Spec.SchedulerName != "" {
 			in.Spec.Template.Spec.SchedulerName = elasticsearch.Spec.PodTemplate.Spec.SchedulerName
 		}
@@ -140,12 +157,12 @@ func (c *Controller) ensureStatefulSet(
 		in.Spec.Template.Spec.Priority = elasticsearch.Spec.PodTemplate.Spec.Priority
 		in.Spec.Template.Spec.SecurityContext = elasticsearch.Spec.PodTemplate.Spec.SecurityContext
 
-		if isClient {
+		if nodeRole == NodeRoleClient {
 			in = c.upsertMonitoringContainer(in, elasticsearch, esVersion)
 			in = upsertDatabaseSecretForSG(in, esVersion, elasticsearch.Spec.DatabaseSecret.SecretName)
 		}
 		if !elasticsearch.Spec.DisableSecurity {
-			in = upsertCertificate(in, elasticsearch.Spec.CertificateSecret.SecretName, isClient, esVersion)
+			in = upsertCertificate(in, elasticsearch.Spec.CertificateSecret.SecretName, nodeRole, esVersion)
 		}
 
 		if esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginXpack &&
@@ -220,15 +237,16 @@ func (c *Controller) ensureClientNode(elasticsearch *api.Elasticsearch) (kutil.V
 		statefulSetName = fmt.Sprintf("%v-%v", clientNode.Prefix, statefulSetName)
 	}
 
-	labels := elasticsearch.OffshootLabels()
-	labels[NodeRoleClient] = NodeRoleSet
+	labels := map[string]string{
+		NodeRoleClient: NodeRoleSet,
+	}
 
 	heapSize := int64(134217728) // 128mb
 	if request, found := clientNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
 		heapSize = getHeapSizeForNode(request.Value())
 	}
 
-	esVersion, err := c.esVersionLister.Get(string(elasticsearch.Spec.Version))
+	esVersion, err := c.esVersionLister.Get(elasticsearch.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -283,7 +301,7 @@ func (c *Controller) ensureClientNode(elasticsearch *api.Elasticsearch) (kutil.V
 	}
 	maxUnavailable := elasticsearch.Spec.Topology.Client.MaxUnavailable
 
-	return c.ensureStatefulSet(elasticsearch, clientNode.Storage, clientNode.Resources, statefulSetName, labels, replicas, envList, true, maxUnavailable)
+	return c.ensureStatefulSet(elasticsearch, clientNode.Storage, clientNode.Resources, statefulSetName, labels, replicas, envList, NodeRoleClient, maxUnavailable)
 }
 
 func (c *Controller) ensureMasterNode(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
@@ -294,13 +312,14 @@ func (c *Controller) ensureMasterNode(elasticsearch *api.Elasticsearch) (kutil.V
 		statefulSetName = fmt.Sprintf("%v-%v", masterNode.Prefix, statefulSetName)
 	}
 
-	esVersion, err := c.esVersionLister.Get(string(elasticsearch.Spec.Version))
+	esVersion, err := c.esVersionLister.Get(elasticsearch.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
-	labels := elasticsearch.OffshootLabels()
-	labels[NodeRoleMaster] = NodeRoleSet
+	labels := map[string]string{
+		NodeRoleMaster: NodeRoleSet,
+	}
 
 	heapSize := int64(134217728) // 128mb
 	if request, found := masterNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
@@ -380,7 +399,7 @@ func (c *Controller) ensureMasterNode(elasticsearch *api.Elasticsearch) (kutil.V
 
 	maxUnavailable := elasticsearch.Spec.Topology.Master.MaxUnavailable
 
-	return c.ensureStatefulSet(elasticsearch, masterNode.Storage, masterNode.Resources, statefulSetName, labels, replicas, envList, false, maxUnavailable)
+	return c.ensureStatefulSet(elasticsearch, masterNode.Storage, masterNode.Resources, statefulSetName, labels, replicas, envList, NodeRoleMaster, maxUnavailable)
 }
 
 func (c *Controller) ensureDataNode(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
@@ -391,15 +410,16 @@ func (c *Controller) ensureDataNode(elasticsearch *api.Elasticsearch) (kutil.Ver
 		statefulSetName = fmt.Sprintf("%v-%v", dataNode.Prefix, statefulSetName)
 	}
 
-	labels := elasticsearch.OffshootLabels()
-	labels[NodeRoleData] = NodeRoleSet
+	labels := map[string]string{
+		NodeRoleData: NodeRoleSet,
+	}
 
 	heapSize := int64(134217728) // 128mb
 	if request, found := dataNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
 		heapSize = getHeapSizeForNode(request.Value())
 	}
 
-	esVersion, err := c.esVersionLister.Get(string(elasticsearch.Spec.Version))
+	esVersion, err := c.esVersionLister.Get(elasticsearch.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -455,17 +475,19 @@ func (c *Controller) ensureDataNode(elasticsearch *api.Elasticsearch) (kutil.Ver
 
 	maxUnavailable := elasticsearch.Spec.Topology.Data.MaxUnavailable
 
-	return c.ensureStatefulSet(elasticsearch, dataNode.Storage, dataNode.Resources, statefulSetName, labels, replicas, envList, false, maxUnavailable)
+	return c.ensureStatefulSet(elasticsearch, dataNode.Storage, dataNode.Resources, statefulSetName, labels, replicas, envList, NodeRoleData, maxUnavailable)
 }
 
 func (c *Controller) ensureCombinedNode(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
 	statefulSetName := elasticsearch.OffshootName()
-	labels := elasticsearch.OffshootLabels()
-	labels[NodeRoleClient] = NodeRoleSet
-	labels[NodeRoleMaster] = NodeRoleSet
-	labels[NodeRoleData] = NodeRoleSet
 
-	esVersion, err := c.esVersionLister.Get(string(elasticsearch.Spec.Version))
+	labels := map[string]string{
+		NodeRoleClient: NodeRoleSet,
+		NodeRoleMaster: NodeRoleSet,
+		NodeRoleData:   NodeRoleSet,
+	}
+
+	esVersion, err := c.esVersionLister.Get(elasticsearch.Spec.Version)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -559,7 +581,7 @@ func (c *Controller) ensureCombinedNode(elasticsearch *api.Elasticsearch) (kutil
 
 	maxUnavailable := elasticsearch.Spec.MaxUnavailable
 
-	return c.ensureStatefulSet(elasticsearch, &pvcSpec, resources, statefulSetName, labels, replicas, envList, true, maxUnavailable)
+	return c.ensureStatefulSet(elasticsearch, &pvcSpec, resources, statefulSetName, labels, replicas, envList, NodeRoleClient, maxUnavailable)
 }
 
 func (c *Controller) checkStatefulSet(elasticsearch *api.Elasticsearch, name string) error {
@@ -726,8 +748,7 @@ func upsertUserEnv(statefulSet *apps.StatefulSet, elasticsearch *api.Elasticsear
 	return statefulSet
 }
 
-func upsertPort(statefulSet *apps.StatefulSet, isClient bool) *apps.StatefulSet {
-
+func upsertPorts(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 	getPorts := func() []core.ContainerPort {
 		portList := []core.ContainerPort{
 			{
@@ -736,13 +757,12 @@ func upsertPort(statefulSet *apps.StatefulSet, isClient bool) *apps.StatefulSet 
 				Protocol:      core.ProtocolTCP,
 			},
 		}
-		if isClient {
-			portList = append(portList, core.ContainerPort{
-				Name:          api.ElasticsearchRestPortName,
-				ContainerPort: api.ElasticsearchRestPort,
-				Protocol:      core.ProtocolTCP,
-			})
-		}
+
+		portList = append(portList, core.ContainerPort{
+			Name:          api.ElasticsearchRestPortName,
+			ContainerPort: api.ElasticsearchRestPort,
+			Protocol:      core.ProtocolTCP,
+		})
 
 		return portList
 	}
@@ -839,7 +859,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, el
 	return statefulSet
 }
 
-func upsertCertificate(statefulSet *apps.StatefulSet, secretName string, isClientNode bool, esVersion *catalog.ElasticsearchVersion) *apps.StatefulSet {
+func upsertCertificate(statefulSet *apps.StatefulSet, secretName string, nodeRole string, esVersion *catalog.ElasticsearchVersion) *apps.StatefulSet {
 	addCertVolume := func() *core.SecretVolumeSource {
 		svs := &core.SecretVolumeSource{
 			SecretName: secretName,
@@ -860,7 +880,7 @@ func upsertCertificate(statefulSet *apps.StatefulSet, secretName string, isClien
 			Path: clientKeyStore,
 		})
 
-		if isClientNode && esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginSearchGuard {
+		if nodeRole == NodeRoleClient && esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginSearchGuard {
 			svs.Items = append(svs.Items, core.KeyToPath{
 				Key:  sgAdminKeyStore,
 				Path: sgAdminKeyStore,
@@ -1214,4 +1234,31 @@ fi
 		},
 		VolumeMounts: volumeMounts,
 	}
+}
+
+func parseAffinityTemplate(affinity *core.Affinity, nodeRole string) (*core.Affinity, error) {
+	if affinity == nil {
+		return nil, errors.New("affinity is nil")
+	}
+
+	templateMap := map[string]string{
+		api.ElasticsearchNodeAffinityTemplateVar: nodeRole,
+	}
+
+	jsonObj, err := json.Marshal(affinity)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to marshal affinity")
+	}
+
+	resolved, err := envsubst.EvalMap(string(jsonObj), templateMap)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal([]byte(resolved), affinity)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to unmarshal the affinity")
+	}
+
+	return affinity, nil
 }

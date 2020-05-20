@@ -105,20 +105,20 @@ type MongoDBSpec struct {
 	// Template.
 	UpdateStrategy apps.StatefulSetUpdateStrategy `json:"updateStrategy,omitempty" protobuf:"bytes,15,opt,name=updateStrategy"`
 
+	// TLS contains tls configurations for client and server.
+	// +optional
+	TLS *TLSConfig `json:"tls,omitempty" protobuf:"bytes,16,opt,name=tls"`
+
+	// Secret for KeyFile. Contains keyfile `key.txt` if spec.clusterAuthMode == keyFile || sendKeyFile
+	KeyFile *core.SecretVolumeSource `json:"keyFile,omitempty" protobuf:"bytes,17,opt,name=keyFile"`
+
 	// Indicates that the database is paused and controller will not sync any changes made to this spec.
 	// +optional
-	Paused bool `json:"paused,omitempty" protobuf:"varint,16,opt,name=paused"`
+	Paused bool `json:"paused,omitempty" protobuf:"varint,18,opt,name=paused"`
 
 	// Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.
 	// +optional
-	Halted bool `json:"halted,omitempty" protobuf:"varint,17,opt,name=halted"`
-
-	// TLS contains tls configurations for client and server.
-	// +optional
-	TLS *TLSConfig `json:"tls,omitempty" protobuf:"bytes,18,opt,name=tls"`
-
-	// Secret for KeyFile. Contains keyfile `key.txt` if spec.clusterAuthMode == keyFile || sendKeyFile
-	KeyFile *core.SecretVolumeSource `json:"keyFile,omitempty" protobuf:"bytes,19,opt,name=keyFile"`
+	Halted bool `json:"halted,omitempty" protobuf:"varint,19,opt,name=halted"`
 
 	// TerminationPolicy controls the delete operation for database
 	// +optional
@@ -127,6 +127,7 @@ type MongoDBSpec struct {
 
 // ClusterAuthMode represents the clusterAuthMode of mongodb clusters ( replicaset or sharding)
 // ref: https://docs.mongodb.com/manual/reference/program/mongod/#cmdoption-mongod-clusterauthmode
+// +kubebuilder:validation:Enum=keyFile;sendKeyFile;sendX509;x509
 type ClusterAuthMode string
 
 const (
@@ -149,6 +150,7 @@ const (
 
 // SSLMode represents available sslmodes of mongodb.
 // ref: https://docs.mongodb.com/manual/reference/program/mongod/#cmdoption-mongod-sslmode
+// +kubebuilder:validation:Enum=disabled;allowSSL;preferSSL;requireSSL
 type SSLMode string
 
 const (

@@ -56,7 +56,7 @@ const (
 	MongoDBConfigLabelKey = "mongodb.kubedb.com/node.config"
 	MongoDBMongosLabelKey = "mongodb.kubedb.com/node.mongos"
 
-	ShardAffinityTemplateVar = "SHARD_INDEX"
+	MongoDBShardAffinityTemplateVar = "SHARD_INDEX"
 )
 
 func (m MongoDB) OffshootName() string {
@@ -74,7 +74,7 @@ func (m MongoDB) ShardNodeTemplate() string {
 	if m.Spec.ShardTopology == nil {
 		return ""
 	}
-	return fmt.Sprintf("%s${%s}", m.ShardCommonNodeName(), ShardAffinityTemplateVar)
+	return fmt.Sprintf("%s${%s}", m.ShardCommonNodeName(), MongoDBShardAffinityTemplateVar)
 }
 
 func (m MongoDB) ShardCommonNodeName() string {
@@ -118,7 +118,7 @@ func (m MongoDB) ShardRepSetName(nodeNum int32) string {
 }
 
 func (m MongoDB) ConfigSvrRepSetName() string {
-	repSetName := fmt.Sprintf("cnfRepSet")
+	repSetName := "cnfRepSet"
 	if m.Spec.ShardTopology != nil && m.Spec.ShardTopology.ConfigServer.Prefix != "" {
 		repSetName = m.Spec.ShardTopology.ConfigServer.Prefix
 	}
@@ -315,9 +315,6 @@ func (m *MongoDB) SetDefaults(mgVersion *v1alpha1.MongoDBVersion, topology *core
 	if m == nil {
 		return
 	}
-	if m == nil {
-		return
-	}
 
 	if m.Spec.StorageType == "" {
 		m.Spec.StorageType = StorageTypeDurable
@@ -344,6 +341,20 @@ func (m *MongoDB) SetDefaults(mgVersion *v1alpha1.MongoDBVersion, topology *core
 	}
 
 	if m.Spec.ShardTopology != nil {
+		if m.Spec.ShardTopology.Mongos.PodTemplate.Spec.Lifecycle == nil {
+			m.Spec.ShardTopology.Mongos.PodTemplate.Spec.Lifecycle = new(core.Lifecycle)
+		}
+
+		m.Spec.ShardTopology.Mongos.PodTemplate.Spec.Lifecycle.PreStop = &core.Handler{
+			Exec: &core.ExecAction{
+				Command: []string{
+					"bash",
+					"-c",
+					"mongo admin --username=$MONGO_INITDB_ROOT_USERNAME --password=$MONGO_INITDB_ROOT_PASSWORD --quiet --eval \"db.adminCommand({ shutdown: 1 })\" || true",
+				},
+			},
+		}
+
 		if m.Spec.ShardTopology.Mongos.Strategy.Type == "" {
 			m.Spec.ShardTopology.Mongos.Strategy.Type = apps.RollingUpdateDeploymentStrategyType
 		}

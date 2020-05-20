@@ -3,7 +3,7 @@ module kubedb.dev/operator
 go 1.12
 
 require (
-	github.com/appscode/go v0.0.0-20191119085241-0887d8ec2ecc
+	github.com/appscode/go v0.0.0-20200323182826-54e98e09185a
 	github.com/coreos/prometheus-operator v0.34.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5
@@ -12,21 +12,20 @@ require (
 	k8s.io/apimachinery v0.16.5-beta.1
 	k8s.io/apiserver v0.0.0-20191114103151-9ca1dc586682
 	k8s.io/client-go v12.0.0+incompatible
-	kmodules.xyz/client-go v0.0.0-20200207062238-c552fd719556
+	kmodules.xyz/client-go v0.0.0-20200518125232-435dcc370844
 	kmodules.xyz/custom-resources v0.0.0-20191130062942-f41b54f62419
-	kmodules.xyz/offshoot-api v0.0.0-20200207061254-705ac16690ec // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20191127075323-d4bfdee6974d
-	kubedb.dev/apimachinery v0.13.0-rc.3.0.20200209044157-d39a1db65004
-	kubedb.dev/elasticsearch v0.13.0-rc.1.0.20200129154009-e51555d54720
-	kubedb.dev/memcached v0.6.0-rc.1.0.20200126185242-e61dd2e6e440
-	kubedb.dev/mongodb v0.6.0-rc.1.0.20200209032954-0f20ff3acefa
-	kubedb.dev/mysql v0.6.0-rc.0.0.20200130012612-f4a67e958427
-	kubedb.dev/percona-xtradb v0.0.0-20200129155859-e69742decadf
-	kubedb.dev/pgbouncer v0.0.0-20200209052735-cd4d27211151
-	kubedb.dev/postgres v0.13.0-rc.0.0.20200126185722-15f0611d5ed8
-	kubedb.dev/proxysql v0.0.0-20200129164527-f4d1c0249f53
-	kubedb.dev/redis v0.6.0-rc.0.0.20200130225128-c1db4c438bb4
-	stash.appscode.dev/stash v0.9.0-rc.4
+	kubedb.dev/apimachinery v0.14.0-beta.0
+	kubedb.dev/elasticsearch v0.13.0-rc.1.0.20200520074231-0bca1a049199
+	kubedb.dev/memcached v0.6.0-rc.1.0.20200519123238-18917f8d2562
+	kubedb.dev/mongodb v0.6.0-rc.1.0.20200519121154-010d029483d7
+	kubedb.dev/mysql v0.6.0-rc.0.0.20200519113147-cfee601b89df
+	kubedb.dev/percona-xtradb v0.0.0-20200519131118-52fc205905ef
+	kubedb.dev/pgbouncer v0.0.0-20200519130312-7cd92ba4ef58
+	kubedb.dev/postgres v0.13.0-rc.0.0.20200519115546-6af125961046
+	kubedb.dev/proxysql v0.0.0-20200519133001-987fbf6010b8
+	kubedb.dev/redis v0.6.0-rc.0.0.20200519111602-429141b4ef77
+	stash.appscode.dev/apimachinery v0.9.0-rc.6
 )
 
 replace (

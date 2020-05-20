@@ -169,7 +169,7 @@ func (c *Controller) manageValidation(pgbouncer *api.PgBouncer) error {
 
 func (c *Controller) manageInitialPhase(pgbouncer *api.PgBouncer) error {
 	if pgbouncer.Status.Phase == "" {
-		pg, err := util.UpdatePgBouncerStatus(c.ExtClient.KubedbV1alpha1(), pgbouncer, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
+		pg, err := util.UpdatePgBouncerStatus(c.ExtClient.KubedbV1alpha1(), pgbouncer.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
 		})
@@ -191,7 +191,7 @@ func (c *Controller) manageFinalPhase(pgbouncer *api.PgBouncer) error {
 			return nil
 		}
 		// add to phase that PgBouncer is being initialized
-		pg, err := util.UpdatePgBouncerStatus(c.ExtClient.KubedbV1alpha1(), pgbouncer, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
+		pg, err := util.UpdatePgBouncerStatus(c.ExtClient.KubedbV1alpha1(), pgbouncer.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
 		})
@@ -201,7 +201,7 @@ func (c *Controller) manageFinalPhase(pgbouncer *api.PgBouncer) error {
 		}
 		pgbouncer.Status = pg.Status
 	}
-	pg, err := util.UpdatePgBouncerStatus(c.ExtClient.KubedbV1alpha1(), pgbouncer, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
+	pg, err := util.UpdatePgBouncerStatus(c.ExtClient.KubedbV1alpha1(), pgbouncer.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = pgbouncer.Generation
 		return in

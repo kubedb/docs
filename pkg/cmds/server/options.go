@@ -37,8 +37,8 @@ import (
 	"kmodules.xyz/client-go/tools/cli"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	appcatinformers "kmodules.xyz/custom-resources/client/informers/externalversions"
-	scs "stash.appscode.dev/stash/client/clientset/versioned"
-	stashInformers "stash.appscode.dev/stash/client/informers/externalversions"
+	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
+	stashInformers "stash.appscode.dev/apimachinery/client/informers/externalversions"
 )
 
 type ExtraOptions struct {

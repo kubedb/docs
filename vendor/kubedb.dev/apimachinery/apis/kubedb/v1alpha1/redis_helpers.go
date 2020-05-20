@@ -25,11 +25,17 @@ import (
 
 	"github.com/appscode/go/types"
 	apps "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
+
+const RedisShardAffinityTemplateVar = "SHARD_INDEX"
 
 func (_ Redis) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
 	return crds.MustCustomResourceDefinition(SchemeGroupVersion.WithResource(ResourcePluralRedis))
@@ -147,7 +153,7 @@ func (r *Redis) GetMonitoringVendor() string {
 	return ""
 }
 
-func (r *Redis) SetDefaults() {
+func (r *Redis) SetDefaults(topology *core_util.Topology) {
 	if r == nil {
 		return
 	}
@@ -182,9 +188,61 @@ func (r *Redis) SetDefaults() {
 		r.Spec.PodTemplate.Spec.ServiceAccountName = r.OffshootName()
 	}
 
+	labels := r.OffshootSelectors()
+	if r.Spec.Mode == RedisModeCluster {
+		labels[RedisShardKey] = r.ShardNodeTemplate()
+	}
+	r.setDefaultAffinity(&r.Spec.PodTemplate, labels, topology)
+
 	r.Spec.Monitor.SetDefaults()
 }
 
 func (e *RedisSpec) GetSecrets() []string {
 	return nil
+}
+
+func (r *Redis) setDefaultAffinity(podTemplate *ofst.PodTemplateSpec, labels map[string]string, topology *core_util.Topology) {
+	if podTemplate == nil {
+		return
+	} else if podTemplate.Spec.Affinity != nil {
+		topology.ConvertAffinity(podTemplate.Spec.Affinity)
+		return
+	}
+
+	podTemplate.Spec.Affinity = &corev1.Affinity{
+		PodAntiAffinity: &corev1.PodAntiAffinity{
+			PreferredDuringSchedulingIgnoredDuringExecution: []corev1.WeightedPodAffinityTerm{
+				// Prefer to not schedule multiple pods on the same node
+				{
+					Weight: 100,
+					PodAffinityTerm: corev1.PodAffinityTerm{
+						Namespaces: []string{r.Namespace},
+						LabelSelector: &metav1.LabelSelector{
+							MatchLabels: labels,
+						},
+
+						TopologyKey: corev1.LabelHostname,
+					},
+				},
+				// Prefer to not schedule multiple pods on the node with same zone
+				{
+					Weight: 50,
+					PodAffinityTerm: corev1.PodAffinityTerm{
+						Namespaces: []string{r.Namespace},
+						LabelSelector: &metav1.LabelSelector{
+							MatchLabels: labels,
+						},
+						TopologyKey: topology.LabelZone,
+					},
+				},
+			},
+		},
+	}
+}
+
+func (r Redis) ShardNodeTemplate() string {
+	if r.Spec.Mode == RedisModeStandalone {
+		panic("shard template is not applicable to a standalone redis server")
+	}
+	return fmt.Sprintf("${%s}", RedisShardAffinityTemplateVar)
 }
