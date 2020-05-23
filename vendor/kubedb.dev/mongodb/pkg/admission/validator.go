@@ -16,6 +16,7 @@ limitations under the License.
 package admission
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -100,7 +101,7 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := a.extClient.KubedbV1alpha1().MongoDBs(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			obj, err := a.extClient.KubedbV1alpha1().MongoDBs(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
@@ -150,7 +151,7 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 	if mongodb.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if _, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -247,20 +248,20 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 
 	if strictValidation {
 		if mongodb.Spec.DatabaseSecret != nil {
-			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(mongodb.Spec.DatabaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), mongodb.Spec.DatabaseSecret.SecretName, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
 
 		if mongodb.Spec.KeyFile != nil {
-			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(mongodb.Spec.KeyFile.SecretName, metav1.GetOptions{}); err != nil {
+			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), mongodb.Spec.KeyFile.SecretName, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
 
 		// Check if mongodbVersion is deprecated.
 		// If deprecated, return error
-		mongodbVersion, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+		mongodbVersion, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}

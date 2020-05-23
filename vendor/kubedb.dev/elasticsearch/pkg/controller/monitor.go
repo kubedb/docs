@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -62,7 +63,7 @@ func (c *Controller) deleteMonitor(elasticsearch *api.Elasticsearch) error {
 }
 
 func (c *Controller) getOldAgent(elasticsearch *api.Elasticsearch) mona.Agent {
-	service, err := c.Client.CoreV1().Services(elasticsearch.Namespace).Get(elasticsearch.StatsService().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(elasticsearch.Namespace).Get(context.TODO(), elasticsearch.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -71,17 +72,16 @@ func (c *Controller) getOldAgent(elasticsearch *api.Elasticsearch) mona.Agent {
 }
 
 func (c *Controller) setNewAgent(elasticsearch *api.Elasticsearch) error {
-	service, err := c.Client.CoreV1().Services(elasticsearch.Namespace).Get(elasticsearch.StatsService().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(elasticsearch.Namespace).Get(context.TODO(), elasticsearch.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	_, _, err = core_util.PatchService(c.Client, service, func(in *core.Service) *core.Service {
+	_, _, err = core_util.PatchService(context.TODO(), c.Client, service, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
 			mona.KeyAgent: string(elasticsearch.Spec.Monitor.Agent),
-		},
-		)
+		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }
 

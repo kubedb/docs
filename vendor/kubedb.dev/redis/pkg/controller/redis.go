@@ -16,6 +16,8 @@ limitations under the License.
 package controller
 
 import (
+	"context"
+
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
@@ -43,10 +45,10 @@ func (c *Controller) create(redis *api.Redis) error {
 	}
 
 	if redis.Status.Phase == "" {
-		rd, err := util.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+		rd, err := util.UpdateRedisStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
-		})
+		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -99,11 +101,11 @@ func (c *Controller) create(redis *api.Redis) error {
 		)
 	}
 
-	rd, err := util.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+	rd, err := util.UpdateRedisStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = redis.Generation
 		return in
-	})
+	}, metav1.UpdateOptions{})
 	if err != nil {
 		c.recorder.Eventf(
 			redis,
@@ -160,11 +162,11 @@ func (c *Controller) halt(db *api.Redis) error {
 		return err
 	}
 	log.Infof("update status of Redis %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateRedisStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+	if _, err := util.UpdateRedisStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
-	}); err != nil {
+	}, metav1.UpdateOptions{}); err != nil {
 		return err
 	}
 	return nil
@@ -200,6 +202,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(redis *api.Redis) error {
 
 	// delete PVC for both "wipeOut" and "delete" TerminationPolicy.
 	return dynamic_util.EnsureOwnerReferenceForSelector(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		redis.Namespace,
@@ -212,6 +215,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(redis *api.Redis) error {
 	labelSelector := labels.SelectorFromSet(redis.OffshootSelectors())
 
 	return dynamic_util.RemoveOwnerReferenceForSelector(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		redis.Namespace,

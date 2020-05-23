@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"time"
 
 	v1alpha1 "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
@@ -38,14 +39,14 @@ type PgBouncerVersionsGetter interface {
 
 // PgBouncerVersionInterface has methods to work with PgBouncerVersion resources.
 type PgBouncerVersionInterface interface {
-	Create(*v1alpha1.PgBouncerVersion) (*v1alpha1.PgBouncerVersion, error)
-	Update(*v1alpha1.PgBouncerVersion) (*v1alpha1.PgBouncerVersion, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.PgBouncerVersion, error)
-	List(opts v1.ListOptions) (*v1alpha1.PgBouncerVersionList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.PgBouncerVersion, err error)
+	Create(ctx context.Context, pgBouncerVersion *v1alpha1.PgBouncerVersion, opts v1.CreateOptions) (*v1alpha1.PgBouncerVersion, error)
+	Update(ctx context.Context, pgBouncerVersion *v1alpha1.PgBouncerVersion, opts v1.UpdateOptions) (*v1alpha1.PgBouncerVersion, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.PgBouncerVersion, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.PgBouncerVersionList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.PgBouncerVersion, err error)
 	PgBouncerVersionExpansion
 }
 
@@ -62,19 +63,19 @@ func newPgBouncerVersions(c *CatalogV1alpha1Client) *pgBouncerVersions {
 }
 
 // Get takes name of the pgBouncerVersion, and returns the corresponding pgBouncerVersion object, and an error if there is any.
-func (c *pgBouncerVersions) Get(name string, options v1.GetOptions) (result *v1alpha1.PgBouncerVersion, err error) {
+func (c *pgBouncerVersions) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.PgBouncerVersion, err error) {
 	result = &v1alpha1.PgBouncerVersion{}
 	err = c.client.Get().
 		Resource("pgbouncerversions").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of PgBouncerVersions that match those selectors.
-func (c *pgBouncerVersions) List(opts v1.ListOptions) (result *v1alpha1.PgBouncerVersionList, err error) {
+func (c *pgBouncerVersions) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.PgBouncerVersionList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -84,13 +85,13 @@ func (c *pgBouncerVersions) List(opts v1.ListOptions) (result *v1alpha1.PgBounce
 		Resource("pgbouncerversions").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested pgBouncerVersions.
-func (c *pgBouncerVersions) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *pgBouncerVersions) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -100,66 +101,69 @@ func (c *pgBouncerVersions) Watch(opts v1.ListOptions) (watch.Interface, error) 
 		Resource("pgbouncerversions").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a pgBouncerVersion and creates it.  Returns the server's representation of the pgBouncerVersion, and an error, if there is any.
-func (c *pgBouncerVersions) Create(pgBouncerVersion *v1alpha1.PgBouncerVersion) (result *v1alpha1.PgBouncerVersion, err error) {
+func (c *pgBouncerVersions) Create(ctx context.Context, pgBouncerVersion *v1alpha1.PgBouncerVersion, opts v1.CreateOptions) (result *v1alpha1.PgBouncerVersion, err error) {
 	result = &v1alpha1.PgBouncerVersion{}
 	err = c.client.Post().
 		Resource("pgbouncerversions").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(pgBouncerVersion).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a pgBouncerVersion and updates it. Returns the server's representation of the pgBouncerVersion, and an error, if there is any.
-func (c *pgBouncerVersions) Update(pgBouncerVersion *v1alpha1.PgBouncerVersion) (result *v1alpha1.PgBouncerVersion, err error) {
+func (c *pgBouncerVersions) Update(ctx context.Context, pgBouncerVersion *v1alpha1.PgBouncerVersion, opts v1.UpdateOptions) (result *v1alpha1.PgBouncerVersion, err error) {
 	result = &v1alpha1.PgBouncerVersion{}
 	err = c.client.Put().
 		Resource("pgbouncerversions").
 		Name(pgBouncerVersion.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(pgBouncerVersion).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the pgBouncerVersion and deletes it. Returns an error if one occurs.
-func (c *pgBouncerVersions) Delete(name string, options *v1.DeleteOptions) error {
+func (c *pgBouncerVersions) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Resource("pgbouncerversions").
 		Name(name).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *pgBouncerVersions) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *pgBouncerVersions) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Resource("pgbouncerversions").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // Patch applies the patch and returns the patched pgBouncerVersion.
-func (c *pgBouncerVersions) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.PgBouncerVersion, err error) {
+func (c *pgBouncerVersions) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.PgBouncerVersion, err error) {
 	result = &v1alpha1.PgBouncerVersion{}
 	err = c.client.Patch(pt).
 		Resource("pgbouncerversions").
-		SubResource(subresources...).
 		Name(name).
+		SubResource(subresources...).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }

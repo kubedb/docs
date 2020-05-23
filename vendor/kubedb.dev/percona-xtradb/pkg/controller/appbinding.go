@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -71,39 +72,45 @@ func (c *Controller) ensureAppBinding(db *api.PerconaXtraDB) (kutil.VerbType, er
 		return kutil.VerbUnchanged, err
 	}
 
-	pxVersion, err := c.ExtClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(string(db.Spec.Version), metav1.GetOptions{})
+	pxVersion, err := c.ExtClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, fmt.Errorf("failed to get PerconaXtraDBVersion %v for %v/%v. Reason: %v", db.Spec.Version, db.Namespace, db.Name, err)
 	}
 
-	_, vt, err := appcat_util.CreateOrPatchAppBinding(c.AppCatalogClient.AppcatalogV1alpha1(), meta, func(in *appcat.AppBinding) *appcat.AppBinding {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = db.OffshootLabels()
-		in.Annotations = meta_util.FilterKeys(api.GenericKey, in.Annotations, db.Annotations)
+	_, vt, err := appcat_util.CreateOrPatchAppBinding(
+		context.TODO(),
+		c.AppCatalogClient.AppcatalogV1alpha1(),
+		meta,
+		func(in *appcat.AppBinding) *appcat.AppBinding {
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+			in.Labels = db.OffshootLabels()
+			in.Annotations = meta_util.FilterKeys(api.GenericKey, in.Annotations, db.Annotations)
 
-		in.Spec.Type = appmeta.Type()
-		in.Spec.Version = pxVersion.Spec.Version
-		in.Spec.ClientConfig.URL = types.StringP(fmt.Sprintf("tcp(%s:%d)/", db.ServiceName(), defaultDBPort.Port))
-		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
-			Scheme: "mysql",
-			Name:   db.ServiceName(),
-			Port:   defaultDBPort.Port,
-			Path:   "/",
-		}
-		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
-
-		in.Spec.Secret = &core.LocalObjectReference{
-			Name: db.Spec.DatabaseSecret.SecretName,
-		}
-
-		if db.IsCluster() {
-			in.Spec.Parameters = &runtime.RawExtension{
-				Raw: garbdCnfJson,
+			in.Spec.Type = appmeta.Type()
+			in.Spec.Version = pxVersion.Spec.Version
+			in.Spec.ClientConfig.URL = types.StringP(fmt.Sprintf("tcp(%s:%d)/", db.ServiceName(), defaultDBPort.Port))
+			in.Spec.ClientConfig.Service = &appcat.ServiceReference{
+				Scheme: "mysql",
+				Name:   db.ServiceName(),
+				Port:   defaultDBPort.Port,
+				Path:   "/",
 			}
-		}
+			in.Spec.ClientConfig.InsecureSkipTLSVerify = false
 
-		return in
-	})
+			in.Spec.Secret = &core.LocalObjectReference{
+				Name: db.Spec.DatabaseSecret.SecretName,
+			}
+
+			if db.IsCluster() {
+				in.Spec.Parameters = &runtime.RawExtension{
+					Raw: garbdCnfJson,
+				}
+			}
+
+			return in
+		},
+		metav1.PatchOptions{},
+	)
 
 	if err != nil {
 		return kutil.VerbUnchanged, err

@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -62,7 +63,7 @@ func (c *Controller) deleteMonitor(redis *api.Redis) error {
 }
 
 func (c *Controller) getOldAgent(redis *api.Redis) mona.Agent {
-	service, err := c.Client.CoreV1().Services(redis.Namespace).Get(redis.StatsService().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(redis.Namespace).Get(context.TODO(), redis.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -71,17 +72,16 @@ func (c *Controller) getOldAgent(redis *api.Redis) mona.Agent {
 }
 
 func (c *Controller) setNewAgent(redis *api.Redis) error {
-	service, err := c.Client.CoreV1().Services(redis.Namespace).Get(redis.StatsService().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(redis.Namespace).Get(context.TODO(), redis.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	_, _, err = core_util.PatchService(c.Client, service, func(in *core.Service) *core.Service {
+	_, _, err = core_util.PatchService(context.TODO(), c.Client, service, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
 			mona.KeyAgent: string(redis.Spec.Monitor.Agent),
-		},
-		)
+		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }
 

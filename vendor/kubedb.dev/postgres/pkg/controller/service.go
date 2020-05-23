@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -98,7 +99,7 @@ func (c *Controller) ensureService(postgres *api.Postgres) (kutil.VerbType, erro
 }
 
 func (c *Controller) checkService(postgres *api.Postgres, name string) error {
-	service, err := c.Client.CoreV1().Services(postgres.Namespace).Get(name, metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(postgres.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -122,7 +123,7 @@ func (c *Controller) createService(postgres *api.Postgres) (kutil.VerbType, erro
 
 	owner := metav1.NewControllerRef(postgres, api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres))
 
-	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = postgres.OffshootLabels()
 		in.Annotations = postgres.Spec.ServiceTemplate.Annotations
@@ -145,7 +146,7 @@ func (c *Controller) createService(postgres *api.Postgres) (kutil.VerbType, erro
 			in.Spec.HealthCheckNodePort = postgres.Spec.ServiceTemplate.Spec.HealthCheckNodePort
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return ok, err
 }
 
@@ -164,7 +165,7 @@ func (c *Controller) createReplicasService(postgres *api.Postgres) (kutil.VerbTy
 
 	owner := metav1.NewControllerRef(postgres, api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres))
 
-	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = postgres.OffshootLabels()
 		in.Annotations = postgres.Spec.ReplicaServiceTemplate.Annotations
@@ -187,7 +188,7 @@ func (c *Controller) createReplicasService(postgres *api.Postgres) (kutil.VerbTy
 			in.Spec.HealthCheckNodePort = postgres.Spec.ReplicaServiceTemplate.Spec.HealthCheckNodePort
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return ok, err
 }
 
@@ -217,7 +218,7 @@ func (c *Controller) ensureStatsService(postgres *api.Postgres) (kutil.VerbType,
 		Name:      postgres.StatsService().ServiceName(),
 		Namespace: postgres.Namespace,
 	}
-	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = postgres.StatsServiceLabels()
 		in.Spec.Selector = postgres.OffshootSelectors()
@@ -230,7 +231,7 @@ func (c *Controller) ensureStatsService(postgres *api.Postgres) (kutil.VerbType,
 			},
 		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {

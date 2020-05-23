@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -49,10 +50,10 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 	}
 
 	if px.Status.Phase == "" {
-		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
-		})
+		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -68,10 +69,10 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 			return nil
 		}
 
-		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
-		})
+		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -141,10 +142,10 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		}
 
 		// add phase that database is being initialized
-		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
-		})
+		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -154,11 +155,11 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		return nil
 	}
 
-	per, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+	per, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = px.Generation
 		return in
-	})
+	}, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
@@ -204,11 +205,11 @@ func (c *Controller) halt(db *api.PerconaXtraDB) error {
 		return err
 	}
 	log.Infof("update status of PerconaXtraDB %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+	if _, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
-	}); err != nil {
+	}, metav1.UpdateOptions{}); err != nil {
 		return err
 	}
 	return nil
@@ -252,6 +253,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(px *api.PerconaXtraDB) error {
 	} else {
 		// Make sure secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
+			context.TODO(),
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			px.Namespace,
@@ -262,6 +264,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(px *api.PerconaXtraDB) error {
 	}
 	// delete PVC for both "wipeOut" and "delete" TerminationPolicy.
 	return dynamic_util.EnsureOwnerReferenceForSelector(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		px.Namespace,
@@ -274,6 +277,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(px *api.PerconaXtraDB) er
 	labelSelector := labels.SelectorFromSet(px.OffshootSelectors())
 
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		px.Namespace,
@@ -282,6 +286,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(px *api.PerconaXtraDB) er
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		px.Namespace,
@@ -306,11 +311,11 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 	if err != nil {
 		return err
 	}
-	_, err = util.UpdatePerconaXtraDBStatus(c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+	_, err = util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 		in.Phase = phase
 		in.Reason = reason
 		return in
-	})
+	}, metav1.UpdateOptions{})
 	return err
 }
 
@@ -320,9 +325,9 @@ func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation
 		return err
 	}
 
-	_, _, err = util.PatchPerconaXtraDB(c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
+	_, _, err = util.PatchPerconaXtraDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
 		in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }

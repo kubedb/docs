@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"time"
 
 	v1alpha1 "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
@@ -38,14 +39,14 @@ type MySQLVersionsGetter interface {
 
 // MySQLVersionInterface has methods to work with MySQLVersion resources.
 type MySQLVersionInterface interface {
-	Create(*v1alpha1.MySQLVersion) (*v1alpha1.MySQLVersion, error)
-	Update(*v1alpha1.MySQLVersion) (*v1alpha1.MySQLVersion, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.MySQLVersion, error)
-	List(opts v1.ListOptions) (*v1alpha1.MySQLVersionList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.MySQLVersion, err error)
+	Create(ctx context.Context, mySQLVersion *v1alpha1.MySQLVersion, opts v1.CreateOptions) (*v1alpha1.MySQLVersion, error)
+	Update(ctx context.Context, mySQLVersion *v1alpha1.MySQLVersion, opts v1.UpdateOptions) (*v1alpha1.MySQLVersion, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.MySQLVersion, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.MySQLVersionList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.MySQLVersion, err error)
 	MySQLVersionExpansion
 }
 
@@ -62,19 +63,19 @@ func newMySQLVersions(c *CatalogV1alpha1Client) *mySQLVersions {
 }
 
 // Get takes name of the mySQLVersion, and returns the corresponding mySQLVersion object, and an error if there is any.
-func (c *mySQLVersions) Get(name string, options v1.GetOptions) (result *v1alpha1.MySQLVersion, err error) {
+func (c *mySQLVersions) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.MySQLVersion, err error) {
 	result = &v1alpha1.MySQLVersion{}
 	err = c.client.Get().
 		Resource("mysqlversions").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of MySQLVersions that match those selectors.
-func (c *mySQLVersions) List(opts v1.ListOptions) (result *v1alpha1.MySQLVersionList, err error) {
+func (c *mySQLVersions) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.MySQLVersionList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -84,13 +85,13 @@ func (c *mySQLVersions) List(opts v1.ListOptions) (result *v1alpha1.MySQLVersion
 		Resource("mysqlversions").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested mySQLVersions.
-func (c *mySQLVersions) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *mySQLVersions) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -100,66 +101,69 @@ func (c *mySQLVersions) Watch(opts v1.ListOptions) (watch.Interface, error) {
 		Resource("mysqlversions").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a mySQLVersion and creates it.  Returns the server's representation of the mySQLVersion, and an error, if there is any.
-func (c *mySQLVersions) Create(mySQLVersion *v1alpha1.MySQLVersion) (result *v1alpha1.MySQLVersion, err error) {
+func (c *mySQLVersions) Create(ctx context.Context, mySQLVersion *v1alpha1.MySQLVersion, opts v1.CreateOptions) (result *v1alpha1.MySQLVersion, err error) {
 	result = &v1alpha1.MySQLVersion{}
 	err = c.client.Post().
 		Resource("mysqlversions").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(mySQLVersion).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a mySQLVersion and updates it. Returns the server's representation of the mySQLVersion, and an error, if there is any.
-func (c *mySQLVersions) Update(mySQLVersion *v1alpha1.MySQLVersion) (result *v1alpha1.MySQLVersion, err error) {
+func (c *mySQLVersions) Update(ctx context.Context, mySQLVersion *v1alpha1.MySQLVersion, opts v1.UpdateOptions) (result *v1alpha1.MySQLVersion, err error) {
 	result = &v1alpha1.MySQLVersion{}
 	err = c.client.Put().
 		Resource("mysqlversions").
 		Name(mySQLVersion.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(mySQLVersion).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the mySQLVersion and deletes it. Returns an error if one occurs.
-func (c *mySQLVersions) Delete(name string, options *v1.DeleteOptions) error {
+func (c *mySQLVersions) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Resource("mysqlversions").
 		Name(name).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *mySQLVersions) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *mySQLVersions) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Resource("mysqlversions").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // Patch applies the patch and returns the patched mySQLVersion.
-func (c *mySQLVersions) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.MySQLVersion, err error) {
+func (c *mySQLVersions) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.MySQLVersion, err error) {
 	result = &v1alpha1.MySQLVersion{}
 	err = c.client.Patch(pt).
 		Resource("mysqlversions").
-		SubResource(subresources...).
 		Name(name).
+		SubResource(subresources...).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }

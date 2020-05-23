@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -48,10 +49,10 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	}
 
 	if mysql.Status.Phase == "" {
-		my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
+		my, err := util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
-		})
+		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -116,10 +117,10 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		}
 
 		// add phase that database is being initialized
-		my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
+		my, err := util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
-		})
+		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -132,11 +133,11 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		}
 	}
 
-	my, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
+	my, err := util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = mysql.Generation
 		return in
-	})
+	}, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
@@ -182,11 +183,11 @@ func (c *Controller) halt(db *api.MySQL) error {
 		return err
 	}
 	log.Infof("update status of MySQL %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
+	if _, err := util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
-	}); err != nil {
+	}, metav1.UpdateOptions{}); err != nil {
 		return err
 	}
 	return nil
@@ -231,6 +232,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(mysql *api.MySQL, owner *metav
 	} else {
 		// Make sure secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
+			context.TODO(),
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			mysql.Namespace,
@@ -241,6 +243,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(mysql *api.MySQL, owner *metav
 	}
 	// delete PVC for both "wipeOut" and "delete" TerminationPolicy.
 	return dynamic_util.EnsureOwnerReferenceForSelector(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		mysql.Namespace,
@@ -253,6 +256,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(mysql *api.MySQL) error {
 	labelSelector := labels.SelectorFromSet(mysql.OffshootSelectors())
 
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		mysql.Namespace,
@@ -261,6 +265,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(mysql *api.MySQL) error {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		mysql.Namespace,
@@ -285,11 +290,17 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 	if err != nil {
 		return err
 	}
-	_, err = util.UpdateMySQLStatus(c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
-		in.Phase = phase
-		in.Reason = reason
-		return in
-	})
+	_, err = util.UpdateMySQLStatus(
+		context.TODO(),
+		c.ExtClient.KubedbV1alpha1(),
+		mysql.ObjectMeta,
+		func(in *api.MySQLStatus) *api.MySQLStatus {
+			in.Phase = phase
+			in.Reason = reason
+			return in
+		},
+		metav1.UpdateOptions{},
+	)
 	return err
 }
 
@@ -299,9 +310,15 @@ func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation
 		return err
 	}
 
-	_, _, err = util.PatchMySQL(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
-		in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
-		return in
-	})
+	_, _, err = util.PatchMySQL(
+		context.TODO(),
+		c.ExtClient.KubedbV1alpha1(),
+		mysql,
+		func(in *api.MySQL) *api.MySQL {
+			in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
+			return in
+		},
+		metav1.PatchOptions{},
+	)
 	return err
 }

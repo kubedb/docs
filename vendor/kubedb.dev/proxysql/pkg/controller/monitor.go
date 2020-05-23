@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -61,7 +62,7 @@ func (c *Controller) deleteMonitor(proxysql *api.ProxySQL) (kutil.VerbType, erro
 }
 
 func (c *Controller) getOldAgent(proxysql *api.ProxySQL) mona.Agent {
-	service, err := c.Client.CoreV1().Services(proxysql.Namespace).Get(proxysql.StatsService().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(proxysql.Namespace).Get(context.TODO(), proxysql.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -70,17 +71,16 @@ func (c *Controller) getOldAgent(proxysql *api.ProxySQL) mona.Agent {
 }
 
 func (c *Controller) setNewAgent(proxysql *api.ProxySQL) error {
-	service, err := c.Client.CoreV1().Services(proxysql.Namespace).Get(proxysql.StatsService().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(proxysql.Namespace).Get(context.TODO(), proxysql.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	_, _, err = core_util.PatchService(c.Client, service, func(in *core.Service) *core.Service {
+	_, _, err = core_util.PatchService(context.TODO(), c.Client, service, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
 			mona.KeyAgent: string(proxysql.Spec.Monitor.Agent),
-		},
-		)
+		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }
 

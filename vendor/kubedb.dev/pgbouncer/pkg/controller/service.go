@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -64,7 +65,7 @@ func (c *Controller) ensureService(pgbouncer *api.PgBouncer) (kutil.VerbType, er
 
 func (c *Controller) checkService(pgbouncer *api.PgBouncer, name string) error {
 	//returns error if Service already exists
-	service, err := c.Client.CoreV1().Services(pgbouncer.Namespace).Get(name, metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(pgbouncer.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -86,7 +87,7 @@ func (c *Controller) createOrPatchService(pgbouncer *api.PgBouncer) (kutil.VerbT
 		Namespace: pgbouncer.Namespace,
 	}
 
-	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		ref := metav1.NewControllerRef(pgbouncer, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
 		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 		in.Labels = pgbouncer.OffshootLabels()
@@ -108,7 +109,7 @@ func (c *Controller) createOrPatchService(pgbouncer *api.PgBouncer) (kutil.VerbT
 			in.Spec.HealthCheckNodePort = pgbouncer.Spec.ServiceTemplate.Spec.HealthCheckNodePort
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return ok, err
 }
 
@@ -147,7 +148,7 @@ func (c *Controller) ensureStatsService(pgbouncer *api.PgBouncer) (kutil.VerbTyp
 		Name:      pgbouncer.StatsService().ServiceName(),
 		Namespace: pgbouncer.Namespace,
 	}
-	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		ref := metav1.NewControllerRef(pgbouncer, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
 		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
 		in.Labels = pgbouncer.StatsServiceLabels()
@@ -161,7 +162,7 @@ func (c *Controller) ensureStatsService(pgbouncer *api.PgBouncer) (kutil.VerbTyp
 			},
 		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {

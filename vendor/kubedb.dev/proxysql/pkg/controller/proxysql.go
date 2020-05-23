@@ -16,6 +16,8 @@ limitations under the License.
 package controller
 
 import (
+	"context"
+
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
@@ -42,10 +44,16 @@ func (c *Controller) create(proxysql *api.ProxySQL) error {
 	}
 
 	if proxysql.Status.Phase == "" {
-		proxysqlUpd, err := util.UpdateProxySQLStatus(c.ExtClient.KubedbV1alpha1(), proxysql.ObjectMeta, func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
-			in.Phase = api.DatabasePhaseCreating
-			return in
-		})
+		proxysqlUpd, err := util.UpdateProxySQLStatus(
+			context.TODO(),
+			c.ExtClient.KubedbV1alpha1(),
+			proxysql.ObjectMeta,
+			func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
+				in.Phase = api.DatabasePhaseCreating
+				return in
+			},
+			metav1.UpdateOptions{},
+		)
 		if err != nil {
 			return err
 		}
@@ -94,11 +102,17 @@ func (c *Controller) create(proxysql *api.ProxySQL) error {
 		)
 	}
 
-	proxysqlUpd, err := util.UpdateProxySQLStatus(c.ExtClient.KubedbV1alpha1(), proxysql.ObjectMeta, func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
-		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = proxysql.Generation
-		return in
-	})
+	proxysqlUpd, err := util.UpdateProxySQLStatus(
+		context.TODO(),
+		c.ExtClient.KubedbV1alpha1(),
+		proxysql.ObjectMeta,
+		func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
+			in.Phase = api.DatabasePhaseRunning
+			in.ObservedGeneration = proxysql.Generation
+			return in
+		},
+		metav1.UpdateOptions{},
+	)
 	if err != nil {
 		return err
 	}
@@ -138,6 +152,7 @@ func (c *Controller) terminate(proxysql *api.ProxySQL) error {
 	// delete PVC
 	selector := labels.SelectorFromSet(proxysql.OffshootSelectors())
 	if err := dynamic_util.EnsureOwnerReferenceForSelector(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		proxysql.Namespace,

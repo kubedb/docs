@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -61,7 +62,7 @@ func (c *Controller) ensureRedisConfig(redis *api.Redis) error {
 		} else if vt != kutil.VerbUnchanged {
 			// add configmap to redis.spec.configSource
 			redis.Spec.ConfigSource = &core.VolumeSource{}
-			rd, _, err := kutildb.PatchRedis(c.ExtClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
+			rd, _, err := kutildb.PatchRedis(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
 				in.Spec.ConfigSource = &core.VolumeSource{
 					ConfigMap: &core.ConfigMapVolumeSource{
 						LocalObjectReference: core.LocalObjectReference{
@@ -71,7 +72,7 @@ func (c *Controller) ensureRedisConfig(redis *api.Redis) error {
 					},
 				}
 				return in
-			})
+			}, metav1.PatchOptions{})
 			if err != nil {
 				return errors.Wrap(err, "Failed to Patch redis while updating redis.spec.configSource")
 			}
@@ -92,7 +93,7 @@ func (c *Controller) ensureRedisConfig(redis *api.Redis) error {
 
 func (c *Controller) checkConfigMap(redis *api.Redis) error {
 	// ConfigMap for Redis configuration
-	configmap, err := c.Client.CoreV1().ConfigMaps(redis.Namespace).Get(redis.ConfigMapName(), metav1.GetOptions{})
+	configmap, err := c.Client.CoreV1().ConfigMaps(redis.Namespace).Get(context.TODO(), redis.ConfigMapName(), metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -116,7 +117,7 @@ func (c *Controller) createConfigMap(redis *api.Redis) (*core.ConfigMap, kutil.V
 
 	owner := metav1.NewControllerRef(redis, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
-	return core_util.CreateOrPatchConfigMap(c.Client, meta, func(in *core.ConfigMap) *core.ConfigMap {
+	return core_util.CreateOrPatchConfigMap(context.TODO(), c.Client, meta, func(in *core.ConfigMap) *core.ConfigMap {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = redis.OffshootSelectors()
 		in.Annotations = redis.Spec.ServiceTemplate.Annotations
@@ -126,5 +127,5 @@ func (c *Controller) createConfigMap(redis *api.Redis) (*core.ConfigMap, kutil.V
 		}
 
 		return in
-	})
+	}, metav1.PatchOptions{})
 }

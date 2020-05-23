@@ -86,7 +86,7 @@ func RunLeaderElection() {
 			Namespace: namespace,
 		},
 	}
-	if _, err := kubeClient.CoreV1().ConfigMaps(namespace).Create(configMap); err != nil && !kerr.IsAlreadyExists(err) {
+	if _, err := kubeClient.CoreV1().ConfigMaps(namespace).Create(context.TODO(), configMap, metav1.CreateOptions{}); err != nil && !kerr.IsAlreadyExists(err) {
 		log.Fatalln(err)
 	}
 
@@ -151,12 +151,12 @@ func RunLeaderElection() {
 				OnNewLeader: func(identity string) {
 					log.Printf("Leader changed from '%s' to '%s'\n", lastLeader, identity)
 					lastLeader = identity
-					statefulSet, err := kubeClient.AppsV1().StatefulSets(namespace).Get(statefulSetName, metav1.GetOptions{})
+					statefulSet, err := kubeClient.AppsV1().StatefulSets(namespace).Get(context.TODO(), statefulSetName, metav1.GetOptions{})
 					if err != nil {
 						log.Fatalln(err)
 					}
 
-					pods, err := kubeClient.CoreV1().Pods(namespace).List(metav1.ListOptions{
+					pods, err := kubeClient.CoreV1().Pods(namespace).List(context.TODO(), metav1.ListOptions{
 						LabelSelector: metav1.FormatLabelSelector(statefulSet.Spec.Selector),
 					})
 					if err != nil {
@@ -169,10 +169,10 @@ func RunLeaderElection() {
 						if pod.Name == identity {
 							role = RolePrimary
 						}
-						if _, _, err := core_util.PatchPod(kubeClient, &pod, func(in *core.Pod) *core.Pod {
+						if _, _, err := core_util.PatchPod(context.TODO(), kubeClient, &pod, func(in *core.Pod) *core.Pod {
 							in.Labels["kubedb.com/role"] = role
 							return in
-						}); err != nil {
+						}, metav1.PatchOptions{}); err != nil {
 							// not sure if panic-ing will make the situation better or worse. but, as we are going to
 							// reimplement the postgres clustering part, lets keep it as it is right now
 							fmt.Println("got error while updating pod label:", err)

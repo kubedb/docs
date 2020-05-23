@@ -17,6 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	"context"
+
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
@@ -30,6 +32,7 @@ import (
 	core "k8s.io/api/core/v1"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/dynamic"
@@ -105,7 +108,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		catalog.PgBouncerVersion{}.CustomResourceDefinition(),
 		appcat_util.AppBinding{}.CustomResourceDefinition(),
 	}
-	return apiext_util.RegisterCRDs(c.Client.Discovery(), c.ApiExtKubeClient, crds)
+	return apiext_util.RegisterCRDs(context.TODO(), c.Client.Discovery(), c.ApiExtKubeClient, crds)
 }
 
 // InitInformer initializes PgBouncer, DormantDB amd Snapshot watcher
@@ -190,12 +193,18 @@ func (c *Controller) pushFailureEvent(pgbouncer *api.PgBouncer, reason string) {
 		reason,
 	)
 
-	pg, err := kutildb.UpdatePgBouncerStatus(c.ExtClient.KubedbV1alpha1(), pgbouncer.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
-		in.Phase = api.DatabasePhaseFailed
-		in.Reason = reason
-		in.ObservedGeneration = pgbouncer.Generation
-		return in
-	})
+	pg, err := kutildb.UpdatePgBouncerStatus(
+		context.TODO(),
+		c.ExtClient.KubedbV1alpha1(),
+		pgbouncer.ObjectMeta,
+		func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
+			in.Phase = api.DatabasePhaseFailed
+			in.Reason = reason
+			in.ObservedGeneration = pgbouncer.Generation
+			return in
+		},
+		metav1.UpdateOptions{},
+	)
 	if err != nil {
 		c.recorder.Eventf(
 			pgbouncer,

@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -62,7 +63,7 @@ func (c *Controller) ensureService(memcached *api.Memcached) (kutil.VerbType, er
 }
 
 func (c *Controller) checkService(memcached *api.Memcached, serviceName string) error {
-	service, err := c.Client.CoreV1().Services(memcached.Namespace).Get(serviceName, metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(memcached.Namespace).Get(context.TODO(), serviceName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -86,7 +87,7 @@ func (c *Controller) createService(memcached *api.Memcached) (kutil.VerbType, er
 
 	owner := metav1.NewControllerRef(memcached, api.SchemeGroupVersion.WithKind(api.ResourceKindMemcached))
 
-	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = memcached.OffshootLabels()
 		in.Annotations = memcached.Spec.ServiceTemplate.Annotations
@@ -111,7 +112,7 @@ func (c *Controller) createService(memcached *api.Memcached) (kutil.VerbType, er
 			in.Spec.HealthCheckNodePort = memcached.Spec.ServiceTemplate.Spec.HealthCheckNodePort
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return ok, err
 }
 
@@ -134,7 +135,7 @@ func (c *Controller) ensureStatsService(memcached *api.Memcached) (kutil.VerbTyp
 		Name:      memcached.StatsService().ServiceName(),
 		Namespace: memcached.Namespace,
 	}
-	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = memcached.StatsServiceLabels()
 		in.Spec.Selector = memcached.OffshootSelectors()
@@ -147,7 +148,7 @@ func (c *Controller) ensureStatsService(memcached *api.Memcached) (kutil.VerbTyp
 			},
 		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {

@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	time "time"
 
 	catalogv1alpha1 "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
@@ -61,13 +62,13 @@ func NewFilteredProxySQLVersionInformer(client versioned.Interface, resyncPeriod
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.CatalogV1alpha1().ProxySQLVersions().List(options)
+				return client.CatalogV1alpha1().ProxySQLVersions().List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.CatalogV1alpha1().ProxySQLVersions().Watch(options)
+				return client.CatalogV1alpha1().ProxySQLVersions().Watch(context.TODO(), options)
 			},
 		},
 		&catalogv1alpha1.ProxySQLVersion{},

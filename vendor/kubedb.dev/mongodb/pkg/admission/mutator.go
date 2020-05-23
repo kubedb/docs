@@ -16,6 +16,7 @@ limitations under the License.
 package admission
 
 import (
+	"context"
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
@@ -140,7 +141,7 @@ func (a *MongoDBMutator) setDefaultValues(extClient cs.Interface, mongodb *api.M
 // getMongoDBVersion returns MongoDBVersion.
 // If MongoDBVersion doesn't exists return 0 valued MongoDBVersion (not nil)
 func getMongoDBVersion(extClient cs.Interface, ver string) (*v1alpha1.MongoDBVersion, error) {
-	mgVersion, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(ver, metav1.GetOptions{})
+	mgVersion, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), ver, metav1.GetOptions{})
 	if err != nil && kerr.IsNotFound(err) {
 		return &v1alpha1.MongoDBVersion{}, nil
 	}

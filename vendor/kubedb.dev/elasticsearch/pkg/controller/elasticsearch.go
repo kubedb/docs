@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -53,10 +54,16 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	if elasticsearch.Status.Phase == "" {
-		es, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-			in.Phase = api.DatabasePhaseCreating
-			return in
-		})
+		es, err := util.UpdateElasticsearchStatus(
+			context.TODO(),
+			c.ExtClient.KubedbV1alpha1(),
+			elasticsearch.ObjectMeta,
+			func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+				in.Phase = api.DatabasePhaseCreating
+				return in
+			},
+			metav1.UpdateOptions{},
+		)
 		if err != nil {
 			return err
 		}
@@ -111,10 +118,15 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		}
 
 		// add phase that database is being initialized
-		mg, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-			in.Phase = api.DatabasePhaseInitializing
-			return in
-		})
+		mg, err := util.UpdateElasticsearchStatus(
+			context.TODO(), c.ExtClient.KubedbV1alpha1(),
+			elasticsearch.ObjectMeta,
+			func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+				in.Phase = api.DatabasePhaseInitializing
+				return in
+			},
+			metav1.UpdateOptions{},
+		)
 		if err != nil {
 			return err
 		}
@@ -127,11 +139,17 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		}
 	}
 
-	es, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-		in.Phase = api.DatabasePhaseRunning
-		in.ObservedGeneration = elasticsearch.Generation
-		return in
-	})
+	es, err := util.UpdateElasticsearchStatus(
+		context.TODO(),
+		c.ExtClient.KubedbV1alpha1(),
+		elasticsearch.ObjectMeta,
+		func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+			in.Phase = api.DatabasePhaseRunning
+			in.ObservedGeneration = elasticsearch.Generation
+			return in
+		},
+		metav1.UpdateOptions{},
+	)
 	if err != nil {
 		return err
 	}
@@ -230,11 +248,17 @@ func (c *Controller) halt(db *api.Elasticsearch) error {
 		return err
 	}
 	log.Infof("update status of Elasticsearch %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-		in.Phase = api.DatabasePhaseHalted
-		in.ObservedGeneration = db.Generation
-		return in
-	}); err != nil {
+	if _, err := util.UpdateElasticsearchStatus(
+		context.TODO(),
+		c.ExtClient.KubedbV1alpha1(),
+		db.ObjectMeta,
+		func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+			in.Phase = api.DatabasePhaseHalted
+			in.ObservedGeneration = db.Generation
+			return in
+		},
+		metav1.UpdateOptions{},
+	); err != nil {
 		return err
 	}
 	return nil
@@ -279,6 +303,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsear
 	} else {
 		// Make sure secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
+			context.TODO(),
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			elasticsearch.Namespace,
@@ -289,6 +314,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsear
 	}
 	// delete PVC for both "wipeOut" and "delete" TerminationPolicy.
 	return dynamic_util.EnsureOwnerReferenceForSelector(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		elasticsearch.Namespace,
@@ -301,6 +327,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasti
 	labelSelector := labels.SelectorFromSet(elasticsearch.OffshootSelectors())
 
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		elasticsearch.Namespace,
@@ -309,6 +336,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasti
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		elasticsearch.Namespace,
@@ -333,11 +361,11 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 	if err != nil {
 		return err
 	}
-	_, err = util.UpdateElasticsearchStatus(c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+	_, err = util.UpdateElasticsearchStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.Phase = phase
 		in.Reason = reason
 		return in
-	})
+	}, metav1.UpdateOptions{})
 	return err
 }
 
@@ -347,10 +375,10 @@ func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation
 		return err
 	}
 
-	_, _, err = util.PatchElasticsearch(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+	_, _, err = util.PatchElasticsearch(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
 		in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }
 
@@ -361,7 +389,10 @@ func (c *Controller) createPodDisruptionBudget(sts *appsv1.StatefulSet, maxUnava
 		Name:      sts.Name,
 		Namespace: sts.Namespace,
 	}
-	_, _, err := policy_util.CreateOrPatchPodDisruptionBudget(c.Client, m,
+	_, _, err := policy_util.CreateOrPatchPodDisruptionBudget(
+		context.TODO(),
+		c.Client,
+		m,
 		func(in *policyv1beta1.PodDisruptionBudget) *policyv1beta1.PodDisruptionBudget {
 			in.Labels = sts.Labels
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
@@ -374,6 +405,8 @@ func (c *Controller) createPodDisruptionBudget(sts *appsv1.StatefulSet, maxUnava
 
 			in.Spec.MinAvailable = nil
 			return in
-		})
+		},
+		metav1.PatchOptions{},
+	)
 	return err
 }

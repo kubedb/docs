@@ -16,6 +16,8 @@ limitations under the License.
 package controller
 
 import (
+	"context"
+
 	"kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 
 	"github.com/appscode/go/encoding/json/types"
@@ -42,7 +44,7 @@ func (c *Controller) MigrateObservedGeneration() error {
 		v1alpha1.SchemeGroupVersion.WithResource(v1alpha1.ResourcePluralRedis),
 	} {
 		client := c.DynamicClient.Resource(gvr)
-		objects, err := client.Namespace(core.NamespaceAll).List(metav1.ListOptions{})
+		objects, err := client.Namespace(core.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			errs = append(errs, err)
 			continue
@@ -53,7 +55,7 @@ func (c *Controller) MigrateObservedGeneration() error {
 			if e1 != nil {
 				errs = append(errs, e1)
 			} else if changed1 {
-				_, e2 := client.Namespace(obj.GetNamespace()).UpdateStatus(&obj, metav1.UpdateOptions{})
+				_, e2 := client.Namespace(obj.GetNamespace()).UpdateStatus(context.TODO(), &obj, metav1.UpdateOptions{})
 				errs = append(errs, e2)
 			}
 		}

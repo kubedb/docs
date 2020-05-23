@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -31,29 +32,32 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchRedis(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Redis) *api.Redis) (*api.Redis, kutil.VerbType, error) {
-	cur, err := c.Redises(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+func CreateOrPatchRedis(ctx context.Context, c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Redis) *api.Redis, opts metav1.PatchOptions) (*api.Redis, kutil.VerbType, error) {
+	cur, err := c.Redises(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Redis %s/%s.", meta.Namespace, meta.Name)
-		out, err := c.Redises(meta.Namespace).Create(transform(&api.Redis{
+		out, err := c.Redises(meta.Namespace).Create(ctx, transform(&api.Redis{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Redis",
 				APIVersion: api.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}))
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchRedis(c, cur, transform)
+	return PatchRedis(ctx, c, cur, transform, opts)
 }
 
-func PatchRedis(c cs.KubedbV1alpha1Interface, cur *api.Redis, transform func(*api.Redis) *api.Redis) (*api.Redis, kutil.VerbType, error) {
-	return PatchRedisObject(c, cur, transform(cur.DeepCopy()))
+func PatchRedis(ctx context.Context, c cs.KubedbV1alpha1Interface, cur *api.Redis, transform func(*api.Redis) *api.Redis, opts metav1.PatchOptions) (*api.Redis, kutil.VerbType, error) {
+	return PatchRedisObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchRedisObject(c cs.KubedbV1alpha1Interface, cur, mod *api.Redis) (*api.Redis, kutil.VerbType, error) {
+func PatchRedisObject(ctx context.Context, c cs.KubedbV1alpha1Interface, cur, mod *api.Redis, opts metav1.PatchOptions) (*api.Redis, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -72,20 +76,20 @@ func PatchRedisObject(c cs.KubedbV1alpha1Interface, cur, mod *api.Redis) (*api.R
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching Redis %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.Redises(cur.Namespace).Patch(cur.Name, types.MergePatchType, patch)
+	out, err := c.Redises(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateRedis(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Redis) *api.Redis) (result *api.Redis, err error) {
+func TryUpdateRedis(ctx context.Context, c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Redis) *api.Redis, opts metav1.UpdateOptions) (result *api.Redis, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.Redises(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		cur, e2 := c.Redises(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
 
-			result, e2 = c.Redises(cur.Namespace).Update(transform(cur.DeepCopy()))
+			result, e2 = c.Redises(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update Redis %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
@@ -99,9 +103,11 @@ func TryUpdateRedis(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transf
 }
 
 func UpdateRedisStatus(
+	ctx context.Context,
 	c cs.KubedbV1alpha1Interface,
 	meta metav1.ObjectMeta,
 	transform func(*api.RedisStatus) *api.RedisStatus,
+	opts metav1.UpdateOptions,
 ) (result *api.Redis, err error) {
 	apply := func(x *api.Redis) *api.Redis {
 		return &api.Redis{
@@ -113,16 +119,16 @@ func UpdateRedisStatus(
 	}
 
 	attempt := 0
-	cur, err := c.Redises(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	cur, err := c.Redises(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		var e2 error
-		result, e2 = c.Redises(meta.Namespace).UpdateStatus(apply(cur))
+		result, e2 = c.Redises(meta.Namespace).UpdateStatus(ctx, apply(cur), opts)
 		if kerr.IsConflict(e2) {
-			latest, e3 := c.Redises(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+			latest, e3 := c.Redises(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 			switch {
 			case e3 == nil:
 				cur = latest

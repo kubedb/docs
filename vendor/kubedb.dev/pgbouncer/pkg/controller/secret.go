@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -48,7 +49,7 @@ func (c *Controller) CreateOrPatchDefaultSecret(pgbouncer *api.PgBouncer) (kutil
 	var vt kutil.VerbType
 
 	defaultSecretSpec := c.GetDefaultSecretSpec(pgbouncer)
-	secret, err := c.Client.CoreV1().Secrets(defaultSecretSpec.Namespace).Get(defaultSecretSpec.Name, metav1.GetOptions{})
+	secret, err := c.Client.CoreV1().Secrets(defaultSecretSpec.Namespace).Get(context.TODO(), defaultSecretSpec.Name, metav1.GetOptions{})
 	//if default secret exists, reuse admin pass. Else create a new pass for admin user
 	if err == nil {
 		myPgBouncerPass = string(secret.Data[pbAdminPassword])
@@ -89,9 +90,9 @@ func (c *Controller) CreateOrPatchDefaultSecret(pgbouncer *api.PgBouncer) (kutil
 	ref := metav1.NewControllerRef(pgbouncer, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
 	core_util.EnsureOwnerReference(&defaultSecretSpec.ObjectMeta, ref)
 
-	_, vt, err = core_util.CreateOrPatchSecret(c.Client, defaultSecretSpec.ObjectMeta, func(in *core.Secret) *core.Secret {
+	_, vt, err = core_util.CreateOrPatchSecret(context.TODO(), c.Client, defaultSecretSpec.ObjectMeta, func(in *core.Secret) *core.Secret {
 		return defaultSecretSpec
-	})
+	}, metav1.PatchOptions{})
 	return vt, err
 }
 
@@ -99,7 +100,7 @@ func (c *Controller) isUserSecretExists(pgbouncer *api.PgBouncer) (bool, *core.S
 	if pgbouncer.Spec.UserListSecretRef == nil || pgbouncer.Spec.UserListSecretRef.Name == "" {
 		return false, nil, nil
 	}
-	secret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(pgbouncer.Spec.UserListSecretRef.Name, metav1.GetOptions{})
+	secret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Spec.UserListSecretRef.Name, metav1.GetOptions{})
 	if err == nil {
 		return true, secret, nil
 	}
@@ -107,7 +108,7 @@ func (c *Controller) isUserSecretExists(pgbouncer *api.PgBouncer) (bool, *core.S
 }
 
 func (c *Controller) isSecretExists(meta metav1.ObjectMeta) error {
-	_, err := c.Client.CoreV1().Secrets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	_, err := c.Client.CoreV1().Secrets(meta.Namespace).Get(context.TODO(), meta.Name, metav1.GetOptions{})
 	return err
 }
 

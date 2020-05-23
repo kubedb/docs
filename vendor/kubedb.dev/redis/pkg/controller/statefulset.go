@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
@@ -99,7 +100,7 @@ func (c *Controller) ensureRedisNodes(redis *api.Redis) (kutil.VerbType, error) 
 			}
 		}
 
-		statefulSets, err := c.Client.AppsV1().StatefulSets(redis.Namespace).List(metav1.ListOptions{
+		statefulSets, err := c.Client.AppsV1().StatefulSets(redis.Namespace).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels.Set{
 				api.LabelDatabaseKind: api.ResourceKindRedis,
 				api.LabelDatabaseName: redis.Name,
@@ -115,14 +116,14 @@ func (c *Controller) ensureRedisNodes(redis *api.Redis) (kutil.VerbType, error) 
 			pods[stsIndex] = make([]*core.Pod, *statefulSets.Items[i].Spec.Replicas)
 			for j := 0; j < int(*statefulSets.Items[i].Spec.Replicas); j++ {
 				podName := fmt.Sprintf("%s-%d", statefulSets.Items[i].Name, j)
-				pods[stsIndex][j], err = c.Client.CoreV1().Pods(redis.Namespace).Get(podName, metav1.GetOptions{})
+				pods[stsIndex][j], err = c.Client.CoreV1().Pods(redis.Namespace).Get(context.TODO(), podName, metav1.GetOptions{})
 				if err != nil {
 					return vt, err
 				}
 			}
 		}
 
-		redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{})
+		redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return vt, err
 		}
@@ -132,7 +133,7 @@ func (c *Controller) ensureRedisNodes(redis *api.Redis) (kutil.VerbType, error) 
 
 		log.Infoln("Cluster configured")
 		log.Infoln("Checking for removing master(s)...")
-		statefulSets, err = c.Client.AppsV1().StatefulSets(redis.Namespace).List(metav1.ListOptions{
+		statefulSets, err = c.Client.AppsV1().StatefulSets(redis.Namespace).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels.Set{
 				api.LabelDatabaseKind: api.ResourceKindRedis,
 				api.LabelDatabaseName: redis.Name,
@@ -148,7 +149,7 @@ func (c *Controller) ensureRedisNodes(redis *api.Redis) (kutil.VerbType, error) 
 			for i := int(*redis.Spec.Cluster.Master); i < len(statefulSets.Items); i++ {
 				err = c.Client.AppsV1().
 					StatefulSets(redis.Namespace).
-					Delete(redis.StatefulSetNameWithShard(i), &metav1.DeleteOptions{
+					Delete(context.TODO(), redis.StatefulSetNameWithShard(i), metav1.DeleteOptions{
 						PropagationPolicy: &foregroundPolicy,
 					})
 				if err != nil {
@@ -161,7 +162,7 @@ func (c *Controller) ensureRedisNodes(redis *api.Redis) (kutil.VerbType, error) 
 
 		// update the the statefulSets with reduced replicas as some of their slaves have been
 		// removed when redis.spec.cluster.replicas field is reduced
-		statefulSets, err = c.Client.AppsV1().StatefulSets(redis.Namespace).List(metav1.ListOptions{
+		statefulSets, err = c.Client.AppsV1().StatefulSets(redis.Namespace).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels.Set{
 				api.LabelDatabaseKind: api.ResourceKindRedis,
 				api.LabelDatabaseName: redis.Name,
@@ -187,7 +188,7 @@ func (c *Controller) ensureRedisNodes(redis *api.Redis) (kutil.VerbType, error) 
 
 func (c *Controller) checkStatefulSet(redis *api.Redis, statefulSetName string) error {
 	// SatatefulSet for Redis database
-	statefulSet, err := c.Client.AppsV1().StatefulSets(redis.Namespace).Get(statefulSetName, metav1.GetOptions{})
+	statefulSet, err := c.Client.AppsV1().StatefulSets(redis.Namespace).Get(context.TODO(), statefulSetName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -211,7 +212,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 
 	owner := metav1.NewControllerRef(redis, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
-	redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{})
+	redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -231,7 +232,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 		}
 	}
 
-	return app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
+	return app_util.CreateOrPatchStatefulSet(context.TODO(), c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Labels = redis.OffshootLabels()
 		in.Annotations = redis.Spec.PodTemplate.Controller.Annotations
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
@@ -342,7 +343,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 		in = upsertUserEnv(in, redis)
 		in = upsertCustomConfig(in, redis)
 		return in
-	})
+	}, metav1.PatchOptions{})
 }
 
 func upsertDataVolume(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.StatefulSet {
@@ -402,6 +403,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.Sta
 
 func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) error {
 	return core_util.WaitUntilPodRunningBySelector(
+		context.TODO(),
 		c.Client,
 		statefulSet.Namespace,
 		statefulSet.Spec.Selector,

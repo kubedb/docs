@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	time "time"
 
 	kubedbv1alpha1 "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -62,13 +63,13 @@ func NewFilteredMongoDBInformer(client versioned.Interface, namespace string, re
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.KubedbV1alpha1().MongoDBs(namespace).List(options)
+				return client.KubedbV1alpha1().MongoDBs(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.KubedbV1alpha1().MongoDBs(namespace).Watch(options)
+				return client.KubedbV1alpha1().MongoDBs(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&kubedbv1alpha1.MongoDB{},

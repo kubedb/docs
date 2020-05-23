@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -32,14 +33,14 @@ func (c *Controller) checkTLS(mongodb *api.MongoDB) error {
 	}
 
 	if mongodb.Spec.ReplicaSet == nil && mongodb.Spec.ShardTopology == nil {
-		_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(mongodb.Name+api.MongoDBServerSecretSuffix, metav1.GetOptions{})
+		_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), mongodb.Name+api.MongoDBServerSecretSuffix, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
 	} else if mongodb.Spec.ReplicaSet != nil && mongodb.Spec.ShardTopology == nil {
 		// ReplicaSet
 		for i := 0; i < int(*mongodb.Spec.Replicas); i++ {
-			_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(fmt.Sprintf("%v-%d", mongodb.Name, i), metav1.GetOptions{})
+			_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), fmt.Sprintf("%v-%d", mongodb.Name, i), metav1.GetOptions{})
 			if err != nil {
 				return err
 			}
@@ -48,7 +49,7 @@ func (c *Controller) checkTLS(mongodb *api.MongoDB) error {
 	} else if mongodb.Spec.ShardTopology != nil {
 		// for config server
 		for i := 0; i < int(mongodb.Spec.ShardTopology.ConfigServer.Replicas); i++ {
-			_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(fmt.Sprintf("%v-%d", mongodb.ConfigSvrNodeName(), i), metav1.GetOptions{})
+			_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), fmt.Sprintf("%v-%d", mongodb.ConfigSvrNodeName(), i), metav1.GetOptions{})
 			if err != nil {
 				return err
 			}
@@ -58,7 +59,7 @@ func (c *Controller) checkTLS(mongodb *api.MongoDB) error {
 		for i := 0; i < int(mongodb.Spec.ShardTopology.Shard.Shards); i++ {
 			shardName := mongodb.ShardNodeName(int32(i))
 			for j := 0; j < int(mongodb.Spec.ShardTopology.Shard.Replicas); j++ {
-				_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(fmt.Sprintf("%v-%d", shardName, j), metav1.GetOptions{})
+				_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), fmt.Sprintf("%v-%d", shardName, j), metav1.GetOptions{})
 				if err != nil {
 					return err
 				}
@@ -66,19 +67,19 @@ func (c *Controller) checkTLS(mongodb *api.MongoDB) error {
 		}
 		//for mongos
 		for i := 0; i < int(mongodb.Spec.ShardTopology.Mongos.Replicas); i++ {
-			_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(fmt.Sprintf("%v-%d", mongodb.MongosNodeName(), i), metav1.GetOptions{})
+			_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), fmt.Sprintf("%v-%d", mongodb.MongosNodeName(), i), metav1.GetOptions{})
 			if err != nil {
 				return err
 			}
 		}
 	}
 	// for stash/user
-	_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(mongodb.Name+api.MongoDBExternalClientSecretSuffix+api.MongoDBPEMSecretSuffix, metav1.GetOptions{})
+	_, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), mongodb.Name+api.MongoDBExternalClientSecretSuffix+api.MongoDBPEMSecretSuffix, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 	// for prometheus exporter
-	_, err = c.Client.CoreV1().Secrets(mongodb.Namespace).Get(mongodb.Name+api.MongoDBExporterClientSecretSuffix, metav1.GetOptions{})
+	_, err = c.Client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), mongodb.Name+api.MongoDBExporterClientSecretSuffix, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}

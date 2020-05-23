@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	time "time"
 
 	opsv1alpha1 "kubedb.dev/apimachinery/apis/ops/v1alpha1"
@@ -62,13 +63,13 @@ func NewFilteredEtcdOpsRequestInformer(client versioned.Interface, namespace str
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OpsV1alpha1().EtcdOpsRequests(namespace).List(options)
+				return client.OpsV1alpha1().EtcdOpsRequests(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.OpsV1alpha1().EtcdOpsRequests(namespace).Watch(options)
+				return client.OpsV1alpha1().EtcdOpsRequests(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&opsv1alpha1.EtcdOpsRequest{},

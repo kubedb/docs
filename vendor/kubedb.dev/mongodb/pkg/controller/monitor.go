@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -62,7 +63,7 @@ func (c *Controller) deleteMonitor(mongodb *api.MongoDB) error {
 }
 
 func (c *Controller) getOldAgent(mongodb *api.MongoDB) mona.Agent {
-	service, err := c.Client.CoreV1().Services(mongodb.Namespace).Get(mongodb.StatsService().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(mongodb.Namespace).Get(context.TODO(), mongodb.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -71,17 +72,17 @@ func (c *Controller) getOldAgent(mongodb *api.MongoDB) mona.Agent {
 }
 
 func (c *Controller) setNewAgent(mongodb *api.MongoDB) error {
-	service, err := c.Client.CoreV1().Services(mongodb.Namespace).Get(mongodb.StatsService().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(mongodb.Namespace).Get(context.TODO(), mongodb.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	_, _, err = core_util.PatchService(c.Client, service, func(in *core.Service) *core.Service {
+	_, _, err = core_util.PatchService(context.TODO(), c.Client, service, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
 			mona.KeyAgent: string(mongodb.Spec.Monitor.Agent),
 		},
 		)
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }
 

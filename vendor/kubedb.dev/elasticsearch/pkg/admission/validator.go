@@ -16,6 +16,7 @@ limitations under the License.
 package admission
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -101,7 +102,7 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := a.extClient.KubedbV1alpha1().Elasticsearches(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			obj, err := a.extClient.KubedbV1alpha1().Elasticsearches(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil {
 				if kerr.IsNotFound(err) {
 					break
@@ -155,7 +156,7 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 	if elasticsearch.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if _, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), string(elasticsearch.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -225,21 +226,21 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 	if strictValidation {
 		databaseSecret := elasticsearch.Spec.DatabaseSecret
 		if databaseSecret != nil {
-			if _, err := client.CoreV1().Secrets(elasticsearch.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+			if _, err := client.CoreV1().Secrets(elasticsearch.Namespace).Get(context.TODO(), databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
 
 		certificateSecret := elasticsearch.Spec.CertificateSecret
 		if certificateSecret != nil {
-			if _, err := client.CoreV1().Secrets(elasticsearch.Namespace).Get(certificateSecret.SecretName, metav1.GetOptions{}); err != nil {
+			if _, err := client.CoreV1().Secrets(elasticsearch.Namespace).Get(context.TODO(), certificateSecret.SecretName, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
 
 		// Check if elasticsearchVersion is deprecated.
 		// If deprecated, return error
-		elasticsearchVersion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(string(elasticsearch.Spec.Version), metav1.GetOptions{})
+		elasticsearchVersion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), string(elasticsearch.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}

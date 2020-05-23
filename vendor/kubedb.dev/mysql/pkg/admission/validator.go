@@ -16,6 +16,7 @@ limitations under the License.
 package admission
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -102,7 +103,7 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := a.extClient.KubedbV1alpha1().MySQLs(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			obj, err := a.extClient.KubedbV1alpha1().MySQLs(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
@@ -247,7 +248,7 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 	if mysql.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if myVer, err = extClient.CatalogV1alpha1().MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{}); err != nil {
+	if myVer, err = extClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), string(mysql.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -296,14 +297,14 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 
 	if strictValidation {
 		if databaseSecret != nil {
-			if _, err := client.CoreV1().Secrets(mysql.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+			if _, err := client.CoreV1().Secrets(mysql.Namespace).Get(context.TODO(), databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
 
 		// Check if mysqlVersion is deprecated.
 		// If deprecated, return error
-		mysqlVersion, err := extClient.CatalogV1alpha1().MySQLVersions().Get(string(mysql.Spec.Version), metav1.GetOptions{})
+		mysqlVersion, err := extClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), string(mysql.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}

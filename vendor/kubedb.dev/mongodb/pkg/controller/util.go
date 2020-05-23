@@ -16,6 +16,8 @@ limitations under the License.
 package controller
 
 import (
+	"context"
+
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 
@@ -45,11 +47,13 @@ func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.Databas
 	if err != nil {
 		return err
 	}
-	_, err = util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
-		in.Phase = phase
-		in.Reason = reason
-		return in
-	})
+	_, err = util.UpdateMongoDBStatus(
+		context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+			in.Phase = phase
+			in.Reason = reason
+			return in
+		}, metav1.UpdateOptions{},
+	)
 	return err
 }
 
@@ -59,10 +63,10 @@ func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation
 		return err
 	}
 
-	_, _, err = util.PatchMongoDB(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
+	_, _, err = util.PatchMongoDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
 		in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }
 
@@ -76,7 +80,7 @@ func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, o
 
 	//Dont delete unused secrets that are not owned by kubeDB
 	for _, unusedSecret := range unusedSecrets.List() {
-		secret, err := c.Client.CoreV1().Secrets(meta.Namespace).Get(unusedSecret, metav1.GetOptions{})
+		secret, err := c.Client.CoreV1().Secrets(meta.Namespace).Get(context.TODO(), unusedSecret, metav1.GetOptions{})
 		//Maybe user has delete this secret
 		if kerr.IsNotFound(err) {
 			unusedSecrets.Delete(secret.Name)
@@ -92,6 +96,7 @@ func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, o
 	}
 
 	return dynamic_util.EnsureOwnerReferenceForItems(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		meta.Namespace,

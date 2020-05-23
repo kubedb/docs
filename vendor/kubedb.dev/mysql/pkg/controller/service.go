@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -62,7 +63,7 @@ func (c *Controller) ensureService(mysql *api.MySQL) (kutil.VerbType, error) {
 }
 
 func (c *Controller) checkService(mysql *api.MySQL, serviceName string) error {
-	service, err := c.Client.CoreV1().Services(mysql.Namespace).Get(serviceName, metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(mysql.Namespace).Get(context.TODO(), serviceName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -86,7 +87,7 @@ func (c *Controller) createService(mysql *api.MySQL) (kutil.VerbType, error) {
 
 	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
-	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = mysql.OffshootLabels()
 		in.Annotations = mysql.Spec.ServiceTemplate.Annotations
@@ -111,7 +112,7 @@ func (c *Controller) createService(mysql *api.MySQL) (kutil.VerbType, error) {
 			in.Spec.HealthCheckNodePort = mysql.Spec.ServiceTemplate.Spec.HealthCheckNodePort
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return ok, err
 }
 
@@ -134,7 +135,7 @@ func (c *Controller) ensureStatsService(mysql *api.MySQL) (kutil.VerbType, error
 		Name:      mysql.StatsService().ServiceName(),
 		Namespace: mysql.Namespace,
 	}
-	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = mysql.StatsServiceLabels()
 		in.Spec.Selector = mysql.OffshootSelectors()
@@ -147,7 +148,7 @@ func (c *Controller) ensureStatsService(mysql *api.MySQL) (kutil.VerbType, error
 			},
 		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
@@ -191,7 +192,7 @@ func (c *Controller) createMySQLGoverningService(mysql *api.MySQL) (string, erro
 	}
 	core_util.EnsureOwnerReference(&service.ObjectMeta, owner)
 
-	_, err := c.Client.CoreV1().Services(mysql.Namespace).Create(service)
+	_, err := c.Client.CoreV1().Services(mysql.Namespace).Create(context.TODO(), service, metav1.CreateOptions{})
 	if err != nil && !kerr.IsAlreadyExists(err) {
 		return "", err
 	}

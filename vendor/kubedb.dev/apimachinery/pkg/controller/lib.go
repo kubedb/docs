@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"math"
 	"time"
 
@@ -42,7 +43,7 @@ import (
 const UtilVolumeName = "util-volume"
 
 func (c *Controller) checkGoverningService(name, namespace string) (bool, error) {
-	_, err := c.Client.CoreV1().Services(namespace).Get(name, metav1.GetOptions{})
+	_, err := c.Client.CoreV1().Services(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return false, nil
@@ -73,7 +74,7 @@ func (c *Controller) CreateGoverningService(name, namespace string) error {
 			ClusterIP: core.ClusterIPNone,
 		},
 	}
-	_, err = c.Client.CoreV1().Services(namespace).Create(service)
+	_, err = c.Client.CoreV1().Services(namespace).Create(context.TODO(), service, metav1.CreateOptions{})
 	return err
 }
 
@@ -118,7 +119,7 @@ func (c *Controller) GetVolumeForSnapshot(st api.StorageType, pvcSpec *core.Pers
 		}
 	}
 
-	if _, err := c.Client.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(claim); err != nil {
+	if _, err := c.Client.CoreV1().PersistentVolumeClaims(claim.Namespace).Create(context.TODO(), claim, metav1.CreateOptions{}); err != nil {
 		return nil, err
 	}
 
@@ -136,7 +137,7 @@ func (c *Controller) CreateStatefulSetPodDisruptionBudget(sts *appsv1.StatefulSe
 		Name:      sts.Name,
 		Namespace: sts.Namespace,
 	}
-	_, _, err := policy_util.CreateOrPatchPodDisruptionBudget(c.Client, m,
+	_, _, err := policy_util.CreateOrPatchPodDisruptionBudget(context.TODO(), c.Client, m,
 		func(in *policyv1beta1.PodDisruptionBudget) *policyv1beta1.PodDisruptionBudget {
 			in.Labels = sts.Labels
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
@@ -150,7 +151,7 @@ func (c *Controller) CreateStatefulSetPodDisruptionBudget(sts *appsv1.StatefulSe
 
 			in.Spec.MinAvailable = nil
 			return in
-		})
+		}, metav1.PatchOptions{})
 	return err
 }
 
@@ -162,7 +163,7 @@ func (c *Controller) CreateDeploymentPodDisruptionBudget(deployment *appsv1.Depl
 		Namespace: deployment.Namespace,
 	}
 
-	_, _, err := policy_util.CreateOrPatchPodDisruptionBudget(c.Client, m,
+	_, _, err := policy_util.CreateOrPatchPodDisruptionBudget(context.TODO(), c.Client, m,
 		func(in *policyv1beta1.PodDisruptionBudget) *policyv1beta1.PodDisruptionBudget {
 			in.Labels = deployment.Labels
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
@@ -175,12 +176,12 @@ func (c *Controller) CreateDeploymentPodDisruptionBudget(deployment *appsv1.Depl
 
 			in.Spec.MinAvailable = &intstr.IntOrString{IntVal: 1}
 			return in
-		})
+		}, metav1.PatchOptions{})
 	return err
 }
 
 func FoundStashCRDs(apiExtClient crd_cs.ApiextensionsV1beta1Interface) bool {
-	_, err := apiExtClient.CustomResourceDefinitions().Get(v1beta1.ResourcePluralRestoreSession+"."+v1beta1.SchemeGroupVersion.Group, metav1.GetOptions{})
+	_, err := apiExtClient.CustomResourceDefinitions().Get(context.TODO(), v1beta1.ResourcePluralRestoreSession+"."+v1beta1.SchemeGroupVersion.Group, metav1.GetOptions{})
 	return err == nil
 }
 

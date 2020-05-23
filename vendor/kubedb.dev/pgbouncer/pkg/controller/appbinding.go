@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -49,7 +50,7 @@ func (c *Controller) manageAppBindingEvent(key string) error {
 		return nil
 	}
 
-	pgBouncerList, err := c.ExtClient.KubedbV1alpha1().PgBouncers(core.NamespaceAll).List(metav1.ListOptions{})
+	pgBouncerList, err := c.ExtClient.KubedbV1alpha1().PgBouncers(core.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -87,7 +88,7 @@ func (c *Controller) getCABundlesFromAppBindingsInPgBouncerSpec(pgbouncer *api.P
 	var myCAStrings string
 	if pgbouncer.Spec.Databases != nil && len(pgbouncer.Spec.Databases) > 0 {
 		for _, db := range pgbouncer.Spec.Databases {
-			appBinding, err := c.AppCatalogClient.AppcatalogV1alpha1().AppBindings(db.DatabaseRef.Namespace).Get(db.DatabaseRef.Name, metav1.GetOptions{})
+			appBinding, err := c.AppCatalogClient.AppcatalogV1alpha1().AppBindings(db.DatabaseRef.Namespace).Get(context.TODO(), db.DatabaseRef.Name, metav1.GetOptions{})
 			if err != nil {
 				if kerr.IsNotFound(err) {
 					log.Infoln(err)

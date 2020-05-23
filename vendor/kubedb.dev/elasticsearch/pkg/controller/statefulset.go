@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
@@ -104,84 +105,90 @@ func (c *Controller) ensureStatefulSet(
 		return kutil.VerbUnchanged, err
 	}
 
-	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
-		in.Labels = core_util.UpsertMap(labels, elasticsearch.OffshootLabels())
-		in.Annotations = elasticsearch.Spec.PodTemplate.Controller.Annotations
-		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(
+		context.TODO(),
+		c.Client,
+		statefulSetMeta,
+		func(in *apps.StatefulSet) *apps.StatefulSet {
+			in.Labels = core_util.UpsertMap(labels, elasticsearch.OffshootLabels())
+			in.Annotations = elasticsearch.Spec.PodTemplate.Controller.Annotations
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
-		in.Spec.Replicas = types.Int32P(replicas)
+			in.Spec.Replicas = types.Int32P(replicas)
 
-		in.Spec.ServiceName = elasticsearch.GvrSvcName()
-		in.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: labelSelector,
-		}
-		in.Spec.Template.Labels = labelSelector
-		in.Spec.Template.Annotations = elasticsearch.Spec.PodTemplate.Annotations
-		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
-			in.Spec.Template.Spec.InitContainers,
-			append(
-				initContainers,
-				elasticsearch.Spec.PodTemplate.Spec.InitContainers...,
-			),
-		)
-		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
-			in.Spec.Template.Spec.Containers,
-			core.Container{
-				Name:            api.ResourceSingularElasticsearch,
-				Image:           esVersion.Spec.DB.Image,
-				ImagePullPolicy: core.PullIfNotPresent,
-				SecurityContext: &core.SecurityContext{
-					Privileged: types.BoolP(false),
-					Capabilities: &core.Capabilities{
-						Add: []core.Capability{"IPC_LOCK", "SYS_RESOURCE"},
-					},
-				},
-				Resources:      resources,
-				LivenessProbe:  elasticsearch.Spec.PodTemplate.Spec.LivenessProbe,
-				ReadinessProbe: elasticsearch.Spec.PodTemplate.Spec.ReadinessProbe,
-				Lifecycle:      elasticsearch.Spec.PodTemplate.Spec.Lifecycle,
-			})
-		in = upsertEnv(in, elasticsearch, esVersion, envList)
-		in = upsertUserEnv(in, elasticsearch)
-		in = upsertPorts(in)
-		in = upsertCustomConfig(in, elasticsearch, esVersion)
-
-		in.Spec.Template.Spec.NodeSelector = elasticsearch.Spec.PodTemplate.Spec.NodeSelector
-		in.Spec.Template.Spec.Affinity = affinity
-		if elasticsearch.Spec.PodTemplate.Spec.SchedulerName != "" {
-			in.Spec.Template.Spec.SchedulerName = elasticsearch.Spec.PodTemplate.Spec.SchedulerName
-		}
-		in.Spec.Template.Spec.Tolerations = elasticsearch.Spec.PodTemplate.Spec.Tolerations
-		in.Spec.Template.Spec.ImagePullSecrets = elasticsearch.Spec.PodTemplate.Spec.ImagePullSecrets
-		in.Spec.Template.Spec.PriorityClassName = elasticsearch.Spec.PodTemplate.Spec.PriorityClassName
-		in.Spec.Template.Spec.Priority = elasticsearch.Spec.PodTemplate.Spec.Priority
-		in.Spec.Template.Spec.SecurityContext = elasticsearch.Spec.PodTemplate.Spec.SecurityContext
-
-		if nodeRole == NodeRoleClient {
-			in = c.upsertMonitoringContainer(in, elasticsearch, esVersion)
-			in = upsertDatabaseSecretForSG(in, esVersion, elasticsearch.Spec.DatabaseSecret.SecretName)
-		}
-		if !elasticsearch.Spec.DisableSecurity {
-			in = upsertCertificate(in, elasticsearch.Spec.CertificateSecret.SecretName, nodeRole, esVersion)
-		}
-
-		if esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginXpack &&
-			in.Spec.Template.Spec.SecurityContext == nil {
-			in.Spec.Template.Spec.SecurityContext = &core.PodSecurityContext{
-				FSGroup: types.Int64P(1000),
+			in.Spec.ServiceName = elasticsearch.GvrSvcName()
+			in.Spec.Selector = &metav1.LabelSelector{
+				MatchLabels: labelSelector,
 			}
-		}
+			in.Spec.Template.Labels = labelSelector
+			in.Spec.Template.Annotations = elasticsearch.Spec.PodTemplate.Annotations
+			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
+				in.Spec.Template.Spec.InitContainers,
+				append(
+					initContainers,
+					elasticsearch.Spec.PodTemplate.Spec.InitContainers...,
+				),
+			)
+			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+				in.Spec.Template.Spec.Containers,
+				core.Container{
+					Name:            api.ResourceSingularElasticsearch,
+					Image:           esVersion.Spec.DB.Image,
+					ImagePullPolicy: core.PullIfNotPresent,
+					SecurityContext: &core.SecurityContext{
+						Privileged: types.BoolP(false),
+						Capabilities: &core.Capabilities{
+							Add: []core.Capability{"IPC_LOCK", "SYS_RESOURCE"},
+						},
+					},
+					Resources:      resources,
+					LivenessProbe:  elasticsearch.Spec.PodTemplate.Spec.LivenessProbe,
+					ReadinessProbe: elasticsearch.Spec.PodTemplate.Spec.ReadinessProbe,
+					Lifecycle:      elasticsearch.Spec.PodTemplate.Spec.Lifecycle,
+				})
+			in = upsertEnv(in, elasticsearch, esVersion, envList)
+			in = upsertUserEnv(in, elasticsearch)
+			in = upsertPorts(in)
+			in = upsertCustomConfig(in, elasticsearch, esVersion)
 
-		in = upsertDatabaseConfigforXPack(in, elasticsearch, esVersion)
+			in.Spec.Template.Spec.NodeSelector = elasticsearch.Spec.PodTemplate.Spec.NodeSelector
+			in.Spec.Template.Spec.Affinity = affinity
+			if elasticsearch.Spec.PodTemplate.Spec.SchedulerName != "" {
+				in.Spec.Template.Spec.SchedulerName = elasticsearch.Spec.PodTemplate.Spec.SchedulerName
+			}
+			in.Spec.Template.Spec.Tolerations = elasticsearch.Spec.PodTemplate.Spec.Tolerations
+			in.Spec.Template.Spec.ImagePullSecrets = elasticsearch.Spec.PodTemplate.Spec.ImagePullSecrets
+			in.Spec.Template.Spec.PriorityClassName = elasticsearch.Spec.PodTemplate.Spec.PriorityClassName
+			in.Spec.Template.Spec.Priority = elasticsearch.Spec.PodTemplate.Spec.Priority
+			in.Spec.Template.Spec.SecurityContext = elasticsearch.Spec.PodTemplate.Spec.SecurityContext
 
-		in = upsertDataVolume(in, elasticsearch.Spec.StorageType, pvcSpec, esVersion)
-		in = upsertTemporaryVolume(in)
+			if nodeRole == NodeRoleClient {
+				in = c.upsertMonitoringContainer(in, elasticsearch, esVersion)
+				in = upsertDatabaseSecretForSG(in, esVersion, elasticsearch.Spec.DatabaseSecret.SecretName)
+			}
+			if !elasticsearch.Spec.DisableSecurity {
+				in = upsertCertificate(in, elasticsearch.Spec.CertificateSecret.SecretName, nodeRole, esVersion)
+			}
 
-		in.Spec.Template.Spec.ServiceAccountName = elasticsearch.Spec.PodTemplate.Spec.ServiceAccountName
-		in.Spec.UpdateStrategy = elasticsearch.Spec.UpdateStrategy
+			if esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginXpack &&
+				in.Spec.Template.Spec.SecurityContext == nil {
+				in.Spec.Template.Spec.SecurityContext = &core.PodSecurityContext{
+					FSGroup: types.Int64P(1000),
+				}
+			}
 
-		return in
-	})
+			in = upsertDatabaseConfigforXPack(in, elasticsearch, esVersion)
+
+			in = upsertDataVolume(in, elasticsearch.Spec.StorageType, pvcSpec, esVersion)
+			in = upsertTemporaryVolume(in)
+
+			in.Spec.Template.Spec.ServiceAccountName = elasticsearch.Spec.PodTemplate.Spec.ServiceAccountName
+			in.Spec.UpdateStrategy = elasticsearch.Spec.UpdateStrategy
+
+			return in
+		},
+		metav1.PatchOptions{},
+	)
 
 	if err != nil {
 		return kutil.VerbUnchanged, err
@@ -213,6 +220,7 @@ func (c *Controller) ensureStatefulSet(
 
 func (c *Controller) CheckStatefulSetPodStatus(statefulSet *apps.StatefulSet) error {
 	err := core_util.WaitUntilPodRunningBySelector(
+		context.TODO(),
 		c.Client,
 		statefulSet.Namespace,
 		statefulSet.Spec.Selector,
@@ -587,7 +595,7 @@ func (c *Controller) ensureCombinedNode(elasticsearch *api.Elasticsearch) (kutil
 func (c *Controller) checkStatefulSet(elasticsearch *api.Elasticsearch, name string) error {
 	elasticsearchName := elasticsearch.OffshootName()
 	// SatatefulSet for Elasticsearch database
-	statefulSet, err := c.Client.AppsV1().StatefulSets(elasticsearch.Namespace).Get(name, metav1.GetOptions{})
+	statefulSet, err := c.Client.AppsV1().StatefulSets(elasticsearch.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil

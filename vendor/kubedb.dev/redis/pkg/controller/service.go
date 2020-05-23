@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -62,7 +63,7 @@ func (c *Controller) ensureService(redis *api.Redis) (kutil.VerbType, error) {
 }
 
 func (c *Controller) checkService(redis *api.Redis, serviceName string) error {
-	service, err := c.Client.CoreV1().Services(redis.Namespace).Get(serviceName, metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(redis.Namespace).Get(context.TODO(), serviceName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -86,7 +87,7 @@ func (c *Controller) createService(redis *api.Redis) (kutil.VerbType, error) {
 
 	owner := metav1.NewControllerRef(redis, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
-	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = redis.OffshootSelectors()
 		in.Annotations = redis.Spec.ServiceTemplate.Annotations
@@ -111,7 +112,7 @@ func (c *Controller) createService(redis *api.Redis) (kutil.VerbType, error) {
 			in.Spec.HealthCheckNodePort = redis.Spec.ServiceTemplate.Spec.HealthCheckNodePort
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return ok, err
 }
 
@@ -134,7 +135,7 @@ func (c *Controller) ensureStatsService(redis *api.Redis) (kutil.VerbType, error
 		Name:      redis.StatsService().ServiceName(),
 		Namespace: redis.Namespace,
 	}
-	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = redis.StatsServiceLabels()
 		in.Spec.Selector = redis.OffshootSelectors()
@@ -147,7 +148,7 @@ func (c *Controller) ensureStatsService(redis *api.Redis) (kutil.VerbType, error
 			},
 		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {

@@ -72,9 +72,15 @@ const (
 // A valid Certificate requires at least one of a CommonName, DNSName, or
 // URISAN to be valid.
 type CertificateSpec struct {
+	// Full X509 name specification (https://golang.org/pkg/crypto/x509/pkix/#Name).
+	// +optional
+	Subject *X509Subject `json:"subject,omitempty"`
+
 	// CommonName is a common name to be used on the Certificate.
 	// The CommonName should have a length of 64 characters or fewer to avoid
 	// generating invalid CSRs.
+	// This value is ignored by TLS clients when any subject alt name is set.
+	// This is x509 behaviour: https://tools.ietf.org/html/rfc6125#section-6.4.4
 	// +optional
 	CommonName string `json:"commonName,omitempty"`
 
@@ -103,8 +109,18 @@ type CertificateSpec struct {
 	// +optional
 	URISANs []string `json:"uriSANs,omitempty"`
 
+	// EmailSANs is a list of Email Subject Alternative Names to be set on this
+	// Certificate.
+	// +optional
+	EmailSANs []string `json:"emailSANs,omitempty"`
+
 	// SecretName is the name of the secret resource to store this secret in
 	SecretName string `json:"secretName"`
+
+	// Keystores configures additional keystore output formats stored in the
+	// `secretName` Secret resource.
+	// +optional
+	Keystores *CertificateKeystores `json:"keystores,omitempty"`
 
 	// IssuerRef is a reference to the issuer for this certificate.
 	// If the 'kind' field is not set, or set to 'Issuer', an Issuer resource
@@ -127,6 +143,10 @@ type CertificateSpec struct {
 	// If provided, value must be between 2048 and 8192 inclusive when KeyAlgorithm is
 	// empty or is set to "rsa", and value must be one of (256, 384, 521) when
 	// KeyAlgorithm is set to "ecdsa".
+	// +kubebuilder:validation:ExclusiveMaximum=false
+	// +kubebuilder:validation:Maximum=8192
+	// +kubebuilder:validation:ExclusiveMinimum=false
+	// +kubebuilder:validation:Minimum=0
 	// +optional
 	KeySize int `json:"keySize,omitempty"`
 
@@ -143,6 +163,110 @@ type CertificateSpec struct {
 	// values are "pkcs1" and "pkcs8" standing for PKCS#1 and PKCS#8, respectively.
 	// If KeyEncoding is not specified, then PKCS#1 will be used by default.
 	KeyEncoding KeyEncoding `json:"keyEncoding,omitempty"`
+
+	// Options to control private keys used for the Certificate.
+	// +optional
+	PrivateKey *CertificatePrivateKey `json:"privateKey,omitempty"`
+}
+
+// CertificatePrivateKey contains configuration options for private keys
+// used by the Certificate controller.
+// This allows control of how private keys are rotated.
+type CertificatePrivateKey struct {
+	// RotationPolicy controls how private keys should be regenerated when a
+	// re-issuance is being processed.
+	// If set to Never, a private key will only be generated if one does not
+	// already exist in the target `spec.secretName`. If one does exists but it
+	// does not have the correct algorithm or size, a warning will be raised
+	// to await user intervention.
+	// If set to Always, a private key matching the specified requirements
+	// will be generated whenever a re-issuance occurs.
+	// Default is 'Never' for backward compatibility.
+	// +optional
+	RotationPolicy PrivateKeyRotationPolicy `json:"rotationPolicy,omitempty"`
+}
+
+// Denotes how private keys should be generated or sourced when a Certificate
+// is being issued.
+type PrivateKeyRotationPolicy string
+
+var (
+	// RotationPolicyNever means a private key will only be generated if one
+	// does not already exist in the target `spec.secretName`.
+	// If one does exists but it does not have the correct algorithm or size,
+	// a warning will be raised to await user intervention.
+	RotationPolicyNever PrivateKeyRotationPolicy = "Never"
+
+	// RotationPolicyAlways means a private key matching the specified
+	// requirements will be generated whenever a re-issuance occurs.
+	RotationPolicyAlways PrivateKeyRotationPolicy = "Always"
+)
+
+// X509Subject Full X509 name specification
+type X509Subject struct {
+	// Countries to be used on the Certificate.
+	// +optional
+	Countries []string `json:"countries,omitempty"`
+	// Organizational Units to be used on the Certificate.
+	// +optional
+	OrganizationalUnits []string `json:"organizationalUnits,omitempty"`
+	// Cities to be used on the Certificate.
+	// +optional
+	Localities []string `json:"localities,omitempty"`
+	// State/Provinces to be used on the Certificate.
+	// +optional
+	Provinces []string `json:"provinces,omitempty"`
+	// Street addresses to be used on the Certificate.
+	// +optional
+	StreetAddresses []string `json:"streetAddresses,omitempty"`
+	// Postal codes to be used on the Certificate.
+	// +optional
+	PostalCodes []string `json:"postalCodes,omitempty"`
+	// Serial number to be used on the Certificate.
+	// +optional
+	SerialNumber string `json:"serialNumber,omitempty"`
+}
+
+// CertificateKeystores configures additional keystore output formats to be
+// created in the Certificate's output Secret.
+type CertificateKeystores struct {
+	// JKS configures options for storing a JKS keystore in the
+	// `spec.secretName` Secret resource.
+	JKS *JKSKeystore `json:"jks,omitempty"`
+
+	// PKCS12 configures options for storing a PKCS12 keystore in the
+	// `spec.secretName` Secret resource.
+	PKCS12 *PKCS12Keystore `json:"pkcs12,omitempty"`
+}
+
+// JKS configures options for storing a JKS keystore in the `spec.secretName`
+// Secret resource.
+type JKSKeystore struct {
+	// Create enables JKS keystore creation for the Certificate.
+	// If true, a file named `keystore.jks` will be created in the target
+	// Secret resource, encrypted using the password stored in
+	// `passwordSecretRef`.
+	// The keystore file will only be updated upon re-issuance.
+	Create bool `json:"create"`
+
+	// PasswordSecretRef is a reference to a key in a Secret resource
+	// containing the password used to encrypt the JKS keystore.
+	PasswordSecretRef cmmeta.SecretKeySelector `json:"passwordSecretRef"`
+}
+
+// PKCS12 configures options for storing a PKCS12 keystore in the
+// `spec.secretName` Secret resource.
+type PKCS12Keystore struct {
+	// Create enables PKCS12 keystore creation for the Certificate.
+	// If true, a file named `keystore.p12` will be created in the target
+	// Secret resource, encrypted using the password stored in
+	// `passwordSecretRef`.
+	// The keystore file will only be updated upon re-issuance.
+	Create bool `json:"create"`
+
+	// PasswordSecretRef is a reference to a key in a Secret resource
+	// containing the password used to encrypt the PKCS12 keystore.
+	PasswordSecretRef cmmeta.SecretKeySelector `json:"passwordSecretRef"`
 }
 
 // CertificateStatus defines the observed state of Certificate
@@ -157,6 +281,32 @@ type CertificateStatus struct {
 	// by this resource in spec.secretName.
 	// +optional
 	NotAfter *metav1.Time `json:"notAfter,omitempty"`
+
+	// The current 'revision' of the certificate as issued.
+	//
+	// When a CertificateRequest resource is created, it will have the
+	// `cert-manager.io/certificate-revision` set to one greater than the
+	// current value of this field.
+	//
+	// Upon issuance, this field will be set to the value of the annotation
+	// on the CertificateRequest resource used to issue the certificate.
+	//
+	// Persisting the value on the CertificateRequest resource allows the
+	// certificates controller to know whether a request is part of an old
+	// issuance or if it is part of the ongoing revision's issuance by
+	// checking if the revision value in the annotation is greater than this
+	// field.
+	// +optional
+	Revision *int `json:"revision,omitempty"`
+
+	// The name of the Secret resource containing the private key to be used
+	// for the next certificate iteration.
+	// The keymanager controller will automatically set this field if the
+	// `Issuing` condition is set to `True`.
+	// It will automatically unset this field when the Issuing condition is
+	// not set or False.
+	// +optional
+	NextPrivateKeySecretName *string `json:"nextPrivateKeySecretName,omitempty"`
 }
 
 // CertificateCondition contains condition information for an Certificate.
@@ -194,4 +344,22 @@ const (
 	// - The target secret contains a private key valid for the certificate
 	// - The commonName and dnsNames attributes match those specified on the Certificate
 	CertificateConditionReady CertificateConditionType = "Ready"
+
+	// A condition added to Certificate resources when an issuance is required.
+	// This condition will be automatically added and set to true if:
+	//   * No keypair data exists in the target Secret
+	//   * The data stored in the Secret cannot be decoded
+	//   * The private key and certificate do not have matching public keys
+	//   * If a CertificateRequest for the current revision exists and the
+	//     certificate data stored in the Secret does not match the
+	//    `status.certificate` on the CertificateRequest.
+	//   * If no CertificateRequest resource exists for the current revision,
+	//     the options on the Certificate resource are compared against the
+	//     x509 data in the Secret, similar to what's done in earlier versions.
+	//     If there is a mismatch, an issuance is triggered.
+	// This condition may also be added by external API consumers to trigger
+	// a re-issuance manually for any other reason.
+	//
+	// It will be removed by the 'issuing' controller upon completing issuance.
+	CertificateConditionIssuing CertificateConditionType = "Issuing"
 )

@@ -16,6 +16,7 @@ limitations under the License.
 package admission
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -99,7 +100,7 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := a.extClient.KubedbV1alpha1().Postgreses(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			obj, err := a.extClient.KubedbV1alpha1().Postgreses(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
@@ -145,7 +146,7 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	if postgres.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if _, err := extClient.CatalogV1alpha1().PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), string(postgres.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -199,14 +200,14 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	databaseSecret := postgres.Spec.DatabaseSecret
 	if strictValidation {
 		if databaseSecret != nil {
-			if _, err := client.CoreV1().Secrets(postgres.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+			if _, err := client.CoreV1().Secrets(postgres.Namespace).Get(context.TODO(), databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
 
 		// Check if postgresVersion is deprecated.
 		// If deprecated, return error
-		postgresVersion, err := extClient.CatalogV1alpha1().PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{})
+		postgresVersion, err := extClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), string(postgres.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}

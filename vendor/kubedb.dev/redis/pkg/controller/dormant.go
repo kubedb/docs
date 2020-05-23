@@ -16,6 +16,8 @@ limitations under the License.
 package controller
 
 import (
+	"context"
+
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 
 	"github.com/appscode/go/log"
@@ -29,12 +31,12 @@ import (
 
 func (c *Controller) waitUntilPaused(db *api.Redis) error {
 	log.Infof("waiting for pods for Redis %v/%v to be deleted\n", db.Namespace, db.Name)
-	if err := core_util.WaitUntilPodDeletedBySelector(c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootSelectors())); err != nil {
+	if err := core_util.WaitUntilPodDeletedBySelector(context.TODO(), c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootSelectors())); err != nil {
 		return err
 	}
 
 	log.Infof("waiting for services for Redis %v/%v to be deleted\n", db.Namespace, db.Name)
-	if err := core_util.WaitUntilServiceDeletedBySelector(c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootSelectors())); err != nil {
+	if err := core_util.WaitUntilServiceDeletedBySelector(context.TODO(), c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootSelectors())); err != nil {
 		return err
 	}
 
@@ -51,7 +53,7 @@ func (c *Controller) waitUntilPaused(db *api.Redis) error {
 
 func (c *Controller) waitUntilRBACStuffDeleted(meta metav1.ObjectMeta) error {
 	// Delete ServiceAccount
-	if err := core_util.WaitUntillServiceAccountDeleted(c.Client, meta); err != nil {
+	if err := core_util.WaitUntillServiceAccountDeleted(context.TODO(), c.Client, meta); err != nil {
 		return err
 	}
 
@@ -61,7 +63,7 @@ func (c *Controller) waitUntilRBACStuffDeleted(meta metav1.ObjectMeta) error {
 func (c *Controller) waitUntilStatefulSetsDeleted(db *api.Redis) error {
 	log.Infof("waiting for statefulsets for Redis %v/%v to be deleted\n", db.Namespace, db.Name)
 	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
-		if sts, err := c.Client.AppsV1().StatefulSets(db.Namespace).List(metav1.ListOptions{LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String()}); err != nil && kerr.IsNotFound(err) || len(sts.Items) == 0 {
+		if sts, err := c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String()}); err != nil && kerr.IsNotFound(err) || len(sts.Items) == 0 {
 			return true, nil
 		}
 		return false, nil
@@ -79,7 +81,8 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 		AppcatalogV1alpha1().
 		AppBindings(db.Namespace).
 		DeleteCollection(
-			&metav1.DeleteOptions{PropagationPolicy: &policy},
+			context.TODO(),
+			metav1.DeleteOptions{PropagationPolicy: &policy},
 			metav1.ListOptions{LabelSelector: labelSelector},
 		); err != nil {
 		return err
@@ -91,7 +94,8 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 		PolicyV1beta1().
 		PodDisruptionBudgets(db.Namespace).
 		DeleteCollection(
-			&metav1.DeleteOptions{PropagationPolicy: &policy},
+			context.TODO(),
+			metav1.DeleteOptions{PropagationPolicy: &policy},
 			metav1.ListOptions{LabelSelector: labelSelector},
 		); err != nil {
 		return err
@@ -103,7 +107,8 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 		AppsV1().
 		StatefulSets(db.Namespace).
 		DeleteCollection(
-			&metav1.DeleteOptions{PropagationPolicy: &policy},
+			context.TODO(),
+			metav1.DeleteOptions{PropagationPolicy: &policy},
 			metav1.ListOptions{LabelSelector: labelSelector},
 		); err != nil {
 		return err
@@ -115,7 +120,8 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 		RbacV1().
 		RoleBindings(db.Namespace).
 		DeleteCollection(
-			&metav1.DeleteOptions{PropagationPolicy: &policy},
+			context.TODO(),
+			metav1.DeleteOptions{PropagationPolicy: &policy},
 			metav1.ListOptions{LabelSelector: labelSelector},
 		); err != nil {
 		return err
@@ -125,7 +131,8 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 		RbacV1().
 		Roles(db.Namespace).
 		DeleteCollection(
-			&metav1.DeleteOptions{PropagationPolicy: &policy},
+			context.TODO(),
+			metav1.DeleteOptions{PropagationPolicy: &policy},
 			metav1.ListOptions{LabelSelector: labelSelector},
 		); err != nil {
 		return err
@@ -135,7 +142,8 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 		CoreV1().
 		ServiceAccounts(db.Namespace).
 		DeleteCollection(
-			&metav1.DeleteOptions{PropagationPolicy: &policy},
+			context.TODO(),
+			metav1.DeleteOptions{PropagationPolicy: &policy},
 			metav1.ListOptions{LabelSelector: labelSelector},
 		); err != nil {
 		return err
@@ -147,7 +155,7 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 	svcs, err := c.Client.
 		CoreV1().
 		Services(db.Namespace).
-		List(metav1.ListOptions{LabelSelector: labelSelector})
+		List(context.TODO(), metav1.ListOptions{LabelSelector: labelSelector})
 	if err != nil && !kerr.IsNotFound(err) {
 		return err
 	}
@@ -155,7 +163,7 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 		if err := c.Client.
 			CoreV1().
 			Services(db.Namespace).
-			Delete(svc.Name, &metav1.DeleteOptions{PropagationPolicy: &policy}); err != nil {
+			Delete(context.TODO(), svc.Name, metav1.DeleteOptions{PropagationPolicy: &policy}); err != nil {
 			return err
 		}
 	}

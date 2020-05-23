@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -42,10 +43,10 @@ func (c *Controller) ensureDatabaseSecret(mysql *api.MySQL) error {
 			return err
 		}
 
-		ms, _, err := util.PatchMySQL(c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
+		ms, _, err := util.PatchMySQL(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
 			in.Spec.DatabaseSecret = secretVolumeSource
 			return in
-		})
+		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
@@ -80,7 +81,7 @@ func (c *Controller) createDatabaseSecret(mysql *api.MySQL) (*core.SecretVolumeS
 				KeyMySQLPassword: randPassword,
 			},
 		}
-		if _, err := c.Client.CoreV1().Secrets(mysql.Namespace).Create(secret); err != nil {
+		if _, err := c.Client.CoreV1().Secrets(mysql.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return nil, err
 		}
 	}
@@ -97,19 +98,19 @@ func (c *Controller) upgradeDatabaseSecret(mysql *api.MySQL) error {
 		Namespace: mysql.Namespace,
 	}
 
-	_, _, err := core_util.CreateOrPatchSecret(c.Client, meta, func(in *core.Secret) *core.Secret {
+	_, _, err := core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {
 		if _, ok := in.Data[KeyMySQLUser]; !ok {
 			if val, ok2 := in.Data["user"]; ok2 {
 				in.StringData = map[string]string{KeyMySQLUser: string(val)}
 			}
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }
 
 func (c *Controller) checkSecret(secretName string, mysql *api.MySQL) (*core.Secret, error) {
-	secret, err := c.Client.CoreV1().Secrets(mysql.Namespace).Get(secretName, metav1.GetOptions{})
+	secret, err := c.Client.CoreV1().Secrets(mysql.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil

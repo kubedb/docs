@@ -17,6 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	"context"
+
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 
 	"github.com/appscode/go/types"
@@ -26,7 +28,7 @@ import (
 
 func (c *Controller) getVolumeAndVolumeMountForDefaultUserList(pgbouncer *api.PgBouncer) (*core.Volume, *core.VolumeMount, error) {
 	fSecret := c.GetDefaultSecretSpec(pgbouncer)
-	_, err := c.Client.CoreV1().Secrets(fSecret.Namespace).Get(fSecret.Name, metav1.GetOptions{})
+	_, err := c.Client.CoreV1().Secrets(fSecret.Namespace).Get(context.TODO(), fSecret.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -51,7 +53,7 @@ func (c *Controller) getVolumeAndVolumeMountForDefaultUserList(pgbouncer *api.Pg
 
 func (c *Controller) getVolumeAndVolumeMountForServingServerCertificate(pgbouncer *api.PgBouncer) (*core.Volume, *core.VolumeMount, error) {
 	//TODO: this is for issuer only, I'm not sure about clusterIssuer yet
-	clientSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(pgbouncer.Name+api.PgBouncerServingServerSuffix, metav1.GetOptions{})
+	clientSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Name+api.PgBouncerServingServerSuffix, metav1.GetOptions{})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -75,7 +77,7 @@ func (c *Controller) getVolumeAndVolumeMountForServingServerCertificate(pgbounce
 
 func (c *Controller) getVolumeAndVolumeMountForServingClientCertificate(pgbouncer *api.PgBouncer) (*core.Volume, *core.VolumeMount, error) {
 	//TODO: this is for issuer only, I'm not sure about clusterIssuer yet
-	clientSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(pgbouncer.Name+api.PgBouncerServingClientSuffix, metav1.GetOptions{})
+	clientSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Name+api.PgBouncerServingClientSuffix, metav1.GetOptions{})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -98,7 +100,7 @@ func (c *Controller) getVolumeAndVolumeMountForServingClientCertificate(pgbounce
 }
 
 func (c *Controller) getVolumeAndVolumeMountForExporterClientCertificate(pgbouncer *api.PgBouncer) (*core.Volume, *core.VolumeMount, error) {
-	clientSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(pgbouncer.Name+api.PgBouncerExporterClientCertSuffix, metav1.GetOptions{})
+	clientSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Name+api.PgBouncerExporterClientCertSuffix, metav1.GetOptions{})
 	if err != nil {
 		return nil, nil, err
 	}

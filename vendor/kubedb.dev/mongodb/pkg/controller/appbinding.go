@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -75,7 +76,7 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 	if (db.Spec.SSLMode == api.SSLModeRequireSSL || db.Spec.SSLMode == api.SSLModePreferSSL) &&
 		db.Spec.TLS != nil {
 
-		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(db.Name+api.MongoDBExternalClientSecretSuffix, metav1.GetOptions{})
+		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Name+api.MongoDBExternalClientSecretSuffix, metav1.GetOptions{})
 		if err != nil {
 			return kutil.VerbUnchanged, errors.Wrapf(err, "failed to read certificate secret for MongoDB %s/%s", db.Namespace, db.Name)
 		}
@@ -91,37 +92,43 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 		clientPEMSecretName = db.Name + api.MongoDBExternalClientSecretSuffix + api.MongoDBPEMSecretSuffix
 	}
 
-	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(db.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, fmt.Errorf("failed to get MongoDBVersion %v for %v/%v. Reason: %v", db.Spec.Version, db.Namespace, db.Name, err)
 	}
 
-	_, vt, err := appcat_util.CreateOrPatchAppBinding(c.AppCatalogClient.AppcatalogV1alpha1(), meta, func(in *appcat.AppBinding) *appcat.AppBinding {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = db.OffshootLabels()
-		in.Annotations = meta_util.FilterKeys(api.GenericKey, in.Annotations, db.Annotations)
+	_, vt, err := appcat_util.CreateOrPatchAppBinding(
+		context.TODO(),
+		c.AppCatalogClient.AppcatalogV1alpha1(),
+		meta,
+		func(in *appcat.AppBinding) *appcat.AppBinding {
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+			in.Labels = db.OffshootLabels()
+			in.Annotations = meta_util.FilterKeys(api.GenericKey, in.Annotations, db.Annotations)
 
-		in.Spec.Type = appmeta.Type()
-		in.Spec.Version = mongodbVersion.Spec.Version
-		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
-			Scheme: "mongodb",
-			Name:   db.ServiceName(),
-			Port:   defaultDBPort.Port,
-		}
-		in.Spec.ClientConfig.CABundle = caBundle
-		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
-
-		in.Spec.Secret = &core.LocalObjectReference{
-			Name: clientPEMSecretName,
-		}
-
-		if jsonBytes != nil {
-			in.Spec.Parameters = &runtime.RawExtension{
-				Raw: jsonBytes,
+			in.Spec.Type = appmeta.Type()
+			in.Spec.Version = mongodbVersion.Spec.Version
+			in.Spec.ClientConfig.Service = &appcat.ServiceReference{
+				Scheme: "mongodb",
+				Name:   db.ServiceName(),
+				Port:   defaultDBPort.Port,
 			}
-		}
-		return in
-	})
+			in.Spec.ClientConfig.CABundle = caBundle
+			in.Spec.ClientConfig.InsecureSkipTLSVerify = false
+
+			in.Spec.Secret = &core.LocalObjectReference{
+				Name: clientPEMSecretName,
+			}
+
+			if jsonBytes != nil {
+				in.Spec.Parameters = &runtime.RawExtension{
+					Raw: jsonBytes,
+				}
+			}
+			return in
+		},
+		metav1.PatchOptions{},
+	)
 
 	if err != nil {
 		return kutil.VerbUnchanged, err

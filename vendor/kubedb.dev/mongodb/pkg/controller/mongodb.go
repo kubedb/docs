@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -47,10 +48,10 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	if mongodb.Status.Phase == "" {
-		mg, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		mg, err := util.UpdateMongoDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
-		})
+		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -133,10 +134,10 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		}
 
 		// add phase that database is being initialized
-		mg, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		mg, err := util.UpdateMongoDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
-		})
+		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -149,11 +150,11 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		}
 	}
 
-	mg, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+	mg, err := util.UpdateMongoDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = mongodb.Generation
 		return in
-	})
+	}, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
@@ -199,11 +200,11 @@ func (c *Controller) halt(db *api.MongoDB) error {
 		return err
 	}
 	log.Infof("update status of MongoDB %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMongoDBStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+	if _, err := util.UpdateMongoDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
-	}); err != nil {
+	}, metav1.UpdateOptions{}); err != nil {
 		return err
 	}
 	return nil
@@ -249,6 +250,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(db *api.MongoDB, owner *metav1
 	} else {
 		// Make sure secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
+			context.TODO(),
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			db.Namespace,
@@ -259,6 +261,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(db *api.MongoDB, owner *metav1
 	}
 	// delete PVC for both "wipeOut" and "delete" TerminationPolicy.
 	return dynamic_util.EnsureOwnerReferenceForSelector(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		db.Namespace,
@@ -271,6 +274,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.MongoDB) error {
 	labelSelector := labels.SelectorFromSet(db.OffshootSelectors())
 
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		db.Namespace,
@@ -279,6 +283,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.MongoDB) error {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		db.Namespace,

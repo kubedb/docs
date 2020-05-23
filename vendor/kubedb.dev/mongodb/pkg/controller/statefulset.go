@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -157,7 +158,7 @@ func (c *Controller) ensureTopologyCluster(mongodb *api.MongoDB) (kutil.VerbType
 
 func (c *Controller) ensureShardNode(mongodb *api.MongoDB) ([]*apps.StatefulSet, kutil.VerbType, error) {
 	shardSts := func(nodeNum int32) (*apps.StatefulSet, kutil.VerbType, error) {
-		mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+		mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
@@ -261,7 +262,7 @@ func (c *Controller) ensureShardNode(mongodb *api.MongoDB) ([]*apps.StatefulSet,
 }
 
 func (c *Controller) ensureConfigNode(mongodb *api.MongoDB) (*apps.StatefulSet, kutil.VerbType, error) {
-	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -343,7 +344,7 @@ func (c *Controller) ensureConfigNode(mongodb *api.MongoDB) (*apps.StatefulSet, 
 }
 
 func (c *Controller) ensureNonTopology(mongodb *api.MongoDB) (kutil.VerbType, error) {
-	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -467,7 +468,7 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB, opts workloadOption
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(string(mongodb.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -496,84 +497,90 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB, opts workloadOption
 		})
 	}
 
-	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
-		in.Labels = opts.labels
-		in.Annotations = pt.Controller.Annotations
-		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(
+		context.TODO(),
+		c.Client,
+		statefulSetMeta,
+		func(in *apps.StatefulSet) *apps.StatefulSet {
+			in.Labels = opts.labels
+			in.Annotations = pt.Controller.Annotations
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
-		in.Spec.Replicas = opts.replicas
-		in.Spec.ServiceName = opts.gvrSvcName
-		in.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: opts.selectors,
-		}
-		in.Spec.Template.Labels = opts.selectors
-		in.Spec.Template.Annotations = pt.Annotations
-		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
-			in.Spec.Template.Spec.InitContainers,
-			pt.Spec.InitContainers,
-		)
-		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
-			in.Spec.Template.Spec.Containers,
-			core.Container{
-				Name:            api.ResourceSingularMongoDB,
-				Image:           mongodbVersion.Spec.DB.Image,
-				ImagePullPolicy: core.PullIfNotPresent,
-				Command:         opts.cmd,
-				Args: meta_util.UpsertArgumentList(
-					opts.args, pt.Spec.Args),
-				Ports: []core.ContainerPort{
-					{
-						Name:          "db",
-						ContainerPort: MongoDBPort,
-						Protocol:      core.ProtocolTCP,
-					},
-				},
-				Env:            core_util.UpsertEnvVars(opts.envList, pt.Spec.Env...),
-				Resources:      pt.Spec.Resources,
-				Lifecycle:      pt.Spec.Lifecycle,
-				LivenessProbe:  livenessProbe,
-				ReadinessProbe: readinessProbe,
-				VolumeMounts:   opts.volumeMount,
-			})
-
-		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
-			in.Spec.Template.Spec.InitContainers,
-			opts.initContainers,
-		)
-
-		if mongodb.GetMonitoringVendor() == mona.VendorPrometheus {
+			in.Spec.Replicas = opts.replicas
+			in.Spec.ServiceName = opts.gvrSvcName
+			in.Spec.Selector = &metav1.LabelSelector{
+				MatchLabels: opts.selectors,
+			}
+			in.Spec.Template.Labels = opts.selectors
+			in.Spec.Template.Annotations = pt.Annotations
+			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
+				in.Spec.Template.Spec.InitContainers,
+				pt.Spec.InitContainers,
+			)
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 				in.Spec.Template.Spec.Containers,
-				getExporterContainer(mongodb, mongodbVersion),
+				core.Container{
+					Name:            api.ResourceSingularMongoDB,
+					Image:           mongodbVersion.Spec.DB.Image,
+					ImagePullPolicy: core.PullIfNotPresent,
+					Command:         opts.cmd,
+					Args: meta_util.UpsertArgumentList(
+						opts.args, pt.Spec.Args),
+					Ports: []core.ContainerPort{
+						{
+							Name:          "db",
+							ContainerPort: MongoDBPort,
+							Protocol:      core.ProtocolTCP,
+						},
+					},
+					Env:            core_util.UpsertEnvVars(opts.envList, pt.Spec.Env...),
+					Resources:      pt.Spec.Resources,
+					Lifecycle:      pt.Spec.Lifecycle,
+					LivenessProbe:  livenessProbe,
+					ReadinessProbe: readinessProbe,
+					VolumeMounts:   opts.volumeMount,
+				})
+
+			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
+				in.Spec.Template.Spec.InitContainers,
+				opts.initContainers,
 			)
-		}
 
-		in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(in.Spec.Template.Spec.Volumes, opts.volumes...)
+			if mongodb.GetMonitoringVendor() == mona.VendorPrometheus {
+				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+					in.Spec.Template.Spec.Containers,
+					getExporterContainer(mongodb, mongodbVersion),
+				)
+			}
 
-		in.Spec.Template = upsertEnv(in.Spec.Template, mongodb)
-		if !opts.isMongos {
-			//Mongos doesn't have any data
-			in = upsertDataVolume(in, opts.pvcSpec, mongodb.Spec.StorageType)
-		}
+			in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(in.Spec.Template.Spec.Volumes, opts.volumes...)
 
-		if opts.configSource != nil {
-			in.Spec.Template = c.upsertConfigSourceVolume(in.Spec.Template, opts.configSource)
-		}
+			in.Spec.Template = upsertEnv(in.Spec.Template, mongodb)
+			if !opts.isMongos {
+				//Mongos doesn't have any data
+				in = upsertDataVolume(in, opts.pvcSpec, mongodb.Spec.StorageType)
+			}
 
-		in.Spec.Template.Spec.NodeSelector = pt.Spec.NodeSelector
-		in.Spec.Template.Spec.Affinity = pt.Spec.Affinity
-		if pt.Spec.SchedulerName != "" {
-			in.Spec.Template.Spec.SchedulerName = pt.Spec.SchedulerName
-		}
-		in.Spec.Template.Spec.Tolerations = pt.Spec.Tolerations
-		in.Spec.Template.Spec.ImagePullSecrets = pt.Spec.ImagePullSecrets
-		in.Spec.Template.Spec.PriorityClassName = pt.Spec.PriorityClassName
-		in.Spec.Template.Spec.Priority = pt.Spec.Priority
-		in.Spec.Template.Spec.SecurityContext = pt.Spec.SecurityContext
-		in.Spec.Template.Spec.ServiceAccountName = pt.Spec.ServiceAccountName
-		in.Spec.UpdateStrategy = mongodb.Spec.UpdateStrategy
-		return in
-	})
+			if opts.configSource != nil {
+				in.Spec.Template = c.upsertConfigSourceVolume(in.Spec.Template, opts.configSource)
+			}
+
+			in.Spec.Template.Spec.NodeSelector = pt.Spec.NodeSelector
+			in.Spec.Template.Spec.Affinity = pt.Spec.Affinity
+			if pt.Spec.SchedulerName != "" {
+				in.Spec.Template.Spec.SchedulerName = pt.Spec.SchedulerName
+			}
+			in.Spec.Template.Spec.Tolerations = pt.Spec.Tolerations
+			in.Spec.Template.Spec.ImagePullSecrets = pt.Spec.ImagePullSecrets
+			in.Spec.Template.Spec.PriorityClassName = pt.Spec.PriorityClassName
+			in.Spec.Template.Spec.Priority = pt.Spec.Priority
+			in.Spec.Template.Spec.SecurityContext = pt.Spec.SecurityContext
+			in.Spec.Template.Spec.ServiceAccountName = pt.Spec.ServiceAccountName
+			in.Spec.UpdateStrategy = mongodb.Spec.UpdateStrategy
+			return in
+		},
+		metav1.PatchOptions{},
+	)
 
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -590,7 +597,7 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB, opts workloadOption
 
 func (c *Controller) checkStatefulSet(mongodb *api.MongoDB, stsName string) error {
 	// StatefulSet for MongoDB database
-	statefulSet, err := c.Client.AppsV1().StatefulSets(mongodb.Namespace).Get(stsName, metav1.GetOptions{})
+	statefulSet, err := c.Client.AppsV1().StatefulSets(mongodb.Namespace).Get(context.TODO(), stsName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -848,6 +855,7 @@ func upsertEnv(template core.PodTemplateSpec, mongodb *api.MongoDB) core.PodTemp
 func (c *Controller) checkStatefulSetPodStatus(sts *apps.StatefulSet) error {
 	log.Infof("Waiting for running phase for statefulset %v/%v.", sts.Namespace, sts.Name)
 	err := core_util.WaitUntilPodRunningBySelector(
+		context.TODO(),
 		c.Client,
 		sts.Namespace,
 		sts.Spec.Selector,
@@ -875,7 +883,7 @@ func getExporterContainer(mongodb *api.MongoDB, mongodbVersion *v1alpha1.MongoDB
 	if mongodb.Spec.SSLMode != api.SSLModeDisabled && mongodb.Spec.TLS != nil {
 		clientPEM := fmt.Sprintf("%s/%s", api.MongoCertDirectory, api.MongoClientFileName)
 		clientCA := fmt.Sprintf("%s/%s", api.MongoCertDirectory, api.TLSCACertFileName)
-		args = append(args, fmt.Sprintf("--mongodb.tls"))
+		args = append(args, "--mongodb.tls")
 		args = append(args, "--mongodb.tls-ca")
 		args = append(args, clientCA)
 		args = append(args, "--mongodb.tls-cert")

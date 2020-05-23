@@ -17,6 +17,7 @@ limitations under the License.
 package admission
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -95,7 +96,7 @@ func (a *MemcachedValidator) Admit(req *admission.AdmissionRequest) *admission.A
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := a.extClient.KubedbV1alpha1().Memcacheds(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			obj, err := a.extClient.KubedbV1alpha1().Memcacheds(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
@@ -137,14 +138,14 @@ func ValidateMemcached(client kubernetes.Interface, extClient cs.Interface, memc
 	}
 
 	// Check Memcached version validation
-	if _, err := extClient.CatalogV1alpha1().MemcachedVersions().Get(string(memcached.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().MemcachedVersions().Get(context.TODO(), string(memcached.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
 	if strictValidation {
 		// Check if memcachedVersion is deprecated.
 		// If deprecated, return error
-		memcachedVersion, err := extClient.CatalogV1alpha1().MemcachedVersions().Get(string(memcached.Spec.Version), metav1.GetOptions{})
+		memcachedVersion, err := extClient.CatalogV1alpha1().MemcachedVersions().Get(context.TODO(), string(memcached.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}

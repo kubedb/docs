@@ -16,6 +16,8 @@ limitations under the License.
 package controller
 
 import (
+	"context"
+
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
@@ -29,6 +31,7 @@ import (
 	core "k8s.io/api/core/v1"
 	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/dynamic"
@@ -92,7 +95,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 		api.ProxySQL{}.CustomResourceDefinition(),
 		catalog.ProxySQLVersion{}.CustomResourceDefinition(),
 	}
-	return apiext_util.RegisterCRDs(c.Client.Discovery(), c.ApiExtKubeClient, crds)
+	return apiext_util.RegisterCRDs(context.TODO(), c.Client.Discovery(), c.ApiExtKubeClient, crds)
 }
 
 // Init initializes proxysql, DormantDB amd RestoreSession watcher
@@ -162,12 +165,12 @@ func (c *Controller) pushFailureEvent(proxysql *api.ProxySQL, reason string) {
 		reason,
 	)
 
-	proxysqlUpd, err := util.UpdateProxySQLStatus(c.ExtClient.KubedbV1alpha1(), proxysql.ObjectMeta, func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
+	proxysqlUpd, err := util.UpdateProxySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), proxysql.ObjectMeta, func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
 		in.Phase = api.DatabasePhaseFailed
 		in.Reason = reason
 		in.ObservedGeneration = proxysql.Generation
 		return in
-	})
+	}, metav1.UpdateOptions{})
 
 	if err != nil {
 		c.recorder.Eventf(

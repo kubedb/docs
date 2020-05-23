@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 	"path"
 	"strconv"
@@ -62,92 +63,98 @@ func (c *Controller) ensureStatefulSet(
 		replicas = types.Int32(postgres.Spec.Replicas)
 	}
 
-	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
-		in.Labels = postgres.OffshootLabels()
-		in.Annotations = postgres.Spec.PodTemplate.Controller.Annotations
-		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(
+		context.TODO(),
+		c.Client,
+		statefulSetMeta,
+		func(in *apps.StatefulSet) *apps.StatefulSet {
+			in.Labels = postgres.OffshootLabels()
+			in.Annotations = postgres.Spec.PodTemplate.Controller.Annotations
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
-		in.Spec.Replicas = types.Int32P(replicas)
+			in.Spec.Replicas = types.Int32P(replicas)
 
-		in.Spec.ServiceName = c.GoverningService
-		in.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: postgres.OffshootSelectors(),
-		}
-		in.Spec.Template.Labels = postgres.OffshootSelectors()
-		in.Spec.Template.Annotations = postgres.Spec.PodTemplate.Annotations
-		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, postgres.Spec.PodTemplate.Spec.InitContainers)
-		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
-			in.Spec.Template.Spec.Containers,
-			core.Container{
-				Name: api.ResourceSingularPostgres,
-				Args: append([]string{
-					"leader_election",
-					fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
-				}, c.LoggerOptions.ToFlags()...),
-				Env: []core.EnvVar{
-					{
-						Name:  analytics.Key,
-						Value: c.AnalyticsClientID,
+			in.Spec.ServiceName = c.GoverningService
+			in.Spec.Selector = &metav1.LabelSelector{
+				MatchLabels: postgres.OffshootSelectors(),
+			}
+			in.Spec.Template.Labels = postgres.OffshootSelectors()
+			in.Spec.Template.Annotations = postgres.Spec.PodTemplate.Annotations
+			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, postgres.Spec.PodTemplate.Spec.InitContainers)
+			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+				in.Spec.Template.Spec.Containers,
+				core.Container{
+					Name: api.ResourceSingularPostgres,
+					Args: append([]string{
+						"leader_election",
+						fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
+					}, c.LoggerOptions.ToFlags()...),
+					Env: []core.EnvVar{
+						{
+							Name:  analytics.Key,
+							Value: c.AnalyticsClientID,
+						},
 					},
-				},
-				Image:          postgresVersion.Spec.DB.Image,
-				Resources:      postgres.Spec.PodTemplate.Spec.Resources,
-				LivenessProbe:  postgres.Spec.PodTemplate.Spec.LivenessProbe,
-				ReadinessProbe: postgres.Spec.PodTemplate.Spec.ReadinessProbe,
-				Lifecycle:      postgres.Spec.PodTemplate.Spec.Lifecycle,
-				SecurityContext: &core.SecurityContext{
-					Privileged: types.BoolP(false),
-					Capabilities: &core.Capabilities{
-						Add: []core.Capability{"IPC_LOCK", "SYS_RESOURCE"},
+					Image:          postgresVersion.Spec.DB.Image,
+					Resources:      postgres.Spec.PodTemplate.Spec.Resources,
+					LivenessProbe:  postgres.Spec.PodTemplate.Spec.LivenessProbe,
+					ReadinessProbe: postgres.Spec.PodTemplate.Spec.ReadinessProbe,
+					Lifecycle:      postgres.Spec.PodTemplate.Spec.Lifecycle,
+					SecurityContext: &core.SecurityContext{
+						Privileged: types.BoolP(false),
+						Capabilities: &core.Capabilities{
+							Add: []core.Capability{"IPC_LOCK", "SYS_RESOURCE"},
+						},
 					},
-				},
-			})
-		in = upsertEnv(in, postgres, envList)
-		in = upsertUserEnv(in, postgres)
-		in = upsertPort(in)
+				})
+			in = upsertEnv(in, postgres, envList)
+			in = upsertUserEnv(in, postgres)
+			in = upsertPort(in)
 
-		in.Spec.Template.Spec.NodeSelector = postgres.Spec.PodTemplate.Spec.NodeSelector
-		in.Spec.Template.Spec.Affinity = postgres.Spec.PodTemplate.Spec.Affinity
-		if postgres.Spec.PodTemplate.Spec.SchedulerName != "" {
-			in.Spec.Template.Spec.SchedulerName = postgres.Spec.PodTemplate.Spec.SchedulerName
-		}
-		in.Spec.Template.Spec.Tolerations = postgres.Spec.PodTemplate.Spec.Tolerations
-		in.Spec.Template.Spec.ImagePullSecrets = postgres.Spec.PodTemplate.Spec.ImagePullSecrets
-		in.Spec.Template.Spec.PriorityClassName = postgres.Spec.PodTemplate.Spec.PriorityClassName
-		in.Spec.Template.Spec.Priority = postgres.Spec.PodTemplate.Spec.Priority
-		in.Spec.Template.Spec.SecurityContext = postgres.Spec.PodTemplate.Spec.SecurityContext
+			in.Spec.Template.Spec.NodeSelector = postgres.Spec.PodTemplate.Spec.NodeSelector
+			in.Spec.Template.Spec.Affinity = postgres.Spec.PodTemplate.Spec.Affinity
+			if postgres.Spec.PodTemplate.Spec.SchedulerName != "" {
+				in.Spec.Template.Spec.SchedulerName = postgres.Spec.PodTemplate.Spec.SchedulerName
+			}
+			in.Spec.Template.Spec.Tolerations = postgres.Spec.PodTemplate.Spec.Tolerations
+			in.Spec.Template.Spec.ImagePullSecrets = postgres.Spec.PodTemplate.Spec.ImagePullSecrets
+			in.Spec.Template.Spec.PriorityClassName = postgres.Spec.PodTemplate.Spec.PriorityClassName
+			in.Spec.Template.Spec.Priority = postgres.Spec.PodTemplate.Spec.Priority
+			in.Spec.Template.Spec.SecurityContext = postgres.Spec.PodTemplate.Spec.SecurityContext
 
-		in = c.upsertMonitoringContainer(in, postgres, postgresVersion)
-		if postgres.Spec.Archiver != nil {
-			if postgres.Spec.Archiver.Storage != nil {
-				//Creating secret for cloud providers
-				archiverStorage := postgres.Spec.Archiver.Storage
-				if archiverStorage.Local == nil {
-					in = upsertArchiveSecret(in, archiverStorage.StorageSecretName)
+			in = c.upsertMonitoringContainer(in, postgres, postgresVersion)
+			if postgres.Spec.Archiver != nil {
+				if postgres.Spec.Archiver.Storage != nil {
+					//Creating secret for cloud providers
+					archiverStorage := postgres.Spec.Archiver.Storage
+					if archiverStorage.Local == nil {
+						in = upsertArchiveSecret(in, archiverStorage.StorageSecretName)
+					}
 				}
 			}
-		}
 
-		if _, err := meta_util.GetString(postgres.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound {
-			initSource := postgres.Spec.Init
-			if initSource != nil && initSource.PostgresWAL != nil && initSource.PostgresWAL.Local == nil {
-				//Getting secret for cloud providers
-				in = upsertInitWalSecret(in, postgres.Spec.Init.PostgresWAL.StorageSecretName)
+			if _, err := meta_util.GetString(postgres.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound {
+				initSource := postgres.Spec.Init
+				if initSource != nil && initSource.PostgresWAL != nil && initSource.PostgresWAL.Local == nil {
+					//Getting secret for cloud providers
+					in = upsertInitWalSecret(in, postgres.Spec.Init.PostgresWAL.StorageSecretName)
+				}
+				if initSource != nil && initSource.ScriptSource != nil {
+					in = upsertInitScript(in, postgres.Spec.Init.ScriptSource.VolumeSource)
+				}
 			}
-			if initSource != nil && initSource.ScriptSource != nil {
-				in = upsertInitScript(in, postgres.Spec.Init.ScriptSource.VolumeSource)
-			}
-		}
 
-		in = upsertShm(in)
-		in = upsertDataVolume(in, postgres)
-		in = upsertCustomConfig(in, postgres)
+			in = upsertShm(in)
+			in = upsertDataVolume(in, postgres)
+			in = upsertCustomConfig(in, postgres)
 
-		in.Spec.Template.Spec.ServiceAccountName = postgres.Spec.PodTemplate.Spec.ServiceAccountName
-		in.Spec.UpdateStrategy = postgres.Spec.UpdateStrategy
+			in.Spec.Template.Spec.ServiceAccountName = postgres.Spec.PodTemplate.Spec.ServiceAccountName
+			in.Spec.UpdateStrategy = postgres.Spec.UpdateStrategy
 
-		return in
-	})
+			return in
+		},
+		metav1.PatchOptions{},
+	)
 
 	if err != nil {
 		return kutil.VerbUnchanged, err
@@ -177,6 +184,7 @@ func (c *Controller) ensureStatefulSet(
 
 func (c *Controller) CheckStatefulSetPodStatus(statefulSet *apps.StatefulSet) error {
 	err := core_util.WaitUntilPodRunningBySelector(
+		context.TODO(),
 		c.Client,
 		statefulSet.Namespace,
 		statefulSet.Spec.Selector,
@@ -305,7 +313,7 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion 
 func (c *Controller) checkStatefulSet(postgres *api.Postgres) error {
 	name := postgres.OffshootName()
 	// SatatefulSet for Postgres database
-	statefulSet, err := c.Client.AppsV1().StatefulSets(postgres.Namespace).Get(name, metav1.GetOptions{})
+	statefulSet, err := c.Client.AppsV1().StatefulSets(postgres.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil

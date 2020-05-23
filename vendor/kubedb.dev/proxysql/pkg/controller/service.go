@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -62,7 +63,7 @@ func (c *Controller) ensureService(proxysql *api.ProxySQL) (kutil.VerbType, erro
 }
 
 func (c *Controller) checkService(proxysql *api.ProxySQL, serviceName string) error {
-	service, err := c.Client.CoreV1().Services(proxysql.Namespace).Get(serviceName, metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(proxysql.Namespace).Get(context.TODO(), serviceName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -86,7 +87,7 @@ func (c *Controller) createService(proxysql *api.ProxySQL) (kutil.VerbType, erro
 
 	owner := metav1.NewControllerRef(proxysql, api.SchemeGroupVersion.WithKind(api.ResourceKindProxySQL))
 
-	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = proxysql.OffshootLabels()
 		in.Annotations = proxysql.Spec.ServiceTemplate.Annotations
@@ -111,7 +112,7 @@ func (c *Controller) createService(proxysql *api.ProxySQL) (kutil.VerbType, erro
 			in.Spec.HealthCheckNodePort = proxysql.Spec.ServiceTemplate.Spec.HealthCheckNodePort
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return ok, err
 }
 
@@ -134,7 +135,7 @@ func (c *Controller) ensureStatsService(proxysql *api.ProxySQL) (kutil.VerbType,
 		Name:      proxysql.StatsService().ServiceName(),
 		Namespace: proxysql.Namespace,
 	}
-	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = proxysql.StatsServiceLabels()
 		in.Spec.Selector = proxysql.OffshootSelectors()
@@ -147,7 +148,7 @@ func (c *Controller) ensureStatsService(proxysql *api.ProxySQL) (kutil.VerbType,
 			},
 		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {

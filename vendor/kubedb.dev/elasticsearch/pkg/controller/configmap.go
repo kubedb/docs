@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
@@ -70,14 +71,14 @@ func (c *Controller) ensureDatabaseConfigForXPack(elasticsearch *api.Elasticsear
 		}
 		owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
-		if _, _, err := core_util.CreateOrPatchConfigMap(c.Client, cmMeta, func(in *core.ConfigMap) *core.ConfigMap {
+		if _, _, err := core_util.CreateOrPatchConfigMap(context.TODO(), c.Client, cmMeta, func(in *core.ConfigMap) *core.ConfigMap {
 			in.Labels = core_util.UpsertMap(in.Labels, elasticsearch.OffshootLabels())
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Data = map[string]string{
 				ConfigFileName: xpack_config,
 			}
 			return in
-		}); err != nil {
+		}, metav1.PatchOptions{}); err != nil {
 			return err
 		}
 	}
@@ -87,7 +88,7 @@ func (c *Controller) ensureDatabaseConfigForXPack(elasticsearch *api.Elasticsear
 func (c *Controller) findDatabaseConfig(elasticsearch *api.Elasticsearch) error {
 	cmName := fmt.Sprintf("%v-%v", elasticsearch.OffshootName(), DatabaseConfigMapSuffix)
 
-	configMap, err := c.Client.CoreV1().ConfigMaps(elasticsearch.Namespace).Get(cmName, metav1.GetOptions{})
+	configMap, err := c.Client.CoreV1().ConfigMaps(elasticsearch.Namespace).Get(context.TODO(), cmName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
