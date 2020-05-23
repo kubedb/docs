@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -65,7 +66,7 @@ func (c *Controller) ensureElasticGvrSvc(elasticsearch *api.Elasticsearch) error
 		Namespace: elasticsearch.Namespace,
 	}
 
-	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = elasticsearch.OffshootLabels()
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
@@ -73,7 +74,7 @@ func (c *Controller) ensureElasticGvrSvc(elasticsearch *api.Elasticsearch) error
 		in.Spec.ClusterIP = core.ClusterIPNone
 		in.Spec.Ports = []core.ServicePort{defaultPeerPort, defaultClientPort}
 		return in
-	})
+	}, metav1.PatchOptions{})
 
 	if err == nil {
 		c.recorder.Eventf(
@@ -136,7 +137,7 @@ func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.Verb
 }
 
 func (c *Controller) checkService(elasticsearch *api.Elasticsearch, name string) error {
-	service, err := c.Client.CoreV1().Services(elasticsearch.Namespace).Get(name, metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(elasticsearch.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -160,7 +161,7 @@ func (c *Controller) createService(elasticsearch *api.Elasticsearch) (kutil.Verb
 
 	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
-	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = elasticsearch.OffshootLabels()
 		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
@@ -186,7 +187,7 @@ func (c *Controller) createService(elasticsearch *api.Elasticsearch) (kutil.Verb
 			in.Spec.HealthCheckNodePort = elasticsearch.Spec.ServiceTemplate.Spec.HealthCheckNodePort
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return ok, err
 }
 
@@ -198,7 +199,7 @@ func (c *Controller) createMasterService(elasticsearch *api.Elasticsearch) (kuti
 
 	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
-	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = elasticsearch.OffshootLabels()
 		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
@@ -209,7 +210,7 @@ func (c *Controller) createMasterService(elasticsearch *api.Elasticsearch) (kuti
 		in.Spec.ClusterIP = core.ClusterIPNone
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultPeerPort})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return ok, err
 }
 
@@ -232,7 +233,7 @@ func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil
 		Name:      elasticsearch.StatsService().ServiceName(),
 		Namespace: elasticsearch.Namespace,
 	}
-	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = elasticsearch.StatsServiceLabels()
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
@@ -245,7 +246,7 @@ func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil
 			},
 		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {

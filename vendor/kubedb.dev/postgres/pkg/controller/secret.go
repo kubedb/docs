@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -40,10 +41,10 @@ func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
 		if databaseSecretVolume, err = c.createDatabaseSecret(postgres); err != nil {
 			return err
 		}
-		pg, _, err := util.PatchPostgres(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
+		pg, _, err := util.PatchPostgres(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
 			in.Spec.DatabaseSecret = databaseSecretVolume
 			return in
-		})
+		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
@@ -56,7 +57,7 @@ func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
 func (c *Controller) findDatabaseSecret(postgres *api.Postgres) (*core.Secret, error) {
 	name := postgres.OffshootName() + "-auth"
 
-	secret, err := c.Client.CoreV1().Secrets(postgres.Namespace).Get(name, metav1.GetOptions{})
+	secret, err := c.Client.CoreV1().Secrets(postgres.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil
@@ -95,7 +96,7 @@ func (c *Controller) createDatabaseSecret(postgres *api.Postgres) (*core.SecretV
 			PostgresPassword: []byte(rand.GeneratePassword()),
 		},
 	}
-	if _, err := c.Client.CoreV1().Secrets(postgres.Namespace).Create(secret); err != nil {
+	if _, err := c.Client.CoreV1().Secrets(postgres.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 		return nil, err
 	}
 
@@ -112,11 +113,11 @@ func (c *Controller) upgradeDatabaseSecret(postgres *api.Postgres) error {
 		Namespace: postgres.Namespace,
 	}
 
-	_, _, err := core_util.CreateOrPatchSecret(c.Client, meta, func(in *core.Secret) *core.Secret {
+	_, _, err := core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {
 		if _, ok := in.Data[PostgresUser]; !ok {
 			in.StringData = map[string]string{PostgresUser: "postgres"}
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }

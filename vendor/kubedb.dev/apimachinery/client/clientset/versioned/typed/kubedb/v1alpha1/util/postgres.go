@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -31,29 +32,32 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchPostgres(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Postgres) *api.Postgres) (*api.Postgres, kutil.VerbType, error) {
-	cur, err := c.Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+func CreateOrPatchPostgres(ctx context.Context, c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Postgres) *api.Postgres, opts metav1.PatchOptions) (*api.Postgres, kutil.VerbType, error) {
+	cur, err := c.Postgreses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Postgres %s/%s.", meta.Namespace, meta.Name)
-		out, err := c.Postgreses(meta.Namespace).Create(transform(&api.Postgres{
+		out, err := c.Postgreses(meta.Namespace).Create(ctx, transform(&api.Postgres{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Postgres",
 				APIVersion: api.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}))
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchPostgres(c, cur, transform)
+	return PatchPostgres(ctx, c, cur, transform, opts)
 }
 
-func PatchPostgres(c cs.KubedbV1alpha1Interface, cur *api.Postgres, transform func(*api.Postgres) *api.Postgres) (*api.Postgres, kutil.VerbType, error) {
-	return PatchPostgresObject(c, cur, transform(cur.DeepCopy()))
+func PatchPostgres(ctx context.Context, c cs.KubedbV1alpha1Interface, cur *api.Postgres, transform func(*api.Postgres) *api.Postgres, opts metav1.PatchOptions) (*api.Postgres, kutil.VerbType, error) {
+	return PatchPostgresObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchPostgresObject(c cs.KubedbV1alpha1Interface, cur, mod *api.Postgres) (*api.Postgres, kutil.VerbType, error) {
+func PatchPostgresObject(ctx context.Context, c cs.KubedbV1alpha1Interface, cur, mod *api.Postgres, opts metav1.PatchOptions) (*api.Postgres, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -72,19 +76,20 @@ func PatchPostgresObject(c cs.KubedbV1alpha1Interface, cur, mod *api.Postgres) (
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching Postgres %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.Postgreses(cur.Namespace).Patch(cur.Name, types.MergePatchType, patch)
+	out, err := c.Postgreses(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdatePostgres(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Postgres) *api.Postgres) (result *api.Postgres, err error) {
+func TryUpdatePostgres(ctx context.Context, c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Postgres) *api.Postgres, opts metav1.UpdateOptions) (result *api.Postgres, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		cur, e2 := c.Postgreses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.Postgreses(cur.Namespace).Update(transform(cur.DeepCopy()))
+
+			result, e2 = c.Postgreses(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update Postgres %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
@@ -98,9 +103,11 @@ func TryUpdatePostgres(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, tra
 }
 
 func UpdatePostgresStatus(
+	ctx context.Context,
 	c cs.KubedbV1alpha1Interface,
 	meta metav1.ObjectMeta,
 	transform func(*api.PostgresStatus) *api.PostgresStatus,
+	opts metav1.UpdateOptions,
 ) (result *api.Postgres, err error) {
 	apply := func(x *api.Postgres) *api.Postgres {
 		return &api.Postgres{
@@ -112,16 +119,16 @@ func UpdatePostgresStatus(
 	}
 
 	attempt := 0
-	cur, err := c.Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	cur, err := c.Postgreses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		var e2 error
-		result, e2 = c.Postgreses(meta.Namespace).UpdateStatus(apply(cur))
+		result, e2 = c.Postgreses(meta.Namespace).UpdateStatus(ctx, apply(cur), opts)
 		if kerr.IsConflict(e2) {
-			latest, e3 := c.Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+			latest, e3 := c.Postgreses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 			switch {
 			case e3 == nil:
 				cur = latest

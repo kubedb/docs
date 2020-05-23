@@ -16,6 +16,8 @@ limitations under the License.
 package controller
 
 import (
+	"context"
+
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/controller/restoresession"
@@ -63,7 +65,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 
-	topology, err := core_util.DetectTopology(c.KubeClient)
+	topology, err := core_util.DetectTopology(context.TODO(), c.KubeClient)
 	if err != nil {
 		return nil, err
 	}

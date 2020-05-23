@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -68,7 +69,7 @@ func (c *Controller) ensureService(mongodb *api.MongoDB) (kutil.VerbType, error)
 }
 
 func (c *Controller) checkService(mongodb *api.MongoDB, serviceName string) error {
-	service, err := c.Client.CoreV1().Services(mongodb.Namespace).Get(serviceName, metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(mongodb.Namespace).Get(context.TODO(), serviceName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -96,32 +97,38 @@ func (c *Controller) createService(mongodb *api.MongoDB) (kutil.VerbType, error)
 		selector = mongodb.MongosSelectors()
 	}
 
-	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = mongodb.OffshootLabels()
-		in.Annotations = mongodb.Spec.ServiceTemplate.Annotations
+	_, ok, err := core_util.CreateOrPatchService(
+		context.TODO(),
+		c.Client,
+		meta,
+		func(in *core.Service) *core.Service {
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+			in.Labels = mongodb.OffshootLabels()
+			in.Annotations = mongodb.Spec.ServiceTemplate.Annotations
 
-		in.Spec.Selector = selector
-		in.Spec.Ports = ofst.MergeServicePorts(
-			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
-			mongodb.Spec.ServiceTemplate.Spec.Ports,
-		)
+			in.Spec.Selector = selector
+			in.Spec.Ports = ofst.MergeServicePorts(
+				core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
+				mongodb.Spec.ServiceTemplate.Spec.Ports,
+			)
 
-		if mongodb.Spec.ServiceTemplate.Spec.ClusterIP != "" {
-			in.Spec.ClusterIP = mongodb.Spec.ServiceTemplate.Spec.ClusterIP
-		}
-		if mongodb.Spec.ServiceTemplate.Spec.Type != "" {
-			in.Spec.Type = mongodb.Spec.ServiceTemplate.Spec.Type
-		}
-		in.Spec.ExternalIPs = mongodb.Spec.ServiceTemplate.Spec.ExternalIPs
-		in.Spec.LoadBalancerIP = mongodb.Spec.ServiceTemplate.Spec.LoadBalancerIP
-		in.Spec.LoadBalancerSourceRanges = mongodb.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
-		in.Spec.ExternalTrafficPolicy = mongodb.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
-		if mongodb.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
-			in.Spec.HealthCheckNodePort = mongodb.Spec.ServiceTemplate.Spec.HealthCheckNodePort
-		}
-		return in
-	})
+			if mongodb.Spec.ServiceTemplate.Spec.ClusterIP != "" {
+				in.Spec.ClusterIP = mongodb.Spec.ServiceTemplate.Spec.ClusterIP
+			}
+			if mongodb.Spec.ServiceTemplate.Spec.Type != "" {
+				in.Spec.Type = mongodb.Spec.ServiceTemplate.Spec.Type
+			}
+			in.Spec.ExternalIPs = mongodb.Spec.ServiceTemplate.Spec.ExternalIPs
+			in.Spec.LoadBalancerIP = mongodb.Spec.ServiceTemplate.Spec.LoadBalancerIP
+			in.Spec.LoadBalancerSourceRanges = mongodb.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
+			in.Spec.ExternalTrafficPolicy = mongodb.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
+			if mongodb.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
+				in.Spec.HealthCheckNodePort = mongodb.Spec.ServiceTemplate.Spec.HealthCheckNodePort
+			}
+			return in
+		},
+		metav1.PatchOptions{},
+	)
 	return ok, err
 }
 
@@ -144,20 +151,26 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 		Name:      mongodb.StatsService().ServiceName(),
 		Namespace: mongodb.Namespace,
 	}
-	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = mongodb.StatsServiceLabels()
-		in.Spec.Selector = mongodb.OffshootSelectors()
-		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
-			{
-				Name:       api.PrometheusExporterPortName,
-				Protocol:   core.ProtocolTCP,
-				Port:       mongodb.Spec.Monitor.Prometheus.Exporter.Port,
-				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
-			},
-		})
-		return in
-	})
+	_, vt, err := core_util.CreateOrPatchService(
+		context.TODO(),
+		c.Client,
+		meta,
+		func(in *core.Service) *core.Service {
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+			in.Labels = mongodb.StatsServiceLabels()
+			in.Spec.Selector = mongodb.OffshootSelectors()
+			in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+				{
+					Name:       api.PrometheusExporterPortName,
+					Protocol:   core.ProtocolTCP,
+					Port:       mongodb.Spec.Monitor.Prometheus.Exporter.Port,
+					TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+				},
+			})
+			return in
+		},
+		metav1.PatchOptions{},
+	)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
@@ -187,28 +200,34 @@ func (c *Controller) ensureMongoGvrSvc(mongodb *api.MongoDB) error {
 			Namespace: mongodb.Namespace,
 		}
 
-		_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
-			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-			in.Labels = labels
-			// 'tolerate-unready-endpoints' annotation is deprecated.
-			// Use: spec.PublishNotReadyAddresses
-			// ref: https://github.com/kubernetes/kubernetes/pull/63742.
-			// TODO: delete this annotation
-			in.Annotations = map[string]string{
-				"service.alpha.kubernetes.io/tolerate-unready-endpoints": "true",
-			}
-			in.Spec.Selector = selectors
-			in.Spec.Type = core.ServiceTypeClusterIP
-			in.Spec.ClusterIP = core.ClusterIPNone
-			in.Spec.PublishNotReadyAddresses = true
-			in.Spec.Ports = []core.ServicePort{
-				{
-					Name: "db",
-					Port: MongoDBPort,
-				},
-			}
-			return in
-		})
+		_, vt, err := core_util.CreateOrPatchService(
+			context.TODO(),
+			c.Client,
+			meta,
+			func(in *core.Service) *core.Service {
+				core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+				in.Labels = labels
+				// 'tolerate-unready-endpoints' annotation is deprecated.
+				// Use: spec.PublishNotReadyAddresses
+				// ref: https://github.com/kubernetes/kubernetes/pull/63742.
+				// TODO: delete this annotation
+				in.Annotations = map[string]string{
+					"service.alpha.kubernetes.io/tolerate-unready-endpoints": "true",
+				}
+				in.Spec.Selector = selectors
+				in.Spec.Type = core.ServiceTypeClusterIP
+				in.Spec.ClusterIP = core.ClusterIPNone
+				in.Spec.PublishNotReadyAddresses = true
+				in.Spec.Ports = []core.ServicePort{
+					{
+						Name: "db",
+						Port: MongoDBPort,
+					},
+				}
+				return in
+			},
+			metav1.PatchOptions{},
+		)
 
 		if err == nil {
 			c.recorder.Eventf(

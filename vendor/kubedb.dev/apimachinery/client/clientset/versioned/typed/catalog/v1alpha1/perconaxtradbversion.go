@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"time"
 
 	v1alpha1 "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
@@ -38,14 +39,14 @@ type PerconaXtraDBVersionsGetter interface {
 
 // PerconaXtraDBVersionInterface has methods to work with PerconaXtraDBVersion resources.
 type PerconaXtraDBVersionInterface interface {
-	Create(*v1alpha1.PerconaXtraDBVersion) (*v1alpha1.PerconaXtraDBVersion, error)
-	Update(*v1alpha1.PerconaXtraDBVersion) (*v1alpha1.PerconaXtraDBVersion, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.PerconaXtraDBVersion, error)
-	List(opts v1.ListOptions) (*v1alpha1.PerconaXtraDBVersionList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.PerconaXtraDBVersion, err error)
+	Create(ctx context.Context, perconaXtraDBVersion *v1alpha1.PerconaXtraDBVersion, opts v1.CreateOptions) (*v1alpha1.PerconaXtraDBVersion, error)
+	Update(ctx context.Context, perconaXtraDBVersion *v1alpha1.PerconaXtraDBVersion, opts v1.UpdateOptions) (*v1alpha1.PerconaXtraDBVersion, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.PerconaXtraDBVersion, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.PerconaXtraDBVersionList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.PerconaXtraDBVersion, err error)
 	PerconaXtraDBVersionExpansion
 }
 
@@ -62,19 +63,19 @@ func newPerconaXtraDBVersions(c *CatalogV1alpha1Client) *perconaXtraDBVersions {
 }
 
 // Get takes name of the perconaXtraDBVersion, and returns the corresponding perconaXtraDBVersion object, and an error if there is any.
-func (c *perconaXtraDBVersions) Get(name string, options v1.GetOptions) (result *v1alpha1.PerconaXtraDBVersion, err error) {
+func (c *perconaXtraDBVersions) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.PerconaXtraDBVersion, err error) {
 	result = &v1alpha1.PerconaXtraDBVersion{}
 	err = c.client.Get().
 		Resource("perconaxtradbversions").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of PerconaXtraDBVersions that match those selectors.
-func (c *perconaXtraDBVersions) List(opts v1.ListOptions) (result *v1alpha1.PerconaXtraDBVersionList, err error) {
+func (c *perconaXtraDBVersions) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.PerconaXtraDBVersionList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -84,13 +85,13 @@ func (c *perconaXtraDBVersions) List(opts v1.ListOptions) (result *v1alpha1.Perc
 		Resource("perconaxtradbversions").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested perconaXtraDBVersions.
-func (c *perconaXtraDBVersions) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *perconaXtraDBVersions) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -100,66 +101,69 @@ func (c *perconaXtraDBVersions) Watch(opts v1.ListOptions) (watch.Interface, err
 		Resource("perconaxtradbversions").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a perconaXtraDBVersion and creates it.  Returns the server's representation of the perconaXtraDBVersion, and an error, if there is any.
-func (c *perconaXtraDBVersions) Create(perconaXtraDBVersion *v1alpha1.PerconaXtraDBVersion) (result *v1alpha1.PerconaXtraDBVersion, err error) {
+func (c *perconaXtraDBVersions) Create(ctx context.Context, perconaXtraDBVersion *v1alpha1.PerconaXtraDBVersion, opts v1.CreateOptions) (result *v1alpha1.PerconaXtraDBVersion, err error) {
 	result = &v1alpha1.PerconaXtraDBVersion{}
 	err = c.client.Post().
 		Resource("perconaxtradbversions").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(perconaXtraDBVersion).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a perconaXtraDBVersion and updates it. Returns the server's representation of the perconaXtraDBVersion, and an error, if there is any.
-func (c *perconaXtraDBVersions) Update(perconaXtraDBVersion *v1alpha1.PerconaXtraDBVersion) (result *v1alpha1.PerconaXtraDBVersion, err error) {
+func (c *perconaXtraDBVersions) Update(ctx context.Context, perconaXtraDBVersion *v1alpha1.PerconaXtraDBVersion, opts v1.UpdateOptions) (result *v1alpha1.PerconaXtraDBVersion, err error) {
 	result = &v1alpha1.PerconaXtraDBVersion{}
 	err = c.client.Put().
 		Resource("perconaxtradbversions").
 		Name(perconaXtraDBVersion.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(perconaXtraDBVersion).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the perconaXtraDBVersion and deletes it. Returns an error if one occurs.
-func (c *perconaXtraDBVersions) Delete(name string, options *v1.DeleteOptions) error {
+func (c *perconaXtraDBVersions) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Resource("perconaxtradbversions").
 		Name(name).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *perconaXtraDBVersions) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *perconaXtraDBVersions) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Resource("perconaxtradbversions").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // Patch applies the patch and returns the patched perconaXtraDBVersion.
-func (c *perconaXtraDBVersions) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.PerconaXtraDBVersion, err error) {
+func (c *perconaXtraDBVersions) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.PerconaXtraDBVersion, err error) {
 	result = &v1alpha1.PerconaXtraDBVersion{}
 	err = c.client.Patch(pt).
 		Resource("perconaxtradbversions").
-		SubResource(subresources...).
 		Name(name).
+		SubResource(subresources...).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }

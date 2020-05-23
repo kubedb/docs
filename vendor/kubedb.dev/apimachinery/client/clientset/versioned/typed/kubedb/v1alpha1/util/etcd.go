@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -31,29 +32,32 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchEtcd(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Etcd) *api.Etcd) (*api.Etcd, kutil.VerbType, error) {
-	cur, err := c.Etcds(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+func CreateOrPatchEtcd(ctx context.Context, c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Etcd) *api.Etcd, opts metav1.PatchOptions) (*api.Etcd, kutil.VerbType, error) {
+	cur, err := c.Etcds(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Etcd %s/%s.", meta.Namespace, meta.Name)
-		out, err := c.Etcds(meta.Namespace).Create(transform(&api.Etcd{
+		out, err := c.Etcds(meta.Namespace).Create(ctx, transform(&api.Etcd{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Etcd",
 				APIVersion: api.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}))
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchEtcd(c, cur, transform)
+	return PatchEtcd(ctx, c, cur, transform, opts)
 }
 
-func PatchEtcd(c cs.KubedbV1alpha1Interface, cur *api.Etcd, transform func(*api.Etcd) *api.Etcd) (*api.Etcd, kutil.VerbType, error) {
-	return PatchEtcdObject(c, cur, transform(cur.DeepCopy()))
+func PatchEtcd(ctx context.Context, c cs.KubedbV1alpha1Interface, cur *api.Etcd, transform func(*api.Etcd) *api.Etcd, opts metav1.PatchOptions) (*api.Etcd, kutil.VerbType, error) {
+	return PatchEtcdObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchEtcdObject(c cs.KubedbV1alpha1Interface, cur, mod *api.Etcd) (*api.Etcd, kutil.VerbType, error) {
+func PatchEtcdObject(ctx context.Context, c cs.KubedbV1alpha1Interface, cur, mod *api.Etcd, opts metav1.PatchOptions) (*api.Etcd, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -72,20 +76,20 @@ func PatchEtcdObject(c cs.KubedbV1alpha1Interface, cur, mod *api.Etcd) (*api.Etc
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching Etcd %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.Etcds(cur.Namespace).Patch(cur.Name, types.MergePatchType, patch)
+	out, err := c.Etcds(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateEtcd(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Etcd) *api.Etcd) (result *api.Etcd, err error) {
+func TryUpdateEtcd(ctx context.Context, c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.Etcd) *api.Etcd, opts metav1.UpdateOptions) (result *api.Etcd, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.Etcds(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		cur, e2 := c.Etcds(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
 
-			result, e2 = c.Etcds(cur.Namespace).Update(transform(cur.DeepCopy()))
+			result, e2 = c.Etcds(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update Etcd %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
@@ -99,9 +103,11 @@ func TryUpdateEtcd(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transfo
 }
 
 func UpdateEtcdStatus(
+	ctx context.Context,
 	c cs.KubedbV1alpha1Interface,
 	meta metav1.ObjectMeta,
 	transform func(*api.EtcdStatus) *api.EtcdStatus,
+	opts metav1.UpdateOptions,
 ) (result *api.Etcd, err error) {
 	apply := func(x *api.Etcd) *api.Etcd {
 		return &api.Etcd{
@@ -113,16 +119,16 @@ func UpdateEtcdStatus(
 	}
 
 	attempt := 0
-	cur, err := c.Etcds(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	cur, err := c.Etcds(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		var e2 error
-		result, e2 = c.Etcds(meta.Namespace).UpdateStatus(apply(cur))
+		result, e2 = c.Etcds(meta.Namespace).UpdateStatus(ctx, apply(cur), opts)
 		if kerr.IsConflict(e2) {
-			latest, e3 := c.Etcds(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+			latest, e3 := c.Etcds(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 			switch {
 			case e3 == nil:
 				cur = latest

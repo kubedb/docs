@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -72,7 +73,7 @@ type workloadOptions struct {
 }
 
 func (c *Controller) ensureProxySQLNode(proxysql *api.ProxySQL) (kutil.VerbType, error) {
-	proxysqlVersion, err := c.ExtClient.CatalogV1alpha1().ProxySQLVersions().Get(string(proxysql.Spec.Version), metav1.GetOptions{})
+	proxysqlVersion, err := c.ExtClient.CatalogV1alpha1().ProxySQLVersions().Get(context.TODO(), string(proxysql.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -98,9 +99,9 @@ func (c *Controller) ensureProxySQLNode(proxysql *api.ProxySQL) (kutil.VerbType,
 
 	switch gk {
 	case api.Kind(api.ResourceKindPerconaXtraDB):
-		backendDB, err = c.ExtClient.KubedbV1alpha1().PerconaXtraDBs(proxysql.Namespace).Get(backend.Ref.Name, metav1.GetOptions{})
+		backendDB, err = c.ExtClient.KubedbV1alpha1().PerconaXtraDBs(proxysql.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
 	case api.Kind(api.ResourceKindMySQL):
-		backendDB, err = c.ExtClient.KubedbV1alpha1().MySQLs(proxysql.Namespace).Get(backend.Ref.Name, metav1.GetOptions{})
+		backendDB, err = c.ExtClient.KubedbV1alpha1().MySQLs(proxysql.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
 	// TODO: add other cases for MySQL and MariaDB when they will be configured
 	default:
 		return kutil.VerbUnchanged, fmt.Errorf("unknown group kind '%v' is specified", gk.String())
@@ -190,7 +191,7 @@ func (c *Controller) ensureProxySQLNode(proxysql *api.ProxySQL) (kutil.VerbType,
 
 func (c *Controller) checkStatefulSet(proxysql *api.ProxySQL, stsName string) error {
 	// StatefulSet for ProxySQL database
-	statefulSet, err := c.Client.AppsV1().StatefulSets(proxysql.Namespace).Get(stsName, metav1.GetOptions{})
+	statefulSet, err := c.Client.AppsV1().StatefulSets(proxysql.Namespace).Get(context.TODO(), stsName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -262,72 +263,78 @@ func (c *Controller) ensureStatefulSet(
 		livenessProbe = nil
 	}
 
-	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
-		in.Labels = opts.labels
-		in.Annotations = pt.Controller.Annotations
-		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(
+		context.TODO(),
+		c.Client,
+		statefulSetMeta,
+		func(in *apps.StatefulSet) *apps.StatefulSet {
+			in.Labels = opts.labels
+			in.Annotations = pt.Controller.Annotations
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
-		in.Spec.Replicas = opts.replicas
-		in.Spec.ServiceName = opts.gvrSvcName
-		in.Spec.Selector = &metav1.LabelSelector{
-			MatchLabels: opts.selectors,
-		}
-		in.Spec.Template.Labels = opts.selectors
-		in.Spec.Template.Annotations = pt.Annotations
-		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
-			in.Spec.Template.Spec.InitContainers,
-			pt.Spec.InitContainers,
-		)
-		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
-			in.Spec.Template.Spec.Containers,
-			core.Container{
-				Name:            opts.conatainerName,
-				Image:           opts.image,
-				ImagePullPolicy: core.PullIfNotPresent,
-				Command:         opts.cmd,
-				Args:            opts.args,
-				Ports:           opts.ports,
-				Env:             core_util.UpsertEnvVars(opts.envList, pt.Spec.Env...),
-				Resources:       pt.Spec.Resources,
-				Lifecycle:       pt.Spec.Lifecycle,
-				LivenessProbe:   livenessProbe,
-				ReadinessProbe:  readinessProbe,
-				VolumeMounts:    opts.volumeMount,
-			})
-
-		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
-			in.Spec.Template.Spec.InitContainers,
-			opts.initContainers,
-		)
-
-		if opts.monitorContainer != nil && proxysql.GetMonitoringVendor() == mona.VendorPrometheus {
+			in.Spec.Replicas = opts.replicas
+			in.Spec.ServiceName = opts.gvrSvcName
+			in.Spec.Selector = &metav1.LabelSelector{
+				MatchLabels: opts.selectors,
+			}
+			in.Spec.Template.Labels = opts.selectors
+			in.Spec.Template.Annotations = pt.Annotations
+			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
+				in.Spec.Template.Spec.InitContainers,
+				pt.Spec.InitContainers,
+			)
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
-				in.Spec.Template.Spec.Containers, *opts.monitorContainer)
-		}
+				in.Spec.Template.Spec.Containers,
+				core.Container{
+					Name:            opts.conatainerName,
+					Image:           opts.image,
+					ImagePullPolicy: core.PullIfNotPresent,
+					Command:         opts.cmd,
+					Args:            opts.args,
+					Ports:           opts.ports,
+					Env:             core_util.UpsertEnvVars(opts.envList, pt.Spec.Env...),
+					Resources:       pt.Spec.Resources,
+					Lifecycle:       pt.Spec.Lifecycle,
+					LivenessProbe:   livenessProbe,
+					ReadinessProbe:  readinessProbe,
+					VolumeMounts:    opts.volumeMount,
+				})
 
-		// Set proxysql Secret as MYSQL_PROXY_USER and MYSQL_PROXY_PASSWORD env variable
-		in = upsertEnv(in, proxysql)
+			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
+				in.Spec.Template.Spec.InitContainers,
+				opts.initContainers,
+			)
 
-		in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(in.Spec.Template.Spec.Volumes, opts.volume...)
+			if opts.monitorContainer != nil && proxysql.GetMonitoringVendor() == mona.VendorPrometheus {
+				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+					in.Spec.Template.Spec.Containers, *opts.monitorContainer)
+			}
 
-		if opts.configSource != nil {
-			in.Spec.Template = upsertCustomConfig(in.Spec.Template, opts.configSource)
-		}
+			// Set proxysql Secret as MYSQL_PROXY_USER and MYSQL_PROXY_PASSWORD env variable
+			in = upsertEnv(in, proxysql)
 
-		in.Spec.Template.Spec.NodeSelector = pt.Spec.NodeSelector
-		in.Spec.Template.Spec.Affinity = pt.Spec.Affinity
-		if pt.Spec.SchedulerName != "" {
-			in.Spec.Template.Spec.SchedulerName = pt.Spec.SchedulerName
-		}
-		in.Spec.Template.Spec.Tolerations = pt.Spec.Tolerations
-		in.Spec.Template.Spec.ImagePullSecrets = pt.Spec.ImagePullSecrets
-		in.Spec.Template.Spec.PriorityClassName = pt.Spec.PriorityClassName
-		in.Spec.Template.Spec.Priority = pt.Spec.Priority
-		in.Spec.Template.Spec.SecurityContext = pt.Spec.SecurityContext
-		in.Spec.Template.Spec.ServiceAccountName = pt.Spec.ServiceAccountName
-		in.Spec.UpdateStrategy = updateStrategy
-		return in
-	})
+			in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(in.Spec.Template.Spec.Volumes, opts.volume...)
+
+			if opts.configSource != nil {
+				in.Spec.Template = upsertCustomConfig(in.Spec.Template, opts.configSource)
+			}
+
+			in.Spec.Template.Spec.NodeSelector = pt.Spec.NodeSelector
+			in.Spec.Template.Spec.Affinity = pt.Spec.Affinity
+			if pt.Spec.SchedulerName != "" {
+				in.Spec.Template.Spec.SchedulerName = pt.Spec.SchedulerName
+			}
+			in.Spec.Template.Spec.Tolerations = pt.Spec.Tolerations
+			in.Spec.Template.Spec.ImagePullSecrets = pt.Spec.ImagePullSecrets
+			in.Spec.Template.Spec.PriorityClassName = pt.Spec.PriorityClassName
+			in.Spec.Template.Spec.Priority = pt.Spec.Priority
+			in.Spec.Template.Spec.SecurityContext = pt.Spec.SecurityContext
+			in.Spec.Template.Spec.ServiceAccountName = pt.Spec.ServiceAccountName
+			in.Spec.UpdateStrategy = updateStrategy
+			return in
+		},
+		metav1.PatchOptions{},
+	)
 
 	if err != nil {
 		return kutil.VerbUnchanged, err
@@ -352,6 +359,7 @@ func (c *Controller) ensureStatefulSet(
 
 func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) error {
 	err := core_util.WaitUntilPodRunningBySelector(
+		context.TODO(),
 		c.Client,
 		statefulSet.Namespace,
 		statefulSet.Spec.Selector,

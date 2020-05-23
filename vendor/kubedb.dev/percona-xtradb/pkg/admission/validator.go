@@ -16,6 +16,7 @@ limitations under the License.
 package admission
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -103,7 +104,7 @@ func (a *PerconaXtraDBValidator) Admit(req *admission.AdmissionRequest) *admissi
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := a.extClient.KubedbV1alpha1().PerconaXtraDBs(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			obj, err := a.extClient.KubedbV1alpha1().PerconaXtraDBs(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
@@ -171,7 +172,7 @@ func ValidatePerconaXtraDB(client kubernetes.Interface, extClient cs.Interface, 
 			*px.Spec.Replicas)
 	}
 
-	if pxVersion, err := extClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(string(px.Spec.Version), metav1.GetOptions{}); err != nil {
+	if pxVersion, err := extClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(px.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	} else if px.IsCluster() && pxVersion.Spec.Version != api.PerconaXtraDBClusterRecommendedVersion {
 		return errors.Errorf("unsupported version for xtradb cluster, recommended version is %s",
@@ -205,14 +206,14 @@ func ValidatePerconaXtraDB(client kubernetes.Interface, extClient cs.Interface, 
 
 	if strictValidation {
 		if databaseSecret != nil {
-			if _, err := client.CoreV1().Secrets(px.Namespace).Get(databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+			if _, err := client.CoreV1().Secrets(px.Namespace).Get(context.TODO(), databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
 
 		// Check if percona-xtradb Version is deprecated.
 		// If deprecated, return error
-		pxVersion, err := extClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(string(px.Spec.Version), metav1.GetOptions{})
+		pxVersion, err := extClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(px.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}

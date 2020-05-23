@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -56,10 +57,10 @@ func (c *Controller) ensureCertSecret(elasticsearch *api.Elasticsearch) error {
 		if certSecretVolumeSource, err = c.createCertSecret(elasticsearch); err != nil {
 			return err
 		}
-		es, _, err := util.PatchElasticsearch(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+		es, _, err := util.PatchElasticsearch(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
 			in.Spec.CertificateSecret = certSecretVolumeSource
 			return in
-		})
+		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
@@ -75,10 +76,10 @@ func (c *Controller) ensureDatabaseSecret(elasticsearch *api.Elasticsearch) erro
 		if databaseSecretVolume, err = c.createDatabaseSecret(elasticsearch); err != nil {
 			return err
 		}
-		es, _, err := util.PatchElasticsearch(c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+		es, _, err := util.PatchElasticsearch(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
 			in.Spec.DatabaseSecret = databaseSecretVolume
 			return in
-		})
+		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
@@ -91,7 +92,7 @@ func (c *Controller) ensureDatabaseSecret(elasticsearch *api.Elasticsearch) erro
 func (c *Controller) findCertSecret(elasticsearch *api.Elasticsearch) (*core.Secret, error) {
 	name := fmt.Sprintf("%v-cert", elasticsearch.OffshootName())
 
-	secret, err := c.Client.CoreV1().Secrets(elasticsearch.Namespace).Get(name, metav1.GetOptions{})
+	secret, err := c.Client.CoreV1().Secrets(elasticsearch.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil
@@ -191,7 +192,7 @@ func (c *Controller) createCertSecret(elasticsearch *api.Elasticsearch) (*core.S
 			"key_pass": pass,
 		},
 	}
-	if _, err := c.Client.CoreV1().Secrets(elasticsearch.Namespace).Create(secret); err != nil {
+	if _, err := c.Client.CoreV1().Secrets(elasticsearch.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 		return nil, err
 	}
 
@@ -205,7 +206,7 @@ func (c *Controller) createCertSecret(elasticsearch *api.Elasticsearch) (*core.S
 func (c *Controller) findDatabaseSecret(elasticsearch *api.Elasticsearch) (*core.Secret, error) {
 	name := fmt.Sprintf("%v-auth", elasticsearch.OffshootName())
 
-	secret, err := c.Client.CoreV1().Secrets(elasticsearch.Namespace).Get(name, metav1.GetOptions{})
+	secret, err := c.Client.CoreV1().Secrets(elasticsearch.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil
@@ -465,7 +466,7 @@ func (c *Controller) createDatabaseSecret(elasticsearch *api.Elasticsearch) (*co
 		Type: core.SecretTypeOpaque,
 		Data: data,
 	}
-	if _, err := c.Client.CoreV1().Secrets(elasticsearch.Namespace).Create(secret); err != nil {
+	if _, err := c.Client.CoreV1().Secrets(elasticsearch.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 		return nil, err
 	}
 

@@ -18,14 +18,15 @@ package v1alpha2
 
 // Annotation names for Secrets
 const (
-	AltNamesAnnotationKey    = "cert-manager.io/alt-names"
-	IPSANAnnotationKey       = "cert-manager.io/ip-sans"
-	URISANAnnotationKey      = "cert-manager.io/uri-sans"
-	CommonNameAnnotationKey  = "cert-manager.io/common-name"
-	IssuerNameAnnotationKey  = "cert-manager.io/issuer-name"
-	IssuerKindAnnotationKey  = "cert-manager.io/issuer-kind"
-	IssuerGroupAnnotationKey = "cert-manager.io/issuer-group"
-	CertificateNameKey       = "cert-manager.io/certificate-name"
+	AltNamesAnnotationKey          = "cert-manager.io/alt-names"
+	IPSANAnnotationKey             = "cert-manager.io/ip-sans"
+	URISANAnnotationKey            = "cert-manager.io/uri-sans"
+	CommonNameAnnotationKey        = "cert-manager.io/common-name"
+	IssuerNameAnnotationKey        = "cert-manager.io/issuer-name"
+	IssuerKindAnnotationKey        = "cert-manager.io/issuer-kind"
+	IssuerGroupAnnotationKey       = "cert-manager.io/issuer-group"
+	CertificateNameKey             = "cert-manager.io/certificate-name"
+	IsNextPrivateKeySecretLabelKey = "cert-manager.io/next-private-key"
 )
 
 // Deprecated annotation names for Secrets
@@ -46,7 +47,7 @@ const (
 	// if the challenge type is set to http01
 	IngressACMEIssuerHTTP01IngressClassAnnotationKey = "acme.cert-manager.io/http01-ingress-class"
 
-	// IngessClassAnnotationKey picks a specific "class" for the Ingress. The
+	// IngressClassAnnotationKey picks a specific "class" for the Ingress. The
 	// controller only processes Ingresses with this annotation either unset, or
 	// set to either the configured value or the empty string.
 	IngressClassAnnotationKey = "kubernetes.io/ingress.class"
@@ -55,6 +56,9 @@ const (
 // Annotation names for CertificateRequests
 const (
 	CRPrivateKeyAnnotationKey = "cert-manager.io/private-key-secret-name"
+
+	// Annotation to declare the CertificateRequest "revision", beloning to a Certificate Resource
+	CertificateRequestRevisionAnnotationKey = "cert-manager.io/certificate-revision"
 )
 
 const (
@@ -96,6 +100,15 @@ const (
 	// If an injectable references a Secret that does NOT have this annotation,
 	// the cainjector will refuse to inject the secret.
 	AllowsInjectionFromSecretAnnotation = "cert-manager.io/allow-direct-injection"
+)
+
+// Issuer specific Annotations
+const (
+	// VenafiCustomFieldsAnnotationKey is the annotation that passes on JSON encoded custom fields to the Venafi issuer
+	// This will only work with Venafi TPP v19.3 and higher
+	// The value is an array with objects containing the name and value keys
+	// for example: `[{"name": "custom-field", "value": "custom-value"}]`
+	VenafiCustomFieldsAnnotationKey = "venafi.cert-manager.io/custom-fields"
 )
 
 // KeyUsage specifies valid usage contexts for keys.
@@ -151,12 +164,15 @@ const (
 	UsageTimestamping       KeyUsage = "timestamping"
 	UsageOCSPSigning        KeyUsage = "ocsp signing"
 	UsageMicrosoftSGC       KeyUsage = "microsoft sgc"
-	UsageNetscapSGC         KeyUsage = "netscape sgc"
+	UsageNetscapeSGC        KeyUsage = "netscape sgc"
 )
 
 // DefaultKeyUsages contains the default list of key usages
 func DefaultKeyUsages() []KeyUsage {
 	// The serverAuth EKU is required as of Mac OS Catalina: https://support.apple.com/en-us/HT210176
 	// Without this usage, certificates will _always_ flag a warning in newer Mac OS browsers.
-	return []KeyUsage{UsageDigitalSignature, UsageKeyEncipherment, UsageServerAuth}
+	// We don't explicitly add it here as it leads to strange behaviour when a user sets isCA: true
+	// (in which case, 'serverAuth' on the CA can break a lot of clients).
+	// CAs can (and often do) opt to automatically add usages.
+	return []KeyUsage{UsageDigitalSignature, UsageKeyEncipherment}
 }

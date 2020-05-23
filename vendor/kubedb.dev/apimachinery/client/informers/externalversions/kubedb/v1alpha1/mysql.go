@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	time "time"
 
 	kubedbv1alpha1 "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -62,13 +63,13 @@ func NewFilteredMySQLInformer(client versioned.Interface, namespace string, resy
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.KubedbV1alpha1().MySQLs(namespace).List(options)
+				return client.KubedbV1alpha1().MySQLs(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.KubedbV1alpha1().MySQLs(namespace).Watch(options)
+				return client.KubedbV1alpha1().MySQLs(namespace).Watch(context.TODO(), options)
 			},
 		},
 		&kubedbv1alpha1.MySQL{},

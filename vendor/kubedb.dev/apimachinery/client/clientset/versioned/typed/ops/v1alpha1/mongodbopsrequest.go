@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"time"
 
 	v1alpha1 "kubedb.dev/apimachinery/apis/ops/v1alpha1"
@@ -38,15 +39,15 @@ type MongoDBOpsRequestsGetter interface {
 
 // MongoDBOpsRequestInterface has methods to work with MongoDBOpsRequest resources.
 type MongoDBOpsRequestInterface interface {
-	Create(*v1alpha1.MongoDBOpsRequest) (*v1alpha1.MongoDBOpsRequest, error)
-	Update(*v1alpha1.MongoDBOpsRequest) (*v1alpha1.MongoDBOpsRequest, error)
-	UpdateStatus(*v1alpha1.MongoDBOpsRequest) (*v1alpha1.MongoDBOpsRequest, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.MongoDBOpsRequest, error)
-	List(opts v1.ListOptions) (*v1alpha1.MongoDBOpsRequestList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.MongoDBOpsRequest, err error)
+	Create(ctx context.Context, mongoDBOpsRequest *v1alpha1.MongoDBOpsRequest, opts v1.CreateOptions) (*v1alpha1.MongoDBOpsRequest, error)
+	Update(ctx context.Context, mongoDBOpsRequest *v1alpha1.MongoDBOpsRequest, opts v1.UpdateOptions) (*v1alpha1.MongoDBOpsRequest, error)
+	UpdateStatus(ctx context.Context, mongoDBOpsRequest *v1alpha1.MongoDBOpsRequest, opts v1.UpdateOptions) (*v1alpha1.MongoDBOpsRequest, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.MongoDBOpsRequest, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.MongoDBOpsRequestList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.MongoDBOpsRequest, err error)
 	MongoDBOpsRequestExpansion
 }
 
@@ -65,20 +66,20 @@ func newMongoDBOpsRequests(c *OpsV1alpha1Client, namespace string) *mongoDBOpsRe
 }
 
 // Get takes name of the mongoDBOpsRequest, and returns the corresponding mongoDBOpsRequest object, and an error if there is any.
-func (c *mongoDBOpsRequests) Get(name string, options v1.GetOptions) (result *v1alpha1.MongoDBOpsRequest, err error) {
+func (c *mongoDBOpsRequests) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.MongoDBOpsRequest, err error) {
 	result = &v1alpha1.MongoDBOpsRequest{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("mongodbopsrequests").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of MongoDBOpsRequests that match those selectors.
-func (c *mongoDBOpsRequests) List(opts v1.ListOptions) (result *v1alpha1.MongoDBOpsRequestList, err error) {
+func (c *mongoDBOpsRequests) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.MongoDBOpsRequestList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -89,13 +90,13 @@ func (c *mongoDBOpsRequests) List(opts v1.ListOptions) (result *v1alpha1.MongoDB
 		Resource("mongodbopsrequests").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested mongoDBOpsRequests.
-func (c *mongoDBOpsRequests) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *mongoDBOpsRequests) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -106,87 +107,90 @@ func (c *mongoDBOpsRequests) Watch(opts v1.ListOptions) (watch.Interface, error)
 		Resource("mongodbopsrequests").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a mongoDBOpsRequest and creates it.  Returns the server's representation of the mongoDBOpsRequest, and an error, if there is any.
-func (c *mongoDBOpsRequests) Create(mongoDBOpsRequest *v1alpha1.MongoDBOpsRequest) (result *v1alpha1.MongoDBOpsRequest, err error) {
+func (c *mongoDBOpsRequests) Create(ctx context.Context, mongoDBOpsRequest *v1alpha1.MongoDBOpsRequest, opts v1.CreateOptions) (result *v1alpha1.MongoDBOpsRequest, err error) {
 	result = &v1alpha1.MongoDBOpsRequest{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("mongodbopsrequests").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(mongoDBOpsRequest).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a mongoDBOpsRequest and updates it. Returns the server's representation of the mongoDBOpsRequest, and an error, if there is any.
-func (c *mongoDBOpsRequests) Update(mongoDBOpsRequest *v1alpha1.MongoDBOpsRequest) (result *v1alpha1.MongoDBOpsRequest, err error) {
+func (c *mongoDBOpsRequests) Update(ctx context.Context, mongoDBOpsRequest *v1alpha1.MongoDBOpsRequest, opts v1.UpdateOptions) (result *v1alpha1.MongoDBOpsRequest, err error) {
 	result = &v1alpha1.MongoDBOpsRequest{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("mongodbopsrequests").
 		Name(mongoDBOpsRequest.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(mongoDBOpsRequest).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *mongoDBOpsRequests) UpdateStatus(mongoDBOpsRequest *v1alpha1.MongoDBOpsRequest) (result *v1alpha1.MongoDBOpsRequest, err error) {
+func (c *mongoDBOpsRequests) UpdateStatus(ctx context.Context, mongoDBOpsRequest *v1alpha1.MongoDBOpsRequest, opts v1.UpdateOptions) (result *v1alpha1.MongoDBOpsRequest, err error) {
 	result = &v1alpha1.MongoDBOpsRequest{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("mongodbopsrequests").
 		Name(mongoDBOpsRequest.Name).
 		SubResource("status").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(mongoDBOpsRequest).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the mongoDBOpsRequest and deletes it. Returns an error if one occurs.
-func (c *mongoDBOpsRequests) Delete(name string, options *v1.DeleteOptions) error {
+func (c *mongoDBOpsRequests) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("mongodbopsrequests").
 		Name(name).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *mongoDBOpsRequests) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *mongoDBOpsRequests) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("mongodbopsrequests").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // Patch applies the patch and returns the patched mongoDBOpsRequest.
-func (c *mongoDBOpsRequests) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.MongoDBOpsRequest, err error) {
+func (c *mongoDBOpsRequests) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.MongoDBOpsRequest, err error) {
 	result = &v1alpha1.MongoDBOpsRequest{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("mongodbopsrequests").
-		SubResource(subresources...).
 		Name(name).
+		SubResource(subresources...).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }

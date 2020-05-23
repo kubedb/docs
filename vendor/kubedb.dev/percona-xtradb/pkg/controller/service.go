@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -62,7 +63,7 @@ func (c *Controller) ensureService(px *api.PerconaXtraDB) (kutil.VerbType, error
 }
 
 func (c *Controller) checkService(px *api.PerconaXtraDB, serviceName string) error {
-	service, err := c.Client.CoreV1().Services(px.Namespace).Get(serviceName, metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(px.Namespace).Get(context.TODO(), serviceName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -86,7 +87,7 @@ func (c *Controller) createService(px *api.PerconaXtraDB) (kutil.VerbType, error
 
 	owner := metav1.NewControllerRef(px, api.SchemeGroupVersion.WithKind(api.ResourceKindPerconaXtraDB))
 
-	_, ok, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = px.OffshootLabels()
 		in.Annotations = px.Spec.ServiceTemplate.Annotations
@@ -111,7 +112,7 @@ func (c *Controller) createService(px *api.PerconaXtraDB) (kutil.VerbType, error
 			in.Spec.HealthCheckNodePort = px.Spec.ServiceTemplate.Spec.HealthCheckNodePort
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return ok, err
 }
 
@@ -134,7 +135,7 @@ func (c *Controller) ensureStatsService(px *api.PerconaXtraDB) (kutil.VerbType, 
 		Name:      px.StatsService().ServiceName(),
 		Namespace: px.Namespace,
 	}
-	_, vt, err := core_util.CreateOrPatchService(c.Client, meta, func(in *core.Service) *core.Service {
+	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = px.StatsServiceLabels()
 		in.Spec.Selector = px.OffshootSelectors()
@@ -147,7 +148,7 @@ func (c *Controller) ensureStatsService(px *api.PerconaXtraDB) (kutil.VerbType, 
 			},
 		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
@@ -191,7 +192,7 @@ func (c *Controller) createPerconaXtraDBGoverningService(px *api.PerconaXtraDB) 
 	}
 	core_util.EnsureOwnerReference(&service.ObjectMeta, owner)
 
-	_, err := c.Client.CoreV1().Services(px.Namespace).Create(service)
+	_, err := c.Client.CoreV1().Services(px.Namespace).Create(context.TODO(), service, metav1.CreateOptions{})
 	if err != nil && !kerr.IsAlreadyExists(err) {
 		return "", err
 	}

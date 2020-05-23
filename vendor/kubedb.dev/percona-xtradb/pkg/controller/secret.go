@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -39,10 +40,10 @@ func (c *Controller) ensureDatabaseSecret(px *api.PerconaXtraDB) error {
 			return err
 		}
 
-		per, _, err := util.PatchPerconaXtraDB(c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
+		per, _, err := util.PatchPerconaXtraDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
 			in.Spec.DatabaseSecret = secretVolumeSource
 			return in
-		})
+		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
@@ -78,7 +79,7 @@ func (c *Controller) createDatabaseSecret(px *api.PerconaXtraDB) (*core.SecretVo
 			},
 		}
 
-		if _, err := c.Client.CoreV1().Secrets(px.Namespace).Create(secret); err != nil {
+		if _, err := c.Client.CoreV1().Secrets(px.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return nil, err
 		}
 	}
@@ -95,19 +96,19 @@ func (c *Controller) upgradeDatabaseSecret(px *api.PerconaXtraDB) error {
 		Namespace: px.Namespace,
 	}
 
-	_, _, err := core_util.CreateOrPatchSecret(c.Client, meta, func(in *core.Secret) *core.Secret {
+	_, _, err := core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {
 		if _, ok := in.Data[api.MySQLUserKey]; !ok {
 			if val, ok2 := in.Data["user"]; ok2 {
 				in.StringData = map[string]string{api.MySQLUserKey: string(val)}
 			}
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }
 
 func (c *Controller) checkSecret(secretName string, px *api.PerconaXtraDB) (*core.Secret, error) {
-	secret, err := c.Client.CoreV1().Secrets(px.Namespace).Get(secretName, metav1.GetOptions{})
+	secret, err := c.Client.CoreV1().Secrets(px.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil

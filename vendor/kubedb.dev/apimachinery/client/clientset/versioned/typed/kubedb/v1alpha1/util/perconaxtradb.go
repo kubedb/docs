@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -31,29 +32,32 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchPerconaXtraDB(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.PerconaXtraDB) *api.PerconaXtraDB) (*api.PerconaXtraDB, kutil.VerbType, error) {
-	cur, err := c.PerconaXtraDBs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+func CreateOrPatchPerconaXtraDB(ctx context.Context, c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.PerconaXtraDB) *api.PerconaXtraDB, opts metav1.PatchOptions) (*api.PerconaXtraDB, kutil.VerbType, error) {
+	cur, err := c.PerconaXtraDBs(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating PerconaXtraDB %s/%s.", meta.Namespace, meta.Name)
-		out, err := c.PerconaXtraDBs(meta.Namespace).Create(transform(&api.PerconaXtraDB{
+		out, err := c.PerconaXtraDBs(meta.Namespace).Create(ctx, transform(&api.PerconaXtraDB{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PerconaXtraDB",
 				APIVersion: api.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}))
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchPerconaXtraDB(c, cur, transform)
+	return PatchPerconaXtraDB(ctx, c, cur, transform, opts)
 }
 
-func PatchPerconaXtraDB(c cs.KubedbV1alpha1Interface, cur *api.PerconaXtraDB, transform func(*api.PerconaXtraDB) *api.PerconaXtraDB) (*api.PerconaXtraDB, kutil.VerbType, error) {
-	return PatchPerconaXtraDBObject(c, cur, transform(cur.DeepCopy()))
+func PatchPerconaXtraDB(ctx context.Context, c cs.KubedbV1alpha1Interface, cur *api.PerconaXtraDB, transform func(*api.PerconaXtraDB) *api.PerconaXtraDB, opts metav1.PatchOptions) (*api.PerconaXtraDB, kutil.VerbType, error) {
+	return PatchPerconaXtraDBObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchPerconaXtraDBObject(c cs.KubedbV1alpha1Interface, cur, mod *api.PerconaXtraDB) (*api.PerconaXtraDB, kutil.VerbType, error) {
+func PatchPerconaXtraDBObject(ctx context.Context, c cs.KubedbV1alpha1Interface, cur, mod *api.PerconaXtraDB, opts metav1.PatchOptions) (*api.PerconaXtraDB, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -72,19 +76,20 @@ func PatchPerconaXtraDBObject(c cs.KubedbV1alpha1Interface, cur, mod *api.Percon
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching PerconaXtraDB %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.PerconaXtraDBs(cur.Namespace).Patch(cur.Name, types.MergePatchType, patch)
+	out, err := c.PerconaXtraDBs(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdatePerconaXtraDB(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.PerconaXtraDB) *api.PerconaXtraDB) (result *api.PerconaXtraDB, err error) {
+func TryUpdatePerconaXtraDB(ctx context.Context, c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.PerconaXtraDB) *api.PerconaXtraDB, opts metav1.UpdateOptions) (result *api.PerconaXtraDB, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.PerconaXtraDBs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		cur, e2 := c.PerconaXtraDBs(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.PerconaXtraDBs(cur.Namespace).Update(transform(cur.DeepCopy()))
+
+			result, e2 = c.PerconaXtraDBs(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update PerconaXtraDB %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
@@ -98,9 +103,11 @@ func TryUpdatePerconaXtraDB(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta
 }
 
 func UpdatePerconaXtraDBStatus(
+	ctx context.Context,
 	c cs.KubedbV1alpha1Interface,
 	meta metav1.ObjectMeta,
 	transform func(*api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus,
+	opts metav1.UpdateOptions,
 ) (result *api.PerconaXtraDB, err error) {
 	apply := func(x *api.PerconaXtraDB) *api.PerconaXtraDB {
 		return &api.PerconaXtraDB{
@@ -112,16 +119,16 @@ func UpdatePerconaXtraDBStatus(
 	}
 
 	attempt := 0
-	cur, err := c.PerconaXtraDBs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	cur, err := c.PerconaXtraDBs(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		var e2 error
-		result, e2 = c.PerconaXtraDBs(meta.Namespace).UpdateStatus(apply(cur))
+		result, e2 = c.PerconaXtraDBs(meta.Namespace).UpdateStatus(ctx, apply(cur), opts)
 		if kerr.IsConflict(e2) {
-			latest, e3 := c.PerconaXtraDBs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+			latest, e3 := c.PerconaXtraDBs(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 			switch {
 			case e3 == nil:
 				cur = latest

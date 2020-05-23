@@ -16,6 +16,7 @@ limitations under the License.
 package admission
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -99,7 +100,7 @@ func (a *RedisValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := a.extClient.KubedbV1alpha1().Redises(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			obj, err := a.extClient.KubedbV1alpha1().Redises(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
@@ -139,7 +140,7 @@ func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *a
 	if redis.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if _, err := extClient.CatalogV1alpha1().RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -173,7 +174,7 @@ func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *a
 	if strictValidation {
 		// Check if redisVersion is deprecated.
 		// If deprecated, return error
-		redisVersion, err := extClient.CatalogV1alpha1().RedisVersions().Get(string(redis.Spec.Version), metav1.GetOptions{})
+		redisVersion, err := extClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}

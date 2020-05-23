@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 
@@ -46,10 +47,10 @@ func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 			return err
 		}
 
-		ms, _, err := util.PatchMongoDB(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
+		ms, _, err := util.PatchMongoDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
 			in.Spec.DatabaseSecret = secretVolumeSource
 			return in
-		})
+		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
@@ -87,7 +88,7 @@ func (c *Controller) ensureKeyFileSecret(mongodb *api.MongoDB) error {
 				KeyForKeyFile: base64Token,
 			},
 		}
-		if _, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Create(secret); err != nil {
+		if _, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return err
 		}
 	}
@@ -95,10 +96,10 @@ func (c *Controller) ensureKeyFileSecret(mongodb *api.MongoDB) error {
 	keyFile := &core.SecretVolumeSource{
 		SecretName: secretName,
 	}
-	_, _, err = util.PatchMongoDB(c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
+	_, _, err = util.PatchMongoDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
 		in.Spec.KeyFile = keyFile
 		return in
-	})
+	}, metav1.PatchOptions{})
 	if err != nil {
 		return err
 	}
@@ -132,7 +133,7 @@ func (c *Controller) createDatabaseSecret(mongodb *api.MongoDB) (*core.SecretVol
 				KeyMongoDBPassword: randPassword,
 			},
 		}
-		if _, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Create(secret); err != nil {
+		if _, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return nil, err
 		}
 	}
@@ -142,7 +143,7 @@ func (c *Controller) createDatabaseSecret(mongodb *api.MongoDB) (*core.SecretVol
 }
 
 func (c *Controller) checkSecret(secretName string, mongodb *api.MongoDB) (*core.Secret, error) {
-	secret, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(secretName, metav1.GetOptions{})
+	secret, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil

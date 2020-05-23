@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -62,7 +63,7 @@ func (c *Controller) deleteMonitor(postgres *api.Postgres) error {
 }
 
 func (c *Controller) getOldAgent(postgres *api.Postgres) mona.Agent {
-	service, err := c.Client.CoreV1().Services(postgres.Namespace).Get(postgres.StatsService().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(postgres.Namespace).Get(context.TODO(), postgres.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -71,17 +72,16 @@ func (c *Controller) getOldAgent(postgres *api.Postgres) mona.Agent {
 }
 
 func (c *Controller) setNewAgent(postgres *api.Postgres) error {
-	service, err := c.Client.CoreV1().Services(postgres.Namespace).Get(postgres.StatsService().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(postgres.Namespace).Get(context.TODO(), postgres.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	_, _, err = core_util.PatchService(c.Client, service, func(in *core.Service) *core.Service {
+	_, _, err = core_util.PatchService(context.TODO(), c.Client, service, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
 			mona.KeyAgent: string(postgres.Spec.Monitor.Agent),
-		},
-		)
+		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }
 

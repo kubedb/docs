@@ -17,6 +17,7 @@ limitations under the License.
 package util
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -31,29 +32,32 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchPgBouncer(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.PgBouncer) *api.PgBouncer) (*api.PgBouncer, kutil.VerbType, error) {
-	cur, err := c.PgBouncers(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+func CreateOrPatchPgBouncer(ctx context.Context, c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.PgBouncer) *api.PgBouncer, opts metav1.PatchOptions) (*api.PgBouncer, kutil.VerbType, error) {
+	cur, err := c.PgBouncers(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating PgBouncer %s/%s.", meta.Namespace, meta.Name)
-		out, err := c.PgBouncers(meta.Namespace).Create(transform(&api.PgBouncer{
+		out, err := c.PgBouncers(meta.Namespace).Create(ctx, transform(&api.PgBouncer{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PgBouncer",
 				APIVersion: api.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}))
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchPgBouncer(c, cur, transform)
+	return PatchPgBouncer(ctx, c, cur, transform, opts)
 }
 
-func PatchPgBouncer(c cs.KubedbV1alpha1Interface, cur *api.PgBouncer, transform func(*api.PgBouncer) *api.PgBouncer) (*api.PgBouncer, kutil.VerbType, error) {
-	return PatchPgBouncerObject(c, cur, transform(cur.DeepCopy()))
+func PatchPgBouncer(ctx context.Context, c cs.KubedbV1alpha1Interface, cur *api.PgBouncer, transform func(*api.PgBouncer) *api.PgBouncer, opts metav1.PatchOptions) (*api.PgBouncer, kutil.VerbType, error) {
+	return PatchPgBouncerObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchPgBouncerObject(c cs.KubedbV1alpha1Interface, cur, mod *api.PgBouncer) (*api.PgBouncer, kutil.VerbType, error) {
+func PatchPgBouncerObject(ctx context.Context, c cs.KubedbV1alpha1Interface, cur, mod *api.PgBouncer, opts metav1.PatchOptions) (*api.PgBouncer, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -72,19 +76,20 @@ func PatchPgBouncerObject(c cs.KubedbV1alpha1Interface, cur, mod *api.PgBouncer)
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching PgBouncer %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.PgBouncers(cur.Namespace).Patch(cur.Name, types.MergePatchType, patch)
+	out, err := c.PgBouncers(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdatePgBouncer(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.PgBouncer) *api.PgBouncer) (result *api.PgBouncer, err error) {
+func TryUpdatePgBouncer(ctx context.Context, c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*api.PgBouncer) *api.PgBouncer, opts metav1.UpdateOptions) (result *api.PgBouncer, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.PgBouncers(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		cur, e2 := c.PgBouncers(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.PgBouncers(cur.Namespace).Update(transform(cur.DeepCopy()))
+
+			result, e2 = c.PgBouncers(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update PgBouncer %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
@@ -98,9 +103,11 @@ func TryUpdatePgBouncer(c cs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, tr
 }
 
 func UpdatePgBouncerStatus(
+	ctx context.Context,
 	c cs.KubedbV1alpha1Interface,
 	meta metav1.ObjectMeta,
 	transform func(*api.PgBouncerStatus) *api.PgBouncerStatus,
+	opts metav1.UpdateOptions,
 ) (result *api.PgBouncer, err error) {
 	apply := func(x *api.PgBouncer) *api.PgBouncer {
 		return &api.PgBouncer{
@@ -112,16 +119,16 @@ func UpdatePgBouncerStatus(
 	}
 
 	attempt := 0
-	cur, err := c.PgBouncers(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	cur, err := c.PgBouncers(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		var e2 error
-		result, e2 = c.PgBouncers(meta.Namespace).UpdateStatus(apply(cur))
+		result, e2 = c.PgBouncers(meta.Namespace).UpdateStatus(ctx, apply(cur), opts)
 		if kerr.IsConflict(e2) {
-			latest, e3 := c.PgBouncers(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+			latest, e3 := c.PgBouncers(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 			switch {
 			case e3 == nil:
 				cur = latest

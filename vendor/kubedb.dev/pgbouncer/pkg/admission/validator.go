@@ -17,6 +17,7 @@ limitations under the License.
 package admission
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -93,7 +94,7 @@ func (pbValidator *PgBouncerValidator) Admit(req *admission.AdmissionRequest) *a
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := pbValidator.extClient.KubedbV1alpha1().PgBouncers(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			obj, err := pbValidator.extClient.KubedbV1alpha1().PgBouncers(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if kerr.IsNotFound(err) {
 				log.Infoln("obj ", obj.Name, " already deleted")
 			}
@@ -155,7 +156,7 @@ func ValidatePgBouncer(client kubernetes.Interface, extClient cs.Interface, pgbo
 	if strictValidation {
 		// Check if pgbouncerVersion is absent or deprecated.
 		// If deprecated, return error
-		pgbouncerVersion, err := extClient.CatalogV1alpha1().PgBouncerVersions().Get(string(pgbouncer.Spec.Version), metav1.GetOptions{})
+		pgbouncerVersion, err := extClient.CatalogV1alpha1().PgBouncerVersions().Get(context.TODO(), string(pgbouncer.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}

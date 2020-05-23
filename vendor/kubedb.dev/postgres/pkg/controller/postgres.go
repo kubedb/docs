@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
@@ -51,10 +52,10 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	if postgres.Status.Phase == "" {
-		pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+		pg, err := util.UpdatePostgresStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
-		})
+		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -74,7 +75,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	// ensure database StatefulSet
-	postgresVersion, err := c.ExtClient.CatalogV1alpha1().PostgresVersions().Get(string(postgres.Spec.Version), metav1.GetOptions{})
+	postgresVersion, err := c.ExtClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), string(postgres.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -114,10 +115,10 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		}
 
 		// add phase that database is being initialized
-		pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+		pg, err := util.UpdatePostgresStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 			in.Phase = api.DatabasePhaseInitializing
 			return in
-		})
+		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -130,11 +131,11 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		}
 	}
 
-	pg, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+	pg, err := util.UpdatePostgresStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = postgres.Generation
 		return in
-	})
+	}, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
@@ -200,11 +201,11 @@ func (c *Controller) halt(db *api.Postgres) error {
 		return err
 	}
 	log.Infof("update status of Postgres %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+	if _, err := util.UpdatePostgresStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
-	}); err != nil {
+	}, metav1.UpdateOptions{}); err != nil {
 		return err
 	}
 	return nil
@@ -250,14 +251,15 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, owner 
 			AppsV1().
 			StatefulSets(postgres.Namespace).
 			DeleteCollection(
-				&metav1.DeleteOptions{PropagationPolicy: &policy},
+				context.TODO(),
+				metav1.DeleteOptions{PropagationPolicy: &policy},
 				metav1.ListOptions{LabelSelector: selector.String()},
 			); err != nil && !kerr.IsNotFound(err) {
 			return errors.Wrap(err, "error in deletion of statefulsets")
 		}
 		// Let's give statefulsets some time to breath and then be deleted.
 		if err := wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
-			podList, err := c.Client.CoreV1().Pods(postgres.Namespace).List(metav1.ListOptions{
+			podList, err := c.Client.CoreV1().Pods(postgres.Namespace).List(context.TODO(), metav1.ListOptions{
 				LabelSelector: selector.String(),
 			})
 			return len(podList.Items) == 0, err
@@ -276,6 +278,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, owner 
 	} else {
 		// Make sure secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
+			context.TODO(),
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			postgres.Namespace,
@@ -286,6 +289,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, owner 
 	}
 	// delete PVC for both "wipeOut" and "delete" TerminationPolicy.
 	return dynamic_util.EnsureOwnerReferenceForSelector(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		postgres.Namespace,
@@ -298,6 +302,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *api.Postgres) e
 	labelSelector := labels.SelectorFromSet(postgres.OffshootSelectors())
 
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
 		postgres.Namespace,
@@ -306,6 +311,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *api.Postgres) e
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
+		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		postgres.Namespace,
@@ -317,7 +323,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *api.Postgres) e
 }
 
 func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
-	postgres, err := c.ExtClient.KubedbV1alpha1().Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	postgres, err := c.ExtClient.KubedbV1alpha1().Postgreses(meta.Namespace).Get(context.TODO(), meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -326,27 +332,27 @@ func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error)
 }
 
 func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
-	postgres, err := c.ExtClient.KubedbV1alpha1().Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	postgres, err := c.ExtClient.KubedbV1alpha1().Postgreses(meta.Namespace).Get(context.TODO(), meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	_, err = util.UpdatePostgresStatus(c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+	_, err = util.UpdatePostgresStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = phase
 		in.Reason = reason
 		return in
-	})
+	}, metav1.UpdateOptions{})
 	return err
 }
 
 func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
-	postgres, err := c.ExtClient.KubedbV1alpha1().Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	postgres, err := c.ExtClient.KubedbV1alpha1().Postgreses(meta.Namespace).Get(context.TODO(), meta.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	_, _, err = util.PatchPostgres(c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
+	_, _, err = util.PatchPostgres(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
 		in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }

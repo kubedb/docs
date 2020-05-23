@@ -16,6 +16,7 @@ limitations under the License.
 package admission
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -103,7 +104,7 @@ func (a *ProxySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			_, err := a.extClient.KubedbV1alpha1().ProxySQLs(req.Namespace).Get(req.Name, metav1.GetOptions{})
+			_, err := a.extClient.KubedbV1alpha1().ProxySQLs(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			}
@@ -164,11 +165,11 @@ func validateBackendWithMode(extClient cs.Interface, proxysql *api.ProxySQL) err
 	switch gk {
 	case api.Kind(api.ResourceKindPerconaXtraDB):
 		requiredMode = api.LoadBalanceModeGalera
-		_, err = extClient.KubedbV1alpha1().PerconaXtraDBs(proxysql.Namespace).Get(backend.Ref.Name, metav1.GetOptions{})
+		_, err = extClient.KubedbV1alpha1().PerconaXtraDBs(proxysql.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
 
 	case api.Kind(api.ResourceKindMySQL):
 		requiredMode = api.LoadBalanceModeGroupReplication
-		_, err = extClient.KubedbV1alpha1().MySQLs(proxysql.Namespace).Get(backend.Ref.Name, metav1.GetOptions{})
+		_, err = extClient.KubedbV1alpha1().MySQLs(proxysql.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
 
 	// TODO: add other cases for MySQL and MariaDB when they will be configured
 
@@ -197,7 +198,7 @@ func ValidateProxySQL(client kubernetes.Interface, extClient cs.Interface, proxy
 	}
 	var proxysqlVersion *catalog_api.ProxySQLVersion
 	var err error
-	if proxysqlVersion, err = extClient.CatalogV1alpha1().ProxySQLVersions().Get(string(proxysql.Spec.Version), metav1.GetOptions{}); err != nil {
+	if proxysqlVersion, err = extClient.CatalogV1alpha1().ProxySQLVersions().Get(context.TODO(), string(proxysql.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
@@ -222,7 +223,7 @@ func ValidateProxySQL(client kubernetes.Interface, extClient cs.Interface, proxy
 
 	if strictValidation {
 		if proxysqlSecret != nil {
-			if _, err = client.CoreV1().Secrets(proxysql.Namespace).Get(proxysqlSecret.SecretName, metav1.GetOptions{}); err != nil {
+			if _, err = client.CoreV1().Secrets(proxysql.Namespace).Get(context.TODO(), proxysqlSecret.SecretName, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}

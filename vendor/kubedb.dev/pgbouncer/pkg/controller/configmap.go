@@ -18,6 +18,7 @@ package controller
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"path/filepath"
 	"text/template"
@@ -86,7 +87,7 @@ func (c *Controller) generateConfig(pgbouncer *api.PgBouncer) (string, error) {
 			name := db.DatabaseRef.Name
 			namespace := pgbouncer.GetNamespace()
 
-			appBinding, err := c.AppCatalogClient.AppcatalogV1alpha1().AppBindings(namespace).Get(name, metav1.GetOptions{})
+			appBinding, err := c.AppCatalogClient.AppcatalogV1alpha1().AppBindings(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 			if err != nil {
 				if kerr.IsNotFound(err) {
 					log.Warning(err)
@@ -108,7 +109,7 @@ func (c *Controller) generateConfig(pgbouncer *api.PgBouncer) (string, error) {
 				buf.WriteString(fmt.Sprint(db.Alias + " = " + *(appBinding.Spec.ClientConfig.URL) + " dbname=" + db.DatabaseName))
 			}
 			if db.DatabaseSecretRef != nil {
-				secret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(db.DatabaseSecretRef.Name, metav1.GetOptions{})
+				secret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), db.DatabaseSecretRef.Name, metav1.GetOptions{})
 				if err == nil {
 					buf.WriteString(fmt.Sprint(" user=", string(secret.Data["username"])))
 					buf.WriteString(fmt.Sprint(" password=", string(secret.Data["password"])))
@@ -172,21 +173,21 @@ func (c *Controller) ensureConfigMapFromCRD(pgbouncer *api.PgBouncer) (kutil.Ver
 		return kutil.VerbUnchanged, err
 	}
 
-	_, vt, err := core_util.CreateOrPatchConfigMap(c.Client, configMapMeta, func(in *core.ConfigMap) *core.ConfigMap {
+	_, vt, err := core_util.CreateOrPatchConfigMap(context.TODO(), c.Client, configMapMeta, func(in *core.ConfigMap) *core.ConfigMap {
 		in.Labels = pgbouncer.OffshootLabels()
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Data = map[string]string{
 			pbConfigFile: cfg,
 		}
 		return in
-	})
+	}, metav1.PatchOptions{})
 
 	return vt, err
 }
 
 func (c *Controller) getUserListFileName(pgbouncer *api.PgBouncer) (string, error) {
 	defaultSecretSpec := c.GetDefaultSecretSpec(pgbouncer)
-	defaultSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(defaultSecretSpec.Name, metav1.GetOptions{})
+	defaultSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), defaultSecretSpec.Name, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -198,7 +199,7 @@ func (c *Controller) getUserListFileName(pgbouncer *api.PgBouncer) (string, erro
 
 func (c *Controller) isUpStreamServerCAExist(pgbouncer *api.PgBouncer) (bool, error) {
 	defaultSecretSpec := c.GetDefaultSecretSpec(pgbouncer)
-	defaultSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(defaultSecretSpec.Name, metav1.GetOptions{})
+	defaultSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), defaultSecretSpec.Name, metav1.GetOptions{})
 	if err != nil {
 		return false, err
 	}

@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"errors"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -26,6 +27,7 @@ import (
 
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kutil "kmodules.xyz/client-go"
 )
 
@@ -42,10 +44,10 @@ func (c *Controller) create(memcached *api.Memcached) error {
 	}
 
 	if memcached.Status.Phase == "" {
-		mc, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+		mc, err := util.UpdateMemcachedStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 			in.Phase = api.DatabasePhaseCreating
 			return in
-		})
+		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
@@ -85,11 +87,11 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		)
 	}
 
-	mc, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+	mc, err := util.UpdateMemcachedStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = memcached.Generation
 		return in
-	})
+	}, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
@@ -140,11 +142,11 @@ func (c *Controller) halt(db *api.Memcached) error {
 		return err
 	}
 	log.Infof("update status of Memcached %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMemcachedStatus(c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+	if _, err := util.UpdateMemcachedStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
-	}); err != nil {
+	}, metav1.UpdateOptions{}); err != nil {
 		return err
 	}
 	return nil

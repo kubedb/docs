@@ -22,9 +22,6 @@ import (
 	cmmeta "github.com/jetstack/cert-manager/pkg/apis/meta/v1"
 )
 
-// TODO: these types should be moved into their own API group once we have a loose
-// coupling between ACME Issuers and their solver configurations (see: Solver proposal)
-
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
@@ -99,7 +96,7 @@ type OrderStatus struct {
 	FinalizeURL string `json:"finalizeURL,omitempty"`
 
 	// Authorizations contains data returned from the ACME server on what
-	// authoriations must be completed in order to validate the DNS names
+	// authorizations must be completed in order to validate the DNS names
 	// specified on the Order.
 	// +optional
 	Authorizations []ACMEAuthorization `json:"authorizations,omitempty"`
@@ -145,6 +142,17 @@ type ACMEAuthorization struct {
 	// field will be 'true' and the 'identifier' field will be 'example.com'.
 	// +optional
 	Wildcard *bool `json:"wildcard,omitempty"`
+
+	// InitialState is the initial state of the ACME authorization when first
+	// fetched from the ACME server.
+	// If an Authorization is already 'valid', the Order controller will not
+	// create a Challenge resource for the authorization. This will occur when
+	// working with an ACME server that enables 'authz reuse' (such as Let's
+	// Encrypt's production endpoint).
+	// If not set and 'identifier' is set, the state is assumed to be pending
+	// and a Challenge will be created.
+	// +optional
+	InitialState State `json:"initialState,omitempty"`
 
 	// Challenges specifies the challenge types offered by the ACME server.
 	// One of these challenge types will be selected when validating the DNS

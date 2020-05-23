@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -39,10 +40,16 @@ func (c *Controller) ensureProxySQLSecret(proxysql *api.ProxySQL) error {
 			return err
 		}
 
-		proxysqlPathced, _, err := util.PatchProxySQL(c.ExtClient.KubedbV1alpha1(), proxysql, func(in *api.ProxySQL) *api.ProxySQL {
-			in.Spec.ProxySQLSecret = secretVolumeSource
-			return in
-		})
+		proxysqlPathced, _, err := util.PatchProxySQL(
+			context.TODO(),
+			c.ExtClient.KubedbV1alpha1(),
+			proxysql,
+			func(in *api.ProxySQL) *api.ProxySQL {
+				in.Spec.ProxySQLSecret = secretVolumeSource
+				return in
+			},
+			metav1.PatchOptions{},
+		)
 		if err != nil {
 			return err
 		}
@@ -84,7 +91,7 @@ func (c *Controller) createProxySQLSecret(proxysql *api.ProxySQL) (*core.SecretV
 
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
 
-		if _, err := c.Client.CoreV1().Secrets(proxysql.Namespace).Create(secret); err != nil {
+		if _, err := c.Client.CoreV1().Secrets(proxysql.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return nil, err
 		}
 	}
@@ -94,7 +101,7 @@ func (c *Controller) createProxySQLSecret(proxysql *api.ProxySQL) (*core.SecretV
 }
 
 func (c *Controller) checkSecret(secretName string, proxysql *api.ProxySQL) (*core.Secret, error) {
-	secret, err := c.Client.CoreV1().Secrets(proxysql.Namespace).Get(secretName, metav1.GetOptions{})
+	secret, err := c.Client.CoreV1().Secrets(proxysql.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil

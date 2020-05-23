@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -54,7 +55,7 @@ func (c *Controller) addOrUpdateMonitor(pgbouncer *api.PgBouncer) (kutil.VerbTyp
 }
 
 func (c *Controller) getOldAgent(pgbouncer *api.PgBouncer) mona.Agent {
-	service, err := c.Client.CoreV1().Services(pgbouncer.Namespace).Get(pgbouncer.StatsService().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -63,17 +64,16 @@ func (c *Controller) getOldAgent(pgbouncer *api.PgBouncer) mona.Agent {
 }
 
 func (c *Controller) setNewAgent(pgbouncer *api.PgBouncer) error {
-	service, err := c.Client.CoreV1().Services(pgbouncer.Namespace).Get(pgbouncer.StatsService().ServiceName(), metav1.GetOptions{})
+	service, err := c.Client.CoreV1().Services(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	_, _, err = core_util.PatchService(c.Client, service, func(in *core.Service) *core.Service {
+	_, _, err = core_util.PatchService(context.TODO(), c.Client, service, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
 			mona.KeyAgent: string(pgbouncer.Spec.Monitor.Agent),
-		},
-		)
+		})
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return err
 }
 

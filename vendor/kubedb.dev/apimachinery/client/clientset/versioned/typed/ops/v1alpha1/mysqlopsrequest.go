@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"context"
 	"time"
 
 	v1alpha1 "kubedb.dev/apimachinery/apis/ops/v1alpha1"
@@ -38,15 +39,15 @@ type MySQLOpsRequestsGetter interface {
 
 // MySQLOpsRequestInterface has methods to work with MySQLOpsRequest resources.
 type MySQLOpsRequestInterface interface {
-	Create(*v1alpha1.MySQLOpsRequest) (*v1alpha1.MySQLOpsRequest, error)
-	Update(*v1alpha1.MySQLOpsRequest) (*v1alpha1.MySQLOpsRequest, error)
-	UpdateStatus(*v1alpha1.MySQLOpsRequest) (*v1alpha1.MySQLOpsRequest, error)
-	Delete(name string, options *v1.DeleteOptions) error
-	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options v1.GetOptions) (*v1alpha1.MySQLOpsRequest, error)
-	List(opts v1.ListOptions) (*v1alpha1.MySQLOpsRequestList, error)
-	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.MySQLOpsRequest, err error)
+	Create(ctx context.Context, mySQLOpsRequest *v1alpha1.MySQLOpsRequest, opts v1.CreateOptions) (*v1alpha1.MySQLOpsRequest, error)
+	Update(ctx context.Context, mySQLOpsRequest *v1alpha1.MySQLOpsRequest, opts v1.UpdateOptions) (*v1alpha1.MySQLOpsRequest, error)
+	UpdateStatus(ctx context.Context, mySQLOpsRequest *v1alpha1.MySQLOpsRequest, opts v1.UpdateOptions) (*v1alpha1.MySQLOpsRequest, error)
+	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.MySQLOpsRequest, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.MySQLOpsRequestList, error)
+	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.MySQLOpsRequest, err error)
 	MySQLOpsRequestExpansion
 }
 
@@ -65,20 +66,20 @@ func newMySQLOpsRequests(c *OpsV1alpha1Client, namespace string) *mySQLOpsReques
 }
 
 // Get takes name of the mySQLOpsRequest, and returns the corresponding mySQLOpsRequest object, and an error if there is any.
-func (c *mySQLOpsRequests) Get(name string, options v1.GetOptions) (result *v1alpha1.MySQLOpsRequest, err error) {
+func (c *mySQLOpsRequests) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.MySQLOpsRequest, err error) {
 	result = &v1alpha1.MySQLOpsRequest{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("mysqlopsrequests").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // List takes label and field selectors, and returns the list of MySQLOpsRequests that match those selectors.
-func (c *mySQLOpsRequests) List(opts v1.ListOptions) (result *v1alpha1.MySQLOpsRequestList, err error) {
+func (c *mySQLOpsRequests) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.MySQLOpsRequestList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -89,13 +90,13 @@ func (c *mySQLOpsRequests) List(opts v1.ListOptions) (result *v1alpha1.MySQLOpsR
 		Resource("mysqlopsrequests").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Watch returns a watch.Interface that watches the requested mySQLOpsRequests.
-func (c *mySQLOpsRequests) Watch(opts v1.ListOptions) (watch.Interface, error) {
+func (c *mySQLOpsRequests) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -106,87 +107,90 @@ func (c *mySQLOpsRequests) Watch(opts v1.ListOptions) (watch.Interface, error) {
 		Resource("mysqlopsrequests").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Watch()
+		Watch(ctx)
 }
 
 // Create takes the representation of a mySQLOpsRequest and creates it.  Returns the server's representation of the mySQLOpsRequest, and an error, if there is any.
-func (c *mySQLOpsRequests) Create(mySQLOpsRequest *v1alpha1.MySQLOpsRequest) (result *v1alpha1.MySQLOpsRequest, err error) {
+func (c *mySQLOpsRequests) Create(ctx context.Context, mySQLOpsRequest *v1alpha1.MySQLOpsRequest, opts v1.CreateOptions) (result *v1alpha1.MySQLOpsRequest, err error) {
 	result = &v1alpha1.MySQLOpsRequest{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("mysqlopsrequests").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(mySQLOpsRequest).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Update takes the representation of a mySQLOpsRequest and updates it. Returns the server's representation of the mySQLOpsRequest, and an error, if there is any.
-func (c *mySQLOpsRequests) Update(mySQLOpsRequest *v1alpha1.MySQLOpsRequest) (result *v1alpha1.MySQLOpsRequest, err error) {
+func (c *mySQLOpsRequests) Update(ctx context.Context, mySQLOpsRequest *v1alpha1.MySQLOpsRequest, opts v1.UpdateOptions) (result *v1alpha1.MySQLOpsRequest, err error) {
 	result = &v1alpha1.MySQLOpsRequest{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("mysqlopsrequests").
 		Name(mySQLOpsRequest.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(mySQLOpsRequest).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-
-func (c *mySQLOpsRequests) UpdateStatus(mySQLOpsRequest *v1alpha1.MySQLOpsRequest) (result *v1alpha1.MySQLOpsRequest, err error) {
+func (c *mySQLOpsRequests) UpdateStatus(ctx context.Context, mySQLOpsRequest *v1alpha1.MySQLOpsRequest, opts v1.UpdateOptions) (result *v1alpha1.MySQLOpsRequest, err error) {
 	result = &v1alpha1.MySQLOpsRequest{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("mysqlopsrequests").
 		Name(mySQLOpsRequest.Name).
 		SubResource("status").
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(mySQLOpsRequest).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }
 
 // Delete takes name of the mySQLOpsRequest and deletes it. Returns an error if one occurs.
-func (c *mySQLOpsRequests) Delete(name string, options *v1.DeleteOptions) error {
+func (c *mySQLOpsRequests) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("mysqlopsrequests").
 		Name(name).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *mySQLOpsRequests) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+func (c *mySQLOpsRequests) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
+	if listOpts.TimeoutSeconds != nil {
+		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("mysqlopsrequests").
-		VersionedParams(&listOptions, scheme.ParameterCodec).
+		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
-		Body(options).
-		Do().
+		Body(&opts).
+		Do(ctx).
 		Error()
 }
 
 // Patch applies the patch and returns the patched mySQLOpsRequest.
-func (c *mySQLOpsRequests) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.MySQLOpsRequest, err error) {
+func (c *mySQLOpsRequests) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.MySQLOpsRequest, err error) {
 	result = &v1alpha1.MySQLOpsRequest{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("mysqlopsrequests").
-		SubResource(subresources...).
 		Name(name).
+		SubResource(subresources...).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(data).
-		Do().
+		Do(ctx).
 		Into(result)
 	return
 }

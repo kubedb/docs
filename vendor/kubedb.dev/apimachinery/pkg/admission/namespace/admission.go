@@ -17,6 +17,7 @@ limitations under the License.
 package namespace
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -100,7 +101,7 @@ func (a *NamespaceValidator) Admit(req *admission.AdmissionRequest) *admission.A
 					list, err := a.dc.
 						Resource(api.SchemeGroupVersion.WithResource(resource)).
 						Namespace(req.Name).
-						List(metav1.ListOptions{})
+						List(context.TODO(), metav1.ListOptions{})
 					if err != nil {
 						results[idx] = err
 						return

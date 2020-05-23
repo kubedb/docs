@@ -16,15 +16,17 @@ limitations under the License.
 package controller
 
 import (
+	"context"
+
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 
 	core "k8s.io/api/core/v1"
 	policy_v1beta1 "k8s.io/api/policy/v1beta1"
-	rbac "k8s.io/api/rbac/v1beta1"
+	rbac "k8s.io/api/rbac/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
-	rbac_util "kmodules.xyz/client-go/rbac/v1beta1"
+	rbac_util "kmodules.xyz/client-go/rbac/v1"
 )
 
 func (c *Controller) createServiceAccount(db *api.MySQL, saName string) error {
@@ -32,6 +34,7 @@ func (c *Controller) createServiceAccount(db *api.MySQL, saName string) error {
 
 	// Create new ServiceAccount
 	_, _, err := core_util.CreateOrPatchServiceAccount(
+		context.TODO(),
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      saName,
@@ -42,6 +45,7 @@ func (c *Controller) createServiceAccount(db *api.MySQL, saName string) error {
 			in.Labels = db.OffshootLabels()
 			return in
 		},
+		metav1.PatchOptions{},
 	)
 	return err
 }
@@ -51,6 +55,7 @@ func (c *Controller) ensureRole(db *api.MySQL, name string, pspName string) erro
 
 	// Create new Role for ElasticSearch and it's Snapshot
 	_, _, err := rbac_util.CreateOrPatchRole(
+		context.TODO(),
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      name,
@@ -71,6 +76,7 @@ func (c *Controller) ensureRole(db *api.MySQL, name string, pspName string) erro
 			}
 			return in
 		},
+		metav1.PatchOptions{},
 	)
 	return err
 }
@@ -80,6 +86,7 @@ func (c *Controller) createRoleBinding(db *api.MySQL, roleName string, saName st
 
 	// Ensure new RoleBindings for ElasticSearch and it's Snapshot
 	_, _, err := rbac_util.CreateOrPatchRoleBinding(
+		context.TODO(),
 		c.Client,
 		metav1.ObjectMeta{
 			Name:      roleName,
@@ -102,12 +109,13 @@ func (c *Controller) createRoleBinding(db *api.MySQL, roleName string, saName st
 			}
 			return in
 		},
+		metav1.PatchOptions{},
 	)
 	return err
 }
 
 func (c *Controller) getPolicyNames(db *api.MySQL) (string, error) {
-	dbVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(string(db.Spec.Version), metav1.GetOptions{})
+	dbVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -123,7 +131,7 @@ func (c *Controller) ensureDatabaseRBAC(mysql *api.MySQL) error {
 		mysql.Spec.PodTemplate.Spec.ServiceAccountName = saName
 	}
 
-	sa, err := c.Client.CoreV1().ServiceAccounts(mysql.Namespace).Get(saName, metav1.GetOptions{})
+	sa, err := c.Client.CoreV1().ServiceAccounts(mysql.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		// create service account, since it does not exist
 		if err = c.createServiceAccount(mysql, saName); err != nil {

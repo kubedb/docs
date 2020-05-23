@@ -127,7 +127,7 @@ type VenafiTPP struct {
 	// The secret must contain two keys, 'username' and 'password'.
 	CredentialsRef cmmeta.LocalObjectReference `json:"credentialsRef"`
 
-	// CABundle is a PEM encoded TLS certifiate to use to verify connections to
+	// CABundle is a PEM encoded TLS certificate to use to verify connections to
 	// the TPP instance.
 	// If specified, system roots will not be used and the issuing CA for the
 	// TPP instance must be verifiable using the provided root.
@@ -140,13 +140,20 @@ type VenafiTPP struct {
 // VenafiCloud defines connection configuration details for Venafi Cloud
 type VenafiCloud struct {
 	// URL is the base URL for Venafi Cloud
-	URL string `json:"url"`
+	// +optional
+	URL string `json:"url,omitempty"`
 
 	// APITokenSecretRef is a secret key selector for the Venafi Cloud API token.
 	APITokenSecretRef cmmeta.SecretKeySelector `json:"apiTokenSecretRef"`
 }
 
-type SelfSignedIssuer struct{}
+type SelfSignedIssuer struct {
+	// The CRL distribution points is an X.509 v3 certificate extension which identifies
+	// the location of the CRL from which the revocation of this certificate can be checked.
+	// If not set certificate will be issued without CDP. Values are strings.
+	// +optional
+	CRLDistributionPoints []string `json:"crlDistributionPoints,omitempty"`
+}
 
 type VaultIssuer struct {
 	// Vault authentication
@@ -217,6 +224,12 @@ type CAIssuer struct {
 	// SecretName is the name of the secret used to sign Certificates issued
 	// by this Issuer.
 	SecretName string `json:"secretName"`
+
+	// The CRL distribution points is an X.509 v3 certificate extension which identifies
+	// the location of the CRL from which the revocation of this certificate can be checked.
+	// If not set certificate will be issued without CDP. Values are strings.
+	// +optional
+	CRLDistributionPoints []string `json:"crlDistributionPoints,omitempty"`
 }
 
 // IssuerStatus contains status information about an Issuer

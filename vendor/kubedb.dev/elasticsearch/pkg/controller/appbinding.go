@@ -16,6 +16,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
@@ -43,7 +44,7 @@ func (c *Controller) ensureAppBinding(db *api.Elasticsearch) (kutil.VerbType, er
 
 	var caBundle []byte
 	if db.Spec.EnableSSL {
-		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(db.Spec.CertificateSecret.SecretName, metav1.GetOptions{})
+		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.CertificateSecret.SecretName, metav1.GetOptions{})
 		if err != nil {
 			return kutil.VerbUnchanged, errors.Wrapf(err, "failed to read certificate secret for Elasticsearch %s/%s", db.Namespace, db.Name)
 		}
@@ -59,41 +60,47 @@ func (c *Controller) ensureAppBinding(db *api.Elasticsearch) (kutil.VerbType, er
 		return kutil.VerbUnchanged, fmt.Errorf("failed to get ElasticsearchVersion %v for %v/%v. Reason: %v", db.Spec.Version, db.Namespace, db.Name, err)
 	}
 
-	_, vt, err := appcat_util.CreateOrPatchAppBinding(c.AppCatalogClient.AppcatalogV1alpha1(), meta, func(in *appcat.AppBinding) *appcat.AppBinding {
-		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = db.OffshootLabels()
-		in.Annotations = meta_util.FilterKeys(api.GenericKey, in.Annotations, db.Annotations)
+	_, vt, err := appcat_util.CreateOrPatchAppBinding(
+		context.TODO(),
+		c.AppCatalogClient.AppcatalogV1alpha1(),
+		meta,
+		func(in *appcat.AppBinding) *appcat.AppBinding {
+			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+			in.Labels = db.OffshootLabels()
+			in.Annotations = meta_util.FilterKeys(api.GenericKey, in.Annotations, db.Annotations)
 
-		in.Spec.Type = appmeta.Type()
-		in.Spec.Version = elasticsearchVersion.Spec.Version
-		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
-			Scheme: db.GetConnectionScheme(),
-			Name:   db.ServiceName(),
-			Port:   defaultClientPort.Port,
-		}
-		in.Spec.ClientConfig.CABundle = caBundle
-		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
+			in.Spec.Type = appmeta.Type()
+			in.Spec.Version = elasticsearchVersion.Spec.Version
+			in.Spec.ClientConfig.Service = &appcat.ServiceReference{
+				Scheme: db.GetConnectionScheme(),
+				Name:   db.ServiceName(),
+				Port:   defaultClientPort.Port,
+			}
+			in.Spec.ClientConfig.CABundle = caBundle
+			in.Spec.ClientConfig.InsecureSkipTLSVerify = false
 
-		in.Spec.Secret = &core.LocalObjectReference{
-			Name: db.Spec.DatabaseSecret.SecretName,
-		}
-		in.Spec.SecretTransforms = []appcat.SecretTransform{
-			{
-				RenameKey: &appcat.RenameKeyTransform{
-					From: KeyAdminUserName,
-					To:   appcat.KeyUsername,
+			in.Spec.Secret = &core.LocalObjectReference{
+				Name: db.Spec.DatabaseSecret.SecretName,
+			}
+			in.Spec.SecretTransforms = []appcat.SecretTransform{
+				{
+					RenameKey: &appcat.RenameKeyTransform{
+						From: KeyAdminUserName,
+						To:   appcat.KeyUsername,
+					},
 				},
-			},
-			{
-				RenameKey: &appcat.RenameKeyTransform{
-					From: KeyAdminPassword,
-					To:   appcat.KeyPassword,
+				{
+					RenameKey: &appcat.RenameKeyTransform{
+						From: KeyAdminPassword,
+						To:   appcat.KeyPassword,
+					},
 				},
-			},
-		}
+			}
 
-		return in
-	})
+			return in
+		},
+		metav1.PatchOptions{},
+	)
 
 	if err != nil {
 		return kutil.VerbUnchanged, err

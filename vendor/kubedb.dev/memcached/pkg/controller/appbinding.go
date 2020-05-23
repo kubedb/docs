@@ -17,6 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	"context"
+
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
@@ -39,12 +41,12 @@ func (c *Controller) ensureAppBinding(db *api.Memcached) (kutil.VerbType, error)
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMemcached))
 
-	memcachedVersion, err := c.ExtClient.CatalogV1alpha1().MemcachedVersions().Get(string(db.Spec.Version), metav1.GetOptions{})
+	memcachedVersion, err := c.ExtClient.CatalogV1alpha1().MemcachedVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
-	_, vt, err := appcat_util.CreateOrPatchAppBinding(c.AppCatalogClient.AppcatalogV1alpha1(), meta, func(in *appcat.AppBinding) *appcat.AppBinding {
+	_, vt, err := appcat_util.CreateOrPatchAppBinding(context.TODO(), c.AppCatalogClient.AppcatalogV1alpha1(), meta, func(in *appcat.AppBinding) *appcat.AppBinding {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootLabels()
 		in.Annotations = meta_util.FilterKeys(api.GenericKey, in.Annotations, db.Annotations)
@@ -58,7 +60,7 @@ func (c *Controller) ensureAppBinding(db *api.Memcached) (kutil.VerbType, error)
 		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
 
 		return in
-	})
+	}, metav1.PatchOptions{})
 
 	if err != nil {
 		return kutil.VerbUnchanged, err

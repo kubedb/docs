@@ -2,7 +2,6 @@ package swift
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 
@@ -110,7 +109,7 @@ func newSwiftClient(cfg stow.Config) (*swift.Connection, error) {
 	}
 	err := client.Authenticate()
 	if err != nil {
-		return nil, fmt.Errorf("unable to authenticate, reason: %v", err)
+		return nil, errors.New("Unable to authenticate")
 	}
 	return &client, nil
 }
