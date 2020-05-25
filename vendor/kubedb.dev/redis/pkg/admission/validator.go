@@ -158,7 +158,7 @@ func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *a
 	}
 
 	if redis.Spec.Mode == api.RedisModeCluster && *redis.Spec.Cluster.Replicas == 0 {
-		return fmt.Errorf(`spec.cluster.replicas "%v" invalid. Value must be > 0`, redis.Spec.Cluster.Master)
+		return fmt.Errorf(`spec.cluster.replicas "%v" invalid. Value must be > 0`, redis.Spec.Cluster.Replicas)
 	}
 
 	if redis.Spec.StorageType == "" {
