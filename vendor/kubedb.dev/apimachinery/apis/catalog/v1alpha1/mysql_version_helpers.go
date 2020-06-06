@@ -22,7 +22,7 @@ import (
 	"kubedb.dev/apimachinery/api/crds"
 	"kubedb.dev/apimachinery/apis"
 
-	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
+	"kmodules.xyz/client-go/apiextensions"
 )
 
 func (_ MySQLVersion) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {

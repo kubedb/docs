@@ -39,7 +39,7 @@ func (c *Controller) newMonitorController(proxysql *api.ProxySQL) (mona.Agent, e
 	}
 
 	if monitorSpec.Prometheus != nil {
-		return agents.New(monitorSpec.Agent, c.Client, c.ApiExtKubeClient, c.promClient), nil
+		return agents.New(monitorSpec.Agent, c.Client, c.promClient), nil
 	}
 
 	return nil, fmt.Errorf("monitoring controller not found for ProxySQL %v/%v in %v", proxysql.Namespace, proxysql.Name, monitorSpec)
@@ -67,7 +67,7 @@ func (c *Controller) getOldAgent(proxysql *api.ProxySQL) mona.Agent {
 		return nil
 	}
 	oldAgentType, _ := meta_util.GetStringValue(service.Annotations, mona.KeyAgent)
-	return agents.New(mona.AgentType(oldAgentType), c.Client, c.ApiExtKubeClient, c.promClient)
+	return agents.New(mona.AgentType(oldAgentType), c.Client, c.promClient)
 }
 
 func (c *Controller) setNewAgent(proxysql *api.ProxySQL) error {

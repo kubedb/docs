@@ -30,8 +30,7 @@ import (
 	"github.com/appscode/go/log"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	core "k8s.io/api/core/v1"
-	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -41,7 +40,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
-	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
+	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat_util "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -73,7 +72,7 @@ type Controller struct {
 func New(
 	clientConfig *rest.Config,
 	client kubernetes.Interface,
-	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
+	crdClient crd_cs.Interface,
 	extClient cs.Interface,
 	dc dynamic.Interface,
 	appCatalogClient appcat_cs.Interface,
@@ -87,7 +86,7 @@ func New(
 			ClientConfig:     clientConfig,
 			Client:           client,
 			ExtClient:        extClient,
-			ApiExtKubeClient: apiExtKubeClient,
+			CRDClient:        crdClient,
 			DynamicClient:    dc,
 			AppCatalogClient: appCatalogClient,
 			ClusterTopology:  topology,
@@ -103,12 +102,12 @@ func New(
 
 // Ensuring Custom Resource Definitions
 func (c *Controller) EnsureCustomResourceDefinitions() error {
-	crds := []*crd_api.CustomResourceDefinition{
+	crds := []*apiextensions.CustomResourceDefinition{
 		api.PgBouncer{}.CustomResourceDefinition(),
 		catalog.PgBouncerVersion{}.CustomResourceDefinition(),
 		appcat_util.AppBinding{}.CustomResourceDefinition(),
 	}
-	return apiext_util.RegisterCRDs(context.TODO(), c.Client.Discovery(), c.ApiExtKubeClient, crds)
+	return apiextensions.RegisterCRDs(c.CRDClient, crds)
 }
 
 // InitInformer initializes PgBouncer, DormantDB amd Snapshot watcher

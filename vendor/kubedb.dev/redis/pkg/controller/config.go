@@ -23,7 +23,7 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -43,7 +43,7 @@ type OperatorConfig struct {
 
 	ClientConfig     *rest.Config
 	KubeClient       kubernetes.Interface
-	APIExtKubeClient crd_cs.ApiextensionsV1beta1Interface
+	APIExtKubeClient crd_cs.Interface
 	DBClient         cs.Interface
 	DynamicClient    dynamic.Interface
 	AppCatalogClient appcat_cs.Interface

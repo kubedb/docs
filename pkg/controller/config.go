@@ -33,7 +33,7 @@ import (
 	rdc "kubedb.dev/redis/pkg/controller"
 
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -54,7 +54,7 @@ type OperatorConfig struct {
 
 	ClientConfig     *rest.Config
 	KubeClient       kubernetes.Interface
-	APIExtKubeClient crd_cs.ApiextensionsV1beta1Interface
+	CRDClient        crd_cs.Interface
 	DBClient         cs.Interface
 	StashClient      scs.Interface
 	DynamicClient    dynamic.Interface
@@ -84,7 +84,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	ctrl := New(
 		c.ClientConfig,
 		c.KubeClient,
-		c.APIExtKubeClient,
+		c.CRDClient,
 		c.DBClient,
 		c.StashClient,
 		c.DynamicClient,
@@ -96,15 +96,15 @@ func (c *OperatorConfig) New() (*Controller, error) {
 
 	ctrl.RSInformer = restoresession.NewController(ctrl.Controller, nil, ctrl.Config, nil, recorder).InitInformer()
 
-	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
-	ctrl.mcCtrl = mcc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
-	ctrl.mgCtrl = mgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
-	ctrl.myCtrl = myc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
-	ctrl.pgbCtrl = pgb.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
-	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
-	ctrl.prCtrl = prc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.PromClient, ctrl.Config, recorder)
-	ctrl.pxCtrl = pxc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
-	ctrl.rdCtrl = rdc.New(c.ClientConfig, c.KubeClient, c.APIExtKubeClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
+	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
+	ctrl.mcCtrl = mcc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
+	ctrl.mgCtrl = mgc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
+	ctrl.myCtrl = myc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
+	ctrl.pgbCtrl = pgb.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
+	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
+	ctrl.prCtrl = prc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.PromClient, ctrl.Config, recorder)
+	ctrl.pxCtrl = pxc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.StashClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, recorder)
+	ctrl.rdCtrl = rdc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, recorder)
 
 	if err := ctrl.Init(); err != nil {
 		return nil, err
