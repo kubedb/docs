@@ -30,8 +30,7 @@ import (
 	"github.com/appscode/go/log"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	core "k8s.io/api/core/v1"
-	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -41,7 +40,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
-	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
+	"kmodules.xyz/client-go/apiextensions"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -70,7 +69,7 @@ var _ amc.DBHelper = &Controller{}
 func New(
 	clientConfig *rest.Config,
 	client kubernetes.Interface,
-	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
+	crdClient crd_cs.Interface,
 	extClient cs.Interface,
 	stashClient scs.Interface,
 	dc dynamic.Interface,
@@ -85,7 +84,7 @@ func New(
 			Client:           client,
 			ExtClient:        extClient,
 			StashClient:      stashClient,
-			ApiExtKubeClient: apiExtKubeClient,
+			CRDClient:        crdClient,
 			DynamicClient:    dc,
 			AppCatalogClient: appCatalogClient,
 		},
@@ -101,12 +100,12 @@ func New(
 // Ensuring Custom Resource Definitions
 func (c *Controller) EnsureCustomResourceDefinitions() error {
 	log.Infoln("Ensuring CustomResourceDefinition...")
-	crds := []*crd_api.CustomResourceDefinition{
+	crds := []*apiextensions.CustomResourceDefinition{
 		api.MySQL{}.CustomResourceDefinition(),
 		catalog.MySQLVersion{}.CustomResourceDefinition(),
 		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
-	return apiext_util.RegisterCRDs(context.TODO(), c.Client.Discovery(), c.ApiExtKubeClient, crds)
+	return apiextensions.RegisterCRDs(c.CRDClient, crds)
 }
 
 // Init initializes mysql, DormantDB amd Snapshot watcher

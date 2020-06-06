@@ -21,7 +21,7 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -37,12 +37,12 @@ const (
 type OperatorConfig struct {
 	amc.Config
 
-	ClientConfig     *rest.Config
-	KubeClient       kubernetes.Interface
-	APIExtKubeClient crd_cs.ApiextensionsV1beta1Interface
-	DBClient         cs.Interface
-	DynamicClient    dynamic.Interface
-	PromClient       pcm.MonitoringV1Interface
+	ClientConfig  *rest.Config
+	KubeClient    kubernetes.Interface
+	CRDClient     crd_cs.Interface
+	DBClient      cs.Interface
+	DynamicClient dynamic.Interface
+	PromClient    pcm.MonitoringV1Interface
 }
 
 func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
@@ -61,7 +61,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	ctrl := New(
 		c.ClientConfig,
 		c.KubeClient,
-		c.APIExtKubeClient,
+		c.CRDClient,
 		c.DBClient,
 		c.DynamicClient,
 		c.PromClient,

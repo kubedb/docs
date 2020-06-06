@@ -16,8 +16,6 @@ limitations under the License.
 package controller
 
 import (
-	"context"
-
 	catalogapi "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	dbapi "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
@@ -34,12 +32,11 @@ import (
 
 	"github.com/appscode/go/log"
 	pcm "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	crd_api "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
+	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	apiext_util "kmodules.xyz/client-go/apiextensions/v1beta1"
+	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -66,7 +63,7 @@ type Controller struct {
 func New(
 	clientConfig *rest.Config,
 	client kubernetes.Interface,
-	apiExtKubeClient crd_cs.ApiextensionsV1beta1Interface,
+	crdClient crd_cs.Interface,
 	dbClient cs.Interface,
 	stashClient scs.Interface,
 	dynamicClient dynamic.Interface,
@@ -80,7 +77,7 @@ func New(
 			ClientConfig:     clientConfig,
 			Client:           client,
 			ExtClient:        dbClient,
-			ApiExtKubeClient: apiExtKubeClient,
+			CRDClient:        crdClient,
 			StashClient:      stashClient,
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
@@ -94,7 +91,7 @@ func New(
 // EnsureCustomResourceDefinitions ensures CRD for MySQl, DormantDatabase and Snapshot
 func (c *Controller) EnsureCustomResourceDefinitions() error {
 	log.Infoln("Ensuring CustomResourceDefinition...")
-	crds := []*crd_api.CustomResourceDefinition{
+	crds := []*apiextensions.CustomResourceDefinition{
 		dbapi.Elasticsearch{}.CustomResourceDefinition(),
 		dbapi.Etcd{}.CustomResourceDefinition(),
 		dbapi.Memcached{}.CustomResourceDefinition(),
@@ -119,5 +116,5 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 
 		appcat.AppBinding{}.CustomResourceDefinition(),
 	}
-	return apiext_util.RegisterCRDs(context.TODO(), c.Client.Discovery(), c.ApiExtKubeClient, crds)
+	return apiextensions.RegisterCRDs(c.CRDClient, crds)
 }

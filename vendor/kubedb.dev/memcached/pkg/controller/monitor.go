@@ -40,7 +40,7 @@ func (c *Controller) newMonitorController(memcached *api.Memcached) (mona.Agent,
 	}
 
 	if monitorSpec.Prometheus != nil {
-		return agents.New(monitorSpec.Agent, c.Client, c.ApiExtKubeClient, c.promClient), nil
+		return agents.New(monitorSpec.Agent, c.Client, c.promClient), nil
 	}
 
 	return nil, fmt.Errorf("monitoring controller not found for %v", monitorSpec)
@@ -69,7 +69,7 @@ func (c *Controller) getOldAgent(memcached *api.Memcached) mona.Agent {
 		return nil
 	}
 	oldAgentType, _ := meta_util.GetStringValue(service.Annotations, mona.KeyAgent)
-	return agents.New(mona.AgentType(oldAgentType), c.Client, c.ApiExtKubeClient, c.promClient)
+	return agents.New(mona.AgentType(oldAgentType), c.Client, c.promClient)
 }
 
 func (c *Controller) setNewAgent(memcached *api.Memcached) error {

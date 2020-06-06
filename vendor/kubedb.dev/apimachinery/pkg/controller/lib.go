@@ -30,13 +30,14 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
-	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/discovery"
 	policy_util "kmodules.xyz/client-go/policy/v1beta1"
+	"stash.appscode.dev/apimachinery/apis/stash"
 	"stash.appscode.dev/apimachinery/apis/stash/v1beta1"
 )
 
@@ -180,15 +181,10 @@ func (c *Controller) CreateDeploymentPodDisruptionBudget(deployment *appsv1.Depl
 	return err
 }
 
-func FoundStashCRDs(apiExtClient crd_cs.ApiextensionsV1beta1Interface) bool {
-	_, err := apiExtClient.CustomResourceDefinitions().Get(context.TODO(), v1beta1.ResourcePluralRestoreSession+"."+v1beta1.SchemeGroupVersion.Group, metav1.GetOptions{})
-	return err == nil
-}
-
 // BlockOnStashOperator waits for restoresession crd to come up.
 // It either waits until restoresession crd exists or throws error otherwise
 func (c *Controller) BlockOnStashOperator(stopCh <-chan struct{}) error {
 	return wait.PollImmediateUntil(time.Second*10, func() (bool, error) {
-		return FoundStashCRDs(c.ApiExtKubeClient), nil
+		return discovery.ExistsGroupKind(c.Client.Discovery(), stash.GroupName, v1beta1.ResourceKindRestoreSession), nil
 	}, stopCh)
 }

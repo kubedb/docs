@@ -36,6 +36,8 @@ import (
 const (
 	CONFIG_SOURCE_VOLUME           = "custom-config"
 	CONFIG_SOURCE_VOLUME_MOUNTPATH = "/usr/config/"
+	DATA_SOURCE_VOLUME             = "data-volume"
+	DATA_SOURCE_VOLUME_MOUNTPATH   = "/data"
 )
 
 func (c *Controller) ensureDeployment(memcached *api.Memcached) (kutil.VerbType, error) {
@@ -151,6 +153,7 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 		}
 		in = upsertUserEnv(in, memcached)
 		in = upsertCustomConfig(in, memcached)
+		in = upsertDataVolume(in, memcached, memcachedVersion.Spec.DB.Image)
 
 		in.Spec.Template.Spec.NodeSelector = memcached.Spec.PodTemplate.Spec.NodeSelector
 		in.Spec.Template.Spec.Affinity = memcached.Spec.PodTemplate.Spec.Affinity
@@ -206,6 +209,64 @@ func upsertCustomConfig(deployment *apps.Deployment, memcached *api.Memcached) *
 				break
 			}
 		}
+	}
+
+	return deployment
+}
+
+// upsertDataVolume insert additional data volume if provided and ensures that it is useable
+// by memcached.
+func upsertDataVolume(deployment *apps.Deployment, memcached *api.Memcached, memcachedImage string) *apps.Deployment {
+	if memcached.Spec.DataVolume != nil {
+		dataVolumeMount := core.VolumeMount{
+			Name:      DATA_SOURCE_VOLUME,
+			MountPath: DATA_SOURCE_VOLUME_MOUNTPATH,
+		}
+
+		for i, container := range deployment.Spec.Template.Spec.Containers {
+			if container.Name == api.ResourceSingularMemcached {
+				volumeMounts := container.VolumeMounts
+				volumeMounts = core_util.UpsertVolumeMount(volumeMounts, dataVolumeMount)
+				deployment.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+				dataVolume := core.Volume{
+					Name:         DATA_SOURCE_VOLUME,
+					VolumeSource: *memcached.Spec.DataVolume,
+				}
+
+				volumes := deployment.Spec.Template.Spec.Volumes
+				volumes = core_util.UpsertVolume(volumes, dataVolume)
+				deployment.Spec.Template.Spec.Volumes = volumes
+				break
+			}
+		}
+
+		// The volume will be created as owned by root, but
+		// memcached will run as user "memcache". Changing fsGroup is broken
+		// for ephemeral inline volumes (https://github.com/kubernetes/kubernetes/issues/89290)
+		// and we don't know the uid of the "memcache" user, so instead of relying
+		// on fsGroup we run a "chown" inside an init container which uses the same
+		// image as the daemon.
+		var root int64
+		privileged := true
+		deployment.Spec.Template.Spec.InitContainers = core_util.UpsertContainer(deployment.Spec.Template.Spec.InitContainers,
+			core.Container{
+				Name:            "data-volume-owner",
+				Image:           memcachedImage,
+				ImagePullPolicy: core.PullIfNotPresent,
+				Command: []string{
+					"/bin/chown",
+					"memcache",
+					DATA_SOURCE_VOLUME_MOUNTPATH,
+				},
+				SecurityContext: &core.SecurityContext{
+					RunAsUser:  &root,
+					Privileged: &privileged,
+				},
+				VolumeMounts: []core.VolumeMount{
+					dataVolumeMount,
+				},
+			})
 	}
 
 	return deployment
