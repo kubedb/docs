@@ -15,17 +15,17 @@ require (
 	kmodules.xyz/client-go v0.0.0-20200525195850-2fd180961371
 	kmodules.xyz/custom-resources v0.0.0-20200604135349-9e9f5c4fdba9
 	kmodules.xyz/webhook-runtime v0.0.0-20200522123600-ca70a7e28ed0
-	kubedb.dev/apimachinery v0.14.0-alpha.5
-	kubedb.dev/elasticsearch v0.13.0-rc.1.0.20200606050651-11517f71bca6
-	kubedb.dev/memcached v0.6.0-rc.1.0.20200606050855-2ed2c3a053b0
-	kubedb.dev/mongodb v0.6.0-rc.1.0.20200606050948-ca03db0931c3
-	kubedb.dev/mysql v0.6.0-rc.0.0.20200606050956-86eb33133d67
-	kubedb.dev/percona-xtradb v0.0.0-20200606051048-9b6c9a53cbbc
-	kubedb.dev/pgbouncer v0.0.0-20200606051000-c50c65de5c1a
-	kubedb.dev/postgres v0.13.0-rc.0.0.20200606051044-1a5df17c1192
-	kubedb.dev/proxysql v0.0.0-20200606051004-7235b0c5b8ea
-	kubedb.dev/redis v0.6.0-rc.0.0.20200606051124-e441809cd318
-	stash.appscode.dev/apimachinery v0.10.0-alpha.0
+	kubedb.dev/apimachinery v0.14.0-alpha.7
+	kubedb.dev/elasticsearch v0.14.0-alpha.0
+	kubedb.dev/memcached v0.7.0-alpha.0
+	kubedb.dev/mongodb v0.7.0-alpha.0
+	kubedb.dev/mysql v0.7.0-alpha.0
+	kubedb.dev/percona-xtradb v0.1.0-alpha.0
+	kubedb.dev/pgbouncer v0.1.0-alpha.0
+	kubedb.dev/postgres v0.14.0-alpha.0
+	kubedb.dev/proxysql v0.1.0-alpha.0
+	kubedb.dev/redis v0.7.0-alpha.0
+	stash.appscode.dev/apimachinery v0.10.0-alpha.1
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d

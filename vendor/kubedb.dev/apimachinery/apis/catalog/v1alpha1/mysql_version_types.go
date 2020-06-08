@@ -45,7 +45,7 @@ type MySQLVersion struct {
 	Spec              MySQLVersionSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
 }
 
-// MySQLVersionSpec is the spec for postgres version
+// MySQLVersionSpec is the spec for MySQL version
 type MySQLVersionSpec struct {
 	// Version
 	Version string `json:"version" protobuf:"bytes,1,opt,name=version"`
@@ -83,12 +83,12 @@ type MySQLVersionReplicationModeDetector struct {
 	Image string `json:"image" protobuf:"bytes,1,opt,name=image"`
 }
 
-// MySQLVersionTools is the image for the postgres tools
+// MySQLVersionTools is the image for the MySQL tools
 type MySQLVersionTools struct {
 	Image string `json:"image" protobuf:"bytes,1,opt,name=image"`
 }
 
-// MySQLVersionInitContainer is the Elasticsearch Container initializer
+// MySQLVersionInitContainer is the MySQL Container initializer
 type MySQLVersionInitContainer struct {
 	Image string `json:"image" protobuf:"bytes,1,opt,name=image"`
 }
@@ -99,23 +99,23 @@ type MySQLVersionPodSecurityPolicy struct {
 }
 
 type MySQLUpgradeConstraints struct {
-	// List of all accepted version for ops request
+	// List of all accepted versions for uprade request
 	Whitelist Whitelist `json:"whitelist,omitempty" protobuf:"bytes,1,opt,name=whitelist"`
-	// List of all rejected version for ops request
+	// List of all rejected versions for uprade request
 	Blacklist Blacklist `json:"blacklist,omitempty" protobuf:"bytes,2,opt,name=blacklist"`
 }
 
 type Whitelist struct {
-	// List of all accepted version for standalone ops request. empty indicates all accepted
+	// List of all accepted versions for upgrade request of a Standalone server. empty indicates all accepted
 	Standalone []string `json:"standalone,omitempty" protobuf:"bytes,1,opt,name=standalone"`
-	// List of all accepted version for groupReplication ops request. empty indicates all accepted
+	// List of all accepted versions for upgrade request of a GroupReplication cluster. empty indicates all accepted
 	GroupReplication []string `json:"groupReplication,omitempty" protobuf:"bytes,2,opt,name=groupReplication"`
 }
 
 type Blacklist struct {
-	// List of all rejected version for standalone ops request
+	// List of all rejected versions for upgrade request of a Standalone server
 	Standalone []string `json:"standalone,omitempty" protobuf:"bytes,1,opt,name=standalone"`
-	// List of all rejected version for groupReplication ops request
+	// List of all rejected versions for upgrade request of a GroupReplication cluster
 	GroupReplication []string `json:"groupReplication,omitempty" protobuf:"bytes,2,opt,name=groupReplication"`
 }
 

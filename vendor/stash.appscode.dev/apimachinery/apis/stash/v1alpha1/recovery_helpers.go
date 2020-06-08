@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"stash.appscode.dev/apimachinery/api/crds"
+	"stash.appscode.dev/apimachinery/crds"
 
 	"kmodules.xyz/client-go/apiextensions"
 )

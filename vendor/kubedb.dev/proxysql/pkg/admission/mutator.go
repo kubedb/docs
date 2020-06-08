@@ -18,6 +18,7 @@ package admission
 import (
 	"sync"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -45,11 +46,11 @@ var _ hookapi.AdmissionHook = &ProxySQLMutator{}
 // Resource is the resource to use for hosting mutating admission webhook.
 func (a *ProxySQLMutator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "mutators.kubedb.com",
+			Group:    kubedb.MutatorGroupName,
 			Version:  "v1alpha1",
-			Resource: "proxysqlmutators",
+			Resource: api.ResourcePluralProxySQL,
 		},
-		"proxysqlmutator"
+		api.ResourceSingularProxySQL
 }
 
 // Initialize is called as a post-start hook

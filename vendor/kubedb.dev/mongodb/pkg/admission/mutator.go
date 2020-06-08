@@ -20,6 +20,7 @@ import (
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -50,11 +51,11 @@ var _ hookapi.AdmissionHook = &MongoDBMutator{}
 
 func (a *MongoDBMutator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "mutators.kubedb.com",
+			Group:    kubedb.MutatorGroupName,
 			Version:  "v1alpha1",
-			Resource: "mongodbmutators",
+			Resource: api.ResourcePluralMongoDB,
 		},
-		"mongodbmutator"
+		api.ResourceSingularMongoDB
 }
 
 func (a *MongoDBMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
