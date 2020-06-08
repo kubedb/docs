@@ -15710,15 +15710,8 @@ func schema_custom_resources_apis_appcatalog_v1alpha1_AddKeyTransform(ref common
 							Format:      "",
 						},
 					},
-					"jsonPathExpression": {
-						SchemaProps: spec.SchemaProps{
-							Description: "The JSONPath expression, the result of which will be added to the Secret under the specified key. For example, given the following credentials: { \"foo\": { \"bar\": \"foobar\" } } and the jsonPathExpression \"{.foo.bar}\", the value \"foobar\" will be stored in the credentials Secret under the specified key.",
-							Type:        []string{"string"},
-							Format:      "",
-						},
-					},
 				},
-				Required: []string{"key", "value", "stringValue", "jsonPathExpression"},
+				Required: []string{"key", "value", "stringValue"},
 			},
 		},
 	}
@@ -17609,7 +17602,7 @@ func schema_apimachinery_apis_catalog_v1alpha1_Blacklist(ref common.ReferenceCal
 				Properties: map[string]spec.Schema{
 					"standalone": {
 						SchemaProps: spec.SchemaProps{
-							Description: "List of all rejected version for standalone ops request",
+							Description: "List of all rejected versions for upgrade request of a Standalone server",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -17623,7 +17616,7 @@ func schema_apimachinery_apis_catalog_v1alpha1_Blacklist(ref common.ReferenceCal
 					},
 					"groupReplication": {
 						SchemaProps: spec.SchemaProps{
-							Description: "List of all rejected version for groupReplication ops request",
+							Description: "List of all rejected versions for upgrade request of a GroupReplication cluster",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -18538,13 +18531,13 @@ func schema_apimachinery_apis_catalog_v1alpha1_MySQLUpgradeConstraints(ref commo
 				Properties: map[string]spec.Schema{
 					"whitelist": {
 						SchemaProps: spec.SchemaProps{
-							Description: "List of all accepted version for ops request",
+							Description: "List of all accepted versions for uprade request",
 							Ref:         ref("kubedb.dev/apimachinery/apis/catalog/v1alpha1.Whitelist"),
 						},
 					},
 					"blacklist": {
 						SchemaProps: spec.SchemaProps{
-							Description: "List of all rejected version for ops request",
+							Description: "List of all rejected versions for uprade request",
 							Ref:         ref("kubedb.dev/apimachinery/apis/catalog/v1alpha1.Blacklist"),
 						},
 					},
@@ -18638,7 +18631,7 @@ func schema_apimachinery_apis_catalog_v1alpha1_MySQLVersionInitContainer(ref com
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "MySQLVersionInitContainer is the Elasticsearch Container initializer",
+				Description: "MySQLVersionInitContainer is the MySQL Container initializer",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"image": {
@@ -18745,7 +18738,7 @@ func schema_apimachinery_apis_catalog_v1alpha1_MySQLVersionSpec(ref common.Refer
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "MySQLVersionSpec is the spec for postgres version",
+				Description: "MySQLVersionSpec is the spec for MySQL version",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"version": {
@@ -18817,7 +18810,7 @@ func schema_apimachinery_apis_catalog_v1alpha1_MySQLVersionTools(ref common.Refe
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "MySQLVersionTools is the image for the postgres tools",
+				Description: "MySQLVersionTools is the image for the MySQL tools",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"image": {
@@ -19832,7 +19825,7 @@ func schema_apimachinery_apis_catalog_v1alpha1_Whitelist(ref common.ReferenceCal
 				Properties: map[string]spec.Schema{
 					"standalone": {
 						SchemaProps: spec.SchemaProps{
-							Description: "List of all accepted version for standalone ops request. empty indicates all accepted",
+							Description: "List of all accepted versions for upgrade request of a Standalone server. empty indicates all accepted",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{
@@ -19846,7 +19839,7 @@ func schema_apimachinery_apis_catalog_v1alpha1_Whitelist(ref common.ReferenceCal
 					},
 					"groupReplication": {
 						SchemaProps: spec.SchemaProps{
-							Description: "List of all accepted version for groupReplication ops request. empty indicates all accepted",
+							Description: "List of all accepted versions for upgrade request of a GroupReplication cluster. empty indicates all accepted",
 							Type:        []string{"array"},
 							Items: &spec.SchemaOrArray{
 								Schema: &spec.Schema{

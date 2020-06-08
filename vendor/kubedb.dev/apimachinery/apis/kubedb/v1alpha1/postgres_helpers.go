@@ -19,9 +19,9 @@ package v1alpha1
 import (
 	"fmt"
 
-	"kubedb.dev/apimachinery/api/crds"
 	"kubedb.dev/apimachinery/apis"
 	"kubedb.dev/apimachinery/apis/kubedb"
+	"kubedb.dev/apimachinery/crds"
 
 	"github.com/appscode/go/types"
 	apps "k8s.io/api/apps/v1"

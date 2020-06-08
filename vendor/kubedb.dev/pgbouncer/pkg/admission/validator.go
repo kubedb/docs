@@ -22,6 +22,7 @@ import (
 	"strings"
 	"sync"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -50,11 +51,11 @@ var _ hookapi.AdmissionHook = &PgBouncerValidator{}
 
 func (a *PgBouncerValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "validators.kubedb.com",
+			Group:    kubedb.ValidatorGroupName,
 			Version:  "v1alpha1",
-			Resource: "pgbouncervalidators",
+			Resource: api.ResourcePluralPgBouncer,
 		},
-		"pgbouncervalidator"
+		api.ResourceSingularPgBouncer
 }
 
 func (a *PgBouncerValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

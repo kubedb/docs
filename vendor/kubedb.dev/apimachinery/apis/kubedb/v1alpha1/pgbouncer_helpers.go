@@ -19,9 +19,9 @@ package v1alpha1
 import (
 	"fmt"
 
-	"kubedb.dev/apimachinery/api/crds"
 	"kubedb.dev/apimachinery/apis"
 	"kubedb.dev/apimachinery/apis/kubedb"
+	"kubedb.dev/apimachinery/crds"
 
 	"kmodules.xyz/client-go/apiextensions"
 	meta_util "kmodules.xyz/client-go/meta"

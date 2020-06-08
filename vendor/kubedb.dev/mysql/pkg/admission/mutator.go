@@ -18,6 +18,7 @@ package admission
 import (
 	"sync"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -45,11 +46,11 @@ var _ hookapi.AdmissionHook = &MySQLMutator{}
 
 func (a *MySQLMutator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "mutators.kubedb.com",
+			Group:    kubedb.MutatorGroupName,
 			Version:  "v1alpha1",
-			Resource: "mysqlmutators",
+			Resource: api.ResourcePluralMySQL,
 		},
-		"mysqlmutator"
+		api.ResourceSingularMySQL
 }
 
 func (a *MySQLMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

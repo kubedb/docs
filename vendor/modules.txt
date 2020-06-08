@@ -987,8 +987,7 @@ kmodules.xyz/prober/api/v1
 # kmodules.xyz/webhook-runtime v0.0.0-20200522123600-ca70a7e28ed0
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.14.0-alpha.5
-kubedb.dev/apimachinery/api/crds
+# kubedb.dev/apimachinery v0.14.0-alpha.7
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/catalog
 kubedb.dev/apimachinery/apis/catalog/v1alpha1
@@ -1016,41 +1015,42 @@ kubedb.dev/apimachinery/client/informers/externalversions/ops/v1alpha1
 kubedb.dev/apimachinery/client/listers/catalog/v1alpha1
 kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1
 kubedb.dev/apimachinery/client/listers/ops/v1alpha1
+kubedb.dev/apimachinery/crds
 kubedb.dev/apimachinery/pkg/admission/namespace
 kubedb.dev/apimachinery/pkg/controller
 kubedb.dev/apimachinery/pkg/controller/restoresession
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.13.0-rc.1.0.20200606050651-11517f71bca6
+# kubedb.dev/elasticsearch v0.14.0-alpha.0
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
 kubedb.dev/elasticsearch/pkg/keytool
 kubedb.dev/elasticsearch/third_party/golang/crypto/pkcs12
 kubedb.dev/elasticsearch/third_party/golang/crypto/pkcs12/internal/rc2
-# kubedb.dev/memcached v0.6.0-rc.1.0.20200606050855-2ed2c3a053b0
+# kubedb.dev/memcached v0.7.0-alpha.0
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.6.0-rc.1.0.20200606050948-ca03db0931c3
+# kubedb.dev/mongodb v0.7.0-alpha.0
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.6.0-rc.0.0.20200606050956-86eb33133d67
+# kubedb.dev/mysql v0.7.0-alpha.0
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.0.0-20200606051048-9b6c9a53cbbc
+# kubedb.dev/percona-xtradb v0.1.0-alpha.0
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
 # kubedb.dev/pg-leader-election v0.2.0-alpha.0
 kubedb.dev/pg-leader-election/pkg/leader_election
-# kubedb.dev/pgbouncer v0.0.0-20200606051000-c50c65de5c1a
+# kubedb.dev/pgbouncer v0.1.0-alpha.0
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.13.0-rc.0.0.20200606051044-1a5df17c1192
+# kubedb.dev/postgres v0.14.0-alpha.0
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.0.0-20200606051004-7235b0c5b8ea
+# kubedb.dev/proxysql v0.1.0-alpha.0
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.6.0-rc.0.0.20200606051124-e441809cd318
+# kubedb.dev/redis v0.7.0-alpha.0
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster
 kubedb.dev/redis/pkg/controller
@@ -1088,8 +1088,7 @@ sigs.k8s.io/structured-merge-diff/v3/typed
 sigs.k8s.io/structured-merge-diff/v3/value
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
-# stash.appscode.dev/apimachinery v0.10.0-alpha.0
-stash.appscode.dev/apimachinery/api/crds
+# stash.appscode.dev/apimachinery v0.10.0-alpha.1
 stash.appscode.dev/apimachinery/apis
 stash.appscode.dev/apimachinery/apis/repositories
 stash.appscode.dev/apimachinery/apis/repositories/v1alpha1
@@ -1109,4 +1108,5 @@ stash.appscode.dev/apimachinery/client/informers/externalversions/stash/v1alpha1
 stash.appscode.dev/apimachinery/client/informers/externalversions/stash/v1beta1
 stash.appscode.dev/apimachinery/client/listers/stash/v1alpha1
 stash.appscode.dev/apimachinery/client/listers/stash/v1beta1
+stash.appscode.dev/apimachinery/crds
 stash.appscode.dev/apimachinery/pkg/restic

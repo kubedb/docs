@@ -18,6 +18,7 @@ package admission
 import (
 	"sync"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -44,11 +45,11 @@ var _ hookapi.AdmissionHook = &PostgresMutator{}
 
 func (a *PostgresMutator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "mutators.kubedb.com",
+			Group:    kubedb.MutatorGroupName,
 			Version:  "v1alpha1",
-			Resource: "postgresmutators",
+			Resource: api.ResourcePluralPostgres,
 		},
-		"postgresmutator"
+		api.ResourceSingularPostgres
 }
 
 func (a *PostgresMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

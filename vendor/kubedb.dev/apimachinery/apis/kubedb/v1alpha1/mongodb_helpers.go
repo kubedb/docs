@@ -20,10 +20,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"kubedb.dev/apimachinery/api/crds"
 	"kubedb.dev/apimachinery/apis"
 	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	"kubedb.dev/apimachinery/apis/kubedb"
+	"kubedb.dev/apimachinery/crds"
 
 	"github.com/appscode/go/types"
 	"gomodules.xyz/version"

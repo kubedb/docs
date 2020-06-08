@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"sync"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -46,11 +47,11 @@ var _ hookapi.AdmissionHook = &MemcachedMutator{}
 
 func (a *MemcachedMutator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "mutators.kubedb.com",
+			Group:    kubedb.MutatorGroupName,
 			Version:  "v1alpha1",
-			Resource: "memcachedmutators",
+			Resource: api.ResourcePluralMemcached,
 		},
-		"memcachedmutator"
+		api.ResourceSingularMemcached
 }
 
 func (a *MemcachedMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

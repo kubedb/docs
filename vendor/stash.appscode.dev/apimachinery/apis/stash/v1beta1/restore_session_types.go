@@ -52,6 +52,7 @@ type RestoreSessionSpec struct {
 	// Supported values are "Restic", "VolumeSnapshotter".
 	// Default value is "Restic".
 	// +optional
+	// +kubebuilder:default=Restic
 	Driver Snapshotter `json:"driver,omitempty" protobuf:"bytes,1,opt,name=driver,casttype=Snapshotter"`
 	// Repository refer to the Repository crd that hold backend information
 	// +optional

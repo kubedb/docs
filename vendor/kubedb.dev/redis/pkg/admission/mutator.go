@@ -18,6 +18,7 @@ package admission
 import (
 	"sync"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
@@ -47,11 +48,11 @@ var _ hookapi.AdmissionHook = &RedisMutator{}
 
 func (a *RedisMutator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "mutators.kubedb.com",
+			Group:    kubedb.MutatorGroupName,
 			Version:  "v1alpha1",
-			Resource: "redismutators",
+			Resource: api.ResourcePluralRedis,
 		},
-		"redismutator"
+		api.ResourceSingularRedis
 }
 
 func (a *RedisMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

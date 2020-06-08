@@ -21,6 +21,7 @@ import (
 	"strings"
 	"sync"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
@@ -56,11 +57,11 @@ var forbiddenEnvVars = []string{
 
 func (a *RedisValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "validators.kubedb.com",
+			Group:    kubedb.ValidatorGroupName,
 			Version:  "v1alpha1",
-			Resource: "redisvalidators",
+			Resource: api.ResourcePluralRedis,
 		},
-		"redisvalidator"
+		api.ResourceSingularRedis
 }
 
 func (a *RedisValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
