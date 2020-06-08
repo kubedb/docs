@@ -29,7 +29,10 @@ import (
 	mgAdmsn "kubedb.dev/mongodb/pkg/admission"
 	myAdmsn "kubedb.dev/mysql/pkg/admission"
 	"kubedb.dev/operator/pkg/controller"
+	pxcAdmsn "kubedb.dev/percona-xtradb/pkg/admission"
+	pgbAdmsn "kubedb.dev/pgbouncer/pkg/admission"
 	pgAdmsn "kubedb.dev/postgres/pkg/admission"
+	prAdmsn "kubedb.dev/proxysql/pkg/admission"
 	rdAdmsn "kubedb.dev/redis/pkg/admission"
 
 	admission "k8s.io/api/admission/v1beta1"
@@ -141,26 +144,36 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 
 	if c.OperatorConfig.EnableMutatingWebhook {
 		c.ExtraConfig.AdmissionHooks = []hooks.AdmissionHook{
+			&esAdmsn.ElasticsearchMutator{
+				ClusterTopology: ctrl.ClusterTopology,
+			},
+			&mcAdmsn.MemcachedMutator{},
 			&mgAdmsn.MongoDBMutator{
 				ClusterTopology: ctrl.ClusterTopology,
 			},
 			&myAdmsn.MySQLMutator{},
+			&pxcAdmsn.PerconaXtraDBMutator{},
+			&pgbAdmsn.PgBouncerMutator{},
 			&pgAdmsn.PostgresMutator{},
-			&esAdmsn.ElasticsearchMutator{},
+			&prAdmsn.ProxySQLMutator{},
 			&rdAdmsn.RedisMutator{},
-			&mcAdmsn.MemcachedMutator{},
 		}
 	}
 	if c.OperatorConfig.EnableValidatingWebhook {
 		c.ExtraConfig.AdmissionHooks = append(c.ExtraConfig.AdmissionHooks,
+			&esAdmsn.ElasticsearchValidator{
+				ClusterTopology: ctrl.ClusterTopology,
+			},
+			&mcAdmsn.MemcachedValidator{},
 			&mgAdmsn.MongoDBValidator{
 				ClusterTopology: ctrl.ClusterTopology,
 			},
 			&myAdmsn.MySQLValidator{},
+			&pxcAdmsn.PerconaXtraDBValidator{},
+			&pgbAdmsn.PgBouncerValidator{},
 			&pgAdmsn.PostgresValidator{},
-			&esAdmsn.ElasticsearchValidator{},
+			&prAdmsn.ProxySQLValidator{},
 			&rdAdmsn.RedisValidator{},
-			&mcAdmsn.MemcachedValidator{},
 			&namespace.NamespaceValidator{
 				Resources: []string{
 					api.ResourcePluralElasticsearch,
