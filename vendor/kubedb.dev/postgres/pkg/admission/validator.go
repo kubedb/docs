@@ -22,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
@@ -56,11 +57,11 @@ var forbiddenEnvVars = []string{
 
 func (a *PostgresValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "validators.kubedb.com",
+			Group:    kubedb.ValidatorGroupName,
 			Version:  "v1alpha1",
-			Resource: "postgresvalidators",
+			Resource: api.ResourcePluralPostgres,
 		},
-		"postgresvalidator"
+		api.ResourceSingularPostgres
 }
 
 func (a *PostgresValidator) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

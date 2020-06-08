@@ -21,6 +21,7 @@ import (
 	"strings"
 	"sync"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
@@ -58,11 +59,11 @@ var forbiddenEnvVars = []string{
 // Resource is the resource to use for hosting validating admission webhook.
 func (a *PerconaXtraDBValidator) Resource() (plural schema.GroupVersionResource, singular string) {
 	return schema.GroupVersionResource{
-			Group:    "validators.kubedb.com",
+			Group:    kubedb.ValidatorGroupName,
 			Version:  "v1alpha1",
-			Resource: "perconaxtradbvalidators",
+			Resource: api.ResourcePluralPerconaXtraDB,
 		},
-		"perconaxtradbvalidator"
+		api.ResourceSingularPerconaXtraDB
 }
 
 // Initialize is called as a post-start hook
