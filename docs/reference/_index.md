@@ -1,10 +1,11 @@
 ---
 title: Reference
-description: KubeDB CLI Reference
+description: KubeDB Reference
 menu:
-  docs_0.12.0:
+  docs_{{ .version }}:
     identifier: reference
     name: Reference
     weight: 1000
-menu_name: docs_0.12.0
+    pre: dropdown
+menu_name: docs_{{ .version }}
 ---
