@@ -1,11 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MySQLOpsRequest
 metadata:
-  name: my-ops
+  name: myopsreq-standalone
   namespace: demo
 spec:
   databaseRef:
-    name: my-group
+    name: my-standalone
   type: Upgrade
   upgrade:
     targetVersion: "8.0.20"

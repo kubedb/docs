@@ -4,9 +4,9 @@ metadata:
   name: myops
   namespace: demo
 spec:
+  type: VerticalScaling  
   databaseRef:
     name: my-group
-  type: VerticalScaling  
   verticalScaling:
     mysql:
       requests:
