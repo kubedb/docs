@@ -23,7 +23,7 @@ stash-install:
 	helm install stash-operator appscode/stash --wait \
 		--version v0.9.0-rc.4 \
 		--namespace kube-system; \
-	kubectl wait --for=condition=Available apiservice -l app.kubernetes.io/name=stash --timeout=5m
+	kubectl wait --for=condition=Available apiservice -l app=stash --timeout=5m
 	curl -fsSL https://github.com/stashed/catalog/raw/v0.3.0/deploy/script.sh | bash -s -- --catalog=stash-mongodb --docker-registry=stashed
 
 .PHONY: stash-uninstall
@@ -33,4 +33,4 @@ stash-uninstall:
 
 .PHONY: stash-purge
 stash-purge: stash-uninstall
-	kubectl delete crds -l app.kubernetes.io/name=stash
+	kubectl delete crds -l app=stash
