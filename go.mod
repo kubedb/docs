@@ -25,7 +25,7 @@ require (
 	kubedb.dev/postgres v0.14.0-alpha.0
 	kubedb.dev/proxysql v0.1.0-alpha.0
 	kubedb.dev/redis v0.7.0-alpha.0
-	stash.appscode.dev/apimachinery v0.10.0-alpha.1
+	stash.appscode.dev/apimachinery v0.10.0-beta.0
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
