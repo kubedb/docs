@@ -1411,8 +1411,8 @@ stash.appscode.dev/apimachinery v0.10.0-alpha.0 h1:/CBUctjDJyjo9a9lANjAPRq3Fj1Ky
 stash.appscode.dev/apimachinery v0.10.0-alpha.0/go.mod h1:su9Q+3/B6+5PdGvVZBIkXoAik6iKKFUcdPNThpZPVV4=
 stash.appscode.dev/apimachinery v0.10.0-alpha.1 h1:NzT8tRWNhSnvwBMihVhTfHMG06Aw93SMkv8z9AvXUB0=
 stash.appscode.dev/apimachinery v0.10.0-alpha.1/go.mod h1:IzulL8Pi1zByc2Nlg+R6w2yPE15zc3Elksn8a/l8meg=
-stash.appscode.dev/apimachinery v0.10.0-beta.0 h1:gIn9ai1ipjgGImTXJseOsucv3rJmQC4/34kihUWul4g=
-stash.appscode.dev/apimachinery v0.10.0-beta.0/go.mod h1:v3rBovazmdCv/9rAA5U7LpDRFhVqcLsagnLlbPfD2Eg=
+stash.appscode.dev/apimachinery v0.10.0-beta.1 h1:R1IhAhZ/iUbs2M+v9LYJacDCOmc4lk00JzSjVBrxOG0=
+stash.appscode.dev/apimachinery v0.10.0-beta.1/go.mod h1:v3rBovazmdCv/9rAA5U7LpDRFhVqcLsagnLlbPfD2Eg=
 vbom.ml/util v0.0.0-20160121211510-db5cfe13f5cc/go.mod h1:so/NYdZXCz+E3ZpW0uAoCj6uzU2+8OWDFv/HxUSs7kI=
 xorm.io/builder v0.3.6/go.mod h1:LEFAPISnRzG+zxaxj2vPicRwz67BdhFreKg8yv8/TgU=
 xorm.io/core v0.7.2-0.20190928055935-90aeac8d08eb/go.mod h1:jJfd0UAEzZ4t87nbQYtVjmqpIODugN6PD2D9E+dJvdM=
