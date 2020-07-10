@@ -1,5 +1,5 @@
 /*
-Copyright The KubeDB Authors.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -100,19 +100,19 @@ type MySQLVersionPodSecurityPolicy struct {
 
 type MySQLUpgradeConstraints struct {
 	// List of all accepted versions for uprade request
-	Whitelist Whitelist `json:"whitelist,omitempty" protobuf:"bytes,1,opt,name=whitelist"`
+	Allowlist Allowlist `json:"allowlist,omitempty" protobuf:"bytes,1,opt,name=allowlist"`
 	// List of all rejected versions for uprade request
-	Blacklist Blacklist `json:"blacklist,omitempty" protobuf:"bytes,2,opt,name=blacklist"`
+	Denylist Denylist `json:"denylist,omitempty" protobuf:"bytes,2,opt,name=denylist"`
 }
 
-type Whitelist struct {
+type Allowlist struct {
 	// List of all accepted versions for upgrade request of a Standalone server. empty indicates all accepted
 	Standalone []string `json:"standalone,omitempty" protobuf:"bytes,1,opt,name=standalone"`
 	// List of all accepted versions for upgrade request of a GroupReplication cluster. empty indicates all accepted
 	GroupReplication []string `json:"groupReplication,omitempty" protobuf:"bytes,2,opt,name=groupReplication"`
 }
 
-type Blacklist struct {
+type Denylist struct {
 	// List of all rejected versions for upgrade request of a Standalone server
 	Standalone []string `json:"standalone,omitempty" protobuf:"bytes,1,opt,name=standalone"`
 	// List of all rejected versions for upgrade request of a GroupReplication cluster
