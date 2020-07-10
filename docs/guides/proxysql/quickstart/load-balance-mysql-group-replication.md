@@ -30,7 +30,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored [here](https://github.com/kubedb/docs/tree/{{< param "info.subproject_version" >}}/docs/examples).
+> Note: YAML files used in this tutorial are stored [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples).
 
 ## Load Balance Using ProxySQL
 
