@@ -107,23 +107,7 @@ spec:
               upgradeConstraints:
                 description: upgrade constraints
                 properties:
-                  blacklist:
-                    description: List of all rejected versions for uprade request
-                    properties:
-                      groupReplication:
-                        description: List of all rejected versions for upgrade request
-                          of a GroupReplication cluster
-                        items:
-                          type: string
-                        type: array
-                      standalone:
-                        description: List of all rejected versions for upgrade request
-                          of a Standalone server
-                        items:
-                          type: string
-                        type: array
-                    type: object
-                  whitelist:
+                  allowlist:
                     description: List of all accepted versions for uprade request
                     properties:
                       groupReplication:
@@ -135,6 +119,22 @@ spec:
                       standalone:
                         description: List of all accepted versions for upgrade request
                           of a Standalone server. empty indicates all accepted
+                        items:
+                          type: string
+                        type: array
+                    type: object
+                  denylist:
+                    description: List of all rejected versions for uprade request
+                    properties:
+                      groupReplication:
+                        description: List of all rejected versions for upgrade request
+                          of a GroupReplication cluster
+                        items:
+                          type: string
+                        type: array
+                      standalone:
+                        description: List of all rejected versions for upgrade request
+                          of a Standalone server
                         items:
                           type: string
                         type: array

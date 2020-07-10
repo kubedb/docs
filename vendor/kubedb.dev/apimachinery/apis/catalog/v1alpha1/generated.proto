@@ -1,5 +1,5 @@
 /*
-Copyright The KubeDB Authors.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,7 +28,15 @@ import "k8s.io/apimachinery/pkg/runtime/schema/generated.proto";
 // Package-wide variables from generator "generated".
 option go_package = "v1alpha1";
 
-message Blacklist {
+message Allowlist {
+  // List of all accepted versions for upgrade request of a Standalone server. empty indicates all accepted
+  repeated string standalone = 1;
+
+  // List of all accepted versions for upgrade request of a GroupReplication cluster. empty indicates all accepted
+  repeated string groupReplication = 2;
+}
+
+message Denylist {
   // List of all rejected versions for upgrade request of a Standalone server
   repeated string standalone = 1;
 
@@ -292,10 +300,10 @@ message MongoDBVersionTools {
 
 message MySQLUpgradeConstraints {
   // List of all accepted versions for uprade request
-  optional Whitelist whitelist = 1;
+  optional Allowlist allowlist = 1;
 
   // List of all rejected versions for uprade request
-  optional Blacklist blacklist = 2;
+  optional Denylist denylist = 2;
 }
 
 // +kubebuilder:object:root=true
@@ -656,13 +664,5 @@ message RedisVersionSpec {
 
   // PSP names
   optional RedisVersionPodSecurityPolicy podSecurityPolicies = 5;
-}
-
-message Whitelist {
-  // List of all accepted versions for upgrade request of a Standalone server. empty indicates all accepted
-  repeated string standalone = 1;
-
-  // List of all accepted versions for upgrade request of a GroupReplication cluster. empty indicates all accepted
-  repeated string groupReplication = 2;
 }
 
