@@ -93,6 +93,7 @@ DOCKER_REPO_ROOT := /go/src/$(GO_PKG)/$(REPO)
 # If you want to build AND push all containers, see the 'all-push' rule.
 all: fmt build
 
+include Makefile.env
 include Makefile.stash
 
 # For the following OS/ARCH expansions, we transform OS/ARCH into OS_ARCH
@@ -332,8 +333,8 @@ $(BUILD_DIRS):
 	@mkdir -p $@
 
 REGISTRY_SECRET ?=
-ENTERPRISE_TAG  ?= v0.1.0-alpha.3
-KUBE_NAMESPACE  ?= kube-system
+ENTERPRISE_TAG  ?=
+KUBE_NAMESPACE  ?=
 
 ifeq ($(strip $(REGISTRY_SECRET)),)
 	IMAGE_PULL_SECRETS =

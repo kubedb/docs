@@ -14,21 +14,26 @@
 
 SHELL=/bin/bash -o pipefail
 
+CHART_REGISTRY        ?=
+CHART_REGISTRY_URL    ?=
+STASH_VERSION         ?=
+STASH_CATALOG_VERSION ?=
+
 # To test stash integration
 .PHONY: stash-install
 stash-install:
-	helm repo add appscode https://charts.appscode.com/stable/; \
+	helm repo add $(CHART_REGISTRY) $(CHART_REGISTRY_URL); \
 	helm repo update; \
-	helm install stash-operator appscode/stash --wait \
-		--version v0.9.0-rc.4 \
-		--namespace kube-system; \
-	kubectl wait --for=condition=Available apiservice -l app.kubernetes.io/name=stash --timeout=5m
-	curl -fsSL https://github.com/stashed/catalog/raw/v0.3.0/deploy/script.sh | bash -s -- --catalog=stash-mongodb --docker-registry=stashed
+	helm install stash-operator $(CHART_REGISTRY)/stash --wait \
+		--version $(STASH_VERSION) \
+		--namespace $(KUBE_NAMESPACE); \
+	kubectl wait --for=condition=Available apiservice -l 'app.kubernetes.io/name=stash,app.kubernetes.io/instance=stash-operator' --timeout=5m
+	curl -fsSL https://github.com/stashed/catalog/raw/$(STASH_CATALOG_VERSION)/deploy/script.sh | bash -s -- --docker-registry=stashed
 
 .PHONY: stash-uninstall
 stash-uninstall:
-	curl -fsSL https://github.com/stashed/catalog/raw/v0.3.0/deploy/script.sh | bash -s -- --catalog=stash-mongodb --uninstall || true
-	helm uninstall stash --namespace=kube-system || true
+	curl -fsSL https://github.com/stashed/catalog/raw/$(STASH_CATALOG_VERSION)/deploy/script.sh | bash -s -- --uninstall || true
+	helm uninstall stash --namespace=$(KUBE_NAMESPACE) || true
 
 .PHONY: stash-purge
 stash-purge: stash-uninstall
