@@ -1,0 +1,95 @@
+name: e2e
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  kubernetes:
+    name: Kubernetes
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.html_url, '/pull/') && github.event.comment.body == '/ok-to-test'
+    strategy:
+      matrix:
+        k8s: [v1.12.10, v1.14.10, v1.16.9, v1.18.4]
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Checkout pr
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          curl -fsSL https://github.com/github/hub/raw/master/script/get | bash -s 2.14.1
+          sudo mv bin/hub /usr/local/bin
+          hub pr checkout $PR_NUMBER
+
+      - name: Create Kubernetes ${{ matrix.k8s }} cluster
+        id: kind
+        uses: engineerd/setup-kind@v0.3.0
+        with:
+          version: v0.8.1
+          config: hack/kubernetes/kind.yaml
+          image: kindest/node:${{ matrix.k8s }}
+
+      - name: Prepare cluster for testing
+        id: local-path
+        env:
+          USERNAME: 1gtm
+          REGISTRY_SECRET: regcred
+          GCR_SERVICE_ACCOUNT_JSON_KEY: ${{ secrets.GCR_SERVICE_ACCOUNT_JSON_KEY }}
+        run: |
+          echo "waiting for nodes to be ready ..."
+          kubectl wait --for=condition=Ready nodes --all --timeout=5m
+          kubectl get nodes
+          echo
+          echo "install helm 3"
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+          echo
+          echo "create docker-registry secret"
+          kubectl create secret docker-registry ${REGISTRY_SECRET} \
+            --namespace=kube-system \
+            --docker-server=https://gcr.io \
+            --docker-username=_json_key \
+            --docker-email=${USERNAME}@appscode.com \
+            --docker-password="$(echo $GCR_SERVICE_ACCOUNT_JSON_KEY)"
+
+      - name: Install cert-manager
+        run: |
+          kubectl create namespace cert-manager
+          # ref: https://github.com/cloudflare/semver_bash/blob/master/semver.sh#L3
+          RE='[^0-9]*\([0-9]*\)[.]\([0-9]*\)[.]\([0-9]*\)\([0-9A-Za-z-]*\)'
+          eval MAJOR=`echo ${{ matrix.k8s }} | sed -e "s#$RE#\1#"`
+          eval MINOR=`echo ${{ matrix.k8s }} | sed -e "s#$RE#\2#"`
+          if [ $MAJOR -eq 1 ] && [ $MINOR -lt 15 ]; then
+            kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager-legacy.yaml
+          else
+            kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager.yaml
+          fi
+
+      - name: Check out installer
+        run: |
+          cd ..
+          git clone https://github.com/kubedb/installer.git
+          cd installer
+          git checkout master
+
+      - name: Install stash and addons
+        run: |
+          make stash-install
+
+      - name: Run e2e tests
+        env:
+          REGISTRY: kubedbci
+          REGISTRY_SECRET: regcred
+          TEST_CREDENTIALS: ${{ secrets.TEST_CREDENTIALS }}
+          GOOGLE_SERVICE_ACCOUNT_JSON_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON_KEY }}
+        run: |
+          echo "preparing test credentials"
+          mkdir -p hack/config
+          echo -n "$TEST_CREDENTIALS" > hack/config/.env
+          echo >> hack/config/.env
+          echo "GOOGLE_SERVICE_ACCOUNT_JSON_KEY=$(echo $GOOGLE_SERVICE_ACCOUNT_JSON_KEY)" >> hack/config/.env
+          make install
+          # echo
+          # make e2e-parallel
