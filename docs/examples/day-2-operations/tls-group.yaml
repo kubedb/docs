@@ -1,0 +1,34 @@
+apiVersion: kubedb.com/v1alpha1
+kind: MySQL
+metadata:
+  name: my-group
+  namespace: demo
+spec:
+  version: "5.7.29"
+  replicas: 3
+  topology:
+    mode: GroupReplication
+    group:
+      name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
+      baseServerID: 100
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  requireSSL: true
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io/v1alpha2
+      kind: Issuer
+      name: mysql-issuer
+    certificate:
+      organization:
+        - kubedb:server
+      dnsNames:
+        - localhost
+        - "127.0.0.1"
+  terminationPolicy: WipeOut

@@ -1,9 +1,9 @@
 ---
-title: Upgrading MySQL standalone
+title: Upgrading MySQL group replication
 menu:
   docs_{{ .version }}:
-    identifier: my-upgrade-standalone
-    name: my-upgrade-standalone
+    identifier: my-upgrade-group
+    name: my-upgrade-group
     parent: my-upgrading-mysql
     weight: 20
 menu_name: docs_{{ .version }}
@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > :warning: **This doc is only for KubeDB Enterprise**: You need to be an enterprise user!
 
-# Upgrade MySQL Group Replication using KubeDB enterprise operator
+# Upgrade MySQL Group Replication
 
 This guide will show you how to use `KubeDB` enterprise operator to upgrade the `MySQL` Group Replication.
 
@@ -20,7 +20,7 @@ This guide will show you how to use `KubeDB` enterprise operator to upgrade the 
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` general and enterprise operator in your cluster following the steps [here]().
+- Install `KubeDB` community and enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MySQL](/docs/concepts/databases/mysql.md)

@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > :warning: **This doc is only for KubeDB Enterprise**: You need to be an enterprise user!
 
-# Upgrade MySQL Standalone using KubeDB enterprise operator
+# Upgrade MySQL Standalone
 
 This guide will show you how to use `KubeDB` enterprise operator to upgrade the `MySQL` Standalone.
 
@@ -20,7 +20,7 @@ This guide will show you how to use `KubeDB` enterprise operator to upgrade the 
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` general and enterprise operator in your cluster following the steps [here]().
+- Install `KubeDB` community and enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MySQL](/docs/concepts/databases/mysql.md)

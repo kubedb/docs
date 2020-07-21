@@ -6,7 +6,7 @@ metadata:
 spec:
   type: VerticalScaling  
   databaseRef:
-    name: my-group
+    name: my-standalone
   verticalScaling:
     mysql:
       requests:

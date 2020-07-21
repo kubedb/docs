@@ -28,14 +28,14 @@ The following diagram shows how KubeDB enterprise operator upgrade `MySQL` versi
 
 <figure align="center">
   <img alt="Stash Backup Flow" src="/docs/images/day-2-operation/ops_req-upgrade.svg">
-<figcaption align="center">Fig: Backup process of Workload volumes in Stash</figcaption>
+<figcaption align="center">Fig: Upgrading Process of MySQL</figcaption>
 </figure>
 
 The upgrading process consists of the following steps:
 
 1. At first, a user creates a `MySQL` crd.
 
-2. `KubeDB` operator watches for `MySQL` crd.
+2. `KubeDB` community operator watches for `MySQL` crd.
 
 3. When it finds one, it creates a `StatefulSet` and related necessary stuff like secret, service, etc.
 
@@ -43,14 +43,14 @@ The upgrading process consists of the following steps:
 
 5. `KubeDB` enterprise operator watches for `MySQLOpsRequest`.
 
-6. When it finds a specific one, it pauses the `MySQL` object to stop it's processing operated by `KubeDB` operator in the runtime of upgrading.  
+6. When it finds a specific one, it pauses the `MySQL` object so that the `KubeDB` community operator doesn't perform any operation on the `MySQL` during the upgrading process.  
 
 7. By looking at the target version from `MySQLOpsRequest` crd, `KubeDB` enterprise operator takes one of the following steps:
-   - Update the images of the `StatefulSet` for patch version upgrading.
-   - Creates a new `StatefulSet` using targeted images for major version upgrading.
+   - Update the images of the `StatefulSet` for upgrading between patch/minor versions.
+   - Creates a new `StatefulSet` using targeted images for upgrading between major versions.
 
 8. After successful upgradation of `StatefulSet` and its `Pod` images, the `KubeDB` enterprise operator updates the `MySQL` object images.
 
-9. After successful upgradation of `MySQL` object, the `KubeDB` enterprise operator resumes the `MySQL` object to start it's processing operated by `KubeDB` operator.
+9. After successful upgradation of `MySQL` object, the `KubeDB` enterprise operator resumes the `MySQL` object so that the `KubeDB` community operator can resumes it's operations.
 
 At each of the above steps, the `KubeDB` enterprise operator updates the `status` section of the `MySQLOpsRequest`.
