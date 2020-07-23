@@ -27,14 +27,14 @@ import (
 
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kutil "kmodules.xyz/client-go"
+	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
 )
 
 const (
-	AuthSecretSuffix = "-auth"
+	AuthSecretSuffix = "auth"
 )
 
 func (c *Controller) managePgBouncerEvent(key string) error {
@@ -94,18 +94,19 @@ func (c *Controller) manageCreateOrPatchEvent(pgbouncer *api.PgBouncer) error {
 	}
 	// wait for certificates
 	if pgbouncer.Spec.TLS != nil {
-		// wait for serving certificate
-		if _, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Name+api.PgBouncerServingServerSuffix, metav1.GetOptions{}); kerr.IsNotFound(err) {
-			return nil
+		ok, err := dynamic_util.ResourcesExists(
+			c.DynamicClient,
+			core.SchemeGroupVersion.WithResource("secrets"),
+			pgbouncer.Namespace,
+			meta_util.NameWithSuffix(pgbouncer.Name, api.PgBouncerServingServerSuffix),
+			meta_util.NameWithSuffix(pgbouncer.Name, api.PgBouncerServingClientSuffix),
+			meta_util.NameWithSuffix(pgbouncer.Name, api.PgBouncerExporterClientCertSuffix),
+		)
+		if err != nil {
+			return err
 		}
-
-		// wait for serving client certificate
-		if _, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Name+api.PgBouncerServingClientSuffix, metav1.GetOptions{}); kerr.IsNotFound(err) {
-			return nil
-		}
-
-		// wait for exporter client certificate
-		if _, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Name+api.PgBouncerExporterClientCertSuffix, metav1.GetOptions{}); kerr.IsNotFound(err) {
+		if !ok {
+			log.Infof("wait for all certificate secrets for pgbouncer %s/%s", pgbouncer.Namespace, pgbouncer.Name)
 			return nil
 		}
 	}
@@ -183,7 +184,7 @@ func (c *Controller) manageInitialPhase(pgbouncer *api.PgBouncer) error {
 }
 
 func (c *Controller) manageFinalPhase(pgbouncer *api.PgBouncer) error {
-	if !c.isPgBouncerExist(pgbouncer) {
+	if !c.PgBouncerExists(pgbouncer) {
 		return nil
 	}
 
@@ -356,7 +357,7 @@ func (c *Controller) manageStatService(pgbouncer *api.PgBouncer) error {
 	return nil
 }
 
-func (c *Controller) isPgBouncerExist(pgbouncer *api.PgBouncer) bool {
+func (c *Controller) PgBouncerExists(pgbouncer *api.PgBouncer) bool {
 	_, err := c.ExtClient.KubedbV1alpha1().PgBouncers(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Name, metav1.GetOptions{})
 	return err == nil
 }

@@ -27,7 +27,6 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -175,19 +174,4 @@ func (c *Controller) ensureStatsService(pgbouncer *api.PgBouncer) (kutil.VerbTyp
 		)
 	}
 	return vt, nil
-}
-
-func (c *Controller) PgBouncerForService(s *core.Service) (*api.PgBouncer, error) {
-	pgbouncers, err := c.pbLister.PgBouncers(s.Namespace).List(labels.Everything())
-	if err != nil {
-		return nil, err
-	}
-
-	for _, pgbouncer := range pgbouncers {
-		if metav1.IsControlledBy(s, pgbouncer) {
-			return pgbouncer, nil
-		}
-	}
-
-	return nil, nil
 }

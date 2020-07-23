@@ -52,25 +52,22 @@ func (c *Controller) initSecretWatcher() {
 	c.SecretInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if secret, ok := obj.(*core.Secret); ok {
-				pgbouncer, err := c.PgBouncerForSecret(secret)
-				if err == nil && pgbouncer != nil {
-					queue.Enqueue(c.pbQueue.GetQueue(), pgbouncer)
+				if key := c.PgBouncerForSecret(secret); key != "" {
+					queue.Enqueue(c.pbQueue.GetQueue(), key)
 				}
 			}
 		},
 		UpdateFunc: func(oldObj interface{}, newObj interface{}) {
 			if secret, ok := newObj.(*core.Secret); ok {
-				pgbouncer, err := c.PgBouncerForSecret(secret)
-				if err == nil && pgbouncer != nil {
-					queue.Enqueue(c.pbQueue.GetQueue(), pgbouncer)
+				if key := c.PgBouncerForSecret(secret); key != "" {
+					queue.Enqueue(c.pbQueue.GetQueue(), key)
 				}
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
 			if secret, ok := obj.(*core.Secret); ok {
-				pgbouncer, err := c.PgBouncerForSecret(secret)
-				if err == nil && pgbouncer != nil {
-					queue.Enqueue(c.pbQueue.GetQueue(), pgbouncer)
+				if key := c.PgBouncerForSecret(secret); key != "" {
+					queue.Enqueue(c.pbQueue.GetQueue(), key)
 				}
 			}
 		},

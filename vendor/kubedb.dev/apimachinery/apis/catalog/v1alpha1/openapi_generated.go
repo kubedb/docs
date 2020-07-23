@@ -17904,7 +17904,7 @@ func schema_apimachinery_apis_catalog_v1alpha1_ElasticsearchVersionSpec(ref comm
 						},
 					},
 				},
-				Required: []string{"version", "authPlugin", "db", "exporter", "tools", "initContainer", "podSecurityPolicies"},
+				Required: []string{"version", "authPlugin", "db", "exporter", "initContainer", "podSecurityPolicies"},
 			},
 		},
 		Dependencies: []string{

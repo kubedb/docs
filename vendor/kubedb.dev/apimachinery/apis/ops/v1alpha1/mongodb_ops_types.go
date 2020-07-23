@@ -18,7 +18,6 @@ package v1alpha1
 
 import (
 	core "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kmapi "kmodules.xyz/client-go/api/v1"
 )
@@ -52,7 +51,7 @@ type MongoDBOpsRequest struct {
 // MongoDBOpsRequestSpec is the spec for MongoDBOpsRequest
 type MongoDBOpsRequestSpec struct {
 	// Specifies the MongoDB reference
-	DatabaseRef v1.LocalObjectReference `json:"databaseRef" protobuf:"bytes,1,opt,name=databaseRef"`
+	DatabaseRef core.LocalObjectReference `json:"databaseRef" protobuf:"bytes,1,opt,name=databaseRef"`
 	// Specifies the ops request type: Upgrade, HorizontalScaling, VerticalScaling etc.
 	Type OpsRequestType `json:"type" protobuf:"bytes,2,opt,name=type,casttype=OpsRequestType"`
 	// Specifies information necessary for upgrading mongodb

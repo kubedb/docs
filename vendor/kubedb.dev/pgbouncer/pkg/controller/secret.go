@@ -27,9 +27,10 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/tools/cache"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 const UserListKey string = "userlist"
@@ -37,7 +38,7 @@ const UserListKey string = "userlist"
 func (c *Controller) GetDefaultSecretSpec(pgbouncer *api.PgBouncer) *core.Secret {
 	return &core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      pgbouncer.GetName() + AuthSecretSuffix,
+			Name:      meta_util.NameWithSuffix(pgbouncer.GetName(), AuthSecretSuffix),
 			Namespace: pgbouncer.Namespace,
 			Labels:    pgbouncer.OffshootLabels(),
 		},
@@ -112,17 +113,11 @@ func (c *Controller) isSecretExists(meta metav1.ObjectMeta) error {
 	return err
 }
 
-func (c *Controller) PgBouncerForSecret(s *core.Secret) (*api.PgBouncer, error) {
-	pgbouncers, err := c.pbLister.PgBouncers(s.Namespace).List(labels.Everything())
-	if err != nil {
-		return nil, err
+func (c *Controller) PgBouncerForSecret(s *core.Secret) cache.ExplicitKey {
+	ctrl := metav1.GetControllerOf(s)
+	if ctrl == nil || ctrl.Kind != api.ResourceKindPgBouncer {
+		return ""
 	}
-
-	for _, pgbouncer := range pgbouncers {
-		if metav1.IsControlledBy(s, pgbouncer) {
-			return pgbouncer, nil
-		}
-	}
-
-	return nil, nil
+	// Owner ref is set by the enterprise operator
+	return cache.ExplicitKey(s.Namespace + "/" + ctrl.Name)
 }

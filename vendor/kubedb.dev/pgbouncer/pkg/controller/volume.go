@@ -24,6 +24,7 @@ import (
 	"github.com/appscode/go/types"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (c *Controller) getVolumeAndVolumeMountForDefaultUserList(pgbouncer *api.PgBouncer) (*core.Volume, *core.VolumeMount, error) {
@@ -53,7 +54,7 @@ func (c *Controller) getVolumeAndVolumeMountForDefaultUserList(pgbouncer *api.Pg
 
 func (c *Controller) getVolumeAndVolumeMountForServingServerCertificate(pgbouncer *api.PgBouncer) (*core.Volume, *core.VolumeMount, error) {
 	//TODO: this is for issuer only, I'm not sure about clusterIssuer yet
-	clientSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Name+api.PgBouncerServingServerSuffix, metav1.GetOptions{})
+	clientSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), meta_util.NameWithSuffix(pgbouncer.Name, api.PgBouncerServingServerSuffix), metav1.GetOptions{})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -77,7 +78,7 @@ func (c *Controller) getVolumeAndVolumeMountForServingServerCertificate(pgbounce
 
 func (c *Controller) getVolumeAndVolumeMountForServingClientCertificate(pgbouncer *api.PgBouncer) (*core.Volume, *core.VolumeMount, error) {
 	//TODO: this is for issuer only, I'm not sure about clusterIssuer yet
-	clientSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Name+api.PgBouncerServingClientSuffix, metav1.GetOptions{})
+	clientSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), meta_util.NameWithSuffix(pgbouncer.Name, api.PgBouncerServingClientSuffix), metav1.GetOptions{})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -100,7 +101,7 @@ func (c *Controller) getVolumeAndVolumeMountForServingClientCertificate(pgbounce
 }
 
 func (c *Controller) getVolumeAndVolumeMountForExporterClientCertificate(pgbouncer *api.PgBouncer) (*core.Volume, *core.VolumeMount, error) {
-	clientSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Name+api.PgBouncerExporterClientCertSuffix, metav1.GetOptions{})
+	clientSecret, err := c.Client.CoreV1().Secrets(pgbouncer.Namespace).Get(context.TODO(), meta_util.NameWithSuffix(pgbouncer.Name, api.PgBouncerExporterClientCertSuffix), metav1.GetOptions{})
 	if err != nil {
 		return nil, nil, err
 	}

@@ -20329,6 +20329,10 @@ spec:
                       backing this claim.
                     type: string
                 type: object
+              storageEngine:
+                description: 'StorageEngine can be wiredTiger (default) or inMemory
+                  See available StorageEngine: https://docs.mongodb.com/manual/core/storage-engines/'
+                type: string
               storageType:
                 description: StorageType can be durable (default) or ephemeral
                 enum:
