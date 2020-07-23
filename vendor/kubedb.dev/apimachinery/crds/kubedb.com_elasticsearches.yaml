@@ -63,6 +63,7 @@ spec:
               - SearchGuard
               - None
               - X-Pack
+              - OpenDistro
               type: string
             certificateSecret:
               description: Secret with SSL certificates

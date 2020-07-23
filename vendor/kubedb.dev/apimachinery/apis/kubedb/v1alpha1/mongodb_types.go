@@ -123,6 +123,10 @@ type MongoDBSpec struct {
 	// TerminationPolicy controls the delete operation for database
 	// +optional
 	TerminationPolicy TerminationPolicy `json:"terminationPolicy,omitempty" protobuf:"bytes,20,opt,name=terminationPolicy,casttype=TerminationPolicy"`
+
+	// StorageEngine can be wiredTiger (default) or inMemory
+	// See available StorageEngine: https://docs.mongodb.com/manual/core/storage-engines/
+	StorageEngine StorageEngine `json:"storageEngine,omitempty" protobuf:"bytes,21,opt,name=storageEngine,casttype=StorageEngine"`
 }
 
 // ClusterAuthMode represents the clusterAuthMode of mongodb clusters ( replicaset or sharding)
@@ -167,6 +171,18 @@ const (
 
 	// SSLModeRequireSSL represents `requiteSSL` sslmode. It ensures that the server uses and accepts only TLS/SSL encrypted connections.
 	SSLModeRequireSSL SSLMode = "requireSSL"
+)
+
+// StorageEngine represents storage engine of mongodb clusters.
+// ref: https://docs.mongodb.com/manual/core/storage-engines/
+type StorageEngine string
+
+const (
+	// StorageEngineWiredTiger represents `wiredTiger` storage engine of mongodb.
+	StorageEngineWiredTiger StorageEngine = "wiredTiger"
+
+	// StorageEngineInMemory represents `inMemory` storage engine of mongodb.
+	StorageEngineInMemory StorageEngine = "inMemory"
 )
 
 type MongoDBReplicaSet struct {

@@ -12,19 +12,19 @@ require (
 	k8s.io/apimachinery v0.18.3
 	k8s.io/apiserver v0.18.3
 	k8s.io/client-go v12.0.0+incompatible
-	kmodules.xyz/client-go v0.0.0-20200714060506-0b57b4060595
+	kmodules.xyz/client-go v0.0.0-20200723053948-317b6023eb5d
 	kmodules.xyz/custom-resources v0.0.0-20200604135349-9e9f5c4fdba9
 	kmodules.xyz/webhook-runtime v0.0.0-20200522123600-ca70a7e28ed0
-	kubedb.dev/apimachinery v0.14.0-beta.1
-	kubedb.dev/elasticsearch v0.14.0-beta.1
-	kubedb.dev/memcached v0.7.0-beta.1
-	kubedb.dev/mongodb v0.7.0-beta.1
-	kubedb.dev/mysql v0.7.0-beta.1
-	kubedb.dev/percona-xtradb v0.1.0-beta.1
-	kubedb.dev/pgbouncer v0.1.0-beta.1
-	kubedb.dev/postgres v0.14.0-beta.1
-	kubedb.dev/proxysql v0.1.0-beta.1
-	kubedb.dev/redis v0.7.0-beta.1
+	kubedb.dev/apimachinery v0.14.0-beta.1.0.20200723065505-3b5e9ece8940
+	kubedb.dev/elasticsearch v0.14.0-beta.1.0.20200723090857-ae696dbe80d1
+	kubedb.dev/memcached v0.7.0-beta.1.0.20200723095755-ff1b144ef97b
+	kubedb.dev/mongodb v0.7.0-beta.1.0.20200723074815-b736c57ef0f1
+	kubedb.dev/mysql v0.7.0-beta.1.0.20200723095850-02c9434cc3dd
+	kubedb.dev/percona-xtradb v0.1.0-beta.1.0.20200714170224-189f3212f741
+	kubedb.dev/pgbouncer v0.1.0-beta.1.0.20200723095805-ca61e88c6644
+	kubedb.dev/postgres v0.14.0-beta.1.0.20200723102056-197f1b2b7d95
+	kubedb.dev/proxysql v0.1.0-beta.1.0.20200723101031-6644058ed759
+	kubedb.dev/redis v0.7.0-beta.1.0.20200723083918-2bafb114564b
 	stash.appscode.dev/apimachinery v0.10.0-beta.1
 )
 

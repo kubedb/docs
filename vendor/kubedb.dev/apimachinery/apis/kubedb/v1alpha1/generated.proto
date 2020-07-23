@@ -737,6 +737,10 @@ message MongoDBSpec {
   // TerminationPolicy controls the delete operation for database
   // +optional
   optional string terminationPolicy = 20;
+
+  // StorageEngine can be wiredTiger (default) or inMemory
+  // See available StorageEngine: https://docs.mongodb.com/manual/core/storage-engines/
+  optional string storageEngine = 21;
 }
 
 message MongoDBStatus {
