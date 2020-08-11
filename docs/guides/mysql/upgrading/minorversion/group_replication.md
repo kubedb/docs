@@ -1,11 +1,11 @@
 ---
-title: Upgrading MySQL group replication major version
+title: Upgrading MySQL group replication minor version
 menu:
   docs_{{ .version }}:
-    identifier: my-upgrading-mysql-group-major
-    name: Group Replication major version
-    parent: my-upgrading-mysql
-    weight: 25
+    identifier: my-upgrading-mysql-minor-group
+    name: Group Replication
+    parent: my-upgrading-mysql-minor
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

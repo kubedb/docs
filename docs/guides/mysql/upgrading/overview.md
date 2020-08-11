@@ -5,7 +5,7 @@ menu:
     identifier: my-upgrading-overview
     name: Overview
     parent: my-upgrading-mysql
-    weight: 15
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

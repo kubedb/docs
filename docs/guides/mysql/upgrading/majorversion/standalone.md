@@ -1,11 +1,11 @@
 ---
-title: Upgrading MySQL standalone
+title: Upgrading MySQL standalone major version
 menu:
   docs_{{ .version }}:
-    identifier: my-upgrading-mysql-standalone
+    identifier: my-upgrading-mysql-major-standalone
     name: Standalone
-    parent: my-upgrading-mysql
-    weight: 20
+    parent: my-upgrading-mysql-major
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
