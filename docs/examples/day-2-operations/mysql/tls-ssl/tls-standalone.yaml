@@ -1,0 +1,33 @@
+apiVersion: kubedb.com/v1alpha1
+kind: MySQL
+metadata:
+  name: mysql-quickstart
+  namespace: demo
+spec:
+  version: "8.0.20"
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  monitor:
+    agent: prometheus.io/builtin   
+  requireSSL: true
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io/v1alpha2
+      kind: Issuer
+      name: mysql-issuer
+    certificates:
+    - alias: 
+      subject:
+        organizations:
+        - kubedb:server
+      dnsNames:
+      - localhost
+      ipAddresses:
+      - "127.0.0.1"
+  terminationPolicy: WipeOut

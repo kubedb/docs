@@ -1,7 +1,7 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MySQLOpsRequest
 metadata:
-  name: myops-horizontal
+  name: my-scale-up
   namespace: demo
 spec:
   type: HorizontalScaling  

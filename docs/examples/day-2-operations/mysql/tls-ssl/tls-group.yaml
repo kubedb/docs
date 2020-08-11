@@ -1,10 +1,16 @@
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:
-  name: mysql-quickstart
+  name: my-group
   namespace: demo
 spec:
-  version: "5.7.29"
+  version: "8.0.20"
+  replicas: 3
+  topology:
+    mode: GroupReplication
+    group:
+      name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
+      baseServerID: 100
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -13,18 +19,19 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  monitor:
-    agent: prometheus.io/builtin   
   requireSSL: true
   tls:
     issuerRef:
       apiGroup: cert-manager.io/v1alpha2
       kind: Issuer
       name: mysql-issuer
-    certificate:
-      organization:
-      - kubedb:server
-      dnsNames:
-      - localhost
-      - "127.0.0.1"
+      certificates:
+      - alias: 
+        subject:
+          organizations:
+          - kubedb:server
+        dnsNames:
+        - localhost
+        ipAddresses:
+        - "127.0.0.1"
   terminationPolicy: WipeOut

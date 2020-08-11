@@ -1,7 +1,7 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MySQLOpsRequest
 metadata:
-  name: myopsreq-standalone
+  name: my-upgrade-standalone
   namespace: demo
 spec:
   databaseRef:

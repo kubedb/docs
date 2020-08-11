@@ -68,11 +68,14 @@ spec:
       apiGroup: cert-manager.io/v1alpha2
       kind: Issuer
       name: mysql-issuer
-    certificate:
-      organization:
-      - kubedb:server
+    certificates:
+    - alias:
+      subject:
+        organizations:
+        - kubedb:server
       dnsNames:
       - localhost
+      ipAddresses:
       - "127.0.0.1"
   configSource:
     configMap:
@@ -120,8 +123,8 @@ spec:
 
 `spec.version` is a required field specifying the name of the [MySQLVersion](/docs/concepts/catalog/mysql.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MySQLVersion` resources,
 
-- `8.0.20`, `8.0.19`, `8.0.18`, `8.0.14`, `8.0.3`, `8.0-v2`, `8.0-v1`, `8.0`, `8-v1`, `8`
-- `5.7.29`, `5.7.25`, `5.7-v2`, `5.7-v1`, `5.7`, `5-v1`, `5`
+- `8.0.21`, `8.0.20`, `8.0.14`, `8.0.3`, `8.0-v2`, `8.0-v1`, `8.0`, `8-v1`, `8`
+- `5.7.31`, `5.7.29`, `5.7.25`, `5.7-v2`, `5.7-v1`, `5.7`, `5-v1`, `5`
 
 ### spec.topology
 
@@ -278,31 +281,28 @@ MySQL managed by KubeDB can be monitored with builtin-Prometheus and CoreOS-Prom
 
 ### spec.requireSSL
 
-`spec.requireSSL` specifies SSL client connections to the server are required or not. if `spec.requireSSL` is `true` then the server permits only TCP/IP connections that use SSL, or connections that use a socket file (on Unix) or shared memory (on Windows). The server rejects nonsecure connection attempts. More details [here](https://dev.mysql.com/doc/refman/5.7/en/using-encrypted-connections.html)
+`spec.requireSSL` specifies whether the client connections require SSL. If `spec.requireSSL` is `true` then the server permits only TCP/IP connections that use SSL, or connections that use a socket file (on Unix) or shared memory (on Windows). The server rejects any non-secure connection attempt. For more details, please visit [here](https://dev.mysql.com/doc/refman/5.7/en/using-encrypted-connections.html)
 
 ### spec.tls
 
-`spec.tls` represents configurations for certificates used in TLS/SSL or mixed TLS/SSL used for all network connections of mysql.
+`spec.tls` specifies the TLS/SSL configurations for the MySQL.
 
-Available configurable fields:
+The following fields are configurable in the `spec.tls` section:
 
-- `issuerRef` is a reference to the `Issuer` or `ClusterIssuer` that will be used by KubeDB to generate necessary certificates.
-- `certificate` (optional) is used to configure the certificates.
+- `issuerRef` is a reference to the `Issuer` or `ClusterIssuer` CR of [cert-manager](https://cert-manager.io/docs/concepts/issuer/) that will be used by `KubeDB` to generate necessary certificates.
 
-`spec.tls.issuerRef` has the following fields:
+  - `apiGroup` is the group name of the resource   being referenced. The value for `Issuer` or   `ClusterIssuer` is "cert-manager.io"   (cert-manager v0.12.0 and later).
+  - `kind` is the type of resource being   referenced. KubeDB supports both of `Issuer`   and `ClusterIssuer` as values fro this field.
+  - `name` is the name of resource (`Issuer` or `ClusterIssuer`) being referenced.
 
-- `apiGroup` is the group name of the resource being referenced. The value for `Issuer` or `ClusterIssuer` is "cert-manager.io" (cert-manager v0.12.0 and later).
-- `kind` is the type of resource being referenced. KubeDB supports both of `Issuer` and `ClusterIssuer` as values fro this field.
-- `name` is the name of resource (`Issuer` or `ClusterIssuer`) being referenced.
+- `certificate` (optional) is used to configure the certificates. It has the following fields:
 
-`spec.tls.certificate` has the following fields:
-
-- `organization` (optional) is the organization to be used on the Certificate.
-- `duration` (optional) is the time period during which the certificate is valid.
-- `renewBefore` (optional) is a specifiable time before expiration duration.
-- `dnsNames` (optional) is a list of subject alt names to be used in the Certificate..
-- `ipAddresses` (optional) is a list of IP addresses to be used in the Certificate.
-- `uriSANs` (optional) is a list of URI Subject Alternative Names to be set in the Certificate.
+  - `organization` (optional) is the   organization to be used on the Certificate.
+  - `duration` (optional) is the time period   during which the certificate is valid.
+  - `renewBefore` (optional) is a specifiable   time before expiration duration.
+  - `dnsNames` (optional) is a list of subject   alt names to be used in the Certificate..
+  - `ipAddresses` (optional) is a list of IP   addresses to be used in the Certificate.
+  - `uriSANs` (optional) is a list of URI   Subject Alternative Names to be set in the   Certificate.
 
 ### spec.configSource
 

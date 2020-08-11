@@ -2,19 +2,19 @@
 title: Vertical Scaling MySQL group replication
 menu:
   docs_{{ .version }}:
-    identifier: my-vertical-scale
-    name: my-vertical-scale
-    parent: my-upgrading-mysql
+    identifier: my-vertical-scaling-group
+    name: Group Replication
+    parent:  my-vertical-scaling
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> :warning: **This doc is only for KubeDB Enterprise**: You need to be an enterprise user!
+{{< notice type="warning" message="Vertical scaling is an Enterprise feature of KubeDB. You must have KubeDB Enterprise operator installed to test this feature." >}}
 
 # Vertical Scale MySQL Group Replication
 
-This guide will show you how to use `KubeDB` enterprise operator to update the resources of server nodes of a `MySQL` Group Replication.
+This guide will show you how to use `KubeDB` enterprise operator to update the resources of the members of a `MySQL` Group Replication.
 
 ## Before You Begin
 
@@ -25,6 +25,7 @@ This guide will show you how to use `KubeDB` enterprise operator to update the r
 - You should be familiar with the following `KubeDB` concepts:
   - [MySQL](/docs/concepts/databases/mysql.md)
   - [MySQLOpsRequest](/docs/concepts/day-2-operations/mysqlopsrequest.md)
+  - [Vertical Scaling Overview](/docs/guides/mysql/scaling/vertical-scaling/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
@@ -33,53 +34,53 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations](/docs/examples/day-2-operations) directory of [stashed/docs](https://github.com/stashed/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations](/docs/examples/day-2-operations) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ### Apply Vertical Scaling on MySQL Group Replication
 
-Here, we are going to deploy a  `MySQL` group replication using a supported version by `KubeDB` operator. Below section will check the supported `MySQL` versions.
+Here, we are going to deploy a  `MySQL` group replication using a supported version by `KubeDB` operator. Then we are going to apply vertical scaling on it.
+
+#### Prepare Group Replication
+
+At first, we are going to deploy a group replication server using supported `MySQL` version. Then, we are going to update the resources of the members through vertical scaling.
 
 **Find supported MySQL Version:**
 
-When you have installed `KubeDB`, it has created `MySQLVersion` crd for all supported `MySQL` versions. Let's check support versions,
+When you have installed `KubeDB`, it has created `MySQLVersion` cr for all supported `MySQL` versions.  Let's check the supported MySQL versions,
 
 ```console
 $ kubectl get mysqlversion
 NAME        VERSION   DB_IMAGE                 DEPRECATED   AGE
-5           5         kubedb/mysql:5           true         49s
-5-v1        5         kubedb/mysql:5-v1        true         49s
-5.7         5.7       kubedb/mysql:5.7         true         49s
-5.7-v1      5.7       kubedb/mysql:5.7-v1      true         49s
-5.7-v2      5.7.25    kubedb/mysql:5.7-v2      true         49s
-5.7-v3      5.7.25    kubedb/mysql:5.7.25      true         49s
-5.7-v4      5.7.29    kubedb/mysql:5.7.29                   49s
-5.7.25      5.7.25    kubedb/mysql:5.7.25      true         49s
-5.7.25-v1   5.7.25    kubedb/mysql:5.7.25-v1                49s
-5.7.29      5.7.29    kubedb/mysql:5.7.29                   49s
-8           8         kubedb/mysql:8           true         49s
-8-v1        8         kubedb/mysql:8-v1        true         49s
-8.0         8.0       kubedb/mysql:8.0         true         49s
-8.0-v1      8.0.3     kubedb/mysql:8.0-v1      true         49s
-8.0-v2      8.0.14    kubedb/mysql:8.0-v2      true         49s
-8.0-v3      8.0.20    kubedb/mysql:8.0.20                   49s
-8.0.14      8.0.14    kubedb/mysql:8.0.14      true         49s
-8.0.14-v1   8.0.14    kubedb/mysql:8.0.14-v1                49s
-8.0.18      8.0.18    kubedb/mysql:8.0.18                   49s
-8.0.19      8.0.19    kubedb/mysql:8.0.19                   49s
-8.0.20      8.0.20    kubedb/mysql:8.0.20                   49s
-8.0.3       8.0.3     kubedb/mysql:8.0.3       true         49s
-8.0.3-v1    8.0.3     kubedb/mysql:8.0.3-v1                 49s
+5           5         kubedb/mysql:5           true         149m
+5-v1        5         kubedb/mysql:5-v1        true         149m
+5.7         5.7       kubedb/mysql:5.7         true         149m
+5.7-v1      5.7       kubedb/mysql:5.7-v1      true         149m
+5.7-v2      5.7.25    kubedb/mysql:5.7-v2      true         149m
+5.7-v3      5.7.25    kubedb/mysql:5.7.25      true         149m
+5.7-v4      5.7.29    kubedb/mysql:5.7.29      true         149m
+5.7.25      5.7.25    kubedb/mysql:5.7.25      true         149m
+5.7.25-v1   5.7.25    kubedb/mysql:5.7.25-v1                149m
+5.7.29      5.7.29    kubedb/mysql:5.7.29                   149m
+5.7.31      5.7.31    kubedb/mysql:5.7.31                   149m
+8           8         kubedb/mysql:8           true         149m
+8-v1        8         kubedb/mysql:8-v1        true         149m
+8.0         8.0       kubedb/mysql:8.0         true         149m
+8.0-v1      8.0.3     kubedb/mysql:8.0-v1      true         149m
+8.0-v2      8.0.14    kubedb/mysql:8.0-v2      true         149m
+8.0-v3      8.0.20    kubedb/mysql:8.0.20      true         149m
+8.0.14      8.0.14    kubedb/mysql:8.0.14      true         149m
+8.0.14-v1   8.0.14    kubedb/mysql:8.0.14-v1                149m
+8.0.20      8.0.20    kubedb/mysql:8.0.20                   149m
+8.0.21      8.0.21    kubedb/mysql:8.0.21                   149m
+8.0.3       8.0.3     kubedb/mysql:8.0.3       true         149m
+8.0.3-v1    8.0.3     kubedb/mysql:8.0.3-v1                 149m
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. Now we will select a version from `MySQLVersion` for `MySQL` group replication. For `MySQL` group replication deployment, we will select version `8.0.20`.
+The version above that does not show `DEPRECATED` `true` are supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using non-deprecated `MySQL` version `8.0.20`.
 
-#### Prepare Group Replication
+**Deploy MySQL Group Replication :**
 
-Now, we are going to deploy a `MySQL` group replication using version `8.0.20`.
-
-**Create MySQL Object:**
-
-Below is the YAML of the `MySQL` crd that we are going to create,
+In this section, we are going to deploy a MySQL group replication with 3 members. Then, in the next section we will update the resources of the members using vertical scaling. Below is the YAML of the `MySQL` cr that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -106,14 +107,14 @@ spec:
   terminationPolicy: WipeOut
 ```
 
-Let's create the `MySQL` crd we have shown above,
+Let's create the `MySQL` cr we have shown above,
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2operations/group_replication2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/verticalscaling/group_replication.yaml
 mysql.kubedb.com/my-group created
 ```
 
-**Check MySQL group Ready to Scale:**
+**Wait for the cluster to be ready :**
 
 `KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services and Secrets etc.
 Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
@@ -147,17 +148,16 @@ $ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[].resources'
 {}
 ```
 
-You can see the Pod has empty resources that means the scheduler will choose a random node to place the container of the Pod on by default
-
-We are ready to apply horizontal scale on this group replication.
+You can see that the Pod has empty resources that means the scheduler will choose a random node to place the container of the Pod on by default.
+We are ready to apply the vertical scale on this group replication.
 
 #### Vertical Scaling
 
-Here, we are going to update the resources of server nodes of the `MySQL` group replication.
+Here, we are going to update the resources of the database cluster to meet up the desired resources after scaling.
 
 **Create MySQLOpsRequest:**
 
-Below is the YAML of the `MySQLOpsRequest` crd that we are going to create,
+In order to update the resources of your database cluster, you have to create a `MySQLOpsRequest` cr with your desired resources after scaling. Below is the YAML of the `MySQLOpsRequest` crd that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -181,20 +181,20 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` refers to the `my-group` MySQL object for operation.
-- `spec.type` specifies that this is an `VerticalScaling` type operation
-- `spec.VerticalScaling.mysql` specifies the mysql container resources to apply
+- `spec.databaseRef.name` specifies that we are performing operation on `my-group` `MySQL` database.
+- `spec.type` specifies that we are performing `VerticalScaling` on our database.
+- `spec.VerticalScaling.mysql` specifies the expected mysql container resources after scaling.
 
-Let's create the `MySQLOpsRequest` crd we have shown above,
+Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2operations/vertical_scale.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/verticalscaling/vertical_scale.yaml
 mysqlopsrequest.ops.kubedb.com/myops-vertical created
 ```
 
-**Check MySQL Group Replication resources updated:**
+**Verify MySQL Group Replication resources updated successfully :**
 
-If everything goes well, `KubeDB` enterprise operator will update the resources of the StatefulSet's `Pod` containers. After successful scaling process is done, the `KubeDB` enterprise operator update the resources of the `MySQL` object.
+If everything goes well, `KubeDB` enterprise operator will update the resources of the StatefulSet's `Pod` containers. After successful scaling process is done, the `KubeDB` enterprise operator update the resources of the `MySQL` cluster.
 
 First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` crd,
 
@@ -205,7 +205,7 @@ NAME             TYPE              STATUS       AGE
 myops-vertical   VerticalScaling   Successful   4m45s
 ```
 
-We can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the resources of the server nodes of the `MySQL` group replication are updated.
+You can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the resources of the members of the `MySQL` group replication are updated.
 
 ```console
 $ kubectl describe myops -n demo myops-vertical
@@ -310,7 +310,7 @@ Events:
   Normal  Successful       22m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, Resumed for MySQL: demo/my-group
 ```
 
-Now, we are going to verify whether the resources of the server nodes have updated to meet up the desire state, Let's check,
+Now, we are going to verify whether the resources of the members of the cluster have updated to meet up the desire state, Let's check,
 
 ```console
 $ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[].resources'
@@ -326,7 +326,7 @@ $ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[].resources'
 }
 ```
 
-The above output verify that we have successfully scaled up the resources of the server nodes.
+The above output verify that we have successfully updated the resources of the `MySQL` group replication.
 
 ## Cleaning Up
 

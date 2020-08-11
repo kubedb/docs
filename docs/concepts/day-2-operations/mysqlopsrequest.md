@@ -1,16 +1,16 @@
 ---
-title: MySQLOpsRequest
+title: MySQLOpsRequests
 menu:
   docs_{{ .version }}:
-    identifier: mysql-ops-request
-    name: MySQLOpsRequest
-    parent: day-2-operations
-    weight: 10
+    identifier: concepts-opsrequests-mysqlopsrequests
+    name: MySQLOpsRequests
+    parent: concepts-opsrequests
+    weight: 20
 menu_name: docs_{{ .version }}
-section_menu_id: day-2-operations
+section_menu_id: concepts
 ---
 
-> :warning: **This doc is only for KubeDB Enterprise**: You need to be an enterprise user!
+{{< notice type="warning" message="This doc has described only the KubeDB enterprise feature. If you are a KubeDB enterprise user then you have to explore it" >}}
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
@@ -18,13 +18,41 @@ section_menu_id: day-2-operations
 
 ## What is MySQLOpsRequest
 
-`MySQLOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [MySQL](https://www.mysql.com/) administrative operations like database version upgrading, resources scaling in a Kubernetes native way. You have to configure and create a `MySQLOpsRequest` object for specific operations.
+`MySQLOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [MySQL](https://www.mysql.com/) administrative operations like database version upgrading, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
 
 ## MySQLOpsRequest CRD Specifications
 
 Like any official Kubernetes resource, a `MySQLOpsRequest` has `TypeMeta`, `ObjectMeta`, `Spec` and `Status` sections.
 
-A sample common structure of `MySQLOpsRequest`  for the operations of `MySQL`  is shown below,
+Here, some sample `MySQLOpsRequest` CRs for different administrative operations is given below,
+
+Sample `MySQLOpsRequest` for upgrading database:
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: my-ops-upgrade
+  namespace: demo
+spec:
+  databaseRef:
+    name: my-group
+  type: Upgrade
+  upgrade:
+    targetVersion: 8.0.20
+status:
+  conditions:
+  - lastTransitionTime: "2020-06-11T09:59:05Z"
+    message: The controller has scaled/upgraded the MySQL successfully
+    observedGeneration: 3
+    reason: OpsRequestSuccessful
+    status: "True"
+    type: Successful
+  observedGeneration: 3
+  phase: Successful
+```
+
+Sample `MySQLOpsRequest` for horizontal scaling:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -35,12 +63,32 @@ metadata:
 spec:
   databaseRef:
     name: my-group
-  type: Upgrade
-  upgrade:
-    targetVersion: 8.0.20
   type: HorizontalScaling  
   horizontalScaling:
     member: 3
+status:
+  conditions:
+  - lastTransitionTime: "2020-06-11T09:59:05Z"
+    message: The controller has scaled/upgraded the MySQL successfully
+    observedGeneration: 3
+    reason: OpsRequestSuccessful
+    status: "True"
+    type: Successful
+  observedGeneration: 3
+  phase: Successful
+```
+
+Sample `MySQLOpsRequest` for vertical scaling:
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: myops
+  namespace: demo
+spec:
+  databaseRef:
+    name: my-group
   type: VerticalScaling  
   verticalScaling:
     mysql:
@@ -62,7 +110,7 @@ status:
   phase: Successful
 ```
 
-Here, we are going to describe the various sections of `MySQLOpsRequest` crd.
+Here, we are going to describe the various sections of a `MySQLOpsRequest` crd.
 
 ### MySQLOpsRequest `Spec`
 
@@ -70,27 +118,33 @@ A `MySQLOpsRequest` object has the following fields in the `spec` section.
 
 #### spec.databaseRef
 
-`spec.databaseRef` is a required field specifying the reference of the [MySQL](/docs/concepts/databases/mysql.md) object where the administrative operations will be applied. This field consists of the following sub-fields:
+`spec.databaseRef` is a required field that point to the [MySQL](/docs/concepts/databases/mysql.md) object where the administrative operations will be applied. This field consists of the following sub-field:
 
 - **spec.databaseRef.name :**  specifies the name of the [MySQL](/docs/concepts/databases/mysql.md) object.
 
 #### spec.type
 
-`spec.type` specifies what kind of operation will be applied to the database. Currently, there are three types of operation are allowed in `MySQLOpsRequest` is shown below,
+`spec.type` specifies the kind of operation that will be applied to the database. Currently, the following types of operations are allowed in `MySQLOpsRequest`.
 
-- `Upgrade`, `HorizontalScaling` and `VerticalScaling`.
+- `Upgrade` 
+- `HorizontalScaling`
+- `VerticalScaling`
+
+>You can perform only one type of operation on a single `MySQLOpsRequest` CR. For example, if you want to upgrade your database and scale up its replica then you have to create two separate `MySQLOpsRequest`. At first, you have to create a `MySQLOpsRequest` for upgrading. Once it is completed, then you can create another `MySQLOpsRequest` for scaling. You should not create two `MySQLOpsRequest` simultaneously.
 
 #### spec.upgrade
 
-`spec.upgrade` is a required field specifying the information of `MySQL` version upgrading. This field consists of the following sub-fields:
+If you want to upgrade you MySQL version, you have to specify the `spec.upgrade`  section that specifies the desired version information. This field consists of the following sub-field:
 
-- `spec.upgrade.targetVersion` refers to a `MySQL` version name that is upgrade from the current version to this targeted version.
+- `spec.upgrade.targetVersion` refers to a [MySQLVersion](/docs/concepts/catalog/mysql.md) CR that contains the MySQL version information where you want to upgrade.
+
+>You can only upgrade between MySQL versions. KubeDB does not support downgrade for MySQL.
 
 #### spec.horizontalScaling
 
-`spec.horizontalScaling` is a required field specifying the information of `MySQL` server node scaling. This field consists of the following sub-fields:
+If you want to scale-up or scale-down your MySQL cluster, you have to specify `spec.horizontalScaling` section. This field consists of the following sub-field:
 
-- `spec.horizontalScaling.member` indicates the number of server nodes of `MySQL` to be operated on.
+- `spec.horizontalScaling.member` indicates the desired number of members for your MySQL cluster after scaling. For example, if your cluster currently has 4 members and you want to add additional 2 members then you have to specify 6 in `spec.horizontalScaling.member` field. Similarly, if you want to remove one member from the cluster, you have specify 3  in `spec.horizontalScaling.member` field.
 
 #### spec.verticalScaling
 
@@ -98,7 +152,7 @@ A `MySQLOpsRequest` object has the following fields in the `spec` section.
 
 - `spec.verticalScaling.mysql` indicates the `MySQL` server resources. It has the below structure:
   
-    ```
+    ```yaml
     requests:
       memory: "200Mi"
       cpu: "0.1"
@@ -107,23 +161,24 @@ A `MySQLOpsRequest` object has the following fields in the `spec` section.
       cpu: "0.2"
     ```
 
-  Here, when you specify the resource request for `MySQL` Container, the scheduler uses this information to decide which node to place the container of the Pod on and when you specify a resource limit for `MySQL` Container, the `kubelet` enforces those limits so that the running container is not allowed to use more of that resource than the limit you set. you can found more details from [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+  Here, when you specify the resource request for `MySQL` container, the scheduler uses this information to decide which node to place the container of the Pod on and when you specify a resource limit for `MySQL` container, the `kubelet` enforces those limits so that the running container is not allowed to use more of that resource than the limit you set. you can found more details from [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
 
 - `spec.verticalScaling.exporter` indicates the `exporter` container resources. It has the same structure as `spec.verticalScaling.mysql` and you can scale the resource the same way as `mysql` container.
 
+>You can increase/decrease resources for both `mysql` container and `exporter` container on a single `MySQLOpsRequest` CR.
+
 ### MySQLOpsRequest `Status`
 
-`.status` describes the current state and progress of the `MySQLOpsRequest` operation and updated by the `MySQLOpsRequest` controller. The controller continually and actively manages every object's actual state to match the desired state you supplied. It has the following fields:
+`.status` describes the current state and progress of the `MySQLOpsRequest` operation. It has the following fields:
 
 #### status.phase
 
-`status.phase` indicates the overall phase of the operation for this `MySQLOpsRequest`.
-
-- `status.phase` will be `Successful` only if the overall condition is Succeeded.
-
-- `status.phase` will be `Failed` if any transition of the condition is failed.
-
-- `status.phase` will be `Denied` if the operation type is not supported.
+`status.phase` indicates the overall phase of the operation for this `MySQLOpsRequest`. It can have the following three values:
+|Phase          |Meaning                |
+|---------------|-----------------------|
+|Successful     | KubeDB has successfully performed the operation requested in the MySQLOpsRequest |
+|Failed         | KubeDB has failed the operation requested in the MySQLOpsRequest|
+|Denied         | KubeDB has denied the operation requested in the MySQLOpsRequest|
 
 #### status.observedGeneration
 
@@ -131,55 +186,48 @@ A `MySQLOpsRequest` object has the following fields in the `spec` section.
 
 #### status.conditions
 
-`status.conditions` has an array of `MySQLOpsRequet` operations condition and this field describes the information of different conditions of the operation. Each element of the conditions array has six possible fields:
+`status.conditions` is an array that specifies the conditions of different steps of `MySQLOpsRequest` processing. Each condition entry has the following fields:
 
-- The `lastTransitionTime` field provides a timestamp for when the operation last transitioned from one status to another.
+- `types` specifies the type of the condition. MySQLOpsRequest has the following types of conditions:
 
-- The `message` field is a human-readable message indicating details about the transition.
+  | Type                | Meaning                                                                  |
+  | ------------------- | -------------------------------------------------------------------------|
+  | `Progressing`       | Specifies that the operation is now in the progressing state  |
+  | `Successful`        | Specifies such a state that the operation on the database has been successful. |
+  | `PauseDatabase`     | Specifies such a state that the database is paused by the operator   |
+  | `ResumeDatabase`    | Specifies such a state that the database is resumed by the operator    |
+  | `Failure`           | Specifies such a state that the operation on the database has been failed.  |
+  | `Scaling`           | Specifies such a state that the scaling operation on the database has stared  |
+  | `VerticalScaling`   | Specifies such a state that vertical scaling have performed successfully on database  |
+  | `HorizontalScaling` | Specifies such a state that horizontal scaling have performed successfully on database |
+  | `Upgrading`         | Specifies such a state that database upgrading operation has stared  |
+  | `UpgradeVersion`    | Specifies such a state that version upgrading on database have performed successfully  |
 
 - The `status` field is a string, with possible values `"True"`, `"False"`, and `"Unknown"`.
   - `status` will be `"True"` if the current transition is succeeded.
   - `status` will be `"False"` if the current transition is failed.
   - `status` will be `"Unknown"` if the current transition is denied.
-
-- The `observedGeneration` shows the most recent transition generation observed by the `MySQLOpsRequest` controller.
-
+- The `message` field is a human-readable message indicating details about the condition.
 - The `reason` field is a unique, one-word, CamelCase reason for the condition's last transition. It has the following possible values:
 
-  | Reason                              | Usage                                            |
-  | ----------------------------------- | ------------------------------------------------ |
-  | `OpsRequestReconcileFailed`         | Last reconcile get failed                        |
-  | `OpsRequestObserveGenerationFailed` | Last observe generation get failed               |
-  | `OpsRequestDenied`                  | Ops request type denied                          |
-  | `OpsRequestProgressing`             | Ops request is progressing                       |
-  | `PausingDatabase`                   | Database get pausing                             |
-  | `PausedDatabase`                    | Database is paused                               |
-  | `ResumingDatabase`                  | Database get resuming                            |
-  | `ResumedDatabase`                   | Database is resumed                              |
-  | `OpsRequestUpgradingVersion`        | Ops request for upgrading db version             |
-  | `OpsRequestUpgradedVersion`         | Ops request is successfully upgraded  db version |
-  | `OpsRequestUpgradedVersionFailed`   | Ops request get failed in upgrading db version   |
-  | `OpsRequestScalingDatabase`         | Ops request for scaling initialization           |
-  | `OpsRequestHorizontalScaling`       | Ops request for horizontal scaling               |
-  | `OpsRequestHorizontalScalingFailed` | Ops request get failed in horizontal scaling     |
-  | `OpsRequestVerticalScaling`         | Ops request for vertical scaling                 |
-  | `OpsRequestVerticalScalingFailed`   | Ops request get failed in vertical scaling       |
-  | `OpsRequestSuccessful`              | Ops request is successful in the last transition |
-  
-- The `type` indicates the condition transition where the `MySQLOpsRequest` is in and it has the following possible values:
+  | Reason                                  | Meaning                                       |
+  | --------------------------------------- | -----------------------------------------------|
+  | `OpsRequestProgressingStarted`          | Operator has started the OpsRequest processing    |
+  | `OpsRequestFailedToProgressing`         | Operator has failed to start the OpsRequest processing    |
+  | `SuccessfullyPausedDatabase`            | Database is successfully paused by the operator  |
+  | `FailedToPauseDatabase`                 | Database is failed to pause by the operator    |
+  | `SuccessfullyResumedDatabase`           | Database is successfully resumed to perform it's usual operation  |
+  | `FailedToResumedDatabase`               | Database is failed to resume                   |
+  | `DatabaseVersionUpgradingStarted`       | Operator has started upgrading the database version    |
+  | `SuccessfullyUpgradedDatabaseVersion`   | Operator has successfully upgraded the database version |
+  | `FailedToUpgradeDatabaseVersion`        | Operator has failed to upgrade the database version   |
+  | `HorizontalScalingStarted`              | Operator has started the horizontal scaling          |
+  | `SuccessfullyPerformedHorizontalScaling` | Operator has successfully performed on horizontal scaling     |
+  | `FailedToPerformHorizontalScaling`      | Operator has failed to perform on horizontal scaling     |
+  | `VerticalScalingStarted`                | Operator has started the vertical scaling    |
+  | `SuccessfullyPerformedVerticalScaling`  | Operator has successfully performed on vertical scaling   |
+  | `FailedToPerformVerticalScaling`        | Operator has failed to perform on vertical scaling   |
+  | `OpsRequestProcessedSuccessfully`       | Operator has successfully completed the operator requested by the OpeRequest CR |
 
-  | Type                | Usage                                                |
-  | ------------------- | ---------------------------------------------------- |
-  | `Progressing`       | Ops request is in progressing transition             |
-  | `successful`        | Ops request is succeeded in the last transition      |
-  | `PausingDatabase`   | Ops request is in pausing database transition        |
-  | `PausedDatabase`    | Ops request is in paused database transition         |
-  | `ResumingDatabase`  | Ops request is in resuming database transition       |
-  | `ResumedDatabase`   | Ops request is in resumed database transition        |
-  | `Failure`           | Ops request is failed in the last transition         |
-  | `Denied`            | Ops request is denied for unsupported operation type |
-  | `Scaling`           | Ops request is in the scaling transition             |
-  | `VerticalScaling`   | Ops request is in the vertical scaling transition    |
-  | `HorizaontalScaling`| Ops request is in the horizontal scaling transition  |
-  | `UpgradingVersion`  | Ops request is in the upgrading transition           |
-  | `UpgradedVersion`   | Ops request is in the vertical scaling transition    |
+- The `lastTransitionTime` field provides a timestamp for when the operation last transitioned from one state to another.
+- The `observedGeneration` shows the most recent condition transition generation observed by the controller.

@@ -5,6 +5,6 @@ menu:
     identifier: my-vertical-scaling
     name: Vertical Scaling
     parent: my-scaling-mysql
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 ---

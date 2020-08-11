@@ -2,19 +2,19 @@
 title: Horizontal Scaling MySQL group replication
 menu:
   docs_{{ .version }}:
-    identifier: my-horizontal-scale
-    name: my-horizontal-scale
-    parent: my-upgrading-mysql
-    weight: 30
+    identifier: my-horizontal-scaling-group
+    name: Group Replication
+    parent: my-horizontal-scaling
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> :warning: **This doc is only for KubeDB Enterprise**: You need to be an enterprise user!
+{{< notice type="warning" message="Horizontal scaling is an Enterprise feature of KubeDB. You must have KubeDB Enterprise operator installed to test this feature." >}}
 
 # Horizontal Scale MySQL Group Replication
 
-This guide will show you how to use `KubeDB` enterprise operator to scale the number of server nodes of a `MySQL` Group Replication.
+This guide will show you how to use `KubeDB` enterprise operator to increase/decrease the number of members of a `MySQL` Group Replication.
 
 ## Before You Begin
 
@@ -25,6 +25,7 @@ This guide will show you how to use `KubeDB` enterprise operator to scale the nu
 - You should be familiar with the following `KubeDB` concepts:
   - [MySQL](/docs/concepts/databases/mysql.md)
   - [MySQLOpsRequest](/docs/concepts/day-2-operations/mysqlopsrequest.md)
+  - [Horizontal Scaling Overview](/docs/guides/mysql/scaling/horizontal-scaling/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
@@ -33,53 +34,53 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations](/docs/examples/day-2-operations) directory of [stashed/docs](https://github.com/stashed/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations](/docs/examples/day-2-operations) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
 ### Apply Horizontal Scaling on MySQL Group Replication
 
-Here, we are going to deploy a  `MySQL` group replication using a supported version by `KubeDB` operator. Below section will check the supported `MySQL` versions.
+Here, we are going to deploy a  `MySQL` group replication using a supported version by `KubeDB` operator. Then we are going to apply horizontal scaling on it.
+
+#### Prepare Group Replication
+
+At first, we are going to deploy a group replication server with 3 members. Then, we are going to add two additional members through horizontal scaling. Finally, we will  remove 1 members from the cluster again via horizontal scaling.
 
 **Find supported MySQL Version:**
 
-When you have installed `KubeDB`, it has created `MySQLVersion` crd for all supported `MySQL` versions. Let's check support versions,
+When you have installed `KubeDB`, it has created `MySQLVersion` cr for all supported `MySQL` versions.  Let's check the supported MySQL versions,
 
 ```console
 $ kubectl get mysqlversion
 NAME        VERSION   DB_IMAGE                 DEPRECATED   AGE
-5           5         kubedb/mysql:5           true         49s
-5-v1        5         kubedb/mysql:5-v1        true         49s
-5.7         5.7       kubedb/mysql:5.7         true         49s
-5.7-v1      5.7       kubedb/mysql:5.7-v1      true         49s
-5.7-v2      5.7.25    kubedb/mysql:5.7-v2      true         49s
-5.7-v3      5.7.25    kubedb/mysql:5.7.25      true         49s
-5.7-v4      5.7.29    kubedb/mysql:5.7.29                   49s
-5.7.25      5.7.25    kubedb/mysql:5.7.25      true         49s
-5.7.25-v1   5.7.25    kubedb/mysql:5.7.25-v1                49s
-5.7.29      5.7.29    kubedb/mysql:5.7.29                   49s
-8           8         kubedb/mysql:8           true         49s
-8-v1        8         kubedb/mysql:8-v1        true         49s
-8.0         8.0       kubedb/mysql:8.0         true         49s
-8.0-v1      8.0.3     kubedb/mysql:8.0-v1      true         49s
-8.0-v2      8.0.14    kubedb/mysql:8.0-v2      true         49s
-8.0-v3      8.0.20    kubedb/mysql:8.0.20                   49s
-8.0.14      8.0.14    kubedb/mysql:8.0.14      true         49s
-8.0.14-v1   8.0.14    kubedb/mysql:8.0.14-v1                49s
-8.0.18      8.0.18    kubedb/mysql:8.0.18                   49s
-8.0.19      8.0.19    kubedb/mysql:8.0.19                   49s
-8.0.20      8.0.20    kubedb/mysql:8.0.20                   49s
-8.0.3       8.0.3     kubedb/mysql:8.0.3       true         49s
-8.0.3-v1    8.0.3     kubedb/mysql:8.0.3-v1                 49s
+5           5         kubedb/mysql:5           true         149m
+5-v1        5         kubedb/mysql:5-v1        true         149m
+5.7         5.7       kubedb/mysql:5.7         true         149m
+5.7-v1      5.7       kubedb/mysql:5.7-v1      true         149m
+5.7-v2      5.7.25    kubedb/mysql:5.7-v2      true         149m
+5.7-v3      5.7.25    kubedb/mysql:5.7.25      true         149m
+5.7-v4      5.7.29    kubedb/mysql:5.7.29      true         149m
+5.7.25      5.7.25    kubedb/mysql:5.7.25      true         149m
+5.7.25-v1   5.7.25    kubedb/mysql:5.7.25-v1                149m
+5.7.29      5.7.29    kubedb/mysql:5.7.29                   149m
+5.7.31      5.7.31    kubedb/mysql:5.7.31                   149m
+8           8         kubedb/mysql:8           true         149m
+8-v1        8         kubedb/mysql:8-v1        true         149m
+8.0         8.0       kubedb/mysql:8.0         true         149m
+8.0-v1      8.0.3     kubedb/mysql:8.0-v1      true         149m
+8.0-v2      8.0.14    kubedb/mysql:8.0-v2      true         149m
+8.0-v3      8.0.20    kubedb/mysql:8.0.20      true         149m
+8.0.14      8.0.14    kubedb/mysql:8.0.14      true         149m
+8.0.14-v1   8.0.14    kubedb/mysql:8.0.14-v1                149m
+8.0.20      8.0.20    kubedb/mysql:8.0.20                   149m
+8.0.21      8.0.21    kubedb/mysql:8.0.21                   149m
+8.0.3       8.0.3     kubedb/mysql:8.0.3       true         149m
+8.0.3-v1    8.0.3     kubedb/mysql:8.0.3-v1                 149m
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. Now we will select a version from `MySQLVersion` for `MySQL` group replication. For `MySQL` group replication deployment, we will select version `8.0.20`.
+The version above that does not show `DEPRECATED` `true` are supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using `MySQL`  `8.0.20`.
 
-#### Prepare Group Replication
+**Deploy MySQL Group Replication :**
 
-Now, we are going to deploy a `MySQL` group replication using version `8.0.20`.
-
-**Create MySQL Object:**
-
-Below is the YAML of the `MySQL` crd that we are going to create,
+In this section, we are going to deploy a MySQL group replication with 3 members. Then, in the next section we will scale-up the cluster using horizontal scaling. Below is the YAML of the `MySQLO` cr that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -109,11 +110,11 @@ spec:
 Let's create the `MySQL` crd we have shown above,
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2operations/group_replication2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/horizontalscaling/group_replication.yaml
 mysql.kubedb.com/my-group created
 ```
 
-**Check MySQL group Ready to Scale:**
+**Wait for the cluster to be ready :**
 
 `KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services and Secrets etc. A secret called `my-group-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
 Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
@@ -140,7 +141,7 @@ my-group-1   1/1     Running   0          14m
 my-group-2   1/1     Running   0          11m
 ```
 
-Let's check the StatefulSet pods have formed a MySQL group replication,
+Let's verify that the StatefulSet's pods have joined into a group replication cluster,
 
 ```console
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
@@ -160,15 +161,15 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
 ```
 
-We are ready to apply horizontal scale on this group replication.
+So, we can see that our group replication cluster has 3 members. Now, we are ready to apply the horizontal scale on this group replication.
 
-#### Horizontal Scaling
+#### Scale Up
 
-Here, we are going to scale up the number of server nodes of the `MySQL` group replication.
+Here, we are going to add 2 members in our group replication using horizontal scaling.
 
 **Create MySQLOpsRequest:**
 
-Below is the YAML of the `MySQLOpsRequest` crd that we are going to create,
+In order to scale up your cluster, you have to create a `MySQLOpsRequest` cr with your desired number of members after scaling. Below is the YAML of the `MySQLOpsRequest` crd that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -186,48 +187,47 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` refers to the `my-group` MySQL object for operation.
-- `spec.type` specifies that this is an `HorizontalScaling` type operation
-- `spec.horizontalScaling.member` specifies final expected number of nodes for group replication.
+- `spec.databaseRef.name` specifies that we are performing operation on `my-group` `MySQL` database.
+- `spec.type` specifies that we are performing `HorizontalScaling` on our database.
+- `spec.horizontalScaling.member` specifies the expected number of members after the scaling.
 
-Let's create the `MySQLOpsRequest` crd we have shown above,
+Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2operations/horizontal_scale.yaml
-mysqlopsrequest.ops.kubedb.com/myopsreq-group created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/horizontalscaling/scale_up.yaml
+mysqlopsrequest.ops.kubedb.com/my-scale-up created
 ```
 
-**Check MySQL server nodes scaled up:**
+**Verify Scale Up Succeeded :**
 
-If everything goes well, `KubeDB` enterprise operator will scale up the StatefulSet's `Pod`. After successful scaling process is done, the `KubeDB` enterprise operator update the replicas of the `MySQL` object.
+If everything goes well, `KubeDB` enterprise operator will scale up the StatefulSet's `Pod`. After scaling process is completed successfully, the `KubeDB` enterprise operator update the replicas of the `MySQL` object.
 
-First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` crd,
+First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
 ```console
-$ watch -n 3 kubectl get myops -n demo myopsreq-group
-Every 3.0s: kubectl get myops -n demo myopsreq-group             suaas-appscode: Thu Jun 18 14:48:05 2020
+Every 3.0s: kubectl get myops -n demo my-scale-up              suaas-appscode: Sat Jul 25 15:49:42 2020
 
-NAME             TYPE      STATUS       AGE
-myopsreq-group   Upgrade   Successful   8m30s
+NAME            TYPE                STATUS       AGE
+my-scale-up     HorizontalScaling   Successful   2m55s
 ```
 
-We can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the `MySQL` group replication is scaled up.
+You can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the `MySQL` group replication is scaled up.
 
 ```console
-$ kubectl describe myops -n demo myops
-Name:         myops-horizontal
+$ kubectl describe myops -n demo my-scale-up
+Name:         my-scale-up
 Namespace:    demo
 Labels:       <none>
 Annotations:  API Version:  ops.kubedb.com/v1alpha1
 Kind:         MySQLOpsRequest
 Metadata:
-  Creation Timestamp:  2020-06-30T17:35:48Z
+  Creation Timestamp:  2020-07-25T09:46:47Z
   Finalizers:
     mysql.ops.kubedb.com
   Generation:        3
-  Resource Version:  13681
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mysqlopsrequests/myops
-  UID:               cf58a544-bc8f-4d40-a565-cece7b85e44e
+  Resource Version:  7362
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mysqlopsrequests/my-scale-up
+  UID:               902682dd-8d7b-4f07-822f-79f4ab4ce693
 Spec:
   Database Ref:
     Name:  my-group
@@ -238,68 +238,58 @@ Spec:
   Type:                  HorizontalScaling
 Status:
   Conditions:
-    Last Transition Time:  2020-06-30T17:35:48Z
-    Message:               The controller has started to Progress the OpsRequest
+    Last Transition Time:  2020-07-25T09:46:47Z
+    Message:               Controller has started to Progress the MySQLOpsRequest: demo/my-scale-up
     Observed Generation:   1
-    Reason:                OpsRequestOpsRequestProgressing
+    Reason:                OpsRequestProgressingStarted
     Status:                True
     Type:                  Progressing
-    Last Transition Time:  2020-06-30T17:35:48Z
-    Message:               MySQLOpsRequestDefinition: myops for Pausing MySQL: demo/my-group
+    Last Transition Time:  2020-07-25T09:46:47Z
+    Message:               The controller successfull Paused the MySQL database: demo/my-group 
     Observed Generation:   1
-    Reason:                PausingDatabase
+    Reason:                SuccessfullyPausedDatabase
     Status:                True
-    Type:                  PausingDatabase
-    Last Transition Time:  2020-06-30T17:35:48Z
-    Message:               MySQLOpsRequestDefinition: myops for Paused MySQL: demo/my-group
+    Type:                  PauseDatabase
+    Last Transition Time:  2020-07-25T09:46:47Z
+    Message:               Horizontal scaling started in MySQL: demo/my-group for MySQLOpsRequest: my-scale-up
     Observed Generation:   1
-    Reason:                PausedDatabase
-    Status:                True
-    Type:                  PausedDatabase
-    Last Transition Time:  2020-06-30T17:35:49Z
-    Message:               MySQLOpsRequestDefinition: myops for Scaling MySQL: demo/my-group
-    Observed Generation:   1
-    Reason:                OpsRequestScalingDatabase
+    Reason:                HorizontalScalingStarted
     Status:                True
     Type:                  Scaling
-    Last Transition Time:  2020-06-30T17:38:29Z
-    Message:               MySQLOpsRequestDefinition: myops for Horizontal Scaling MySQL: demo/my-group
+    Last Transition Time:  2020-07-25T09:49:27Z
+    Message:               Horizontal scaling performed successfully in MySQL: demo/my-group for MySQLOpsRequest: my-scale-up
     Observed Generation:   1
-    Reason:                OpsRequestHorizontalScaling
+    Reason:                SuccessfullyPerformedHorizontalScaling
     Status:                True
     Type:                  HorizontalScaling
-    Last Transition Time:  2020-06-30T17:38:29Z
-    Message:               MySQLOpsRequestDefinition: myops for Resuming MySQL: demo/my-group
+    Last Transition Time:  2020-07-25T09:49:28Z
+    Message:               The controller successfull Resumed the MySQL database: demo/my-group
     Observed Generation:   3
-    Reason:                ResumingDatabase
+    Reason:                SuccessfullyResumedDatabase
     Status:                True
-    Type:                  ResumingDatabase
-    Last Transition Time:  2020-06-30T17:38:30Z
-    Message:               MySQLOpsRequestDefinition: myops for Reasumed MySQL: demo/my-group
+    Type:                  ResumeDatabase
+    Last Transition Time:  2020-07-25T09:49:28Z
+    Message:               Controller has successfully scaled/upgraded the MySQL demo/my-scale-up
     Observed Generation:   3
-    Reason:                ResumedDatabase
-    Status:                True
-    Type:                  ResumedDatabase
-    Last Transition Time:  2020-06-30T17:38:30Z
-    Message:               The controller has scaled/upgraded the MySQL successfully
-    Observed Generation:   3
-    Reason:                OpsRequestSuccessful
+    Reason:                OpsRequestProcessedSuccessfully
     Status:                True
     Type:                  Successful
   Observed Generation:     3
   Phase:                   Successful
 Events:
-  Type    Reason           Age    From                        Message
-  ----    ------           ----   ----                        -------
-  Normal  Pausing          7m35s  KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops, Pausing MySQL: demo/my-group
-  Normal  SuccessfulPause  7m35s  KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops, successfully paused: demo/my-group
-  Normal  Starting         7m34s  KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops for Scaling MySQL: demo/my-group
-  Normal  Starting         4m54s  KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops, Horizontal Scaling MySQL: demo/my-group
-  Normal  Resuming         4m54s  KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops, Resuming MySQL: demo/my-group
-  Normal  Successful       4m54s  KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops, Resumed for MySQL: demo/my-group
+  Type    Reason      Age    From                        Message
+  ----    ------      ----   ----                        -------
+  Normal  Starting    4m14s  KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-scale-up
+  Normal  Starting    4m14s  KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-group
+  Normal  Successful  4m14s  KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-group for MySQLOpsRequest: my-scale-up
+  Normal  Starting    4m14s  KubeDB Enterprise Operator  Horizontal scaling started in MySQL: demo/my-group for MySQLOpsRequest: my-scale-up
+  Normal  Successful  94s    KubeDB Enterprise Operator  Horizontal scaling performed successfully in MySQL: demo/my-group for MySQLOpsRequest: my-scale-up
+  Normal  Starting    93s    KubeDB Enterprise Operator  Resuming MySQL database: demo/my-group
+  Normal  Successful  93s    KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-group
+  Normal  Successful  93s    KubeDB Enterprise Operator  Controller has Successfully scaled the MySQL database: demo/my-group
 ```
 
-Now, we are going to verify whether the number of server nodes have increased to meet up the desire state, Let's check,
+Now, we are going to verify whether the number of members have increased to meet up the desire state, Let's check,
 
 ```console
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
@@ -321,8 +311,150 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
 ```
 
-You can see above that our `MySQL` group replication now have total 5 server nodes. It verify that we have successfully scaled up.
+You can see above that our `MySQL` group replication now have total 5 members. It verify that we have successfully scaled up.
 
+#### Scale Down
+
+Here, we are going to remove 1 member from our group replication using horizontal scaling.
+
+**Create MysQLOpsRequest :**
+
+In order to scale down your cluster, you have to create a `MySQLOpsRequest` cr with your desired number of members after scaling. Below is the YAML of the `MySQLOpsRequest` crd that we are going to create,
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: myops
+  namespace: demo
+spec:
+  type: HorizontalScaling  
+  databaseRef:
+    name: my-group
+  horizontalScaling:
+    member: 3
+```
+
+Let's create the `MySQLOpsRequest` cr we have shown above,
+
+```console
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/docs/examples/day-2-operations/mysql/horizontalscaling/scale_down.yaml
+mysqlopsrequest.ops.kubedb.com/my-scale-down created
+```
+
+**Verify Scale Up Succeeded :**
+
+If everything goes well, `KubeDB` enterprise operator will scale down the StatefulSet's `Pod`. After scaling process is completed successfully, the `KubeDB` enterprise operator update the replicas of the `MySQL` object.
+
+Now, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
+
+```console
+Every 3.0s: kubectl get myops -n demo my-scale-down              suaas-appscode: Sat Jul 25 15:49:42 2020
+
+NAME            TYPE                STATUS       AGE
+my-scale-down   HorizontalScaling   Successful   2m55s
+```
+
+You can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the `MySQL` group replication is scaled down.
+
+```console
+$ kubectl describe myops -n demo my-scale-down
+Name:         my-scale-down
+Namespace:    demo
+Labels:       <none>
+Annotations:  API Version:  ops.kubedb.com/v1alpha1
+Kind:         MySQLOpsRequest
+Metadata:
+  Creation Timestamp:  2020-07-25T09:59:42Z
+  Finalizers:
+    mysql.ops.kubedb.com
+  Generation:        3
+  Resource Version:  8359
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mysqlopsrequests/my-scale-down
+  UID:               a83a6e69-90be-45fc-8505-af47756d5abd
+Spec:
+  Database Ref:
+    Name:  my-group
+  Horizontal Scaling:
+    Member:              4
+    Member Weight:       50
+  Stateful Set Ordinal:  0
+  Type:                  HorizontalScaling
+Status:
+  Conditions:
+    Last Transition Time:  2020-07-25T09:59:42Z
+    Message:               Controller has started to Progress the MySQLOpsRequest: demo/my-scale-down
+    Observed Generation:   1
+    Reason:                OpsRequestProgressingStarted
+    Status:                True
+    Type:                  Progressing
+    Last Transition Time:  2020-07-25T09:59:43Z
+    Message:               The controller successfull Paused the MySQL database: demo/my-group 
+    Observed Generation:   1
+    Reason:                SuccessfullyPausedDatabase
+    Status:                True
+    Type:                  PauseDatabase
+    Last Transition Time:  2020-07-25T09:59:43Z
+    Message:               Horizontal scaling started in MySQL: demo/my-group for MySQLOpsRequest: my-scale-down
+    Observed Generation:   1
+    Reason:                HorizontalScalingStarted
+    Status:                True
+    Type:                  Scaling
+    Last Transition Time:  2020-07-25T10:00:23Z
+    Message:               Horizontal scaling performed successfully in MySQL: demo/my-group for MySQLOpsRequest: my-scale-down
+    Observed Generation:   1
+    Reason:                SuccessfullyPerformedHorizontalScaling
+    Status:                True
+    Type:                  HorizontalScaling
+    Last Transition Time:  2020-07-25T10:00:23Z
+    Message:               The controller successfull Resumed the MySQL database: demo/my-group
+    Observed Generation:   3
+    Reason:                SuccessfullyResumedDatabase
+    Status:                True
+    Type:                  ResumeDatabase
+    Last Transition Time:  2020-07-25T10:00:23Z
+    Message:               Controller has successfully scaled/upgraded the MySQL demo/my-scale-down
+    Observed Generation:   3
+    Reason:                OpsRequestProcessedSuccessfully
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     3
+  Phase:                   Successful
+Events:
+  Type    Reason      Age   From                        Message
+  ----    ------      ----  ----                        -------
+  Normal  Starting    112s  KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-scale-down
+  Normal  Starting    111s  KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-group
+  Normal  Successful  111s  KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-group for MySQLOpsRequest: my-scale-down
+  Normal  Starting    111s  KubeDB Enterprise Operator  Horizontal scaling started in MySQL: demo/my-group for MySQLOpsRequest: my-scale-down
+  Normal  Successful  71s   KubeDB Enterprise Operator  Horizontal scaling performed successfully in MySQL: demo/my-group for MySQLOpsRequest: my-scale-down
+  Normal  Starting    71s   KubeDB Enterprise Operator  Resuming MySQL database: demo/my-group
+  Normal  Successful  71s   KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-group
+  Normal  Successful  71s   KubeDB Enterprise Operator  Controller has Successfully scaled the MySQL database: demo/my-group
+```
+
+Now, we are going to verify whether the number of members have decreased to meet up the desire state, Let's check,
+
+```console
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
+root
+
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
+Y28qkWFQ8QHVzq2h
+
+$ kubectl exec -it -n demo my-group-0 -- mysql -u root --password=5pwciRRUWHhSJ6qQ --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
+mysql: [Warning] Using a password on the command line interface can be insecure.
++---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
+| CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
++---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
+| group_replication_applier | 533602d0-ce5b-11ea-b866-5ad2598e5303 | my-group-1.my-group-gvr.demo |        3306 | ONLINE       | SECONDARY   | 8.0.20         |
+| group_replication_applier | 7d429240-ce5b-11ea-9fe2-0aaa5a845ec8 | my-group-2.my-group-gvr.demo |        3306 | ONLINE       | SECONDARY   | 8.0.20         |
+| group_replication_applier | c498302f-ce5b-11ea-96a3-72980d437abc | my-group-3.my-group-gvr.demo |        3306 | ONLINE       | SECONDARY   | 8.0.20         |
+| group_replication_applier | dfb1633a-ce5a-11ea-a9c8-6e4ef86119d0 | my-group-0.my-group-gvr.demo |        3306 | ONLINE       | PRIMARY     | 8.0.20         |
++---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
+```
+
+You can see above that our `MySQL` group replication now have total 4 members. It verify that we have successfully scaled down.
 
 ## Cleaning Up
 
@@ -330,5 +462,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```console
 kubectl delete my -n demo my-group
-kubectl delete myops -n demo myops
+kubectl delete myops -n demo my-scale-up
+kubectl delete myops -n demo my-scale-down
 ```

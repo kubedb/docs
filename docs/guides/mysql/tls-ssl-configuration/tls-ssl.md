@@ -3,9 +3,9 @@ title: TLS/SSL (Transport Encryption)
 menu:
   docs_{{ .version }}:
     identifier: my-tls-encryption
-    name: TLS/SSL (Transport Encryption)
+    name: MySQL TLS/SSL Configuration
     parent: my-tls
-    weight: 30
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

@@ -2,19 +2,19 @@
 title: Vertical Scaling MySQL standalone
 menu:
   docs_{{ .version }}:
-    identifier: my-vertical-scale-standalone
-    name: my-vertical-scale-standalone
-    parent: my-upgrading-mysql
-    weight: 40
+    identifier: my-vertical-scaling-standalone
+    name: Standalone
+    parent:  my-vertical-scaling
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> :warning: **This doc is only for KubeDB Enterprise**: You need to be an enterprise user!
+{{< notice type="warning" message="Vertical scaling is an Enterprise feature of KubeDB. You must have KubeDB Enterprise operator installed to test this feature." >}}
 
 # Vertical Scale MySQL Standalone
 
-This guide will show you how to use `KubeDB` enterprise operator to update the resources of standalone.
+This guide will show you how to use `KubeDB` enterprise operator to update the resources of a standalone.
 
 ## Before You Begin
 
@@ -25,6 +25,7 @@ This guide will show you how to use `KubeDB` enterprise operator to update the r
 - You should be familiar with the following `KubeDB` concepts:
   - [MySQL](/docs/concepts/databases/mysql.md)
   - [MySQLOpsRequest](/docs/concepts/day-2-operations/mysqlopsrequest.md)
+  - [Vertical Scaling Overview](/docs/guides/mysql/scaling/vertical-scaling/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
@@ -33,53 +34,53 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations](/docs/examples/day-2-operations) directory of [stashed/docs](https://github.com/stashed/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations](/docs/examples/day-2-operations) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ### Apply Vertical Scaling on Standalone
 
-Here, we are going to deploy a  `MySQL` standalone using a supported version by `KubeDB` operator. Below section will check the supported `MySQL` versions.
+Here, we are going to deploy a  `MySQL` standalone using a supported version by `KubeDB` operator. Then we are going to apply vertical scaling on it.
+
+#### Prepare Group Replication
+
+At first, we are going to deploy a standalone using supported `MySQL` version. Then, we are going to update the resources of the database server through vertical scaling.
 
 **Find supported MySQL Version:**
 
-When you have installed `KubeDB`, it has created `MySQLVersion` crd for all supported `MySQL` versions. Let's check support versions,
+When you have installed `KubeDB`, it has created `MySQLVersion` crd for all supported `MySQL` versions. Let's check the supported MySQL versions,
 
 ```console
 $ kubectl get mysqlversion
 NAME        VERSION   DB_IMAGE                 DEPRECATED   AGE
-5           5         kubedb/mysql:5           true         49s
-5-v1        5         kubedb/mysql:5-v1        true         49s
-5.7         5.7       kubedb/mysql:5.7         true         49s
-5.7-v1      5.7       kubedb/mysql:5.7-v1      true         49s
-5.7-v2      5.7.25    kubedb/mysql:5.7-v2      true         49s
-5.7-v3      5.7.25    kubedb/mysql:5.7.25      true         49s
-5.7-v4      5.7.29    kubedb/mysql:5.7.29                   49s
-5.7.25      5.7.25    kubedb/mysql:5.7.25      true         49s
-5.7.25-v1   5.7.25    kubedb/mysql:5.7.25-v1                49s
-5.7.29      5.7.29    kubedb/mysql:5.7.29                   49s
-8           8         kubedb/mysql:8           true         49s
-8-v1        8         kubedb/mysql:8-v1        true         49s
-8.0         8.0       kubedb/mysql:8.0         true         49s
-8.0-v1      8.0.3     kubedb/mysql:8.0-v1      true         49s
-8.0-v2      8.0.14    kubedb/mysql:8.0-v2      true         49s
-8.0-v3      8.0.20    kubedb/mysql:8.0.20                   49s
-8.0.14      8.0.14    kubedb/mysql:8.0.14      true         49s
-8.0.14-v1   8.0.14    kubedb/mysql:8.0.14-v1                49s
-8.0.18      8.0.18    kubedb/mysql:8.0.18                   49s
-8.0.19      8.0.19    kubedb/mysql:8.0.19                   49s
-8.0.20      8.0.20    kubedb/mysql:8.0.20                   49s
-8.0.3       8.0.3     kubedb/mysql:8.0.3       true         49s
-8.0.3-v1    8.0.3     kubedb/mysql:8.0.3-v1                 49s
+5           5         kubedb/mysql:5           true         149m
+5-v1        5         kubedb/mysql:5-v1        true         149m
+5.7         5.7       kubedb/mysql:5.7         true         149m
+5.7-v1      5.7       kubedb/mysql:5.7-v1      true         149m
+5.7-v2      5.7.25    kubedb/mysql:5.7-v2      true         149m
+5.7-v3      5.7.25    kubedb/mysql:5.7.25      true         149m
+5.7-v4      5.7.29    kubedb/mysql:5.7.29      true         149m
+5.7.25      5.7.25    kubedb/mysql:5.7.25      true         149m
+5.7.25-v1   5.7.25    kubedb/mysql:5.7.25-v1                149m
+5.7.29      5.7.29    kubedb/mysql:5.7.29                   149m
+5.7.31      5.7.31    kubedb/mysql:5.7.31                   149m
+8           8         kubedb/mysql:8           true         149m
+8-v1        8         kubedb/mysql:8-v1        true         149m
+8.0         8.0       kubedb/mysql:8.0         true         149m
+8.0-v1      8.0.3     kubedb/mysql:8.0-v1      true         149m
+8.0-v2      8.0.14    kubedb/mysql:8.0-v2      true         149m
+8.0-v3      8.0.20    kubedb/mysql:8.0.20      true         149m
+8.0.14      8.0.14    kubedb/mysql:8.0.14      true         149m
+8.0.14-v1   8.0.14    kubedb/mysql:8.0.14-v1                149m
+8.0.20      8.0.20    kubedb/mysql:8.0.20                   149m
+8.0.21      8.0.21    kubedb/mysql:8.0.21                   149m
+8.0.3       8.0.3     kubedb/mysql:8.0.3       true         149m
+8.0.3-v1    8.0.3     kubedb/mysql:8.0.3-v1                 149m
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. Now we will select a version from `MySQLVersion` for `MySQL` standalone. For `MySQL` standalone deployment, we will select version `8.0.20`.
+The version above that does not show `DEPRECATED` `true` are supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a standalone using non-deprecated `MySQL`  version `8.0.20`.
 
-#### Prepare Standalone
+**Deploy MySQL Standalone :**
 
-Now, we are going to deploy a `MySQL` standalone using version `8.0.20`.
-
-**Create MySQL Object:**
-
-Below is the YAML of the `MySQL` crd that we are going to create,
+In this section, we are going to deploy a MySQL standalone. Then, in the next section we will update the resources of the database server using vertical scaling. Below is the YAML of the `MySQL` crd that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -145,11 +146,11 @@ We are ready to apply horizontal scale on this standalone.
 
 #### Vertical Scaling
 
-Here, we are going to update the resources of the standalone.
+Here, we are going to update the resources of the standalone to meet up the desired resources after scaling.
 
 **Create MySQLOpsRequest:**
 
-Below is the YAML of the `MySQLOpsRequest` crd that we are going to create,
+In order to update the resources of your database, you have to create a `MySQLOpsRequest` cr with your desired resources after scaling. Below is the YAML of the `MySQLOpsRequest` crd that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -173,9 +174,9 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` refers to the `my-group` MySQL object for operation.
-- `spec.type` specifies that this is an `VerticalScaling` type operation
-- `spec.VerticalScaling.mysql` specifies the mysql container resources to apply
+- `spec.databaseRef.name` specifies that we are performing operation on `my-group` `MySQL` database.
+- `spec.type` specifies that we are performing `VerticalScaling` on our database.
+- `spec.VerticalScaling.mysql` specifies the expected mysql container resources after scaling.
 
 Let's create the `MySQLOpsRequest` crd we have shown above,
 
@@ -184,7 +185,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysqlopsrequest.ops.kubedb.com/myops-vertical created
 ```
 
-**Check MySQL Standalone resources updated:**
+**Verify MySQL Standalone resources updated successfully :**
 
 If everything goes well, `KubeDB` enterprise operator will update the resources of the StatefulSet's `Pod` containers. After successful scaling process is done, the `KubeDB` enterprise operator update the resources of the `MySQL` object.
 

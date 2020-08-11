@@ -4,7 +4,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "5.7.29"
+  version: "8.0.20"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -19,16 +19,4 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  requireSSL: true
-  tls:
-    issuerRef:
-      apiGroup: cert-manager.io/v1alpha2
-      kind: Issuer
-      name: mysql-issuer
-    certificate:
-      organization:
-        - kubedb:server
-      dnsNames:
-        - localhost
-        - "127.0.0.1"
   terminationPolicy: WipeOut

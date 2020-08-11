@@ -7,7 +7,7 @@ spec:
   version: "8.0.20"
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "do-block-storage"
     accessModes:
       - ReadWriteOnce
     resources:
