@@ -12,9 +12,9 @@ section_menu_id: guides
 
 {{< notice type="warning" message="Upgrading is an Enterprise feature of KubeDB. You must have KubeDB Enterprise operator installed to test this feature." >}}
 
-# Upgrade MySQL Standalone
+# Upgrade minor version of MySQL Standalone
 
-This guide will show you how to use `KubeDB` enterprise operator to upgrade the version of `MySQL` standalone.
+This guide will show you how to use `KubeDB` enterprise operator to upgrade the minor version of `MySQL` standalone.
 
 ## Before You Begin
 
@@ -34,7 +34,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations](/docs/examples/day-2-operations) directory of [kubedb/docs](https://github.com/kube/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations/mysql](/docs/examples/day-2-operations/mysql) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
 ### Apply Version Upgrading on Standalone
 
@@ -111,7 +111,7 @@ spec:
   version: 5.7.29
 ```
 
-The above `spec.upgradeConstraints.denylist` is showing that upgrading below version of `5.7.29` is not possible for both standalone and group replication. That means, it is possible to upgrade any version above `5.7.29`. Here, we are going to create a `MySQL` standalone using MySQL  `5.7.29`. Then we are going to upgrade this version to `8.0.20`.
+The above `spec.upgradeConstraints.denylist` is showing that upgrading below version of `5.7.29` is not possible for both standalone and group replication. That means, it is possible to upgrade any version above `5.7.29`. Here, we are going to create a `MySQL` standalone using MySQL  `5.7.29`. Then we are going to upgrade this version to `5.7.31`.
 
 #### Prepare Standalone
 
@@ -143,7 +143,7 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/upgrading/standalone.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/upgrading/minorversin/standalone.yaml
 mysql.kubedb.com/my-standalone created
 ```
 
@@ -189,7 +189,7 @@ We are ready to apply upgrading on this `MySQL` standalone.
 
 #### Upgrade
 
-Here, we are going to upgrade `MySQL` standalone from `5.7.29` to `8.0.20`.
+Here, we are going to upgrade `MySQL` standalone from `5.7.29` to `5.7.31`.
 
 **Create MySQLOpsRequest:**
 
@@ -199,27 +199,27 @@ In order to upgrade the standalone, you have to create a `MySQLOpsRequest` cr wi
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MySQLOpsRequest
 metadata:
-  name: my-upgrade-standalone
+  name: my-upgrade-minor-standalone
   namespace: demo
 spec:
   databaseRef:
     name: my-standalone
   type: Upgrade
   upgrade:
-    targetVersion: "8.0.20"
+    targetVersion: "5.7.31"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
 - `spec.type` specifies that we are going performing `Upgrade` on our database.
-- `spec.upgrade.targetVersion` specifies expected version `8.0.20` after upgrading.
+- `spec.upgrade.targetVersion` specifies expected version `5.7.31` after upgrading.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/upgrading/upgrade_standalone.yaml
-mysqlopsrequest.ops.kubedb.com/my-upgrade-standalone created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/upgrading/minorversion/upgrade_minor_version_standalone.yaml
+mysqlopsrequest.ops.kubedb.com/my-upgrade-minor-standalone created
 ```
 
 **Verify MySQL version upgraded successfully :**
@@ -229,71 +229,72 @@ If everything goes well, `KubeDB` enterprise operator will update the image of `
 At first, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
 ```console
-$ kubectl get myops -n demo my-upgrade-standalone
-Every 3.0s: kubectl get myops -n demo my-upgrade-standalone      suaas-appscode: Sun Jul 26 00:07:35 2020
+$ watch -n 3 kubectl get myops -n demo my-upgrade-minor-standalone
+Every 3.0s: kubectl get myops -n demo my-up...  suaas-appscode: Wed Aug 12 16:12:03 2020
 
-NAME                    TYPE      STATUS       AGE
-my-upgrade-standalone   Upgrade   Successful   4m9s
+NAME                          TYPE      STATUS       AGE
+my-upgrade-minor-standalone   Upgrade   Successful   3m57s
 ```
 
 We can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the `MySQL`, `StatefulSet`, and its `Pod` have updated with new image.
 
 ```console
-$ kubectl describe myops -n demo my-upgrade-standalone
-Name:         my-upgrade-standalone
+$ kubectl describe myops -n demo my-upgrade-minor-standalone
+Name:         my-upgrade-minor-standalone
 Namespace:    demo
 Labels:       <none>
 Annotations:  API Version:  ops.kubedb.com/v1alpha1
 Kind:         MySQLOpsRequest
 Metadata:
-  Creation Timestamp:  2020-07-25T18:03:26Z
+  Creation Timestamp:  2020-08-12T10:08:06Z
   Finalizers:
     mysql.ops.kubedb.com
-  Generation:        2
-  Resource Version:  3629
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mysqlopsrequests/my-upgrade-standalone
-  UID:               aa3c9ff0-08c6-4f33-9371-5f68c979be08
+  Generation:  2
+  ...
+  Resource Version:  61103
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mysqlopsrequests/my-upgrade-minor-standalone
+  UID:               03ea52ac-5b74-47b9-bfba-426f386e8a34
 Spec:
   Database Ref:
     Name:                my-standalone
   Stateful Set Ordinal:  0
   Type:                  Upgrade
   Upgrade:
-    Target Version:  8.0.20
+    Target Version:  5.7.31
 Status:
   Conditions:
-    Last Transition Time:  2020-07-25T18:03:26Z
-    Message:               Controller has started to Progress the MySQLOpsRequest: demo/my-upgrade-standalone
+    Last Transition Time:  2020-08-12T10:08:06Z
+    Message:               Controller has started to Progress the MySQLOpsRequest: demo/my-upgrade-minor-standalone
     Observed Generation:   1
     Reason:                OpsRequestProgressingStarted
     Status:                True
     Type:                  Progressing
-    Last Transition Time:  2020-07-25T18:03:26Z
-    Message:               The controller successfull Paused the MySQL database: demo/my-standalone 
+    Last Transition Time:  2020-08-12T10:08:06Z
+    Message:               Controller has successfully Paused the MySQL database: demo/my-standalone 
     Observed Generation:   1
     Reason:                SuccessfullyPausedDatabase
     Status:                True
     Type:                  PauseDatabase
-    Last Transition Time:  2020-07-25T18:03:26Z
-    Message:               MySQL version upgrading stated for MySQLOpsRequest: demo/my-upgrade-standalone
+    Last Transition Time:  2020-08-12T10:08:06Z
+    Message:               MySQL version upgrading stated for MySQLOpsRequest: demo/my-upgrade-minor-standalone
     Observed Generation:   1
     Reason:                DatabaseVersionUpgradingStarted
     Status:                True
     Type:                  Upgrading
-    Last Transition Time:  2020-07-25T18:07:06Z
-    Message:               Image successfully updated in MySQL: demo/my-standalone for MySQLOpsRequest: my-upgrade-standalone 
+    Last Transition Time:  2020-08-12T10:10:06Z
+    Message:               Image successfully updated in MySQL: demo/my-standalone for MySQLOpsRequest: my-upgrade-minor-standalone 
     Observed Generation:   1
     Reason:                SuccessfullyUpgradedDatabaseVersion
     Status:                True
     Type:                  UpgradeVersion
-    Last Transition Time:  2020-07-25T18:07:06Z
-    Message:               The controller successfull Resumed the MySQL database: demo/my-standalone
+    Last Transition Time:  2020-08-12T10:10:06Z
+    Message:               Controller has successfully Resumed the MySQL database: demo/my-standalone
     Observed Generation:   2
     Reason:                SuccessfullyResumedDatabase
     Status:                True
     Type:                  ResumeDatabase
-    Last Transition Time:  2020-07-25T18:07:06Z
-    Message:               Controller has successfully scaled/upgraded the MySQL demo/my-upgrade-standalone
+    Last Transition Time:  2020-08-12T10:10:06Z
+    Message:               Controller has successfully scaled/upgraded the MySQL demo/my-upgrade-minor-standalone
     Observed Generation:   2
     Reason:                OpsRequestProcessedSuccessfully
     Status:                True
@@ -303,29 +304,29 @@ Status:
 Events:
   Type    Reason      Age    From                        Message
   ----    ------      ----   ----                        -------
-  Normal  Starting    4m47s  KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-upgrade-standalone
-  Normal  Starting    4m47s  KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-standalone
-  Normal  Successful  4m47s  KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-standalone for MySQLOpsRequest: my-upgrade-standalone
-  Normal  Starting    4m47s  KubeDB Enterprise Operator  Upgrading MySQL images: demo/my-standalone for MySQLOpsRequest: my-upgrade-standalone
-  Normal  Successful  87s    KubeDB Enterprise Operator  Image successfully upgraded for standalone/master: demo/my-standalone-0
-  Normal  Successful  67s    KubeDB Enterprise Operator  Image successfully updated in MySQL: demo/my-standalone for MySQLOpsRequest: my-upgrade-standalone
-  Normal  Successful  67s    KubeDB Enterprise Operator  Image successfully upgraded for standalone/master: demo/my-standalone-0
-  Normal  Starting    67s    KubeDB Enterprise Operator  Resuming MySQL database: demo/my-standalone
-  Normal  Successful  67s    KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-standalone
-  Normal  Successful  67s    KubeDB Enterprise Operator  Controller has Successfully upgraded the version of MySQL : demo/my-standalone
+  Normal  Starting    4m48s  KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-upgrade-minor-standalone
+  Normal  Starting    4m48s  KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-standalone
+  Normal  Successful  4m48s  KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-standalone for MySQLOpsRequest: my-upgrade-minor-standalone
+  Normal  Starting    4m48s  KubeDB Enterprise Operator  Upgrading MySQL images: demo/my-standalone for MySQLOpsRequest: my-upgrade-minor-standalone
+  Normal  Successful  3m8s   KubeDB Enterprise Operator  Image successfully upgraded for standalone/master: demo/my-standalone-0
+  Normal  Successful  2m48s  KubeDB Enterprise Operator  Image successfully updated in MySQL: demo/my-standalone for MySQLOpsRequest: my-upgrade-minor-standalone
+  Normal  Successful  2m48s  KubeDB Enterprise Operator  Image successfully upgraded for standalone/master: demo/my-standalone-0
+  Normal  Starting    2m48s  KubeDB Enterprise Operator  Resuming MySQL database: demo/my-standalone
+  Normal  Successful  2m48s  KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-standalone
+  Normal  Successful  2m48s  KubeDB Enterprise Operator  Controller has Successfully upgraded the version of MySQL : demo/my-standalone
 ```
 
 Now, we are going to verify whether the `MySQL`, `StatefulSet` and it's `Pod` have updated with new image. Let's check,
 
 ```console
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
-8.0.20
+5.7.31
 
 $ kubectl get sts -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-kubedb/my:8.0.20
+kubedb/my:5.7.31
 
 $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-kubedb/my:8.0.20
+kubedb/my:5.7.31
 ```
 
 You can see above that our `MySQL`standalone has updated with new version. It verify that we have successfully upgrade our standalone.
@@ -336,5 +337,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```console
 kubectl delete my -n demo my-standalone
-kubectl delete myops -n demo my-upgrade-standalone
+kubectl delete myops -n demo my-upgrade-minor-standalone
 ```

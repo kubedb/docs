@@ -34,7 +34,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations](/docs/examples/day-2-operations) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations/mysql](/docs/examples/day-2-operations/mysql) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
 ### Apply Horizontal Scaling on MySQL Group Replication
 
@@ -107,7 +107,7 @@ spec:
   terminationPolicy: WipeOut
 ```
 
-Let's create the `MySQL` crd we have shown above,
+Let's create the `MySQL` cr we have shown above,
 
 ```console
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/horizontalscaling/group_replication.yaml
@@ -136,9 +136,9 @@ $ watch -n 3 kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my
 Every 3.0s: kubectl get pod -n demo -l kubedb.com/kind=MySQ...  suaas-appscode: Tue Jun 30 22:45:33 2020
 
 NAME         READY   STATUS    RESTARTS   AGE
-my-group-0   1/1     Running   0          17m
-my-group-1   1/1     Running   0          14m
-my-group-2   1/1     Running   0          11m
+my-group-0   2/2     Running   0          17m
+my-group-1   2/2     Running   0          14m
+my-group-2   2/2     Running   0          11m
 ```
 
 Let's verify that the StatefulSet's pods have joined into a group replication cluster,
@@ -150,7 +150,7 @@ root
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
 sWfUMoqRpOJyomgb
 
-$ kubectl exec -it -n demo my-group-0 -- mysql -u root --password=sWfUMoqRpOJyomgb --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=sWfUMoqRpOJyomgb --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
@@ -169,13 +169,13 @@ Here, we are going to add 2 members in our group replication using horizontal sc
 
 **Create MySQLOpsRequest:**
 
-In order to scale up your cluster, you have to create a `MySQLOpsRequest` cr with your desired number of members after scaling. Below is the YAML of the `MySQLOpsRequest` crd that we are going to create,
+In order to scale up your cluster, you have to create a `MySQLOpsRequest` cr with your desired number of members after scaling. Below is the YAML of the `MySQLOpsRequest` cr that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MySQLOpsRequest
 metadata:
-  name: myops
+  name: my-scale-up
   namespace: demo
 spec:
   type: HorizontalScaling  
@@ -298,7 +298,7 @@ root
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
 Y28qkWFQ8QHVzq2h
 
-$ kubectl exec -it -n demo my-group-0 -- mysql -u root --password=Y28qkWFQ8QHVzq2h --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=Y28qkWFQ8QHVzq2h --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
@@ -319,20 +319,20 @@ Here, we are going to remove 1 member from our group replication using horizonta
 
 **Create MysQLOpsRequest :**
 
-In order to scale down your cluster, you have to create a `MySQLOpsRequest` cr with your desired number of members after scaling. Below is the YAML of the `MySQLOpsRequest` crd that we are going to create,
+In order to scale down your cluster, you have to create a `MySQLOpsRequest` cr with your desired number of members after scaling. Below is the YAML of the `MySQLOpsRequest` cr that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MySQLOpsRequest
 metadata:
-  name: myops
+  name: my-scale-down
   namespace: demo
 spec:
   type: HorizontalScaling  
   databaseRef:
     name: my-group
   horizontalScaling:
-    member: 3
+    member: 4
 ```
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
@@ -442,7 +442,7 @@ root
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
 Y28qkWFQ8QHVzq2h
 
-$ kubectl exec -it -n demo my-group-0 -- mysql -u root --password=5pwciRRUWHhSJ6qQ --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=5pwciRRUWHhSJ6qQ --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |

@@ -4,7 +4,7 @@ metadata:
   name: my-standalone
   namespace: demo
 spec:
-  version: "8.0.20"
+  version: "5.7.31"
   storageType: Durable
   storage:
     storageClassName: "standard"

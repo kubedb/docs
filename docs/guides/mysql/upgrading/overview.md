@@ -33,9 +33,9 @@ The following diagram shows how KubeDB enterprise operator used to upgrade the v
 
 The upgrading process consists of the following steps:
 
-1. At first, a user creates a `MySQL` CR.
+1. At first, a user creates a `MySQL` cr.
 
-2. `KubeDB` community operator watches for the `MySQL` CR.
+2. `KubeDB` community operator watches for the `MySQL` cr.
 
 3. When it finds one, it creates a `StatefulSet` and related necessary stuff like secret, service, etc.
 

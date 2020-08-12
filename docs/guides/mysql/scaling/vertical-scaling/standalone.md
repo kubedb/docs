@@ -34,7 +34,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations](/docs/examples/day-2-operations) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations/mysql](/docs/examples/day-2-operations/mysql) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ### Apply Vertical Scaling on Standalone
 
@@ -46,7 +46,7 @@ At first, we are going to deploy a standalone using supported `MySQL` version. T
 
 **Find supported MySQL Version:**
 
-When you have installed `KubeDB`, it has created `MySQLVersion` crd for all supported `MySQL` versions. Let's check the supported MySQL versions,
+When you have installed `KubeDB`, it has created `MySQLVersion` cr for all supported `MySQL` versions. Let's check the supported MySQL versions,
 
 ```console
 $ kubectl get mysqlversion
@@ -80,7 +80,7 @@ The version above that does not show `DEPRECATED` `true` are supported by `KubeD
 
 **Deploy MySQL Standalone :**
 
-In this section, we are going to deploy a MySQL standalone. Then, in the next section we will update the resources of the database server using vertical scaling. Below is the YAML of the `MySQL` crd that we are going to create,
+In this section, we are going to deploy a MySQL standalone. Then, in the next section we will update the resources of the database server using vertical scaling. Below is the YAML of the `MySQL` cr that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -89,7 +89,7 @@ metadata:
   name: my-standalone
   namespace: demo
 spec:
-  version: "5.7.29"
+  version: "8.0.20"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -101,10 +101,10 @@ spec:
   terminationPolicy: WipeOut
 ```
 
-Let's create the `MySQL` crd we have shown above,
+Let's create the `MySQL` cr we have shown above,
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2operations/standalone2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/verticalscaling/standalone.yaml
 mysql.kubedb.com/my-standalone created
 ```
 
@@ -142,7 +142,7 @@ $ kubectl get pod -n demo my-standalone-0 -o json | jq '.spec.containers[].resou
 
 You can see the Pod has empty resources that means the scheduler will choose a random node to place the container of the Pod on by default
 
-We are ready to apply horizontal scale on this standalone.
+We are ready to apply horizontal scale on this standalone database.
 
 #### Vertical Scaling
 
@@ -150,18 +150,18 @@ Here, we are going to update the resources of the standalone to meet up the desi
 
 **Create MySQLOpsRequest:**
 
-In order to update the resources of your database, you have to create a `MySQLOpsRequest` cr with your desired resources after scaling. Below is the YAML of the `MySQLOpsRequest` crd that we are going to create,
+In order to update the resources of your database, you have to create a `MySQLOpsRequest` cr with your desired resources after scaling. Below is the YAML of the `MySQLOpsRequest` cr that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MySQLOpsRequest
 metadata:
-  name: myops-vertical
+  name: my-scale-standalone
   namespace: demo
 spec:
   type: VerticalScaling  
   databaseRef:
-    name: my-group
+    name: my-standalone
   verticalScaling:
     mysql:
       requests:
@@ -178,43 +178,45 @@ Here,
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.mysql` specifies the expected mysql container resources after scaling.
 
-Let's create the `MySQLOpsRequest` crd we have shown above,
+Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2operations/vertical_scale.yaml
-mysqlopsrequest.ops.kubedb.com/myops-vertical created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2operations/vertical_scale_standalone.yaml
+mysqlopsrequest.ops.kubedb.com/my-scale-standalone created
 ```
 
 **Verify MySQL Standalone resources updated successfully :**
 
 If everything goes well, `KubeDB` enterprise operator will update the resources of the StatefulSet's `Pod` containers. After successful scaling process is done, the `KubeDB` enterprise operator update the resources of the `MySQL` object.
 
-First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` crd,
+First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
 ```console
-Every 3.0s: kubectl get myops -n demo myops-vertical             suaas-appscode: Wed Jul  1 18:04:52 2020
+$ watch -n 3 kubectl get myops -n demo my-scale-standalone
+Every 3.0s: kubectl get myops -n demo my-sc...  suaas-appscode: Wed Aug 12 17:21:42 2020
 
-NAME             TYPE              STATUS       AGE
-myops-vertical   VerticalScaling   Successful   4m45s
+NAME                  TYPE              STATUS       AGE
+my-scale-standalone   VerticalScaling   Successful   2m15s
 ```
 
 We can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the standalone resources are updated.
 
 ```console
-$ kubectl describe myops -n demo myops-vertical
-Name:         myops-vertical
+$ kubectl describe myops -n demo my-scale-standalone
+Name:         my-scale-standalone
 Namespace:    demo
 Labels:       <none>
 Annotations:  API Version:  ops.kubedb.com/v1alpha1
 Kind:         MySQLOpsRequest
 Metadata:
-  Creation Timestamp:  2020-07-01T12:00:07Z
+  Creation Timestamp:  2020-08-12T11:19:27Z
   Finalizers:
     mysql.ops.kubedb.com
-  Generation:        2
-  Resource Version:  24776
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mysqlopsrequests/myops-vertical
-  UID:               2dc4bb1c-ee26-4817-9c24-008e5619023c
+  Generation:  2
+  ...
+  Resource Version:  2359
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mysqlopsrequests/my-scale-standalone
+  UID:               b85c9b47-9557-405d-b891-2f7bc1010db3
 Spec:
   Database Ref:
     Name:                my-standalone
@@ -230,67 +232,57 @@ Spec:
         Memory:  200Mi
 Status:
   Conditions:
-    Last Transition Time:  2020-07-01T12:00:07Z
-    Message:               The controller has started to Progress the OpsRequest
+    Last Transition Time:  2020-08-12T11:19:27Z
+    Message:               Controller has started to Progress the MySQLOpsRequest: demo/my-scale-standalone
     Observed Generation:   1
-    Reason:                OpsRequestOpsRequestProgressing
+    Reason:                OpsRequestProgressingStarted
     Status:                True
     Type:                  Progressing
-    Last Transition Time:  2020-07-01T12:00:07Z
-    Message:               MySQLOpsRequestDefinition: myops-vertical for Pausing MySQL: demo/my-standalone
+    Last Transition Time:  2020-08-12T11:19:27Z
+    Message:               Controller has successfully Paused the MySQL database: demo/my-standalone 
     Observed Generation:   1
-    Reason:                PausingDatabase
+    Reason:                SuccessfullyPausedDatabase
     Status:                True
-    Type:                  PausingDatabase
-    Last Transition Time:  2020-07-01T12:00:07Z
-    Message:               MySQLOpsRequestDefinition: myops-vertical for Paused MySQL: demo/my-standalone
+    Type:                  PauseDatabase
+    Last Transition Time:  2020-08-12T11:19:27Z
+    Message:               Vertical scaling started in MySQL: demo/my-standalone for MySQLOpsRequest: my-scale-standalone
     Observed Generation:   1
-    Reason:                PausedDatabase
-    Status:                True
-    Type:                  PausedDatabase
-    Last Transition Time:  2020-07-01T12:00:07Z
-    Message:               MySQLOpsRequestDefinition: myops-vertical for Scaling MySQL: demo/my-standalone
-    Observed Generation:   1
-    Reason:                OpsRequestScalingDatabase
+    Reason:                VerticalScalingStarted
     Status:                True
     Type:                  Scaling
-    Last Transition Time:  2020-07-01T12:02:07Z
-    Message:               MySQLOpsRequestDefinition: myops-vertical for Vertical Scaling MySQL: demo/my-standalone
+    Last Transition Time:  2020-08-12T11:21:27Z
+    Message:               Vertical scaling performed successfully in MySQL: demo/my-standalone for MySQLOpsRequest: my-scale-standalone
     Observed Generation:   1
-    Reason:                OpsRequestVerticalScaling
+    Reason:                SuccessfullyPerformedVerticalScaling
     Status:                True
     Type:                  VerticalScaling
-    Last Transition Time:  2020-07-01T12:02:07Z
-    Message:               MySQLOpsRequestDefinition: myops-vertical for Resuming MySQL: demo/my-standalone
+    Last Transition Time:  2020-08-12T11:21:27Z
+    Message:               Controller has successfully Resumed the MySQL database: demo/my-standalone
     Observed Generation:   2
-    Reason:                ResumingDatabase
+    Reason:                SuccessfullyResumedDatabase
     Status:                True
-    Type:                  ResumingDatabase
-    Last Transition Time:  2020-07-01T12:02:07Z
-    Message:               MySQLOpsRequestDefinition: myops-vertical for Reasumed MySQL: demo/my-standalone
+    Type:                  ResumeDatabase
+    Last Transition Time:  2020-08-12T11:21:27Z
+    Message:               Controller has successfully scaled/upgraded the MySQL demo/my-scale-standalone
     Observed Generation:   2
-    Reason:                ResumedDatabase
-    Status:                True
-    Type:                  ResumedDatabase
-    Last Transition Time:  2020-07-01T12:02:07Z
-    Message:               The controller has scaled/upgraded the MySQL successfully
-    Observed Generation:   2
-    Reason:                OpsRequestSuccessful
+    Reason:                OpsRequestProcessedSuccessfully
     Status:                True
     Type:                  Successful
   Observed Generation:     2
   Phase:                   Successful
 Events:
-  Type    Reason           Age    From                        Message
-  ----    ------           ----   ----                        -------
-  Normal  Pausing          8m46s  KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, Pausing MySQL: demo/my-standalone
-  Normal  SuccessfulPause  8m46s  KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, successfully paused: demo/my-standalone
-  Normal  Starting         8m46s  KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical for Scaling MySQL: demo/my-standalone
-  Normal  Successful       7m6s   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-standalone-0
-  Normal  Starting         6m46s  KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, Vertical Scaling MySQL: demo/my-standalone
-  Normal  Successful       6m46s  KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-standalone-0
-  Normal  Resuming         6m46s  KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, Resuming MySQL: demo/my-standalone
-  Normal  Successful       6m46s  KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, Resumed for MySQL: demo/my-standalone
+  Type    Reason      Age    From                        Message
+  ----    ------      ----   ----                        -------
+  Normal  Starting    2m44s  KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-scale-standalone
+  Normal  Starting    2m44s  KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-standalone
+  Normal  Successful  2m44s  KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-standalone for MySQLOpsRequest: my-scale-standalone
+  Normal  Starting    2m44s  KubeDB Enterprise Operator  Vertical scaling started in MySQL: demo/my-standalone for MySQLOpsRequest: my-scale-standalone
+  Normal  Successful  64s    KubeDB Enterprise Operator  Image successfully upgraded for standalone/master: demo/my-standalone-0
+  Normal  Successful  44s    KubeDB Enterprise Operator  Vertical scaling performed successfully in MySQL: demo/my-standalone for MySQLOpsRequest: my-scale-standalone
+  Normal  Successful  44s    KubeDB Enterprise Operator  Image successfully upgraded for standalone/master: demo/my-standalone-0
+  Normal  Starting    44s    KubeDB Enterprise Operator  Resuming MySQL database: demo/my-standalone
+  Normal  Successful  44s    KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-standalone
+  Normal  Successful  44s    KubeDB Enterprise Operator  Controller has Successfully scaled the MySQL database: demo/my-standalone
 ```
 
 Now, we are going to verify whether the resources of the standalone has updated to meet up the desire state, Let's check,
@@ -317,6 +309,6 @@ The above output verify that we have successfully scaled up the resources of the
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```console
-kubectl delete my -n demo my-group
-kubectl delete myops -n demo myops-vertical
+kubectl delete my -n demo my-standalone
+kubectl delete myops -n demo  my-scale-standalone
 ```

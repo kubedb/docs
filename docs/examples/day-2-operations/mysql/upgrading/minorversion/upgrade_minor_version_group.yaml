@@ -1,13 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MySQLOpsRequest
 metadata:
-  name: my-scale-down
+  name: my-upgrade-minor-group
   namespace: demo
 spec:
-  type: HorizontalScaling  
+  type: Upgrade
   databaseRef:
     name: my-group
-  horizontalScaling:
-    member: 4
-
-
+  upgrade:
+    targetVersion: "5.7.31"

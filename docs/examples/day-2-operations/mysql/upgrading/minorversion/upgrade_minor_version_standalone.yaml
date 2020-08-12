@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: my-upgrade-minor-standalone
+  namespace: demo
+spec:
+  databaseRef:
+    name: my-standalone
+  type: Upgrade
+  upgrade:
+    targetVersion: "5.7.31"

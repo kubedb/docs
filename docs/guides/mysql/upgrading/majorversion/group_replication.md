@@ -12,9 +12,9 @@ section_menu_id: guides
 
 {{< notice type="warning" message="Upgrading is an Enterprise feature of KubeDB. You must have KubeDB Enterprise operator installed to test this feature." >}}
 
-# Upgrade MySQL Group Replication
+# Upgrade major version of MySQL Group Replication
 
-This guide will show you how to use `KubeDB` enterprise operator to upgrade the version of `MySQL` Group Replication.
+This guide will show you how to use `KubeDB` enterprise operator to upgrade the major version of `MySQL` Group Replication.
 
 ## Before You Begin
 
@@ -34,7 +34,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations](/docs/examples/day-2-operations) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations/mysql](/docs/examples/day-2-operations/mysql) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ### Apply Version Upgrading on Group Replication
 
@@ -80,20 +80,31 @@ The version above that does not show `DEPRECATED` true are supported by `KubeDB`
 
 **Check Upgrade Constraints:**
 
-Database version upgrade constraints is a constraint that shows whether it is possible or not possible to upgrade from one version to another. Let's check the version upgrade constraints of `MySQL` `5.7.29`,
+Database version upgrade constraints is a constraint that shows whether it is possible or not possible to upgrade from one version to another. Let's check the version upgrade constraints of `MySQL` `5.7.31`,
 
 ```console
-$ kubectl get mysqlversion 5.7.29 -o yaml
+$ kubectl get mysqlversion 5.7.31 -o yaml
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
 metadata:
-  creationTimestamp: "2020-07-25T08:45:21Z"
-  ....
-  generation: 2
-  name: 5.7.29
+  creationTimestamp: "2020-08-12T08:28:09Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/instance: kubedb-catalog
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kubedb-catalog
+    app.kubernetes.io/version: v0.14.0-beta.1
+    helm.sh/chart: kubedb-catalog-v0.14.0-beta.1
+  ...
+    operation: Update
+    time: "2020-08-12T08:28:09Z"
+  name: 5.7.31
+  resourceVersion: "42252"
+  selfLink: /apis/catalog.kubedb.com/v1alpha1/mysqlversions/5.7.31
+  uid: 4d1cfcf0-ac49-484f-83c3-38ff724d13c7
 spec:
   db:
-    image: suaas21/my:5.7.29
+    image: kubedb/mysql:5.7.31
   exporter:
     image: kubedb/mysqld-exporter:v0.11.0
   initContainer:
@@ -107,13 +118,13 @@ spec:
   upgradeConstraints:
     denylist:
       groupReplication:
-      - < 5.7.29
+      - < 5.7.31
       standalone:
-      - < 5.7.29
-  version: 5.7.29
+      - < 5.7.31
+  version: 5.7.31
 ```
 
-The above `spec.upgradeConstraints.denylist` of `5.7.29` is showing that upgrading below version of `5.7.29` is not possible for both group replication and standalone. That means, it is possible to upgrade any version above `5.7.29`. Here, we are going to create a `MySQL` Group Replication using MySQL  `5.7.29`. Then we are going to upgrade this version to `8.0.20`.
+The above `spec.upgradeConstraints.denylist` of `5.7.31` is showing that upgrading below version of `5.7.31` is not possible for both group replication and standalone. That means, it is possible to upgrade any version above `5.7.31`. Here, we are going to create a `MySQL` Group Replication using MySQL  `5.7.31`. Then we are going to upgrade this version to `8.0.21`.
 
 **Deploy MySQL Group Replication :**
 
@@ -126,7 +137,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "5.7.29"
+  version: "5.7.31"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -147,7 +158,7 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/upgrading/group_replication.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/upgrading/majorversion/group_replication.yaml
 mysql.kubedb.com/my-group created
 ```
 
@@ -161,7 +172,7 @@ $ watch -n 3 kubectl get my -n demo my-group
 Every 3.0s: kubectl get my -n demo my-group                      suaas-appscode: Thu Jun 18 14:30:24 2020
 
 NAME       VERSION   STATUS    AGE
-my-group   5.7.29    Running   5m52s
+my-group   5.7.31    Running   5m52s
 
 $ watch -n 3 kubectl get sts -n demo my-group
 Every 3.0s: kubectl get sts -n demo my-group                     suaas-appscode: Thu Jun 18 14:31:44 2020
@@ -173,24 +184,24 @@ $ watch -n 3 kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my
 Every 3.0s: kubectl get pod -n demo -l kubedb.com/kind=MySQL...  suaas-appscode: Thu Jun 18 14:35:35 2020
 
 NAME         READY   STATUS    RESTARTS   AGE
-my-group-0   1/1     Running   0          11m
-my-group-1   1/1     Running   0          9m53s
-my-group-2   1/1     Running   0          6m48s
+my-group-0   2/2     Running   0          11m
+my-group-1   2/2     Running   0          9m53s
+my-group-2   2/2     Running   0          6m48s
 ```
 
 Let's verify the `MySQL`, the `StatefulSet` and its `Pod` image version,
 
 ```console
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
-5.7.29
+5.7.31
 
-$ kubectl get sts -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o json | jq '.items[].spec.template.spec.containers[0].image'
-"kubedb/my:5.7.29"
+$ kubectl get sts -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+"kubedb/mysql:5.7.31"
 
-$ kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o json | jq '.items[].spec.containers[0].image'
-"kubedb/my:5.7.29"
-"kubedb/my:5.7.29"
-"kubedb/my:5.7.29"
+$ kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o json | jq '.items[].spec.containers[1].image'
+"kubedb/mysql:5.7.31"
+"kubedb/mysql:5.7.31"
+"kubedb/mysql:5.7.31"
 ```
 
 Let's also verify that the StatefulSet’s pods have joined into a group replication,
@@ -202,14 +213,14 @@ root
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
 sWfUMoqRpOJyomgb
 
-kubectl exec -it -n demo my-group-0 -- mysql -u root --password=sWfUMoqRpOJyomgb --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=OUta0G6QnyBuKmi0 --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                  | MEMBER_PORT | MEMBER_STATE |
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+
-| group_replication_applier | 356c03c0-b9cb-11ea-b856-7e6de479ee9d | my-group-1.my-group-gvr.demo |        3306 | ONLINE       |
-| group_replication_applier | 5be97bc0-b9cb-11ea-8b8b-a2eec7faa37d | my-group-2.my-group-gvr.demo |        3306 | ONLINE       |
-| group_replication_applier | c7089cb3-b9ca-11ea-b92a-228a3699132f | my-group-0.my-group-gvr.demo |        3306 | ONLINE       |
+| group_replication_applier | 0f29bc2e-dc76-11ea-b66f-02f24f164817 | my-group-1.my-group-gvr.demo |        3306 | ONLINE       |
+| group_replication_applier | 3741c056-dc76-11ea-ac3e-120989b9c9d5 | my-group-2.my-group-gvr.demo |        3306 | ONLINE       |
+| group_replication_applier | e2ba6b64-dc75-11ea-93e3-f60ec5bc86b8 | my-group-0.my-group-gvr.demo |        3306 | ONLINE       |
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+
 ```
 
@@ -217,7 +228,7 @@ We are ready to apply upgrading on this `MySQL` group replication.
 
 #### Upgrade
 
-Here, we are going to upgrade the `MySQL` group replication from `5.7.29` to `8.0.20`.
+Here, we are going to upgrade the `MySQL` group replication from `5.7.31` to `8.0.21`.
 
 **Create MySQLOpsRequest :**
 
@@ -234,23 +245,23 @@ spec:
   databaseRef:
     name: my-group
   upgrade:
-    targetVersion: "8.0.20"
+    targetVersion: "8.0.21"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
 - `spec.type` specifies that we are going performing `Upgrade` on our database.
-- `spec.upgrade.targetVersion` specifies expected version `8.0.20` after upgrading.
+- `spec.upgrade.targetVersion` specifies expected version `8.0.21` after upgrading.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/upgrading/upgrade_major_version_group.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/upgrading/majorversion/upgrade_major_version_group.yaml
 mysqlopsrequest.ops.kubedb.com/my-upgrade-major-group created
 ```
 
-> Note: During upgradation of mysql group replication, a new StatefulSet is created by the KubeDB enterprise operator in the field of major version upgrading and the old one is deleted. The name of the newly created StatefulSet is formed as follows: `<mysql-name>-<suffix>`.
+> Note: During upgradation of major version of mysql group replication, a new StatefulSet is created by the KubeDB enterprise operator and the old one is deleted. The name of the newly created StatefulSet is formed as follows: `<mysql-name>-<suffix>`.
 Here, `<suffix>` is a positive integer number and starts with 1. It's determined as follows:
 For one-time major version upgrading of group replication, suffix will be 1.
 For the 2nd time major version upgrading of group replication, suffix will be 2.
@@ -280,53 +291,54 @@ Labels:       <none>
 Annotations:  API Version:  ops.kubedb.com/v1alpha1
 Kind:         MySQLOpsRequest
 Metadata:
-  Creation Timestamp:  2020-07-25T15:36:13Z
+  Creation Timestamp:  2020-08-12T09:36:15Z
   Finalizers:
     mysql.ops.kubedb.com
-  Generation:        3
-  Resource Version:  38424
+  Generation:  3
+  ...
+  Resource Version:  56320
   Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mysqlopsrequests/my-upgrade-major-group
-  UID:               1eb46c20-0b23-4e3c-bbcc-093f54f3465e
+  UID:               c6541723-7624-4ab1-8ef4-91170e0df11a
 Spec:
   Database Ref:
     Name:                my-group
   Stateful Set Ordinal:  1
   Type:                  Upgrade
   Upgrade:
-    Target Version:  8.0.20
+    Target Version:  8.0.21
 Status:
   Conditions:
-    Last Transition Time:  2020-07-25T15:36:13Z
+    Last Transition Time:  2020-08-12T09:36:15Z
     Message:               Controller has started to Progress the MySQLOpsRequest: demo/my-upgrade-major-group
     Observed Generation:   1
     Reason:                OpsRequestProgressingStarted
     Status:                True
     Type:                  Progressing
-    Last Transition Time:  2020-07-25T15:36:13Z
-    Message:               The controller successfull Paused the MySQL database: demo/my-group 
+    Last Transition Time:  2020-08-12T09:36:15Z
+    Message:               Controller has successfully Paused the MySQL database: demo/my-group 
     Observed Generation:   1
     Reason:                SuccessfullyPausedDatabase
     Status:                True
     Type:                  PauseDatabase
-    Last Transition Time:  2020-07-25T15:36:13Z
+    Last Transition Time:  2020-08-12T09:36:15Z
     Message:               MySQL version upgrading stated for MySQLOpsRequest: demo/my-upgrade-major-group
     Observed Generation:   1
     Reason:                DatabaseVersionUpgradingStarted
     Status:                True
     Type:                  Upgrading
-    Last Transition Time:  2020-07-25T15:41:33Z
+    Last Transition Time:  2020-08-12T09:44:15Z
     Message:               Image successfully updated in MySQL: demo/my-group for MySQLOpsRequest: my-upgrade-major-group 
     Observed Generation:   1
     Reason:                SuccessfullyUpgradedDatabaseVersion
     Status:                True
     Type:                  UpgradeVersion
-    Last Transition Time:  2020-07-25T15:41:33Z
-    Message:               The controller successfull Resumed the MySQL database: demo/my-group
+    Last Transition Time:  2020-08-12T09:44:15Z
+    Message:               Controller has successfully Resumed the MySQL database: demo/my-group
     Observed Generation:   3
     Reason:                SuccessfullyResumedDatabase
     Status:                True
     Type:                  ResumeDatabase
-    Last Transition Time:  2020-07-25T15:41:33Z
+    Last Transition Time:  2020-08-12T09:44:15Z
     Message:               Controller has successfully scaled/upgraded the MySQL demo/my-upgrade-major-group
     Observed Generation:   3
     Reason:                OpsRequestProcessedSuccessfully
@@ -337,32 +349,32 @@ Status:
 Events:
   Type    Reason      Age    From                        Message
   ----    ------      ----   ----                        -------
-  Normal  Starting    7m9s   KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-upgrade-major-group
-  Normal  Starting    7m9s   KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-group
-  Normal  Successful  7m9s   KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-group for MySQLOpsRequest: my-upgrade-major-group
-  Normal  Starting    7m9s   KubeDB Enterprise Operator  Upgrading MySQL images: demo/my-group for MySQLOpsRequest: my-upgrade-major-group
-  Normal  Successful  5m29s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1-0
-  Normal  Successful  3m49s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1-1
-  Normal  Successful  2m9s   KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1-2
-  Normal  Successful  109s   KubeDB Enterprise Operator  Image successfully updated of MySQL: demo/my-group for MySQLOpsRequest: my-upgrade-major-group
-  Normal  Starting    109s   KubeDB Enterprise Operator  Resuming MySQL database: demo/my-group
-  Normal  Successful  109s   KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-group
-  Normal  Successful  109s   KubeDB Enterprise Operator  Controller has Successfully upgraded the version of MySQL : demo/my-group
+  Normal  Starting    8m3s   KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-upgrade-major-group
+  Normal  Starting    8m3s   KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-group
+  Normal  Successful  8m3s   KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-group for MySQLOpsRequest: my-upgrade-major-group
+  Normal  Starting    8m3s   KubeDB Enterprise Operator  Upgrading MySQL images: demo/my-group for MySQLOpsRequest: my-upgrade-major-group
+  Normal  Successful  5m23s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1-0
+  Normal  Successful  2m43s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1-1
+  Normal  Successful  23s    KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1-2
+  Normal  Successful  3s     KubeDB Enterprise Operator  Image successfully updated of MySQL: demo/my-group for MySQLOpsRequest: my-upgrade-major-group
+  Normal  Starting    3s     KubeDB Enterprise Operator  Resuming MySQL database: demo/my-group
+  Normal  Successful  3s     KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-group
+  Normal  Successful  3s     KubeDB Enterprise Operator  Controller has Successfully upgraded the version of MySQL : demo/my-group
 ```
 
 Now, we are going to verify whether the `MySQL` and `StatefulSet` and it's `Pod` have updated with new image. Let's check,
 
 ```console
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
-8.0.20
+8.0.21
 
-$ kubectl get sts -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o json | jq '.items[].spec.template.spec.containers[0].image'
-"kubedb/my:8.0.20"
+$ kubectl get sts -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+"kubedb/mysql:8.0.21"
 
-$ kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o json | jq '.items[].spec.containers[0].image'
-"kubedb/my:8.0.20"
-"kubedb/my:8.0.20"
-"kubedb/my:8.0.20"
+$ kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o json | jq '.items[].spec.containers[1].image'
+"kubedb/mysql:8.0.21"
+"kubedb/mysql:8.0.21"
+"kubedb/mysql:8.0.21"
 ```
 
 Let's also check the StatefulSet pods have joined the `MySQL` group replication,
@@ -374,14 +386,14 @@ root
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
 sWfUMoqRpOJyomgb
 
-$ kubectl exec -it -n demo my-group-1-0 -- mysql -u root --password=sWfUMoqRpOJyomgb --host=my-group-1-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
+$ kubectl exec -it -n demo my-group-1-0 -c mysql -- mysql -u root --password=OUta0G6QnyBuKmi0 --host=my-group-1-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+--------------------------------+-------------+--------------+-------------+----------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                    | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
 +---------------------------+--------------------------------------+--------------------------------+-------------+--------------+-------------+----------------+
-| group_replication_applier | 4d594b52-b9e8-11ea-b389-22889501aae8 | my-group-1-1.my-group-gvr.demo |        3306 | ONLINE       | PRIMARY     | 8.0.20         |
-| group_replication_applier | 866bb020-b9e8-11ea-bc06-52c624549b83 | my-group-1-2.my-group-gvr.demo |        3306 | ONLINE       | SECONDARY   | 8.0.20         |
-| group_replication_applier | d4b2dc04-b9e7-11ea-a833-72f402a520fd | my-group-1-0.my-group-gvr.demo |        3306 | ONLINE       | SECONDARY   | 8.0.20         |
+| group_replication_applier | 16a6270a-dc80-11ea-b911-1e3c8e142114 | my-group-1-2.my-group-gvr.demo |        3306 | ONLINE       | SECONDARY   | 8.0.21         |
+| group_replication_applier | 6e0709ba-dc7f-11ea-9fb1-aaa4bd57b6ff | my-group-1-0.my-group-gvr.demo |        3306 | ONLINE       | PRIMARY     | 8.0.21         |
+| group_replication_applier | ca40ac85-dc7f-11ea-9ff0-3621cd123c11 | my-group-1-1.my-group-gvr.demo |        3306 | ONLINE       | SECONDARY   | 8.0.21         |
 +---------------------------+--------------------------------------+--------------------------------+-------------+--------------+-------------+----------------+
 ```
 

@@ -34,7 +34,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations](/docs/examples/day-2-operations) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations/mysql](/docs/examples/day-2-operations/mysql) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ### Apply Vertical Scaling on MySQL Group Replication
 
@@ -136,20 +136,19 @@ $ watch -n 3 kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my
 Every 3.0s: kubectl get pod -n demo -l kubedb.com/kind=MySQ...  suaas-appscode: Tue Jun 30 22:45:33 2020
 
 NAME         READY   STATUS    RESTARTS   AGE
-my-group-0   1/1     Running   0          17m
-my-group-1   1/1     Running   0          14m
-my-group-2   1/1     Running   0          11m
+my-group-0   2/2     Running   0          17m
+my-group-1   2/2     Running   0          14m
+my-group-2   2/2     Running   0          11m
 ```
 
 Let's check one of the StatefulSet's pod containers resources,
 
 ```console
-$ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[].resources'
+$ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources'
 {}
 ```
 
-You can see that the Pod has empty resources that means the scheduler will choose a random node to place the container of the Pod on by default.
-We are ready to apply the vertical scale on this group replication.
+You can see that the Pod has empty resources that means the scheduler will choose a random node to place the container of the Pod on by default.Now, we are ready to apply the vertical scale on this group replication.
 
 #### Vertical Scaling
 
@@ -157,13 +156,13 @@ Here, we are going to update the resources of the database cluster to meet up th
 
 **Create MySQLOpsRequest:**
 
-In order to update the resources of your database cluster, you have to create a `MySQLOpsRequest` cr with your desired resources after scaling. Below is the YAML of the `MySQLOpsRequest` crd that we are going to create,
+In order to update the resources of your database cluster, you have to create a `MySQLOpsRequest` cr with your desired resources after scaling. Below is the YAML of the `MySQLOpsRequest` cr that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MySQLOpsRequest
 metadata:
-  name: myops-vertical
+  name: my-scale-group
   namespace: demo
 spec:
   type: VerticalScaling  
@@ -188,40 +187,42 @@ Here,
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/verticalscaling/vertical_scale.yaml
-mysqlopsrequest.ops.kubedb.com/myops-vertical created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/verticalscaling/vertical_scale_group.yaml
+mysqlopsrequest.ops.kubedb.com/my-scale-group created
 ```
 
 **Verify MySQL Group Replication resources updated successfully :**
 
 If everything goes well, `KubeDB` enterprise operator will update the resources of the StatefulSet's `Pod` containers. After successful scaling process is done, the `KubeDB` enterprise operator update the resources of the `MySQL` cluster.
 
-First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` crd,
+First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
 ```console
-Every 3.0s: kubectl get myops -n demo myops-vertical             suaas-appscode: Wed Jul  1 18:04:52 2020
+$ watch -n 3 kubectl get myops -n demo my-scale-group
+Every 3.0s: kubectl get myops -n demo my-sc...  suaas-appscode: Wed Aug 12 16:49:21 2020
 
 NAME             TYPE              STATUS       AGE
-myops-vertical   VerticalScaling   Successful   4m45s
+my-scale-group   VerticalScaling   Successful   4m53s
 ```
 
 You can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the resources of the members of the `MySQL` group replication are updated.
 
 ```console
-$ kubectl describe myops -n demo myops-vertical
-Name:         myops-vertical
+$ kubectl describe myops -n demo my-scale-group
+Name:         my-scale-group
 Namespace:    demo
 Labels:       <none>
 Annotations:  API Version:  ops.kubedb.com/v1alpha1
 Kind:         MySQLOpsRequest
 Metadata:
-  Creation Timestamp:  2020-07-01T10:25:05Z
+  Creation Timestamp:  2020-08-12T10:44:28Z
   Finalizers:
     mysql.ops.kubedb.com
-  Generation:        2
-  Resource Version:  16560
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mysqlopsrequests/myops-vertical
-  UID:               bf8a3fc9-aab9-4fa6-a8f8-5c393e0bc166
+  Generation:  2
+  ...
+  Resource Version:  68442
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mysqlopsrequests/my-scale-group
+  UID:               ae8f1ab5-ab89-4ba9-bf41-3ce11b1d0cf0
 Spec:
   Database Ref:
     Name:                my-group
@@ -237,83 +238,79 @@ Spec:
         Memory:  200Mi
 Status:
   Conditions:
-    Last Transition Time:  2020-07-01T10:25:06Z
-    Message:               The controller has started to Progress the OpsRequest
+    Last Transition Time:  2020-08-12T10:44:28Z
+    Message:               Controller has started to Progress the MySQLOpsRequest: demo/my-scale-group
     Observed Generation:   1
-    Reason:                OpsRequestOpsRequestProgressing
+    Reason:                OpsRequestProgressingStarted
     Status:                True
     Type:                  Progressing
-    Last Transition Time:  2020-07-01T10:25:06Z
-    Message:               MySQLOpsRequestDefinition: myops-vertical for Pausing MySQL: demo/my-group
+    Last Transition Time:  2020-08-12T10:44:28Z
+    Message:               Controller has successfully Paused the MySQL database: demo/my-group 
     Observed Generation:   1
-    Reason:                PausingDatabase
+    Reason:                SuccessfullyPausedDatabase
     Status:                True
-    Type:                  PausingDatabase
-    Last Transition Time:  2020-07-01T10:25:06Z
-    Message:               MySQLOpsRequestDefinition: myops-vertical for Paused MySQL: demo/my-group
+    Type:                  PauseDatabase
+    Last Transition Time:  2020-08-12T10:44:28Z
+    Message:               Vertical scaling started in MySQL: demo/my-group for MySQLOpsRequest: my-scale-group
     Observed Generation:   1
-    Reason:                PausedDatabase
-    Status:                True
-    Type:                  PausedDatabase
-    Last Transition Time:  2020-07-01T10:25:06Z
-    Message:               MySQLOpsRequestDefinition: myops-vertical for Scaling MySQL: demo/my-group
-    Observed Generation:   1
-    Reason:                OpsRequestScalingDatabase
+    Reason:                VerticalScalingStarted
     Status:                True
     Type:                  Scaling
-    Last Transition Time:  2020-07-01T10:32:35Z
-    Message:               MySQLOpsRequestDefinition: myops-vertical for Vertical Scaling MySQL: demo/my-group
+    Last Transition Time:  2020-08-12T10:49:08Z
+    Message:               Vertical scaling performed successfully in MySQL: demo/my-group for MySQLOpsRequest: my-scale-group
     Observed Generation:   1
-    Reason:                OpsRequestVerticalScaling
+    Reason:                SuccessfullyPerformedVerticalScaling
     Status:                True
     Type:                  VerticalScaling
-    Last Transition Time:  2020-07-01T10:32:36Z
-    Message:               MySQLOpsRequestDefinition: myops-vertical for Resuming MySQL: demo/my-group
+    Last Transition Time:  2020-08-12T10:49:08Z
+    Message:               Controller has successfully Resumed the MySQL database: demo/my-group
     Observed Generation:   2
-    Reason:                ResumingDatabase
+    Reason:                SuccessfullyResumedDatabase
     Status:                True
-    Type:                  ResumingDatabase
-    Last Transition Time:  2020-07-01T10:32:36Z
-    Message:               MySQLOpsRequestDefinition: myops-vertical for Reasumed MySQL: demo/my-group
+    Type:                  ResumeDatabase
+    Last Transition Time:  2020-08-12T10:49:08Z
+    Message:               Controller has successfully scaled/upgraded the MySQL demo/my-scale-group
     Observed Generation:   2
-    Reason:                ResumedDatabase
-    Status:                True
-    Type:                  ResumedDatabase
-    Last Transition Time:  2020-07-01T10:32:36Z
-    Message:               The controller has scaled/upgraded the MySQL successfully
-    Observed Generation:   2
-    Reason:                OpsRequestSuccessful
+    Reason:                OpsRequestProcessedSuccessfully
     Status:                True
     Type:                  Successful
   Observed Generation:     2
   Phase:                   Successful
 Events:
-  Type    Reason           Age   From                        Message
-  ----    ------           ----  ----                        -------
-  Normal  SuccessfulPause  29m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, successfully paused: demo/my-group
-  Normal  Starting         29m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical for Scaling MySQL: demo/my-group
-  Normal  Pausing          29m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, Pausing MySQL: demo/my-group
-  Normal  Successful       26m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-group-1
-  Normal  Successful       26m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-group-1
-  Normal  Successful       26m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-group-1
-  Normal  Successful       24m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-group-2
-  Normal  Successful       24m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-group-1
-  Normal  Successful       24m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-group-2
-  Normal  Starting         22m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, Vertical Scaling MySQL: demo/my-group
-  Normal  Successful       22m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-group-2
-  Normal  Successful       22m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-group-1
-  Normal  Successful       22m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-group-0
-  Normal  Successful       22m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-group-0
-  Normal  Successful       22m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-group-2
-  Normal  Successful       22m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, resources successfully updated for Pod: demo/my-group-1
-  Normal  Resuming         22m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, Resuming MySQL: demo/my-group
-  Normal  Successful       22m   KubeDB Enterprise Operator  MySQLOpsRequestDefinition: myops-vertical, Resumed for MySQL: demo/my-group
+  Type    Reason      Age    From                        Message
+  ----    ------      ----   ----                        -------
+  Normal  Starting    5m50s  KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-scale-group
+  Normal  Starting    5m50s  KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-group
+  Normal  Successful  5m50s  KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-group for MySQLOpsRequest: my-scale-group
+  Normal  Starting    5m50s  KubeDB Enterprise Operator  Vertical scaling started in MySQL: demo/my-group for MySQLOpsRequest: my-scale-group
+  Normal  Successful  4m10s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1
+  Normal  Successful  3m50s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1
+  Normal  Successful  3m30s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1
+  Normal  Successful  3m10s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1
+  Normal  Successful  2m50s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1
+  Normal  Successful  2m50s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-2
+  Normal  Successful  2m30s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-2
+  Normal  Successful  2m30s  KubeDB Enterprise Operator  Image successfully upgraded for standalone/master: demo/my-group-1
+  Normal  Successful  2m10s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-2
+  Normal  Successful  2m10s  KubeDB Enterprise Operator  Image successfully upgraded for standalone/master: demo/my-group-1
+  Normal  Successful  110s   KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-2
+  Normal  Successful  110s   KubeDB Enterprise Operator  Image successfully upgraded for standalone/master: demo/my-group-1
+  Normal  Successful  90s    KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-0
+  Normal  Successful  90s    KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-2
+  Normal  Successful  90s    KubeDB Enterprise Operator  Image successfully upgraded for standalone/master: demo/my-group-1
+  Normal  Successful  70s    KubeDB Enterprise Operator  Vertical scaling performed successfully in MySQL: demo/my-group for MySQLOpsRequest: my-scale-group
+  Normal  Successful  70s    KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-0
+  Normal  Successful  70s    KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-2
+  Normal  Successful  70s    KubeDB Enterprise Operator  Image successfully upgraded for standalone/master: demo/my-group-1
+  Normal  Starting    70s    KubeDB Enterprise Operator  Resuming MySQL database: demo/my-group
+  Normal  Successful  70s    KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-group
+  Normal  Successful  70s    KubeDB Enterprise Operator  Controller has Successfully scaled the MySQL database: demo/my-group
 ```
 
 Now, we are going to verify whether the resources of the members of the cluster have updated to meet up the desire state, Let's check,
 
 ```console
-$ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[].resources'
+$ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources'
 {
   "limits": {
     "cpu": "200m",
@@ -334,5 +331,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```console
 kubectl delete my -n demo my-group
-kubectl delete myops -n demo myops-vertical
+kubectl delete myops -n demo my-scale-group
 ```

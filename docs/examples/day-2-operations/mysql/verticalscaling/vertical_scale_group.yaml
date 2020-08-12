@@ -10,8 +10,8 @@ spec:
   verticalScaling:
     mysql:
       requests:
-        memory: "512Mi"
-        cpu: "1"
+        memory: "200Mi"
+        cpu: "0.1"
       limits:
-        memory: "512Mi"
-        cpu: "1"
+        memory: "300Mi"
+        cpu: "0.2"
