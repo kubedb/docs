@@ -1,10 +1,10 @@
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:
-  name: my-group
+  name: my-group-tls
   namespace: demo
 spec:
-  version: "8.0.20"
+  version: "8.0.21"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -22,16 +22,16 @@ spec:
   requireSSL: true
   tls:
     issuerRef:
-      apiGroup: cert-manager.io/v1alpha2
+      apiGroup: cert-manager.io/v1beta1
       kind: Issuer
       name: mysql-issuer
-      certificates:
-      - alias: 
-        subject:
-          organizations:
-          - kubedb:server
-        dnsNames:
-        - localhost
-        ipAddresses:
-        - "127.0.0.1"
+    certificates:
+    - alias: server
+      subject:
+        organizations:
+        - kubedb:server
+      dnsNames:
+      - localhost
+      ipAddresses:
+      - "127.0.0.1"
   terminationPolicy: WipeOut

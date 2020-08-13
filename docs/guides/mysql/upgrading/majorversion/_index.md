@@ -5,6 +5,6 @@ menu:
     identifier: my-upgrading-mysql-major
     name: Major version
     parent: my-upgrading-mysql
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 ---

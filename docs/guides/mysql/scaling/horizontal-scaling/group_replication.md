@@ -80,7 +80,7 @@ The version above that does not show `DEPRECATED` `true` are supported by `KubeD
 
 **Deploy MySQL Group Replication :**
 
-In this section, we are going to deploy a MySQL group replication with 3 members. Then, in the next section we will scale-up the cluster using horizontal scaling. Below is the YAML of the `MySQLO` cr that we are going to create,
+In this section, we are going to deploy a MySQL group replication with 3 members. Then, in the next section we will scale-up the cluster using horizontal scaling. Below is the YAML of the `MySQL` cr that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1

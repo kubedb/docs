@@ -65,11 +65,11 @@ spec:
   requireSSL: true
   tls:
     issuerRef:
-      apiGroup: cert-manager.io/v1alpha2
+      apiGroup: cert-manager.io/v1beta1
       kind: Issuer
       name: mysql-issuer
     certificates:
-    - alias:
+    - alias: server
       subject:
         organizations:
         - kubedb:server
@@ -292,17 +292,34 @@ The following fields are configurable in the `spec.tls` section:
 - `issuerRef` is a reference to the `Issuer` or `ClusterIssuer` CR of [cert-manager](https://cert-manager.io/docs/concepts/issuer/) that will be used by `KubeDB` to generate necessary certificates.
 
   - `apiGroup` is the group name of the resource   being referenced. The value for `Issuer` or   `ClusterIssuer` is "cert-manager.io"   (cert-manager v0.12.0 and later).
-  - `kind` is the type of resource being   referenced. KubeDB supports both of `Issuer`   and `ClusterIssuer` as values fro this field.
+  - `kind` is the type of resource being   referenced. KubeDB supports both of `Issuer`   and `ClusterIssuer` as values for this field.
   - `name` is the name of resource (`Issuer` or `ClusterIssuer`) being referenced.
 
-- `certificate` (optional) is used to configure the certificates. It has the following fields:
+- `certificates` (optional) are a list of certificate used to configure the server and/or client certificate. It has the following fields:
+  
+  - `alias` represents the identifier of the certificate. It has the following possible value:
+    - `server` is used for server certificate identification.
+    - `archiver` is used for client certificate identification.
+    - `metrics-exporter` is used for metrics exporter certificate identification.
+  - `secretName` (optional) specifies the k8s secret name that holds the certificates.
+    >This field is optional. If the user  `<database-name>-<cert-alias>-cert`.
+  - `subject` (optional) specifies an `X.509` distinguished name. It has the following possible field,
+    - `organizations` (optional) are the list of different organization name to be used on the Certificate.
+    - `organizationalUnits` (optional) are the list of different organization unit name to be used on the Certificate.
+    - `countries` (optional) are the list of country name to be used on the Certificate.
+    - `localities` (optional) are the list of locality name to be used on the Certificate.
+    - `provinces` (optional) are the list of province name to be used on the Certificate.
+    - `streetAddresses` (optional) are the list of street address to be used on the Certificate.
+    - `postalCodes` (optional) are the list of postal code to be used on the Certificate.
+    - `serialNumber` (optional) is a serial number to be used on the Certificate.
+    You can found more details from [Here](https://golang.org/pkg/crypto/x509/pkix/#Name)  
 
-  - `organization` (optional) is the   organization to be used on the Certificate.
-  - `duration` (optional) is the time period   during which the certificate is valid.
-  - `renewBefore` (optional) is a specifiable   time before expiration duration.
-  - `dnsNames` (optional) is a list of subject   alt names to be used in the Certificate..
-  - `ipAddresses` (optional) is a list of IP   addresses to be used in the Certificate.
-  - `uriSANs` (optional) is a list of URI   Subject Alternative Names to be set in the   Certificate.
+  - `duration` (optional) is the time period during which the certificate is valid.
+  - `renewBefore` (optional) is a specifiable time before expiration duration.
+  - `dnsNames` (optional) is a list of subject alt names to be used in the Certificate.
+  - `ipAddresses` (optional) is a list of IP addresses to be used in the Certificate.
+  - `uriSANs` (optional) is a list of URI Subject Alternative Names to be set in the Certificate.
+  - `emailSANs` (optional) is a list of email Subject Alternative Names to be set in the Certificate.
 
 ### spec.configSource
 

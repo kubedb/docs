@@ -5,7 +5,7 @@ menu:
     identifier: concepts-opsrequests-mysqlopsrequests
     name: MySQLOpsRequests
     parent: concepts-opsrequests
-    weight: 20
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: concepts
 ---
@@ -152,16 +152,16 @@ If you want to scale-up or scale-down your MySQL cluster, you have to specify `s
 
 - `spec.verticalScaling.mysql` indicates the `MySQL` server resources. It has the below structure:
   
-    ```yaml
-    requests:
-      memory: "200Mi"
-      cpu: "0.1"
-    limits:
-      memory: "300Mi"
-      cpu: "0.2"
-    ```
+```yaml
+requests:
+  memory: "200Mi"
+  cpu: "0.1"
+limits:
+  memory: "300Mi"
+  cpu: "0.2"
+```
 
-  Here, when you specify the resource request for `MySQL` container, the scheduler uses this information to decide which node to place the container of the Pod on and when you specify a resource limit for `MySQL` container, the `kubelet` enforces those limits so that the running container is not allowed to use more of that resource than the limit you set. you can found more details from [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+Here, when you specify the resource request for `MySQL` container, the scheduler uses thisinformation to decide which node to place the container of the Pod on and when you specify a resourcelimit for `MySQL` container, the `kubelet` enforces those limits so that the running container is notallowed to use more of that resource than the limit you set. you can found more details from [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
 
 - `spec.verticalScaling.exporter` indicates the `exporter` container resources. It has the same structure as `spec.verticalScaling.mysql` and you can scale the resource the same way as `mysql` container.
 
@@ -174,11 +174,12 @@ If you want to scale-up or scale-down your MySQL cluster, you have to specify `s
 #### status.phase
 
 `status.phase` indicates the overall phase of the operation for this `MySQLOpsRequest`. It can have the following three values:
-|Phase          |Meaning                |
-|---------------|-----------------------|
+
+|Phase          |Meaning                                                               |
+|---------------|-----------------------------------------------------------------------|
 |Successful     | KubeDB has successfully performed the operation requested in the MySQLOpsRequest |
-|Failed         | KubeDB has failed the operation requested in the MySQLOpsRequest|
-|Denied         | KubeDB has denied the operation requested in the MySQLOpsRequest|
+|Failed         | KubeDB has failed the operation requested in the MySQLOpsRequest |
+|Denied         | KubeDB has denied the operation requested in the MySQLOpsRequest |
 
 #### status.observedGeneration
 
@@ -190,18 +191,18 @@ If you want to scale-up or scale-down your MySQL cluster, you have to specify `s
 
 - `types` specifies the type of the condition. MySQLOpsRequest has the following types of conditions:
 
-  | Type                | Meaning                                                                  |
-  | ------------------- | -------------------------------------------------------------------------|
-  | `Progressing`       | Specifies that the operation is now in the progressing state  |
-  | `Successful`        | Specifies such a state that the operation on the database has been successful. |
-  | `PauseDatabase`     | Specifies such a state that the database is paused by the operator   |
-  | `ResumeDatabase`    | Specifies such a state that the database is resumed by the operator    |
-  | `Failure`           | Specifies such a state that the operation on the database has been failed.  |
-  | `Scaling`           | Specifies such a state that the scaling operation on the database has stared  |
-  | `VerticalScaling`   | Specifies such a state that vertical scaling have performed successfully on database  |
-  | `HorizontalScaling` | Specifies such a state that horizontal scaling have performed successfully on database |
-  | `Upgrading`         | Specifies such a state that database upgrading operation has stared  |
-  | `UpgradeVersion`    | Specifies such a state that version upgrading on database have performed successfully  |
+| Type                | Meaning                                                                  |
+| ------------------- | -------------------------------------------------------------------------|
+| `Progressing`       | Specifies that the operation is now in the progressing state  |
+| `Successful`        | Specifies such a state that the operation on the database has beensuccessful. |
+| `PauseDatabase`     | Specifies such a state that the database is paused by the operator   |
+| `ResumeDatabase`    | Specifies such a state that the database is resumed by the operator    |
+| `Failure`           | Specifies such a state that the operation on the database has been failed.  |
+| `Scaling`           | Specifies such a state that the scaling operation on the database has stared |
+| `VerticalScaling`   | Specifies such a state that vertical scaling have performed successfully on database  |
+| `HorizontalScaling` | Specifies such a state that horizontal scaling have performed successfully on database |
+| `Upgrading`         | Specifies such a state that database upgrading operation has stared  |
+| `UpgradeVersion`    | Specifies such a state that version upgrading on database have performed successfully  |
 
 - The `status` field is a string, with possible values `"True"`, `"False"`, and `"Unknown"`.
   - `status` will be `"True"` if the current transition is succeeded.
@@ -210,24 +211,24 @@ If you want to scale-up or scale-down your MySQL cluster, you have to specify `s
 - The `message` field is a human-readable message indicating details about the condition.
 - The `reason` field is a unique, one-word, CamelCase reason for the condition's last transition. It has the following possible values:
 
-  | Reason                                  | Meaning                                       |
-  | --------------------------------------- | -----------------------------------------------|
-  | `OpsRequestProgressingStarted`          | Operator has started the OpsRequest processing    |
-  | `OpsRequestFailedToProgressing`         | Operator has failed to start the OpsRequest processing    |
-  | `SuccessfullyPausedDatabase`            | Database is successfully paused by the operator  |
-  | `FailedToPauseDatabase`                 | Database is failed to pause by the operator    |
-  | `SuccessfullyResumedDatabase`           | Database is successfully resumed to perform it's usual operation  |
-  | `FailedToResumedDatabase`               | Database is failed to resume                   |
-  | `DatabaseVersionUpgradingStarted`       | Operator has started upgrading the database version    |
-  | `SuccessfullyUpgradedDatabaseVersion`   | Operator has successfully upgraded the database version |
-  | `FailedToUpgradeDatabaseVersion`        | Operator has failed to upgrade the database version   |
-  | `HorizontalScalingStarted`              | Operator has started the horizontal scaling          |
-  | `SuccessfullyPerformedHorizontalScaling` | Operator has successfully performed on horizontal scaling     |
-  | `FailedToPerformHorizontalScaling`      | Operator has failed to perform on horizontal scaling     |
-  | `VerticalScalingStarted`                | Operator has started the vertical scaling    |
-  | `SuccessfullyPerformedVerticalScaling`  | Operator has successfully performed on vertical scaling   |
-  | `FailedToPerformVerticalScaling`        | Operator has failed to perform on vertical scaling   |
-  | `OpsRequestProcessedSuccessfully`       | Operator has successfully completed the operator requested by the OpeRequest CR |
+| Reason                                  | Meaning                                       |
+| --------------------------------------- | -----------------------------------------------|
+| `OpsRequestProgressingStarted`          | Operator has started the OpsRequest processing    |
+| `OpsRequestFailedToProgressing`         | Operator has failed to start the OpsRequest processing    |
+| `SuccessfullyPausedDatabase`            | Database is successfully paused by the operator  |
+| `FailedToPauseDatabase`                 | Database is failed to pause by the operator    |
+| `SuccessfullyResumedDatabase`           | Database is successfully resumed to perform it's usual operation  |
+| `FailedToResumedDatabase`               | Database is failed to resume                   |
+| `DatabaseVersionUpgradingStarted`       | Operator has started upgrading the database version    |
+| `SuccessfullyUpgradedDatabaseVersion`   | Operator has successfully upgraded the database version |
+| `FailedToUpgradeDatabaseVersion`        | Operator has failed to upgrade the database version   |
+| `HorizontalScalingStarted`              | Operator has started the horizontal scaling          |
+| `SuccessfullyPerformedHorizontalScaling` | Operator has successfully performed on horizontal scaling     |
+| `FailedToPerformHorizontalScaling`      | Operator has failed to perform on horizontal scaling     |
+| `VerticalScalingStarted`                | Operator has started the vertical scaling    |
+| `SuccessfullyPerformedVerticalScaling`  | Operator has successfully performed on vertical scaling   |
+| `FailedToPerformVerticalScaling`        | Operator has failed to perform on vertical scaling   |
+| `OpsRequestProcessedSuccessfully`       | Operator has successfully completed the operator requested by the OpeRequest cr |
 
 - The `lastTransitionTime` field provides a timestamp for when the operation last transitioned from one state to another.
 - The `observedGeneration` shows the most recent condition transition generation observed by the controller.

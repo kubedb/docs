@@ -1,10 +1,10 @@
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:
-  name: mysql-quickstart
+  name: my-standalone-tls
   namespace: demo
 spec:
-  version: "8.0.20"
+  version: "8.0.21"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -18,11 +18,11 @@ spec:
   requireSSL: true
   tls:
     issuerRef:
-      apiGroup: cert-manager.io/v1alpha2
+      apiGroup: cert-manager.io/v1beta1
       kind: Issuer
       name: mysql-issuer
     certificates:
-    - alias: 
+    - alias: server
       subject:
         organizations:
         - kubedb:server
