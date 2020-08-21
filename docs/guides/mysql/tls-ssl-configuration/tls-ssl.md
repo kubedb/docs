@@ -79,22 +79,16 @@ issuer.cert-manager.io/mysql-issuer created
 
 ### Deploy MySQL Standalone with TLS/SSL configuration
 
-Here, we are going to deploy a `MySQL` standalone with TLS/SSL configuration.Below is the YAML for MySQL Standalone that we are going to create,
+Here, our issuer `mysql-issuer`  is ready to deploy a `MySQL` standalone with TLS/SSL configuration. Below is the YAML for MySQL Standalone that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:
-  name: my-group-tls
+  name: my-standalone-tls
   namespace: demo
 spec:
   version: "8.0.21"
-  replicas: 3
-  topology:
-    mode: GroupReplication
-    group:
-      name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
-      baseServerID: 100
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -102,22 +96,22 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 1Gi   
   requireSSL: true
   tls:
     issuerRef:
       apiGroup: cert-manager.io/v1beta1
       kind: Issuer
       name: mysql-issuer
-      certificates:
-      - alias: server
-        subject:
-          organizations:
-          - kubedb:server
-        dnsNames:
-        - localhost
-        ipAddresses:
-        - "127.0.0.1"
+    certificates:
+    - alias: server
+      subject:
+        organizations:
+        - kubedb:server
+      dnsNames:
+      - localhost
+      ipAddresses:
+      - "127.0.0.1"
   terminationPolicy: WipeOut
 ```
 
@@ -160,7 +154,7 @@ $ watch -n 3 kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my
 Every 3.0s: kubectl get pod -n demo -l kubedb.com/kind=MySQL...  suaas-appscode: Thu Aug 13 18:13:19 2020
 
 NAME                  READY   STATUS    RESTARTS   AGE
-my-standalone-tls-0   2/2     Running   0          7m35s
+my-standalone-tls-0   1/1     Running   0          7m35s
 ```
 
 **Verify tls-secrets created successfully :**
@@ -188,7 +182,7 @@ Now, we are going to connect to the database for verifying the `MySQL` server ha
 Let's exec into the pod to verify TLS/SSL configuration,
 
 ```console
-$ kubectl exec -it -n  demo  my-standalone-tls-0 -c mysql -- sh
+$ kubectl exec -it -n  demo  my-standalone-tls-0 -- bash
 # ls /etc/mysql/certs/
 ca.crt  client.crt  client.key  server.crt  server.key
 
@@ -259,7 +253,7 @@ Let's connect to the database server with a secure connection,
 
 ```console
 # creating SSL required user
-$ kubectl exec -it -n  demo  mysql-tls-0 -c mysql -- bash
+$ kubectl exec -it -n  demo  my-standalone-tls-0 -- bash
 
 root@mysql-tls-0:/# mysql -uroot -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -320,7 +314,7 @@ From the above output, you can see that only using client certificate we can acc
 
 ## Deploy MySQL Group Replication with TLS/SSL configuration
 
-Now, we are going to deploy a `MySQL` group replication with TLS/SSL configuration.Below is the YAML for MySQL group replication that we are going to create,
+Now, we are going to deploy a `MySQL` group replication with TLS/SSL configuration. Below is the YAML for MySQL group replication that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1

@@ -12,9 +12,7 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
-  monitor:
-    agent: prometheus.io/builtin   
+        storage: 1Gi   
   requireSSL: true
   tls:
     issuerRef:

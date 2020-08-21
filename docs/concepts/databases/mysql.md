@@ -302,7 +302,7 @@ The following fields are configurable in the `spec.tls` section:
     - `archiver` is used for client certificate identification.
     - `metrics-exporter` is used for metrics exporter certificate identification.
   - `secretName` (optional) specifies the k8s secret name that holds the certificates.
-    >This field is optional. If the user  `<database-name>-<cert-alias>-cert`.
+    >This field is optional. If the user does not specify this field, the default secret name will be created the following format: `<database-name>-<cert-alias>-cert`.
   - `subject` (optional) specifies an `X.509` distinguished name. It has the following possible field,
     - `organizations` (optional) are the list of different organization name to be used on the Certificate.
     - `organizationalUnits` (optional) are the list of different organization unit name to be used on the Certificate.

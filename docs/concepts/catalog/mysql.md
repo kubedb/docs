@@ -25,23 +25,36 @@ Using a separate crd for specifying respective docker images, and pod security p
 As with all other Kubernetes objects, a MySQLVersion needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section.
 
 ```yaml
-apiVersion: catalog.kubedb.com/v1alpha1
+	apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
 metadata:
-  name: "8.0-v2"
   labels:
-    app: kubedb
+    app.kubernetes.io/instance: kubedb-catalog
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kubedb-catalog
+    app.kubernetes.io/version: v0.14.0-beta.1
+    helm.sh/chart: kubedb-catalog-v0.14.0-beta.1
+  name: 8.0.21
 spec:
-  version: "8.0"
   db:
-    image: "${KUBEDB_DOCKER_REGISTRY}/mysql:8.0-v2"
+    image: kubedb/mysql:8.0.21
   exporter:
-    image: "${KUBEDB_DOCKER_REGISTRY}/mysqld-exporter:v0.11.0"
-  tools:
-    image: "${KUBEDB_DOCKER_REGISTRY}/mysql-tools:8.0-v2"
+    image: kubedb/mysqld-exporter:v0.11.0
+  initContainer:
+    image: kubedb/busybox
   podSecurityPolicies:
-    databasePolicyName: "mysql-db"
-    snapshotterPolicyName: "mysql-snapshot"
+    databasePolicyName: mysql-db
+  replicationModeDetector:
+    image: kubedb/mysql-replication-mode-detector:v0.1.0-beta.1
+  tools:
+    image: kubedb/mysql-tools:5.7.25
+  upgradeConstraints:
+    denylist:
+      groupReplication:
+      - < 8.0.21
+      standalone:
+      - < 8.0.21
+  version: 8.0.21
 ```
 
 ### metadata.name
@@ -72,23 +85,25 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 `spec.exporter.image` is a required field that specifies the image which will be used to export Prometheus metrics.
 
+### spec.initContainer.image
+
+`spec.initContainer.image` is a required field that specifies the image which will be used to remove `lost+found` directory and mount an `EmptyDir` data volume.
+
+### spec.replicationModeDetector.image
+
+`spec.replicationModeDetector.image` is only required field for MySQL Group Replication. This field specifies that image which will be used to detect primary member/replica/node in Group Replication.
+
 ### spec.tools.image
 
-`spec.tools.image` is a required field that specifies the image which will be used to take backup and initialize database from snapshot.
+`spec.tools.image` is a optional field that specifies the image which will be used to take backup and initialize database from snapshot.
+
+### spec.upgradeConstraints
+
+`spec.upgradeConstraints` specifies a specific database version upgrade constraints in a mathematical expression that describes whether it is possible or not to upgrade from this version to another. It has two subfields, which describe the version upgrade constraint.
 
 ### spec.podSecurityPolicies.databasePolicyName
 
 `spec.podSecurityPolicies.databasePolicyName` is a required field that specifies the name of the pod security policy required to get the database server pod(s) running.
-
-### spec.podSecurityPolicies.snapshotterPolicyName
-
-`spec.podSecurityPolicies.snapshotterPolicyName` is a required field that specifies the name of the pod security policy required to get the snapshotter pod(s) running. To use user-defined policies, names of the policies have to be set in `spec.podSecurityPolicies` and in the list of allowed policy names in KubeDB operator like below:
-
-```console
-helm upgrade kubedb-operator appscode/kubedb --namespace kube-system \
-  --set additionalPodSecurityPolicies[0]=custom-db-policy \
-  --set additionalPodSecurityPolicies[1]=custom-snapshotter-policy
-```
 
 ## Next Steps
 
