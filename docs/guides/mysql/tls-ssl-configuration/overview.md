@@ -10,21 +10,21 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> :warning: **This doc is only for KubeDB Enterprise**: You need to be an enterprise user!
+{{< notice type="warning" message="MySQL TSL/SSL encryption is an Enterprise feature of KubeDB. You must have a KubeDB Enterprise operator installed to test this feature." >}}
 
 # MySQL TLS/SSL Encryption
 
 **Prerequisite :** To configure TLS/SSL in `MySQL`, `KubeDB` uses `cert-manager` to issue certificates. So first you have to make sure that the cluster has `cert-manager` installed. To install `cert-manager` in your cluster following steps [here](https://cert-manager.io/docs/installation/kubernetes/).
 
-To issue a certificate, the following crd of `cert-manager` is used:
+To issue a certificate, the following cr of `cert-manager` is used:
 
-- `Issuer/ClusterIssuer` : Issuers, and ClusterIssuers represent certificate authorities (CAs) that are able to generate signed certificates by honoring certificate signing requests. All cert-manager certificates require a referenced issuer that is in a ready condition to attempt to honor the request. You can learn more details [here](https://cert-manager.io/docs/concepts/issuer/).
+- `Issuer/ClusterIssuer`: Issuers and ClusterIssuers represent certificate authorities (CAs) that are able to generate signed certificates by honoring certificate signing requests. All cert-manager certificates require a referenced issuer that is in a ready condition to attempt to honor the request. You can learn more details [here](https://cert-manager.io/docs/concepts/issuer/).
 
-- `Certificate` : `cert-manager` has the concept of Certificates that define a desired x509 certificate which will be renewed and kept up to date. You can learn more details [here](https://cert-manager.io/docs/concepts/certificate/).
+- `Certificate`: `cert-manager` has the concept of Certificates that define the desired x509 certificate which will be renewed and kept up to date. You can learn more details [here](https://cert-manager.io/docs/concepts/certificate/).
 
-**MySQL CRD Specification :**
+**MySQL CRD Specification:**
 
-KubeDB uses following crd fields to enable SSL/TLS encryption in `MySQL`.
+KubeDB uses the following cr fields to enable SSL/TLS encryption in `MySQL`.
 
 - `spec:`
   - `requireSSL`
@@ -38,18 +38,18 @@ When, `requireSSL` is set, the users must specify the `tls.issuerRef` field. `Ku
 
 ## How TLS/SSL configures in MySQL
 
-The following figure shows how `KubeDB` enterprise used to configure TLS/SSL in MySQL. Open the image in a new tab to see the enlarged version.
+The following figure shows how `KubeDB` enterprise is used to configure TLS/SSL in MySQL. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Stash Backup Flow" src="/docs/images/day-2-operation/mysql/my-tls-ssl.png">
+  <img alt="Stash Backup Flow" src="/docs/images/day-2-operation/mysql/my-tls-ssl.png">
 <figcaption align="center">Fig: Deploy MySQL with TLS/SSL</figcaption>
 </figure>
 
 Deploying MySQL with TLS/SSL configuration process consists of the following steps:
 
-1. At first, a user creates a `Issuer/ClusterIssuer` cr.
+1. At first, a user creates an `Issuer/ClusterIssuer` cr.
 
-2. Then the use creates a `MySQL` cr.
+2. Then the user creates a `MySQL` cr.
 
 3. `KubeDB` community operator watches for the `MySQL` cr.
 
@@ -61,7 +61,7 @@ Deploying MySQL with TLS/SSL configuration process consists of the following ste
 
 7. `cert-manager` watches for certificates.
 
-8. When it finds one, it creates certificate secrets `tls-secrets`(server, client, exporter secrets etc.) that holds the actual self-signed certificate.
+8. When it finds one, it creates certificate secrets `tls-secrets`(server, client, exporter secrets, etc.) that hold the actual self-signed certificate.
 
 9. `KubeDB` community operator watches for the Certificate secrets `tls-secrets`.
 

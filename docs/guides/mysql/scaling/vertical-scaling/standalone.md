@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-{{< notice type="warning" message="Vertical scaling is an Enterprise feature of KubeDB. You must have KubeDB Enterprise operator installed to test this feature." >}}
+{{< notice type="warning" message="Vertical scaling is an Enterprise feature of KubeDB. You must have a KubeDB Enterprise operator installed to test this feature." >}}
 
 # Vertical Scale MySQL Standalone
 
@@ -76,11 +76,11 @@ NAME        VERSION   DB_IMAGE                 DEPRECATED   AGE
 8.0.3-v1    8.0.3     kubedb/mysql:8.0.3-v1                 149m
 ```
 
-The version above that does not show `DEPRECATED` `true` are supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a standalone using non-deprecated `MySQL`  version `8.0.20`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a standalone using non-deprecated `MySQL`  version `8.0.20`.
 
-**Deploy MySQL Standalone :**
+**Deploy MySQL Standalone:**
 
-In this section, we are going to deploy a MySQL standalone. Then, in the next section we will update the resources of the database server using vertical scaling. Below is the YAML of the `MySQL` cr that we are going to create,
+In this section, we are going to deploy a MySQL standalone. Then, in the next section, we will update the resources of the database server using vertical scaling. Below is the YAML of the `MySQL` cr that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -110,7 +110,7 @@ mysql.kubedb.com/my-standalone created
 
 **Check Standalone Ready to Scale:**
 
-`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services and Secrets etc.
+`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc.
 Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
 
 ```console
@@ -140,13 +140,13 @@ $ kubectl get pod -n demo my-standalone-0 -o json | jq '.spec.containers[].resou
 {}
 ```
 
-You can see the Pod has empty resources that means the scheduler will choose a random node to place the container of the Pod on by default
+You can see the Pod has empty resources that mean the scheduler will choose a random node to place the container of the Pod on by default
 
-We are ready to apply horizontal scale on this standalone database.
+We are ready to apply a horizontal scale on this standalone database.
 
 #### Vertical Scaling
 
-Here, we are going to update the resources of the standalone to meet up the desired resources after scaling.
+Here, we are going to update the resources of the standalone to meet up with the desired resources after scaling.
 
 **Create MySQLOpsRequest:**
 
@@ -185,9 +185,9 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysqlopsrequest.ops.kubedb.com/my-scale-standalone created
 ```
 
-**Verify MySQL Standalone resources updated successfully :**
+**Verify MySQL Standalone resources updated successfully:**
 
-If everything goes well, `KubeDB` enterprise operator will update the resources of the StatefulSet's `Pod` containers. After successful scaling process is done, the `KubeDB` enterprise operator update the resources of the `MySQL` object.
+If everything goes well, `KubeDB` enterprise operator will update the resources of the StatefulSet's `Pod` containers. After a successful scaling process is done, the `KubeDB` enterprise operator updates the resources of the `MySQL` object.
 
 First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
@@ -285,7 +285,7 @@ Events:
   Normal  Successful  44s    KubeDB Enterprise Operator  Controller has Successfully scaled the MySQL database: demo/my-standalone
 ```
 
-Now, we are going to verify whether the resources of the standalone has updated to meet up the desire state, Let's check,
+Now, we are going to verify whether the resources of the standalone has updated to meet up the desired state, Let's check,
 
 ```console
 $ kubectl get pod -n demo my-standalone-0 -o json | jq '.spec.containers[].resources'
@@ -302,7 +302,7 @@ $ kubectl get pod -n demo my-standalone-0 -o json | jq '.spec.containers[].resou
 
 ```
 
-The above output verify that we have successfully scaled up the resources of the standalone.
+The above output verifies that we have successfully scaled up the resources of the standalone.
 
 ## Cleaning Up
 

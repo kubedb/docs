@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-{{< notice type="warning" message="Upgrading is an Enterprise feature of KubeDB. You must have KubeDB Enterprise operator installed to test this feature." >}}
+{{< notice type="warning" message="Upgrading is an Enterprise feature of KubeDB. You must have a KubeDB Enterprise operator installed to test this feature." >}}
 
 # Upgrade major version of MySQL Group Replication
 
@@ -42,7 +42,7 @@ Here, we are going to deploy a `MySQL` group replication using a supported versi
 
 #### Prepare Group Replication
 
-At first, we are going to deploy a group replication using supported that `MySQL` version whether it is possible to upgrade from this version to another. In the next two section we are going to find out supported version and version upgrade constraints.
+At first, we are going to deploy a group replication using supported that `MySQL` version whether it is possible to upgrade from this version to another. In the next two sections, we are going to find out the supported version and version upgrade constraints.
 
 **Find supported MySQL Version:**
 
@@ -76,7 +76,7 @@ NAME        VERSION   DB_IMAGE                 DEPRECATED   AGE
 8.0.3-v1    8.0.3     kubedb/mysql:8.0.3-v1                 149m
 ```
 
-The version above that does not show `DEPRECATED` true are supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Now, we are going to select a non-deprecated version from `MySQLVersion` for `MySQL` group replication that will be possible to upgrade from this version to another version. In the next section we are going to verify version upgrade constraints.
+The version above that does not show `DEPRECATED` true is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Now, we are going to select a non-deprecated version from `MySQLVersion` for `MySQL` group replication that will be possible to upgrade from this version to another version. In the next section, we are going to verify version upgrade constraints.
 
 **Check Upgrade Constraints:**
 
@@ -126,7 +126,7 @@ spec:
 
 The above `spec.upgradeConstraints.denylist` of `5.7.31` is showing that upgrading below version of `5.7.31` is not possible for both group replication and standalone. That means, it is possible to upgrade any version above `5.7.31`. Here, we are going to create a `MySQL` Group Replication using MySQL  `5.7.31`. Then we are going to upgrade this version to `8.0.21`.
 
-**Deploy MySQL Group Replication :**
+**Deploy MySQL Group Replication:**
 
 In this section, we are going to deploy a MySQL group replication with 3 members. Then, in the next section we will upgrade the version of the  members using upgrading. Below is the YAML of the `MySQL` cr that we are going to create,
 
@@ -162,9 +162,9 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mysql.kubedb.com/my-group created
 ```
 
-**Wait for the cluster to be ready :**
+**Wait for the cluster to be ready:**
 
-`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services and Secrets etc. A secret called `my-group-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
+`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc. A secret called `my-group-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
 Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
 
 ```console
@@ -230,9 +230,9 @@ We are ready to apply upgrading on this `MySQL` group replication.
 
 Here, we are going to upgrade the `MySQL` group replication from `5.7.31` to `8.0.21`.
 
-**Create MySQLOpsRequest :**
+**Create MySQLOpsRequest:**
 
-In order to upgrade your database cluster, you have to create a `MySQLOpsRequest` cr with your desired version that supported by `KubeDB`. Below is the YAML of the `MySQLOpsRequest` crd that we are going to create,
+To upgrade your database cluster, you have to create a `MySQLOpsRequest` cr with your desired version that supported by `KubeDB`. Below is the YAML of the `MySQLOpsRequest` cr that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -261,15 +261,15 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysqlopsrequest.ops.kubedb.com/my-upgrade-major-group created
 ```
 
-> Note: During upgradation of major version of mysql group replication, a new StatefulSet is created by the KubeDB enterprise operator and the old one is deleted. The name of the newly created StatefulSet is formed as follows: `<mysql-name>-<suffix>`.
+> Note: During the upgradation of the major version of MySQL group replication, a new StatefulSet is created by the KubeDB enterprise operator and the old one is deleted. The name of the newly created StatefulSet is formed as follows: `<mysql-name>-<suffix>`.
 Here, `<suffix>` is a positive integer number and starts with 1. It's determined as follows:
-For one-time major version upgrading of group replication, suffix will be 1.
-For the 2nd time major version upgrading of group replication, suffix will be 2.
+For one-time major version upgrading of group replication, the suffix will be 1.
+For the 2nd time major version upgrading of group replication, the suffix will be 2.
 It will be continued...
 
-**Verify MySQL version upgraded successfully :**
+**Verify MySQL version upgraded successfully:**
 
-If everything goes well, `KubeDB` enterprise operator will create a new `StatefulSet` named `my-group-1` with desire updated version and delete the old one.
+If everything goes well, `KubeDB` enterprise operator will create a new `StatefulSet` named `my-group-1` with the desire updated version and delete the old one.
 
 At first, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
@@ -281,7 +281,7 @@ NAME                     TYPE      STATUS       AGE
 my-upgrade-major-group   Upgrade   Successful   5m26s
 ```
 
-You can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the `MySQL` group replication is updated with new images and the `StatefulSet` is created with new image.
+You can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the `MySQL` group replication is updated with new images and the `StatefulSet` is created with a new image.
 
 ```console
 $ kubectl describe myops -n demo my-upgrade-major-group
@@ -397,7 +397,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+--------------------------------+-------------+--------------+-------------+----------------+
 ```
 
-You can see above that our `MySQL` group replication now have updated members. It verify that we have successfully upgrade our cluster.
+You can see above that our `MySQL` group replication now has updated members. It verifies that we have successfully upgraded our cluster.
 
 ## Cleaning Up
 

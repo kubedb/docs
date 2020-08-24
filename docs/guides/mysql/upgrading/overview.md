@@ -10,11 +10,11 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-{{< notice type="warning" message="Upgrading is an Enterprise feature of KubeDB. You must have KubeDB Enterprise operator installed to test this feature." >}}
+{{< notice type="warning" message="Upgrading is an Enterprise feature of KubeDB. You must have a KubeDB Enterprise operator installed to test this feature." >}}
 
 # Upgrading MySQL version Overview
 
-This guide will give you an overview on how KubeDB enterprise operator upgrade the version of `MySQL` database.
+This guide will give you an overview of how KubeDB enterprise operator upgrades the version of `MySQL` database.
 
 ## Before You Begin
 
@@ -27,7 +27,7 @@ This guide will give you an overview on how KubeDB enterprise operator upgrade t
 The following diagram shows how KubeDB enterprise operator used to upgrade the version of `MySQL`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Stash Backup Flow" src="/docs/images/day-2-operation/mysql/my-upgrading.png">
+  <img alt="Stash Backup Flow" src="/docs/images/day-2-operation/mysql/my-upgrading.png">
 <figcaption align="center">Fig: Upgrading Process of MySQL</figcaption>
 </figure>
 
@@ -51,6 +51,6 @@ The upgrading process consists of the following steps:
 
 8. After successful upgradation of the `StatefulSet` and its `Pod` images, the `KubeDB` enterprise operator updates the image of the `MySQL` object to reflect the updated cluster state.
 
-9. After successful upgradation of `MySQL` object, the `KubeDB` enterprise operator resumes the `MySQL` object so that the `KubeDB` community operator can resume it's usual operations.
+9. After successful upgradation of `MySQL` object, the `KubeDB` enterprise operator resumes the `MySQL` object so that the `KubeDB` community operator can resume its usual operations.
 
 In the next doc, we are going to show a step by step guide on upgrading of a MySQL database using upgrade operation.

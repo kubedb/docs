@@ -99,7 +99,14 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 ### spec.upgradeConstraints
 
-`spec.upgradeConstraints` specifies a specific database version upgrade constraints in a mathematical expression that describes whether it is possible or not to upgrade from this version to another. It has two subfields, which describe the version upgrade constraint.
+`spec.upgradeConstraints` specifies a specific database version upgrade constraints in a mathematical expression that describes whether it is possible or not to upgrade from the current version to any other valid version. This field consists of the following sub-fields:
+
+- `denylist` specifies that it is not possible to upgrade from the current version to any other version. This field has two sub-fields:
+  - `groupReplication` : Suppose you have an expression like, `< 8.0.21` under `groupReplication`, it indicates that it's not possible to upgrade from the current version to any other lower version `8.0.21` for group replication.
+  - `standalone`: Suppose you have an expression like, `< 8.0.21` under `standalone`, it indicates that it's not possible to upgrade from the current version to any other lower version `8.0.21` for standalone.
+- `allowlist` specifies that it is possible to upgrade from the current version to any other version. This field has two sub-fields:
+  - `groupReplication` : Suppose you have an expression like, `8.0.3`, it indicates that it's possible to upgrade from the current version to `8.0.3` for group replication.
+  - `standalone`: Suppose you have an expression like, `8.0.3`, it indicates that it's possible to upgrade from the current version to `8.0.3` for standalone.
 
 ### spec.podSecurityPolicies.databasePolicyName
 

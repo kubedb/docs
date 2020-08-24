@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-{{< notice type="warning" message="Vertical scaling is an Enterprise feature of KubeDB. You must have KubeDB Enterprise operator installed to test this feature." >}}
+{{< notice type="warning" message="Vertical scaling is an Enterprise feature of KubeDB. You must have a KubeDB Enterprise operator installed to test this feature." >}}
 
 # Vertical Scale MySQL Group Replication
 
@@ -42,7 +42,7 @@ Here, we are going to deploy a  `MySQL` group replication using a supported vers
 
 #### Prepare Group Replication
 
-At first, we are going to deploy a group replication server using supported `MySQL` version. Then, we are going to update the resources of the members through vertical scaling.
+At first, we are going to deploy a group replication server using a supported `MySQL` version. Then, we are going to update the resources of the members through vertical scaling.
 
 **Find supported MySQL Version:**
 
@@ -76,9 +76,9 @@ NAME        VERSION   DB_IMAGE                 DEPRECATED   AGE
 8.0.3-v1    8.0.3     kubedb/mysql:8.0.3-v1                 149m
 ```
 
-The version above that does not show `DEPRECATED` `true` are supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using non-deprecated `MySQL` version `8.0.20`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using non-deprecated `MySQL` version `8.0.20`.
 
-**Deploy MySQL Group Replication :**
+**Deploy MySQL Group Replication:**
 
 In this section, we are going to deploy a MySQL group replication with 3 members. Then, in the next section we will update the resources of the members using vertical scaling. Below is the YAML of the `MySQL` cr that we are going to create,
 
@@ -114,9 +114,9 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mysql.kubedb.com/my-group created
 ```
 
-**Wait for the cluster to be ready :**
+**Wait for the cluster to be ready:**
 
-`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services and Secrets etc.
+`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc.
 Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
 
 ```console
@@ -148,11 +148,11 @@ $ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources
 {}
 ```
 
-You can see that the Pod has empty resources that means the scheduler will choose a random node to place the container of the Pod on by default.Now, we are ready to apply the vertical scale on this group replication.
+You can see that the Pod has empty resources that mean the scheduler will choose a random node to place the container of the Pod on by default. Now, we are ready to apply the vertical scale on this group replication.
 
 #### Vertical Scaling
 
-Here, we are going to update the resources of the database cluster to meet up the desired resources after scaling.
+Here, we are going to update the resources of the database cluster to meet up with the desired resources after scaling.
 
 **Create MySQLOpsRequest:**
 
@@ -191,9 +191,9 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysqlopsrequest.ops.kubedb.com/my-scale-group created
 ```
 
-**Verify MySQL Group Replication resources updated successfully :**
+**Verify MySQL Group Replication resources updated successfully:**
 
-If everything goes well, `KubeDB` enterprise operator will update the resources of the StatefulSet's `Pod` containers. After successful scaling process is done, the `KubeDB` enterprise operator update the resources of the `MySQL` cluster.
+If everything goes well, `KubeDB` enterprise operator will update the resources of the StatefulSet's `Pod` containers. After a successful scaling process is done, the `KubeDB` enterprise operator updates the resources of the `MySQL` cluster.
 
 First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
@@ -307,7 +307,7 @@ Events:
   Normal  Successful  70s    KubeDB Enterprise Operator  Controller has Successfully scaled the MySQL database: demo/my-group
 ```
 
-Now, we are going to verify whether the resources of the members of the cluster have updated to meet up the desire state, Let's check,
+Now, we are going to verify whether the resources of the members of the cluster have updated to meet up the desired state, Let's check,
 
 ```console
 $ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources'
@@ -323,7 +323,7 @@ $ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources
 }
 ```
 
-The above output verify that we have successfully updated the resources of the `MySQL` group replication.
+The above output verifies that we have successfully updated the resources of the `MySQL` group replication.
 
 ## Cleaning Up
 

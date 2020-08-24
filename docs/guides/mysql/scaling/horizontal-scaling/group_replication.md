@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-{{< notice type="warning" message="Horizontal scaling is an Enterprise feature of KubeDB. You must have KubeDB Enterprise operator installed to test this feature." >}}
+{{< notice type="warning" message="Horizontal scaling is an Enterprise feature of KubeDB. You must have a KubeDB Enterprise operator installed to test this feature." >}}
 
 # Horizontal Scale MySQL Group Replication
 
@@ -42,7 +42,7 @@ Here, we are going to deploy a  `MySQL` group replication using a supported vers
 
 #### Prepare Group Replication
 
-At first, we are going to deploy a group replication server with 3 members. Then, we are going to add two additional members through horizontal scaling. Finally, we will  remove 1 members from the cluster again via horizontal scaling.
+At first, we are going to deploy a group replication server with 3 members. Then, we are going to add two additional members through horizontal scaling. Finally, we will remove 1 member from the cluster again via horizontal scaling.
 
 **Find supported MySQL Version:**
 
@@ -76,9 +76,9 @@ NAME        VERSION   DB_IMAGE                 DEPRECATED   AGE
 8.0.3-v1    8.0.3     kubedb/mysql:8.0.3-v1                 149m
 ```
 
-The version above that does not show `DEPRECATED` `true` are supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using `MySQL`  `8.0.20`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using `MySQL`  `8.0.20`.
 
-**Deploy MySQL Group Replication :**
+**Deploy MySQL Group Replication:**
 
 In this section, we are going to deploy a MySQL group replication with 3 members. Then, in the next section we will scale-up the cluster using horizontal scaling. Below is the YAML of the `MySQL` cr that we are going to create,
 
@@ -114,9 +114,9 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mysql.kubedb.com/my-group created
 ```
 
-**Wait for the cluster to be ready :**
+**Wait for the cluster to be ready:**
 
-`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services and Secrets etc. A secret called `my-group-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
+`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc. A secret called `my-group-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
 Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
 
 ```console
@@ -161,7 +161,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
 ```
 
-So, we can see that our group replication cluster has 3 members. Now, we are ready to apply the horizontal scale on this group replication.
+So, we can see that our group replication cluster has 3 members. Now, we are ready to apply the horizontal scale to this group replication.
 
 #### Scale Up
 
@@ -169,7 +169,7 @@ Here, we are going to add 2 members in our group replication using horizontal sc
 
 **Create MySQLOpsRequest:**
 
-In order to scale up your cluster, you have to create a `MySQLOpsRequest` cr with your desired number of members after scaling. Below is the YAML of the `MySQLOpsRequest` cr that we are going to create,
+To scale up your cluster, you have to create a `MySQLOpsRequest` cr with your desired number of members after scaling. Below is the YAML of the `MySQLOpsRequest` cr that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -198,9 +198,9 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysqlopsrequest.ops.kubedb.com/my-scale-up created
 ```
 
-**Verify Scale Up Succeeded :**
+**Verify Scale-Up Succeeded:**
 
-If everything goes well, `KubeDB` enterprise operator will scale up the StatefulSet's `Pod`. After scaling process is completed successfully, the `KubeDB` enterprise operator update the replicas of the `MySQL` object.
+If everything goes well, `KubeDB` enterprise operator will scale up the StatefulSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` enterprise operator updates the replicas of the `MySQL` object.
 
 First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
@@ -289,7 +289,7 @@ Events:
   Normal  Successful  93s    KubeDB Enterprise Operator  Controller has Successfully scaled the MySQL database: demo/my-group
 ```
 
-Now, we are going to verify whether the number of members have increased to meet up the desire state, Let's check,
+Now, we are going to verify whether the number of members has increased to meet up the desired state, Let's check,
 
 ```console
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
@@ -311,15 +311,15 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
 ```
 
-You can see above that our `MySQL` group replication now have total 5 members. It verify that we have successfully scaled up.
+You can see above that our `MySQL` group replication now has a total of 5 members. It verifies that we have successfully scaled up.
 
 #### Scale Down
 
 Here, we are going to remove 1 member from our group replication using horizontal scaling.
 
-**Create MysQLOpsRequest :**
+**Create MysQLOpsRequest:**
 
-In order to scale down your cluster, you have to create a `MySQLOpsRequest` cr with your desired number of members after scaling. Below is the YAML of the `MySQLOpsRequest` cr that we are going to create,
+To scale down your cluster, you have to create a `MySQLOpsRequest` cr with your desired number of members after scaling. Below is the YAML of the `MySQLOpsRequest` cr that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -342,9 +342,9 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysqlopsrequest.ops.kubedb.com/my-scale-down created
 ```
 
-**Verify Scale Up Succeeded :**
+**Verify Scale-down Succeeded:**
 
-If everything goes well, `KubeDB` enterprise operator will scale down the StatefulSet's `Pod`. After scaling process is completed successfully, the `KubeDB` enterprise operator update the replicas of the `MySQL` object.
+If everything goes well, `KubeDB` enterprise operator will scale down the StatefulSet's `Pod`. After the scaling process is completed successfully, the `KubeDB` enterprise operator updates the replicas of the `MySQL` object.
 
 Now, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
@@ -433,7 +433,7 @@ Events:
   Normal  Successful  71s   KubeDB Enterprise Operator  Controller has Successfully scaled the MySQL database: demo/my-group
 ```
 
-Now, we are going to verify whether the number of members have decreased to meet up the desire state, Let's check,
+Now, we are going to verify whether the number of members has decreased to meet up the desired state, Let's check,
 
 ```console
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
@@ -454,7 +454,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
 ```
 
-You can see above that our `MySQL` group replication now have total 4 members. It verify that we have successfully scaled down.
+You can see above that our `MySQL` group replication now has a total of 4 members. It verifies that we have successfully scaled down.
 
 ## Cleaning Up
 

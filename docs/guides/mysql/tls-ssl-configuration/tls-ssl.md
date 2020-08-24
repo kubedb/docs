@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> :warning: **This doc is only for KubeDB Enterprise**: You need to be an enterprise user!
+{{< notice type="warning" message="MySQL TSL/SSL encryption is an Enterprise feature of KubeDB. You must have a KubeDB Enterprise operator installed to test this feature." >}}
 
 # Configure TLS/SSL in MySQL
 
@@ -121,10 +121,10 @@ Here,
 
 - `spec.tls.issuerRef` refers to the `mysql-issuer` issuer.
 
-- `spec.tls.certificates` gives you a lots of option to configure so that the certificate will be renewed and kept up to date. 
+- `spec.tls.certificates` gives you a lot of options to configure so that the certificate will be renewed and kept up to date. 
 You can found more details from [here](/docs/concepts/databases/mysql.md#tls)
 
-**Deploy MySQL Standalone :**
+**Deploy MySQL Standalone:**
 
 Let’s create the `MySQL` cr we have shown above,
 
@@ -133,7 +133,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysql.kubedb.com/my-standalone-tls created
 ```
 
-**Wait for the database to be ready :**
+**Wait for the database to be ready:**
 
 Now, watch `MySQL` is going to `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
 
@@ -157,7 +157,7 @@ NAME                  READY   STATUS    RESTARTS   AGE
 my-standalone-tls-0   1/1     Running   0          7m35s
 ```
 
-**Verify tls-secrets created successfully :**
+**Verify tls-secrets created successfully:**
 
 If everything goes well, you can see that our tls-secrets will be created which contains server, client, exporter certificate. Server tls-secret will be used for server configuration and client tls-secret will be used for a secure connection.
 
@@ -175,7 +175,7 @@ my-standalone-tls-server-cert               kubernetes.io/tls                   
 my-standalone-tls-token-rkjd2               kubernetes.io/service-account-token   3      33m
 ```
 
-**Verify MySQL Standalone configured with TLS/SSL :**
+**Verify MySQL Standalone configured with TLS/SSL:**
 
 Now, we are going to connect to the database for verifying the `MySQL` server has configured with TLS/SSL encryption.
 
@@ -243,9 +243,9 @@ mysql> exit
 Bye
 ```
 
-The above output shows that `MySQL` server is configured to TLS/SSL. You can also see that the `.crt` and `.key` files are stored in the `/etc/ mysql/certs/` directory for client and server.
+The above output shows that the `MySQL` server is configured to TLS/SSL. You can also see that the `.crt` and `.key` files are stored in the `/etc/ mysql/certs/` directory for client and server.
 
-**Verify secure connection for SSL required user :**
+**Verify secure connection for SSL required user:**
 
 Now, you can create an SSL required user that will be used to connect to the database with a secure connection.
 
@@ -356,7 +356,7 @@ spec:
   terminationPolicy: WipeOut
 ```
 
-**Deploy MySQL group replication :**
+**Deploy MySQL group replication:**
 
 ```console
 kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/tls-ssl/tls-group.yaml
@@ -407,7 +407,7 @@ my-group-tls-server-cert                    kubernetes.io/tls                   
 my-group-tls-token-49sjm                    kubernetes.io/service-account-token   3      13m
 ```
 
-**Verify MySQL Standalone configured to TLS/SSL :**
+**Verify MySQL Standalone configured to TLS/SSL:**
 
 Now, we are going to connect to the database for verifying the `MySQL` group replication has configured with TLS/SSL encryption.
 
@@ -486,16 +486,16 @@ mysql> exit
 Bye
 ```
 
-The above output shows that `MySQL` server is configured to TLS/SSL. You can also see that the `.crt` and `.key` files are stored in the `/etc/ mysql/certs/` directory for client and server.
+The above output shows that the `MySQL` server is configured to TLS/SSL. You can also see that the `.crt` and `.key` files are stored in the `/etc/ mysql/certs/` directory for client and server.
 
-**Verify secure connection for SSL required user :**
+**Verify secure connection for SSL required user:**
 
 Now, you can create an SSL required user that will be used to connect to the database with a secure connection.
 
 Let's connect to the database server with a secure connection,
 
 ```console
-# creating ssl required user
+# creating SSL required user
 $ kubectl exec -it -n  demo  my-group-tls-0 -c mysql -- bash
 
 root@my-group-0:/# mysql -uroot -p${MYSQL_ROOT_PASSWORD}

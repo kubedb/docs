@@ -10,11 +10,11 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-{{< notice type="warning" message="Vertical scaling is an Enterprise feature of KubeDB. You must have KubeDB Enterprise operator installed to test this feature." >}}
+{{< notice type="warning" message="Vertical scaling is an Enterprise feature of KubeDB. You must have a KubeDB Enterprise operator installed to test this feature." >}}
 
 # Vertical Scaling MySQL
 
-This guide will give you an overview on how KubeDB enterprise operator update the resources(for example Memory and RAM etc.) of the `MySQL` database server.
+This guide will give you an overview of how KubeDB enterprise operator updates the resources(for example Memory and RAM etc.) of the `MySQL` database server.
 
 ## Before You Begin
 
@@ -24,10 +24,10 @@ This guide will give you an overview on how KubeDB enterprise operator update th
 
 ## How Vertical Scaling Process Works
 
-The following diagram shows how KubeDB enterprise operator used to update the resources of the `MySQL` database server. Open the image in a new tab to see the enlarged version.
+The following diagram shows how the KubeDB enterprise operator used to update the resources of the `MySQL` database server. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Stash Backup Flow" src="/docs/images/day-2-operation/mysql/my-vertical_scaling.png">
+  <img alt="Stash Backup Flow" src="/docs/images/day-2-operation/mysql/my-vertical_scaling.png">
 <figcaption align="center">Fig: Vertical scaling process of MySQL</figcaption>
 </figure>
 
@@ -45,10 +45,10 @@ The vertical scaling process consists of the following steps:
 
 6. When it finds one, it pauses the `MySQL` object so that the `KubeDB` community operator doesn't perform any operation on the `MySQL` during the scaling process.  
 
-7. Then the `KubeDB` enterprise operator will update resources of the StatefulSet replicas to reach desired state.
+7. Then the `KubeDB` enterprise operator will update resources of the StatefulSet replicas to reach the desired state.
 
 8. After successful updating of the resources of the StatefulSet's replica, the `KubeDB` enterprise operator updates the `MySQL` object resources to reflect the updated state.
 
-9. After successful updating of the `MySQL` resources, the `KubeDB` enterprise operator resumes the `MySQL` object so that the `KubeDB` community operator resumes it's usual operations.
+9. After successful updating of the `MySQL` resources, the `KubeDB` enterprise operator resumes the `MySQL` object so that the `KubeDB` community operator resumes its usual operations.
 
 In the next doc, we are going to show a step by step guide on updating resources of MySQL database using vertical scaling operation.

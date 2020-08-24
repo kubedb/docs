@@ -18,7 +18,7 @@ section_menu_id: concepts
 
 ## What is MySQLOpsRequest
 
-`MySQLOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [MySQL](https://www.mysql.com/) administrative operations like database version upgrading, horizontal scaling, vertical scaling etc. in a Kubernetes native way.
+`MySQLOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [MySQL](https://www.mysql.com/) administrative operations like database version upgrading, horizontal scaling, vertical scaling, etc. in a Kubernetes native way.
 
 ## MySQLOpsRequest CRD Specifications
 
@@ -110,7 +110,7 @@ status:
   phase: Successful
 ```
 
-Here, we are going to describe the various sections of a `MySQLOpsRequest` crd.
+Here, we are going to describe the various sections of a `MySQLOpsRequest` cr.
 
 ### MySQLOpsRequest `Spec`
 
@@ -134,7 +134,7 @@ A `MySQLOpsRequest` object has the following fields in the `spec` section.
 
 #### spec.upgrade
 
-If you want to upgrade you MySQL version, you have to specify the `spec.upgrade`  section that specifies the desired version information. This field consists of the following sub-field:
+If you want to upgrade your MySQL version, you have to specify the `spec.upgrade`  section that specifies the desired version information. This field consists of the following sub-field:
 
 - `spec.upgrade.targetVersion` refers to a [MySQLVersion](/docs/concepts/catalog/mysql.md) CR that contains the MySQL version information where you want to upgrade.
 
@@ -144,7 +144,7 @@ If you want to upgrade you MySQL version, you have to specify the `spec.upgrade`
 
 If you want to scale-up or scale-down your MySQL cluster, you have to specify `spec.horizontalScaling` section. This field consists of the following sub-field:
 
-- `spec.horizontalScaling.member` indicates the desired number of members for your MySQL cluster after scaling. For example, if your cluster currently has 4 members and you want to add additional 2 members then you have to specify 6 in `spec.horizontalScaling.member` field. Similarly, if you want to remove one member from the cluster, you have specify 3  in `spec.horizontalScaling.member` field.
+- `spec.horizontalScaling.member` indicates the desired number of members for your MySQL cluster after scaling. For example, if your cluster currently has 4 members and you want to add additional 2 members then you have to specify 6 in `spec.horizontalScaling.member` field. Similarly, if you want to remove one member from the cluster, you have to specify 3  in `spec.horizontalScaling.member` field.
 
 #### spec.verticalScaling
 
@@ -161,7 +161,7 @@ limits:
   cpu: "0.2"
 ```
 
-Here, when you specify the resource request for `MySQL` container, the scheduler uses thisinformation to decide which node to place the container of the Pod on and when you specify a resourcelimit for `MySQL` container, the `kubelet` enforces those limits so that the running container is notallowed to use more of that resource than the limit you set. you can found more details from [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+Here, when you specify the resource request for `MySQL` container, the scheduler uses this information to decide which node to place the container of the Pod on and when you specify a resource limit for `MySQL` container, the `kubelet` enforces those limits so that the running container is not allowed to use more of that resource than the limit you set. you can found more details from [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
 
 - `spec.verticalScaling.exporter` indicates the `exporter` container resources. It has the same structure as `spec.verticalScaling.mysql` and you can scale the resource the same way as `mysql` container.
 
@@ -193,16 +193,16 @@ Here, when you specify the resource request for `MySQL` container, the scheduler
 
 | Type                | Meaning                                                                  |
 | ------------------- | -------------------------------------------------------------------------|
-| `Progressing`       | Specifies that the operation is now in the progressing state  |
-| `Successful`        | Specifies such a state that the operation on the database has beensuccessful. |
+| `Progressing`       | Specifies that the operation is now progressing |
+| `Successful`        | Specifies such a state that the operation on the database has been successful. |
 | `PauseDatabase`     | Specifies such a state that the database is paused by the operator   |
 | `ResumeDatabase`    | Specifies such a state that the database is resumed by the operator    |
 | `Failure`           | Specifies such a state that the operation on the database has been failed.  |
 | `Scaling`           | Specifies such a state that the scaling operation on the database has stared |
-| `VerticalScaling`   | Specifies such a state that vertical scaling have performed successfully on database  |
-| `HorizontalScaling` | Specifies such a state that horizontal scaling have performed successfully on database |
+| `VerticalScaling`   | Specifies such a state that vertical scaling has performed successfully on database  |
+| `HorizontalScaling` | Specifies such a state that horizontal scaling has performed successfully on database |
 | `Upgrading`         | Specifies such a state that database upgrading operation has stared  |
-| `UpgradeVersion`    | Specifies such a state that version upgrading on database have performed successfully  |
+| `UpgradeVersion`    | Specifies such a state that version upgrading on the database have performed successfully  |
 
 - The `status` field is a string, with possible values `"True"`, `"False"`, and `"Unknown"`.
   - `status` will be `"True"` if the current transition is succeeded.
@@ -217,7 +217,7 @@ Here, when you specify the resource request for `MySQL` container, the scheduler
 | `OpsRequestFailedToProgressing`         | Operator has failed to start the OpsRequest processing    |
 | `SuccessfullyPausedDatabase`            | Database is successfully paused by the operator  |
 | `FailedToPauseDatabase`                 | Database is failed to pause by the operator    |
-| `SuccessfullyResumedDatabase`           | Database is successfully resumed to perform it's usual operation  |
+| `SuccessfullyResumedDatabase`           | Database is successfully resumed to perform its usual operation  |
 | `FailedToResumedDatabase`               | Database is failed to resume                   |
 | `DatabaseVersionUpgradingStarted`       | Operator has started upgrading the database version    |
 | `SuccessfullyUpgradedDatabaseVersion`   | Operator has successfully upgraded the database version |
@@ -228,7 +228,7 @@ Here, when you specify the resource request for `MySQL` container, the scheduler
 | `VerticalScalingStarted`                | Operator has started the vertical scaling    |
 | `SuccessfullyPerformedVerticalScaling`  | Operator has successfully performed on vertical scaling   |
 | `FailedToPerformVerticalScaling`        | Operator has failed to perform on vertical scaling   |
-| `OpsRequestProcessedSuccessfully`       | Operator has successfully completed the operator requested by the OpeRequest cr |
+| `OpsRequestProcessedSuccessfully`       | Operator has completed the operation successfully requested by the OpeRequest cr  |
 
 - The `lastTransitionTime` field provides a timestamp for when the operation last transitioned from one state to another.
 - The `observedGeneration` shows the most recent condition transition generation observed by the controller.

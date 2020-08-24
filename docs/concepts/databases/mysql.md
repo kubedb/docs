@@ -128,7 +128,7 @@ spec:
 
 ### spec.topology
 
-`spec.topology` is an optional field that provides a way to configure HA, fault-tolerant MySQL cluster. This field enables you to specify the clustering mode. Currently, we support only MySQL Group Replication. KubeDB uses `PodDisruptionBudget` to ensure that majority of the group replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained and no data loss is occurred.
+`spec.topology` is an optional field that provides a way to configure HA, fault-tolerant MySQL cluster. This field enables you to specify the clustering mode. Currently, we support only MySQL Group Replication. KubeDB uses `PodDisruptionBudget` to ensure that majority of the group replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained and no data loss has occurred.
 
 You can specify the following fields in `spec.topology` field,
 
@@ -137,11 +137,11 @@ You can specify the following fields in `spec.topology` field,
 - `group` is an optional field to configure a group replication. It contains the following fields:
   - `name` is an optional field to specify the name for the group. It must be a version 4 UUID if specified.
 
-  - `baseServerID` is also an optional field. On a replication master and each replication slave, the `--server-id`option must be specified to establish a unique replication ID in the range from `1` to `2^32 − 1`. Here, “Unique” means that each ID must be different from every other ID in use by any other replication master or slave. So, `baseServerID` is needed to calculate a unique server_id for each member.
+  - `baseServerID` is also an optional field. On a replication master and each replication slave, the `--server-id` option must be specified to establish a unique replication ID in the range from `1` to `2^32 − 1`. Here, “Unique” means that each ID must be different from every other ID in use by any other replication master or slave. So, `baseServerID` is needed to calculate a unique server_id for each member.
 
 ### spec.databaseSecret
 
-`spec.databaseSecret` is an optional field that points to a Secret used to hold credentials for `mysql` root user. If not set, KubeDB operator creates a new Secret `{mysql-object-name}-auth` for storing the password for `mysql` root user for each MySQL object. If you want to use an existing secret please specify that when creating the MySQL object using `spec.databaseSecret.secretName`.
+`spec.databaseSecret` is an optional field that points to a Secret used to hold credentials for `mysql` root user. If not set, the KubeDB operator creates a new Secret `{mysql-object-name}-auth` for storing the password for `mysql` root user for each MySQL object. If you want to use an existing secret please specify that when creating the MySQL object using `spec.databaseSecret.secretName`.
 
 This secret contains a `user` key and a `password` key which contains the `username` and `password` respectively for `mysql` root user. Here, the value of `user` key is fixed to be `root`.
 
@@ -172,7 +172,7 @@ type: Opaque
 
 ### spec.storageType
 
-`spec.storageType` is an optional field that specifies the type of storage to use for database. It can be either `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MySQL database using [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) volume. In this case, you don't have to specify `spec.storage` field.
+`spec.storageType` is an optional field that specifies the type of storage to use for the database. It can be either `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MySQL database using [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) volume. In this case, you don't have to specify `spec.storage` field.
 
 ### spec.storage
 
@@ -195,7 +195,7 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 #### Initialize via Script
 
-To initialize a MySQL database using a script (shell script, sql script etc.), set the `spec.init.scriptSource` section when creating a MySQL object. It will execute files alphabetically with extensions `.sh` , `.sql`  and `.sql.gz` that are found in the repository. The scripts inside child folders will be skipped. ScriptSource must have following information:
+To initialize a MySQL database using a script (shell script, sql script, etc.), set the `spec.init.scriptSource` section when creating a MySQL object. It will execute files alphabetically with extensions `.sh` , `.sql`  and `.sql.gz` that is found in the repository. The scripts inside child folders will be skipped. ScriptSource must have the following information:
 
 - [VolumeSource](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes): Where your script is loaded from.
 
@@ -218,7 +218,7 @@ In the above example, KubeDB operator will launch a Job to execute all js script
 
 #### Initialize from Snapshots
 
-To initialize from prior snapshots, set the `spec.init.snapshotSource` section when creating a MySQL object. In this case, SnapshotSource must have following information:
+To initialize from prior snapshots, set the `spec.init.snapshotSource` section when creating a MySQL object. In this case, SnapshotSource must have the following information:
 
 - `name:` Name of the Snapshot
 - `namespace:` Namespace of the Snapshot
@@ -236,18 +236,18 @@ spec:
       namespace: "demo"
 ```
 
-In the above example, MySQL database will be initialized from Snapshot `snapshot-xyz` in `demo` namespace. Here, KubeDB operator will launch a Job to initialize MySQL once StatefulSet pods are running.
+In the above example, MySQL database will be initialized from Snapshot `snapshot-xyz` in `demo` namespace. Here, the KubeDB operator will launch a Job to initialize MySQL once StatefulSet pods are running.
 
-When initializing from Snapshot, root user credentials must have to match with the previous one. For example, let's say, Snapshot `snapshot-xyz` is for MySQL `mysql-old`. In this case, new MySQL `mysql-db` should use the same credentials for root user of `mysql-old`. Otherwise, the restoration process will fail.
+When initializing from Snapshot, root user credentials must have to match with the previous one. For example, let's say, Snapshot `snapshot-xyz` is for MySQL `mysql-old`. In this case, new MySQL `mysql-db` should use the same credentials for the root user of `mysql-old`. Otherwise, the restoration process will fail.
 
 For more details tutorial on how to initialize from snapshot, please visit [here](/docs/guides/mysql/initialization/using-snapshot.md).
 
 ### spec.backupSchedule
 
-KubeDB supports taking periodic snapshots for MySQL database. This is an optional section in `.spec`. When `spec.backupSchedule` section is added, KubeDB operator immediately takes a backup to validate this information. After that, at each tick KubeDB operator creates a [Snapshot](/docs/concepts/snapshot.md) object. This triggers operator to create a Job to take backup. If used, set the various sub-fields accordingly.
+KubeDB supports taking periodic snapshots for the MySQL database. This is an optional section in `.spec`. When `spec.backupSchedule` section is added, the KubeDB operator immediately takes a backup to validate this information. After that, at each tick KubeDB operator creates a [Snapshot](/docs/concepts/snapshot.md) object. This triggers operator to create a Job to take backup. If used, set the various sub-fields accordingly.
 
 - `spec.backupSchedule.cronExpression` is a required [cron expression](https://github.com/robfig/cron/blob/v2/doc.go#L26). This specifies the schedule for backup operations.
-- `spec.backupSchedule.{storage}` is a required field that is used as the destination for storing snapshot data. KubeDB supports cloud storage providers like S3, GCS, Azure and OpenStack Swift. It also supports any locally mounted Kubernetes volumes, like NFS, Ceph, etc. Only one backend can be used at a time. To learn how to configure this, please visit [here](/docs/concepts/snapshot.md).
+- `spec.backupSchedule.{storage}` is a required field that is used as the destination for storing snapshot data. KubeDB supports cloud storage providers like S3, GCS, Azure, and OpenStack Swift. It also supports any locally mounted Kubernetes volumes, like NFS, Ceph, etc. Only one backend can be used at a time. To learn how to configure this, please visit [here](/docs/concepts/snapshot.md).
 
 You can also specify a template for pod of backup job through `spec.backupSchedule.podTemplate`. KubeDB will use the information you have provided in `podTemplate` to create the backup job. KubeDB accept following fields to set in `spec.backupSchedule.podTemplate`:
 
@@ -291,30 +291,30 @@ The following fields are configurable in the `spec.tls` section:
 
 - `issuerRef` is a reference to the `Issuer` or `ClusterIssuer` CR of [cert-manager](https://cert-manager.io/docs/concepts/issuer/) that will be used by `KubeDB` to generate necessary certificates.
 
-  - `apiGroup` is the group name of the resource   being referenced. The value for `Issuer` or   `ClusterIssuer` is "cert-manager.io"   (cert-manager v0.12.0 and later).
-  - `kind` is the type of resource being   referenced. KubeDB supports both of `Issuer`   and `ClusterIssuer` as values for this field.
-  - `name` is the name of resource (`Issuer` or `ClusterIssuer`) being referenced.
+  - `apiGroup` is the group name of the resource being referenced. The value for `Issuer` or   `ClusterIssuer` is "cert-manager.io"   (cert-manager v0.12.0 and later).
+  - `kind` is the type of resource being referenced. KubeDB supports both `Issuer`   and `ClusterIssuer` as values for this field.
+  - `name` is the name of the resource (`Issuer` or `ClusterIssuer`) being referenced.
 
-- `certificates` (optional) are a list of certificate used to configure the server and/or client certificate. It has the following fields:
+- `certificates` (optional) are a list of certificates used to configure the server and/or client certificate. It has the following fields:
   
   - `alias` represents the identifier of the certificate. It has the following possible value:
     - `server` is used for server certificate identification.
     - `archiver` is used for client certificate identification.
     - `metrics-exporter` is used for metrics exporter certificate identification.
   - `secretName` (optional) specifies the k8s secret name that holds the certificates.
-    >This field is optional. If the user does not specify this field, the default secret name will be created the following format: `<database-name>-<cert-alias>-cert`.
+    >This field is optional. If the user does not specify this field, the default secret name will be created in the following format: `<database-name>-<cert-alias>-cert`.
   - `subject` (optional) specifies an `X.509` distinguished name. It has the following possible field,
-    - `organizations` (optional) are the list of different organization name to be used on the Certificate.
+    - `organizations` (optional) are the list of different organization names to be used on the Certificate.
     - `organizationalUnits` (optional) are the list of different organization unit name to be used on the Certificate.
-    - `countries` (optional) are the list of country name to be used on the Certificate.
-    - `localities` (optional) are the list of locality name to be used on the Certificate.
-    - `provinces` (optional) are the list of province name to be used on the Certificate.
-    - `streetAddresses` (optional) are the list of street address to be used on the Certificate.
+    - `countries` (optional) are the list of country names to be used on the Certificate.
+    - `localities` (optional) are the list of locality names to be used on the Certificate.
+    - `provinces` (optional) are the list of province names to be used on the Certificate.
+    - `streetAddresses` (optional) are the list of a street address to be used on the Certificate.
     - `postalCodes` (optional) are the list of postal code to be used on the Certificate.
     - `serialNumber` (optional) is a serial number to be used on the Certificate.
     You can found more details from [Here](https://golang.org/pkg/crypto/x509/pkix/#Name)  
 
-  - `duration` (optional) is the time period during which the certificate is valid.
+  - `duration` (optional) is the period during which the certificate is valid.
   - `renewBefore` (optional) is a specifiable time before expiration duration.
   - `dnsNames` (optional) is a list of subject alt names to be used in the Certificate.
   - `ipAddresses` (optional) is a list of IP addresses to be used in the Certificate.
@@ -323,13 +323,13 @@ The following fields are configurable in the `spec.tls` section:
 
 ### spec.configSource
 
-`spec.configSource` is an optional field that allows users to provide custom configuration for MySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/using-custom-config.md).
+`spec.configSource` is an optional field that allows users to provide custom configuration for MySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/using-custom-config.md).
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for MySQL database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for the MySQL database.
 
-KubeDB accept following fields to set in `spec.podTemplate:`
+KubeDB accepts the following fields to set in `spec.podTemplate:`
 
 - metadata:
   - annotations (pod's annotation)
@@ -357,7 +357,7 @@ Uses of some field of `spec.podTemplate` is described below,
 
 #### spec.podTemplate.spec.args
 
-`spec.podTemplate.spec.args` is an optional field. This can be used to provide additional arguments to database installation. To learn about available args of `mysqld`, visit [here](https://dev.mysql.com/doc/refman/8.0/en/server-options.html).
+`spec.podTemplate.spec.args` is an optional field. This can be used to provide additional arguments for database installation. To learn about available args of `mysqld`, visit [here](https://dev.mysql.com/doc/refman/8.0/en/server-options.html).
 
 #### spec.podTemplate.spec.env
 
@@ -365,13 +365,13 @@ Uses of some field of `spec.podTemplate` is described below,
 
 Note that, KubeDB does not allow `MYSQL_ROOT_PASSWORD`, `MYSQL_ALLOW_EMPTY_PASSWORD`, `MYSQL_RANDOM_ROOT_PASSWORD`, and `MYSQL_ONETIME_PASSWORD` environment variables to set in `spec.env`. If you want to set the root password, please use `spec.databaseSecret` instead described earlier.
 
-If you try to set any of the forbidden environment variables i.e. `MYSQL_ROOT_PASSWORD` in MySQL crd, Kubed operator will reject the request with following error,
+If you try to set any of the forbidden environment variables i.e. `MYSQL_ROOT_PASSWORD` in MySQL crd, Kubed operator will reject the request with the following error,
 
 ```ini
 Error from server (Forbidden): error when creating "./mysql.yaml": admission webhook "mysql.validators.kubedb.com" denied the request: environment variable MYSQL_ROOT_PASSWORD is forbidden to use in MySQL spec
 ```
 
-Also note that KubeDB does not allow to update the environment variables as updating them does not have any effect once the database is created.  If you try to update environment variables, KubeDB operator will reject the request with following error,
+Also, note that KubeDB does not allow to update the environment variables as updating them does not have any effect once the database is created.  If you try to update environment variables, KubeDB operator will reject the request with the following error,
 
 ```ini
 Error from server (BadRequest): error when applying patch:
@@ -400,7 +400,7 @@ for: "./mysql.yaml": admission webhook "mysql.validators.kubedb.com" denied the 
 
 #### spec.podTemplate.spec.serviceAccountName
 
- `serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
+ `serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine-tune role-based access control.
 
  If this field is left empty, the KubeDB operator will create a service account name matching MySQL crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
 
@@ -435,11 +435,11 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v
 
 ### spec.updateStrategy
 
-You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for MySQL database thorough `spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from old KubeDB version to new one should behave.
+You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for MySQL database thorough `spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from the old KubeDB version to a new one should behave.
 
 ### spec.terminationPolicy
 
-`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. KubeDB provides following four termination policies:
+`terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. KubeDB provides the following four termination policies:
 
 - DoNotTerminate
 - Pause

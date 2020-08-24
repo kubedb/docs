@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-{{< notice type="warning" message="Upgrading is an Enterprise feature of KubeDB. You must have KubeDB Enterprise operator installed to test this feature." >}}
+{{< notice type="warning" message="Upgrading is an Enterprise feature of KubeDB. You must have a KubeDB Enterprise operator installed to test this feature." >}}
 
 # Upgrade minor version of MySQL Standalone
 
@@ -42,7 +42,7 @@ Here, we are going to deploy a `MySQL` standalone using a supported version by `
 
 #### Prepare Group Replication
 
-At first, we are going to deploy a standalone using supported that `MySQL` version whether it is possible to upgrade from this version to another. In the next two section we are going to find out supported version and version upgrade constraints.
+At first, we are going to deploy a standalone using supported that `MySQL` version whether it is possible to upgrade from this version to another. In the next two sections, we are going to find out the supported version and version upgrade constraints.
 
 **Find supported MySQLVersion:**
 
@@ -76,7 +76,7 @@ NAME        VERSION   DB_IMAGE                 DEPRECATED   AGE
 8.0.3-v1    8.0.3     kubedb/mysql:8.0.3-v1                 149m
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Now, we are going to select a non-deprecated version from `MySQLVersion` for `MySQL` standalone that will be possible to upgrade from this version to another version. In the next section we are going to verify version upgrade constraints.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Now, we are going to select a non-deprecated version from `MySQLVersion` for `MySQL` standalone that will be possible to upgrade from this version to another version. In the next section, we are going to verify version upgrade constraints.
 
 **Check Upgrade Constraints:**
 
@@ -117,9 +117,9 @@ The above `spec.upgradeConstraints.denylist` is showing that upgrading below ver
 
 Now, we are going to deploy a `MySQL` standalone using version `5.7.29`.
 
-**Deploy MySQL standalone :**
+**Deploy MySQL standalone:**
 
-In this section, we are going to deploy a MySQL standalone. Then, in the next section we will upgrade the version of the database using upgrading. Below is the YAML of the `MySQL` crd that we are going to create,
+In this section, we are going to deploy a MySQL standalone. Then, in the next section, we will upgrade the version of the database using upgrading. Below is the YAML of the `MySQL` cr that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha1
@@ -147,9 +147,9 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mysql.kubedb.com/my-standalone created
 ```
 
-**Wait for the database to be ready :**
+**Wait for the database to be ready:**
 
-`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services and Secrets etc. A secret called `my-standalone-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
+`KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc. A secret called `my-standalone-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
 Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
 
 ```console
@@ -193,7 +193,7 @@ Here, we are going to upgrade `MySQL` standalone from `5.7.29` to `5.7.31`.
 
 **Create MySQLOpsRequest:**
 
-In order to upgrade the standalone, you have to create a `MySQLOpsRequest` cr with your desired version that supported by `KubeDB`. Below is the YAML of the `MySQLOpsRequest` cr that we are going to create,
+To upgrade the standalone, you have to create a `MySQLOpsRequest` cr with your desired version that supported by `KubeDB`. Below is the YAML of the `MySQLOpsRequest` cr that we are going to create,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -222,9 +222,9 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysqlopsrequest.ops.kubedb.com/my-upgrade-minor-standalone created
 ```
 
-**Verify MySQL version upgraded successfully :**
+**Verify MySQL version upgraded successfully:**
 
-If everything goes well, `KubeDB` enterprise operator will update the image of `MySQL`, `StatefulSet` and its `Pod`.
+If everything goes well, `KubeDB` enterprise operator will update the image of `MySQL`, `StatefulSet`, and its `Pod`.
 
 At first, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
@@ -236,7 +236,7 @@ NAME                          TYPE      STATUS       AGE
 my-upgrade-minor-standalone   Upgrade   Successful   3m57s
 ```
 
-We can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the `MySQL`, `StatefulSet`, and its `Pod` have updated with new image.
+We can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the `MySQL`, `StatefulSet`, and its `Pod` have updated with a new image.
 
 ```console
 $ kubectl describe myops -n demo my-upgrade-minor-standalone
@@ -329,7 +329,7 @@ $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].imag
 kubedb/my:5.7.31
 ```
 
-You can see above that our `MySQL`standalone has updated with new version. It verify that we have successfully upgrade our standalone.
+You can see above that our `MySQL`standalone has been updated with the new version. It verifies that we have successfully upgraded our standalone.
 
 ## Cleaning Up
 
