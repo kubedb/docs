@@ -49,7 +49,7 @@ metadata:
   name: builtin-prom-mysql
   namespace: demo
 spec:
-  version: "8.0-v2"
+  version: "8.0.21"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -75,39 +75,43 @@ mysql.kubedb.com/builtin-prom-mysql created
 
 Now, wait for the database to go into `Running` state.
 
-```console
-$ kubectl get my -n demo builtin-prom-mysql
+```bash
+$ watch -n 3 kubectl get mysql -n demo builtin-prom-mysql
+Every 3.0s: kubectl get mysql -n demo builtin-prom-mysql        suaas-appscode: Tue Aug 25 16:07:29 2020
+
 NAME                 VERSION   STATUS    AGE
-builtin-prom-mysql   8.0-v2    Running   3m
+builtin-prom-mysql   8.0.21    Running   3m33s
 ```
 
 KubeDB will create a separate stats service with name `{MySQL crd name}-stats` for monitoring purpose.
 
-```console
+```bash
 $ kubectl get svc -n demo --selector="kubedb.com/name=builtin-prom-mysql"
-NAME                       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
-builtin-prom-mysql         ClusterIP   10.105.40.59   <none>        3306/TCP    4m9s
-builtin-prom-mysql-stats   ClusterIP   10.98.61.28    <none>        56790/TCP   3m11s
+NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+builtin-prom-mysql         ClusterIP   10.104.141.73   <none>        3306/TCP    4m45s
+builtin-prom-mysql-gvr     ClusterIP   None            <none>        3306/TCP    4m45s
+builtin-prom-mysql-stats   ClusterIP   10.103.209.43   <none>        56790/TCP   2m9s
 ```
 
 Here, `builtin-prom-mysql-stats` service has been created for monitoring purpose. Let's describe the service.
 
-```console
+```bash
 $ kubectl describe svc -n demo builtin-prom-mysql-stats
 Name:              builtin-prom-mysql-stats
 Namespace:         demo
 Labels:            kubedb.com/kind=MySQL
                    kubedb.com/name=builtin-prom-mysql
+                   kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
                    prometheus.io/path: /metrics
                    prometheus.io/port: 56790
                    prometheus.io/scrape: true
 Selector:          kubedb.com/kind=MySQL,kubedb.com/name=builtin-prom-mysql
 Type:              ClusterIP
-IP:                10.98.61.28
+IP:                10.103.209.43
 Port:              prom-http  56790/TCP
 TargetPort:        prom-http/TCP
-Endpoints:         172.17.0.5:56790
+Endpoints:         10.244.1.5:56790
 Session Affinity:  None
 Events:            <none>
 ```
@@ -137,7 +141,7 @@ Let's configure a Prometheus scraping job to collect metrics from this service.
   # by default Prometheus server select all kubernetes services as possible target.
   # relabel_config is used to filter only desired endpoints
   relabel_configs:
-  # keep only those services that has "prometheus.io/scrape","prometheus.io/path" and "prometheus.io/port" anootations
+  # keep only those services that has "prometheus.io/scrape","prometheus.io/path" and "prometheus.io/port" annotations
   - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape, __meta_kubernetes_service_annotation_prometheus_io_port]
     separator: ;
     regex: true;(.*)
@@ -337,16 +341,16 @@ Now, you can view the collected metrics and create a graph from homepage of this
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
 ```console
-$ kubectl delete -n demo my/builtin-prom-mysql
+kubectl delete -n demo my/builtin-prom-mysql
 
-$ kubectl delete -n monitoring deployment.apps/prometheus
+kubectl delete -n monitoring deployment.apps/prometheus
 
-$ kubectl delete -n monitoring clusterrole.rbac.authorization.k8s.io/prometheus
-$ kubectl delete -n monitoring serviceaccount/prometheus
-$ kubectl delete -n monitoring clusterrolebinding.rbac.authorization.k8s.io/prometheus
+kubectl delete -n monitoring clusterrole.rbac.authorization.k8s.io/prometheus
+kubectl delete -n monitoring serviceaccount/prometheus
+kubectl delete -n monitoring clusterrolebinding.rbac.authorization.k8s.io/prometheus
 
-$ kubectl delete ns demo
-$ kubectl delete ns monitoring
+kubectl delete ns demo
+kubectl delete ns monitoring
 ```
 
 ## Next Steps

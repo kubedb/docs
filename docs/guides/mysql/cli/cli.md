@@ -22,21 +22,21 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 
 `kubectl create` creates a database CRD object in `default` namespace by default. Following command will create a MySQL object as specified in `mysql.yaml`.
 
-```console
-$ kubectl create -f mysql-demo.yaml
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/cli/mysql-demo.yaml
 mysql.kubedb.com/mysql-demo created
 ```
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
-```console
-$ kubectl create -f mysql-demo.yaml --namespace=kube-system
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/cli/mysql-demo.yaml --namespace=kube-system
 mysql.kubedb.com/mysql-demo created
 ```
 
 `kubectl create` command also considers `stdin` as input.
 
-```console
+```bash
 cat mysql-demo.yaml | kubectl create -f -
 ```
 
@@ -44,13 +44,12 @@ cat mysql-demo.yaml | kubectl create -f -
 
 `kubectl get` command allows users to list or find any KubeDB object. To list all MySQL objects in `default` namespace, run the following command:
 
-```console
+```bash
 $ kubectl get mysql
 NAME         VERSION   STATUS    AGE
-mysql-demo   8.0-v2    Running   2m
-mysql-dev    8.0-v2    Running   1m
-mysql-prod   8.0-v2    Running   1m
-mysql-qa     8.0-v2    Running   1m
+mysql-demo   8.0.21    Running   5m1s
+mysql-dev    5.7.31    Running   10m1s
+mysql-prod   8.0.20    Running   20m1s
 ```
 
 To get YAML of an object, use `--output=yaml` flag.
@@ -60,15 +59,18 @@ $ kubectl get mysql mysql-demo --output=yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:
-  creationTimestamp: 2018-09-27T13:07:23Z
+  creationTimestamp: "2020-08-25T11:21:29Z"
   finalizers:
   - kubedb.com
+  ...
   generation: 2
+    operation: Update
+    time: "2020-08-25T11:22:40Z"
   name: mysql-demo
   namespace: default
-  resourceVersion: "19279"
+  resourceVersion: "8763"
   selfLink: /apis/kubedb.com/v1alpha1/namespaces/default/mysqls/mysql-demo
-  uid: 46034ac3-c256-11e8-b2cc-080027d9f35e
+  uid: daac5549-0a7b-4e25-8773-473dffabf1cd
 spec:
   databaseSecret:
     secretName: mysql-demo-auth
@@ -77,6 +79,7 @@ spec:
     metadata: {}
     spec:
       resources: {}
+      serviceAccountName: mysql-demo
   replicas: 1
   serviceTemplate:
     metadata: {}
@@ -89,12 +92,12 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
+  terminationPolicy: Delete
   updateStrategy:
     type: RollingUpdate
-  version: 8.0-v2
+  version: 8.0.21
 status:
-  observedGeneration: 2$4213139756412538772
+  observedGeneration: 2
   phase: Running
 ```
 
@@ -106,17 +109,24 @@ kubectl get mysql mysql-demo --output=json
 
 To list all KubeDB objects, use following command:
 
-```console
+```bash
 $ kubectl get all -o wide
-NAME                          VERSION   STATUS    AGE
-mysql.kubedb.com/mysql-demo   8.0-v2    Running   3m
-mysql.kubedb.com/mysql-dev    8.0-v2    Running   2m
-mysql.kubedb.com/mysql-prod   8.0-v2    Running   2m
-mysql.kubedb.com/mysql-qa     8.0-v2    Running   2m
+NAME               READY   STATUS    RESTARTS   AGE   IP            NODE          NOMINATED NODE   READINESS GATES
+pod/mysql-demo-0   1/1     Running   0          21m   10.244.1.10   kind-worker   <none>           <none>
 
-NAME                                DATABASE              BUCKET              STATUS      AGE
-snap/mysql-demo-20170605-073557     my/mysql-demo         gs:bucket-name      Succeeded   9m
-snap/snapshot-20171212-114700       my/mysql-demo         gs:bucket-name      Succeeded   1h
+NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE   SELECTOR
+service/kubernetes       ClusterIP   10.96.0.1       <none>        443/TCP    64m   <none>
+service/mysql-demo       ClusterIP   10.109.208.91   <none>        3306/TCP   21m   kubedb.com/kind=MySQL,kubedb.com/name=mysql-demo
+service/mysql-demo-gvr   ClusterIP   None            <none>        3306/TCP   21m   kubedb.com/kind=MySQL,kubedb.com/name=mysql-demo
+
+NAME                          READY   AGE   CONTAINERS   IMAGES
+statefulset.apps/mysql-demo   1/1     21m   mysql        kubedb/mysql:8.0.21
+
+NAME                                            TYPE               VERSION   AGE
+appbinding.appcatalog.appscode.com/mysql-demo   kubedb.com/mysql   8.0.21    20m
+
+NAME                          VERSION   STATUS    AGE
+mysql.kubedb.com/mysql-demo   8.0.21    Running   21m
 ```
 
 Flag `--output=wide` is used to print additional information.
@@ -124,26 +134,6 @@ Flag `--output=wide` is used to print additional information.
 List command supports short names for each object types. You can use it like `kubectl get <short-name>`. Below are the short name for KubeDB objects:
 
 - MySQL: `my`
-- Snapshot: `snap`
-- DormantDatabase: `drmn`
-
-You can print labels with objects. The following command will list all Snapshots with their corresponding labels.
-
-```console
-$ kubectl get snap --show-labels
-NAME                          DATABASE              STATUS      AGE       LABELS
-mysql-demo-20170605-073557    my/mysql-demo         Succeeded   11m       kubedb.com/kind=MySQL,kubedb.com/name=mysql-demo
-snapshot-20171212-114700      my/mysql-demo         Succeeded   1h        kubedb.com/kind=MySQL,kubedb.com/name=mysql-demo
-```
-
-You can also filter list using `--selector` flag.
-
-```console
-$ kubectl get snap --selector='kubedb.com/kind=MySQL' --show-labels
-NAME                          DATABASE         STATUS      AGE       LABELS
-mysql-demo-20171212-073557    my/mysql-demo    Succeeded   14m       kubedb.com/kind=MySQL,kubedb.com/name=mysql-demo
-snapshot-20171212-114700      my/mysql-demo    Succeeded   2h        kubedb.com/kind=MySQL,kubedb.com/name=mysql-demo
-```
 
 To print only object name, run the following command:
 
@@ -161,66 +151,118 @@ snapshot/snapshot-20170505-114700
 
 `kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe MySQL database `mysql-demo` with relevant information.
 
-```console
+```bash
 $ kubectl dba describe my mysql-demo
 Name:               mysql-demo
 Namespace:          default
-CreationTimestamp:  Thu, 27 Sep 2018 19:07:23 +0600
+CreationTimestamp:  Tue, 25 Aug 2020 17:21:29 +0600
 Labels:             <none>
 Annotations:        <none>
 Replicas:           1  total
 Status:             Running
-  StorageType:      Durable
+StorageType:        Durable
 Volume:
-  StorageClass:  standard
-  Capacity:      1Gi
-  Access Modes:  RWO
+  StorageClass:      standard
+  Capacity:          1Gi
+  Access Modes:      RWO
+Paused:              false
+Halted:              false
+Termination Policy:  Delete
 
-StatefulSet:
+StatefulSet:          
   Name:               mysql-demo
-  CreationTimestamp:  Thu, 27 Sep 2018 19:07:25 +0600
-  Labels:               kubedb.com/kind=MySQL
+  CreationTimestamp:  Tue, 25 Aug 2020 17:21:29 +0600
+  Labels:               app.kubernetes.io/component=database
+                        app.kubernetes.io/instance=mysql-demo
+                        app.kubernetes.io/managed-by=kubedb.com
+                        app.kubernetes.io/name=mysql
+                        app.kubernetes.io/version=8.0.21
+                        kubedb.com/kind=MySQL
                         kubedb.com/name=mysql-demo
   Annotations:        <none>
-  Replicas:           824638226772 desired | 1 total
+  Replicas:           824635270088 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
-Service:
+Service:        
   Name:         mysql-demo
-  Labels:         kubedb.com/kind=MySQL
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=mysql-demo
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=mysql
+                  app.kubernetes.io/version=8.0.21
+                  kubedb.com/kind=MySQL
                   kubedb.com/name=mysql-demo
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.102.105.123
+  IP:           10.109.208.91
   Port:         db  3306/TCP
   TargetPort:   db/TCP
-  Endpoints:    172.17.0.5:3306
+  Endpoints:    10.244.1.10:3306
+
+Service:        
+  Name:         mysql-demo-gvr
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=mysql-demo
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=mysql
+                  app.kubernetes.io/version=8.0.21
+                  kubedb.com/kind=MySQL
+                  kubedb.com/name=mysql-demo
+  Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
+  Type:         ClusterIP
+  IP:           None
+  Port:         db  3306/TCP
+  TargetPort:   3306/TCP
+  Endpoints:    10.244.1.10:3306
 
 Database Secret:
   Name:         mysql-demo-auth
-  Labels:         kubedb.com/kind=MySQL
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=mysql-demo
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=mysql
+                  app.kubernetes.io/version=8.0.21
+                  kubedb.com/kind=MySQL
                   kubedb.com/name=mysql-demo
   Annotations:  <none>
+  Type:         Opaque
+  Data:
+    password:  16 bytes
+    username:  4 bytes
 
-Type:  Opaque
-
-Data
-====
-  password:  16 bytes
-  user:      4 bytes
-
-No Snapshots.
+AppBinding:
+  Metadata:
+    Creation Timestamp:  2020-08-25T11:22:39Z
+    Labels:
+      app.kubernetes.io/component:   database
+      app.kubernetes.io/instance:    mysql-demo
+      app.kubernetes.io/managed-by:  kubedb.com
+      app.kubernetes.io/name:        mysql
+      app.kubernetes.io/version:     8.0.21
+      kubedb.com/kind:               MySQL
+      kubedb.com/name:               mysql-demo
+    Name:                            mysql-demo
+    Namespace:                       default
+  Spec:
+    Client Config:
+      Service:
+        Name:    mysql-demo
+        Path:    /
+        Port:    3306
+        Scheme:  mysql
+      URL:       tcp(mysql-demo:3306)/
+    Secret:
+      Name:   mysql-demo-auth
+    Type:     kubedb.com/mysql
+    Version:  8.0.21
 
 Events:
   Type    Reason      Age   From            Message
   ----    ------      ----  ----            -------
-  Normal  Successful  4m    MySQL operator  Successfully created Service
-  Normal  Successful  4m    MySQL operator  Successfully created StatefulSet
-  Normal  Successful  4m    MySQL operator  Successfully created MySQL
-  Normal  Successful  4m    MySQL operator  Successfully patched StatefulSet
-  Normal  Successful  4m    MySQL operator  Successfully patched MySQL
-  Normal  Successful  3m    MySQL operator  Successfully patched StatefulSet
-  Normal  Successful  3m    MySQL operator  Successfully patched MySQL
+  Normal  Successful  27m   MySQL operator  Successfully created Service
+  Normal  Successful  26m   MySQL operator  Successfully created StatefulSet
+  Normal  Successful  26m   MySQL operator  Successfully created MySQL
+  Normal  Successful  26m   MySQL operator  Successfully created appbinding
 ```
 
 `kubectl dba describe` command provides following basic information about a MySQL database.
@@ -229,7 +271,6 @@ Events:
 - Storage (Persistent Volume)
 - Service
 - Secret (If available)
-- Snapshots (If any)
 - Monitoring system (If available)
 
 To hide events on KubeDB object, use flag `--show-events=false`
@@ -258,7 +299,7 @@ You can also describe KubeDB objects with matching labels. The following command
 kubectl dba describe my --all-namespaces --selector='group=dev'
 ```
 
-To learn about various options of `describe` command, please visit [here](/docs/reference/kubectl-dba_describe.md).
+To learn about various options of `describe` command, please visit [here](/docs/examples/mysql/cli/kubectl-dba_describe.md).
 
 ### How to Edit Objects
 

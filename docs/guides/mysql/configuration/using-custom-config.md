@@ -24,7 +24,7 @@ KubeDB supports providing custom configuration for MySQL. This tutorial will sho
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   
@@ -47,7 +47,7 @@ In this tutorial, we will configure [max_connections](https://dev.mysql.com/doc/
 
 At first, let's create `my-config.cnf` file setting `max_connections` and `read_buffer_size` parameters.
 
-```console
+```bash
 cat <<EOF > my-config.cnf
 [mysqld]
 max_connections = 200
@@ -64,8 +64,8 @@ Here, `read_buffer_size` is set to 1MB in bytes.
 
 Now, create a configMap with this configuration file.
 
-```console
- $ kubectl create configmap -n demo my-custom-config --from-file=./my-config.cnf
+```bash
+$ kubectl create configmap -n demo my-custom-config --from-file=./my-config.cnf
 configmap/my-custom-config created
 ```
 
@@ -88,7 +88,7 @@ metadata:
 
 Now, create MySQL crd specifying `spec.configSource` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/configuration/mysql-custom.yaml
 mysql.kubedb.com/custom-mysql created
 ```
@@ -102,7 +102,7 @@ metadata:
   name: custom-mysql
   namespace: demo
 spec:
-  version: "8.0-v2"
+  version: "8.0.21"
   configSource:
     configMap:
       name: my-custom-config
@@ -119,7 +119,7 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset,
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo
 NAME             READY     STATUS    RESTARTS   AGE
 custom-mysql-0   1/1       Running   0          44s
@@ -127,19 +127,16 @@ custom-mysql-0   1/1       Running   0          44s
 
 Check the pod's log to see if the database is ready
 
-```console
+```bash
 $ kubectl logs -f -n demo custom-mysql-0
-Initializing database
-.....
-Database initialized
-Initializing certificates
+2020-08-26T10:45:27.892022Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2020-08-26T10:45:28.353024Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
 ...
-Certificates initialized
-MySQL init process in progress...
-....
-MySQL init process done. Ready for start up.
-....
-2018-07-10T06:12:46.957611Z 0 [Note] /usr/sbin/mysqld: ready for connections. Version: '8.0.3-rc-log'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server (GPL)
+2020-08-26T10:45:28.465037Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060
+2020-08-26T10:45:28.573208Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2020-08-26T10:45:28.573533Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+...
+2020-08-26T10:45:28.610887Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.21'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
 ....
 ```
 
@@ -149,22 +146,33 @@ Now, we will check if the database has started with the custom configuration we 
 
 First, deploy [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin/) to connect with the MySQL database we have just created.
 
-```console
+```bash
  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/quickstart/demo-1.yaml
 deployment.extensions/myadmin created
 service/myadmin created
 ```
 
-Then, open your browser and go to the following URL: _http://{cluster-ip}:{myadmin-svc-nodeport}_. For minikube you can get this URL by running the following command:
+Then, open your browser and go to the following URL: _http://{node-ip}:{myadmin-svc-nodeport}_. For kind cluster, you can get this URL by running the following command:
 
-```console
-$ minikube service myadmin -n demo --url
-http://192.168.99.100:30039
+```bash
+$ kubectl get svc -n demo myadmin -o json | jq '.spec.ports[].nodePort'
+30942
+
+$ kubectl get node -o json | jq '.items[].status.addresses[].address'
+"172.18.0.3"
+"kind-control-plane"
+"172.18.0.4"
+"kind-worker"
+"172.18.0.2"
+"kind-worker2"
+
+# expected url will be:
+url: http://172.18.0.4:30942
 ```
 
 Now, let's connect to the database from the phpMyAdmin dashboard using the database pod IP and MySQL user password.
 
-```console
+```bash
 $ kubectl get pods custom-mysql-0 -n demo -o yaml | grep IP
   hostIP: 10.0.2.15
   podIP: 172.17.0.6
@@ -185,14 +193,10 @@ Once, you have connected to the database with phpMyAdmin go to **Variables** tab
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo my/custom-mysql -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo my/custom-mysql
 
-kubectl patch -n demo drmn/custom-mysql -p '{"spec":{"wipeOut":true}}' --type="merge"
-kubectl delete -n demo drmn/custom-mysql
-
-kubectl delete -n demo configmap my-custom-config
 kubectl delete deployment -n demo myadmin
 kubectl delete service -n demo myadmin
 

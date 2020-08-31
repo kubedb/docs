@@ -24,7 +24,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -45,7 +45,7 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 
 At first, let's create a `Service Acoount` in `demo` namespace.
 
-```console
+```bash
 $ kubectl create serviceaccount -n demo my-custom-serviceaccount
 serviceaccount/my-custom-serviceaccount created
 ```
@@ -69,7 +69,7 @@ secrets:
 
 Now, we need to create a role that has necessary access permissions for the MySQL instance named `quick-mysql`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/custom-rbac/my-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
@@ -97,7 +97,7 @@ This permission is required for MySQL pods running on PSP enabled clusters.
 
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
-```console
+```bash
 $ kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
 rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
@@ -129,7 +129,7 @@ subjects:
 
 Now, create a MySQL crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/custom-rbac/my-custom-db.yaml
 mysql.kubedb.com/quick-mysql created
 ```
@@ -143,7 +143,7 @@ metadata:
   name: quick-mysql
   namespace: demo
 spec:
-  version: "8.0-v2"
+  version: "8.0.21"
   storageType: Durable
   podTemplate:
     spec:
@@ -156,45 +156,35 @@ spec:
       requests:
         storage: 1Gi
   terminationPolicy: DoNotTerminate
-
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-mysql-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, StatefulSet, services, secret etc. If everything goes well, we should see that a pod with the name `quick-mysql-0` has been created.
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo quick-mysql-0
-NAME                READY     STATUS    RESTARTS   AGE
-quick-mysql-0   1/1       Running   0          14m
+NAME            READY   STATUS    RESTARTS   AGE
+quick-mysql-0   1/1     Running   0          2m44s
 ```
 
 Check the pod's log to see if the database is ready
 
-```console
+```bash
 $ kubectl logs -f -n demo quick-mysql-0
-Initializing database
-2019-05-31T05:02:35.307699Z 0 [Warning] [MY-011070] [Server] 'Disabling symbolic links using --skip-symbolic-links (or equivalent) is the default. Consider not using this option as it' is deprecated and will be removed in a future release.
-2019-05-31T05:02:35.307762Z 0 [System] [MY-013169] [Server] /usr/sbin/mysqld (mysqld 8.0.14) initializing of server in progress as process 29
-2019-05-31T05:02:47.346326Z 5 [Warning] [MY-010453] [Server] root@localhost is created with an empty password ! Please consider switching off the --initialize-insecure option.
-2019-05-31T05:02:53.777918Z 0 [System] [MY-013170] [Server] /usr/sbin/mysqld (mysqld 8.0.14) initializing of server has completed
-Database initialized
-MySQL init process in progress...
-MySQL init process in progress...
-2019-05-31T05:02:56.656884Z 0 [Warning] [MY-011070] [Server] 'Disabling symbolic links using --skip-symbolic-links (or equivalent) is the default. Consider not using this option as it' is deprecated and will be removed in a future release.
-2019-05-31T05:02:56.656953Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.14) starting as process 80
-2019-05-31T05:02:57.876853Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
-2019-05-31T05:02:57.892774Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
-2019-05-31T05:02:57.910391Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.14'  socket: '/var/run/mysqld/mysqld.sock'  port: 0  MySQL Community Server - GPL.
-2019-05-31T05:02:58.045050Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Socket: '/var/run/mysqld/mysqlx.sock'
-Warning: Unable to load '/usr/share/zoneinfo/iso3166.tab' as time zone. Skipping it.
-Warning: Unable to load '/usr/share/zoneinfo/leap-seconds.list' as time zone. Skipping it.
-Warning: Unable to load '/usr/share/zoneinfo/zone.tab' as time zone. Skipping it.
-Warning: Unable to load '/usr/share/zoneinfo/zone1970.tab' as time zone. Skipping it.
+...
+2020-08-27 06:01:50+00:00 [Note] [Entrypoint]: MySQL init process done. Ready for start up.
 
-2019-05-31T05:03:04.217396Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.14)  MySQL Community Server - GPL.
-
-MySQL init process done. Ready for start up.
+2020-08-27T06:01:51.142462Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.21) starting as process 1
+2020-08-27T06:01:51.142509Z 0 [ERROR] [MY-010338] [Server] Can't find error-message file '/usr/share/mysql-8.0/errmsg.sys'. Check error-message file location and 'lc-messages-dir' configuration directive.
+2020-08-27T06:01:51.151516Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2020-08-27T06:01:51.681653Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+...
+2020-08-27T06:01:51.802033Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060
+2020-08-27T06:01:51.924095Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2020-08-27T06:01:51.924256Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2020-08-27T06:01:51.931573Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+2020-08-27T06:01:51.955689Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.21'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
 ```
 
 Once we see `MySQL init process done. Ready for start up.` in the log, the database is ready.
@@ -205,7 +195,7 @@ An existing service account can be reused in another MySQL instance. No new acce
 
 Now, create MySQL crd `minute-mysql` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/custom-rbac/my-custom-db-two.yaml
 mysql.kubedb.com/quick-mysql created
 ```
@@ -219,7 +209,7 @@ metadata:
   name: minute-mysql
   namespace: demo
 spec:
-  version: "8.0-v2"
+  version: "8.0.21"
   storageType: Durable
   podTemplate:
     spec:
@@ -239,39 +229,28 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, stateful
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo minute-mysql-0
-NAME                READY     STATUS    RESTARTS   AGE
+NAME             READY     STATUS    RESTARTS   AGE
 minute-mysql-0   1/1       Running   0          14m
 ```
 
 Check the pod's log to see if the database is ready
 
-```console
-$ kubectl logs -f -n demo minute-mysql-0
-Initializing database
-2019-05-31T05:09:12.165236Z 0 [Warning] [MY-011070] [Server] 'Disabling symbolic links using --skip-symbolic-links (or equivalent) is the default. Consider not using this option as it' is deprecated and will be removed in a future release.
-2019-05-31T05:09:12.165298Z 0 [System] [MY-013169] [Server] /usr/sbin/mysqld (mysqld 8.0.14) initializing of server in progress as process 28
-2019-05-31T05:09:24.903995Z 5 [Warning] [MY-010453] [Server] root@localhost is created with an empty password ! Please consider switching off the --initialize-insecure option.
-2019-05-31T05:09:30.857155Z 0 [System] [MY-013170] [Server] /usr/sbin/mysqld (mysqld 8.0.14) initializing of server has completed
-Database initialized
-MySQL init process in progress...
-MySQL init process in progress...
-2019-05-31T05:09:33.931254Z 0 [Warning] [MY-011070] [Server] 'Disabling symbolic links using --skip-symbolic-links (or equivalent) is the default. Consider not using this option as it' is deprecated and will be removed in a future release.
-2019-05-31T05:09:33.931315Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.14) starting as process 79
-2019-05-31T05:09:34.819349Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
-2019-05-31T05:09:34.834673Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
-2019-05-31T05:09:34.850188Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.14'  socket: '/var/run/mysqld/mysqld.sock'  port: 0  MySQL Community Server - GPL.
-2019-05-31T05:09:35.064435Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Socket: '/var/run/mysqld/mysqlx.sock'
-Warning: Unable to load '/usr/share/zoneinfo/iso3166.tab' as time zone. Skipping it.
-Warning: Unable to load '/usr/share/zoneinfo/leap-seconds.list' as time zone. Skipping it.
-Warning: Unable to load '/usr/share/zoneinfo/zone.tab' as time zone. Skipping it.
-Warning: Unable to load '/usr/share/zoneinfo/zone1970.tab' as time zone. Skipping it.
+```bash
+...
+2020-08-27 06:01:50+00:00 [Note] [Entrypoint]: MySQL init process done. Ready for start up.
 
-2019-05-31T05:09:41.236940Z 0 [System] [MY-010910] [Server] /usr/sbin/mysqld: Shutdown complete (mysqld 8.0.14)  MySQL Community Server - GPL.
-
-MySQL init process done. Ready for start up.
-
+2020-08-27T06:01:51.142462Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.21) starting as process 1
+2020-08-27T06:01:51.142509Z 0 [ERROR] [MY-010338] [Server] Can't find error-message file '/usr/share/mysql-8.0/errmsg.sys'. Check error-message file location and 'lc-messages-dir' configuration directive.
+2020-08-27T06:01:51.151516Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2020-08-27T06:01:51.681653Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+...
+2020-08-27T06:01:51.802033Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060
+2020-08-27T06:01:51.924095Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2020-08-27T06:01:51.924256Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2020-08-27T06:01:51.931573Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
+2020-08-27T06:01:51.955689Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.21'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
 ```
 
 `MySQL init process done. Ready for start up.` in the log signifies that the database is running successfully.
@@ -280,7 +259,7 @@ MySQL init process done. Ready for start up.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo my/quick-mysql -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo my/quick-mysql
 

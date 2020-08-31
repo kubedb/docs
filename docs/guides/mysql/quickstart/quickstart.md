@@ -30,15 +30,15 @@ This tutorial will show you how to use KubeDB to run a MySQL database.
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
-  ```console
+  ```bash
   $ kubectl get storageclasses
-  NAME                 PROVISIONER                AGE
-  standard (default)   k8s.io/minikube-hostpath   4h
+  NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+  standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. This tutorial will also use a [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin/) deployment to connect and test MySQL database, once it is running. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
 
@@ -51,44 +51,61 @@ This tutorial will show you how to use KubeDB to run a MySQL database.
   myadmin-c4db4df95-8lk74   0/1       ContainerCreating   0          27s
   myadmin-c4db4df95-8lk74   1/1       Running             0          1m
 
-  $ kubectl get service -n demo
+  $ kubectl get svc -n demo
   NAME      TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
   myadmin   LoadBalancer   10.105.73.16   <pending>     80:30158/TCP   23m
-
-  $ minikube ip
-  192.168.99.100
   ```
 
-  Now, open your browser and go to the following URL: _http://{minikube-ip}:{myadmin-svc-nodeport}_.
-  You can also get this URl by running the following command:
+  Then, open your browser and go to the following URL: _http://{node-ip}:{myadmin-svc-nodeport}_. For kind cluster, you can get this URL by running the following command:
 
-  ```console
-  $ minikube service myadmin -n demo --url
-  http://192.168.99.100:30158
+  ```bash
+  $ kubectl get svc -n demo myadmin -o json | jq '.spec.ports[].nodePort'
+  30158
+  
+  $ kubectl get node -o json | jq '.items[].status.addresses[].address'
+  "172.18.0.3"
+  "kind-control-plane"
+  "172.18.0.4"
+  "kind-worker"
+  "172.18.0.2"
+  "kind-worker2"
+  
+  # expected url will be:
+  url: http://172.18.0.4:30158
   ```
 
-According to the above example, this URL will be [http://192.168.99.100:30158](http://192.168.99.100:30158). The login informations to phpMyAdmin _(host, username and password)_ will be retrieved later in this tutorial.
+According to the above example, this URL will be [ http://172.18.0.4:30158]( http://172.18.0.4:30158). The login informations to phpMyAdmin _(host, username and password)_ will be retrieved later in this tutorial.
 
 ## Find Available MySQLVersion
 
 When you have installed KubeDB, it has created `MySQLVersion` crd for all supported MySQL versions. Check 0
 
-```console
+```bash
 $ kubectl get mysqlversions
-NAME     VERSION   DB_IMAGE              DEPRECATED   AGE
-5        5         kubedb/mysql:5        true         29s
-5-v1     5         kubedb/mysql:5-v1     true         29s
-5.7      5.7       kubedb/mysql:5.7      true         29s
-5.7-v1   5.7       kubedb/mysql:5.7-v1                29s
-5.7-v2   5.7.25    kubedb/mysql:5.7-v2                29s
-5.7.25   5.7.25    kubedb/mysql:5.7.25                29s
-8        8         kubedb/mysql:8        true         29s
-8-v1     8         kubedb/mysql:8-v1     true         29s
-8.0      8.0       kubedb/mysql:8.0      true         29s
-8.0-v1   8.0       kubedb/mysql:8.0-v1                29s
-8.0-v2   8.0       kubedb/mysql:8.0-v2                29s
-8.0.14   8.0.14    kubedb/mysql:8.0.14                29s
-8.0.3    8.0.3     kubedb/mysql:8.0.3                 29s
+NAME        VERSION   DB_IMAGE                 DEPRECATED   AGE
+5           5         kubedb/mysql:5           true         5h36m
+5-v1        5         kubedb/mysql:5-v1        true         5h36m
+5.7         5.7       kubedb/mysql:5.7         true         5h36m
+5.7-v1      5.7       kubedb/mysql:5.7-v1      true         5h36m
+5.7-v2      5.7.25    kubedb/mysql:5.7-v2      true         5h36m
+5.7-v3      5.7.25    kubedb/mysql:5.7.25      true         5h36m
+5.7-v4      5.7.29    kubedb/mysql:5.7.29      true         5h36m
+5.7.25      5.7.25    kubedb/mysql:5.7.25      true         5h36m
+5.7.25-v1   5.7.25    kubedb/mysql:5.7.25-v1                5h36m
+5.7.29      5.7.29    kubedb/mysql:5.7.29                   5h36m
+5.7.31      5.7.31    kubedb/mysql:5.7.31                   5h36m
+8           8         kubedb/mysql:8           true         5h36m
+8-v1        8         kubedb/mysql:8-v1        true         5h36m
+8.0         8.0       kubedb/mysql:8.0         true         5h36m
+8.0-v1      8.0.3     kubedb/mysql:8.0-v1      true         5h36m
+8.0-v2      8.0.14    kubedb/mysql:8.0-v2      true         5h36m
+8.0-v3      8.0.20    kubedb/mysql:8.0.20      true         5h36m
+8.0.14      8.0.14    kubedb/mysql:8.0.14      true         5h36m
+8.0.14-v1   8.0.14    kubedb/mysql:8.0.14-v1                5h36m
+8.0.20      8.0.20    kubedb/mysql:8.0.20                   5h36m
+8.0.21      8.0.21    kubedb/mysql:8.0.21                   5h36m
+8.0.3       8.0.3     kubedb/mysql:8.0.3       true         5h36m
+8.0.3-v1    8.0.3     kubedb/mysql:8.0.3-v1
 ```
 
 ## Create a MySQL database
@@ -102,7 +119,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "8.0-v2"
+  version: "8.0.21"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -114,14 +131,14 @@ spec:
   terminationPolicy: DoNotTerminate
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/quickstart/demo-2.yaml
 mysql.kubedb.com/mysql-quickstart created
 ```
 
 Here,
 
-- `spec.version` is the name of the MySQLVersion CRD where the docker images are specified. In this tutorial, a MySQL 8.0-v2 database is going to be created.
+- `spec.version` is the name of the MySQLVersion CRD where the docker images are specified. In this tutorial, a MySQL `8.0.21` database is going to create.
 - `spec.storageType` specifies the type of storage that will be used for MySQL database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MySQL database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/mysql.md#specterminationpolicy)
@@ -134,61 +151,118 @@ KubeDB operator watches for `MySQL` objects using Kubernetes api. When a `MySQL`
 $ kubectl dba describe my -n demo mysql-quickstart
 Name:               mysql-quickstart
 Namespace:          demo
-CreationTimestamp:  Wed, 06 Feb 2019 17:17:55 +0600
+CreationTimestamp:  Mon, 31 Aug 2020 16:39:47 +0600
 Labels:             <none>
-Annotations:        <none>
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-quickstart","namespace":"demo"},"spec":{"storage":{"acces...
 Replicas:           1  total
 Status:             Running
-  StorageType:      Durable
+StorageType:        Durable
 Volume:
-  StorageClass:  standard
-  Capacity:      1Gi
-  Access Modes:  RWO
+  StorageClass:      standard
+  Capacity:          1Gi
+  Access Modes:      RWO
+Paused:              false
+Halted:              false
+Termination Policy:  DoNotTerminate
 
-StatefulSet:
+StatefulSet:          
   Name:               mysql-quickstart
-  CreationTimestamp:  Wed, 06 Feb 2019 17:17:55 +0600
-  Labels:               kubedb.com/kind=MySQL
+  CreationTimestamp:  Mon, 31 Aug 2020 16:39:47 +0600
+  Labels:               app.kubernetes.io/component=database
+                        app.kubernetes.io/instance=mysql-quickstart
+                        app.kubernetes.io/managed-by=kubedb.com
+                        app.kubernetes.io/name=mysql
+                        app.kubernetes.io/version=8.0.21
+                        kubedb.com/kind=MySQL
                         kubedb.com/name=mysql-quickstart
   Annotations:        <none>
-  Replicas:           824641282668 desired | 1 total
+  Replicas:           824634389080 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
-Service:
+Service:        
   Name:         mysql-quickstart
-  Labels:         kubedb.com/kind=MySQL
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=mysql-quickstart
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=mysql
+                  app.kubernetes.io/version=8.0.21
+                  kubedb.com/kind=MySQL
                   kubedb.com/name=mysql-quickstart
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.99.24.103
+  IP:           10.103.57.226
   Port:         db  3306/TCP
   TargetPort:   db/TCP
-  Endpoints:    172.17.0.8:3306
+  Endpoints:    10.244.2.13:3306
+
+Service:        
+  Name:         mysql-quickstart-gvr
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=mysql-quickstart
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=mysql
+                  app.kubernetes.io/version=8.0.21
+                  kubedb.com/kind=MySQL
+                  kubedb.com/name=mysql-quickstart
+  Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
+  Type:         ClusterIP
+  IP:           None
+  Port:         db  3306/TCP
+  TargetPort:   3306/TCP
+  Endpoints:    10.244.2.13:3306
 
 Database Secret:
   Name:         mysql-quickstart-auth
-  Labels:         kubedb.com/kind=MySQL
+  Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=mysql-quickstart
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=mysql
+                  app.kubernetes.io/version=8.0.21
+                  kubedb.com/kind=MySQL
                   kubedb.com/name=mysql-quickstart
   Annotations:  <none>
+  Type:         Opaque
+  Data:
+    password:  16 bytes
+    username:  4 bytes
 
-Type:  Opaque
+AppBinding:
+  Metadata:
+    Annotations:
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"8.0.21"}}
 
-Data
-====
-  password:  16 bytes
-  username:  4 bytes
-
-No Snapshots.
+    Creation Timestamp:  2020-08-31T10:40:53Z
+    Labels:
+      app.kubernetes.io/component:   database
+      app.kubernetes.io/instance:    mysql-quickstart
+      app.kubernetes.io/managed-by:  kubedb.com
+      app.kubernetes.io/name:        mysql
+      app.kubernetes.io/version:     8.0.21
+      kubedb.com/kind:               MySQL
+      kubedb.com/name:               mysql-quickstart
+    Name:                            mysql-quickstart
+    Namespace:                       demo
+  Spec:
+    Client Config:
+      Service:
+        Name:    mysql-quickstart
+        Path:    /
+        Port:    3306
+        Scheme:  mysql
+      URL:       tcp(mysql-quickstart:3306)/
+    Secret:
+      Name:   mysql-quickstart-auth
+    Type:     kubedb.com/mysql
+    Version:  8.0.21
 
 Events:
-  Type    Reason      Age   From             Message
-  ----    ------      ----  ----             -------
-  Normal  Successful  2m    KubeDB operator  Successfully created Service
-  Normal  Successful  53s   KubeDB operator  Successfully created StatefulSet
-  Normal  Successful  53s   KubeDB operator  Successfully created MySQL
-  Normal  Successful  53s   KubeDB operator  Successfully created appbinding
-  Normal  Successful  53s   KubeDB operator  Successfully patched StatefulSet
-  Normal  Successful  53s   KubeDB operator  Successfully patched MySQL
+  Type    Reason      Age   From            Message
+  ----    ------      ----  ----            -------
+  Normal  Successful  3m    MySQL operator  Successfully created Service
+  Normal  Successful  2m    MySQL operator  Successfully created StatefulSet
+  Normal  Successful  2m    MySQL operator  Successfully created MySQL
+  Normal  Successful  2m    MySQL operator  Successfully created appbinding
+
 
 $ kubectl get statefulset -n demo
 NAME               READY   AGE
@@ -203,28 +277,32 @@ NAME                                       CAPACITY   ACCESS MODES   RECLAIM POL
 pvc-652e02c7-0d7f-11e8-9091-08002751ae8c   1Gi        RWO            Delete           Bound     demo/data-mysql-quickstart-0   standard                 11m
 
 $ kubectl get service -n demo
-NAME               TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
-kubedb             ClusterIP      None            <none>        <none>         11m
-myadmin            LoadBalancer   10.105.73.16    <pending>     80:30158/TCP   41m
-mysql-quickstart   ClusterIP      10.104.50.139   <none>        3306/TCP       11m
+NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
+myadmin                 LoadBalancer   10.104.142.213   <pending>     80:31529/TCP   6h2m
+mysql-quickstart        ClusterIP      10.109.217.165   <none>        3306/TCP       5m56s
+mysql-quickstart-gvr    ClusterIP      None             <none>        3306/TCP       5m56s
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MySQL object:
 
 ```yaml
 $ kubectl get my -n demo mysql-quickstart -o yaml
+ $ kubectl get my -n demo mysql-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha1
 kind: MySQL
 metadata:
-  creationTimestamp: "2019-02-06T11:17:55Z"
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"8.0.21"}}
+  creationTimestamp: "2020-08-27T12:19:42Z"
   finalizers:
   - kubedb.com
-  generation: 2
+  ...
   name: mysql-quickstart
   namespace: demo
-  resourceVersion: "2158"
+  resourceVersion: "70812"
   selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/mysqls/mysql-quickstart
-  uid: d9b37fc3-2a00-11e9-a088-080027ab5700
+  uid: 837ac85a-134a-457e-b126-f4681d92f117
 spec:
   databaseSecret:
     secretName: mysql-quickstart-auth
@@ -233,6 +311,7 @@ spec:
     metadata: {}
     spec:
       resources: {}
+      serviceAccountName: mysql-quickstart
   replicas: 1
   serviceTemplate:
     metadata: {}
@@ -240,7 +319,6 @@ spec:
   storage:
     accessModes:
     - ReadWriteOnce
-    dataSource: null
     resources:
       requests:
         storage: 1Gi
@@ -249,9 +327,9 @@ spec:
   terminationPolicy: DoNotTerminate
   updateStrategy:
     type: RollingUpdate
-  version: 8.0-v2
+  version: 8.0.21
 status:
-  observedGeneration: 2$4213139756412538772
+  observedGeneration: 2
   phase: Running
 ```
 
@@ -263,9 +341,9 @@ If you want to use an existing secret please specify that when creating the MySQ
 
 Now, you can connect to this database from the phpMyAdmin dashboard using the database pod IP and and `mysql` user password.
 
-```console
+```bash
 $ kubectl get pods mysql-quickstart-0 -n demo -o yaml | grep podIP
-  podIP: 172.17.0.6
+  podIP: 10.244.2.13
 
 $ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.\username}' | base64 -d
 root
@@ -275,33 +353,33 @@ l0yKjI1E7IMohsGR
 ```
 
 ---
-Note: In MySQL:8.0-v1 (ie, 8.0.14), connection to phpMyAdmin may give error as it is using `caching_sha2_password` and `sha256_password` authentication plugins over `mysql_native_password`. If the error happens do the following for work around. But, It's not recommended to change authentication plugins. See [here](https://stackoverflow.com/questions/49948350/phpmyadmin-on-mysql-8-0) for alternative solutions.
+>Note: In MySQL: `8.0.14` connection to phpMyAdmin may give error as it is using `caching_sha2_password` and `sha256_password` authentication plugins over `mysql_native_password`. If the error happens do the following for work around. But, It's not recommended to change authentication plugins. See [here](https://stackoverflow.com/questions/49948350/phpmyadmin-on-mysql-8-0) for alternative solutions.
 
-```console
+```bash
 kubectl exec -it -n demo mysql-quickstart-0 -- mysql -u root --password=l0yKjI1E7IMohsGR -e "ALTER USER root IDENTIFIED WITH mysql_native_password BY 'l0yKjI1E7IMohsGR';"
 ```
 ---
 
-Now, open your browser and go to the following URL: _http://{minikube-ip}:{myadmin-svc-nodeport}_. To log into the phpMyAdmin, use host __`mysql-quickstart.demo`__ or __`172.17.0.6`__ , username __`root`__ and password __`l0yKjI1E7IMohsGR`__.
+Now, open your browser and go to the following URL: _http://{node-ip}:{myadmin-svc-nodeport}_. To log into the phpMyAdmin, use host __`mysql-quickstart.demo`__ or __`10.244.2.13`__ , username __`root`__ and password __`l0yKjI1E7IMohsGR`__.
 
 ## DoNotTerminate Property
 
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
-```console
+```bash
 $ kubectl delete my mysql-quickstart -n demo
 Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" denied the request: mysql "mysql-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubectl edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when mysql is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
+Now, run `kubectl edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` (which deletes the mysql object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/pause the database.
 
 Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/mysql.md#specterminationpolicy).
 
-## Pause Database
+## Database Halt
 
-When [TerminationPolicy](/docs/concepts/databases/mysql.md#specterminationpolicy) is set to `Pause`, it will pause the MySQL database instead of deleting it. Here, If you delete the MySQL object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `mgo-quickstart` MySQL database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
+When [TerminationPolicy](/docs/concepts/databases/mysql.md#specterminationpolicy) is set to `halt` and If you delete the MySQL object, KubeDB operator will delete the StatefulSet and its pods with PVCs but leaves the secret unchanged.
 
-```console
+```bash
 $ kubectl delete my mysql-quickstart -n demo
 mysql.kubedb.com "mysql-quickstart" deleted
 
@@ -373,6 +451,15 @@ Here,
 - `spec.origin` is the spec of the original spec of the original MySQL object.
 - `status.phase` points to the current database state `Paused`.
 
+## Database Delete Property
+
+When `terminationPolicy` is set to `Delete`, KubeDB delete the MySQL object
+
+```bash
+$ kubectl delete my mysql-quickstart -n demo
+Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" denied the request: mysql "mysql-quickstart" can't be paused. To delete, change spec.terminationPolicy
+```
+
 ## Resume Dormant Database
 
 To resume the database from the dormant state, create same `MySQL` object with same Spec.
@@ -381,12 +468,12 @@ In this tutorial, the dormant database can be resumed by creating original `MySQ
 
 The below command will resume the DormantDatabase `mysql-quickstart` that was created before.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/quickstart/demo-2.yaml
 mysql.kubedb.com/mysql-quickstart created
 ```
 
-Now, if you exec into the database, you can see that the datas are intact.
+Now, if you exec into the database, you can see that the database are intact.
 
 ## WipeOut DormantDatabase
 
@@ -417,7 +504,7 @@ If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object
 
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
-```console
+```bash
 $ kubectl delete drmn mysql-quickstart -n demo
 dormantdatabase.kubedb.com "mysql-quickstart" deleted
 ```
@@ -426,7 +513,7 @@ dormantdatabase.kubedb.com "mysql-quickstart" deleted
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mysql/mysql-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mysql/mysql-quickstart
 
