@@ -78,7 +78,7 @@ According to the above example, this URL will be [ http://172.18.0.4:30158]( htt
 
 ## Find Available MySQLVersion
 
-When you have installed KubeDB, it has created `MySQLVersion` crd for all supported MySQL versions. Check 0
+When you have installed KubeDB, it has created `MySQLVersion` crd for all supported MySQL versions. Check it by using the following command,
 
 ```bash
 $ kubectl get mysqlversions
@@ -362,9 +362,13 @@ kubectl exec -it -n demo mysql-quickstart-0 -- mysql -u root --password=l0yKjI1E
 
 Now, open your browser and go to the following URL: _http://{node-ip}:{myadmin-svc-nodeport}_. To log into the phpMyAdmin, use host __`mysql-quickstart.demo`__ or __`10.244.2.13`__ , username __`root`__ and password __`l0yKjI1E7IMohsGR`__.
 
-## DoNotTerminate Property
+## Database TerminationPolicy
 
-When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
+This field is used to regulate the deletion process of the related resources when `MySQL` object is deleted. User can set the value of this field according to their needs. The available options and their use case scenario is described below:
+
+**DoNotTerminate:**
+
+When `terminationPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
 $ kubectl delete my mysql-quickstart -n demo
@@ -375,139 +379,107 @@ Now, run `kubectl edit my mysql-quickstart -n demo` to set `spec.terminationPoli
 
 Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/mysql.md#specterminationpolicy).
 
-## Database Halt
+**Halt:**
 
-When [TerminationPolicy](/docs/concepts/databases/mysql.md#specterminationpolicy) is set to `halt` and If you delete the MySQL object, KubeDB operator will delete the StatefulSet and its pods with PVCs but leaves the secret unchanged.
+Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `MySQL` object `terminationPolicy` to `Halt`.
+
+When the [TerminationPolicy](/docs/concepts/databases/mysql.md#specterminationpolicy) is set to `halt` and the MySQL object is deleted, the KubeDB operator will delete the StatefulSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `halt` in existing database using `edit` command for testing.
+
+At first, run `kubectl edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Halt`. Then delete the mysql object,
 
 ```bash
 $ kubectl delete my mysql-quickstart -n demo
 mysql.kubedb.com "mysql-quickstart" deleted
-
-$ kubectl get drmn -n demo mysql-quickstart
-NAME               STATUS    AGE
-mysql-quickstart   Pausing   14s
-
-$ kubectl get drmn -n demo mysql-quickstart
-NAME               STATUS    AGE
-mysql-quickstart   Paused    39s
 ```
 
-```yaml
-$ kubectl get drmn -n demo mysql-quickstart -o yaml
-apiVersion: kubedb.com/v1alpha1
-kind: DormantDatabase
-metadata:
-  creationTimestamp: "2019-02-07T09:54:20Z"
-  finalizers:
-  - kubedb.com
-  generation: 1
-  labels:
-    kubedb.com/kind: MySQL
-  name: mysql-quickstart
-  namespace: demo
-  resourceVersion: "32852"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/dormantdatabases/mysql-quickstart
-  uid: 575bf14f-2abe-11e9-9d44-080027154f61
-spec:
-  origin:
-    metadata:
-      creationTimestamp: "2019-02-07T09:46:04Z"
-      name: mysql-quickstart
-      namespace: demo
-    spec:
-      mysql:
-        databaseSecret:
-          secretName: mysql-quickstart-auth
-        podTemplate:
-          controller: {}
-          metadata: {}
-          spec:
-            resources: {}
-        replicas: 1
-        serviceTemplate:
-          metadata: {}
-          spec: {}
-        storage:
-          accessModes:
-          - ReadWriteOnce
-          dataSource: null
-          resources:
-            requests:
-              storage: 1Gi
-          storageClassName: standard
-        storageType: Durable
-        terminationPolicy: Pause
-        updateStrategy:
-          type: RollingUpdate
-        version: 8.0-v2
-status:
-  observedGeneration: 1$5984877185736766566
-  pausingTime: "2019-02-07T09:54:24Z"
-  phase: Paused
+Now, run the following command to get all mysql resources in `demo` namespaces,
+
+```bash
+$ kubectl get sts,svc,secret,pvc -n demo
+NAME                           TYPE                                  DATA   AGE
+secret/default-token-lgbjm     kubernetes.io/service-account-token   3      23h
+secret/mysql-quickstart-auth   Opaque                                2      20h
+
+NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/data-mysql-quickstart-0   Bound    pvc-716f627c-9aa2-47b6-aa64-a547aab6f55c   1Gi        RWO            standard       20h
 ```
 
-Here,
+From the above output, you can see that all mysql resources(`StatefulSet`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your mysql again using this resources.
 
-- `spec.origin` is the spec of the original spec of the original MySQL object.
-- `status.phase` points to the current database state `Paused`.
+>You can also set the `terminationPolicy` to `Pause`(deprecated). It's behavior same as `halt` and right now `Pause` is replaced by `Halt`.
 
-## Database Delete Property
+**Delete:**
 
-When `terminationPolicy` is set to `Delete`, KubeDB delete the MySQL object
+If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `MySQL` object `terminationPolicy` to `Delete`. In this setting, `StatefulSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
+
+When the [TerminationPolicy](/docs/concepts/databases/mysql.md#specterminationpolicy) is set to `Delete` and the MySQL object is deleted, the KubeDB operator will delete the StatefulSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshot`) intact.
+
+Suppose, we have a database with `terminationPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
 $ kubectl delete my mysql-quickstart -n demo
-Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" denied the request: mysql "mysql-quickstart" can't be paused. To delete, change spec.terminationPolicy
+mysql.kubedb.com "mysql-quickstart" deleted
 ```
 
-## Resume Dormant Database
-
-To resume the database from the dormant state, create same `MySQL` object with same Spec.
-
-In this tutorial, the dormant database can be resumed by creating original `MySQL` object.
-
-The below command will resume the DormantDatabase `mysql-quickstart` that was created before.
+Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/quickstart/demo-2.yaml
-mysql.kubedb.com/mysql-quickstart created
+$ kubectl get sts,svc,secret,pvc -n demo
+NAME                           TYPE                                  DATA   AGE
+secret/default-token-lgbjm     kubernetes.io/service-account-token   3      24h
+secret/mysql-quickstart-auth   Opaque
 ```
 
-Now, if you exec into the database, you can see that the database are intact.
+From the above output, you can see that all mysql resources(`StatefulSet`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mysql using `snapshots`(if previously taken) and `secret`.
 
-## WipeOut DormantDatabase
+>If you don't set the terminationPolicy then the kubeDB set the TerminationPolicy to Delete by-default.
 
-You can wipe out a DormantDatabase while deleting the objet by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `MySQL` database (i.e, PVCs, Secrets, Snapshots). It will also delete snapshot data stored in the Cloud Storage buckets.
+**WipeOut:**
+
+You can totally delete the `MySQL` database and relevant resources without any tracking by setting `terminationPolicy` to `WipeOut`. KubeDB operator will delete all relevant resources of this `MySQL` database (i.e, `PVCs`, `Secrets`, `Snapshots`) when the `terminationPolicy` is set to `WipeOut`.
+
+Suppose, we have a database with `terminationPolicy` set to `WipeOut`. Now, are going to delete the database using the following command:
 
 ```yaml
 $ kubectl delete my mysql-quickstart -n demo
 mysql.kubedb.com "mysql-quickstart" deleted
-
-$ kubectl edit drmn -n demo mysql-quickstart
-apiVersion: kubedb.com/v1alpha1
-kind: DormantDatabase
-metadata:
-  name: mysql-quickstart
-  namespace: demo
-  ...
-spec:
-  wipeOut: true
-  ...
-status:
-  phase: Paused
-  ...
 ```
 
-If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object, then only this object will be deleted and `kubedb-operator` won't delete related Secrets, PVCs and Snapshots. So, user still can access the stored data in the cloud storage buckets as well as PVCs.
-
-## Delete DormantDatabase
-
-As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
+Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl delete drmn mysql-quickstart -n demo
-dormantdatabase.kubedb.com "mysql-quickstart" deleted
+$ kubectl get sts,svc,secret,pvc -n demo
+No resources found in demo namespace.
 ```
+
+From the above output, you can see that all mysql resources are deleted. there is no option to recreate/reinitialize your database if `terminationPolicy` is set to `Delete`.
+
+>Be careful when you set the `terminationPolicy` to `Delete`. Because there is no option to trace the database resources if once deleted the database.
+
+## Database Halted
+
+If you want to delete MySQL resources(`StatefulSet`,`Service`, etc.) without deleting the `MySQL` object, `PVCs` and `Secret` you have to set the `spec.halted` to `true`. KubeDB operator will be able to delete the MySQL related resources except the `MySQL` object, `PVCs` and `Secret`.
+
+Suppose we have a database running `mysql-quickstart` in our cluster. Now, we are going to set `spec.halted` to `true` in `MySQL`  object by running `kubectl edit -n demo mysql-quickstart` command.
+
+Run the following command to get MySQL resources,
+
+```bash
+$ kubectl get my,sts,secret,svc,pvc -n demo
+NAME                                VERSION   STATUS   AGE
+mysql.kubedb.com/mysql-quickstart   8.0.21    Halted   22m
+
+NAME                           TYPE                                  DATA   AGE
+secret/default-token-lgbjm     kubernetes.io/service-account-token   3      27h
+secret/mysql-quickstart-auth   Opaque                                2      22m
+
+NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/data-mysql-quickstart-0   Bound    pvc-7ab0ebb0-bb2e-45c1-9af1-4f175672605b   1Gi        RWO            standard       22m
+```
+
+From the above output , you can see that `MySQL` object, `PVCs`, `Secret` are still alive. Then you can recreate your `MySQL` with same configuration.
+
+>When you set `spec.halted` to `true` in `MySQL` object then the `terminationPolicy` is also set to `Halt` by KubeDB operator.
 
 ## Cleaning up
 
@@ -517,9 +489,6 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 kubectl patch -n demo mysql/mysql-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mysql/mysql-quickstart
 
-kubectl patch -n demo drmn/mysql-quickstart -p '{"spec":{"wipeOut":true}}' --type="merge"
-kubectl delete -n demo drmn/mysql-quickstart
-
 kubectl delete ns demo
 ```
 
@@ -528,7 +497,7 @@ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we create `DormantDatabase` and preserve all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will not create `DormantDatabase` and it will delete everything created by KubeDB for a particular MySQL crd when you delete the crd. For more details about termination policy, please visit [here](/docs/concepts/databases/mysql.md#specterminationpolicy).
+2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular MySQL crd when you delete the crd. For more details about termination policy, please visit [here](/docs/concepts/databases/mysql.md#specterminationpolicy).
 
 ## Next Steps
 
