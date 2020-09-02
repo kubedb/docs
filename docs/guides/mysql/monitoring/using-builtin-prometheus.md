@@ -355,9 +355,6 @@ kubectl delete ns monitoring
 
 ## Next Steps
 
-- Learn about [taking instant backup](/docs/guides/mysql/snapshot/backup-and-restore.md) of MySQL database using KubeDB.
-- Learn how to [schedule backup](/docs/guides/mysql/snapshot/scheduled-backup.md)  of MySQL database.
-- Learn about initializing [MySQL with Snapshot](/docs/guides/mysql/initialization/using-snapshot.md).
 - Monitor your MySQL database with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/mysql/monitoring/using-coreos-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MySQL with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

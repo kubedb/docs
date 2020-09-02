@@ -184,8 +184,7 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 `spec.init` is an optional section that can be used to initialize a newly created MySQL database. MySQL databases can be initialized in one of two ways:
 
- 1. Initialize from Script
- 2. Initialize from Snapshot
+- Initialize from Script
 
 #### Initialize via Script
 
@@ -410,5 +409,4 @@ If you don't specify `spec.terminationPolicy` KubeDB uses `Delete` termination p
 ## Next Steps
 
 - Learn how to use KubeDB to run a MySQL database [here](/docs/guides/mysql/README.md).
-- See the list of supported storage providers for snapshots [here](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

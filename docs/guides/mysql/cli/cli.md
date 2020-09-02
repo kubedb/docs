@@ -143,8 +143,6 @@ mysql/mysql-demo
 mysql/mysql-dev
 mysql/mysql-prod
 mysql/mysql-qa
-snapshot/mysql-demo-20170605-073557
-snapshot/snapshot-20170505-114700
 ```
 
 ### How to Describe Objects
@@ -305,19 +303,20 @@ To learn about various options of `describe` command, please visit [here](/docs/
 
 `kubectl edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
 
-Let's edit an existing running MySQL object to setup [Scheduled Backup](/docs/guides/mysql/snapshot/scheduled-backup.md). The following command will open MySQL `mysql-demo` in editor.
+Lets edit an existing running MySQL object to setup database [Halted](/docs/concepts/databases/mysql.md#spechalted). The following command will open MySQL `mysql-demo` in editor.
 
 ```console
-$ kubectl edit my mysql-demo
+$ kubectl edit my -n demo mysql-quickstart
 
-# Add following under Spec to configure periodic backups
-# backupSchedule:
-#   cronExpression: '@every 1m'
-#   storageSecretName: my-snap-secret
-#   gcs:
-#     bucket: bucket-name
+spec:
+  ....
+  databaseSecret:
+    secretName: mysql-quickstart-auth
+# add database halted = true to delete StatefulSet services and database other resources
+  halted: true
+  ....
 
-mysql "mysql-demo" edited
+mysql.kubedb.com/mysql-quickstart edited
 ```
 
 #### Edit Restrictions
