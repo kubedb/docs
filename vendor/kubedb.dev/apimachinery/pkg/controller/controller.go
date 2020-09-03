@@ -24,7 +24,6 @@ import (
 	kubedbinformers "kubedb.dev/apimachinery/client/informers/externalversions"
 
 	"github.com/appscode/go/log/golog"
-	cm "github.com/jetstack/cert-manager/pkg/client/clientset/versioned"
 	cmInformers "github.com/jetstack/cert-manager/pkg/client/informers/externalversions"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	externalInformers "k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions"
@@ -58,8 +57,6 @@ type Controller struct {
 	AppCatalogClient appcat_cs.Interface
 	// StashClient for stash
 	StashClient scs.Interface
-	//CertManagerClient for cert-manger
-	CertManagerClient cm.Interface
 	// Cluster topology when the operator started
 	ClusterTopology *core_util.Topology
 }

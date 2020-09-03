@@ -34,11 +34,11 @@ const (
 
 // redisVersion captures the set of commands for managing redis cluster
 type redisVersion interface {
-	ClusterCreateCmd(replicas int32, addrs ...string) []string
-	AddNodeAsMasterCmd(newAddr, existingAddr string) []string
-	AddNodeAsSlaveCmd(newAddr, existingAddr, masterId string) []string
-	DeleteNodeCmd(existingAddr, deletingNodeID string) []string
-	ReshardCmd(srcIP, srcID, dstIP, dstID string, slotStart, slotEnd int) []string
+	ClusterCreateCmd(useTLS bool, replicas int32, addrs ...string) []string
+	AddNodeAsMasterCmd(useTLS bool, newAddr, existingAddr string) []string
+	AddNodeAsSlaveCmd(useTLS bool, newAddr, existingAddr, masterId string) []string
+	DeleteNodeCmd(useTLS bool, existingAddr, deletingNodeID string) []string
+	ReshardCmd(useTLS bool, srcIP, srcID, dstIP, dstID string, slotStart, slotEnd int) []string
 }
 
 type version4 struct{}
@@ -64,7 +64,8 @@ func newVersion(version string) (redisVersion, error) {
 	switch major {
 	case 4:
 		return &version4{}, nil
-	case 5:
+	case 5, 6:
+		// all commands are same for version 5 and version 6
 		return &version5{}, nil
 	}
 
@@ -76,7 +77,7 @@ func newVersion(version string) (redisVersion, error) {
 	ref: https://github.com/antirez/redis/blob/4.0.11/src/redis-trib.rb
 **************************************************/
 
-func (v version4) ClusterCreateCmd(replicas int32, addrs ...string) []string {
+func (v version4) ClusterCreateCmd(useTLS bool, replicas int32, addrs ...string) []string {
 	command := []string{"redis-trib", "create"}
 	if replicas > 0 {
 		replica := strconv.Itoa(int(replicas))
@@ -85,82 +86,134 @@ func (v version4) ClusterCreateCmd(replicas int32, addrs ...string) []string {
 	return append(command, addrs...)
 }
 
-func (v version4) AddNodeAsMasterCmd(newAddr, existingAddr string) []string {
+func (v version4) AddNodeAsMasterCmd(useTLS bool, newAddr, existingAddr string) []string {
 	return []string{"redis-trib", "add-node", newAddr, existingAddr}
 }
 
-func (v version4) AddNodeAsSlaveCmd(newAddr, existingAddr, masterId string) []string {
+func (v version4) AddNodeAsSlaveCmd(useTLS bool, newAddr, existingAddr, masterId string) []string {
 	return []string{"redis-trib", "add-node", "--slave", "--master-id", masterId, newAddr, existingAddr}
 }
 
-func (v version4) DeleteNodeCmd(existingAddr, deletingNodeID string) []string {
+func (v version4) DeleteNodeCmd(useTLS bool, existingAddr, deletingNodeID string) []string {
 	return []string{"redis-trib", "del-node", existingAddr, deletingNodeID}
 }
 
-func (v version4) ReshardCmd(srcIP, srcID, dstIP, dstID string, slotStart, slotEnd int) []string {
+func (v version4) ReshardCmd(useTLS bool, srcIP, srcID, dstIP, dstID string, slotStart, slotEnd int) []string {
 	return []string{"/conf/cluster.sh", "reshard", srcIP, srcID, dstIP, dstID,
 		strconv.Itoa(slotStart), strconv.Itoa(slotEnd)}
 }
 
 /*************************************************
-	redis-cli cluster managing commands for v5
+	redis-cli cluster managing commands for v5, v6
 	ref: https://github.com/antirez/redis/blob/5.0.3/src/redis-cli.c
 *************************************************/
+var (
+	tlsArgs = []string{
+		"--tls",
+		"--cert",
+		"/certs/client.crt",
+		"--key",
+		"/certs/client.key",
+		"--cacert",
+		"/certs/ca.crt",
+	}
+)
 
-func (v version5) ClusterCreateCmd(replicas int32, addrs ...string) []string {
-	command := []string{"redis-cli", "--cluster", "create"}
+func (v version5) ClusterCreateCmd(useTLS bool, replicas int32, addrs ...string) []string {
+	command := []string{"redis-cli"}
+	if useTLS {
+		command = append(command, tlsArgs...)
+	}
+	command = append(command, "--cluster", "create")
 	if replicas > 0 {
 		replica := strconv.Itoa(int(replicas))
 		command = append(command, "--cluster-replicas", replica)
 	}
-	return append(command, addrs...)
+	command = append(command, addrs...)
+	return command
 }
 
-func (v version5) AddNodeAsMasterCmd(newAddr, existingAddr string) []string {
-	return []string{"redis-cli", "--cluster", "add-node", newAddr, existingAddr}
+func (v version5) AddNodeAsMasterCmd(useTLS bool, newAddr, existingAddr string) []string {
+	command := []string{"redis-cli"}
+	if useTLS {
+		command = append(command, tlsArgs...)
+	}
+	return append(command, "--cluster", "add-node", newAddr, existingAddr)
 }
 
-func (v version5) AddNodeAsSlaveCmd(newAddr, existingAddr, masterId string) []string {
-	return []string{"redis-cli", "--cluster", "add-node", "--cluster-slave", "--cluster-master-id", masterId, newAddr, existingAddr}
+func (v version5) AddNodeAsSlaveCmd(useTLS bool, newAddr, existingAddr, masterId string) []string {
+	command := []string{"redis-cli"}
+	if useTLS {
+		command = append(command, tlsArgs...)
+	}
+	return append(command, "--cluster", "add-node", "--cluster-slave", "--cluster-master-id", masterId, newAddr, existingAddr)
 }
 
-func (v version5) DeleteNodeCmd(existingAddr, deletingNodeID string) []string {
-	return []string{"redis-cli", "--cluster", "del-node", existingAddr, deletingNodeID}
+func (v version5) DeleteNodeCmd(useTLS bool, existingAddr, deletingNodeID string) []string {
+	command := []string{"redis-cli"}
+	if useTLS {
+		command = append(command, tlsArgs...)
+	}
+	return append(command, "--cluster", "del-node", existingAddr, deletingNodeID)
 }
 
-func (v version5) ReshardCmd(srcIP, srcID, dstIP, dstID string, slotStart, slotEnd int) []string {
+func (v version5) ReshardCmd(useTLS bool, srcIP, srcID, dstIP, dstID string, slotStart, slotEnd int) []string {
 	existingAddr := fmt.Sprintf("%s:%d", srcIP, api.RedisNodePort)
-	return []string{"redis-cli", "--cluster", "reshard", existingAddr,
+	command := []string{"redis-cli"}
+	if useTLS {
+		command = append(command, tlsArgs...)
+	}
+	return append(command, "--cluster", "reshard", existingAddr,
 		"--cluster-from", srcID, "--cluster-to", dstID, "--cluster-slots",
-		strconv.Itoa(slotEnd - slotStart + 1), "--cluster-yes"}
+		strconv.Itoa(slotEnd-slotStart+1), "--cluster-yes")
 }
 
 /*******************************************
 	redis-cli cluster commands (general)
 *******************************************/
 // https://redis.io/commands/cluster-nodes
-func ClusterNodesCmd(ip string) []string {
-	return []string{"redis-cli", "-c", "-h", ip, "cluster", "nodes"}
+func ClusterNodesCmd(useTLS bool, ip string) []string {
+	command := []string{"redis-cli"}
+	if useTLS {
+		command = append(command, tlsArgs...)
+	}
+	return append(command, "-c", "-h", ip, "cluster", "nodes")
 }
 
 // https://redis.io/commands/cluster-meet
-func ClusterMeetCmd(senderIP, receiverIP, receiverPort string) []string {
-	return []string{"redis-cli", "-c", "-h", senderIP, "cluster", "meet", receiverIP, receiverPort}
+func ClusterMeetCmd(useTLS bool, senderIP, receiverIP, receiverPort string) []string {
+	command := []string{"redis-cli"}
+	if useTLS {
+		command = append(command, tlsArgs...)
+	}
+	return append(command, "-c", "-h", senderIP, "cluster", "meet", receiverIP, receiverPort)
 }
 
 // https://redis.io/commands/cluster-reset
-func ClusterResetCmd(ip, resetType string) []string {
-	return []string{"redis-cli", "-c", "cluster", "reset", resetType}
+func ClusterResetCmd(useTLS bool, ip, resetType string) []string {
+	command := []string{"redis-cli"}
+	if useTLS {
+		command = append(command, tlsArgs...)
+	}
+	return append(command, "-c", "cluster", "reset", resetType)
 }
 
 // https://redis.io/commands/cluster-failover
-func ClusterFailoverCmd(ip string) []string {
-	return []string{"redis-cli", "-c", "-h", ip, "cluster", "failover"}
+func ClusterFailoverCmd(useTLS bool, ip string) []string {
+	command := []string{"redis-cli"}
+	if useTLS {
+		command = append(command, tlsArgs...)
+	}
+	return append(command, "-c", "-h", ip, "cluster", "failover")
 }
 
 // https://redis.io/commands/cluster-replicate
-func ClusterReplicateCmd(ip, masterNodeID string) []string {
-	return []string{"redis-cli", "-c", "-h", ip, "cluster", "replicate", masterNodeID}
+func ClusterReplicateCmd(useTLS bool, ip, masterNodeID string) []string {
+	command := []string{"redis-cli"}
+	if useTLS {
+		command = append(command, tlsArgs...)
+	}
+	return append(command, "-c", "-h", ip, "cluster", "replicate", masterNodeID)
 }
 
 /**********************************
@@ -168,6 +221,10 @@ func ClusterReplicateCmd(ip, masterNodeID string) []string {
 **********************************/
 
 // https://redis.io/commands/ping
-func PingCmd(ip string) []string {
-	return []string{"redis-cli", "-h", ip, "ping"}
+func PingCmd(useTLS bool, ip string) []string {
+	command := []string{"redis-cli"}
+	if useTLS {
+		command = append(command, tlsArgs...)
+	}
+	return append(command, "-h", ip, "ping")
 }

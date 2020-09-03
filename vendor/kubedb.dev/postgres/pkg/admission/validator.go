@@ -260,10 +260,6 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 		}
 	}
 
-	if postgres.Spec.UpdateStrategy.Type == "" {
-		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
-	}
-
 	if postgres.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}

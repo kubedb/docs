@@ -237,10 +237,6 @@ func ValidatePerconaXtraDB(client kubernetes.Interface, extClient cs.Interface, 
 			px.Namespace, px.Name, px.Spec.Init.StashRestoreSession.Name)
 	}
 
-	if px.Spec.UpdateStrategy.Type == "" {
-		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
-	}
-
 	if px.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}

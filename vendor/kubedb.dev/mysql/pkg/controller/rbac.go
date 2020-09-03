@@ -75,6 +75,14 @@ func (c *Controller) ensureRole(db *api.MySQL, name string, pspName string) erro
 				}
 				in.Rules = append(in.Rules, pspRule)
 			}
+
+			podRule := rbac.PolicyRule{
+				APIGroups: []string{""},
+				Resources: []string{"pods"},
+				Verbs:     []string{"*"},
+			}
+			in.Rules = append(in.Rules, podRule)
+
 			return in
 		},
 		metav1.PatchOptions{},

@@ -75,8 +75,8 @@ func (c *Controller) createDatabaseSecret(px *api.PerconaXtraDB) (*core.SecretVo
 			},
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
-				api.MySQLUserKey:     mysqlUser,
-				api.MySQLPasswordKey: randPassword,
+				core.BasicAuthUsernameKey: mysqlUser,
+				core.BasicAuthPasswordKey: randPassword,
 			},
 		}
 
@@ -98,9 +98,9 @@ func (c *Controller) upgradeDatabaseSecret(px *api.PerconaXtraDB) error {
 	}
 
 	_, _, err := core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {
-		if _, ok := in.Data[api.MySQLUserKey]; !ok {
+		if _, ok := in.Data[core.BasicAuthUsernameKey]; !ok {
 			if val, ok2 := in.Data["user"]; ok2 {
-				in.StringData = map[string]string{api.MySQLUserKey: string(val)}
+				in.StringData = map[string]string{core.BasicAuthUsernameKey: string(val)}
 			}
 		}
 		return in

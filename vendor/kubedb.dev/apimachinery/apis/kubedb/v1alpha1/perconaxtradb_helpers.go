@@ -24,7 +24,6 @@ import (
 	"kubedb.dev/apimachinery/crds"
 
 	"github.com/appscode/go/types"
-	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"kmodules.xyz/client-go/apiextensions"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -128,7 +127,11 @@ func (p perconaXtraDBStatsService) ServiceName() string {
 }
 
 func (p perconaXtraDBStatsService) ServiceMonitorName() string {
-	return fmt.Sprintf("kubedb-%s-%s", p.Namespace, p.Name)
+	return p.ServiceName()
+}
+
+func (p perconaXtraDBStatsService) ServiceMonitorAdditionalLabels() map[string]string {
+	return p.OffshootLabels()
 }
 
 func (p perconaXtraDBStatsService) Path() string {
@@ -167,9 +170,6 @@ func (p *PerconaXtraDB) SetDefaults() {
 
 	if p.Spec.StorageType == "" {
 		p.Spec.StorageType = StorageTypeDurable
-	}
-	if p.Spec.UpdateStrategy.Type == "" {
-		p.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 	}
 	if p.Spec.TerminationPolicy == "" {
 		p.Spec.TerminationPolicy = TerminationPolicyDelete

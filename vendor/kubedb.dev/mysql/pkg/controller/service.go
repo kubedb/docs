@@ -199,3 +199,55 @@ func (c *Controller) createMySQLGoverningService(mysql *api.MySQL) (string, erro
 	}
 	return service.Name, nil
 }
+
+func (c *Controller) ensureServiceForPrimaryPod(mysql *api.MySQL) (kutil.VerbType, error) {
+	// Check if service name exists
+	svcName := fmt.Sprintf("%s-%s", mysql.ServiceName(), "primary")
+	if err := c.checkService(mysql, svcName); err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
+	// create Service for primary/master pod
+	vt, err := c.createServiceForPrimaryPod(mysql, svcName)
+	return vt, err
+}
+
+func (c *Controller) createServiceForPrimaryPod(mysql *api.MySQL, svcName string) (kutil.VerbType, error) {
+	meta := metav1.ObjectMeta{
+		Name:      svcName,
+		Namespace: mysql.Namespace,
+	}
+
+	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
+
+	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+		in.Labels = mysql.OffshootLabels()
+		in.Annotations = mysql.Spec.ServiceTemplate.Annotations
+		in.Spec.Selector = mysql.OffshootSelectors()
+		//add extra selector to select only primary pod
+		in.Spec.Selector[labelRole] = primary
+
+		in.Spec.Ports = ofst.MergeServicePorts(
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
+			mysql.Spec.ServiceTemplate.Spec.Ports,
+		)
+
+		if mysql.Spec.ServiceTemplate.Spec.ClusterIP != "" {
+			in.Spec.ClusterIP = mysql.Spec.ServiceTemplate.Spec.ClusterIP
+		}
+		if mysql.Spec.ServiceTemplate.Spec.Type != "" {
+			in.Spec.Type = mysql.Spec.ServiceTemplate.Spec.Type
+		}
+		in.Spec.ExternalIPs = mysql.Spec.ServiceTemplate.Spec.ExternalIPs
+		in.Spec.LoadBalancerIP = mysql.Spec.ServiceTemplate.Spec.LoadBalancerIP
+		in.Spec.LoadBalancerSourceRanges = mysql.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
+		in.Spec.ExternalTrafficPolicy = mysql.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
+		if mysql.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
+			in.Spec.HealthCheckNodePort = mysql.Spec.ServiceTemplate.Spec.HealthCheckNodePort
+		}
+		return in
+	}, metav1.PatchOptions{})
+	return ok, err
+
+}

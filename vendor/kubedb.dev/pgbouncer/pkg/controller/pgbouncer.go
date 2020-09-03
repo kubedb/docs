@@ -98,9 +98,9 @@ func (c *Controller) manageCreateOrPatchEvent(pgbouncer *api.PgBouncer) error {
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			pgbouncer.Namespace,
-			meta_util.NameWithSuffix(pgbouncer.Name, api.PgBouncerServingServerSuffix),
-			meta_util.NameWithSuffix(pgbouncer.Name, api.PgBouncerServingClientSuffix),
-			meta_util.NameWithSuffix(pgbouncer.Name, api.PgBouncerExporterClientCertSuffix),
+			pgbouncer.MustCertSecretName(api.PgBouncerServerCert),
+			pgbouncer.MustCertSecretName(api.PgBouncerClientCert),
+			pgbouncer.MustCertSecretName(api.PgBouncerMetricsExporterCert),
 		)
 		if err != nil {
 			return err

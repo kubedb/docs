@@ -55,22 +55,16 @@ const (
 	ElasticsearchMetricsPort     = 9600
 	ElasticsearchMetricsPortName = "metrics"
 
-	MongoDBShardPort                  = 27017
-	MongoDBConfigdbPort               = 27017
-	MongoDBMongosPort                 = 27017
-	MongoDBKeyFileSecretSuffix        = "key"
-	MongoDBExternalClientSecretSuffix = "client-cert"
-	MongoDBExporterClientSecretSuffix = "exporter-cert"
-	MongoDBServerSecretSuffix         = "server-cert"
-	MongoDBPEMSecretSuffix            = "pem"
-	MongoDBClientCertOrganization     = DatabaseNamePrefix + ":client"
-	MongoDBCertificateCN              = "root"
+	MongoDBShardPort           = 27017
+	MongoDBConfigdbPort        = 27017
+	MongoDBMongosPort          = 27017
+	MongoDBKeyFileSecretSuffix = "key"
+	MongoDBRootUsername        = "root"
 
-	MySQLUserKey         = "username"
-	MySQLPasswordKey     = "password"
-	MySQLNodePort        = 3306
-	MySQLGroupComPort    = 33060
-	MySQLMaxGroupMembers = 9
+	MySQLMetricsExporterConfigSecretSuffix = "metrics-exporter-config"
+	MySQLNodePort                          = 3306
+	MySQLGroupComPort                      = 33060
+	MySQLMaxGroupMembers                   = 9
 	// The recommended MySQL server version for group replication (GR)
 	MySQLGRRecommendedVersion       = "5.7.25"
 	MySQLDefaultGroupSize           = 3
@@ -94,11 +88,9 @@ const (
 	LabelProxySQLName        = ProxySQLKey + "/name"
 	LabelProxySQLLoadBalance = ProxySQLKey + "/load-balance"
 
-	ProxySQLUserKey               = "proxysqluser"
-	ProxySQLPasswordKey           = "proxysqlpass"
 	ProxySQLMySQLNodePort         = 6033
 	ProxySQLAdminPort             = 6032
-	ProxySQLAdminPortName         = "proxyadm"
+	ProxySQLAdminPortName         = "admin"
 	ProxySQLDataMountPath         = "/var/lib/proxysql"
 	ProxySQLCustomConfigMountPath = "/etc/custom-config"
 
@@ -106,15 +98,15 @@ const (
 	RedisNodePort   = 6379
 	RedisGossipPort = 16379
 
-	PgBouncerServingClientSuffix      = "serving-client-cert"
-	PgBouncerExporterClientCertSuffix = "exporter-cert"
-	PgBouncerServingServerSuffix      = "serving-server-cert"
-	PgBouncerUpstreamServerCA         = "upstream-server-ca.crt"
+	RedisKeyFileSecretSuffix = "key"
+	RedisPEMSecretSuffix     = "pem"
+	RedisRootUsername        = "root"
 
-	MySQLClientCertSuffix         = "client-cert"
-	MySQLExporterClientCertSuffix = "exporter-cert"
-	MySQLServerCertSuffix         = "server-cert"
+	PgBouncerUpstreamServerCA = "upstream-server-ca.crt"
 
-	LocalHost   = "localhost"
-	LocalHostIP = "127.0.0.1"
+	MySQLContainerReplicationModeDetectorName = "replication-mode-detector"
+
+	ContainerExporterName = "exporter"
+	LocalHost             = "localhost"
+	LocalHostIP           = "127.0.0.1"
 )

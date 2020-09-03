@@ -17,9 +17,9 @@ limitations under the License.
 package v1alpha1
 
 import (
-	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
@@ -88,10 +88,9 @@ type PerconaXtraDBSpec struct {
 	// +optional
 	ServiceTemplate ofst.ServiceTemplateSpec `json:"serviceTemplate,omitempty" protobuf:"bytes,10,opt,name=serviceTemplate"`
 
-	// updateStrategy indicates the StatefulSetUpdateStrategy that will be
-	// employed to update Pods in the StatefulSet when a revision is made to
-	// Template.
-	UpdateStrategy apps.StatefulSetUpdateStrategy `json:"updateStrategy,omitempty" protobuf:"bytes,11,opt,name=updateStrategy"`
+	// TLS contains tls configurations for client and server.
+	// +optional
+	TLS *kmapi.TLSConfig `json:"tls,omitempty" protobuf:"bytes,11,opt,name=tls"`
 
 	// Indicates that the database is paused and controller will not sync any changes made to this spec.
 	// +optional
@@ -101,14 +100,19 @@ type PerconaXtraDBSpec struct {
 	// +optional
 	Halted bool `json:"halted,omitempty" protobuf:"varint,13,opt,name=halted"`
 
-	// TLS contains tls configurations for client and server.
-	// +optional
-	TLS *TLSConfig `json:"tls,omitempty" protobuf:"bytes,14,opt,name=tls"`
-
 	// TerminationPolicy controls the delete operation for database
 	// +optional
-	TerminationPolicy TerminationPolicy `json:"terminationPolicy,omitempty" protobuf:"bytes,15,opt,name=terminationPolicy,casttype=TerminationPolicy"`
+	TerminationPolicy TerminationPolicy `json:"terminationPolicy,omitempty" protobuf:"bytes,14,opt,name=terminationPolicy,casttype=TerminationPolicy"`
 }
+
+// +kubebuilder:validation:Enum=server;archiver;metrics-exporter
+type PerconaXtraDBCertificateAlias string
+
+const (
+	PerconaXtraDBServerCert          PerconaXtraDBCertificateAlias = "server"
+	PerconaXtraDBArchiverCert        PerconaXtraDBCertificateAlias = "archiver"
+	PerconaXtraDBMetricsExporterCert PerconaXtraDBCertificateAlias = "metrics-exporter"
+)
 
 type PerconaXtraDBStatus struct {
 	Phase  DatabasePhase `json:"phase,omitempty" protobuf:"bytes,1,opt,name=phase,casttype=DatabasePhase"`

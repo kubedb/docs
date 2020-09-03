@@ -30,14 +30,14 @@ func (c *Controller) addEventHandler(selector labels.Selector) {
 	c.RSInformer.AddEventHandler(queue.NewFilteredHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			rs := obj.(*v1beta1.RestoreSession)
-			if rs.Status.Phase == v1beta1.RestoreSessionSucceeded || rs.Status.Phase == v1beta1.RestoreSessionFailed {
+			if rs.Status.Phase == v1beta1.RestoreSucceeded || rs.Status.Phase == v1beta1.RestoreFailed {
 				queue.Enqueue(c.RSQueue.GetQueue(), obj)
 			}
 		},
 		UpdateFunc: func(old interface{}, new interface{}) {
 			oldObj := old.(*v1beta1.RestoreSession)
 			newObj := new.(*v1beta1.RestoreSession)
-			if newObj.Status.Phase != oldObj.Status.Phase && (newObj.Status.Phase == v1beta1.RestoreSessionSucceeded || newObj.Status.Phase == v1beta1.RestoreSessionFailed) {
+			if newObj.Status.Phase != oldObj.Status.Phase && (newObj.Status.Phase == v1beta1.RestoreSucceeded || newObj.Status.Phase == v1beta1.RestoreFailed) {
 				queue.Enqueue(c.RSQueue.GetQueue(), newObj)
 			}
 		},

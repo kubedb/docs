@@ -150,7 +150,9 @@ func (c *Controller) ensureStatefulSet(
 			in = upsertCustomConfig(in, postgres)
 
 			in.Spec.Template.Spec.ServiceAccountName = postgres.Spec.PodTemplate.Spec.ServiceAccountName
-			in.Spec.UpdateStrategy = postgres.Spec.UpdateStrategy
+			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
+				Type: apps.OnDeleteStatefulSetStrategyType,
+			}
 
 			return in
 		},

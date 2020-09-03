@@ -151,7 +151,7 @@ func (c *Controller) haltDatabase(db *api.Elasticsearch) error {
 		AppBindings(db.Namespace).
 		DeleteCollection(
 			context.TODO(),
-			meta_util.DeleteInForeground(),
+			meta_util.DeleteInBackground(),
 			metav1.ListOptions{LabelSelector: labelSelector},
 		); err != nil {
 		return err
@@ -164,7 +164,7 @@ func (c *Controller) haltDatabase(db *api.Elasticsearch) error {
 		PodDisruptionBudgets(db.Namespace).
 		DeleteCollection(
 			context.TODO(),
-			meta_util.DeleteInForeground(),
+			meta_util.DeleteInBackground(),
 			metav1.ListOptions{LabelSelector: labelSelector},
 		); err != nil {
 		return err
@@ -182,6 +182,7 @@ func (c *Controller) haltDatabase(db *api.Elasticsearch) error {
 		); err != nil {
 		return err
 	}
+
 	// delete rbacs: rolebinding, roles, serviceaccounts
 	log.Infof("deleting RoleBindings of Elasticsearch %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
@@ -189,36 +190,38 @@ func (c *Controller) haltDatabase(db *api.Elasticsearch) error {
 		RoleBindings(db.Namespace).
 		DeleteCollection(
 			context.TODO(),
-			meta_util.DeleteInForeground(),
+			meta_util.DeleteInBackground(),
 			metav1.ListOptions{LabelSelector: labelSelector},
 		); err != nil {
 		return err
 	}
+
 	log.Infof("deleting Roles of Elasticsearch %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		RbacV1().
 		Roles(db.Namespace).
 		DeleteCollection(
 			context.TODO(),
-			meta_util.DeleteInForeground(),
+			meta_util.DeleteInBackground(),
 			metav1.ListOptions{LabelSelector: labelSelector},
 		); err != nil {
 		return err
 	}
+
 	log.Infof("deleting ServiceAccounts of Elasticsearch %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		CoreV1().
 		ServiceAccounts(db.Namespace).
 		DeleteCollection(
 			context.TODO(),
-			meta_util.DeleteInForeground(),
+			meta_util.DeleteInBackground(),
 			metav1.ListOptions{LabelSelector: labelSelector},
 		); err != nil {
 		return err
 	}
-	// delete services
 
-	// service, stats service, gvr service
+	// Delete services:
+	// client service, stats service, gvr service
 	log.Infof("deleting Services of Elasticsearch %v/%v.", db.Namespace, db.Name)
 	svcs, err := c.Client.
 		CoreV1().
@@ -231,7 +234,7 @@ func (c *Controller) haltDatabase(db *api.Elasticsearch) error {
 		if err := c.Client.
 			CoreV1().
 			Services(db.Namespace).
-			Delete(context.TODO(), svc.Name, meta_util.DeleteInForeground()); err != nil {
+			Delete(context.TODO(), svc.Name, meta_util.DeleteInBackground()); err != nil {
 			return err
 		}
 	}

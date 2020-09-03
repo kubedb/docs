@@ -77,7 +77,7 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 	if (db.Spec.SSLMode == api.SSLModeRequireSSL || db.Spec.SSLMode == api.SSLModePreferSSL) &&
 		db.Spec.TLS != nil {
 
-		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Name+api.MongoDBExternalClientSecretSuffix, metav1.GetOptions{})
+		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.MustCertSecretName(api.MongoDBClientCert, ""), metav1.GetOptions{})
 		if err != nil {
 			return kutil.VerbUnchanged, errors.Wrapf(err, "failed to read certificate secret for MongoDB %s/%s", db.Namespace, db.Name)
 		}
@@ -90,7 +90,7 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 
 	clientPEMSecretName := db.Spec.DatabaseSecret.SecretName
 	if caBundle != nil {
-		clientPEMSecretName = db.Name + api.MongoDBExternalClientSecretSuffix + api.MongoDBPEMSecretSuffix
+		clientPEMSecretName = db.MustCertSecretName(api.MongoDBClientCert, "")
 	}
 
 	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})

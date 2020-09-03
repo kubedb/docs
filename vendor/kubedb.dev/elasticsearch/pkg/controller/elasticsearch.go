@@ -25,21 +25,19 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/elasticsearch/pkg/admission"
+	"kubedb.dev/elasticsearch/pkg/distribution"
 
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
-	appsv1 "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
-	policy_util "kmodules.xyz/client-go/policy/v1beta1"
+	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
@@ -83,9 +81,16 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	// ensure database StatefulSet
-	vt2, err := c.ensureElasticsearchNode(elasticsearch)
+	elasticsearch, vt2, err := c.ensureElasticsearchNode(elasticsearch)
 	if err != nil {
 		return err
+	}
+
+	// If both err==nil & elasticsearch == nil,
+	// the object was dropped from the work-queue, to process later.
+	// return nil.
+	if elasticsearch == nil {
+		return nil
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
@@ -184,38 +189,53 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	return nil
 }
 
-func (c *Controller) ensureElasticsearchNode(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
-	var err error
+func (c *Controller) ensureElasticsearchNode(es *api.Elasticsearch) (*api.Elasticsearch, kutil.VerbType, error) {
+	if es == nil {
+		return nil, kutil.VerbUnchanged, errors.New("Elasticsearch object is empty")
+	}
 
-	if err = c.ensureCertSecret(elasticsearch); err != nil {
-		return kutil.VerbUnchanged, err
+	elastic, err := distribution.NewElasticsearch(c.Client, c.ExtClient, es)
+	if err != nil {
+		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to get elasticsearch distribution")
 	}
-	if err = c.ensureDatabaseSecret(elasticsearch); err != nil {
-		return kutil.VerbUnchanged, err
+
+	if err = elastic.EnsureCertSecrets(); err != nil {
+		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to ensure certificates secret")
 	}
-	if err = c.ensureDatabaseConfigForXPack(elasticsearch); err != nil {
-		return kutil.VerbUnchanged, err
+
+	if err = elastic.EnsureDatabaseSecret(); err != nil {
+		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to ensure database credential secret")
+	}
+
+	if !elastic.IsAllRequiredSecretAvailable() {
+		log.Warningf("Required secrets for Elasticsearch: %s/%s are not ready yet", es.Namespace, es.Name)
+		queue.EnqueueAfter(c.esQueue.GetQueue(), elastic.UpdatedElasticsearch(), 5*time.Second)
+		return nil, kutil.VerbUnchanged, nil
+	}
+
+	if err = elastic.EnsureDefaultConfig(); err != nil {
+		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to ensure default configuration for elasticsearch")
 	}
 
 	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
-	if err := c.ensureDatabaseRBAC(elasticsearch); err != nil {
-		return kutil.VerbUnchanged, err
+	if err := c.ensureDatabaseRBAC(elastic.UpdatedElasticsearch()); err != nil {
+		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to create RBAC role or roleBinding")
 	}
 
 	vt := kutil.VerbUnchanged
-	topology := elasticsearch.Spec.Topology
+	topology := elastic.UpdatedElasticsearch().Spec.Topology
 	if topology != nil {
-		vt1, err := c.ensureClientNode(elasticsearch)
+		vt1, err := elastic.EnsureClientNodes()
 		if err != nil {
-			return kutil.VerbUnchanged, err
+			return nil, kutil.VerbUnchanged, err
 		}
-		vt2, err := c.ensureMasterNode(elasticsearch)
+		vt2, err := elastic.EnsureMasterNodes()
 		if err != nil {
-			return kutil.VerbUnchanged, err
+			return nil, kutil.VerbUnchanged, err
 		}
-		vt3, err := c.ensureDataNode(elasticsearch)
+		vt3, err := elastic.EnsureDataNodes()
 		if err != nil {
-			return kutil.VerbUnchanged, err
+			return nil, kutil.VerbUnchanged, err
 		}
 
 		if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated && vt3 == kutil.VerbCreated {
@@ -224,17 +244,16 @@ func (c *Controller) ensureElasticsearchNode(elasticsearch *api.Elasticsearch) (
 			vt = kutil.VerbPatched
 		}
 	} else {
-		vt, err = c.ensureCombinedNode(elasticsearch)
+		vt, err = elastic.EnsureCombinedNode()
 		if err != nil {
-			return kutil.VerbUnchanged, err
+			return nil, kutil.VerbUnchanged, err
 		}
 	}
 
 	// Need some time to build elasticsearch cluster. Nodes will communicate with each other
-	// TODO: find better way
 	time.Sleep(time.Second * 30)
 
-	return vt, nil
+	return elastic.UpdatedElasticsearch(), vt, nil
 }
 
 func (c *Controller) halt(db *api.Elasticsearch) error {
@@ -380,34 +399,5 @@ func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation
 		in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
 		return in
 	}, metav1.PatchOptions{})
-	return err
-}
-
-func (c *Controller) createPodDisruptionBudget(sts *appsv1.StatefulSet, maxUnavailable *intstr.IntOrString) error {
-	owner := metav1.NewControllerRef(sts, appsv1.SchemeGroupVersion.WithKind("StatefulSet"))
-
-	m := metav1.ObjectMeta{
-		Name:      sts.Name,
-		Namespace: sts.Namespace,
-	}
-	_, _, err := policy_util.CreateOrPatchPodDisruptionBudget(
-		context.TODO(),
-		c.Client,
-		m,
-		func(in *policyv1beta1.PodDisruptionBudget) *policyv1beta1.PodDisruptionBudget {
-			in.Labels = sts.Labels
-			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-
-			in.Spec.Selector = &metav1.LabelSelector{
-				MatchLabels: sts.Spec.Template.Labels,
-			}
-
-			in.Spec.MaxUnavailable = maxUnavailable
-
-			in.Spec.MinAvailable = nil
-			return in
-		},
-		metav1.PatchOptions{},
-	)
 	return err
 }

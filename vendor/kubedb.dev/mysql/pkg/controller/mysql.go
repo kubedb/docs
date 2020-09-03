@@ -77,8 +77,51 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		return err
 	}
 
+	// create Service only for master/primary pod
+	if mysql.Spec.Topology != nil && mysql.Spec.Topology.Mode != nil && *mysql.Spec.Topology.Mode == api.MySQLClusterModeGroup {
+		vt, err := c.ensureServiceForPrimaryPod(mysql)
+		if err != nil {
+			return err
+		}
+		if vt == kutil.VerbCreated {
+			c.recorder.Event(
+				mysql,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully created primary service",
+			)
+		} else if vt == kutil.VerbPatched {
+			c.recorder.Event(
+				mysql,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully patched primary service",
+			)
+		}
+	}
+
 	if err := c.ensureDatabaseSecret(mysql); err != nil {
 		return err
+	}
+
+	// wait for certificates
+	if mysql.Spec.TLS != nil && mysql.Spec.TLS.IssuerRef != nil {
+		ok, err := dynamic_util.ResourcesExists(
+			c.DynamicClient,
+			core.SchemeGroupVersion.WithResource("secrets"),
+			mysql.Namespace,
+			mysql.MustCertSecretName(api.MySQLServerCert),
+			mysql.MustCertSecretName(api.MySQLClientCert),
+			mysql.MustCertSecretName(api.MySQLMetricsExporterCert),
+			meta_util.NameWithSuffix(mysql.Name, api.MySQLMetricsExporterConfigSecretSuffix),
+		)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			log.Infoln(fmt.Sprintf("wait for all necessary secrets for mysql %s/%s", mysql.Namespace, mysql.Name))
+			return nil
+		}
 	}
 
 	// ensure database StatefulSet

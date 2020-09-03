@@ -24,6 +24,7 @@ import (
 	time "time"
 
 	versioned "kubedb.dev/apimachinery/client/clientset/versioned"
+	autoscaling "kubedb.dev/apimachinery/client/informers/externalversions/autoscaling"
 	catalog "kubedb.dev/apimachinery/client/informers/externalversions/catalog"
 	internalinterfaces "kubedb.dev/apimachinery/client/informers/externalversions/internalinterfaces"
 	kubedb "kubedb.dev/apimachinery/client/informers/externalversions/kubedb"
@@ -175,9 +176,14 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
+	Autoscaling() autoscaling.Interface
 	Catalog() catalog.Interface
 	Kubedb() kubedb.Interface
 	Ops() ops.Interface
+}
+
+func (f *sharedInformerFactory) Autoscaling() autoscaling.Interface {
+	return autoscaling.New(f, f.namespace, f.tweakListOptions)
 }
 
 func (f *sharedInformerFactory) Catalog() catalog.Interface {

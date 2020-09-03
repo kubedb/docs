@@ -194,7 +194,7 @@ func (c *Controller) ensurePerconaXtraDB(px *api.PerconaXtraDB) (kutil.VerbType,
 		monitorContainer: &monitorContainer,
 	}
 
-	return c.ensureStatefulSet(px, px.Spec.UpdateStrategy, opts)
+	return c.ensureStatefulSet(px, opts)
 }
 
 func (c *Controller) checkStatefulSet(px *api.PerconaXtraDB, stsName string) error {
@@ -245,10 +245,7 @@ func upsertCustomConfig(
 	return template
 }
 
-func (c *Controller) ensureStatefulSet(
-	px *api.PerconaXtraDB,
-	updateStrategy apps.StatefulSetUpdateStrategy,
-	opts workloadOptions) (kutil.VerbType, error) {
+func (c *Controller) ensureStatefulSet(px *api.PerconaXtraDB, opts workloadOptions) (kutil.VerbType, error) {
 	// Take value of podTemplate
 	var pt ofst.PodTemplateSpec
 	if opts.podTemplate != nil {
@@ -357,7 +354,10 @@ func (c *Controller) ensureStatefulSet(
 			in.Spec.Template.Spec.Priority = pt.Spec.Priority
 			in.Spec.Template.Spec.SecurityContext = pt.Spec.SecurityContext
 			in.Spec.Template.Spec.ServiceAccountName = pt.Spec.ServiceAccountName
-			in.Spec.UpdateStrategy = updateStrategy
+			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
+				Type: apps.OnDeleteStatefulSetStrategyType,
+			}
+
 			return in
 		},
 		metav1.PatchOptions{},
@@ -450,7 +450,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, px *api.PerconaXtraDB) *apps.State
 							LocalObjectReference: core.LocalObjectReference{
 								Name: px.Spec.DatabaseSecret.SecretName,
 							},
-							Key: api.MySQLPasswordKey,
+							Key: core.BasicAuthPasswordKey,
 						},
 					},
 				},
@@ -461,7 +461,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, px *api.PerconaXtraDB) *apps.State
 							LocalObjectReference: core.LocalObjectReference{
 								Name: px.Spec.DatabaseSecret.SecretName,
 							},
-							Key: api.MySQLUserKey,
+							Key: core.BasicAuthUsernameKey,
 						},
 					},
 				},

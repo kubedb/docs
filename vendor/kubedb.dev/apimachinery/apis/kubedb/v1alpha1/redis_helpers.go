@@ -24,9 +24,9 @@ import (
 	"kubedb.dev/apimachinery/crds"
 
 	"github.com/appscode/go/types"
-	apps "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -35,9 +35,11 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-const RedisShardAffinityTemplateVar = "SHARD_INDEX"
+const (
+	RedisShardAffinityTemplateVar = "SHARD_INDEX"
+)
 
-func (_ Redis) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
+func (r Redis) CustomResourceDefinition() *apiextensions.CustomResourceDefinition {
 	return crds.MustCustomResourceDefinition(SchemeGroupVersion.WithResource(ResourcePluralRedis))
 }
 
@@ -125,7 +127,11 @@ func (r redisStatsService) ServiceName() string {
 }
 
 func (r redisStatsService) ServiceMonitorName() string {
-	return fmt.Sprintf("kubedb-%s-%s", r.Namespace, r.Name)
+	return r.ServiceName()
+}
+
+func (p redisStatsService) ServiceMonitorAdditionalLabels() map[string]string {
+	return p.OffshootLabels()
 }
 
 func (r redisStatsService) Path() string {
@@ -175,9 +181,6 @@ func (r *Redis) SetDefaults(topology *core_util.Topology) {
 	if r.Spec.StorageType == "" {
 		r.Spec.StorageType = StorageTypeDurable
 	}
-	if r.Spec.UpdateStrategy.Type == "" {
-		r.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
-	}
 	if r.Spec.TerminationPolicy == "" {
 		r.Spec.TerminationPolicy = TerminationPolicyDelete
 	} else if r.Spec.TerminationPolicy == TerminationPolicyPause {
@@ -195,9 +198,20 @@ func (r *Redis) SetDefaults(topology *core_util.Topology) {
 	r.setDefaultAffinity(&r.Spec.PodTemplate, labels, topology)
 
 	r.Spec.Monitor.SetDefaults()
+
+	r.setDefaultTLSConfig()
 }
 
-func (e *RedisSpec) GetSecrets() []string {
+func (r *Redis) setDefaultTLSConfig() {
+	if r.Spec.TLS == nil || r.Spec.TLS.IssuerRef == nil {
+		return
+	}
+	r.Spec.TLS.Certificates = kmapi.SetMissingSecretNameForCertificate(r.Spec.TLS.Certificates, string(RedisServerCert), r.CertificateName(RedisServerCert))
+	r.Spec.TLS.Certificates = kmapi.SetMissingSecretNameForCertificate(r.Spec.TLS.Certificates, string(RedisClientCert), r.CertificateName(RedisClientCert))
+	r.Spec.TLS.Certificates = kmapi.SetMissingSecretNameForCertificate(r.Spec.TLS.Certificates, string(RedisMetricsExporterCert), r.CertificateName(RedisMetricsExporterCert))
+}
+
+func (r *RedisSpec) GetSecrets() []string {
 	return nil
 }
 
@@ -245,4 +259,23 @@ func (r Redis) ShardNodeTemplate() string {
 		panic("shard template is not applicable to a standalone redis server")
 	}
 	return fmt.Sprintf("${%s}", RedisShardAffinityTemplateVar)
+}
+
+// CertificateName returns the default certificate name and/or certificate secret name for a certificate alias
+func (r *Redis) CertificateName(alias RedisCertificateAlias) string {
+	return meta_util.NameWithSuffix(r.Name, fmt.Sprintf("%s-cert", string(alias)))
+}
+
+// MustCertSecretName returns the secret name for a certificate alias
+func (r *Redis) MustCertSecretName(alias RedisCertificateAlias) string {
+	if r == nil {
+		panic("missing Redis database")
+	} else if r.Spec.TLS == nil {
+		panic(fmt.Errorf("Redis %s/%s is missing tls spec", r.Namespace, r.Name))
+	}
+	name, ok := kmapi.GetCertificateSecretName(r.Spec.TLS.Certificates, string(alias))
+	if !ok {
+		panic(fmt.Errorf("Redis %s/%s is missing secret name for %s certificate", r.Namespace, r.Name, alias))
+	}
+	return name
 }

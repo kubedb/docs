@@ -169,10 +169,6 @@ func ValidateMemcached(client kubernetes.Interface, extClient cs.Interface, memc
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be atleast 1"`, memcached.Spec.Replicas)
 	}
 
-	if memcached.Spec.UpdateStrategy.Type == "" {
-		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
-	}
-
 	if memcached.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}

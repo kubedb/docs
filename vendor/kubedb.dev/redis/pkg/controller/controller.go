@@ -95,7 +95,7 @@ func New(
 	}
 }
 
-// EnsureCustomResourceDefinitions ensures CRD for MySQl, DormantDatabase
+// EnsureCustomResourceDefinitions ensures CRD for Redis, DormantDatabase
 func (c *Controller) EnsureCustomResourceDefinitions() error {
 	log.Infoln("Ensuring CustomResourceDefinition...")
 	crds := []*apiextensions.CustomResourceDefinition{
@@ -109,7 +109,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 // InitInformer initializes Redis, DormantDB amd Snapshot watcher
 func (c *Controller) Init() error {
 	c.initWatcher()
-
+	c.initSecretWatcher()
 	return nil
 }
 

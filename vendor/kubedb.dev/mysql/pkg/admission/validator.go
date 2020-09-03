@@ -22,13 +22,11 @@ import (
 	"strings"
 	"sync"
 
-	cat_api "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
-	"github.com/coreos/go-semver/semver"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
@@ -145,53 +143,6 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 	return status
 }
 
-// recursivelyVersionCompare() receives two slices versionA and versionB of size 3 containing
-// major, minor and patch parts of the given versions (versionA and versionB) in indices
-// 0, 1 and 2 respectively. This function compares these parts of versionA and versionB. It returns,
-//
-// 		0;	if all parts of versionA are equal to corresponding parts of versionB
-//		1;	if for some i, version[i] > versionB[i] where from j = 0 to i-1, versionA[j] = versionB[j]
-//	   -1;	if for some i, version[i] < versionB[i] where from j = 0 to i-1, versionA[j] = versionB[j]
-//
-// ref: https://github.com/coreos/go-semver/blob/568e959cd89871e61434c1143528d9162da89ef2/semver/semver.go#L126-L141
-func recursivelyVersionCompare(versionA []int64, versionB []int64) int {
-	if len(versionA) == 0 {
-		return 0
-	}
-
-	a := versionA[0]
-	b := versionB[0]
-
-	if a > b {
-		return 1
-	} else if a < b {
-		return -1
-	}
-
-	return recursivelyVersionCompare(versionA[1:], versionB[1:])
-}
-
-// Currently, we support Group Replication for version 5.7.25. validateVersion()
-// checks whether the given version has exactly these major (5), minor (7) and patch (25).
-func validateGroupServerVersion(version string) error {
-	recommended, err := semver.NewVersion(api.MySQLGRRecommendedVersion)
-	if err != nil {
-		return fmt.Errorf("unable to parse recommended MySQL version %s: %v", api.MySQLGRRecommendedVersion, err)
-	}
-
-	given, err := semver.NewVersion(version)
-	if err != nil {
-		return fmt.Errorf("unable to parse given MySQL version %s: %v", version, err)
-	}
-
-	if cmp := recursivelyVersionCompare(recommended.Slice(), given.Slice()); cmp != 0 {
-		return fmt.Errorf("currently supported MySQL server version for group replication is %s, but used %s",
-			api.MySQLGRRecommendedVersion, version)
-	}
-
-	return nil
-}
-
 // On a replication master and each replication slave, the --server-id
 // option must be specified to establish a unique replication ID in the
 // range from 1 to 2^32 − 1. “Unique”, means that each ID must be different
@@ -242,15 +193,12 @@ func validateMySQLGroup(replicas int32, group api.MySQLGroupSpec) error {
 // ValidateMySQL checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
 func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *api.MySQL, strictValidation bool) error {
-	var (
-		err   error
-		myVer *cat_api.MySQLVersion
-	)
-
 	if mysql.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if myVer, err = extClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), string(mysql.Spec.Version), metav1.GetOptions{}); err != nil {
+
+	mysqlVersion, err := extClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), mysql.Spec.Version, metav1.GetOptions{})
+	if err != nil {
 		return err
 	}
 
@@ -275,7 +223,7 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 		// 'spec.topology.mode' is set to "GroupReplication"
 		if *mysql.Spec.Topology.Mode == api.MySQLClusterModeGroup {
 			// if spec.topology.mode is "GroupReplication", spec.topology.group is set to default during mutating
-			if err = validateMySQLGroup(*mysql.Spec.Replicas, *mysql.Spec.Topology.Group); err != nil {
+			if err := validateMySQLGroup(*mysql.Spec.Replicas, *mysql.Spec.Topology.Group); err != nil {
 				return err
 			}
 		}
@@ -306,11 +254,6 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 
 		// Check if mysqlVersion is deprecated.
 		// If deprecated, return error
-		mysqlVersion, err := extClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), string(mysql.Spec.Version), metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
-
 		if mysqlVersion.Spec.Deprecated {
 			return fmt.Errorf("mysql %s/%s is using deprecated version %v. Skipped processing", mysql.Namespace, mysql.Name, mysqlVersion.Name)
 		}
@@ -319,13 +262,6 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 			return fmt.Errorf("mysql %s/%s is using invalid mysqlVersion %v. Skipped processing. reason: %v", mysql.Namespace,
 				mysql.Name, mysqlVersion.Name, err)
 		}
-
-		if mysql.Spec.Topology != nil && mysql.Spec.Topology.Mode != nil &&
-			*mysql.Spec.Topology.Mode == api.MySQLClusterModeGroup {
-			if err = validateGroupServerVersion(myVer.Spec.Version); err != nil {
-				return err
-			}
-		}
 	}
 
 	if mysql.Spec.Init != nil &&
@@ -333,10 +269,6 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 		databaseSecret == nil {
 		return fmt.Errorf("for Snapshot init, 'spec.databaseSecret.secretName' of %v/%v needs to be similar to older database of restoesession %v",
 			mysql.Namespace, mysql.Name, mysql.Spec.Init.StashRestoreSession.Name)
-	}
-
-	if mysql.Spec.UpdateStrategy.Type == "" {
-		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
 	}
 
 	if mysql.Spec.TerminationPolicy == "" {

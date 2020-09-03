@@ -24,7 +24,6 @@ import (
 	"kubedb.dev/apimachinery/crds"
 
 	"github.com/appscode/go/types"
-	apps "k8s.io/api/apps/v1"
 	"kmodules.xyz/client-go/apiextensions"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -108,7 +107,11 @@ func (p proxysqlStatsService) ServiceName() string {
 }
 
 func (p proxysqlStatsService) ServiceMonitorName() string {
-	return fmt.Sprintf("kubedb-%s-%s", p.Namespace, p.Name)
+	return p.ServiceName()
+}
+
+func (p proxysqlStatsService) ServiceMonitorAdditionalLabels() map[string]string {
+	return p.OffshootLabels()
 }
 
 func (p proxysqlStatsService) Path() string {
@@ -147,10 +150,6 @@ func (p *ProxySQL) SetDefaults() {
 
 	if p.Spec.Replicas == nil {
 		p.Spec.Replicas = types.Int32P(1)
-	}
-
-	if p.Spec.UpdateStrategy.Type == "" {
-		p.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 	}
 
 	p.Spec.Monitor.SetDefaults()

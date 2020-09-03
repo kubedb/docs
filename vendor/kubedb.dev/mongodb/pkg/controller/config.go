@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/controller/restoresession"
@@ -38,17 +39,11 @@ import (
 	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 )
 
-const (
-	mutatingWebhookConfig   = "mutators.kubedb.com"
-	validatingWebhookConfig = "validators.kubedb.com"
-)
-
 type OperatorConfig struct {
 	amc.Config
 
 	ClientConfig     *rest.Config
 	KubeClient       kubernetes.Interface
-	MetadataClient   metadata.Interface
 	CRDClient        crd_cs.Interface
 	DBClient         cs.Interface
 	DynamicClient    dynamic.Interface
@@ -68,7 +63,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 
-	topology, err := core_util.DetectTopology(context.TODO(), c.MetadataClient)
+	topology, err := core_util.DetectTopology(context.TODO(), metadata.NewForConfigOrDie(c.ClientConfig))
 	if err != nil {
 		return nil, err
 	}
@@ -100,12 +95,12 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 	if c.EnableMutatingWebhook {
-		if err := reg_util.UpdateMutatingWebhookCABundle(c.ClientConfig, mutatingWebhookConfig); err != nil {
+		if err := reg_util.UpdateMutatingWebhookCABundle(c.ClientConfig, kubedb.MutatorGroupName); err != nil {
 			return nil, err
 		}
 	}
 	if c.EnableValidatingWebhook {
-		if err := reg_util.UpdateValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig); err != nil {
+		if err := reg_util.UpdateValidatingWebhookCABundle(c.ClientConfig, kubedb.ValidatorGroupName); err != nil {
 			return nil, err
 		}
 	}
