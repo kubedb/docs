@@ -98,7 +98,7 @@ func (c *Controller) topologyInitContainer(
 						LocalObjectReference: core.LocalObjectReference{
 							Name: mongodb.Spec.DatabaseSecret.SecretName,
 						},
-						Key: KeyMongoDBUser,
+						Key: core.BasicAuthUsernameKey,
 					},
 				},
 			},
@@ -109,7 +109,7 @@ func (c *Controller) topologyInitContainer(
 						LocalObjectReference: core.LocalObjectReference{
 							Name: mongodb.Spec.DatabaseSecret.SecretName,
 						},
-						Key: KeyMongoDBPassword,
+						Key: core.BasicAuthPasswordKey,
 					},
 				},
 			},

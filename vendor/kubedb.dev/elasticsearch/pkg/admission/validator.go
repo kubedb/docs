@@ -53,9 +53,10 @@ type ElasticsearchValidator struct {
 var _ hookapi.AdmissionHook = &ElasticsearchValidator{}
 
 var forbiddenEnvVars = []string{
-	"NODE_NAME",
-	"NODE_MASTER",
-	"NODE_DATA",
+	"node.name",
+	"node.ingest",
+	"node.master",
+	"node.data",
 }
 
 func (a *ElasticsearchValidator) Resource() (plural schema.GroupVersionResource, singular string) {
@@ -256,10 +257,6 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 			return fmt.Errorf("elasticsearch %s/%s is using invalid elasticsearchVersion %v. Skipped processing. reason: %v", elasticsearch.Namespace,
 				elasticsearch.Name, elasticsearchVersion.Name, err)
 		}
-	}
-
-	if elasticsearch.Spec.UpdateStrategy.Type == "" {
-		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
 	}
 
 	if elasticsearch.Spec.TerminationPolicy == "" {

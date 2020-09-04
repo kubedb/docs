@@ -23,7 +23,6 @@ import (
 	"kubedb.dev/apimachinery/apis/kubedb"
 	"kubedb.dev/apimachinery/crds"
 
-	apps "k8s.io/api/apps/v1"
 	"kmodules.xyz/client-go/apiextensions"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -106,7 +105,11 @@ func (m memcachedStatsService) ServiceName() string {
 }
 
 func (m memcachedStatsService) ServiceMonitorName() string {
-	return fmt.Sprintf("kubedb-%s-%s", m.Namespace, m.Name)
+	return m.ServiceName()
+}
+
+func (m memcachedStatsService) ServiceMonitorAdditionalLabels() map[string]string {
+	return m.OffshootLabels()
 }
 
 func (m memcachedStatsService) Path() string {
@@ -140,9 +143,6 @@ func (m *Memcached) SetDefaults() {
 	}
 
 	// perform defaulting
-	if m.Spec.UpdateStrategy.Type == "" {
-		m.Spec.UpdateStrategy.Type = apps.RollingUpdateDeploymentStrategyType
-	}
 	if m.Spec.TerminationPolicy == "" {
 		m.Spec.TerminationPolicy = TerminationPolicyDelete
 	} else if m.Spec.TerminationPolicy == TerminationPolicyPause {

@@ -22,11 +22,13 @@ import (
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/pkg/eventer"
+	certlib "kubedb.dev/elasticsearch/pkg/lib/cert"
 
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kutil "kmodules.xyz/client-go"
+	api_util "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -45,12 +47,22 @@ func (c *Controller) ensureAppBinding(db *api.Elasticsearch) (kutil.VerbType, er
 
 	var caBundle []byte
 	if db.Spec.EnableSSL {
-		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.CertificateSecret.SecretName, metav1.GetOptions{})
-		if err != nil {
-			return kutil.VerbUnchanged, errors.Wrapf(err, "failed to read certificate secret for Elasticsearch %s/%s", db.Namespace, db.Name)
+		if db.Spec.TLS == nil {
+			return kutil.VerbUnchanged, errors.New("missing TLS configuration")
 		}
-		if v, ok := certSecret.Data["root.pem"]; !ok {
-			return kutil.VerbUnchanged, errors.Errorf("root.pem is missing in certificate secret for Elasticsearch %s/%s", db.Namespace, db.Name)
+
+		sName, exist := api_util.GetCertificateSecretName(db.Spec.TLS.Certificates, string(api.ElasticsearchHTTPCert))
+		if !exist {
+			return kutil.VerbUnchanged, errors.New("http-cert secret is missing")
+		}
+
+		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
+		if err != nil {
+			return kutil.VerbUnchanged, errors.Wrapf(err, "failed to read http-cert secret for Elasticsearch %s/%s", db.Namespace, db.Name)
+		}
+
+		if v, ok := certSecret.Data[certlib.CACert]; !ok {
+			return kutil.VerbUnchanged, errors.Errorf("ca.crt is missing in http-cert secret for Elasticsearch %s/%s", db.Namespace, db.Name)
 		} else {
 			caBundle = v
 		}
@@ -82,20 +94,6 @@ func (c *Controller) ensureAppBinding(db *api.Elasticsearch) (kutil.VerbType, er
 
 			in.Spec.Secret = &core.LocalObjectReference{
 				Name: db.Spec.DatabaseSecret.SecretName,
-			}
-			in.Spec.SecretTransforms = []appcat.SecretTransform{
-				{
-					RenameKey: &appcat.RenameKeyTransform{
-						From: KeyAdminUserName,
-						To:   appcat.KeyUsername,
-					},
-				},
-				{
-					RenameKey: &appcat.RenameKeyTransform{
-						From: KeyAdminPassword,
-						To:   appcat.KeyPassword,
-					},
-				},
 			}
 
 			return in

@@ -29,7 +29,7 @@ import (
 )
 
 func (c *Controller) handleRestoreSession(rs *v1beta1.RestoreSession) error {
-	if rs.Status.Phase != v1beta1.RestoreSessionSucceeded && rs.Status.Phase != v1beta1.RestoreSessionFailed {
+	if rs.Status.Phase != v1beta1.RestoreSucceeded && rs.Status.Phase != v1beta1.RestoreFailed {
 		log.Debugf("restoreSession %v/%v is not any of 'succeeded' or 'failed' ", rs.Namespace, rs.Name)
 		return nil
 	}
@@ -88,7 +88,7 @@ func (c *Controller) handleRestoreSession(rs *v1beta1.RestoreSession) error {
 
 	var phase api.DatabasePhase
 	var reason string
-	if rs.Status.Phase == v1beta1.RestoreSessionSucceeded {
+	if rs.Status.Phase == v1beta1.RestoreSucceeded {
 		phase = api.DatabasePhaseRunning
 		if err := c.snapshotter.UpsertDatabaseAnnotation(meta, map[string]string{
 			api.AnnotationInitialized: "",
@@ -108,7 +108,7 @@ func (c *Controller) handleRestoreSession(rs *v1beta1.RestoreSession) error {
 		log.Errorln(err)
 		return nil
 	}
-	if rs.Status.Phase == v1beta1.RestoreSessionSucceeded {
+	if rs.Status.Phase == v1beta1.RestoreSucceeded {
 		c.eventRecorder.Event(
 			runtimeObj,
 			core.EventTypeNormal,

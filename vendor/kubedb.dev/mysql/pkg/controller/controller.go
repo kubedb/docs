@@ -112,6 +112,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 // Init initializes mysql, DormantDB amd Snapshot watcher
 func (c *Controller) Init() error {
 	c.initWatcher()
+	c.initSecretWatcher()
 	c.RSQueue = restoresession.NewController(c.Controller, c, c.Config, nil, c.recorder).AddEventHandlerFunc(c.selector)
 
 	return nil

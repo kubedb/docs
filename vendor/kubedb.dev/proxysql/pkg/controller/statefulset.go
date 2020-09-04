@@ -153,7 +153,7 @@ func (c *Controller) ensureProxySQLNode(proxysql *api.ProxySQL) (kutil.VerbType,
 					LocalObjectReference: core.LocalObjectReference{
 						Name: backendDB.GetDatabaseSecretName(),
 					},
-					Key: api.MySQLPasswordKey,
+					Key: core.BasicAuthPasswordKey,
 				},
 			},
 		},
@@ -187,7 +187,7 @@ func (c *Controller) ensureProxySQLNode(proxysql *api.ProxySQL) (kutil.VerbType,
 		monitorContainer: monitorContainer,
 	}
 
-	return c.ensureStatefulSet(proxysql, proxysql.Spec.UpdateStrategy, opts)
+	return c.ensureStatefulSet(proxysql, opts)
 }
 
 func (c *Controller) checkStatefulSet(proxysql *api.ProxySQL, stsName string) error {
@@ -234,10 +234,7 @@ func upsertCustomConfig(template core.PodTemplateSpec, configSource *core.Volume
 	return template
 }
 
-func (c *Controller) ensureStatefulSet(
-	proxysql *api.ProxySQL,
-	updateStrategy apps.StatefulSetUpdateStrategy,
-	opts workloadOptions) (kutil.VerbType, error) {
+func (c *Controller) ensureStatefulSet(proxysql *api.ProxySQL, opts workloadOptions) (kutil.VerbType, error) {
 	// Take value of podTemplate
 	var pt ofst.PodTemplateSpec
 	if opts.podTemplate != nil {
@@ -331,7 +328,9 @@ func (c *Controller) ensureStatefulSet(
 			in.Spec.Template.Spec.Priority = pt.Spec.Priority
 			in.Spec.Template.Spec.SecurityContext = pt.Spec.SecurityContext
 			in.Spec.Template.Spec.ServiceAccountName = pt.Spec.ServiceAccountName
-			in.Spec.UpdateStrategy = updateStrategy
+			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
+				Type: apps.OnDeleteStatefulSetStrategyType,
+			}
 			return in
 		},
 		metav1.PatchOptions{},
@@ -383,7 +382,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, proxysql *api.ProxySQL) *apps.Stat
 							LocalObjectReference: core.LocalObjectReference{
 								Name: proxysql.Spec.ProxySQLSecret.SecretName,
 							},
-							Key: api.ProxySQLUserKey,
+							Key: core.BasicAuthUsernameKey,
 						},
 					},
 				},
@@ -394,7 +393,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, proxysql *api.ProxySQL) *apps.Stat
 							LocalObjectReference: core.LocalObjectReference{
 								Name: proxysql.Spec.ProxySQLSecret.SecretName,
 							},
-							Key: api.ProxySQLPasswordKey,
+							Key: core.BasicAuthPasswordKey,
 						},
 					},
 				},

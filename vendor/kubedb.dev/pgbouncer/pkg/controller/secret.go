@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 
 	"github.com/appscode/go/crypto/rand"
@@ -115,7 +116,8 @@ func (c *Controller) isSecretExists(meta metav1.ObjectMeta) error {
 
 func (c *Controller) PgBouncerForSecret(s *core.Secret) cache.ExplicitKey {
 	ctrl := metav1.GetControllerOf(s)
-	if ctrl == nil || ctrl.Kind != api.ResourceKindPgBouncer {
+	ok, err := core_util.IsOwnerOfGroupKind(ctrl, kubedb.GroupName, api.ResourceKindPgBouncer)
+	if err != nil || !ok {
 		return ""
 	}
 	// Owner ref is set by the enterprise operator

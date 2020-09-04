@@ -96,6 +96,7 @@ func (c *Controller) ensureMongosNode(mongodb *api.MongoDB) (*apps.StatefulSet, 
 		mongodb,
 		mongodbVersion,
 		&mongodb.Spec.ShardTopology.Mongos.PodTemplate,
+		mongodb.MongosNodeName(),
 	)
 
 	var initContainers []core.Container
@@ -217,7 +218,7 @@ func mongosInitContainer(
 						LocalObjectReference: core.LocalObjectReference{
 							Name: mongodb.Spec.DatabaseSecret.SecretName,
 						},
-						Key: KeyMongoDBUser,
+						Key: core.BasicAuthUsernameKey,
 					},
 				},
 			},
@@ -228,7 +229,7 @@ func mongosInitContainer(
 						LocalObjectReference: core.LocalObjectReference{
 							Name: mongodb.Spec.DatabaseSecret.SecretName,
 						},
-						Key: KeyMongoDBPassword,
+						Key: core.BasicAuthPasswordKey,
 					},
 				},
 			},

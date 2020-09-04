@@ -85,8 +85,8 @@ func (c *Controller) createProxySQLSecret(proxysql *api.ProxySQL) (*core.SecretV
 			},
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
-				api.ProxySQLUserKey:     proxysqlUser,
-				api.ProxySQLPasswordKey: randProxysqlPassword,
+				core.BasicAuthUsernameKey: proxysqlUser,
+				core.BasicAuthPasswordKey: randProxysqlPassword,
 			},
 		}
 

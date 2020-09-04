@@ -21,6 +21,7 @@ package versioned
 import (
 	"fmt"
 
+	autoscalingv1alpha1 "kubedb.dev/apimachinery/client/clientset/versioned/typed/autoscaling/v1alpha1"
 	catalogv1alpha1 "kubedb.dev/apimachinery/client/clientset/versioned/typed/catalog/v1alpha1"
 	configv1alpha1 "kubedb.dev/apimachinery/client/clientset/versioned/typed/config/v1alpha1"
 	kubedbv1alpha1 "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1"
@@ -33,6 +34,7 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
+	AutoscalingV1alpha1() autoscalingv1alpha1.AutoscalingV1alpha1Interface
 	CatalogV1alpha1() catalogv1alpha1.CatalogV1alpha1Interface
 	ConfigV1alpha1() configv1alpha1.ConfigV1alpha1Interface
 	KubedbV1alpha1() kubedbv1alpha1.KubedbV1alpha1Interface
@@ -43,10 +45,16 @@ type Interface interface {
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	catalogV1alpha1 *catalogv1alpha1.CatalogV1alpha1Client
-	configV1alpha1  *configv1alpha1.ConfigV1alpha1Client
-	kubedbV1alpha1  *kubedbv1alpha1.KubedbV1alpha1Client
-	opsV1alpha1     *opsv1alpha1.OpsV1alpha1Client
+	autoscalingV1alpha1 *autoscalingv1alpha1.AutoscalingV1alpha1Client
+	catalogV1alpha1     *catalogv1alpha1.CatalogV1alpha1Client
+	configV1alpha1      *configv1alpha1.ConfigV1alpha1Client
+	kubedbV1alpha1      *kubedbv1alpha1.KubedbV1alpha1Client
+	opsV1alpha1         *opsv1alpha1.OpsV1alpha1Client
+}
+
+// AutoscalingV1alpha1 retrieves the AutoscalingV1alpha1Client
+func (c *Clientset) AutoscalingV1alpha1() autoscalingv1alpha1.AutoscalingV1alpha1Interface {
+	return c.autoscalingV1alpha1
 }
 
 // CatalogV1alpha1 retrieves the CatalogV1alpha1Client
@@ -90,6 +98,10 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
+	cs.autoscalingV1alpha1, err = autoscalingv1alpha1.NewForConfig(&configShallowCopy)
+	if err != nil {
+		return nil, err
+	}
 	cs.catalogV1alpha1, err = catalogv1alpha1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
@@ -118,6 +130,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
+	cs.autoscalingV1alpha1 = autoscalingv1alpha1.NewForConfigOrDie(c)
 	cs.catalogV1alpha1 = catalogv1alpha1.NewForConfigOrDie(c)
 	cs.configV1alpha1 = configv1alpha1.NewForConfigOrDie(c)
 	cs.kubedbV1alpha1 = kubedbv1alpha1.NewForConfigOrDie(c)
@@ -130,6 +143,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
+	cs.autoscalingV1alpha1 = autoscalingv1alpha1.New(c)
 	cs.catalogV1alpha1 = catalogv1alpha1.New(c)
 	cs.configV1alpha1 = configv1alpha1.New(c)
 	cs.kubedbV1alpha1 = kubedbv1alpha1.New(c)

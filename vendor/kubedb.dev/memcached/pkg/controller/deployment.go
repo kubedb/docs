@@ -166,7 +166,9 @@ func (c *Controller) createDeployment(memcached *api.Memcached) (*apps.Deploymen
 		in.Spec.Template.Spec.Priority = memcached.Spec.PodTemplate.Spec.Priority
 		in.Spec.Template.Spec.SecurityContext = memcached.Spec.PodTemplate.Spec.SecurityContext
 		in.Spec.Template.Spec.ServiceAccountName = memcached.Spec.PodTemplate.Spec.ServiceAccountName
-		in.Spec.Strategy = memcached.Spec.UpdateStrategy
+		in.Spec.Strategy = apps.DeploymentStrategy{
+			Type: apps.RollingUpdateDeploymentStrategyType,
+		}
 
 		return in
 	}, metav1.PatchOptions{})

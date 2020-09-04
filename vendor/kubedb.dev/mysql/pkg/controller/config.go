@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/controller/restoresession"
@@ -37,6 +38,9 @@ import (
 const (
 	mutatingWebhookConfig   = "mutators.kubedb.com"
 	validatingWebhookConfig = "validators.kubedb.com"
+
+	primary   = "primary"
+	labelRole = api.MySQLKey + "/role"
 )
 
 type OperatorConfig struct {

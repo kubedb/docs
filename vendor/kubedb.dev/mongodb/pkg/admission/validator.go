@@ -278,10 +278,6 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 		}
 	}
 
-	if mongodb.Spec.UpdateStrategy.Type == "" {
-		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
-	}
-
 	if mongodb.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
@@ -330,12 +326,10 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 
 var preconditionSpecFields = []string{
 	"spec.storageType",
-	"spec.storage",
 	"spec.databaseSecret",
 	"spec.certificateSecret",
 	"spec.init",
 	"spec.replicaSet.name",
-	"spec.shardTopology.*.storage",
 	"spec.shardTopology.*.prefix",
 }
 

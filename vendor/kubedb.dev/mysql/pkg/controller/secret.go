@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 
@@ -27,14 +28,12 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/cache"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 const (
 	mysqlUser = "root"
-
-	KeyMySQLUser     = "username"
-	KeyMySQLPassword = "password"
 )
 
 func (c *Controller) ensureDatabaseSecret(mysql *api.MySQL) error {
@@ -78,8 +77,8 @@ func (c *Controller) createDatabaseSecret(mysql *api.MySQL) (*core.SecretVolumeS
 			},
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
-				KeyMySQLUser:     mysqlUser,
-				KeyMySQLPassword: randPassword,
+				core.BasicAuthUsernameKey: mysqlUser,
+				core.BasicAuthPasswordKey: randPassword,
 			},
 		}
 		if _, err := c.Client.CoreV1().Secrets(mysql.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
@@ -100,9 +99,9 @@ func (c *Controller) upgradeDatabaseSecret(mysql *api.MySQL) error {
 	}
 
 	_, _, err := core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {
-		if _, ok := in.Data[KeyMySQLUser]; !ok {
+		if _, ok := in.Data[core.BasicAuthUsernameKey]; !ok {
 			if val, ok2 := in.Data["user"]; ok2 {
-				in.StringData = map[string]string{KeyMySQLUser: string(val)}
+				in.StringData = map[string]string{core.BasicAuthUsernameKey: string(val)}
 			}
 		}
 		return in
@@ -124,4 +123,15 @@ func (c *Controller) checkSecret(secretName string, mysql *api.MySQL) (*core.Sec
 		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, mysql.Namespace, secretName)
 	}
 	return secret, nil
+}
+
+func (c *Controller) mysqlForSecret(s *core.Secret) cache.ExplicitKey {
+	ctrl := metav1.GetControllerOf(s)
+	ok, err := core_util.IsOwnerOfGroupKind(ctrl, kubedb.GroupName, api.ResourceKindMySQL)
+	if err != nil || !ok {
+		return ""
+	}
+
+	// Owner ref is set by the enterprise operator
+	return cache.ExplicitKey(s.Namespace + "/" + ctrl.Name)
 }

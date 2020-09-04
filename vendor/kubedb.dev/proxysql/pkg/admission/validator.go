@@ -237,10 +237,6 @@ func ValidateProxySQL(client kubernetes.Interface, extClient cs.Interface, proxy
 		}
 	}
 
-	if proxysql.Spec.UpdateStrategy.Type == "" {
-		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
-	}
-
 	monitorSpec := proxysql.Spec.Monitor
 	if monitorSpec != nil {
 		if err = amv.ValidateMonitorSpec(monitorSpec); err != nil {

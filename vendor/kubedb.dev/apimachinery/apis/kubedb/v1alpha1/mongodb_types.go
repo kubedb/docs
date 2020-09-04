@@ -20,6 +20,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
@@ -100,34 +101,38 @@ type MongoDBSpec struct {
 	// +optional
 	ServiceTemplate ofst.ServiceTemplateSpec `json:"serviceTemplate,omitempty" protobuf:"bytes,14,opt,name=serviceTemplate"`
 
-	// updateStrategy indicates the StatefulSetUpdateStrategy that will be
-	// employed to update Pods in the StatefulSet when a revision is made to
-	// Template.
-	UpdateStrategy apps.StatefulSetUpdateStrategy `json:"updateStrategy,omitempty" protobuf:"bytes,15,opt,name=updateStrategy"`
-
 	// TLS contains tls configurations for client and server.
 	// +optional
-	TLS *TLSConfig `json:"tls,omitempty" protobuf:"bytes,16,opt,name=tls"`
+	TLS *kmapi.TLSConfig `json:"tls,omitempty" protobuf:"bytes,15,opt,name=tls"`
 
 	// Secret for KeyFile. Contains keyfile `key.txt` if spec.clusterAuthMode == keyFile || sendKeyFile
-	KeyFile *core.SecretVolumeSource `json:"keyFile,omitempty" protobuf:"bytes,17,opt,name=keyFile"`
+	KeyFile *core.SecretVolumeSource `json:"keyFile,omitempty" protobuf:"bytes,16,opt,name=keyFile"`
 
 	// Indicates that the database is paused and controller will not sync any changes made to this spec.
 	// +optional
-	Paused bool `json:"paused,omitempty" protobuf:"varint,18,opt,name=paused"`
+	Paused bool `json:"paused,omitempty" protobuf:"varint,17,opt,name=paused"`
 
 	// Indicates that the database is halted and all offshoot Kubernetes resources except PVCs are deleted.
 	// +optional
-	Halted bool `json:"halted,omitempty" protobuf:"varint,19,opt,name=halted"`
+	Halted bool `json:"halted,omitempty" protobuf:"varint,18,opt,name=halted"`
 
 	// TerminationPolicy controls the delete operation for database
 	// +optional
-	TerminationPolicy TerminationPolicy `json:"terminationPolicy,omitempty" protobuf:"bytes,20,opt,name=terminationPolicy,casttype=TerminationPolicy"`
+	TerminationPolicy TerminationPolicy `json:"terminationPolicy,omitempty" protobuf:"bytes,19,opt,name=terminationPolicy,casttype=TerminationPolicy"`
 
 	// StorageEngine can be wiredTiger (default) or inMemory
 	// See available StorageEngine: https://docs.mongodb.com/manual/core/storage-engines/
-	StorageEngine StorageEngine `json:"storageEngine,omitempty" protobuf:"bytes,21,opt,name=storageEngine,casttype=StorageEngine"`
+	StorageEngine StorageEngine `json:"storageEngine,omitempty" protobuf:"bytes,20,opt,name=storageEngine,casttype=StorageEngine"`
 }
+
+// +kubebuilder:validation:Enum=server;client;metrics-exporter
+type MongoDBCertificateAlias string
+
+const (
+	MongoDBServerCert          MongoDBCertificateAlias = "server"
+	MongoDBClientCert          MongoDBCertificateAlias = "client"
+	MongoDBMetricsExporterCert MongoDBCertificateAlias = "metrics-exporter"
+)
 
 // ClusterAuthMode represents the clusterAuthMode of mongodb clusters ( replicaset or sharding)
 // ref: https://docs.mongodb.com/manual/reference/program/mongod/#cmdoption-mongod-clusterauthmode

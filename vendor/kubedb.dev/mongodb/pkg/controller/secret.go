@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 
@@ -28,15 +29,14 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/tools/cache"
+	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 const (
 	mongodbUser = "root"
 
-	KeyMongoDBUser     = "username"
-	KeyMongoDBPassword = "password"
-	KeyForKeyFile      = "key.txt"
+	KeyForKeyFile = "key.txt"
 
 	DatabaseSecretSuffix = "-auth"
 )
@@ -130,8 +130,8 @@ func (c *Controller) createDatabaseSecret(mongodb *api.MongoDB) (*core.SecretVol
 			},
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
-				KeyMongoDBUser:     mongodbUser,
-				KeyMongoDBPassword: randPassword,
+				core.BasicAuthUsernameKey: mongodbUser,
+				core.BasicAuthPasswordKey: randPassword,
 			},
 		}
 		if _, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
@@ -158,17 +158,12 @@ func (c *Controller) checkSecret(secretName string, mongodb *api.MongoDB) (*core
 	return secret, nil
 }
 
-func (c *Controller) MongoDBForSecret(s *core.Secret) (*api.MongoDB, error) {
-	dbs, err := c.mgLister.MongoDBs(s.Namespace).List(labels.Everything())
-	if err != nil {
-		return nil, err
+func (c *Controller) MongoDBForSecret(s *core.Secret) cache.ExplicitKey {
+	ctrl := metav1.GetControllerOf(s)
+	ok, err := core_util.IsOwnerOfGroupKind(ctrl, kubedb.GroupName, api.ResourceKindMongoDB)
+	if err != nil || !ok {
+		return ""
 	}
-
-	for _, db := range dbs {
-		if metav1.IsControlledBy(s, db) {
-			return db, nil
-		}
-	}
-
-	return nil, nil
+	// Owner ref is set by the enterprise operator
+	return cache.ExplicitKey(s.Namespace + "/" + ctrl.Name)
 }

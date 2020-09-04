@@ -99,27 +99,19 @@ func (c *Controller) initSecretWatcher() {
 	c.SecretInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if secret, ok := obj.(*core.Secret); ok {
-				db, err := c.MongoDBForSecret(secret)
-				if err == nil && db != nil {
-					queue.Enqueue(c.mgQueue.GetQueue(), db)
+				if key := c.MongoDBForSecret(secret); key != "" {
+					queue.Enqueue(c.mgQueue.GetQueue(), key)
 				}
 			}
 		},
 		UpdateFunc: func(oldObj interface{}, newObj interface{}) {
 			if secret, ok := newObj.(*core.Secret); ok {
-				db, err := c.MongoDBForSecret(secret)
-				if err == nil && db != nil {
-					queue.Enqueue(c.mgQueue.GetQueue(), db)
+				if key := c.MongoDBForSecret(secret); key != "" {
+					queue.Enqueue(c.mgQueue.GetQueue(), key)
 				}
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
-			if secret, ok := obj.(*core.Secret); ok {
-				db, err := c.MongoDBForSecret(secret)
-				if err == nil && db != nil {
-					queue.Enqueue(c.mgQueue.GetQueue(), db)
-				}
-			}
 		},
 	})
 }

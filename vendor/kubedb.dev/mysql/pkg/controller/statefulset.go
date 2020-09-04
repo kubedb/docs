@@ -30,74 +30,61 @@ import (
 	"github.com/fatih/structs"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
 func (c *Controller) ensureStatefulSet(mysql *api.MySQL) (kutil.VerbType, error) {
-	if err := c.checkStatefulSet(mysql); err != nil {
-		return kutil.VerbUnchanged, err
-	}
-
-	// Create statefulSet for MySQL database
-	statefulSet, vt, err := c.createStatefulSet(mysql)
+	stsName, stsCur, err := c.findStatefulSet(mysql)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
-	// Check StatefulSet Pod status
-	if vt != kutil.VerbUnchanged {
-		if err := c.checkStatefulSetPodStatus(statefulSet); err != nil {
+	vt := kutil.VerbUnchanged
+	if stsCur == nil {
+		// Create statefulSet for MySQL database
+		var stsNew *apps.StatefulSet
+		stsNew, vt, err = c.createStatefulSet(mysql, stsName)
+		if err != nil {
 			return kutil.VerbUnchanged, err
 		}
-		c.recorder.Eventf(
-			mysql,
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully %v StatefulSet",
-			vt,
-		)
+
+		// Check StatefulSet Pod status
+		if vt != kutil.VerbUnchanged {
+			if err := c.checkStatefulSetPodStatus(stsNew); err != nil {
+				return kutil.VerbUnchanged, err
+			}
+			c.recorder.Eventf(
+				mysql,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully %v StatefulSet",
+				vt,
+			)
+		}
+		stsCur = stsNew
 	}
 
 	// ensure pdb
-	if err := c.CreateStatefulSetPodDisruptionBudget(statefulSet); err != nil {
+	if err := c.CreateStatefulSetPodDisruptionBudget(stsCur); err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
 	return vt, nil
 }
 
-func (c *Controller) checkStatefulSet(mysql *api.MySQL) error {
-	// SatatefulSet for MySQL database
-	statefulSet, err := c.Client.AppsV1().StatefulSets(mysql.Namespace).Get(context.TODO(), mysql.OffshootName(), metav1.GetOptions{})
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			return nil
-		}
-		return err
-	}
-
-	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindMySQL ||
-		statefulSet.Labels[api.LabelDatabaseName] != mysql.Name {
-		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, mysql.Namespace, mysql.OffshootName())
-	}
-
-	return nil
-}
-
-func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kutil.VerbType, error) {
+func (c *Controller) createStatefulSet(mysql *api.MySQL, stsName string) (*apps.StatefulSet, kutil.VerbType, error) {
 	statefulSetMeta := metav1.ObjectMeta{
-		Name:      mysql.OffshootName(),
+		Name:      stsName,
 		Namespace: mysql.Namespace,
 	}
-
 	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
-	mysqlVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), string(mysql.Spec.Version), metav1.GetOptions{})
+	mysqlVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), mysql.Spec.Version, metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -167,15 +154,60 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL) (*apps.StatefulSet, kut
 					},
 				},
 			}
+
+			// add ssl certs flag into args to configure TLS for standalone
+			if mysql.Spec.Topology == nil && mysql.Spec.TLS != nil {
+				args := container.Args
+				tlsArgs := []string{
+					"--ssl-capath=/etc/mysql/certs",
+					"--ssl-ca=/etc/mysql/certs/ca.crt",
+					"--ssl-cert=/etc/mysql/certs/server.crt",
+					"--ssl-key=/etc/mysql/certs/server.key",
+				}
+				args = append(args, tlsArgs...)
+				if mysql.Spec.RequireSSL {
+					args = append(args, "--require-secure-transport=ON")
+				}
+				container.Args = args
+			}
+
 			if mysql.Spec.Topology != nil && mysql.Spec.Topology.Mode != nil &&
 				*mysql.Spec.Topology.Mode == api.MySQLClusterModeGroup {
+				// replicationModeDetector is used to continuous select primary pod
+				// and add label as primary
+				replicationModeDetector := core.Container{
+					Name:            api.MySQLContainerReplicationModeDetectorName,
+					Image:           mysqlVersion.Spec.ReplicationModeDetector.Image,
+					ImagePullPolicy: core.PullIfNotPresent,
+					Args:            append([]string{"run"}, c.LoggerOptions.ToFlags()...),
+				}
+
+				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, replicationModeDetector)
+
 				container.Command = []string{
 					"peer-finder",
 				}
-				userProvidedArgs := strings.Join(mysql.Spec.PodTemplate.Spec.Args, " ")
+
+				args := mysql.Spec.PodTemplate.Spec.Args
+
+				// add ssl certs flag into args in peer-finder to configure TLS for group replication
+				if mysql.Spec.TLS != nil {
+					tlsArgs := []string{
+						"--ssl-capath=/etc/mysql/certs",
+						"--ssl-ca=/etc/mysql/certs/ca.crt",
+						"--ssl-cert=/etc/mysql/certs/server.crt",
+						"--ssl-key=/etc/mysql/certs/server.key",
+					}
+					args = append(args, tlsArgs...)
+					if mysql.Spec.RequireSSL {
+						args = append(args, "--require-secure-transport=ON ")
+					}
+				}
+
+				providedArgs := strings.Join(args, " ")
 				container.Args = []string{
 					fmt.Sprintf("-service=%s", mysql.GoverningServiceName()),
-					fmt.Sprintf("-on-start=/on-start.sh %s", userProvidedArgs),
+					fmt.Sprintf("-on-start=/on-start.sh %s", providedArgs),
 				}
 				if container.LivenessProbe != nil && structs.IsZero(*container.LivenessProbe) {
 					container.LivenessProbe = nil
@@ -223,18 +255,32 @@ mysql -h localhost -nsLNE -e "select 1;" 2>/dev/null | grep -v "*"
 			}
 
 			if mysql.GetMonitoringVendor() == mona.VendorPrometheus {
+				var argsStr string
+				var args []string
+
+				args = mysql.Spec.Monitor.Prometheus.Exporter.Args
+				// pass config.my-cnf flag into exporter to configure TLS
+				if mysql.Spec.TLS != nil {
+					// ref: https://github.com/prometheus/mysqld_exporter#general-flags
+					// https://github.com/prometheus/mysqld_exporter#customizing-configuration-for-a-ssl-connection
+					args = append(args, "--config.my-cnf=/etc/mysql/certs/exporter.cnf ")
+					argsStr = fmt.Sprintf(`/bin/mysqld_exporter --web.listen-address=:%v --web.telemetry-path=%v %v`,
+						mysql.Spec.Monitor.Prometheus.Exporter.Port, mysql.StatsService().Path(), strings.Join(args, " "))
+				} else {
+					// DATA_SOURCE_NAME=user:password@tcp(localhost:5555)/dbname
+					// ref: https://github.com/prometheus/mysqld_exporter#setting-the-mysql-servers-data-source-name
+					argsStr = fmt.Sprintf(`export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"
+						/bin/mysqld_exporter --web.listen-address=:%v --web.telemetry-path=%v %v`,
+						mysql.Spec.Monitor.Prometheus.Exporter.Port, mysql.StatsService().Path(), strings.Join(args, " "))
+				}
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
-					Name: "exporter",
+					Name: api.ContainerExporterName,
 					Command: []string{
 						"/bin/sh",
 					},
 					Args: []string{
 						"-c",
-						// DATA_SOURCE_NAME=user:password@tcp(localhost:5555)/dbname
-						// owner: https://github.com/prometheus/mysqld_exporter#setting-the-mysql-servers-data-source-name
-						fmt.Sprintf(`export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"
-						/bin/mysqld_exporter --web.listen-address=:%v --web.telemetry-path=%v %v`,
-							mysql.Spec.Monitor.Prometheus.Exporter.Port, mysql.StatsService().Path(), strings.Join(mysql.Spec.Monitor.Prometheus.Exporter.Args, " ")),
+						argsStr,
 					},
 					Image: mysqlVersion.Spec.Exporter.Image,
 					Ports: []core.ContainerPort{
@@ -250,7 +296,7 @@ mysql -h localhost -nsLNE -e "select 1;" 2>/dev/null | grep -v "*"
 				})
 			}
 			// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
-			in = upsertEnv(in, mysql)
+			in = upsertEnv(in, mysql, stsName)
 			in = upsertDataVolume(in, mysql)
 			in = upsertCustomConfig(in, mysql)
 
@@ -271,13 +317,18 @@ mysql -h localhost -nsLNE -e "select 1;" 2>/dev/null | grep -v "*"
 				in.Spec.Template.Spec.SecurityContext = mysql.Spec.PodTemplate.Spec.SecurityContext
 			}
 			in.Spec.Template.Spec.ServiceAccountName = mysql.Spec.PodTemplate.Spec.ServiceAccountName
-			in.Spec.UpdateStrategy = mysql.Spec.UpdateStrategy
+			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
+				Type: apps.OnDeleteStatefulSetStrategyType,
+			}
 			in = upsertUserEnv(in, mysql)
 
+			// configure tls
+			if mysql.Spec.TLS != nil {
+				in = upsertTLSVolume(in, mysql)
+			}
+
 			return in
-		},
-		metav1.PatchOptions{},
-	)
+		}, metav1.PatchOptions{})
 }
 
 func upsertDataVolume(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
@@ -334,9 +385,9 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.Sta
 	return statefulSet
 }
 
-func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
+func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL, stsName string) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMySQL || container.Name == "exporter" {
+		if container.Name == api.ResourceSingularMySQL || container.Name == api.ContainerExporterName || container.Name == api.MySQLContainerReplicationModeDetectorName {
 			envs := []core.EnvVar{
 				{
 					Name: "MYSQL_ROOT_PASSWORD",
@@ -345,7 +396,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSe
 							LocalObjectReference: core.LocalObjectReference{
 								Name: mysql.Spec.DatabaseSecret.SecretName,
 							},
-							Key: KeyMySQLPassword,
+							Key: core.BasicAuthPasswordKey,
 						},
 					},
 				},
@@ -356,7 +407,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSe
 							LocalObjectReference: core.LocalObjectReference{
 								Name: mysql.Spec.DatabaseSecret.SecretName,
 							},
-							Key: KeyMySQLUser,
+							Key: core.BasicAuthUsernameKey,
 						},
 					},
 				},
@@ -368,7 +419,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSe
 				envs = append(envs, []core.EnvVar{
 					{
 						Name:  "BASE_NAME",
-						Value: mysql.Name,
+						Value: stsName,
 					},
 					{
 						Name:  "GOV_SVC",
@@ -471,4 +522,154 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.S
 		}
 	}
 	return statefulSet
+}
+
+func (c *Controller) findStatefulSet(mysql *api.MySQL) (string, *apps.StatefulSet, error) {
+	stsList, err := c.Client.AppsV1().StatefulSets(mysql.Namespace).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return "", nil, err
+	}
+
+	count := 0
+	var cur *apps.StatefulSet
+	for i, sts := range stsList.Items {
+		if metav1.IsControlledBy(&sts, mysql) &&
+			sts.Labels[api.LabelDatabaseKind] == api.ResourceKindMySQL &&
+			sts.Labels[api.LabelDatabaseName] == mysql.Name {
+			count++
+			cur = &stsList.Items[i]
+		}
+	}
+
+	switch count {
+	case 0:
+		return mysql.OffshootName(), nil, nil
+	case 1:
+		return cur.Name, cur, nil
+	}
+	return "", nil, fmt.Errorf("more then one StatefulSet found for MySQL %s/%s", mysql.Namespace, mysql.Name)
+}
+
+func upsertTLSVolume(sts *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
+	for i, container := range sts.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularMySQL {
+			volumeMount := core.VolumeMount{
+				Name:      "tls-volume",
+				MountPath: "/etc/mysql/certs",
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
+			sts.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+		}
+
+		if container.Name == "exporter" {
+			volumeMount := core.VolumeMount{
+				Name:      "exporter-tls-volume",
+				MountPath: "/etc/mysql/certs",
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
+			sts.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+		}
+	}
+
+	volume := core.Volume{
+		Name: "tls-volume",
+		VolumeSource: core.VolumeSource{
+			Projected: &core.ProjectedVolumeSource{
+				Sources: []core.VolumeProjection{
+					{
+						Secret: &core.SecretProjection{
+							LocalObjectReference: core.LocalObjectReference{
+								Name: mysql.MustCertSecretName(api.MySQLServerCert),
+							},
+							Items: []core.KeyToPath{
+								{
+									Key:  "ca.crt",
+									Path: "ca.crt",
+								},
+								{
+									Key:  "tls.crt",
+									Path: "server.crt",
+								},
+								{
+									Key:  "tls.key",
+									Path: "server.key",
+								},
+							},
+						},
+					},
+					{
+						Secret: &core.SecretProjection{
+							LocalObjectReference: core.LocalObjectReference{
+								Name: mysql.MustCertSecretName(api.MySQLClientCert),
+							},
+							Items: []core.KeyToPath{
+								{
+									Key:  "tls.crt",
+									Path: "client.crt",
+								},
+								{
+									Key:  "tls.key",
+									Path: "client.key",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	exporterTLSVolume := core.Volume{
+		Name: "exporter-tls-volume",
+		VolumeSource: core.VolumeSource{
+			Projected: &core.ProjectedVolumeSource{
+				Sources: []core.VolumeProjection{
+					{
+						Secret: &core.SecretProjection{
+							LocalObjectReference: core.LocalObjectReference{
+								Name: mysql.MustCertSecretName(api.MySQLMetricsExporterCert),
+							},
+							Items: []core.KeyToPath{
+								{
+									Key:  "ca.crt",
+									Path: "ca.crt",
+								},
+								{
+									Key:  "tls.crt",
+									Path: "exporter.crt",
+								},
+								{
+									Key:  "tls.key",
+									Path: "exporter.key",
+								},
+							},
+						},
+					},
+					{
+						Secret: &core.SecretProjection{
+							LocalObjectReference: core.LocalObjectReference{
+								Name: meta_util.NameWithSuffix(mysql.Name, api.MySQLMetricsExporterConfigSecretSuffix),
+							},
+							Items: []core.KeyToPath{
+								{
+									Key:  "exporter.cnf",
+									Path: "exporter.cnf",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	sts.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+		sts.Spec.Template.Spec.Volumes,
+		volume,
+		exporterTLSVolume,
+	)
+
+	return sts
 }

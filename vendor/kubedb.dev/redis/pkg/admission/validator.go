@@ -28,6 +28,7 @@ import (
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
 	"github.com/pkg/errors"
+	version "gomodules.xyz/version"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -191,16 +192,22 @@ func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *a
 		}
 	}
 
-	if redis.Spec.UpdateStrategy.Type == "" {
-		return fmt.Errorf(`'spec.updateStrategy.type' is missing`)
-	}
-
 	if redis.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
 	if redis.Spec.StorageType == api.StorageTypeEphemeral && redis.Spec.TerminationPolicy == api.TerminationPolicyHalt {
 		return fmt.Errorf(`'spec.terminationPolicy: Halt' can not be used for 'Ephemeral' storage`)
+	}
+
+	if redis.Spec.TLS != nil {
+		redisVersion, err := extClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		if _, err := checkTLSSupport(redisVersion.Spec.Version); err != nil {
+			return err
+		}
 	}
 
 	if err := amv.ValidateEnvVar(redis.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindRedis); err != nil {
@@ -259,4 +266,15 @@ func preconditionFailedError() error {
 	kind
 	name
 	namespace`, strList}, "\n\t"))
+}
+
+func checkTLSSupport(v string) (bool, error) {
+	rdVersion, err := version.NewVersion(v)
+	if err != nil {
+		return false, err
+	}
+	if rdVersion.Major() < 6 {
+		return false, fmt.Errorf("ssl support is available only for v6 or later versions")
+	}
+	return true, nil
 }

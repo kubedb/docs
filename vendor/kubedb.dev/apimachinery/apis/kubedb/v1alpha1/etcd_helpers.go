@@ -24,7 +24,6 @@ import (
 	"kubedb.dev/apimachinery/crds"
 
 	"github.com/appscode/go/types"
-	apps "k8s.io/api/apps/v1"
 	"kmodules.xyz/client-go/apiextensions"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -111,7 +110,11 @@ func (e etcdStatsService) ServiceName() string {
 }
 
 func (e etcdStatsService) ServiceMonitorName() string {
-	return fmt.Sprintf("kubedb-%s-%s", e.Namespace, e.Name)
+	return e.ServiceName()
+}
+
+func (e etcdStatsService) ServiceMonitorAdditionalLabels() map[string]string {
+	return e.OffshootLabels()
 }
 
 func (e etcdStatsService) Path() string {
@@ -150,9 +153,6 @@ func (e *Etcd) SetDefaults() {
 	}
 	if e.Spec.StorageType == "" {
 		e.Spec.StorageType = StorageTypeDurable
-	}
-	if e.Spec.UpdateStrategy.Type == "" {
-		e.Spec.UpdateStrategy.Type = apps.RollingUpdateStatefulSetStrategyType
 	}
 	if e.Spec.TerminationPolicy == "" {
 		e.Spec.TerminationPolicy = TerminationPolicyDelete
