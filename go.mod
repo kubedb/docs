@@ -15,16 +15,16 @@ require (
 	kmodules.xyz/client-go v0.0.0-20200903033732-dab39b86c81b
 	kmodules.xyz/custom-resources v0.0.0-20200604135349-9e9f5c4fdba9
 	kmodules.xyz/webhook-runtime v0.0.0-20200522123600-ca70a7e28ed0
-	kubedb.dev/apimachinery v0.14.0-beta.1.0.20200903230240-76ac9bc0603a
-	kubedb.dev/elasticsearch v0.14.0-beta.1.0.20200903223145-ada6c2d36052
-	kubedb.dev/memcached v0.7.0-beta.1.0.20200903074009-1b627013901f
-	kubedb.dev/mongodb v0.7.0-beta.1.0.20200903053553-c1d5cdb81349
-	kubedb.dev/mysql v0.7.0-beta.1.0.20200903235014-184a6cbc4adc
-	kubedb.dev/percona-xtradb v0.1.0-beta.1.0.20200903182127-85d1d036113f
-	kubedb.dev/pgbouncer v0.1.0-beta.1.0.20200903182113-ddf5a857c707
-	kubedb.dev/postgres v0.14.0-beta.1.0.20200903081355-9208f75491d7
-	kubedb.dev/proxysql v0.1.0-beta.1.0.20200903182752-7f5349cc7fc6
-	kubedb.dev/redis v0.7.0-beta.1.0.20200903234104-c76ee46e3a33
+	kubedb.dev/apimachinery v0.14.0-beta.2
+	kubedb.dev/elasticsearch v0.14.0-beta.2
+	kubedb.dev/memcached v0.7.0-beta.2
+	kubedb.dev/mongodb v0.7.0-beta.2
+	kubedb.dev/mysql v0.7.0-beta.2
+	kubedb.dev/percona-xtradb v0.1.0-beta.2
+	kubedb.dev/pgbouncer v0.1.0-beta.2
+	kubedb.dev/postgres v0.14.0-beta.2
+	kubedb.dev/proxysql v0.1.0-beta.2
+	kubedb.dev/redis v0.7.0-beta.2
 	stash.appscode.dev/apimachinery v0.10.0
 )
 
