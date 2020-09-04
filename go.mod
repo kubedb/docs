@@ -34,6 +34,10 @@ replace google.golang.org/genproto => google.golang.org/genproto v0.0.0-20191115
 
 replace cloud.google.com/go => cloud.google.com/go v0.49.0
 
+replace github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
+
+replace github.com/golang/protobuf => github.com/golang/protobuf v1.3.2
+
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
 
 replace git.apache.org/thrift.git => github.com/apache/thrift v0.13.0
@@ -61,10 +65,6 @@ replace github.com/Azure/go-autorest/autorest/validation => github.com/Azure/go-
 replace github.com/Azure/go-autorest/logger => github.com/Azure/go-autorest/logger v0.1.0
 
 replace github.com/Azure/go-autorest/tracing => github.com/Azure/go-autorest/tracing v0.5.0
-
-replace github.com/gogo/protobuf => github.com/gogo/protobuf v1.3.1
-
-replace github.com/golang/protobuf => github.com/golang/protobuf v1.3.2
 
 replace github.com/imdario/mergo => github.com/imdario/mergo v0.3.5
 
