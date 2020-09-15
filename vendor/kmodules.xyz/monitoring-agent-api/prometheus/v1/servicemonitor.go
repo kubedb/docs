@@ -21,12 +21,12 @@ import (
 
 	kutil "kmodules.xyz/client-go"
 
-	promapi "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
-	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/golang/glog"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
+	promapi "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	prom "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"

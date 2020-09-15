@@ -1,11 +1,11 @@
 /*
 Copyright AppsCode Inc. and Contributors
 
-Licensed under the PolyForm Noncommercial License 1.0.0 (the "License");
+Licensed under the AppsCode Community License 1.0.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://github.com/appscode/licenses/raw/1.0.0/PolyForm-Noncommercial-1.0.0.md
+    https://github.com/appscode/licenses/raw/1.0.0/AppsCode-Community-1.0.0.md
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -65,14 +65,10 @@ const (
 	ServerCertDirectoryName = "server-cert"
 	ServerCertDirectoryPath = "/server-cert"
 
-	initialConfigDirectoryName = "configdir"
 	initialConfigDirectoryPath = "/configdb-readonly"
 
 	initialKeyDirectoryName = "keydir"
 	initialKeyDirectoryPath = "/keydir-readonly"
-
-	InitInstallContainerName   = "copy-config"
-	InitBootstrapContainerName = "bootstrap"
 )
 
 type workloadOptions struct {
@@ -695,7 +691,7 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB, opts workloadOption
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 				in.Spec.Template.Spec.Containers,
 				core.Container{
-					Name:            api.ResourceSingularMongoDB,
+					Name:            api.MongoDBContainerName,
 					Image:           mongodbVersion.Spec.DB.Image,
 					ImagePullPolicy: core.PullIfNotPresent,
 					Command:         opts.cmd,
@@ -815,7 +811,7 @@ func installInitContainer(
 	}
 
 	installContainer = core.Container{
-		Name:            InitInstallContainerName,
+		Name:            api.MongoDBInitInstallContainerName,
 		Image:           mongodbVersion.Spec.InitContainer.Image,
 		ImagePullPolicy: core.PullIfNotPresent,
 		Command:         []string{"/bin/sh"},
@@ -933,7 +929,7 @@ func upsertDataVolume(
 	storageType api.StorageType,
 ) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB {
+		if container.Name == api.MongoDBContainerName {
 			volumeMount := []core.VolumeMount{
 				{
 					Name:      dataDirectoryName,
@@ -1036,7 +1032,7 @@ func upsertEnv(template core.PodTemplateSpec, mongodb *api.MongoDB) core.PodTemp
 		},
 	}
 	for i, container := range template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB || container.Name == "exporter" {
+		if container.Name == api.MongoDBContainerName || container.Name == api.ContainerExporterName {
 			template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
 		}
 	}
@@ -1082,7 +1078,7 @@ func getExporterContainer(mongodb *api.MongoDB, mongodbVersion *v1alpha1.MongoDB
 	}
 
 	return core.Container{
-		Name:  "exporter",
+		Name:  api.ContainerExporterName,
 		Args:  args,
 		Image: mongodbVersion.Spec.Exporter.Image,
 		Ports: []core.ContainerPort{

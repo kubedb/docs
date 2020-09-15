@@ -1,11 +1,11 @@
 /*
 Copyright AppsCode Inc. and Contributors
 
-Licensed under the PolyForm Noncommercial License 1.0.0 (the "License");
+Licensed under the AppsCode Community License 1.0.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://github.com/appscode/licenses/raw/1.0.0/PolyForm-Noncommercial-1.0.0.md
+    https://github.com/appscode/licenses/raw/1.0.0/AppsCode-Community-1.0.0.md
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,7 +31,7 @@ import (
 // So, This initial file is copied to configDirectoryPath "/data/configdb" by init-container.
 func (c *Controller) upsertConfigSourceVolume(template core.PodTemplateSpec, configSource *core.VolumeSource) core.PodTemplateSpec {
 	for i, container := range template.Spec.Containers {
-		if container.Name == api.ResourceSingularMongoDB {
+		if container.Name == api.MongoDBContainerName {
 			template.Spec.Containers[i].Args = meta_util.UpsertArgumentList(
 				template.Spec.Containers[i].Args,
 				[]string{"--config=" + filepath.Join(configDirectoryPath, "mongod.conf")},
@@ -40,11 +40,11 @@ func (c *Controller) upsertConfigSourceVolume(template core.PodTemplateSpec, con
 	}
 
 	for i, container := range template.Spec.InitContainers {
-		if container.Name == InitInstallContainerName {
+		if container.Name == api.MongoDBInitInstallContainerName {
 			template.Spec.InitContainers[i].VolumeMounts = core_util.UpsertVolumeMount(
 				template.Spec.InitContainers[i].VolumeMounts,
 				core.VolumeMount{
-					Name:      initialConfigDirectoryName,
+					Name:      api.MongoDBConfigDirectoryName,
 					MountPath: initialConfigDirectoryPath,
 				})
 		}
@@ -53,7 +53,7 @@ func (c *Controller) upsertConfigSourceVolume(template core.PodTemplateSpec, con
 	template.Spec.Volumes = core_util.UpsertVolume(
 		template.Spec.Volumes,
 		core.Volume{
-			Name:         initialConfigDirectoryName,
+			Name:         api.MongoDBConfigDirectoryName,
 			VolumeSource: *configSource,
 		})
 
