@@ -25,9 +25,9 @@ import (
 	api "kmodules.xyz/monitoring-agent-api/api/v1"
 	prom_util "kmodules.xyz/monitoring-agent-api/prometheus/v1"
 
-	promapi "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
-	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"github.com/pkg/errors"
+	promapi "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	prom "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"

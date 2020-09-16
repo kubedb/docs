@@ -22,7 +22,7 @@ import (
 	"kmodules.xyz/monitoring-agent-api/agents/prometheusoperator"
 	api "kmodules.xyz/monitoring-agent-api/api/v1"
 
-	prom "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	prom "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
