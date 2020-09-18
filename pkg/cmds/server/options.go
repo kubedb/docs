@@ -43,6 +43,7 @@ import (
 )
 
 type ExtraOptions struct {
+	LicenseFile                 string
 	OperatorNamespace           string
 	RestrictToOperatorNamespace bool
 	GoverningService            string
@@ -79,6 +80,7 @@ func NewExtraOptions() *ExtraOptions {
 }
 
 func (s *ExtraOptions) AddGoFlags(fs *flag.FlagSet) {
+	fs.StringVar(&s.LicenseFile, "license-file", s.LicenseFile, "Path to license file")
 	fs.StringVar(&s.GoverningService, "governing-service", s.GoverningService, "Governing service for database statefulset")
 
 	fs.Float64Var(&s.QPS, "qps", s.QPS, "The maximum QPS to the master from this client")
@@ -100,6 +102,7 @@ func (s *ExtraOptions) AddFlags(fs *pflag.FlagSet) {
 func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 	var err error
 
+	cfg.LicenseFile = s.LicenseFile
 	cfg.OperatorNamespace = s.OperatorNamespace
 	cfg.GoverningService = s.GoverningService
 
