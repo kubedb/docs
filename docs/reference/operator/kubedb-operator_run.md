@@ -75,6 +75,7 @@ kubedb-operator run [flags]
       --http2-max-streams-per-connection int                    The limit that the server gives to clients for the maximum number of streams in an HTTP/2 connection. Zero means to use golang's default. (default 1000)
       --kubeconfig string                                       kubeconfig file pointing at the 'core' kubernetes server.
       --label-key-blacklist strings                             list of keys that are not propagated from a CRD object to its offshoots (default [app.kubernetes.io/name,app.kubernetes.io/version,app.kubernetes.io/instance,app.kubernetes.io/managed-by])
+      --license-file string                                     Path to license file
       --profiling                                               Enable profiling via web interface host:port/debug/pprof/ (default true)
       --qps float                                               The maximum QPS to the master from this client (default 1e+06)
       --requestheader-allowed-names strings                     List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.
