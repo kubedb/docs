@@ -78,7 +78,7 @@ func (c *Controller) ensureElasticGvrSvc(elasticsearch *api.Elasticsearch) error
 	}, metav1.PatchOptions{})
 
 	if err == nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			elasticsearch,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -100,7 +100,7 @@ func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.Verb
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt1 != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			elasticsearch,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -119,7 +119,7 @@ func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.Verb
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt2 != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			elasticsearch,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -251,7 +251,7 @@ func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			elasticsearch,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

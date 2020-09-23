@@ -154,10 +154,10 @@ func (c *Controller) topologyInitContainer(
 	}
 
 	//only on mongos in case of sharding (which is handled on 'ensureMongosNode'.
-	if mongodb.Spec.ShardTopology == nil && mongodb.Spec.Init != nil && mongodb.Spec.Init.ScriptSource != nil {
+	if mongodb.Spec.ShardTopology == nil && mongodb.Spec.Init != nil && mongodb.Spec.Init.Script != nil {
 		rsVolumes = append(rsVolumes, core.Volume{
 			Name:         "initial-script",
-			VolumeSource: mongodb.Spec.Init.ScriptSource.VolumeSource,
+			VolumeSource: mongodb.Spec.Init.Script.VolumeSource,
 		})
 
 		bootstrapContainer.VolumeMounts = core_util.UpsertVolumeMount(

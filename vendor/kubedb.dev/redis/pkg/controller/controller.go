@@ -53,8 +53,6 @@ type Controller struct {
 
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
-	// Event Recorder
-	recorder record.EventRecorder
 	// labelselector for event-handler of Snapshot, Dormant and Job
 	selector labels.Selector
 
@@ -85,10 +83,10 @@ func New(
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
 			ClusterTopology:  topology,
+			Recorder:         recorder,
 		},
 		Config:     opt,
 		promClient: promClient,
-		recorder:   recorder,
 		selector: labels.SelectorFromSet(map[string]string{
 			api.LabelDatabaseKind: api.ResourceKindRedis,
 		}),
@@ -162,7 +160,7 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) pushFailureEvent(redis *api.Redis, reason string) {
-	c.recorder.Eventf(
+	c.Recorder.Eventf(
 		redis,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
@@ -178,7 +176,7 @@ func (c *Controller) pushFailureEvent(redis *api.Redis, reason string) {
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			redis,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,

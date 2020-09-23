@@ -264,13 +264,6 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 		}
 	}
 
-	if mysql.Spec.Init != nil &&
-		mysql.Spec.Init.StashRestoreSession != nil &&
-		databaseSecret == nil {
-		return fmt.Errorf("for Snapshot init, 'spec.databaseSecret.secretName' of %v/%v needs to be similar to older database of restoesession %v",
-			mysql.Namespace, mysql.Name, mysql.Spec.Init.StashRestoreSession.Name)
-	}
-
 	if mysql.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}

@@ -37,11 +37,11 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/record"
 	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 )
 
 type Controller struct {
@@ -66,12 +66,12 @@ func New(
 	client kubernetes.Interface,
 	crdClient crd_cs.Interface,
 	dbClient cs.Interface,
-	stashClient scs.Interface,
 	dynamicClient dynamic.Interface,
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	opt amc.Config,
 	topology *core_util.Topology,
+	recorder record.EventRecorder,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
@@ -79,10 +79,10 @@ func New(
 			Client:           client,
 			ExtClient:        dbClient,
 			CRDClient:        crdClient,
-			StashClient:      stashClient,
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
 			ClusterTopology:  topology,
+			Recorder:         recorder,
 		},
 		Config:     opt,
 		promClient: promClient,

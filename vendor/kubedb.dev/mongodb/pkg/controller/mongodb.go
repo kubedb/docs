@@ -37,7 +37,7 @@ import (
 
 func (c *Controller) create(mongodb *api.MongoDB) error {
 	if err := validator.ValidateMongoDB(c.Client, c.ExtClient, mongodb, true); err != nil {
-		c.recorder.Event(
+		c.Recorder.Event(
 			mongodb,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -130,14 +130,14 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			mongodb,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created MongoDB",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			mongodb,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -153,7 +153,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	if _, err := meta_util.GetString(mongodb.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		mongodb.Spec.Init != nil && mongodb.Spec.Init.StashRestoreSession != nil {
+		mongodb.Spec.Init != nil && mongodb.Spec.Init.Initializer != nil {
 
 		if mongodb.Status.Phase == api.DatabasePhaseInitializing {
 			return nil
@@ -170,8 +170,8 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		mongodb.Status = mg.Status
 
 		init := mongodb.Spec.Init
-		if init.StashRestoreSession != nil {
-			log.Debugf("MongoDB %v/%v is waiting for restoreSession to be succeeded", mongodb.Namespace, mongodb.Name)
+		if init.Initializer != nil {
+			log.Debugf("MongoDB %v/%v is waiting for the initializer to complete it's initialization", mongodb.Namespace, mongodb.Name)
 			return nil
 		}
 	}
@@ -188,7 +188,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(mongodb); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mongodb,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -200,7 +200,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	if err := c.manageMonitor(mongodb); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mongodb,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,

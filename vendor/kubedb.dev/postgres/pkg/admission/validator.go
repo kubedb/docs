@@ -246,13 +246,6 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	}
 	// end <==============
 
-	if postgres.Spec.Init != nil &&
-		postgres.Spec.Init.StashRestoreSession != nil &&
-		databaseSecret == nil {
-		return fmt.Errorf("in StashRestore init, 'spec.databaseSecret.secretName' of %v/%v needs to be similar to older database of restoresession %v",
-			postgres.Namespace, postgres.Name, postgres.Spec.Init.StashRestoreSession.Name)
-	}
-
 	if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
 		wal := postgres.Spec.Init.PostgresWAL
 		if wal.S3 == nil && wal.GCS == nil && wal.Azure == nil && wal.Swift == nil && wal.Local == nil {

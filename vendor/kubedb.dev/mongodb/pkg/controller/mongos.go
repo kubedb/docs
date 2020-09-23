@@ -119,10 +119,10 @@ func (c *Controller) ensureMongosNode(mongodb *api.MongoDB) (*apps.StatefulSet, 
 	initContainers = append(initContainers, initContnr)
 	volumes = core_util.UpsertVolume(volumes, initvolumes...)
 
-	if mongodb.Spec.Init != nil && mongodb.Spec.Init.ScriptSource != nil {
+	if mongodb.Spec.Init != nil && mongodb.Spec.Init.Script != nil {
 		volumes = core_util.UpsertVolume(volumes, core.Volume{
 			Name:         "initial-script",
-			VolumeSource: mongodb.Spec.Init.ScriptSource.VolumeSource,
+			VolumeSource: mongodb.Spec.Init.Script.VolumeSource,
 		})
 
 		volumeMounts = append(
@@ -268,10 +268,10 @@ func mongosInitContainer(
 		})
 	}
 
-	if mongodb.Spec.Init != nil && mongodb.Spec.Init.ScriptSource != nil {
+	if mongodb.Spec.Init != nil && mongodb.Spec.Init.Script != nil {
 		rsVolumes = append(rsVolumes, core.Volume{
 			Name:         "initial-script",
-			VolumeSource: mongodb.Spec.Init.ScriptSource.VolumeSource,
+			VolumeSource: mongodb.Spec.Init.Script.VolumeSource,
 		})
 
 		bootstrapContainer.VolumeMounts = core_util.UpsertVolumeMount(

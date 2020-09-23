@@ -62,7 +62,7 @@ func (c *Controller) ensureService(postgres *api.Postgres) (kutil.VerbType, erro
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt1 != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			postgres,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -81,7 +81,7 @@ func (c *Controller) ensureService(postgres *api.Postgres) (kutil.VerbType, erro
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt2 != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			postgres,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -236,7 +236,7 @@ func (c *Controller) ensureStatsService(postgres *api.Postgres) (kutil.VerbType,
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			postgres,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

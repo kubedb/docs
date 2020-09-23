@@ -58,7 +58,7 @@ func (c *Controller) ensureService(mongodb *api.MongoDB) (kutil.VerbType, error)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mongodb,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -175,7 +175,7 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mongodb,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -231,7 +231,7 @@ func (c *Controller) ensureMongoGvrSvc(mongodb *api.MongoDB) error {
 		)
 
 		if err == nil {
-			c.recorder.Eventf(
+			c.Recorder.Eventf(
 				mongodb,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,

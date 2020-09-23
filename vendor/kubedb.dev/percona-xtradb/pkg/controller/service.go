@@ -52,7 +52,7 @@ func (c *Controller) ensureService(px *api.PerconaXtraDB) (kutil.VerbType, error
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			px,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -153,7 +153,7 @@ func (c *Controller) ensureStatsService(px *api.PerconaXtraDB) (kutil.VerbType, 
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			px,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

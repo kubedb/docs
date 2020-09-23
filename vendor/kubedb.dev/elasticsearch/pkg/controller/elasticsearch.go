@@ -42,7 +42,7 @@ import (
 
 func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	if err := validator.ValidateElasticsearch(c.Client, c.ExtClient, elasticsearch, true); err != nil {
-		c.recorder.Event(
+		c.Recorder.Event(
 			elasticsearch,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -94,14 +94,14 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			elasticsearch,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created Elasticsearch",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			elasticsearch,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -117,7 +117,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	if _, err := meta_util.GetString(elasticsearch.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		elasticsearch.Spec.Init != nil && elasticsearch.Spec.Init.StashRestoreSession != nil {
+		elasticsearch.Spec.Init != nil && elasticsearch.Spec.Init.Initializer != nil {
 
 		if elasticsearch.Status.Phase == api.DatabasePhaseInitializing {
 			return nil
@@ -139,8 +139,8 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		elasticsearch.Status = mg.Status
 
 		init := elasticsearch.Spec.Init
-		if init.StashRestoreSession != nil {
-			log.Debugf("Elasticsearch %v/%v is waiting for restoreSession to be succeeded", elasticsearch.Namespace, elasticsearch.Name)
+		if init.Initializer != nil {
+			log.Debugf("Elasticsearch %v/%v is waiting for initializer to complete it's initialization", elasticsearch.Namespace, elasticsearch.Name)
 			return nil
 		}
 	}
@@ -163,7 +163,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(elasticsearch); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			elasticsearch,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -175,7 +175,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	if err := c.manageMonitor(elasticsearch); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			elasticsearch,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,

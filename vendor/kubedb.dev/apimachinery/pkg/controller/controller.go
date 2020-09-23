@@ -35,12 +35,14 @@ import (
 	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/record"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	appcat_in "kmodules.xyz/custom-resources/client/informers/externalversions"
 	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
-	stashInformers "stash.appscode.dev/apimachinery/client/informers/externalversions"
+	stashinformer "stash.appscode.dev/apimachinery/client/informers/externalversions"
+	lister "stash.appscode.dev/apimachinery/client/listers/stash/v1beta1"
 )
 
 type Controller struct {
@@ -55,24 +57,22 @@ type Controller struct {
 	DynamicClient dynamic.Interface
 	// AppCatalog client
 	AppCatalogClient appcat_cs.Interface
-	// StashClient for stash
-	StashClient scs.Interface
 	// Cluster topology when the operator started
 	ClusterTopology *core_util.Topology
+	// Event Recorder
+	Recorder record.EventRecorder
 }
 
 type Config struct {
 	// Informer factory
 	KubeInformerFactory        informers.SharedInformerFactory
 	KubedbInformerFactory      kubedbinformers.SharedInformerFactory
-	StashInformerFactory       stashInformers.SharedInformerFactory
 	AppCatInformerFactory      appcat_in.SharedInformerFactory
 	ExternalInformerFactory    externalInformers.SharedInformerFactory
 	CertManagerInformerFactory cmInformers.SharedInformerFactory
 
-	// restoreSession queue
-	RSQueue    *queue.Worker
-	RSInformer cache.SharedIndexInformer
+	// External tool to initialize the database
+	Initializers Initializers
 
 	// Secret
 	SecretInformer cache.SharedIndexInformer
@@ -89,6 +89,24 @@ type Config struct {
 	WatchNamespace          string
 	EnableValidatingWebhook bool
 	EnableMutatingWebhook   bool
+}
+
+type Initializers struct {
+	Stash StashInitializer
+}
+
+type StashInitializer struct {
+	StashClient          scs.Interface
+	StashInformerFactory stashinformer.SharedInformerFactory
+	// StashInitializer RestoreSession
+	RSQueue    *queue.Worker
+	RSInformer cache.SharedIndexInformer
+	RSLister   lister.RestoreSessionLister
+
+	// StashInitializer RestoreBatch
+	RBQueue    *queue.Worker
+	RBInformer cache.SharedIndexInformer
+	RBLister   lister.RestoreBatchLister
 }
 
 type DBHelper interface {

@@ -701,6 +701,18 @@ spec:
               type: boolean
             init:
               properties:
+                initializer:
+                  properties:
+                    apiGroup:
+                      type: string
+                    kind:
+                      type: string
+                    name:
+                      type: string
+                  required:
+                  - kind
+                  - name
+                  type: object
                 postgresWAL:
                   properties:
                     azure:
@@ -1363,7 +1375,7 @@ spec:
                           type: string
                       type: object
                   type: object
-                scriptSource:
+                script:
                   properties:
                     awsElasticBlockStore:
                       properties:
@@ -1951,11 +1963,6 @@ spec:
                       required:
                       - volumePath
                       type: object
-                  type: object
-                stashRestoreSession:
-                  properties:
-                    name:
-                      type: string
                   type: object
               type: object
             internalUsers:
@@ -3697,8 +3704,14 @@ spec:
                         items:
                           type: string
                         type: array
-                      keyEncoding:
-                        type: string
+                      privateKey:
+                        properties:
+                          encoding:
+                            enum:
+                            - PKCS1
+                            - PKCS8
+                            type: string
+                        type: object
                       renewBefore:
                         type: string
                       secretName:

@@ -124,10 +124,10 @@ func (c *Controller) ensurePerconaXtraDB(px *api.PerconaXtraDB) (kutil.VerbType,
 	var volumes []core.Volume
 	var volumeMounts []core.VolumeMount
 
-	if !px.IsCluster() && px.Spec.Init != nil && px.Spec.Init.ScriptSource != nil {
+	if !px.IsCluster() && px.Spec.Init != nil && px.Spec.Init.Script != nil {
 		volumes = append(volumes, core.Volume{
 			Name:         "initial-script",
-			VolumeSource: px.Spec.Init.ScriptSource.VolumeSource,
+			VolumeSource: px.Spec.Init.Script.VolumeSource,
 		})
 		volumeMounts = append(volumeMounts, core.VolumeMount{
 			Name:      "initial-script",
@@ -372,7 +372,7 @@ func (c *Controller) ensureStatefulSet(px *api.PerconaXtraDB, opts workloadOptio
 		if err := c.checkStatefulSetPodStatus(statefulSet); err != nil {
 			return kutil.VerbUnchanged, err
 		}
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			px,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

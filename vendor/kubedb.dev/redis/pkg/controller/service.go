@@ -52,7 +52,7 @@ func (c *Controller) ensureService(redis *api.Redis) (kutil.VerbType, error) {
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			redis,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -153,7 +153,7 @@ func (c *Controller) ensureStatsService(redis *api.Redis) (kutil.VerbType, error
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			redis,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

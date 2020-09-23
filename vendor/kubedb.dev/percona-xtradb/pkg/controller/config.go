@@ -19,19 +19,16 @@ package controller
 import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
-	"kubedb.dev/apimachinery/pkg/controller/restoresession"
-	"kubedb.dev/apimachinery/pkg/eventer"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/discovery"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 )
 
 const (
@@ -42,14 +39,15 @@ const (
 type OperatorConfig struct {
 	amc.Config
 
+	LicenseFile      string
 	ClientConfig     *rest.Config
 	KubeClient       kubernetes.Interface
 	CRDClient        crd_cs.Interface
 	DBClient         cs.Interface
-	StashClient      scs.Interface
 	DynamicClient    dynamic.Interface
 	AppCatalogClient appcat_cs.Interface
 	PromClient       pcm.MonitoringV1Interface
+	Recorder         record.EventRecorder
 }
 
 func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
@@ -63,27 +61,17 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 
-	recorder := eventer.NewEventRecorder(c.KubeClient, "PerconaXtraDB operator")
-
 	ctrl := New(
 		c.ClientConfig,
 		c.KubeClient,
 		c.CRDClient,
 		c.DBClient,
-		c.StashClient,
 		c.DynamicClient,
 		c.AppCatalogClient,
 		c.PromClient,
 		c.Config,
-		recorder,
+		c.Recorder,
 	)
-
-	tweakListOptions := func(options *metav1.ListOptions) {
-		options.LabelSelector = ctrl.selector.String()
-	}
-
-	// Initialize RestoreSessionForCluster informer.
-	ctrl.RSInformer = restoresession.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions, recorder).InitInformer()
 
 	if err := ctrl.EnsureCustomResourceDefinitions(); err != nil {
 		return nil, err

@@ -70,7 +70,7 @@ func (c *Controller) ensureStatefulSet(redis *api.Redis, statefulSetName string,
 			return kutil.VerbUnchanged, errors.Wrap(err, "Failed to CreateOrPatch StatefulSet")
 		}
 
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			redis,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

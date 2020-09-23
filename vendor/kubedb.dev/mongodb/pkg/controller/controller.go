@@ -26,7 +26,7 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
 	amc "kubedb.dev/apimachinery/pkg/controller"
-	"kubedb.dev/apimachinery/pkg/controller/restoresession"
+	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -47,7 +47,6 @@ import (
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 )
 
 type Controller struct {
@@ -56,8 +55,6 @@ type Controller struct {
 
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
-	// Event Recorder
-	recorder record.EventRecorder
 	// labelselector for event-handler of Snapshot, Dormant and Job
 	selector labels.Selector
 
@@ -74,7 +71,6 @@ func New(
 	client kubernetes.Interface,
 	crdClient crd_cs.Interface,
 	extClient cs.Interface,
-	stashClient scs.Interface,
 	dc dynamic.Interface,
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
@@ -87,15 +83,14 @@ func New(
 			ClientConfig:     clientConfig,
 			Client:           client,
 			ExtClient:        extClient,
-			StashClient:      stashClient,
 			CRDClient:        crdClient,
 			DynamicClient:    dc,
 			AppCatalogClient: appCatalogClient,
 			ClusterTopology:  topology,
+			Recorder:         recorder,
 		},
 		Config:     opt,
 		promClient: promClient,
-		recorder:   recorder,
 		selector: labels.SelectorFromSet(map[string]string{
 			api.LabelDatabaseKind: api.ResourceKindMongoDB,
 		}),
@@ -117,7 +112,15 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 func (c *Controller) Init() error {
 	c.initWatcher()
 	c.initSecretWatcher()
-	c.RSQueue = restoresession.NewController(c.Controller, c, c.Config, nil, c.recorder).AddEventHandlerFunc(c.selector)
+
+	// Initialize Stash initializer
+	stash.NewController(
+		c.Controller,
+		&c.Config.Initializers.Stash,
+		c,
+		c.Recorder,
+		c.WatchNamespace,
+	).InitWatcher(c.MaxNumRequeues, c.NumThreads, c.selector)
 
 	return nil
 }
@@ -142,23 +145,14 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.KubeInformerFactory.Start(stopCh)
 	c.KubedbInformerFactory.Start(stopCh)
 
-	go func() {
-		// start StashInformerFactory only if stash crds (ie, "restoreSession") are available.
-		if err := c.BlockOnStashOperator(stopCh); err != nil {
-			log.Errorln("error while waiting for restoreSession.", err)
-			return
-		}
-
-		// start informer factory
-		c.StashInformerFactory.Start(stopCh)
-		for t, v := range c.StashInformerFactory.WaitForCacheSync(stopCh) {
-			if !v {
-				log.Fatalf("%v timed out waiting for caches to sync", t)
-				return
-			}
-		}
-		c.RSQueue.Run(stopCh)
-	}()
+	// Start Stash initializer controllers
+	go stash.NewController(
+		c.Controller,
+		&c.Config.Initializers.Stash,
+		c,
+		c.Recorder,
+		c.WatchNamespace,
+	).StartController(stopCh)
 
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range c.KubeInformerFactory.WaitForCacheSync(stopCh) {
@@ -190,7 +184,7 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) pushFailureEvent(mongodb *api.MongoDB, reason string) {
-	c.recorder.Eventf(
+	c.Recorder.Eventf(
 		mongodb,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
@@ -212,7 +206,7 @@ func (c *Controller) pushFailureEvent(mongodb *api.MongoDB, reason string) {
 		metav1.UpdateOptions{},
 	)
 	if err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mongodb,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,

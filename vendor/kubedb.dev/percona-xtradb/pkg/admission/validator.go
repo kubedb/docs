@@ -154,7 +154,7 @@ func validateCluster(px *api.PerconaXtraDB) error {
 			return errors.Errorf(`'spec.px.clusterName' "%s" shouldn't have more than %d characters'`,
 				clusterName, api.PerconaXtraDBMaxClusterNameLength)
 		}
-		if px.Spec.Init != nil && px.Spec.Init.ScriptSource != nil {
+		if px.Spec.Init != nil && px.Spec.Init.Script != nil {
 			return fmt.Errorf("`.spec.init.scriptSource` is not supported for cluster. For PerconaXtraDB cluster initialization see https://stash.run/docs/latest/addons/percona-xtradb/guides/5.7/clusterd/")
 		}
 	}
@@ -228,13 +228,6 @@ func ValidatePerconaXtraDB(client kubernetes.Interface, extClient cs.Interface, 
 			return fmt.Errorf("perconaXtraDBVersion %s/%s is using invalid perconaXtraDBVersion %v. Skipped processing. reason: %v", pxVersion.Namespace,
 				pxVersion.Name, pxVersion.Name, err)
 		}
-	}
-
-	if px.Spec.Init != nil &&
-		px.Spec.Init.StashRestoreSession != nil &&
-		databaseSecret == nil {
-		return fmt.Errorf("for Stash RestoreSession init, 'spec.databaseSecret.secretName' of %v/%v needs to be similar to older database of restoression %v",
-			px.Namespace, px.Name, px.Spec.Init.StashRestoreSession.Name)
 	}
 
 	if px.Spec.TerminationPolicy == "" {

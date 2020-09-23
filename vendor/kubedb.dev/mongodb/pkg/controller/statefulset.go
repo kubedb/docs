@@ -121,7 +121,7 @@ func (c *Controller) ensureTopologyCluster(mongodb *api.MongoDB) (kutil.VerbType
 			if err := c.checkStatefulSetPodStatus(st); err != nil {
 				return kutil.VerbUnchanged, err
 			}
-			c.recorder.Eventf(
+			c.Recorder.Eventf(
 				mongodb,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,
@@ -140,7 +140,7 @@ func (c *Controller) ensureTopologyCluster(mongodb *api.MongoDB) (kutil.VerbType
 		if err := c.checkStatefulSetPodStatus(mongosSts); err != nil {
 			return kutil.VerbUnchanged, err
 		}
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mongodb,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -478,10 +478,10 @@ func (c *Controller) ensureNonTopology(mongodb *api.MongoDB) (kutil.VerbType, er
 	initContainers = append(initContainers, initContnr)
 	volumes = core_util.UpsertVolume(volumes, initvolumes...)
 
-	if mongodb.Spec.Init != nil && mongodb.Spec.Init.ScriptSource != nil {
+	if mongodb.Spec.Init != nil && mongodb.Spec.Init.Script != nil {
 		volumes = core_util.UpsertVolume(volumes, core.Volume{
 			Name:         "initial-script",
-			VolumeSource: mongodb.Spec.Init.ScriptSource.VolumeSource,
+			VolumeSource: mongodb.Spec.Init.Script.VolumeSource,
 		})
 
 		volumeMounts = []core.VolumeMount{
@@ -618,7 +618,7 @@ func (c *Controller) ensureNonTopology(mongodb *api.MongoDB) (kutil.VerbType, er
 		if err := c.checkStatefulSetPodStatus(st); err != nil {
 			return kutil.VerbUnchanged, err
 		}
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mongodb,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

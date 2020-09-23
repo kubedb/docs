@@ -79,7 +79,7 @@ func (c *Controller) ensureRedisConfig(redis *api.Redis) error {
 			}
 
 			redis.Spec.ConfigSource = rd.Spec.ConfigSource
-			c.recorder.Eventf(
+			c.Recorder.Eventf(
 				redis,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,

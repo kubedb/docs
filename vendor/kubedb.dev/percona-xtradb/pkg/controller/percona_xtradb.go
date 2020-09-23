@@ -39,7 +39,7 @@ import (
 
 func (c *Controller) create(px *api.PerconaXtraDB) error {
 	if err := validator.ValidatePerconaXtraDB(c.Client, c.ExtClient, px, true); err != nil {
-		c.recorder.Event(
+		c.Recorder.Event(
 			px,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -64,7 +64,7 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 	// For Percona XtraDB Cluster (px.spec.replicas > 1),
 	// Set status as "Initializing" until specified restoresession object be succeeded, if provided
 	if _, err := meta_util.GetString(px.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		px.IsCluster() && px.Spec.Init != nil && px.Spec.Init.StashRestoreSession != nil {
+		px.IsCluster() && px.Spec.Init != nil && px.Spec.Init.Initializer != nil {
 
 		if px.Status.Phase == api.DatabasePhaseInitializing {
 			return nil
@@ -112,14 +112,14 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			px,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created PerconaXtraDB",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			px,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -136,7 +136,7 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 	// For Standalone Percona XtraDB (px.spec.replicas = 1),
 	// Set status as "Initializing" until specified restoresession object be succeeded, if provided
 	if _, err := meta_util.GetString(px.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		!px.IsCluster() && px.Spec.Init != nil && px.Spec.Init.StashRestoreSession != nil {
+		!px.IsCluster() && px.Spec.Init != nil && px.Spec.Init.Initializer != nil {
 
 		if px.Status.Phase == api.DatabasePhaseInitializing {
 			return nil
@@ -152,7 +152,7 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		}
 		px.Status = perconaxtradb.Status
 
-		log.Debugf("PerconaXtraDB %v/%v is waiting for restoreSession to be succeeded", px.Namespace, px.Name)
+		log.Debugf("PerconaXtraDB %v/%v is waiting for the initializer to complete it's initialization", px.Namespace, px.Name)
 		return nil
 	}
 
@@ -168,7 +168,7 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(px); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			px,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -180,7 +180,7 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 	}
 
 	if err := c.manageMonitor(px); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			px,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,

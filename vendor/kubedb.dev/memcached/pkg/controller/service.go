@@ -51,7 +51,7 @@ func (c *Controller) ensureService(memcached *api.Memcached) (kutil.VerbType, er
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			memcached,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -152,7 +152,7 @@ func (c *Controller) ensureStatsService(memcached *api.Memcached) (kutil.VerbTyp
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			memcached,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

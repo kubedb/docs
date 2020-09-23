@@ -22,6 +22,8 @@ import (
 
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	kubedbinformers "kubedb.dev/apimachinery/client/informers/externalversions"
+	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
+	"kubedb.dev/apimachinery/pkg/eventer"
 	"kubedb.dev/operator/pkg/controller"
 
 	prom "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
@@ -38,8 +40,6 @@ import (
 	"kmodules.xyz/client-go/tools/cli"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	appcatinformers "kmodules.xyz/custom-resources/client/informers/externalversions"
-	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
-	stashInformers "stash.appscode.dev/apimachinery/client/informers/externalversions"
 )
 
 type ExtraOptions struct {
@@ -128,9 +128,6 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 	if cfg.DBClient, err = cs.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
-	if cfg.StashClient, err = scs.NewForConfig(cfg.ClientConfig); err != nil {
-		return err
-	}
 	if cfg.DynamicClient, err = dynamic.NewForConfig(cfg.ClientConfig); err != nil {
 		return err
 	}
@@ -142,7 +139,6 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 	}
 	cfg.KubeInformerFactory = informers.NewSharedInformerFactory(cfg.KubeClient, cfg.ResyncPeriod)
 	cfg.KubedbInformerFactory = kubedbinformers.NewSharedInformerFactory(cfg.DBClient, cfg.ResyncPeriod)
-	cfg.StashInformerFactory = stashInformers.NewSharedInformerFactory(cfg.StashClient, cfg.ResyncPeriod)
 	cfg.AppCatInformerFactory = appcatinformers.NewSharedInformerFactory(cfg.AppCatalogClient, cfg.ResyncPeriod)
 
 	cfg.SecretInformer = cfg.KubeInformerFactory.InformerFor(&core.Secret{}, func(client kubernetes.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
@@ -154,6 +150,8 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 		)
 	})
 	cfg.SecretLister = corelisters.NewSecretLister(cfg.SecretInformer.GetIndexer())
-
-	return nil
+	// Create event recorder
+	cfg.Recorder = eventer.NewEventRecorder(cfg.KubeClient, "KubeDB Operator")
+	// Configure Stash initializer
+	return stash.Configure(cfg.ClientConfig, &cfg.Initializers.Stash, cfg.ResyncPeriod)
 }

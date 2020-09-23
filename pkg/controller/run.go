@@ -17,6 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
+
 	"github.com/appscode/go/log"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
@@ -46,29 +48,13 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.KubeInformerFactory.Start(stopCh)
 	c.KubedbInformerFactory.Start(stopCh)
 
-	go func() {
-		// start StashInformerFactory only if stash crds (ie, "restoreSession") are available.
-		if err := c.BlockOnStashOperator(stopCh); err != nil {
-			log.Errorln("error while waiting for restoreSession.", err)
-			return
-		}
-
-		// start informer factory
-		c.StashInformerFactory.Start(stopCh)
-		for t, v := range c.StashInformerFactory.WaitForCacheSync(stopCh) {
-			if !v {
-				log.Fatalf("%v timed out waiting for caches to sync", t)
-				return
-			}
-		}
-		// Only postgres, elasticsearch, mongodb and mysql has restoreSession queue initialized.
-		// Check RSQueue initialization in ctrl.init() (e.g. c.myCtrl.Init()) to know if it expects RS watcher.
-		c.esCtrl.RSQueue.Run(stopCh)
-		c.mgCtrl.RSQueue.Run(stopCh)
-		c.myCtrl.RSQueue.Run(stopCh)
-		c.pgCtrl.RSQueue.Run(stopCh)
-		c.pxCtrl.RSQueue.Run(stopCh)
-	}()
+	// Run Stash initializer controllers
+	go stash.NewController(c.esCtrl.Controller, &c.esCtrl.Config.Initializers.Stash, c.esCtrl, c.Recorder, c.WatchNamespace).StartController(stopCh)
+	go stash.NewController(c.mgCtrl.Controller, &c.mgCtrl.Config.Initializers.Stash, c.mgCtrl, c.Recorder, c.WatchNamespace).StartController(stopCh)
+	go stash.NewController(c.myCtrl.Controller, &c.myCtrl.Config.Initializers.Stash, c.myCtrl, c.Recorder, c.WatchNamespace).StartController(stopCh)
+	go stash.NewController(c.pxCtrl.Controller, &c.pxCtrl.Config.Initializers.Stash, c.pxCtrl, c.Recorder, c.WatchNamespace).StartController(stopCh)
+	go stash.NewController(c.pgCtrl.Controller, &c.pgCtrl.Config.Initializers.Stash, c.pgCtrl, c.Recorder, c.WatchNamespace).StartController(stopCh)
+	go stash.NewController(c.rdCtrl.Controller, &c.rdCtrl.Config.Initializers.Stash, c.rdCtrl, c.Recorder, c.WatchNamespace).StartController(stopCh)
 
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range c.KubeInformerFactory.WaitForCacheSync(stopCh) {

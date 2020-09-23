@@ -19,7 +19,6 @@ package controller
 import (
 	"context"
 	"math"
-	"time"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 
@@ -33,12 +32,8 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/apimachinery/pkg/util/wait"
 	core_util "kmodules.xyz/client-go/core/v1"
-	"kmodules.xyz/client-go/discovery"
 	policy_util "kmodules.xyz/client-go/policy/v1beta1"
-	"stash.appscode.dev/apimachinery/apis/stash"
-	"stash.appscode.dev/apimachinery/apis/stash/v1beta1"
 )
 
 const UtilVolumeName = "util-volume"
@@ -179,12 +174,4 @@ func (c *Controller) CreateDeploymentPodDisruptionBudget(deployment *appsv1.Depl
 			return in
 		}, metav1.PatchOptions{})
 	return err
-}
-
-// BlockOnStashOperator waits for restoresession crd to come up.
-// It either waits until restoresession crd exists or throws error otherwise
-func (c *Controller) BlockOnStashOperator(stopCh <-chan struct{}) error {
-	return wait.PollImmediateUntil(time.Second*10, func() (bool, error) {
-		return discovery.ExistsGroupKind(c.Client.Discovery(), stash.GroupName, v1beta1.ResourceKindRestoreSession), nil
-	}, stopCh)
 }

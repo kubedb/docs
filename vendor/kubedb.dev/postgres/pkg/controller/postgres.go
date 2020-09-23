@@ -42,7 +42,7 @@ import (
 
 func (c *Controller) create(postgres *api.Postgres) error {
 	if err := validator.ValidatePostgres(c.Client, c.ExtClient, postgres, true); err != nil {
-		c.recorder.Event(
+		c.Recorder.Event(
 			postgres,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -86,14 +86,14 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			postgres,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created Postgres",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			postgres,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -109,7 +109,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	if _, err := meta_util.GetString(postgres.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		postgres.Spec.Init != nil && postgres.Spec.Init.StashRestoreSession != nil {
+		postgres.Spec.Init != nil && postgres.Spec.Init.Initializer != nil {
 
 		if postgres.Status.Phase == api.DatabasePhaseInitializing {
 			return nil
@@ -126,7 +126,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		postgres.Status = pg.Status
 
 		init := postgres.Spec.Init
-		if init.StashRestoreSession != nil {
+		if init.Initializer != nil {
 			log.Debugf("Postgres %v/%v is waiting for restoreSession to be succeeded", postgres.Namespace, postgres.Name)
 			return nil
 		}
@@ -144,7 +144,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(postgres); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			postgres,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -156,7 +156,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	if err := c.manageMonitor(postgres); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			postgres,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,

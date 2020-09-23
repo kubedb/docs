@@ -55,7 +55,7 @@ func (c *Controller) ensureDeployment(memcached *api.Memcached) (kutil.VerbType,
 		if err := app_util.WaitUntilDeploymentReady(context.TODO(), c.Client, deployment.ObjectMeta); err != nil {
 			return kutil.VerbUnchanged, err
 		}
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			memcached,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

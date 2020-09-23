@@ -52,7 +52,7 @@ func (c *Controller) ensureService(mysql *api.MySQL) (kutil.VerbType, error) {
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mysql,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -153,7 +153,7 @@ func (c *Controller) ensureStatsService(mysql *api.MySQL) (kutil.VerbType, error
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mysql,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

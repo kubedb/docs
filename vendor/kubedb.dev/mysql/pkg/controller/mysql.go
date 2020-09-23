@@ -39,7 +39,7 @@ import (
 
 func (c *Controller) create(mysql *api.MySQL) error {
 	if err := validator.ValidateMySQL(c.Client, c.ExtClient, mysql, true); err != nil {
-		c.recorder.Event(
+		c.Recorder.Event(
 			mysql,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -84,14 +84,14 @@ func (c *Controller) create(mysql *api.MySQL) error {
 			return err
 		}
 		if vt == kutil.VerbCreated {
-			c.recorder.Event(
+			c.Recorder.Event(
 				mysql,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,
 				"Successfully created primary service",
 			)
 		} else if vt == kutil.VerbPatched {
-			c.recorder.Event(
+			c.Recorder.Event(
 				mysql,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,
@@ -131,14 +131,14 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			mysql,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created MySQL",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			mysql,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -154,7 +154,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	}
 
 	if _, err := meta_util.GetString(mysql.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		mysql.Spec.Init != nil && mysql.Spec.Init.StashRestoreSession != nil {
+		mysql.Spec.Init != nil && mysql.Spec.Init.Initializer != nil {
 
 		if mysql.Status.Phase == api.DatabasePhaseInitializing {
 			return nil
@@ -171,8 +171,8 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		mysql.Status = my.Status
 
 		init := mysql.Spec.Init
-		if init.StashRestoreSession != nil {
-			log.Debugf("MySQL %v/%v is waiting for restoreSession to be succeeded", mysql.Namespace, mysql.Name)
+		if init.Initializer != nil {
+			log.Debugf("MySQL %v/%v is waiting for the initializer to complete it's initialization", mysql.Namespace, mysql.Name)
 			return nil
 		}
 	}
@@ -189,7 +189,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(mysql); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mysql,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -201,7 +201,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	}
 
 	if err := c.manageMonitor(mysql); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mysql,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,

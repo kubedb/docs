@@ -37,7 +37,7 @@ import (
 
 func (c *Controller) create(redis *api.Redis) error {
 	if err := validator.ValidateRedis(c.Client, c.ExtClient, redis, true); err != nil {
-		c.recorder.Event(
+		c.Recorder.Event(
 			redis,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -108,14 +108,14 @@ func (c *Controller) create(redis *api.Redis) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			redis,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created Redis",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			redis,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -129,7 +129,7 @@ func (c *Controller) create(redis *api.Redis) error {
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			redis,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
@@ -141,7 +141,7 @@ func (c *Controller) create(redis *api.Redis) error {
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(redis); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			redis,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -153,7 +153,7 @@ func (c *Controller) create(redis *api.Redis) error {
 	}
 
 	if err := c.manageMonitor(redis); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			redis,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,

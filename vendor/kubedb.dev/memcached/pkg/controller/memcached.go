@@ -33,7 +33,7 @@ import (
 
 func (c *Controller) create(memcached *api.Memcached) error {
 	if err := validator.ValidateMemcached(c.Client, c.ExtClient, memcached, true); err != nil {
-		c.recorder.Event(
+		c.Recorder.Event(
 			memcached,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -72,14 +72,14 @@ func (c *Controller) create(memcached *api.Memcached) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			memcached,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created Memcached",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			memcached,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -99,7 +99,7 @@ func (c *Controller) create(memcached *api.Memcached) error {
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(memcached); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			memcached,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -111,7 +111,7 @@ func (c *Controller) create(memcached *api.Memcached) error {
 	}
 
 	if err := c.manageMonitor(memcached); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			memcached,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
