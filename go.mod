@@ -17,9 +17,6 @@ require (
 	kmodules.xyz/client-go v0.0.0-20200929030759-cce6a3c623c1
 	kmodules.xyz/custom-resources v0.0.0-20200922210108-70f2815a43bb
 	kmodules.xyz/monitoring-agent-api v0.0.0-20200922204510-b8b5610e5385 // indirect
-	kmodules.xyz/objectstore-api v0.0.0-20200922210707-59bab27e5d41 // indirect
-	kmodules.xyz/offshoot-api v0.0.0-20200922211229-36acc531abab // indirect
-	kmodules.xyz/prober v0.0.0-20200922212142-743a6514664e // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de
 	kubedb.dev/apimachinery v0.14.0-beta.2.0.20200915201356-5ddfd53ad058
 	kubedb.dev/elasticsearch v0.14.0-beta.2.0.20200916003206-98c1ad832ab4
@@ -31,7 +28,7 @@ require (
 	kubedb.dev/postgres v0.14.0-beta.2.0.20200916004433-66f45a55e2fa
 	kubedb.dev/proxysql v0.1.0-beta.2.0.20200916004609-4759525bce34
 	kubedb.dev/redis v0.7.0-beta.2.0.20200916004859-d46d0dbdabd6
-	stash.appscode.dev/apimachinery v0.11.0
+	stash.appscode.dev/apimachinery v0.11.2
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d

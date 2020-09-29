@@ -1750,8 +1750,8 @@ sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0/go.mod h1
 sourcegraph.com/sqs/pbtypes v0.0.0-20180604144634-d3ebe8f20ae4/go.mod h1:ketZ/q3QxT9HOBeFhu6RdvsftgpsbFHBF5Cas6cDKZ0=
 stash.appscode.dev/apimachinery v0.10.0 h1:zKmaANWOTH89J7a/D1FwXFUWAQdI1rA5Nr82WbnLGm8=
 stash.appscode.dev/apimachinery v0.10.0/go.mod h1:TpdBIAiHCtpkUB13SDUyCZ6y+5wmzXBMAf9e72cSPO4=
-stash.appscode.dev/apimachinery v0.11.0 h1:ntvpZDGRsM0f99TBMYrvdtPiF7+d/0th13/EW9d978c=
-stash.appscode.dev/apimachinery v0.11.0/go.mod h1:Cw+8L2u+1T7ZqfYvB2ktdXD/bsWslXNG/bIhk/sV+qs=
+stash.appscode.dev/apimachinery v0.11.2 h1:ZbkbWWfAR0SOhhZHRnLcbsbsKh/7hBkqnjIFWXkvyeg=
+stash.appscode.dev/apimachinery v0.11.2/go.mod h1:9rK2Iz8tgbmyE0eiYS7plYbGxFsa80PCf0jvDNTroOY=
 vbom.ml/util v0.0.0-20160121211510-db5cfe13f5cc/go.mod h1:so/NYdZXCz+E3ZpW0uAoCj6uzU2+8OWDFv/HxUSs7kI=
 xorm.io/builder v0.3.6/go.mod h1:LEFAPISnRzG+zxaxj2vPicRwz67BdhFreKg8yv8/TgU=
 xorm.io/core v0.7.2-0.20190928055935-90aeac8d08eb/go.mod h1:jJfd0UAEzZ4t87nbQYtVjmqpIODugN6PD2D9E+dJvdM=
