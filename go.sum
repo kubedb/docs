@@ -1686,6 +1686,8 @@ kubedb.dev/apimachinery v0.14.0-beta.3.0.20200929172147-60ada14c6d75/go.mod h1:9
 kubedb.dev/apimachinery v0.14.0-beta.3.0.20200930122555-ca1839c9a8ba/go.mod h1:9BZ/HvgfMURlOGJu+Nw72sI+I6LEL4RdHHbMt3ZIPJM=
 kubedb.dev/apimachinery v0.14.0-beta.3.0.20200930131706-0a6262cb9ef8 h1:bzfO15a+t/Gl3CpKpIdo80L0AAtFb+8JGTVreDvtMgQ=
 kubedb.dev/apimachinery v0.14.0-beta.3.0.20200930131706-0a6262cb9ef8/go.mod h1:9BZ/HvgfMURlOGJu+Nw72sI+I6LEL4RdHHbMt3ZIPJM=
+kubedb.dev/apimachinery v0.14.0-beta.3.0.20200930160612-c1c866163d8f h1:gjDKqrBFHppbB5pAC+YCgc8jEfUXfdqXagwsJm6BIZg=
+kubedb.dev/apimachinery v0.14.0-beta.3.0.20200930160612-c1c866163d8f/go.mod h1:9BZ/HvgfMURlOGJu+Nw72sI+I6LEL4RdHHbMt3ZIPJM=
 kubedb.dev/elasticsearch v0.14.0-beta.3.0.20200930133952-94db60b7e4b6 h1:puqFm8VIANP1OGoEERgsz0GQnTfR0Jr3bGGTpAsMblw=
 kubedb.dev/elasticsearch v0.14.0-beta.3.0.20200930133952-94db60b7e4b6/go.mod h1:gyRkHxF2AxNi1IMnWtzE35qhWLkVu3ZdX4GBCJrYwHo=
 kubedb.dev/memcached v0.7.0-beta.3.0.20200930151433-d4dbb4a64983 h1:R6tk2G8ElHk1J3gmQRV6RQClYSZpd5VMv7SawvCkNYc=

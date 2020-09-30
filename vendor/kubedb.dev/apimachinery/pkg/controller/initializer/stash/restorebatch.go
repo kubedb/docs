@@ -80,6 +80,7 @@ func (c Controller) processRestoreBatch(key string) error {
 		// Note that you also have to check the uid if you have a local controlled resource, which
 		// is dependent on the actual instance, to detect that a Job was recreated with the same name
 		rb := obj.(*v1beta1.RestoreBatch).DeepCopy()
+		rb.GetObjectKind().SetGroupVersionKind(v1beta1.SchemeGroupVersion.WithKind(v1beta1.ResourceKindRestoreBatch))
 		ri, err := c.extractRestoreInfo(rb)
 		if err != nil {
 			log.Errorln("failed to extract restore invoker info. Reason: ", err)

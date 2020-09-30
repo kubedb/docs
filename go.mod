@@ -18,7 +18,7 @@ require (
 	kmodules.xyz/custom-resources v0.0.0-20200922210108-70f2815a43bb
 	kmodules.xyz/monitoring-agent-api v0.0.0-20200922204510-b8b5610e5385 // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de
-	kubedb.dev/apimachinery v0.14.0-beta.3.0.20200930131706-0a6262cb9ef8
+	kubedb.dev/apimachinery v0.14.0-beta.3.0.20200930160612-c1c866163d8f
 	kubedb.dev/elasticsearch v0.14.0-beta.3.0.20200930133952-94db60b7e4b6
 	kubedb.dev/memcached v0.7.0-beta.3.0.20200930151433-d4dbb4a64983
 	kubedb.dev/mongodb v0.7.0-beta.3.0.20200930133209-b5b728a8c88e
