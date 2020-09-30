@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	le "kubedb.dev/pg-leader-election/pkg/leader_election"
 
@@ -168,7 +169,7 @@ func (c *Controller) ensureDatabaseRBAC(postgres *api.Postgres) error {
 		}
 	} else if err != nil {
 		return err
-	} else if sa.Labels[meta_util.ManagedByLabelKey] != api.GenericKey {
+	} else if sa.Labels[meta_util.ManagedByLabelKey] != kubedb.GroupName {
 		// user provided the service account, so do nothing.
 		return nil
 	}

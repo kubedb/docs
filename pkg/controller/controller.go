@@ -18,6 +18,7 @@ package controller
 
 import (
 	catalogapi "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	dbapi "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
@@ -34,6 +35,7 @@ import (
 	"github.com/appscode/go/log"
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -48,6 +50,9 @@ type Controller struct {
 	amc.Config
 	*amc.Controller
 	promClient pcm.MonitoringV1Interface
+
+	// LabelSelector to filter Stash restore invokers only for KubeDB
+	selector metav1.LabelSelector
 
 	// DB controllers
 	esCtrl  *esc.Controller
@@ -86,6 +91,14 @@ func New(
 		},
 		Config:     opt,
 		promClient: promClient,
+		selector: metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      api.LabelDatabaseKind,
+					Operator: metav1.LabelSelectorOpExists,
+				},
+			},
+		},
 	}
 }
 

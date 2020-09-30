@@ -33,14 +33,9 @@ import (
 )
 
 const (
-	ConfigFileName              = "elasticsearch.yml"
-	ConfigFileMountPath         = "/usr/share/elasticsearch/config"
-	TempConfigFileMountPath     = "/elasticsearch/temp-config"
-	DatabaseConfigSecretSuffix  = "config"
-	SecurityConfigFileMountPath = "/usr/share/elasticsearch/plugins/opendistro_security/securityconfig"
-	InternalUserFileName        = "internal_users.yml"
-	RolesMappingFileName        = "roles_mapping.yml"
-	ReadallMonitorRole          = "readall_and_monitor"
+	ConfigFileName       = "elasticsearch.yml"
+	InternalUserFileName = "internal_users.yml"
+	RolesMappingFileName = "roles_mapping.yml"
 )
 
 var adminDNTemplate = `

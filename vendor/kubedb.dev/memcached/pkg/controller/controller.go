@@ -168,7 +168,6 @@ func (c *Controller) pushFailureEvent(memcached *api.Memcached, reason string) {
 
 	mc, err := util.UpdateMemcachedStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseFailed
-		in.Reason = reason
 		in.ObservedGeneration = memcached.Generation
 		return in
 	}, metav1.UpdateOptions{})

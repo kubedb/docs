@@ -28,20 +28,6 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 )
 
-const (
-	DefaultClientNodePrefix = "client"
-	DefaultDataNodePrefix   = "data"
-	DefaultMasterNodePrefix = "master"
-
-	NodeRoleMaster = "node.role.master"
-	NodeRoleClient = "node.role.client"
-	NodeRoleData   = "node.role.data"
-	NodeRoleSet    = "set"
-
-	// 26GB, 26 * 1024 * 1024 * 1024 = 27917287424
-	MaxHeapSize = 27917287424
-)
-
 func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 	statefulSetName := es.elasticsearch.OffshootName()
 	masterNode := es.elasticsearch.Spec.Topology.Master
@@ -49,11 +35,11 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 	if masterNode.Prefix != "" {
 		statefulSetName = fmt.Sprintf("%v-%v", masterNode.Prefix, statefulSetName)
 	} else {
-		statefulSetName = fmt.Sprintf("%v-%v", DefaultMasterNodePrefix, statefulSetName)
+		statefulSetName = fmt.Sprintf("%v-%v", api.ElasticsearchMasterNodePrefix, statefulSetName)
 	}
 
 	labels := map[string]string{
-		NodeRoleMaster: NodeRoleSet,
+		api.ElasticsearchNodeRoleMaster: api.ElasticsearchNodeRoleSet,
 	}
 
 	// If replicas is not provided, default to 1.
@@ -62,7 +48,7 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 		replicas = masterNode.Replicas
 	}
 
-	heapSize := int64(134217728) // 128mb
+	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
 	if request, found := masterNode.Resources.Requests[corev1.ResourceMemory]; found && request.Value() > 0 {
 		heapSize = getHeapSizeForNode(request.Value())
 	}
@@ -127,7 +113,7 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 		},
 	}
 
-	return es.ensureStatefulSet(&masterNode, statefulSetName, labels, replicas, NodeRoleMaster, envList, initEnvList)
+	return es.ensureStatefulSet(&masterNode, statefulSetName, labels, replicas, api.ElasticsearchMasterNodePrefix, envList, initEnvList)
 }
 
 func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
@@ -137,14 +123,14 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 	if dataNode.Prefix != "" {
 		statefulSetName = fmt.Sprintf("%v-%v", dataNode.Prefix, statefulSetName)
 	} else {
-		statefulSetName = fmt.Sprintf("%v-%v", DefaultDataNodePrefix, statefulSetName)
+		statefulSetName = fmt.Sprintf("%v-%v", api.ElasticsearchDataNodePrefix, statefulSetName)
 	}
 
 	labels := map[string]string{
-		NodeRoleData: NodeRoleSet,
+		api.ElasticsearchNodeRoleData: api.ElasticsearchNodeRoleSet,
 	}
 
-	heapSize := int64(134217728) // 128mb
+	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
 	if request, found := dataNode.Resources.Requests[corev1.ResourceMemory]; found && request.Value() > 0 {
 		heapSize = getHeapSizeForNode(request.Value())
 	}
@@ -198,32 +184,32 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 		replicas = dataNode.Replicas
 	}
 
-	return es.ensureStatefulSet(&dataNode, statefulSetName, labels, replicas, NodeRoleData, envList, initEnvList)
+	return es.ensureStatefulSet(&dataNode, statefulSetName, labels, replicas, api.ElasticsearchNodeRoleData, envList, initEnvList)
 
 }
 
-func (es *Elasticsearch) EnsureClientNodes() (kutil.VerbType, error) {
+func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 	statefulSetName := es.elasticsearch.OffshootName()
-	clientNode := es.elasticsearch.Spec.Topology.Client
+	ingestNode := es.elasticsearch.Spec.Topology.Ingest
 
-	if clientNode.Prefix != "" {
-		statefulSetName = fmt.Sprintf("%v-%v", clientNode.Prefix, statefulSetName)
+	if ingestNode.Prefix != "" {
+		statefulSetName = fmt.Sprintf("%v-%v", ingestNode.Prefix, statefulSetName)
 	} else {
-		statefulSetName = fmt.Sprintf("%v-%v", DefaultClientNodePrefix, statefulSetName)
+		statefulSetName = fmt.Sprintf("%v-%v", api.ElasticsearchIngestNodePrefix, statefulSetName)
 	}
 
 	labels := map[string]string{
-		NodeRoleClient: NodeRoleSet,
+		api.ElasticsearchNodeRoleIngest: api.ElasticsearchNodeRoleSet,
 	}
 
-	heapSize := int64(134217728) // 128mb
-	if request, found := clientNode.Resources.Requests[corev1.ResourceMemory]; found && request.Value() > 0 {
+	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
+	if request, found := ingestNode.Resources.Requests[corev1.ResourceMemory]; found && request.Value() > 0 {
 		heapSize = getHeapSizeForNode(request.Value())
 	}
 
 	// Environment variable list for main container.
 	// These are node specific, i.e. changes depending on node type.
-	// Following are for Client node:
+	// Following are for Ingest node:
 	envList := []corev1.EnvVar{
 		{
 			Name:  "ES_JAVA_OPTS",
@@ -266,22 +252,22 @@ func (es *Elasticsearch) EnsureClientNodes() (kutil.VerbType, error) {
 	}
 
 	replicas := types.Int32P(1)
-	if clientNode.Replicas != nil {
-		replicas = clientNode.Replicas
+	if ingestNode.Replicas != nil {
+		replicas = ingestNode.Replicas
 	}
 
-	return es.ensureStatefulSet(&clientNode, statefulSetName, labels, replicas, NodeRoleClient, envList, initEnvList)
+	return es.ensureStatefulSet(&ingestNode, statefulSetName, labels, replicas, api.ElasticsearchNodeRoleIngest, envList, initEnvList)
 }
 
 func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 	statefulSetName := es.elasticsearch.OffshootName()
 	combinedNode := es.getCombinedNode()
 
-	// Each node performs all three roles; master, data, and client.
+	// Each node performs all three roles; master, data, and ingest.
 	labels := map[string]string{
-		NodeRoleMaster: NodeRoleSet,
-		NodeRoleData:   NodeRoleSet,
-		NodeRoleClient: NodeRoleSet,
+		api.ElasticsearchNodeRoleMaster: api.ElasticsearchNodeRoleSet,
+		api.ElasticsearchNodeRoleData:   api.ElasticsearchNodeRoleSet,
+		api.ElasticsearchNodeRoleIngest: api.ElasticsearchNodeRoleSet,
 	}
 
 	// If replicas is not provided, default to 1.
@@ -290,7 +276,7 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 		replicas = combinedNode.Replicas
 	}
 
-	heapSize := int64(134217728) // 128mb
+	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
 	if request, found := combinedNode.Resources.Requests[corev1.ResourceMemory]; found && request.Value() > 0 {
 		heapSize = getHeapSizeForNode(request.Value())
 	}
@@ -355,8 +341,8 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 		},
 	}
 
-	// For affinity, NodeRoleClient is used.
-	return es.ensureStatefulSet(combinedNode, statefulSetName, labels, replicas, NodeRoleClient, envList, initEnvList)
+	// For affinity, NodeRoleIngest is used.
+	return es.ensureStatefulSet(combinedNode, statefulSetName, labels, replicas, api.ElasticsearchNodeRoleIngest, envList, initEnvList)
 
 }
 
@@ -381,8 +367,8 @@ func getHeapSizeForNode(val int64) int64 {
 	ret := (val / 100) * 50
 
 	// 26 GB is safe on most systems
-	if ret > MaxHeapSize {
-		ret = MaxHeapSize
+	if ret > api.ElasticsearchMaxHeapSize {
+		ret = api.ElasticsearchMaxHeapSize
 	}
 	return ret
 }

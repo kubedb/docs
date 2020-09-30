@@ -183,11 +183,6 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 			return fmt.Errorf(`spec.shardTopology.mongos.replicas %v invalid. Must be greater than zero when spec.shardTopology is set`, top.Mongos.Replicas)
 		}
 
-		// Validate Mongos deployment strategy
-		if top.Mongos.Strategy.Type == "" {
-			return fmt.Errorf(`spec.shardTopology.mongos.strategy.type is missing`)
-		}
-
 		// Validate Envs
 		if err := amv.ValidateEnvVar(top.Shard.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
 			return err

@@ -25,6 +25,7 @@ import (
 	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
 	amc "kubedb.dev/apimachinery/pkg/controller"
+	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -32,7 +33,6 @@ import (
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -53,8 +53,8 @@ type Controller struct {
 
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
-	// labelselector for event-handler of Snapshot, Dormant and Job
-	selector labels.Selector
+	// LabelSelector to filter Stash restore invokers only for this database
+	selector metav1.LabelSelector
 
 	// Redis
 	rdQueue    *queue.Worker
@@ -87,9 +87,11 @@ func New(
 		},
 		Config:     opt,
 		promClient: promClient,
-		selector: labels.SelectorFromSet(map[string]string{
-			api.LabelDatabaseKind: api.ResourceKindRedis,
-		}),
+		selector: metav1.LabelSelector{
+			MatchLabels: map[string]string{
+				api.LabelDatabaseKind: api.ResourceKindMySQL,
+			},
+		},
 	}
 }
 
@@ -113,7 +115,7 @@ func (c *Controller) Init() error {
 
 // RunControllers runs queue.worker
 func (c *Controller) RunControllers(stopCh <-chan struct{}) {
-	// Watch x  TPR objects
+	// Start Redis controller
 	c.rdQueue.Run(stopCh)
 }
 
@@ -122,7 +124,7 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 	go c.StartAndRunControllers(stopCh)
 }
 
-// StartAndRunControllers starts InformetFactory and runs queue.worker
+// StartAndRunControllers starts InformerFactory and runs queue.worker
 func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	defer utilruntime.HandleCrash()
 
@@ -144,6 +146,10 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 		}
 	}
 
+	// Initialize and start Stash controllers
+	go stash.NewController(c.Controller, &c.Config.Initializers.Stash, c.WatchNamespace).StartAfterStashInstalled(c.MaxNumRequeues, c.NumThreads, c.selector, stopCh)
+
+	// Start Redis controller
 	c.RunControllers(stopCh)
 
 	if c.EnableMutatingWebhook {
@@ -171,7 +177,6 @@ func (c *Controller) pushFailureEvent(redis *api.Redis, reason string) {
 
 	rd, err := kutildb.UpdateRedisStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseFailed
-		in.Reason = reason
 		in.ObservedGeneration = redis.Generation
 		return in
 	}, metav1.UpdateOptions{})

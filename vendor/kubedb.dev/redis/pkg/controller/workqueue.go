@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 
@@ -26,6 +27,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
 )
@@ -34,7 +36,7 @@ func (c *Controller) initWatcher() {
 	c.rdInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Redises().Informer()
 	c.rdQueue = queue.New("Redis", c.MaxNumRequeues, c.NumThreads, c.runRedis)
 	c.rdLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Redises().Lister()
-	c.rdInformer.AddEventHandler(queue.NewReconcilableHandler(c.rdQueue.GetQueue()))
+	c.rdInformer.AddEventHandler(queue.NewChangeHandler(c.rdQueue.GetQueue()))
 }
 
 func (c *Controller) runRedis(key string) error {
@@ -52,27 +54,27 @@ func (c *Controller) runRedis(key string) error {
 		// is dependent on the actual instance, to detect that a Redis was recreated with the same name
 		redis := obj.(*api.Redis).DeepCopy()
 		if redis.DeletionTimestamp != nil {
-			if core_util.HasFinalizer(redis.ObjectMeta, api.GenericKey) {
+			if core_util.HasFinalizer(redis.ObjectMeta, kubedb.GroupName) {
 				if err := c.terminate(redis); err != nil {
 					log.Errorln(err)
 					return err
 				}
 				_, _, err = util.PatchRedis(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
-					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, api.GenericKey)
+					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
 			redis, _, err = util.PatchRedis(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
-				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
+				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})
 			if err != nil {
 				return err
 			}
 
-			if redis.Spec.Paused {
+			if kmapi.IsConditionTrue(redis.Status.Conditions, api.DatabasePaused) {
 				return nil
 			}
 

@@ -29,9 +29,8 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	kutil "kmodules.xyz/client-go"
-	core_util "kmodules.xyz/client-go/core/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
 
@@ -123,6 +122,52 @@ func (c *Controller) create(redis *api.Redis) error {
 		)
 	}
 
+	_, err = c.ensureAppBinding(redis)
+	if err != nil {
+		log.Errorln(err)
+		return err
+	}
+
+	if redis.Spec.Init != nil && redis.Spec.Init.Initializer != nil {
+		// If "Initialized" condition is not present, it means restore process hasn't completed yet.
+		// In this case, make database phase "Initializing".
+		if !kmapi.HasCondition(redis.Status.Conditions, api.DatabaseInitialized) {
+			redis, err := util.UpdateRedisStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+				in.Phase = api.DatabasePhaseInitializing
+				in.ObservedGeneration = redis.Generation
+				return in
+			}, metav1.UpdateOptions{})
+			if err != nil {
+				return err
+			}
+			// write log indicating that the database is waiting for the data to be restored by external initializer
+			log.Infof("Database %s %s/%s is waiting for data to be restored by initializer %s/%s/%s",
+				redis.Kind,
+				redis.Namespace,
+				redis.Name,
+				*redis.Spec.Init.Initializer.APIGroup,
+				redis.Spec.Init.Initializer.Kind,
+				redis.Spec.Init.Initializer.Name,
+			)
+			// Rest of the processing will execute after the the restore process completed. So, just return for now.
+			return nil
+		} else {
+			// Restore process has completed. It has either succeeded or failed. Update database phase accordingly.
+			dbPhase := api.DatabasePhaseRunning
+			if !kmapi.IsConditionTrue(redis.Status.Conditions, api.DatabaseInitialized) {
+				dbPhase = api.DatabasePhaseFailed
+			}
+			redis, err = util.UpdateRedisStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+				in.Phase = dbPhase
+				in.ObservedGeneration = redis.Generation
+				return in
+			}, metav1.UpdateOptions{})
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	rd, err := util.UpdateRedisStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseRunning
 		in.ObservedGeneration = redis.Generation
@@ -164,11 +209,6 @@ func (c *Controller) create(redis *api.Redis) error {
 		return nil
 	}
 
-	_, err = c.ensureAppBinding(redis)
-	if err != nil {
-		log.Errorln(err)
-		return err
-	}
 	return nil
 }
 
@@ -196,7 +236,7 @@ func (c *Controller) halt(db *api.Redis) error {
 
 func (c *Controller) terminate(redis *api.Redis) error {
 	// If TerminationPolicy is "halt", keep PVCs,Secrets intact.
-	if redis.Spec.TerminationPolicy == api.TerminationPolicyPause || redis.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+	if redis.Spec.TerminationPolicy == api.TerminationPolicyHalt {
 		if err := c.removeOwnerReferenceFromOffshoots(redis); err != nil {
 			return err
 		}
@@ -273,44 +313,4 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(redis *api.Redis) error {
 		return err
 	}
 	return nil
-}
-
-func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
-	redis, err := c.rdLister.Redises(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	return redis, nil
-}
-
-func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
-	redis, err := c.rdLister.Redises(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return err
-	}
-	_, err = util.UpdateRedisStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
-		in.Phase = phase
-		in.Reason = reason
-		return in
-	},
-		metav1.UpdateOptions{},
-	)
-	return err
-}
-
-func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
-	redis, err := c.rdLister.Redises(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return err
-	}
-
-	_, _, err = util.PatchRedis(context.TODO(),
-		c.ExtClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
-			in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
-			return in
-		},
-		metav1.PatchOptions{},
-	)
-	return err
 }

@@ -35,9 +35,9 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kutil "kmodules.xyz/client-go"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
-	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/analytics"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
@@ -134,7 +134,7 @@ func (c *Controller) ensureStatefulSet(
 				}
 			}
 
-			if _, err := meta_util.GetString(postgres.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound {
+			if !kmapi.HasCondition(postgres.Status.Conditions, api.DatabaseInitialized) {
 				initSource := postgres.Spec.Init
 				if initSource != nil && initSource.PostgresWAL != nil && initSource.PostgresWAL.Local == nil {
 					//Getting secret for cloud providers

@@ -23,7 +23,10 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 
 	"github.com/appscode/go/log"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/cache"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
 )
@@ -33,7 +36,7 @@ func (c *Controller) initWatcher() {
 	c.esQueue = queue.New("Elasticsearch", c.MaxNumRequeues, c.NumThreads, c.runElasticsearch)
 	c.esLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Elasticsearches().Lister()
 	c.esVersionLister = c.KubedbInformerFactory.Catalog().V1alpha1().ElasticsearchVersions().Lister()
-	c.esInformer.AddEventHandler(queue.NewReconcilableHandler(c.esQueue.GetQueue()))
+	c.esInformer.AddEventHandler(queue.NewChangeHandler(c.esQueue.GetQueue()))
 }
 
 func (c *Controller) runElasticsearch(key string) error {
@@ -71,7 +74,7 @@ func (c *Controller) runElasticsearch(key string) error {
 				return err
 			}
 
-			if elasticsearch.Spec.Paused {
+			if kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabasePaused) {
 				return nil
 			}
 
@@ -91,4 +94,25 @@ func (c *Controller) runElasticsearch(key string) error {
 		}
 	}
 	return nil
+}
+
+func (c *Controller) initSecretWatcher() {
+	c.SecretInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			if secret, ok := obj.(*core.Secret); ok {
+				if key := c.elasticsearchForSecret(secret); key != "" {
+					queue.Enqueue(c.esQueue.GetQueue(), key)
+				}
+			}
+		},
+		UpdateFunc: func(oldObj interface{}, newObj interface{}) {
+			if secret, ok := newObj.(*core.Secret); ok {
+				if key := c.elasticsearchForSecret(secret); key != "" {
+					queue.Enqueue(c.esQueue.GetQueue(), key)
+				}
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+		},
+	})
 }

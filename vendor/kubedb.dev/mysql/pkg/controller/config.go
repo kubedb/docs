@@ -17,7 +17,6 @@ limitations under the License.
 package controller
 
 import (
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 
@@ -30,15 +29,11 @@ import (
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/discovery"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 )
 
 const (
 	mutatingWebhookConfig   = "mutators.kubedb.com"
 	validatingWebhookConfig = "validators.kubedb.com"
-
-	primary   = "primary"
-	labelRole = api.MySQLKey + "/role"
 )
 
 type OperatorConfig struct {
@@ -50,7 +45,6 @@ type OperatorConfig struct {
 	CRDClient        crd_cs.Interface
 	DBClient         cs.Interface
 	DynamicClient    dynamic.Interface
-	StashClient      scs.Interface
 	AppCatalogClient appcat_cs.Interface
 	PromClient       pcm.MonitoringV1Interface
 	Recorder         record.EventRecorder

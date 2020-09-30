@@ -32,12 +32,9 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	kutil "kmodules.xyz/client-go"
-	core_util "kmodules.xyz/client-go/core/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
-	meta_util "kmodules.xyz/client-go/meta"
-	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
@@ -116,32 +113,43 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return err
 	}
 
-	if _, err := meta_util.GetString(elasticsearch.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		elasticsearch.Spec.Init != nil && elasticsearch.Spec.Init.Initializer != nil {
-
-		if elasticsearch.Status.Phase == api.DatabasePhaseInitializing {
-			return nil
-		}
-
-		// add phase that database is being initialized
-		mg, err := util.UpdateElasticsearchStatus(
-			context.TODO(), c.ExtClient.KubedbV1alpha1(),
-			elasticsearch.ObjectMeta,
-			func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+	if elasticsearch.Spec.Init != nil && elasticsearch.Spec.Init.Initializer != nil {
+		// If "Initialized" condition is not present, it means restore process hasn't completed yet.
+		// In this case, make database phase "Initializing".
+		if !kmapi.HasCondition(elasticsearch.Status.Conditions, api.DatabaseInitialized) {
+			elasticsearch, err := util.UpdateElasticsearchStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 				in.Phase = api.DatabasePhaseInitializing
+				in.ObservedGeneration = elasticsearch.Generation
 				return in
-			},
-			metav1.UpdateOptions{},
-		)
-		if err != nil {
-			return err
-		}
-		elasticsearch.Status = mg.Status
-
-		init := elasticsearch.Spec.Init
-		if init.Initializer != nil {
-			log.Debugf("Elasticsearch %v/%v is waiting for initializer to complete it's initialization", elasticsearch.Namespace, elasticsearch.Name)
+			}, metav1.UpdateOptions{})
+			if err != nil {
+				return err
+			}
+			// write log indicating that the database is waiting for the data to be restored by external initializer
+			log.Infof("Database %s %s/%s is waiting for data to be restored by initializer %s/%s/%s",
+				elasticsearch.Kind,
+				elasticsearch.Namespace,
+				elasticsearch.Name,
+				*elasticsearch.Spec.Init.Initializer.APIGroup,
+				elasticsearch.Spec.Init.Initializer.Kind,
+				elasticsearch.Spec.Init.Initializer.Name,
+			)
+			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
+		} else {
+			// Restore process has completed. It has either succeeded or failed. Update database phase accordingly.
+			dbPhase := api.DatabasePhaseRunning
+			if !kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseInitialized) {
+				dbPhase = api.DatabasePhaseFailed
+			}
+			elasticsearch, err = util.UpdateElasticsearchStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+				in.Phase = dbPhase
+				in.ObservedGeneration = elasticsearch.Generation
+				return in
+			}, metav1.UpdateOptions{})
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -199,17 +207,38 @@ func (c *Controller) ensureElasticsearchNode(es *api.Elasticsearch) (*api.Elasti
 		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to get elasticsearch distribution")
 	}
 
+	// Create/sync certificate secrets
+	// But if  the tls.issuerRef is set, do nothing (i.e. should be handled from enterprise operator).
 	if err = elastic.EnsureCertSecrets(); err != nil {
 		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to ensure certificates secret")
 	}
 
+	// Create/sync user credential (ie. username, password) secrets
 	if err = elastic.EnsureDatabaseSecret(); err != nil {
 		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to ensure database credential secret")
 	}
 
-	if !elastic.IsAllRequiredSecretAvailable() {
-		log.Warningf("Required secrets for Elasticsearch: %s/%s are not ready yet", es.Namespace, es.Name)
-		queue.EnqueueAfter(c.esQueue.GetQueue(), elastic.UpdatedElasticsearch(), 5*time.Second)
+	// Get the cert secret names
+	// List varies depending on the elasticsearch distribution & configuration.
+	sNames := elastic.RequiredCertSecretNames()
+	// Check whether the secrets are available or not.
+	ok, err := dynamic_util.ResourcesExists(
+		c.DynamicClient,
+		core.SchemeGroupVersion.WithResource("secrets"),
+		es.Namespace,
+		sNames...,
+	)
+	if err != nil {
+		return nil, kutil.VerbUnchanged, err
+	}
+	if !ok {
+		// If the certificates are managed by the enterprise operator,
+		// It takes some time for the secrets to get ready.
+		// If any required secret is yet to get ready,
+		// drop the elasticsearch object from work queue (i.e. return nil with no error).
+		// When any secret owned by this elasticsearch object is created/updated,
+		// this elasticsearch object will be enqueued again for processing.
+		log.Infoln(fmt.Sprintf("Required secrets for Elasticsearch: %s/%s are not ready yet", es.Namespace, es.Name))
 		return nil, kutil.VerbUnchanged, nil
 	}
 
@@ -225,7 +254,7 @@ func (c *Controller) ensureElasticsearchNode(es *api.Elasticsearch) (*api.Elasti
 	vt := kutil.VerbUnchanged
 	topology := elastic.UpdatedElasticsearch().Spec.Topology
 	if topology != nil {
-		vt1, err := elastic.EnsureClientNodes()
+		vt1, err := elastic.EnsureIngestNodes()
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
@@ -289,7 +318,7 @@ func (c *Controller) terminate(elasticsearch *api.Elasticsearch) error {
 
 	// If TerminationPolicy is "halt", keep PVCs,Secrets intact.
 	// TerminationPolicyPause is deprecated and will be removed in future.
-	if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyHalt || elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyPause {
+	if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyHalt {
 		if err := c.removeOwnerReferenceFromOffshoots(elasticsearch); err != nil {
 			return err
 		}
@@ -365,39 +394,4 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasti
 		return err
 	}
 	return nil
-}
-
-func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
-	elasticsearch, err := c.esLister.Elasticsearches(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	return elasticsearch, nil
-}
-
-func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
-	elasticsearch, err := c.esLister.Elasticsearches(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return err
-	}
-	_, err = util.UpdateElasticsearchStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-		in.Phase = phase
-		in.Reason = reason
-		return in
-	}, metav1.UpdateOptions{})
-	return err
-}
-
-func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
-	elasticsearch, err := c.esLister.Elasticsearches(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return err
-	}
-
-	_, _, err = util.PatchElasticsearch(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
-		in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
-		return in
-	}, metav1.PatchOptions{})
-	return err
 }

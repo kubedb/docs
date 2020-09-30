@@ -129,15 +129,9 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 
 			elasticsearch := obj.(*api.Elasticsearch).DeepCopy()
 			oldElasticsearch := oldObject.(*api.Elasticsearch).DeepCopy()
-			oldElasticsearch.SetDefaults(a.ClusterTopology)
 			// Allow changing Database Secret only if there was no secret have set up yet.
 			if oldElasticsearch.Spec.DatabaseSecret == nil {
 				oldElasticsearch.Spec.DatabaseSecret = elasticsearch.Spec.DatabaseSecret
-			}
-
-			// Allow changing CertificateSecret only if there was no secret have set up yet.
-			if oldElasticsearch.Spec.CertificateSecret == nil {
-				oldElasticsearch.Spec.CertificateSecret = elasticsearch.Spec.CertificateSecret
 			}
 
 			if err := validateUpdate(elasticsearch, oldElasticsearch); err != nil {
@@ -182,20 +176,20 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 			return errors.New("doesn't support spec.resources when spec.topology is set")
 		}
 
-		if topology.Client.Prefix == topology.Master.Prefix {
-			return errors.New("client & master node should not have same prefix")
+		if topology.Ingest.Prefix == topology.Master.Prefix {
+			return errors.New("ingest & master node should not have same prefix")
 		}
-		if topology.Client.Prefix == topology.Data.Prefix {
-			return errors.New("client & data node should not have same prefix")
+		if topology.Ingest.Prefix == topology.Data.Prefix {
+			return errors.New("ingest & data node should not have same prefix")
 		}
 		if topology.Master.Prefix == topology.Data.Prefix {
 			return errors.New("master & data node should not have same prefix")
 		}
 
-		if topology.Client.Replicas == nil || *topology.Client.Replicas < 1 {
-			return fmt.Errorf(`topology.client.replicas "%v" invalid. Must be greater than zero`, topology.Client.Replicas)
+		if topology.Ingest.Replicas == nil || *topology.Ingest.Replicas < 1 {
+			return fmt.Errorf(`topology.ingest.replicas "%v" invalid. Must be greater than zero`, topology.Ingest.Replicas)
 		}
-		if err := amv.ValidateStorage(client, elasticsearch.Spec.StorageType, topology.Client.Storage); err != nil {
+		if err := amv.ValidateStorage(client, elasticsearch.Spec.StorageType, topology.Ingest.Storage); err != nil {
 			return err
 		}
 
@@ -230,13 +224,6 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		databaseSecret := elasticsearch.Spec.DatabaseSecret
 		if databaseSecret != nil {
 			if _, err := client.CoreV1().Secrets(elasticsearch.Namespace).Get(context.TODO(), databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
-				return err
-			}
-		}
-
-		certificateSecret := elasticsearch.Spec.CertificateSecret
-		if certificateSecret != nil {
-			if _, err := client.CoreV1().Secrets(elasticsearch.Namespace).Get(context.TODO(), certificateSecret.SecretName, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}

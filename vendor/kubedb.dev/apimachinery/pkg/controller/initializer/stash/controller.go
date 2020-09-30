@@ -24,9 +24,8 @@ import (
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/record"
+	dmcond "kmodules.xyz/client-go/dynamic/conditions"
 	"kmodules.xyz/client-go/tools/queue"
 	"stash.appscode.dev/apimachinery/apis/stash/v1beta1"
 	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
@@ -36,10 +35,6 @@ import (
 type Controller struct {
 	*amc.Controller
 	*amc.StashInitializer
-	// SnapshotDoer interface
-	snapshotter amc.DBHelper
-	// Event Recorder
-	eventRecorder record.EventRecorder
 	// Namespace to watch
 	watchNamespace string
 }
@@ -47,25 +42,20 @@ type Controller struct {
 func NewController(
 	ctrl *amc.Controller,
 	initializer *amc.StashInitializer,
-	snapshotter amc.DBHelper,
-	recorder record.EventRecorder,
 	watchNamespace string,
 ) *Controller {
 	return &Controller{
 		Controller:       ctrl,
 		StashInitializer: initializer,
-		snapshotter:      snapshotter,
-		eventRecorder:    recorder,
 		watchNamespace:   watchNamespace,
 	}
 }
 
 type restoreInfo struct {
-	invoker      core.TypedLocalObjectReference
-	namespace    string
-	target       *v1beta1.RestoreTarget
-	phase        v1beta1.RestorePhase
-	targetDBKind string
+	invoker core.TypedLocalObjectReference
+	target  *v1beta1.RestoreTarget
+	phase   v1beta1.RestorePhase
+	do      dmcond.DynamicOptions
 }
 
 func Configure(cfg *rest.Config, s *amc.StashInitializer, resyncPeriod time.Duration) error {
@@ -77,32 +67,49 @@ func Configure(cfg *rest.Config, s *amc.StashInitializer, resyncPeriod time.Dura
 	return nil
 }
 
-func (c *Controller) InitWatcher(maxNumRequeues, numThreads int, selector labels.Selector) {
-	log.Infoln("Initializing stash watchers.....")
-	// only watch  the restore invokers that matches the selector
-	tweakListOptions := func(options *metav1.ListOptions) {
-		options.LabelSelector = selector.String()
-	}
-	// Initialize RestoreSession Watcher
-	c.RSInformer = c.restoreSessionInformer(tweakListOptions)
-	c.RSQueue = queue.New(v1beta1.ResourceKindRestoreSession, maxNumRequeues, numThreads, c.processRestoreSession)
-	c.RSLister = c.StashInformerFactory.Stash().V1beta1().RestoreSessions().Lister()
-	c.RSInformer.AddEventHandler(c.restoreSessionEventHandler(selector))
-
-	// Initialize RestoreBatch Watcher
-	c.RBInformer = c.restoreBatchInformer(tweakListOptions)
-	c.RBQueue = queue.New(v1beta1.ResourceKindRestoreBatch, maxNumRequeues, numThreads, c.processRestoreBatch)
-	c.RBLister = c.StashInformerFactory.Stash().V1beta1().RestoreBatches().Lister()
-	c.RBInformer.AddEventHandler(c.restoreBatchEventHandler(selector))
-}
-
-func (c *Controller) StartController(stopCh <-chan struct{}) {
-	// Start StashInformerFactory only if stash crds (ie, "RestoreSession") are available.
+func (c *Controller) StartAfterStashInstalled(maxNumRequeues, numThreads int, selector metav1.LabelSelector, stopCh <-chan struct{}) {
+	// Wait until Stash operator installed
 	if err := c.waitUntilStashInstalled(stopCh); err != nil {
 		log.Errorln("error during waiting for RestoreSession crd. Reason: ", err)
 		return
 	}
 
+	// Initialize the watchers
+	err := c.initWatcher(maxNumRequeues, numThreads, selector)
+	if err != nil {
+		log.Errorln("Failed to initialize Stash controllers. Reason: ", err)
+		return
+	}
+
+	// Run the Stash controllers
+	c.startController(stopCh)
+}
+
+func (c *Controller) initWatcher(maxNumRequeues, numThreads int, selector metav1.LabelSelector) error {
+	log.Infoln("Initializing stash watchers.....")
+	// only watch  the restore invokers that matches the selector
+	ls, err := metav1.LabelSelectorAsSelector(&selector)
+	if err != nil {
+		return err
+	}
+	tweakListOptions := func(options *metav1.ListOptions) {
+		options.LabelSelector = ls.String()
+	}
+	// Initialize RestoreSession Watcher
+	c.RSInformer = c.restoreSessionInformer(tweakListOptions)
+	c.RSQueue = queue.New(v1beta1.ResourceKindRestoreSession, maxNumRequeues, numThreads, c.processRestoreSession)
+	c.RSLister = c.StashInformerFactory.Stash().V1beta1().RestoreSessions().Lister()
+	c.RSInformer.AddEventHandler(c.restoreSessionEventHandler(ls))
+
+	// Initialize RestoreBatch Watcher
+	c.RBInformer = c.restoreBatchInformer(tweakListOptions)
+	c.RBQueue = queue.New(v1beta1.ResourceKindRestoreBatch, maxNumRequeues, numThreads, c.processRestoreBatch)
+	c.RBLister = c.StashInformerFactory.Stash().V1beta1().RestoreBatches().Lister()
+	c.RBInformer.AddEventHandler(c.restoreBatchEventHandler(ls))
+	return nil
+}
+
+func (c *Controller) startController(stopCh <-chan struct{}) {
 	log.Infoln("Starting Stash controllers...")
 	// start informer factory
 	c.StashInformerFactory.Start(stopCh)

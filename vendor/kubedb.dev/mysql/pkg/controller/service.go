@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/pkg/eventer"
@@ -41,46 +40,7 @@ var defaultDBPort = core.ServicePort{
 	TargetPort: intstr.FromString("db"),
 }
 
-func (c *Controller) ensureService(mysql *api.MySQL) (kutil.VerbType, error) {
-	// Check if service name exists
-	if err := c.checkService(mysql, mysql.ServiceName()); err != nil {
-		return kutil.VerbUnchanged, err
-	}
-
-	// create database Service
-	vt, err := c.createService(mysql)
-	if err != nil {
-		return kutil.VerbUnchanged, err
-	} else if vt != kutil.VerbUnchanged {
-		c.Recorder.Eventf(
-			mysql,
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully %s Service",
-			vt,
-		)
-	}
-	return vt, nil
-}
-
-func (c *Controller) checkService(mysql *api.MySQL, serviceName string) error {
-	service, err := c.Client.CoreV1().Services(mysql.Namespace).Get(context.TODO(), serviceName, metav1.GetOptions{})
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			return nil
-		}
-		return err
-	}
-
-	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindMySQL ||
-		service.Labels[api.LabelDatabaseName] != mysql.Name {
-		return fmt.Errorf(`intended service "%v/%v" already exists`, mysql.Namespace, serviceName)
-	}
-
-	return nil
-}
-
-func (c *Controller) createService(mysql *api.MySQL) (kutil.VerbType, error) {
+func (c *Controller) ensurePrimaryService(mysql *api.MySQL) (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
 		Name:      mysql.OffshootName(),
 		Namespace: mysql.Namespace,
@@ -88,12 +48,17 @@ func (c *Controller) createService(mysql *api.MySQL) (kutil.VerbType, error) {
 
 	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
-	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
+	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = mysql.OffshootLabels()
 		in.Annotations = mysql.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Selector = mysql.OffshootSelectors()
+		//add extra selector to select only primary pod for group replication
+		if mysql.UsesGroupReplication() {
+			in.Spec.Selector[api.MySQLLabelRole] = api.MySQLPodPrimary
+		}
+
 		in.Spec.Ports = ofst.MergeServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
 			mysql.Spec.ServiceTemplate.Spec.Ports,
@@ -114,7 +79,18 @@ func (c *Controller) createService(mysql *api.MySQL) (kutil.VerbType, error) {
 		}
 		return in
 	}, metav1.PatchOptions{})
-	return ok, err
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	} else if vt != kutil.VerbUnchanged {
+		c.Recorder.Eventf(
+			mysql,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %s Service",
+			vt,
+		)
+	}
+	return vt, nil
 }
 
 func (c *Controller) ensureStatsService(mysql *api.MySQL) (kutil.VerbType, error) {
@@ -122,11 +98,6 @@ func (c *Controller) ensureStatsService(mysql *api.MySQL) (kutil.VerbType, error
 	if mysql.GetMonitoringVendor() != mona.VendorPrometheus {
 		log.Infoln("spec.monitor.agent is not operator or builtin.")
 		return kutil.VerbUnchanged, nil
-	}
-
-	// Check if statsService name exists
-	if err := c.checkService(mysql, mysql.StatsService().ServiceName()); err != nil {
-		return kutil.VerbUnchanged, err
 	}
 
 	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
@@ -200,33 +171,21 @@ func (c *Controller) createMySQLGoverningService(mysql *api.MySQL) (string, erro
 	return service.Name, nil
 }
 
-func (c *Controller) ensureServiceForPrimaryPod(mysql *api.MySQL) (kutil.VerbType, error) {
-	// Check if service name exists
-	svcName := fmt.Sprintf("%s-%s", mysql.ServiceName(), "primary")
-	if err := c.checkService(mysql, svcName); err != nil {
-		return kutil.VerbUnchanged, err
-	}
-
-	// create Service for primary/master pod
-	vt, err := c.createServiceForPrimaryPod(mysql, svcName)
-	return vt, err
-}
-
-func (c *Controller) createServiceForPrimaryPod(mysql *api.MySQL, svcName string) (kutil.VerbType, error) {
+func (c *Controller) ensureSecondaryService(mysql *api.MySQL) (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
-		Name:      svcName,
+		Name:      mysql.SecondaryServiceName(),
 		Namespace: mysql.Namespace,
 	}
 
 	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
-	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
+	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = mysql.OffshootLabels()
 		in.Annotations = mysql.Spec.ServiceTemplate.Annotations
 		in.Spec.Selector = mysql.OffshootSelectors()
-		//add extra selector to select only primary pod
-		in.Spec.Selector[labelRole] = primary
+		//add extra selector to select only secondary pod
+		in.Spec.Selector[api.MySQLLabelRole] = api.MySQLPodSecondary
 
 		in.Spec.Ports = ofst.MergeServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
@@ -248,6 +207,5 @@ func (c *Controller) createServiceForPrimaryPod(mysql *api.MySQL, svcName string
 		}
 		return in
 	}, metav1.PatchOptions{})
-	return ok, err
-
+	return vt, err
 }

@@ -85,7 +85,7 @@ func (c *Controller) processRestoreSession(key string) error {
 			log.Errorln("failed to extract restore invoker info. Reason: ", err)
 			return err
 		}
-		return c.syncDatabasePhase(ri)
+		return c.setRestoreCompletionCondition(ri)
 	}
 	return nil
 }

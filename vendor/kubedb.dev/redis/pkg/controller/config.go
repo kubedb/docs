@@ -86,6 +86,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	if err := ctrl.EnsureCustomResourceDefinitions(); err != nil {
 		return nil, err
 	}
+
 	if c.EnableMutatingWebhook {
 		if err := reg_util.UpdateMutatingWebhookCABundle(c.ClientConfig, mutatingWebhookConfig); err != nil {
 			return nil, err

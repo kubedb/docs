@@ -24,8 +24,8 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"kubedb.dev/elasticsearch/pkg/lib/user"
 
-	"github.com/appscode/go/crypto/rand"
 	"github.com/pkg/errors"
+	"gomodules.xyz/password-generator"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -45,7 +45,7 @@ func (es *Elasticsearch) EnsureDatabaseSecret() error {
 		// If the secret already exists in the same name,
 		// validate it (ie. it contains username, password as keys).
 		var err error
-		pass := rand.Characters(8)
+		pass := password.Generate(api.DefaultPasswordLength)
 		if dbSecretVolume, err = es.createOrSyncUserCredSecret(string(api.ElasticsearchInternalUserAdmin), pass); err != nil {
 			return err
 		}
@@ -61,7 +61,6 @@ func (es *Elasticsearch) EnsureDatabaseSecret() error {
 		}
 
 		es.elasticsearch = newES
-		return nil
 	} else {
 		// Get the secret and validate it.
 		dbSecret, err := es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Get(context.TODO(), dbSecretVolume.SecretName, metav1.GetOptions{})
@@ -82,7 +81,7 @@ func (es *Elasticsearch) EnsureDatabaseSecret() error {
 			continue
 		}
 
-		pass := rand.Characters(8)
+		pass := password.Generate(api.DefaultPasswordLength)
 		_, err := es.createOrSyncUserCredSecret(username, pass)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("failed to create credential secret for user: %s", username))
@@ -216,9 +215,9 @@ func (es *Elasticsearch) setMissingUsersAndRolesMapping() error {
 		//	V6        = "sg_readall_and_monitor"
 		var readallMonitor string
 		if string(es.esVersion.Spec.Version[0]) == "6" {
-			readallMonitor = ReadallMonitorRoleV6
+			readallMonitor = api.ElasticsearchSearchGuardReadallMonitorRoleV6
 		} else {
-			readallMonitor = ReadallMonitorRoleV7
+			readallMonitor = api.ElasticsearchSearchGuardReadallMonitorRoleV7
 		}
 
 		// Create rolesMapping if not exists.

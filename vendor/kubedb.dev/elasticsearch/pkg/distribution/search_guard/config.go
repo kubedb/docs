@@ -33,15 +33,9 @@ import (
 )
 
 const (
-	ConfigFileName              = "elasticsearch.yml"
-	ConfigFileMountPath         = "/usr/share/elasticsearch/config"
-	TempConfigFileMountPath     = "/elasticsearch/temp-config"
-	DatabaseConfigSecretSuffix  = "config"
-	SecurityConfigFileMountPath = "/usr/share/elasticsearch/plugins/search-guard-%v/sgconfig"
-	InternalUserFileName        = "sg_internal_users.yml"
-	RolesMappingFileName        = "sg_roles_mapping.yml"
-	ReadallMonitorRoleV7        = "SGS_READALL_AND_MONITOR"
-	ReadallMonitorRoleV6        = "sg_readall_and_monitor"
+	ConfigFileName       = "elasticsearch.yml"
+	InternalUserFileName = "sg_internal_users.yml"
+	RolesMappingFileName = "sg_roles_mapping.yml"
 )
 
 var adminDNTemplate = `

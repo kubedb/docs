@@ -48,14 +48,6 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.KubeInformerFactory.Start(stopCh)
 	c.KubedbInformerFactory.Start(stopCh)
 
-	// Run Stash initializer controllers
-	go stash.NewController(c.esCtrl.Controller, &c.esCtrl.Config.Initializers.Stash, c.esCtrl, c.Recorder, c.WatchNamespace).StartController(stopCh)
-	go stash.NewController(c.mgCtrl.Controller, &c.mgCtrl.Config.Initializers.Stash, c.mgCtrl, c.Recorder, c.WatchNamespace).StartController(stopCh)
-	go stash.NewController(c.myCtrl.Controller, &c.myCtrl.Config.Initializers.Stash, c.myCtrl, c.Recorder, c.WatchNamespace).StartController(stopCh)
-	go stash.NewController(c.pxCtrl.Controller, &c.pxCtrl.Config.Initializers.Stash, c.pxCtrl, c.Recorder, c.WatchNamespace).StartController(stopCh)
-	go stash.NewController(c.pgCtrl.Controller, &c.pgCtrl.Config.Initializers.Stash, c.pgCtrl, c.Recorder, c.WatchNamespace).StartController(stopCh)
-	go stash.NewController(c.rdCtrl.Controller, &c.rdCtrl.Config.Initializers.Stash, c.rdCtrl, c.Recorder, c.WatchNamespace).StartController(stopCh)
-
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range c.KubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
@@ -70,6 +62,10 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 		}
 	}
 
+	// Initialize and start Stash controllers
+	go stash.NewController(c.Controller, &c.Config.Initializers.Stash, c.WatchNamespace).StartAfterStashInstalled(c.MaxNumRequeues, c.NumThreads, c.selector, stopCh)
+
+	// Run individual database controllers
 	c.esCtrl.RunControllers(stopCh)
 	c.mcCtrl.RunControllers(stopCh)
 	c.mgCtrl.RunControllers(stopCh)

@@ -2895,8 +2895,6 @@ spec:
                       type: object
                   type: object
               type: object
-            paused:
-              type: boolean
             podTemplate:
               properties:
                 controller:
@@ -4418,6 +4416,31 @@ spec:
           type: object
         status:
           properties:
+            conditions:
+              items:
+                properties:
+                  lastTransitionTime:
+                    format: date-time
+                    type: string
+                  message:
+                    type: string
+                  observedGeneration:
+                    format: int64
+                    type: integer
+                  reason:
+                    type: string
+                  status:
+                    type: string
+                  type:
+                    type: string
+                required:
+                - lastTransitionTime
+                - message
+                - reason
+                - status
+                - type
+                type: object
+              type: array
             observedGeneration:
               format: int64
               type: integer
@@ -4429,8 +4452,6 @@ spec:
               - Paused
               - Halted
               - Failed
-              type: string
-            reason:
               type: string
           type: object
       type: object

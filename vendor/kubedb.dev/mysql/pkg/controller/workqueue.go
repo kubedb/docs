@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 
@@ -26,6 +27,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
 )
@@ -34,7 +36,7 @@ func (c *Controller) initWatcher() {
 	c.myInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().MySQLs().Informer()
 	c.myQueue = queue.New("MySQL", c.MaxNumRequeues, c.NumThreads, c.runMySQL)
 	c.myLister = c.KubedbInformerFactory.Kubedb().V1alpha1().MySQLs().Lister()
-	c.myInformer.AddEventHandler(queue.NewReconcilableHandler(c.myQueue.GetQueue()))
+	c.myInformer.AddEventHandler(queue.NewChangeHandler(c.myQueue.GetQueue()))
 }
 
 func (c *Controller) runMySQL(key string) error {
@@ -52,27 +54,27 @@ func (c *Controller) runMySQL(key string) error {
 		// is dependent on the actual instance, to detect that a MySQL was recreated with the same name
 		mysql := obj.(*api.MySQL).DeepCopy()
 		if mysql.DeletionTimestamp != nil {
-			if core_util.HasFinalizer(mysql.ObjectMeta, api.GenericKey) {
+			if core_util.HasFinalizer(mysql.ObjectMeta, kubedb.GroupName) {
 				if err := c.terminate(mysql); err != nil {
 					log.Errorln(err)
 					return err
 				}
 				_, _, err = util.PatchMySQL(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
-					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, api.GenericKey)
+					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
 			mysql, _, err = util.PatchMySQL(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
-				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, api.GenericKey)
+				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})
 			if err != nil {
 				return err
 			}
 
-			if mysql.Spec.Paused {
+			if kmapi.IsConditionTrue(mysql.Status.Conditions, api.DatabasePaused) {
 				return nil
 			}
 

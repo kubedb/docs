@@ -34,23 +34,16 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-const (
-	NodeRoleMaster = "node.role.master"
-	NodeRoleClient = "node.role.client"
-	NodeRoleData   = "node.role.data"
-	NodeRoleSet    = "set"
-)
-
 var (
-	defaultClientPort = core.ServicePort{
+	defaultRestPort = core.ServicePort{
 		Name:       api.ElasticsearchRestPortName,
 		Port:       api.ElasticsearchRestPort,
 		TargetPort: intstr.FromString(api.ElasticsearchRestPortName),
 	}
-	defaultPeerPort = core.ServicePort{
-		Name:       api.ElasticsearchNodePortName,
-		Port:       api.ElasticsearchNodePort,
-		TargetPort: intstr.FromString(api.ElasticsearchNodePortName),
+	defaultTransportPort = core.ServicePort{
+		Name:       api.ElasticsearchTransportPortName,
+		Port:       api.ElasticsearchTransportPort,
+		TargetPort: intstr.FromString(api.ElasticsearchTransportPortName),
 	}
 )
 
@@ -73,7 +66,7 @@ func (c *Controller) ensureElasticGvrSvc(elasticsearch *api.Elasticsearch) error
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
 		in.Spec.Type = core.ServiceTypeClusterIP
 		in.Spec.ClusterIP = core.ClusterIPNone
-		in.Spec.Ports = []core.ServicePort{defaultPeerPort, defaultClientPort}
+		in.Spec.Ports = []core.ServicePort{defaultTransportPort, defaultRestPort}
 		return in
 	}, metav1.PatchOptions{})
 
@@ -168,9 +161,9 @@ func (c *Controller) createService(elasticsearch *api.Elasticsearch) (kutil.Verb
 		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
-		in.Spec.Selector[NodeRoleClient] = NodeRoleSet
+		in.Spec.Selector[api.ElasticsearchNodeRoleIngest] = api.ElasticsearchNodeRoleSet
 		in.Spec.Ports = ofst.MergeServicePorts(
-			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultClientPort}),
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultRestPort}),
 			elasticsearch.Spec.ServiceTemplate.Spec.Ports,
 		)
 
@@ -205,11 +198,11 @@ func (c *Controller) createMasterService(elasticsearch *api.Elasticsearch) (kuti
 		in.Labels = elasticsearch.OffshootLabels()
 		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
-		in.Spec.Selector[NodeRoleMaster] = NodeRoleSet
+		in.Spec.Selector[api.ElasticsearchNodeRoleMaster] = api.ElasticsearchNodeRoleSet
 
 		in.Spec.Type = core.ServiceTypeClusterIP
 		in.Spec.ClusterIP = core.ClusterIPNone
-		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultPeerPort})
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultTransportPort})
 		return in
 	}, metav1.PatchOptions{})
 	return ok, err

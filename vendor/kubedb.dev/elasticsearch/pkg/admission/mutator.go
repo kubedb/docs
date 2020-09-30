@@ -17,6 +17,7 @@ limitations under the License.
 package admission
 
 import (
+	"context"
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
@@ -26,6 +27,7 @@ import (
 	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
@@ -93,7 +95,7 @@ func (a *ElasticsearchMutator) Admit(req *admission.AdmissionRequest) *admission
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	mod, err := setDefaultValues(obj.(*api.Elasticsearch).DeepCopy(), a.ClusterTopology)
+	mod, err := setDefaultValues(a.extClient, obj.(*api.Elasticsearch).DeepCopy(), a.ClusterTopology)
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mod != nil {
@@ -111,7 +113,7 @@ func (a *ElasticsearchMutator) Admit(req *admission.AdmissionRequest) *admission
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a Elasticsearch database
-func setDefaultValues(elasticsearch *api.Elasticsearch, clusterTopology *core_util.Topology) (runtime.Object, error) {
+func setDefaultValues(extClient cs.Interface, elasticsearch *api.Elasticsearch, clusterTopology *core_util.Topology) (runtime.Object, error) {
 	if elasticsearch.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
 	}
@@ -125,8 +127,8 @@ func setDefaultValues(elasticsearch *api.Elasticsearch, clusterTopology *core_ut
 
 	topology := elasticsearch.Spec.Topology
 	if topology != nil {
-		if topology.Client.Replicas == nil {
-			topology.Client.Replicas = types.Int32P(1)
+		if topology.Ingest.Replicas == nil {
+			topology.Ingest.Replicas = types.Int32P(1)
 		}
 
 		if topology.Master.Replicas == nil {
@@ -141,7 +143,13 @@ func setDefaultValues(elasticsearch *api.Elasticsearch, clusterTopology *core_ut
 			elasticsearch.Spec.Replicas = types.Int32P(1)
 		}
 	}
-	elasticsearch.SetDefaults(clusterTopology)
+
+	esversion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), elasticsearch.Spec.Version, metav1.GetOptions{})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get ElasticsearchVersion: %s", elasticsearch.Spec.Version)
+	}
+
+	elasticsearch.SetDefaults(esversion, clusterTopology)
 
 	// If monitoring spec is given without port,
 	// set default Listening port

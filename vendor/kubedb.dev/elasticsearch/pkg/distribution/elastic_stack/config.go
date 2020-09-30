@@ -28,10 +28,7 @@ import (
 )
 
 const (
-	ConfigFileName             = "elasticsearch.yml"
-	ConfigFileMountPath        = "/usr/share/elasticsearch/config"
-	TempConfigFileMountPath    = "/elasticsearch/temp-config"
-	DatabaseConfigSecretSuffix = "config"
+	ConfigFileName = "elasticsearch.yml"
 )
 
 var xpack_security_enabled = `

@@ -23,7 +23,7 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 
-	"github.com/appscode/go/crypto/rand"
+	passgen "gomodules.xyz/password-generator"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -62,12 +62,6 @@ func (c *Controller) createDatabaseSecret(px *api.PerconaXtraDB) (*core.SecretVo
 		return nil, err
 	}
 	if sc == nil {
-		randPassword := ""
-
-		// if the password starts with "-", it will cause error in bash scripts (in percona-xtradb-tools)
-		for randPassword = rand.GeneratePassword(); randPassword[0] == '-'; {
-		}
-
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   authSecretName,
@@ -76,7 +70,7 @@ func (c *Controller) createDatabaseSecret(px *api.PerconaXtraDB) (*core.SecretVo
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
 				core.BasicAuthUsernameKey: mysqlUser,
-				core.BasicAuthPasswordKey: randPassword,
+				core.BasicAuthPasswordKey: passgen.Generate(api.DefaultPasswordLength),
 			},
 		}
 

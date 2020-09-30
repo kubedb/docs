@@ -33,7 +33,6 @@ import (
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -53,16 +52,14 @@ type Controller struct {
 
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
-	// labelselector for event-handler of Snapshot, Dormant and Job
-	selector labels.Selector
+	// LabelSelector to filter Stash restore invokers only for this database
+	selector metav1.LabelSelector
 
 	// PerconaXtraDB
 	pxQueue    *queue.Worker
 	pxInformer cache.SharedIndexInformer
 	pxLister   api_listers.PerconaXtraDBLister
 }
-
-var _ amc.DBHelper = &Controller{}
 
 func New(
 	clientConfig *rest.Config,
@@ -87,9 +84,11 @@ func New(
 		},
 		Config:     opt,
 		promClient: promClient,
-		selector: labels.SelectorFromSet(map[string]string{
-			api.LabelDatabaseKind: api.ResourceKindPerconaXtraDB,
-		}),
+		selector: metav1.LabelSelector{
+			MatchLabels: map[string]string{
+				api.LabelDatabaseKind: api.ResourceKindPerconaXtraDB,
+			},
+		},
 	}
 }
 
@@ -107,16 +106,6 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 // Init initializes percona-xtradb, DormantDB amd RestoreSessionForCluster watcher
 func (c *Controller) Init() error {
 	c.initWatcher()
-
-	// Initialize Stash initializer
-	stash.NewController(
-		c.Controller,
-		&c.Config.Initializers.Stash,
-		c,
-		c.Recorder,
-		c.WatchNamespace,
-	).InitWatcher(c.MaxNumRequeues, c.NumThreads, c.selector)
-
 	return nil
 }
 
@@ -150,15 +139,6 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.KubeInformerFactory.Start(stopCh)
 	c.KubedbInformerFactory.Start(stopCh)
 
-	// Start Stash initializer controllers
-	go stash.NewController(
-		c.Controller,
-		&c.Config.Initializers.Stash,
-		c,
-		c.Recorder,
-		c.WatchNamespace,
-	).StartController(stopCh)
-
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range c.KubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
@@ -172,7 +152,10 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 			return
 		}
 	}
+	// Initialize and start Stash controllers
+	go stash.NewController(c.Controller, &c.Config.Initializers.Stash, c.WatchNamespace).StartAfterStashInstalled(c.MaxNumRequeues, c.NumThreads, c.selector, stopCh)
 
+	// Start PerconaXtraDB controller
 	c.RunControllers(stopCh)
 
 	<-stopCh
@@ -191,7 +174,6 @@ func (c *Controller) pushFailureEvent(px *api.PerconaXtraDB, reason string) {
 
 	perconaXtraDB, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 		in.Phase = api.DatabasePhaseFailed
-		in.Reason = reason
 		in.ObservedGeneration = px.Generation
 		return in
 	}, metav1.UpdateOptions{})

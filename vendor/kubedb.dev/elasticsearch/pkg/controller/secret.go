@@ -14,22 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package api
+package controller
 
 import (
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 
-	kutil "kmodules.xyz/client-go"
+	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/tools/cache"
+	core_util "kmodules.xyz/client-go/core/v1"
 )
 
-type ElasticsearchInterface interface {
-	UpdatedElasticsearch() *api.Elasticsearch
-	EnsureCertSecrets() error
-	EnsureDatabaseSecret() error
-	EnsureDefaultConfig() error
-	EnsureMasterNodes() (kutil.VerbType, error)
-	EnsureIngestNodes() (kutil.VerbType, error)
-	EnsureDataNodes() (kutil.VerbType, error)
-	EnsureCombinedNode() (kutil.VerbType, error)
-	RequiredCertSecretNames() []string
+func (c *Controller) elasticsearchForSecret(s *core.Secret) cache.ExplicitKey {
+	ctrl := metav1.GetControllerOf(s)
+	ok, err := core_util.IsOwnerOfGroupKind(ctrl, kubedb.GroupName, api.ResourceKindElasticsearch)
+	if err != nil || !ok {
+		return ""
+	}
+
+	// Owner ref is set by the enterprise operator
+	return cache.ExplicitKey(s.Namespace + "/" + ctrl.Name)
 }

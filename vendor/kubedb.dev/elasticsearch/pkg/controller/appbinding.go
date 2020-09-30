@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	certlib "kubedb.dev/elasticsearch/pkg/lib/cert"
@@ -80,14 +81,14 @@ func (c *Controller) ensureAppBinding(db *api.Elasticsearch) (kutil.VerbType, er
 		func(in *appcat.AppBinding) *appcat.AppBinding {
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Labels = db.OffshootLabels()
-			in.Annotations = meta_util.FilterKeys(api.GenericKey, in.Annotations, db.Annotations)
+			in.Annotations = meta_util.FilterKeys(kubedb.GroupName, in.Annotations, db.Annotations)
 
 			in.Spec.Type = appmeta.Type()
 			in.Spec.Version = elasticsearchVersion.Spec.Version
 			in.Spec.ClientConfig.Service = &appcat.ServiceReference{
 				Scheme: db.GetConnectionScheme(),
 				Name:   db.ServiceName(),
-				Port:   defaultClientPort.Port,
+				Port:   defaultRestPort.Port,
 			}
 			in.Spec.ClientConfig.CABundle = caBundle
 			in.Spec.ClientConfig.InsecureSkipTLSVerify = false

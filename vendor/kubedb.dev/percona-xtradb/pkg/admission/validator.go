@@ -234,8 +234,8 @@ func ValidatePerconaXtraDB(client kubernetes.Interface, extClient cs.Interface, 
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
-	if px.Spec.StorageType == api.StorageTypeEphemeral && px.Spec.TerminationPolicy == api.TerminationPolicyPause {
-		return fmt.Errorf(`'spec.terminationPolicy: Pause' can not be used for 'Ephemeral' storage`)
+	if px.Spec.StorageType == api.StorageTypeEphemeral && px.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+		return fmt.Errorf(`'spec.terminationPolicy: Halt' can not be used for 'Ephemeral' storage`)
 	}
 
 	monitorSpec := px.Spec.Monitor

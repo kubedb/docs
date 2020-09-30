@@ -60,12 +60,12 @@ func (es *Elasticsearch) EnsureCertSecrets() error {
 		return err
 	}
 
-	caKey, caCert, err := es.createRootCertSecret(certPath)
+	caKey, caCert, err := es.createCACertSecret(certPath)
 	if err != nil {
 		return errors.Wrap(err, "failed to create/sync root-cert secret")
 	}
 
-	err = es.createNodeCertSecret(caKey, caCert, certPath)
+	err = es.createTransportCertSecret(caKey, caCert, certPath)
 	if err != nil {
 		return errors.Wrap(err, "failed to create/sync transport-cert secret")
 	}
@@ -83,11 +83,15 @@ func (es *Elasticsearch) EnsureCertSecrets() error {
 			return errors.Wrap(err, "failed to create/sync admin-cert secret")
 		}
 
-		err = es.createExporterCertSecret(caKey, caCert, certPath)
-		if err != nil {
-			return errors.Wrap(err, "failed to create/sync metrics-exporter-cert secret")
+		// create certificate for metrics-exporter, if monitoring is enabled
+		if es.elasticsearch.Spec.Monitor != nil {
+			err = es.createExporterCertSecret(caKey, caCert, certPath)
+			if err != nil {
+				return errors.Wrap(err, "failed to create/sync metrics-exporter-cert secret")
+			}
 		}
 
+		// create certificate for archiver ( ie. stash )
 		err = es.createArchiverCertSecret(caKey, caCert, certPath)
 		if err != nil {
 			return errors.Wrap(err, "failed to create/sync archiver-cert secret")
@@ -97,23 +101,23 @@ func (es *Elasticsearch) EnsureCertSecrets() error {
 	return nil
 }
 
-func (es *Elasticsearch) createRootCertSecret(cPath string) (*rsa.PrivateKey, *x509.Certificate, error) {
-	rSecret, err := es.findSecret(es.elasticsearch.MustCertSecretName(api.ElasticsearchRootCert))
+func (es *Elasticsearch) createCACertSecret(cPath string) (*rsa.PrivateKey, *x509.Certificate, error) {
+	rSecret, err := es.findSecret(es.elasticsearch.MustCertSecretName(api.ElasticsearchCACert))
 	if err != nil {
 		return nil, nil, err
 	}
 
 	if rSecret == nil {
 		// create certs here
-		caKey, caCert, err := pkcs8.CreateCaCertificate(cPath)
+		caKey, caCert, err := pkcs8.CreateCaCertificate(es.elasticsearch.ClientCertificateCN(api.ElasticsearchCACert), cPath)
 		if err != nil {
 			return nil, nil, err
 		}
-		rootCa, err := ioutil.ReadFile(filepath.Join(cPath, certlib.RootCACert))
+		rootCa, err := ioutil.ReadFile(filepath.Join(cPath, certlib.CACert))
 		if err != nil {
 			return nil, nil, err
 		}
-		rootKey, err := ioutil.ReadFile(filepath.Join(cPath, certlib.RootCAKey))
+		rootKey, err := ioutil.ReadFile(filepath.Join(cPath, certlib.CAKey))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -127,7 +131,7 @@ func (es *Elasticsearch) createRootCertSecret(cPath string) (*rsa.PrivateKey, *x
 
 		secret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   es.elasticsearch.MustCertSecretName(api.ElasticsearchRootCert),
+				Name:   es.elasticsearch.MustCertSecretName(api.ElasticsearchCACert),
 				Labels: es.elasticsearch.OffshootLabels(),
 			},
 			Type: corev1.SecretTypeTLS,
@@ -174,7 +178,7 @@ func (es *Elasticsearch) createRootCertSecret(cPath string) (*rsa.PrivateKey, *x
 	return caKey, caCert[0], nil
 }
 
-func (es *Elasticsearch) createNodeCertSecret(caKey *rsa.PrivateKey, caCert *x509.Certificate, cPath string) error {
+func (es *Elasticsearch) createTransportCertSecret(caKey *rsa.PrivateKey, caCert *x509.Certificate, cPath string) error {
 	nSecret, err := es.findSecret(es.elasticsearch.MustCertSecretName(api.ElasticsearchTransportCert))
 	if err != nil {
 		return err
@@ -187,7 +191,7 @@ func (es *Elasticsearch) createNodeCertSecret(caKey *rsa.PrivateKey, caCert *x50
 			return err
 		}
 
-		rootCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.RootCACert))
+		caCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.CACert))
 		if err != nil {
 			return err
 		}
@@ -203,7 +207,7 @@ func (es *Elasticsearch) createNodeCertSecret(caKey *rsa.PrivateKey, caCert *x50
 		}
 
 		data := map[string][]byte{
-			certlib.CACert:  rootCert,
+			certlib.CACert:  caCert,
 			certlib.TLSKey:  nodeKey,
 			certlib.TLSCert: nodeCert,
 		}
@@ -257,7 +261,7 @@ func (es *Elasticsearch) createHTTPCertSecret(caKey *rsa.PrivateKey, caCert *x50
 			return err
 		}
 
-		rootCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.RootCACert))
+		caCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.CACert))
 		if err != nil {
 			return err
 		}
@@ -273,7 +277,7 @@ func (es *Elasticsearch) createHTTPCertSecret(caKey *rsa.PrivateKey, caCert *x50
 		}
 
 		data := map[string][]byte{
-			certlib.CACert:  rootCert,
+			certlib.CACert:  caCert,
 			certlib.TLSKey:  clientKey,
 			certlib.TLSCert: clientCert,
 		}
@@ -327,7 +331,7 @@ func (es *Elasticsearch) createAdminCertSecret(caKey *rsa.PrivateKey, caCert *x5
 			return err
 		}
 
-		rootCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.RootCACert))
+		caCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.CACert))
 		if err != nil {
 			return err
 		}
@@ -343,7 +347,7 @@ func (es *Elasticsearch) createAdminCertSecret(caKey *rsa.PrivateKey, caCert *x5
 		}
 
 		data := map[string][]byte{
-			certlib.CACert:  rootCert,
+			certlib.CACert:  caCert,
 			certlib.TLSKey:  clientKey,
 			certlib.TLSCert: clientCert,
 		}
@@ -397,7 +401,7 @@ func (es *Elasticsearch) createExporterCertSecret(caKey *rsa.PrivateKey, caCert 
 			return err
 		}
 
-		rootCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.RootCACert))
+		caCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.CACert))
 		if err != nil {
 			return err
 		}
@@ -413,7 +417,7 @@ func (es *Elasticsearch) createExporterCertSecret(caKey *rsa.PrivateKey, caCert 
 		}
 
 		data := map[string][]byte{
-			certlib.CACert:  rootCert,
+			certlib.CACert:  caCert,
 			certlib.TLSKey:  clientKey,
 			certlib.TLSCert: clientCert,
 		}
@@ -467,7 +471,7 @@ func (es *Elasticsearch) createArchiverCertSecret(caKey *rsa.PrivateKey, caCert 
 			return err
 		}
 
-		rootCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.RootCACert))
+		caCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.CACert))
 		if err != nil {
 			return err
 		}
@@ -483,7 +487,7 @@ func (es *Elasticsearch) createArchiverCertSecret(caKey *rsa.PrivateKey, caCert 
 		}
 
 		data := map[string][]byte{
-			certlib.CACert:  rootCert,
+			certlib.CACert:  caCert,
 			certlib.TLSKey:  clientKey,
 			certlib.TLSCert: clientCert,
 		}

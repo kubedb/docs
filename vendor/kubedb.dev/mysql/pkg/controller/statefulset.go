@@ -171,8 +171,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL, stsName string) (*apps.
 				container.Args = args
 			}
 
-			if mysql.Spec.Topology != nil && mysql.Spec.Topology.Mode != nil &&
-				*mysql.Spec.Topology.Mode == api.MySQLClusterModeGroup {
+			if mysql.UsesGroupReplication() {
 				// replicationModeDetector is used to continuous select primary pod
 				// and add label as primary
 				replicationModeDetector := core.Container{
@@ -412,9 +411,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL, stsName string) 
 					},
 				},
 			}
-			if mysql.Spec.Topology != nil &&
-				mysql.Spec.Topology.Mode != nil &&
-				*mysql.Spec.Topology.Mode == api.MySQLClusterModeGroup &&
+			if mysql.UsesGroupReplication() &&
 				container.Name == api.ResourceSingularMySQL {
 				envs = append(envs, []core.EnvVar{
 					{

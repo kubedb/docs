@@ -339,9 +339,10 @@ lint: $(BUILD_DIRS)
 $(BUILD_DIRS):
 	@mkdir -p $@
 
-REGISTRY_SECRET ?=
-KUBE_NAMESPACE  ?=
-LICENSE_FILE    ?=
+REGISTRY_SECRET 	?=
+KUBE_NAMESPACE  	?=
+LICENSE_FILE    	?=
+IMAGE_PULL_POLICY 	?= Always
 
 ifeq ($(strip $(REGISTRY_SECRET)),)
 	IMAGE_PULL_SECRETS =
@@ -358,8 +359,8 @@ install:
 		--set operator.registry=$(REGISTRY)  \
 		--set operator.repository=operator   \
 		--set operator.tag=$(TAG)            \
-		--set imagePullPolicy=Always         \
-		$(IMAGE_PULL_SECRETS);               \
+		--set imagePullPolicy=$(IMAGE_PULL_POLICY)	\
+		$(IMAGE_PULL_SECRETS);               		\
 	kubectl wait --for=condition=Available apiservice -l 'app.kubernetes.io/name=kubedb,app.kubernetes.io/instance=kubedb' --timeout=5m; \
 	kubectl wait --for=condition=Established crds -l app.kubernetes.io/name=kubedb --timeout=5m; \
 	helm install kubedb-catalog charts/kubedb-catalog \
