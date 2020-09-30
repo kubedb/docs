@@ -16,7 +16,6 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	kmodules.xyz/client-go v0.0.0-20201007024140-3223988adf40
 	kmodules.xyz/custom-resources v0.0.0-20200922210108-70f2815a43bb
-	kmodules.xyz/monitoring-agent-api v0.0.0-20200922204510-b8b5610e5385 // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de
 	kubedb.dev/apimachinery v0.14.0-beta.3.0.20200930160612-c1c866163d8f
 	kubedb.dev/elasticsearch v0.14.0-beta.3.0.20200930133952-94db60b7e4b6
