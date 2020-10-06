@@ -59,14 +59,14 @@ func (c *Controller) runMySQL(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				_, _, err = util.PatchMySQL(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
+				_, _, err = util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
-			mysql, _, err = util.PatchMySQL(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
+			mysql, _, err = util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})

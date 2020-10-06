@@ -25,6 +25,7 @@ import (
 
 	"github.com/appscode/go/types"
 	core "k8s.io/api/core/v1"
+	appslister "k8s.io/client-go/listers/apps/v1"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	"kmodules.xyz/client-go/apiextensions"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -259,4 +260,10 @@ func (m *MySQL) MustCertSecretName(alias MySQLCertificateAlias) string {
 		panic(fmt.Errorf("MySQL %s/%s is missing secret name for %s certificate", m.Namespace, m.Name, alias))
 	}
 	return name
+}
+
+func (m *MySQL) IsReplicasReady(stsLister appslister.StatefulSetLister) (bool, string, error) {
+	// TODO: Implement database specific logic here
+	// return isReplicasReady, message, error
+	return false, "", nil
 }

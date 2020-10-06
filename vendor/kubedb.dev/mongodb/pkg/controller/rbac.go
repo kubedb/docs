@@ -124,7 +124,7 @@ func (c *Controller) createRoleBinding(db *api.MongoDB, roleName string, saName 
 }
 
 func (c *Controller) getPolicyNames(db *api.MongoDB) (string, error) {
-	dbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	dbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

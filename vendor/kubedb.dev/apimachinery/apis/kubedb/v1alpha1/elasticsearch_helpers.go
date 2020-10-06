@@ -28,6 +28,7 @@ import (
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	appslister "k8s.io/client-go/listers/apps/v1"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -432,4 +433,10 @@ func (e *ElasticsearchSpec) GetSecrets() []string {
 		secrets = append(secrets, e.DatabaseSecret.SecretName)
 	}
 	return secrets
+}
+
+func (e *Elasticsearch) IsReplicasReady(stsLister appslister.StatefulSetLister) (bool, string, error) {
+	// TODO: Implement database specific logic here
+	// return isReplicasReady, message, error
+	return false, "", nil
 }

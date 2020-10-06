@@ -21,9 +21,7 @@ import (
 
 	"github.com/appscode/go/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
-	"kmodules.xyz/client-go/tools/queue"
 	"stash.appscode.dev/apimachinery/apis/stash/v1beta1"
 	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 	stashinformers "stash.appscode.dev/apimachinery/client/informers/externalversions/stash/v1beta1"
@@ -39,31 +37,6 @@ func (c *Controller) restoreBatchInformer(tweakListOptions func(options *metav1.
 			tweakListOptions,
 		)
 	})
-}
-
-func (c Controller) restoreBatchEventHandler(selector labels.Selector) cache.ResourceEventHandler {
-	return queue.NewFilteredHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: func(obj interface{}) {
-			rb := obj.(*v1beta1.RestoreBatch)
-			if rb.Status.Phase == v1beta1.RestoreSucceeded ||
-				rb.Status.Phase == v1beta1.RestoreFailed ||
-				rb.Status.Phase == v1beta1.RestorePhaseUnknown {
-				queue.Enqueue(c.RBQueue.GetQueue(), obj)
-			}
-		},
-		UpdateFunc: func(old interface{}, new interface{}) {
-			oldObj := old.(*v1beta1.RestoreBatch)
-			newObj := new.(*v1beta1.RestoreBatch)
-			if newObj.Status.Phase != oldObj.Status.Phase &&
-				(newObj.Status.Phase == v1beta1.RestoreSucceeded ||
-					newObj.Status.Phase == v1beta1.RestoreFailed ||
-					newObj.Status.Phase == v1beta1.RestorePhaseUnknown) {
-				queue.Enqueue(c.RBQueue.GetQueue(), newObj)
-			}
-		},
-		DeleteFunc: func(obj interface{}) {
-		},
-	}, selector)
 }
 
 func (c Controller) processRestoreBatch(key string) error {
@@ -86,7 +59,7 @@ func (c Controller) processRestoreBatch(key string) error {
 			log.Errorln("failed to extract restore invoker info. Reason: ", err)
 			return err
 		}
-		return c.setRestoreCompletionCondition(ri)
+		return c.handleRestoreInvokerEvent(ri)
 	}
 	return nil
 }

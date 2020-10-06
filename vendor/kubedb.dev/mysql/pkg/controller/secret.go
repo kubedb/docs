@@ -43,7 +43,7 @@ func (c *Controller) ensureDatabaseSecret(mysql *api.MySQL) error {
 			return err
 		}
 
-		ms, _, err := util.PatchMySQL(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
+		ms, _, err := util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
 			in.Spec.DatabaseSecret = secretVolumeSource
 			return in
 		}, metav1.PatchOptions{})

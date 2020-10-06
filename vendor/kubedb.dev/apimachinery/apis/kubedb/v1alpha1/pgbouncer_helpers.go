@@ -23,6 +23,7 @@ import (
 	"kubedb.dev/apimachinery/apis/kubedb"
 	"kubedb.dev/apimachinery/crds"
 
+	appslister "k8s.io/client-go/listers/apps/v1"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	"kmodules.xyz/client-go/apiextensions"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -178,4 +179,10 @@ func (p *PgBouncer) MustCertSecretName(alias PgBouncerCertificateAlias) string {
 		panic(fmt.Errorf("PgBouncer %s/%s is missing secret name for %s certificate", p.Namespace, p.Name, alias))
 	}
 	return name
+}
+
+func (p *PgBouncer) IsReplicasReady(stsLister appslister.StatefulSetLister) (bool, string, error) {
+	// TODO: Implement database specific logic here
+	// return isReplicasReady, message, error
+	return false, "", nil
 }

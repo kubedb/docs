@@ -41,7 +41,7 @@ func (c *Controller) ensureDatabaseSecret(px *api.PerconaXtraDB) error {
 			return err
 		}
 
-		per, _, err := util.PatchPerconaXtraDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
+		per, _, err := util.PatchPerconaXtraDB(context.TODO(), c.DBClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
 			in.Spec.DatabaseSecret = secretVolumeSource
 			return in
 		}, metav1.PatchOptions{})

@@ -58,14 +58,14 @@ func (c *Controller) runPostgres(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				_, _, err = util.PatchPostgres(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
+				_, _, err = util.PatchPostgres(context.TODO(), c.DBClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
-			postgres, _, err = util.PatchPostgres(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
+			postgres, _, err = util.PatchPostgres(context.TODO(), c.DBClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})

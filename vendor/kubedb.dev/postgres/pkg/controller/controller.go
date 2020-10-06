@@ -78,7 +78,7 @@ func New(
 		Controller: &amc.Controller{
 			ClientConfig:     clientConfig,
 			Client:           client,
-			ExtClient:        extClient,
+			DBClient:         extClient,
 			CRDClient:        apiExtKubeClient,
 			DynamicClient:    dc,
 			AppCatalogClient: appCatalogClient,
@@ -156,6 +156,9 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 		}
 	}
 
+	// Start StatefulSet controller
+	c.StsQueue.Run(stopCh)
+
 	// Initialize and start Stash controllers
 	go stash.NewController(c.Controller, &c.Config.Initializers.Stash, c.WatchNamespace).StartAfterStashInstalled(c.MaxNumRequeues, c.NumThreads, c.selector, stopCh)
 
@@ -178,10 +181,10 @@ func (c *Controller) pushFailureEvent(postgres *api.Postgres, reason string) {
 
 	pg, err := kutildb.UpdatePostgresStatus(
 		context.TODO(),
-		c.ExtClient.KubedbV1alpha1(),
+		c.DBClient.KubedbV1alpha1(),
 		postgres.ObjectMeta,
 		func(in *api.PostgresStatus) *api.PostgresStatus {
-			in.Phase = api.DatabasePhaseFailed
+			in.Phase = api.DatabasePhaseNotReady
 			in.ObservedGeneration = postgres.Generation
 			return in
 		},

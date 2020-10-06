@@ -22,6 +22,8 @@ type ElasticsearchAutoscalerExpansion interface{}
 
 type EtcdAutoscalerExpansion interface{}
 
+type MariaDBAutoscalerExpansion interface{}
+
 type MemcachedAutoscalerExpansion interface{}
 
 type MongoDBAutoscalerExpansion interface{}
@@ -37,3 +39,7 @@ type PostgresAutoscalerExpansion interface{}
 type ProxySQLAutoscalerExpansion interface{}
 
 type RedisAutoscalerExpansion interface{}
+
+type VerticalAutoscalerExpansion interface{}
+
+type VerticalAutoscalerCheckpointExpansion interface{}

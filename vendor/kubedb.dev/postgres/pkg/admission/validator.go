@@ -29,6 +29,7 @@ import (
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
 	"github.com/pkg/errors"
+	"gomodules.xyz/sets"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,6 +39,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/leaderelection"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
@@ -129,7 +131,7 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 				oldPostgres.Spec.DatabaseSecret = postgres.Spec.DatabaseSecret
 			}
 
-			if err := validateUpdate(postgres, oldPostgres); err != nil {
+			if err := validateUpdate(postgres, oldPostgres, postgres.Status.Conditions); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
 		}
@@ -268,8 +270,8 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	return nil
 }
 
-func validateUpdate(obj, oldObj runtime.Object) error {
-	preconditions := getPreconditionFunc()
+func validateUpdate(obj, oldObj runtime.Object, conditions []kmapi.Condition) error {
+	preconditions := getPreconditionFunc(conditions)
 	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
@@ -280,7 +282,7 @@ func validateUpdate(obj, oldObj runtime.Object) error {
 	return nil
 }
 
-func getPreconditionFunc() []mergepatch.PreconditionFunc {
+func getPreconditionFunc(conditions []kmapi.Condition) []mergepatch.PreconditionFunc {
 	preconditions := []mergepatch.PreconditionFunc{
 		mergepatch.RequireKeyUnchanged("apiVersion"),
 		mergepatch.RequireKeyUnchanged("kind"),
@@ -288,7 +290,12 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 		mergepatch.RequireMetadataKeyUnchanged("namespace"),
 	}
 
-	for _, field := range preconditionSpecFields {
+	// Once the database has been provisioned, don't let update the "spec.init" section
+	if kmapi.IsConditionTrue(conditions, api.DatabaseProvisioned) {
+		preconditionSpecFields.Insert("spec.init")
+	}
+
+	for _, field := range preconditionSpecFields.List() {
 		preconditions = append(preconditions,
 			meta_util.RequireChainKeyUnchanged(field),
 		)
@@ -296,18 +303,17 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 	return preconditions
 }
 
-var preconditionSpecFields = []string{
+var preconditionSpecFields = sets.NewString(
 	"spec.standby",
 	"spec.streaming",
 	"spec.archiver",
 	"spec.databaseSecret",
 	"spec.storageType",
 	"spec.storage",
-	"spec.init",
-}
+)
 
 func preconditionFailedError() error {
-	str := preconditionSpecFields
+	str := preconditionSpecFields.List()
 	strList := strings.Join(str, "\n\t")
 	return fmt.Errorf(strings.Join([]string{`At least one of the following was changed:
 	apiVersion

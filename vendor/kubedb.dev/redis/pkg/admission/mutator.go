@@ -40,7 +40,7 @@ type RedisMutator struct {
 	ClusterTopology *core_util.Topology
 
 	client      kubernetes.Interface
-	extClient   cs.Interface
+	dbClient    cs.Interface
 	lock        sync.RWMutex
 	initialized bool
 }
@@ -66,7 +66,7 @@ func (a *RedisMutator) Initialize(config *rest.Config, stopCh <-chan struct{}) e
 	if a.client, err = kubernetes.NewForConfig(config); err != nil {
 		return err
 	}
-	if a.extClient, err = cs.NewForConfig(config); err != nil {
+	if a.dbClient, err = cs.NewForConfig(config); err != nil {
 		return err
 	}
 	return err

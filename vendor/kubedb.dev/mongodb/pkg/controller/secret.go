@@ -49,7 +49,7 @@ func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 			return err
 		}
 
-		ms, _, err := util.PatchMongoDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
+		ms, _, err := util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
 			in.Spec.DatabaseSecret = secretVolumeSource
 			return in
 		}, metav1.PatchOptions{})
@@ -98,7 +98,7 @@ func (c *Controller) ensureKeyFileSecret(mongodb *api.MongoDB) error {
 	keyFile := &core.SecretVolumeSource{
 		SecretName: secretName,
 	}
-	_, _, err = util.PatchMongoDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
+	_, _, err = util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
 		in.Spec.KeyFile = keyFile
 		return in
 	}, metav1.PatchOptions{})

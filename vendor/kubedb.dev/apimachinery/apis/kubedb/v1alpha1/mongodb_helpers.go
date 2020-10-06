@@ -29,6 +29,7 @@ import (
 	"gomodules.xyz/version"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	appslister "k8s.io/client-go/listers/apps/v1"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -640,4 +641,10 @@ func (m *MongoDB) MustCertSecretName(alias MongoDBCertificateAlias, stsName stri
 		panic(fmt.Errorf("MongoDB %s/%s is missing secret name for %s certificate", m.Namespace, m.Name, alias))
 	}
 	return name
+}
+
+func (m *MongoDB) IsReplicasReady(stsLister appslister.StatefulSetLister) (bool, string, error) {
+	// TODO: Implement database specific logic here
+	// return isReplicasReady, message, error
+	return false, "", nil
 }

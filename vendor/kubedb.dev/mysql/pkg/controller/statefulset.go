@@ -84,7 +84,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL, stsName string) (*apps.
 	}
 	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
-	mysqlVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), mysql.Spec.Version, metav1.GetOptions{})
+	mysqlVersion, err := c.DBClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), mysql.Spec.Version, metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}

@@ -160,7 +160,7 @@ func (c *Controller) ensureTopologyCluster(mongodb *api.MongoDB) (kutil.VerbType
 
 func (c *Controller) ensureShardNode(mongodb *api.MongoDB) ([]*apps.StatefulSet, kutil.VerbType, error) {
 	shardSts := func(nodeNum int32) (*apps.StatefulSet, kutil.VerbType, error) {
-		mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
+		mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
@@ -371,7 +371,7 @@ func (c *Controller) ensureShardNode(mongodb *api.MongoDB) ([]*apps.StatefulSet,
 }
 
 func (c *Controller) ensureConfigNode(mongodb *api.MongoDB) (*apps.StatefulSet, kutil.VerbType, error) {
-	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -560,7 +560,7 @@ func (c *Controller) ensureConfigNode(mongodb *api.MongoDB) (*apps.StatefulSet, 
 }
 
 func (c *Controller) ensureNonTopology(mongodb *api.MongoDB) (kutil.VerbType, error) {
-	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -800,7 +800,7 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB, opts workloadOption
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}

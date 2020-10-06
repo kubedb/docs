@@ -116,7 +116,7 @@ func (c *Controller) createRoleBinding(db *api.PerconaXtraDB, name string) error
 }
 
 func (c *Controller) getPolicyNames(db *api.PerconaXtraDB) (string, error) {
-	dbVersion, err := c.ExtClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	dbVersion, err := c.DBClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

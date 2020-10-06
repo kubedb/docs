@@ -67,7 +67,7 @@ func New(
 	clientConfig *rest.Config,
 	client kubernetes.Interface,
 	crdClient crd_cs.Interface,
-	extClient cs.Interface,
+	dbClient cs.Interface,
 	dc dynamic.Interface,
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
@@ -79,7 +79,7 @@ func New(
 		Controller: &amc.Controller{
 			ClientConfig:     clientConfig,
 			Client:           client,
-			ExtClient:        extClient,
+			DBClient:         dbClient,
 			CRDClient:        crdClient,
 			DynamicClient:    dc,
 			AppCatalogClient: appCatalogClient,
@@ -148,6 +148,9 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 		}
 	}
 
+	// Start StatefulSet controller
+	c.StsQueue.Run(stopCh)
+
 	// Initialize and start Stash controllers
 	go stash.NewController(c.Controller, &c.Config.Initializers.Stash, c.WatchNamespace).StartAfterStashInstalled(c.MaxNumRequeues, c.NumThreads, c.selector, stopCh)
 
@@ -179,10 +182,10 @@ func (c *Controller) pushFailureEvent(mongodb *api.MongoDB, reason string) {
 
 	mg, err := util.UpdateMongoDBStatus(
 		context.TODO(),
-		c.ExtClient.KubedbV1alpha1(),
+		c.DBClient.KubedbV1alpha1(),
 		mongodb.ObjectMeta,
 		func(in *api.MongoDBStatus) *api.MongoDBStatus {
-			in.Phase = api.DatabasePhaseFailed
+			in.Phase = api.DatabasePhaseNotReady
 			in.ObservedGeneration = mongodb.Generation
 			return in
 		},

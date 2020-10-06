@@ -34,7 +34,7 @@ import (
 )
 
 func (c *Controller) ensureMongosNode(mongodb *api.MongoDB) (*apps.StatefulSet, kutil.VerbType, error) {
-	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}

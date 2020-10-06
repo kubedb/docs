@@ -411,6 +411,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"kubedb.dev/apimachinery/apis/catalog/v1alpha1.EtcdVersionList":                       schema_apimachinery_apis_catalog_v1alpha1_EtcdVersionList(ref),
 		"kubedb.dev/apimachinery/apis/catalog/v1alpha1.EtcdVersionSpec":                       schema_apimachinery_apis_catalog_v1alpha1_EtcdVersionSpec(ref),
 		"kubedb.dev/apimachinery/apis/catalog/v1alpha1.EtcdVersionTools":                      schema_apimachinery_apis_catalog_v1alpha1_EtcdVersionTools(ref),
+		"kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersion":                        schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersion(ref),
+		"kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionDatabase":                schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersionDatabase(ref),
+		"kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionExporter":                schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersionExporter(ref),
+		"kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionInitContainer":           schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersionInitContainer(ref),
+		"kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionList":                    schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersionList(ref),
+		"kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionPodSecurityPolicy":       schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersionPodSecurityPolicy(ref),
+		"kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionSpec":                    schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersionSpec(ref),
 		"kubedb.dev/apimachinery/apis/catalog/v1alpha1.MemcachedVersion":                      schema_apimachinery_apis_catalog_v1alpha1_MemcachedVersion(ref),
 		"kubedb.dev/apimachinery/apis/catalog/v1alpha1.MemcachedVersionDatabase":              schema_apimachinery_apis_catalog_v1alpha1_MemcachedVersionDatabase(ref),
 		"kubedb.dev/apimachinery/apis/catalog/v1alpha1.MemcachedVersionExporter":              schema_apimachinery_apis_catalog_v1alpha1_MemcachedVersionExporter(ref),
@@ -19269,6 +19276,225 @@ func schema_apimachinery_apis_catalog_v1alpha1_EtcdVersionTools(ref common.Refer
 				Required: []string{"image"},
 			},
 		},
+	}
+}
+
+func schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersion(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type: []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionSpec"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionSpec"},
+	}
+}
+
+func schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersionDatabase(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "MariaDBVersionDatabase is the mariadb image",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"image": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"image"},
+			},
+		},
+	}
+}
+
+func schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersionExporter(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "MariaDBVersionExporter is the image for the MariaDB exporter",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"image": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"image"},
+			},
+		},
+	}
+}
+
+func schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersionInitContainer(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "MariaDBVersionInitContainer is the MariaDB Container initializer",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"image": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"image"},
+			},
+		},
+	}
+}
+
+func schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersionList(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "MariaDBVersionList is a list of MariaDBVersions",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+						},
+					},
+					"items": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Items is a list of MariaDBVersion CRD objects",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Ref: ref("kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersion"),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersion"},
+	}
+}
+
+func schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersionPodSecurityPolicy(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "MariaDBVersionPodSecurityPolicy is the MariaDB pod security policies",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"databasePolicyName": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"databasePolicyName"},
+			},
+		},
+	}
+}
+
+func schema_apimachinery_apis_catalog_v1alpha1_MariaDBVersionSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "MariaDBVersionSpec is the spec for MariaDB version",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Version",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"db": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Database Image",
+							Ref:         ref("kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionDatabase"),
+						},
+					},
+					"exporter": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Exporter Image",
+							Ref:         ref("kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionExporter"),
+						},
+					},
+					"deprecated": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Deprecated versions usable but regarded as obsolete and best avoided, typically due to having been superseded.",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"initContainer": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Init container Image",
+							Ref:         ref("kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionInitContainer"),
+						},
+					},
+					"podSecurityPolicies": {
+						SchemaProps: spec.SchemaProps{
+							Description: "PSP names",
+							Ref:         ref("kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionPodSecurityPolicy"),
+						},
+					},
+				},
+				Required: []string{"version", "db", "exporter", "initContainer", "podSecurityPolicies"},
+			},
+		},
+		Dependencies: []string{
+			"kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionDatabase", "kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionExporter", "kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionInitContainer", "kubedb.dev/apimachinery/apis/catalog/v1alpha1.MariaDBVersionPodSecurityPolicy"},
 	}
 }
 

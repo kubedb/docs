@@ -57,14 +57,14 @@ func (c *Controller) runPerconaXtraDB(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				_, _, err = util.PatchPerconaXtraDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
+				_, _, err = util.PatchPerconaXtraDB(context.TODO(), c.DBClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
-			px, _, err = util.PatchPerconaXtraDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
+			px, _, err = util.PatchPerconaXtraDB(context.TODO(), c.DBClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})

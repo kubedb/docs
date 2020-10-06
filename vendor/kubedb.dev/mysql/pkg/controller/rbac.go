@@ -124,7 +124,7 @@ func (c *Controller) createRoleBinding(db *api.MySQL, roleName string, saName st
 }
 
 func (c *Controller) getPolicyNames(db *api.MySQL) (string, error) {
-	dbVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	dbVersion, err := c.DBClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

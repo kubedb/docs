@@ -82,7 +82,7 @@ func New(
 		Controller: &amc.Controller{
 			ClientConfig:     clientConfig,
 			Client:           client,
-			ExtClient:        dbClient,
+			DBClient:         dbClient,
 			CRDClient:        crdClient,
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,

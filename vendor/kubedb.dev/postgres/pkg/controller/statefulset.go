@@ -134,7 +134,7 @@ func (c *Controller) ensureStatefulSet(
 				}
 			}
 
-			if !kmapi.HasCondition(postgres.Status.Conditions, api.DatabaseInitialized) {
+			if !kmapi.HasCondition(postgres.Status.Conditions, api.DatabaseDataRestored) {
 				initSource := postgres.Spec.Init
 				if initSource != nil && initSource.PostgresWAL != nil && initSource.PostgresWAL.Local == nil {
 					//Getting secret for cloud providers

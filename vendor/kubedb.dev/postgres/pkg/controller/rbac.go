@@ -143,7 +143,7 @@ func (c *Controller) createRoleBinding(db *api.Postgres, saName string) error {
 }
 
 func (c *Controller) getPolicyNames(db *api.Postgres) (string, error) {
-	dbVersion, err := c.ExtClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), db.Spec.Version, metav1.GetOptions{})
+	dbVersion, err := c.DBClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), db.Spec.Version, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

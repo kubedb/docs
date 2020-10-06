@@ -37,7 +37,7 @@ import (
 
 type PostgresMutator struct {
 	client      kubernetes.Interface
-	extClient   cs.Interface
+	dbClient    cs.Interface
 	lock        sync.RWMutex
 	initialized bool
 }
@@ -63,7 +63,7 @@ func (a *PostgresMutator) Initialize(config *rest.Config, stopCh <-chan struct{}
 	if a.client, err = kubernetes.NewForConfig(config); err != nil {
 		return err
 	}
-	if a.extClient, err = cs.NewForConfig(config); err != nil {
+	if a.dbClient, err = cs.NewForConfig(config); err != nil {
 		return err
 	}
 	return err

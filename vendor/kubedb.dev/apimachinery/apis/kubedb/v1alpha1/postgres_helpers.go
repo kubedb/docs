@@ -24,6 +24,7 @@ import (
 	"kubedb.dev/apimachinery/crds"
 
 	"github.com/appscode/go/types"
+	appslister "k8s.io/client-go/listers/apps/v1"
 	"kmodules.xyz/client-go/apiextensions"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -190,4 +191,10 @@ func (e *PostgresSpec) GetSecrets() []string {
 		secrets = append(secrets, e.DatabaseSecret.SecretName)
 	}
 	return secrets
+}
+
+func (p *Postgres) IsReplicasReady(stsLister appslister.StatefulSetLister) (bool, string, error) {
+	// TODO: Implement database specific logic here
+	// return isReplicasReady, message, error
+	return false, "", nil
 }

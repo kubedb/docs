@@ -29,6 +29,7 @@ type AutoscalingV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	ElasticsearchAutoscalersGetter
 	EtcdAutoscalersGetter
+	MariaDBAutoscalersGetter
 	MemcachedAutoscalersGetter
 	MongoDBAutoscalersGetter
 	MySQLAutoscalersGetter
@@ -37,6 +38,8 @@ type AutoscalingV1alpha1Interface interface {
 	PostgresAutoscalersGetter
 	ProxySQLAutoscalersGetter
 	RedisAutoscalersGetter
+	VerticalAutoscalersGetter
+	VerticalAutoscalerCheckpointsGetter
 }
 
 // AutoscalingV1alpha1Client is used to interact with features provided by the autoscaling.kubedb.com group.
@@ -50,6 +53,10 @@ func (c *AutoscalingV1alpha1Client) ElasticsearchAutoscalers(namespace string) E
 
 func (c *AutoscalingV1alpha1Client) EtcdAutoscalers(namespace string) EtcdAutoscalerInterface {
 	return newEtcdAutoscalers(c, namespace)
+}
+
+func (c *AutoscalingV1alpha1Client) MariaDBAutoscalers(namespace string) MariaDBAutoscalerInterface {
+	return newMariaDBAutoscalers(c, namespace)
 }
 
 func (c *AutoscalingV1alpha1Client) MemcachedAutoscalers(namespace string) MemcachedAutoscalerInterface {
@@ -82,6 +89,14 @@ func (c *AutoscalingV1alpha1Client) ProxySQLAutoscalers(namespace string) ProxyS
 
 func (c *AutoscalingV1alpha1Client) RedisAutoscalers(namespace string) RedisAutoscalerInterface {
 	return newRedisAutoscalers(c, namespace)
+}
+
+func (c *AutoscalingV1alpha1Client) VerticalAutoscalers(namespace string) VerticalAutoscalerInterface {
+	return newVerticalAutoscalers(c, namespace)
+}
+
+func (c *AutoscalingV1alpha1Client) VerticalAutoscalerCheckpoints(namespace string) VerticalAutoscalerCheckpointInterface {
+	return newVerticalAutoscalerCheckpoints(c, namespace)
 }
 
 // NewForConfig creates a new AutoscalingV1alpha1Client for the given config.

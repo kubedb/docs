@@ -59,14 +59,14 @@ func (c *Controller) runRedis(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				_, _, err = util.PatchRedis(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
+				_, _, err = util.PatchRedis(context.TODO(), c.DBClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
-			redis, _, err = util.PatchRedis(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
+			redis, _, err = util.PatchRedis(context.TODO(), c.DBClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})

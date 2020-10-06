@@ -42,7 +42,7 @@ func (c *Controller) ensureAppBinding(db *api.Redis) (kutil.VerbType, error) {
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
-	redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}

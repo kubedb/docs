@@ -1317,18 +1317,6 @@ spec:
               type: boolean
             init:
               properties:
-                initializer:
-                  properties:
-                    apiGroup:
-                      type: string
-                    kind:
-                      type: string
-                    name:
-                      type: string
-                  required:
-                  - kind
-                  - name
-                  type: object
                 postgresWAL:
                   properties:
                     azure:
@@ -2580,6 +2568,8 @@ spec:
                       - volumePath
                       type: object
                   type: object
+                waitForInitialRestore:
+                  type: boolean
               type: object
             leaderElection:
               properties:
@@ -4446,12 +4436,12 @@ spec:
               type: integer
             phase:
               enum:
-              - Running
-              - Creating
-              - Initializing
-              - Paused
+              - Provisioning
+              - DataRestoring
+              - Ready
+              - Critical
+              - NotReady
               - Halted
-              - Failed
               type: string
           type: object
       type: object

@@ -36,7 +36,7 @@ import (
 )
 
 func (c *Controller) create(mongodb *api.MongoDB) error {
-	if err := validator.ValidateMongoDB(c.Client, c.ExtClient, mongodb, true); err != nil {
+	if err := validator.ValidateMongoDB(c.Client, c.DBClient, mongodb, true); err != nil {
 		c.Recorder.Event(
 			mongodb,
 			core.EventTypeWarning,
@@ -48,8 +48,8 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	if mongodb.Status.Phase == "" {
-		mg, err := util.UpdateMongoDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
-			in.Phase = api.DatabasePhaseCreating
+		mg, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
@@ -152,48 +152,25 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		return err
 	}
 
-	if mongodb.Spec.Init != nil && mongodb.Spec.Init.Initializer != nil {
-		// If "Initialized" condition is not present, it means restore process hasn't completed yet.
-		// In this case, make database phase "Initializing".
-		if !kmapi.HasCondition(mongodb.Status.Conditions, api.DatabaseInitialized) {
-			mongodb, err := util.UpdateMongoDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
-				in.Phase = api.DatabasePhaseInitializing
-				in.ObservedGeneration = mongodb.Generation
-				return in
-			}, metav1.UpdateOptions{})
-			if err != nil {
-				return err
-			}
+	//======================== Wait for the initial restore =====================================
+	if mongodb.Spec.Init != nil && mongodb.Spec.Init.WaitForInitialRestore {
+		// Only wait for the first restore.
+		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
+		if !kmapi.HasCondition(mongodb.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseDataRestored) {
 			// write log indicating that the database is waiting for the data to be restored by external initializer
-			log.Infof("Database %s %s/%s is waiting for data to be restored by initializer %s/%s/%s",
+			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
 				mongodb.Kind,
 				mongodb.Namespace,
 				mongodb.Name,
-				*mongodb.Spec.Init.Initializer.APIGroup,
-				mongodb.Spec.Init.Initializer.Kind,
-				mongodb.Spec.Init.Initializer.Name,
 			)
 			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
-		} else {
-			// Restore process has completed. It has either succeeded or failed. Update database phase accordingly.
-			dbPhase := api.DatabasePhaseRunning
-			if !kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseInitialized) {
-				dbPhase = api.DatabasePhaseFailed
-			}
-			mongodb, err = util.UpdateMongoDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
-				in.Phase = dbPhase
-				in.ObservedGeneration = mongodb.Generation
-				return in
-			}, metav1.UpdateOptions{})
-			if err != nil {
-				return err
-			}
 		}
 	}
 
-	mg, err := util.UpdateMongoDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
-		in.Phase = api.DatabasePhaseRunning
+	mg, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = mongodb.Generation
 		return in
 	}, metav1.UpdateOptions{})
@@ -242,7 +219,7 @@ func (c *Controller) halt(db *api.MongoDB) error {
 		return err
 	}
 	log.Infof("update status of MongoDB %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMongoDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+	if _, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in

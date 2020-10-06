@@ -124,7 +124,7 @@ func (c *Controller) ensureRedisNodes(redis *api.Redis) (kutil.VerbType, error) 
 			}
 		}
 
-		redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
+		redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return vt, err
 		}
@@ -213,7 +213,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 
 	owner := metav1.NewControllerRef(redis, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
-	redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
+	redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}

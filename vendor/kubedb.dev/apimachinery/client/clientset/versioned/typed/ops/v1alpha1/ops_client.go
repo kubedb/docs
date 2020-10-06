@@ -29,6 +29,7 @@ type OpsV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	ElasticsearchOpsRequestsGetter
 	EtcdOpsRequestsGetter
+	MariaDBOpsRequestsGetter
 	MemcachedOpsRequestsGetter
 	MongoDBOpsRequestsGetter
 	MySQLOpsRequestsGetter
@@ -50,6 +51,10 @@ func (c *OpsV1alpha1Client) ElasticsearchOpsRequests(namespace string) Elasticse
 
 func (c *OpsV1alpha1Client) EtcdOpsRequests(namespace string) EtcdOpsRequestInterface {
 	return newEtcdOpsRequests(c, namespace)
+}
+
+func (c *OpsV1alpha1Client) MariaDBOpsRequests(namespace string) MariaDBOpsRequestInterface {
+	return newMariaDBOpsRequests(c, namespace)
 }
 
 func (c *OpsV1alpha1Client) MemcachedOpsRequests(namespace string) MemcachedOpsRequestInterface {

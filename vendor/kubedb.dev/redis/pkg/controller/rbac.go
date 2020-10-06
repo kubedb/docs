@@ -116,7 +116,7 @@ func (c *Controller) createRoleBinding(db *api.Redis, roleName string, saName st
 }
 
 func (c *Controller) getPolicyNames(db *api.Redis) (string, error) {
-	dbVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	dbVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

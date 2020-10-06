@@ -181,15 +181,6 @@ func (es *Elasticsearch) ensureStatefulSet(
 		return kutil.VerbUnchanged, errors.Wrap(err, "failed to create or patch statefulset")
 	}
 
-	if vt == kutil.VerbCreated || vt == kutil.VerbPatched {
-		// Check whether StatefulSet's Pods are running.
-		// Given timeout: 10 minutes
-		// TODO: what if there is a huge number of replicas, is this timeout enough?
-		if err := es.checkStatefulSetPodStatus(statefulSet); err != nil {
-			return kutil.VerbUnchanged, err
-		}
-	}
-
 	// ensure pdb
 	if esNode.MaxUnavailable != nil {
 		if err := es.createPodDisruptionBudget(statefulSet, esNode.MaxUnavailable); err != nil {
@@ -559,6 +550,10 @@ func (es *Elasticsearch) upsertContainerEnv(envList []corev1.EnvVar) []corev1.En
 		{
 			Name:  "network.host",
 			Value: "0.0.0.0",
+		},
+		{
+			Name:  "JAVA_OPTS",
+			Value: "-XX:UseContainerSupport",
 		},
 	}...)
 

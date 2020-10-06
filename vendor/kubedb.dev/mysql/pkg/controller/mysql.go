@@ -37,7 +37,7 @@ import (
 )
 
 func (c *Controller) create(mysql *api.MySQL) error {
-	if err := validator.ValidateMySQL(c.Client, c.ExtClient, mysql, true); err != nil {
+	if err := validator.ValidateMySQL(c.Client, c.DBClient, mysql, true); err != nil {
 		c.Recorder.Event(
 			mysql,
 			core.EventTypeWarning,
@@ -49,8 +49,8 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	}
 
 	if mysql.Status.Phase == "" {
-		my, err := util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
-			in.Phase = api.DatabasePhaseCreating
+		my, err := util.UpdateMySQLStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
+			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
@@ -152,48 +152,25 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		return err
 	}
 
-	if mysql.Spec.Init != nil && mysql.Spec.Init.Initializer != nil {
-		// If "Initialized" condition is not present, it means restore process hasn't completed yet.
-		// In this case, make database phase "Initializing".
-		if !kmapi.HasCondition(mysql.Status.Conditions, api.DatabaseInitialized) {
-			mysql, err := util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
-				in.Phase = api.DatabasePhaseInitializing
-				in.ObservedGeneration = mysql.Generation
-				return in
-			}, metav1.UpdateOptions{})
-			if err != nil {
-				return err
-			}
+	//======================== Wait for the initial restore =====================================
+	if mysql.Spec.Init != nil && mysql.Spec.Init.WaitForInitialRestore {
+		// Only wait for the first restore.
+		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
+		if !kmapi.HasCondition(mysql.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(mysql.Status.Conditions, api.DatabaseDataRestored) {
 			// write log indicating that the database is waiting for the data to be restored by external initializer
-			log.Infof("Database %s %s/%s is waiting for data to be restored by initializer %s/%s/%s",
+			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
 				mysql.Kind,
 				mysql.Namespace,
 				mysql.Name,
-				*mysql.Spec.Init.Initializer.APIGroup,
-				mysql.Spec.Init.Initializer.Kind,
-				mysql.Spec.Init.Initializer.Name,
 			)
 			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
-		} else {
-			// Restore process has completed. It has either succeeded or failed. Update database phase accordingly.
-			dbPhase := api.DatabasePhaseRunning
-			if !kmapi.IsConditionTrue(mysql.Status.Conditions, api.DatabaseInitialized) {
-				dbPhase = api.DatabasePhaseFailed
-			}
-			mysql, err = util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
-				in.Phase = dbPhase
-				in.ObservedGeneration = mysql.Generation
-				return in
-			}, metav1.UpdateOptions{})
-			if err != nil {
-				return err
-			}
 		}
 	}
 
-	my, err := util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
-		in.Phase = api.DatabasePhaseRunning
+	my, err := util.UpdateMySQLStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
+		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = mysql.Generation
 		return in
 	}, metav1.UpdateOptions{})
@@ -242,7 +219,7 @@ func (c *Controller) halt(db *api.MySQL) error {
 		return err
 	}
 	log.Infof("update status of MySQL %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
+	if _, err := util.UpdateMySQLStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in

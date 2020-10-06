@@ -42,7 +42,7 @@ func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
 		if databaseSecretVolume, err = c.createDatabaseSecret(postgres); err != nil {
 			return err
 		}
-		pg, _, err := util.PatchPostgres(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
+		pg, _, err := util.PatchPostgres(context.TODO(), c.DBClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
 			in.Spec.DatabaseSecret = databaseSecretVolume
 			return in
 		}, metav1.PatchOptions{})

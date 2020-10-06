@@ -150,6 +150,9 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 		}
 	}
 
+	// Start StatefulSet controller
+	c.StsQueue.Run(stopCh)
+
 	// Initialize and start Stash controllers
 	go stash.NewController(c.Controller, &c.Config.Initializers.Stash, c.WatchNamespace).StartAfterStashInstalled(c.MaxNumRequeues, c.NumThreads, c.selector, stopCh)
 
@@ -180,7 +183,6 @@ func (c *Controller) pushFailureEvent(elasticsearch *api.Elasticsearch, reason s
 	)
 
 	es, err := util.UpdateElasticsearchStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-		in.Phase = api.DatabasePhaseFailed
 		in.ObservedGeneration = elasticsearch.Generation
 		return in
 	}, metav1.UpdateOptions{})

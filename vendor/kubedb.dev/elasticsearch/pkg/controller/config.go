@@ -21,6 +21,7 @@ import (
 
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
+	sts "kubedb.dev/apimachinery/pkg/controller/statefulset"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -100,6 +101,8 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	if err := ctrl.Init(); err != nil {
 		return nil, err
 	}
+	// Initialize StatefulSet watcher
+	sts.NewController(&c.Config, c.KubeClient, c.DynamicClient).InitStsWatcher()
 
 	return ctrl, nil
 }

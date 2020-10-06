@@ -24,6 +24,7 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
+	api_util "kubedb.dev/apimachinery/pkg/util"
 	validator "kubedb.dev/elasticsearch/pkg/admission"
 	"kubedb.dev/elasticsearch/pkg/distribution"
 
@@ -49,13 +50,17 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return nil
 	}
 
-	if elasticsearch.Status.Phase == "" {
-		es, err := util.UpdateElasticsearchStatus(
+	// Get elasticsearch phase from condition
+	// If new phase is not equal to old phase,
+	// update Elasticsearch phase.
+	phase := api_util.PhaseFromCondition(elasticsearch.Status.Conditions)
+	if elasticsearch.Status.Phase != phase {
+		_, err := util.UpdateElasticsearchStatus(
 			context.TODO(),
 			c.ExtClient.KubedbV1alpha1(),
 			elasticsearch.ObjectMeta,
 			func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-				in.Phase = api.DatabasePhaseCreating
+				in.Phase = phase
 				return in
 			},
 			metav1.UpdateOptions{},
@@ -63,7 +68,9 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		if err != nil {
 			return err
 		}
-		elasticsearch.Status = es.Status
+		// drop the object from queue,
+		// the object will be enqueued again from this update event.
+		return nil
 	}
 
 	// create Governing Service
@@ -113,43 +120,20 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return err
 	}
 
-	if elasticsearch.Spec.Init != nil && elasticsearch.Spec.Init.Initializer != nil {
-		// If "Initialized" condition is not present, it means restore process hasn't completed yet.
-		// In this case, make database phase "Initializing".
-		if !kmapi.HasCondition(elasticsearch.Status.Conditions, api.DatabaseInitialized) {
-			elasticsearch, err := util.UpdateElasticsearchStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-				in.Phase = api.DatabasePhaseInitializing
-				in.ObservedGeneration = elasticsearch.Generation
-				return in
-			}, metav1.UpdateOptions{})
-			if err != nil {
-				return err
-			}
+	//======================== Wait for the initial restore =====================================
+	if elasticsearch.Spec.Init != nil && elasticsearch.Spec.Init.WaitForInitialRestore {
+		// Only wait for the first restore.
+		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
+		if !kmapi.HasCondition(elasticsearch.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseDataRestored) {
 			// write log indicating that the database is waiting for the data to be restored by external initializer
-			log.Infof("Database %s %s/%s is waiting for data to be restored by initializer %s/%s/%s",
+			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
 				elasticsearch.Kind,
 				elasticsearch.Namespace,
 				elasticsearch.Name,
-				*elasticsearch.Spec.Init.Initializer.APIGroup,
-				elasticsearch.Spec.Init.Initializer.Kind,
-				elasticsearch.Spec.Init.Initializer.Name,
 			)
 			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
-		} else {
-			// Restore process has completed. It has either succeeded or failed. Update database phase accordingly.
-			dbPhase := api.DatabasePhaseRunning
-			if !kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseInitialized) {
-				dbPhase = api.DatabasePhaseFailed
-			}
-			elasticsearch, err = util.UpdateElasticsearchStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-				in.Phase = dbPhase
-				in.ObservedGeneration = elasticsearch.Generation
-				return in
-			}, metav1.UpdateOptions{})
-			if err != nil {
-				return err
-			}
 		}
 	}
 
@@ -158,7 +142,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		c.ExtClient.KubedbV1alpha1(),
 		elasticsearch.ObjectMeta,
 		func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-			in.Phase = api.DatabasePhaseRunning
+			in.Phase = api.DatabasePhaseReady
 			in.ObservedGeneration = elasticsearch.Generation
 			return in
 		},

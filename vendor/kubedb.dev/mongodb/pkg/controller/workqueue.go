@@ -60,14 +60,14 @@ func (c *Controller) runMongoDB(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				_, _, err = util.PatchMongoDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
+				_, _, err = util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
-			mongodb, _, err = util.PatchMongoDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
+			mongodb, _, err = util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})

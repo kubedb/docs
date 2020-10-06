@@ -67,7 +67,7 @@ type workloadOptions struct {
 }
 
 func (c *Controller) ensurePerconaXtraDB(px *api.PerconaXtraDB) (kutil.VerbType, error) {
-	pxVersion, err := c.ExtClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(px.Spec.Version), metav1.GetOptions{})
+	pxVersion, err := c.DBClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(px.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}

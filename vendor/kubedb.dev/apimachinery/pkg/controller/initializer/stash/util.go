@@ -94,26 +94,40 @@ func (c *Controller) extractRestoreInfo(invoker interface{}) (*restoreInfo, erro
 	return ri, nil
 }
 
-func (c *Controller) setRestoreCompletionCondition(ri *restoreInfo) error {
+func (c *Controller) handleRestoreInvokerEvent(ri *restoreInfo) error {
 	if ri == nil {
 		return fmt.Errorf("invalid restore information. it must not be nil")
 	}
+
+	// Restore process has started, add "DataRestoreStarted" condition to the respective database CR
+	err := ri.do.SetCondition(kmapi.Condition{
+		Type:    api.DatabaseDataRestoreStarted,
+		Status:  kmapi.ConditionTrue,
+		Reason:  api.DataRestoreStartedByExternalInitializer,
+		Message: fmt.Sprintf("Data restore started by initializer: %s/%s/%s.", *ri.invoker.APIGroup, ri.invoker.Kind, ri.invoker.Name),
+	})
+	if err != nil {
+		return err
+	}
+
+	// Just log and return if the restore process hasn't completed yet.
 	if ri.phase != v1beta1.RestoreSucceeded && ri.phase != v1beta1.RestoreFailed && ri.phase != v1beta1.RestorePhaseUnknown {
 		log.Infof("restore process hasn't completed yet. Current restore phase: %s", ri.phase)
 		return nil
 	}
 
+	// If the target was not identified properly, we can't process further.
 	if ri.target == nil {
-		return fmt.Errorf("restore invoker does not have any target specified")
+		return fmt.Errorf("couldn't identified the restore target from invoker: %s/%s/%s", *ri.invoker.APIGroup, ri.invoker.Kind, ri.invoker.Name)
 	}
 
 	dbCond := kmapi.Condition{
-		Type: api.DatabaseInitialized,
+		Type: api.DatabaseDataRestored,
 	}
 
 	if ri.phase == v1beta1.RestoreSucceeded {
 		dbCond.Status = kmapi.ConditionTrue
-		dbCond.Reason = api.DatabaseSuccessfullyInitialized
+		dbCond.Reason = api.DatabaseSuccessfullyRestored
 		dbCond.Message = fmt.Sprintf("Successfully restored data by initializer %s %s/%s",
 			ri.invoker.Kind,
 			ri.do.Namespace,
@@ -121,7 +135,7 @@ func (c *Controller) setRestoreCompletionCondition(ri *restoreInfo) error {
 		)
 	} else {
 		dbCond.Status = kmapi.ConditionFalse
-		dbCond.Reason = api.FailedToInitializeDatabase
+		dbCond.Reason = api.FailedToRestoreData
 		dbCond.Message = fmt.Sprintf("Failed to restore data by initializer %s %s/%s."+
 			"\nRun 'kubectl describe %s %s -n %s' for more details.",
 			ri.invoker.Kind,
@@ -134,7 +148,7 @@ func (c *Controller) setRestoreCompletionCondition(ri *restoreInfo) error {
 	}
 
 	// Add "DatabaseInitialized" dmcond to the respective database CR
-	err := ri.do.SetCondition(dbCond)
+	err = ri.do.SetCondition(dbCond)
 	if err != nil {
 		return err
 	}

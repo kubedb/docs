@@ -1832,12 +1832,12 @@ spec:
               type: integer
             phase:
               enum:
-              - Running
-              - Creating
-              - Initializing
-              - Paused
+              - Provisioning
+              - DataRestoring
+              - Ready
+              - Critical
+              - NotReady
               - Halted
-              - Failed
               type: string
           type: object
       type: object

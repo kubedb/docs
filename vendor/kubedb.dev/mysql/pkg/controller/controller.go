@@ -17,12 +17,9 @@ limitations under the License.
 package controller
 
 import (
-	"context"
-
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
 	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
@@ -77,7 +74,7 @@ func New(
 		Controller: &amc.Controller{
 			ClientConfig:     clientConfig,
 			Client:           client,
-			ExtClient:        extClient,
+			DBClient:         extClient,
 			CRDClient:        crdClient,
 			DynamicClient:    dc,
 			AppCatalogClient: appCatalogClient,
@@ -155,6 +152,9 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 		}
 	}
 
+	// Start StatefulSet controller
+	c.StsQueue.Run(stopCh)
+
 	// Initialize and start Stash controllers
 	go stash.NewController(c.Controller, &c.Config.Initializers.Stash, c.WatchNamespace).StartAfterStashInstalled(c.MaxNumRequeues, c.NumThreads, c.selector, stopCh)
 
@@ -174,20 +174,4 @@ func (c *Controller) pushFailureEvent(mysql *api.MySQL, reason string) {
 		mysql.Name,
 		reason,
 	)
-
-	my, err := util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
-		in.Phase = api.DatabasePhaseFailed
-		in.ObservedGeneration = mysql.Generation
-		return in
-	}, metav1.UpdateOptions{})
-
-	if err != nil {
-		c.Recorder.Eventf(
-			mysql,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			err.Error(),
-		)
-	}
-	mysql.Status = my.Status
 }

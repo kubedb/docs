@@ -76,7 +76,7 @@ func New(
 		Controller: &amc.Controller{
 			ClientConfig:     clientConfig,
 			Client:           client,
-			ExtClient:        extClient,
+			DBClient:         extClient,
 			CRDClient:        crdClient,
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
@@ -152,6 +152,10 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 			return
 		}
 	}
+
+	// Start StatefulSet controller
+	c.StsQueue.Run(stopCh)
+
 	// Initialize and start Stash controllers
 	go stash.NewController(c.Controller, &c.Config.Initializers.Stash, c.WatchNamespace).StartAfterStashInstalled(c.MaxNumRequeues, c.NumThreads, c.selector, stopCh)
 
@@ -172,8 +176,8 @@ func (c *Controller) pushFailureEvent(px *api.PerconaXtraDB, reason string) {
 		reason,
 	)
 
-	perconaXtraDB, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
-		in.Phase = api.DatabasePhaseFailed
+	perconaXtraDB, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+		in.Phase = api.DatabasePhaseNotReady
 		in.ObservedGeneration = px.Generation
 		return in
 	}, metav1.UpdateOptions{})

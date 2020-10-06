@@ -74,7 +74,7 @@ func (c *Controller) ensureAppBinding(db *api.PerconaXtraDB) (kutil.VerbType, er
 		return kutil.VerbUnchanged, err
 	}
 
-	pxVersion, err := c.ExtClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	pxVersion, err := c.DBClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, fmt.Errorf("failed to get PerconaXtraDBVersion %v for %v/%v. Reason: %v", db.Spec.Version, db.Namespace, db.Name, err)
 	}

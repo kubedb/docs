@@ -35,7 +35,7 @@ import (
 )
 
 func (c *Controller) create(redis *api.Redis) error {
-	if err := validator.ValidateRedis(c.Client, c.ExtClient, redis, true); err != nil {
+	if err := validator.ValidateRedis(c.Client, c.DBClient, redis, true); err != nil {
 		c.Recorder.Event(
 			redis,
 			core.EventTypeWarning,
@@ -47,8 +47,8 @@ func (c *Controller) create(redis *api.Redis) error {
 	}
 
 	if redis.Status.Phase == "" {
-		rd, err := util.UpdateRedisStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
-			in.Phase = api.DatabasePhaseCreating
+		rd, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
@@ -128,48 +128,25 @@ func (c *Controller) create(redis *api.Redis) error {
 		return err
 	}
 
-	if redis.Spec.Init != nil && redis.Spec.Init.Initializer != nil {
-		// If "Initialized" condition is not present, it means restore process hasn't completed yet.
-		// In this case, make database phase "Initializing".
-		if !kmapi.HasCondition(redis.Status.Conditions, api.DatabaseInitialized) {
-			redis, err := util.UpdateRedisStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
-				in.Phase = api.DatabasePhaseInitializing
-				in.ObservedGeneration = redis.Generation
-				return in
-			}, metav1.UpdateOptions{})
-			if err != nil {
-				return err
-			}
+	//======================== Wait for the initial restore =====================================
+	if redis.Spec.Init != nil && redis.Spec.Init.WaitForInitialRestore {
+		// Only wait for the first restore.
+		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
+		if !kmapi.HasCondition(redis.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(redis.Status.Conditions, api.DatabaseDataRestored) {
 			// write log indicating that the database is waiting for the data to be restored by external initializer
-			log.Infof("Database %s %s/%s is waiting for data to be restored by initializer %s/%s/%s",
+			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
 				redis.Kind,
 				redis.Namespace,
 				redis.Name,
-				*redis.Spec.Init.Initializer.APIGroup,
-				redis.Spec.Init.Initializer.Kind,
-				redis.Spec.Init.Initializer.Name,
 			)
 			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
-		} else {
-			// Restore process has completed. It has either succeeded or failed. Update database phase accordingly.
-			dbPhase := api.DatabasePhaseRunning
-			if !kmapi.IsConditionTrue(redis.Status.Conditions, api.DatabaseInitialized) {
-				dbPhase = api.DatabasePhaseFailed
-			}
-			redis, err = util.UpdateRedisStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
-				in.Phase = dbPhase
-				in.ObservedGeneration = redis.Generation
-				return in
-			}, metav1.UpdateOptions{})
-			if err != nil {
-				return err
-			}
 		}
 	}
 
-	rd, err := util.UpdateRedisStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
-		in.Phase = api.DatabasePhaseRunning
+	rd, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = redis.Generation
 		return in
 	}, metav1.UpdateOptions{})
@@ -224,7 +201,7 @@ func (c *Controller) halt(db *api.Redis) error {
 		return err
 	}
 	log.Infof("update status of Redis %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateRedisStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+	if _, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in

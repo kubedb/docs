@@ -26,6 +26,10 @@ type ElasticsearchVersionListerExpansion interface{}
 // EtcdVersionLister.
 type EtcdVersionListerExpansion interface{}
 
+// MariaDBVersionListerExpansion allows custom methods to be added to
+// MariaDBVersionLister.
+type MariaDBVersionListerExpansion interface{}
+
 // MemcachedVersionListerExpansion allows custom methods to be added to
 // MemcachedVersionLister.
 type MemcachedVersionListerExpansion interface{}

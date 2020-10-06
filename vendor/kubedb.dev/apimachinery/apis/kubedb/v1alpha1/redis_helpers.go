@@ -26,6 +26,7 @@ import (
 	"github.com/appscode/go/types"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	appslister "k8s.io/client-go/listers/apps/v1"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -276,4 +277,10 @@ func (r *Redis) MustCertSecretName(alias RedisCertificateAlias) string {
 		panic(fmt.Errorf("Redis %s/%s is missing secret name for %s certificate", r.Namespace, r.Name, alias))
 	}
 	return name
+}
+
+func (r *Redis) IsReplicasReady(stsLister appslister.StatefulSetLister) (bool, string, error) {
+	// TODO: Implement database specific logic here
+	// return isReplicasReady, message, error
+	return false, "", nil
 }

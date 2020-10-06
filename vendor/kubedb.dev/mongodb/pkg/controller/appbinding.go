@@ -94,7 +94,7 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 		clientPEMSecretName = db.MustCertSecretName(api.MongoDBClientCert, "")
 	}
 
-	mongodbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, fmt.Errorf("failed to get MongoDBVersion %v for %v/%v. Reason: %v", db.Spec.Version, db.Namespace, db.Name, err)
 	}

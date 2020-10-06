@@ -61,6 +61,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1alpha1().ElasticsearchAutoscalers().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("etcdautoscalers"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1alpha1().EtcdAutoscalers().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("mariadbautoscalers"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1alpha1().MariaDBAutoscalers().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("memcachedautoscalers"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1alpha1().MemcachedAutoscalers().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("mongodbautoscalers"):
@@ -77,12 +79,18 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1alpha1().ProxySQLAutoscalers().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("redisautoscalers"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1alpha1().RedisAutoscalers().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("verticalautoscalers"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1alpha1().VerticalAutoscalers().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("verticalautoscalercheckpoints"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1alpha1().VerticalAutoscalerCheckpoints().Informer()}, nil
 
 		// Group=catalog.kubedb.com, Version=v1alpha1
 	case catalogv1alpha1.SchemeGroupVersion.WithResource("elasticsearchversions"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().ElasticsearchVersions().Informer()}, nil
 	case catalogv1alpha1.SchemeGroupVersion.WithResource("etcdversions"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().EtcdVersions().Informer()}, nil
+	case catalogv1alpha1.SchemeGroupVersion.WithResource("mariadbversions"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().MariaDBVersions().Informer()}, nil
 	case catalogv1alpha1.SchemeGroupVersion.WithResource("memcachedversions"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().MemcachedVersions().Informer()}, nil
 	case catalogv1alpha1.SchemeGroupVersion.WithResource("mongodbversions"):
@@ -129,6 +137,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Ops().V1alpha1().ElasticsearchOpsRequests().Informer()}, nil
 	case opsv1alpha1.SchemeGroupVersion.WithResource("etcdopsrequests"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Ops().V1alpha1().EtcdOpsRequests().Informer()}, nil
+	case opsv1alpha1.SchemeGroupVersion.WithResource("mariadbopsrequests"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Ops().V1alpha1().MariaDBOpsRequests().Informer()}, nil
 	case opsv1alpha1.SchemeGroupVersion.WithResource("memcachedopsrequests"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Ops().V1alpha1().MemcachedOpsRequests().Informer()}, nil
 	case opsv1alpha1.SchemeGroupVersion.WithResource("mongodbopsrequests"):
