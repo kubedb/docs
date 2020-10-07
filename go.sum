@@ -115,6 +115,8 @@ github.com/appscode/go v0.0.0-20200323182826-54e98e09185a h1:cZ80NKoLRaW1PVCWXAJ
 github.com/appscode/go v0.0.0-20200323182826-54e98e09185a/go.mod h1:lIcm8Z6VPuvcw/a3EeOWcG6R3I13iHMLYbtVP7TKufY=
 github.com/appscode/go v0.0.0-20200928211031-cc0c23082d91 h1:a5T6J190+3yXrGoq7qjng7EnseLj/IMoRhmV48+Y1iU=
 github.com/appscode/go v0.0.0-20200928211031-cc0c23082d91/go.mod h1:oWiTjcudxE2UxyEDtsgJl3d84JD75S7j3UsrLKC7U68=
+github.com/appscode/go v0.0.0-20201006035845-a0302ac8e3d3 h1:o7BXOSGtgz9rusCIJd7iUPrOiyhAa4g0cWj4ZM6+bMg=
+github.com/appscode/go v0.0.0-20201006035845-a0302ac8e3d3/go.mod h1:piHRpQ9+NTTuV3V98INxjU7o2KlAJMznaxvB6wHKkfU=
 github.com/appscode/osm v0.14.0 h1:gCzb5mIUgZfst/vXRKjLrJ5xFzNkaFxNE1xYhmgHi0M=
 github.com/appscode/osm v0.14.0/go.mod h1:3bxEjMJSVhSNBXVrdrCy8EwMudOWKK6UgHzAOdZY7LQ=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e h1:QEF07wC0T1rKkctt1RINW/+RMTVmiwxETico2l3gxJA=
@@ -153,6 +155,7 @@ github.com/bazelbuild/buildtools v0.0.0-20190731111112-f720930ceb60/go.mod h1:5J
 github.com/bazelbuild/buildtools v0.0.0-20190917191645-69366ca98f89/go.mod h1:5JP0TXzWDHXv8qvxRC4InIazwdyDseBDbzESUMKk1yU=
 github.com/bazelbuild/rules_go v0.0.0-20190719190356-6dae44dc5cab/go.mod h1:MC23Dc/wkXEyk3Wpq6lCqz0ZAYOZDw2DR5y3N1q2i7M=
 github.com/beevik/ntp v0.2.0/go.mod h1:hIHWr+l3+/clUnF44zdK+CWW7fO8dR5cIylAQ76NRpg=
+github.com/beevik/ntp v0.3.0/go.mod h1:hIHWr+l3+/clUnF44zdK+CWW7fO8dR5cIylAQ76NRpg=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973 h1:xJ4a3vCFaGF/jqvzLMYoU8P317H5OQ+Via4RmuPwCS0=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
@@ -206,6 +209,8 @@ github.com/codegangsta/inject v0.0.0-20150114235600-33e0aa1cb7c0/go.mod h1:4Zcju
 github.com/codegangsta/negroni v1.0.0/go.mod h1:v0y3T5G7Y1UlFfyxFn/QLRU4a2EuNau2iZY63YTKWo0=
 github.com/codeskyblue/go-sh v0.0.0-20190412065543-76bd3d59ff27 h1:HHUr4P/aKh4quafGxDT9LDasjGdlGkzLbfmmrlng3kA=
 github.com/codeskyblue/go-sh v0.0.0-20190412065543-76bd3d59ff27/go.mod h1:VQx0hjo2oUeQkQUET7wRwradO6f+fN5jzXgB/zROxxE=
+github.com/codeskyblue/go-sh v0.0.0-20200712050446-30169cf553fe h1:69JI97HlzP+PH5Mi1thcGlDoBr6PS2Oe+l3mNmAkbs4=
+github.com/codeskyblue/go-sh v0.0.0-20200712050446-30169cf553fe/go.mod h1:VQx0hjo2oUeQkQUET7wRwradO6f+fN5jzXgB/zROxxE=
 github.com/container-storage-interface/spec v1.2.0/go.mod h1:6URME8mwIBbpVyZV93Ce5St17xBiQJQY67NDsuohiy4=
 github.com/containerd/console v0.0.0-20170925154832-84eeaae905fa/go.mod h1:Tj/on1eG8kiEhd0+fhSDzsPAFESxzBBvdyEgyryXffw=
 github.com/containerd/containerd v1.0.2/go.mod h1:bC6axHOhabU15QhwfG7w5PipXdVtMXFTttgp+kVtyUA=
@@ -1500,6 +1505,8 @@ gomodules.xyz/jsonpatch/v2 v2.1.0 h1:Phva6wqu+xR//Njw6iorylFFgn/z547tw5Ne3HZPQ+k
 gomodules.xyz/jsonpatch/v2 v2.1.0/go.mod h1:IhYNNY4jnS53ZnfE4PAmpKtDpTCj1JFXc+3mwe7XcUU=
 gomodules.xyz/password-generator v0.2.3 h1:ZU751qRdzvvKziAYyCLY6j0TIn7xJP/fjaacfC0dAo0=
 gomodules.xyz/password-generator v0.2.3/go.mod h1:TvwYYTx9+P1pPwKQKfZgB/wr2Id9MqAQ3B5auY7reNg=
+gomodules.xyz/password-generator v0.2.4 h1:wtCrCgF3ovoXyzcaRDVhx2D2We+6yfaRf/IQsSBsOSY=
+gomodules.xyz/password-generator v0.2.4/go.mod h1:TvwYYTx9+P1pPwKQKfZgB/wr2Id9MqAQ3B5auY7reNg=
 gomodules.xyz/sets v0.0.0-20200817084356-ae6e5e14ce3d h1:iikjtYw6tLPrD2dXkzDVMygYLaqzGRxQTDFZI23MXes=
 gomodules.xyz/sets v0.0.0-20200817084356-ae6e5e14ce3d/go.mod h1:jKgNp01/iDs+svOWXaPk5cKP3VXy0mWUoTF/ore+aMc=
 gomodules.xyz/stow v0.2.3 h1:019jXAX2+QsY5qCytwqpRRG+wZ7HaESZzsQ1vuhTV00=
@@ -1682,6 +1689,8 @@ kmodules.xyz/monitoring-agent-api v0.0.0-20200915181828-7e94cbcaa0f3 h1:MAWWNvZ7
 kmodules.xyz/monitoring-agent-api v0.0.0-20200915181828-7e94cbcaa0f3/go.mod h1:YkI5McpM0icVJwceLhdxP1cmBJ1odD/aefiFLWuO08Q=
 kmodules.xyz/monitoring-agent-api v0.0.0-20200922204510-b8b5610e5385 h1:P3vkeFpPqsJa/GaOzvhoRGJ2UhlaWpe1qrChvzs9his=
 kmodules.xyz/monitoring-agent-api v0.0.0-20200922204510-b8b5610e5385/go.mod h1:WD8UJt8h37KF9nHbbstY7KDfkOxSkdrYbIr+WO6PaYw=
+kmodules.xyz/monitoring-agent-api v0.0.0-20201007104803-408a1ff2de8d h1:HFdWHhAkJZpoyMkp0kayKPf896IEkI7fWIpeJK4sY1o=
+kmodules.xyz/monitoring-agent-api v0.0.0-20201007104803-408a1ff2de8d/go.mod h1:ySvogFmyMVUNEFdUYnHp9T4njsB7o661ClfwNLcBWVo=
 kmodules.xyz/objectstore-api v0.0.0-20200521103120-92080446e04d h1:ud3XDScnBdD5q6nLQI/tHLSbuuSwIFaav6IhcQAz2qA=
 kmodules.xyz/objectstore-api v0.0.0-20200521103120-92080446e04d/go.mod h1:k6sbzLWYBLRGDNmCj/NwLgj1cniRXCl9ux/P6+7Xd+A=
 kmodules.xyz/objectstore-api v0.0.0-20200922210707-59bab27e5d41 h1:BsCSSPoY0uRGylfPTUzzQ28h2axuXremPGPzwpmxvYI=
@@ -1702,6 +1711,9 @@ kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de h1:uWgv78OoOWx9e
 kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de/go.mod h1:5A8s2nvrNAZGrt0OlsiiuZIik3xWyKW6+ZSwgljIm78=
 kubedb.dev/apimachinery v0.14.0-beta.2.0.20200915201356-5ddfd53ad058 h1:8WFov0PK3kxyfYvkPYnBCHgaqWDpkMDXVvv6Pntad8U=
 kubedb.dev/apimachinery v0.14.0-beta.2.0.20200915201356-5ddfd53ad058/go.mod h1:2w2Cqp1GQinKgNzenUcF1G5HCX/VkXmgcfrfAjZPMy8=
+kubedb.dev/apimachinery v0.14.0-beta.3 h1:ju+Ljf5DC3Bojg3zv2NeFtwIKEvIBCJkkbGIJ4khoDU=
+kubedb.dev/apimachinery v0.14.0-beta.3.0.20201007105016-e562def953d6 h1:wF2o4TGOzv4lrd0wkrvunBVOo053f2JX1qP4zuS3EEc=
+kubedb.dev/apimachinery v0.14.0-beta.3.0.20201007105016-e562def953d6/go.mod h1:kMOJ79iYJdu9mW61F2SR9PDCgdutAe2y3XViLMQ9viE=
 kubedb.dev/elasticsearch v0.14.0-beta.2.0.20200916003206-98c1ad832ab4 h1:QCVsPHAgj+GrsDWljoX5jIf0UUvUcShWMrE9mWP++Q8=
 kubedb.dev/elasticsearch v0.14.0-beta.2.0.20200916003206-98c1ad832ab4/go.mod h1:4c8hLkafoo3+d3pdWPwn4XtURcBee1NJJJFqrg114gA=
 kubedb.dev/memcached v0.7.0-beta.2.0.20200916003254-fc482bc2d868 h1:XGutyp0qtOipkLM9lITWcAwAgBAsng4h7wcxg86AoAQ=
