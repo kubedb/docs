@@ -93,7 +93,11 @@ func (c *Controller) createDatabaseSecret(postgres *api.Postgres) (*core.SecretV
 		},
 		Type: core.SecretTypeOpaque,
 		Data: map[string][]byte{
-			PostgresUser:     []byte("postgres"),
+			core.BasicAuthUsernameKey: []byte("postgres"),
+			core.BasicAuthPasswordKey: []byte(passgen.Generate(api.DefaultPasswordLength)),
+			// Deprecated, will be removed soon
+			PostgresUser: []byte("postgres"),
+			// Deprecated, will be removed soon
 			PostgresPassword: []byte(passgen.Generate(api.DefaultPasswordLength)),
 		},
 	}
@@ -115,8 +119,12 @@ func (c *Controller) upgradeDatabaseSecret(postgres *api.Postgres) error {
 	}
 
 	_, _, err := core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {
-		if _, ok := in.Data[PostgresUser]; !ok {
-			in.StringData = map[string]string{PostgresUser: "postgres"}
+		if _, ok := in.Data[core.BasicAuthUsernameKey]; !ok {
+			in.StringData = map[string]string{
+				core.BasicAuthUsernameKey: "postgres",
+				// Deprecated
+				PostgresUser: "postgres",
+			}
 		}
 		return in
 	}, metav1.PatchOptions{})

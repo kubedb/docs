@@ -370,7 +370,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsear
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
 	if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		if err := c.wipeOutDatabase(elasticsearch.ObjectMeta, elasticsearch.Spec.GetSecrets(), owner); err != nil {
+		if err := c.wipeOutDatabase(elasticsearch.ObjectMeta, elasticsearch.Spec.GetPersistentSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
@@ -380,7 +380,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsear
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			elasticsearch.Namespace,
-			elasticsearch.Spec.GetSecrets(),
+			elasticsearch.Spec.GetPersistentSecrets(),
 			elasticsearch); err != nil {
 			return err
 		}
@@ -413,7 +413,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasti
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		elasticsearch.Namespace,
-		elasticsearch.Spec.GetSecrets(),
+		elasticsearch.Spec.GetPersistentSecrets(),
 		elasticsearch); err != nil {
 		return err
 	}

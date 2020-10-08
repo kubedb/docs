@@ -66,20 +66,6 @@ func (c *Controller) ensureAppBinding(db *api.Postgres, postgresVersion *catalog
 			in.Spec.Secret = &core.LocalObjectReference{
 				Name: db.Spec.DatabaseSecret.SecretName,
 			}
-			in.Spec.SecretTransforms = []appcat.SecretTransform{
-				{
-					RenameKey: &appcat.RenameKeyTransform{
-						From: PostgresUser,
-						To:   appcat.KeyUsername,
-					},
-				},
-				{
-					RenameKey: &appcat.RenameKeyTransform{
-						From: PostgresPassword,
-						To:   appcat.KeyPassword,
-					},
-				},
-			}
 
 			return in
 		}, metav1.PatchOptions{},

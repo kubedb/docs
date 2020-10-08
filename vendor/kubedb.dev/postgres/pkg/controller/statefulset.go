@@ -354,7 +354,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []cor
 					LocalObjectReference: core.LocalObjectReference{
 						Name: postgres.Spec.DatabaseSecret.SecretName,
 					},
-					Key: PostgresUser,
+					Key: core.BasicAuthUsernameKey,
 				},
 			},
 		},
@@ -365,7 +365,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []cor
 					LocalObjectReference: core.LocalObjectReference{
 						Name: postgres.Spec.DatabaseSecret.SecretName,
 					},
-					Key: PostgresPassword,
+					Key: core.BasicAuthPasswordKey,
 				},
 			},
 		},
@@ -450,7 +450,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 						LocalObjectReference: core.LocalObjectReference{
 							Name: postgres.Spec.DatabaseSecret.SecretName,
 						},
-						Key: PostgresUser,
+						Key: core.BasicAuthUsernameKey,
 					},
 				},
 			},
@@ -461,7 +461,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 						LocalObjectReference: core.LocalObjectReference{
 							Name: postgres.Spec.DatabaseSecret.SecretName,
 						},
-						Key: PostgresPassword,
+						Key: core.BasicAuthPasswordKey,
 					},
 				},
 			},

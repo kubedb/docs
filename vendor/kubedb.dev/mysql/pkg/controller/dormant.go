@@ -121,7 +121,7 @@ func (c *Controller) secretsUsedByPeers(meta metav1.ObjectMeta) (sets.String, er
 	}
 	for _, my := range dbList {
 		if my.Name != meta.Name {
-			secretUsed.Insert(my.Spec.GetSecrets()...)
+			secretUsed.Insert(my.Spec.GetPersistentSecrets()...)
 		}
 	}
 	return secretUsed, nil
