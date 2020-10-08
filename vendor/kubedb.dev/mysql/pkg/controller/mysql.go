@@ -262,7 +262,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(mysql *api.MySQL, owner *metav
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
 	if mysql.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		if err := c.wipeOutDatabase(mysql.ObjectMeta, mysql.Spec.GetSecrets(), owner); err != nil {
+		if err := c.wipeOutDatabase(mysql.ObjectMeta, mysql.Spec.GetPersistentSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
@@ -272,7 +272,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(mysql *api.MySQL, owner *metav
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			mysql.Namespace,
-			mysql.Spec.GetSecrets(),
+			mysql.Spec.GetPersistentSecrets(),
 			mysql); err != nil {
 			return err
 		}
@@ -305,7 +305,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(mysql *api.MySQL) error {
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		mysql.Namespace,
-		mysql.Spec.GetSecrets(),
+		mysql.Spec.GetPersistentSecrets(),
 		mysql); err != nil {
 		return err
 	}

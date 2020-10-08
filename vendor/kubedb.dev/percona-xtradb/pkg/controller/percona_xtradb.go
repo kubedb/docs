@@ -240,7 +240,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(px *api.PerconaXtraDB) error {
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
 	if px.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		if err := c.wipeOutDatabase(px.ObjectMeta, px.Spec.GetSecrets(), owner); err != nil {
+		if err := c.wipeOutDatabase(px.ObjectMeta, px.Spec.GetPersistentSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
@@ -250,7 +250,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(px *api.PerconaXtraDB) error {
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			px.Namespace,
-			px.Spec.GetSecrets(),
+			px.Spec.GetPersistentSecrets(),
 			px); err != nil {
 			return err
 		}
@@ -283,7 +283,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(px *api.PerconaXtraDB) er
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		px.Namespace,
-		px.Spec.GetSecrets(),
+		px.Spec.GetPersistentSecrets(),
 		px); err != nil {
 		return err
 	}

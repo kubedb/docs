@@ -258,7 +258,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, owner 
 		}); err != nil {
 			fmt.Printf("got error while waiting for db pods to be deleted: %v. coninuing with further deletion steps.\n", err.Error())
 		}
-		if err := c.wipeOutDatabase(postgres.ObjectMeta, postgres.Spec.GetSecrets(), owner); err != nil {
+		if err := c.wipeOutDatabase(postgres.ObjectMeta, postgres.Spec.GetPersistentSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 		// if wal archiver was configured, remove wal data from backend
@@ -274,7 +274,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, owner 
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			postgres.Namespace,
-			postgres.Spec.GetSecrets(),
+			postgres.Spec.GetPersistentSecrets(),
 			postgres); err != nil {
 			return err
 		}
@@ -307,7 +307,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *api.Postgres) e
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		postgres.Namespace,
-		postgres.Spec.GetSecrets(),
+		postgres.Spec.GetPersistentSecrets(),
 		postgres); err != nil {
 		return err
 	}

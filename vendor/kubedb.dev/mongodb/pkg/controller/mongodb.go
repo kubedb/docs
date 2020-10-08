@@ -263,7 +263,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(db *api.MongoDB, owner *metav1
 	// else, keep it intact.
 	if db.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
 		// wipeOut restoreSession
-		if err := c.wipeOutDatabase(db.ObjectMeta, db.Spec.GetSecrets(), owner); err != nil {
+		if err := c.wipeOutDatabase(db.ObjectMeta, db.Spec.GetPersistentSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
@@ -273,7 +273,7 @@ func (c *Controller) setOwnerReferenceToOffshoots(db *api.MongoDB, owner *metav1
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			db.Namespace,
-			db.Spec.GetSecrets(),
+			db.Spec.GetPersistentSecrets(),
 			db); err != nil {
 			return err
 		}
@@ -306,7 +306,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.MongoDB) error {
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		db.Namespace,
-		db.Spec.GetSecrets(),
+		db.Spec.GetPersistentSecrets(),
 		db); err != nil {
 		return err
 	}
