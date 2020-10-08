@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -130,34 +130,34 @@ func upsertServicePort(in *core.Service, pgbouncer *api.PgBouncer) []core.Servic
 	)
 }
 
-func (c *Controller) ensureStatsService(pgbouncer *api.PgBouncer) (kutil.VerbType, error) {
+func (c *Controller) ensureStatsService(db *api.PgBouncer) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
-	if pgbouncer.GetMonitoringVendor() != mona.VendorPrometheus {
-		log.Infoln("pgbouncer.spec.monitor.agent is not coreos-operator or builtin.")
+	if db.Spec.Monitor == nil || db.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
+		log.Infoln("pgbouncer.spec.monitor.agent is not provided by prometheus.io")
 		return kutil.VerbUnchanged, nil
 	}
 
 	// Check if statsService name exists
-	if err := c.checkService(pgbouncer, pgbouncer.StatsService().ServiceName()); err != nil {
+	if err := c.checkService(db, db.StatsService().ServiceName()); err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
 	// reconcile stats service
 	meta := metav1.ObjectMeta{
-		Name:      pgbouncer.StatsService().ServiceName(),
-		Namespace: pgbouncer.Namespace,
+		Name:      db.StatsService().ServiceName(),
+		Namespace: db.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
-		ref := metav1.NewControllerRef(pgbouncer, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
+		ref := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
 		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
-		in.Labels = pgbouncer.StatsServiceLabels()
-		in.Spec.Selector = pgbouncer.OffshootSelectors()
+		in.Labels = db.StatsServiceLabels()
+		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
-				Name:       api.PrometheusExporterPortName,
+				Name:       mona.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
-				Port:       pgbouncer.Spec.Monitor.Prometheus.Exporter.Port,
-				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+				Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
+				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},
 		})
 		return in
@@ -166,7 +166,7 @@ func (c *Controller) ensureStatsService(pgbouncer *api.PgBouncer) (kutil.VerbTyp
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
-			pgbouncer,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s stats service",

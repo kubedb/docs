@@ -102,7 +102,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 	// Initialize StatefulSet watcher
-	sts.NewController(&c.Config, c.KubeClient, c.DynamicClient).InitStsWatcher()
+	sts.NewController(&c.Config, c.KubeClient, c.DBClient, c.DynamicClient).InitStsWatcher()
 
 	return ctrl, nil
 }

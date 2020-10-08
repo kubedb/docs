@@ -20,8 +20,8 @@ import (
 	"context"
 	"errors"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/memcached/pkg/admission"
 
@@ -32,7 +32,7 @@ import (
 )
 
 func (c *Controller) create(memcached *api.Memcached) error {
-	if err := validator.ValidateMemcached(c.Client, c.ExtClient, memcached, true); err != nil {
+	if err := validator.ValidateMemcached(c.Client, c.DBClient, memcached, true); err != nil {
 		c.Recorder.Event(
 			memcached,
 			core.EventTypeWarning,
@@ -44,8 +44,8 @@ func (c *Controller) create(memcached *api.Memcached) error {
 	}
 
 	if memcached.Status.Phase == "" {
-		mc, err := util.UpdateMemcachedStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
-			in.Phase = api.DatabasePhaseCreating
+		mc, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
@@ -54,7 +54,7 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		memcached.Status = mc.Status
 	}
 
-	// Ensure ClusterRoles for deployments
+	// Ensure ClusterRoles for stss
 	if err := c.ensureRBACStuff(memcached); err != nil {
 		return err
 	}
@@ -65,8 +65,8 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		return err
 	}
 
-	// ensure database Deployment
-	vt2, err := c.ensureDeployment(memcached)
+	// ensure database StatefulSet
+	vt2, err := c.ensureStatefulSet(memcached)
 	if err != nil {
 		return err
 	}
@@ -87,8 +87,8 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		)
 	}
 
-	mc, err := util.UpdateMemcachedStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
-		in.Phase = api.DatabasePhaseRunning
+	mc, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = memcached.Generation
 		return in
 	}, metav1.UpdateOptions{})
@@ -142,7 +142,7 @@ func (c *Controller) halt(db *api.Memcached) error {
 		return err
 	}
 	log.Infof("update status of Memcached %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMemcachedStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+	if _, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in

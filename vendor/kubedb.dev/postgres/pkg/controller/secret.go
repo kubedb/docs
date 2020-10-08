@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
 	passgen "gomodules.xyz/password-generator"
 	core "k8s.io/api/core/v1"
@@ -42,7 +42,7 @@ func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
 		if databaseSecretVolume, err = c.createDatabaseSecret(postgres); err != nil {
 			return err
 		}
-		pg, _, err := util.PatchPostgres(context.TODO(), c.DBClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
+		pg, _, err := util.PatchPostgres(context.TODO(), c.DBClient.KubedbV1alpha2(), postgres, func(in *api.Postgres) *api.Postgres {
 			in.Spec.DatabaseSecret = databaseSecretVolume
 			return in
 		}, metav1.PatchOptions{})

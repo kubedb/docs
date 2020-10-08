@@ -17,7 +17,7 @@ limitations under the License.
 package api
 
 import (
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	kutil "kmodules.xyz/client-go"
 )

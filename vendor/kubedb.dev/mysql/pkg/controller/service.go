@@ -19,7 +19,7 @@ package controller
 import (
 	"context"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -95,8 +95,8 @@ func (c *Controller) ensurePrimaryService(mysql *api.MySQL) (kutil.VerbType, err
 
 func (c *Controller) ensureStatsService(mysql *api.MySQL) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
-	if mysql.GetMonitoringVendor() != mona.VendorPrometheus {
-		log.Infoln("spec.monitor.agent is not operator or builtin.")
+	if mysql.Spec.Monitor == nil || mysql.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
+		log.Infoln("spec.monitor.agent is not provided by prometheus.io")
 		return kutil.VerbUnchanged, nil
 	}
 
@@ -113,10 +113,10 @@ func (c *Controller) ensureStatsService(mysql *api.MySQL) (kutil.VerbType, error
 		in.Spec.Selector = mysql.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
-				Name:       api.PrometheusExporterPortName,
+				Name:       mona.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
 				Port:       mysql.Spec.Monitor.Prometheus.Exporter.Port,
-				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},
 		})
 		return in

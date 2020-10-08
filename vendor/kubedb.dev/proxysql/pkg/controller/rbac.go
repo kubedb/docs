@@ -19,7 +19,7 @@ package controller
 import (
 	"context"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	core "k8s.io/api/core/v1"
 	policy_v1beta1 "k8s.io/api/policy/v1beta1"
@@ -116,7 +116,7 @@ func (c *Controller) createRoleBinding(db *api.ProxySQL, name string) error {
 }
 
 func (c *Controller) getPolicyNames(db *api.ProxySQL) (string, error) {
-	dbVersion, err := c.ExtClient.CatalogV1alpha1().ProxySQLVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	dbVersion, err := c.DBClient.CatalogV1alpha1().ProxySQLVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

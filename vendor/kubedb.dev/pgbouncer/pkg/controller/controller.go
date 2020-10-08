@@ -20,10 +20,10 @@ import (
 	"context"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
-	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
+	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
+	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha2"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
@@ -85,7 +85,7 @@ func New(
 		Controller: &amc.Controller{
 			ClientConfig:     clientConfig,
 			Client:           client,
-			ExtClient:        extClient,
+			DBClient:         extClient,
 			CRDClient:        crdClient,
 			DynamicClient:    dc,
 			AppCatalogClient: appCatalogClient,
@@ -194,10 +194,10 @@ func (c *Controller) pushFailureEvent(pgbouncer *api.PgBouncer, reason string) {
 
 	pg, err := kutildb.UpdatePgBouncerStatus(
 		context.TODO(),
-		c.ExtClient.KubedbV1alpha1(),
+		c.DBClient.KubedbV1alpha2(),
 		pgbouncer.ObjectMeta,
 		func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
-			in.Phase = api.DatabasePhaseFailed
+			in.Phase = api.DatabasePhaseNotReady
 			in.ObservedGeneration = pgbouncer.Generation
 			return in
 		},

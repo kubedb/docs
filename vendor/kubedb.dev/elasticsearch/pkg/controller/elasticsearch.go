@@ -19,12 +19,11 @@ package controller
 import (
 	"context"
 	"fmt"
-	"time"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
-	api_util "kubedb.dev/apimachinery/pkg/util"
+	"kubedb.dev/apimachinery/pkg/phase"
 	validator "kubedb.dev/elasticsearch/pkg/admission"
 	"kubedb.dev/elasticsearch/pkg/distribution"
 
@@ -39,7 +38,7 @@ import (
 )
 
 func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
-	if err := validator.ValidateElasticsearch(c.Client, c.ExtClient, elasticsearch, true); err != nil {
+	if err := validator.ValidateElasticsearch(c.Client, c.DBClient, elasticsearch, true); err != nil {
 		c.Recorder.Event(
 			elasticsearch,
 			core.EventTypeWarning,
@@ -53,11 +52,11 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	// Get elasticsearch phase from condition
 	// If new phase is not equal to old phase,
 	// update Elasticsearch phase.
-	phase := api_util.PhaseFromCondition(elasticsearch.Status.Conditions)
+	phase := phase.PhaseFromCondition(elasticsearch.Status.Conditions)
 	if elasticsearch.Status.Phase != phase {
 		_, err := util.UpdateElasticsearchStatus(
 			context.TODO(),
-			c.ExtClient.KubedbV1alpha1(),
+			c.DBClient.KubedbV1alpha2(),
 			elasticsearch.ObjectMeta,
 			func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 				in.Phase = phase
@@ -137,22 +136,6 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		}
 	}
 
-	es, err := util.UpdateElasticsearchStatus(
-		context.TODO(),
-		c.ExtClient.KubedbV1alpha1(),
-		elasticsearch.ObjectMeta,
-		func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-			in.Phase = api.DatabasePhaseReady
-			in.ObservedGeneration = elasticsearch.Generation
-			return in
-		},
-		metav1.UpdateOptions{},
-	)
-	if err != nil {
-		return err
-	}
-	elasticsearch.Status = es.Status
-
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(elasticsearch); err != nil {
 		c.Recorder.Eventf(
@@ -178,6 +161,66 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return nil
 	}
 
+	// If WaitForInitialRestore is set,
+	// Check: ReplicaReady --> AcceptingConnection --> Ready --> DataRestored --> Provisioned
+	if elasticsearch.Spec.Init != nil && elasticsearch.Spec.Init.WaitForInitialRestore {
+		if kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseReplicaReady) &&
+			kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseAcceptingConnection) &&
+			kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseReady) &&
+			kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseDataRestored) &&
+			!kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseProvisioned) {
+			_, err := util.UpdateElasticsearchStatus(
+				context.TODO(),
+				c.DBClient.KubedbV1alpha2(),
+				elasticsearch.ObjectMeta,
+				func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+					in.Conditions = kmapi.SetCondition(in.Conditions,
+						kmapi.Condition{
+							Type:    api.DatabaseProvisioned,
+							Status:  kmapi.ConditionTrue,
+							Reason:  "",
+							Message: fmt.Sprintf("The Elasticsearch: %s/%s is successfully provisioned.", elasticsearch.Namespace, elasticsearch.Name),
+						})
+					return in
+				},
+				metav1.UpdateOptions{},
+			)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		// TODO: check again, what happens when some node go down!
+		// If waitForInitialRestore is empty,
+		// Check: ReplicaReady --> AcceptingConnection --> Ready --> Provisioned
+		if kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseReplicaReady) &&
+			// kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseAcceptingConnection) &&
+			// kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseReady) &&
+			!kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseProvisioned) {
+			_, err := util.UpdateElasticsearchStatus(
+				context.TODO(),
+				c.DBClient.KubedbV1alpha2(),
+				elasticsearch.ObjectMeta,
+				func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+					in.Conditions = kmapi.SetCondition(in.Conditions,
+						kmapi.Condition{
+							Type:               api.DatabaseProvisioned,
+							Status:             kmapi.ConditionTrue,
+							ObservedGeneration: elasticsearch.ObjectMeta.Generation,
+							LastTransitionTime: metav1.Now(),
+							Reason:             "",
+							Message:            fmt.Sprintf("The Elasticsearch: %s/%s is successfully provisioned.", elasticsearch.Namespace, elasticsearch.Name),
+						})
+					return in
+				},
+				metav1.UpdateOptions{},
+			)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -186,7 +229,7 @@ func (c *Controller) ensureElasticsearchNode(es *api.Elasticsearch) (*api.Elasti
 		return nil, kutil.VerbUnchanged, errors.New("Elasticsearch object is empty")
 	}
 
-	elastic, err := distribution.NewElasticsearch(c.Client, c.ExtClient, es)
+	elastic, err := distribution.NewElasticsearch(c.Client, c.DBClient, es)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to get elasticsearch distribution")
 	}
@@ -263,9 +306,6 @@ func (c *Controller) ensureElasticsearchNode(es *api.Elasticsearch) (*api.Elasti
 		}
 	}
 
-	// Need some time to build elasticsearch cluster. Nodes will communicate with each other
-	time.Sleep(time.Second * 30)
-
 	return elastic.UpdatedElasticsearch(), vt, nil
 }
 
@@ -283,7 +323,7 @@ func (c *Controller) halt(db *api.Elasticsearch) error {
 	log.Infof("update status of Elasticsearch %v/%v to Halted.", db.Namespace, db.Name)
 	if _, err := util.UpdateElasticsearchStatus(
 		context.TODO(),
-		c.ExtClient.KubedbV1alpha1(),
+		c.DBClient.KubedbV1alpha2(),
 		db.ObjectMeta,
 		func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 			in.Phase = api.DatabasePhaseHalted

@@ -18,6 +18,7 @@ package v1alpha1
 
 import (
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kmapi "kmodules.xyz/client-go/api/v1"
 )
@@ -68,6 +69,9 @@ type MySQLOpsRequestSpec struct {
 	TLS *TLSSpec `json:"tls,omitempty" protobuf:"bytes,8,opt,name=tls"`
 	// Specifies information necessary for restarting database
 	Restart *RestartSpec `json:"restart,omitempty" protobuf:"bytes,9,opt,name=restart"`
+
+	// Specifies the current ordinal of the StatefulSet
+	StatefulSetOrdinal *int32 `json:"statefulSetOrdinal,omitempty" protobuf:"varint,10,opt,name=statefulSetOrdinal"`
 }
 
 // MySQLReplicaReadinessCriteria is the criteria for checking readiness of a MySQL pod
@@ -95,9 +99,11 @@ type MySQLVerticalScalingSpec struct {
 
 // MySQLVolumeExpansionSpec is the spec for MySQL volume expansion
 type MySQLVolumeExpansionSpec struct {
+	MySQL *resource.Quantity `json:"mysql,omitempty" protobuf:"bytes,1,opt,name=mysql"`
 }
 
 type MySQLCustomConfigurationSpec struct {
+	MySQL *MySQLCustomConfiguration `json:"mysql,omitempty" protobuf:"bytes,1,opt,name=mysql"`
 }
 
 type MySQLCustomConfiguration struct {

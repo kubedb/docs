@@ -19,7 +19,7 @@ package controller
 import (
 	"context"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/appscode/go/types"
 	core "k8s.io/api/core/v1"

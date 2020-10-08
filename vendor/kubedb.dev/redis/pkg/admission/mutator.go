@@ -20,7 +20,7 @@ import (
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
 	"github.com/appscode/go/types"
@@ -32,7 +32,6 @@ import (
 	"k8s.io/client-go/rest"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
-	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
@@ -129,26 +128,5 @@ func setDefaultValues(redis *api.Redis, clusterTopology *core_util.Topology) (ru
 
 	redis.SetDefaults(clusterTopology)
 
-	// If monitoring spec is given without port,
-	// set default Listening port
-	setMonitoringPort(redis)
-
 	return redis, nil
-}
-
-// Assign Default Monitoring Port if MonitoringSpec Exists
-// and the AgentVendor is Prometheus.
-func setMonitoringPort(redis *api.Redis) {
-	if redis.Spec.Monitor != nil &&
-		redis.GetMonitoringVendor() == mona.VendorPrometheus {
-		if redis.Spec.Monitor.Prometheus == nil {
-			redis.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
-		}
-		if redis.Spec.Monitor.Prometheus.Exporter == nil {
-			redis.Spec.Monitor.Prometheus.Exporter = &mona.PrometheusExporterSpec{}
-		}
-		if redis.Spec.Monitor.Prometheus.Exporter.Port == 0 {
-			redis.Spec.Monitor.Prometheus.Exporter.Port = api.PrometheusExporterPortNumber
-		}
-	}
 }

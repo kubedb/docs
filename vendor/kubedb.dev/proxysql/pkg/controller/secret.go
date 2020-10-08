@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
 	passgen "gomodules.xyz/password-generator"
 	core "k8s.io/api/core/v1"
@@ -43,7 +43,7 @@ func (c *Controller) ensureProxySQLSecret(proxysql *api.ProxySQL) error {
 
 		proxysqlPathced, _, err := util.PatchProxySQL(
 			context.TODO(),
-			c.ExtClient.KubedbV1alpha1(),
+			c.DBClient.KubedbV1alpha2(),
 			proxysql,
 			func(in *api.ProxySQL) *api.ProxySQL {
 				in.Spec.ProxySQLSecret = secretVolumeSource

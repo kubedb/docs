@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strings"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/types"
@@ -38,13 +38,13 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-type db interface {
+type database interface {
 	PeerName(i int) string
 	GetDatabaseSecretName() string
 }
 
-var _ db = api.PerconaXtraDB{}
-var _ db = api.MySQL{}
+var _ database = api.PerconaXtraDB{}
+var _ database = api.MySQL{}
 
 type workloadOptions struct {
 	// App level options
@@ -52,7 +52,7 @@ type workloadOptions struct {
 	labels    map[string]string
 	selectors map[string]string
 
-	// db container options
+	// database container options
 	conatainerName string
 	image          string
 	cmd            []string // cmd of `proxysql` container
@@ -73,8 +73,8 @@ type workloadOptions struct {
 	volume         []core.Volume // volumes to mount on stsPodTemplate
 }
 
-func (c *Controller) ensureProxySQLNode(proxysql *api.ProxySQL) (kutil.VerbType, error) {
-	proxysqlVersion, err := c.ExtClient.CatalogV1alpha1().ProxySQLVersions().Get(context.TODO(), string(proxysql.Spec.Version), metav1.GetOptions{})
+func (c *Controller) ensureProxySQLNode(db *api.ProxySQL) (kutil.VerbType, error) {
+	proxysqlVersion, err := c.DBClient.CatalogV1alpha1().ProxySQLVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -92,17 +92,17 @@ func (c *Controller) ensureProxySQLNode(proxysql *api.ProxySQL) (kutil.VerbType,
 		},
 	}
 
-	proxysql.Spec.PodTemplate.Spec.ServiceAccountName = proxysql.OffshootName()
+	db.Spec.PodTemplate.Spec.ServiceAccountName = db.OffshootName()
 
-	var backendDB db
-	backend := proxysql.Spec.Backend
+	var backendDB database
+	backend := db.Spec.Backend
 	gk := schema.GroupKind{Group: *backend.Ref.APIGroup, Kind: backend.Ref.Kind}
 
 	switch gk {
 	case api.Kind(api.ResourceKindPerconaXtraDB):
-		backendDB, err = c.ExtClient.KubedbV1alpha1().PerconaXtraDBs(proxysql.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
+		backendDB, err = c.DBClient.KubedbV1alpha2().PerconaXtraDBs(db.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
 	case api.Kind(api.ResourceKindMySQL):
-		backendDB, err = c.ExtClient.KubedbV1alpha1().MySQLs(proxysql.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
+		backendDB, err = c.DBClient.KubedbV1alpha2().MySQLs(db.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
 	// TODO: add other cases for MySQL and MariaDB when they will be configured
 	default:
 		return kutil.VerbUnchanged, fmt.Errorf("unknown group kind '%v' is specified", gk.String())
@@ -117,7 +117,7 @@ func (c *Controller) ensureProxySQLNode(proxysql *api.ProxySQL) (kutil.VerbType,
 	}
 
 	var monitorContainer *core.Container
-	if proxysql.GetMonitoringVendor() == mona.VendorPrometheus {
+	if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 		monitorContainer = &core.Container{
 			Name: "exporter",
 			Command: []string{
@@ -129,19 +129,19 @@ func (c *Controller) ensureProxySQLNode(proxysql *api.ProxySQL) (kutil.VerbType,
 				// ref: https://github.com/go-sql-driver/mysql#dsn-data-source-name
 				fmt.Sprintf(`export DATA_SOURCE_NAME="admin:admin@tcp(127.0.0.1:6032)/"
 						/bin/proxysql_exporter --web.listen-address=:%v --web.telemetry-path=%v %v`,
-					proxysql.Spec.Monitor.Prometheus.Port, proxysql.StatsService().Path(), strings.Join(proxysql.Spec.Monitor.Args, " ")),
+					db.Spec.Monitor.Prometheus.Exporter.Port, db.StatsService().Path(), strings.Join(db.Spec.Monitor.Prometheus.Exporter.Args, " ")),
 			},
 			Image: proxysqlVersion.Spec.Exporter.Image,
 			Ports: []core.ContainerPort{
 				{
-					Name:          api.PrometheusExporterPortName,
+					Name:          mona.PrometheusExporterPortName,
 					Protocol:      core.ProtocolTCP,
-					ContainerPort: proxysql.Spec.Monitor.Prometheus.Port,
+					ContainerPort: db.Spec.Monitor.Prometheus.Exporter.Port,
 				},
 			},
-			Env:             proxysql.Spec.Monitor.Env,
-			Resources:       proxysql.Spec.Monitor.Resources,
-			SecurityContext: proxysql.Spec.Monitor.SecurityContext,
+			Env:             db.Spec.Monitor.Prometheus.Exporter.Env,
+			Resources:       db.Spec.Monitor.Prometheus.Exporter.Resources,
+			SecurityContext: db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 		}
 	}
 
@@ -163,14 +163,14 @@ func (c *Controller) ensureProxySQLNode(proxysql *api.ProxySQL) (kutil.VerbType,
 		},
 		{
 			Name:  "LOAD_BALANCE_MODE",
-			Value: string(*proxysql.Spec.Mode),
+			Value: string(*db.Spec.Mode),
 		},
 	}
 
 	opts := workloadOptions{
-		stsName:          proxysql.OffshootName(),
-		labels:           proxysql.OffshootLabels(),
-		selectors:        proxysql.OffshootSelectors(),
+		stsName:          db.OffshootName(),
+		labels:           db.OffshootLabels(),
+		selectors:        db.OffshootSelectors(),
 		conatainerName:   api.ResourceSingularProxySQL,
 		image:            proxysqlVersion.Spec.Proxysql.Image,
 		args:             nil,
@@ -179,15 +179,15 @@ func (c *Controller) ensureProxySQLNode(proxysql *api.ProxySQL) (kutil.VerbType,
 		envList:          envList,
 		initContainers:   nil,
 		gvrSvcName:       c.GoverningService,
-		podTemplate:      &proxysql.Spec.PodTemplate,
-		configSource:     proxysql.Spec.ConfigSource,
-		replicas:         proxysql.Spec.Replicas,
+		podTemplate:      &db.Spec.PodTemplate,
+		configSource:     db.Spec.ConfigSource,
+		replicas:         db.Spec.Replicas,
 		volume:           nil,
 		volumeMount:      nil,
 		monitorContainer: monitorContainer,
 	}
 
-	return c.ensureStatefulSet(proxysql, opts)
+	return c.ensureStatefulSet(db, opts)
 }
 
 func (c *Controller) checkStatefulSet(proxysql *api.ProxySQL, stsName string) error {
@@ -234,23 +234,23 @@ func upsertCustomConfig(template core.PodTemplateSpec, configSource *core.Volume
 	return template
 }
 
-func (c *Controller) ensureStatefulSet(proxysql *api.ProxySQL, opts workloadOptions) (kutil.VerbType, error) {
+func (c *Controller) ensureStatefulSet(db *api.ProxySQL, opts workloadOptions) (kutil.VerbType, error) {
 	// Take value of podTemplate
 	var pt ofst.PodTemplateSpec
 	if opts.podTemplate != nil {
 		pt = *opts.podTemplate
 	}
-	if err := c.checkStatefulSet(proxysql, opts.stsName); err != nil {
+	if err := c.checkStatefulSet(db, opts.stsName); err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
 	// Create statefulSet for ProxySQL database
 	statefulSetMeta := metav1.ObjectMeta{
 		Name:      opts.stsName,
-		Namespace: proxysql.Namespace,
+		Namespace: db.Namespace,
 	}
 
-	owner := metav1.NewControllerRef(proxysql, api.SchemeGroupVersion.WithKind(api.ResourceKindProxySQL))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindProxySQL))
 
 	readinessProbe := pt.Spec.ReadinessProbe
 	if readinessProbe != nil && structs.IsZero(*readinessProbe) {
@@ -303,13 +303,13 @@ func (c *Controller) ensureStatefulSet(proxysql *api.ProxySQL, opts workloadOpti
 				opts.initContainers,
 			)
 
-			if opts.monitorContainer != nil && proxysql.GetMonitoringVendor() == mona.VendorPrometheus {
+			if opts.monitorContainer != nil && db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 					in.Spec.Template.Spec.Containers, *opts.monitorContainer)
 			}
 
 			// Set proxysql Secret as MYSQL_PROXY_USER and MYSQL_PROXY_PASSWORD env variable
-			in = upsertEnv(in, proxysql)
+			in = upsertEnv(in, db)
 
 			in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(in.Spec.Template.Spec.Volumes, opts.volume...)
 
@@ -346,11 +346,11 @@ func (c *Controller) ensureStatefulSet(proxysql *api.ProxySQL, opts workloadOpti
 			return kutil.VerbUnchanged, err
 		}
 		c.recorder.Eventf(
-			proxysql,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %v StatefulSet %v/%v",
-			vt, proxysql.Namespace, opts.stsName,
+			vt, db.Namespace, opts.stsName,
 		)
 	}
 

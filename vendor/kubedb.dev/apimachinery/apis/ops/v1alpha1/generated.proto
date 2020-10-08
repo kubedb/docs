@@ -623,6 +623,7 @@ message MySQLCustomConfiguration {
 }
 
 message MySQLCustomConfigurationSpec {
+  optional MySQLCustomConfiguration mysql = 1;
 }
 
 message MySQLHorizontalScalingSpec {
@@ -683,6 +684,9 @@ message MySQLOpsRequestSpec {
 
   // Specifies information necessary for restarting database
   optional RestartSpec restart = 9;
+
+  // Specifies the current ordinal of the StatefulSet
+  optional int32 statefulSetOrdinal = 10;
 }
 
 // MySQLOpsRequestStatus is the status for MySQLOpsRequest
@@ -719,6 +723,7 @@ message MySQLVerticalScalingSpec {
 
 // MySQLVolumeExpansionSpec is the spec for MySQL volume expansion
 message MySQLVolumeExpansionSpec {
+  optional k8s.io.apimachinery.pkg.api.resource.Quantity mysql = 1;
 }
 
 message PerconaXtraDBCustomConfiguration {

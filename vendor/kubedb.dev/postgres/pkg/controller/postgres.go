@@ -21,8 +21,8 @@ import (
 	"fmt"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/postgres/pkg/admission"
 
@@ -51,7 +51,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	if postgres.Status.Phase == "" {
-		pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+		pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
@@ -123,7 +123,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		}
 	}
 
-	pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+	pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = postgres.Generation
 		return in
@@ -193,7 +193,7 @@ func (c *Controller) halt(db *api.Postgres) error {
 		return err
 	}
 	log.Infof("update status of Postgres %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+	if _, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in

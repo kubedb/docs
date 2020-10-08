@@ -20,10 +20,10 @@ import (
 	"context"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
-	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
+	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
+	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha2"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
 	"kubedb.dev/apimachinery/pkg/eventer"
@@ -178,7 +178,7 @@ func (c *Controller) pushFailureEvent(redis *api.Redis, reason string) {
 		reason,
 	)
 
-	rd, err := kutildb.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+	rd, err := kutildb.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseNotReady
 		in.ObservedGeneration = redis.Generation
 		return in

@@ -20,8 +20,8 @@ import (
 	"context"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
 	"github.com/appscode/go/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,9 +30,9 @@ import (
 )
 
 func (c *Controller) initWatcher() {
-	c.proxysqlInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().ProxySQLs().Informer()
+	c.proxysqlInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().ProxySQLs().Informer()
 	c.proxysqlQueue = queue.New("ProxySQL", c.MaxNumRequeues, c.NumThreads, c.runProxySQL)
-	c.proxysqlLister = c.KubedbInformerFactory.Kubedb().V1alpha1().ProxySQLs().Lister()
+	c.proxysqlLister = c.KubedbInformerFactory.Kubedb().V1alpha2().ProxySQLs().Lister()
 	c.proxysqlInformer.AddEventHandler(queue.NewChangeHandler(c.proxysqlQueue.GetQueue()))
 }
 
@@ -56,14 +56,14 @@ func (c *Controller) runProxySQL(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				_, _, err = util.PatchProxySQL(context.TODO(), c.ExtClient.KubedbV1alpha1(), proxysql, func(in *api.ProxySQL) *api.ProxySQL {
+				_, _, err = util.PatchProxySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), proxysql, func(in *api.ProxySQL) *api.ProxySQL {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
-			proxysql, _, err = util.PatchProxySQL(context.TODO(), c.ExtClient.KubedbV1alpha1(), proxysql, func(in *api.ProxySQL) *api.ProxySQL {
+			proxysql, _, err = util.PatchProxySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), proxysql, func(in *api.ProxySQL) *api.ProxySQL {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})

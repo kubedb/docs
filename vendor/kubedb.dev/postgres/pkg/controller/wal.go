@@ -21,7 +21,7 @@ import (
 	"os"
 	"path/filepath"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"gomodules.xyz/stow"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

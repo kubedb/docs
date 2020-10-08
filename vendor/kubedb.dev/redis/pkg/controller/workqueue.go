@@ -20,8 +20,8 @@ import (
 	"context"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
@@ -33,9 +33,9 @@ import (
 )
 
 func (c *Controller) initWatcher() {
-	c.rdInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Redises().Informer()
+	c.rdInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().Redises().Informer()
 	c.rdQueue = queue.New("Redis", c.MaxNumRequeues, c.NumThreads, c.runRedis)
-	c.rdLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Redises().Lister()
+	c.rdLister = c.KubedbInformerFactory.Kubedb().V1alpha2().Redises().Lister()
 	c.rdInformer.AddEventHandler(queue.NewChangeHandler(c.rdQueue.GetQueue()))
 }
 
@@ -59,14 +59,14 @@ func (c *Controller) runRedis(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				_, _, err = util.PatchRedis(context.TODO(), c.DBClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
+				_, _, err = util.PatchRedis(context.TODO(), c.DBClient.KubedbV1alpha2(), redis, func(in *api.Redis) *api.Redis {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
-			redis, _, err = util.PatchRedis(context.TODO(), c.DBClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
+			redis, _, err = util.PatchRedis(context.TODO(), c.DBClient.KubedbV1alpha2(), redis, func(in *api.Redis) *api.Redis {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})

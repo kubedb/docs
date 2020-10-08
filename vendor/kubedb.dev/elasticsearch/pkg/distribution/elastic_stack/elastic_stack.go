@@ -18,7 +18,7 @@ package elastic_stack
 
 import (
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	distapi "kubedb.dev/elasticsearch/pkg/distribution/api"
 

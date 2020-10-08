@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -281,10 +281,6 @@ func (c *Controller) ensureShardNode(mongodb *api.MongoDB) ([]*apps.StatefulSet,
 				MountPath: configDirectoryPath,
 			},
 			{
-				Name:      certDirectoryName,
-				MountPath: api.MongoCertDirectory,
-			},
-			{
 				Name:      dataDirectoryName,
 				MountPath: dataDirectoryPath,
 			},
@@ -295,7 +291,7 @@ func (c *Controller) ensureShardNode(mongodb *api.MongoDB) ([]*apps.StatefulSet,
 		}
 
 		if mongodb.Spec.KeyFile != nil {
-			volumes = append(volumes, core.Volume{
+			volumes = core_util.UpsertVolume(volumes, core.Volume{
 				Name: initialKeyDirectoryName, // FIXIT: mounted where?
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
@@ -308,7 +304,7 @@ func (c *Controller) ensureShardNode(mongodb *api.MongoDB) ([]*apps.StatefulSet,
 
 		//only on mongos in case of sharding (which is handled on 'ensureMongosNode'.
 		if mongodb.Spec.ShardTopology == nil && mongodb.Spec.Init != nil && mongodb.Spec.Init.Script != nil {
-			volumes = append(volumes, core.Volume{
+			volumes = core_util.UpsertVolume(volumes, core.Volume{
 				Name:         "initial-script",
 				VolumeSource: mongodb.Spec.Init.Script.VolumeSource,
 			})
@@ -492,10 +488,6 @@ func (c *Controller) ensureConfigNode(mongodb *api.MongoDB) (*apps.StatefulSet, 
 			MountPath: configDirectoryPath,
 		},
 		{
-			Name:      certDirectoryName,
-			MountPath: api.MongoCertDirectory,
-		},
-		{
 			Name:      dataDirectoryName,
 			MountPath: dataDirectoryPath,
 		},
@@ -506,7 +498,7 @@ func (c *Controller) ensureConfigNode(mongodb *api.MongoDB) (*apps.StatefulSet, 
 	}
 
 	if mongodb.Spec.KeyFile != nil {
-		volumes = append(volumes, core.Volume{
+		volumes = core_util.UpsertVolume(volumes, core.Volume{
 			Name: initialKeyDirectoryName, // FIXIT: mounted where?
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
@@ -519,7 +511,7 @@ func (c *Controller) ensureConfigNode(mongodb *api.MongoDB) (*apps.StatefulSet, 
 
 	//only on mongos in case of sharding (which is handled on 'ensureMongosNode'.
 	if mongodb.Spec.ShardTopology == nil && mongodb.Spec.Init != nil && mongodb.Spec.Init.Script != nil {
-		volumes = append(volumes, core.Volume{
+		volumes = core_util.UpsertVolume(volumes, core.Volume{
 			Name:         "initial-script",
 			VolumeSource: mongodb.Spec.Init.Script.VolumeSource,
 		})
@@ -706,10 +698,6 @@ func (c *Controller) ensureNonTopology(mongodb *api.MongoDB) (kutil.VerbType, er
 				MountPath: configDirectoryPath,
 			},
 			{
-				Name:      certDirectoryName,
-				MountPath: api.MongoCertDirectory,
-			},
-			{
 				Name:      dataDirectoryName,
 				MountPath: dataDirectoryPath,
 			},
@@ -720,7 +708,7 @@ func (c *Controller) ensureNonTopology(mongodb *api.MongoDB) (kutil.VerbType, er
 		}...)
 
 		if mongodb.Spec.KeyFile != nil {
-			volumes = append(volumes, core.Volume{
+			volumes = core_util.UpsertVolume(volumes, core.Volume{
 				Name: initialKeyDirectoryName, // FIXIT: mounted where?
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
@@ -733,7 +721,7 @@ func (c *Controller) ensureNonTopology(mongodb *api.MongoDB) (kutil.VerbType, er
 
 		//only on mongos in case of sharding (which is handled on 'ensureMongosNode'.
 		if mongodb.Spec.ShardTopology == nil && mongodb.Spec.Init != nil && mongodb.Spec.Init.Script != nil {
-			volumes = append(volumes, core.Volume{
+			volumes = core_util.UpsertVolume(volumes, core.Volume{
 				Name:         "initial-script",
 				VolumeSource: mongodb.Spec.Init.Script.VolumeSource,
 			})
@@ -823,7 +811,7 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB, opts workloadOption
 	}
 
 	if mongodb.Spec.SSLMode != api.SSLModeDisabled && mongodb.Spec.TLS != nil {
-		opts.volumeMount = append(opts.volumeMount, core.VolumeMount{
+		opts.volumeMount = core_util.UpsertVolumeMount(opts.volumeMount, core.VolumeMount{
 			Name:      certDirectoryName,
 			MountPath: api.MongoCertDirectory,
 		})
@@ -878,7 +866,7 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB, opts workloadOption
 				opts.initContainers,
 			)
 
-			if mongodb.GetMonitoringVendor() == mona.VendorPrometheus {
+			if mongodb.Spec.Monitor != nil && mongodb.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 					in.Spec.Template.Spec.Containers,
 					getExporterContainer(mongodb, mongodbVersion),
@@ -1034,7 +1022,7 @@ func installInitContainer(
 				},
 			}...)
 
-		initVolumes = append(initVolumes, []core.Volume{
+		initVolumes = core_util.UpsertVolume(initVolumes, []core.Volume{
 			{
 				Name: ClientCertDirectoryName,
 				VolumeSource: core.VolumeSource{
@@ -1070,7 +1058,7 @@ func installInitContainer(
 				MountPath: initialKeyDirectoryPath,
 			})
 
-		initVolumes = append(initVolumes, core.Volume{
+		initVolumes = core_util.UpsertVolume(initVolumes, core.Volume{
 			Name: initialKeyDirectoryName,
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
@@ -1226,7 +1214,7 @@ func getExporterContainer(mongodb *api.MongoDB, mongodbVersion *v1alpha1.MongoDB
 		"--mongodb.uri=mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@localhost:27017/admin",
 		fmt.Sprintf("--web.listen-address=:%d", mongodb.Spec.Monitor.Prometheus.Exporter.Port),
 		metricsPath,
-	}, mongodb.Spec.Monitor.Args...)
+	}, mongodb.Spec.Monitor.Prometheus.Exporter.Args...)
 
 	if mongodb.Spec.SSLMode != api.SSLModeDisabled && mongodb.Spec.TLS != nil {
 		clientPEM := fmt.Sprintf("%s/%s", api.MongoCertDirectory, api.MongoClientFileName)
@@ -1244,7 +1232,7 @@ func getExporterContainer(mongodb *api.MongoDB, mongodbVersion *v1alpha1.MongoDB
 		Image: mongodbVersion.Spec.Exporter.Image,
 		Ports: []core.ContainerPort{
 			{
-				Name:          api.PrometheusExporterPortName,
+				Name:          mona.PrometheusExporterPortName,
 				Protocol:      core.ProtocolTCP,
 				ContainerPort: mongodb.Spec.Monitor.Prometheus.Exporter.Port,
 			},

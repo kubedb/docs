@@ -23,7 +23,7 @@ import (
 
 	v1alpha1 "kubedb.dev/apimachinery/apis/autoscaling/v1alpha1"
 	catalogv1alpha1 "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	kubedbv1alpha1 "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	v1alpha2 "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	opsv1alpha1 "kubedb.dev/apimachinery/apis/ops/v1alpha1"
 
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -108,29 +108,29 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	case catalogv1alpha1.SchemeGroupVersion.WithResource("redisversions"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Catalog().V1alpha1().RedisVersions().Informer()}, nil
 
-		// Group=kubedb.com, Version=v1alpha1
-	case kubedbv1alpha1.SchemeGroupVersion.WithResource("elasticsearches"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().Elasticsearches().Informer()}, nil
-	case kubedbv1alpha1.SchemeGroupVersion.WithResource("etcds"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().Etcds().Informer()}, nil
-	case kubedbv1alpha1.SchemeGroupVersion.WithResource("mariadbs"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().MariaDBs().Informer()}, nil
-	case kubedbv1alpha1.SchemeGroupVersion.WithResource("memcacheds"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().Memcacheds().Informer()}, nil
-	case kubedbv1alpha1.SchemeGroupVersion.WithResource("mongodbs"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().MongoDBs().Informer()}, nil
-	case kubedbv1alpha1.SchemeGroupVersion.WithResource("mysqls"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().MySQLs().Informer()}, nil
-	case kubedbv1alpha1.SchemeGroupVersion.WithResource("perconaxtradbs"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().PerconaXtraDBs().Informer()}, nil
-	case kubedbv1alpha1.SchemeGroupVersion.WithResource("pgbouncers"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().PgBouncers().Informer()}, nil
-	case kubedbv1alpha1.SchemeGroupVersion.WithResource("postgreses"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().Postgreses().Informer()}, nil
-	case kubedbv1alpha1.SchemeGroupVersion.WithResource("proxysqls"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().ProxySQLs().Informer()}, nil
-	case kubedbv1alpha1.SchemeGroupVersion.WithResource("redises"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha1().Redises().Informer()}, nil
+		// Group=kubedb.com, Version=v1alpha2
+	case v1alpha2.SchemeGroupVersion.WithResource("elasticsearches"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha2().Elasticsearches().Informer()}, nil
+	case v1alpha2.SchemeGroupVersion.WithResource("etcds"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha2().Etcds().Informer()}, nil
+	case v1alpha2.SchemeGroupVersion.WithResource("mariadbs"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha2().MariaDBs().Informer()}, nil
+	case v1alpha2.SchemeGroupVersion.WithResource("memcacheds"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha2().Memcacheds().Informer()}, nil
+	case v1alpha2.SchemeGroupVersion.WithResource("mongodbs"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha2().MongoDBs().Informer()}, nil
+	case v1alpha2.SchemeGroupVersion.WithResource("mysqls"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha2().MySQLs().Informer()}, nil
+	case v1alpha2.SchemeGroupVersion.WithResource("perconaxtradbs"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha2().PerconaXtraDBs().Informer()}, nil
+	case v1alpha2.SchemeGroupVersion.WithResource("pgbouncers"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha2().PgBouncers().Informer()}, nil
+	case v1alpha2.SchemeGroupVersion.WithResource("postgreses"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha2().Postgreses().Informer()}, nil
+	case v1alpha2.SchemeGroupVersion.WithResource("proxysqls"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha2().ProxySQLs().Informer()}, nil
+	case v1alpha2.SchemeGroupVersion.WithResource("redises"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Kubedb().V1alpha2().Redises().Informer()}, nil
 
 		// Group=ops.kubedb.com, Version=v1alpha1
 	case opsv1alpha1.SchemeGroupVersion.WithResource("elasticsearchopsrequests"):

@@ -21,8 +21,8 @@ import (
 	"fmt"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
 	passgen "gomodules.xyz/password-generator"
 	core "k8s.io/api/core/v1"
@@ -43,7 +43,7 @@ func (c *Controller) ensureDatabaseSecret(mysql *api.MySQL) error {
 			return err
 		}
 
-		ms, _, err := util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
+		ms, _, err := util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), mysql, func(in *api.MySQL) *api.MySQL {
 			in.Spec.DatabaseSecret = secretVolumeSource
 			return in
 		}, metav1.PatchOptions{})

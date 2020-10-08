@@ -18,11 +18,10 @@ package validator
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/appscode/go/arrays"
 	"github.com/pkg/errors"
@@ -68,27 +67,21 @@ func ValidateStorage(client kubernetes.Interface, storageType api.StorageType, s
 }
 
 // ValidateMonitorSpec validates the Monitoring spec after all the defaulting is done.
-func ValidateMonitorSpec(monitorSpec *mona.AgentSpec) error {
-	specData, err := json.Marshal(monitorSpec)
-	if err != nil {
-		return err
+func ValidateMonitorSpec(agent *mona.AgentSpec) error {
+	if agent.Agent == "" {
+		return fmt.Errorf(`object 'Agent' is missing in '%+v'`, agent)
 	}
 
-	if monitorSpec.Agent == "" {
-		return fmt.Errorf(`object 'Agent' is missing in '%v'`, string(specData))
-	}
-
-	if monitorSpec.Agent.Vendor() == mona.VendorPrometheus {
-		if monitorSpec.Prometheus != nil &&
-			monitorSpec.Prometheus.Exporter != nil &&
-			monitorSpec.Prometheus.Exporter.Port >= 1024 &&
-			monitorSpec.Prometheus.Exporter.Port <= 65535 {
+	if agent.Agent.Vendor() == mona.VendorPrometheus {
+		if agent.Prometheus != nil &&
+			agent.Prometheus.Exporter.Port >= 1024 &&
+			agent.Prometheus.Exporter.Port <= 65535 {
 			return nil
 		}
-		return fmt.Errorf(`invalid 'Monitor.Prometheus' in '%v'. prometheus.exporter.port value must be between 1024 and 65535, inclusive`, string(specData))
+		return fmt.Errorf(`invalid 'monitor.prometheus' in '%+v'. prometheus.exporter.port value must be between 1024 and 65535, inclusive`, agent)
 	}
 
-	return fmt.Errorf(`invalid 'Agent' in '%v'`, string(specData))
+	return fmt.Errorf(`invalid 'Agent' in '%+v'`, agent)
 }
 
 func ValidateEnvVar(envs []core.EnvVar, forbiddenEnvs []string, resourceType string) error {

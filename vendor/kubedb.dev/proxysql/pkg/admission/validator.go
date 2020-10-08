@@ -24,7 +24,7 @@ import (
 
 	catalog_api "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
@@ -106,7 +106,7 @@ func (a *ProxySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			_, err := a.extClient.KubedbV1alpha1().ProxySQLs(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
+			_, err := a.extClient.KubedbV1alpha2().ProxySQLs(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			}
@@ -167,11 +167,11 @@ func validateBackendWithMode(extClient cs.Interface, proxysql *api.ProxySQL) err
 	switch gk {
 	case api.Kind(api.ResourceKindPerconaXtraDB):
 		requiredMode = api.LoadBalanceModeGalera
-		_, err = extClient.KubedbV1alpha1().PerconaXtraDBs(proxysql.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
+		_, err = extClient.KubedbV1alpha2().PerconaXtraDBs(proxysql.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
 
 	case api.Kind(api.ResourceKindMySQL):
 		requiredMode = api.LoadBalanceModeGroupReplication
-		_, err = extClient.KubedbV1alpha1().MySQLs(proxysql.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
+		_, err = extClient.KubedbV1alpha2().MySQLs(proxysql.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
 
 	// TODO: add other cases for MySQL and MariaDB when they will be configured
 

@@ -20,8 +20,8 @@ import (
 	"context"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
 	"github.com/appscode/go/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,9 +31,9 @@ import (
 )
 
 func (c *Controller) initWatcher() {
-	c.pxInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().PerconaXtraDBs().Informer()
+	c.pxInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().PerconaXtraDBs().Informer()
 	c.pxQueue = queue.New("PerconaXtraDB", c.MaxNumRequeues, c.NumThreads, c.runPerconaXtraDB)
-	c.pxLister = c.KubedbInformerFactory.Kubedb().V1alpha1().PerconaXtraDBs().Lister()
+	c.pxLister = c.KubedbInformerFactory.Kubedb().V1alpha2().PerconaXtraDBs().Lister()
 	c.pxInformer.AddEventHandler(queue.NewChangeHandler(c.pxQueue.GetQueue()))
 }
 
@@ -57,14 +57,14 @@ func (c *Controller) runPerconaXtraDB(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				_, _, err = util.PatchPerconaXtraDB(context.TODO(), c.DBClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
+				_, _, err = util.PatchPerconaXtraDB(context.TODO(), c.DBClient.KubedbV1alpha2(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
-			px, _, err = util.PatchPerconaXtraDB(context.TODO(), c.DBClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
+			px, _, err = util.PatchPerconaXtraDB(context.TODO(), c.DBClient.KubedbV1alpha2(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})

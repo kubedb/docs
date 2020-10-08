@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strings"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -145,7 +145,7 @@ func (c *Controller) ensurePerconaXtraDB(px *api.PerconaXtraDB) (kutil.VerbType,
 	}
 
 	var monitorContainer core.Container
-	if px.GetMonitoringVendor() == mona.VendorPrometheus {
+	if px.Spec.Monitor != nil && px.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 		monitorContainer = core.Container{
 			Name: "exporter",
 			Command: []string{
@@ -157,19 +157,19 @@ func (c *Controller) ensurePerconaXtraDB(px *api.PerconaXtraDB) (kutil.VerbType,
 				// ref: https://github.com/prometheus/mysqld_exporter#setting-the-mysql-servers-data-source-name
 				fmt.Sprintf(`export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"
 						/bin/mysqld_exporter --web.listen-address=:%v --web.telemetry-path=%v %v`,
-					px.Spec.Monitor.Prometheus.Port, px.StatsService().Path(), strings.Join(px.Spec.Monitor.Args, " ")),
+					px.Spec.Monitor.Prometheus.Exporter.Port, px.StatsService().Path(), strings.Join(px.Spec.Monitor.Prometheus.Exporter.Args, " ")),
 			},
 			Image: pxVersion.Spec.Exporter.Image,
 			Ports: []core.ContainerPort{
 				{
-					Name:          api.PrometheusExporterPortName,
+					Name:          mona.PrometheusExporterPortName,
 					Protocol:      core.ProtocolTCP,
-					ContainerPort: px.Spec.Monitor.Prometheus.Port,
+					ContainerPort: px.Spec.Monitor.Prometheus.Exporter.Port,
 				},
 			},
-			Env:             px.Spec.Monitor.Env,
-			Resources:       px.Spec.Monitor.Resources,
-			SecurityContext: px.Spec.Monitor.SecurityContext,
+			Env:             px.Spec.Monitor.Prometheus.Exporter.Env,
+			Resources:       px.Spec.Monitor.Prometheus.Exporter.Resources,
+			SecurityContext: px.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 		}
 	}
 
@@ -329,7 +329,7 @@ func (c *Controller) ensureStatefulSet(px *api.PerconaXtraDB, opts workloadOptio
 				opts.initContainers,
 			)
 
-			if opts.monitorContainer != nil && px.GetMonitoringVendor() == mona.VendorPrometheus {
+			if opts.monitorContainer != nil && px.Spec.Monitor != nil && px.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 					in.Spec.Template.Spec.Containers, *opts.monitorContainer)
 			}

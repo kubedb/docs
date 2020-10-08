@@ -22,7 +22,7 @@ import (
 	"path/filepath"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -314,35 +314,35 @@ func upsertPort(statefulSet *apps.StatefulSet, pgbouncer *api.PgBouncer) *apps.S
 	return statefulSet
 }
 
-func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, pgbouncer *api.PgBouncer, pgbouncerVersion *catalog.PgBouncerVersion) *apps.StatefulSet {
-	if pgbouncer.GetMonitoringVendor() == mona.VendorPrometheus {
+func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db *api.PgBouncer, pgbouncerVersion *catalog.PgBouncerVersion) *apps.StatefulSet {
+	if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 		var monitorArgs []string
-		if pgbouncer.Spec.Monitor != nil {
-			monitorArgs = pgbouncer.Spec.Monitor.Prometheus.Exporter.Args
+		if db.Spec.Monitor != nil {
+			monitorArgs = db.Spec.Monitor.Prometheus.Exporter.Args
 		}
 
-		adminSecretSpec := c.GetDefaultSecretSpec(pgbouncer)
+		adminSecretSpec := c.GetDefaultSecretSpec(db)
 		err := c.isSecretExists(adminSecretSpec.ObjectMeta)
 		if err != nil {
 			log.Infoln(err)
 			return statefulSet //Dont make changes if error occurs
 		}
 
-		dataSource := fmt.Sprintf("postgres://%s:@localhost:%d/%s?sslmode=disable", pbAdminUser, *pgbouncer.Spec.ConnectionPool.Port, pbAdminDatabase)
+		dataSource := fmt.Sprintf("postgres://%s:@localhost:%d/%s?sslmode=disable", pbAdminUser, *db.Spec.ConnectionPool.Port, pbAdminDatabase)
 
 		var volumeMounts []core.VolumeMount
-		if pgbouncer.Spec.TLS != nil {
+		if db.Spec.TLS != nil {
 			// TLS is enabled
-			if pgbouncer.Spec.TLS.IssuerRef != nil {
+			if db.Spec.TLS.IssuerRef != nil {
 				// mount exporter client-cert in exporter container
-				_, ctClientVolumeMount, err := c.getVolumeAndVolumeMountForExporterClientCertificate(pgbouncer)
+				_, ctClientVolumeMount, err := c.getVolumeAndVolumeMountForExporterClientCertificate(db)
 				if err == nil {
 					volumeMounts = append(volumeMounts, *ctClientVolumeMount)
 				}
 				// update dataSource
 				dataSource = fmt.Sprintf("postgres://%s:@localhost:%d/%s?sslmode=verify-full"+
 					"&sslrootcert=%s&sslcert=%s&sslkey=%s",
-					pbAdminUser, *pgbouncer.Spec.ConnectionPool.Port, pbAdminDatabase,
+					pbAdminUser, *db.Spec.ConnectionPool.Port, pbAdminDatabase,
 					filepath.Join(ServingClientCertMountPath, "ca.crt"),
 					filepath.Join(ServingClientCertMountPath, "tls.crt"),
 					filepath.Join(ServingClientCertMountPath, "tls.key"))
@@ -353,20 +353,20 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, pg
 		container := core.Container{
 			Name: "exporter",
 			Args: append([]string{
-				fmt.Sprintf("--web.listen-address=:%d", pgbouncer.Spec.Monitor.Prometheus.Exporter.Port),
+				fmt.Sprintf("--web.listen-address=:%d", db.Spec.Monitor.Prometheus.Exporter.Port),
 			}, monitorArgs...),
 			Image:           pgbouncerVersion.Spec.Exporter.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
 				{
-					Name:          api.PrometheusExporterPortName,
+					Name:          mona.PrometheusExporterPortName,
 					Protocol:      core.ProtocolTCP,
-					ContainerPort: pgbouncer.Spec.Monitor.Prometheus.Exporter.Port,
+					ContainerPort: db.Spec.Monitor.Prometheus.Exporter.Port,
 				},
 			},
-			Env:             pgbouncer.Spec.Monitor.Prometheus.Exporter.Env,
-			Resources:       pgbouncer.Spec.Monitor.Prometheus.Exporter.Resources,
-			SecurityContext: pgbouncer.Spec.Monitor.Prometheus.Exporter.SecurityContext,
+			Env:             db.Spec.Monitor.Prometheus.Exporter.Env,
+			Resources:       db.Spec.Monitor.Prometheus.Exporter.Resources,
+			SecurityContext: db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 			VolumeMounts:    volumeMounts,
 		}
 

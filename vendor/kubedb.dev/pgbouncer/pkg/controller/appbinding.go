@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"strings"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
@@ -50,7 +50,7 @@ func (c *Controller) manageAppBindingEvent(key string) error {
 		return nil
 	}
 
-	pgBouncerList, err := c.ExtClient.KubedbV1alpha1().PgBouncers(core.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
+	pgBouncerList, err := c.DBClient.KubedbV1alpha2().PgBouncers(core.NamespaceAll).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

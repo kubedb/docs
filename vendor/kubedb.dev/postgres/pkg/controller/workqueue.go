@@ -20,8 +20,8 @@ import (
 	"context"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
 	"github.com/appscode/go/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,9 +31,9 @@ import (
 )
 
 func (c *Controller) initWatcher() {
-	c.pgInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Postgreses().Informer()
+	c.pgInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().Postgreses().Informer()
 	c.pgQueue = queue.New("Postgres", c.MaxNumRequeues, c.NumThreads, c.runPostgres)
-	c.pgLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Postgreses().Lister()
+	c.pgLister = c.KubedbInformerFactory.Kubedb().V1alpha2().Postgreses().Lister()
 	c.pgInformer.AddEventHandler(queue.NewChangeHandler(c.pgQueue.GetQueue()))
 }
 
@@ -58,14 +58,14 @@ func (c *Controller) runPostgres(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				_, _, err = util.PatchPostgres(context.TODO(), c.DBClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
+				_, _, err = util.PatchPostgres(context.TODO(), c.DBClient.KubedbV1alpha2(), postgres, func(in *api.Postgres) *api.Postgres {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
-			postgres, _, err = util.PatchPostgres(context.TODO(), c.DBClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
+			postgres, _, err = util.PatchPostgres(context.TODO(), c.DBClient.KubedbV1alpha2(), postgres, func(in *api.Postgres) *api.Postgres {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})

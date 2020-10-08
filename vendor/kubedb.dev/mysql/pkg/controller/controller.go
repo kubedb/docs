@@ -18,9 +18,9 @@ package controller
 
 import (
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
+	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha2"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
 	"kubedb.dev/apimachinery/pkg/eventer"

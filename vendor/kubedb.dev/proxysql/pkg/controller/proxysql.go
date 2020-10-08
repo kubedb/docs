@@ -19,8 +19,8 @@ package controller
 import (
 	"context"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/proxysql/pkg/admission"
 
@@ -33,7 +33,7 @@ import (
 )
 
 func (c *Controller) create(proxysql *api.ProxySQL) error {
-	if err := validator.ValidateProxySQL(c.Client, c.ExtClient, proxysql, true); err != nil {
+	if err := validator.ValidateProxySQL(c.Client, c.DBClient, proxysql, true); err != nil {
 		c.recorder.Event(
 			proxysql,
 			core.EventTypeWarning,
@@ -47,10 +47,10 @@ func (c *Controller) create(proxysql *api.ProxySQL) error {
 	if proxysql.Status.Phase == "" {
 		proxysqlUpd, err := util.UpdateProxySQLStatus(
 			context.TODO(),
-			c.ExtClient.KubedbV1alpha1(),
+			c.DBClient.KubedbV1alpha2(),
 			proxysql.ObjectMeta,
 			func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
-				in.Phase = api.DatabasePhaseCreating
+				in.Phase = api.DatabasePhaseProvisioning
 				return in
 			},
 			metav1.UpdateOptions{},
@@ -105,10 +105,10 @@ func (c *Controller) create(proxysql *api.ProxySQL) error {
 
 	proxysqlUpd, err := util.UpdateProxySQLStatus(
 		context.TODO(),
-		c.ExtClient.KubedbV1alpha1(),
+		c.DBClient.KubedbV1alpha2(),
 		proxysql.ObjectMeta,
 		func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
-			in.Phase = api.DatabasePhaseRunning
+			in.Phase = api.DatabasePhaseReady
 			in.ObservedGeneration = proxysql.Generation
 			return in
 		},

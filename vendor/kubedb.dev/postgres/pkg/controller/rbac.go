@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	le "kubedb.dev/pg-leader-election/pkg/leader_election"
 
 	apps "k8s.io/api/apps/v1"

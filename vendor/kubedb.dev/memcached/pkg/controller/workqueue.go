@@ -20,8 +20,8 @@ import (
 	"context"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
 	"github.com/appscode/go/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,9 +31,9 @@ import (
 )
 
 func (c *Controller) initWatcher() {
-	c.mcInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().Memcacheds().Informer()
+	c.mcInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().Memcacheds().Informer()
 	c.mcQueue = queue.New("Memcached", c.MaxNumRequeues, c.NumThreads, c.runMemcached)
-	c.mcLister = c.KubedbInformerFactory.Kubedb().V1alpha1().Memcacheds().Lister()
+	c.mcLister = c.KubedbInformerFactory.Kubedb().V1alpha2().Memcacheds().Lister()
 	c.mcInformer.AddEventHandler(queue.NewChangeHandler(c.mcQueue.GetQueue()))
 }
 
@@ -57,14 +57,14 @@ func (c *Controller) runMemcached(key string) error {
 					log.Errorln(err)
 					return err
 				}
-				_, _, err = util.PatchMemcached(context.TODO(), c.ExtClient.KubedbV1alpha1(), memcached, func(in *api.Memcached) *api.Memcached {
+				_, _, err = util.PatchMemcached(context.TODO(), c.DBClient.KubedbV1alpha2(), memcached, func(in *api.Memcached) *api.Memcached {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
-			memcached, _, err = util.PatchMemcached(context.TODO(), c.ExtClient.KubedbV1alpha1(), memcached, func(in *api.Memcached) *api.Memcached {
+			memcached, _, err = util.PatchMemcached(context.TODO(), c.DBClient.KubedbV1alpha2(), memcached, func(in *api.Memcached) *api.Memcached {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})

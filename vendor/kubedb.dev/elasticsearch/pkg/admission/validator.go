@@ -23,7 +23,7 @@ import (
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
@@ -107,7 +107,7 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := a.extClient.KubedbV1alpha1().Elasticsearches(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
+			obj, err := a.extClient.KubedbV1alpha2().Elasticsearches(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil {
 				if kerr.IsNotFound(err) {
 					break

@@ -24,7 +24,7 @@ import (
 	"time"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
@@ -104,7 +104,7 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := a.extClient.KubedbV1alpha1().Postgreses(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
+			obj, err := a.extClient.KubedbV1alpha2().Postgreses(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {

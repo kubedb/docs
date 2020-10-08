@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -117,35 +117,35 @@ func (c *Controller) createService(proxysql *api.ProxySQL) (kutil.VerbType, erro
 	return ok, err
 }
 
-func (c *Controller) ensureStatsService(proxysql *api.ProxySQL) (kutil.VerbType, error) {
+func (c *Controller) ensureStatsService(db *api.ProxySQL) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
-	if proxysql.GetMonitoringVendor() != mona.VendorPrometheus {
-		log.Infoln("spec.monitor.agent is not coreos-operator or builtin.")
+	if db.Spec.Monitor == nil || db.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
+		log.Infoln("spec.monitor.agent is not provided by prometheus.io")
 		return kutil.VerbUnchanged, nil
 	}
 
 	// Check if statsService name exists
-	if err := c.checkService(proxysql, proxysql.StatsService().ServiceName()); err != nil {
+	if err := c.checkService(db, db.StatsService().ServiceName()); err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
-	owner := metav1.NewControllerRef(proxysql, api.SchemeGroupVersion.WithKind(api.ResourceKindProxySQL))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindProxySQL))
 
 	// reconcile stats Service
 	meta := metav1.ObjectMeta{
-		Name:      proxysql.StatsService().ServiceName(),
-		Namespace: proxysql.Namespace,
+		Name:      db.StatsService().ServiceName(),
+		Namespace: db.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = proxysql.StatsServiceLabels()
-		in.Spec.Selector = proxysql.OffshootSelectors()
+		in.Labels = db.StatsServiceLabels()
+		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
-				Name:       api.PrometheusExporterPortName,
+				Name:       mona.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
-				Port:       proxysql.Spec.Monitor.Prometheus.Port,
-				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+				Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
+				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},
 		})
 		return in
@@ -154,7 +154,7 @@ func (c *Controller) ensureStatsService(proxysql *api.ProxySQL) (kutil.VerbType,
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.recorder.Eventf(
-			proxysql,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s stats service",

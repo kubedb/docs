@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -210,8 +210,8 @@ func (c *Controller) createMasterService(elasticsearch *api.Elasticsearch) (kuti
 
 func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
-	if elasticsearch.GetMonitoringVendor() != mona.VendorPrometheus {
-		log.Infoln("spec.monitor.agent is not coreos-operator or builtin.")
+	if elasticsearch.Spec.Monitor == nil || elasticsearch.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
+		log.Infoln("spec.monitor.agent is not provided by prometheus.io")
 		return kutil.VerbUnchanged, nil
 	}
 
@@ -233,10 +233,10 @@ func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
-				Name:       api.PrometheusExporterPortName,
+				Name:       mona.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
 				Port:       elasticsearch.Spec.Monitor.Prometheus.Exporter.Port,
-				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},
 		})
 		return in

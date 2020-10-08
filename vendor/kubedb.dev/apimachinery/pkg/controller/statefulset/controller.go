@@ -17,19 +17,20 @@ limitations under the License.
 package statefulset
 
 import (
+	"fmt"
+
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	db_cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 
 	"github.com/appscode/go/log"
-	appsv1 "k8s.io/api/apps/v1"
+	apps "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	core_util "kmodules.xyz/client-go/core/v1"
-	dmcond "kmodules.xyz/client-go/dynamic/conditions"
 	"kmodules.xyz/client-go/tools/queue"
 )
 
@@ -54,22 +55,46 @@ func NewController(
 	}
 }
 
-type databaseInfo struct {
-	do            dmcond.DynamicOptions
-	replicasReady bool
-	msg           string
-}
-
 func (c *Controller) InitStsWatcher() {
 	log.Infoln("Initializing StatefulSet watcher.....")
 	// Initialize RestoreSession Watcher
 	c.StsInformer = c.KubeInformerFactory.Apps().V1().StatefulSets().Informer()
 	c.StsQueue = queue.New(api.ResourceKindStatefulSet, c.MaxNumRequeues, c.NumThreads, c.processStatefulSet)
 	c.StsLister = c.KubeInformerFactory.Apps().V1().StatefulSets().Lister()
-	c.StsInformer.AddEventHandler(c.newStsEventHandlerFuncs())
+	c.StsInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			if sts, ok := obj.(*apps.StatefulSet); ok {
+				c.enqueueOnlyKubeDBSts(sts)
+			}
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			if sts, ok := newObj.(*apps.StatefulSet); ok {
+				c.enqueueOnlyKubeDBSts(sts)
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			if sts, ok := obj.(*apps.StatefulSet); ok {
+				ok, _, err := core_util.IsOwnerOfGroup(metav1.GetControllerOf(sts), kubedb.GroupName)
+				if err != nil || !ok {
+					log.Warningln(err)
+					return
+				}
+				dbInfo, err := c.extractDatabaseInfo(sts)
+				if err != nil {
+					log.Warningf("failed to extract database info from StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
+					return
+				}
+				err = c.ensureReadyReplicasCond(dbInfo)
+				if err != nil {
+					log.Warningf("failed to update ReadyReplicas condition. Reason: %v", err)
+					return
+				}
+			}
+		},
+	})
 }
 
-func (c *Controller) enqueueOnlyKubeDBSts(sts *appsv1.StatefulSet) {
+func (c *Controller) enqueueOnlyKubeDBSts(sts *apps.StatefulSet) {
 	// only enqueue if the controlling owner is a KubeDB resource
 	ok, _, err := core_util.IsOwnerOfGroup(metav1.GetControllerOf(sts), kubedb.GroupName)
 	if err != nil {
@@ -79,4 +104,25 @@ func (c *Controller) enqueueOnlyKubeDBSts(sts *appsv1.StatefulSet) {
 	if key, err := cache.MetaNamespaceKeyFunc(sts); ok && err == nil {
 		queue.Enqueue(c.StsQueue.GetQueue(), key)
 	}
+}
+
+func (c *Controller) processStatefulSet(key string) error {
+	log.Infof("Started processing, key: %v", key)
+	obj, exists, err := c.StsInformer.GetIndexer().GetByKey(key)
+	if err != nil {
+		log.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		return err
+	}
+
+	if !exists {
+		log.Debugf("StatefulSet %s does not exist anymore", key)
+	} else {
+		sts := obj.(*apps.StatefulSet).DeepCopy()
+		dbInfo, err := c.extractDatabaseInfo(sts)
+		if err != nil {
+			return fmt.Errorf("failed to extract database info from StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
+		}
+		return c.ensureReadyReplicasCond(dbInfo)
+	}
+	return nil
 }

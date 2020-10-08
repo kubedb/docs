@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/pgbouncer/pkg/admission"
 
@@ -141,7 +141,7 @@ func (c *Controller) manageCreateOrPatchEvent(pgbouncer *api.PgBouncer) error {
 }
 
 func (c *Controller) manageValidation(pgbouncer *api.PgBouncer) error {
-	if err := validator.ValidatePgBouncer(c.Client, c.ExtClient, pgbouncer, true); err != nil {
+	if err := validator.ValidatePgBouncer(c.Client, c.DBClient, pgbouncer, true); err != nil {
 		c.recorder.Event(
 			pgbouncer,
 			core.EventTypeWarning,
@@ -170,8 +170,8 @@ func (c *Controller) manageValidation(pgbouncer *api.PgBouncer) error {
 
 func (c *Controller) manageInitialPhase(pgbouncer *api.PgBouncer) error {
 	if pgbouncer.Status.Phase == "" {
-		pg, err := util.UpdatePgBouncerStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), pgbouncer.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
-			in.Phase = api.DatabasePhaseCreating
+		pg, err := util.UpdatePgBouncerStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), pgbouncer.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
+			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
@@ -187,8 +187,8 @@ func (c *Controller) manageFinalPhase(pgbouncer *api.PgBouncer) error {
 		return nil
 	}
 
-	pg, err := util.UpdatePgBouncerStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), pgbouncer.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
-		in.Phase = api.DatabasePhaseRunning
+	pg, err := util.UpdatePgBouncerStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), pgbouncer.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
+		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = pgbouncer.Generation
 		return in
 	}, metav1.UpdateOptions{})
@@ -257,7 +257,7 @@ func (c *Controller) manageConfigMap(pgbouncer *api.PgBouncer) error {
 }
 
 func (c *Controller) manageStatefulSet(pgbouncer *api.PgBouncer) error {
-	pgBouncerVersion, err := c.ExtClient.CatalogV1alpha1().PgBouncerVersions().Get(context.TODO(), pgbouncer.Spec.Version, metav1.GetOptions{})
+	pgBouncerVersion, err := c.DBClient.CatalogV1alpha1().PgBouncerVersions().Get(context.TODO(), pgbouncer.Spec.Version, metav1.GetOptions{})
 	if err != nil {
 		log.Infoln(err)
 		return err
@@ -342,6 +342,6 @@ func (c *Controller) manageStatService(pgbouncer *api.PgBouncer) error {
 }
 
 func (c *Controller) PgBouncerExists(pgbouncer *api.PgBouncer) bool {
-	_, err := c.ExtClient.KubedbV1alpha1().PgBouncers(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Name, metav1.GetOptions{})
+	_, err := c.DBClient.KubedbV1alpha2().PgBouncers(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Name, metav1.GetOptions{})
 	return err == nil
 }

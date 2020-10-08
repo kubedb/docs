@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -202,8 +202,8 @@ func upsertReplicaServicePort(in *core.Service, postgres *api.Postgres) []core.S
 
 func (c *Controller) ensureStatsService(postgres *api.Postgres) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
-	if postgres.GetMonitoringVendor() != mona.VendorPrometheus {
-		log.Infoln("postgres.spec.monitor.agent is not coreos-operator or builtin.")
+	if postgres.Spec.Monitor == nil || postgres.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
+		log.Infoln("postgres.spec.monitor.agent is not provided by prometheus.io")
 		return kutil.VerbUnchanged, nil
 	}
 
@@ -225,10 +225,10 @@ func (c *Controller) ensureStatsService(postgres *api.Postgres) (kutil.VerbType,
 		in.Spec.Selector = postgres.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
-				Name:       api.PrometheusExporterPortName,
+				Name:       mona.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
 				Port:       postgres.Spec.Monitor.Prometheus.Exporter.Port,
-				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},
 		})
 		return in

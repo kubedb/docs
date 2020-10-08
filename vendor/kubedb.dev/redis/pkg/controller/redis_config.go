@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/types"
@@ -63,7 +63,7 @@ func (c *Controller) ensureRedisConfig(redis *api.Redis) error {
 		} else if vt != kutil.VerbUnchanged {
 			// add configmap to redis.spec.configSource
 			redis.Spec.ConfigSource = &core.VolumeSource{}
-			rd, _, err := kutildb.PatchRedis(context.TODO(), c.DBClient.KubedbV1alpha1(), redis, func(in *api.Redis) *api.Redis {
+			rd, _, err := kutildb.PatchRedis(context.TODO(), c.DBClient.KubedbV1alpha2(), redis, func(in *api.Redis) *api.Redis {
 				in.Spec.ConfigSource = &core.VolumeSource{
 					ConfigMap: &core.ConfigMapVolumeSource{
 						LocalObjectReference: core.LocalObjectReference{

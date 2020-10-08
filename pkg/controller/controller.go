@@ -18,8 +18,7 @@ package controller
 
 import (
 	catalogapi "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	dbapi "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	dbapi "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	esc "kubedb.dev/elasticsearch/pkg/controller"
@@ -94,7 +93,7 @@ func New(
 		selector: metav1.LabelSelector{
 			MatchExpressions: []metav1.LabelSelectorRequirement{
 				{
-					Key:      api.LabelDatabaseKind,
+					Key:      dbapi.LabelDatabaseKind,
 					Operator: metav1.LabelSelectorOpExists,
 				},
 			},

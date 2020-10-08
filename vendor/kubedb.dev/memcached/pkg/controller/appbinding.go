@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	core "k8s.io/api/core/v1"
@@ -42,7 +42,7 @@ func (c *Controller) ensureAppBinding(db *api.Memcached) (kutil.VerbType, error)
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMemcached))
 
-	memcachedVersion, err := c.ExtClient.CatalogV1alpha1().MemcachedVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	memcachedVersion, err := c.DBClient.CatalogV1alpha1().MemcachedVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}

@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"strings"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -31,6 +31,7 @@ import (
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -178,7 +179,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL, stsName string) (*apps.
 					Name:            api.MySQLContainerReplicationModeDetectorName,
 					Image:           mysqlVersion.Spec.ReplicationModeDetector.Image,
 					ImagePullPolicy: core.PullIfNotPresent,
-					Args:            append([]string{"run"}, c.LoggerOptions.ToFlags()...),
+					Args:            append([]string{"run", fmt.Sprintf("--db-name=%s", mysql.Name)}, c.LoggerOptions.ToFlags()...),
 				}
 
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, replicationModeDetector)
@@ -253,7 +254,7 @@ mysql -h localhost -nsLNE -e "select 1;" 2>/dev/null | grep -v "*"
 				},
 			}
 
-			if mysql.GetMonitoringVendor() == mona.VendorPrometheus {
+			if mysql.Spec.Monitor != nil && mysql.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 				var argsStr string
 				var args []string
 
@@ -284,7 +285,7 @@ mysql -h localhost -nsLNE -e "select 1;" 2>/dev/null | grep -v "*"
 					Image: mysqlVersion.Spec.Exporter.Image,
 					Ports: []core.ContainerPort{
 						{
-							Name:          api.PrometheusExporterPortName,
+							Name:          mona.PrometheusExporterPortName,
 							Protocol:      core.ProtocolTCP,
 							ContainerPort: mysql.Spec.Monitor.Prometheus.Exporter.Port,
 						},
@@ -522,7 +523,9 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.S
 }
 
 func (c *Controller) findStatefulSet(mysql *api.MySQL) (string, *apps.StatefulSet, error) {
-	stsList, err := c.Client.AppsV1().StatefulSets(mysql.Namespace).List(context.TODO(), metav1.ListOptions{})
+	stsList, err := c.Client.AppsV1().StatefulSets(mysql.Namespace).List(context.TODO(), metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(mysql.OffshootSelectors()).String(),
+	})
 	if err != nil {
 		return "", nil, err
 	}
@@ -530,9 +533,7 @@ func (c *Controller) findStatefulSet(mysql *api.MySQL) (string, *apps.StatefulSe
 	count := 0
 	var cur *apps.StatefulSet
 	for i, sts := range stsList.Items {
-		if metav1.IsControlledBy(&sts, mysql) &&
-			sts.Labels[api.LabelDatabaseKind] == api.ResourceKindMySQL &&
-			sts.Labels[api.LabelDatabaseName] == mysql.Name {
+		if metav1.IsControlledBy(&sts, mysql) {
 			count++
 			cur = &stsList.Items[i]
 		}

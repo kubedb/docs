@@ -21,10 +21,10 @@ import (
 
 	catlog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
-	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
+	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha2"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
 	"kubedb.dev/apimachinery/pkg/eventer"
@@ -182,7 +182,7 @@ func (c *Controller) pushFailureEvent(mongodb *api.MongoDB, reason string) {
 
 	mg, err := util.UpdateMongoDBStatus(
 		context.TODO(),
-		c.DBClient.KubedbV1alpha1(),
+		c.DBClient.KubedbV1alpha2(),
 		mongodb.ObjectMeta,
 		func(in *api.MongoDBStatus) *api.MongoDBStatus {
 			in.Phase = api.DatabasePhaseNotReady

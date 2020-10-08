@@ -20,11 +20,11 @@ import (
 	"context"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	catalog_lister "kubedb.dev/apimachinery/client/listers/catalog/v1alpha1"
-	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
+	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha2"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
 	"kubedb.dev/apimachinery/pkg/eventer"
@@ -68,7 +68,7 @@ func New(
 	restConfig *restclient.Config,
 	client kubernetes.Interface,
 	crdClient crd_cs.Interface,
-	extClient cs.Interface,
+	dbClient cs.Interface,
 	dc dynamic.Interface,
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
@@ -80,7 +80,7 @@ func New(
 		Controller: &amc.Controller{
 			ClientConfig:     restConfig,
 			Client:           client,
-			ExtClient:        extClient,
+			DBClient:         dbClient,
 			CRDClient:        crdClient,
 			DynamicClient:    dc,
 			AppCatalogClient: appCatalogClient,
@@ -182,7 +182,7 @@ func (c *Controller) pushFailureEvent(elasticsearch *api.Elasticsearch, reason s
 		reason,
 	)
 
-	es, err := util.UpdateElasticsearchStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+	es, err := util.UpdateElasticsearchStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.ObservedGeneration = elasticsearch.Generation
 		return in
 	}, metav1.UpdateOptions{})

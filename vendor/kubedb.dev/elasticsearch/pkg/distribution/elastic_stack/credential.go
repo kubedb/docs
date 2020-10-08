@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
 	"github.com/pkg/errors"
 	"gomodules.xyz/password-generator"
@@ -37,7 +37,7 @@ func (es *Elasticsearch) EnsureDatabaseSecret() error {
 		if dbSecretVolume, err = es.createAdminCredSecret(); err != nil {
 			return err
 		}
-		newES, _, err := util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha1(), es.elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+		newES, _, err := util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
 			in.Spec.DatabaseSecret = dbSecretVolume
 			return in
 		}, metav1.PatchOptions{})

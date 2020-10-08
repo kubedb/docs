@@ -20,7 +20,7 @@ import (
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
 	"github.com/pkg/errors"
@@ -30,7 +30,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	meta_util "kmodules.xyz/client-go/meta"
-	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
@@ -119,23 +118,5 @@ func setDefaultValues(proxysql *api.ProxySQL) (runtime.Object, error) {
 
 	proxysql.SetDefaults()
 
-	// If monitoring spec is given without port,
-	// set default Listening port
-	setMonitoringPort(proxysql)
-
 	return proxysql, nil
-}
-
-// Assign Default Monitoring Port if MonitoringSpec Exists
-// and the AgentVendor is Prometheus.
-func setMonitoringPort(proxysql *api.ProxySQL) {
-	if proxysql.Spec.Monitor != nil &&
-		proxysql.GetMonitoringVendor() == mona.VendorPrometheus {
-		if proxysql.Spec.Monitor.Prometheus == nil {
-			proxysql.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
-		}
-		if proxysql.Spec.Monitor.Prometheus.Port == 0 {
-			proxysql.Spec.Monitor.Prometheus.Port = api.PrometheusExporterPortNumber
-		}
-	}
 }

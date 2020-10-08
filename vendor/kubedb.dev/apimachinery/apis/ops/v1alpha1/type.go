@@ -46,6 +46,8 @@ const (
 	VotingExclusionAdded      = "VotingExclusionAdded"
 	VotingExclusionDeleted    = "VotingExclusionDeleted"
 	UpdateStatefulSets        = "UpdateStatefulSets"
+	VolumeExpansion           = "VolumeExpansion"
+	Reconfigure               = "Reconfigure"
 
 	// MongoDB Constants
 	StartingBalancer            = "StartingBalancer"
@@ -69,7 +71,6 @@ const (
 	ScaleDownConfigServer       = "ScaleDownConfigServer "
 	ScaleUpConfigServer         = "ScaleUpConfigServer "
 	ScaleMongos                 = "ScaleMongos"
-	VolumeExpansion             = "VolumeExpansion"
 	ReconfigureReplicaset       = "ReconfigureReplicaset"
 	ReconfigureMongos           = "ReconfigureMongos"
 	ReconfigureShard            = "ReconfigureShard"

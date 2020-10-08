@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"gomodules.xyz/version"
 )

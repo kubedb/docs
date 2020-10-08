@@ -23,7 +23,7 @@ import (
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
 	"github.com/appscode/go/log"
@@ -95,7 +95,7 @@ func (pbValidator *PgBouncerValidator) Admit(req *admission.AdmissionRequest) *a
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := pbValidator.extClient.KubedbV1alpha1().PgBouncers(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
+			obj, err := pbValidator.extClient.KubedbV1alpha2().PgBouncers(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if kerr.IsNotFound(err) {
 				log.Infoln("obj ", obj.Name, " already deleted")
 			}

@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"strings"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	certlib "kubedb.dev/elasticsearch/pkg/lib/cert"
 
 	"github.com/appscode/go/log"
@@ -338,7 +338,8 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 
 	// Upsert Volume for monitoring sidecar.
 	// This volume is only used for ingest nodes.
-	if es.elasticsearch.GetMonitoringVendor() == mona.VendorPrometheus &&
+	if es.elasticsearch.Spec.Monitor != nil &&
+		es.elasticsearch.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus &&
 		es.elasticsearch.Spec.EnableSSL &&
 		nodeRole == api.ElasticsearchNodeRoleIngest {
 		volumes = core_util.UpsertVolume(volumes, corev1.Volume{
@@ -570,20 +571,6 @@ func (es *Elasticsearch) upsertContainerEnv(envList []corev1.EnvVar) []corev1.En
 	}
 
 	return envList
-}
-
-func (es *Elasticsearch) checkStatefulSetPodStatus(statefulSet *appsv1.StatefulSet) error {
-	err := core_util.WaitUntilPodRunningBySelector(
-		context.TODO(),
-		es.kClient,
-		statefulSet.Namespace,
-		statefulSet.Spec.Selector,
-		int(types.Int32(statefulSet.Spec.Replicas)),
-	)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func parseAffinityTemplate(affinity *corev1.Affinity, nodeRole string) (*corev1.Affinity, error) {

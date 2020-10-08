@@ -22,7 +22,7 @@ import (
 	"os"
 	"strings"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/admission/namespace"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	esAdmsn "kubedb.dev/elasticsearch/pkg/admission"
@@ -98,9 +98,6 @@ type KubeDBServer struct {
 }
 
 func (op *KubeDBServer) Run(stopCh <-chan struct{}) error {
-	if err := op.Operator.MigrateObservedGeneration(); err != nil {
-		return fmt.Errorf("failed  to migrate observedGeneration to int64 for existing objects. Reason: %v", err)
-	}
 	go op.Operator.Run(stopCh)
 	return op.GenericAPIServer.PrepareRun().Run(stopCh)
 }

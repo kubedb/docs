@@ -35,9 +35,9 @@ const (
 )
 
 func (c *Controller) initWatcher() {
-	c.pbInformer = c.KubedbInformerFactory.Kubedb().V1alpha1().PgBouncers().Informer()
+	c.pbInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().PgBouncers().Informer()
 	c.pbQueue = queue.New("PgBouncer", c.MaxNumRequeues, c.NumThreads, c.managePgBouncerEvent)
-	c.pbLister = c.KubedbInformerFactory.Kubedb().V1alpha1().PgBouncers().Lister()
+	c.pbLister = c.KubedbInformerFactory.Kubedb().V1alpha2().PgBouncers().Lister()
 	c.pbInformer.AddEventHandler(queue.NewChangeHandler(c.pbQueue.GetQueue()))
 }
 

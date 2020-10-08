@@ -20,7 +20,7 @@ import (
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
 	"github.com/appscode/go/types"
@@ -30,7 +30,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	meta_util "kmodules.xyz/client-go/meta"
-	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
@@ -128,25 +127,5 @@ func setDefaultValues(pgbouncer *api.PgBouncer) runtime.Object {
 	}
 	pgbouncer.SetDefaults()
 
-	// If monitoring spec is given without port, set default Listening port
-	setMonitoringPort(pgbouncer)
-
 	return pgbouncer
-}
-
-// Assign Default Monitoring Port if MonitoringSpec Exists
-// and the AgentVendor is Prometheus.
-func setMonitoringPort(pgbouncer *api.PgBouncer) {
-	if pgbouncer.Spec.Monitor != nil &&
-		pgbouncer.GetMonitoringVendor() == mona.VendorPrometheus {
-		if pgbouncer.Spec.Monitor.Prometheus == nil {
-			pgbouncer.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
-		}
-		if pgbouncer.Spec.Monitor.Prometheus.Exporter == nil {
-			pgbouncer.Spec.Monitor.Prometheus.Exporter = &mona.PrometheusExporterSpec{}
-		}
-		if pgbouncer.Spec.Monitor.Prometheus.Exporter.Port == 0 {
-			pgbouncer.Spec.Monitor.Prometheus.Exporter.Port = api.PrometheusExporterPortNumber
-		}
-	}
 }

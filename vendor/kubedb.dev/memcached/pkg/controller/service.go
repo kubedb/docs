@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -116,35 +116,35 @@ func (c *Controller) createService(memcached *api.Memcached) (kutil.VerbType, er
 	return ok, err
 }
 
-func (c *Controller) ensureStatsService(memcached *api.Memcached) (kutil.VerbType, error) {
+func (c *Controller) ensureStatsService(db *api.Memcached) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
-	if memcached.GetMonitoringVendor() != mona.VendorPrometheus {
-		log.Infoln("spec.monitor.agent is not coreos-operator or builtin.")
+	if db.Spec.Monitor == nil || db.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
+		log.Infoln("spec.monitor.agent is not provided by prometheus.io")
 		return kutil.VerbUnchanged, nil
 	}
 
 	// Check if Stats Service name exists
-	if err := c.checkService(memcached, memcached.StatsService().ServiceName()); err != nil {
+	if err := c.checkService(db, db.StatsService().ServiceName()); err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
-	owner := metav1.NewControllerRef(memcached, api.SchemeGroupVersion.WithKind(api.ResourceKindMemcached))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMemcached))
 
 	// reconcile stats Service
 	meta := metav1.ObjectMeta{
-		Name:      memcached.StatsService().ServiceName(),
-		Namespace: memcached.Namespace,
+		Name:      db.StatsService().ServiceName(),
+		Namespace: db.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = memcached.StatsServiceLabels()
-		in.Spec.Selector = memcached.OffshootSelectors()
+		in.Labels = db.StatsServiceLabels()
+		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
-				Name:       api.PrometheusExporterPortName,
+				Name:       mona.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
-				Port:       memcached.Spec.Monitor.Prometheus.Exporter.Port,
-				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+				Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
+				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},
 		})
 		return in
@@ -153,7 +153,7 @@ func (c *Controller) ensureStatsService(memcached *api.Memcached) (kutil.VerbTyp
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.Recorder.Eventf(
-			memcached,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s stats service",

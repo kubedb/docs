@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/mongodb/pkg/admission"
 
@@ -48,7 +48,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	if mongodb.Status.Phase == "" {
-		mg, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		mg, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
@@ -169,7 +169,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		}
 	}
 
-	mg, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+	mg, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = mongodb.Generation
 		return in
@@ -219,7 +219,7 @@ func (c *Controller) halt(db *api.MongoDB) error {
 		return err
 	}
 	log.Infof("update status of MongoDB %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+	if _, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
