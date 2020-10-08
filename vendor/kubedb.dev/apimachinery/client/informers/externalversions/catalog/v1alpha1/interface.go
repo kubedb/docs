@@ -28,6 +28,8 @@ type Interface interface {
 	ElasticsearchVersions() ElasticsearchVersionInformer
 	// EtcdVersions returns a EtcdVersionInformer.
 	EtcdVersions() EtcdVersionInformer
+	// MariaDBVersions returns a MariaDBVersionInformer.
+	MariaDBVersions() MariaDBVersionInformer
 	// MemcachedVersions returns a MemcachedVersionInformer.
 	MemcachedVersions() MemcachedVersionInformer
 	// MongoDBVersions returns a MongoDBVersionInformer.
@@ -65,6 +67,11 @@ func (v *version) ElasticsearchVersions() ElasticsearchVersionInformer {
 // EtcdVersions returns a EtcdVersionInformer.
 func (v *version) EtcdVersions() EtcdVersionInformer {
 	return &etcdVersionInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
+// MariaDBVersions returns a MariaDBVersionInformer.
+func (v *version) MariaDBVersions() MariaDBVersionInformer {
+	return &mariaDBVersionInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
 // MemcachedVersions returns a MemcachedVersionInformer.

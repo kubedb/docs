@@ -19,7 +19,8 @@ package controller
 import (
 	"context"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/apis/kubedb"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	core "k8s.io/api/core/v1"
@@ -41,7 +42,7 @@ func (c *Controller) ensureAppBinding(db *api.Memcached) (kutil.VerbType, error)
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMemcached))
 
-	memcachedVersion, err := c.ExtClient.CatalogV1alpha1().MemcachedVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	memcachedVersion, err := c.DBClient.CatalogV1alpha1().MemcachedVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -49,7 +50,7 @@ func (c *Controller) ensureAppBinding(db *api.Memcached) (kutil.VerbType, error)
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(context.TODO(), c.AppCatalogClient.AppcatalogV1alpha1(), meta, func(in *appcat.AppBinding) *appcat.AppBinding {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootLabels()
-		in.Annotations = meta_util.FilterKeys(api.GenericKey, in.Annotations, db.Annotations)
+		in.Annotations = meta_util.FilterKeys(kubedb.GroupName, in.Annotations, db.Annotations)
 
 		in.Spec.Type = appmeta.Type()
 		in.Spec.Version = memcachedVersion.Spec.Version
@@ -65,7 +66,7 @@ func (c *Controller) ensureAppBinding(db *api.Memcached) (kutil.VerbType, error)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

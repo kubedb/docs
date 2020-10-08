@@ -20,7 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/apis/kubedb"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/types"
@@ -43,7 +44,7 @@ func (c *Controller) ensureAppBinding(db *api.MySQL) (kutil.VerbType, error) {
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
-	mysqlVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	mysqlVersion, err := c.DBClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, fmt.Errorf("failed to get MySQLVersion %v for %v/%v. Reason: %v", db.Spec.Version, db.Namespace, db.Name, err)
 	}
@@ -51,7 +52,7 @@ func (c *Controller) ensureAppBinding(db *api.MySQL) (kutil.VerbType, error) {
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(context.TODO(), c.AppCatalogClient.AppcatalogV1alpha1(), meta, func(in *appcat.AppBinding) *appcat.AppBinding {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootLabels()
-		in.Annotations = meta_util.FilterKeys(api.GenericKey, in.Annotations, db.Annotations)
+		in.Annotations = meta_util.FilterKeys(kubedb.GroupName, in.Annotations, db.Annotations)
 
 		in.Spec.Type = appmeta.Type()
 		in.Spec.Version = mysqlVersion.Spec.Version
@@ -74,7 +75,7 @@ func (c *Controller) ensureAppBinding(db *api.MySQL) (kutil.VerbType, error) {
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

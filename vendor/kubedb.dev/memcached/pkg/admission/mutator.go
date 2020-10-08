@@ -21,7 +21,7 @@ import (
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
 	"github.com/appscode/go/types"
@@ -32,7 +32,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	meta_util "kmodules.xyz/client-go/meta"
-	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
@@ -126,26 +125,5 @@ func setDefaultValues(memcached *api.Memcached) (runtime.Object, error) {
 	}
 	memcached.SetDefaults()
 
-	// If monitoring spec is given without port,
-	// set default Listening port
-	setMonitoringPort(memcached)
-
 	return memcached, nil
-}
-
-// Assign Default Monitoring Port if MonitoringSpec Exists
-// and the AgentVendor is Prometheus.
-func setMonitoringPort(memcached *api.Memcached) {
-	if memcached.Spec.Monitor != nil &&
-		memcached.GetMonitoringVendor() == mona.VendorPrometheus {
-		if memcached.Spec.Monitor.Prometheus == nil {
-			memcached.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
-		}
-		if memcached.Spec.Monitor.Prometheus.Exporter == nil {
-			memcached.Spec.Monitor.Prometheus.Exporter = &mona.PrometheusExporterSpec{}
-		}
-		if memcached.Spec.Monitor.Prometheus.Exporter.Port == 0 {
-			memcached.Spec.Monitor.Prometheus.Exporter.Port = api.PrometheusExporterPortNumber
-		}
-	}
 }

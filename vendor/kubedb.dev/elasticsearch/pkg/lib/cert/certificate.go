@@ -35,9 +35,8 @@ const (
 
 	AdminCACert = "admin-ca.crt"
 	AdminCAKey  = "admin-ca.key"
-	RootCACert  = "root-ca.crt"
-	RootCAKey   = "root-ca.key"
 	CACert      = "ca.crt"
+	CAKey       = "ca.key"
 	TLSCert     = "tls.crt"
 	TLSKey      = "tls.key"
 

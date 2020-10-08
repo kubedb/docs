@@ -22,7 +22,7 @@ github.com/NYTimes/gziphandler
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
-# github.com/appscode/go v0.0.0-20200928211031-cc0c23082d91
+# github.com/appscode/go v0.0.0-20201006035845-a0302ac8e3d3
 github.com/appscode/go/analytics
 github.com/appscode/go/arrays
 github.com/appscode/go/context
@@ -97,7 +97,7 @@ github.com/blang/semver
 github.com/cespare/xxhash/v2
 # github.com/codegangsta/inject v0.0.0-20150114235600-33e0aa1cb7c0
 github.com/codegangsta/inject
-# github.com/codeskyblue/go-sh v0.0.0-20190412065543-76bd3d59ff27
+# github.com/codeskyblue/go-sh v0.0.0-20200712050446-30169cf553fe
 github.com/codeskyblue/go-sh
 # github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e
 github.com/coreos/go-systemd/daemon
@@ -435,7 +435,7 @@ gomodules.xyz/envsubst/parse
 gomodules.xyz/envsubst/path
 # gomodules.xyz/jsonpatch/v2 v2.1.0
 gomodules.xyz/jsonpatch/v2
-# gomodules.xyz/password-generator v0.2.3
+# gomodules.xyz/password-generator v0.2.4
 gomodules.xyz/password-generator
 # gomodules.xyz/sets v0.0.0-20200817084356-ae6e5e14ce3d
 gomodules.xyz/sets
@@ -1066,6 +1066,7 @@ kmodules.xyz/client-go/apps/v1
 kmodules.xyz/client-go/core/v1
 kmodules.xyz/client-go/discovery
 kmodules.xyz/client-go/dynamic
+kmodules.xyz/client-go/dynamic/conditions
 kmodules.xyz/client-go/logs
 kmodules.xyz/client-go/meta
 kmodules.xyz/client-go/policy/v1beta1
@@ -1076,7 +1077,7 @@ kmodules.xyz/client-go/tools/clientcmd
 kmodules.xyz/client-go/tools/clusterid
 kmodules.xyz/client-go/tools/exec
 kmodules.xyz/client-go/tools/queue
-# kmodules.xyz/constants v0.0.0-20200506032633-a21e58ceec72
+# kmodules.xyz/constants v0.0.0-20200923054614-6b87dbbae4d6
 kmodules.xyz/constants/aws
 kmodules.xyz/constants/azure
 kmodules.xyz/constants/google
@@ -1094,7 +1095,7 @@ kmodules.xyz/custom-resources/client/informers/externalversions/appcatalog/v1alp
 kmodules.xyz/custom-resources/client/informers/externalversions/internalinterfaces
 kmodules.xyz/custom-resources/client/listers/appcatalog/v1alpha1
 kmodules.xyz/custom-resources/crds
-# kmodules.xyz/monitoring-agent-api v0.0.0-20200922204510-b8b5610e5385
+# kmodules.xyz/monitoring-agent-api v0.0.0-20201007104803-408a1ff2de8d
 kmodules.xyz/monitoring-agent-api/agents
 kmodules.xyz/monitoring-agent-api/agents/prometheus
 kmodules.xyz/monitoring-agent-api/agents/prometheusbuiltin
@@ -1111,7 +1112,7 @@ kmodules.xyz/prober/api/v1
 # kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.14.0-beta.2.0.20200915201356-5ddfd53ad058
+# kubedb.dev/apimachinery v0.14.0-beta.3.0.20201007234719-34bf142ede67
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
 kubedb.dev/apimachinery/apis/autoscaling/v1alpha1
@@ -1120,7 +1121,7 @@ kubedb.dev/apimachinery/apis/catalog/v1alpha1
 kubedb.dev/apimachinery/apis/config
 kubedb.dev/apimachinery/apis/config/v1alpha1
 kubedb.dev/apimachinery/apis/kubedb
-kubedb.dev/apimachinery/apis/kubedb/v1alpha1
+kubedb.dev/apimachinery/apis/kubedb/v1alpha2
 kubedb.dev/apimachinery/apis/ops
 kubedb.dev/apimachinery/apis/ops/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned
@@ -1128,8 +1129,8 @@ kubedb.dev/apimachinery/client/clientset/versioned/scheme
 kubedb.dev/apimachinery/client/clientset/versioned/typed/autoscaling/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned/typed/catalog/v1alpha1
 kubedb.dev/apimachinery/client/clientset/versioned/typed/config/v1alpha1
-kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1
-kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util
+kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2
+kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util
 kubedb.dev/apimachinery/client/clientset/versioned/typed/ops/v1alpha1
 kubedb.dev/apimachinery/client/informers/externalversions
 kubedb.dev/apimachinery/client/informers/externalversions/autoscaling
@@ -1138,20 +1139,22 @@ kubedb.dev/apimachinery/client/informers/externalversions/catalog
 kubedb.dev/apimachinery/client/informers/externalversions/catalog/v1alpha1
 kubedb.dev/apimachinery/client/informers/externalversions/internalinterfaces
 kubedb.dev/apimachinery/client/informers/externalversions/kubedb
-kubedb.dev/apimachinery/client/informers/externalversions/kubedb/v1alpha1
+kubedb.dev/apimachinery/client/informers/externalversions/kubedb/v1alpha2
 kubedb.dev/apimachinery/client/informers/externalversions/ops
 kubedb.dev/apimachinery/client/informers/externalversions/ops/v1alpha1
 kubedb.dev/apimachinery/client/listers/autoscaling/v1alpha1
 kubedb.dev/apimachinery/client/listers/catalog/v1alpha1
-kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1
+kubedb.dev/apimachinery/client/listers/kubedb/v1alpha2
 kubedb.dev/apimachinery/client/listers/ops/v1alpha1
 kubedb.dev/apimachinery/crds
 kubedb.dev/apimachinery/pkg/admission/namespace
 kubedb.dev/apimachinery/pkg/controller
-kubedb.dev/apimachinery/pkg/controller/restoresession
+kubedb.dev/apimachinery/pkg/controller/initializer/stash
+kubedb.dev/apimachinery/pkg/controller/statefulset
 kubedb.dev/apimachinery/pkg/eventer
+kubedb.dev/apimachinery/pkg/phase
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.14.0-beta.2.0.20200916003206-98c1ad832ab4
+# kubedb.dev/elasticsearch v0.14.0-beta.3.0.20201007224838-0bf2c530c8b8
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
 kubedb.dev/elasticsearch/pkg/distribution
@@ -1162,30 +1165,30 @@ kubedb.dev/elasticsearch/pkg/distribution/search_guard
 kubedb.dev/elasticsearch/pkg/lib/cert
 kubedb.dev/elasticsearch/pkg/lib/cert/pkcs8
 kubedb.dev/elasticsearch/pkg/lib/user
-# kubedb.dev/memcached v0.7.0-beta.2.0.20200916003254-fc482bc2d868
+# kubedb.dev/memcached v0.7.0-beta.3.0.20201008002141-57091fac57b3
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.7.0-beta.2.0.20200916003509-3c626235e51f
+# kubedb.dev/mongodb v0.7.0-beta.3.0.20201007212740-e7c1e3a32b59
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.7.0-beta.2.0.20200916004052-5162a530f835
+# kubedb.dev/mysql v0.7.0-beta.3.0.20201008002648-54a3614068f7
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.1.0-beta.2.0.20200916004222-299013484898
+# kubedb.dev/percona-xtradb v0.1.0-beta.3.0.20201007215642-f3c2a3603934
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
-# kubedb.dev/pg-leader-election v0.2.0-beta.2
+# kubedb.dev/pg-leader-election v0.2.0-beta.3
 kubedb.dev/pg-leader-election/pkg/leader_election
-# kubedb.dev/pgbouncer v0.1.0-beta.2.0.20200916005131-c5fb3b0ed048
+# kubedb.dev/pgbouncer v0.1.0-beta.3.0.20201007230752-cc01e1cae996
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.14.0-beta.2.0.20200916004433-66f45a55e2fa
+# kubedb.dev/postgres v0.14.0-beta.3.0.20201007220305-ae29ba5e7adb
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.1.0-beta.2.0.20200916004609-4759525bce34
+# kubedb.dev/proxysql v0.1.0-beta.3.0.20201008005231-66eb215687bd
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.7.0-beta.2.0.20200916004859-d46d0dbdabd6
+# kubedb.dev/redis v0.7.0-beta.3.0.20201007211632-b1f3b76ab1d1
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster
 kubedb.dev/redis/pkg/controller

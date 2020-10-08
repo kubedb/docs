@@ -19,11 +19,11 @@ package controller
 import (
 	"context"
 	"fmt"
-	"time"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
+	"kubedb.dev/apimachinery/pkg/phase"
 	validator "kubedb.dev/elasticsearch/pkg/admission"
 	"kubedb.dev/elasticsearch/pkg/distribution"
 
@@ -32,17 +32,14 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	kutil "kmodules.xyz/client-go"
-	core_util "kmodules.xyz/client-go/core/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
-	meta_util "kmodules.xyz/client-go/meta"
-	"kmodules.xyz/client-go/tools/queue"
 )
 
 func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
-	if err := validator.ValidateElasticsearch(c.Client, c.ExtClient, elasticsearch, true); err != nil {
-		c.recorder.Event(
+	if err := validator.ValidateElasticsearch(c.Client, c.DBClient, elasticsearch, true); err != nil {
+		c.Recorder.Event(
 			elasticsearch,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -52,13 +49,17 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return nil
 	}
 
-	if elasticsearch.Status.Phase == "" {
-		es, err := util.UpdateElasticsearchStatus(
+	// Get elasticsearch phase from condition
+	// If new phase is not equal to old phase,
+	// update Elasticsearch phase.
+	phase := phase.PhaseFromCondition(elasticsearch.Status.Conditions)
+	if elasticsearch.Status.Phase != phase {
+		_, err := util.UpdateElasticsearchStatus(
 			context.TODO(),
-			c.ExtClient.KubedbV1alpha1(),
+			c.DBClient.KubedbV1alpha2(),
 			elasticsearch.ObjectMeta,
 			func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-				in.Phase = api.DatabasePhaseCreating
+				in.Phase = phase
 				return in
 			},
 			metav1.UpdateOptions{},
@@ -66,7 +67,9 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		if err != nil {
 			return err
 		}
-		elasticsearch.Status = es.Status
+		// drop the object from queue,
+		// the object will be enqueued again from this update event.
+		return nil
 	}
 
 	// create Governing Service
@@ -94,14 +97,14 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			elasticsearch,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created Elasticsearch",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			elasticsearch,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -116,54 +119,26 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return err
 	}
 
-	if _, err := meta_util.GetString(elasticsearch.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		elasticsearch.Spec.Init != nil && elasticsearch.Spec.Init.StashRestoreSession != nil {
-
-		if elasticsearch.Status.Phase == api.DatabasePhaseInitializing {
-			return nil
-		}
-
-		// add phase that database is being initialized
-		mg, err := util.UpdateElasticsearchStatus(
-			context.TODO(), c.ExtClient.KubedbV1alpha1(),
-			elasticsearch.ObjectMeta,
-			func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-				in.Phase = api.DatabasePhaseInitializing
-				return in
-			},
-			metav1.UpdateOptions{},
-		)
-		if err != nil {
-			return err
-		}
-		elasticsearch.Status = mg.Status
-
-		init := elasticsearch.Spec.Init
-		if init.StashRestoreSession != nil {
-			log.Debugf("Elasticsearch %v/%v is waiting for restoreSession to be succeeded", elasticsearch.Namespace, elasticsearch.Name)
+	//======================== Wait for the initial restore =====================================
+	if elasticsearch.Spec.Init != nil && elasticsearch.Spec.Init.WaitForInitialRestore {
+		// Only wait for the first restore.
+		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
+		if !kmapi.HasCondition(elasticsearch.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseDataRestored) {
+			// write log indicating that the database is waiting for the data to be restored by external initializer
+			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
+				elasticsearch.Kind,
+				elasticsearch.Namespace,
+				elasticsearch.Name,
+			)
+			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
 		}
 	}
-
-	es, err := util.UpdateElasticsearchStatus(
-		context.TODO(),
-		c.ExtClient.KubedbV1alpha1(),
-		elasticsearch.ObjectMeta,
-		func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-			in.Phase = api.DatabasePhaseRunning
-			in.ObservedGeneration = elasticsearch.Generation
-			return in
-		},
-		metav1.UpdateOptions{},
-	)
-	if err != nil {
-		return err
-	}
-	elasticsearch.Status = es.Status
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(elasticsearch); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			elasticsearch,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -175,7 +150,7 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	if err := c.manageMonitor(elasticsearch); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			elasticsearch,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -186,6 +161,66 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return nil
 	}
 
+	// If WaitForInitialRestore is set,
+	// Check: ReplicaReady --> AcceptingConnection --> Ready --> DataRestored --> Provisioned
+	if elasticsearch.Spec.Init != nil && elasticsearch.Spec.Init.WaitForInitialRestore {
+		if kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseReplicaReady) &&
+			kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseAcceptingConnection) &&
+			kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseReady) &&
+			kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseDataRestored) &&
+			!kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseProvisioned) {
+			_, err := util.UpdateElasticsearchStatus(
+				context.TODO(),
+				c.DBClient.KubedbV1alpha2(),
+				elasticsearch.ObjectMeta,
+				func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+					in.Conditions = kmapi.SetCondition(in.Conditions,
+						kmapi.Condition{
+							Type:    api.DatabaseProvisioned,
+							Status:  kmapi.ConditionTrue,
+							Reason:  "",
+							Message: fmt.Sprintf("The Elasticsearch: %s/%s is successfully provisioned.", elasticsearch.Namespace, elasticsearch.Name),
+						})
+					return in
+				},
+				metav1.UpdateOptions{},
+			)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		// TODO: check again, what happens when some node go down!
+		// If waitForInitialRestore is empty,
+		// Check: ReplicaReady --> AcceptingConnection --> Ready --> Provisioned
+		if kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseReplicaReady) &&
+			// kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseAcceptingConnection) &&
+			// kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseReady) &&
+			!kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseProvisioned) {
+			_, err := util.UpdateElasticsearchStatus(
+				context.TODO(),
+				c.DBClient.KubedbV1alpha2(),
+				elasticsearch.ObjectMeta,
+				func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+					in.Conditions = kmapi.SetCondition(in.Conditions,
+						kmapi.Condition{
+							Type:               api.DatabaseProvisioned,
+							Status:             kmapi.ConditionTrue,
+							ObservedGeneration: elasticsearch.ObjectMeta.Generation,
+							LastTransitionTime: metav1.Now(),
+							Reason:             "",
+							Message:            fmt.Sprintf("The Elasticsearch: %s/%s is successfully provisioned.", elasticsearch.Namespace, elasticsearch.Name),
+						})
+					return in
+				},
+				metav1.UpdateOptions{},
+			)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -194,22 +229,43 @@ func (c *Controller) ensureElasticsearchNode(es *api.Elasticsearch) (*api.Elasti
 		return nil, kutil.VerbUnchanged, errors.New("Elasticsearch object is empty")
 	}
 
-	elastic, err := distribution.NewElasticsearch(c.Client, c.ExtClient, es)
+	elastic, err := distribution.NewElasticsearch(c.Client, c.DBClient, es)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to get elasticsearch distribution")
 	}
 
+	// Create/sync certificate secrets
+	// But if  the tls.issuerRef is set, do nothing (i.e. should be handled from enterprise operator).
 	if err = elastic.EnsureCertSecrets(); err != nil {
 		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to ensure certificates secret")
 	}
 
+	// Create/sync user credential (ie. username, password) secrets
 	if err = elastic.EnsureDatabaseSecret(); err != nil {
 		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to ensure database credential secret")
 	}
 
-	if !elastic.IsAllRequiredSecretAvailable() {
-		log.Warningf("Required secrets for Elasticsearch: %s/%s are not ready yet", es.Namespace, es.Name)
-		queue.EnqueueAfter(c.esQueue.GetQueue(), elastic.UpdatedElasticsearch(), 5*time.Second)
+	// Get the cert secret names
+	// List varies depending on the elasticsearch distribution & configuration.
+	sNames := elastic.RequiredCertSecretNames()
+	// Check whether the secrets are available or not.
+	ok, err := dynamic_util.ResourcesExists(
+		c.DynamicClient,
+		core.SchemeGroupVersion.WithResource("secrets"),
+		es.Namespace,
+		sNames...,
+	)
+	if err != nil {
+		return nil, kutil.VerbUnchanged, err
+	}
+	if !ok {
+		// If the certificates are managed by the enterprise operator,
+		// It takes some time for the secrets to get ready.
+		// If any required secret is yet to get ready,
+		// drop the elasticsearch object from work queue (i.e. return nil with no error).
+		// When any secret owned by this elasticsearch object is created/updated,
+		// this elasticsearch object will be enqueued again for processing.
+		log.Infoln(fmt.Sprintf("Required secrets for Elasticsearch: %s/%s are not ready yet", es.Namespace, es.Name))
 		return nil, kutil.VerbUnchanged, nil
 	}
 
@@ -225,7 +281,7 @@ func (c *Controller) ensureElasticsearchNode(es *api.Elasticsearch) (*api.Elasti
 	vt := kutil.VerbUnchanged
 	topology := elastic.UpdatedElasticsearch().Spec.Topology
 	if topology != nil {
-		vt1, err := elastic.EnsureClientNodes()
+		vt1, err := elastic.EnsureIngestNodes()
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
@@ -250,9 +306,6 @@ func (c *Controller) ensureElasticsearchNode(es *api.Elasticsearch) (*api.Elasti
 		}
 	}
 
-	// Need some time to build elasticsearch cluster. Nodes will communicate with each other
-	time.Sleep(time.Second * 30)
-
 	return elastic.UpdatedElasticsearch(), vt, nil
 }
 
@@ -270,7 +323,7 @@ func (c *Controller) halt(db *api.Elasticsearch) error {
 	log.Infof("update status of Elasticsearch %v/%v to Halted.", db.Namespace, db.Name)
 	if _, err := util.UpdateElasticsearchStatus(
 		context.TODO(),
-		c.ExtClient.KubedbV1alpha1(),
+		c.DBClient.KubedbV1alpha2(),
 		db.ObjectMeta,
 		func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 			in.Phase = api.DatabasePhaseHalted
@@ -289,7 +342,7 @@ func (c *Controller) terminate(elasticsearch *api.Elasticsearch) error {
 
 	// If TerminationPolicy is "halt", keep PVCs,Secrets intact.
 	// TerminationPolicyPause is deprecated and will be removed in future.
-	if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyHalt || elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyPause {
+	if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyHalt {
 		if err := c.removeOwnerReferenceFromOffshoots(elasticsearch); err != nil {
 			return err
 		}
@@ -365,39 +418,4 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasti
 		return err
 	}
 	return nil
-}
-
-func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
-	elasticsearch, err := c.esLister.Elasticsearches(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	return elasticsearch, nil
-}
-
-func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
-	elasticsearch, err := c.esLister.Elasticsearches(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return err
-	}
-	_, err = util.UpdateElasticsearchStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-		in.Phase = phase
-		in.Reason = reason
-		return in
-	}, metav1.UpdateOptions{})
-	return err
-}
-
-func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
-	elasticsearch, err := c.esLister.Elasticsearches(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return err
-	}
-
-	_, _, err = util.PatchElasticsearch(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
-		in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
-		return in
-	}, metav1.PatchOptions{})
-	return err
 }

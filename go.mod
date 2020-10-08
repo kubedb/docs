@@ -3,7 +3,7 @@ module kubedb.dev/operator
 go 1.12
 
 require (
-	github.com/appscode/go v0.0.0-20200928211031-cc0c23082d91
+	github.com/appscode/go v0.0.0-20201006035845-a0302ac8e3d3
 	github.com/prometheus-operator/prometheus-operator v0.42.0
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
@@ -16,19 +16,17 @@ require (
 	k8s.io/client-go v12.0.0+incompatible
 	kmodules.xyz/client-go v0.0.0-20201007024140-3223988adf40
 	kmodules.xyz/custom-resources v0.0.0-20200922210108-70f2815a43bb
-	kmodules.xyz/monitoring-agent-api v0.0.0-20200922204510-b8b5610e5385 // indirect
 	kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de
-	kubedb.dev/apimachinery v0.14.0-beta.2.0.20200915201356-5ddfd53ad058
-	kubedb.dev/elasticsearch v0.14.0-beta.2.0.20200916003206-98c1ad832ab4
-	kubedb.dev/memcached v0.7.0-beta.2.0.20200916003254-fc482bc2d868
-	kubedb.dev/mongodb v0.7.0-beta.2.0.20200916003509-3c626235e51f
-	kubedb.dev/mysql v0.7.0-beta.2.0.20200916004052-5162a530f835
-	kubedb.dev/percona-xtradb v0.1.0-beta.2.0.20200916004222-299013484898
-	kubedb.dev/pgbouncer v0.1.0-beta.2.0.20200916005131-c5fb3b0ed048
-	kubedb.dev/postgres v0.14.0-beta.2.0.20200916004433-66f45a55e2fa
-	kubedb.dev/proxysql v0.1.0-beta.2.0.20200916004609-4759525bce34
-	kubedb.dev/redis v0.7.0-beta.2.0.20200916004859-d46d0dbdabd6
-	stash.appscode.dev/apimachinery v0.11.2
+	kubedb.dev/apimachinery v0.14.0-beta.3.0.20201007234719-34bf142ede67
+	kubedb.dev/elasticsearch v0.14.0-beta.3.0.20201007224838-0bf2c530c8b8
+	kubedb.dev/memcached v0.7.0-beta.3.0.20201008002141-57091fac57b3
+	kubedb.dev/mongodb v0.7.0-beta.3.0.20201007212740-e7c1e3a32b59
+	kubedb.dev/mysql v0.7.0-beta.3.0.20201008002648-54a3614068f7
+	kubedb.dev/percona-xtradb v0.1.0-beta.3.0.20201007215642-f3c2a3603934
+	kubedb.dev/pgbouncer v0.1.0-beta.3.0.20201007230752-cc01e1cae996
+	kubedb.dev/postgres v0.14.0-beta.3.0.20201007220305-ae29ba5e7adb
+	kubedb.dev/proxysql v0.1.0-beta.3.0.20201008005231-66eb215687bd
+	kubedb.dev/redis v0.7.0-beta.3.0.20201007211632-b1f3b76ab1d1
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d

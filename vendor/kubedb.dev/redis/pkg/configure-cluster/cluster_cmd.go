@@ -22,7 +22,7 @@ import (
 	"strconv"
 	"strings"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 )
 
 type ResetType string

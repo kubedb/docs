@@ -22,10 +22,11 @@ import (
 	"fmt"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
 	"github.com/appscode/go/crypto/rand"
+	passgen "gomodules.xyz/password-generator"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -48,7 +49,7 @@ func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
 			return err
 		}
 
-		ms, _, err := util.PatchMongoDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
+		ms, _, err := util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb, func(in *api.MongoDB) *api.MongoDB {
 			in.Spec.DatabaseSecret = secretVolumeSource
 			return in
 		}, metav1.PatchOptions{})
@@ -97,7 +98,7 @@ func (c *Controller) ensureKeyFileSecret(mongodb *api.MongoDB) error {
 	keyFile := &core.SecretVolumeSource{
 		SecretName: secretName,
 	}
-	_, _, err = util.PatchMongoDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
+	_, _, err = util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb, func(in *api.MongoDB) *api.MongoDB {
 		in.Spec.KeyFile = keyFile
 		return in
 	}, metav1.PatchOptions{})
@@ -117,12 +118,6 @@ func (c *Controller) createDatabaseSecret(mongodb *api.MongoDB) (*core.SecretVol
 		return nil, err
 	}
 	if sc == nil {
-		randPassword := ""
-
-		// if the password starts with "-" it will cause error in bash scripts (in mongodb-tools)
-		for randPassword = rand.GeneratePassword(); randPassword[0] == '-'; randPassword = rand.GeneratePassword() {
-		}
-
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   authSecretName,
@@ -131,7 +126,7 @@ func (c *Controller) createDatabaseSecret(mongodb *api.MongoDB) (*core.SecretVol
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
 				core.BasicAuthUsernameKey: mongodbUser,
-				core.BasicAuthPasswordKey: randPassword,
+				core.BasicAuthPasswordKey: passgen.Generate(api.DefaultPasswordLength),
 			},
 		}
 		if _, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {

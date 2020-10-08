@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -34,23 +34,16 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-const (
-	NodeRoleMaster = "node.role.master"
-	NodeRoleClient = "node.role.client"
-	NodeRoleData   = "node.role.data"
-	NodeRoleSet    = "set"
-)
-
 var (
-	defaultClientPort = core.ServicePort{
+	defaultRestPort = core.ServicePort{
 		Name:       api.ElasticsearchRestPortName,
 		Port:       api.ElasticsearchRestPort,
 		TargetPort: intstr.FromString(api.ElasticsearchRestPortName),
 	}
-	defaultPeerPort = core.ServicePort{
-		Name:       api.ElasticsearchNodePortName,
-		Port:       api.ElasticsearchNodePort,
-		TargetPort: intstr.FromString(api.ElasticsearchNodePortName),
+	defaultTransportPort = core.ServicePort{
+		Name:       api.ElasticsearchTransportPortName,
+		Port:       api.ElasticsearchTransportPort,
+		TargetPort: intstr.FromString(api.ElasticsearchTransportPortName),
 	}
 )
 
@@ -73,12 +66,12 @@ func (c *Controller) ensureElasticGvrSvc(elasticsearch *api.Elasticsearch) error
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
 		in.Spec.Type = core.ServiceTypeClusterIP
 		in.Spec.ClusterIP = core.ClusterIPNone
-		in.Spec.Ports = []core.ServicePort{defaultPeerPort, defaultClientPort}
+		in.Spec.Ports = []core.ServicePort{defaultTransportPort, defaultRestPort}
 		return in
 	}, metav1.PatchOptions{})
 
 	if err == nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			elasticsearch,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -100,7 +93,7 @@ func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.Verb
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt1 != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			elasticsearch,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -119,7 +112,7 @@ func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.Verb
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt2 != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			elasticsearch,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -168,9 +161,9 @@ func (c *Controller) createService(elasticsearch *api.Elasticsearch) (kutil.Verb
 		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
-		in.Spec.Selector[NodeRoleClient] = NodeRoleSet
+		in.Spec.Selector[api.ElasticsearchNodeRoleIngest] = api.ElasticsearchNodeRoleSet
 		in.Spec.Ports = ofst.MergeServicePorts(
-			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultClientPort}),
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultRestPort}),
 			elasticsearch.Spec.ServiceTemplate.Spec.Ports,
 		)
 
@@ -205,11 +198,11 @@ func (c *Controller) createMasterService(elasticsearch *api.Elasticsearch) (kuti
 		in.Labels = elasticsearch.OffshootLabels()
 		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
-		in.Spec.Selector[NodeRoleMaster] = NodeRoleSet
+		in.Spec.Selector[api.ElasticsearchNodeRoleMaster] = api.ElasticsearchNodeRoleSet
 
 		in.Spec.Type = core.ServiceTypeClusterIP
 		in.Spec.ClusterIP = core.ClusterIPNone
-		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultPeerPort})
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultTransportPort})
 		return in
 	}, metav1.PatchOptions{})
 	return ok, err
@@ -217,8 +210,8 @@ func (c *Controller) createMasterService(elasticsearch *api.Elasticsearch) (kuti
 
 func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
-	if elasticsearch.GetMonitoringVendor() != mona.VendorPrometheus {
-		log.Infoln("spec.monitor.agent is not coreos-operator or builtin.")
+	if elasticsearch.Spec.Monitor == nil || elasticsearch.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
+		log.Infoln("spec.monitor.agent is not provided by prometheus.io")
 		return kutil.VerbUnchanged, nil
 	}
 
@@ -240,10 +233,10 @@ func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil
 		in.Spec.Selector = elasticsearch.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
-				Name:       api.PrometheusExporterPortName,
+				Name:       mona.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
 				Port:       elasticsearch.Spec.Monitor.Prometheus.Exporter.Port,
-				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},
 		})
 		return in
@@ -251,7 +244,7 @@ func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			elasticsearch,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

@@ -19,7 +19,8 @@ package controller
 import (
 	"context"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/apis/kubedb"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	le "kubedb.dev/pg-leader-election/pkg/leader_election"
 
 	apps "k8s.io/api/apps/v1"
@@ -142,7 +143,7 @@ func (c *Controller) createRoleBinding(db *api.Postgres, saName string) error {
 }
 
 func (c *Controller) getPolicyNames(db *api.Postgres) (string, error) {
-	dbVersion, err := c.ExtClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), db.Spec.Version, metav1.GetOptions{})
+	dbVersion, err := c.DBClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), db.Spec.Version, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -168,7 +169,7 @@ func (c *Controller) ensureDatabaseRBAC(postgres *api.Postgres) error {
 		}
 	} else if err != nil {
 		return err
-	} else if sa.Labels[meta_util.ManagedByLabelKey] != api.GenericKey {
+	} else if sa.Labels[meta_util.ManagedByLabelKey] != kubedb.GroupName {
 		// user provided the service account, so do nothing.
 		return nil
 	}

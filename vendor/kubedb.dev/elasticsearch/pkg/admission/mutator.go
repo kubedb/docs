@@ -17,22 +17,23 @@ limitations under the License.
 package admission
 
 import (
+	"context"
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
 	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
-	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
@@ -93,7 +94,7 @@ func (a *ElasticsearchMutator) Admit(req *admission.AdmissionRequest) *admission
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	mod, err := setDefaultValues(obj.(*api.Elasticsearch).DeepCopy(), a.ClusterTopology)
+	mod, err := setDefaultValues(a.extClient, obj.(*api.Elasticsearch).DeepCopy(), a.ClusterTopology)
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mod != nil {
@@ -111,7 +112,7 @@ func (a *ElasticsearchMutator) Admit(req *admission.AdmissionRequest) *admission
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a Elasticsearch database
-func setDefaultValues(elasticsearch *api.Elasticsearch, clusterTopology *core_util.Topology) (runtime.Object, error) {
+func setDefaultValues(extClient cs.Interface, elasticsearch *api.Elasticsearch, clusterTopology *core_util.Topology) (runtime.Object, error) {
 	if elasticsearch.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
 	}
@@ -125,8 +126,8 @@ func setDefaultValues(elasticsearch *api.Elasticsearch, clusterTopology *core_ut
 
 	topology := elasticsearch.Spec.Topology
 	if topology != nil {
-		if topology.Client.Replicas == nil {
-			topology.Client.Replicas = types.Int32P(1)
+		if topology.Ingest.Replicas == nil {
+			topology.Ingest.Replicas = types.Int32P(1)
 		}
 
 		if topology.Master.Replicas == nil {
@@ -141,28 +142,13 @@ func setDefaultValues(elasticsearch *api.Elasticsearch, clusterTopology *core_ut
 			elasticsearch.Spec.Replicas = types.Int32P(1)
 		}
 	}
-	elasticsearch.SetDefaults(clusterTopology)
 
-	// If monitoring spec is given without port,
-	// set default Listening port
-	setMonitoringPort(elasticsearch)
+	esversion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), elasticsearch.Spec.Version, metav1.GetOptions{})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get ElasticsearchVersion: %s", elasticsearch.Spec.Version)
+	}
+
+	elasticsearch.SetDefaults(esversion, clusterTopology)
 
 	return elasticsearch, nil
-}
-
-// Assign Default Monitoring Port if MonitoringSpec Exists
-// and the AgentVendor is Prometheus.
-func setMonitoringPort(db *api.Elasticsearch) {
-	if db.Spec.Monitor != nil &&
-		db.GetMonitoringVendor() == mona.VendorPrometheus {
-		if db.Spec.Monitor.Prometheus == nil {
-			db.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
-		}
-		if db.Spec.Monitor.Prometheus.Exporter == nil {
-			db.Spec.Monitor.Prometheus.Exporter = &mona.PrometheusExporterSpec{}
-		}
-		if db.Spec.Monitor.Prometheus.Exporter.Port == 0 {
-			db.Spec.Monitor.Prometheus.Exporter.Port = api.PrometheusExporterPortNumber
-		}
-	}
 }

@@ -22,7 +22,7 @@ import (
 
 	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
 	"github.com/pkg/errors"
@@ -35,7 +35,6 @@ import (
 	"k8s.io/client-go/rest"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
-	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
@@ -43,7 +42,7 @@ type MongoDBMutator struct {
 	ClusterTopology *core_util.Topology
 
 	client      kubernetes.Interface
-	extClient   cs.Interface
+	dbClient    cs.Interface
 	lock        sync.RWMutex
 	initialized bool
 }
@@ -69,7 +68,7 @@ func (a *MongoDBMutator) Initialize(config *rest.Config, stopCh <-chan struct{})
 	if a.client, err = kubernetes.NewForConfig(config); err != nil {
 		return err
 	}
-	if a.extClient, err = cs.NewForConfig(config); err != nil {
+	if a.dbClient, err = cs.NewForConfig(config); err != nil {
 		return err
 	}
 	return err
@@ -96,7 +95,7 @@ func (a *MongoDBMutator) Admit(req *admission.AdmissionRequest) *admission.Admis
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	mongoMod, err := a.setDefaultValues(a.extClient, obj.(*api.MongoDB).DeepCopy())
+	mongoMod, err := a.setDefaultValues(a.dbClient, obj.(*api.MongoDB).DeepCopy())
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mongoMod != nil {
@@ -133,10 +132,6 @@ func (a *MongoDBMutator) setDefaultValues(extClient cs.Interface, mongodb *api.M
 
 	mongodb.SetDefaults(mgVersion, a.ClusterTopology)
 
-	// If monitoring spec is given without port,
-	// set default Listening port
-	setMonitoringPort(mongodb)
-
 	return mongodb, nil
 }
 
@@ -148,21 +143,4 @@ func getMongoDBVersion(extClient cs.Interface, ver string) (*v1alpha1.MongoDBVer
 		return &v1alpha1.MongoDBVersion{}, nil
 	}
 	return mgVersion, err
-}
-
-// Assign Default Monitoring Port if MonitoringSpec Exists
-// and the AgentVendor is Prometheus.
-func setMonitoringPort(mongodb *api.MongoDB) {
-	if mongodb.Spec.Monitor != nil &&
-		mongodb.GetMonitoringVendor() == mona.VendorPrometheus {
-		if mongodb.Spec.Monitor.Prometheus == nil {
-			mongodb.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
-		}
-		if mongodb.Spec.Monitor.Prometheus.Exporter == nil {
-			mongodb.Spec.Monitor.Prometheus.Exporter = &mona.PrometheusExporterSpec{}
-		}
-		if mongodb.Spec.Monitor.Prometheus.Exporter.Port == 0 {
-			mongodb.Spec.Monitor.Prometheus.Exporter.Port = api.PrometheusExporterPortNumber
-		}
-	}
 }

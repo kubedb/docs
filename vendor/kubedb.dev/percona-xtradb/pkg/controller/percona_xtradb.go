@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/percona-xtradb/pkg/admission"
 
@@ -30,16 +30,14 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	kutil "kmodules.xyz/client-go"
-	core_util "kmodules.xyz/client-go/core/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
-	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (c *Controller) create(px *api.PerconaXtraDB) error {
-	if err := validator.ValidatePerconaXtraDB(c.Client, c.ExtClient, px, true); err != nil {
-		c.recorder.Event(
+	if err := validator.ValidatePerconaXtraDB(c.Client, c.DBClient, px, true); err != nil {
+		c.Recorder.Event(
 			px,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -51,8 +49,8 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 	}
 
 	if px.Status.Phase == "" {
-		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
-			in.Phase = api.DatabasePhaseCreating
+		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
@@ -61,26 +59,24 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		px.Status = perconaxtradb.Status
 	}
 
-	// For Percona XtraDB Cluster (px.spec.replicas > 1),
-	// Set status as "Initializing" until specified restoresession object be succeeded, if provided
-	if _, err := meta_util.GetString(px.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		px.IsCluster() && px.Spec.Init != nil && px.Spec.Init.StashRestoreSession != nil {
-
-		if px.Status.Phase == api.DatabasePhaseInitializing {
+	// For Percona XtraDB Cluster (px.spec.replicas > 1), Stash restores the data into some PVCs.
+	// Then, KubeDB should create the StatefulSet using those PVCs. So, for clustering mode, we are going to
+	// wait for restore process to complete before creating the StatefulSet.
+	//======================== Wait for the initial restore =====================================
+	if px.Spec.Init != nil && px.Spec.Init.WaitForInitialRestore && px.IsCluster() {
+		// Only wait for the first restore.
+		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
+		if !kmapi.HasCondition(px.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(px.Status.Conditions, api.DatabaseDataRestored) {
+			// write log indicating that the database is waiting for the data to be restored by external initializer
+			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
+				px.Kind,
+				px.Namespace,
+				px.Name,
+			)
+			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
 		}
-
-		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
-			in.Phase = api.DatabasePhaseInitializing
-			return in
-		}, metav1.UpdateOptions{})
-		if err != nil {
-			return err
-		}
-		px.Status = perconaxtradb.Status
-
-		log.Debugf("PerconaXtraDB %v/%v is waiting for restoreSession to be succeeded", px.Namespace, px.Name)
-		return nil
 	}
 
 	// create Governing Service
@@ -112,14 +108,14 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			px,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created PerconaXtraDB",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			px,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -133,31 +129,27 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		return err
 	}
 
-	// For Standalone Percona XtraDB (px.spec.replicas = 1),
-	// Set status as "Initializing" until specified restoresession object be succeeded, if provided
-	if _, err := meta_util.GetString(px.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		!px.IsCluster() && px.Spec.Init != nil && px.Spec.Init.StashRestoreSession != nil {
-
-		if px.Status.Phase == api.DatabasePhaseInitializing {
+	// For Standalone Percona XtraDB (px.spec.replicas = 1),, Stash directly restore into the database.
+	// So, for standalone mode, we are going to wait for restore process to complete after creating the StatefulSet.
+	//======================== Wait for the initial restore =====================================
+	if px.Spec.Init != nil && px.Spec.Init.WaitForInitialRestore && !px.IsCluster() {
+		// Only wait for the first restore.
+		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
+		if !kmapi.HasCondition(px.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(px.Status.Conditions, api.DatabaseDataRestored) {
+			// write log indicating that the database is waiting for the data to be restored by external initializer
+			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
+				px.Kind,
+				px.Namespace,
+				px.Name,
+			)
+			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
 		}
-
-		// add phase that database is being initialized
-		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
-			in.Phase = api.DatabasePhaseInitializing
-			return in
-		}, metav1.UpdateOptions{})
-		if err != nil {
-			return err
-		}
-		px.Status = perconaxtradb.Status
-
-		log.Debugf("PerconaXtraDB %v/%v is waiting for restoreSession to be succeeded", px.Namespace, px.Name)
-		return nil
 	}
 
-	per, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
-		in.Phase = api.DatabasePhaseRunning
+	per, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = px.Generation
 		return in
 	}, metav1.UpdateOptions{})
@@ -168,7 +160,7 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(px); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			px,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -180,7 +172,7 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 	}
 
 	if err := c.manageMonitor(px); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			px,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -206,7 +198,7 @@ func (c *Controller) halt(db *api.PerconaXtraDB) error {
 		return err
 	}
 	log.Infof("update status of PerconaXtraDB %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+	if _, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
@@ -219,7 +211,7 @@ func (c *Controller) halt(db *api.PerconaXtraDB) error {
 func (c *Controller) terminate(px *api.PerconaXtraDB) error {
 	// If TerminationPolicy is "halt", keep PVCs and Secrets intact.
 	// TerminationPolicyPause is deprecated and will be removed in future.
-	if px.Spec.TerminationPolicy == api.TerminationPolicyHalt || px.Spec.TerminationPolicy == api.TerminationPolicyPause {
+	if px.Spec.TerminationPolicy == api.TerminationPolicyHalt {
 		if err := c.removeOwnerReferenceFromOffshoots(px); err != nil {
 			return err
 		}
@@ -296,39 +288,4 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(px *api.PerconaXtraDB) er
 		return err
 	}
 	return nil
-}
-
-func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
-	px, err := c.pxLister.PerconaXtraDBs(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	return px, nil
-}
-
-func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
-	px, err := c.pxLister.PerconaXtraDBs(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return err
-	}
-	_, err = util.UpdatePerconaXtraDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
-		in.Phase = phase
-		in.Reason = reason
-		return in
-	}, metav1.UpdateOptions{})
-	return err
-}
-
-func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
-	px, err := c.pxLister.PerconaXtraDBs(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return err
-	}
-
-	_, _, err = util.PatchPerconaXtraDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
-		in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
-		return in
-	}, metav1.PatchOptions{})
-	return err
 }

@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	"kubedb.dev/pg-leader-election/pkg/leader_election"
 
@@ -35,9 +35,9 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kutil "kmodules.xyz/client-go"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
-	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/analytics"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
@@ -134,14 +134,14 @@ func (c *Controller) ensureStatefulSet(
 				}
 			}
 
-			if _, err := meta_util.GetString(postgres.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound {
+			if !kmapi.HasCondition(postgres.Status.Conditions, api.DatabaseDataRestored) {
 				initSource := postgres.Spec.Init
 				if initSource != nil && initSource.PostgresWAL != nil && initSource.PostgresWAL.Local == nil {
 					//Getting secret for cloud providers
 					in = upsertInitWalSecret(in, postgres.Spec.Init.PostgresWAL.StorageSecretName)
 				}
-				if initSource != nil && initSource.ScriptSource != nil {
-					in = upsertInitScript(in, postgres.Spec.Init.ScriptSource.VolumeSource)
+				if initSource != nil && initSource.Script != nil {
+					in = upsertInitScript(in, postgres.Spec.Init.Script.VolumeSource)
 				}
 			}
 
@@ -169,7 +169,7 @@ func (c *Controller) ensureStatefulSet(
 			return kutil.VerbUnchanged, err
 		}
 
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			postgres,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -418,24 +418,24 @@ func upsertPort(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 }
 
 func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, postgres *api.Postgres, postgresVersion *catalog.PostgresVersion) *apps.StatefulSet {
-	if postgres.GetMonitoringVendor() == mona.VendorPrometheus {
+	if postgres.Spec.Monitor != nil && postgres.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 		container := core.Container{
 			Name: "exporter",
 			Args: append([]string{
 				"--log.level=info",
-			}, postgres.Spec.Monitor.Args...),
+			}, postgres.Spec.Monitor.Prometheus.Exporter.Args...),
 			Image:           postgresVersion.Spec.Exporter.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
 				{
-					Name:          api.PrometheusExporterPortName,
+					Name:          mona.PrometheusExporterPortName,
 					Protocol:      core.ProtocolTCP,
-					ContainerPort: int32(api.PrometheusExporterPortNumber),
+					ContainerPort: int32(postgres.Spec.Monitor.Prometheus.Exporter.Port),
 				},
 			},
-			Env:             postgres.Spec.Monitor.Env,
-			Resources:       postgres.Spec.Monitor.Resources,
-			SecurityContext: postgres.Spec.Monitor.SecurityContext,
+			Env:             postgres.Spec.Monitor.Prometheus.Exporter.Env,
+			Resources:       postgres.Spec.Monitor.Prometheus.Exporter.Resources,
+			SecurityContext: postgres.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 		}
 
 		envList := []core.EnvVar{
@@ -467,7 +467,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 			},
 			{
 				Name:  "PG_EXPORTER_WEB_LISTEN_ADDRESS",
-				Value: fmt.Sprintf(":%d", api.PrometheusExporterPortNumber),
+				Value: fmt.Sprintf(":%d", postgres.Spec.Monitor.Prometheus.Exporter.Port),
 			},
 			{
 				Name:  "PG_EXPORTER_WEB_TELEMETRY_PATH",

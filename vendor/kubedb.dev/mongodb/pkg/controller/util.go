@@ -19,57 +19,17 @@ package controller
 import (
 	"context"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"kubedb.dev/apimachinery/apis/kubedb"
 
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
-	core_util "kmodules.xyz/client-go/core/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
 )
-
-func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
-	mongodb, err := c.mgLister.MongoDBs(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	return mongodb, nil
-}
-
-func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
-	mongodb, err := c.mgLister.MongoDBs(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return err
-	}
-	_, err = util.UpdateMongoDBStatus(
-		context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
-			in.Phase = phase
-			in.Reason = reason
-			return in
-		}, metav1.UpdateOptions{},
-	)
-	return err
-}
-
-func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
-	mongodb, err := c.mgLister.MongoDBs(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return err
-	}
-
-	_, _, err = util.PatchMongoDB(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb, func(in *api.MongoDB) *api.MongoDB {
-		in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
-		return in
-	}, metav1.PatchOptions{})
-	return err
-}
 
 // wipeOutDatabase is a generic function to call from WipeOutDatabase and mongodb terminate method.
 func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, owner *metav1.OwnerReference) error {
@@ -91,7 +51,7 @@ func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, o
 			return errors.Wrap(err, "error in getting db secret")
 		}
 		genericKey, ok := secret.Labels[meta_util.ManagedByLabelKey]
-		if !ok || genericKey != api.GenericKey {
+		if !ok || genericKey != kubedb.GroupName {
 			unusedSecrets.Delete(secret.Name)
 		}
 	}

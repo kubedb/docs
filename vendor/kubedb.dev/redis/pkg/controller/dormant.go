@@ -19,7 +19,8 @@ package controller
 import (
 	"context"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/apis/kubedb"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
@@ -97,7 +98,7 @@ func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, o
 			return errors.Wrap(err, "error in getting db secret")
 		}
 		genericKey, ok := secret.Labels[meta_util.ManagedByLabelKey]
-		if !ok || genericKey != api.GenericKey {
+		if !ok || genericKey != kubedb.GroupName {
 			unusedSecrets.Delete(secret.Name)
 		}
 	}

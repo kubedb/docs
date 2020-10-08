@@ -21,21 +21,19 @@ import (
 
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
-	"kubedb.dev/apimachinery/pkg/controller/restoresession"
-	"kubedb.dev/apimachinery/pkg/eventer"
+	sts "kubedb.dev/apimachinery/pkg/controller/statefulset"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/metadata"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 )
 
 const (
@@ -46,14 +44,15 @@ const (
 type OperatorConfig struct {
 	amc.Config
 
+	LicenseFile      string
 	ClientConfig     *rest.Config
 	KubeClient       kubernetes.Interface
 	CRDClient        crd_cs.Interface
 	DBClient         cs.Interface
-	StashClient      scs.Interface
 	AppCatalogClient appcat_cs.Interface
 	DynamicClient    dynamic.Interface
 	PromClient       pcm.MonitoringV1Interface
+	Recorder         record.EventRecorder
 }
 
 func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
@@ -66,7 +65,6 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	if err := discovery.IsDefaultSupportedVersion(c.KubeClient); err != nil {
 		return nil, err
 	}
-	recorder := eventer.NewEventRecorder(c.KubeClient, "Postgres operator")
 
 	topology, err := core_util.DetectTopology(context.TODO(), metadata.NewForConfigOrDie(c.ClientConfig))
 	if err != nil {
@@ -78,21 +76,13 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.KubeClient,
 		c.CRDClient,
 		c.DBClient,
-		c.StashClient,
 		c.DynamicClient,
 		c.AppCatalogClient,
 		c.PromClient,
 		c.Config,
 		topology,
-		recorder,
+		c.Recorder,
 	)
-
-	tweakListOptions := func(options *metav1.ListOptions) {
-		options.LabelSelector = ctrl.selector.String()
-	}
-
-	// Initialize RestoreSession Informer. Later EventHandler will be added to these informers.
-	ctrl.RSInformer = restoresession.NewController(ctrl.Controller, ctrl, ctrl.Config, tweakListOptions, recorder).InitInformer()
 
 	if err := ctrl.EnsureCustomResourceDefinitions(); err != nil {
 		return nil, err
@@ -111,6 +101,9 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	if err := ctrl.Init(); err != nil {
 		return nil, err
 	}
+
+	// Initialize StatefulSet watcher
+	sts.NewController(&c.Config, c.KubeClient, c.DBClient, c.DynamicClient).InitStsWatcher()
 
 	return ctrl, nil
 }

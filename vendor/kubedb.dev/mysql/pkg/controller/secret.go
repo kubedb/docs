@@ -21,10 +21,10 @@ import (
 	"fmt"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
-	"github.com/appscode/go/crypto/rand"
+	passgen "gomodules.xyz/password-generator"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,7 +43,7 @@ func (c *Controller) ensureDatabaseSecret(mysql *api.MySQL) error {
 			return err
 		}
 
-		ms, _, err := util.PatchMySQL(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql, func(in *api.MySQL) *api.MySQL {
+		ms, _, err := util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), mysql, func(in *api.MySQL) *api.MySQL {
 			in.Spec.DatabaseSecret = secretVolumeSource
 			return in
 		}, metav1.PatchOptions{})
@@ -64,12 +64,6 @@ func (c *Controller) createDatabaseSecret(mysql *api.MySQL) (*core.SecretVolumeS
 		return nil, err
 	}
 	if sc == nil {
-		randPassword := ""
-
-		// if the password starts with "-", it will cause error in bash scripts (in mysql-tools)
-		for randPassword = rand.GeneratePassword(); randPassword[0] == '-'; {
-		}
-
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   authSecretName,
@@ -78,7 +72,7 @@ func (c *Controller) createDatabaseSecret(mysql *api.MySQL) (*core.SecretVolumeS
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
 				core.BasicAuthUsernameKey: mysqlUser,
-				core.BasicAuthPasswordKey: randPassword,
+				core.BasicAuthPasswordKey: passgen.Generate(api.DefaultPasswordLength),
 			},
 		}
 		if _, err := c.Client.CoreV1().Secrets(mysql.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {

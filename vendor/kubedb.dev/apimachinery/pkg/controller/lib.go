@@ -19,26 +19,21 @@ package controller
 import (
 	"context"
 	"math"
-	"time"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/appscode/go/log"
 	_ "gomodules.xyz/stow/azure"
 	_ "gomodules.xyz/stow/google"
 	_ "gomodules.xyz/stow/s3"
-	appsv1 "k8s.io/api/apps/v1"
+	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/apimachinery/pkg/util/wait"
 	core_util "kmodules.xyz/client-go/core/v1"
-	"kmodules.xyz/client-go/discovery"
 	policy_util "kmodules.xyz/client-go/policy/v1beta1"
-	"stash.appscode.dev/apimachinery/apis/stash"
-	"stash.appscode.dev/apimachinery/apis/stash/v1beta1"
 )
 
 const UtilVolumeName = "util-volume"
@@ -131,8 +126,8 @@ func (c *Controller) GetVolumeForSnapshot(st api.StorageType, pvcSpec *core.Pers
 	return volume, nil
 }
 
-func (c *Controller) CreateStatefulSetPodDisruptionBudget(sts *appsv1.StatefulSet) error {
-	owner := metav1.NewControllerRef(sts, appsv1.SchemeGroupVersion.WithKind("StatefulSet"))
+func (c *Controller) CreateStatefulSetPodDisruptionBudget(sts *apps.StatefulSet) error {
+	owner := metav1.NewControllerRef(sts, apps.SchemeGroupVersion.WithKind("StatefulSet"))
 
 	m := metav1.ObjectMeta{
 		Name:      sts.Name,
@@ -156,8 +151,8 @@ func (c *Controller) CreateStatefulSetPodDisruptionBudget(sts *appsv1.StatefulSe
 	return err
 }
 
-func (c *Controller) CreateDeploymentPodDisruptionBudget(deployment *appsv1.Deployment) error {
-	owner := metav1.NewControllerRef(deployment, appsv1.SchemeGroupVersion.WithKind("Deployment"))
+func (c *Controller) CreateDeploymentPodDisruptionBudget(deployment *apps.Deployment) error {
+	owner := metav1.NewControllerRef(deployment, apps.SchemeGroupVersion.WithKind("Deployment"))
 
 	m := metav1.ObjectMeta{
 		Name:      deployment.Name,
@@ -179,12 +174,4 @@ func (c *Controller) CreateDeploymentPodDisruptionBudget(deployment *appsv1.Depl
 			return in
 		}, metav1.PatchOptions{})
 	return err
-}
-
-// BlockOnStashOperator waits for restoresession crd to come up.
-// It either waits until restoresession crd exists or throws error otherwise
-func (c *Controller) BlockOnStashOperator(stopCh <-chan struct{}) error {
-	return wait.PollImmediateUntil(time.Second*10, func() (bool, error) {
-		return discovery.ExistsGroupKind(c.Client.Discovery(), stash.GroupName, v1beta1.ResourceKindRestoreSession), nil
-	}, stopCh)
 }

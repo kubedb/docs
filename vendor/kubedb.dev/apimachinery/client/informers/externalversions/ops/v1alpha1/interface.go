@@ -28,6 +28,8 @@ type Interface interface {
 	ElasticsearchOpsRequests() ElasticsearchOpsRequestInformer
 	// EtcdOpsRequests returns a EtcdOpsRequestInformer.
 	EtcdOpsRequests() EtcdOpsRequestInformer
+	// MariaDBOpsRequests returns a MariaDBOpsRequestInformer.
+	MariaDBOpsRequests() MariaDBOpsRequestInformer
 	// MemcachedOpsRequests returns a MemcachedOpsRequestInformer.
 	MemcachedOpsRequests() MemcachedOpsRequestInformer
 	// MongoDBOpsRequests returns a MongoDBOpsRequestInformer.
@@ -65,6 +67,11 @@ func (v *version) ElasticsearchOpsRequests() ElasticsearchOpsRequestInformer {
 // EtcdOpsRequests returns a EtcdOpsRequestInformer.
 func (v *version) EtcdOpsRequests() EtcdOpsRequestInformer {
 	return &etcdOpsRequestInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// MariaDBOpsRequests returns a MariaDBOpsRequestInformer.
+func (v *version) MariaDBOpsRequests() MariaDBOpsRequestInformer {
+	return &mariaDBOpsRequestInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // MemcachedOpsRequests returns a MemcachedOpsRequestInformer.

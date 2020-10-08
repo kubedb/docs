@@ -29,6 +29,7 @@ type CatalogV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	ElasticsearchVersionsGetter
 	EtcdVersionsGetter
+	MariaDBVersionsGetter
 	MemcachedVersionsGetter
 	MongoDBVersionsGetter
 	MySQLVersionsGetter
@@ -50,6 +51,10 @@ func (c *CatalogV1alpha1Client) ElasticsearchVersions() ElasticsearchVersionInte
 
 func (c *CatalogV1alpha1Client) EtcdVersions() EtcdVersionInterface {
 	return newEtcdVersions(c)
+}
+
+func (c *CatalogV1alpha1Client) MariaDBVersions() MariaDBVersionInterface {
+	return newMariaDBVersions(c)
 }
 
 func (c *CatalogV1alpha1Client) MemcachedVersions() MemcachedVersionInterface {

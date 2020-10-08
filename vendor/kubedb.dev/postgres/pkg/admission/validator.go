@@ -24,11 +24,12 @@ import (
 	"time"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
 	"github.com/pkg/errors"
+	"gomodules.xyz/sets"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,6 +39,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/leaderelection"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
@@ -102,7 +104,7 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := a.extClient.KubedbV1alpha1().Postgreses(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
+			obj, err := a.extClient.KubedbV1alpha2().Postgreses(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
@@ -129,7 +131,7 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 				oldPostgres.Spec.DatabaseSecret = postgres.Spec.DatabaseSecret
 			}
 
-			if err := validateUpdate(postgres, oldPostgres); err != nil {
+			if err := validateUpdate(postgres, oldPostgres, postgres.Status.Conditions); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
 		}
@@ -173,9 +175,7 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	if postgres.Spec.StandbyMode != nil {
 		standByMode := *postgres.Spec.StandbyMode
 		if standByMode != api.HotPostgresStandbyMode &&
-			standByMode != api.WarmPostgresStandbyMode &&
-			standByMode != api.DeprecatedHotStandby &&
-			standByMode != api.DeprecatedWarmStandby {
+			standByMode != api.WarmPostgresStandbyMode {
 			return fmt.Errorf(`spec.standbyMode "%s" invalid`, standByMode)
 		}
 	}
@@ -184,8 +184,7 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 		streamingMode := *postgres.Spec.StreamingMode
 		// TODO: synchronous Streaming is unavailable due to lack of support
 		if streamingMode != api.AsynchronousPostgresStreamingMode &&
-			streamingMode != api.SynchronousPostgresStreamingMode &&
-			streamingMode != api.DeprecatedAsynchronousStreaming {
+			streamingMode != api.SynchronousPostgresStreamingMode {
 			return fmt.Errorf(`spec.streamingMode "%s" invalid`, streamingMode)
 		}
 	}
@@ -246,13 +245,6 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	}
 	// end <==============
 
-	if postgres.Spec.Init != nil &&
-		postgres.Spec.Init.StashRestoreSession != nil &&
-		databaseSecret == nil {
-		return fmt.Errorf("in StashRestore init, 'spec.databaseSecret.secretName' of %v/%v needs to be similar to older database of restoresession %v",
-			postgres.Namespace, postgres.Name, postgres.Spec.Init.StashRestoreSession.Name)
-	}
-
 	if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
 		wal := postgres.Spec.Init.PostgresWAL
 		if wal.S3 == nil && wal.GCS == nil && wal.Azure == nil && wal.Swift == nil && wal.Local == nil {
@@ -278,8 +270,8 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	return nil
 }
 
-func validateUpdate(obj, oldObj runtime.Object) error {
-	preconditions := getPreconditionFunc()
+func validateUpdate(obj, oldObj runtime.Object, conditions []kmapi.Condition) error {
+	preconditions := getPreconditionFunc(conditions)
 	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
@@ -290,7 +282,7 @@ func validateUpdate(obj, oldObj runtime.Object) error {
 	return nil
 }
 
-func getPreconditionFunc() []mergepatch.PreconditionFunc {
+func getPreconditionFunc(conditions []kmapi.Condition) []mergepatch.PreconditionFunc {
 	preconditions := []mergepatch.PreconditionFunc{
 		mergepatch.RequireKeyUnchanged("apiVersion"),
 		mergepatch.RequireKeyUnchanged("kind"),
@@ -298,7 +290,12 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 		mergepatch.RequireMetadataKeyUnchanged("namespace"),
 	}
 
-	for _, field := range preconditionSpecFields {
+	// Once the database has been provisioned, don't let update the "spec.init" section
+	if kmapi.IsConditionTrue(conditions, api.DatabaseProvisioned) {
+		preconditionSpecFields.Insert("spec.init")
+	}
+
+	for _, field := range preconditionSpecFields.List() {
 		preconditions = append(preconditions,
 			meta_util.RequireChainKeyUnchanged(field),
 		)
@@ -306,18 +303,17 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 	return preconditions
 }
 
-var preconditionSpecFields = []string{
+var preconditionSpecFields = sets.NewString(
 	"spec.standby",
 	"spec.streaming",
 	"spec.archiver",
 	"spec.databaseSecret",
 	"spec.storageType",
 	"spec.storage",
-	"spec.init",
-}
+)
 
 func preconditionFailedError() error {
-	str := preconditionSpecFields
+	str := preconditionSpecFields.List()
 	strList := strings.Join(str, "\n\t")
 	return fmt.Errorf(strings.Join([]string{`At least one of the following was changed:
 	apiVersion

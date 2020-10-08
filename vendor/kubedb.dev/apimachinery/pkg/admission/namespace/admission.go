@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"sync"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	admission "k8s.io/api/admission/v1beta1"
 	core "k8s.io/api/core/v1"
@@ -122,8 +122,7 @@ func (a *NamespaceValidator) Admit(req *admission.AdmissionRequest) *admission.A
 							return err
 						}
 						if found &&
-							(terminationPolicy == string(api.TerminationPolicyPause) ||
-								terminationPolicy == string(api.TerminationPolicyHalt) ||
+							(terminationPolicy == string(api.TerminationPolicyHalt) ||
 								terminationPolicy == string(api.TerminationPolicyDoNotTerminate)) {
 							return fmt.Errorf("%s %s/%s has termination policy `%s`", u.GetKind(), u.GetNamespace(), u.GetName(), terminationPolicy)
 						}

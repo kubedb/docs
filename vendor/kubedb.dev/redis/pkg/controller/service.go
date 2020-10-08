@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -52,7 +52,7 @@ func (c *Controller) ensureService(redis *api.Redis) (kutil.VerbType, error) {
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			redis,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -119,8 +119,8 @@ func (c *Controller) createService(redis *api.Redis) (kutil.VerbType, error) {
 
 func (c *Controller) ensureStatsService(redis *api.Redis) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
-	if redis.GetMonitoringVendor() != mona.VendorPrometheus {
-		log.Infoln("spec.monitor.agent is not operator or builtin.")
+	if redis.Spec.Monitor == nil || redis.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
+		log.Infoln("spec.monitor.agent is not provided by prometheus.io")
 		return kutil.VerbUnchanged, nil
 	}
 
@@ -142,10 +142,10 @@ func (c *Controller) ensureStatsService(redis *api.Redis) (kutil.VerbType, error
 		in.Spec.Selector = redis.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
-				Name:       api.PrometheusExporterPortName,
+				Name:       mona.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
 				Port:       redis.Spec.Monitor.Prometheus.Exporter.Port,
-				TargetPort: intstr.FromString(api.PrometheusExporterPortName),
+				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},
 		})
 		return in
@@ -153,7 +153,7 @@ func (c *Controller) ensureStatsService(redis *api.Redis) (kutil.VerbType, error
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			redis,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

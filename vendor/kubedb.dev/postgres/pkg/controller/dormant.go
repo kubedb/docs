@@ -19,7 +19,8 @@ package controller
 import (
 	"context"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/apis/kubedb"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
@@ -119,7 +120,7 @@ func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, r
 		if err != nil {
 			return errors.Wrap(err, "error in getting db secret")
 		}
-		if secret.Labels[meta_util.ManagedByLabelKey] != api.GenericKey {
+		if secret.Labels[meta_util.ManagedByLabelKey] != kubedb.GroupName {
 			unusedSecrets.Delete(secret.Name)
 		}
 	}

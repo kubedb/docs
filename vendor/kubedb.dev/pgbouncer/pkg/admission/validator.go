@@ -1,11 +1,11 @@
 /*
 Copyright AppsCode Inc. and Contributors
 
-Licensed under the AppsCode Community License 1.0.0 (the "License");
+Licensed under the AppsCode Free Trial License 1.0.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    https://github.com/appscode/licenses/raw/1.0.0/AppsCode-Community-1.0.0.md
+    https://github.com/appscode/licenses/raw/1.0.0/AppsCode-Free-Trial-1.0.0.md
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,7 +23,7 @@ import (
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
 	"github.com/appscode/go/log"
@@ -95,7 +95,7 @@ func (pbValidator *PgBouncerValidator) Admit(req *admission.AdmissionRequest) *a
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := pbValidator.extClient.KubedbV1alpha1().PgBouncers(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
+			obj, err := pbValidator.extClient.KubedbV1alpha2().PgBouncers(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if kerr.IsNotFound(err) {
 				log.Infoln("obj ", obj.Name, " already deleted")
 			}

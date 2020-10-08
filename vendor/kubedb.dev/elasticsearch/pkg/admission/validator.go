@@ -23,11 +23,12 @@ import (
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
 	"github.com/pkg/errors"
+	"gomodules.xyz/sets"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
@@ -105,7 +107,7 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := a.extClient.KubedbV1alpha1().Elasticsearches(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
+			obj, err := a.extClient.KubedbV1alpha2().Elasticsearches(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil {
 				if kerr.IsNotFound(err) {
 					break
@@ -129,18 +131,12 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 
 			elasticsearch := obj.(*api.Elasticsearch).DeepCopy()
 			oldElasticsearch := oldObject.(*api.Elasticsearch).DeepCopy()
-			oldElasticsearch.SetDefaults(a.ClusterTopology)
 			// Allow changing Database Secret only if there was no secret have set up yet.
 			if oldElasticsearch.Spec.DatabaseSecret == nil {
 				oldElasticsearch.Spec.DatabaseSecret = elasticsearch.Spec.DatabaseSecret
 			}
 
-			// Allow changing CertificateSecret only if there was no secret have set up yet.
-			if oldElasticsearch.Spec.CertificateSecret == nil {
-				oldElasticsearch.Spec.CertificateSecret = elasticsearch.Spec.CertificateSecret
-			}
-
-			if err := validateUpdate(elasticsearch, oldElasticsearch); err != nil {
+			if err := validateUpdate(elasticsearch, oldElasticsearch, elasticsearch.Status.Conditions); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
 		}
@@ -182,20 +178,20 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 			return errors.New("doesn't support spec.resources when spec.topology is set")
 		}
 
-		if topology.Client.Prefix == topology.Master.Prefix {
-			return errors.New("client & master node should not have same prefix")
+		if topology.Ingest.Prefix == topology.Master.Prefix {
+			return errors.New("ingest & master node should not have same prefix")
 		}
-		if topology.Client.Prefix == topology.Data.Prefix {
-			return errors.New("client & data node should not have same prefix")
+		if topology.Ingest.Prefix == topology.Data.Prefix {
+			return errors.New("ingest & data node should not have same prefix")
 		}
 		if topology.Master.Prefix == topology.Data.Prefix {
 			return errors.New("master & data node should not have same prefix")
 		}
 
-		if topology.Client.Replicas == nil || *topology.Client.Replicas < 1 {
-			return fmt.Errorf(`topology.client.replicas "%v" invalid. Must be greater than zero`, topology.Client.Replicas)
+		if topology.Ingest.Replicas == nil || *topology.Ingest.Replicas < 1 {
+			return fmt.Errorf(`topology.ingest.replicas "%v" invalid. Must be greater than zero`, topology.Ingest.Replicas)
 		}
-		if err := amv.ValidateStorage(client, elasticsearch.Spec.StorageType, topology.Client.Storage); err != nil {
+		if err := amv.ValidateStorage(client, elasticsearch.Spec.StorageType, topology.Ingest.Storage); err != nil {
 			return err
 		}
 
@@ -230,13 +226,6 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		databaseSecret := elasticsearch.Spec.DatabaseSecret
 		if databaseSecret != nil {
 			if _, err := client.CoreV1().Secrets(elasticsearch.Namespace).Get(context.TODO(), databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
-				return err
-			}
-		}
-
-		certificateSecret := elasticsearch.Spec.CertificateSecret
-		if certificateSecret != nil {
-			if _, err := client.CoreV1().Secrets(elasticsearch.Namespace).Get(context.TODO(), certificateSecret.SecretName, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
@@ -281,8 +270,8 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 	return nil
 }
 
-func validateUpdate(obj, oldObj runtime.Object) error {
-	preconditions := getPreconditionFunc()
+func validateUpdate(obj, oldObj runtime.Object, conditions []kmapi.Condition) error {
+	preconditions := getPreconditionFunc(conditions)
 	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
@@ -293,7 +282,7 @@ func validateUpdate(obj, oldObj runtime.Object) error {
 	return nil
 }
 
-func getPreconditionFunc() []mergepatch.PreconditionFunc {
+func getPreconditionFunc(conditions []kmapi.Condition) []mergepatch.PreconditionFunc {
 	preconditions := []mergepatch.PreconditionFunc{
 		mergepatch.RequireKeyUnchanged("apiVersion"),
 		mergepatch.RequireKeyUnchanged("kind"),
@@ -301,7 +290,12 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 		mergepatch.RequireMetadataKeyUnchanged("namespace"),
 	}
 
-	for _, field := range preconditionSpecFields {
+	// Once the database has been provisioned, don't let update the "spec.init" section
+	if kmapi.IsConditionTrue(conditions, api.DatabaseProvisioned) {
+		preconditionSpecFields.Insert("spec.init")
+	}
+
+	for _, field := range preconditionSpecFields.List() {
 		preconditions = append(preconditions,
 			meta_util.RequireChainKeyUnchanged(field),
 		)
@@ -309,7 +303,7 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 	return preconditions
 }
 
-var preconditionSpecFields = []string{
+var preconditionSpecFields = sets.NewString(
 	"spec.topology.*.prefix",
 	"spec.topology.*.storage",
 	"spec.enableSSL",
@@ -318,12 +312,11 @@ var preconditionSpecFields = []string{
 	"spec.databaseSecret",
 	"spec.storageType",
 	"spec.storage",
-	"spec.init",
 	"spec.podTemplate.spec.nodeSelector",
-}
+)
 
 func preconditionFailedError() error {
-	str := preconditionSpecFields
+	str := preconditionSpecFields.List()
 	strList := strings.Join(str, "\n\t")
 	return fmt.Errorf(strings.Join([]string{`At least one of the following was changed:
 	apiVersion

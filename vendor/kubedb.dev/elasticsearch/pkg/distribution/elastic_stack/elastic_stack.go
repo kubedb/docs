@@ -17,17 +17,12 @@ limitations under the License.
 package elastic_stack
 
 import (
-	"context"
-
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	distapi "kubedb.dev/elasticsearch/pkg/distribution/api"
 
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	api_util "kmodules.xyz/client-go/api/v1"
 )
 
 type Elasticsearch struct {
@@ -52,46 +47,24 @@ func (es *Elasticsearch) UpdatedElasticsearch() *api.Elasticsearch {
 	return es.elasticsearch
 }
 
-func (es *Elasticsearch) IsAllRequiredSecretAvailable() bool {
+func (es *Elasticsearch) RequiredCertSecretNames() []string {
 	if !es.elasticsearch.Spec.DisableSecurity {
-		tls := es.elasticsearch.Spec.TLS
+		var sNames []string
+		// transport layer is always secured with certificate
+		sNames = append(sNames, es.elasticsearch.MustCertSecretName(api.ElasticsearchTransportCert))
 
-		// check transport layer cert
-		sName, exist := api_util.GetCertificateSecretName(tls.Certificates, string(api.ElasticsearchTransportCert))
-		if exist {
-			_, err := es.getSecret(sName, es.elasticsearch.Namespace)
-			if err != nil {
-				return false
-			}
-		} else {
-			return false
-		}
-
+		// If SSL is enabled for REST layer
 		if es.elasticsearch.Spec.EnableSSL {
-			// check http layer cert
-			sName, exist := api_util.GetCertificateSecretName(tls.Certificates, string(api.ElasticsearchHTTPCert))
-			if exist {
-				_, err := es.getSecret(sName, es.elasticsearch.Namespace)
-				if err != nil {
-					return false
-				}
-			} else {
-				return false
+			// http server certificate
+			sNames = append(sNames, es.elasticsearch.MustCertSecretName(api.ElasticsearchHTTPCert))
+			// archiver certificate
+			sNames = append(sNames, es.elasticsearch.MustCertSecretName(api.ElasticsearchArchiverCert))
+			// metrics exporter certificate, if monitoring is enabled
+			if es.elasticsearch.Spec.Monitor != nil {
+				sNames = append(sNames, es.elasticsearch.MustCertSecretName(api.ElasticsearchMetricsExporterCert))
 			}
 		}
-
-		// check user credentials secret
-		// admin credentials
-		_, err := es.getSecret(es.elasticsearch.Spec.DatabaseSecret.SecretName, es.elasticsearch.Namespace)
-		if err != nil {
-			return false
-		}
+		return sNames
 	}
-
-	return true
-}
-
-func (es *Elasticsearch) getSecret(name, namespace string) (*corev1.Secret, error) {
-	secret, err := es.kClient.CoreV1().Secrets(namespace).Get(context.TODO(), name, metav1.GetOptions{})
-	return secret, err
+	return nil
 }

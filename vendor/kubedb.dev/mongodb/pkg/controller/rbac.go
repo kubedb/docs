@@ -19,7 +19,7 @@ package controller
 import (
 	"context"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
@@ -124,7 +124,7 @@ func (c *Controller) createRoleBinding(db *api.MongoDB, roleName string, saName 
 }
 
 func (c *Controller) getPolicyNames(db *api.MongoDB) (string, error) {
-	dbVersion, err := c.ExtClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	dbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

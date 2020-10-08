@@ -24,7 +24,7 @@ import (
 	"regexp"
 	"strconv"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	configure_cluster "kubedb.dev/redis/pkg/configure-cluster"
 
@@ -70,7 +70,7 @@ func (c *Controller) ensureStatefulSet(redis *api.Redis, statefulSetName string,
 			return kutil.VerbUnchanged, errors.Wrap(err, "Failed to CreateOrPatch StatefulSet")
 		}
 
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			redis,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -124,7 +124,7 @@ func (c *Controller) ensureRedisNodes(redis *api.Redis) (kutil.VerbType, error) 
 			}
 		}
 
-		redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
+		redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return vt, err
 		}
@@ -213,7 +213,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 
 	owner := metav1.NewControllerRef(redis, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
-	redisVersion, err := c.ExtClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
+	redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -349,7 +349,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 		//upsert the container
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, container)
 
-		if redis.GetMonitoringVendor() == mona.VendorPrometheus {
+		if redis.Spec.Monitor != nil && redis.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 
 			args := []string{
 				fmt.Sprintf("--web.listen-address=:%v", redis.Spec.Monitor.Prometheus.Exporter.Port),
@@ -371,7 +371,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 				ImagePullPolicy: core.PullIfNotPresent,
 				Ports: []core.ContainerPort{
 					{
-						Name:          api.PrometheusExporterPortName,
+						Name:          mona.PrometheusExporterPortName,
 						Protocol:      core.ProtocolTCP,
 						ContainerPort: redis.Spec.Monitor.Prometheus.Exporter.Port,
 					},

@@ -20,7 +20,7 @@ import (
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
 	"github.com/appscode/go/types"
@@ -31,13 +31,12 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	meta_util "kmodules.xyz/client-go/meta"
-	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
 type PostgresMutator struct {
 	client      kubernetes.Interface
-	extClient   cs.Interface
+	dbClient    cs.Interface
 	lock        sync.RWMutex
 	initialized bool
 }
@@ -63,7 +62,7 @@ func (a *PostgresMutator) Initialize(config *rest.Config, stopCh <-chan struct{}
 	if a.client, err = kubernetes.NewForConfig(config); err != nil {
 		return err
 	}
-	if a.extClient, err = cs.NewForConfig(config); err != nil {
+	if a.dbClient, err = cs.NewForConfig(config); err != nil {
 		return err
 	}
 	return err
@@ -125,26 +124,5 @@ func setDefaultValues(postgres *api.Postgres) (runtime.Object, error) {
 	}
 	postgres.SetDefaults()
 
-	// If monitoring spec is given without port,
-	// set default Listening port
-	setMonitoringPort(postgres)
-
 	return postgres, nil
-}
-
-// Assign Default Monitoring Port if MonitoringSpec Exists
-// and the AgentVendor is Prometheus.
-func setMonitoringPort(postgres *api.Postgres) {
-	if postgres.Spec.Monitor != nil &&
-		postgres.GetMonitoringVendor() == mona.VendorPrometheus {
-		if postgres.Spec.Monitor.Prometheus == nil {
-			postgres.Spec.Monitor.Prometheus = &mona.PrometheusSpec{}
-		}
-		if postgres.Spec.Monitor.Prometheus.Exporter == nil {
-			postgres.Spec.Monitor.Prometheus.Exporter = &mona.PrometheusExporterSpec{}
-		}
-		if postgres.Spec.Monitor.Prometheus.Exporter.Port == 0 {
-			postgres.Spec.Monitor.Prometheus.Exporter.Port = api.PrometheusExporterPortNumber
-		}
-	}
 }

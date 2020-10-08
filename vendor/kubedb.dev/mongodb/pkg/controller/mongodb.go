@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/mongodb/pkg/admission"
 
@@ -31,13 +31,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	kutil "kmodules.xyz/client-go"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
-	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (c *Controller) create(mongodb *api.MongoDB) error {
-	if err := validator.ValidateMongoDB(c.Client, c.ExtClient, mongodb, true); err != nil {
-		c.recorder.Event(
+	if err := validator.ValidateMongoDB(c.Client, c.DBClient, mongodb, true); err != nil {
+		c.Recorder.Event(
 			mongodb,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -48,8 +48,8 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	if mongodb.Status.Phase == "" {
-		mg, err := util.UpdateMongoDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
-			in.Phase = api.DatabasePhaseCreating
+		mg, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
@@ -130,14 +130,14 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			mongodb,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created MongoDB",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			mongodb,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -152,32 +152,25 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		return err
 	}
 
-	if _, err := meta_util.GetString(mongodb.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		mongodb.Spec.Init != nil && mongodb.Spec.Init.StashRestoreSession != nil {
-
-		if mongodb.Status.Phase == api.DatabasePhaseInitializing {
-			return nil
-		}
-
-		// add phase that database is being initialized
-		mg, err := util.UpdateMongoDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
-			in.Phase = api.DatabasePhaseInitializing
-			return in
-		}, metav1.UpdateOptions{})
-		if err != nil {
-			return err
-		}
-		mongodb.Status = mg.Status
-
-		init := mongodb.Spec.Init
-		if init.StashRestoreSession != nil {
-			log.Debugf("MongoDB %v/%v is waiting for restoreSession to be succeeded", mongodb.Namespace, mongodb.Name)
+	//======================== Wait for the initial restore =====================================
+	if mongodb.Spec.Init != nil && mongodb.Spec.Init.WaitForInitialRestore {
+		// Only wait for the first restore.
+		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
+		if !kmapi.HasCondition(mongodb.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseDataRestored) {
+			// write log indicating that the database is waiting for the data to be restored by external initializer
+			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
+				mongodb.Kind,
+				mongodb.Namespace,
+				mongodb.Name,
+			)
+			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
 		}
 	}
 
-	mg, err := util.UpdateMongoDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
-		in.Phase = api.DatabasePhaseRunning
+	mg, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = mongodb.Generation
 		return in
 	}, metav1.UpdateOptions{})
@@ -188,7 +181,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(mongodb); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mongodb,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -200,7 +193,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	if err := c.manageMonitor(mongodb); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mongodb,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -226,7 +219,7 @@ func (c *Controller) halt(db *api.MongoDB) error {
 		return err
 	}
 	log.Infof("update status of MongoDB %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMongoDBStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+	if _, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
@@ -241,7 +234,7 @@ func (c *Controller) terminate(db *api.MongoDB) error {
 
 	// If TerminationPolicy is "halt", keep PVCs and Secrets intact.
 	// TerminationPolicyPause is deprecated and will be removed in future.
-	if db.Spec.TerminationPolicy == api.TerminationPolicyHalt || db.Spec.TerminationPolicy == api.TerminationPolicyPause {
+	if db.Spec.TerminationPolicy == api.TerminationPolicyHalt {
 		if err := c.removeOwnerReferenceFromOffshoots(db); err != nil {
 			return err
 		}

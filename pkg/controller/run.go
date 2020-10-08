@@ -17,6 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
+
 	"github.com/appscode/go/log"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
@@ -46,30 +48,6 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.KubeInformerFactory.Start(stopCh)
 	c.KubedbInformerFactory.Start(stopCh)
 
-	go func() {
-		// start StashInformerFactory only if stash crds (ie, "restoreSession") are available.
-		if err := c.BlockOnStashOperator(stopCh); err != nil {
-			log.Errorln("error while waiting for restoreSession.", err)
-			return
-		}
-
-		// start informer factory
-		c.StashInformerFactory.Start(stopCh)
-		for t, v := range c.StashInformerFactory.WaitForCacheSync(stopCh) {
-			if !v {
-				log.Fatalf("%v timed out waiting for caches to sync", t)
-				return
-			}
-		}
-		// Only postgres, elasticsearch, mongodb and mysql has restoreSession queue initialized.
-		// Check RSQueue initialization in ctrl.init() (e.g. c.myCtrl.Init()) to know if it expects RS watcher.
-		c.esCtrl.RSQueue.Run(stopCh)
-		c.mgCtrl.RSQueue.Run(stopCh)
-		c.myCtrl.RSQueue.Run(stopCh)
-		c.pgCtrl.RSQueue.Run(stopCh)
-		c.pxCtrl.RSQueue.Run(stopCh)
-	}()
-
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range c.KubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
@@ -84,6 +62,13 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 		}
 	}
 
+	// Start StatefulSet controller
+	c.StsQueue.Run(stopCh)
+
+	// Initialize and start Stash controllers
+	go stash.NewController(c.Controller, &c.Config.Initializers.Stash, c.WatchNamespace).StartAfterStashInstalled(c.MaxNumRequeues, c.NumThreads, c.selector, stopCh)
+
+	// Run individual database controllers
 	c.esCtrl.RunControllers(stopCh)
 	c.mcCtrl.RunControllers(stopCh)
 	c.mgCtrl.RunControllers(stopCh)

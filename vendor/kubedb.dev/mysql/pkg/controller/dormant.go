@@ -19,7 +19,8 @@ package controller
 import (
 	"context"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/apis/kubedb"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
@@ -54,10 +55,6 @@ func (c *Controller) waitUntilHalted(db *api.MySQL) error {
 		return err
 	}
 
-	if err := c.waitUntilDeploymentsDeleted(db); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -73,16 +70,6 @@ func (c *Controller) waitUntilStatefulSetsDeleted(db *api.MySQL) error {
 	log.Infof("waiting for statefulsets for MySQL %v/%v to be deleted\n", db.Namespace, db.Name)
 	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
 		if sts, err := c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String()}); err != nil && kerr.IsNotFound(err) || len(sts.Items) == 0 {
-			return true, nil
-		}
-		return false, nil
-	})
-}
-
-func (c *Controller) waitUntilDeploymentsDeleted(db *api.MySQL) error {
-	log.Infof("waiting for deployments for MySQL %v/%v to be deleted\n", db.Namespace, db.Name)
-	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
-		if deploys, err := c.Client.AppsV1().Deployments(db.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String()}); err != nil && kerr.IsNotFound(err) || len(deploys.Items) == 0 {
 			return true, nil
 		}
 		return false, nil
@@ -109,7 +96,7 @@ func (c *Controller) wipeOutDatabase(meta metav1.ObjectMeta, secrets []string, o
 			return errors.Wrap(err, "error in getting db secret")
 		}
 		genericKey, ok := secret.Labels[meta_util.ManagedByLabelKey]
-		if !ok || genericKey != api.GenericKey {
+		if !ok || genericKey != kubedb.GroupName {
 			unusedSecrets.Delete(secret.Name)
 		}
 	}

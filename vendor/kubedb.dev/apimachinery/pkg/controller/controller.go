@@ -19,7 +19,6 @@ package controller
 import (
 	"time"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	kubedbinformers "kubedb.dev/apimachinery/client/informers/externalversions"
 
@@ -27,20 +26,21 @@ import (
 	cmInformers "github.com/jetstack/cert-manager/pkg/client/informers/externalversions"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	externalInformers "k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
+	appslister "k8s.io/client-go/listers/apps/v1"
 	corelisters "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/record"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	appcat_in "kmodules.xyz/custom-resources/client/informers/externalversions"
 	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
-	stashInformers "stash.appscode.dev/apimachinery/client/informers/externalversions"
+	stashinformer "stash.appscode.dev/apimachinery/client/informers/externalversions"
+	lister "stash.appscode.dev/apimachinery/client/listers/stash/v1beta1"
 )
 
 type Controller struct {
@@ -49,34 +49,37 @@ type Controller struct {
 	Client kubernetes.Interface
 	// CRD Client
 	CRDClient crd_cs.Interface
-	// ThirdPartyExtension client
-	ExtClient cs.Interface //#TODO: rename to DBClient
+	// KubeDB client
+	DBClient cs.Interface
 	// Dynamic client
 	DynamicClient dynamic.Interface
 	// AppCatalog client
 	AppCatalogClient appcat_cs.Interface
-	// StashClient for stash
-	StashClient scs.Interface
 	// Cluster topology when the operator started
 	ClusterTopology *core_util.Topology
+	// Event Recorder
+	Recorder record.EventRecorder
 }
 
 type Config struct {
 	// Informer factory
 	KubeInformerFactory        informers.SharedInformerFactory
 	KubedbInformerFactory      kubedbinformers.SharedInformerFactory
-	StashInformerFactory       stashInformers.SharedInformerFactory
 	AppCatInformerFactory      appcat_in.SharedInformerFactory
 	ExternalInformerFactory    externalInformers.SharedInformerFactory
 	CertManagerInformerFactory cmInformers.SharedInformerFactory
 
-	// restoreSession queue
-	RSQueue    *queue.Worker
-	RSInformer cache.SharedIndexInformer
+	// External tool to initialize the database
+	Initializers Initializers
 
 	// Secret
 	SecretInformer cache.SharedIndexInformer
 	SecretLister   corelisters.SecretLister
+
+	// StatefulSet Watcher
+	StsQueue    *queue.Worker
+	StsInformer cache.SharedIndexInformer
+	StsLister   appslister.StatefulSetLister
 
 	OperatorNamespace       string
 	GoverningService        string
@@ -91,8 +94,20 @@ type Config struct {
 	EnableMutatingWebhook   bool
 }
 
-type DBHelper interface {
-	GetDatabase(metav1.ObjectMeta) (runtime.Object, error)
-	SetDatabaseStatus(metav1.ObjectMeta, api.DatabasePhase, string) error
-	UpsertDatabaseAnnotation(metav1.ObjectMeta, map[string]string) error
+type Initializers struct {
+	Stash StashInitializer
+}
+
+type StashInitializer struct {
+	StashClient          scs.Interface
+	StashInformerFactory stashinformer.SharedInformerFactory
+	// StashInitializer RestoreSession
+	RSQueue    *queue.Worker
+	RSInformer cache.SharedIndexInformer
+	RSLister   lister.RestoreSessionLister
+
+	// StashInitializer RestoreBatch
+	RBQueue    *queue.Worker
+	RBInformer cache.SharedIndexInformer
+	RBLister   lister.RestoreBatchLister
 }

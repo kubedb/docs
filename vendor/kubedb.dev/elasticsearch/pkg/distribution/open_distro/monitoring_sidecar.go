@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	certlib "kubedb.dev/elasticsearch/pkg/lib/cert"
 
 	"github.com/pkg/errors"
@@ -31,7 +31,7 @@ import (
 )
 
 func (es *Elasticsearch) upsertMonitoringContainer(containers []corev1.Container) ([]corev1.Container, error) {
-	if es.elasticsearch.GetMonitoringVendor() == mona.VendorPrometheus {
+	if es.elasticsearch.Spec.Monitor != nil && es.elasticsearch.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 		var uri string
 		if es.elasticsearch.Spec.DisableSecurity {
 			uri = fmt.Sprintf("%s://localhost:%d", es.elasticsearch.GetConnectionScheme(), api.ElasticsearchRestPort)
@@ -43,16 +43,26 @@ func (es *Elasticsearch) upsertMonitoringContainer(containers []corev1.Container
 			Name: "exporter",
 			Args: append([]string{
 				fmt.Sprintf("--es.uri=%s", uri),
-				fmt.Sprintf("--web.listen-address=:%d", api.PrometheusExporterPortNumber),
+				fmt.Sprintf("--web.listen-address=:%d", func() int32 {
+					if es.elasticsearch.Spec.Monitor.Prometheus != nil {
+						return es.elasticsearch.Spec.Monitor.Prometheus.Exporter.Port
+					}
+					return int32(mona.PrometheusExporterPortNumber)
+				}()),
 				fmt.Sprintf("--web.telemetry-path=%s", es.elasticsearch.StatsService().Path()),
 			}, es.elasticsearch.Spec.Monitor.Prometheus.Exporter.Args...),
 			Image:           es.esVersion.Spec.Exporter.Image,
 			ImagePullPolicy: corev1.PullIfNotPresent,
 			Ports: []corev1.ContainerPort{
 				{
-					Name:          api.PrometheusExporterPortName,
-					Protocol:      corev1.ProtocolTCP,
-					ContainerPort: int32(api.PrometheusExporterPortNumber),
+					Name:     mona.PrometheusExporterPortName,
+					Protocol: corev1.ProtocolTCP,
+					ContainerPort: func() int32 {
+						if es.elasticsearch.Spec.Monitor.Prometheus != nil {
+							return es.elasticsearch.Spec.Monitor.Prometheus.Exporter.Port
+						}
+						return int32(mona.PrometheusExporterPortNumber)
+					}(),
 				},
 			},
 			Env:             es.elasticsearch.Spec.Monitor.Prometheus.Exporter.Env,

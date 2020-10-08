@@ -34,6 +34,14 @@ type EtcdAutoscalerListerExpansion interface{}
 // EtcdAutoscalerNamespaceLister.
 type EtcdAutoscalerNamespaceListerExpansion interface{}
 
+// MariaDBAutoscalerListerExpansion allows custom methods to be added to
+// MariaDBAutoscalerLister.
+type MariaDBAutoscalerListerExpansion interface{}
+
+// MariaDBAutoscalerNamespaceListerExpansion allows custom methods to be added to
+// MariaDBAutoscalerNamespaceLister.
+type MariaDBAutoscalerNamespaceListerExpansion interface{}
+
 // MemcachedAutoscalerListerExpansion allows custom methods to be added to
 // MemcachedAutoscalerLister.
 type MemcachedAutoscalerListerExpansion interface{}
@@ -97,3 +105,19 @@ type RedisAutoscalerListerExpansion interface{}
 // RedisAutoscalerNamespaceListerExpansion allows custom methods to be added to
 // RedisAutoscalerNamespaceLister.
 type RedisAutoscalerNamespaceListerExpansion interface{}
+
+// VerticalAutoscalerListerExpansion allows custom methods to be added to
+// VerticalAutoscalerLister.
+type VerticalAutoscalerListerExpansion interface{}
+
+// VerticalAutoscalerNamespaceListerExpansion allows custom methods to be added to
+// VerticalAutoscalerNamespaceLister.
+type VerticalAutoscalerNamespaceListerExpansion interface{}
+
+// VerticalAutoscalerCheckpointListerExpansion allows custom methods to be added to
+// VerticalAutoscalerCheckpointLister.
+type VerticalAutoscalerCheckpointListerExpansion interface{}
+
+// VerticalAutoscalerCheckpointNamespaceListerExpansion allows custom methods to be added to
+// VerticalAutoscalerCheckpointNamespaceLister.
+type VerticalAutoscalerCheckpointNamespaceListerExpansion interface{}

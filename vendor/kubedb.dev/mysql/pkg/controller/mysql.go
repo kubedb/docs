@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/mysql/pkg/admission"
 
@@ -30,16 +30,15 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	kutil "kmodules.xyz/client-go"
-	core_util "kmodules.xyz/client-go/core/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (c *Controller) create(mysql *api.MySQL) error {
-	if err := validator.ValidateMySQL(c.Client, c.ExtClient, mysql, true); err != nil {
-		c.recorder.Event(
+	if err := validator.ValidateMySQL(c.Client, c.DBClient, mysql, true); err != nil {
+		c.Recorder.Event(
 			mysql,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -50,8 +49,8 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	}
 
 	if mysql.Status.Phase == "" {
-		my, err := util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
-			in.Phase = api.DatabasePhaseCreating
+		my, err := util.UpdateMySQLStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
+			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
@@ -72,30 +71,30 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	}
 
 	// ensure database Service
-	vt1, err := c.ensureService(mysql)
+	vt1, err := c.ensurePrimaryService(mysql)
 	if err != nil {
 		return err
 	}
 
 	// create Service only for master/primary pod
-	if mysql.Spec.Topology != nil && mysql.Spec.Topology.Mode != nil && *mysql.Spec.Topology.Mode == api.MySQLClusterModeGroup {
-		vt, err := c.ensureServiceForPrimaryPod(mysql)
+	if mysql.UsesGroupReplication() {
+		vt, err := c.ensureSecondaryService(mysql)
 		if err != nil {
 			return err
 		}
 		if vt == kutil.VerbCreated {
-			c.recorder.Event(
+			c.Recorder.Event(
 				mysql,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,
-				"Successfully created primary service",
+				"Successfully created service for secondary replicas",
 			)
 		} else if vt == kutil.VerbPatched {
-			c.recorder.Event(
+			c.Recorder.Event(
 				mysql,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,
-				"Successfully patched primary service",
+				"Successfully patched service for secondary replicas",
 			)
 		}
 	}
@@ -131,14 +130,14 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			mysql,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created MySQL",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			mysql,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -153,32 +152,25 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		return err
 	}
 
-	if _, err := meta_util.GetString(mysql.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		mysql.Spec.Init != nil && mysql.Spec.Init.StashRestoreSession != nil {
-
-		if mysql.Status.Phase == api.DatabasePhaseInitializing {
-			return nil
-		}
-
-		// add phase that database is being initialized
-		my, err := util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
-			in.Phase = api.DatabasePhaseInitializing
-			return in
-		}, metav1.UpdateOptions{})
-		if err != nil {
-			return err
-		}
-		mysql.Status = my.Status
-
-		init := mysql.Spec.Init
-		if init.StashRestoreSession != nil {
-			log.Debugf("MySQL %v/%v is waiting for restoreSession to be succeeded", mysql.Namespace, mysql.Name)
+	//======================== Wait for the initial restore =====================================
+	if mysql.Spec.Init != nil && mysql.Spec.Init.WaitForInitialRestore {
+		// Only wait for the first restore.
+		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
+		if !kmapi.HasCondition(mysql.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(mysql.Status.Conditions, api.DatabaseDataRestored) {
+			// write log indicating that the database is waiting for the data to be restored by external initializer
+			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
+				mysql.Kind,
+				mysql.Namespace,
+				mysql.Name,
+			)
+			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
 		}
 	}
 
-	my, err := util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
-		in.Phase = api.DatabasePhaseRunning
+	my, err := util.UpdateMySQLStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
+		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = mysql.Generation
 		return in
 	}, metav1.UpdateOptions{})
@@ -189,7 +181,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(mysql); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mysql,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -201,7 +193,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 	}
 
 	if err := c.manageMonitor(mysql); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			mysql,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -227,7 +219,7 @@ func (c *Controller) halt(db *api.MySQL) error {
 		return err
 	}
 	log.Infof("update status of MySQL %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMySQLStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
+	if _, err := util.UpdateMySQLStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
@@ -242,7 +234,7 @@ func (c *Controller) terminate(mysql *api.MySQL) error {
 
 	// If TerminationPolicy is "halt", keep PVCs and Secrets intact.
 	// TerminationPolicyHalt is deprecated and will be removed in future.
-	if mysql.Spec.TerminationPolicy == api.TerminationPolicyHalt || mysql.Spec.TerminationPolicy == api.TerminationPolicyPause {
+	if mysql.Spec.TerminationPolicy == api.TerminationPolicyHalt {
 		if err := c.removeOwnerReferenceFromOffshoots(mysql); err != nil {
 			return err
 		}
@@ -318,51 +310,4 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(mysql *api.MySQL) error {
 		return err
 	}
 	return nil
-}
-
-func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
-	mysql, err := c.myLister.MySQLs(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return nil, err
-	}
-
-	return mysql, nil
-}
-
-func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
-	mysql, err := c.myLister.MySQLs(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return err
-	}
-	_, err = util.UpdateMySQLStatus(
-		context.TODO(),
-		c.ExtClient.KubedbV1alpha1(),
-		mysql.ObjectMeta,
-		func(in *api.MySQLStatus) *api.MySQLStatus {
-			in.Phase = phase
-			in.Reason = reason
-			return in
-		},
-		metav1.UpdateOptions{},
-	)
-	return err
-}
-
-func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
-	mysql, err := c.myLister.MySQLs(meta.Namespace).Get(meta.Name)
-	if err != nil {
-		return err
-	}
-
-	_, _, err = util.PatchMySQL(
-		context.TODO(),
-		c.ExtClient.KubedbV1alpha1(),
-		mysql,
-		func(in *api.MySQL) *api.MySQL {
-			in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
-			return in
-		},
-		metav1.PatchOptions{},
-	)
-	return err
 }

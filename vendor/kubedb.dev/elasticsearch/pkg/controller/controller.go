@@ -20,13 +20,13 @@ import (
 	"context"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	catalog_lister "kubedb.dev/apimachinery/client/listers/catalog/v1alpha1"
-	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
+	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha2"
 	amc "kubedb.dev/apimachinery/pkg/controller"
-	"kubedb.dev/apimachinery/pkg/controller/restoresession"
+	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
@@ -34,7 +34,6 @@ import (
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	utilRuntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -47,7 +46,6 @@ import (
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 )
 
 type Controller struct {
@@ -56,10 +54,8 @@ type Controller struct {
 
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
-	// Event Recorder
-	recorder record.EventRecorder
-	// labelselector for event-handler of Snapshot, Dormant and Job
-	selector labels.Selector
+	// LabelSelector to filter Stash restore invokers only for this database
+	selector metav1.LabelSelector
 
 	// Elasticsearch
 	esQueue         *queue.Worker
@@ -68,14 +64,11 @@ type Controller struct {
 	esVersionLister catalog_lister.ElasticsearchVersionLister
 }
 
-var _ amc.DBHelper = &Controller{}
-
 func New(
 	restConfig *restclient.Config,
 	client kubernetes.Interface,
 	crdClient crd_cs.Interface,
-	extClient cs.Interface,
-	stashClient scs.Interface,
+	dbClient cs.Interface,
 	dc dynamic.Interface,
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
@@ -87,19 +80,20 @@ func New(
 		Controller: &amc.Controller{
 			ClientConfig:     restConfig,
 			Client:           client,
-			ExtClient:        extClient,
-			StashClient:      stashClient,
+			DBClient:         dbClient,
 			CRDClient:        crdClient,
 			DynamicClient:    dc,
 			AppCatalogClient: appCatalogClient,
 			ClusterTopology:  topology,
+			Recorder:         recorder,
 		},
 		Config:     opt,
 		promClient: promClient,
-		recorder:   recorder,
-		selector: labels.SelectorFromSet(map[string]string{
-			api.LabelDatabaseKind: api.ResourceKindElasticsearch,
-		}),
+		selector: metav1.LabelSelector{
+			MatchLabels: map[string]string{
+				api.LabelDatabaseKind: api.ResourceKindElasticsearch,
+			},
+		},
 	}
 }
 
@@ -117,14 +111,13 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 // InitInformer initializes Elasticsearch, DormantDB amd Snapshot watcher
 func (c *Controller) Init() error {
 	c.initWatcher()
-	c.RSQueue = restoresession.NewController(c.Controller, c, c.Config, nil, c.recorder).AddEventHandlerFunc(c.selector)
-
+	c.initSecretWatcher()
 	return nil
 }
 
 // RunControllers runs queue.worker
 func (c *Controller) RunControllers(stopCh <-chan struct{}) {
-	// Watch x  TPR objects
+	// Start Elasticsearch controller
 	c.esQueue.Run(stopCh)
 }
 
@@ -143,24 +136,6 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.KubeInformerFactory.Start(stopCh)
 	c.KubedbInformerFactory.Start(stopCh)
 
-	go func() {
-		// start StashInformerFactory only if stash crds (ie, "restoreSession") are available.
-		if err := c.BlockOnStashOperator(stopCh); err != nil {
-			log.Errorln("error while waiting for restoreSession.", err)
-			return
-		}
-
-		// start informer factory
-		c.StashInformerFactory.Start(stopCh)
-		for t, v := range c.StashInformerFactory.WaitForCacheSync(stopCh) {
-			if !v {
-				log.Fatalf("%v timed out waiting for caches to sync", t)
-				return
-			}
-		}
-		c.RSQueue.Run(stopCh)
-	}()
-
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range c.KubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
@@ -175,6 +150,13 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 		}
 	}
 
+	// Start StatefulSet controller
+	c.StsQueue.Run(stopCh)
+
+	// Initialize and start Stash controllers
+	go stash.NewController(c.Controller, &c.Config.Initializers.Stash, c.WatchNamespace).StartAfterStashInstalled(c.MaxNumRequeues, c.NumThreads, c.selector, stopCh)
+
+	// Start Elasticsearch controller
 	c.RunControllers(stopCh)
 
 	if c.EnableMutatingWebhook {
@@ -191,7 +173,7 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) pushFailureEvent(elasticsearch *api.Elasticsearch, reason string) {
-	c.recorder.Eventf(
+	c.Recorder.Eventf(
 		elasticsearch,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
@@ -200,14 +182,12 @@ func (c *Controller) pushFailureEvent(elasticsearch *api.Elasticsearch, reason s
 		reason,
 	)
 
-	es, err := util.UpdateElasticsearchStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-		in.Phase = api.DatabasePhaseFailed
-		in.Reason = reason
+	es, err := util.UpdateElasticsearchStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 		in.ObservedGeneration = elasticsearch.Generation
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			elasticsearch,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,

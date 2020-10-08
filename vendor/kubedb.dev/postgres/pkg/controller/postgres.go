@@ -21,8 +21,8 @@ import (
 	"fmt"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/postgres/pkg/admission"
 
@@ -32,17 +32,15 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kutil "kmodules.xyz/client-go"
-	core_util "kmodules.xyz/client-go/core/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
-	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func (c *Controller) create(postgres *api.Postgres) error {
-	if err := validator.ValidatePostgres(c.Client, c.ExtClient, postgres, true); err != nil {
-		c.recorder.Event(
+	if err := validator.ValidatePostgres(c.Client, c.DBClient, postgres, true); err != nil {
+		c.Recorder.Event(
 			postgres,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -53,8 +51,8 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	if postgres.Status.Phase == "" {
-		pg, err := util.UpdatePostgresStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
-			in.Phase = api.DatabasePhaseCreating
+		pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
@@ -76,7 +74,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	// ensure database StatefulSet
-	postgresVersion, err := c.ExtClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), string(postgres.Spec.Version), metav1.GetOptions{})
+	postgresVersion, err := c.DBClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), string(postgres.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -86,14 +84,14 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			postgres,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created Postgres",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			postgres,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -108,32 +106,25 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		return err
 	}
 
-	if _, err := meta_util.GetString(postgres.Annotations, api.AnnotationInitialized); err == kutil.ErrNotFound &&
-		postgres.Spec.Init != nil && postgres.Spec.Init.StashRestoreSession != nil {
-
-		if postgres.Status.Phase == api.DatabasePhaseInitializing {
-			return nil
-		}
-
-		// add phase that database is being initialized
-		pg, err := util.UpdatePostgresStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
-			in.Phase = api.DatabasePhaseInitializing
-			return in
-		}, metav1.UpdateOptions{})
-		if err != nil {
-			return err
-		}
-		postgres.Status = pg.Status
-
-		init := postgres.Spec.Init
-		if init.StashRestoreSession != nil {
-			log.Debugf("Postgres %v/%v is waiting for restoreSession to be succeeded", postgres.Namespace, postgres.Name)
+	//======================== Wait for the initial restore =====================================
+	if postgres.Spec.Init != nil && postgres.Spec.Init.WaitForInitialRestore {
+		// Only wait for the first restore.
+		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
+		if !kmapi.HasCondition(postgres.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(postgres.Status.Conditions, api.DatabaseDataRestored) {
+			// write log indicating that the database is waiting for the data to be restored by external initializer
+			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
+				postgres.Kind,
+				postgres.Namespace,
+				postgres.Name,
+			)
+			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
 		}
 	}
 
-	pg, err := util.UpdatePostgresStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
-		in.Phase = api.DatabasePhaseRunning
+	pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = postgres.Generation
 		return in
 	}, metav1.UpdateOptions{})
@@ -144,7 +135,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(postgres); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			postgres,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -156,7 +147,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	if err := c.manageMonitor(postgres); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			postgres,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -202,7 +193,7 @@ func (c *Controller) halt(db *api.Postgres) error {
 		return err
 	}
 	log.Infof("update status of Postgres %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdatePostgresStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), db.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+	if _, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
 		return in
@@ -217,7 +208,7 @@ func (c *Controller) terminate(postgres *api.Postgres) error {
 
 	// If TerminationPolicy is "halt", keep PVCs and Secrets intact.
 	// TerminationPolicyPause is deprecated and will be removed in future.
-	if postgres.Spec.TerminationPolicy == api.TerminationPolicyHalt || postgres.Spec.TerminationPolicy == api.TerminationPolicyPause {
+	if postgres.Spec.TerminationPolicy == api.TerminationPolicyHalt {
 		if err := c.removeOwnerReferenceFromOffshoots(postgres); err != nil {
 			return err
 		}
@@ -321,39 +312,4 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *api.Postgres) e
 		return err
 	}
 	return nil
-}
-
-func (c *Controller) GetDatabase(meta metav1.ObjectMeta) (runtime.Object, error) {
-	postgres, err := c.ExtClient.KubedbV1alpha1().Postgreses(meta.Namespace).Get(context.TODO(), meta.Name, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	return postgres, nil
-}
-
-func (c *Controller) SetDatabaseStatus(meta metav1.ObjectMeta, phase api.DatabasePhase, reason string) error {
-	postgres, err := c.ExtClient.KubedbV1alpha1().Postgreses(meta.Namespace).Get(context.TODO(), meta.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-	_, err = util.UpdatePostgresStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
-		in.Phase = phase
-		in.Reason = reason
-		return in
-	}, metav1.UpdateOptions{})
-	return err
-}
-
-func (c *Controller) UpsertDatabaseAnnotation(meta metav1.ObjectMeta, annotation map[string]string) error {
-	postgres, err := c.ExtClient.KubedbV1alpha1().Postgreses(meta.Namespace).Get(context.TODO(), meta.Name, metav1.GetOptions{})
-	if err != nil {
-		return err
-	}
-
-	_, _, err = util.PatchPostgres(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
-		in.Annotations = core_util.UpsertMap(in.Annotations, annotation)
-		return in
-	}, metav1.PatchOptions{})
-	return err
 }

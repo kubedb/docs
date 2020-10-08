@@ -23,11 +23,12 @@ import (
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
 	"github.com/pkg/errors"
+	"gomodules.xyz/sets"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
@@ -103,7 +105,7 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 	case admission.Delete:
 		if req.Name != "" {
 			// req.Object.Raw = nil, so read from kubernetes
-			obj, err := a.extClient.KubedbV1alpha1().MongoDBs(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
+			obj, err := a.extClient.KubedbV1alpha2().MongoDBs(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)
 			} else if err == nil && obj.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
@@ -134,7 +136,7 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 				oldMongoDB.Spec.DatabaseSecret = mongodb.Spec.DatabaseSecret
 			}
 
-			if err := validateUpdate(mongodb, oldMongoDB); err != nil {
+			if err := validateUpdate(mongodb, oldMongoDB, mongodb.Status.Conditions); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
 		}
@@ -181,11 +183,6 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 		}
 		if top.Mongos.Replicas < 1 {
 			return fmt.Errorf(`spec.shardTopology.mongos.replicas %v invalid. Must be greater than zero when spec.shardTopology is set`, top.Mongos.Replicas)
-		}
-
-		// Validate Mongos deployment strategy
-		if top.Mongos.Strategy.Type == "" {
-			return fmt.Errorf(`spec.shardTopology.mongos.strategy.type is missing`)
 		}
 
 		// Validate Envs
@@ -296,8 +293,8 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 	return nil
 }
 
-func validateUpdate(obj, oldObj runtime.Object) error {
-	preconditions := getPreconditionFunc()
+func validateUpdate(obj, oldObj runtime.Object, conditions []kmapi.Condition) error {
+	preconditions := getPreconditionFunc(conditions)
 	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
@@ -308,7 +305,7 @@ func validateUpdate(obj, oldObj runtime.Object) error {
 	return nil
 }
 
-func getPreconditionFunc() []mergepatch.PreconditionFunc {
+func getPreconditionFunc(conditions []kmapi.Condition) []mergepatch.PreconditionFunc {
 	preconditions := []mergepatch.PreconditionFunc{
 		mergepatch.RequireKeyUnchanged("apiVersion"),
 		mergepatch.RequireKeyUnchanged("kind"),
@@ -316,7 +313,12 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 		mergepatch.RequireMetadataKeyUnchanged("namespace"),
 	}
 
-	for _, field := range preconditionSpecFields {
+	// Once the database has been provisioned, don't let update the "spec.init" section
+	if kmapi.IsConditionTrue(conditions, api.DatabaseProvisioned) {
+		preconditionSpecFields.Insert("spec.init")
+	}
+
+	for _, field := range preconditionSpecFields.List() {
 		preconditions = append(preconditions,
 			meta_util.RequireChainKeyUnchanged(field),
 		)
@@ -324,17 +326,16 @@ func getPreconditionFunc() []mergepatch.PreconditionFunc {
 	return preconditions
 }
 
-var preconditionSpecFields = []string{
+var preconditionSpecFields = sets.NewString(
 	"spec.storageType",
 	"spec.databaseSecret",
 	"spec.certificateSecret",
-	"spec.init",
 	"spec.replicaSet.name",
 	"spec.shardTopology.*.prefix",
-}
+)
 
 func preconditionFailedError() error {
-	str := preconditionSpecFields
+	str := preconditionSpecFields.List()
 	strList := strings.Join(str, "\n\t")
 	return fmt.Errorf(strings.Join([]string{`At least one of the following was changed:
 	apiVersion

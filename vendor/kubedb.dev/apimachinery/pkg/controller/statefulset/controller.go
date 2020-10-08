@@ -1,0 +1,128 @@
+/*
+Copyright AppsCode Inc. and Contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package statefulset
+
+import (
+	"fmt"
+
+	"kubedb.dev/apimachinery/apis/kubedb"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	db_cs "kubedb.dev/apimachinery/client/clientset/versioned"
+	amc "kubedb.dev/apimachinery/pkg/controller"
+
+	"github.com/appscode/go/log"
+	apps "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/cache"
+	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/tools/queue"
+)
+
+type Controller struct {
+	*amc.Controller
+	*amc.Config
+}
+
+func NewController(
+	config *amc.Config,
+	client kubernetes.Interface,
+	dbClient db_cs.Interface,
+	dmClient dynamic.Interface,
+) *Controller {
+	return &Controller{
+		Controller: &amc.Controller{
+			Client:        client,
+			DBClient:      dbClient,
+			DynamicClient: dmClient,
+		},
+		Config: config,
+	}
+}
+
+func (c *Controller) InitStsWatcher() {
+	log.Infoln("Initializing StatefulSet watcher.....")
+	// Initialize RestoreSession Watcher
+	c.StsInformer = c.KubeInformerFactory.Apps().V1().StatefulSets().Informer()
+	c.StsQueue = queue.New(api.ResourceKindStatefulSet, c.MaxNumRequeues, c.NumThreads, c.processStatefulSet)
+	c.StsLister = c.KubeInformerFactory.Apps().V1().StatefulSets().Lister()
+	c.StsInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			if sts, ok := obj.(*apps.StatefulSet); ok {
+				c.enqueueOnlyKubeDBSts(sts)
+			}
+		},
+		UpdateFunc: func(oldObj, newObj interface{}) {
+			if sts, ok := newObj.(*apps.StatefulSet); ok {
+				c.enqueueOnlyKubeDBSts(sts)
+			}
+		},
+		DeleteFunc: func(obj interface{}) {
+			if sts, ok := obj.(*apps.StatefulSet); ok {
+				ok, _, err := core_util.IsOwnerOfGroup(metav1.GetControllerOf(sts), kubedb.GroupName)
+				if err != nil || !ok {
+					log.Warningln(err)
+					return
+				}
+				dbInfo, err := c.extractDatabaseInfo(sts)
+				if err != nil {
+					log.Warningf("failed to extract database info from StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
+					return
+				}
+				err = c.ensureReadyReplicasCond(dbInfo)
+				if err != nil {
+					log.Warningf("failed to update ReadyReplicas condition. Reason: %v", err)
+					return
+				}
+			}
+		},
+	})
+}
+
+func (c *Controller) enqueueOnlyKubeDBSts(sts *apps.StatefulSet) {
+	// only enqueue if the controlling owner is a KubeDB resource
+	ok, _, err := core_util.IsOwnerOfGroup(metav1.GetControllerOf(sts), kubedb.GroupName)
+	if err != nil {
+		log.Warningln(err)
+		return
+	}
+	if key, err := cache.MetaNamespaceKeyFunc(sts); ok && err == nil {
+		queue.Enqueue(c.StsQueue.GetQueue(), key)
+	}
+}
+
+func (c *Controller) processStatefulSet(key string) error {
+	log.Infof("Started processing, key: %v", key)
+	obj, exists, err := c.StsInformer.GetIndexer().GetByKey(key)
+	if err != nil {
+		log.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		return err
+	}
+
+	if !exists {
+		log.Debugf("StatefulSet %s does not exist anymore", key)
+	} else {
+		sts := obj.(*apps.StatefulSet).DeepCopy()
+		dbInfo, err := c.extractDatabaseInfo(sts)
+		if err != nil {
+			return fmt.Errorf("failed to extract database info from StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
+		}
+		return c.ensureReadyReplicasCond(dbInfo)
+	}
+	return nil
+}

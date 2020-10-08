@@ -20,11 +20,11 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
-	"github.com/appscode/go/crypto/rand"
 	"github.com/pkg/errors"
+	"gomodules.xyz/password-generator"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -37,7 +37,7 @@ func (es *Elasticsearch) EnsureDatabaseSecret() error {
 		if dbSecretVolume, err = es.createAdminCredSecret(); err != nil {
 			return err
 		}
-		newES, _, err := util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha1(), es.elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+		newES, _, err := util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
 			in.Spec.DatabaseSecret = dbSecretVolume
 			return in
 		}, metav1.PatchOptions{})
@@ -45,7 +45,6 @@ func (es *Elasticsearch) EnsureDatabaseSecret() error {
 			return err
 		}
 		es.elasticsearch = newES
-		return nil
 	} else {
 		// Get the secret and validate it.
 		dbSecret, err := es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Get(context.TODO(), dbSecretVolume.SecretName, metav1.GetOptions{})
@@ -83,7 +82,7 @@ func (es *Elasticsearch) createAdminCredSecret() (*corev1.SecretVolumeSource, er
 	}
 
 	// Create new secret new random password
-	pass := rand.Characters(8)
+	pass := password.Generate(api.DefaultPasswordLength)
 	var data = map[string][]byte{
 		corev1.BasicAuthUsernameKey: []byte(api.ElasticsearchInternalUserElastic),
 		corev1.BasicAuthPasswordKey: []byte(pass),

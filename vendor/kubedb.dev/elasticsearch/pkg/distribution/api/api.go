@@ -17,7 +17,7 @@ limitations under the License.
 package api
 
 import (
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	kutil "kmodules.xyz/client-go"
 )
@@ -28,8 +28,8 @@ type ElasticsearchInterface interface {
 	EnsureDatabaseSecret() error
 	EnsureDefaultConfig() error
 	EnsureMasterNodes() (kutil.VerbType, error)
-	EnsureClientNodes() (kutil.VerbType, error)
+	EnsureIngestNodes() (kutil.VerbType, error)
 	EnsureDataNodes() (kutil.VerbType, error)
 	EnsureCombinedNode() (kutil.VerbType, error)
-	IsAllRequiredSecretAvailable() bool
+	RequiredCertSecretNames() []string
 }

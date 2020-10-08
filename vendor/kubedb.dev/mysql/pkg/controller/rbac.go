@@ -19,7 +19,8 @@ package controller
 import (
 	"context"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/apis/kubedb"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	core "k8s.io/api/core/v1"
 	policy_v1beta1 "k8s.io/api/policy/v1beta1"
@@ -76,12 +77,24 @@ func (c *Controller) ensureRole(db *api.MySQL, name string, pspName string) erro
 				in.Rules = append(in.Rules, pspRule)
 			}
 
-			podRule := rbac.PolicyRule{
-				APIGroups: []string{""},
-				Resources: []string{"pods"},
-				Verbs:     []string{"*"},
+			resourceRule := []rbac.PolicyRule{
+				{
+					APIGroups: []string{""},
+					Resources: []string{"pods"},
+					Verbs:     []string{"*"},
+				},
+				{
+					APIGroups: []string{kubedb.GroupName},
+					Resources: []string{api.ResourcePluralMySQL},
+					Verbs:     []string{"get"},
+				},
+				{
+					APIGroups: []string{""},
+					Resources: []string{"secrets"},
+					Verbs:     []string{"get"},
+				},
 			}
-			in.Rules = append(in.Rules, podRule)
+			in.Rules = append(in.Rules, resourceRule...)
 
 			return in
 		},
@@ -124,7 +137,7 @@ func (c *Controller) createRoleBinding(db *api.MySQL, roleName string, saName st
 }
 
 func (c *Controller) getPolicyNames(db *api.MySQL) (string, error) {
-	dbVersion, err := c.ExtClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	dbVersion, err := c.DBClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}

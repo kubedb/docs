@@ -20,10 +20,10 @@ import (
 	"context"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
-	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
+	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha2"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
@@ -52,8 +52,6 @@ type Controller struct {
 
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
-	// Event Recorder
-	recorder record.EventRecorder
 	// labelselector for event-handler of Snapshot, Dormant and Job
 	selector labels.Selector
 
@@ -78,14 +76,14 @@ func New(
 		Controller: &amc.Controller{
 			ClientConfig:     clientConfig,
 			Client:           client,
-			ExtClient:        extClient,
+			DBClient:         extClient,
 			CRDClient:        crdClient,
 			AppCatalogClient: appCatalogClient,
 			ClusterTopology:  topology,
+			Recorder:         recorder,
 		},
 		Config:     opt,
 		promClient: promClient,
-		recorder:   recorder,
 		selector: labels.SelectorFromSet(map[string]string{
 			api.LabelDatabaseKind: api.ResourceKindMemcached,
 		}),
@@ -159,7 +157,7 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) pushFailureEvent(memcached *api.Memcached, reason string) {
-	c.recorder.Eventf(
+	c.Recorder.Eventf(
 		memcached,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
@@ -168,14 +166,13 @@ func (c *Controller) pushFailureEvent(memcached *api.Memcached, reason string) {
 		reason,
 	)
 
-	mc, err := util.UpdateMemcachedStatus(context.TODO(), c.ExtClient.KubedbV1alpha1(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
-		in.Phase = api.DatabasePhaseFailed
-		in.Reason = reason
+	mc, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+		in.Phase = api.DatabasePhaseNotReady
 		in.ObservedGeneration = memcached.Generation
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			memcached,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,

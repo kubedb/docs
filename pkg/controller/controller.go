@@ -18,7 +18,7 @@ package controller
 
 import (
 	catalogapi "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
-	dbapi "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	dbapi "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	esc "kubedb.dev/elasticsearch/pkg/controller"
@@ -34,20 +34,24 @@ import (
 	"github.com/appscode/go/log"
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/record"
 	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 )
 
 type Controller struct {
 	amc.Config
 	*amc.Controller
 	promClient pcm.MonitoringV1Interface
+
+	// LabelSelector to filter Stash restore invokers only for KubeDB
+	selector metav1.LabelSelector
 
 	// DB controllers
 	esCtrl  *esc.Controller
@@ -66,26 +70,34 @@ func New(
 	client kubernetes.Interface,
 	crdClient crd_cs.Interface,
 	dbClient cs.Interface,
-	stashClient scs.Interface,
 	dynamicClient dynamic.Interface,
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	opt amc.Config,
 	topology *core_util.Topology,
+	recorder record.EventRecorder,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
 			ClientConfig:     clientConfig,
 			Client:           client,
-			ExtClient:        dbClient,
+			DBClient:         dbClient,
 			CRDClient:        crdClient,
-			StashClient:      stashClient,
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
 			ClusterTopology:  topology,
+			Recorder:         recorder,
 		},
 		Config:     opt,
 		promClient: promClient,
+		selector: metav1.LabelSelector{
+			MatchExpressions: []metav1.LabelSelectorRequirement{
+				{
+					Key:      dbapi.LabelDatabaseKind,
+					Operator: metav1.LabelSelectorOpExists,
+				},
+			},
+		},
 	}
 }
 

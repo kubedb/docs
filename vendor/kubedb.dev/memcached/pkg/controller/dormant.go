@@ -19,7 +19,7 @@ package controller
 import (
 	"context"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/appscode/go/log"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -45,7 +45,7 @@ func (c *Controller) waitUntilPaused(db *api.Memcached) error {
 		return err
 	}
 
-	if err := c.waitUntilDeploymentsDeleted(db); err != nil {
+	if err := c.waitUntilStatefulSetsDeleted(db); err != nil {
 		return err
 	}
 
@@ -61,10 +61,10 @@ func (c *Controller) waitUntilRBACStuffDeleted(meta metav1.ObjectMeta) error {
 	return nil
 }
 
-func (c *Controller) waitUntilDeploymentsDeleted(db *api.Memcached) error {
-	log.Infof("waiting for deployments for Memcached %v/%v to be deleted\n", db.Namespace, db.Name)
+func (c *Controller) waitUntilStatefulSetsDeleted(db *api.Memcached) error {
+	log.Infof("waiting for stss for Memcached %v/%v to be deleted\n", db.Namespace, db.Name)
 	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
-		if sts, err := c.Client.AppsV1().Deployments(db.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String()}); err != nil && kerr.IsNotFound(err) || len(sts.Items) == 0 {
+		if sts, err := c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String()}); err != nil && kerr.IsNotFound(err) || len(sts.Items) == 0 {
 			return true, nil
 		}
 		return false, nil
@@ -103,10 +103,10 @@ func (c *Controller) haltDatabase(db *api.Memcached) error {
 	}
 
 	// delete sts collection offshoot labels
-	log.Infof("deleting deployments of Memcached %v/%v.", db.Namespace, db.Name)
+	log.Infof("deleting stss of Memcached %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		AppsV1().
-		Deployments(db.Namespace).
+		StatefulSets(db.Namespace).
 		DeleteCollection(
 			context.TODO(),
 			metav1.DeleteOptions{PropagationPolicy: &policy},

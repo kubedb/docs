@@ -29,7 +29,8 @@ import (
 	"path/filepath"
 	"time"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
+	"kubedb.dev/apimachinery/apis/kubedb"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	certlib "kubedb.dev/elasticsearch/pkg/lib/cert"
 
 	"github.com/appscode/go/ioutil"
@@ -39,12 +40,12 @@ import (
 
 // Creates pkcs8 encoded certificates in pem format.
 // Generated secret contains:
-// 	- tls.crt: root-ca.crt (CA: true)
-//	- tls.key: root-ca.key
-func CreateCaCertificate(certPath string) (*rsa.PrivateKey, *x509.Certificate, error) {
+// 	- tls.crt: ca.crt (CA: true)
+//	- tls.key: ca.key
+func CreateCaCertificate(commonName string, certPath string) (*rsa.PrivateKey, *x509.Certificate, error) {
 	cfg := cert.Config{
-		CommonName:   "KubeDB Com. Root CA",
-		Organization: []string{"Elasticsearch Operator"},
+		CommonName:   commonName,
+		Organization: []string{kubedb.GroupName},
 	}
 
 	caKey, err := cert.NewPrivateKey()
@@ -62,12 +63,12 @@ func CreateCaCertificate(certPath string) (*rsa.PrivateKey, *x509.Certificate, e
 		return nil, nil, errors.Wrap(err, "failed to encode private key")
 	}
 
-	if !ioutil.WriteString(filepath.Join(certPath, certlib.RootCAKey), string(caKeyByte)) {
+	if !ioutil.WriteString(filepath.Join(certPath, certlib.CAKey), string(caKeyByte)) {
 		return nil, nil, errors.New("failed to write key for CA certificate")
 	}
 
 	caCertByte := cert.EncodeCertPEM(caCert)
-	if !ioutil.WriteString(filepath.Join(certPath, certlib.RootCACert), string(caCertByte)) {
+	if !ioutil.WriteString(filepath.Join(certPath, certlib.CACert), string(caCertByte)) {
 		return nil, nil, errors.New("failed to write CA certificate")
 	}
 
@@ -81,8 +82,8 @@ func CreateCaCertificate(certPath string) (*rsa.PrivateKey, *x509.Certificate, e
 // 	- tls.key: transport-layer.key
 func CreateTransportCertificate(certPath string, elasticsearch *api.Elasticsearch, caKey *rsa.PrivateKey, caCert *x509.Certificate) error {
 	cfg := cert.Config{
-		CommonName:   elasticsearch.OffshootName(),
-		Organization: []string{"Elasticsearch Operator"},
+		CommonName:   elasticsearch.ClientCertificateCN(api.ElasticsearchTransportCert),
+		Organization: []string{kubedb.GroupName},
 		Usages: []x509.ExtKeyUsage{
 			x509.ExtKeyUsageServerAuth,
 			x509.ExtKeyUsageClientAuth,
@@ -105,12 +106,12 @@ func CreateTransportCertificate(certPath string, elasticsearch *api.Elasticsearc
 	}
 
 	if !ioutil.WriteString(filepath.Join(certPath, certlib.TLSKey), string(nodeKeyByte)) {
-		return errors.New("failed to write key for node certificate")
+		return errors.New("failed to write key for transport certificate")
 	}
 
 	nodeCertByte := cert.EncodeCertPEM(nodeCertificate)
 	if !ioutil.WriteString(filepath.Join(certPath, certlib.TLSCert), string(nodeCertByte)) {
-		return errors.New("failed to write node certificate")
+		return errors.New("failed to write transport certificate")
 	}
 
 	return nil
@@ -123,8 +124,8 @@ func CreateTransportCertificate(certPath string, elasticsearch *api.Elasticsearc
 // 	- tls.key: http-layer.key
 func CreateHTTPCertificate(certPath string, elasticsearch *api.Elasticsearch, caKey *rsa.PrivateKey, caCert *x509.Certificate) error {
 	cfg := cert.Config{
-		CommonName:   elasticsearch.OffshootName() + "-client",
-		Organization: []string{"Elasticsearch Operator"},
+		CommonName:   elasticsearch.ClientCertificateCN(api.ElasticsearchHTTPCert),
+		Organization: []string{kubedb.GroupName},
 		AltNames: cert.AltNames{
 			DNSNames: []string{
 				"localhost",
@@ -133,7 +134,6 @@ func CreateHTTPCertificate(certPath string, elasticsearch *api.Elasticsearch, ca
 		},
 		Usages: []x509.ExtKeyUsage{
 			x509.ExtKeyUsageServerAuth,
-			x509.ExtKeyUsageClientAuth,
 		},
 	}
 
@@ -171,10 +171,9 @@ func CreateHTTPCertificate(certPath string, elasticsearch *api.Elasticsearch, ca
 // 	- tls.key: client.key
 func CreateClientCertificate(alias string, certPath string, elasticsearch *api.Elasticsearch, caKey *rsa.PrivateKey, caCert *x509.Certificate) error {
 	cfg := cert.Config{
-		CommonName:   elasticsearch.OffshootName() + "-" + alias,
-		Organization: []string{"Elasticsearch Operator"},
+		CommonName:   elasticsearch.ClientCertificateCN(api.ElasticsearchCertificateAlias(alias)),
+		Organization: []string{kubedb.GroupName},
 		Usages: []x509.ExtKeyUsage{
-			x509.ExtKeyUsageServerAuth,
 			x509.ExtKeyUsageClientAuth,
 		},
 	}

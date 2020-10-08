@@ -20,10 +20,10 @@ import (
 	"context"
 	"fmt"
 
-	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha1"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha1/util"
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
-	"github.com/appscode/go/crypto/rand"
+	passgen "gomodules.xyz/password-generator"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,7 +42,7 @@ func (c *Controller) ensureDatabaseSecret(postgres *api.Postgres) error {
 		if databaseSecretVolume, err = c.createDatabaseSecret(postgres); err != nil {
 			return err
 		}
-		pg, _, err := util.PatchPostgres(context.TODO(), c.ExtClient.KubedbV1alpha1(), postgres, func(in *api.Postgres) *api.Postgres {
+		pg, _, err := util.PatchPostgres(context.TODO(), c.DBClient.KubedbV1alpha2(), postgres, func(in *api.Postgres) *api.Postgres {
 			in.Spec.DatabaseSecret = databaseSecretVolume
 			return in
 		}, metav1.PatchOptions{})
@@ -94,7 +94,7 @@ func (c *Controller) createDatabaseSecret(postgres *api.Postgres) (*core.SecretV
 		Type: core.SecretTypeOpaque,
 		Data: map[string][]byte{
 			PostgresUser:     []byte("postgres"),
-			PostgresPassword: []byte(rand.GeneratePassword()),
+			PostgresPassword: []byte(passgen.Generate(api.DefaultPasswordLength)),
 		},
 	}
 	if _, err := c.Client.CoreV1().Secrets(postgres.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
