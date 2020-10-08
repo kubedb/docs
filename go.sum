@@ -1677,6 +1677,8 @@ kmodules.xyz/custom-resources v0.0.0-20200604135349-9e9f5c4fdba9 h1:W+k1qhU0W1rp
 kmodules.xyz/custom-resources v0.0.0-20200604135349-9e9f5c4fdba9/go.mod h1:bu1V7HdnuHc1hgvbqAdcwTViQ0TfZwF3Nu/SjB4vai4=
 kmodules.xyz/custom-resources v0.0.0-20200922210108-70f2815a43bb h1:SwMPMh6A196yoe8kAH+guTNS8rsTfB2dRbFNh6g0Znk=
 kmodules.xyz/custom-resources v0.0.0-20200922210108-70f2815a43bb/go.mod h1:+YU32jSWaGGE4etTr/iCF88tLAeDNq1lhptVymjUbjg=
+kmodules.xyz/custom-resources v0.0.0-20201008012351-6d8090f759d4 h1:eftT0CrrAYK1uniwsVhheYao4mwGk+eFT9eftRX9BMo=
+kmodules.xyz/custom-resources v0.0.0-20201008012351-6d8090f759d4/go.mod h1:+YU32jSWaGGE4etTr/iCF88tLAeDNq1lhptVymjUbjg=
 kmodules.xyz/monitoring-agent-api v0.0.0-20201007104803-408a1ff2de8d h1:HFdWHhAkJZpoyMkp0kayKPf896IEkI7fWIpeJK4sY1o=
 kmodules.xyz/monitoring-agent-api v0.0.0-20201007104803-408a1ff2de8d/go.mod h1:ySvogFmyMVUNEFdUYnHp9T4njsB7o661ClfwNLcBWVo=
 kmodules.xyz/objectstore-api v0.0.0-20200922210707-59bab27e5d41 h1:BsCSSPoY0uRGylfPTUzzQ28h2axuXremPGPzwpmxvYI=
@@ -1693,6 +1695,8 @@ kubedb.dev/apimachinery v0.14.0-beta.3.0.20201007213724-ad7988a872e4/go.mod h1:k
 kubedb.dev/apimachinery v0.14.0-beta.3.0.20201007223912-7d9095af5d5f/go.mod h1:kMOJ79iYJdu9mW61F2SR9PDCgdutAe2y3XViLMQ9viE=
 kubedb.dev/apimachinery v0.14.0-beta.3.0.20201007234719-34bf142ede67 h1:4wLUC/dF8bC3I+lfkl90sfueY4/cigHa30dY2GOW8oc=
 kubedb.dev/apimachinery v0.14.0-beta.3.0.20201007234719-34bf142ede67/go.mod h1:kMOJ79iYJdu9mW61F2SR9PDCgdutAe2y3XViLMQ9viE=
+kubedb.dev/apimachinery v0.14.0-beta.3.0.20201008014325-32105113cdd3 h1:o0nZxgUWP2IROAs1hGdOCNtSwIkLX+hgMTdiqPOGpEQ=
+kubedb.dev/apimachinery v0.14.0-beta.3.0.20201008014325-32105113cdd3/go.mod h1:2cIABSce2Yw9yiH7AcQ8cQ+kWIlEl7ivnosDEZ00hv4=
 kubedb.dev/elasticsearch v0.14.0-beta.3.0.20201007224838-0bf2c530c8b8 h1:Yo6EXl5hTM8sdYKwbYRmQfWbS1ThhRvN1v12sytd9OY=
 kubedb.dev/elasticsearch v0.14.0-beta.3.0.20201007224838-0bf2c530c8b8/go.mod h1:KPXDWGlgMSIpFhQ+MrpH7TkrNCPoZeSRA3Da0BAdKF8=
 kubedb.dev/memcached v0.7.0-beta.3.0.20201008002141-57091fac57b3 h1:5ZAYISjnW5C4j6oqhHRibIdBmAbXTrHilZYW47EAmuw=
