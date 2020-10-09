@@ -1,33 +1,62 @@
 ---
-title: Kubectl-Dba
+title: Kubectl-Dba Completion
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba
-    name: Kubectl-Dba
+    identifier: kubectl-dba-completion
+    name: Kubectl-Dba Completion
     parent: reference-cli
-    weight: 0
-
 menu_name: docs_{{ .version }}
 section_menu_id: reference
-url: /docs/{{ .version }}/reference/cli/
-aliases:
-- /docs/{{ .version }}/reference/cli/kubectl-dba/
 ---
-## kubectl-dba
+## kubectl-dba completion
 
-kubectl plugin for KubeDB
+Generate completion script
 
 ### Synopsis
 
-kubectl plugin for KubeDB by AppsCode - Kubernetes ready production-grade Databases
+To load completions:
 
- Find more information at https://kubedb.com
+Bash:
+
+$ source <(kubectl-dba completion bash)
+
+# To load completions for each session, execute once:
+Linux:
+  $ kubectl-dba completion bash > /etc/bash_completion.d/kubectl-dba
+MacOS:
+  $ kubectl-dba completion bash > /usr/local/etc/bash_completion.d/kubectl-dba
+
+Zsh:
+
+# If shell completion is not already enabled in your environment you will need
+# to enable it.  You can execute the following once:
+
+$ echo "autoload -U compinit; compinit" >> ~/.zshrc
+
+# To load completions for each session, execute once:
+$ kubectl-dba completion zsh > "${fpath[1]}/_kubectl-dba"
+
+# You will need to start a new shell for this setup to take effect.
+
+Fish:
+
+$ kubectl-dba completion fish | source
+
+# To load completions for each session, execute once:
+$ kubectl-dba completion fish > ~/.config/fish/completions/kubectl-dba.fish
+
 
 ```
-kubectl-dba [flags]
+kubectl-dba completion [bash|zsh|fish|powershell]
 ```
 
 ### Options
+
+```
+  -h, --help   help for completion
+```
+
+### Options inherited from parent commands
 
 ```
       --alsologtostderr                  log to standard error as well as files
@@ -40,7 +69,6 @@ kubectl-dba [flags]
       --cluster string                   The name of the kubeconfig cluster to use
       --context string                   The name of the kubeconfig context to use
       --enable-analytics                 Send analytical events to Google Analytics (default true)
-  -h, --help                             help for kubectl-dba
       --insecure-skip-tls-verify         If true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure
       --kubeconfig string                Path to the kubeconfig file to use for CLI requests.
       --log-backtrace-at traceLocation   when logging hits line file:N, emit a stack trace (default :0)
@@ -61,7 +89,5 @@ kubectl-dba [flags]
 
 ### SEE ALSO
 
-* [kubectl-dba completion](/docs/reference/cli/kubectl-dba_completion.md)	 - Generate completion script
-* [kubectl-dba describe](/docs/reference/cli/kubectl-dba_describe.md)	 - Show details of a specific resource or group of resources
-* [kubectl-dba version](/docs/reference/cli/kubectl-dba_version.md)	 - Prints binary version number.
+* [kubectl-dba](/docs/reference/cli/kubectl-dba.md)	 - kubectl plugin for KubeDB
 
