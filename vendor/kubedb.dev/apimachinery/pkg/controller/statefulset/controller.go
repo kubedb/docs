@@ -26,6 +26,7 @@ import (
 
 	"github.com/appscode/go/log"
 	apps "k8s.io/api/apps/v1"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -81,7 +82,9 @@ func (c *Controller) InitStsWatcher() {
 				}
 				dbInfo, err := c.extractDatabaseInfo(sts)
 				if err != nil {
-					log.Warningf("failed to extract database info from StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
+					if !kerr.IsNotFound(err) {
+						log.Warningf("failed to extract database info from StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
+					}
 					return
 				}
 				err = c.ensureReadyReplicasCond(dbInfo)
@@ -98,11 +101,11 @@ func (c *Controller) enqueueOnlyKubeDBSts(sts *apps.StatefulSet) {
 	// only enqueue if the controlling owner is a KubeDB resource
 	ok, _, err := core_util.IsOwnerOfGroup(metav1.GetControllerOf(sts), kubedb.GroupName)
 	if err != nil {
-		log.Warningln(err)
+		log.Warningf("failed to enqueue StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
 		return
 	}
-	if key, err := cache.MetaNamespaceKeyFunc(sts); ok && err == nil {
-		queue.Enqueue(c.StsQueue.GetQueue(), key)
+	if ok {
+		queue.Enqueue(c.StsQueue.GetQueue(), cache.ExplicitKey(sts.Namespace+"/"+sts.Name))
 	}
 }
 
