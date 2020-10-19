@@ -4,7 +4,7 @@ metadata:
   name: mysql-misc-config
   namespace: demo
 spec:
-  version: "5.7-v1"
+  version: "5.7.31"
   storageType: "Durable"
   storage:
     storageClassName: "standard"
@@ -24,6 +24,6 @@ spec:
         requests:
           memory: "1Gi"
           cpu: "250m"
-  terminationPolicy: Pause
+  terminationPolicy: Halt
   updateStrategy:
     type: RollingUpdate

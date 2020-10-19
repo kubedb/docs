@@ -4,7 +4,7 @@ metadata:
   name: minute-mysql
   namespace: demo
 spec:
-  version: "8.0-v2"
+  version: "8.0.21"
   storageType: Durable
   podTemplate:
     spec:

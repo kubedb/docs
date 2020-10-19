@@ -4,7 +4,7 @@ metadata:
   name: coreos-prom-mysql
   namespace: demo
 spec:
-  version: "8.0-v2"
+  version: "8.0.21"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -16,7 +16,6 @@ spec:
   monitor:
     agent: prometheus.io/coreos-operator
     prometheus:
-      namespace: monitoring
       labels:
         k8s-app: prometheus
       interval: 10s
