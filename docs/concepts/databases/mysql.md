@@ -29,7 +29,7 @@ metadata:
   name: m1
   namespace: demo
 spec:
-  version: "8.0-v2"
+  version: "8.0.21"
   topology:
     mode: GroupReplication
     group:
@@ -49,12 +49,6 @@ spec:
     scriptSource:
       configMap:
         name: mg-init-script
-  backupSchedule:
-    cronExpression: "@every 2m"
-    storageSecretName: ms-snap-secret
-    gcs:
-      bucket: kubedb-qa
-      prefix: demo
   monitor:
     agent: prometheus.io/coreos-operator
     prometheus:
@@ -190,8 +184,7 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 `spec.init` is an optional section that can be used to initialize a newly created MySQL database. MySQL databases can be initialized in one of two ways:
 
- 1. Initialize from Script
- 2. Initialize from Snapshot
+- Initialize from Script
 
 #### Initialize via Script
 
@@ -207,7 +200,7 @@ kind: MySQL
 metadata:
   name: m1
 spec:
-  version: 8.0-v2
+  version: 8.0.21
   init:
     scriptSource:
       configMap:
@@ -215,62 +208,6 @@ spec:
 ```
 
 In the above example, KubeDB operator will launch a Job to execute all js script of `mysql-init-script` in alphabetical order once StatefulSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mysql/initialization/using-script.md).
-
-#### Initialize from Snapshots
-
-To initialize from prior snapshots, set the `spec.init.snapshotSource` section when creating a MySQL object. In this case, SnapshotSource must have the following information:
-
-- `name:` Name of the Snapshot
-- `namespace:` Namespace of the Snapshot
-
-```yaml
-apiVersion: kubedb.com/v1alpha1
-kind: MySQL
-metadata:
-  name: m1
-spec:
-  version: 8.0-v2
-  init:
-    snapshotSource:
-      name: "snapshot-xyz"
-      namespace: "demo"
-```
-
-In the above example, MySQL database will be initialized from Snapshot `snapshot-xyz` in `demo` namespace. Here, the KubeDB operator will launch a Job to initialize MySQL once StatefulSet pods are running.
-
-When initializing from Snapshot, root user credentials must have to match with the previous one. For example, let's say, Snapshot `snapshot-xyz` is for MySQL `mysql-old`. In this case, new MySQL `mysql-db` should use the same credentials for the root user of `mysql-old`. Otherwise, the restoration process will fail.
-
-For more details tutorial on how to initialize from snapshot, please visit [here](/docs/guides/mysql/initialization/using-snapshot.md).
-
-### spec.backupSchedule
-
-KubeDB supports taking periodic snapshots for the MySQL database. This is an optional section in `.spec`. When `spec.backupSchedule` section is added, the KubeDB operator immediately takes a backup to validate this information. After that, at each tick KubeDB operator creates a [Snapshot](/docs/concepts/snapshot.md) object. This triggers operator to create a Job to take backup. If used, set the various sub-fields accordingly.
-
-- `spec.backupSchedule.cronExpression` is a required [cron expression](https://github.com/robfig/cron/blob/v2/doc.go#L26). This specifies the schedule for backup operations.
-- `spec.backupSchedule.{storage}` is a required field that is used as the destination for storing snapshot data. KubeDB supports cloud storage providers like S3, GCS, Azure, and OpenStack Swift. It also supports any locally mounted Kubernetes volumes, like NFS, Ceph, etc. Only one backend can be used at a time. To learn how to configure this, please visit [here](/docs/concepts/snapshot.md).
-
-You can also specify a template for pod of backup job through `spec.backupSchedule.podTemplate`. KubeDB will use the information you have provided in `podTemplate` to create the backup job. KubeDB accept following fields to set in `spec.backupSchedule.podTemplate`:
-
-- metadata:
-  - annotations (pod's annotation)
-- controller:
-  - annotations (job's annotation)
-- spec:
-  - args
-  - env
-  - resources
-  - imagePullSecrets
-  - initContainers
-  - nodeSelector
-  - affinity
-  - schedulerName
-  - tolerations
-  - priorityClassName
-  - priority
-  - securityContext
-  - livenessProbe
-  - readinessProbe
-  - lifecycle
 
 ### spec.monitor
 
@@ -437,12 +374,20 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v
 
 You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for MySQL database thorough `spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from the old KubeDB version to a new one should behave.
 
+### spec.paused
+
+`spec.paused` is an optional field. This field will be used to pause the kubeDB operator. When you set `spec.paused` to `true`, the KubeDB operator doesn't perform any operation on `MySQL` object.
+
+### spec.halted
+
+`spec.halted` is an optional field. Suppose you want to delete the `MySQL` resources(`StatefulSet`, `Service` etc.) except `MySQL` object, `PVCs` and `Secret` then you need to set `spec.halted` to `true`. If you set `spec.halted` to `true` then the `terminationPolicy` in `MySQL` object will be set `Halt` by-default.  
+
 ### spec.terminationPolicy
 
 `terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. KubeDB provides the following four termination policies:
 
 - DoNotTerminate
-- Pause
+- Halt
 - Delete (`Default`)
 - WipeOut
 
@@ -450,21 +395,18 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 
 Following table show what KubeDB does when you delete MySQL crd for different termination policies,
 
-| Behavior                            | DoNotTerminate |  Pause   |  Delete  | WipeOut  |
+| Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
 | ----------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
-| 2. Create Dormant Database          |    &#10007;    | &#10003; | &#10007; | &#10007; |
-| 3. Delete StatefulSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 4. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 5. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
-| 6. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |
-| 7. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
-| 8. Delete Snapshot data from bucket |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| 2. Delete StatefulSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 3. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 4. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
+| 5. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| 6. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-If you don't specify `spec.terminationPolicy` KubeDB uses `Pause` termination policy by default.
+If you don't specify `spec.terminationPolicy` KubeDB uses `Delete` termination policy by default.
 
 ## Next Steps
 
 - Learn how to use KubeDB to run a MySQL database [here](/docs/guides/mysql/README.md).
-- See the list of supported storage providers for snapshots [here](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
