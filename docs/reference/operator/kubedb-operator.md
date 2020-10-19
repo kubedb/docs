@@ -1,9 +1,9 @@
 ---
-title: KubeDB-Operator
+title: Kubedb-Operator
 menu:
   docs_{{ .version }}:
     identifier: kubedb-operator
-    name: KubeDB-Operator
+    name: Kubedb-Operator
     parent: reference-operator
     weight: 0
 
