@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: es-use-tls-x-pack
     name: Use TLS
-    parent: es-x-pack-elasticsearch
+    parent: es-x-pack
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

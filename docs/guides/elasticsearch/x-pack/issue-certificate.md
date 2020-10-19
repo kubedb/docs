@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: es-issue-certificate-x-pack
     name: Issue Certificate
-    parent: es-x-pack-elasticsearch
+    parent: es-x-pack
     weight: 25
 menu_name: docs_{{ .version }}
 section_menu_id: guides

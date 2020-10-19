@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: my-upgrade-minor-group
+  namespace: demo
+spec:
+  type: Upgrade
+  databaseRef:
+    name: my-group
+  upgrade:
+    targetVersion: "5.7.31"
