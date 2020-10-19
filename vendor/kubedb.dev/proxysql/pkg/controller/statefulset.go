@@ -40,7 +40,7 @@ import (
 
 type database interface {
 	PeerName(i int) string
-	GetDatabaseSecretName() string
+	GetAuthSecretName() string
 }
 
 var _ database = api.PerconaXtraDB{}
@@ -60,7 +60,7 @@ type workloadOptions struct {
 	ports          []core.ContainerPort
 	envList        []core.EnvVar // envList of `proxysql` container
 	volumeMount    []core.VolumeMount
-	configSource   *core.VolumeSource
+	configSecret   *core.LocalObjectReference
 
 	// monitor container
 	monitorContainer *core.Container
@@ -151,7 +151,7 @@ func (c *Controller) ensureProxySQLNode(db *api.ProxySQL) (kutil.VerbType, error
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
-						Name: backendDB.GetDatabaseSecretName(),
+						Name: backendDB.GetAuthSecretName(),
 					},
 					Key: core.BasicAuthPasswordKey,
 				},
@@ -180,7 +180,7 @@ func (c *Controller) ensureProxySQLNode(db *api.ProxySQL) (kutil.VerbType, error
 		initContainers:   nil,
 		gvrSvcName:       c.GoverningService,
 		podTemplate:      &db.Spec.PodTemplate,
-		configSource:     db.Spec.ConfigSource,
+		configSecret:     db.Spec.ConfigSecret,
 		replicas:         db.Spec.Replicas,
 		volume:           nil,
 		volumeMount:      nil,
@@ -208,7 +208,7 @@ func (c *Controller) checkStatefulSet(proxysql *api.ProxySQL, stsName string) er
 	return nil
 }
 
-func upsertCustomConfig(template core.PodTemplateSpec, configSource *core.VolumeSource) core.PodTemplateSpec {
+func upsertCustomConfig(template core.PodTemplateSpec, configSecret *core.LocalObjectReference) core.PodTemplateSpec {
 	for i, container := range template.Spec.Containers {
 		if container.Name == api.ResourceSingularProxySQL {
 			configVolumeMount := core.VolumeMount{
@@ -220,8 +220,12 @@ func upsertCustomConfig(template core.PodTemplateSpec, configSource *core.Volume
 			template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 			configVolume := core.Volume{
-				Name:         "custom-config",
-				VolumeSource: *configSource,
+				Name: "custom-config",
+				VolumeSource: core.VolumeSource{
+					Secret: &core.SecretVolumeSource{
+						SecretName: configSecret.Name,
+					},
+				},
 			}
 
 			volumes := template.Spec.Volumes
@@ -313,8 +317,8 @@ func (c *Controller) ensureStatefulSet(db *api.ProxySQL, opts workloadOptions) (
 
 			in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(in.Spec.Template.Spec.Volumes, opts.volume...)
 
-			if opts.configSource != nil {
-				in.Spec.Template = upsertCustomConfig(in.Spec.Template, opts.configSource)
+			if opts.configSecret != nil {
+				in.Spec.Template = upsertCustomConfig(in.Spec.Template, opts.configSecret)
 			}
 
 			in.Spec.Template.Spec.NodeSelector = pt.Spec.NodeSelector
@@ -380,7 +384,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, proxysql *api.ProxySQL) *apps.Stat
 					ValueFrom: &core.EnvVarSource{
 						SecretKeyRef: &core.SecretKeySelector{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: proxysql.Spec.ProxySQLSecret.SecretName,
+								Name: proxysql.Spec.AuthSecret.Name,
 							},
 							Key: core.BasicAuthUsernameKey,
 						},
@@ -391,7 +395,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, proxysql *api.ProxySQL) *apps.Stat
 					ValueFrom: &core.EnvVarSource{
 						SecretKeyRef: &core.SecretKeySelector{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: proxysql.Spec.ProxySQLSecret.SecretName,
+								Name: proxysql.Spec.AuthSecret.Name,
 							},
 							Key: core.BasicAuthPasswordKey,
 						},

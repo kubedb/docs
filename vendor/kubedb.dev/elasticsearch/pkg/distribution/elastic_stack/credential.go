@@ -25,20 +25,20 @@ import (
 
 	"github.com/pkg/errors"
 	"gomodules.xyz/password-generator"
-	corev1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
 
-func (es *Elasticsearch) EnsureDatabaseSecret() error {
-	dbSecretVolume := es.elasticsearch.Spec.DatabaseSecret
-	if dbSecretVolume == nil {
+func (es *Elasticsearch) EnsureAuthSecret() error {
+	authSecret := es.elasticsearch.Spec.AuthSecret
+	if authSecret == nil {
 		var err error
-		if dbSecretVolume, err = es.createAdminCredSecret(); err != nil {
+		if authSecret, err = es.createAdminCredSecret(); err != nil {
 			return err
 		}
 		newES, _, err := util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
-			in.Spec.DatabaseSecret = dbSecretVolume
+			in.Spec.AuthSecret = authSecret
 			return in
 		}, metav1.PatchOptions{})
 		if err != nil {
@@ -47,9 +47,9 @@ func (es *Elasticsearch) EnsureDatabaseSecret() error {
 		es.elasticsearch = newES
 	} else {
 		// Get the secret and validate it.
-		dbSecret, err := es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Get(context.TODO(), dbSecretVolume.SecretName, metav1.GetOptions{})
+		dbSecret, err := es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{})
 		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to get credential secret: %s/%s", es.elasticsearch.Namespace, dbSecretVolume.SecretName))
+			return errors.Wrap(err, fmt.Sprintf("failed to get credential secret: %s/%s", es.elasticsearch.Namespace, authSecret.Name))
 		}
 
 		err = es.validateAndSyncLabels(dbSecret)
@@ -60,7 +60,7 @@ func (es *Elasticsearch) EnsureDatabaseSecret() error {
 	return nil
 }
 
-func (es *Elasticsearch) createAdminCredSecret() (*corev1.SecretVolumeSource, error) {
+func (es *Elasticsearch) createAdminCredSecret() (*core.LocalObjectReference, error) {
 	dbSecret, err := es.findSecret(es.elasticsearch.UserCredSecretName(string(api.ElasticsearchInternalUserElastic)))
 	if err != nil {
 		return nil, err
@@ -76,24 +76,24 @@ func (es *Elasticsearch) createAdminCredSecret() (*corev1.SecretVolumeSource, er
 		if err != nil {
 			return nil, errors.Wrap(err, fmt.Sprintf("failed to validate/sync secret: %s/%s", dbSecret.Namespace, dbSecret.Name))
 		}
-		return &corev1.SecretVolumeSource{
-			SecretName: dbSecret.Name,
+		return &core.LocalObjectReference{
+			Name: dbSecret.Name,
 		}, nil
 	}
 
 	// Create new secret new random password
 	pass := password.Generate(api.DefaultPasswordLength)
 	var data = map[string][]byte{
-		corev1.BasicAuthUsernameKey: []byte(api.ElasticsearchInternalUserElastic),
-		corev1.BasicAuthPasswordKey: []byte(pass),
+		core.BasicAuthUsernameKey: []byte(api.ElasticsearchInternalUserElastic),
+		core.BasicAuthPasswordKey: []byte(pass),
 	}
 
-	secret := &corev1.Secret{
+	secret := &core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   es.elasticsearch.UserCredSecretName(string(api.ElasticsearchInternalUserElastic)),
 			Labels: es.elasticsearch.OffshootLabels(),
 		},
-		Type: corev1.SecretTypeBasicAuth,
+		Type: core.SecretTypeBasicAuth,
 		Data: data,
 	}
 
@@ -105,21 +105,21 @@ func (es *Elasticsearch) createAdminCredSecret() (*corev1.SecretVolumeSource, er
 		return nil, err
 	}
 
-	return &corev1.SecretVolumeSource{
-		SecretName: secret.Name,
+	return &core.LocalObjectReference{
+		Name: secret.Name,
 	}, nil
 }
 
-func (es *Elasticsearch) validateAndSyncLabels(secret *corev1.Secret) error {
+func (es *Elasticsearch) validateAndSyncLabels(secret *core.Secret) error {
 	if secret == nil {
 		return errors.New("secret is empty")
 	}
 
-	if value, exist := secret.Data[corev1.BasicAuthUsernameKey]; !exist || len(value) == 0 {
+	if value, exist := secret.Data[core.BasicAuthUsernameKey]; !exist || len(value) == 0 {
 		return errors.New("username is missing")
 	}
 
-	if value, exist := secret.Data[corev1.BasicAuthPasswordKey]; !exist || len(value) == 0 {
+	if value, exist := secret.Data[core.BasicAuthPasswordKey]; !exist || len(value) == 0 {
 		return errors.New("password is missing")
 	}
 
@@ -132,7 +132,7 @@ func (es *Elasticsearch) validateAndSyncLabels(secret *corev1.Secret) error {
 		ctrl.Kind == api.ResourceKindElasticsearch && ctrl.Name == es.elasticsearch.Name {
 
 		// sync labels
-		if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secret.ObjectMeta, func(in *corev1.Secret) *corev1.Secret {
+		if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secret.ObjectMeta, func(in *core.Secret) *core.Secret {
 			in.Labels = core_util.UpsertMap(in.Labels, es.elasticsearch.OffshootLabels())
 			return in
 		}, metav1.PatchOptions{}); err != nil {

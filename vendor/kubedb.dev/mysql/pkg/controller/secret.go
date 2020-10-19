@@ -36,27 +36,27 @@ const (
 	mysqlUser = "root"
 )
 
-func (c *Controller) ensureDatabaseSecret(mysql *api.MySQL) error {
-	if mysql.Spec.DatabaseSecret == nil {
-		secretVolumeSource, err := c.createDatabaseSecret(mysql)
+func (c *Controller) ensureAuthSecret(mysql *api.MySQL) error {
+	if mysql.Spec.AuthSecret == nil {
+		authSecret, err := c.createAuthSecret(mysql)
 		if err != nil {
 			return err
 		}
 
 		ms, _, err := util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), mysql, func(in *api.MySQL) *api.MySQL {
-			in.Spec.DatabaseSecret = secretVolumeSource
+			in.Spec.AuthSecret = authSecret
 			return in
 		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
-		mysql.Spec.DatabaseSecret = ms.Spec.DatabaseSecret
+		mysql.Spec.AuthSecret = ms.Spec.AuthSecret
 		return nil
 	}
-	return c.upgradeDatabaseSecret(mysql)
+	return c.upgradeAuthSecret(mysql)
 }
 
-func (c *Controller) createDatabaseSecret(mysql *api.MySQL) (*core.SecretVolumeSource, error) {
+func (c *Controller) createAuthSecret(mysql *api.MySQL) (*core.LocalObjectReference, error) {
 	authSecretName := mysql.Name + "-auth"
 
 	sc, err := c.checkSecret(authSecretName, mysql)
@@ -79,16 +79,16 @@ func (c *Controller) createDatabaseSecret(mysql *api.MySQL) (*core.SecretVolumeS
 			return nil, err
 		}
 	}
-	return &core.SecretVolumeSource{
-		SecretName: authSecretName,
+	return &core.LocalObjectReference{
+		Name: authSecretName,
 	}, nil
 }
 
 // This is done to fix 0.8.0 -> 0.9.0 upgrade due to
 // https://github.com/kubedb/mysql/pull/115/files#diff-10ddaf307bbebafda149db10a28b9c24R17 commit
-func (c *Controller) upgradeDatabaseSecret(mysql *api.MySQL) error {
+func (c *Controller) upgradeAuthSecret(mysql *api.MySQL) error {
 	meta := metav1.ObjectMeta{
-		Name:      mysql.Spec.DatabaseSecret.SecretName,
+		Name:      mysql.Spec.AuthSecret.Name,
 		Namespace: mysql.Namespace,
 	}
 

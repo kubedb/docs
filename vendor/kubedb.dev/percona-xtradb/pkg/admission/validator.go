@@ -131,8 +131,8 @@ func (a *PerconaXtraDBValidator) Admit(req *admission.AdmissionRequest) *admissi
 			oldPXC := oldObject.(*api.PerconaXtraDB).DeepCopy()
 			oldPXC.SetDefaults()
 			// Allow changing Database Secret only if there was no secret have set up yet.
-			if oldPXC.Spec.DatabaseSecret == nil {
-				oldPXC.Spec.DatabaseSecret = px.Spec.DatabaseSecret
+			if oldPXC.Spec.AuthSecret == nil {
+				oldPXC.Spec.AuthSecret = px.Spec.AuthSecret
 			}
 
 			if err := validateUpdate(px, oldPXC, px.Status.Conditions); err != nil {
@@ -206,11 +206,11 @@ func ValidatePerconaXtraDB(client kubernetes.Interface, extClient cs.Interface, 
 		return err
 	}
 
-	databaseSecret := px.Spec.DatabaseSecret
+	authSecret := px.Spec.AuthSecret
 
 	if strictValidation {
-		if databaseSecret != nil {
-			if _, err := client.CoreV1().Secrets(px.Namespace).Get(context.TODO(), databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+		if authSecret != nil {
+			if _, err := client.CoreV1().Secrets(px.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}

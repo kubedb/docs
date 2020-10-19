@@ -348,22 +348,22 @@ func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []cor
 			Value: postgres.ServiceName(),
 		},
 		{
-			Name: PostgresUser,
+			Name: EnvPostgresUser,
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
-						Name: postgres.Spec.DatabaseSecret.SecretName,
+						Name: postgres.Spec.AuthSecret.Name,
 					},
 					Key: core.BasicAuthUsernameKey,
 				},
 			},
 		},
 		{
-			Name: PostgresPassword,
+			Name: EnvPostgresPassword,
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
-						Name: postgres.Spec.DatabaseSecret.SecretName,
+						Name: postgres.Spec.AuthSecret.Name,
 					},
 					Key: core.BasicAuthPasswordKey,
 				},
@@ -448,7 +448,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 				ValueFrom: &core.EnvVarSource{
 					SecretKeyRef: &core.SecretKeySelector{
 						LocalObjectReference: core.LocalObjectReference{
-							Name: postgres.Spec.DatabaseSecret.SecretName,
+							Name: postgres.Spec.AuthSecret.Name,
 						},
 						Key: core.BasicAuthUsernameKey,
 					},
@@ -459,7 +459,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 				ValueFrom: &core.EnvVarSource{
 					SecretKeyRef: &core.SecretKeySelector{
 						LocalObjectReference: core.LocalObjectReference{
-							Name: postgres.Spec.DatabaseSecret.SecretName,
+							Name: postgres.Spec.AuthSecret.Name,
 						},
 						Key: core.BasicAuthPasswordKey,
 					},
@@ -690,7 +690,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *ap
 }
 
 func upsertCustomConfig(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
-	if postgres.Spec.ConfigSource != nil {
+	if postgres.Spec.ConfigSecret != nil {
 		for i, container := range statefulSet.Spec.Template.Spec.Containers {
 			if container.Name == api.ResourceSingularPostgres {
 				configVolumeMount := core.VolumeMount{
@@ -702,8 +702,12 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, postgres *api.Postgres) *
 				statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 				configVolume := core.Volume{
-					Name:         "custom-config",
-					VolumeSource: *postgres.Spec.ConfigSource,
+					Name: "custom-config",
+					VolumeSource: core.VolumeSource{
+						Secret: &core.SecretVolumeSource{
+							SecretName: postgres.Spec.ConfigSecret.Name,
+						},
+					},
 				}
 
 				volumes := statefulSet.Spec.Template.Spec.Volumes

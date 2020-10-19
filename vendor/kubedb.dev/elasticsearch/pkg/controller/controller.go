@@ -17,12 +17,9 @@ limitations under the License.
 package controller
 
 import (
-	"context"
-
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	catalog_lister "kubedb.dev/apimachinery/client/listers/catalog/v1alpha1"
 	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha2"
 	amc "kubedb.dev/apimachinery/pkg/controller"
@@ -72,7 +69,7 @@ func New(
 	dc dynamic.Interface,
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
-	opt amc.Config,
+	amcConfig amc.Config,
 	topology *core_util.Topology,
 	recorder record.EventRecorder,
 ) *Controller {
@@ -87,7 +84,7 @@ func New(
 			ClusterTopology:  topology,
 			Recorder:         recorder,
 		},
-		Config:     opt,
+		Config:     amcConfig,
 		promClient: promClient,
 		selector: metav1.LabelSelector{
 			MatchLabels: map[string]string{
@@ -119,6 +116,9 @@ func (c *Controller) Init() error {
 func (c *Controller) RunControllers(stopCh <-chan struct{}) {
 	// Start Elasticsearch controller
 	c.esQueue.Run(stopCh)
+
+	// Start Elasticsearch health checker
+	c.RunHealthChecker(stopCh)
 }
 
 // Blocks caller. Intended to be called as a Go routine.
@@ -181,19 +181,4 @@ func (c *Controller) pushFailureEvent(elasticsearch *api.Elasticsearch, reason s
 		elasticsearch.Name,
 		reason,
 	)
-
-	es, err := util.UpdateElasticsearchStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), elasticsearch.ObjectMeta, func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-		in.ObservedGeneration = elasticsearch.Generation
-		return in
-	}, metav1.UpdateOptions{})
-	if err != nil {
-		c.Recorder.Eventf(
-			elasticsearch,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			err.Error(),
-		)
-
-	}
-	elasticsearch.Status = es.Status
 }

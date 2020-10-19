@@ -32,7 +32,7 @@ import (
 	"github.com/appscode/go/crypto/rand"
 	"github.com/pkg/errors"
 	"gomodules.xyz/cert"
-	corev1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -122,12 +122,12 @@ func (es *Elasticsearch) createCACertSecret(cPath string) (*rsa.PrivateKey, *x50
 
 		owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
-		secret := &corev1.Secret{
+		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   es.elasticsearch.MustCertSecretName(api.ElasticsearchCACert),
 				Labels: es.elasticsearch.OffshootLabels(),
 			},
-			Type: corev1.SecretTypeTLS,
+			Type: core.SecretTypeTLS,
 			Data: data,
 		}
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
@@ -207,12 +207,12 @@ func (es *Elasticsearch) createTransportCertSecret(caKey *rsa.PrivateKey, caCert
 
 		owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
-		secret := &corev1.Secret{
+		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   es.elasticsearch.MustCertSecretName(api.ElasticsearchTransportCert),
 				Labels: es.elasticsearch.OffshootLabels(),
 			},
-			Type: corev1.SecretTypeTLS,
+			Type: core.SecretTypeTLS,
 			Data: data,
 		}
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
@@ -277,12 +277,12 @@ func (es *Elasticsearch) createHTTPCertSecret(caKey *rsa.PrivateKey, caCert *x50
 
 		owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
-		secret := &corev1.Secret{
+		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   es.elasticsearch.MustCertSecretName(api.ElasticsearchHTTPCert),
 				Labels: es.elasticsearch.OffshootLabels(),
 			},
-			Type: corev1.SecretTypeTLS,
+			Type: core.SecretTypeTLS,
 			Data: data,
 		}
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
@@ -347,12 +347,12 @@ func (es *Elasticsearch) createExporterCertSecret(caKey *rsa.PrivateKey, caCert 
 
 		owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
-		secret := &corev1.Secret{
+		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   es.elasticsearch.MustCertSecretName(api.ElasticsearchMetricsExporterCert),
 				Labels: es.elasticsearch.OffshootLabels(),
 			},
-			Type: corev1.SecretTypeTLS,
+			Type: core.SecretTypeTLS,
 			Data: data,
 		}
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
@@ -417,12 +417,12 @@ func (es *Elasticsearch) createArchiverCertSecret(caKey *rsa.PrivateKey, caCert 
 
 		owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
-		secret := &corev1.Secret{
+		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   es.elasticsearch.MustCertSecretName(api.ElasticsearchArchiverCert),
 				Labels: es.elasticsearch.OffshootLabels(),
 			},
-			Type: corev1.SecretTypeTLS,
+			Type: core.SecretTypeTLS,
 			Data: data,
 		}
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
@@ -452,7 +452,7 @@ func (es *Elasticsearch) createArchiverCertSecret(caKey *rsa.PrivateKey, caCert 
 	return nil
 }
 
-func (es *Elasticsearch) findSecret(name string) (*corev1.Secret, error) {
+func (es *Elasticsearch) findSecret(name string) (*core.Secret, error) {
 
 	secret, err := es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {

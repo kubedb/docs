@@ -77,7 +77,7 @@ func (c *Controller) create(proxysql *api.ProxySQL) error {
 		return err
 	}
 
-	if err := c.ensureProxySQLSecret(proxysql); err != nil {
+	if err := c.ensureAuthSecret(proxysql); err != nil {
 		return err
 	}
 

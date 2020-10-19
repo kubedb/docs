@@ -97,7 +97,7 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		return err
 	}
 
-	if err := c.ensureDatabaseSecret(px); err != nil {
+	if err := c.ensureAuthSecret(px); err != nil {
 		return err
 	}
 

@@ -113,6 +113,16 @@ github.com/dgrijalva/jwt-go
 # github.com/docker/spdystream v0.0.0-20160310174837-449fdfce4d96
 github.com/docker/spdystream
 github.com/docker/spdystream/spdy
+# github.com/elastic/go-elasticsearch/v6 v6.8.10
+github.com/elastic/go-elasticsearch/v6
+github.com/elastic/go-elasticsearch/v6/esapi
+github.com/elastic/go-elasticsearch/v6/estransport
+github.com/elastic/go-elasticsearch/v6/internal/version
+# github.com/elastic/go-elasticsearch/v7 v7.9.0
+github.com/elastic/go-elasticsearch/v7
+github.com/elastic/go-elasticsearch/v7/esapi
+github.com/elastic/go-elasticsearch/v7/estransport
+github.com/elastic/go-elasticsearch/v7/internal/version
 # github.com/emicklei/go-restful v2.9.5+incompatible
 github.com/emicklei/go-restful
 github.com/emicklei/go-restful/log
@@ -435,7 +445,7 @@ gomodules.xyz/envsubst/parse
 gomodules.xyz/envsubst/path
 # gomodules.xyz/jsonpatch/v2 v2.1.0
 gomodules.xyz/jsonpatch/v2
-# gomodules.xyz/password-generator v0.2.4
+# gomodules.xyz/password-generator v0.2.5
 gomodules.xyz/password-generator
 # gomodules.xyz/sets v0.0.0-20200817084356-ae6e5e14ce3d
 gomodules.xyz/sets
@@ -1112,7 +1122,7 @@ kmodules.xyz/prober/api/v1
 # kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.14.0-beta.3.0.20201019120142-0d4040b4ef21
+# kubedb.dev/apimachinery v0.14.0-beta.3.0.20201019175817-06c2076f1e91
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
 kubedb.dev/apimachinery/apis/autoscaling/v1alpha1
@@ -1154,7 +1164,7 @@ kubedb.dev/apimachinery/pkg/controller/statefulset
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/phase
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.14.0-beta.3.0.20201008030514-34d03a1f5324
+# kubedb.dev/elasticsearch v0.14.0-beta.3.0.20201019183940-c22b7f3193c0
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
 kubedb.dev/elasticsearch/pkg/distribution
@@ -1165,30 +1175,31 @@ kubedb.dev/elasticsearch/pkg/distribution/search_guard
 kubedb.dev/elasticsearch/pkg/lib/cert
 kubedb.dev/elasticsearch/pkg/lib/cert/pkcs8
 kubedb.dev/elasticsearch/pkg/lib/user
-# kubedb.dev/memcached v0.7.0-beta.3.0.20201008030630-480c5281bf4c
+kubedb.dev/elasticsearch/pkg/util/go-es
+# kubedb.dev/memcached v0.7.0-beta.3.0.20201019123808-40afd78dc5cc
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.7.0-beta.3.0.20201008032522-05b7a0bd3187
+# kubedb.dev/mongodb v0.7.0-beta.3.0.20201019184118-7e7a960e5557
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.7.0-beta.3.0.20201008033043-d490e95c89a1
+# kubedb.dev/mysql v0.7.0-beta.3.0.20201019175223-09d4743dd9e4
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.1.0-beta.3.0.20201008033809-418c767a46aa
+# kubedb.dev/percona-xtradb v0.1.0-beta.3.0.20201019181251-60f7e5a915ef
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
 # kubedb.dev/pg-leader-election v0.2.0-beta.3
 kubedb.dev/pg-leader-election/pkg/leader_election
-# kubedb.dev/pgbouncer v0.1.0-beta.3.0.20201008030800-d30a59c2fa4a
+# kubedb.dev/pgbouncer v0.1.0-beta.3.0.20201019173229-d5fa2ce7d09f
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.14.0-beta.3.0.20201008033434-ccadf2745ff3
+# kubedb.dev/postgres v0.14.0-beta.3.0.20201019130757-0df8a375f9a2
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.1.0-beta.3.0.20201008030639-07ea3acb37a4
+# kubedb.dev/proxysql v0.1.0-beta.3.0.20201019174009-d2f326c74b92
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.7.0-beta.3.0.20201008030900-00f07b4f0618
+# kubedb.dev/redis v0.7.0-beta.3.0.20201019181236-2e2f2d7b154d
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster
 kubedb.dev/redis/pkg/controller

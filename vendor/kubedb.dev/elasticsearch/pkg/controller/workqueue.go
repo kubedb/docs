@@ -23,6 +23,7 @@ import (
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
+	"kubedb.dev/apimachinery/pkg/phase"
 
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
@@ -54,21 +55,21 @@ func (c *Controller) runElasticsearch(key string) error {
 	} else {
 		// Note that you also have to check the uid if you have a local controlled resource, which
 		// is dependent on the actual instance, to detect that a Elasticsearch was recreated with the same name
-		elasticsearch := obj.(*api.Elasticsearch).DeepCopy()
-		if elasticsearch.DeletionTimestamp != nil {
-			if core_util.HasFinalizer(elasticsearch.ObjectMeta, kubedb.GroupName) {
-				if err := c.terminate(elasticsearch); err != nil {
+		db := obj.(*api.Elasticsearch).DeepCopy()
+		if db.DeletionTimestamp != nil {
+			if core_util.HasFinalizer(db.ObjectMeta, kubedb.GroupName) {
+				if err := c.terminate(db); err != nil {
 					log.Errorln(err)
 					return err
 				}
-				_, _, err = util.PatchElasticsearch(context.TODO(), c.DBClient.KubedbV1alpha2(), elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+				_, _, err = util.PatchElasticsearch(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.Elasticsearch) *api.Elasticsearch {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
-			elasticsearch, _, err = util.PatchElasticsearch(context.TODO(), c.DBClient.KubedbV1alpha2(), elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+			db, _, err = util.PatchElasticsearch(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.Elasticsearch) *api.Elasticsearch {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})
@@ -76,21 +77,44 @@ func (c *Controller) runElasticsearch(key string) error {
 				return err
 			}
 
-			// if conditions are empty, set initial condition "ProvisioningStarted" to "true"
-			if elasticsearch.Status.Conditions == nil {
+			// Get elasticsearch phase from condition
+			// If new phase is not equal to old phase,
+			// update Elasticsearch phase.
+			phase := phase.PhaseFromCondition(db.Status.Conditions)
+			if db.Status.Phase != phase {
 				_, err := util.UpdateElasticsearchStatus(
 					context.TODO(),
 					c.DBClient.KubedbV1alpha2(),
-					elasticsearch.ObjectMeta,
+					db.ObjectMeta,
+					func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+						in.Phase = phase
+						in.ObservedGeneration = db.Generation
+						return in
+					},
+					metav1.UpdateOptions{},
+				)
+				if err != nil {
+					c.pushFailureEvent(db, err.Error())
+					return err
+				}
+				// drop the object from queue,
+				// the object will be enqueued again from this update event.
+				return nil
+			}
+
+			// if conditions are empty, set initial condition "ProvisioningStarted" to "true"
+			if db.Status.Conditions == nil {
+				_, err := util.UpdateElasticsearchStatus(
+					context.TODO(),
+					c.DBClient.KubedbV1alpha2(),
+					db.ObjectMeta,
 					func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 						in.Conditions = kmapi.SetCondition(in.Conditions,
 							kmapi.Condition{
-								Type:               api.DatabaseProvisioningStarted,
-								Status:             kmapi.ConditionTrue,
-								ObservedGeneration: elasticsearch.ObjectMeta.Generation,
-								LastTransitionTime: metav1.Now(),
-								Reason:             "",
-								Message:            fmt.Sprintf("The KubeDB operator has started the provisioning of Elasticsearch: %s/%s", elasticsearch.Namespace, elasticsearch.Name),
+								Type:    api.DatabaseProvisioningStarted,
+								Status:  core.ConditionTrue,
+								Reason:  api.DatabaseProvisioningStartedSuccessfully,
+								Message: fmt.Sprintf("The KubeDB operator has started the provisioning of Elasticsearch: %s/%s", db.Namespace, db.Name),
 							})
 						return in
 					},
@@ -106,41 +130,39 @@ func (c *Controller) runElasticsearch(key string) error {
 
 			// If the DB object is Paused, the operator will ignore the change events from
 			// the DB object.
-			if kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabasePaused) {
+			if kmapi.IsConditionTrue(db.Status.Conditions, api.DatabasePaused) {
 				return nil
 			}
 
-			if elasticsearch.Spec.Halted {
-				// If the DB object is Halted, but the status.phase is yet to be changed.
-				if elasticsearch.Status.Phase != api.DatabasePhaseHalted {
-					_, err := util.UpdateElasticsearchStatus(
-						context.TODO(),
-						c.DBClient.KubedbV1alpha2(),
-						elasticsearch.ObjectMeta,
-						func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
-							in.Phase = api.DatabasePhaseHalted
-							in.ObservedGeneration = elasticsearch.Generation
-							return in
-						},
-						metav1.UpdateOptions{},
-					)
-					if err != nil {
-						return err
-					}
-					// drop the object from queue,
-					// the object will be enqueued again from this update event.
-					return nil
-				}
-
-				if err := c.halt(elasticsearch); err != nil {
+			if db.Spec.Halted {
+				if err := c.halt(db); err != nil {
 					log.Errorln(err)
-					c.pushFailureEvent(elasticsearch, err.Error())
+					c.pushFailureEvent(db, err.Error())
 					return err
 				}
 			} else {
-				if err := c.create(elasticsearch); err != nil {
+				// Here, spec.halted=false, remove the halted condition if exists.
+				if kmapi.HasCondition(db.Status.Conditions, api.DatabaseHalted) {
+					if _, err := util.UpdateElasticsearchStatus(
+						context.TODO(),
+						c.DBClient.KubedbV1alpha2(),
+						db.ObjectMeta,
+						func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+							in.Conditions = kmapi.RemoveCondition(in.Conditions, api.DatabaseHalted)
+							return in
+						},
+						metav1.UpdateOptions{},
+					); err != nil {
+						return err
+					}
+					// return from here, will be enqueued again from the event.
+					return nil
+				}
+
+				// process db object
+				if err := c.create(db); err != nil {
 					log.Errorln(err)
-					c.pushFailureEvent(elasticsearch, err.Error())
+					c.pushFailureEvent(db, err.Error())
 					return err
 				}
 			}

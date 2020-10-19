@@ -23,7 +23,7 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/appscode/go/types"
-	corev1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
@@ -49,14 +49,14 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 	}
 
 	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
-	if request, found := masterNode.Resources.Requests[corev1.ResourceMemory]; found && request.Value() > 0 {
+	if request, found := masterNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
 		heapSize = getHeapSizeForNode(request.Value())
 	}
 
 	// Environment variable list for main container.
 	// These are node specific, i.e. changes depending on node type.
 	// Following are for Master node:
-	envList := []corev1.EnvVar{
+	envList := []core.EnvVar{
 		{
 			Name:  "ES_JAVA_OPTS",
 			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
@@ -79,12 +79,12 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 	// for the vary first time. Need to remove from EnvList as
 	// soon as the cluster is up and running.
 	if strings.HasPrefix(es.esVersion.Spec.Version, "1.") {
-		envList = core_util.UpsertEnvVars(envList, corev1.EnvVar{
+		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "cluster.initial_master_nodes",
 			Value: es.getInitialMasterNodes(),
 		})
 	} else {
-		envList = core_util.UpsertEnvVars(envList, corev1.EnvVar{
+		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "discovery.zen.minimum_master_nodes",
 			Value: fmt.Sprintf("%v", (*replicas/2)+1),
 		})
@@ -98,7 +98,7 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 	envList = core_util.UpsertEnvVars(envList, es.elasticsearch.Spec.PodTemplate.Spec.Env...)
 
 	// Environment variables for init container (i.e. config-merger)
-	initEnvList := []corev1.EnvVar{
+	initEnvList := []core.EnvVar{
 		{
 			Name:  "NODE_MASTER",
 			Value: "true",
@@ -131,14 +131,14 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 	}
 
 	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
-	if request, found := dataNode.Resources.Requests[corev1.ResourceMemory]; found && request.Value() > 0 {
+	if request, found := dataNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
 		heapSize = getHeapSizeForNode(request.Value())
 	}
 
 	// Environment variable list for main container.
 	// These are node specific, i.e. changes depending on node type.
 	// Following are for Data node:
-	envList := []corev1.EnvVar{
+	envList := []core.EnvVar{
 		{
 			Name:  "ES_JAVA_OPTS",
 			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
@@ -164,7 +164,7 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 	envList = core_util.UpsertEnvVars(envList, es.elasticsearch.Spec.PodTemplate.Spec.Env...)
 
 	// Environment variables for init container (i.e. config-merger)
-	initEnvList := []corev1.EnvVar{
+	initEnvList := []core.EnvVar{
 		{
 			Name:  "NODE_MASTER",
 			Value: "false",
@@ -203,14 +203,14 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 	}
 
 	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
-	if request, found := ingestNode.Resources.Requests[corev1.ResourceMemory]; found && request.Value() > 0 {
+	if request, found := ingestNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
 		heapSize = getHeapSizeForNode(request.Value())
 	}
 
 	// Environment variable list for main container.
 	// These are node specific, i.e. changes depending on node type.
 	// Following are for Ingest node:
-	envList := []corev1.EnvVar{
+	envList := []core.EnvVar{
 		{
 			Name:  "ES_JAVA_OPTS",
 			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
@@ -236,7 +236,7 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 	envList = core_util.UpsertEnvVars(envList, es.elasticsearch.Spec.PodTemplate.Spec.Env...)
 
 	// Environment variables for init container (i.e. config-merger)
-	initEnvList := []corev1.EnvVar{
+	initEnvList := []core.EnvVar{
 		{
 			Name:  "NODE_MASTER",
 			Value: "false",
@@ -277,14 +277,14 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 	}
 
 	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
-	if request, found := combinedNode.Resources.Requests[corev1.ResourceMemory]; found && request.Value() > 0 {
+	if request, found := combinedNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
 		heapSize = getHeapSizeForNode(request.Value())
 	}
 
 	// Environment variable list for main container.
 	// These are node specific, i.e. changes depending on node type.
 	// Followings are for Combined node:
-	envList := []corev1.EnvVar{
+	envList := []core.EnvVar{
 		{
 			Name:  "ES_JAVA_OPTS",
 			Value: fmt.Sprintf("-Xms%v -Xmx%v", heapSize, heapSize),
@@ -307,12 +307,12 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 	// for the vary first time. Need to remove from EnvList as
 	// soon as the cluster is up and running.
 	if strings.HasPrefix(es.esVersion.Spec.Version, "1.") {
-		envList = core_util.UpsertEnvVars(envList, corev1.EnvVar{
+		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "cluster.initial_master_nodes",
 			Value: es.getInitialMasterNodes(),
 		})
 	} else {
-		envList = core_util.UpsertEnvVars(envList, corev1.EnvVar{
+		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "discovery.zen.minimum_master_nodes",
 			Value: fmt.Sprintf("%v", (*replicas/2)+1),
 		})
@@ -326,7 +326,7 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 	envList = core_util.UpsertEnvVars(envList, es.elasticsearch.Spec.PodTemplate.Spec.Env...)
 
 	// Environment variables for init container (i.e. config-merger)
-	initEnvList := []corev1.EnvVar{
+	initEnvList := []core.EnvVar{
 		{
 			Name:  "NODE_MASTER",
 			Value: "true",
