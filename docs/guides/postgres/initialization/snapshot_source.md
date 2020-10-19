@@ -50,7 +50,7 @@ You have to specify the Snapshot `name` and `namespace` in the `spec.init.snapsh
 Below is the YAML for PostgreSQL object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: recovered-postgres

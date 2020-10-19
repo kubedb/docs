@@ -82,7 +82,7 @@ metadata:
 Now, create MongoDB crd specifying `spec.configSource` field.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mgo-custom-config

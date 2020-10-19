@@ -100,7 +100,7 @@ User can initialize a new database from this archived WAL files. We have to spec
 The YAML file in this tutorial creates a Postgres object using WAL files from Amazon S3.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: replay-postgres

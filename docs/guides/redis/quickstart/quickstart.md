@@ -74,7 +74,7 @@ $ kubectl get redisversions
 KubeDB implements a `Redis` CRD to define the specification of a Redis server. Below is the `Redis` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Redis
 metadata:
   name: redis-quickstart
@@ -179,7 +179,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get rd -n demo redis-quickstart -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Redis
 metadata:
   creationTimestamp: 2018-10-01T06:01:23Z
@@ -189,7 +189,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
   resourceVersion: "7841"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/redises/redis-quickstart
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/redises/redis-quickstart
   uid: 6cc214c9-c53f-11e8-9ba7-0800274bef12
 spec:
   mode: Standalone
@@ -272,7 +272,7 @@ redis-quickstart   Paused    1m
 
 ```yaml
 $ kubectl get drmn -n demo redis-quickstart -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   creationTimestamp: 2018-10-01T06:09:58Z
@@ -284,7 +284,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
   resourceVersion: "8445"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/dormantdatabases/redis-quickstart
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/dormantdatabases/redis-quickstart
   uid: 9fb52903-c540-11e8-9ba7-0800274bef12
 spec:
   origin:
@@ -348,7 +348,7 @@ You can wipe out a DormantDatabase while deleting the objet by setting `spec.wip
 
 ```console
 $ kubectl edit drmn -n demo redis-quickstart
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   name: redis-quickstart

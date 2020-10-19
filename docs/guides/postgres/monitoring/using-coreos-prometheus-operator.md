@@ -89,7 +89,7 @@ Notice the `spec.serviceMonitorSelector` section. Here, `k8s-app: prometheus` la
 At first, let's deploy an PostgreSQL database with monitoring enabled. Below is the PostgreSQL object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: coreos-prom-postgres

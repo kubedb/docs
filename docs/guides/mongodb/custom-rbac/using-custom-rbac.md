@@ -137,7 +137,7 @@ mongodb.kubedb.com/quick-mongodb created
 Below is the YAML for the MongoDB crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: quick-mongodb
@@ -202,7 +202,7 @@ mongodb.kubedb.com/quick-mongodb created
 Below is the YAML for the MongoDB crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: minute-mongodb

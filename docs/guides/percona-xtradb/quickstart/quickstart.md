@@ -59,7 +59,7 @@ NAME          VERSION   DB_IMAGE                            DEPRECATED   AGE
 KubeDB implements a `PerconaXtraDB` CRD to define the specification of a PerconaXtraDB database. Below is the `PerconaXtraDB` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   name: demo-quickstart
@@ -102,7 +102,7 @@ Name:         demo-quickstart
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha1
+API Version:  kubedb.com/v1alpha2
 Kind:         PerconaXtraDB
 Metadata:
   Creation Timestamp:  2019-12-23T13:00:34Z
@@ -110,7 +110,7 @@ Metadata:
     kubedb.com
   Generation:        2
   Resource Version:  45676
-  Self Link:         /apis/kubedb.com/v1alpha1/namespaces/demo/perconaxtradbs/demo-quickstart
+  Self Link:         /apis/kubedb.com/v1alpha2/namespaces/demo/perconaxtradbs/demo-quickstart
   UID:               ef82922b-ce02-4184-8f3d-237a37dfec43
 Spec:
   Database Secret:
@@ -190,7 +190,7 @@ $ kubectl get px -n demo demo-quickstart -o yaml
 And the output is as follows:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   creationTimestamp: "2019-12-23T13:00:34Z"
@@ -200,7 +200,7 @@ metadata:
   name: demo-quickstart
   namespace: demo
   resourceVersion: "45676"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/perconaxtradbs/demo-quickstart
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/perconaxtradbs/demo-quickstart
   uid: ef82922b-ce02-4184-8f3d-237a37dfec43
 spec:
   databaseSecret:
@@ -339,7 +339,7 @@ pvc-b1a12fb2-cc4f-45d1-9d3c-921181d0d8cc   50Mi       RWO            Delete     
 
 ```yaml
 $ kubectl get drmn -n demo demo-quickstart -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   creationTimestamp: "2019-12-23T13:40:51Z"
@@ -351,7 +351,7 @@ metadata:
   name: demo-quickstart
   namespace: demo
   resourceVersion: "50190"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/dormantdatabases/demo-quickstart
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/dormantdatabases/demo-quickstart
   uid: 13be40cb-2abd-43d2-bffa-42a7ea7a3f5e
 spec:
   origin:
@@ -433,7 +433,7 @@ $ kubectl delete px demo-quickstart -n demo
 kubectl delete px demo-quickstart -n demo
 
 $ kubectl edit drmn -n demo demo-quickstart
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   name: demo-quickstart

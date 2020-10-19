@@ -265,7 +265,7 @@ elasticsearch.kubedb.com/es-kibana-demo created
 Below is the YAML for the Elasticsearch crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
   name: es-kibana-demo

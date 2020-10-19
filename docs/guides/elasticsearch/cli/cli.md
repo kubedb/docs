@@ -54,7 +54,7 @@ To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
 $ kubectl get elasticsearch elasticsearch-demo --output=yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
   creationTimestamp: 2018-10-08T14:22:19Z
@@ -64,7 +64,7 @@ metadata:
   name: elasticsearch-demo
   namespace: default
   resourceVersion: "51660"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/default/elasticsearches/elasticsearch-demo
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/elasticsearches/elasticsearch-demo
   uid: 90a54c9e-cb05-11e8-8d51-9eed48c5e947
 spec:
   certificateSecret:

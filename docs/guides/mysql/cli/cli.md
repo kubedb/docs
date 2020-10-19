@@ -56,7 +56,7 @@ To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
 $ kubectl get mysql mysql-demo --output=yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   creationTimestamp: "2020-08-25T11:21:29Z"
@@ -69,7 +69,7 @@ metadata:
   name: mysql-demo
   namespace: default
   resourceVersion: "8763"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/default/mysqls/mysql-demo
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/mysqls/mysql-demo
   uid: daac5549-0a7b-4e25-8773-473dffabf1cd
 spec:
   databaseSecret:

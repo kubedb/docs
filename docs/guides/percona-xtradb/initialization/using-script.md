@@ -53,7 +53,7 @@ configmap/px-init-script created
 Below is the `PerconaXtraDB` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   name: px-init-script
@@ -95,8 +95,8 @@ Name:         px-init-script
 Namespace:    demo
 Labels:       <none>
 Annotations:  kubectl.kubernetes.io/last-applied-configuration:
-                {"apiVersion":"kubedb.com/v1alpha1","kind":"PerconaXtraDB","metadata":{"annotations":{},"name":"px-init-script","namespace":"demo"},"spec"...
-API Version:  kubedb.com/v1alpha1
+                {"apiVersion":"kubedb.com/v1alpha2","kind":"PerconaXtraDB","metadata":{"annotations":{},"name":"px-init-script","namespace":"demo"},"spec"...
+API Version:  kubedb.com/v1alpha2
 Kind:         PerconaXtraDB
 Metadata:
   Creation Timestamp:  2020-01-09T13:45:43Z
@@ -104,7 +104,7 @@ Metadata:
     kubedb.com
   Generation:        2
   Resource Version:  64559
-  Self Link:         /apis/kubedb.com/v1alpha1/namespaces/demo/perconaxtradbs/px-init-script
+  Self Link:         /apis/kubedb.com/v1alpha2/namespaces/demo/perconaxtradbs/px-init-script
   UID:               d7ad081e-8b2d-41d1-aae3-6141a01a66f1
 Spec:
   Database Secret:
@@ -188,12 +188,12 @@ $ kubectl get px -n demo px-init-script -o yaml
 Output:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha1","kind":"PerconaXtraDB","metadata":{"annotations":{},"name":"px-init-script","namespace":"demo"},"spec":{"init":{"scriptSource":{"configMap":{"name":"px-init-script"}}},"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","updateStrategy":{"type":"RollingUpdate"},"version":"5.7"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"PerconaXtraDB","metadata":{"annotations":{},"name":"px-init-script","namespace":"demo"},"spec":{"init":{"scriptSource":{"configMap":{"name":"px-init-script"}}},"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","updateStrategy":{"type":"RollingUpdate"},"version":"5.7"}}
   creationTimestamp: "2020-01-09T13:45:43Z"
   finalizers:
   - kubedb.com
@@ -201,7 +201,7 @@ metadata:
   name: px-init-script
   namespace: demo
   resourceVersion: "64559"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/perconaxtradbs/px-init-script
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/perconaxtradbs/px-init-script
   uid: d7ad081e-8b2d-41d1-aae3-6141a01a66f1
 spec:
   databaseSecret:

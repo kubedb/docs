@@ -103,7 +103,7 @@ While deploying `Redis` from private repository, you have to add `myregistrykey`
 Below is the Redis CRD object we will create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Redis
 metadata:
   name: redis-pvt-reg

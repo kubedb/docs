@@ -57,7 +57,7 @@ To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
 $ kubectl get redis redis-demo --output=yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Redis
 metadata:
   creationTimestamp: 2018-10-01T08:14:27Z
@@ -69,7 +69,7 @@ metadata:
   name: redis-demo
   namespace: default
   resourceVersion: "18201"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/default/redises/redis-demo
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/redises/redis-demo
   uid: 039aeaa1-c552-11e8-9ba7-0800274bef12
 spec:
   mode: Standalone

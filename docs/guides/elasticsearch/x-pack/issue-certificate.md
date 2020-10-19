@@ -300,7 +300,7 @@ Use this Secret `custom-certificate-es-ssl-cert` in your Elasticsearch object.
 Below is the Elasticsearch object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
   name: custom-certificate-es-ssl

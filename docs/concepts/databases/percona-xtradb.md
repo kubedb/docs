@@ -23,7 +23,7 @@ section_menu_id: concepts
 As with all other Kubernetes objects, a PerconaXtraDB needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `spec` section. Below is an example PerconaXtraDB object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   name: demo-px
@@ -163,7 +163,7 @@ To initialize a PerconaXtraDB database (with replica 1) using a script (shell sc
 Below is an example showing how a script from a configMap can be used to initialize a PerconaXtraDB database.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   name: init-demo-px
@@ -184,7 +184,7 @@ If you have a backup of PerconaXtraDB cluster using [Stash](https://stash.run), 
 - `name:` Name of the RestoreSession object
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   name: px-new

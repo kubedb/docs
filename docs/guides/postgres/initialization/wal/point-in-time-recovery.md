@@ -72,7 +72,7 @@ secret "s3-secret" created
 Below is the YAML for sample database we are going to deploy,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: pg-original
@@ -192,7 +192,7 @@ We had inserted first sample data at `2019-01-07 08:28:58.752729+00`. So, if we 
 Below is the YAML we are going to create to recover up to `"2019-01-07 08:30:00+00"` timestamp.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: pitr-1
@@ -259,7 +259,7 @@ Now, let's recover up to second sample data. We had inserted second sample data 
 Below is the YAML we are going to create to recover up to `"2019-01-07 08:40:00+00"` timestamp.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: pitr-2

@@ -1,5 +1,5 @@
  {
-   "apiVersion": "kubedb.com/v1alpha1",
+   "apiVersion": "kubedb.com/v1alpha2",
    "kind": "Postgres",
    "metadata": {
      "creationTimestamp": "2017-07-19T15:11:45Z",

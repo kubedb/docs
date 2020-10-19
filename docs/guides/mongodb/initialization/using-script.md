@@ -54,7 +54,7 @@ configmap/mg-init-script created
 Below is the `MongoDB` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mgo-init-script
@@ -179,7 +179,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get mg -n demo mgo-init-script -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   creationTimestamp: "2019-02-06T09:43:54Z"
@@ -189,7 +189,7 @@ metadata:
   name: mgo-init-script
   namespace: demo
   resourceVersion: "89660"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/mongodbs/mgo-init-script
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mgo-init-script
   uid: b7bde230-29f3-11e9-aebf-080027875192
 spec:
   databaseSecret:

@@ -126,7 +126,7 @@ KubeDB implements a Postgres CRD to define the specification of a PostgreSQL dat
 Below is the Postgres object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: quick-postgres
@@ -375,7 +375,7 @@ Let's see, what we have in this DormantDatabase object
 
 ```yaml
 $ kubectl get drmn -n demo quick-postgres -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   creationTimestamp: "2019-02-07T11:05:44Z"
@@ -387,7 +387,7 @@ metadata:
   name: quick-postgres
   namespace: demo
   resourceVersion: "39020"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/dormantdatabases/quick-postgres
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/dormantdatabases/quick-postgres
   uid: 50a9c42e-2ac8-11e9-9d44-080027154f61
 spec:
   origin:

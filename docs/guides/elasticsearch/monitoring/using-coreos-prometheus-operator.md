@@ -89,7 +89,7 @@ Notice the `spec.serviceMonitorSelector` section. Here, `k8s-app: prometheus` la
 At first, let's deploy an Elasticsearch database with monitoring enabled. Below is the Elasticsearch object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
   name: coreos-prom-es

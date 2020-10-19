@@ -139,7 +139,7 @@ While deploying PostgreSQL from private repository, you have to add `myregistryk
 Below is the Postgres object we will create in this tutorial
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: pvt-reg-postgres

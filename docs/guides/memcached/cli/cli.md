@@ -57,7 +57,7 @@ To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
 $ kubectl get memcached memcached-demo --output=yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Memcached
 metadata:
   creationTimestamp: 2018-10-04T05:58:57Z
@@ -69,7 +69,7 @@ metadata:
   name: memcached-demo
   namespace: default
   resourceVersion: "6883"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/default/memcacheds/memcached-demo
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/memcacheds/memcached-demo
   uid: 953df4d1-c79a-11e8-bb11-0800272ad446
 spec:
   podTemplate:

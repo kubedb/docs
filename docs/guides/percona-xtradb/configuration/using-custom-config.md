@@ -99,7 +99,7 @@ perconaxtradb.kubedb.com/custom-px created
 Below is the YAML for the PerconaXtraDB object we just created above.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   name: custom-px

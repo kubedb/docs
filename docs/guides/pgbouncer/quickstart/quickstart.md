@@ -166,7 +166,7 @@ KubeDB implements a PgBouncer crd to define the specifications of a PgBouncer.
 Below is the PgBouncer object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PgBouncer
 metadata:
   name: pgbouncer-server
@@ -307,7 +307,7 @@ Now we will need to edit our PgBouncer's spec.databases to add this database to 
 The YAML file should now look like this:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PgBouncer
 metadata:
   name: pgbouncer-server
@@ -381,8 +381,8 @@ Name:         pgbouncer-demo
 Namespace:    demo
 Labels:       <none>
 Annotations:  kubectl.kubernetes.io/last-applied-configuration:
-                {"apiVersion":"kubedb.com/v1alpha1","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-demo","namespace":"demo"},"spec":{"c...
-API Version:  kubedb.com/v1alpha1
+                {"apiVersion":"kubedb.com/v1alpha2","kind":"PgBouncer","metadata":{"annotations":{},"name":"pgbouncer-demo","namespace":"demo"},"spec":{"c...
+API Version:  kubedb.com/v1alpha2
 Kind:         PgBouncer
 Metadata:
   Creation Timestamp:  2019-10-31T10:34:04Z
@@ -390,7 +390,7 @@ Metadata:
     kubedb.com
   Generation:        1
   Resource Version:  4733
-  Self Link:         /apis/kubedb.com/v1alpha1/namespaces/demo/pgbouncers/pgbouncer-demo
+  Self Link:         /apis/kubedb.com/v1alpha2/namespaces/demo/pgbouncers/pgbouncer-demo
   UID:               158b7c58-ecb2-4a77-bceb-081489b4921a
 Spec:
   Connection Pool:

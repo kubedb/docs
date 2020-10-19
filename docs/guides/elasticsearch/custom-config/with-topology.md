@@ -128,7 +128,7 @@ elasticsearch.kubedb.com/custom-elasticsearch created
 Below is the YAML for the Elasticsearch crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
   name: custom-elasticsearch

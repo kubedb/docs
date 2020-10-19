@@ -43,7 +43,7 @@ This tutorial will show you how to monitor Memcached server using builtin [Prome
 At first, let's deploy a Memcached server with monitoring enabled. Below is the Memcached object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Memcached
 metadata:
   name: builtin-prom-memcd

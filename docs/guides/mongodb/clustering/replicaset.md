@@ -42,7 +42,7 @@ To deploy a MongoDB ReplicaSet, user have to specify `spec.replicaSet` option in
 The following is an example of a `Mongodb` object which creates MongoDB ReplicaSet of three members.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mgo-replicaset
@@ -175,7 +175,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get mg -n demo mgo-replicaset -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   creationTimestamp: "2019-04-30T09:45:14Z"
@@ -185,7 +185,7 @@ metadata:
   name: mgo-replicaset
   namespace: demo
   resourceVersion: "30485"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/mongodbs/mgo-replicaset
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mgo-replicaset
   uid: a7aa351c-6b2c-11e9-97a6-0800278b6754
 spec:
   certificateSecret:
@@ -431,7 +431,7 @@ mgo-replicaset   Paused    1m
 
 ```yaml
 $ kubectl get drmn -n demo mgo-replicaset -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   creationTimestamp: "2019-04-30T09:48:12Z"
@@ -443,7 +443,7 @@ metadata:
   name: mgo-replicaset
   namespace: demo
   resourceVersion: "30679"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/dormantdatabases/mgo-replicaset
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/dormantdatabases/mgo-replicaset
   uid: 11b04c13-6b2d-11e9-97a6-0800278b6754
 spec:
   origin:
@@ -537,7 +537,7 @@ You can wipe out a DormantDatabase while deleting the object by setting `spec.wi
 
 ```yaml
 $ kubectl edit drmn -n demo mgo-replicaset
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   name: mgo-replicaset

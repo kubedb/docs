@@ -51,7 +51,7 @@ spec:
 Once we add this PgBouncerVersion we can use it in a new PgBouncer like:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PgBouncer
 metadata:
   name: pgbouncer-server

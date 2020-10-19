@@ -124,7 +124,7 @@ While deploying Elasticsearch from private repository, you have to add `myregist
 Below is the YAML for Elasticsearch crd that will be created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
   name: pvt-reg-elasticsearch

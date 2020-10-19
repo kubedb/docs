@@ -33,7 +33,7 @@ This tutorial will show you how to use KubeDB to initialize a MongoDB database w
 Below is the `MongoDB` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mgo-init-snapshot

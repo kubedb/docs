@@ -50,7 +50,7 @@ Now, we are going to deploy a `MongoDB` replicaset database with version `3.6.8`
 In this section, we are going to deploy a MongoDB replicaset database. Then, in the next section we will update the resources of the database using `MongoDBOpsRequest` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mg-replicaset

@@ -92,7 +92,7 @@ While deploying `ProxySQL` from private repository, you have to add `myregistryk
 Below is the ProxySQL object we will create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: ProxySQL
 metadata:
   name: proxysql-pvt-reg
