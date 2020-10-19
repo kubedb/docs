@@ -84,6 +84,7 @@ type Config struct {
 	OperatorNamespace       string
 	GoverningService        string
 	ResyncPeriod            time.Duration
+	ReadinessProbeInterval  time.Duration
 	MaxNumRequeues          int
 	NumThreads              int
 	LoggerOptions           golog.Options

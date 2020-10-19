@@ -74,7 +74,7 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		return err
 	}
 
-	if err := c.ensureDatabaseSecret(mongodb); err != nil {
+	if err := c.ensureAuthSecret(mongodb); err != nil {
 		return err
 	}
 

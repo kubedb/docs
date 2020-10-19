@@ -24,13 +24,13 @@ import (
 	certlib "kubedb.dev/elasticsearch/pkg/lib/cert"
 
 	"github.com/pkg/errors"
-	corev1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
-func (es *Elasticsearch) upsertMonitoringContainer(containers []corev1.Container) ([]corev1.Container, error) {
+func (es *Elasticsearch) upsertMonitoringContainer(containers []core.Container) ([]core.Container, error) {
 	if es.elasticsearch.Spec.Monitor != nil && es.elasticsearch.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 		var uri string
 		if es.elasticsearch.Spec.DisableSecurity {
@@ -39,7 +39,7 @@ func (es *Elasticsearch) upsertMonitoringContainer(containers []corev1.Container
 			uri = fmt.Sprintf("%s://$(DB_USER):$(DB_PASSWORD)@localhost:%d", es.elasticsearch.GetConnectionScheme(), api.ElasticsearchRestPort)
 		}
 
-		container := corev1.Container{
+		container := core.Container{
 			Name: "exporter",
 			Args: append([]string{
 				fmt.Sprintf("--es.uri=%s", uri),
@@ -52,11 +52,11 @@ func (es *Elasticsearch) upsertMonitoringContainer(containers []corev1.Container
 				fmt.Sprintf("--web.telemetry-path=%s", es.elasticsearch.StatsService().Path()),
 			}, es.elasticsearch.Spec.Monitor.Prometheus.Exporter.Args...),
 			Image:           es.esVersion.Spec.Exporter.Image,
-			ImagePullPolicy: corev1.PullIfNotPresent,
-			Ports: []corev1.ContainerPort{
+			ImagePullPolicy: core.PullIfNotPresent,
+			Ports: []core.ContainerPort{
 				{
 					Name:     mona.PrometheusExporterPortName,
-					Protocol: corev1.ProtocolTCP,
+					Protocol: core.ProtocolTCP,
 					ContainerPort: func() int32 {
 						if es.elasticsearch.Spec.Monitor.Prometheus != nil {
 							return es.elasticsearch.Spec.Monitor.Prometheus.Exporter.Port
@@ -77,26 +77,26 @@ func (es *Elasticsearch) upsertMonitoringContainer(containers []corev1.Container
 				return nil, errors.Wrap(err, "failed to get metrics-exporter-cred secret")
 			}
 
-			envList := []corev1.EnvVar{
+			envList := []core.EnvVar{
 				{
 					Name: "DB_USER",
-					ValueFrom: &corev1.EnvVarSource{
-						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{
+					ValueFrom: &core.EnvVarSource{
+						SecretKeyRef: &core.SecretKeySelector{
+							LocalObjectReference: core.LocalObjectReference{
 								Name: sName,
 							},
-							Key: corev1.BasicAuthUsernameKey,
+							Key: core.BasicAuthUsernameKey,
 						},
 					},
 				},
 				{
 					Name: "DB_PASSWORD",
-					ValueFrom: &corev1.EnvVarSource{
-						SecretKeyRef: &corev1.SecretKeySelector{
-							LocalObjectReference: corev1.LocalObjectReference{
+					ValueFrom: &core.EnvVarSource{
+						SecretKeyRef: &core.SecretKeySelector{
+							LocalObjectReference: core.LocalObjectReference{
 								Name: sName,
 							},
-							Key: corev1.BasicAuthPasswordKey,
+							Key: core.BasicAuthPasswordKey,
 						},
 					},
 				},
@@ -105,7 +105,7 @@ func (es *Elasticsearch) upsertMonitoringContainer(containers []corev1.Container
 		}
 
 		if es.elasticsearch.Spec.EnableSSL {
-			certVolumeMount := corev1.VolumeMount{
+			certVolumeMount := core.VolumeMount{
 				Name:      es.elasticsearch.CertSecretVolumeName(api.ElasticsearchMetricsExporterCert),
 				MountPath: ExporterCertDir,
 			}

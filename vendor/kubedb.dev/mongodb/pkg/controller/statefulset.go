@@ -82,7 +82,7 @@ type workloadOptions struct {
 	args         []string      // args of `mongodb` container
 	envList      []core.EnvVar // envList of `mongodb` container
 	volumeMount  []core.VolumeMount
-	configSource *core.VolumeSource
+	configSecret *core.LocalObjectReference
 
 	// pod Template level options
 	replicas       *int32
@@ -237,7 +237,7 @@ func (c *Controller) ensureShardNode(mongodb *api.MongoDB) ([]*apps.StatefulSet,
 				ValueFrom: &core.EnvVarSource{
 					SecretKeyRef: &core.SecretKeySelector{
 						LocalObjectReference: core.LocalObjectReference{
-							Name: mongodb.Spec.DatabaseSecret.SecretName,
+							Name: mongodb.Spec.AuthSecret.Name,
 						},
 						Key: core.BasicAuthUsernameKey,
 					},
@@ -248,7 +248,7 @@ func (c *Controller) ensureShardNode(mongodb *api.MongoDB) ([]*apps.StatefulSet,
 				ValueFrom: &core.EnvVarSource{
 					SecretKeyRef: &core.SecretKeySelector{
 						LocalObjectReference: core.LocalObjectReference{
-							Name: mongodb.Spec.DatabaseSecret.SecretName,
+							Name: mongodb.Spec.AuthSecret.Name,
 						},
 						Key: core.BasicAuthPasswordKey,
 					},
@@ -290,13 +290,13 @@ func (c *Controller) ensureShardNode(mongodb *api.MongoDB) ([]*apps.StatefulSet,
 			},
 		}
 
-		if mongodb.Spec.KeyFile != nil {
+		if mongodb.Spec.KeyFileSecret != nil {
 			volumes = core_util.UpsertVolume(volumes, core.Volume{
 				Name: initialKeyDirectoryName, // FIXIT: mounted where?
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
 						DefaultMode: types.Int32P(0400),
-						SecretName:  mongodb.Spec.KeyFile.SecretName,
+						SecretName:  mongodb.Spec.KeyFileSecret.Name,
 					},
 				},
 			})
@@ -340,7 +340,7 @@ func (c *Controller) ensureShardNode(mongodb *api.MongoDB) ([]*apps.StatefulSet,
 			initContainers: []core.Container{initContnr},
 			gvrSvcName:     mongodb.GvrSvcName(mongodb.ShardNodeName(nodeNum)),
 			podTemplate:    podTemplate,
-			configSource:   mongodb.Spec.ShardTopology.Shard.ConfigSource,
+			configSecret:   mongodb.Spec.ShardTopology.Shard.ConfigSecret,
 			pvcSpec:        mongodb.Spec.ShardTopology.Shard.Storage,
 			replicas:       &mongodb.Spec.ShardTopology.Shard.Replicas,
 			volumes:        volumes,
@@ -444,7 +444,7 @@ func (c *Controller) ensureConfigNode(mongodb *api.MongoDB) (*apps.StatefulSet, 
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
-						Name: mongodb.Spec.DatabaseSecret.SecretName,
+						Name: mongodb.Spec.AuthSecret.Name,
 					},
 					Key: core.BasicAuthUsernameKey,
 				},
@@ -455,7 +455,7 @@ func (c *Controller) ensureConfigNode(mongodb *api.MongoDB) (*apps.StatefulSet, 
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
-						Name: mongodb.Spec.DatabaseSecret.SecretName,
+						Name: mongodb.Spec.AuthSecret.Name,
 					},
 					Key: core.BasicAuthPasswordKey,
 				},
@@ -497,13 +497,13 @@ func (c *Controller) ensureConfigNode(mongodb *api.MongoDB) (*apps.StatefulSet, 
 		},
 	}
 
-	if mongodb.Spec.KeyFile != nil {
+	if mongodb.Spec.KeyFileSecret != nil {
 		volumes = core_util.UpsertVolume(volumes, core.Volume{
 			Name: initialKeyDirectoryName, // FIXIT: mounted where?
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
 					DefaultMode: types.Int32P(0400),
-					SecretName:  mongodb.Spec.KeyFile.SecretName,
+					SecretName:  mongodb.Spec.KeyFileSecret.Name,
 				},
 			},
 		})
@@ -541,7 +541,7 @@ func (c *Controller) ensureConfigNode(mongodb *api.MongoDB) (*apps.StatefulSet, 
 		initContainers: []core.Container{initContnr},
 		gvrSvcName:     mongodb.GvrSvcName(mongodb.ConfigSvrNodeName()),
 		podTemplate:    &mongodb.Spec.ShardTopology.ConfigServer.PodTemplate,
-		configSource:   mongodb.Spec.ShardTopology.ConfigServer.ConfigSource,
+		configSecret:   mongodb.Spec.ShardTopology.ConfigServer.ConfigSecret,
 		pvcSpec:        mongodb.Spec.ShardTopology.ConfigServer.Storage,
 		replicas:       &mongodb.Spec.ShardTopology.ConfigServer.Replicas,
 		volumes:        volumes,
@@ -655,7 +655,7 @@ func (c *Controller) ensureNonTopology(mongodb *api.MongoDB) (kutil.VerbType, er
 				ValueFrom: &core.EnvVarSource{
 					SecretKeyRef: &core.SecretKeySelector{
 						LocalObjectReference: core.LocalObjectReference{
-							Name: mongodb.Spec.DatabaseSecret.SecretName,
+							Name: mongodb.Spec.AuthSecret.Name,
 						},
 						Key: core.BasicAuthUsernameKey,
 					},
@@ -666,7 +666,7 @@ func (c *Controller) ensureNonTopology(mongodb *api.MongoDB) (kutil.VerbType, er
 				ValueFrom: &core.EnvVarSource{
 					SecretKeyRef: &core.SecretKeySelector{
 						LocalObjectReference: core.LocalObjectReference{
-							Name: mongodb.Spec.DatabaseSecret.SecretName,
+							Name: mongodb.Spec.AuthSecret.Name,
 						},
 						Key: core.BasicAuthPasswordKey,
 					},
@@ -707,13 +707,13 @@ func (c *Controller) ensureNonTopology(mongodb *api.MongoDB) (kutil.VerbType, er
 			},
 		}...)
 
-		if mongodb.Spec.KeyFile != nil {
+		if mongodb.Spec.KeyFileSecret != nil {
 			volumes = core_util.UpsertVolume(volumes, core.Volume{
 				Name: initialKeyDirectoryName, // FIXIT: mounted where?
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
 						DefaultMode: types.Int32P(0400),
-						SecretName:  mongodb.Spec.KeyFile.SecretName,
+						SecretName:  mongodb.Spec.KeyFileSecret.Name,
 					},
 				},
 			})
@@ -752,7 +752,7 @@ func (c *Controller) ensureNonTopology(mongodb *api.MongoDB) (kutil.VerbType, er
 		initContainers: initContainers,
 		gvrSvcName:     mongodb.GvrSvcName(mongodb.OffshootName()),
 		podTemplate:    mongodb.Spec.PodTemplate,
-		configSource:   mongodb.Spec.ConfigSource,
+		configSecret:   mongodb.Spec.ConfigSecret,
 		pvcSpec:        mongodb.Spec.Storage,
 		replicas:       mongodb.Spec.Replicas,
 		volumes:        volumes,
@@ -881,8 +881,8 @@ func (c *Controller) ensureStatefulSet(mongodb *api.MongoDB, opts workloadOption
 				in = upsertDataVolume(in, opts.pvcSpec, mongodb.Spec.StorageType)
 			}
 
-			if opts.configSource != nil {
-				in.Spec.Template = c.upsertConfigSourceVolume(in.Spec.Template, opts.configSource)
+			if opts.configSecret != nil {
+				in.Spec.Template = c.upsertConfigSecretVolume(in.Spec.Template, opts.configSecret)
 			}
 
 			in.Spec.Template.Spec.NodeSelector = pt.Spec.NodeSelector
@@ -1050,7 +1050,7 @@ func installInitContainer(
 	//if sslMode == "" {
 	//	sslMode = api.SSLModeDisabled
 	//}
-	if mongodb.Spec.KeyFile != nil {
+	if mongodb.Spec.KeyFileSecret != nil {
 		installContainer.VolumeMounts = core_util.UpsertVolumeMount(
 			installContainer.VolumeMounts,
 			core.VolumeMount{
@@ -1063,7 +1063,7 @@ func installInitContainer(
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
 					DefaultMode: types.Int32P(0400),
-					SecretName:  mongodb.Spec.KeyFile.SecretName,
+					SecretName:  mongodb.Spec.KeyFileSecret.Name,
 				},
 			},
 		})
@@ -1162,7 +1162,7 @@ func upsertEnv(template core.PodTemplateSpec, mongodb *api.MongoDB) core.PodTemp
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
-						Name: mongodb.Spec.DatabaseSecret.SecretName,
+						Name: mongodb.Spec.AuthSecret.Name,
 					},
 					Key: core.BasicAuthUsernameKey,
 				},
@@ -1173,7 +1173,7 @@ func upsertEnv(template core.PodTemplateSpec, mongodb *api.MongoDB) core.PodTemp
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
-						Name: mongodb.Spec.DatabaseSecret.SecretName,
+						Name: mongodb.Spec.AuthSecret.Name,
 					},
 					Key: core.BasicAuthPasswordKey,
 				},

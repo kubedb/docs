@@ -99,7 +99,7 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		}
 	}
 
-	if err := c.ensureDatabaseSecret(mysql); err != nil {
+	if err := c.ensureAuthSecret(mysql); err != nil {
 		return err
 	}
 

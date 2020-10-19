@@ -29,8 +29,8 @@ import (
 	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
 	"gomodules.xyz/envsubst"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
+	apps "k8s.io/api/apps/v1"
+	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kutil "kmodules.xyz/client-go"
@@ -45,15 +45,15 @@ const (
 )
 
 var (
-	defaultRestPort = corev1.ContainerPort{
+	defaultRestPort = core.ContainerPort{
 		Name:          api.ElasticsearchRestPortName,
 		ContainerPort: api.ElasticsearchRestPort,
-		Protocol:      corev1.ProtocolTCP,
+		Protocol:      core.ProtocolTCP,
 	}
-	defaultTransportPort = corev1.ContainerPort{
+	defaultTransportPort = core.ContainerPort{
 		Name:          api.ElasticsearchTransportPortName,
 		ContainerPort: api.ElasticsearchTransportPort,
-		Protocol:      corev1.ProtocolTCP,
+		Protocol:      core.ProtocolTCP,
 	}
 )
 
@@ -63,8 +63,8 @@ func (es *Elasticsearch) ensureStatefulSet(
 	labels map[string]string,
 	replicas *int32,
 	nodeRole string,
-	envList []corev1.EnvVar,
-	initEnvList []corev1.EnvVar,
+	envList []core.EnvVar,
+	initEnvList []core.EnvVar,
 ) (kutil.VerbType, error) {
 
 	if esNode == nil {
@@ -118,7 +118,7 @@ func (es *Elasticsearch) ensureStatefulSet(
 		return kutil.VerbUnchanged, errors.Wrap(err, "failed to get volumes")
 	}
 
-	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(context.TODO(), es.kClient, statefulSetMeta, func(in *appsv1.StatefulSet) *appsv1.StatefulSet {
+	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(context.TODO(), es.kClient, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Labels = core_util.UpsertMap(labels, es.elasticsearch.OffshootLabels())
 		in.Annotations = es.elasticsearch.Spec.PodTemplate.Controller.Annotations
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
@@ -147,7 +147,7 @@ func (es *Elasticsearch) ensureStatefulSet(
 
 		// securityContext for x-pack
 		if in.Spec.Template.Spec.SecurityContext == nil {
-			in.Spec.Template.Spec.SecurityContext = &corev1.PodSecurityContext{
+			in.Spec.Template.Spec.SecurityContext = &core.PodSecurityContext{
 				FSGroup: types.Int64P(1000),
 			}
 		}
@@ -166,8 +166,8 @@ func (es *Elasticsearch) ensureStatefulSet(
 		// Any kind of modification on Elasticsearch will be performed via ElasticsearchModificationRequest CRD.
 		// If user update the Elasticsearch object without ElasticsearchModificationRequest,
 		// user will have delete the pods manually to encounter the changes.
-		in.Spec.UpdateStrategy = appsv1.StatefulSetUpdateStrategy{
-			Type: appsv1.OnDeleteStatefulSetStrategyType,
+		in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
+			Type: apps.OnDeleteStatefulSetStrategyType,
 		}
 
 		return in
@@ -187,19 +187,19 @@ func (es *Elasticsearch) ensureStatefulSet(
 	return vt, nil
 }
 
-func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole string) ([]corev1.Volume, *corev1.PersistentVolumeClaim, error) {
+func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole string) ([]core.Volume, *core.PersistentVolumeClaim, error) {
 	if esNode == nil {
 		return nil, nil, errors.New("elasticsearchNode is empty")
 	}
 
-	var volumes []corev1.Volume
-	var pvc *corev1.PersistentVolumeClaim
+	var volumes []core.Volume
+	var pvc *core.PersistentVolumeClaim
 
 	// Upsert Volume for configuration directory
-	volumes = core_util.UpsertVolume(volumes, corev1.Volume{
+	volumes = core_util.UpsertVolume(volumes, core.Volume{
 		Name: "esconfig",
-		VolumeSource: corev1.VolumeSource{
-			EmptyDir: &corev1.EmptyDirVolumeSource{},
+		VolumeSource: core.VolumeSource{
+			EmptyDir: &core.EmptyDirVolumeSource{},
 		},
 	})
 
@@ -207,10 +207,10 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 	// These files will modified( if necessary ) and moved to elasticsearch config directory
 	// from config-merger init container.
 	secretName := es.elasticsearch.ConfigSecretName()
-	volumes = core_util.UpsertVolume(volumes, corev1.Volume{
+	volumes = core_util.UpsertVolume(volumes, core.Volume{
 		Name: "temp-esconfig",
-		VolumeSource: corev1.VolumeSource{
-			Secret: &corev1.SecretVolumeSource{
+		VolumeSource: core.VolumeSource{
+			Secret: &core.SecretVolumeSource{
 				SecretName: secretName,
 			},
 		},
@@ -219,10 +219,14 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 	// Upsert Volume for user provided custom configuration.
 	// These configuration will be merged to default config yaml (ie. elasticsearch.yaml)
 	// from config-merger initContainer.
-	if es.elasticsearch.Spec.ConfigSource != nil {
-		volumes = core_util.UpsertVolume(volumes, corev1.Volume{
-			Name:         "custom-config",
-			VolumeSource: *es.elasticsearch.Spec.ConfigSource,
+	if es.elasticsearch.Spec.ConfigSecret != nil {
+		volumes = core_util.UpsertVolume(volumes, core.Volume{
+			Name: "custom-config",
+			VolumeSource: core.VolumeSource{
+				Secret: &core.SecretVolumeSource{
+					SecretName: es.elasticsearch.Spec.ConfigSecret.Name,
+				},
+			},
 		})
 	}
 
@@ -230,27 +234,27 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 	// If storageType is "Ephemeral", add volume of "EmptyDir" type.
 	// The storageType is default to "Durable".
 	if es.elasticsearch.Spec.StorageType == api.StorageTypeEphemeral {
-		ed := corev1.EmptyDirVolumeSource{}
+		ed := core.EmptyDirVolumeSource{}
 		if esNode.Storage != nil {
-			if sz, found := esNode.Storage.Resources.Requests[corev1.ResourceStorage]; found {
+			if sz, found := esNode.Storage.Resources.Requests[core.ResourceStorage]; found {
 				ed.SizeLimit = &sz
 			}
 		}
-		volumes = core_util.UpsertVolume(volumes, corev1.Volume{
+		volumes = core_util.UpsertVolume(volumes, core.Volume{
 			Name: "data",
-			VolumeSource: corev1.VolumeSource{
+			VolumeSource: core.VolumeSource{
 				EmptyDir: &ed,
 			},
 		})
 	} else {
 		if len(esNode.Storage.AccessModes) == 0 {
-			esNode.Storage.AccessModes = []corev1.PersistentVolumeAccessMode{
-				corev1.ReadWriteOnce,
+			esNode.Storage.AccessModes = []core.PersistentVolumeAccessMode{
+				core.ReadWriteOnce,
 			}
-			log.Infof(`Using "%v" as AccessModes in "%v"`, corev1.ReadWriteOnce, esNode.Storage)
+			log.Infof(`Using "%v" as AccessModes in "%v"`, core.ReadWriteOnce, esNode.Storage)
 		}
 
-		pvc = &corev1.PersistentVolumeClaim{
+		pvc = &core.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "data",
 			},
@@ -269,12 +273,12 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 	}
 	if !es.elasticsearch.Spec.DisableSecurity {
 		// transport layer is always secured
-		volumes = core_util.UpsertVolume(volumes, corev1.Volume{
+		volumes = core_util.UpsertVolume(volumes, core.Volume{
 			Name: es.elasticsearch.CertSecretVolumeName(api.ElasticsearchTransportCert),
-			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
+			VolumeSource: core.VolumeSource{
+				Secret: &core.SecretVolumeSource{
 					SecretName: es.elasticsearch.MustCertSecretName(api.ElasticsearchTransportCert),
-					Items: []corev1.KeyToPath{
+					Items: []core.KeyToPath{
 						{
 							Key:  certlib.CACert,
 							Path: certlib.CACert,
@@ -294,12 +298,12 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 
 		// if security is enabled at rest layer
 		if es.elasticsearch.Spec.EnableSSL {
-			volumes = core_util.UpsertVolume(volumes, corev1.Volume{
+			volumes = core_util.UpsertVolume(volumes, core.Volume{
 				Name: es.elasticsearch.CertSecretVolumeName(api.ElasticsearchHTTPCert),
-				VolumeSource: corev1.VolumeSource{
-					Secret: &corev1.SecretVolumeSource{
+				VolumeSource: core.VolumeSource{
+					Secret: &core.SecretVolumeSource{
 						SecretName: es.elasticsearch.MustCertSecretName(api.ElasticsearchHTTPCert),
-						Items: []corev1.KeyToPath{
+						Items: []core.KeyToPath{
 							{
 								Key:  certlib.CACert,
 								Path: certlib.CACert,
@@ -325,12 +329,12 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 		es.elasticsearch.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus &&
 		es.elasticsearch.Spec.EnableSSL &&
 		nodeRole == api.ElasticsearchNodeRoleIngest {
-		volumes = core_util.UpsertVolume(volumes, corev1.Volume{
+		volumes = core_util.UpsertVolume(volumes, core.Volume{
 			Name: es.elasticsearch.CertSecretVolumeName(api.ElasticsearchMetricsExporterCert),
-			VolumeSource: corev1.VolumeSource{
-				Secret: &corev1.SecretVolumeSource{
+			VolumeSource: core.VolumeSource{
+				Secret: &core.SecretVolumeSource{
 					SecretName: es.elasticsearch.MustCertSecretName(api.ElasticsearchMetricsExporterCert),
-					Items: []corev1.KeyToPath{
+					Items: []core.KeyToPath{
 						{
 							Key:  certlib.CACert,
 							Path: certlib.CACert,
@@ -350,16 +354,16 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 	}
 
 	// Upsert temp Volume
-	volumes = core_util.UpsertVolume(volumes, corev1.Volume{
+	volumes = core_util.UpsertVolume(volumes, core.Volume{
 		Name: "temp",
-		VolumeSource: corev1.VolumeSource{
-			EmptyDir: &corev1.EmptyDirVolumeSource{},
+		VolumeSource: core.VolumeSource{
+			EmptyDir: &core.EmptyDirVolumeSource{},
 		},
 	})
 	return volumes, pvc, nil
 }
 
-func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole string, envList []corev1.EnvVar) ([]corev1.Container, error) {
+func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole string, envList []core.EnvVar) ([]core.Container, error) {
 	if esNode == nil {
 		return nil, errors.New("ElasticsearchNode is empty")
 	}
@@ -368,7 +372,7 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 	// 		- data directory
 	//		- configuration
 	// 		- temp directory
-	volumeMount := []corev1.VolumeMount{
+	volumeMount := []core.VolumeMount{
 		{
 			Name:      "data",
 			MountPath: api.ElasticsearchDataDir,
@@ -385,36 +389,36 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 
 	if !es.elasticsearch.Spec.DisableSecurity {
 		// transport layer is always secure.
-		volumeMount = core_util.UpsertVolumeMount(volumeMount, corev1.VolumeMount{
+		volumeMount = core_util.UpsertVolumeMount(volumeMount, core.VolumeMount{
 			Name:      es.elasticsearch.CertSecretVolumeName(api.ElasticsearchTransportCert),
 			MountPath: es.elasticsearch.CertSecretVolumeMountPath(api.ElasticsearchConfigDir, api.ElasticsearchTransportCert),
 		})
 
 		// check if the security for rest layer is enabled
 		if es.elasticsearch.Spec.EnableSSL {
-			volumeMount = core_util.UpsertVolumeMount(volumeMount, corev1.VolumeMount{
+			volumeMount = core_util.UpsertVolumeMount(volumeMount, core.VolumeMount{
 				Name:      es.elasticsearch.CertSecretVolumeName(api.ElasticsearchHTTPCert),
 				MountPath: es.elasticsearch.CertSecretVolumeMountPath(api.ElasticsearchConfigDir, api.ElasticsearchHTTPCert),
 			})
 		}
 	}
 
-	containers := []corev1.Container{
+	containers := []core.Container{
 		{
 			Name:            api.ResourceSingularElasticsearch,
 			Image:           es.esVersion.Spec.DB.Image,
-			ImagePullPolicy: corev1.PullIfNotPresent,
+			ImagePullPolicy: core.PullIfNotPresent,
 			Env:             envList,
 
 			// The restPort is only necessary for Ingest nodes.
 			// But it is set for all type of nodes, so that our controller can
 			// communicate with each nodes specifically.
 			// The DBA controller uses the restPort to check health of a node.
-			Ports: []corev1.ContainerPort{defaultRestPort, defaultTransportPort},
-			SecurityContext: &corev1.SecurityContext{
+			Ports: []core.ContainerPort{defaultRestPort, defaultTransportPort},
+			SecurityContext: &core.SecurityContext{
 				Privileged: types.BoolP(false),
-				Capabilities: &corev1.Capabilities{
-					Add: []corev1.Capability{"IPC_LOCK", "SYS_RESOURCE"},
+				Capabilities: &core.Capabilities{
+					Add: []core.Capability{"IPC_LOCK", "SYS_RESOURCE"},
 				},
 			},
 			Resources:      esNode.Resources,
@@ -438,18 +442,18 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 	return containers, nil
 }
 
-func (es *Elasticsearch) getInitContainers(esNode *api.ElasticsearchNode, envList []corev1.EnvVar) ([]corev1.Container, error) {
+func (es *Elasticsearch) getInitContainers(esNode *api.ElasticsearchNode, envList []core.EnvVar) ([]core.Container, error) {
 	if esNode == nil {
 		return nil, errors.New("ElasticsearchNode is empty")
 	}
 
-	initContainers := []corev1.Container{
+	initContainers := []core.Container{
 		{
 			Name:            "init-sysctl",
 			Image:           es.esVersion.Spec.InitContainer.Image,
-			ImagePullPolicy: corev1.PullIfNotPresent,
+			ImagePullPolicy: core.PullIfNotPresent,
 			Command:         []string{"sysctl", "-w", "vm.max_map_count=262144"},
-			SecurityContext: &corev1.SecurityContext{
+			SecurityContext: &core.SecurityContext{
 				Privileged: types.BoolP(true),
 			},
 			Resources: esNode.Resources,
@@ -460,8 +464,8 @@ func (es *Elasticsearch) getInitContainers(esNode *api.ElasticsearchNode, envLis
 	return initContainers, nil
 }
 
-func (es *Elasticsearch) upsertConfigMergerInitContainer(initCon []corev1.Container, envList []corev1.EnvVar) []corev1.Container {
-	volumeMounts := []corev1.VolumeMount{
+func (es *Elasticsearch) upsertConfigMergerInitContainer(initCon []core.Container, envList []core.EnvVar) []core.Container {
+	volumeMounts := []core.VolumeMount{
 		{
 			Name:      "esconfig",
 			MountPath: api.ElasticsearchConfigDir,
@@ -477,17 +481,17 @@ func (es *Elasticsearch) upsertConfigMergerInitContainer(initCon []corev1.Contai
 	}
 
 	// mount path for custom configuration
-	if es.elasticsearch.Spec.ConfigSource != nil {
-		volumeMounts = core_util.UpsertVolumeMount(volumeMounts, corev1.VolumeMount{
+	if es.elasticsearch.Spec.ConfigSecret != nil {
+		volumeMounts = core_util.UpsertVolumeMount(volumeMounts, core.VolumeMount{
 			Name:      "custom-config",
 			MountPath: api.ElasticsearchCustomConfigDir,
 		})
 	}
 
-	configMerger := corev1.Container{
+	configMerger := core.Container{
 		Name:            ConfigMergerInitContainerName,
 		Image:           es.esVersion.Spec.InitContainer.YQImage,
-		ImagePullPolicy: corev1.PullIfNotPresent,
+		ImagePullPolicy: core.PullIfNotPresent,
 		Env:             envList,
 		VolumeMounts:    volumeMounts,
 	}
@@ -515,13 +519,13 @@ func (es *Elasticsearch) checkStatefulSet(sName string) error {
 	return nil
 }
 
-func (es *Elasticsearch) upsertContainerEnv(envList []corev1.EnvVar) []corev1.EnvVar {
+func (es *Elasticsearch) upsertContainerEnv(envList []core.EnvVar) []core.EnvVar {
 
-	envList = core_util.UpsertEnvVars(envList, []corev1.EnvVar{
+	envList = core_util.UpsertEnvVars(envList, []core.EnvVar{
 		{
 			Name: "node.name",
-			ValueFrom: &corev1.EnvVarSource{
-				FieldRef: &corev1.ObjectFieldSelector{
+			ValueFrom: &core.EnvVarSource{
+				FieldRef: &core.ObjectFieldSelector{
 					FieldPath: "metadata.name",
 				},
 			},
@@ -536,23 +540,23 @@ func (es *Elasticsearch) upsertContainerEnv(envList []corev1.EnvVar) []corev1.En
 		},
 		{
 			Name: "ELASTIC_USER",
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: es.elasticsearch.Spec.DatabaseSecret.SecretName,
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: es.elasticsearch.Spec.AuthSecret.Name,
 					},
-					Key: corev1.BasicAuthUsernameKey,
+					Key: core.BasicAuthUsernameKey,
 				},
 			},
 		},
 		{
 			Name: "ELASTIC_PASSWORD",
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: es.elasticsearch.Spec.DatabaseSecret.SecretName,
+			ValueFrom: &core.EnvVarSource{
+				SecretKeyRef: &core.SecretKeySelector{
+					LocalObjectReference: core.LocalObjectReference{
+						Name: es.elasticsearch.Spec.AuthSecret.Name,
 					},
-					Key: corev1.BasicAuthPasswordKey,
+					Key: core.BasicAuthPasswordKey,
 				},
 			},
 		},
@@ -563,12 +567,12 @@ func (es *Elasticsearch) upsertContainerEnv(envList []corev1.EnvVar) []corev1.En
 	}...)
 
 	if strings.HasPrefix(es.esVersion.Spec.Version, "7.") {
-		envList = core_util.UpsertEnvVars(envList, corev1.EnvVar{
+		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "discovery.seed_hosts",
 			Value: es.elasticsearch.MasterServiceName(),
 		})
 	} else {
-		envList = core_util.UpsertEnvVars(envList, corev1.EnvVar{
+		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "discovery.zen.ping.unicast.hosts",
 			Value: es.elasticsearch.MasterServiceName(),
 		})
@@ -577,7 +581,7 @@ func (es *Elasticsearch) upsertContainerEnv(envList []corev1.EnvVar) []corev1.En
 	return envList
 }
 
-func parseAffinityTemplate(affinity *corev1.Affinity, nodeRole string) (*corev1.Affinity, error) {
+func parseAffinityTemplate(affinity *core.Affinity, nodeRole string) (*core.Affinity, error) {
 	if affinity == nil {
 		return nil, errors.New("affinity is nil")
 	}

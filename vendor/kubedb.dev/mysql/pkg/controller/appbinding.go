@@ -66,7 +66,7 @@ func (c *Controller) ensureAppBinding(db *api.MySQL) (kutil.VerbType, error) {
 		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
 
 		in.Spec.Secret = &core.LocalObjectReference{
-			Name: db.Spec.DatabaseSecret.SecretName,
+			Name: db.Spec.AuthSecret.Name,
 		}
 
 		return in

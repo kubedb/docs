@@ -606,7 +606,7 @@ func upsertUserEnv(statefulset *apps.StatefulSet, redis *api.Redis) *apps.Statef
 }
 
 func upsertCustomConfig(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.StatefulSet {
-	if redis.Spec.ConfigSource != nil {
+	if redis.Spec.ConfigSecret != nil {
 		for i, container := range statefulSet.Spec.Template.Spec.Containers {
 			if container.Name == api.ResourceSingularRedis {
 				configVolumeMount := core.VolumeMount{
@@ -618,8 +618,13 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.S
 				statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 				configVolume := core.Volume{
-					Name:         "custom-config",
-					VolumeSource: *redis.Spec.ConfigSource,
+					Name: "custom-config",
+					VolumeSource: core.VolumeSource{
+						Secret: &core.SecretVolumeSource{
+							SecretName:  redis.Spec.ConfigSecret.Name,
+							DefaultMode: types.Int32P(0777),
+						},
+					},
 				}
 
 				volumes := statefulSet.Spec.Template.Spec.Volumes

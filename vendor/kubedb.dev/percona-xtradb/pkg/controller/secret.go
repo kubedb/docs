@@ -34,27 +34,27 @@ const (
 	mysqlUser = "root"
 )
 
-func (c *Controller) ensureDatabaseSecret(px *api.PerconaXtraDB) error {
-	if px.Spec.DatabaseSecret == nil {
-		secretVolumeSource, err := c.createDatabaseSecret(px)
+func (c *Controller) ensureAuthSecret(px *api.PerconaXtraDB) error {
+	if px.Spec.AuthSecret == nil {
+		authSecret, err := c.createAuthSecret(px)
 		if err != nil {
 			return err
 		}
 
 		per, _, err := util.PatchPerconaXtraDB(context.TODO(), c.DBClient.KubedbV1alpha2(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
-			in.Spec.DatabaseSecret = secretVolumeSource
+			in.Spec.AuthSecret = authSecret
 			return in
 		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
-		px.Spec.DatabaseSecret = per.Spec.DatabaseSecret
+		px.Spec.AuthSecret = per.Spec.AuthSecret
 		return nil
 	}
-	return c.upgradeDatabaseSecret(px)
+	return c.upgradeAuthSecret(px)
 }
 
-func (c *Controller) createDatabaseSecret(px *api.PerconaXtraDB) (*core.SecretVolumeSource, error) {
+func (c *Controller) createAuthSecret(px *api.PerconaXtraDB) (*core.LocalObjectReference, error) {
 	authSecretName := px.Name + "-auth"
 
 	sc, err := c.checkSecret(authSecretName, px)
@@ -78,16 +78,16 @@ func (c *Controller) createDatabaseSecret(px *api.PerconaXtraDB) (*core.SecretVo
 			return nil, err
 		}
 	}
-	return &core.SecretVolumeSource{
-		SecretName: authSecretName,
+	return &core.LocalObjectReference{
+		Name: authSecretName,
 	}, nil
 }
 
 // This is done to fix 0.8.0 -> 0.9.0 upgrade due to
 // https://github.com/kubedb/percona-xtradb/pull/115/files#diff-10ddaf307bbebafda149db10a28b9c24R17 commit
-func (c *Controller) upgradeDatabaseSecret(px *api.PerconaXtraDB) error {
+func (c *Controller) upgradeAuthSecret(px *api.PerconaXtraDB) error {
 	meta := metav1.ObjectMeta{
-		Name:      px.Spec.DatabaseSecret.SecretName,
+		Name:      px.Spec.AuthSecret.Name,
 		Namespace: px.Namespace,
 	}
 

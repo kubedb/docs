@@ -39,24 +39,24 @@ const (
 
 	KeyForKeyFile = "key.txt"
 
-	DatabaseSecretSuffix = "-auth"
+	AuthSecretSuffix = "-auth"
 )
 
-func (c *Controller) ensureDatabaseSecret(mongodb *api.MongoDB) error {
-	if mongodb.Spec.DatabaseSecret == nil {
-		secretVolumeSource, err := c.createDatabaseSecret(mongodb)
+func (c *Controller) ensureAuthSecret(mongodb *api.MongoDB) error {
+	if mongodb.Spec.AuthSecret == nil {
+		authSecret, err := c.createAuthSecret(mongodb)
 		if err != nil {
 			return err
 		}
 
 		ms, _, err := util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb, func(in *api.MongoDB) *api.MongoDB {
-			in.Spec.DatabaseSecret = secretVolumeSource
+			in.Spec.AuthSecret = authSecret
 			return in
 		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
-		mongodb.Spec.DatabaseSecret = ms.Spec.DatabaseSecret
+		mongodb.Spec.AuthSecret = ms.Spec.AuthSecret
 	}
 
 	return nil
@@ -68,8 +68,8 @@ func (c *Controller) ensureKeyFileSecret(mongodb *api.MongoDB) error {
 	}
 
 	secretName := mongodb.Name + api.MongoDBKeyFileSecretSuffix
-	if mongodb.Spec.KeyFile != nil && mongodb.Spec.KeyFile.SecretName != "" {
-		secretName = mongodb.Spec.KeyFile.SecretName
+	if mongodb.Spec.KeyFileSecret != nil && mongodb.Spec.KeyFileSecret.Name != "" {
+		secretName = mongodb.Spec.KeyFileSecret.Name
 	}
 
 	secret, err := c.checkSecret(secretName, mongodb)
@@ -95,23 +95,23 @@ func (c *Controller) ensureKeyFileSecret(mongodb *api.MongoDB) error {
 		}
 	}
 
-	keyFile := &core.SecretVolumeSource{
-		SecretName: secretName,
+	keyFile := &core.LocalObjectReference{
+		Name: secretName,
 	}
 	_, _, err = util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb, func(in *api.MongoDB) *api.MongoDB {
-		in.Spec.KeyFile = keyFile
+		in.Spec.KeyFileSecret = keyFile
 		return in
 	}, metav1.PatchOptions{})
 	if err != nil {
 		return err
 	}
 
-	mongodb.Spec.KeyFile = keyFile
+	mongodb.Spec.KeyFileSecret = keyFile
 	return nil
 }
 
-func (c *Controller) createDatabaseSecret(mongodb *api.MongoDB) (*core.SecretVolumeSource, error) {
-	authSecretName := mongodb.Name + DatabaseSecretSuffix
+func (c *Controller) createAuthSecret(mongodb *api.MongoDB) (*core.LocalObjectReference, error) {
+	authSecretName := mongodb.Name + AuthSecretSuffix
 
 	sc, err := c.checkSecret(authSecretName, mongodb)
 	if err != nil {
@@ -133,8 +133,8 @@ func (c *Controller) createDatabaseSecret(mongodb *api.MongoDB) (*core.SecretVol
 			return nil, err
 		}
 	}
-	return &core.SecretVolumeSource{
-		SecretName: authSecretName,
+	return &core.LocalObjectReference{
+		Name: authSecretName,
 	}, nil
 }
 

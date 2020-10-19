@@ -132,8 +132,8 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 			}
 			oldMongoDB.SetDefaults(mgVersion, a.ClusterTopology)
 			// Allow changing Database Secret only if there was no secret have set up yet.
-			if oldMongoDB.Spec.DatabaseSecret == nil {
-				oldMongoDB.Spec.DatabaseSecret = mongodb.Spec.DatabaseSecret
+			if oldMongoDB.Spec.AuthSecret == nil {
+				oldMongoDB.Spec.AuthSecret = mongodb.Spec.AuthSecret
 			}
 
 			if err := validateUpdate(mongodb, oldMongoDB, mongodb.Status.Conditions); err != nil {
@@ -167,8 +167,8 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 		if mongodb.Spec.PodTemplate != nil {
 			return fmt.Errorf(`doesn't support 'spec.podTemplate' when spec.shardTopology is set`)
 		}
-		if mongodb.Spec.ConfigSource != nil {
-			return fmt.Errorf(`doesn't support 'spec.configSource' when spec.shardTopology is set`)
+		if mongodb.Spec.ConfigSecret != nil {
+			return fmt.Errorf(`doesn't support 'spec.configSecret' when spec.shardTopology is set`)
 		}
 
 		// Validate Topology Replicas values
@@ -246,14 +246,14 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 	}
 
 	if strictValidation {
-		if mongodb.Spec.DatabaseSecret != nil {
-			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), mongodb.Spec.DatabaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+		if mongodb.Spec.AuthSecret != nil {
+			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), mongodb.Spec.AuthSecret.Name, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
 
-		if mongodb.Spec.KeyFile != nil {
-			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), mongodb.Spec.KeyFile.SecretName, metav1.GetOptions{}); err != nil {
+		if mongodb.Spec.KeyFileSecret != nil {
+			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), mongodb.Spec.KeyFileSecret.Name, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
@@ -328,7 +328,7 @@ func getPreconditionFunc(conditions []kmapi.Condition) []mergepatch.Precondition
 
 var preconditionSpecFields = sets.NewString(
 	"spec.storageType",
-	"spec.databaseSecret",
+	"spec.authSecret",
 	"spec.certificateSecret",
 	"spec.replicaSet.name",
 	"spec.shardTopology.*.prefix",

@@ -89,7 +89,7 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 		caBundle = v
 	}
 
-	clientPEMSecretName := db.Spec.DatabaseSecret.SecretName
+	clientPEMSecretName := db.Spec.AuthSecret.Name
 	if caBundle != nil {
 		clientPEMSecretName = db.MustCertSecretName(api.MongoDBClientCert, "")
 	}

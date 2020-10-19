@@ -394,7 +394,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL, stsName string) 
 					ValueFrom: &core.EnvVarSource{
 						SecretKeyRef: &core.SecretKeySelector{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: mysql.Spec.DatabaseSecret.SecretName,
+								Name: mysql.Spec.AuthSecret.Name,
 							},
 							Key: core.BasicAuthPasswordKey,
 						},
@@ -405,7 +405,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL, stsName string) 
 					ValueFrom: &core.EnvVarSource{
 						SecretKeyRef: &core.SecretKeySelector{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: mysql.Spec.DatabaseSecret.SecretName,
+								Name: mysql.Spec.AuthSecret.Name,
 							},
 							Key: core.BasicAuthUsernameKey,
 						},
@@ -438,6 +438,18 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL, stsName string) 
 					{
 						Name:  "BASE_SERVER_ID",
 						Value: strconv.Itoa(int(*mysql.Spec.Topology.Group.BaseServerID)),
+					},
+				}...)
+			}
+			if container.Name == api.MySQLContainerReplicationModeDetectorName {
+				envs = append(envs, []core.EnvVar{
+					{
+						Name: "POD_NAME",
+						ValueFrom: &core.EnvVarSource{
+							FieldRef: &core.ObjectFieldSelector{
+								FieldPath: "metadata.name",
+							},
+						},
 					},
 				}...)
 			}
@@ -496,7 +508,7 @@ func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 }
 
 func upsertCustomConfig(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
-	if mysql.Spec.ConfigSource != nil {
+	if mysql.Spec.ConfigSecret != nil {
 		for i, container := range statefulSet.Spec.Template.Spec.Containers {
 			if container.Name == api.ResourceSingularMySQL {
 				configVolumeMount := core.VolumeMount{
@@ -508,8 +520,12 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.S
 				statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 				configVolume := core.Volume{
-					Name:         "custom-config",
-					VolumeSource: *mysql.Spec.ConfigSource,
+					Name: "custom-config",
+					VolumeSource: core.VolumeSource{
+						Secret: &core.SecretVolumeSource{
+							SecretName: mysql.Spec.ConfigSecret.Name,
+						},
+					},
 				}
 
 				volumes := statefulSet.Spec.Template.Spec.Volumes

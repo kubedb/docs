@@ -65,6 +65,9 @@ const (
 	ElasticsearchOpendistroReadallMonitorRole    = "readall_and_monitor"
 	ElasticsearchSearchGuardReadallMonitorRoleV7 = "SGS_READALL_AND_MONITOR"
 	ElasticsearchSearchGuardReadallMonitorRoleV6 = "sg_readall_and_monitor"
+	ElasticsearchStatusGreen                     = "green"
+	ElasticsearchStatusYellow                    = "yellow"
+	ElasticsearchStatusRed                       = "red"
 
 	// Ref:
 	//	- https://www.elastic.co/guide/en/elasticsearch/reference/7.6/heap-size.html#heap-size
@@ -158,6 +161,8 @@ const (
 	DatabaseReady = "Ready"
 	// used for Databases that are paused
 	DatabasePaused = "Paused"
+	// used for Databases that are halted
+	DatabaseHalted = "Halted"
 
 	// Condition reasons
 	DataRestoreStartedByExternalInitializer = "DataRestoreStartedByExternalInitializer"
@@ -165,6 +170,13 @@ const (
 	FailedToRestoreData                     = "FailedToRestoreData"
 	AllReplicasAreReady                     = "AllReplicasReady"
 	SomeReplicasAreNotReady                 = "SomeReplicasNotReady"
+	DatabaseAcceptingConnectionRequest      = "DatabaseAcceptingConnectionRequest"
+	DatabaseNotAcceptingConnectionRequest   = "DatabaseNotAcceptingConnectionRequest"
+	ReadinessCheckSucceeded                 = "ReadinessCheckSucceeded"
+	ReadinessCheckFailed                    = "ReadinessCheckFailed"
+	DatabaseProvisioningStartedSuccessfully = "DatabaseProvisioningStartedSuccessfully"
+	DatabaseSuccessfullyProvisioned         = "DatabaseSuccessfullyProvisioned"
+	DatabaseHaltedSuccessfully              = "DatabaseHaltedSuccessfully"
 )
 
 // Resource kind related constants

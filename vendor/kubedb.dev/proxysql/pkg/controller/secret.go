@@ -34,9 +34,9 @@ const (
 	proxysqlUser = "proxysql"
 )
 
-func (c *Controller) ensureProxySQLSecret(proxysql *api.ProxySQL) error {
-	if proxysql.Spec.ProxySQLSecret == nil {
-		secretVolumeSource, err := c.createProxySQLSecret(proxysql)
+func (c *Controller) ensureAuthSecret(proxysql *api.ProxySQL) error {
+	if proxysql.Spec.AuthSecret == nil {
+		authSecret, err := c.createAuthSecret(proxysql)
 		if err != nil {
 			return err
 		}
@@ -46,7 +46,7 @@ func (c *Controller) ensureProxySQLSecret(proxysql *api.ProxySQL) error {
 			c.DBClient.KubedbV1alpha2(),
 			proxysql,
 			func(in *api.ProxySQL) *api.ProxySQL {
-				in.Spec.ProxySQLSecret = secretVolumeSource
+				in.Spec.AuthSecret = authSecret
 				return in
 			},
 			metav1.PatchOptions{},
@@ -54,13 +54,13 @@ func (c *Controller) ensureProxySQLSecret(proxysql *api.ProxySQL) error {
 		if err != nil {
 			return err
 		}
-		proxysql.Spec.ProxySQLSecret = proxysqlPathced.Spec.ProxySQLSecret
+		proxysql.Spec.AuthSecret = proxysqlPathced.Spec.AuthSecret
 	}
 
 	return nil
 }
 
-func (c *Controller) createProxySQLSecret(proxysql *api.ProxySQL) (*core.SecretVolumeSource, error) {
+func (c *Controller) createAuthSecret(proxysql *api.ProxySQL) (*core.LocalObjectReference, error) {
 	authSecretName := proxysql.Name + "-auth"
 
 	sc, err := c.checkSecret(authSecretName, proxysql)
@@ -90,8 +90,8 @@ func (c *Controller) createProxySQLSecret(proxysql *api.ProxySQL) (*core.SecretV
 			return nil, err
 		}
 	}
-	return &core.SecretVolumeSource{
-		SecretName: authSecretName,
+	return &core.LocalObjectReference{
+		Name: authSecretName,
 	}, nil
 }
 

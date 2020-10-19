@@ -132,8 +132,8 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 			elasticsearch := obj.(*api.Elasticsearch).DeepCopy()
 			oldElasticsearch := oldObject.(*api.Elasticsearch).DeepCopy()
 			// Allow changing Database Secret only if there was no secret have set up yet.
-			if oldElasticsearch.Spec.DatabaseSecret == nil {
-				oldElasticsearch.Spec.DatabaseSecret = elasticsearch.Spec.DatabaseSecret
+			if oldElasticsearch.Spec.AuthSecret == nil {
+				oldElasticsearch.Spec.AuthSecret = elasticsearch.Spec.AuthSecret
 			}
 
 			if err := validateUpdate(elasticsearch, oldElasticsearch, elasticsearch.Status.Conditions); err != nil {
@@ -223,9 +223,9 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 	}
 
 	if strictValidation {
-		databaseSecret := elasticsearch.Spec.DatabaseSecret
-		if databaseSecret != nil {
-			if _, err := client.CoreV1().Secrets(elasticsearch.Namespace).Get(context.TODO(), databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+		authSecret := elasticsearch.Spec.AuthSecret
+		if authSecret != nil {
+			if _, err := client.CoreV1().Secrets(elasticsearch.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
@@ -309,7 +309,7 @@ var preconditionSpecFields = sets.NewString(
 	"spec.enableSSL",
 	"spec.certificateSecret",
 	"spec.authPlugin",
-	"spec.databaseSecret",
+	"spec.authSecret",
 	"spec.storageType",
 	"spec.storage",
 	"spec.podTemplate.spec.nodeSelector",

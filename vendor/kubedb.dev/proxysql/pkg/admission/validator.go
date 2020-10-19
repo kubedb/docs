@@ -127,8 +127,8 @@ func (a *ProxySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 			oldProxysql := oldObject.(*api.ProxySQL).DeepCopy()
 			oldProxysql.SetDefaults()
 			// Allow changing Database Secret only if there was no secret have set up yet.
-			if oldProxysql.Spec.ProxySQLSecret == nil {
-				oldProxysql.Spec.ProxySQLSecret = proxysql.Spec.ProxySQLSecret
+			if oldProxysql.Spec.AuthSecret == nil {
+				oldProxysql.Spec.AuthSecret = proxysql.Spec.AuthSecret
 			}
 
 			if err := validateUpdate(proxysql, oldProxysql); err != nil {
@@ -221,11 +221,11 @@ func ValidateProxySQL(client kubernetes.Interface, extClient cs.Interface, proxy
 		return err
 	}
 
-	proxysqlSecret := proxysql.Spec.ProxySQLSecret
+	authSecret := proxysql.Spec.AuthSecret
 
 	if strictValidation {
-		if proxysqlSecret != nil {
-			if _, err = client.CoreV1().Secrets(proxysql.Namespace).Get(context.TODO(), proxysqlSecret.SecretName, metav1.GetOptions{}); err != nil {
+		if authSecret != nil {
+			if _, err = client.CoreV1().Secrets(proxysql.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}

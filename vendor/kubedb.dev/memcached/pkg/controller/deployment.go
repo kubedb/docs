@@ -187,7 +187,7 @@ func upsertUserEnv(sts *apps.StatefulSet, memcached *api.Memcached) *apps.Statef
 
 // upsertCustomConfig insert custom configuration volume if provided.
 func upsertCustomConfig(sts *apps.StatefulSet, memcached *api.Memcached) *apps.StatefulSet {
-	if memcached.Spec.ConfigSource != nil {
+	if memcached.Spec.ConfigSecret != nil {
 		for i, container := range sts.Spec.Template.Spec.Containers {
 			if container.Name == api.ResourceSingularMemcached {
 
@@ -201,8 +201,12 @@ func upsertCustomConfig(sts *apps.StatefulSet, memcached *api.Memcached) *apps.S
 				sts.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 				configSourceVolume := core.Volume{
-					Name:         CONFIG_SOURCE_VOLUME,
-					VolumeSource: *memcached.Spec.ConfigSource,
+					Name: CONFIG_SOURCE_VOLUME,
+					VolumeSource: core.VolumeSource{
+						Secret: &core.SecretVolumeSource{
+							SecretName: memcached.Spec.ConfigSecret.Name,
+						},
+					},
 				}
 
 				volumes := sts.Spec.Template.Spec.Volumes

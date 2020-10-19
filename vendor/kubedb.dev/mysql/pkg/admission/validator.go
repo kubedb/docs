@@ -128,8 +128,8 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 			oldMySQL := oldObject.(*api.MySQL).DeepCopy()
 			oldMySQL.SetDefaults()
 			// Allow changing Database Secret only if there was no secret have set up yet.
-			if oldMySQL.Spec.DatabaseSecret == nil {
-				oldMySQL.Spec.DatabaseSecret = mysql.Spec.DatabaseSecret
+			if oldMySQL.Spec.AuthSecret == nil {
+				oldMySQL.Spec.AuthSecret = mysql.Spec.AuthSecret
 			}
 
 			if err := validateUpdate(mysql, oldMySQL, mysql.Status.Conditions); err != nil {
@@ -245,11 +245,11 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 		return err
 	}
 
-	databaseSecret := mysql.Spec.DatabaseSecret
+	authSecret := mysql.Spec.AuthSecret
 
 	if strictValidation {
-		if databaseSecret != nil {
-			if _, err := client.CoreV1().Secrets(mysql.Namespace).Get(context.TODO(), databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+		if authSecret != nil {
+			if _, err := client.CoreV1().Secrets(mysql.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}

@@ -52,7 +52,7 @@ type workloadOptions struct {
 	ports          []core.ContainerPort
 	envList        []core.EnvVar // envList of `percona-xtradb` container
 	volumeMount    []core.VolumeMount
-	configSource   *core.VolumeSource
+	configSecret   *core.LocalObjectReference
 
 	// monitor container
 	monitorContainer *core.Container
@@ -186,7 +186,7 @@ func (c *Controller) ensurePerconaXtraDB(px *api.PerconaXtraDB) (kutil.VerbType,
 		initContainers:   initContainers,
 		gvrSvcName:       c.GoverningService,
 		podTemplate:      &px.Spec.PodTemplate,
-		configSource:     px.Spec.ConfigSource,
+		configSecret:     px.Spec.ConfigSecret,
 		pvcSpec:          px.Spec.Storage,
 		replicas:         px.Spec.Replicas,
 		volume:           volumes,
@@ -216,7 +216,7 @@ func (c *Controller) checkStatefulSet(px *api.PerconaXtraDB, stsName string) err
 }
 
 func upsertCustomConfig(
-	template core.PodTemplateSpec, configSource *core.VolumeSource, replicas int32) core.PodTemplateSpec {
+	template core.PodTemplateSpec, configSecret *core.LocalObjectReference, replicas int32) core.PodTemplateSpec {
 	for i, container := range template.Spec.Containers {
 		if container.Name == api.ResourceSingularPerconaXtraDB {
 			configVolumeMount := core.VolumeMount{
@@ -231,8 +231,12 @@ func upsertCustomConfig(
 			template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 			configVolume := core.Volume{
-				Name:         "custom-config",
-				VolumeSource: *configSource,
+				Name: "custom-config",
+				VolumeSource: core.VolumeSource{
+					Secret: &core.SecretVolumeSource{
+						SecretName: configSecret.Name,
+					},
+				},
 			}
 
 			volumes := template.Spec.Volumes
@@ -339,8 +343,8 @@ func (c *Controller) ensureStatefulSet(px *api.PerconaXtraDB, opts workloadOptio
 			in = upsertEnv(in, px)
 			in = upsertDataVolume(in, px)
 
-			if opts.configSource != nil {
-				in.Spec.Template = upsertCustomConfig(in.Spec.Template, opts.configSource, types.Int32(px.Spec.Replicas))
+			if opts.configSecret != nil {
+				in.Spec.Template = upsertCustomConfig(in.Spec.Template, opts.configSecret, types.Int32(px.Spec.Replicas))
 			}
 
 			in.Spec.Template.Spec.NodeSelector = pt.Spec.NodeSelector
@@ -448,7 +452,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, px *api.PerconaXtraDB) *apps.State
 					ValueFrom: &core.EnvVarSource{
 						SecretKeyRef: &core.SecretKeySelector{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: px.Spec.DatabaseSecret.SecretName,
+								Name: px.Spec.AuthSecret.Name,
 							},
 							Key: core.BasicAuthPasswordKey,
 						},
@@ -459,7 +463,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, px *api.PerconaXtraDB) *apps.State
 					ValueFrom: &core.EnvVarSource{
 						SecretKeyRef: &core.SecretKeySelector{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: px.Spec.DatabaseSecret.SecretName,
+								Name: px.Spec.AuthSecret.Name,
 							},
 							Key: core.BasicAuthUsernameKey,
 						},

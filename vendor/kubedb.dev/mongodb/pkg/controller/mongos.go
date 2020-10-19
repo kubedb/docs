@@ -154,7 +154,7 @@ func (c *Controller) ensureMongosNode(mongodb *api.MongoDB) (*apps.StatefulSet, 
 		initContainers: initContainers,
 		gvrSvcName:     mongodb.GvrSvcName(mongodb.MongosNodeName()),
 		podTemplate:    &mongodb.Spec.ShardTopology.Mongos.PodTemplate,
-		configSource:   mongodb.Spec.ShardTopology.Mongos.ConfigSource,
+		configSecret:   mongodb.Spec.ShardTopology.Mongos.ConfigSecret,
 		pvcSpec:        mongodb.Spec.Storage,
 		replicas:       &mongodb.Spec.ShardTopology.Mongos.Replicas,
 		volumes:        volumes,
@@ -216,7 +216,7 @@ func mongosInitContainer(
 				ValueFrom: &core.EnvVarSource{
 					SecretKeyRef: &core.SecretKeySelector{
 						LocalObjectReference: core.LocalObjectReference{
-							Name: mongodb.Spec.DatabaseSecret.SecretName,
+							Name: mongodb.Spec.AuthSecret.Name,
 						},
 						Key: core.BasicAuthUsernameKey,
 					},
@@ -227,7 +227,7 @@ func mongosInitContainer(
 				ValueFrom: &core.EnvVarSource{
 					SecretKeyRef: &core.SecretKeySelector{
 						LocalObjectReference: core.LocalObjectReference{
-							Name: mongodb.Spec.DatabaseSecret.SecretName,
+							Name: mongodb.Spec.AuthSecret.Name,
 						},
 						Key: core.BasicAuthPasswordKey,
 					},
@@ -256,13 +256,13 @@ func mongosInitContainer(
 
 	var rsVolumes []core.Volume
 
-	if mongodb.Spec.KeyFile != nil {
+	if mongodb.Spec.KeyFileSecret != nil {
 		rsVolumes = core_util.UpsertVolume(rsVolumes, core.Volume{
 			Name: initialKeyDirectoryName, // FIXIT: mounted where?
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
 					DefaultMode: types.Int32P(0400),
-					SecretName:  mongodb.Spec.KeyFile.SecretName,
+					SecretName:  mongodb.Spec.KeyFileSecret.Name,
 				},
 			},
 		})

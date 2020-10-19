@@ -127,8 +127,8 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 			oldPostgres := oldObject.(*api.Postgres).DeepCopy()
 			oldPostgres.SetDefaults()
 			// Allow changing Database Secret only if there was no secret have set up yet.
-			if oldPostgres.Spec.DatabaseSecret == nil {
-				oldPostgres.Spec.DatabaseSecret = postgres.Spec.DatabaseSecret
+			if oldPostgres.Spec.AuthSecret == nil {
+				oldPostgres.Spec.AuthSecret = postgres.Spec.AuthSecret
 			}
 
 			if err := validateUpdate(postgres, oldPostgres, postgres.Status.Conditions); err != nil {
@@ -198,10 +198,10 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 		}
 	}
 
-	databaseSecret := postgres.Spec.DatabaseSecret
+	databaseSecret := postgres.Spec.AuthSecret
 	if strictValidation {
 		if databaseSecret != nil {
-			if _, err := client.CoreV1().Secrets(postgres.Namespace).Get(context.TODO(), databaseSecret.SecretName, metav1.GetOptions{}); err != nil {
+			if _, err := client.CoreV1().Secrets(postgres.Namespace).Get(context.TODO(), databaseSecret.Name, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}

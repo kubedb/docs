@@ -100,7 +100,7 @@ func (c *Controller) ensureAppBinding(db *api.PerconaXtraDB) (kutil.VerbType, er
 			in.Spec.ClientConfig.InsecureSkipTLSVerify = false
 
 			in.Spec.Secret = &core.LocalObjectReference{
-				Name: db.Spec.DatabaseSecret.SecretName,
+				Name: db.Spec.AuthSecret.Name,
 			}
 
 			if db.IsCluster() {

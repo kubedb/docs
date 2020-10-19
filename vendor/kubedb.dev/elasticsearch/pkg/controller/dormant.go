@@ -36,8 +36,8 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 )
 
-// WaitUntilPaused is an Interface of *amc.Controller
-func (c *Controller) waitUntilPaused(db *api.Elasticsearch) error {
+// WaitUntilHalted waits until requested resources are cleaned up successfully
+func (c *Controller) waitUntilHalted(db *api.Elasticsearch) error {
 	log.Infof("waiting for pods for Elasticsearch %v/%v to be deleted\n", db.Namespace, db.Name)
 	if err := core_util.WaitUntilPodDeletedBySelector(context.TODO(), c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootSelectors())); err != nil {
 		return err
@@ -56,10 +56,6 @@ func (c *Controller) waitUntilPaused(db *api.Elasticsearch) error {
 		return err
 	}
 
-	if err := c.waitUntilDeploymentsDeleted(db); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -75,16 +71,6 @@ func (c *Controller) waitUntilStatefulSetsDeleted(db *api.Elasticsearch) error {
 	log.Infof("waiting for statefulsets for Elasticsearch %v/%v to be deleted\n", db.Namespace, db.Name)
 	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
 		if sts, err := c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String()}); err != nil && kerr.IsNotFound(err) || len(sts.Items) == 0 {
-			return true, nil
-		}
-		return false, nil
-	})
-}
-
-func (c *Controller) waitUntilDeploymentsDeleted(db *api.Elasticsearch) error {
-	log.Infof("waiting for deployments for Elasticsearch %v/%v to be deleted\n", db.Namespace, db.Name)
-	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
-		if deploys, err := c.Client.AppsV1().Deployments(db.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String()}); err != nil && kerr.IsNotFound(err) || len(deploys.Items) == 0 {
 			return true, nil
 		}
 		return false, nil
@@ -135,7 +121,7 @@ func (c *Controller) secretsUsedByPeers(meta metav1.ObjectMeta) (sets.String, er
 	}
 	for _, es := range dbList {
 		if es.Name != meta.Name {
-			secretUsed.Insert(es.Spec.GetPersistentSecrets()...)
+			secretUsed.Insert(es.GetPersistentSecrets()...)
 		}
 	}
 	return secretUsed, nil

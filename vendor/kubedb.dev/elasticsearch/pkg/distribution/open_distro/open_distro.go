@@ -24,7 +24,7 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	distapi "kubedb.dev/elasticsearch/pkg/distribution/api"
 
-	corev1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
@@ -75,7 +75,7 @@ func (es *Elasticsearch) RequiredCertSecretNames() []string {
 	return nil
 }
 
-func (es *Elasticsearch) getSecret(name, namespace string) (*corev1.Secret, error) {
+func (es *Elasticsearch) getSecret(name, namespace string) (*core.Secret, error) {
 	secret, err := es.kClient.CoreV1().Secrets(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	return secret, err
 }

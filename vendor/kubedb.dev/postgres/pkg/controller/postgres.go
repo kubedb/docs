@@ -164,7 +164,7 @@ func (c *Controller) create(postgres *api.Postgres) error {
 func (c *Controller) ensurePostgresNode(postgres *api.Postgres, postgresVersion *catalog.PostgresVersion) (kutil.VerbType, error) {
 	var err error
 
-	if err = c.ensureDatabaseSecret(postgres); err != nil {
+	if err = c.ensureAuthSecret(postgres); err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
