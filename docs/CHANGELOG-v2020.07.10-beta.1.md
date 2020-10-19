@@ -166,7 +166,7 @@ aliases:
 - [4f4985d](https://github.com/kubedb/installer/commit/4f4985d) Add script to update release tracker on pr merge (#98)
 - [94baab8](https://github.com/kubedb/installer/commit/94baab8) Update ci.yml
 - [2ffe241](https://github.com/kubedb/installer/commit/2ffe241) Rename TEST_NAMESPACE -> KUBE_NAMESPACE
-- [34ba017](https://github.com/kubedb/installer/commit/34ba017) Change enterprise operator image name to kubedb-enterprise (#97)
+- [34ba017](https://github.com/kubedb/installer/commit/34ba017) Change Enterprise operator image name to kubedb-enterprise (#97)
 - [bc83b11](https://github.com/kubedb/installer/commit/bc83b11) Add commands to update chart (#96)
 - [a0ddc4b](https://github.com/kubedb/installer/commit/a0ddc4b) Bring back postgres 9.6 (#95)
 - [59c1cee](https://github.com/kubedb/installer/commit/59c1cee) Fix chart release process (#94)
@@ -191,7 +191,7 @@ aliases:
 - [19aa0a1](https://github.com/kubedb/installer/commit/19aa0a1) Merge pull request #77 from kubedb/opsvalidator
 - [103ca84](https://github.com/kubedb/installer/commit/103ca84) Use enterprise port values
 - [5d538b8](https://github.com/kubedb/installer/commit/5d538b8) Add ops request validator
-- [ce37683](https://github.com/kubedb/installer/commit/ce37683) Update enterprise operator tag (#78)
+- [ce37683](https://github.com/kubedb/installer/commit/ce37683) Update Enterprise operator tag (#78)
 - [9a08d70](https://github.com/kubedb/installer/commit/9a08d70) Merge pull request #76 from kubedb/mysqlnewversion
 - [82a2d67](https://github.com/kubedb/installer/commit/82a2d67) remove unnecessary code and rename standAlone to standalone
 - [f3f6d05](https://github.com/kubedb/installer/commit/f3f6d05) Add extra wrap for depricated version
@@ -209,7 +209,7 @@ aliases:
 - [df4bcb2](https://github.com/kubedb/installer/commit/df4bcb2) Auto generate chart readme file
 - [00ca986](https://github.com/kubedb/installer/commit/00ca986) Use GCR_SERVICE_ACCOUNT_JSON_KEY env in CI
 - [c0cdfe0](https://github.com/kubedb/installer/commit/c0cdfe0) Configure Docker credential helper
-- [06ed3df](https://github.com/kubedb/installer/commit/06ed3df) Use gcr.io/appscode to host enterprise operator image
+- [06ed3df](https://github.com/kubedb/installer/commit/06ed3df) Use gcr.io/appscode to host Enterprise operator image
 - [9d0fbc9](https://github.com/kubedb/installer/commit/9d0fbc9) Update release.yml
 - [e066043](https://github.com/kubedb/installer/commit/e066043) prometheus.io/coreos-operator -> prometheus.io/coreos-operator (#66)
 - [91f37ec](https://github.com/kubedb/installer/commit/91f37ec) Use image.registry in catalog chart (#65)
@@ -226,7 +226,7 @@ aliases:
 - [1ab4bed](https://github.com/kubedb/installer/commit/1ab4bed) Run checks once in CI pipeline (#53)
 - [5265527](https://github.com/kubedb/installer/commit/5265527) Properly mark optional fields (#52)
 - [6153622](https://github.com/kubedb/installer/commit/6153622) Add replicationModeDetector image field into MySQLVersion CRD (#50)
-- [d546169](https://github.com/kubedb/installer/commit/d546169) Add enterprise operator sidecar (#49)
+- [d546169](https://github.com/kubedb/installer/commit/d546169) Add Enterprise operator sidecar (#49)
 - [cbc7f03](https://github.com/kubedb/installer/commit/cbc7f03) Add deletocollection verbs to kubedb roles (#44)
 - [c598e90](https://github.com/kubedb/installer/commit/c598e90) Allow specifying rather than generating certs (#48)
 - [b39d710](https://github.com/kubedb/installer/commit/b39d710) RBAC for cert manger, issuer watcher, and secret watcher (#43)
@@ -466,7 +466,7 @@ aliases:
 - [4860f2a7](https://github.com/kubedb/operator/commit/4860f2a7) Update to Kubernetes v1.18.3 (#251)
 - [1a163c6a](https://github.com/kubedb/operator/commit/1a163c6a) Create .kodiak.toml
 - [1eda36b9](https://github.com/kubedb/operator/commit/1eda36b9) Update to Kubernetes v1.18.3 (#247)
-- [77b8b858](https://github.com/kubedb/operator/commit/77b8b858) Update enterprise operator tag (#246)
+- [77b8b858](https://github.com/kubedb/operator/commit/77b8b858) Update Enterprise operator tag (#246)
 - [96ca876e](https://github.com/kubedb/operator/commit/96ca876e) Revendor kubedb.dev/apimachinery@master (#245)
 - [43a3a7f1](https://github.com/kubedb/operator/commit/43a3a7f1) Use recommended kubernetes app labels
 - [1ae7045f](https://github.com/kubedb/operator/commit/1ae7045f) Update crazy-max/ghaction-docker-buildx flag
@@ -778,7 +778,7 @@ aliases:
 - [a9decb9](https://github.com/kubedb/pgbouncer/commit/a9decb9) Use stash.appscode.dev/apimachinery@v0.9.0-rc.6 (#11)
 - [cd4d272](https://github.com/kubedb/pgbouncer/commit/cd4d272) Fix build
 - [b21b1a1](https://github.com/kubedb/pgbouncer/commit/b21b1a1) Revendor and update enterprise sidecar image (#10)
-- [463f7bc](https://github.com/kubedb/pgbouncer/commit/463f7bc) Update enterprise operator tag (#9)
+- [463f7bc](https://github.com/kubedb/pgbouncer/commit/463f7bc) Update Enterprise operator tag (#9)
 - [6e01588](https://github.com/kubedb/pgbouncer/commit/6e01588) Use kubedb/installer master branch in CI
 - [88b98a4](https://github.com/kubedb/pgbouncer/commit/88b98a4) Update pgbouncer controller (#8)
 - [a6b71bc](https://github.com/kubedb/pgbouncer/commit/a6b71bc) Update variable names

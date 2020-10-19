@@ -273,7 +273,7 @@ Type "help" for help.
 postgres=# \q
 ```
 
-If everything goes well, we'll be connected to the `postgres` database and be able to execute commands. Lets confirm if the company data we inserted in the  `postgres` database before are available via PgBouncer:
+If everything goes well, we'll be connected to the `postgres` database and be able to execute commands. Let's confirm if the company data we inserted in the  `postgres` database before are available via PgBouncer:
 
 ```console
 $ env PGPASSWORD=qTOzudbzusls6NTZ psql --host=localhost --port=5432 --username=postgres postgres --command='SELECT * FROM company ORDER BY name;'
@@ -341,7 +341,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 pgbouncer.kubedb.com/pgbouncer-server configured
 ```
 
-Lets try to connect to `mydb` via PgBouncer.
+Let's try to connect to `mydb` via PgBouncer.
 
 ```console
 $ env PGPASSWORD=mypass psql --host=localhost --port=5432 --username=myuser tmpdb

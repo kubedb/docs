@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mops-volume-exp-standalone
+  namespace: demo
+spec:
+  type: VolumeExpansion  
+  databaseRef:
+    name: mg-standalone
+  volumeExpansion:
+    standalone: 2Gi

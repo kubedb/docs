@@ -4,8 +4,13 @@ metadata:
   name: mgo-tls
   namespace: demo
 spec:
-  version: "3.6-v4"
+  version: "4.1.13-v1"
   sslMode: requireSSL
+  tls:
+    issuerRef:
+      name: mongo-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
   storage:
     storageClassName: "standard"
     accessModes:

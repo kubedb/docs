@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mops-upgrade
+  namespace: demo
+spec:
+  type: Upgrade
+  databaseRef:
+    name: mg-standalone
+  upgrade:
+    targetVersion: 4.0.5-v3

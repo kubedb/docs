@@ -1,9 +1,9 @@
 ---
-title: Kubedb-Operator Run
+title: KubeDB-Operator Run
 menu:
   docs_{{ .version }}:
     identifier: kubedb-operator-run
-    name: Kubedb-Operator Run
+    name: KubeDB-Operator Run
     parent: reference-operator
 menu_name: docs_{{ .version }}
 section_menu_id: reference

@@ -1,0 +1,17 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mops-hscale-up-shard
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: mg-sharding
+  horizontalScaling:
+    shard:
+      shards: 4
+      replicas: 3
+    mongos:
+      replicas: 3
+    configServer:
+      replicas: 3

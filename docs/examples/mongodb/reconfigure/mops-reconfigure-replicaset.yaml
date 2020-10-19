@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mops-reconfigure-replicaset
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: mg-replicaset
+  customConfig:
+    replicaSet:
+      configMap:
+        name: new-custom-config

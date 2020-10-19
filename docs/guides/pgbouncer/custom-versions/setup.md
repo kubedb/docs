@@ -32,7 +32,7 @@ RUN set -ex \
     bash
 ```
 
-From there, we would define a PgBouncerVersion that contains this new image. Lets say we tagged it as `myco/pgbouncer:custom-1.11.0`.  You can also build exporter image yourself using [pgbouncer_exporter](https://github.com/kubedb/pgbouncer_exporter) repository.
+From there, we would define a PgBouncerVersion that contains this new image. Let's say we tagged it as `myco/pgbouncer:custom-1.11.0`.  You can also build exporter image yourself using [pgbouncer_exporter](https://github.com/kubedb/pgbouncer_exporter) repository.
 
 ```yaml
 apiVersion: catalog.kubedb.com/v1alpha1

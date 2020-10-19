@@ -63,6 +63,14 @@ spec:
             storage: 1Gi
         storageClassName: standard
   sslMode: preferSSL
+  tls:
+    issuerRef:
+      name: mongo-ca-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    certificate:
+      organization:
+        - kubedb
   clusterAuthMode: x509
   storageType: "Durable"
   storage:
@@ -135,10 +143,15 @@ spec:
 
 `spec.version` is a required field specifying the name of the [MongoDBVersion](/docs/concepts/catalog/mongodb.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MongoDBVersion` resources,
 
-- `3.4-v4`, `3.4-v3`, `3.4-v2`, `3.4-v1`, `3.4`
-- `3.6-v4`, `3.6-v3`, `3.6-v2`, `3.6-v1`, `3.6`
-- `4.0.5-v2`, `4.0.5-v1`, `4.0-v1`, `4.0.5`, `4.0`
-- `4.1.7-v2`, `4.1.7-v1`, `4.1.7`
+- `3.4-v5`, `3.4-v4`, `3.4-v3`, `3.4-v2`, `3.4-v1`, `3.4`
+- `3.6-v5`, `3.6-v4`, `3.6-v3`, `3.6-v2`, `3.6-v1`, `3.6`
+- `4.0.5-v3`, `4.0.5-v2`, `4.0.5-v1`, `4.0-v1`, `4.0.5`, `4.0`
+- `4.1.4-v1`, `4.1.4`
+- `4.1.7-v3`, `4.1.7-v2`, `4.1.7-v1`, `4.1.7`
+- `4.1.13-v1`, `4.1.13`
+- `4.2`,
+- `4.2.3`,
+- `3.6.18-percona`, `4.0.10-percona`, `4.2.7-percona`
 
 ### spec.replicas
 
@@ -178,43 +191,8 @@ metadata:
   ...
 type: Opaque
 ```
+
 Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
-
-### spec.certificateSecret
-
-`spec.certificateSecret` (optional) is a secret name that contains keyfile (a random string) against `key.txt` key. Each mongod instance in the replica set and `shardTopology` uses the contents of the keyfile as the shared password for authenticating other members in the `replicaset`. Only `mongod` instances with the correct keyfile can join the replica set. _User can provide the `certificateSecret` by creating a secret with key `key.txt`. See [here](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/#create-a-keyfile) to create the string for `certificateSecret`._ If `certificateSecret` is not given, KubeDB operator will generate a `certificateSecret` itself.
-
-Since, KubeDB v0.13.0 release, if the mongodb is either of ReplicaSet or Sharding, or if the `sslMode` is anything other than `disabled`,then `certificateSecret` will contain some required tls certificates including `ca.cert`, `ca.key`, `client.pem`.
-
-Here, `ca.key` & `ca.cert` represents Certificate Authority (CA) Key and Certificate respectively.
-
-KubeDB also creates a `client.pem` certificate for `certificateSecret`. The `subject` of `client.pem` certificate is added as `root` user in `$external` database. So, user can use this client certificate for `MONGODB-X509` `authenticationMechanism`.
-
-To generate the `certificateSecret` Manually,
-
-1. Generate key file first
-
-  ```console
-  openssl rand -base64 756 > key.txt
-  ```
-
-2. Generate `ca.key` and `ca.cert`
-
-  ```console
-  openssl genrsa -out ca.key 2048
-  openssl req -x509 -new -nodes -key ca.key -days 1024 -out ca.cert -subj "/CN=ca"
-  ```
-
-3. Create Secret
-
-  ```console
-  kubectl create secret generic mongodb-demo-cert -n demo \
-      --from-file=./key.txt \
-      --from-file=./ca.key \
-      --from-file=./ca.cert
-  ```
-
-Now, use this secret `mongodb-demo-cert` in field `spec.certificateSecret.name`.
 
 ### spec.replicaSet
 
@@ -244,6 +222,7 @@ When `spec.shardTopology` is set, the following fields needs to be empty, otherw
 - `spec.storage`
 
 KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas of these shard components are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum and data integrity is maintained.
+
 #### spec.shardTopology.shard
 
 `shard` represents configuration for Shard component of mongodb.
@@ -285,23 +264,61 @@ Available configurable fields:
 
 Enables TLS/SSL or mixed TLS/SSL used for all network connections. The value of [`sslMode`](https://docs.mongodb.com/manual/reference/program/mongod/#cmdoption-mongod-sslmode) field can be one of the following:
 
-|    Value     | Description                                                  |
-| :----------: | :----------------------------------------------------------- |
-|  `disabled`  | The server does not use TLS/SSL.                             |
+|    Value     | Description                                                                                                                    |
+| :----------: | :----------------------------------------------------------------------------------------------------------------------------- |
+|  `disabled`  | The server does not use TLS/SSL.                                                                                               |
 |  `allowSSL`  | Connections between servers do not use TLS/SSL. For incoming connections, the server accepts both TLS/SSL and non-TLS/non-SSL. |
-| `preferSSL`  | Connections between servers use TLS/SSL. For incoming connections, the server accepts both TLS/SSL and non-TLS/non-SSL. |
-| `requireSSL` | The server uses and accepts only TLS/SSL encrypted connections. |
+| `preferSSL`  | Connections between servers use TLS/SSL. For incoming connections, the server accepts both TLS/SSL and non-TLS/non-SSL.        |
+| `requireSSL` | The server uses and accepts only TLS/SSL encrypted connections.                                                                |
+
+### spec.tls
+
+`spec.tls` specifies the TLS/SSL configurations for the MongoDB. KubeDB uses [cert-manager](https://cert-manager.io/) v1 api to provision and manage TLS certificates.
+
+The following fields are configurable in the `spec.tls` section:
+
+- `issuerRef` is a reference to the `Issuer` or `ClusterIssuer` CR of [cert-manager](https://cert-manager.io/docs/concepts/issuer/) that will be used by `KubeDB` to generate necessary certificates.
+
+  - `apiGroup` is the group name of the resource that is being referenced. Currently the only supported value is `cert-manager.io`.
+  - `kind` is the type of resource that is being referenced. KubeDB supports both `Issuer` and `ClusterIssuer` as values for this field.
+  - `name` is the name of the resource (`Issuer` or `ClusterIssuer`) being referenced.
+
+- `certificates` (optional) are a list of certificates used to configure the server and/or client certificate. It has the following fields:
+  - `alias` represents the identifier of the certificate. It has the following possible value:
+    - `server` is used for server certificate identification.
+    - `client` is used for client certificate identification.
+    - `metrics-exporter` is used for metrics exporter certificate identification.
+  - `secretName` (optional) specifies the k8s secret name that holds the certificates.
+    > This field is optional. If the user does not specify this field, the default secret name will be created in the following format: `<database-name>-<cert-alias>-cert`.
+  - `subject` (optional) specifies an `X.509` distinguished name. It has the following possible field,
+    - `organizations` (optional) are the list of different organization names to be used on the Certificate.
+    - `organizationalUnits` (optional) are the list of different organization unit name to be used on the Certificate.
+    - `countries` (optional) are the list of country names to be used on the Certificate.
+    - `localities` (optional) are the list of locality names to be used on the Certificate.
+    - `provinces` (optional) are the list of province names to be used on the Certificate.
+    - `streetAddresses` (optional) are the list of a street address to be used on the Certificate.
+    - `postalCodes` (optional) are the list of postal code to be used on the Certificate.
+    - `serialNumber` (optional) is a serial number to be used on the Certificate.
+      You can found more details from [Here](https://golang.org/pkg/crypto/x509/pkix/#Name)
+  - `duration` (optional) is the period during which the certificate is valid.
+  - `renewBefore` (optional) is a specifiable time before expiration duration.
+  - `dnsNames` (optional) is a list of subject alt names to be used in the Certificate.
+  - `ipAddresses` (optional) is a list of IP addresses to be used in the Certificate.
+  - `uris` (optional) is a list of URI Subject Alternative Names to be set in the Certificate.
+  - `emailAddresses` (optional) is a list of email Subject Alternative Names to be set in the Certificate.
+  - `privateKey` (optional) specifies options to control private keys used for the Certificate.
+    - `encoding` (optional) is the private key cryptography standards (PKCS) encoding for this certificate's private key to be encoded in. If provided, allowed values are "pkcs1" and "pkcs8" standing for PKCS#1 and PKCS#8, respectively. It defaults to PKCS#1 if not specified.
 
 ### spec.clusterAuthMode
 
 The authentication mode used for cluster authentication. This option can have one of the following values:
 
-|     Value     | Description                                                  |
-| :-----------: | :----------------------------------------------------------- |
-|   `keyFile`   | Use a keyfile for authentication. Accept only keyfiles.      |
-| `sendKeyFile` | For rolling upgrade purposes. Send a keyfile for authentication but can accept both keyfiles and x.509 certificates. |
+|     Value     | Description                                                                                                                      |
+| :-----------: | :------------------------------------------------------------------------------------------------------------------------------- |
+|   `keyFile`   | Use a keyfile for authentication. Accept only keyfiles.                                                                          |
+| `sendKeyFile` | For rolling upgrade purposes. Send a keyfile for authentication but can accept both keyfiles and x.509 certificates.             |
 |  `sendX509`   | For rolling upgrade purposes. Send the x.509 certificate for authentication but can accept both keyfiles and x.509 certificates. |
-|    `x509`     | Recommended. Send the x.509 certificate for authentication and accept only x.509 certificates. |
+|    `x509`     | Recommended. Send the x.509 certificate for authentication and accept only x.509 certificates.                                   |
 
 ### spec.storageType
 
@@ -500,13 +517,13 @@ for: "./mongodb.yaml": admission webhook "mongodb.validators.kubedb.com" denied 
 
 #### spec.podTemplate.spec.serviceAccountName
 
-  `serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
+`serviceAccountName` is an optional field supported by KubeDB Operator (version 0.13.0 and higher) that can be used to specify a custom service account to fine tune role based access control.
 
-  If this field is left empty, the KubeDB operator will create a service account name matching MongoDB crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
+If this field is left empty, the KubeDB operator will create a service account name matching MongoDB crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
 
-  If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
+If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
 
-  If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/mongodb/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
+If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/mongodb/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
 
 #### spec.podTemplate.spec.resources
 
