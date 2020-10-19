@@ -102,7 +102,7 @@ func (c *Controller) handleRestoreInvokerEvent(ri *restoreInfo) error {
 	// Restore process has started, add "DataRestoreStarted" condition to the respective database CR
 	err := ri.do.SetCondition(kmapi.Condition{
 		Type:    api.DatabaseDataRestoreStarted,
-		Status:  kmapi.ConditionTrue,
+		Status:  core.ConditionTrue,
 		Reason:  api.DataRestoreStartedByExternalInitializer,
 		Message: fmt.Sprintf("Data restore started by initializer: %s/%s/%s.", *ri.invoker.APIGroup, ri.invoker.Kind, ri.invoker.Name),
 	})
@@ -126,7 +126,7 @@ func (c *Controller) handleRestoreInvokerEvent(ri *restoreInfo) error {
 	}
 
 	if ri.phase == v1beta1.RestoreSucceeded {
-		dbCond.Status = kmapi.ConditionTrue
+		dbCond.Status = core.ConditionTrue
 		dbCond.Reason = api.DatabaseSuccessfullyRestored
 		dbCond.Message = fmt.Sprintf("Successfully restored data by initializer %s %s/%s",
 			ri.invoker.Kind,
@@ -134,7 +134,7 @@ func (c *Controller) handleRestoreInvokerEvent(ri *restoreInfo) error {
 			ri.invoker.Name,
 		)
 	} else {
-		dbCond.Status = kmapi.ConditionFalse
+		dbCond.Status = core.ConditionFalse
 		dbCond.Reason = api.FailedToRestoreData
 		dbCond.Message = fmt.Sprintf("Failed to restore data by initializer %s %s/%s."+
 			"\nRun 'kubectl describe %s %s -n %s' for more details.",
@@ -288,7 +288,7 @@ func (c *Controller) writeRestoreCompletionEvent(do dmcond.DynamicOptions, cond 
 	}
 
 	eventType := core.EventTypeNormal
-	if cond.Status != kmapi.ConditionTrue {
+	if cond.Status != core.ConditionTrue {
 		eventType = core.EventTypeWarning
 	}
 	// create event

@@ -1667,8 +1667,8 @@ kmodules.xyz/client-go v0.0.0-20200929030759-cce6a3c623c1 h1:wig8NVgxE5ynY6dsGdu
 kmodules.xyz/client-go v0.0.0-20200929030759-cce6a3c623c1/go.mod h1:pnRh7gtJ6ErPJQBkQeRlpD95KRtxhD4eGrYagZEU8RM=
 kmodules.xyz/client-go v0.0.0-20201007024140-3223988adf40 h1:XQLn2whq+TYbGxVloiyopxSM9jsqjqvWQjltXFKd+aA=
 kmodules.xyz/client-go v0.0.0-20201007024140-3223988adf40/go.mod h1:pnRh7gtJ6ErPJQBkQeRlpD95KRtxhD4eGrYagZEU8RM=
-kmodules.xyz/client-go v0.0.0-20201008164401-74d81f261ec5 h1:mGySTT2dC8u2FQDUFbDLcOt7GM+IkXqlH2xzATyddKg=
-kmodules.xyz/client-go v0.0.0-20201008164401-74d81f261ec5/go.mod h1:pnRh7gtJ6ErPJQBkQeRlpD95KRtxhD4eGrYagZEU8RM=
+kmodules.xyz/client-go v0.0.0-20201013083546-b17c1e15f1a3 h1:vP8h3s+JdqXQHhhmvoTgKZOtpraF4X1NxA/y4OFTn+I=
+kmodules.xyz/client-go v0.0.0-20201013083546-b17c1e15f1a3/go.mod h1:pnRh7gtJ6ErPJQBkQeRlpD95KRtxhD4eGrYagZEU8RM=
 kmodules.xyz/constants v0.0.0-20200506032633-a21e58ceec72 h1:0sM6nE7aJon/PSdqZTj0bKJlPyzobXkG0wVYKpjcJJE=
 kmodules.xyz/constants v0.0.0-20200506032633-a21e58ceec72/go.mod h1:DbiFk1bJ1KEO94t1SlAn7tzc+Zz95rSXgyUKa2nzPmY=
 kmodules.xyz/constants v0.0.0-20200923054614-6b87dbbae4d6 h1:9b61GdwFN3IC9tPmBvgXdo2kBlQKvyFUy5y4Q0fwB5E=
@@ -1694,8 +1694,8 @@ kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de h1:uWgv78OoOWx9e
 kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de/go.mod h1:5A8s2nvrNAZGrt0OlsiiuZIik3xWyKW6+ZSwgljIm78=
 kubedb.dev/apimachinery v0.14.0-beta.3.0.20201008025554-057d3aefcca0 h1:Uiz2T97uTz8FaDGDqV2TV84/Mic6aDA70RCFnKENx0c=
 kubedb.dev/apimachinery v0.14.0-beta.3.0.20201008025554-057d3aefcca0/go.mod h1:2cIABSce2Yw9yiH7AcQ8cQ+kWIlEl7ivnosDEZ00hv4=
-kubedb.dev/apimachinery v0.14.0-beta.3.0.20201009022246-304c48b817f5 h1:CS/A+zs/L9DEv/EK5TLzXXbmyEV4XhNXZWUrNnGCj44=
-kubedb.dev/apimachinery v0.14.0-beta.3.0.20201009022246-304c48b817f5/go.mod h1:SHNQrFyzOs1DU658O8HiqhM342Zbzwf29FrKxJFad/c=
+kubedb.dev/apimachinery v0.14.0-beta.3.0.20201019120142-0d4040b4ef21 h1:ZSdMBGMFL616RZwWGA0mmv8vizNKB1MmGMQ+dlPcL54=
+kubedb.dev/apimachinery v0.14.0-beta.3.0.20201019120142-0d4040b4ef21/go.mod h1:p9LuoCgOHagyOFawD8zqZLJkRG5DDXivXRdcLC9NoMQ=
 kubedb.dev/elasticsearch v0.14.0-beta.3.0.20201008030514-34d03a1f5324 h1:nGGXX1RHEq+4NYkuqnToU5dhwUl+mtjVF3FFa7V+XnY=
 kubedb.dev/elasticsearch v0.14.0-beta.3.0.20201008030514-34d03a1f5324/go.mod h1:9HRUuYOpz+lIk+AXiGHBGcw2z2gYF1Ttp8Qr5xuyJk4=
 kubedb.dev/memcached v0.7.0-beta.3.0.20201008030630-480c5281bf4c h1:ZltUNPgFFSRiFWUc3puzHd+ZZSCiF8TQUZENkK0i6Jk=
