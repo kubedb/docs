@@ -1,9 +1,9 @@
 ---
-title: KubeDB-Operator Version
+title: Kubedb-Operator Version
 menu:
   docs_{{ .version }}:
     identifier: kubedb-operator-version
-    name: KubeDB-Operator Version
+    name: Kubedb-Operator Version
     parent: reference-operator
 menu_name: docs_{{ .version }}
 section_menu_id: reference
