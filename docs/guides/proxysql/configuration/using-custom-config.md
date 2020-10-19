@@ -111,7 +111,7 @@ proxysql.kubedb.com/custom-proxysql created
 Below is the YAML for the ProxySQL object we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: ProxySQL
 metadata:
   name: custom-proxysql

@@ -45,7 +45,7 @@ This tutorial will show you how to monitor ProxySQL using builtin [Prometheus](h
 At first, let's deploy a MySQL database with Group Replication support. Below is the MySQL object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: my-group
@@ -91,7 +91,7 @@ my-group   5.7.25    Running   3m
 Now we are going to create a sample ProxySQL object to load balance the previously created MySQL group. Keep note that monitoring is enabled in this sample ProxySQL object. See below:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: ProxySQL
 metadata:
   name: builtin-prom-proxysql

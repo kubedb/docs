@@ -57,7 +57,7 @@ To get YAML of an object, use `--output=yaml` flag.
 
 ```yaml
 $ kubectl get mongodb mongodb-demo --output=yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   creationTimestamp: "2019-02-06T10:31:04Z"
@@ -67,7 +67,7 @@ metadata:
   name: mongodb-demo
   namespace: default
   resourceVersion: "94703"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/default/mongodbs/mongodb-demo
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/mongodbs/mongodb-demo
   uid: 4eaaba0e-29fa-11e9-aebf-080027875192
 spec:
   databaseSecret:

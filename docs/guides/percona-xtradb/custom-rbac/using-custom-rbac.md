@@ -145,7 +145,7 @@ perconaxtradb.kubedb.com/px-custom-rbac created
 Below is the YAML for the PerconaXtraDB object we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   name: px-custom-rbac
@@ -255,7 +255,7 @@ perconaxtradb.kubedb.com/px-custom-rbac-two created
 Below is the YAML for the PerconaXtraDB object we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   name: px-custom-rbac-two

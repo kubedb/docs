@@ -23,7 +23,7 @@ section_menu_id: concepts
 As with all other Kubernetes objects, an Elasticsearch needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example Elasticsearch object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
   name: e1
@@ -284,7 +284,7 @@ To learn how to configure `spec.storage`, please visit the links below:
  - `namespace:` Namespace of the Snapshot
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
   name: elasticsearch-db

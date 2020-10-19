@@ -42,7 +42,7 @@ Elasticsearch can be created with multiple nodes. If you want to create an Elast
 Check following Elasticsearch object
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
   name: multi-node-es
@@ -214,7 +214,7 @@ If you want to use separate node for *master*, *data* and *client* role, you nee
 In this tutorial, we will create following Elasticsearch with topology
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
   name: topology-es

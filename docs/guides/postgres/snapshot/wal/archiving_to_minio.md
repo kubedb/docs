@@ -37,7 +37,7 @@ For archiving, a running instance of MinIO server is required. If you don't have
 Below is a Postgres object created with Continuous Archiving support that backs up WAL files to a MinIO server.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: wal-postgres-minio

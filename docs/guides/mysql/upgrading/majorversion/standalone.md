@@ -122,7 +122,7 @@ Now, we are going to deploy a `MySQL` standalone using version `5.7.31`.
 In this section, we are going to deploy a MySQL standalone. Then, in the next section, we will upgrade the version of the database using upgrading. Below is the YAML of the `MySQL` cr that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: my-standalone

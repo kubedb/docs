@@ -64,7 +64,7 @@ Below is the YAML for the MongoDB created in this example. Here, [`spec.podTempl
 In this tutorial, `maxIncomingConnections` is set to `100` (default, 65536) through args `--maxConns=100`.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mgo-misc-config
@@ -164,7 +164,7 @@ You can see the maximum connection is set to `100` in `parsed.net.maxIncomingCon
 Below is the Snapshot CRD that is deployed in this tutorial. Create a secret `mg-snap-secret` from [here](/docs/guides/mongodb/snapshot/backup-and-restore.md#instant-backups) for snapshot. 
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Snapshot
 metadata:
   name: snap-mgo-config
@@ -198,7 +198,7 @@ To configure BackupScheduler, add the require changes in PodTemplate just like s
 
 ```yaml
 $ kubectl edit mg mgo-misc-config -n demo
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mgo-misc-config

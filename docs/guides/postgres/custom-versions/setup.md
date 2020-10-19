@@ -75,7 +75,7 @@ spec:
 Once we add this PostgresVersion we can use it in a new Postgres like:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: timescale-postgres

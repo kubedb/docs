@@ -167,7 +167,7 @@ postgres.kubedb.com/quick-postgres created
 Below is the YAML for the Postgres crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: quick-postgres
@@ -292,7 +292,7 @@ postgres.kubedb.com/quick-postgres created
 Below is the YAML for the Postgres crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: minute-postgres

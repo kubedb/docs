@@ -82,7 +82,7 @@ issuer.cert-manager.io/mysql-issuer created
 Here, our issuer `mysql-issuer`  is ready to deploy a `MySQL` standalone with TLS/SSL configuration. Below is the YAML for MySQL Standalone that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: my-standalone-tls
@@ -317,7 +317,7 @@ From the above output, you can see that only using client certificate we can acc
 Now, we are going to deploy a `MySQL` group replication with TLS/SSL configuration. Below is the YAML for MySQL group replication that we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: my-group-tls

@@ -97,7 +97,7 @@ While deploying `Memcached` from private repository, you have to add `myregistry
 Below is the Memcached CRD object we will create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Memcached
 metadata:
   name: memcd-pvt-reg

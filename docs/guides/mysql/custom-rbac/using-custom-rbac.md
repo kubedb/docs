@@ -137,7 +137,7 @@ mysql.kubedb.com/quick-mysql created
 Below is the YAML for the MySQL crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: quick-mysql
@@ -203,7 +203,7 @@ mysql.kubedb.com/quick-mysql created
 Below is the YAML for the MySQL crd we just created.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: minute-mysql

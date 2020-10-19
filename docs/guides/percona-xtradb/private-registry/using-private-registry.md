@@ -91,7 +91,7 @@ While deploying `PerconaXtraDB` from private repository, you have to add `myregi
 Below is the `PerconaXtraDB` object we will create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   name: px-pvt-reg

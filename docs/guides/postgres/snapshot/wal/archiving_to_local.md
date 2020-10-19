@@ -36,7 +36,7 @@ namespace/demo created
 For archiving, we need to configure Local Storage properly and use storage backend's information. Below is a Postgres object created with Continuous Archiving support that backs up WAL files to Local Storage.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: wal-postgres

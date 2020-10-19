@@ -84,7 +84,7 @@ type: Opaque
 To learn how to configure other storage destinations for Snapshots, please visit [here](/docs/concepts/snapshot.md). Now, create the Snapshot object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Snapshot
 metadata:
   name: snapshot-instant
@@ -113,7 +113,7 @@ snapshot-instant   mgo-instant     Succeeded   20s
 
 ```yaml
 $ kubectl get snap -n demo snapshot-instant -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Snapshot
 metadata:
   creationTimestamp: "2019-02-06T06:40:07Z"
@@ -126,7 +126,7 @@ metadata:
   name: snapshot-instant
   namespace: demo
   resourceVersion: "74570"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/snapshots/snapshot-instant
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/snapshots/snapshot-instant
   uid: 0b20a530-29da-11e9-aebf-080027875192
 spec:
   databaseName: mgo-instant
@@ -236,7 +236,7 @@ From the above image, you can see that the snapshot output is stored in a folder
 You can create a new database from a previously taken Snapshot. Specify the Snapshot name in the `spec.init.snapshotSource` field of a new MongoDB object. See the example `mgo-recovered` object below:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mgo-recovered
@@ -366,7 +366,7 @@ Some common customization sample is shown below.
 Backup and recovery job needs a temporary storage to hold `dump` files before it can be uploaded to cloud backend or inserted into database. By default, KubeDB reads storage specification from `spec.storage` section of database crd and creates PVC with similar specification for backup or recovery job. However, if you want to specify custom PVC template, you can do it through `spec.podVolumeClaimSpec` field of Snapshot crd. This is particularly helpful when you want to use different `storageclass` for backup or recovery job than the database.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Snapshot
 metadata:
   name: snapshot-instant
@@ -392,7 +392,7 @@ spec:
 You can specify resources for backup or recovery job through `spec.podTemplate.spec.resources` field.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Snapshot
 metadata:
   name: snapshot-instant
@@ -420,7 +420,7 @@ spec:
 If you need to add some annotations to backup or recovery job, you can specify this in `spec.podTemplate.controller.annotations`. You can also specify annotation for the pod created by backup or recovery job through `spec.podTemplate.annotations` field.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Snapshot
 metadata:
   name: snapshot-instant
@@ -445,7 +445,7 @@ spec:
 KubeDB also allows to pass extra arguments for backup or recovery job. You can provide these arguments through `spec.podTemplate.spec.args` field of Snapshot crd.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Snapshot
 metadata:
   name: snapshot-instant
@@ -474,7 +474,7 @@ Some common customization examples are shown below:
 Backup and recovery jobs use temporary storage to hold `dump` files before it can be uploaded to cloud backend or restored into database. By default, KubeDB reads storage specification from `spec.storage` section of database crd and creates a PVC with similar specification for backup or recovery job. However, if you want to specify a custom PVC template, you can do it via `spec.podVolumeClaimSpec` field of Snapshot crd. This is particularly helpful when you want to use different `storageclass` for backup or recovery jobs and the database.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Snapshot
 metadata:
   name: snapshot-instant
@@ -500,7 +500,7 @@ spec:
 You can specify resources for backup or recovery jobs using `spec.podTemplate.spec.resources` field.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Snapshot
 metadata:
   name: snapshot-instant
@@ -528,7 +528,7 @@ spec:
 If you need to add some annotations to backup or recovery jobs, you can specify those in `spec.podTemplate.controller.annotations`. You can also specify annotations for the pod created by backup or recovery jobs through `spec.podTemplate.annotations` field.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Snapshot
 metadata:
   name: snapshot-instant
@@ -553,7 +553,7 @@ spec:
 KubeDB allows users to pass extra arguments for backup or recovery jobs. You can provide these arguments through `spec.podTemplate.spec.args` field of Snapshot crd.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Snapshot
 metadata:
   name: snapshot-instant

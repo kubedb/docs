@@ -42,7 +42,7 @@ To deploy a single primary MySQL replication group , specify `spec.topology` fie
 The following is an example `MySQL` object which creates a MySQL group with three members (one is primary member and the two others are secondary members).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: my-group
@@ -88,7 +88,7 @@ Name:               my-group
 Namespace:          demo
 CreationTimestamp:  Tue, 25 Aug 2020 16:42:10 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha1","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
 Replicas:           3  total
 Status:             Running
 StorageType:        Durable
@@ -180,7 +180,7 @@ Database Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha1","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"baseServerID":100,"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.21"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"baseServerID":100,"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.21"}}
 
     Creation Timestamp:  2020-08-25T10:50:59Z
     Labels:
@@ -243,7 +243,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get  my -n demo my-group -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   creationTimestamp: "2019-04-26T09:59:00Z"
@@ -253,7 +253,7 @@ metadata:
   name: my-group
   namespace: demo
   resourceVersion: "1311"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/mysqls/my-group
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mysqls/my-group
   uid: e9f3e216-6809-11e9-89c6-080027fc7fb2
 spec:
   databaseSecret:
