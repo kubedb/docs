@@ -46,7 +46,7 @@ At first, we are going to deploy a standalone using supported that `MySQL` versi
 
 **Find supported MySQLVersion:**
 
-When you have installed `KubeDB`, it has created `MySQLVersion` cr for all supported `MySQL` versions. Let's check support versions,
+When you have installed `KubeDB`, it has created `MySQLVersion` CR for all supported `MySQL` versions. Let's check support versions,
 
 ```console
 $ kubectl get mysqlversion
@@ -212,7 +212,7 @@ spec:
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
-- `spec.type` specifies that we are going performing `Upgrade` on our database.
+- `spec.type` specifies that we are going to perform `Upgrade` on our database.
 - `spec.upgrade.targetVersion` specifies expected version `8.0.21` after upgrading.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
@@ -236,7 +236,7 @@ NAME                          TYPE      STATUS       AGE
 my-upgrade-major-standalone   Upgrade   Successful   3m57s
 ```
 
-We can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the `MySQL`, `StatefulSet`, and its `Pod` have updated with a new image.
+We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the `MySQL`, `StatefulSet`, and its `Pod` have updated with a new image.
 
 ```console
 $ kubectl describe myops -n demo my-upgrade-major-standalone

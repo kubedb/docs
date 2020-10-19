@@ -46,7 +46,7 @@ At first, we are going to deploy a group replication using supported that `MySQL
 
 **Find supported MySQL Version:**
 
-When you have installed `KubeDB`, it has created `MySQLVersion` cr for all supported `MySQL` versions. Let’s check the supported `MySQL` versions,
+When you have installed `KubeDB`, it has created `MySQLVersion` CR for all supported `MySQL` versions. Let’s check the supported `MySQL` versions,
 
 ```console
 $ kubectl get mysqlversion
@@ -251,7 +251,7 @@ spec:
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
-- `spec.type` specifies that we are going performing `Upgrade` on our database.
+- `spec.type` specifies that we are going to perform `Upgrade` on our database.
 - `spec.upgrade.targetVersion` specifies expected version `5.7.31` after upgrading.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
@@ -275,7 +275,7 @@ NAME                     TYPE      STATUS       AGE
 my-upgrade-minor-group   Upgrade   Successful   5m26s
 ```
 
-You can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the `MySQL` group replication is updated with the new version and the `StatefulSet` is created with a new image.
+You can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the `MySQL` group replication is updated with the new version and the `StatefulSet` is created with a new image.
 
 ```console
 $ kubectl describe myops -n demo my-upgrade-minor-group

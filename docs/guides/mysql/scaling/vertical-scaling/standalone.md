@@ -46,7 +46,7 @@ At first, we are going to deploy a standalone using supported `MySQL` version. T
 
 **Find supported MySQL Version:**
 
-When you have installed `KubeDB`, it has created `MySQLVersion` cr for all supported `MySQL` versions. Let's check the supported MySQL versions,
+When you have installed `KubeDB`, it has created `MySQLVersion` CR for all supported `MySQL` versions. Let's check the supported MySQL versions,
 
 ```console
 $ kubectl get mysqlversion
@@ -199,7 +199,7 @@ NAME                  TYPE              STATUS       AGE
 my-scale-standalone   VerticalScaling   Successful   2m15s
 ```
 
-We can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the standalone resources are updated.
+We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the standalone resources are updated.
 
 ```console
 $ kubectl describe myops -n demo my-scale-standalone

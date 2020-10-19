@@ -299,7 +299,7 @@ The following fields are configurable in the `spec.tls` section:
   
   - `alias` represents the identifier of the certificate. It has the following possible value:
     - `server` is used for server certificate identification.
-    - `archiver` is used for client certificate identification.
+    - `client` is used for client certificate identification.
     - `metrics-exporter` is used for metrics exporter certificate identification.
   - `secretName` (optional) specifies the k8s secret name that holds the certificates.
     >This field is optional. If the user does not specify this field, the default secret name will be created in the following format: `<database-name>-<cert-alias>-cert`.

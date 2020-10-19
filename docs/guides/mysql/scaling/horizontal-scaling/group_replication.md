@@ -46,7 +46,7 @@ At first, we are going to deploy a group replication server with 3 members. Then
 
 **Find supported MySQL Version:**
 
-When you have installed `KubeDB`, it has created `MySQLVersion` cr for all supported `MySQL` versions.  Let's check the supported MySQL versions,
+When you have installed `KubeDB`, it has created `MySQLVersion` CR for all supported `MySQL` versions.  Let's check the supported MySQL versions,
 
 ```console
 $ kubectl get mysqlversion
@@ -211,7 +211,7 @@ NAME            TYPE                STATUS       AGE
 my-scale-up     HorizontalScaling   Successful   2m55s
 ```
 
-You can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the `MySQL` group replication is scaled up.
+You can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the `MySQL` group replication is scaled up.
 
 ```console
 $ kubectl describe myops -n demo my-scale-up
@@ -355,7 +355,7 @@ NAME            TYPE                STATUS       AGE
 my-scale-down   HorizontalScaling   Successful   2m55s
 ```
 
-You can see from the above output that the `MySQLOpsRequest` has succeeded. If you describe the `MySQLOpsRequest` you will see that the `MySQL` group replication is scaled down.
+You can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the `MySQL` group replication is scaled down.
 
 ```console
 $ kubectl describe myops -n demo my-scale-down
