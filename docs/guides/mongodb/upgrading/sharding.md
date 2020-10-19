@@ -3,8 +3,8 @@ title: Upgrading MongoDB Sharded Database
 menu:
   docs_{{ .version }}:
     identifier: mg-upgrading-sharding
-    name: Upgrade Sharded Database
-    parent:  mg-upgrading
+    name: Sharding
+    parent: mg-upgrading
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides

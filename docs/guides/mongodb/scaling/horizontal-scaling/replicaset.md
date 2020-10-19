@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: mg-horizontal-scaling-replicaset
     name: Replicaset
-    parent:  mg-horizontal-scaling
+    parent: mg-horizontal-scaling
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

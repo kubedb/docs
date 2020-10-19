@@ -1,10 +1,10 @@
 ---
-title: MongoDB Reconfigure Standalone Database
+title: Reconfigure Standalone MongoDB Database
 menu:
   docs_{{ .version }}:
     identifier: mg-reconfigure-standalone
-    name: Reconfigure Standalone
-    parent:  mg-reconfigure
+    name: Standalone
+    parent: mg-reconfigure
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

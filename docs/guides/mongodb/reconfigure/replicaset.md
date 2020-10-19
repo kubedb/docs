@@ -1,10 +1,10 @@
 ---
-title: MongoDB Reconfigure Replicaset
+title: Reconfigure MongoDB Replicaset
 menu:
   docs_{{ .version }}:
     identifier: mg-reconfigure-replicaset
-    name: Reconfigure Replicaset
-    parent:  mg-reconfigure
+    name: Replicaset
+    parent: mg-reconfigure
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides

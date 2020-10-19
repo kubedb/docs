@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: mg-volume-expansion-replicaset
     name: Replicaset
-    parent:  mg-volume-expansion
+    parent: mg-volume-expansion
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides

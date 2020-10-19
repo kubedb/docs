@@ -1,5 +1,5 @@
 ---
-title: MongoDB Reconfiguring Overview
+title: Reconfiguring MongoDB
 menu:
   docs_{{ .version }}:
     identifier: mg-reconfigure-overview

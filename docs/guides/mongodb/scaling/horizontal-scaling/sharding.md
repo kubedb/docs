@@ -3,9 +3,9 @@ title: Horizontal Scaling MongoDB Shard
 menu:
   docs_{{ .version }}:
     identifier: mg-horizontal-scaling-shard
-    name: Replicaset
-    parent:  mg-horizontal-scaling
-    weight: 20
+    name: Sharding
+    parent: mg-horizontal-scaling
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

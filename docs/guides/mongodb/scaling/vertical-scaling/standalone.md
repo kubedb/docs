@@ -1,10 +1,10 @@
 ---
-title: Vertical Scaling MongoDB Standalone
+title: Vertical Scaling Standalone MongoDB
 menu:
   docs_{{ .version }}:
     identifier: mg-vertical-scaling-standalone
     name: Standalone
-    parent:  mg-vertical-scaling
+    parent: mg-vertical-scaling
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

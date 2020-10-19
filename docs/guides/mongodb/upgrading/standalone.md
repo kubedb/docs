@@ -3,8 +3,8 @@ title: Upgrading MongoDB Standalone
 menu:
   docs_{{ .version }}:
     identifier: mg-upgrading-standalone
-    name: Upgrade Standalone Database
-    parent:  mg-upgrading
+    name: Standalone
+    parent: mg-upgrading
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

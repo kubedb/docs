@@ -3,8 +3,8 @@ title: Upgrading MongoDB Replicaset
 menu:
   docs_{{ .version }}:
     identifier: mg-upgrading-replicaset
-    name: Upgrade ReplicaSet Database
-    parent:  mg-upgrading
+    name: ReplicaSet
+    parent: mg-upgrading
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides

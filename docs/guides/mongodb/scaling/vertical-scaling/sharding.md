@@ -1,10 +1,10 @@
 ---
-title: Vertical Scaling MongoDB Sharded Database
+title: Vertical Scaling Sharded MongoDB Cluster
 menu:
   docs_{{ .version }}:
     identifier: mg-vertical-scaling-shard
-    name: Sharded Database
-    parent:  mg-vertical-scaling
+    name: Sharding
+    parent: mg-vertical-scaling
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides

@@ -1,10 +1,10 @@
 ---
-title: MongoDB Reconfigure Sharded Database
+title: Reconfigure MongoDB Sharded Cluster
 menu:
   docs_{{ .version }}:
     identifier: mg-reconfigure-shard
-    name: Reconfigure Shard
-    parent:  mg-reconfigure
+    name: Sharding
+    parent: mg-reconfigure
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
