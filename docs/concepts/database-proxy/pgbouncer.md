@@ -25,7 +25,7 @@ Like any official Kubernetes resource, a `PgBouncer` object has `TypeMeta`, `Obj
 Below is an example PgBouncer object.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PgBouncer
 metadata:
   name: pgbouncer-server

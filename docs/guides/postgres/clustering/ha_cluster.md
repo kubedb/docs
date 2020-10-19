@@ -28,7 +28,7 @@ A standby server that cannot be connected to until it is promoted to a *master* 
 The following is an example of a `Postgres` object which creates PostgreSQL cluster of three servers.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: warm-postgres
@@ -52,7 +52,7 @@ A standby server that can accept connections and serves read-only queries is cal
 The following `Postgres` object will create PostgreSQL cluster with *hot standby* servers.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: hot-postgres

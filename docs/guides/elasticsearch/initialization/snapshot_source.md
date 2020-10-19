@@ -50,7 +50,7 @@ You have to specify the Snapshot `name` and `namespace` in the `spec.init.snapsh
 Below is the YAML for Elasticsearch object that will be created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
   name: recovered-es

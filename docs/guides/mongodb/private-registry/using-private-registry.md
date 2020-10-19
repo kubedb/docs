@@ -111,7 +111,7 @@ While deploying `MongoDB` from private repository, you have to add `myregistryke
 Below is the MongoDB CRD object we will create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mgo-pvt-reg

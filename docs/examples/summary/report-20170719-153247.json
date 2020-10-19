@@ -1,6 +1,6 @@
 {
   "kind": "Postgres",
-  "apiVersion": "kubedb.com/v1alpha1",
+  "apiVersion": "kubedb.com/v1alpha2",
   "metadata": {
     "name": "p1",
     "namespace": "demo",

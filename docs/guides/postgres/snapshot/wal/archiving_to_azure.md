@@ -36,7 +36,7 @@ namespace/demo created
 For archiving, we need storage Secret, and storage backend information. Below is a Postgres object created with Continuous Archiving support to backup WAL files to Azure Storage.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: wal-postgres

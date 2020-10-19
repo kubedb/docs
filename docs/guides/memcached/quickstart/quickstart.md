@@ -57,7 +57,7 @@ NAME       VERSION   DB_IMAGE                    DEPRECATED   AGE
 KubeDB implements a `Memcached` CRD to define the specification of a Memcached server. Below is the `Memcached` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Memcached
 metadata:
   name: memcd-quickstart
@@ -141,7 +141,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get mc -n demo memcd-quickstart -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Memcached
 metadata:
   creationTimestamp: 2018-10-03T09:40:38Z
@@ -151,7 +151,7 @@ metadata:
   name: memcd-quickstart
   namespace: demo
   resourceVersion: "23592"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/memcacheds/memcd-quickstart
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/memcacheds/memcd-quickstart
   uid: 62b08ec3-c6f0-11e8-8ebc-0800275bbbee
 spec:
   podTemplate:
@@ -252,7 +252,7 @@ memcd-quickstart   Paused    2m
 
 ```yaml
 $ kubectl get drmn -n demo memcd-quickstart -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   creationTimestamp: 2018-10-03T09:49:16Z
@@ -264,7 +264,7 @@ metadata:
   name: memcd-quickstart
   namespace: demo
   resourceVersion: "24242"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/dormantdatabases/memcd-quickstart
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/dormantdatabases/memcd-quickstart
   uid: 97ad28ef-c6f1-11e8-8ebc-0800275bbbee
 spec:
   origin:
@@ -326,7 +326,7 @@ $ kubectl delete mc memcd-quickstart -n demo
 memcached "memcd-quickstart" deleted
 
 $ kubectl edit drmn -n demo memcd-quickstart
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   name: memcd-quickstart

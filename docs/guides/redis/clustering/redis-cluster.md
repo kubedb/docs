@@ -42,7 +42,7 @@ To deploy a Redis Cluster, specify `spec.mode` and `spec.cluster` fields in `Red
 The following is an example `Redis` object which creates a Redis cluster with three master nodes each of which has one replica node.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Redis
 metadata:
   name: redis-cluster
@@ -185,7 +185,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get rd -n demo redis-cluster -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Redis
 metadata:
   creationTimestamp: "2019-02-19T13:28:59Z"
@@ -195,7 +195,7 @@ metadata:
   name: redis-cluster
   namespace: demo
   resourceVersion: "569405"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/redises/redis-cluster
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/redises/redis-cluster
   uid: 509b50ba-344a-11e9-b1be-0800275426d2
 spec:
   cluster:
@@ -377,7 +377,7 @@ Clean what you created in this tutorial.
 
 ```yaml
 $ kubectl edit rd -n demo redis-cluster -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Redis
 metadata:
   name: redis-cluster

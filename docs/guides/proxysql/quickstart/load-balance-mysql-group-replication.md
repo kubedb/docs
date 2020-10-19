@@ -45,7 +45,7 @@ Let's deploy a sample MySQL Group Replication and insert some data into it.
 Below is the YAML of a sample `MySQL` object with group replication that we are going to create for this tutorial:
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: my-group
@@ -187,7 +187,7 @@ KubeDB has a CRD named `ProxySQL` that can identify the reads, writes and route 
 Let's create a ProxySQL object called `proxy-my-group` pointing to the previously created MySQL database. Below is the YAML of the ProxySQL object we are going to create,
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: ProxySQL
 metadata:
   name: proxy-my-group

@@ -42,7 +42,7 @@ To deploy a MongoDB Sharding, user have to specify `spec.replicaSet` option in `
 The following is an example of a `Mongodb` object which creates MongoDB Sharding of three members.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mongo-sh
@@ -180,7 +180,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get mg -n demo mongo-sh -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   creationTimestamp: "2019-04-29T09:13:56Z"
@@ -190,7 +190,7 @@ metadata:
   name: mongo-sh
   namespace: demo
   resourceVersion: "25825"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/mongodbs/mongo-sh
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mongo-sh
   uid: 1d83622c-6a5f-11e9-a871-080027a851ba
 spec:
   certificateSecret:
@@ -617,7 +617,7 @@ Now edit MongoDB `mongo-sh` to increase `spec.shardTopology.shard.shards` to 4 a
 
 ```console
 $ kubectl edit mg -n demo mongo-sh
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mongo-sh
@@ -830,7 +830,7 @@ mongo-sh   Paused   52s
 
 ```yaml
 $ kubectl get drmn -n demo mongo-sh -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   creationTimestamp: "2019-04-29T11:24:24Z"
@@ -842,7 +842,7 @@ metadata:
   name: mongo-sh
   namespace: demo
   resourceVersion: "35082"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/dormantdatabases/mongo-sh
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/dormantdatabases/mongo-sh
   uid: 579c2c2d-6a71-11e9-a871-080027a851ba
 spec:
   origin:
@@ -1079,7 +1079,7 @@ mongodb.kubedb.com "mongo-sh" deleted
 
 ```yaml
 $ kubectl edit drmn -n demo mongo-sh
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   name: mongo-sh

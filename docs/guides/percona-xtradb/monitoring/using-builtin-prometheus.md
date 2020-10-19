@@ -42,7 +42,7 @@ This tutorial will show you how to monitor PerconaXtraDB database using builtin 
 At first, let's deploy a `PerconaXtraDB` object with monitoring enabled. Below is the `PerconaXtraDB` object that we are going to create.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   name: px-builtin-prom

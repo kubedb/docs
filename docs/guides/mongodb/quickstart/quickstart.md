@@ -71,7 +71,7 @@ NAME       VERSION   DB_IMAGE                    DEPRECATED   AGE
 KubeDB implements a `MongoDB` CRD to define the specification of a MongoDB database. Below is the `MongoDB` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mgo-quickstart
@@ -199,7 +199,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get mg -n demo mgo-quickstart -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   creationTimestamp: "2019-04-30T09:55:13Z"
@@ -209,7 +209,7 @@ metadata:
   name: mgo-quickstart
   namespace: demo
   resourceVersion: "31337"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/mongodbs/mgo-quickstart
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mgo-quickstart
   uid: 0c5c22d6-6b2e-11e9-97a6-0800278b6754
 spec:
   databaseSecret:
@@ -348,7 +348,7 @@ mgo-quickstart   Paused    21s
 
 ```yaml
 $ kubectl get drmn -n demo mgo-quickstart -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   creationTimestamp: "2019-04-30T09:57:34Z"
@@ -360,7 +360,7 @@ metadata:
   name: mgo-quickstart
   namespace: demo
   resourceVersion: "31482"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/dormantdatabases/mgo-quickstart
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/dormantdatabases/mgo-quickstart
   uid: 60d472f1-6b2e-11e9-97a6-0800278b6754
 spec:
   origin:
@@ -450,7 +450,7 @@ You can wipe out a DormantDatabase while deleting the object by setting `spec.wi
 
 ```yaml
 $ kubectl edit drmn -n demo mgo-quickstart
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   name: mgo-quickstart

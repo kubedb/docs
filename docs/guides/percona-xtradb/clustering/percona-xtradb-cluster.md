@@ -42,7 +42,7 @@ To deploy a Percona XtraDB Cluster, specify `.spec.replicas` field in `PerconaXt
 The following is an example `PerconaXtraDB` object which creates a Percona XtraDB Cluster with three server (each of them are master that means each server accepts write unlike MySQL Group Replication).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   name: demo-cluster
@@ -81,7 +81,7 @@ Name:         demo-cluster
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
-API Version:  kubedb.com/v1alpha1
+API Version:  kubedb.com/v1alpha2
 Kind:         PerconaXtraDB
 Metadata:
   Creation Timestamp:  2019-12-12T14:05:04Z
@@ -89,7 +89,7 @@ Metadata:
     kubedb.com
   Generation:        2
   Resource Version:  9704
-  Self Link:         /apis/kubedb.com/v1alpha1/namespaces/demo/perconaxtradbs/demo-cluster
+  Self Link:         /apis/kubedb.com/v1alpha2/namespaces/demo/perconaxtradbs/demo-cluster
   UID:               1a128325-738d-406a-a130-c421a4970892
 Spec:
   Database Secret:
@@ -160,7 +160,7 @@ KubeDB operator sets the `.status.phase` to `Running` once the database is succe
 
 ```yaml
 $ kubectl get px -n demo demo-cluster -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   creationTimestamp: "2019-12-12T14:05:04Z"
@@ -170,7 +170,7 @@ metadata:
   name: demo-cluster
   namespace: demo
   resourceVersion: "9704"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/perconaxtradbs/demo-cluster
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/perconaxtradbs/demo-cluster
   uid: 1a128325-738d-406a-a130-c421a4970892
 spec:
   databaseSecret:

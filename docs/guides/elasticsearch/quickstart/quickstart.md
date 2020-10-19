@@ -94,7 +94,7 @@ KubeDB implements an Elasticsearch CRD to define the specification of an Elastic
 Below is the Elasticsearch object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
   name: quick-elasticsearch
@@ -148,7 +148,7 @@ Name:               quick-elasticsearch
 Namespace:          demo
 CreationTimestamp:  Fri, 28 Sep 2018 11:33:29 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha1","kind":"Elasticsearch","metadata":{"annotations":{},"name":"quick-elasticsearch","namespace":"demo"},"spec":{"doNot...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"Elasticsearch","metadata":{"annotations":{},"name":"quick-elasticsearch","namespace":"demo"},"spec":{"doNot...
 Status:             Running
 Replicas:           1  total
   StorageType:      Durable
@@ -464,7 +464,7 @@ $ kubectl get drmn -n demo quick-elasticsearch -o yaml
 ```
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
 metadata:
   creationTimestamp: 2018-09-28T08:56:15Z
@@ -476,14 +476,14 @@ metadata:
   name: quick-elasticsearch
   namespace: demo
   resourceVersion: "23969"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/dormantdatabases/quick-elasticsearch
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/dormantdatabases/quick-elasticsearch
   uid: 5b1a99dd-c2fc-11e8-aac4-8a5cc86ecf00
 spec:
   origin:
     metadata:
       annotations:
         kubectl.kubernetes.io/last-applied-configuration: |
-          {"apiVersion":"kubedb.com/v1alpha1","kind":"Elasticsearch","metadata":{"annotations":{},"name":"quick-elasticsearch","namespace":"demo"},"spec":{"terminationPolicy":true,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","version":7.3.2}}
+          {"apiVersion":"kubedb.com/v1alpha2","kind":"Elasticsearch","metadata":{"annotations":{},"name":"quick-elasticsearch","namespace":"demo"},"spec":{"terminationPolicy":true,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","version":7.3.2}}
       creationTimestamp: 2018-09-28T05:33:29Z
       name: quick-elasticsearch
       namespace: demo

@@ -96,7 +96,7 @@ issuer.cert-manager.io/mongo-ca-issuer created
 Below is the YAML for MongoDB Replicaset. Here, [`spec.sslMode`](/docs/concepts/databases/mongodb.md#specsslMode) specifies `sslMode` for `replicaset` (which is `requireSSL`) and [`spec.clusterAuthMode`](/docs/concepts/databases/mongodb.md#specclusterAuthMode) provides `clusterAuthMode` for mongodb replicaset nodes (which is `x509`).
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mgo-rs-tls

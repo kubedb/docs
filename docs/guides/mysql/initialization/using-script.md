@@ -83,7 +83,7 @@ configmap/my-init-script created
 Below is the `MySQL` object created in this tutorial.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: mysql-init-script
@@ -120,7 +120,7 @@ Name:               mysql-init-script
 Namespace:          demo
 CreationTimestamp:  Thu, 27 Aug 2020 12:42:04 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"scriptS...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"scriptS...
 Replicas:           1  total
 Status:             Running
 StorageType:        Durable
@@ -203,7 +203,7 @@ Init:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"scriptSource":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.21"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"scriptSource":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.21"}}
 
     Creation Timestamp:  2020-08-27T06:43:15Z
     Labels:
@@ -260,12 +260,12 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 
 ```yaml
 $ kubectl get my -n demo mysql-init-script -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha1","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"scriptSource":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.21"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"mysql-init-script","namespace":"demo"},"spec":{"init":{"scriptSource":{"configMap":{"name":"my-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"8.0.21"}}
   creationTimestamp: "2020-08-27T06:42:04Z"
   finalizers:
   - kubedb.com
@@ -275,7 +275,7 @@ metadata:
   name: mysql-init-script
   namespace: demo
   resourceVersion: "11901"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/mysqls/mysql-init-script
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mysqls/mysql-init-script
   uid: 2903f636-09cb-4299-af5d-c7a2e799ec61
 spec:
   databaseSecret:

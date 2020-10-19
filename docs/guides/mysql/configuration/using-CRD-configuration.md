@@ -63,7 +63,7 @@ Below is the YAML for the MySQL created in this example. Here, [`spec.podTemplat
 In this tutorial, an initial database `myDB` will be created by providing `env` `MYSQL_DATABASE` while the server character set will be set to `utf8mb4` by adding extra `args`. Note that, `character-set-server` in `MySQL 5.7.31` is `latin1`.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: mysql-misc-config

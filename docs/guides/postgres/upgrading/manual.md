@@ -71,7 +71,7 @@ kubedb-operator	1       	Fri Feb  8 11:18:46 2019	DEPLOYED	kubedb-0.9.0        	
 Also a sample Postgres database (with scheduled backups) compatible with kubedb-0.9.0 to examine successful upgrade. Read the guide [here](https://kubedb.com/docs/0.9.0/guides/postgres/snapshot/scheduled_backup/#create-postgres-with-backupschedule) to learn about scheduled backup in details.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: scheduled-pg
@@ -441,7 +441,7 @@ See the changed object (defaulted).
 
 ```yaml
 $ kubectl get pg -n demo scheduled-pg -o yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   creationTimestamp: "2019-02-08T05:24:08Z"
@@ -451,7 +451,7 @@ metadata:
   name: scheduled-pg
   namespace: demo
   resourceVersion: "18594"
-  selfLink: /apis/kubedb.com/v1alpha1/namespaces/demo/postgreses/scheduled-pg
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/postgreses/scheduled-pg
   uid: c2a335ed-2b61-11e9-884f-080027973433
 spec:
   backupSchedule:

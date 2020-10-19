@@ -59,7 +59,7 @@ To learn how to configure other storage destinations for Snapshots, please [visi
 Below is the Postgres object with BackupSchedule field.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: scheduled-pg
@@ -156,7 +156,7 @@ Some common customization examples are shown below:
 Backup jobs use temporary storage to hold `dump` files before it can be uploaded to cloud backend. By default, KubeDB reads storage specification from `spec.storage` section of database crd and creates a PVC with similar specification for backup job. However, if you want to specify a custom PVC template, you can do it through `spec.backupSchedule.podVolumeClaimSpec` field. This is particularly helpful when you want to use different `storageclass` for backup jobs and the database.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: scheduled-pg
@@ -190,7 +190,7 @@ spec:
 You can specify resources for backup jobs through `spec.backupSchedule.podTemplate.spec.resources` field.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: scheduled-pg
@@ -226,7 +226,7 @@ spec:
 If you need to add some annotations to backup jobs, you can specify those in `spec.backupSchedule.podTemplate.controller.annotations`. You can also specify annotations for the pod created by backup jobs in `spec.backupSchedule.podTemplate.annotations` field.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: scheduled-pg
@@ -259,7 +259,7 @@ spec:
 KubeDB allows users to pass extra arguments for backup jobs. You can provide these arguments via `spec.backupSchedule.podTemplate.spec.args` field of a Snapshot crd.
 
 ```yaml
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: scheduled-pg
