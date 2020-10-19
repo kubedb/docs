@@ -55,7 +55,7 @@ RUN set -ex \
 RUN sed -r -i "s/[#]*\s*(shared_preload_libraries)\s*=\s*'(.*)'/\1 = 'timescaledb,\2'/;s/,'/'/" /scripts/primary/postgresql.conf
 ```
 
-From there, we would define a PostgresVersion that contains this new image. Lets say we tagged it as `myco/postgres:timescale-0.9.1`
+From there, we would define a PostgresVersion that contains this new image. Let's say we tagged it as `myco/postgres:timescale-0.9.1`
 
 ```yaml
 apiVersion: catalog.kubedb.com/v1alpha1

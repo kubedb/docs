@@ -1,0 +1,17 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mops-vscale-standalone
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: mg-standalone
+  verticalScaling:
+    standalone:
+      requests:
+        memory: "150Mi"
+        cpu: "0.1"
+      limits:
+        memory: "250Mi"
+        cpu: "0.2"

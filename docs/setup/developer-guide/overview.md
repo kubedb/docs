@@ -103,7 +103,7 @@ $ cd $GOPATH/src/github.com/kubedb/operator
 # deploy KubeDB resources and run KubeDB operator in localhost
 $ ./hack/deploy/setup.sh --minikube --run
 
-# deploy Kubedb Catalog, *KubeDB operator will run in a message loop, you should not stop it immediately, To install Kubedb Catalog you can just start another terminal.* 
+# deploy KubeDB Catalog, *KubeDB operator will run in a message loop, you should not stop it immediately, To install KubeDB Catalog you can just start another terminal.* 
 $ ./hack/deploy/install-catalog.sh
 ```
 

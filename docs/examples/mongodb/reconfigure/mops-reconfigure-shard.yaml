@@ -1,0 +1,19 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mops-reconfigure-shard
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: mg-sharding
+  customConfig:
+    shard:
+      configMap:
+        name: new-custom-config
+    configServer:
+      configMap:
+        name: new-custom-config
+    mongos:
+      configMap:
+        name: new-custom-config

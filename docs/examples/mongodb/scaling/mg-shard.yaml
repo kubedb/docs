@@ -1,15 +1,13 @@
 apiVersion: kubedb.com/v1alpha1
 kind: MongoDB
 metadata:
-  name: mongo-sh-tls
+  name: mg-sharding
   namespace: demo
 spec:
-  version: 3.6-v4
-  sslMode: requireSSL
-  clusterAuthMode: x509
+  version: 3.6.8-v1
   shardTopology:
     configServer:
-      replicas: 3
+      replicas: 2
       storage:
         resources:
           requests:
@@ -17,17 +15,11 @@ spec:
         storageClassName: standard
     mongos:
       replicas: 2
-      strategy:
-        type: RollingUpdate
     shard:
-      replicas: 3
+      replicas: 2
       shards: 3
       storage:
         resources:
           requests:
             storage: 1Gi
         storageClassName: standard
-  updateStrategy:
-    type: RollingUpdate
-  storageType: Durable
-  terminationPolicy: WipeOut
