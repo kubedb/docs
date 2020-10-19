@@ -42,7 +42,7 @@ spec:
       requests:
         storage: 1Gi
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       namespace: demo
       labels:
@@ -129,10 +129,10 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 ### spec.monitor
 
-Redis managed by KubeDB can be monitored with builtin-Prometheus and CoreOS-Prometheus operator out-of-the-box. To learn more,
+Redis managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
 
 - [Monitor Redis with builtin Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md)
-- [Monitor Redis with CoreOS Prometheus operator](/docs/guides/redis/monitoring/using-coreos-prometheus-operator.md)
+- [Monitor Redis with Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md)
 
 ### spec.configSource
 

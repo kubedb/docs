@@ -52,7 +52,7 @@ spec:
   userListSecretRef:
     name: db-user-pass
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       namespace: demo
       labels:
@@ -167,10 +167,10 @@ UserList field is used to specify a secret that contains the list of authorised 
 
 ### spec.monitor
 
-PgBouncer managed by KubeDB can be monitored with builtin-Prometheus and CoreOS-Prometheus operator out-of-the-box. To learn more,
+PgBouncer managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
 
 - [Monitor PgBouncer with builtin Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md)
-- [Monitor PgBouncer with CoreOS Prometheus operator](/docs/guides/pgbouncer/monitoring/using-coreos-prometheus-operator.md)
+- [Monitor PgBouncer with Prometheus operator](/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md)
 
 ### spec.podTemplate
 

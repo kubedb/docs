@@ -14,7 +14,7 @@ aliases:
 
 # Monitoring KubeDB Operator
 
-KubeDB has native support for monitoring via [Prometheus](https://prometheus.io/). You can use builtin [Prometheus](https://github.com/prometheus/prometheus) scraper or [CoreOS Prometheus Operator](https://github.com/coreos/prometheus-operator) to monitor KubeDB supported databases as well as KubeDB operator itself. This tutorial will show you what metrics KubeDB operator exports and how to enable monitoring for the operator itself.
+KubeDB has native support for monitoring via [Prometheus](https://prometheus.io/). You can use builtin [Prometheus](https://github.com/prometheus/prometheus) scraper or [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) to monitor KubeDB supported databases as well as KubeDB operator itself. This tutorial will show you what metrics KubeDB operator exports and how to enable monitoring for the operator itself.
 
 ## Overview
 
@@ -93,11 +93,11 @@ You can enable operator monitoring through some flags while installing or upgrad
 |       Script Flag        |            Helm Values             |                     Acceptable Values                      |                                                         Default                                                          |                                                                                    Uses                                                                                    |
 | ------------------------ | ---------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--monitoring-enable`    | `monitoring.enabled`               | `true` or `false`                                          | `false`                                                                                                                  | Specify whether to monitor KubeDB operator.                                                                                                                                |
-| `--monitoring-agent`     | `monitoring.agent`                 | `prometheus.io/builtin` or `prometheus.io/coreos-operator` | `none`                                                                                                                   | Specify which monitoring agent to use for monitoring KubeDB operator.                                                                                                      |
+| `--monitoring-agent`     | `monitoring.agent`                 | `prometheus.io/builtin` or `prometheus.io/operator` | `none`                                                                                                                   | Specify which monitoring agent to use for monitoring KubeDB operator.                                                                                                      |
 | `--prometheus-namespace` | `monitoring.prometheus.namespace`  | any namespace                                              | same namespace as KubeDB operator                                                                                        | Specify the namespace where Prometheus server is running or will be deployed                                                                                               |
-| `--servicemonitor-label` | `monitoring.serviceMonitor.labels` | any label                                                  | For Helm installation, `app: <generated app name>` and `release: <release name>`. For script installation, `app: kubedb` | Specify the labels for ServiceMonitor. Prometheus crd will select ServiceMonitor using these labels. Only usable when monitoring agent is `prometheus.io/coreos-operator`. |
+| `--servicemonitor-label` | `monitoring.serviceMonitor.labels` | any label                                                  | For Helm installation, `app: <generated app name>` and `release: <release name>`. For script installation, `app: kubedb` | Specify the labels for ServiceMonitor. Prometheus crd will select ServiceMonitor using these labels. Only usable when monitoring agent is `prometheus.io/operator`. |
 
-You have to provides these flags while installing or upgrading or updating KubeDB operator. Here, are examples for both script and Helm installation process are given which enable monitoring with `prometheus.io/coreos-operator` Prometheuse server for `operator` metrics.
+You have to provides these flags while installing or upgrading or updating KubeDB operator. Here, are examples for both script and Helm installation process are given which enable monitoring with `prometheus.io/operator` Prometheuse server for `operator` metrics.
 
 **Helm 3:**
 
@@ -105,7 +105,7 @@ You have to provides these flags while installing or upgrading or updating KubeD
 $ helm install kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/coreos-operator \
+  --set monitoring.agent=prometheus.io/operator \
   --set monitoring.prometheus.namespace=monitoring \
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus
 ```
@@ -116,7 +116,7 @@ $ helm install kubedb-operator appscode/kubedb --version {{< param "info.version
 $ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/coreos-operator \
+  --set monitoring.agent=prometheus.io/operator \
   --set monitoring.prometheus.namespace=monitoring \
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus
 ```
@@ -127,7 +127,7 @@ $ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.
 $ helm template kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/coreos-operator \
+  --set monitoring.agent=prometheus.io/operator \
   --set monitoring.prometheus.namespace=monitoring \
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus | kubectl apply -f -
 ```
@@ -135,4 +135,4 @@ $ helm template kubedb-operator appscode/kubedb --version {{< param "info.versio
 ## Next Steps
 
 - Learn how to monitor KubeDB operator using built-in Prometheus from [here](/docs/setup/monitoring/builtin.md).
-- Learn how to monitor KubeDB operator using CoreOS Prometheus operator from [here](/docs/setup/monitoring/coreos.md).
+- Learn how to monitor KubeDB operator using Prometheus operator from [here](/docs/setup/monitoring/coreos.md).

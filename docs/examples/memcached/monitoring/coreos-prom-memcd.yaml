@@ -17,7 +17,7 @@ spec:
           cpu: 250m
           memory: 64Mi
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       namespace: monitoring
       labels:

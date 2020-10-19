@@ -2,7 +2,7 @@
 title: Monitor PgBouncer using Prometheus Operator
 menu:
   docs_{{ .version }}:
-    identifier: pb-using-coreos-prometheus-operator-monitoring
+    identifier: pb-using-prometheus-operator-monitoring
     name: Prometheus Operator
     parent: pb-monitoring-pgbouncer
     weight: 15
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
-# Monitoring PgBouncer using CoreOS Prometheus Operator
+# Monitoring PgBouncer using Prometheus operator
 
-CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use CoreOS Prometheus operator to monitor PgBouncer deployed with KubeDB.
+[Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use Prometheus operator to monitor PgBouncer deployed with KubeDB.
 
 ## Before You Begin
 
@@ -29,9 +29,9 @@ CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) prov
   namespace/monitoring created
   ```
 
-- We need a CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/coreos-operator/README.md).
+- We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
 
-- If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/coreos-operator/README.md#deploy-prometheus-server).
+- If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md#deploy-prometheus-server).
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -39,7 +39,7 @@ CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) prov
 
 We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd. We are going to provide these labels in `spec.monitor.prometheus.labels` field of PgBouncer crd so that KubeDB creates `ServiceMonitor` object accordingly.
 
-As a prerequisite, we need to have CoreOS prometheus-operator running, and a prometheus server created to monitor PgBouncer exporter. In this tutorial we are going to use a prometheus server named `promethus` in `monitoring` namespace. You can use the following to install `CoreOS Prometheus Operator`.
+As a prerequisite, we need to have Prometheus operator running, and a prometheus server created to monitor PgBouncer exporter. In this tutorial we are going to use a prometheus server named `promethus` in `monitoring` namespace. You can use the following to install `Prometheus operator`.
 
 ```console
 $ kubectl apply -f https://raw.githubusercontent.com/appscode/third-party-tools/master/monitoring/prometheus/coreos-operator/artifacts/operator.yaml
@@ -100,7 +100,7 @@ Notice the `spec.serviceMonitorSelector` section. Here, `k8s-app: prometheus` la
 
 ## Deploy PgBouncer with Monitoring Enabled
 
-We will need a PgBouncer with monitoring enabled. This PgBouncer needs to be connected to PostgreSQL database(s). You can get a PgBouncer setup with active connection(s) to PostgreSQL by following the [quickstart](/docs/guides/pgbouncer/quickstart/quickstart.md) guide. PgBouncer object in that guide didn't come with monitoring. So we are going to enable monitoring in it. Below is the PgBouncer object that contains CoreOS prometheus operator based monitoring:
+We will need a PgBouncer with monitoring enabled. This PgBouncer needs to be connected to PostgreSQL database(s). You can get a PgBouncer setup with active connection(s) to PostgreSQL by following the [quickstart](/docs/guides/pgbouncer/quickstart/quickstart.md) guide. PgBouncer object in that guide didn't come with monitoring. So we are going to enable monitoring in it. Below is the PgBouncer object that contains Prometheus operator based monitoring:
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -125,7 +125,7 @@ spec:
   userListSecretRef:
     name: db-user-pass
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       namespace: monitoring
       labels:
@@ -135,7 +135,7 @@ spec:
 
 Here,
 
-- `monitor.agent:  prometheus.io/coreos-operator` indicates that we are going to monitor this server using CoreOS Prometheus Operator.
+- `monitor.agent:  prometheus.io/operator` indicates that we are going to monitor this server using Prometheus operator.
 - `monitor.prometheus.namespace: monitoring` specifies that KubeDB should create `ServiceMonitor` in `monitoring` namespace.
 
 - `monitor.prometheus.labels` specifies that KubeDB should create `ServiceMonitor` with these labels.
@@ -177,7 +177,7 @@ Namespace:         demo
 Labels:            kubedb.com/kind=PgBouncer
                    kubedb.com/name=pgbouncer-server
                    kubedb.com/role=stats
-Annotations:       monitoring.appscode.com/agent:prometheus.io/coreos-operator
+Annotations:       monitoring.appscode.com/agent:prometheus.io/operator
 Selector:          kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-server
 Type:              ClusterIP
 IP:                10.101.214.117

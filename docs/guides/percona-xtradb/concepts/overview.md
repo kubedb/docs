@@ -42,7 +42,7 @@ spec:
       requests:
         storage: 1Gi
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       namespace: demo
       labels:
@@ -204,10 +204,10 @@ For more details tutorial on how to initialize from snapshot, please visit [here
 
 ### .spec.monitor
 
-PerconaXtraDB managed by KubeDB can be monitored with builtin-Prometheus and CoreOS-Prometheus operator out-of-the-box. To learn more,
+PerconaXtraDB managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
 
 - [Monitor PerconaXtraDB with builtin Prometheus](/docs/guides/percona-xtradb/monitoring/using-builtin-prometheus.md)
-- [Monitor PerconaXtraDB with CoreOS Prometheus operator](/docs/guides/percona-xtradb/monitoring/using-coreos-prometheus-operator.md)
+- [Monitor PerconaXtraDB with Prometheus operator](/docs/guides/percona-xtradb/monitoring/using-prometheus-operator.md)
 
 ### .spec.configSource
 

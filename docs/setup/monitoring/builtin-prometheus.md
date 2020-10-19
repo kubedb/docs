@@ -438,4 +438,4 @@ To uninstall KubeDB follow this [guide](/docs/setup/operator/uninstall.md).
 ## Next Steps
 
 - Learn what metrics KubeDB operator exports from [here](/docs/setup/monitoring/overview.md).
-- Learn how to monitor KubeDB operator using CoreOS Prometheus operator from [here](/docs/setup/monitoring/coreos.md).
+- Learn how to monitor KubeDB operator using Prometheus operator from [here](/docs/setup/monitoring/coreos.md).

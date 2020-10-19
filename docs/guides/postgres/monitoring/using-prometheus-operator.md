@@ -2,7 +2,7 @@
 title: Monitor PostgreSQL using Prometheus Operator
 menu:
   docs_{{ .version }}:
-    identifier: pg-using-coreos-prometheus-operator-monitoring
+    identifier: pg-using-prometheus-operator-monitoring
     name: Prometheus Operator
     parent: pg-monitoring-postgres
     weight: 15
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
-# Monitoring PostgreSQL Using CoreOS Prometheus Operator
+# Monitoring PostgreSQL Using Prometheus operator
 
-CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use CoreOS Prometheus operator to monitor PostgreSQL database deployed with KubeDB.
+[Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use Prometheus operator to monitor PostgreSQL database deployed with KubeDB.
 
 ## Before You Begin
 
@@ -32,9 +32,9 @@ CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) prov
   namespace/demo created
   ```
 
-- We need a CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/coreos-operator/README.md).
+- We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
 
-- If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/coreos-operator/README.md#deploy-prometheus-server).
+- If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md#deploy-prometheus-server).
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -105,7 +105,7 @@ spec:
       requests:
         storage: 1Gi
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       namespace: monitoring
       labels:
@@ -115,7 +115,7 @@ spec:
 
 Here,
 
-- `monitor.agent:  prometheus.io/coreos-operator` indicates that we are going to monitor this server using CoreOS prometheus operator.
+- `monitor.agent:  prometheus.io/operator` indicates that we are going to monitor this server using Prometheus operator.
 - `monitor.prometheus.namespace: monitoring` specifies that KubeDB should create `ServiceMonitor` in `monitoring` namespace.
 
 - `monitor.prometheus.labels` specifies that KubeDB should create `ServiceMonitor` with these labels.
@@ -157,7 +157,7 @@ Name:              coreos-prom-postgres-stats
 Namespace:         demo
 Labels:            kubedb.com/kind=Postgres
                    kubedb.com/name=coreos-prom-postgres
-Annotations:       monitoring.appscode.com/agent: prometheus.io/coreos-operator
+Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
 Selector:          kubedb.com/kind=Postgres,kubedb.com/name=coreos-prom-postgres
 Type:              ClusterIP
 IP:                10.110.218.172

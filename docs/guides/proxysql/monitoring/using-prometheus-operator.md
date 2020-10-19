@@ -2,7 +2,7 @@
 title: Monitor ProxySQL using Prometheus Operator
 menu:
   docs_{{ .version }}:
-    identifier: monitor-proxysql-using-coreos-prometheus-operator
+    identifier: monitor-proxysql-using-prometheus-operator
     name: Prometheus Operator
     parent: proxysql-monitoring
     weight: 15
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
-# Monitoring ProxySQL Using CoreOS Prometheus Operator
+# Monitoring ProxySQL Using Prometheus operator
 
-CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) provides simple and Kubernetes native ways to deploy and configure the Prometheus server. This tutorial will show you how to use the CoreOS Prometheus operator to monitor ProxySQL deployed with KubeDB.
+[Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native ways to deploy and configure the Prometheus server. This tutorial will show you how to use the Prometheus operator to monitor ProxySQL deployed with KubeDB.
 
 ## Before You Begin
 
@@ -34,9 +34,9 @@ CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) prov
   namespace/demo created
   ```
 
-- We need a CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/coreos-operator/README.md).
+- We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
 
-- If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/coreos-operator/README.md#deploy-prometheus-server).
+- If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md#deploy-prometheus-server).
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/proxysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/proxysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -159,7 +159,7 @@ spec:
   updateStrategy:
     type: RollingUpdate
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       port: 42004
       namespace: monitoring
@@ -170,7 +170,7 @@ spec:
 
 Here,
 
-- `.spec.monitor.agent: prometheus.io/coreos-operator` indicates that we are going to monitor this server using the CoreOS Prometheus operator.
+- `.spec.monitor.agent: prometheus.io/operator` indicates that we are going to monitor this server using the Prometheus operator.
 - `.spec.monitor.prometheus.port` specifies the port at which ProxySQL exporter will serve the metrics and from this port, the Prometheus server collects them.
 - `.spec.monitor.prometheus.namespace: monitoring` specifies that KubeDB should create `ServiceMonitor` in `monitoring` namespace.
 - `.spec.monitor.prometheus.labels` specifies that KubeDB should create `ServiceMonitor` with these labels.
@@ -210,7 +210,7 @@ Labels:            kubedb.com/kind=ProxySQL
                    kubedb.com/role=stats
                    proxysql.kubedb.com/load-balance=GroupReplication
                    proxysql.kubedb.com/name=coreos-prom-proxysql
-Annotations:       monitoring.appscode.com/agent: prometheus.io/coreos-operator
+Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
 Selector:          kubedb.com/kind=ProxySQL,proxysql.kubedb.com/load-balance=GroupReplication,proxysql.kubedb.com/name=coreos-prom-proxysql
 Type:              ClusterIP
 IP:                10.111.242.54

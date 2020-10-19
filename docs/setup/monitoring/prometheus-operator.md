@@ -1,5 +1,5 @@
 ---
-title: Monitoring KubeDB Operator Using CoreOS Prometheus Operator
+title: Monitoring KubeDB Operator Using Prometheus operator
 menu:
   docs_{{ .version }}:
     identifier: operator-monitoring-coreos
@@ -12,9 +12,9 @@ aliases:
   - /docs/{{ .version }}/setup/operator-monitoring/
 ---
 
-# Monitoring KubeDB Operator Using CoreOS Prometheus Operator
+# Monitoring KubeDB Operator Using Prometheus operator
 
-CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use CoreOS Prometheus operator for monitoring KubeDB operator.
+[Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use Prometheus operator for monitoring KubeDB operator.
 
 ## Before You Begin
 
@@ -27,11 +27,11 @@ CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) prov
   namespace/monitoring created
   ```
 
-- We need a CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/coreos-operator/README.md).
+- We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
 
 ## Enable Monitoring in KubeDB operator
 
-Enable Prometheus monitoring using `prometheus.io/coreos-operator` agent while installing KubeDB operator. To know details about how to enable monitoring see [here](/docs/setup/monitoring/overview.md#how-to-enable-monitoring).
+Enable Prometheus monitoring using `prometheus.io/operator` agent while installing KubeDB operator. To know details about how to enable monitoring see [here](/docs/setup/monitoring/overview.md#how-to-enable-monitoring).
 
 Let's install KubeDB operator with monitoring enabled.
 
@@ -42,7 +42,7 @@ $ helm install kubedb-operator appscode/kubedb --version {{< param "info.version
   --namespace kube-system \
   --no-hooks \
   --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/coreos-operator \
+  --set monitoring.agent=prometheus.io/operator \
   --set monitoring.prometheus.namespace=monitoring \
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus
 ```
@@ -53,7 +53,7 @@ $ helm install kubedb-operator appscode/kubedb --version {{< param "info.version
 $ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/coreos-operator \
+  --set monitoring.agent=prometheus.io/operator \
   --set monitoring.prometheus.namespace=monitoring \
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus
 ```
@@ -65,7 +65,7 @@ $ helm template kubedb-operator appscode/kubedb --version {{< param "info.versio
   --namespace kube-system \
   --no-hooks \
   --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/coreos-operator \
+  --set monitoring.agent=prometheus.io/operator \
   --set monitoring.prometheus.namespace=monitoring \
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus | kubectl apply -f -
 ```
@@ -120,7 +120,7 @@ NAME                             TYPE                DATA   AGE
 kubedb-operator-apiserver-cert   kubernetes.io/tls   2      40m
 ```
 
-We are going to specify this secret in [Prometheus](https://github.com/coreos/prometheus-operator/blob/master/Documentation/design.md#prometheus) crd specification. CoreOS Prometheus will mount this secret in `/etc/prometheus/secret/kubedb-operator-apiserver-cert` directory of respective Prometheus server pod.
+We are going to specify this secret in [Prometheus](https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/design.md#prometheus) crd specification. Prometheus operator will mount this secret in `/etc/prometheus/secret/kubedb-operator-apiserver-cert` directory of respective Prometheus server pod.
 
 Here, `tlsConfig.caFile` indicates the certificate to use for TLS secured connection and `tlsConfig.serverName` is used to verify hostname for which this certificate is valid.
 
@@ -153,7 +153,7 @@ secrets:
 
 ### Deploy New Prometheus Server
 
-If you don't have any existing Prometheus server running, you have to create a Prometheus crd. CoreOS prometheus operator will deploy respective Prometheus server automatically.
+If you don't have any existing Prometheus server running, you have to create a Prometheus crd. Prometheus operator will deploy respective Prometheus server automatically.
 
 **Create RBAC:**
 
@@ -203,7 +203,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 prometheus.monitoring.coreos.com/prometheus created
 ```
 
-CoreOS prometheus operator watches for `Prometheus` crd. Once a `Prometheus` crd is created, it generates respective configuration and creates a `StatefulSet` to run Prometheus server.
+Prometheus operator watches for `Prometheus` crd. Once a `Prometheus` crd is created, it generates respective configuration and creates a `StatefulSet` to run Prometheus server.
 
 Let's check `StatefulSet` has been created,
 

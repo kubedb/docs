@@ -162,7 +162,7 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Monitor your Redis server with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/redis/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your Redis server with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
 - Monitor your Redis server with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md).
 - Detail concepts of [Redis object](/docs/concepts/databases/redis.md).
 - Detail concepts of [RedisVersion object](/docs/concepts/catalog/redis.md).

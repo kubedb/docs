@@ -355,6 +355,6 @@ kubectl delete ns monitoring
 
 ## Next Steps
 
-- Monitor your MySQL database with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/mysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MySQL database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MySQL with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

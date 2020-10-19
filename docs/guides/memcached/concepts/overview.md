@@ -94,10 +94,10 @@ KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are 
 
 ### spec.monitor
 
-Memcached managed by KubeDB can be monitored with builtin-Prometheus and CoreOS-Prometheus operator out-of-the-box. To learn more,
+Memcached managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
 
 - [Monitor Memcached with builtin Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md)
-- [Monitor Memcached with CoreOS Prometheus operator](/docs/guides/memcached/monitoring/using-coreos-prometheus-operator.md)
+- [Monitor Memcached with Prometheus operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md)
 
 ### spec.configSource
 

@@ -50,7 +50,7 @@ spec:
       configMap:
         name: mg-init-script
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       namespace: demo
       labels:
@@ -211,10 +211,10 @@ In the above example, KubeDB operator will launch a Job to execute all js script
 
 ### spec.monitor
 
-MySQL managed by KubeDB can be monitored with builtin-Prometheus and CoreOS-Prometheus operator out-of-the-box. To learn more,
+MySQL managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
 
 - [Monitor MySQL with builtin Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md)
-- [Monitor MySQL with CoreOS Prometheus operator](/docs/guides/mysql/monitoring/using-coreos-prometheus-operator.md)
+- [Monitor MySQL with Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md)
 
 ### spec.requireSSL
 

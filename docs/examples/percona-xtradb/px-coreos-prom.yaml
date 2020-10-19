@@ -18,7 +18,7 @@ spec:
     type: "RollingUpdate"
   terminationPolicy: WipeOut
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       namespace: monitoring
       labels:

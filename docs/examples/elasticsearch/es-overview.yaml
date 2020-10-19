@@ -30,7 +30,7 @@ spec:
       bucket: kubedb-qa
       prefix: demo
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       namespace: demo
       labels:

@@ -65,7 +65,7 @@ spec:
       bucket: kubedb-qa
       prefix: demo
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       namespace: demo
       labels:
@@ -367,10 +367,10 @@ You can also specify a template for pod of backup job through `spec.backupSchedu
 
 ### spec.monitor
 
-PostgreSQL managed by KubeDB can be monitored with builtin-Prometheus and CoreOS-Prometheus operator out-of-the-box. To learn more,
+PostgreSQL managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
 
 - [Monitor PostgreSQL with builtin Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md)
-- [Monitor PostgreSQL with CoreOS Prometheus operator](/docs/guides/postgres/monitoring/using-coreos-prometheus-operator.md)
+- [Monitor PostgreSQL with Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md)
 
 ### spec.configSource
 

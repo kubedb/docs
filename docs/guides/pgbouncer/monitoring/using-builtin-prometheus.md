@@ -366,6 +366,6 @@ $ kubectl delete ns monitoring
 ```
 
 ## Next Steps
-- Monitor your PgBouncer with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/pgbouncer/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PgBouncer with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/pgbouncer/private-registry/using-private-registry.md) to deploy PgBouncer with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

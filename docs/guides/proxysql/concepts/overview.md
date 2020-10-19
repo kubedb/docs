@@ -41,7 +41,7 @@ spec:
   proxysqlSecret:
     secretName: demo-proxysql-for-mysql-auth
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       namespace: demo
       labels:
@@ -139,10 +139,10 @@ type: Opaque
 
 ### .spec.monitor
 
-ProxySQL managed by KubeDB can be monitored with builtin-Prometheus and CoreOS-Prometheus operator out-of-the-box. To learn more,
+ProxySQL managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
 
 - [Monitor ProxySQL with builtin Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md)
-- [Monitor ProxySQL with CoreOS Prometheus operator](/docs/guides/proxysql/monitoring/using-coreos-prometheus-operator.md)
+- [Monitor ProxySQL with Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md)
 
 ### .spec.configSource
 

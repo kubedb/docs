@@ -2,7 +2,7 @@
 title: Monitor MySQL using Prometheus Operator
 menu:
   docs_{{ .version }}:
-    identifier: my-using-coreos-prometheus-operator-monitoring
+    identifier: my-using-prometheus-operator-monitoring
     name: Prometheus Operator
     parent: my-monitoring-mysql
     weight: 10
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/concepts/README.md).
 
-# Monitoring MySQL Using CoreOS Prometheus Operator
+# Monitoring MySQL Using Prometheus operator
 
-CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use CoreOS Prometheus operator to monitor MySQL database deployed with KubeDB.
+[Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use Prometheus operator to monitor MySQL database deployed with KubeDB.
 
 ## Before You Begin
 
@@ -29,9 +29,9 @@ CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) prov
   namespace/demo created
   ```
 
-- We need a CoreOS [prometheus-operator](https://github.com/coreos/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/coreos-operator/README.md).
+- We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
 
-- If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/coreos-operator/README.md#deploy-prometheus-server).
+- If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md#deploy-prometheus-server).
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -121,7 +121,7 @@ spec:
       requests:
         storage: 1Gi
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       labels:
         k8s-app: prometheus
@@ -130,7 +130,7 @@ spec:
 
 Here,
 
-- `monitor.agent:  prometheus.io/coreos-operator` indicates that we are going to monitor this server using CoreOS prometheus operator.
+- `monitor.agent:  prometheus.io/operator` indicates that we are going to monitor this server using Prometheus operator.
 
 - `monitor.prometheus.labels` specifies that KubeDB should create `ServiceMonitor` with these labels.
 
@@ -174,7 +174,7 @@ Namespace:         demo
 Labels:            kubedb.com/kind=MySQL
                    kubedb.com/name=coreos-prom-mysql
                    kubedb.com/role=stats
-Annotations:       monitoring.appscode.com/agent: prometheus.io/coreos-operator
+Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
 Selector:          kubedb.com/kind=MySQL,kubedb.com/name=coreos-prom-mysql
 Type:              ClusterIP
 IP:                10.106.236.14

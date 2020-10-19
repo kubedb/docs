@@ -169,7 +169,7 @@ kubectl delete ns demo
 ## Next Steps
 
 - Initialize [MySQL with Script](/docs/guides/mysql/initialization/using-script.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
 - Detail concepts of [MySQL object](/docs/concepts/databases/mysql.md).
 - Detail concepts of [MySQLVersion object](/docs/concepts/catalog/mysql.md).

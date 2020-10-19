@@ -20,7 +20,7 @@ spec:
   userListSecretRef:
     name: db-user-pass
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       namespace: monitoring
       labels:

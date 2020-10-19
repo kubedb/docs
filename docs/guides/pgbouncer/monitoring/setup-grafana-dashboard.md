@@ -24,7 +24,7 @@ This tutorial will show you how to import our dashboard on Grafana to monitor Pg
 
 - To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/concepts/database-monitoring/overview.md).
 
-- You need to have monitoring enabled using either [Builtin Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md) or [CoreOS Prometheus Operator](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
+- You need to have monitoring enabled using either [Builtin Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md) or [Prometheus operator](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
 
 - To keep everything isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
@@ -40,7 +40,7 @@ This tutorial will show you how to import our dashboard on Grafana to monitor Pg
 
 ## Deploy Grafana
 
-After you have made sure that you have a PgBouncer server running with Monitoring enabled, you're ready to deploy your very own Grafana server. If you still have not deployed PgBouncer server with monitoring enabled, then do so using [Builtin Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md) or [CoreOS Prometheus Operator](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
+After you have made sure that you have a PgBouncer server running with Monitoring enabled, you're ready to deploy your very own Grafana server. If you still have not deployed PgBouncer server with monitoring enabled, then do so using [Builtin Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md) or [Prometheus operator](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
 
 However, if you already have a Grafana server running in your cluster, feel free to skip this part. Otherwise, create one using:
 
@@ -113,5 +113,5 @@ kubectl delete ns monitoring
 ## Next Steps
 
 - Monitor your PgBouncer with KubeDB using [built-in Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
-- Monitor your PgBouncer with KubeDB using [CoreOS Prometheus Operator](/docs/guides/pgbouncer/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PgBouncer with KubeDB using [Prometheus operator](/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

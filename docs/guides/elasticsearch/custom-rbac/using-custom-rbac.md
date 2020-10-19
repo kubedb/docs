@@ -252,7 +252,7 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 - [Snapshot](/docs/guides/elasticsearch/snapshot/instant_backup.md) process of Elasticsearch instances using KubeDB.
 - Take [Scheduled Snapshot](/docs/guides/elasticsearch/snapshot/scheduled_backup.md) of Elasticsearch instances using KubeDB.
 - Initialize [Elasticsearch with Snapshot](/docs/guides/elasticsearch/initialization/snapshot_source.md).
-- Monitor your Elasticsearch instance with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/elasticsearch/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your Elasticsearch instance with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Monitor your Elasticsearch instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
 - Use [kubedb cli](/docs/guides/elasticsearch/cli/cli.md) to manage databases like kubectl for Kubernetes.

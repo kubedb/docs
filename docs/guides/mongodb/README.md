@@ -29,7 +29,7 @@ aliases:
 | Custom Configuration                         |   &#10003;   |
 | Using Custom docker image                    |   &#10003;   |
 | Builtin Prometheus Discovery                 |   &#10003;   |
-| Using CoreOS Prometheus Operator             |   &#10003;   |
+| Using Prometheus operator             |   &#10003;   |
 
 ## Life Cycle of a MongoDB Object
 
@@ -95,7 +95,7 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
 - Initialize [MongoDB with Snapshot](/docs/guides/mongodb/initialization/using-snapshot.md).
 - Start [MongoDB with Custom Config](/docs/guides/mongodb/configuration/using-custom-config.md).
-- Monitor your MongoDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mongodb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
 - Use [kubedb cli](/docs/guides/mongodb/cli/cli.md) to manage databases like kubectl for Kubernetes.

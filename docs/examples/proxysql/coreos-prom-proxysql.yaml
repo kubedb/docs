@@ -16,7 +16,7 @@ spec:
   updateStrategy:
     type: RollingUpdate
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
       port: 42004
       namespace: monitoring
