@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/overview/README.md).
 
 # KubeDB Upgrade Manual
 
@@ -745,5 +745,4 @@ kubectl delete ns demo
 - Learn about [custom PostgresVersions](/docs/guides/postgres/custom-versions/setup.md).
 - Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)
 - Detail concepts of [Postgres object](/docs/guides/postgres/concepts/overview.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

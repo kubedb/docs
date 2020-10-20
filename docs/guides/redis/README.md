@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/redis/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/overview/README.md).
 
 ## Supported Redis Features
 

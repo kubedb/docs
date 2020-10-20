@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/overview/README.md).
 
 # Using Custom RBAC resources
 
@@ -257,6 +257,5 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
 - Use [kubedb cli](/docs/guides/elasticsearch/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/overview.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 

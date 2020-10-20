@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/pgbouncer/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/overview/README.md).
 >
 # Overview
 

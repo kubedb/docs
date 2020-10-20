@@ -12,7 +12,7 @@ section_menu_id: guides
 
 {{< notice type="warning" message="This doc has been deprecated and will be removed in a future release. We recommend using [Stash](/docs/guides/elasticsearch/snapshot/stash.md) to backup & restore Elasticsearch database." >}}
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/overview/README.md).
 
 # KubeDB Snapshot
 

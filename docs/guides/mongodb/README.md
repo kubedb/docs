@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/mongodb/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/overview/README.md).
 
 ## Supported MongoDB Features
 
@@ -101,5 +101,4 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - Use [kubedb cli](/docs/guides/mongodb/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/overview.md).
 - Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

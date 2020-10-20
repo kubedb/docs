@@ -12,7 +12,7 @@ section_menu_id: guides
 
 {{< notice type="warning" message="This doc has been deprecated and will be removed in a future release. We recommend using [Stash](/docs/guides/mongodb/snapshot/stash.md) to backup & restore MongoDB database." >}}
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/overview/README.md).
 
 # Initialize MongoDB with Snapshot
 
@@ -168,5 +168,4 @@ kubectl delete ns demo
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
 - Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/overview.md).
 - Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

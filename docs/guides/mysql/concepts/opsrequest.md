@@ -12,7 +12,7 @@ section_menu_id: concepts
 
 {{< notice type="warning" message="This doc has described only the KubeDB enterprise feature. If you are a KubeDB enterprise user then you have to explore it" >}}
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/overview/README.md).
 
 # MySQLOpsRequest
 

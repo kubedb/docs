@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/postgres/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/overview/README.md).
 
 ## Supported PostgreSQL Features
 
@@ -115,5 +115,4 @@ Note: Here `Deprecated: true` `PostgresVersions` are not supported in {{< param 
 - Monitor your PostgreSQL database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/postgres/private-registry/using-private-registry.md) to deploy PostgreSQL with KubeDB.
 - Detail concepts of [Postgres object](/docs/guides/postgres/concepts/overview.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

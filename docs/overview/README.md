@@ -1,14 +1,16 @@
 ---
 title: KubeDB Overview
-description: KubeDB Overview
 menu:
   docs_{{ .version }}:
-    identifier: overview-concepts
-    name: Overview
-    parent: what-is-kubedb
-    weight: 10
+    identifier: overview-readme
+    name: Readme
+    parent: overview
+    weight: -1
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: overview
+url: /docs/{{ .version }}/overview/
+aliases:
+  - /docs/{{ .version }}/overview/README/
 ---
 
 # KubeDB

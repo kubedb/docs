@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/mysql/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/overview/README.md).
 
 ## Supported MySQL Features
 
@@ -88,5 +88,4 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - Use [kubedb cli](/docs/guides/mysql/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [MySQL object](/docs/guides/mysql/concepts/overview.md).
 - Detail concepts of [MySQLVersion object](/docs/guides/mysql/concepts/catalog.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
