@@ -45,7 +45,7 @@ The Volume Expansion process consists of the following steps:
 
 6. `KubeDB` Enterprise operator watches the `MongoDBOpsRequest` CR.
 
-7. When it finds a `MongoDBOpsRequest` CR, it pauses the `MongoDB` object which is referred from the `MongoDBOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `MongoDB` object during the volume expansion process.
+7. When it finds a `MongoDBOpsRequest` CR, it halts the `MongoDB` object which is referred from the `MongoDBOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `MongoDB` object during the volume expansion process.
 
 8. Then the `KubeDB` Enterprise operator will expand the persistent volume to reach the expected size defined in the `MongoDBOpsRequest` CR.
 

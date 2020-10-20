@@ -60,8 +60,6 @@ spec:
         storage: 50Mi
   monitor:
     agent: prometheus.io/builtin
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: WipeOut
 ```
 

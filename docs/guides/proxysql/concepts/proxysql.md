@@ -39,7 +39,7 @@ spec:
       name: my-group
     replicas: 3
   proxysqlSecret:
-    secretName: demo-proxysql-for-mysql-auth
+    name: demo-proxysql-for-mysql-auth
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -47,9 +47,8 @@ spec:
       labels:
         app: kubedb
       interval: 10s
-  configSource:
-    configMap:
-      name: my-custom-config
+  configSecret:
+    name: my-custom-config
   podTemplate:
     annotations:
       passMe: ToProxySQLPod
@@ -84,8 +83,6 @@ spec:
       - name:  http
         port:  6033
         targetPort: http
-  updateStrategy:
-    type: RollingUpdate
 ```
 
 ### .spec.version
@@ -144,9 +141,9 @@ ProxySQL managed by KubeDB can be monitored with builtin-Prometheus and Promethe
 - [Monitor ProxySQL with builtin Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md)
 - [Monitor ProxySQL with Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md)
 
-### .spec.configSource
+### .spec.configSecret
 
-`.spec.configSource` is an optional field that allows users to provide custom configuration for ProxySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/proxysql/configuration/using-custom-config.md).
+`.spec.configSecret` is an optional field that allows users to provide custom configuration for ProxySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/proxysql/configuration/using-custom-config.md).
 
 ### .spec.podTemplate
 
@@ -262,10 +259,6 @@ KubeDB allows following fields to set in `.spec.serviceTemplate`:
 - sessionAffinityConfig
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
-
-### .spec.updateStrategy
-
-You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for ProxySQL thorough `.spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In the future, we will use this field to determine how automatic migration from an old ProxySQL version to a new one should behave.
 
 ## Next Steps
 

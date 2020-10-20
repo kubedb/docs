@@ -270,11 +270,11 @@ Status:
     Status:                True
     Type:                  Progressing
     Last Transition Time:  2020-08-12T10:08:06Z
-    Message:               Controller has successfully Paused the MySQL database: demo/my-standalone
+    Message:               Controller has successfully Halted the MySQL database: demo/my-standalone
     Observed Generation:   1
-    Reason:                SuccessfullyPausedDatabase
+    Reason:                SuccessfullyHaltedDatabase
     Status:                True
-    Type:                  PauseDatabase
+    Type:                  HaltDatabase
     Last Transition Time:  2020-08-12T10:08:06Z
     Message:               MySQL version upgrading stated for MySQLOpsRequest: demo/my-upgrade-major-standalone
     Observed Generation:   1
@@ -306,7 +306,7 @@ Events:
   ----    ------      ----   ----                        -------
   Normal  Starting    4m48s  KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-upgrade-major-standalone
   Normal  Starting    4m48s  KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-standalone
-  Normal  Successful  4m48s  KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-standalone for MySQLOpsRequest: my-upgrade-major-standalone
+  Normal  Successful  4m48s  KubeDB Enterprise Operator  Successfully halted MySQL database: demo/my-standalone for MySQLOpsRequest: my-upgrade-major-standalone
   Normal  Starting    4m48s  KubeDB Enterprise Operator  Upgrading MySQL images: demo/my-standalone for MySQLOpsRequest: my-upgrade-major-standalone
   Normal  Successful  3m8s   KubeDB Enterprise Operator  Image successfully upgraded for standalone/master: demo/my-standalone-0
   Normal  Successful  2m48s  KubeDB Enterprise Operator  Image successfully updated in MySQL: demo/my-standalone for MySQLOpsRequest: my-upgrade-major-standalone

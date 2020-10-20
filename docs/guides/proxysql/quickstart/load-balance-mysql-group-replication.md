@@ -202,8 +202,6 @@ spec:
       kind: MySQL
       name: my-group
     replicas: 3
-  updateStrategy:
-    type: RollingUpdate
 ```
 
 Now, create this,

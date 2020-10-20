@@ -419,7 +419,7 @@ Requst format: `curl --user "$USERNAME:$PASSWORD" "$ADDRESS/_cluster/health?pret
 
 From the health information above, we can see that our Elasticsearch cluster's status is `green`. That means everything is going well.
 
-## Pause Elasticsearch
+## Halt Elasticsearch
 
 KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` termination policy. If admission webhook is enabled, it prevents user from deleting the database as long as the `spec.terminationPolicy` is set `DoNotTerminate`.
 
@@ -427,15 +427,15 @@ In this tutorial, Elasticsearch `quick-elasticsearch` is created with `spec.term
 
 ```bash
 $ kubectl delete es -n demo quick-elasticsearch
-Error from server (BadRequest): admission webhook "elasticsearch.validators.kubedb.com" denied the request: elasticsearch "quick-elasticsearch" can't be paused. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "elasticsearch.validators.kubedb.com" denied the request: elasticsearch "quick-elasticsearch" can't be halted. To delete, change spec.terminationPolicy
 ```
 
-To pause the database, we have to set `spec.terminationPolicy:` to `Pause` by updating it,
+To halt the database, we have to set `spec.terminationPolicy:` to `Halt` by updating it,
 
 ```bash
 $ kubectl edit es -n demo quick-elasticsearch
 spec:
-  terminationPolicy: Pause
+  terminationPolicy: Halt
 ```
 
 Now, if you delete the Elasticsearch object, KubeDB operator will create a matching DormantDatabase object. KubeDB operator watches for DormantDatabase objects and it will take necessary steps when a DormantDatabase object is created.
@@ -452,7 +452,7 @@ Check DormantDatabase entry
 ```bash
 $ kubectl get drmn -n demo quick-elasticsearch
 NAME                  STATUS    AGE
-quick-elasticsearch   Paused    29s
+quick-elasticsearch   Halted    29s
 ```
 
 In KubeDB parlance, we say that Elasticsearch `quick-elasticsearch`  has entered into dormant state.
@@ -489,10 +489,8 @@ spec:
       namespace: demo
     spec:
       elasticsearch:
-        certificateSecret:
-          secretName: quick-elasticsearch-cert
-        databaseSecret:
-          secretName: quick-elasticsearch-auth
+        authSecret:
+          name: quick-elasticsearch-auth
         podTemplate:
           controller: {}
           metadata: {}
@@ -510,21 +508,19 @@ spec:
               storage: 1Gi
           storageClassName: standard
         storageType: Durable
-        terminationPolicy: Pause
-        updateStrategy:
-          type: RollingUpdate
+        terminationPolicy: Halt
         version: 7.3.2
 status:
   observedGeneration: 1$10263513872796756591
   pausingTime: 2018-09-28T08:56:24Z
-  phase: Paused
+  phase: Halted
 
 ```
 
 Here,
 
 - `spec.origin` contains original Elasticsearch object.
-- `status.phase` points to the current database state `Paused`.
+- `status.phase` points to the current database state `Halted`.
 
 ## Resume DormantDatabase
 

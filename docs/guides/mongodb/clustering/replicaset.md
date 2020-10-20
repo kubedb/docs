@@ -188,10 +188,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mgo-replicaset
   uid: a7aa351c-6b2c-11e9-97a6-0800278b6754
 spec:
-  certificateSecret:
-    secretName: mgo-replicaset-keyfile
-  databaseSecret:
-    secretName: mgo-replicaset-auth
+  authSecret:
+    name: mgo-replicaset-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -236,9 +234,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 3.6-v3
 status:
   observedGeneration: 3$4212299729528774793
@@ -247,7 +243,7 @@ status:
 
 Please note that KubeDB operator has created a new Secret called `mgo-replicaset-auth` *(format: {mongodb-object-name}-auth)* for storing the password for `mongodb` superuser. This secret contains a `username` key which contains the *username* for MongoDB superuser and a `password` key which contains the *password* for MongoDB superuser.
 
-If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`. For more details, please see [here](/docs/guides/mongodb/concepts/mongodb.md#specdatabasesecret).
+If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`. For more details, please see [here](/docs/guides/mongodb/concepts/mongodb.md#specdatabasesecret).
 
 ## Redundancy and Data Availability
 
@@ -410,11 +406,11 @@ rs0:SECONDARY> db.movie.find().pretty()
 { "_id" : ObjectId("5b5efeea9d097ca0600694a3"), "name" : "batman" }
 ```
 
-## Pause Database
+## Halt Database
 
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
 
-Since the MongoDB object created in this tutorial has `spec.terminationPolicy` set to `Pause` (default), if you delete the MongoDB object, KubeDB operator will create a dormant database while deleting the StatefulSet and its pods but leaves the PVCs unchanged.
+Since the MongoDB object created in this tutorial has `spec.terminationPolicy` set to `Halt` (default), if you delete the MongoDB object, KubeDB operator will create a dormant database while deleting the StatefulSet and its pods but leaves the PVCs unchanged.
 
 ```bash
 $ kubectl delete mg mgo-replicaset -n demo
@@ -426,7 +422,7 @@ mgo-replicaset   Pausing   25s
 
 $ kubectl get drmn -n demo mgo-replicaset
 NAME             STATUS    AGE
-mgo-replicaset   Paused    1m
+mgo-replicaset   Halted    1m
 ```
 
 ```yaml
@@ -453,10 +449,8 @@ spec:
       namespace: demo
     spec:
       mongodb:
-        certificateSecret:
-          secretName: mgo-replicaset-keyfile
-        databaseSecret:
-          secretName: mgo-replicaset-auth
+        authSecret:
+          name: mgo-replicaset-auth
         podTemplate:
           controller: {}
           metadata: {}
@@ -501,20 +495,18 @@ spec:
               storage: 1Gi
           storageClassName: standard
         storageType: Durable
-        terminationPolicy: Pause
-        updateStrategy:
-          type: RollingUpdate
+        terminationPolicy: Halt
         version: 3.6-v3
 status:
   observedGeneration: 1$16440556888999634490
   pausingTime: "2019-04-30T09:48:24Z"
-  phase: Paused
+  phase: Halted
 ```
 
 Here,
 
 - `spec.origin` is the spec of the original spec of the original MongoDB object.
-- `status.phase` points to the current database state `Paused`.
+- `status.phase` points to the current database state `Halted`.
 
 ## Resume Dormant Database
 
@@ -547,7 +539,7 @@ spec:
   wipeOut: true
   ...
 status:
-  phase: Paused
+  phase: Halted
   ...
 ```
 

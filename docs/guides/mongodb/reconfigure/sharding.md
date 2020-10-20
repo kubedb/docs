@@ -61,7 +61,7 @@ $ kubectl create configmap -n demo mg-custom-config --from-file=./mongod.conf
 configmap/mg-custom-config created
 ```
 
-In this section, we are going to create a MongoDB object specifying `spec.configSource` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
+In this section, we are going to create a MongoDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -74,9 +74,8 @@ spec:
   shardTopology:
     configServer:
       replicas: 2
-      configSource:
-          configMap:
-            name: mg-custom-config
+      configSecret:
+        name: mg-custom-config
       storage:
         resources:
           requests:
@@ -84,15 +83,13 @@ spec:
         storageClassName: standard
     mongos:
       replicas: 2
-      configSource:
-          configMap:
-            name: mg-custom-config
+      configSecret:
+        name: mg-custom-config
     shard:
       replicas: 2
       shards: 3
-      configSource:
-          configMap:
-            name: mg-custom-config
+      configSecret:
+        name: mg-custom-config
       storage:
         resources:
           requests:
@@ -321,11 +318,11 @@ Status:
     Status:                True
     Type:                  Reconfigure
     Last Transition Time:  2020-09-29T17:16:47Z
-    Message:               Successfully paused mongodb: mg-sharding
+    Message:               Successfully halted mongodb: mg-sharding
     Observed Generation:   1
-    Reason:                PauseDatabase
+    Reason:                HaltDatabase
     Status:                True
-    Type:                  PauseDatabase
+    Type:                  HaltDatabase
     Last Transition Time:  2020-09-29T17:17:32Z
     Message:               Successfully Reconfigured MongoDB
     Observed Generation:   1
@@ -361,8 +358,8 @@ Status:
 Events:
   Type    Reason                   Age    From                        Message
   ----    ------                   ----   ----                        -------
-  Normal  PauseDatabase            5m     KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
-  Normal  PauseDatabase            5m     KubeDB Enterprise Operator  Successfully Paused MongoDB mg-sharding in Namespace demo
+  Normal  HaltDatabase            5m     KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
+  Normal  HaltDatabase            5m     KubeDB Enterprise Operator  Successfully Halted MongoDB mg-sharding in Namespace demo
   Normal  ReconfigureMongos        4m15s  KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
   Normal  ReconfigureConfigServer  3m25s  KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
   Normal  ReconfigureShard         65s    KubeDB Enterprise Operator  Successfully Reconfigured MongoDB

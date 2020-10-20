@@ -211,7 +211,7 @@ volumes:
 - name: kubedb-apiserver-cert
   secret:
     defaultMode: 420
-    secretName: kubedb-apiserver-cert
+    name: kubedb-apiserver-cert
     items: # avoid mounting private key
     - key: tls.crt
       path: tls.crt
@@ -374,7 +374,7 @@ spec:
       - name: kubedb-apiserver-cert
         secret:
           defaultMode: 420
-          secretName: kubedb-apiserver-cert
+          name: kubedb-apiserver-cert
           items: # avoid mounting private key
           - key: tls.crt
             path: tls.crt

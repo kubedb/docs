@@ -231,11 +231,11 @@ $ kubectl describe mongodbopsrequest -n demo mops-vscale-standalone
       Status:                True
       Type:                  Scaling
       Last Transition Time:  2020-08-25T05:12:17Z
-      Message:               Successfully paused mongodb: mg-standalone
+      Message:               Successfully halted mongodb: mg-standalone
       Observed Generation:   1
-      Reason:                PauseDatabase
+      Reason:                HaltDatabase
       Status:                True
-      Type:                  PauseDatabase
+      Type:                  HaltDatabase
       Last Transition Time:  2020-08-25T05:12:17Z
       Message:               Successfully updated StatefulSets Resources
       Observed Generation:   1
@@ -265,8 +265,8 @@ $ kubectl describe mongodbopsrequest -n demo mops-vscale-standalone
   Events:
     Type    Reason                      Age    From                        Message
     ----    ------                      ----   ----                        -------
-    Normal  PauseDatabase               6m12s  KubeDB Enterprise Operator  Pausing Mongodb mg-standalone in Namespace demo
-    Normal  PauseDatabase               6m12s  KubeDB Enterprise Operator  Successfully Paused Mongodb mg-standalone in Namespace demo
+    Normal  HaltDatabase               6m12s  KubeDB Enterprise Operator  Pausing Mongodb mg-standalone in Namespace demo
+    Normal  HaltDatabase               6m12s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-standalone in Namespace demo
     Normal  Starting                    6m12s  KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-standalone
     Normal  UpdateStatefulSetResources  6m12s  KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
     Normal  UpdateStandaloneResources   6m12s  KubeDB Enterprise Operator  Updating Standalone Resources

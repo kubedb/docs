@@ -96,7 +96,7 @@ Volume:
   StorageClass:      standard
   Capacity:          1Gi
   Access Modes:      RWO
-Paused:              false
+Halted:              false
 Halted:              false
 Termination Policy:  WipeOut
 
@@ -256,8 +256,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mysqls/my-group
   uid: e9f3e216-6809-11e9-89c6-080027fc7fb2
 spec:
-  databaseSecret:
-    secretName: my-group-auth
+  authSecret:
+    name: my-group-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -282,8 +282,6 @@ spec:
       baseServerID: 100
       name: dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b
     mode: GroupReplication
-  updateStrategy:
-    type: RollingUpdate
   version: 5.7.25
 status:
   observedGeneration: 2$4213139756412538772
@@ -294,7 +292,7 @@ status:
 
 KubeDB operator has created a new Secret called `my-group-auth` **(format: {mysql-object-name}-auth)** for storing the password for `mysql` superuser. This secret contains a `username` key which contains the **username** for MySQL superuser and a `password` key which contains the **password** for MySQL superuser.
 
-If you want to use an existing secret please specify that when creating the MySQL object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/mysql.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the MySQL object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/mysql.md#specdatabasesecret).
 
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 

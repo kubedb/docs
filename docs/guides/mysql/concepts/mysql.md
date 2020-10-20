@@ -35,8 +35,8 @@ spec:
     group:
       name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
       baseServerID: 100
-  databaseSecret:
-    secretName: m1-auth
+  authSecret:
+    name: m1-auth
   storageType: "Durable"
   storage:
     storageClassName: "standard"
@@ -71,9 +71,8 @@ spec:
       - localhost
       ipAddresses:
       - "127.0.0.1"
-  configSource:
-    configMap:
-      name: my-custom-config
+  configSecret:
+    name: my-custom-config
   podTemplate:
     annotations:
       passMe: ToDatabasePod
@@ -108,9 +107,7 @@ spec:
       - name:  http
         port:  9200
         targetPort: http
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
 ```
 
 ### spec.version
@@ -133,9 +130,9 @@ You can specify the following fields in `spec.topology` field,
 
   - `baseServerID` is also an optional field. On a replication master and each replication slave, the `--server-id` option must be specified to establish a unique replication ID in the range from `1` to `2^32 − 1`. Here, “Unique” means that each ID must be different from every other ID in use by any other replication master or slave. So, `baseServerID` is needed to calculate a unique server_id for each member.
 
-### spec.databaseSecret
+### spec.authSecret
 
-`spec.databaseSecret` is an optional field that points to a Secret used to hold credentials for `mysql` root user. If not set, the KubeDB operator creates a new Secret `{mysql-object-name}-auth` for storing the password for `mysql` root user for each MySQL object. If you want to use an existing secret please specify that when creating the MySQL object using `spec.databaseSecret.secretName`.
+`spec.authSecret` is an optional field that points to a Secret used to hold credentials for `mysql` root user. If not set, the KubeDB operator creates a new Secret `{mysql-object-name}-auth` for storing the password for `mysql` root user for each MySQL object. If you want to use an existing secret please specify that when creating the MySQL object using `spec.authSecret.name`.
 
 This secret contains a `user` key and a `password` key which contains the `username` and `password` respectively for `mysql` root user. Here, the value of `user` key is fixed to be `root`.
 
@@ -258,9 +255,9 @@ The following fields are configurable in the `spec.tls` section:
   - `uriSANs` (optional) is a list of URI Subject Alternative Names to be set in the Certificate.
   - `emailSANs` (optional) is a list of email Subject Alternative Names to be set in the Certificate.
 
-### spec.configSource
+### spec.configSecret
 
-`spec.configSource` is an optional field that allows users to provide custom configuration for MySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/using-custom-config.md).
+`spec.configSecret` is an optional field that allows users to provide custom configuration for MySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/using-custom-config.md).
 
 ### spec.podTemplate
 
@@ -300,7 +297,7 @@ Uses of some field of `spec.podTemplate` is described below,
 
 `spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the MySQL docker image. To know about supported environment variables, please visit [here](https://hub.docker.com/_/mysql/).
 
-Note that, KubeDB does not allow `MYSQL_ROOT_PASSWORD`, `MYSQL_ALLOW_EMPTY_PASSWORD`, `MYSQL_RANDOM_ROOT_PASSWORD`, and `MYSQL_ONETIME_PASSWORD` environment variables to set in `spec.env`. If you want to set the root password, please use `spec.databaseSecret` instead described earlier.
+Note that, KubeDB does not allow `MYSQL_ROOT_PASSWORD`, `MYSQL_ALLOW_EMPTY_PASSWORD`, `MYSQL_RANDOM_ROOT_PASSWORD`, and `MYSQL_ONETIME_PASSWORD` environment variables to set in `spec.env`. If you want to set the root password, please use `spec.authSecret` instead described earlier.
 
 If you try to set any of the forbidden environment variables i.e. `MYSQL_ROOT_PASSWORD` in MySQL crd, Kubed operator will reject the request with the following error,
 
@@ -319,7 +316,7 @@ for: "./mysql.yaml": admission webhook "mysql.validators.kubedb.com" denied the 
     kind
     name
     namespace
-    spec.databaseSecret
+    spec.authSecret
     spec.init
     spec.storageType
     spec.storage
@@ -370,13 +367,9 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
-### spec.updateStrategy
+### spec.halted
 
-You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for MySQL database thorough `spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from the old KubeDB version to a new one should behave.
-
-### spec.paused
-
-`spec.paused` is an optional field. This field will be used to pause the kubeDB operator. When you set `spec.paused` to `true`, the KubeDB operator doesn't perform any operation on `MySQL` object.
+`spec.halted` is an optional field. This field will be used to halt the kubeDB operator. When you set `spec.halted` to `true`, the KubeDB operator doesn't perform any operation on `MySQL` object.
 
 ### spec.halted
 

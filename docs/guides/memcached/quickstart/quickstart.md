@@ -171,7 +171,7 @@ spec:
     spec: {}
   strategy:
     type: RollingUpdate
-  terminationPolicy: Pause
+  terminationPolicy: Halt
   version: 1.5.4-v1
 status:
   observedGeneration: 1$4210395375389091791
@@ -226,16 +226,16 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 
 ```bash
 $ kubectl delete mc memcd-quickstart -n demo
-Error from server (BadRequest): admission webhook "memcached.validators.kubedb.com" denied the request: memcached "memcd-quickstart" can't be paused. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "memcached.validators.kubedb.com" denied the request: memcached "memcd-quickstart" can't be halted. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubectl edit mc memcd-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when memcached is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database. 
+Now, run `kubectl edit mc memcd-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` (which creates `dormantdatabase` when memcached is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Halt`). Then you will be able to delete/halt the database. 
 
 Learn details of all `TerminationPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specterminationpolicy)
 
-## Pause Database
+## Halt Database
 
-When [TerminationPolicy](/docs/guides/memcached/concepts/memcached.md#specterminationpolicy) is set to `Pause`, it will pause the Memcached server instead of deleting it. Here, you delete the Memcached object, KubeDB operator will delete the Deployment and its pods. In KubeDB parlance, we say that `memcd-quickstart` Memcached server has entered into dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
+When [TerminationPolicy](/docs/guides/memcached/concepts/memcached.md#specterminationpolicy) is set to `Halt`, it will halt the Memcached server instead of deleting it. Here, you delete the Memcached object, KubeDB operator will delete the Deployment and its pods. In KubeDB parlance, we say that `memcd-quickstart` Memcached server has entered into dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```bash
 $ kubectl delete mc memcd-quickstart -n demo
@@ -247,7 +247,7 @@ memcd-quickstart   Pausing   21s
 
 $ kubectl get drmn -n demo memcd-quickstart
 NAME               STATUS    AGE
-memcd-quickstart   Paused    2m
+memcd-quickstart   Halted    2m
 ```
 
 ```yaml
@@ -291,18 +291,18 @@ spec:
           spec: {}
         strategy:
           type: RollingUpdate
-        terminationPolicy: Pause
+        terminationPolicy: Halt
         version: 1.5.4-v1
 status:
   observedGeneration: 1$7678503742307285743
   pausingTime: 2018-10-03T09:50:10Z
-  phase: Paused
+  phase: Halted
 ```
 
 Here,
 
 - `spec.origin` is the spec of the original spec of the original Memcached object.
-- `status.phase` points to the current database state `Paused`.
+- `status.phase` points to the current database state `Halted`.
 
 ## Resume Dormant Database
 
@@ -336,7 +336,7 @@ spec:
   wipeOut: true
   ...
 status:
-  phase: Paused
+  phase: Halted
   ...
 ```
 

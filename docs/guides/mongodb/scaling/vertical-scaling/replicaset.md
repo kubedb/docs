@@ -235,11 +235,11 @@ $ kubectl describe mongodbopsrequest -n demo mops-vscale-replicaset
      Status:                True
      Type:                  Scaling
      Last Transition Time:  2020-08-25T06:05:39Z
-     Message:               Successfully paused mongodb: mg-replicaset
+     Message:               Successfully halted mongodb: mg-replicaset
      Observed Generation:   1
-     Reason:                PauseDatabase
+     Reason:                HaltDatabase
      Status:                True
-     Type:                  PauseDatabase
+     Type:                  HaltDatabase
      Last Transition Time:  2020-08-25T06:05:39Z
      Message:               Successfully updated StatefulSets Resources
      Observed Generation:   1
@@ -269,8 +269,8 @@ $ kubectl describe mongodbopsrequest -n demo mops-vscale-replicaset
  Events:
    Type    Reason                      Age    From                        Message
    ----    ------                      ----   ----                        -------
-   Normal  PauseDatabase               4m38s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-   Normal  PauseDatabase               4m38s  KubeDB Enterprise Operator  Successfully Paused Mongodb mg-replicaset in Namespace demo
+   Normal  HaltDatabase               4m38s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
+   Normal  HaltDatabase               4m38s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
    Normal  Starting                    4m38s  KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-replicaset
    Normal  UpdateStatefulSetResources  4m38s  KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
    Normal  UpdateReplicaSetResources   4m38s  KubeDB Enterprise Operator  Updating ReplicaSet Resources

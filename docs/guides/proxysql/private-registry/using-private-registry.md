@@ -107,8 +107,6 @@ spec:
       kind: MySQL
       name: my-group
     replicas: 3
-  updateStrategy:
-    type: RollingUpdate
   podTemplate:
     spec:
       imagePullSecrets:

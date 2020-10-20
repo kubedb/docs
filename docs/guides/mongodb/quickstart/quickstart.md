@@ -212,8 +212,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mgo-quickstart
   uid: 0c5c22d6-6b2e-11e9-97a6-0800278b6754
 spec:
-  databaseSecret:
-    secretName: mgo-quickstart-auth
+  authSecret:
+    name: mgo-quickstart-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -257,8 +257,6 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: DoNotTerminate
-  updateStrategy:
-    type: RollingUpdate
   version: 3.4-v3
 status:
   observedGeneration: 2$4213139756412538772
@@ -267,7 +265,7 @@ status:
 
 Please note that KubeDB operator has created a new Secret called `mgo-quickstart-auth` *(format: {mongodb-object-name}-auth)* for storing the password for `mongodb` superuser. This secret contains a `username` key which contains the *username* for MongoDB superuser and a `password` key which contains the *password* for MongoDB superuser.
 
-If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `user` and `password`. For more details, please see [here](/docs/guides/mongodb/concepts/mongodb.md#specdatabasesecret).
+If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `user` and `password`. For more details, please see [here](/docs/guides/mongodb/concepts/mongodb.md#specdatabasesecret).
 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
@@ -322,16 +320,16 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 
 ```bash
 $ kubectl delete mg mgo-quickstart -n demo
-Error from server (BadRequest): admission webhook "mongodb.validators.kubedb.com" denied the request: mongodb "mgo-quickstart" can't be paused. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "mongodb.validators.kubedb.com" denied the request: mongodb "mgo-quickstart" can't be halted. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubectl edit mg mgo-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when mongodb is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
+Now, run `kubectl edit mg mgo-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` (which creates `dormantdatabase` when mongodb is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Halt`). Then you will be able to delete/halt the database.
 
 Learn details of all `TerminationPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
 
-## Pause Database
+## Halt Database
 
-When [TerminationPolicy](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy) is set to `Pause`, it will pause the MongoDB database instead of deleting it. Here, If you delete the MongoDB object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `mgo-quickstart` MongoDB database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
+When [TerminationPolicy](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy) is set to `Halt`, it will halt the MongoDB database instead of deleting it. Here, If you delete the MongoDB object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `mgo-quickstart` MongoDB database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```bash
 $ kubectl delete mg mgo-quickstart -n demo
@@ -343,7 +341,7 @@ mgo-quickstart   Pausing   39s
 
 $ kubectl get drmn -n demo mgo-quickstart
 NAME             STATUS    AGE
-mgo-quickstart   Paused    21s
+mgo-quickstart   Halted    21s
 ```
 
 ```yaml
@@ -370,8 +368,8 @@ spec:
       namespace: demo
     spec:
       mongodb:
-        databaseSecret:
-          secretName: mgo-quickstart-auth
+        authSecret:
+          name: mgo-quickstart-auth
         podTemplate:
           controller: {}
           metadata: {}
@@ -414,20 +412,18 @@ spec:
               storage: 1Gi
           storageClassName: standard
         storageType: Durable
-        terminationPolicy: Pause
-        updateStrategy:
-          type: RollingUpdate
+        terminationPolicy: Halt
         version: 3.4-v3
 status:
   observedGeneration: 1$16440556888999634490
   pausingTime: "2019-04-30T09:57:44Z"
-  phase: Paused
+  phase: Halted
 ```
 
 Here,
 
 - `spec.origin` is the spec of the original spec of the original MongoDB object.
-- `status.phase` points to the current database state `Paused`.
+- `status.phase` points to the current database state `Halted`.
 
 ## Resume Dormant Database
 
@@ -460,7 +456,7 @@ spec:
   wipeOut: true
   ...
 status:
-  phase: Paused
+  phase: Halted
   ...
 ```
 

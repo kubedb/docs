@@ -239,11 +239,11 @@ Status:
     Status:                True
     Type:                  Progressing
     Last Transition Time:  2020-08-12T11:19:27Z
-    Message:               Controller has successfully Paused the MySQL database: demo/my-standalone 
+    Message:               Controller has successfully Halted the MySQL database: demo/my-standalone 
     Observed Generation:   1
-    Reason:                SuccessfullyPausedDatabase
+    Reason:                SuccessfullyHaltedDatabase
     Status:                True
-    Type:                  PauseDatabase
+    Type:                  HaltDatabase
     Last Transition Time:  2020-08-12T11:19:27Z
     Message:               Vertical scaling started in MySQL: demo/my-standalone for MySQLOpsRequest: my-scale-standalone
     Observed Generation:   1
@@ -275,7 +275,7 @@ Events:
   ----    ------      ----   ----                        -------
   Normal  Starting    2m44s  KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-scale-standalone
   Normal  Starting    2m44s  KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-standalone
-  Normal  Successful  2m44s  KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-standalone for MySQLOpsRequest: my-scale-standalone
+  Normal  Successful  2m44s  KubeDB Enterprise Operator  Successfully halted MySQL database: demo/my-standalone for MySQLOpsRequest: my-scale-standalone
   Normal  Starting    2m44s  KubeDB Enterprise Operator  Vertical scaling started in MySQL: demo/my-standalone for MySQLOpsRequest: my-scale-standalone
   Normal  Successful  64s    KubeDB Enterprise Operator  Image successfully upgraded for standalone/master: demo/my-standalone-0
   Normal  Successful  44s    KubeDB Enterprise Operator  Vertical scaling performed successfully in MySQL: demo/my-standalone for MySQLOpsRequest: my-scale-standalone

@@ -58,8 +58,6 @@ spec:
     resources:
       requests:
         storage: 50Mi
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: WipeOut
 ```
 
@@ -173,8 +171,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/perconaxtradbs/demo-cluster
   uid: 1a128325-738d-406a-a130-c421a4970892
 spec:
-  databaseSecret:
-    secretName: demo-cluster-auth
+  authSecret:
+    name: demo-cluster-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -199,8 +197,6 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: WipeOut
-  updateStrategy:
-    type: RollingUpdate
   version: "5.7-cluster"
 status:
   observedGeneration: 2$4213139756412538772
@@ -211,7 +207,7 @@ status:
 
 KubeDB operator has created a new Secret called `demo-cluster-auth` **(format: {percona-xtradb-cluster-object-name}-auth)** for storing the password for the superuser. This secret contains a `username` key which contains the **username** for the superuser and a `password` key which contains the **password** for the superuser.
 
-If you want to use an existing secret please specify that when creating the `PerconaXtraDB` object using `.spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the `PerconaXtraDB` object using `.spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specdatabasesecret).
 
 Now, you can connect to this database from your terminal using the `root` user and password.
 
@@ -526,7 +522,7 @@ partitioned {
 	protocols  = 0/9/3 (gcs/repl/appl),
 	group UUID = 2cb0d532-1d69-11ea-b1f5-13b666d13d7a
 2019-12-13T11:27:06.083251Z 0 [Note] WSREP: Flow-control interval: [173, 173]
-2019-12-13T11:27:06.083257Z 0 [Note] WSREP: Trying to continue unpaused monitor
+2019-12-13T11:27:06.083257Z 0 [Note] WSREP: Trying to continue unhalted monitor
 2019-12-13T11:27:06.083335Z 2 [Note] WSREP: REPL Protocols: 9 (4, 2)
 2019-12-13T11:27:06.083349Z 2 [Note] WSREP: New cluster view: global state: 2cb0d532-1d69-11ea-b1f5-13b666d13d7a:17, view# 9: Primary, number of nodes: 3, my index: 2, protocol version 3
 2019-12-13T11:27:06.083356Z 2 [Note] WSREP: Setting wsrep_ready to true

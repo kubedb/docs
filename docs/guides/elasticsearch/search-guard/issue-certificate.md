@@ -355,8 +355,6 @@ spec:
   version: "6.3-v1"
   authPlugin: "SearchGuard"
   enableSSL: true
-  certificateSecret:
-    secretName: sg-elasticsearch-cert
   storage:
     storageClassName: "standard"
     accessModes:

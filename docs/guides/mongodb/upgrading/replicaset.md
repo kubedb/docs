@@ -196,11 +196,11 @@ $ kubectl describe mongodbopsrequest -n demo mops-replicaset-upgrade
       Status:                True
       Type:                  UpgradingVersion
       Last Transition Time:  2020-08-24T14:56:39Z
-      Message:               Successfully paused mongodb: mg-replicaset
+      Message:               Successfully halted mongodb: mg-replicaset
       Observed Generation:   1
-      Reason:                PauseDatabase
+      Reason:                HaltDatabase
       Status:                True
-      Type:                  PauseDatabase
+      Type:                  HaltDatabase
       Last Transition Time:  2020-08-24T14:56:39Z
       Message:               Successfully updated statefulsets update strategy type
       Observed Generation:   1
@@ -230,8 +230,8 @@ $ kubectl describe mongodbopsrequest -n demo mops-replicaset-upgrade
   Events:
     Type    Reason                 Age    From                        Message
     ----    ------                 ----   ----                        -------
-    Normal  PauseDatabase          2m26s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-    Normal  PauseDatabase          2m26s  KubeDB Enterprise Operator  Successfully Paused Mongodb mg-replicaset in Namespace demo
+    Normal  HaltDatabase          2m26s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
+    Normal  HaltDatabase          2m26s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
     Normal  Updating               2m26s  KubeDB Enterprise Operator  Updating StatefulSets
     Normal  Updating               2m26s  KubeDB Enterprise Operator  Successfully Updated StatefulSets
     Normal  UpdateReplicaSetImage  2m26s  KubeDB Enterprise Operator  Updating ReplicaSet Images

@@ -111,8 +111,6 @@ spec:
     spec:
       imagePullSecrets:
       - name: myregistrykey
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: WipeOut
 ```
 

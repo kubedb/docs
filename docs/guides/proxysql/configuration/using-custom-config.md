@@ -43,7 +43,7 @@ ProxySQL allows to configure via configuration file. The default configuration f
 
 To know more about configuring ProxySQL see [configuration file](https://github.com/sysown/proxysql/wiki/Configuration-file) and [variables](https://github.com/sysown/proxysql/wiki/Global-variables).
 
-At first, you have to create a config file with name `custom-proxysql.cnf` containing your desired configurations. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `.spec.configSource` section while creating ProxySQL object. KubeDB will mount this volume into `/etc/custom-config` directory of the ProxySQL Pod.
+At first, you have to create a config file with name `custom-proxysql.cnf` containing your desired configurations. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `.spec.configSecret` section while creating ProxySQL object. KubeDB will mount this volume into `/etc/custom-config` directory of the ProxySQL Pod.
 
 In this tutorial, we will configure [mysql-connect_timeout_server](https://github.com/sysown/proxysql/wiki/Global-variables#mysql-connect_timeout_server) via the `custom-proxysql.cnf` file. We will use configMap as volume source.
 
@@ -101,7 +101,7 @@ metadata:
 
 > **Note:** For this tutorial there must be a MySQL object with name `my-group` (Group Replication supported) running in the `demo` namespace in the cluster. You can deploy one by following section [create MySQL object with Group Replication](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md#Create-MySQL-Object).
 
-Now, create ProxySQL object specifying `.spec.configSource` field.
+Now, create ProxySQL object specifying `.spec.configSecret` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/custom-proxysql.yaml
@@ -126,11 +126,8 @@ spec:
       kind: MySQL
       name: my-group
     replicas: 3
-  configSource:
-    configMap:
-      name: my-custom-config
-  updateStrategy:
-    type: RollingUpdate
+  configSecret:
+    name: my-custom-config
 ```
 
 Now, wait a few minutes. KubeDB operator will create necessary statefulset, services, secret etc. If everything goes well, we will see that a Pod with the name `custom-proxysql-0` has been created.

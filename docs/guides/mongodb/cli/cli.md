@@ -70,8 +70,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/mongodbs/mongodb-demo
   uid: 4eaaba0e-29fa-11e9-aebf-080027875192
 spec:
-  databaseSecret:
-    secretName: mongodb-demo-auth
+  authSecret:
+    name: mongodb-demo-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -110,9 +110,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 3.4-v3
 status:
   observedGeneration: 2$4213139756412538772
@@ -322,7 +320,7 @@ Various fields of a KubeDb object can't be edited using `edit` command. The foll
 If StatefulSets exists for a MongoDB database, following fields can't be modified as well.
 
 - spec.ReplicaSet
-- spec.databaseSecret
+- spec.authSecret
 - spec.init
 - spec.storageType
 - spec.storage

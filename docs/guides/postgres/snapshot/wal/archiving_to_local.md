@@ -45,8 +45,6 @@ spec:
   version: "11.1-v3"
   storageType: Durable
   replicas: 2
-  updateStrategy:
-    type: RollingUpdate
   storage:
     storageClassName: "standard"
     accessModes:

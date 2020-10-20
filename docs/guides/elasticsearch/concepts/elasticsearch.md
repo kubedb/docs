@@ -34,10 +34,8 @@ spec:
   maxUnavailable: 0
   authPlugin: "SearchGuard"
   enableSSL: true
-  certificateSecret:
-    secretName: e1-certs
-  databaseSecret:
-    secretName: e1-auth
+  authSecret:
+    name: e1-auth
   storageType: "Durable"
   storage:
     storageClassName: standard
@@ -63,9 +61,8 @@ spec:
       labels:
         app: kubedb
       interval: 10s
-  configSource:
-    configMap:
-      name: es-custom-config
+  configSecret:
+    name: es-custom-config
   podTemplate:
     annotations:
       passMe: ToDatabasePod
@@ -98,8 +95,6 @@ spec:
       - name:  http
         port:  9200
         targetPort: http
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: "DoNotTerminate"
 ```
 
@@ -240,9 +235,9 @@ KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are 
 
 If not set, KubeDB operator creates a new Secret `{Elasticsearch name}-cert` with generated certificates. If you want to use an existing secret, please specify that when creating Elasticsearch using `spec.certificateSecret.secretName`.
 
-### spec.databaseSecret
+### spec.authSecret
 
-`spec.databaseSecret` is an optional field that points to a Secret used to hold credentials and [search guard](https://github.com/floragunncom/search-guard) configuration.
+`spec.authSecret` is an optional field that points to a Secret used to hold credentials and [search guard](https://github.com/floragunncom/search-guard) configuration.
 
 Following keys are used to hold credentials
 
@@ -259,7 +254,7 @@ Following keys are used for search-guard configuration
 - `sg_action_groups.yml:` define permission groups
 - `sg_roles.yml:` define the roles and the associated permissions
 
-If not set, KubeDB operator creates a new Secret `{Elasticsearch name}-auth` with generated credentials and default search-guard configuration. If you want to use an existing secret, please specify that when creating Elasticsearch using `spec.databaseSecret.secretName`. Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
+If not set, KubeDB operator creates a new Secret `{Elasticsearch name}-auth` with generated credentials and default search-guard configuration. If you want to use an existing secret, please specify that when creating Elasticsearch using `spec.authSecret.name`. Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version 0.13.0 and higher).
 
 ### spec.storageType
 
@@ -290,8 +285,8 @@ metadata:
   name: elasticsearch-db
 spec:
   version: "5.6-v1"
-  databaseSecret:
-    secretName: old-elasticsearch-auth
+  authSecret:
+    name: old-elasticsearch-auth
   init:
     snapshotSource:
       name: "snapshot-xyz"
@@ -339,9 +334,9 @@ Elasticsearch managed by KubeDB can be monitored with builtin-Prometheus and Pro
 - [Monitor Elasticsearch with builtin Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md)
 - [Monitor Elasticsearch with Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md)
 
-### spec.configSource
+### spec.configSecret
 
-`spec.configSource` is an optional field that allows users to provide custom configuration for Elasticsearch. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/elasticsearch/custom-config/overview.md).
+`spec.configSecret` is an optional field that allows users to provide custom configuration for Elasticsearch. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/elasticsearch/custom-config/overview.md).
 
 ### spec.podTemplate
 
@@ -423,7 +418,7 @@ At least one of the following was changed:
     spec.topology.*.storage
     spec.enableSSL
     spec.certificateSecret
-    spec.databaseSecret
+    spec.authSecret
     spec.storageType
     spec.storage
     spec.nodeSelector
@@ -474,16 +469,12 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
-### spec.updateStrategy
-
-You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for Elasticsearch database thorough `spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from old KubeDB version to new one should behave.
-
 ### spec.terminationPolicy
 
 `terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Elasticsearch` crd or which resources KubeDB should keep or delete when you delete `Elasticsearch` crd. KubeDB provides following four termination policies:
 
 - DoNotTerminate
-- Pause
+- Halt
 - Delete (`Default`)
 - WipeOut
 
@@ -491,7 +482,7 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 
 Following table show what KubeDB does when you delete Elasticsearch crd for different termination policies,
 
-| Behavior                            | DoNotTerminate |  Pause   |  Delete  | WipeOut  |
+| Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
 | ----------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
 | 2. Create Dormant Database          |    &#10007;    | &#10003; | &#10007; | &#10007; |
@@ -502,7 +493,7 @@ Following table show what KubeDB does when you delete Elasticsearch crd for diff
 | 7. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
 | 8. Delete Snapshot data from bucket |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-If you don't specify `spec.terminationPolicy` KubeDB uses `Pause` termination policy by default.
+If you don't specify `spec.terminationPolicy` KubeDB uses `Halt` termination policy by default.
 
 ## Next Steps
 

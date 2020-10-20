@@ -81,7 +81,7 @@ metadata:
   namespace: demo
 spec:
   ca:
-    secretName: mongo-ca
+    name: mongo-ca
 ```
 
 Apply the `YAML` file:

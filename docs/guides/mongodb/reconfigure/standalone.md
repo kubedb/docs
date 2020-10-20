@@ -60,7 +60,7 @@ $ kubectl create configmap -n demo mg-custom-config --from-file=./mongod.conf
 configmap/mg-custom-config created
 ```
 
-In this section, we are going to create a MongoDB object specifying `spec.configSource` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
+In this section, we are going to create a MongoDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -78,9 +78,8 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  configSource:
-      configMap:
-        name: mg-custom-config
+  configSecret:
+    name: mg-custom-config
 ```
 
 Let's create the `MongoDB` CR we have shown above,
@@ -282,11 +281,11 @@ $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-standalone        
       Status:                True
       Type:                  Reconfigure
       Last Transition Time:  2020-08-26T13:53:50Z
-      Message:               Successfully paused mongodb: mg-standalone
+      Message:               Successfully halted mongodb: mg-standalone
       Observed Generation:   1
-      Reason:                PauseDatabase
+      Reason:                HaltDatabase
       Status:                True
-      Type:                  PauseDatabase
+      Type:                  HaltDatabase
       Last Transition Time:  2020-08-26T13:54:15Z
       Message:               Successfully Reconfigured mongodb
       Observed Generation:   1
@@ -310,8 +309,8 @@ $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-standalone        
   Events:
     Type    Reason                 Age   From                        Message
     ----    ------                 ----  ----                        -------
-    Normal  PauseDatabase          12m   KubeDB Enterprise Operator  Pausing Mongodb mg-standalone in Namespace demo
-    Normal  PauseDatabase          12m   KubeDB Enterprise Operator  Successfully Paused Mongodb mg-standalone in Namespace demo
+    Normal  HaltDatabase          12m   KubeDB Enterprise Operator  Pausing Mongodb mg-standalone in Namespace demo
+    Normal  HaltDatabase          12m   KubeDB Enterprise Operator  Successfully Halted Mongodb mg-standalone in Namespace demo
     Normal  ReconfigureStandalone  11m   KubeDB Enterprise Operator  Successfully Reconfigured mongodb
     Normal  ResumeDatabase         11m   KubeDB Enterprise Operator  Resuming MongoDB
     Normal  ResumeDatabase         11m   KubeDB Enterprise Operator  Successfully Started Balancer

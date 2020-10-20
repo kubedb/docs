@@ -6,8 +6,8 @@ metadata:
 spec:
   version: "11.1-v3"
   replicas: 2
-  databaseSecret:
-    secretName: wal-postgres-auth
+  authSecret:
+    name: wal-postgres-auth
   storage:
     storageClassName: "standard"
     accessModes:

@@ -148,8 +148,8 @@ spec:
 #   gcs:
 #     bucket: kubedb-qa
 #   storageSecretName: mg-snap-secret
-  databaseSecret:
-    secretName: mgo-scheduled-auth
+  authSecret:
+    name: mgo-scheduled-auth
   storage:
     accessModes:
     - ReadWriteOnce

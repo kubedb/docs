@@ -309,11 +309,11 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-up-replicaset
       Status:                True
       Type:                  Scaling
       Last Transition Time:  2020-08-26T05:22:33Z
-      Message:               Successfully paused mongodb: mg-replicaset
+      Message:               Successfully halted mongodb: mg-replicaset
       Observed Generation:   1
-      Reason:                PauseDatabase
+      Reason:                HaltDatabase
       Status:                True
-      Type:                  PauseDatabase
+      Type:                  HaltDatabase
       Last Transition Time:  2020-08-26T05:23:18Z
       Message:               Successfully Scaled Up Replicas of StatefulSet
       Observed Generation:   1
@@ -337,10 +337,10 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-up-replicaset
   Events:
     Type    Reason             Age    From                        Message
     ----    ------             ----   ----                        -------
-    Normal  PauseDatabase      2m10s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-    Normal  PauseDatabase      2m10s  KubeDB Enterprise Operator  Successfully Paused Mongodb mg-replicaset in Namespace demo
-    Normal  PauseDatabase      2m10s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-    Normal  PauseDatabase      2m10s  KubeDB Enterprise Operator  Successfully Paused Mongodb mg-replicaset in Namespace demo
+    Normal  HaltDatabase      2m10s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
+    Normal  HaltDatabase      2m10s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
+    Normal  HaltDatabase      2m10s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
+    Normal  HaltDatabase      2m10s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
     Normal  ScaleUpReplicaSet  85s    KubeDB Enterprise Operator  Successfully Scaled Up Replicas of StatefulSet
     Normal  ResumeDatabase     85s    KubeDB Enterprise Operator  Resuming MongoDB
     Normal  ResumeDatabase     85s    KubeDB Enterprise Operator  Successfully Resumed mongodb
@@ -584,11 +584,11 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-replicaset
      Status:                True
      Type:                  Scaling
      Last Transition Time:  2020-08-26T05:36:49Z
-     Message:               Successfully paused mongodb: mg-replicaset
+     Message:               Successfully halted mongodb: mg-replicaset
      Observed Generation:   1
-     Reason:                PauseDatabase
+     Reason:                HaltDatabase
      Status:                True
-     Type:                  PauseDatabase
+     Type:                  HaltDatabase
      Last Transition Time:  2020-08-26T05:36:54Z
      Message:               Successfully Scale Down Replicas of Replicaset
      Observed Generation:   1
@@ -612,8 +612,8 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-replicaset
  Events:
    Type    Reason               Age    From                        Message
    ----    ------               ----   ----                        -------
-   Normal  PauseDatabase        3m1s   KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-   Normal  PauseDatabase        3m1s   KubeDB Enterprise Operator  Successfully Paused Mongodb mg-replicaset in Namespace demo
+   Normal  HaltDatabase        3m1s   KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
+   Normal  HaltDatabase        3m1s   KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
    Normal  ScalingDown          3m1s   KubeDB Enterprise Operator  Scaling Down Replicas of replicaSet
    Normal  ScalingDown          3m1s   KubeDB Enterprise Operator  Scaling Down Replicas of replicaSet
    Normal  ScaleDownReplicaSet  2m56s  KubeDB Enterprise Operator  Successfully Scale Down Replicas of Replicaset

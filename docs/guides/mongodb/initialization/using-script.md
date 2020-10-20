@@ -192,8 +192,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mgo-init-script
   uid: b7bde230-29f3-11e9-aebf-080027875192
 spec:
-  databaseSecret:
-    secretName: mgo-init-script-auth
+  authSecret:
+    name: mgo-init-script-auth
   init:
     scriptSource:
       configMap:
@@ -236,9 +236,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 3.4-v3
 status:
   observedGeneration: 2$4213139756412538772
@@ -246,7 +244,7 @@ status:
 ```
 
 Please note that KubeDB operator has created a new Secret called `mgo-init-script-auth` *(format: {mongodb-object-name}-auth)* for storing the password for MongoDB superuser. This secret contains a `username` key which contains the *username* for MongoDB superuser and a `password` key which contains the *password* for MongoDB superuser.
-If you want to use an existing secret please specify that when creating the MongoDB object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`.
+If you want to use an existing secret please specify that when creating the MongoDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`.
 
 ```bash
 $ kubectl get secrets -n demo mgo-init-script-auth -o yaml

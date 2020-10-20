@@ -89,7 +89,7 @@ spec:
     spec: {}
   strategy:
     type: RollingUpdate
-  terminationPolicy: Pause
+  terminationPolicy: Halt
   version: 1.5.4-v1
 status:
   observedGeneration: 1$7916315637361465932

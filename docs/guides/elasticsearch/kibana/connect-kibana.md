@@ -41,7 +41,7 @@ demo    Active  5s
 
 ## Overview
 
-At first, we will create some necessary Search Guard configuration and roles to give a user access to an Elasticsearch cluster from Kibana. We will create a secret with this configuration files. Then we will provide this secret in `spec.databaseSecret` field of Elasticsearch crd so that our Elasticsearch cluster start with this configuration. We will also configure Elasticsearch cluster with a [custom configuration](/docs/guides/elasticsearch/custom-config/overview.md) file.
+At first, we will create some necessary Search Guard configuration and roles to give a user access to an Elasticsearch cluster from Kibana. We will create a secret with this configuration files. Then we will provide this secret in `spec.authSecret` field of Elasticsearch crd so that our Elasticsearch cluster start with this configuration. We will also configure Elasticsearch cluster with a [custom configuration](/docs/guides/elasticsearch/custom-config/overview.md) file.
 
 Then, we will deploy Kibana with Search Guard plugin installed. We will configure Kibana to connect with our Elasticsearch cluster.
 
@@ -255,7 +255,7 @@ metadata:
   uid: 5b2adaeb-a2b3-11e8-ba38-080027975c84
 ```
 
-Now, create Elasticsearch crd specifying  `spec.databaseSecret` and `spec.configSource` field.
+Now, create Elasticsearch crd specifying  `spec.authSecret` and `spec.configSecret` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/kibana/es-kibana-demo.yaml
@@ -273,11 +273,10 @@ metadata:
 spec:
   version: "6.3.0-v1"
   replicas: 1
-  databaseSecret:
-    secretName: es-auth
-  configSource:
-    configMap:
-      name: es-custom-config
+  authSecret:
+    name: es-auth
+  configSecret:
+    name: es-custom-config
   storage:
     storageClassName: "standard"
     accessModes:

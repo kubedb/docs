@@ -195,8 +195,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/postgreses/ha-postgres
   uid: dcf6d96a-2ad1-11e9-9d44-080027154f61
 spec:
-  databaseSecret:
-    secretName: ha-postgres-auth
+  authSecret:
+    name: ha-postgres-auth
   leaderElection:
     leaseDurationSeconds: 15
     renewDeadlineSeconds: 10
@@ -219,9 +219,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 10.2-v5
 status:
   observedGeneration: 2$4213139756412538772

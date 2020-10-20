@@ -204,11 +204,11 @@ Status:
     Status:                True
     Type:                  UpgradingVersion
     Last Transition Time:  2020-08-24T15:17:48Z
-    Message:               Successfully paused mongodb: mg-sharding
+    Message:               Successfully halted mongodb: mg-sharding
     Observed Generation:   1
-    Reason:                PauseDatabase
+    Reason:                HaltDatabase
     Status:                True
-    Type:                  PauseDatabase
+    Type:                  HaltDatabase
     Last Transition Time:  2020-08-24T15:17:50Z
     Message:               Succesfully stopped mongodb load balancer
     Observed Generation:   1
@@ -262,8 +262,8 @@ Status:
 Events:
   Type    Reason                   Age    From                        Message
   ----    ------                   ----   ----                        -------
-  Normal  PauseDatabase            3m23s  KubeDB Enterprise Operator  Pausing Mongodb mg-sharding in Namespace demo
-  Normal  PauseDatabase            3m23s  KubeDB Enterprise Operator  Successfully Paused Mongodb mg-sharding in Namespace demo
+  Normal  HaltDatabase            3m23s  KubeDB Enterprise Operator  Pausing Mongodb mg-sharding in Namespace demo
+  Normal  HaltDatabase            3m23s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-sharding in Namespace demo
   Normal  StoppingBalancer         3m23s  KubeDB Enterprise Operator  Stopping Balancer
   Normal  StoppingBalancer         3m21s  KubeDB Enterprise Operator  Successfully Stopped Balancer
   Normal  Updating                 3m21s  KubeDB Enterprise Operator  Updating StatefulSets

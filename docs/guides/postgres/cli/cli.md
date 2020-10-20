@@ -63,8 +63,8 @@ metadata:
   name: postgres-demo
   namespace: default
 spec:
-  databaseSecret:
-    secretName: postgres-demo-auth
+  authSecret:
+    name: postgres-demo-auth
   version: "10.2-v5"
 status:
   creationTime: 2017-12-12T05:46:16Z
@@ -264,7 +264,7 @@ If StatefulSets or Deployments exists for a database, following fields can't be 
 - _spec.standby_
 - _spec.streaming_
 - _spec.archiver_
-- _spec.databaseSecret_
+- _spec.authSecret_
 - _spec.storageType_
 - _spec.storage_
 - _spec.podTemplate.spec.nodeSelector_

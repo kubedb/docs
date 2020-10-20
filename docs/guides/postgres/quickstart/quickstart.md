@@ -297,7 +297,7 @@ type: Opaque
 This secret contains superuser name for `postgres` database as `POSTGRES_USER` key and
 password as `POSTGRES_PASSWORD` key. By default, superuser name is `postgres` and password is randomly generated.
 
-If you want to use custom password, please create the secret manually and specify that when creating the Postgres object using `spec.databaseSecret.secretName`. For more details see [here](/docs/guides/postgres/concepts/postgres.md#specdatabasesecret).
+If you want to use custom password, please create the secret manually and specify that when creating the Postgres object using `spec.authSecret.name`. For more details see [here](/docs/guides/postgres/concepts/postgres.md#specdatabasesecret).
 
 > Note: Auth Secret name format: `{postgres-name}-auth`
 
@@ -333,7 +333,7 @@ Now, go to pgAdmin dashboard and connect to the database using the connection in
   </kbd>
 </p>
 
-## Pause Database
+## Halt Database
 
 KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` termination policy. If admission webhook is enabled, it prevents user from deleting the database as long as the `spec.terminationPolicy` is set `DoNotTerminate`.
 
@@ -341,15 +341,15 @@ In this tutorial, Postgres `quick-postgres` is created with `spec.terminationPol
 
 ```bash
 $  kubectl delete pg -n demo quick-postgres
-Error from server (BadRequest): admission webhook "postgres.validators.kubedb.com" denied the request: postgres "quick-postgres" can't be paused. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "postgres.validators.kubedb.com" denied the request: postgres "quick-postgres" can't be halted. To delete, change spec.terminationPolicy
 ```
 
-To pause the database, we have to set `spec.terminationPolicy:` to `Pause` by updating it,
+To halt the database, we have to set `spec.terminationPolicy:` to `Halt` by updating it,
 
 ```bash
 $ kubectl edit pg -n demo quick-postgres
 spec:
-  terminationPolicy: Pause
+  terminationPolicy: Halt
 ```
 
 Now, if you delete the Postgres object, KubeDB operator will create a matching DormantDatabase object. This DormantDatabase object can be used to resume the database. KubeDB operator will delete the StatefulSet and its Pods but leaves the Secret, PVCs unchanged.
@@ -366,7 +366,7 @@ Check DormantDatabase has been created successfully,
 ```bash
 $ kubectl get drmn -n demo quick-postgres
 NAME             STATUS    AGE
-quick-postgres   Paused    5m
+quick-postgres   Halted    5m
 ```
 
 In KubeDB parlance, we say that Postgres `quick-postgres`  has entered into the dormant state.
@@ -397,8 +397,8 @@ spec:
       namespace: demo
     spec:
       postgres:
-        databaseSecret:
-          secretName: quick-postgres-auth
+        authSecret:
+          name: quick-postgres-auth
         leaderElection:
           leaseDurationSeconds: 15
           renewDeadlineSeconds: 10
@@ -421,20 +421,18 @@ spec:
               storage: 1Gi
           storageClassName: standard
         storageType: Durable
-        terminationPolicy: Pause
-        updateStrategy:
-          type: RollingUpdate
+        terminationPolicy: Halt
         version: 10.2-v5
 status:
   observedGeneration: 1$8378748355133368567
   pausingTime: "2019-02-07T11:05:56Z"
-  phase: Paused
+  phase: Halted
 ```
 
 Here,
 
 - `spec.origin` contains original Postgres object.
-- `status.phase` points to the current database state `Paused`.
+- `status.phase` points to the current database state `Halted`.
 
 ## Resume DormantDatabase
 

@@ -131,10 +131,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/elasticsearches/config-elasticsearch
   uid: 13263dfa-e35d-11e9-85c8-42010a8c002f
 spec:
-  certificateSecret:
-    secretName: config-elasticsearch-cert
-  databaseSecret:
-    secretName: config-elasticsearch-auth
+  authSecret:
+    name: config-elasticsearch-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -153,9 +151,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 7.3.2
 status:
   observedGeneration: 1$4210395375389091791
@@ -176,7 +172,7 @@ $ kubectl create secret -n demo generic config-elasticsearch-auth \
 secret/config-elasticsearch-auth created
 ```
 
-> Use this Secret `config-elasticsearch-auth` in `spec.databaseSecret` field of your Elasticsearch object while creating the elasticsearch for the 1st time. Changing the password after creating, won't work at this time.
+> Use this Secret `config-elasticsearch-auth` in `spec.authSecret` field of your Elasticsearch object while creating the elasticsearch for the 1st time. Changing the password after creating, won't work at this time.
 
 ## Connect to Elasticsearch Database
 

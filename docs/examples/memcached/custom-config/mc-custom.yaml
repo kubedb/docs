@@ -6,9 +6,8 @@ metadata:
 spec:
   replicas: 1
   version: "1.5.4-v1"
-  configSource:
-    configMap:
-      name: mc-custom-config
+  configSecret:
+    name: mc-custom-config
   podTemplate:
     spec:
       resources:

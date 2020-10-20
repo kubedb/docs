@@ -31,8 +31,8 @@ metadata:
 spec:
   version: "5.7"
   replicas: 3
-  databaseSecret:
-    secretName: demo-px-auth
+  authSecret:
+    name: demo-px-auth
   storageType: "Durable"
   storage:
     storageClassName: "standard"
@@ -82,9 +82,7 @@ spec:
       - name:  http
         port:  9200
         targetPort: http
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
 ```
 
 ### .spec.version
@@ -100,9 +98,9 @@ spec:
 
 To learn more about how to setup a Percona XtraDB cluster using KubeDB, please visit [here](/docs/guides/percona-xtradb/clustering/percona-xtradb-cluster.md).
 
-### .spec.databaseSecret
+### .spec.authSecret
 
-`.spec.databaseSecret` is an optional field that points to a Secret used to hold credentials for `mysql` root user. If not set, KubeDB operator creates a new Secret `{percona-xtradb-object-name}-auth` for storing the password for `mysql` root user for each PerconaXtraDB object. If you want to use an existing Secret please specify that when creating the PerconaXtraDB object using `.spec.databaseSecret.secretName`.
+`.spec.authSecret` is an optional field that points to a Secret used to hold credentials for `mysql` root user. If not set, KubeDB operator creates a new Secret `{percona-xtradb-object-name}-auth` for storing the password for `mysql` root user for each PerconaXtraDB object. If you want to use an existing Secret please specify that when creating the PerconaXtraDB object using `.spec.authSecret.name`.
 
 This secret contains a `username` key and a `password` key which contains the username and password respectively for `mysql` root user. Here, the value of `username` key is fixed to be `root`.
 
@@ -209,9 +207,9 @@ PerconaXtraDB managed by KubeDB can be monitored with builtin-Prometheus and Pro
 - [Monitor PerconaXtraDB with builtin Prometheus](/docs/guides/percona-xtradb/monitoring/using-builtin-prometheus.md)
 - [Monitor PerconaXtraDB with Prometheus operator](/docs/guides/percona-xtradb/monitoring/using-prometheus-operator.md)
 
-### .spec.configSource
+### .spec.configSecret
 
-`.spec.configSource` is an optional field that allows users to provide custom configuration for PerconaXtraDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
+`.spec.configSecret` is an optional field that allows users to provide custom configuration for PerconaXtraDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
 
 ### .spec.podTemplate
 
@@ -251,7 +249,7 @@ Usage of some field of `.spec.podTemplate` is described below,
 
 `.spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the PerconaXtraDB Docker image. To know about supported environment variables, please visit [here](https://hub.docker.com/_/mysql/).
 
-Note that, KubeDB does not allow `MYSQL_ROOT_PASSWORD`, `MYSQL_ALLOW_EMPTY_PASSWORD`, `MYSQL_RANDOM_ROOT_PASSWORD`, and `MYSQL_ONETIME_PASSWORD` environment variables to set in `.spec.env`. If you want to set the root password, please use `.spec.databaseSecret` instead described earlier.
+Note that, KubeDB does not allow `MYSQL_ROOT_PASSWORD`, `MYSQL_ALLOW_EMPTY_PASSWORD`, `MYSQL_RANDOM_ROOT_PASSWORD`, and `MYSQL_ONETIME_PASSWORD` environment variables to set in `.spec.env`. If you want to set the root password, please use `.spec.authSecret` instead described earlier.
 
 If you try to set any of the forbidden environment variables i.e. `MYSQL_ROOT_PASSWORD` in PerconaXtraDB object, KubeDB operator will reject the request with following error,
 
@@ -270,7 +268,7 @@ for: "./percona-xtradb.yaml": admission webhook "perconaxtradb.validators.kubedb
     kind
     name
     namespace
-    spec.databaseSecret
+    spec.authSecret
     spec.init
     spec.storageType
     spec.storage
@@ -320,16 +318,12 @@ KubeDB allows following fields to set in `.spec.serviceTemplate`:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
-### .spec.updateStrategy
-
-You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for PerconaXtraDB thorough `.spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from an old PerconaXtraDB version to a new one should behave.
-
 ### .spec.terminationPolicy
 
 `terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PerconaXtraDB` object or which resources KubeDB should keep or delete when you delete `PerconaXtraDB` object. KubeDB provides following four termination policies:
 
 - DoNotTerminate
-- Pause
+- Halt
 - Delete (`Default`)
 - WipeOut
 
@@ -337,7 +331,7 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 
 Following table show what KubeDB does when you delete PerconaXtraDB object for different termination policies,
 
-| Behavior                            | DoNotTerminate |  Pause   |  Delete  | WipeOut  |
+| Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
 | ----------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
 | 2. Create Dormant Database          |    &#10007;    | &#10003; | &#10007; | &#10007; |
@@ -346,7 +340,7 @@ Following table show what KubeDB does when you delete PerconaXtraDB object for d
 | 5. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
 | 6. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-If you don't specify `.spec.terminationPolicy` KubeDB uses `Pause` termination policy by default.
+If you don't specify `.spec.terminationPolicy` KubeDB uses `Halt` termination policy by default.
 
 ## Next Steps
 

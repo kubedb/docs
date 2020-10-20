@@ -116,7 +116,7 @@ Volume:
   StorageClass:      standard
   Capacity:          1Gi
   Access Modes:      RWO
-Paused:              false
+Halted:              false
 Halted:              false
 Termination Policy:  WipeOut
 

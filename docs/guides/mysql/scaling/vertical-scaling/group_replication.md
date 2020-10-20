@@ -245,11 +245,11 @@ Status:
     Status:                True
     Type:                  Progressing
     Last Transition Time:  2020-08-12T10:44:28Z
-    Message:               Controller has successfully Paused the MySQL database: demo/my-group 
+    Message:               Controller has successfully Halted the MySQL database: demo/my-group 
     Observed Generation:   1
-    Reason:                SuccessfullyPausedDatabase
+    Reason:                SuccessfullyHaltedDatabase
     Status:                True
-    Type:                  PauseDatabase
+    Type:                  HaltDatabase
     Last Transition Time:  2020-08-12T10:44:28Z
     Message:               Vertical scaling started in MySQL: demo/my-group for MySQLOpsRequest: my-scale-group
     Observed Generation:   1
@@ -281,7 +281,7 @@ Events:
   ----    ------      ----   ----                        -------
   Normal  Starting    5m50s  KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-scale-group
   Normal  Starting    5m50s  KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-group
-  Normal  Successful  5m50s  KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-group for MySQLOpsRequest: my-scale-group
+  Normal  Successful  5m50s  KubeDB Enterprise Operator  Successfully halted MySQL database: demo/my-group for MySQLOpsRequest: my-scale-group
   Normal  Starting    5m50s  KubeDB Enterprise Operator  Vertical scaling started in MySQL: demo/my-group for MySQLOpsRequest: my-scale-group
   Normal  Successful  4m10s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1
   Normal  Successful  3m50s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1

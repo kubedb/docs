@@ -135,9 +135,8 @@ metadata:
   namespace: demo
 spec:
   version: 7.3.2
-  configSource:
-    configMap:
-      name: es-custom-config
+  configSecret:
+    name: es-custom-config
   topology:
     master:
       prefix: master

@@ -45,8 +45,6 @@ metadata:
 spec:
   version: "10.2-v5"
   replicas: 2
-  updateStrategy:
-    type: RollingUpdate
   storage:
     storageClassName: "standard"
     accessModes:

@@ -90,9 +90,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 4.0-v1
 status:
   observedGeneration: 1$7916315637361465932

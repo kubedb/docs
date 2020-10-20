@@ -90,8 +90,6 @@ spec:
           memory: "1Gi"
           cpu: "250m"
   terminationPolicy: WipeOut
-  updateStrategy:
-    type: RollingUpdate
 ```
 
 ```bash

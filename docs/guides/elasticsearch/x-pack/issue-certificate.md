@@ -308,8 +308,6 @@ metadata:
 spec:
   version: 7.3.2
   enableSSL: true
-  certificateSecret:
-    secretName: custom-certificate-es-ssl-cert
   storage:
     storageClassName: "standard"
     accessModes:

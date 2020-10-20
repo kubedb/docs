@@ -73,8 +73,6 @@ spec:
     scriptSource:
       configMap:
         name: px-init-script
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: DoNotTerminate
 ```
 
@@ -204,8 +202,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/perconaxtradbs/px-init-script
   uid: d7ad081e-8b2d-41d1-aae3-6141a01a66f1
 spec:
-  databaseSecret:
-    secretName: px-init-script-auth
+  authSecret:
+    name: px-init-script-auth
   init:
     scriptSource:
       configMap:
@@ -242,8 +240,6 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: DoNotTerminate
-  updateStrategy:
-    type: RollingUpdate
   version: "5.7"
 status:
   observedGeneration: 2
@@ -254,7 +250,7 @@ status:
 
 KubeDB operator has created a new Secret called `px-init-script-auth` *(format: {percona-xtradb-object-name}-auth)* for storing the password for `mysql` superuser. This secret contains a `username` key which contains the **"username"** for `mysql` superuser and a `password` key which contains the **"password"** for the superuser.
 
-If you want to use an existing secret please specify that when creating the PerconaXtraDB object using `.spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys (`username` and `password`) in `.data` section and also make sure of using `root` as value of `username` key. For more details see [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the PerconaXtraDB object using `.spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys (`username` and `password`) in `.data` section and also make sure of using `root` as value of `username` key. For more details see [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specdatabasesecret).
 
 Now, you can connect to this database using the database pod IP and and `root` user password.
 

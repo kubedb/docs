@@ -152,7 +152,7 @@ Run following command to write user information in `sg_internal_users.yml` file 
 $ curl https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_internal_users.yml | envsubst > sg_internal_users.yml
 ```
 
-> Note: If user does not provide `spec.databaseSecret`, KubeDB will generate random password for both admin and readall user.
+> Note: If user does not provide `spec.authSecret`, KubeDB will generate random password for both admin and readall user.
 
 ### sg_action_groups.yml
 
@@ -348,7 +348,7 @@ If you do not use these two features of Snapshot, you can ignore adding these.
 
 >Note: `ADMIN_PASSWORD` and `READALL_PASSWORD` are the same password you have provided as hashed value in `sg_internal_users.yml`. It is not possible for KubeDB to figure out the password from the hashed value. So, you have to provide these password as a separate key in the secret. Otherwise, KubeDB will not able to perform backup or initialization.
 
-Use this Secret `config-elasticsearch-auth` in `spec.databaseSecret` field of your Elasticsearch object.
+Use this Secret `config-elasticsearch-auth` in `spec.authSecret` field of your Elasticsearch object.
 
 ## Create an Elasticsearch database
 
@@ -363,8 +363,8 @@ metadata:
 spec:
   version: "6.3-v1"
   authPlugin: "SearchGuard"
-  databaseSecret:
-    secretName: config-elasticsearch-auth
+  authSecret:
+    name: config-elasticsearch-auth
   storage:
     storageClassName: "standard"
     accessModes:
@@ -376,7 +376,7 @@ spec:
 
 Here,
 
-- `spec.databaseSecret` specifies Secret with Search Guard configuration and basic auth for internal user.
+- `spec.authSecret` specifies Secret with Search Guard configuration and basic auth for internal user.
 
 Create example above with following command
 

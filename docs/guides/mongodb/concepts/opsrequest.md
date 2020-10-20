@@ -602,7 +602,7 @@ All of them has the following sub-fields:
 | ----------------------------- | ------------------------------------------------------------------------- |
 | `Progressing`                 | Specifies that the operation is now in the progressing state              |
 | `Successful`                  | Specifies such a state that the operation on the database was successful. |
-| `PauseDatabase`               | Specifies such a state that the database is paused by the operator        |
+| `HaltDatabase`               | Specifies such a state that the database is halted by the operator        |
 | `ResumeDatabase`              | Specifies such a state that the database is resumed by the operator       |
 | `Failed`                      | Specifies such a state that the operation on the database failed.         |
 | `StartingBalancer`            | Specifies such a state that the balancer has successfully started         |

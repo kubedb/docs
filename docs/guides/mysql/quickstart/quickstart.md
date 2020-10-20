@@ -161,7 +161,7 @@ Volume:
   StorageClass:      standard
   Capacity:          1Gi
   Access Modes:      RWO
-Paused:              false
+Halted:              false
 Halted:              false
 Termination Policy:  DoNotTerminate
 
@@ -304,8 +304,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mysqls/mysql-quickstart
   uid: 837ac85a-134a-457e-b126-f4681d92f117
 spec:
-  databaseSecret:
-    secretName: mysql-quickstart-auth
+  authSecret:
+    name: mysql-quickstart-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -325,8 +325,6 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: DoNotTerminate
-  updateStrategy:
-    type: RollingUpdate
   version: 8.0.21
 status:
   observedGeneration: 2
@@ -337,7 +335,7 @@ status:
 
 KubeDB operator has created a new Secret called `mysql-quickstart-auth` *(format: {mysql-object-name}-auth)* for storing the password for `mysql` superuser. This secret contains a `username` key which contains the *username* for MySQL superuser and a `password` key which contains the *password* for MySQL superuser.
 
-If you want to use an existing secret please specify that when creating the MySQL object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/mysql.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the MySQL object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/mysql.md#specdatabasesecret).
 
 Now, you can connect to this database from the phpMyAdmin dashboard using the database pod IP and and `mysql` user password.
 
@@ -372,10 +370,10 @@ When `terminationPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `
 
 ```bash
 $ kubectl delete my mysql-quickstart -n demo
-Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" denied the request: mysql "mysql-quickstart" can't be paused. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" denied the request: mysql "mysql-quickstart" can't be halted. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubectl edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` (which deletes the mysql object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/pause the database.
+Now, run `kubectl edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` (which deletes the mysql object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
 Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/mysql.md#specterminationpolicy).
 
@@ -406,7 +404,7 @@ persistentvolumeclaim/data-mysql-quickstart-0   Bound    pvc-716f627c-9aa2-47b6-
 
 From the above output, you can see that all mysql resources(`StatefulSet`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your mysql again using this resources.
 
->You can also set the `terminationPolicy` to `Pause`(deprecated). It's behavior same as `halt` and right now `Pause` is replaced by `Halt`.
+>You can also set the `terminationPolicy` to `Halt`(deprecated). It's behavior same as `halt` and right now `Halt` is replaced by `Halt`.
 
 **Delete:**
 

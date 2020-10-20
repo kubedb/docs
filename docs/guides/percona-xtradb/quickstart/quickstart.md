@@ -75,8 +75,6 @@ spec:
     resources:
       requests:
         storage: 50Mi
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: WipeOut
 ```
 
@@ -203,8 +201,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/perconaxtradbs/demo-quickstart
   uid: ef82922b-ce02-4184-8f3d-237a37dfec43
 spec:
-  databaseSecret:
-    secretName: demo-quickstart-auth
+  authSecret:
+    name: demo-quickstart-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -237,8 +235,6 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: WipeOut
-  updateStrategy:
-    type: RollingUpdate
   version: "5.7"
 status:
   observedGeneration: 2
@@ -249,7 +245,7 @@ status:
 
 KubeDB operator has created a new Secret called `demo-quickstart-auth` *(format: {percona-xtradb-object-name}-auth)* for storing the password for `mysql` superuser. This secret contains a `username` key which contains the **"username"** for `mysql` superuser and a `password` key which contains the **"password"** for the superuser.
 
-If you want to use an existing secret please specify that when creating the PerconaXtraDB object using `.spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys (`username` and `password`) in `.data` section and also make sure of using `root` as value of `username` key. For more details see [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the PerconaXtraDB object using `.spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys (`username` and `password`) in `.data` section and also make sure of using `root` as value of `username` key. For more details see [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specdatabasesecret).
 
 Now, you can connect to this database using the database pod IP and and `root` user password.
 
@@ -304,16 +300,16 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 
 ```bash
 $ kubectl delete px demo-quickstart -n demo
-Error from server (BadRequest): admission webhook "perconaxtradb.validators.kubedb.com" denied the request: percona-xtradb "demo/demo-quickstart" can't be paused. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "perconaxtradb.validators.kubedb.com" denied the request: percona-xtradb "demo/demo-quickstart" can't be halted. To delete, change spec.terminationPolicy
 ```
 
-Now, run `$ kubectl edit px demo-quickstart -n demo` to set `.spec.terminationPolicy` to `Pause` (for which KubeDB operator creates `dormantdatabase` when the PerconaXtraDB object is deleted and it keeps PVC, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
+Now, run `$ kubectl edit px demo-quickstart -n demo` to set `.spec.terminationPolicy` to `Halt` (for which KubeDB operator creates `dormantdatabase` when the PerconaXtraDB object is deleted and it keeps PVC, Secrets intact) or remove this field (which default to `Halt`). Then you will be able to delete/halt the database.
 
 Learn details of all `TerminationPolicy` [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specterminationpolicy).
 
-## Pause Database
+## Halt Database
 
-When [TerminationPolicy](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specterminationpolicy) is set to `Pause`, it will pause the PerconaXtraDB database instead of deleting it. Here, If you delete the PerconaXtraDB object, KubeDB operator will delete the StatefulSet and its Pods but leaves the PVCs and Secret unchanged. In KubeDB parlance, we say that `demo-quickstart` PerconaXtraDB database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
+When [TerminationPolicy](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specterminationpolicy) is set to `Halt`, it will halt the PerconaXtraDB database instead of deleting it. Here, If you delete the PerconaXtraDB object, KubeDB operator will delete the StatefulSet and its Pods but leaves the PVCs and Secret unchanged. In KubeDB parlance, we say that `demo-quickstart` PerconaXtraDB database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```bash
 $ kubectl delete px demo-quickstart -n demo
@@ -321,7 +317,7 @@ perconaxtradb.kubedb.com "demo-quickstart" deleted
 
 $ kubectl get drmn -n demo demo-quickstart
 NAME              STATUS   AGE
-demo-quickstart   Paused   4m21s
+demo-quickstart   Halted   4m21s
 
 $ kubectl get secret -n demo
 NAME                   TYPE                                  DATA   AGE
@@ -361,8 +357,8 @@ spec:
       namespace: demo
     spec:
       perconaxtradb:
-        databaseSecret:
-          secretName: demo-quickstart-auth
+        authSecret:
+          name: demo-quickstart-auth
         podTemplate:
           controller: {}
           metadata: {}
@@ -394,20 +390,18 @@ spec:
               storage: 50Mi
           storageClassName: standard
         storageType: Durable
-        terminationPolicy: Pause
-        updateStrategy:
-          type: RollingUpdate
+        terminationPolicy: Halt
         version: "5.7"
 status:
   observedGeneration: 1
   pausingTime: "2019-12-23T13:40:55Z"
-  phase: Paused
+  phase: Halted
 ```
 
 Here,
 
 - `.spec.origin` is the spec of the original spec of the original PerconaXtraDB object.
-- `.status.phase` points to the current database state `Paused`.
+- `.status.phase` points to the current database state `Halted`.
 
 ## Resume Dormant Database
 
@@ -443,7 +437,7 @@ spec:
   wipeOut: true
   ...
 status:
-  phase: Paused
+  phase: Halted
   ...
 ```
 

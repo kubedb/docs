@@ -104,8 +104,6 @@ spec:
     resources:
       requests:
         storage: 50Mi
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: WipeOut
   monitor:
     agent: prometheus.io/operator

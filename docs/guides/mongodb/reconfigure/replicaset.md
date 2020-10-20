@@ -61,7 +61,7 @@ $ kubectl create configmap -n demo mg-custom-config --from-file=./mongod.conf
 configmap/mg-custom-config created
 ```
 
-In this section, we are going to create a MongoDB object specifying `spec.configSource` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
+In this section, we are going to create a MongoDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
 
@@ -237,11 +237,11 @@ $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-replicaset
      Status:                True
      Type:                  Scaling
      Last Transition Time:  2020-08-26T18:40:06Z
-     Message:               Successfully paused mongodb: mg-replicaset
+     Message:               Successfully halted mongodb: mg-replicaset
      Observed Generation:   1
-     Reason:                PauseDatabase
+     Reason:                HaltDatabase
      Status:                True
-     Type:                  PauseDatabase
+     Type:                  HaltDatabase
      Last Transition Time:  2020-08-26T18:41:26Z
      Message:               Successfully Reconfigured mongodb
      Observed Generation:   1
@@ -265,8 +265,8 @@ $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-replicaset
  Events:
    Type    Reason                 Age    From                        Message
    ----    ------                 ----   ----                        -------
-   Normal  PauseDatabase          2m23s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-   Normal  PauseDatabase          2m23s  KubeDB Enterprise Operator  Successfully Paused Mongodb mg-replicaset in Namespace demo
+   Normal  HaltDatabase          2m23s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
+   Normal  HaltDatabase          2m23s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
    Normal  ReconfigureReplicaset  63s    KubeDB Enterprise Operator  Successfully Reconfigured mongodb
    Normal  ResumeDatabase         63s    KubeDB Enterprise Operator  Resuming MongoDB
    Normal  ResumeDatabase         63s    KubeDB Enterprise Operator  Successfully Started Balancer

@@ -43,7 +43,7 @@ The horizontal scaling process consists of the following steps:
 
 5. `KubeDB` enterprise operator watches for `MySQLOpsRequest`.
 
-6. When it finds one, it pauses the `MySQL` object so that the `KubeDB` community operator doesn't perform any operation on the `MySQL` during the scaling process.  
+6. When it finds one, it halts the `MySQL` object so that the `KubeDB` community operator doesn't perform any operation on the `MySQL` during the scaling process.  
 
 7. Then the `KubeDB` enterprise operator will scale the StatefulSet replicas to reach the expected number of members for the group replication.
 

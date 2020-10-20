@@ -35,7 +35,7 @@ namespace/demo created
 
 PostgreSQL allows to configure database via **Configuration File**, **SQL** and **Shell**. The most common way is to edit configuration file `postgresql.conf`. When PostgreSQL docker image starts, it uses the configuration specified in `postgresql.conf` file. This file can have `include` directive which allows to include configuration from other files. One of these `include` directives is `include_if_exists` which accept a file reference. If the referenced file exists, it includes configuration from the file. Otherwise, it uses default configuration. KubeDB takes advantage of this feature to allow users to provide their custom configuration. To know more about configuring PostgreSQL see [here](https://www.postgresql.org/docs/current/static/runtime-config.html).
 
-At first, you have to create a config file named `user.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSource` section while creating Postgres crd. KubeDB will mount this volume into `/etc/config/` directory of the database pod which will be referenced by `include_if_exists` directive.
+At first, you have to create a config file named `user.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSecret` section while creating Postgres crd. KubeDB will mount this volume into `/etc/config/` directory of the database pod which will be referenced by `include_if_exists` directive.
 
 In this tutorial, we will configure `max_connections` and `shared_buffers` via a custom config file. We will use configMap as volume source.
 
@@ -77,7 +77,7 @@ metadata:
   uid: 131b321f-2ad1-11e9-9d44-080027154f61
 ```
 
-Now, create Postgres crd specifying `spec.configSource` field.
+Now, create Postgres crd specifying `spec.configSecret` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/pg-custom-config.yaml
@@ -94,9 +94,8 @@ metadata:
   namespace: demo
 spec:
   version: "10.2-v5"
-  configSource:
-    configMap:
-      name: pg-custom-config
+  configSecret:
+    name: pg-custom-config
   storage:
     storageClassName: "standard"
     accessModes:

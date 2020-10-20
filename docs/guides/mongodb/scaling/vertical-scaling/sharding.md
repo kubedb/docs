@@ -303,11 +303,11 @@ Status:
     Status:                True
     Type:                  VerticalScaling
     Last Transition Time:  2020-09-21T04:51:47Z
-    Message:               Successfully paused mongodb: mg-sharding
+    Message:               Successfully halted mongodb: mg-sharding
     Observed Generation:   1
-    Reason:                PauseDatabase
+    Reason:                HaltDatabase
     Status:                True
-    Type:                  PauseDatabase
+    Type:                  HaltDatabase
     Last Transition Time:  2020-09-21T04:51:47Z
     Message:               Successfully updated StatefulSets Resources
     Observed Generation:   1
@@ -350,13 +350,13 @@ Events:
   Type    Reason                       Age   From                        Message
   ----    ------                       ----  ----                        -------
   Normal  UpdateStatefulSetResources   29m   KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-  Normal  PauseDatabase                29m   KubeDB Enterprise Operator  Successfully Paused MongoDB mg-sharding in Namespace demo
+  Normal  HaltDatabase                29m   KubeDB Enterprise Operator  Successfully Halted MongoDB mg-sharding in Namespace demo
   Normal  Starting                     29m   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-mongos
   Normal  Starting                     29m   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-configsvr
   Normal  Starting                     29m   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-shard0
   Normal  Starting                     29m   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-shard1
   Normal  Starting                     29m   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-shard2
-  Normal  PauseDatabase                29m   KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
+  Normal  HaltDatabase                29m   KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
   Normal  UpdateConfigServerResources  28m   KubeDB Enterprise Operator  Successfully Vertically Scaled ConfigServer Resources
   Normal  UpdateShardResources         21m   KubeDB Enterprise Operator  Successfully Vertically Scaled Shard Resources
   Normal  UpdateMongosResources        20m   KubeDB Enterprise Operator  Successfully Vertically Scaled Mongos Resources

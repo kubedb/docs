@@ -31,10 +31,8 @@ metadata:
 spec:
   version: "3.4-v3"
   replicas: 3
-  databaseSecret:
-    secretName: mgo1-auth
-  certificateSecret:
-    secretName: mongodb-demo-cert
+  authSecret:
+    name: mgo1-auth
   replicaSet:
     name: rs0
   shardTopology:
@@ -97,9 +95,8 @@ spec:
       labels:
         app: kubedb
       interval: 10s
-  configSource:
-    configMap:
-      name: mg-custom-config
+  configSecret:
+    name: mg-custom-config
   podTemplate:
     annotations:
       passMe: ToDatabasePod
@@ -134,9 +131,7 @@ spec:
         - name: http
           port: 9200
           targetPort: http
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
 ```
 
 ### spec.version
@@ -163,9 +158,9 @@ If both `spec.replicaset` and `spec.shardTopology` is not set, then `spec.replic
 
 KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained.
 
-### spec.databaseSecret
+### spec.authSecret
 
-`spec.databaseSecret` is an optional field that points to a Secret used to hold credentials for `mongodb` superuser. If not set, KubeDB operator creates a new Secret `{mongodb-object-name}-auth` for storing the password for `mongodb` superuser for each MongoDB object. If you want to use an existing secret please specify that when creating the MongoDB object using `spec.databaseSecret.secretName`.
+`spec.authSecret` is an optional field that points to a Secret used to hold credentials for `mongodb` superuser. If not set, KubeDB operator creates a new Secret `{mongodb-object-name}-auth` for storing the password for `mongodb` superuser for each MongoDB object. If you want to use an existing secret please specify that when creating the MongoDB object using `spec.authSecret.name`.
 
 This secret contains a `user` key and a `password` key which contains the `username` and `password` respectively for `mongodb` superuser.
 
@@ -218,7 +213,7 @@ When `spec.shardTopology` is set, the following fields needs to be empty, otherw
 
 - `spec.replicas`
 - `spec.podTemplate`
-- `spec.configSource`
+- `spec.configSecret`
 - `spec.storage`
 
 KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas of these shard components are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum and data integrity is maintained.
@@ -232,7 +227,7 @@ Available configurable fields:
 - `shards` represents number of shards for a mongodb deployment. Each shard is deployed as a [replicaset](/docs/guides/mongodb/clustering/replication_concept.md).
 - `replicas` represents number of replicas of each shard replicaset.
 - `prefix` represents the prefix of each shard node.
-- `configSource` is an optional field to provide custom configuration file for shards (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/guides/mongodb/concepts/mongodb.md#specconfigsource) in details.
+- `configSource` is an optional field to provide custom configuration file for shards (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsource) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
 - `storage` to specify pvc spec for each node of sharding. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/guides/mongodb/concepts/mongodb.md#specstorage) in details.
 
@@ -244,7 +239,7 @@ Available configurable fields:
 
 - `replicas` represents number of replicas for configServer replicaset. Here, configServer is deployed as a replicaset of mongodb.
 - `prefix` represents the prefix of configServer nodes.
-- `configSource` is an optional field to provide custom configuration file for configSource (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/guides/mongodb/concepts/mongodb.md#specconfigsource) in details.
+- `configSource` is an optional field to provide custom configuration file for configSource (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsource) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
 - `storage` to specify pvc spec for each node of configServer. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/guides/mongodb/concepts/mongodb.md#specstorage) in details.
 
@@ -256,7 +251,7 @@ Available configurable fields:
 
 - `replicas` represents number of replicas of `Mongos` instance. Here, Mongos is deployed as stateless (deployment) instance.
 - `prefix` represents the prefix of mongos nodes.
-- `configSource` is an optional field to provide custom configuration file for mongos (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/guides/mongodb/concepts/mongodb.md#specconfigsource) in details.
+- `configSource` is an optional field to provide custom configuration file for mongos (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsource) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
 - `strategy` is the deployment strategy to use to replace existing pods with new ones. This is optional. If not provided, kubernetes will use default deploymentStrategy, ie. `RollingUpdate`. See more about [Deployment Strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
 
@@ -429,9 +424,9 @@ MongoDB managed by KubeDB can be monitored with builtin-Prometheus and Prometheu
 - [Monitor MongoDB with builtin Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md)
 - [Monitor MongoDB with Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md)
 
-### spec.configSource
+### spec.configSecret
 
-`spec.configSource` is an optional field that allows users to provide custom configuration for MongoDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc.
+`spec.configSecret` is an optional field that allows users to provide custom configuration for MongoDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc.
 
 > Please note that, the configfile name needs to be `mongod.conf` for mongodb.
 
@@ -479,7 +474,7 @@ NB. If `spec.shardTopology` is set, then `spec.podTemplate` needs to be empty. I
 
 `spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the MongoDB docker image. To know about supported environment variables, please visit [here](https://hub.docker.com/r/_/mongo/).
 
-Note that, KubeDB does not allow `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` environment variables to set in `spec.podTemplate.spec.env`. If you want to use custom superuser and password, please use `spec.databaseSecret` instead described earlier.
+Note that, KubeDB does not allow `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` environment variables to set in `spec.podTemplate.spec.env`. If you want to use custom superuser and password, please use `spec.authSecret` instead described earlier.
 
 If you try to set `MONGO_INITDB_ROOT_USERNAME` or `MONGO_INITDB_ROOT_PASSWORD` environment variable in MongoDB crd, Kubed operator will reject the request with following error,
 
@@ -499,7 +494,7 @@ for: "./mongodb.yaml": admission webhook "mongodb.validators.kubedb.com" denied 
     name
     namespace
     spec.ReplicaSet
-    spec.databaseSecret
+    spec.authSecret
     spec.init
     spec.storageType
     spec.storage
@@ -550,16 +545,12 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
-### spec.updateStrategy
-
-You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for MongoDB database thorough `spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from old KubeDB version to new one should behave.
-
 ### spec.terminationPolicy
 
 `terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MongoDB` crd or which resources KubeDB should keep or delete when you delete `MongoDB` crd. KubeDB provides following four termination policies:
 
 - DoNotTerminate
-- Pause
+- Halt
 - Delete (`Default`)
 - WipeOut
 
@@ -567,7 +558,7 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 
 Following table show what KubeDB does when you delete MongoDB crd for different termination policies,
 
-| Behavior                            | DoNotTerminate |  Pause   |  Delete  | WipeOut  |
+| Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
 | ----------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
 | 2. Create Dormant Database          |    &#10007;    | &#10003; | &#10007; | &#10007; |
@@ -578,7 +569,7 @@ Following table show what KubeDB does when you delete MongoDB crd for different 
 | 7. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
 | 8. Delete Snapshot data from bucket |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-If you don't specify `spec.terminationPolicy` KubeDB uses `Pause` termination policy by default.
+If you don't specify `spec.terminationPolicy` KubeDB uses `Halt` termination policy by default.
 
 ## Next Steps
 

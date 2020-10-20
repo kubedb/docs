@@ -195,7 +195,7 @@ Here, when you specify the resource request for `MySQL` container, the scheduler
 | ------------------- | -------------------------------------------------------------------------|
 | `Progressing`       | Specifies that the operation is now progressing |
 | `Successful`        | Specifies such a state that the operation on the database has been successful. |
-| `PauseDatabase`     | Specifies such a state that the database is paused by the operator   |
+| `HaltDatabase`     | Specifies such a state that the database is halted by the operator   |
 | `ResumeDatabase`    | Specifies such a state that the database is resumed by the operator    |
 | `Failure`           | Specifies such a state that the operation on the database has been failed.  |
 | `Scaling`           | Specifies such a state that the scaling operation on the database has stared |
@@ -215,8 +215,8 @@ Here, when you specify the resource request for `MySQL` container, the scheduler
 | --------------------------------------- | -----------------------------------------------|
 | `OpsRequestProgressingStarted`          | Operator has started the OpsRequest processing    |
 | `OpsRequestFailedToProgressing`         | Operator has failed to start the OpsRequest processing    |
-| `SuccessfullyPausedDatabase`            | Database is successfully paused by the operator  |
-| `FailedToPauseDatabase`                 | Database is failed to pause by the operator    |
+| `SuccessfullyHaltedDatabase`            | Database is successfully halted by the operator  |
+| `FailedToHaltDatabase`                 | Database is failed to halt by the operator    |
 | `SuccessfullyResumedDatabase`           | Database is successfully resumed to perform its usual operation  |
 | `FailedToResumedDatabase`               | Database is failed to resume                   |
 | `DatabaseVersionUpgradingStarted`       | Operator has started upgrading the database version    |

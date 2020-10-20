@@ -492,9 +492,9 @@ Status:
     Last Transition Time:  2020-09-30T05:45:58Z
     Message:               Successfully Resumed mongodb: mg-sharding
     Observed Generation:   1
-    Reason:                PauseDatabase
+    Reason:                HaltDatabase
     Status:                False
-    Type:                  PauseDatabase
+    Type:                  HaltDatabase
     Last Transition Time:  2020-09-30T05:38:31Z
     Message:               Successfully Horizontally Scaled Up Shard Replicas
     Observed Generation:   1
@@ -530,11 +530,11 @@ Status:
 Events:
   Type    Reason                Age   From                        Message
   ----    ------                ----  ----                        -------
-  Normal  PauseDatabase         54m   KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
-  Normal  PauseDatabase         54m   KubeDB Enterprise Operator  Successfully Paused MongoDB mg-sharding in Namespace demo
+  Normal  HaltDatabase         54m   KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
+  Normal  HaltDatabase         54m   KubeDB Enterprise Operator  Successfully Halted MongoDB mg-sharding in Namespace demo
   Normal  ScaleUpShard          50m   KubeDB Enterprise Operator  Successfully Horizontally Scaled Up Shard
-  Normal  PauseDatabase         50m   KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
-  Normal  PauseDatabase         50m   KubeDB Enterprise Operator  Successfully Paused MongoDB mg-sharding in Namespace demo
+  Normal  HaltDatabase         50m   KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
+  Normal  HaltDatabase         50m   KubeDB Enterprise Operator  Successfully Halted MongoDB mg-sharding in Namespace demo
   Normal  Progressing           50m   KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
   Normal  Progressing           49m   KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
   Normal  ScaleUpShard          49m   KubeDB Enterprise Operator  Successfully Horizontally Scaled Up Shard
@@ -979,11 +979,11 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-shard
      Status:                True
      Type:                  HorizontalScaling
      Last Transition Time:  2020-09-30T07:05:34Z
-     Message:               Successfully paused mongodb: mg-sharding
+     Message:               Successfully halted mongodb: mg-sharding
      Observed Generation:   1
-     Reason:                PauseDatabase
+     Reason:                HaltDatabase
      Status:                True
-     Type:                  PauseDatabase
+     Type:                  HaltDatabase
      Last Transition Time:  2020-09-30T07:04:42Z
      Message:               Successfully Horizontally Scaled Down Shard Replicas
      Observed Generation:   1
@@ -1025,8 +1025,8 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-shard
  Events:
    Type    Reason                  Age    From                        Message
    ----    ------                  ----   ----                        -------
-   Normal  PauseDatabase           2m17s  KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
-   Normal  PauseDatabase           2m17s  KubeDB Enterprise Operator  Successfully Paused MongoDB mg-sharding in Namespace demo
+   Normal  HaltDatabase           2m17s  KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
+   Normal  HaltDatabase           2m17s  KubeDB Enterprise Operator  Successfully Halted MongoDB mg-sharding in Namespace demo
    Normal  ScaleDownShardReplicas  87s    KubeDB Enterprise Operator  Successfully Horizontally Scaled Down Shard Replicas
    Normal  StartingBalancer        87s    KubeDB Enterprise Operator  Starting Balancer
    Normal  StartingBalancer        87s    KubeDB Enterprise Operator  Successfully Started Balancer
@@ -1036,8 +1036,8 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-shard
    Normal  ResumeDatabase          35s    KubeDB Enterprise Operator  Resuming MongoDB
    Normal  ResumeDatabase          35s    KubeDB Enterprise Operator  Successfully Resumed mongodb
    Normal  Successful              35s    KubeDB Enterprise Operator  Successfully Horizontally Scaled Database
-   Normal  PauseDatabase           35s    KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
-   Normal  PauseDatabase           35s    KubeDB Enterprise Operator  Successfully Paused MongoDB mg-sharding in Namespace demo
+   Normal  HaltDatabase           35s    KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
+   Normal  HaltDatabase           35s    KubeDB Enterprise Operator  Successfully Halted MongoDB mg-sharding in Namespace demo
 ```
 
 ##### Verify Number of Shard and Shard Replicas

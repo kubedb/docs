@@ -5,8 +5,8 @@ metadata:
   namespace: demo
 spec:
   version: 7.3.2
-  databaseSecret:
-    secretName: instant-elasticsearch-auth
+  authSecret:
+    name: instant-elasticsearch-auth
   storageType: Durable
   storage:
     storageClassName: "standard"

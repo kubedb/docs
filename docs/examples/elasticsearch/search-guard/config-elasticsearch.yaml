@@ -5,8 +5,8 @@ metadata:
   namespace: demo
 spec:
   version: "6.3-v1"
-  databaseSecret:
-    secretName: config-elasticsearch-auth
+  authSecret:
+    name: config-elasticsearch-auth
   storage:
     storageClassName: "standard"
     accessModes:

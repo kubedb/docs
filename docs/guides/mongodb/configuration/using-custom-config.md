@@ -37,7 +37,7 @@ MongoDB allows to configure database via configuration file. The default configu
 
 > To learn available configuration option of MongoDB see [Configuration File Options](https://docs.mongodb.com/manual/reference/configuration-options/).
 
-At first, you have to create a config file named `mongod.conf`. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `spec.configSource` section while creating MongoDB crd. KubeDB will mount this volume into `/configdb-readonly/` directory of the database pod.
+At first, you have to create a config file named `mongod.conf`. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `spec.configSecret` section while creating MongoDB crd. KubeDB will mount this volume into `/configdb-readonly/` directory of the database pod.
 
 In this tutorial, we will configure [net.maxIncomingConnections](https://docs.mongodb.com/manual/reference/configuration-options/#net.maxIncomingConnections) (default value: 65536) via a custom config file. We will use configMap as volume source.
 
@@ -79,7 +79,7 @@ metadata:
   uid: 7da0467c-29f6-11e9-aebf-080027875192
 ```
 
-Now, create MongoDB crd specifying `spec.configSource` field.
+Now, create MongoDB crd specifying `spec.configSecret` field.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -97,9 +97,8 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  configSource:
-      configMap:
-        name: mg-custom-config
+  configSecret:
+    name: mg-custom-config
 ```
 
 ```bash

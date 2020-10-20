@@ -67,8 +67,6 @@ spec:
       requests:
         storage: 1Gi
   terminationPolicy: WipeOut
-  updateStrategy:
-    type: RollingUpdate
 ```
 
 Let's create the MySQL object we have shown above.
@@ -106,8 +104,6 @@ spec:
       kind: MySQL
       name: my-group
     replicas: 3
-  updateStrategy:
-    type: RollingUpdate
   monitor:
     agent: prometheus.io/builtin
     prometheus:

@@ -43,7 +43,7 @@ The upgrading process consists of the following steps:
 
 5. `KubeDB` Enterprise operator watches the `MongoDBOpsRequest` CR.
 
-6. When it finds a `MongoDBOpsRequest` CR, it pauses the `MongoDB` object which is referred from the `MongoDBOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `MongoDB` object during the upgrading process.  
+6. When it finds a `MongoDBOpsRequest` CR, it halts the `MongoDB` object which is referred from the `MongoDBOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `MongoDB` object during the upgrading process.  
 
 7. By looking at the target version from `MongoDBOpsRequest` CR, `KubeDB` Enterprise operator updates the images of all the `StatefulSets`. After each image update, the operator performs some checks such as if the oplog is synced and database size is almost same or not.
 

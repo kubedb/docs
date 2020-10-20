@@ -193,10 +193,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mongo-sh
   uid: 1d83622c-6a5f-11e9-a871-080027a851ba
 spec:
-  certificateSecret:
-    secretName: mongo-sh-keyfile
-  databaseSecret:
-    secretName: mongo-sh-auth
+  authSecret:
+    name: mongo-sh-auth
   serviceTemplate:
     metadata: {}
     spec: {}
@@ -310,9 +308,7 @@ spec:
             storage: 1Gi
         storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 3.6-v3
 status:
   observedGeneration: 3$4212299729528774793
@@ -321,7 +317,7 @@ status:
 
 Please note that KubeDB operator has created a new Secret called `mongo-sh-auth` _(format: {mongodb-object-name}-auth)_ for storing the password for `mongodb` superuser. This secret contains a `username` key which contains the _username_ for MongoDB superuser and a `password` key which contains the _password_ for MongoDB superuser.
 
-If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`. For more details, please see [here](/docs/guides/mongodb/concepts/mongodb.md#specdatabasesecret).
+If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`. For more details, please see [here](/docs/guides/mongodb/concepts/mongodb.md#specdatabasesecret).
 
 ## Connection Information
 
@@ -809,11 +805,11 @@ mongos> sh.status()
                         { "myfield" : { "$minKey" : 1 } } -->> { "myfield" : { "$maxKey" : 1 } } on : shard1 Timestamp(1, 0)
 ```
 
-## Pause Database
+## Halt Database
 
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
 
-Since the MongoDB object created in this tutorial has `spec.terminationPolicy` set to `Pause` (default), if you delete the MongoDB object, KubeDB operator will create a dormant database while deleting the StatefulSet and its pods but leaves the PVCs unchanged.
+Since the MongoDB object created in this tutorial has `spec.terminationPolicy` set to `Halt` (default), if you delete the MongoDB object, KubeDB operator will create a dormant database while deleting the StatefulSet and its pods but leaves the PVCs unchanged.
 
 ```bash
 $ kubectl delete mg mongo-sh -n demo
@@ -825,7 +821,7 @@ mongo-sh   Pausing   13s
 
 $ kubectl get drmn -n demo mongo-sh
 NAME       STATUS   AGE
-mongo-sh   Paused   52s
+mongo-sh   Halted   52s
 ```
 
 ```yaml
@@ -852,10 +848,8 @@ spec:
       namespace: demo
     spec:
       mongodb:
-        certificateSecret:
-          secretName: mongo-sh-keyfile
-        databaseSecret:
-          secretName: mongo-sh-auth
+        authSecret:
+          name: mongo-sh-auth
         serviceTemplate:
           metadata: {}
           spec: {}
@@ -969,20 +963,20 @@ spec:
                   storage: 1Gi
               storageClassName: standard
         storageType: Durable
-        terminationPolicy: Pause
+        terminationPolicy: Halt
         updateStrategy:
           type: RollingUpdate
         version: 3.6-v3
 status:
   observedGeneration: 1$16440556888999634490
   pausingTime: "2019-04-29T11:24:41Z"
-  phase: Paused
+  phase: Halted
 ```
 
 Here,
 
 - `spec.origin` is the spec of the original spec of the original MongoDB object.
-- `status.phase` points to the current database state `Paused`.
+- `status.phase` points to the current database state `Halted`.
 
 ## Resume Dormant Database
 
@@ -1089,7 +1083,7 @@ spec:
   wipeOut: true
   ...
 status:
-  phase: Paused
+  phase: Halted
   ...
 ```
 

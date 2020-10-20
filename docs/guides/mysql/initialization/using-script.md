@@ -128,7 +128,7 @@ Volume:
   StorageClass:      standard
   Capacity:          1Gi
   Access Modes:      RWO
-Paused:              false
+Halted:              false
 Halted:              false
 Termination Policy:  Delete
 
@@ -278,8 +278,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mysqls/mysql-init-script
   uid: 2903f636-09cb-4299-af5d-c7a2e799ec61
 spec:
-  databaseSecret:
-    secretName: mysql-init-script-auth
+  authSecret:
+    name: mysql-init-script-auth
   init:
     scriptSource:
       configMap:
@@ -303,8 +303,6 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: Delete
-  updateStrategy:
-    type: RollingUpdate
   version: 8.0.21
 status:
   observedGeneration: 2
@@ -312,7 +310,7 @@ status:
 ```
 
 KubeDB operator has created a new Secret called `mysql-init-script-auth` *(format: {mysql-object-name}-auth)* for storing the password for MySQL superuser. This secret contains a `username` key which contains the *username* for MySQL superuser and a `password` key which contains the *password* for MySQL superuser.
-If you want to use an existing secret please specify that when creating the MySQL object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`.
+If you want to use an existing secret please specify that when creating the MySQL object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`.
 
 Now, you can connect to this database from the phpMyAdmin dashboard using the database pod IP and and `mysql` user password.
 

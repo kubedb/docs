@@ -67,10 +67,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/elasticsearches/elasticsearch-demo
   uid: 90a54c9e-cb05-11e8-8d51-9eed48c5e947
 spec:
-  certificateSecret:
-    secretName: elasticsearch-demo-cert
-  databaseSecret:
-    secretName: elasticsearch-demo-auth
+  authSecret:
+    name: elasticsearch-demo-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -88,9 +86,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 7.3.2
 status:
   observedGeneration: 3$4212299729528774793

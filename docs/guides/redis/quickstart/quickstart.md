@@ -210,9 +210,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 4.0-v1
 status:
   observedGeneration: 1$4210395375389091791
@@ -246,16 +244,16 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 
 ```bash
 $ kubectl delete rd redis-quickstart -n demo
-Error from server (BadRequest): admission webhook "redis.validators.kubedb.com" denied the request: redis "redis-quickstart" can't be paused. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "redis.validators.kubedb.com" denied the request: redis "redis-quickstart" can't be halted. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubectl edit rd redis-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when redis is deleted and keeps PVCs intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database. 
+Now, run `kubectl edit rd redis-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` (which creates `dormantdatabase` when redis is deleted and keeps PVCs intact) or remove this field (which default to `Halt`). Then you will be able to delete/halt the database. 
 
 Learn details of all `TerminationPolicy` [here](/docs/guides/redis/concepts/redis.md#specterminationpolicy)
 
-## Pause Database
+## Halt Database
 
-When [TerminationPolicy](/docs/guides/redis/concepts/redis.md#specterminationpolicy) is set to `Pause`, it will pause the Redis server instead of deleting it. Here, If you delete the Redis object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `redis-quickstart` Redis server has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
+When [TerminationPolicy](/docs/guides/redis/concepts/redis.md#specterminationpolicy) is set to `Halt`, it will halt the Redis server instead of deleting it. Here, If you delete the Redis object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `redis-quickstart` Redis server has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```bash
 $ kubectl delete rd redis-quickstart -n demo
@@ -267,7 +265,7 @@ redis-quickstart   Pausing   17s
 
 $ kubectl get drmn -n demo redis-quickstart
 NAME               STATUS    AGE
-redis-quickstart   Paused    1m
+redis-quickstart   Halted    1m
 ```
 
 ```yaml
@@ -312,20 +310,18 @@ spec:
               storage: 1Gi
           storageClassName: standard
         storageType: Durable
-        terminationPolicy: Pause
-        updateStrategy:
-          type: RollingUpdate
+        terminationPolicy: Halt
         version: 4.0-v1
 status:
   observedGeneration: 1$4235806204804343739
   pausingTime: 2018-10-01T06:10:17Z
-  phase: Paused
+  phase: Halted
 ```
 
 Here,
 
 - `spec.origin` is the spec of the original spec of the original Redis object.
-- `status.phase` points to the current database state `Paused`.
+- `status.phase` points to the current database state `Halted`.
 
 ## Resume Dormant Database
 
@@ -358,7 +354,7 @@ spec:
   wipeOut: true
   ...
 status:
-  phase: Paused
+  phase: Halted
   ...
 ```
 

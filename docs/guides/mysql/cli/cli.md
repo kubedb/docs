@@ -72,8 +72,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/default/mysqls/mysql-demo
   uid: daac5549-0a7b-4e25-8773-473dffabf1cd
 spec:
-  databaseSecret:
-    secretName: mysql-demo-auth
+  authSecret:
+    name: mysql-demo-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -93,8 +93,6 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: Delete
-  updateStrategy:
-    type: RollingUpdate
   version: 8.0.21
 status:
   observedGeneration: 2
@@ -163,7 +161,7 @@ Volume:
   StorageClass:      standard
   Capacity:          1Gi
   Access Modes:      RWO
-Paused:              false
+Halted:              false
 Halted:              false
 Termination Policy:  Delete
 
@@ -310,8 +308,8 @@ $ kubectl edit my -n demo mysql-quickstart
 
 spec:
   ....
-  databaseSecret:
-    secretName: mysql-quickstart-auth
+  authSecret:
+    name: mysql-quickstart-auth
 # add database halted = true to delete StatefulSet services and database other resources
   halted: true
   ....
@@ -330,7 +328,7 @@ Various fields of a KubeDB object can't be edited using `edit` command. The foll
 
 If StatefulSets exists for a MySQL database, following fields can't be modified as well.
 
-- spec.databaseSecret
+- spec.authSecret
 - spec.init
 - spec.storageType
 - spec.storage

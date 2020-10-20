@@ -309,11 +309,11 @@ Status:
     Status:                True
     Type:                  Progressing
     Last Transition Time:  2020-08-12T08:34:33Z
-    Message:               Controller has successfully Paused the MySQL database: demo/my-group 
+    Message:               Controller has successfully Halted the MySQL database: demo/my-group 
     Observed Generation:   1
-    Reason:                SuccessfullyPausedDatabase
+    Reason:                SuccessfullyHaltedDatabase
     Status:                True
-    Type:                  PauseDatabase
+    Type:                  HaltDatabase
     Last Transition Time:  2020-08-12T08:34:33Z
     Message:               MySQL version upgrading stated for MySQLOpsRequest: demo/my-upgrade-minor-group
     Observed Generation:   1
@@ -345,7 +345,7 @@ Events:
   ----    ------      ----   ----                        -------
   Normal  Starting    7m59s  KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-upgrade-minor-group
   Normal  Starting    7m59s  KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-group
-  Normal  Successful  7m59s  KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-group for MySQLOpsRequest: my-upgrade-minor-group
+  Normal  Successful  7m59s  KubeDB Enterprise Operator  Successfully halted MySQL database: demo/my-group for MySQLOpsRequest: my-upgrade-minor-group
   Normal  Starting    7m59s  KubeDB Enterprise Operator  Upgrading MySQL images: demo/my-group for MySQLOpsRequest: my-upgrade-minor-group
   Normal  Successful  4m59s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1
   Normal  Successful  4m39s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1

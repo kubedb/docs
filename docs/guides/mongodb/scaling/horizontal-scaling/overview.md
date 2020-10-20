@@ -43,7 +43,7 @@ The Horizontal scaling process consists of the following steps:
 
 5. `KubeDB` Enterprise operator watches the `MongoDBOpsRequest` CR.
 
-6. When it finds a `MongoDBOpsRequest` CR, it pauses the `MongoDB` object which is referred from the `MongoDBOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `MongoDB` object during the horizontal scaling process.  
+6. When it finds a `MongoDBOpsRequest` CR, it halts the `MongoDB` object which is referred from the `MongoDBOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `MongoDB` object during the horizontal scaling process.  
 
 7. Then the `KubeDB` Enterprise operator will scale the related StatefulSet Pods to reach the expected number of replicas defined in the `MongoDBOpsRequest` CR.
 

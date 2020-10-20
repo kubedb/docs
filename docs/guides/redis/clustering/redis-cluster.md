@@ -61,9 +61,7 @@ spec:
     storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
 ```
 
 ```bash
@@ -201,10 +199,8 @@ spec:
   cluster:
     master: 3
     replicas: 1
-  configSource:
-    configMap:
-      defaultMode: 511
-      name: redis-cluster
+  configSecret:
+    name: redis-cluster
   mode: Cluster
   podTemplate:
     controller: {}
@@ -224,9 +220,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 4.0-v2
 status:
   observedGeneration: 2$4213139756412538772

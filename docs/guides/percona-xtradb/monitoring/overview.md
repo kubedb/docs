@@ -53,9 +53,8 @@ metadata:
 spec:
   version: "4.0-v1"
   terminationPolicy: WipeOut
-  configSource: # configure Redis to use password for authentication
-    configMap:
-      name: redis-config
+  configSecret: # configure Redis to use password for authentication
+    name: redis-config
   storageType: Durable
   storage:
     storageClassName: default

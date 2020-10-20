@@ -67,7 +67,7 @@ metadata:
   namespace: demo
 spec:
   ca:
-    secretName: my-ca
+    name: my-ca
 ```
 
 Let’s create the `Issuer` cr we have shown above,

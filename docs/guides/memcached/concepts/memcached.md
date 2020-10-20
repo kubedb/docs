@@ -38,9 +38,8 @@ spec:
       labels:
         app: kubedb
       interval: 10s
-  configSource:
-    configMap:
-      name: mc-custom-config
+  configSecret:
+    name: mc-custom-config
   podTemplate:
     annotations:
       passMe: ToDatabasePod
@@ -75,9 +74,7 @@ spec:
       - name:  http
         port:  9200
         targetPort: http
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
 ```
 
 ### spec.replicas
@@ -99,9 +96,9 @@ Memcached managed by KubeDB can be monitored with builtin-Prometheus and Prometh
 - [Monitor Memcached with builtin Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md)
 - [Monitor Memcached with Prometheus operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md)
 
-### spec.configSource
+### spec.configSecret
 
-`spec.configSource` is an optional field that allows users to provide custom configuration for Memcached. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/memcached/custom-config/using-custom-config.md).
+`spec.configSecret` is an optional field that allows users to provide custom configuration for Memcached. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/memcached/custom-config/using-custom-config.md).
 
 ### spec.podTemplate
 
@@ -200,16 +197,12 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
-### spec.updateStrategy
-
-You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of Deployment created by KubeDB for Memcached server thorough `spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from old KubeDB version to new one should behave.
-
 ### spec.terminationPolicy
 
 `terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Memcached` crd or which resources KubeDB should keep or delete when you delete `Memcached` crd. KubeDB provides following four termination policies:
 
 - DoNotTerminate
-- Pause
+- Halt
 - Delete (`Default`)
 - WipeOut
 
@@ -217,14 +210,14 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 
 Following table show what KubeDB does when you delete Memcached crd for different termination policies,
 
-| Behavior                            | DoNotTerminate |  Pause   |  Delete  | WipeOut  |
+| Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
 | ----------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
 | 2. Create Dormant Database          |    &#10007;    | &#10003; | &#10007; | &#10007; |
 | 3. Delete StatefulSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
 | 4. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
 
-If you don't specify `spec.terminationPolicy` KubeDB uses `Pause` termination policy by default.
+If you don't specify `spec.terminationPolicy` KubeDB uses `Halt` termination policy by default.
 
 ## Next Steps
 

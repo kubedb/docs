@@ -39,7 +39,7 @@ KubeDB supports providing custom configuration for Redis. This tutorial will sho
 
 Redis allows configuration via a config file. When redis docker image starts, it executes `redis-server` command. If we provide a `.conf` file directory as an argument of this command, Redis server will use configuration specified in the file. To know more about configuring Redis see [here](https://redis.io/topics/config).
 
-At first, you have to create a config file named `redis.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSource` section while creating Redis crd. KubeDB will mount this volume into `/usr/local/etc/redis` directory of the pod and the `redis.conf` file path will be sent as an argument of `redis-server` command.
+At first, you have to create a config file named `redis.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSecret` section while creating Redis crd. KubeDB will mount this volume into `/usr/local/etc/redis` directory of the pod and the `redis.conf` file path will be sent as an argument of `redis-server` command.
 
 In this tutorial, we will configure `databases` and `maxclients` via a custom config file. We will use configMap as volume source.
 
@@ -82,7 +82,7 @@ metadata:
   namespace: demo
 ```
 
-Now, create Redis crd specifying `spec.configSource` field.
+Now, create Redis crd specifying `spec.configSecret` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/custom-config/redis-custom.yaml
@@ -99,9 +99,8 @@ metadata:
   namespace: demo
 spec:
   version: "4.0-v1"
-  configSource:
-      configMap:
-        name: rd-custom-config
+  configSecret:
+    name: rd-custom-config
   storage:
     storageClassName: "standard"
     accessModes:

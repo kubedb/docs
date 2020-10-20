@@ -44,8 +44,8 @@ spec:
       storageSecretName: s3-secret
       s3:
         bucket: kubedb
-  databaseSecret:
-    secretName: p1-auth
+  authSecret:
+    name: p1-auth
   storageType: "Durable"
   storage:
     storageClassName: standard
@@ -71,9 +71,8 @@ spec:
       labels:
         app: kubedb
       interval: 10s
-  configSource:
-    configMap:
-      name: pg-custom-config
+  configSecret:
+    name: pg-custom-config
   podTemplate:
     metadata:
       annotations:
@@ -117,9 +116,7 @@ spec:
       - name:  http
         port:  5432
         targetPort: http
-  updateStrategy:
-    type: RollingUpdate
-  terminationPolicy: "Pause"
+  terminationPolicy: "Halt"
 ```
 
 ### spec.version
@@ -196,11 +193,11 @@ Continuous archiving data will be stored in a folder called `{bucket}/{prefix}/k
 
 Follow [this link](/docs/concepts/snapshot.md#google-cloud-storage-gcs) to learn how to create secret for S3 or GCS. To learn more about how to configure Postgres to archive WAL data continuously in AWS S3 bucket, please visit [here](/docs/guides/postgres/snapshot/wal/continuous_archiving.md).
 
-### spec.databaseSecret
+### spec.authSecret
 
-`spec.databaseSecret` is an optional field that points to a Secret used to hold credentials for `postgres` database. If not set, KubeDB operator creates a new Secret with name `{postgres-name}-auth` that hold _username_ and _password_ for `postgres` database.
+`spec.authSecret` is an optional field that points to a Secret used to hold credentials for `postgres` database. If not set, KubeDB operator creates a new Secret with name `{postgres-name}-auth` that hold _username_ and _password_ for `postgres` database.
 
-If you want to use an existing or custom secret, please specify that when creating the Postgres object using `spec.databaseSecret.secretName`. This Secret should contain superuser _username_ as `POSTGRES_USER` key and superuser _password_ as `POSTGRES_PASSWORD` key. Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version >= 0.13.0).
+If you want to use an existing or custom secret, please specify that when creating the Postgres object using `spec.authSecret.name`. This Secret should contain superuser _username_ as `POSTGRES_USER` key and superuser _password_ as `POSTGRES_PASSWORD` key. Secrets provided by users are not managed by KubeDB, and therefore, won't be modified or garbage collected by the KubeDB operator (version >= 0.13.0).
 
 Example:
 
@@ -289,8 +286,8 @@ metadata:
   name: postgres-db
 spec:
   version: "10.2-v5"
-  databaseSecret:
-    secretName: postgres-old-auth
+  authSecret:
+    name: postgres-old-auth
   init:
     snapshotSource:
       name: "snapshot-xyz"
@@ -316,8 +313,8 @@ metadata:
   name: postgres-db
 spec:
   version: "10.2-v5"
-  databaseSecret:
-    secretName: postgres-old
+  authSecret:
+    name: postgres-old
   init:
     postgresWAL:
       storageSecretName: s3-secret
@@ -372,9 +369,9 @@ PostgreSQL managed by KubeDB can be monitored with builtin-Prometheus and Promet
 - [Monitor PostgreSQL with builtin Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md)
 - [Monitor PostgreSQL with Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md)
 
-### spec.configSource
+### spec.configSecret
 
-`spec.configSource` is an optional field that allows users to provide custom configuration for PostgreSQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/postgres/custom-config/using-custom-config.md).
+`spec.configSecret` is an optional field that allows users to provide custom configuration for PostgreSQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/postgres/custom-config/using-custom-config.md).
 
 ### spec.podTemplate
 
@@ -419,7 +416,7 @@ If a service account name is given, and there's an existing service account by t
 
 `spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the Postgres docker image. To know about supported environment variables, please visit [here](https://hub.docker.com/_/postgres/).
 
-Note that, the KubeDB operator does not allow `POSTGRES_USER` and `POSTGRES_PASSWORD` environment variable to set in `spec.podTemplate.spec.env`. If you want to set the superuser _username_ and _password_, please use `spec.databaseSecret` instead described earlier.
+Note that, the KubeDB operator does not allow `POSTGRES_USER` and `POSTGRES_PASSWORD` environment variable to set in `spec.podTemplate.spec.env`. If you want to set the superuser _username_ and _password_, please use `spec.authSecret` instead described earlier.
 
 If you try to set `POSTGRES_USER` or `POSTGRES_PASSWORD` environment variable in Postgres crd, KubeDB operator will reject the request with following error,
 
@@ -442,7 +439,7 @@ At least one of the following was changed:
     spec.standby
     spec.streaming
     spec.archiver
-    spec.databaseSecret
+    spec.authSecret
     spec.storageType
     spec.storage
     spec.podTemplate.spec.nodeSelector
@@ -506,16 +503,12 @@ The fileds of `spec.replicaServiceTemplate` is similar to `spec.serviceTemplate`
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
-### spec.updateStrategy
-
-You can specify [update strategy](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies) of StatefulSet created by KubeDB for Postgres database thorough `spec.updateStrategy` field. The default value of this field is `RollingUpdate`. In future, we will use this field to determine how automatic migration from old KubeDB version to new one should behave.
-
 ### spec.terminationPolicy
 
 `terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Postgres` crd or which resources KubeDB should keep or delete when you delete `Postgres` crd. KubeDB provides following four termination policies:
 
 - DoNotTerminate
-- Pause
+- Halt
 - Delete (`Default`)
 - WipeOut
 
@@ -523,7 +516,7 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 
 Following table show what KubeDB does when you delete Postgres crd for different termination policies,
 
-| Behavior                                 | DoNotTerminate |  Pause   |  Delete  | WipeOut  |
+| Behavior                                 | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
 | ---------------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation                |    &#10003;    | &#10007; | &#10007; | &#10007; |
 | 2. Create Dormant Database               |    &#10007;    | &#10003; | &#10007; | &#10007; |
@@ -535,7 +528,7 @@ Following table show what KubeDB does when you delete Postgres crd for different
 | 8. Delete Snapshot data from bucket      |    &#10007;    | &#10007; | &#10007; | &#10003; |
 | 9. Delete archieved WAL data from bucket |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
-If you don't specify `spec.terminationPolicy` KubeDB uses `Pause` termination policy by default.
+If you don't specify `spec.terminationPolicy` KubeDB uses `Halt` termination policy by default.
 
 ## Next Steps
 

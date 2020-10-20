@@ -37,7 +37,7 @@ PerconaXtraDB allows to configure database via configuration file. The default c
 - For standalone server, it looks into `/etc/my.cnf.d/`and `/etc/percona-server.conf.d/` directories. Here, KubeDB uses the later one `/etc/percona-server.conf.d/` for custom configurations. If configuration file exists, the `mysqld` will use combined startup setting from both `/etc/my.cnf` and `*.cnf` files in `/etc/percona-server.conf.d/` directory. This custom configuration will overwrite the existing default one.
 - For cluster, the `mysqld` process looks into `/etc/my.cnf.d/`, and `/etc/percona-xtradb-cluster.conf.d/` directories. Here, KubeDB uses the later one `/etc/percona-xtradb-cluster.conf.d/` for custom configurations. If any configuration file exists, the `mysqld` will use combined startup settings from both `/etc/my.cnf` and `*.cnf` files in `/etc/percona-xtradb-cluster.conf.d/` directory. This custom configuration will overwrite the existing default one.
 
-At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `.spec.configSource` section while creating PerconaXtraDB object. KubeDB will mount this volume into the directory (specified above) of the database Pod.
+At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `.spec.configSecret` section while creating PerconaXtraDB object. KubeDB will mount this volume into the directory (specified above) of the database Pod.
 
 In this tutorial, we will configure [max_connections](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_connections) and [read_buffer_size](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_read_buffer_size) via a custom config file for a standalone percona server. We will use ConfigMap as volume source.
 
@@ -89,7 +89,7 @@ metadata:
   ...
 ```
 
-Now, create PerconaXtraDB object specifying `.spec.configSource` field.
+Now, create PerconaXtraDB object specifying `.spec.configSecret` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/custom-config.yaml
@@ -107,9 +107,8 @@ metadata:
 spec:
   version: "5.7"
   replicas: 1
-  configSource:
-    configMap:
-      name: my-custom-config
+  configSecret:
+    name: my-custom-config
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -118,8 +117,6 @@ spec:
     resources:
       requests:
         storage: 50Mi
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: DoNotTerminate
 ```
 
