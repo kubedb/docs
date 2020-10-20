@@ -24,7 +24,7 @@ This tutorial will show you how to configure builtin [Prometheus](https://github
 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources.
 
-  ```console
+  ```bash
   $ kubectl create ns monitoring
   namespace/monitoring created
   ```
@@ -37,8 +37,8 @@ Let's install KubeDB with operator monitoring enabled.
 
 **Helm 3:**
 
-```console
-$ helm install kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
+```bash
+$ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --no-hooks \
   --set monitoring.enabled=true \
@@ -49,8 +49,8 @@ $ helm install kubedb-operator appscode/kubedb --version {{< param "info.version
 
 **Helm 2:**
 
-```console
-$ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.version" >}} \
+```bash
+$ helm install appscode/kubedb --name kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/builtin \
@@ -60,8 +60,8 @@ $ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.
 
 **YAML (with Helm 3):**
 
-```console
-$ helm template kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
+```bash
+$ helm template kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --no-hooks \
   --set monitoring.enabled=true \
@@ -70,16 +70,16 @@ $ helm template kubedb-operator appscode/kubedb --version {{< param "info.versio
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus | kubectl apply -f -
 ```
 
-This will add necessary annotations to `kubedb-operator` service created in `kube-system` namespace. Prometheus server will scrape metrics using those annotations. Let's check which annotations are added to the service,
+This will add necessary annotations to `kubedb` service created in `kube-system` namespace. Prometheus server will scrape metrics using those annotations. Let's check which annotations are added to the service,
 
 ```yaml
-$ kubectl get service -n kube-system kubedb-operator -o yaml
+$ kubectl get service -n kube-system kubedb -o yaml
 apiVersion: v1
 kind: Service
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"kubedb"},"name":"kubedb-operator","namespace":"kube-system"},"spec":{"ports":[{"name":"api","port":443,"targetPort":8443}],"selector":{"app":"kubedb"}}}
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"kubedb"},"name":"kubedb","namespace":"kube-system"},"spec":{"ports":[{"name":"api","port":443,"targetPort":8443}],"selector":{"app":"kubedb"}}}
     prometheus.io/path: /metrics
     prometheus.io/port: "8443"
     prometheus.io/scheme: https
@@ -87,10 +87,10 @@ metadata:
   creationTimestamp: 2018-12-31T08:44:05Z
   labels:
     app: kubedb
-  name: kubedb-operator
+  name: kubedb
   namespace: kube-system
   resourceVersion: "22287"
-  selfLink: /api/v1/namespaces/kube-system/services/kubedb-operator
+  selfLink: /api/v1/namespaces/kube-system/services/kubedb
   uid: 3af092c3-0cd8-11e9-9662-080027e8eafe
 spec:
   clusterIP: 10.108.131.64
@@ -125,30 +125,30 @@ Now, we have to configure a Prometheus scraping job to scrape the metrics using 
 - [tls_config](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tls_config) section to establish TLS secured connection.
 - `bearer_token_file` to authorize Prometheus server to KubeDB extension apiserver.
 
-KubeDB has created a secret named `kubedb-operator-apiserver-cert` in `monitoring` namespace as we have specified it through `--prometheus-namespace`. This secret holds the public certificate of KubeDB extension apiserver that is necessary to configure `tls_config` section.
+KubeDB has created a secret named `kubedb-apiserver-cert` in `monitoring` namespace as we have specified it through `--prometheus-namespace`. This secret holds the public certificate of KubeDB extension apiserver that is necessary to configure `tls_config` section.
 
-Verify that the secret `kubedb-operator-apiserver-cert` has been created in `monitoring` namespace.
+Verify that the secret `kubedb-apiserver-cert` has been created in `monitoring` namespace.
 
-```console
+```bash
 $ kubectl get secret -n monitoring -l=app=kubedb
 NAME                             TYPE                DATA   AGE
-kubedb-operator-apiserver-cert   kubernetes.io/tls   2      3h33m
+kubedb-apiserver-cert   kubernetes.io/tls   2      3h33m
 ```
 
-We are going to mount this secret in `/etc/prometheus/secret/kubedb-operator-apiserver-cert` directory of Prometheus deployment.
+We are going to mount this secret in `/etc/prometheus/secret/kubedb-apiserver-cert` directory of Prometheus deployment.
 
 Let's configure a Prometheus scraping job to collect the operator metrics.
 
 ```yaml
-- job_name: kubedb-operator
+- job_name: kubedb
   kubernetes_sd_configs:
   - role: endpoints
   # we have to provide certificate to establish tls secure connection
   tls_config:
     # public certificate of the extension apiserver that has been mounted in "/etc/prometheus/secret/<tls secret name>" directory of prometheus server
-    ca_file: /etc/prometheus/secret/kubedb-operator-apiserver-cert/tls.crt
+    ca_file: /etc/prometheus/secret/kubedb-apiserver-cert/tls.crt
     # dns name for which the certificate is valid
-    server_name: kubedb-operator.kube-system.svc
+    server_name: kubedb.kube-system.svc
   # bearer_token_file is required for authorizing prometheus server to extension apiserver
   bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
   # by default Prometheus server select all kubernetes services as possible target.
@@ -204,25 +204,25 @@ Note that, `bearer_token_file` denotes the `ServiceAccount` token of the Prometh
 
 If you already have a Prometheus server running, update the respective `ConfigMap` and add above scraping job.
 
-Then, you have to mount `kubedb-operator-apiserver-cert` secret in Prometheus deployment. Add the secret as volume:
+Then, you have to mount `kubedb-apiserver-cert` secret in Prometheus deployment. Add the secret as volume:
 
 ```yaml
 volumes:
-- name: kubedb-operator-apiserver-cert
+- name: kubedb-apiserver-cert
   secret:
     defaultMode: 420
-    secretName: kubedb-operator-apiserver-cert
+    secretName: kubedb-apiserver-cert
     items: # avoid mounting private key
     - key: tls.crt
       path: tls.crt
 ```
 
-Then, mount this volume in `/etc/prometheus/secret/kubedb-operator-apiserver-cert` directory.
+Then, mount this volume in `/etc/prometheus/secret/kubedb-apiserver-cert` directory.
 
 ```yaml
 volumeMounts:
-- name: kubedb-operator-apiserver-cert # mount the secret volume with public certificate of the kubedb extension apiserver
-  mountPath: /etc/prometheus/secret/kubedb-operator-apiserver-cert
+- name: kubedb-apiserver-cert # mount the secret volume with public certificate of the kubedb extension apiserver
+  mountPath: /etc/prometheus/secret/kubedb-apiserver-cert
 ```
 
 >Warning: Updating deployment will cause restart of your Prometheus server. If you don't use a persistent volume for Prometheus storage, you will lose your previously scraped data.
@@ -239,7 +239,7 @@ At first, create a ConfigMap with the scraping configuration. Bellow, the YAML o
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: kubedb-operator-prom-config
+  name: kubedb-prom-config
   labels:
     app: kubedb
   namespace: monitoring
@@ -250,15 +250,15 @@ data:
       scrape_timeout: 10s
       evaluation_interval: 30s
     scrape_configs:
-    - job_name: kubedb-operator
+    - job_name: kubedb
       kubernetes_sd_configs:
       - role: endpoints
       # we have to provide certificate to establish tls secure connection
       tls_config:
         # public certificate of the extension apiserver that has been mounted in "/etc/prometheus/secret/<tls secret name>" directory of prometheus server
-        ca_file: /etc/prometheus/secret/kubedb-operator-apiserver-cert/tls.crt
+        ca_file: /etc/prometheus/secret/kubedb-apiserver-cert/tls.crt
         # dns name for which the certificate is valid
-        server_name: kubedb-operator.kube-system.svc
+        server_name: kubedb.kube-system.svc
       # bearer_token_file is required for authorizing prometheus server to extension apiserver
       bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
       # by default Prometheus server select all kubernetes services as possible target.
@@ -310,16 +310,16 @@ data:
 
 Let's create the ConfigMap we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/operator/prom-config.yaml
-configmap/kubedb-operator-prom-config created
+configmap/kubedb-prom-config created
 ```
 
 **Create RBAC:**
 
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
@@ -362,31 +362,31 @@ spec:
           mountPath: /etc/prometheus/
         - name: prometheus-storage-volume
           mountPath: /prometheus/
-        - name: kubedb-operator-apiserver-cert # mount the secret volume with public certificate of the kubedb extension apiserver
-          mountPath: /etc/prometheus/secret/kubedb-operator-apiserver-cert
+        - name: kubedb-apiserver-cert # mount the secret volume with public certificate of the kubedb extension apiserver
+          mountPath: /etc/prometheus/secret/kubedb-apiserver-cert
       volumes:
       - name: prometheus-config-volume
         configMap:
           defaultMode: 420
-          name: kubedb-operator-prom-conf
+          name: kubedb-prom-conf
       - name: prometheus-storage-volume
         emptyDir: {}
-      - name: kubedb-operator-apiserver-cert
+      - name: kubedb-apiserver-cert
         secret:
           defaultMode: 420
-          secretName: kubedb-operator-apiserver-cert
+          secretName: kubedb-apiserver-cert
           items: # avoid mounting private key
           - key: tls.crt
             path: tls.crt
 ```
 
-Notice that, we have mounted `kubedb-operator-apiserver-cert` secret as a volume at `/etc/prometheus/secret/kubedb-operator-apiserver-cert` directory.
+Notice that, we have mounted `kubedb-apiserver-cert` secret as a volume at `/etc/prometheus/secret/kubedb-apiserver-cert` directory.
 
 > Use a persistent volume instead of `emptyDir` for `prometheus-storage` volume if you don't want to lose collected metrics on Prometheus pod restart.
 
 Now, let's create the deployment,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/operator/prom-deploy.yaml
 deployment.apps/prometheus created
 ```
@@ -397,7 +397,7 @@ Prometheus server is listening to port `9090`. We are going to use [port forward
 
 At first, let's check if the Prometheus pod is in `Running` state.
 
-```console
+```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                         READY   STATUS    RESTARTS   AGE
 prometheus-5bcb9678c-kh8vt   1/1     Running   0          149m
@@ -405,13 +405,13 @@ prometheus-5bcb9678c-kh8vt   1/1     Running   0          149m
 
 Now, run following command on a separate terminal to forward 9090 port of `prometheus-5bcb9678c-kh8vt` pod,
 
-```console
+```bash
 $ kubectl port-forward -n monitoring prometheus-5bcb9678c-kh8vt 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `api` endpoint of `kubedb-operator` service as target.
+Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `api` endpoint of `kubedb` service as target.
 
 <p align="center">
   <img alt="Prometheus Target" src="/docs/images/monitoring/operator/builtin-prom-target.png" style="padding:10px">
@@ -421,14 +421,14 @@ Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:909
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete clusterrole -l=app=prometheus-demo
 kubectl delete clusterrolebinding -l=app=prometheus-demo
 
 kubectl delete -n monitoring deployment prometheus
 kubectl delete -n monitoring serviceaccount/prometheus
-kubectl delete -n monitoring configmap/kubedb-operator-prom-config
-kubectl delete -n monitoring secret kubedb-operator-apiserver-cert
+kubectl delete -n monitoring configmap/kubedb-prom-config
+kubectl delete -n monitoring secret kubedb-apiserver-cert
 
 kubectl delete ns monitoring
 ```

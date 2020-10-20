@@ -26,7 +26,7 @@ Now, install KubeDB 0.9.0 cli on your workstation and KubeDB operator in your cl
 
 In this tutorial we are using helm to install kubedb 0.9.0 release. But, user can install kubedb operator from script too.
 
-```console
+```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
 
@@ -96,7 +96,7 @@ spec:
 
 Now create secret and deploy database.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -111,7 +111,7 @@ postgres.kubedb.com/scheduled-pg created
 
 See running scheduled snapshots,
 
-```console
+```bash
 $ kubectl get snap -n demo
 NAME                           DATABASENAME   STATUS      AGE
 scheduled-pg-20190208-053512   scheduled-pg   Succeeded   5m
@@ -124,7 +124,7 @@ scheduled-pg-20190208-054012   scheduled-pg   Succeeded   29s
 
 Node status:
 
-```console
+```bash
 $ kubectl get pods -n demo --show-labels
 NAME             READY   STATUS    RESTARTS   AGE   LABELS
 scheduled-pg-0   1/1     Running   0          16m   controller-revision-hash=scheduled-pg-75f67456c9,kubedb.com/kind=Postgres,kubedb.com/name=scheduled-pg,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=scheduled-pg-0
@@ -149,14 +149,14 @@ Now, you can connect to this database using `scheduled-pg.demo` service and *pas
 - Username: `postgres`
 - Password: Run the following command to get *password*,
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo scheduled-pg-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
   xfd0mqa3S2Ir0tTP
   ```
 
 ### Connect to master-node through cli
 
-```console
+```bash
 $ kubectl exec -it -n demo scheduled-pg-0 bash
 
 bash-4.3# psql -h localhost -U postgres
@@ -175,7 +175,7 @@ postgres=# \l
 
 Postgres replication state
 
-```console
+```bash
 postgres=# SELECT * FROM pg_stat_replication;
  pid | usesysid | usename  | application_name | client_addr | client_hostname | client_port |         backend_start         | backend_xmin |   state   | sent_location | write_location | flush_location | replay_location | sync_priority | sync_state
 -----+----------+----------+------------------+-------------+-----------------+-------------+-------------------------------+--------------+-----------+---------------+----------------+----------------+-----------------+---------------+------------
@@ -186,7 +186,7 @@ postgres=# SELECT * FROM pg_stat_replication;
 
 Insert data
 
-```console
+```bash
 postgres=# CREATE DATABASE testdb;
 CREATE DATABASE
 
@@ -241,7 +241,7 @@ testdb=# SELECT * FROM company;
 
 Exit from postgres cli
 
-```console
+```bash
 testdb=# \q
 bash-4.3# exit
 exit
@@ -251,7 +251,7 @@ exit
 
 Connect to `scheduled-pg-1` and see availability of data
 
-```console
+```bash
 $ kubectl exec -it -n demo scheduled-pg-1 bash
 
 bash-4.3# psql -h localhost -U postgres
@@ -295,7 +295,7 @@ testdb=# SELECT * FROM company;
 
 Connect to `scheduled-pg-2` and see availability of data
 
-```console
+```bash
 $ kubectl exec -it -n demo scheduled-pg-2 bash
 bash-4.3# psql -h localhost -U postgres
 psql (9.6.7)
@@ -342,7 +342,7 @@ exit
 
 For helm, `upgrade` command works fine.
 
-```console
+```bash
 $ helm upgrade --install kubedb-operator appscode/kubedb --version 0.11.0 --namespace kube-system
 $ helm upgrade --install kubedb-catalog appscode/kubedb-catalog --version 0.11.0 --namespace kube-system
 
@@ -358,7 +358,7 @@ For Bash script installation, uninstall first, then install again with 0.11.0 sc
 
 At this state, the operator is skipping this `scheduled-pg` Postgres. Because, Postgres version `9.6-v1` is deprecated in `kubedb 0.11.0`. You can see the skipped event message in postgres database event.
 
-```console
+```bash
 $ kubectl dba describe pg -n demo scheduled-pg
 ....
 
@@ -395,7 +395,7 @@ Note that, Once the DB version is updated, kubedb-operator will update the state
 
 Now, Before updating CRD, find Available PostgresVersion.
 
-```console
+```bash
 $ kubectl get postgresversions
 NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
 10.2       10.2      kubedb/postgres:10.2       true         56m
@@ -433,7 +433,7 @@ Notice the `DEPRECATED` column. Here, `true` means that this PostgresVersion is 
 
 Now, Update the CRD and set `Spec.version` to `10.2-v5`.
 
-```console
+```bash
 kubectl edit pg -n demo scheduled-pg
 ```
 
@@ -500,7 +500,7 @@ status:
 
 Watch for pod updates in `RollingUpdate` UpdateStrategy.
 
-```console
+```bash
 $ kubectl get po -n demo -w
 NAMESPACE     NAME     READY   STATUS    RESTARTS   AGE
 ...
@@ -535,7 +535,7 @@ demo   scheduled-pg-0   1/1   Running   0     2s
 
 Watch for statefulset states.
 
-```console
+```bash
 $ kubectl get statefulset -n demo -w
 NAME           READY   AGE
 scheduled-pg   3/3     105m
@@ -554,7 +554,7 @@ scheduled-pg   3/3   109m
 
 The scheduled snapshot is in working state now.
 
-```console
+```bash
 $ kubectl get snap -n demo
 NAME                           DATABASENAME   STATUS      AGE
 ...
@@ -573,7 +573,7 @@ scheduled-pg-20190208-063904   scheduled-pg   Succeeded   47s
 
 Get master node
 
-```console
+```bash
 $ kubectl get pods -n demo --selector="kubedb.com/role=primary"
 NAME             READY   STATUS    RESTARTS   AGE
 scheduled-pg-0   1/1     Running   0          3m12s
@@ -581,7 +581,7 @@ scheduled-pg-0   1/1     Running   0          3m12s
 
 Exec into postgres master
 
-```console
+```bash
 $ kubectl exec -it -n demo scheduled-pg-0 bash
 
 bash-4.3# psql -h localhost -U postgres
@@ -590,7 +590,7 @@ bash-4.3# psql -h localhost -U postgres
 
 Postgres replication state
 
-```console
+```bash
 postgres=# SELECT * FROM pg_stat_replication;
  pid | usesysid | usename  | application_name | client_addr | client_hostname | client_port |         backend_start         | backend_xmin |   state   | sent_location | write_location | flush_location | replay_location | sync_priority | sync_state
 -----+----------+----------+------------------+-------------+-----------------+-------------+-------------------------------+--------------+-----------+---------------+----------------+----------------+-----------------+---------------+------------
@@ -601,7 +601,7 @@ postgres=# SELECT * FROM pg_stat_replication;
 
 Data availability
 
-```console
+```bash
 postgres=# \l
                                  List of databases
    Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
@@ -644,7 +644,7 @@ exit
 
 Connect to `scheduled-pg-1` and see availability of data
 
-```console
+```bash
 $ kubectl exec -it -n demo scheduled-pg-1 bash
 
 bash-4.3# psql -h localhost -U postgres
@@ -686,7 +686,7 @@ testdb=# SELECT * FROM company;
 
 Connect to `scheduled-pg-2` and see availability of data
 
-```console
+```bash
 $ kubectl exec -it -n demo scheduled-pg-2 bash
 
 bash-4.3# psql -h localhost -U postgres
@@ -733,7 +733,7 @@ exit
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo pg/scheduled-pg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/scheduled-pg
 

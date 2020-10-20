@@ -22,7 +22,7 @@ At first, you need to have a Kubernetes cluster, and the kubectl command-line to
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -47,7 +47,7 @@ For Elasticsearch, push the following images to your private registry.
 - [kubedb/elasticsearch_exporter](https://hub.docker.com/r/kubedb/elasticsearch_exporter)
 - [kubedb/yq](https://hub.docker.com/r/kubedb/yq)
 
-```console
+```bash
 $ export DOCKER_REGISTRY=<your-registry>
 
 $ docker pull kubedb/operator:{{< param "info.version" >}} ; docker tag kubedb/operator:{{< param "info.version" >}} $DOCKER_REGISTRY/operator:{{< param "info.version" >}} ; docker push $DOCKER_REGISTRY/operator:{{< param "info.version" >}}
@@ -63,7 +63,7 @@ ImagePullSecrets is a type of a Kubernetes Secret whose sole purpose is to pull 
 
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
-```console
+```bash
 $ kubectl create secret docker-registry myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
@@ -108,7 +108,7 @@ spec:
 
 Now, create the ElasticsearchVersion crd,
 
-```console
+```bash
 $ kubectl apply -f pvt-elasticsearchversion.yaml
 elasticsearchversion.kubedb.com/pvt-7.3.2 created
 ```
@@ -146,14 +146,14 @@ spec:
 
 Now run the command to deploy this Elasticsearch object:
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/private-registry/private-registry.yaml
 elasticsearch.kubedb.com/pvt-reg-elasticsearch created
 ```
 
 To check if the images pulled successfully from the repository, see if the Elasticsearch is in running state:
 
-```console
+```bash
 $ kubectl get es -n demo pvt-reg-elasticsearch -o wide
 NAME                    VERSION     STATUS       AGE
 pvt-reg-elasticsearch   pvt-7.3.2   Running      33m
@@ -167,7 +167,7 @@ You can specify `imagePullSecret` for Snapshot objects in `spec.podTemplate.spec
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo es/pvt-reg-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/pvt-reg-elasticsearch
 

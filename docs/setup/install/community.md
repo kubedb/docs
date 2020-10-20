@@ -14,7 +14,7 @@ section_menu_id: setup
 
 # Install KubeDB Community Edition
 
-KubeDB Community edition is available under [AppsCode-Community-1.0.0](https://github.com/appscode/licenses/raw/1.0.0/AppsCode-Community-1.0.0.md) license and free to use for both commercial and non-commercial purposes. It comes with all the basic backup functionalities. However, it lacks some advanced features such as [Database Backup](/docs/guides/latest/addons/overview.md), [Auto-Backup](/docs/guides/latest/auto-backup/overview.md), [Batch Backup](/docs/guides/latest/batch-backup/overview.md), and [Local Backend](/docs/guides/latest/backends/local.md) support, etc. compared to the Enterprise edition. A full features comparison between the KubeDB Community edition and Enterprise edition can be found [here](/docs/concepts/what-is-kubedb/overview.md).
+KubeDB Community edition is available under [AppsCode-Community-1.0.0](https://github.com/appscode/licenses/raw/1.0.0/AppsCode-Community-1.0.0.md) license and free to use for both commercial and non-commercial purposes. It comes with the cluster provisioning functionalities. However, it lacks some advanced features such as daatabase backup/recovery, upgrading version, horizontal and vertical scaling, TLS/SSL support via [cert-manager](https://cert-manager.io/), updating configuration post provisioning, connection pooling, etc. compared to the Enterprise edition. A full features comparison between the KubeDB Community edition and Enterprise edition can be found [here](/docs/overview/README.md).
 
 To use KubeDB Community edition, you can grab **1 year** free license from [here](https://license-issuer.appscode.com/).
 
@@ -66,19 +66,50 @@ KubeDB operator can be installed as a Helm chart or simply as Kubernetes manifes
 
 ## Using Helm 3
 
-KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `kubedb`:
+KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install, follow the steps below:
 
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
 $ helm search repo appscode/kubedb --version {{< param "info.community" >}}
-NAME            CHART VERSION         APP VERSION         DESCRIPTION
-appscode/kubedb  {{< param "info.community" >}}    {{< param "info.community" >}}  KubeDB by AppsCode - Backup your Kubernetes Volumes
+NAME                        CHART VERSION APP VERSION   DESCRIPTION
+appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
+appscode/kubedb-catalog     {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Catalog by AppsCode - Catalog for database versions
+appscode/kubedb-enterprise  {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
 
+# Step 1: Install KubeDB Community operator chart
 $ helm install kubedb appscode/kubedb           \
-  --version {{< param "info.community" >}}                \
-  --namespace kube-system                     \
+  --version {{< param "info.community" >}}      \
+  --namespace kube-system                       \
   --set-file license=/path/to/the/license.txt
+
+# Step 2: wait until crds are registered
+$ kubectl get crds -l app=kubedb -w
+NAME                               AGE
+elasticsearches.kubedb.com         12s
+elasticsearchversions.kubedb.com   8s
+etcds.kubedb.com                   8s
+etcdversions.kubedb.com            8s
+memcacheds.kubedb.com              6s
+memcachedversions.kubedb.com       6s
+mongodbs.kubedb.com                7s
+mongodbversions.kubedb.com         6s
+mysqls.kubedb.com                  7s
+mysqlversions.kubedb.com           7s
+postgreses.kubedb.com              8s
+postgresversions.kubedb.com        7s
+redises.kubedb.com                 6s
+redisversions.kubedb.com           6s
+
+# Step 3(a): Install KubeDB catalog of database versions
+$ helm install kubedb-catalog appscode/kubedb-catalog   \
+  --version {{< param "info.community" >}}              \
+  --namespace kube-system
+
+# Step 3(b): Or, if previously installed, upgrade KubeDB catalog of database versions
+$ helm upgrade kubedb-catalog appscode/kubedb-catalog   \
+  --version {{< param "info.community" >}}              \
+  --namespace kube-system
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).
@@ -88,19 +119,50 @@ To see the detailed configuration options, visit [here](https://github.com/kubed
 
 ## Using Helm 2
 
-KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install the chart with the release name `kubedb`:
+KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install, follow the steps below:
 
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
 $ helm search appscode/kubedb --version {{< param "info.community" >}}
-NAME            CHART VERSION         APP VERSION         DESCRIPTION
-appscode/kubedb  {{< param "info.community" >}}    {{< param "info.community" >}}  KubeDB by AppsCode - Backup your Kubernetes Volumes
+NAME                        CHART VERSION APP VERSION   DESCRIPTION
+appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
+appscode/kubedb-catalog     {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Catalog by AppsCode - Catalog for database versions
+appscode/kubedb-enterprise  {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
 
-$ helm install appscode/kubedb --name kubedb    \
-  --version {{< param "info.community" >}}                \
-  --namespace kube-system                     \
+# Step 1: Install KubeDB Community operator chart
+$ helm install appscode/kubedb --name kubedb   \
+  --version {{< param "info.community" >}}     \
+  --namespace kube-system                      \
   --set-file license=/path/to/the/license.txt
+
+# Step 2: wait until crds are registered
+$ kubectl get crds -l app=kubedb -w
+NAME                               AGE
+elasticsearches.kubedb.com         12s
+elasticsearchversions.kubedb.com   8s
+etcds.kubedb.com                   8s
+etcdversions.kubedb.com            8s
+memcacheds.kubedb.com              6s
+memcachedversions.kubedb.com       6s
+mongodbs.kubedb.com                7s
+mongodbversions.kubedb.com         6s
+mysqls.kubedb.com                  7s
+mysqlversions.kubedb.com           7s
+postgreses.kubedb.com              8s
+postgresversions.kubedb.com        7s
+redises.kubedb.com                 6s
+redisversions.kubedb.com           6s
+
+# Step 3(a): Install KubeDB catalog of database versions
+$ helm install appscode/kubedb-catalog --name kubedb-catalog   \
+  --version {{< param "info.community" >}}                     \
+  --namespace kube-system
+
+# Step 3(b): Or, if previously installed, upgrade KubeDB catalog of database versions
+$ helm upgrade kubedb-catalog appscode/kubedb-catalog          \
+  --version {{< param "info.community" >}}                     \
+  --namespace kube-system
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).
@@ -116,13 +178,38 @@ If you prefer to not use Helm, you can generate YAMLs from KubeDB chart and depl
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
 $ helm search repo appscode/kubedb --version {{< param "info.community" >}}
-NAME            CHART VERSION         APP VERSION         DESCRIPTION
-appscode/kubedb  {{< param "info.community" >}}    {{< param "info.community" >}}  KubeDB by AppsCode - Backup your Kubernetes Volumes
+NAME                        CHART VERSION APP VERSION   DESCRIPTION
+appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
+appscode/kubedb-catalog     {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Catalog by AppsCode - Catalog for database versions
+appscode/kubedb-enterprise  {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
 
+# Step 1: Install KubeDB Community operator chart
 $ helm template kubedb appscode/kubedb          \
-  --version {{< param "info.community" >}}                \
-  --namespace kube-system                     \
-  --set-file license=/path/to/the/license.txt \
+  --version {{< param "info.community" >}}      \
+  --namespace kube-system                       \
+  --set-file license=/path/to/the/license.txt   \
+  --no-hooks | kubectl apply -f -
+
+# Step 2: wait until crds are registered
+$ kubectl get crds -l app=kubedb -w
+NAME                               AGE
+elasticsearches.kubedb.com         12s
+elasticsearchversions.kubedb.com   8s
+memcacheds.kubedb.com              6s
+memcachedversions.kubedb.com       6s
+mongodbs.kubedb.com                7s
+mongodbversions.kubedb.com         6s
+mysqls.kubedb.com                  7s
+mysqlversions.kubedb.com           7s
+postgreses.kubedb.com              8s
+postgresversions.kubedb.com        7s
+redises.kubedb.com                 6s
+redisversions.kubedb.com           6s
+
+# Step: Install/Upgrade KubeDB catalog of database versions
+$ helm template kubedb-catalog appscode/kubedb-catalog   \
+  --version {{< param "info.community" >}}               \
+  --namespace kube-system                                \
   --no-hooks | kubectl apply -f -
 ```
 
@@ -139,7 +226,7 @@ To check if KubeDB operator pods have started, run the following command:
 $ kubectl get pods --all-namespaces -l app.kubernetes.io/name=kubedb --watch
 
 NAMESPACE     NAME                     READY     STATUS    RESTARTS   AGE
-kube-system   kubedb-859d6bdb56-m9br5   2/2       Running   2          5s
+kube-system   kubedb-859d6bdb56-m9br5  1/1       Running   2          5s
 ```
 
 Once the operator pod is running, you can cancel the above command by typing `Ctrl+C`.
@@ -148,16 +235,6 @@ Now, to confirm CRD groups have been registered by the operator, run the followi
 
 ```bash
 $ kubectl get crd -l app.kubernetes.io/name=kubedb
-
-NAME                                      CREATED AT
-backupconfigurations.kubedb.appscode.com   2020-08-24T08:20:54Z
-backupsessions.kubedb.appscode.com         2020-08-24T08:20:55Z
-functions.kubedb.appscode.com              2020-08-24T08:20:55Z
-recoveries.kubedb.appscode.com             2020-08-24T08:20:54Z
-repositories.kubedb.appscode.com           2020-08-24T08:20:54Z
-restics.kubedb.appscode.com                2020-08-24T08:20:54Z
-restoresessions.kubedb.appscode.com        2020-08-24T08:20:55Z
-tasks.kubedb.appscode.com                  2020-08-24T08:20:55Z
 ```
 
-Now, you are ready to [take your first backup](/docs/guides/latest/README.md) using KubeDB.
+Now, you are ready to [create your first database](/docs/guides/README.md) using KubeDB.

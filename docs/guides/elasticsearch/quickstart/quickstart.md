@@ -28,7 +28,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -45,7 +45,7 @@ demo    Active  5s
 
 We will have to provide `StorageClass` in Elasticsearch crd specification. Check available `StorageClass` in your cluster using the following command,
 
-```console
+```bash
 $ kubectl get storageclass
 NAME       PROVISIONER        AGE
 standard   external/pharmer   1m
@@ -58,7 +58,7 @@ Here, we have `standard` StorageClass in our cluster.
 
 When you have installed KubeDB, it has created `ElasticsearchVersion` crd for all supported Elasticsearch versions. Let's check available ElasticsearchVersions by,
 
-```console
+```bash
 $ kubectl get elasticsearchversions
 NAME       VERSION   DB_IMAGE                        DEPRECATED   AGE
 5.6        5.6       kubedb/elasticsearch:5.6        true         45m
@@ -123,7 +123,7 @@ Here,
 
 Let's create Elasticsearch crd that is shown above with following command
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/quickstart/quick-elasticsearch.yaml
 elasticsearch.kubedb.com/quick-elasticsearch created
 ```
@@ -134,7 +134,7 @@ KubeDB operator will also create a governing service for StatefulSet with the na
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created.
 
-```console
+```bash
 $ kubectl get es -n demo quick-elasticsearch
 NAME                  VERSION   STATUS    AGE
 quick-elasticsearch   7.3.2    Running   3m
@@ -142,7 +142,7 @@ quick-elasticsearch   7.3.2    Running   3m
 
 Let's describe Elasticsearch object `quick-elasticsearch`
 
-```console
+```bash
 $ kubectl dba describe es -n demo quick-elasticsearch
 Name:               quick-elasticsearch
 Namespace:          demo
@@ -246,7 +246,7 @@ Events:
   Normal  Successful  1m    Elasticsearch operator  Successfully patched Elasticsearch
 ```
 
-```console
+```bash
 $ kubectl get service -n demo --selector=kubedb.com/kind=Elasticsearch,kubedb.com/name=quick-elasticsearch
 NAME                         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 quick-elasticsearch          ClusterIP   10.100.103.159   <none>        9200/TCP   5m
@@ -262,7 +262,7 @@ KubeDB supports Elasticsearch clustering where pods can be any of these three ro
 
 If you see `Topology` section in `kubectl dba describe` result, you will know role(s) of each Pod.
 
-```console
+```bash
 Topology:
   Type                Pod                    StartTime                      Phase
   ----                ---                    ---------                      -----
@@ -282,7 +282,7 @@ Please note that KubeDB operator has created two new Secrets for Elasticsearch o
 
 Auth secret is used to authenticate user for Elasticsearch database and configure xpack plugin.
 
-```console
+```bash
 $ kubectl get secret -n demo quick-elasticsearch-auth -o yaml
 ```
 
@@ -331,7 +331,7 @@ To know more about x-pack configuration, please visit [here](/docs/guides/elasti
 
 Certificate secret contains SSL certificates that are used to secure communication with Elasticsearch database.
 
-```console
+```bash
 $ kubectl get secret -n demo quick-elasticsearch-cert -o yaml
 ```
 
@@ -364,7 +364,7 @@ We will use [port forwarding](https://kubernetes.io/docs/tasks/access-applicatio
 
 Let's forward `9200` port of our database pod. Run following command on a separate terminal,
 
-```console
+```bash
 $ kubectl port-forward -n demo quick-elasticsearch-0 9200
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
@@ -377,21 +377,21 @@ Now, we can connect to the database at `localhost:9200`. Let's find out necessar
 - Address: `localhost:9200`
 - Username: Run following command to get *username*
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo quick-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
   elastic
   ```
 
 - Password: Run following command to get *password*
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo quick-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
   cbciwcfh
   ```
 
 Now let's check health of our Elasticsearch database.
 
-```console
+```bash
 curl --user "elastic:cbciwcfh" "localhost:9200/_cluster/health?pretty"
 ```
 
@@ -425,14 +425,14 @@ KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or lat
 
 In this tutorial, Elasticsearch `quick-elasticsearch` is created with `spec.terminationPolicy: DoNotTerminate`. So if you try to delete this Elasticsearch object, admission webhook will nullify the delete operation.
 
-```console
+```bash
 $ kubectl delete es -n demo quick-elasticsearch
 Error from server (BadRequest): admission webhook "elasticsearch.validators.kubedb.com" denied the request: elasticsearch "quick-elasticsearch" can't be paused. To delete, change spec.terminationPolicy
 ```
 
 To pause the database, we have to set `spec.terminationPolicy:` to `Pause` by updating it,
 
-```console
+```bash
 $ kubectl edit es -n demo quick-elasticsearch
 spec:
   terminationPolicy: Pause
@@ -442,14 +442,14 @@ Now, if you delete the Elasticsearch object, KubeDB operator will create a match
 
 KubeDB operator will delete the StatefulSet and its Pods, but leaves the Secret, PVCs unchanged.
 
-```console
+```bash
 $ kubectl delete es -n demo quick-elasticsearch
 elasticsearch.kubedb.com "quick-elasticsearch" deleted
 ```
 
 Check DormantDatabase entry
 
-```console
+```bash
 $ kubectl get drmn -n demo quick-elasticsearch
 NAME                  STATUS    AGE
 quick-elasticsearch   Paused    29s
@@ -459,7 +459,7 @@ In KubeDB parlance, we say that Elasticsearch `quick-elasticsearch`  has entered
 
 Let's see, what we have in this DormantDatabase object
 
-```console
+```bash
 $ kubectl get drmn -n demo quick-elasticsearch -o yaml
 ```
 
@@ -534,7 +534,7 @@ In this tutorial, the DormantDatabase `quick-elasticsearch` can be resumed by cr
 
 The below command will resume the DormantDatabase `quick-elasticsearch`
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/quickstart/quick-elasticsearch.yaml
 elasticsearch.kubedb.com/quick-elasticsearch created
 ```
@@ -551,7 +551,7 @@ spec:
 
 You can also set `wipeOut: true` by patching the DormantDatabase,
 
-```console
+```bash
 $ kubectl patch -n demo drmn/quick-elasticsearch -p '{"spec":{"wipeOut":true}}' --type="merge"
 ```
 
@@ -561,7 +561,7 @@ If `spec.wipeOut` is not set to `true` while deleting the `dormantdatabase` obje
 
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
-```console
+```bash
 $ kubectl delete drmn -n demo quick-elasticsearch
 dormantdatabase.kubedb.com "quick-elasticsearch" deleted
 ```
@@ -570,7 +570,7 @@ dormantdatabase.kubedb.com "quick-elasticsearch" deleted
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 $ kubectl patch -n demo es/quick-elasticsearch -p '{"spec":{"terminationPolicy": "WipeOut"}}' --type="merge"
 $ kubectl delete -n demo es/quick-elasticsearch
 

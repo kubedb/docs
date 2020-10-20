@@ -24,7 +24,7 @@ KubeDB supports providing custom configuration for Redis. This tutorial will sho
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   
@@ -47,7 +47,7 @@ In this tutorial, we will configure `databases` and `maxclients` via a custom co
 
 At first, let's create `redis.conf` file setting `databases` and `maxclients` parameters. Default value of `databases` is 16 and `maxclients` is 10000.
 
-```console
+```bash
 $ cat <<EOF >redis.conf
 databases 10
 maxclients 500
@@ -62,7 +62,7 @@ maxclients 500
 
 Now, create a configMap with this configuration file.
 
-```console
+```bash
 $ kubectl create configmap -n demo rd-custom-config --from-file=./redis.conf
 configmap/rd-custom-config created
 ```
@@ -84,7 +84,7 @@ metadata:
 
 Now, create Redis crd specifying `spec.configSource` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/custom-config/redis-custom.yaml
 redis.kubedb.com "custom-redis" created
 ```
@@ -115,7 +115,7 @@ Now, wait a few minutes. KubeDB operator will create necessary statefulset, serv
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo custom-redis-0
 NAME             READY     STATUS    RESTARTS   AGE
 custom-redis-0   1/1       Running   0          25s
@@ -123,7 +123,7 @@ custom-redis-0   1/1       Running   0          25s
 
 Check the pod's log to see if the database is ready
 
-```console
+```bash
 $ kubectl logs -f -n demo custom-redis-0
 1:C 01 Oct 08:07:45.274 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
 1:C 01 Oct 08:07:45.274 # Redis version=4.0.6, bits=64, commit=00000000, modified=0, pid=1, just started
@@ -138,7 +138,7 @@ Once we see `Ready to accept connections` in the log, the database is ready.
 
 Now, we will check if the database has started with the custom configuration we have provided. We will `exec` into the pod and use [CONFIG GET](https://redis.io/commands/config-get) command to check the configuration.
 
-```console
+```bash
  $ kubectl exec -it -n demo custom-redis-0 sh
 /data # redis-cli
 127.0.0.1:6379> ping
@@ -157,7 +157,7 @@ PONG
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo rd/custom-redis -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo rd/custom-redis
 

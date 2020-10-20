@@ -26,7 +26,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For memcached, push `DB_IMAGE`, `EXPORTER_IMAGE` of following MemcachedVersions, where `deprecated` is not true, to your private registry.
 
-  ```console
+  ```bash
   $ kubectl get memcachedversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME       VERSION   DB_IMAGE                    EXPORTER_IMAGE                     DEPRECATED
   1.5        1.5       kubedb/memcached:1.5        kubedb/operator:0.8.0              true
@@ -63,7 +63,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
    ```
@@ -74,7 +74,7 @@ ImagePullSecrets is a type of a Kubernete Secret whose sole purpose is to pull p
 
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
-```console
+```bash
 $ kubectl create secret docker-registry -n demo myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
@@ -120,14 +120,14 @@ spec:
 
 Now run the command to deploy this `Memcached` object:
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/private-registry/demo-2.yaml
 memcached.kubedb.com/memcd-pvt-reg created
 ```
 
 To check if the images pulled successfully from the repository, see if the `Memcached` is in running state:
 
-```console
+```bash
 $ kubectl get pods -n demo -w
 NAME                             READY     STATUS              RESTARTS   AGE
 memcd-pvt-reg-694d4d44df-bwtk8   0/1       ContainerCreating   0          18s
@@ -146,7 +146,7 @@ memcd-pvt-reg   1.5.4-v1   Running   59s
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mc/memcd-pvt-reg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mc/memcd-pvt-reg
 

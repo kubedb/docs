@@ -28,7 +28,7 @@ This tutorial will show you how to take snapshots of a KubeDB managed MongoDB da
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
-  ```console
+  ```bash
   $ kubectl get storageclasses
   NAME                 PROVISIONER                AGE
   standard (default)   k8s.io/minikube-hostpath   4h
@@ -36,7 +36,7 @@ This tutorial will show you how to take snapshots of a KubeDB managed MongoDB da
 
 - A `MongoDB` database is needed to take snapshot for this tutorial. To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
 
@@ -55,7 +55,7 @@ In this tutorial, snapshots will be stored in a Google Cloud Storage (GCS) bucke
 | `GOOGLE_PROJECT_ID` | `Required`. Google Cloud project ID |
 | `GOOGLE_SERVICE_ACCOUNT_JSON_KEY` | `Required`. Google Cloud service account json key |
 
-```console
+```bash
 $ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
 $ mv downloaded-sa-json.key > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
 $ kubectl create secret generic mg-snap-secret -n demo \
@@ -98,7 +98,7 @@ spec:
     bucket: kubedb-qa
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/snapshot/demo-2.yaml
 snapshot.kubedb.com/snapshot-instant created
 
@@ -148,7 +148,7 @@ Here,
 
 You can also run the `kubectl dba describe` command to see the recent snapshots taken for a database.
 
-```console
+```bash
 $ kubectl dba describe mg -n demo mgo-instant
 Name:               mgo-instant
 Namespace:          demo
@@ -256,7 +256,7 @@ spec:
       namespace: demo
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/snapshot/demo-3.yaml
 mongodb.kubedb.com/mgo-recovered created
 ```
@@ -267,7 +267,7 @@ Here,
 
 Now, wait several seconds. KubeDB operator will create a new StatefulSet. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snapshot-instant` Snapshot.
 
-```console
+```bash
 $ kubectl get mg -n demo
 NAME            VERSION   STATUS         AGE
 mgo-instant      3.4-v3    Running        13m
@@ -575,7 +575,7 @@ spec:
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mgo-instant mg/mgo-recovered -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-instant mg/mgo-recovered
 

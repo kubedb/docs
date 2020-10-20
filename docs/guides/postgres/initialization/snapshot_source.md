@@ -26,7 +26,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -80,7 +80,7 @@ Here,
 
 Snapshot `instant-snapshot` in `demo` namespace belongs to Postgres `script-postgres`:
 
-```console
+```bash
 $ kubectl get snap -n demo instant-snapshot
 NAME               DATABASENAME      STATUS      AGE
 instant-snapshot   script-postgres   Succeeded   56s
@@ -92,7 +92,7 @@ instant-snapshot   script-postgres   Succeeded   56s
 
 Now, create the Postgres object.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/recovered-postgres.yaml
 postgres.kubedb.com/recovered-postgres created
 ```
@@ -101,7 +101,7 @@ When PostgreSQL database is ready, KubeDB operator launches a Kubernetes Job to 
 
 As a final step of initialization, KubeDB Job controller adds `kubedb.com/initialized` annotation in initialized Postgres object. This prevents further invocation of initialization process.
 
-```console
+```bash
 $ kubectl dba describe pg -n demo recovered-postgres -S=false -W=false
 Name:           recovered-postgres
 Namespace:      demo
@@ -154,21 +154,21 @@ Now, let's connect to our Postgres `recovered-postgres`  using pgAdmin we have i
 
 - Username: Run following command to get *username*,
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo script-postgres-auth -o jsonpath='{.data.\POSTGRES_USER}' | base64 -d
   postgres
   ```
 
 - Password: Run the following command to get *password*,
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo script-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
   STXiSACabNli5xoD
   ```
 
 In PostgreSQL, run following query to check `pg_catalog.pg_tables` to confirm initialization.
 
-```console
+```bash
 select * from pg_catalog.pg_tables where schemaname = 'data';
 ```
 
@@ -188,7 +188,7 @@ We can see TABLE `dashboard` in `data` Schema which is created for initializatio
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 $ kubectl patch -n demo pg/script-postgres pg/recovered-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo pg/script-postgres pg/recovered-postgres
 

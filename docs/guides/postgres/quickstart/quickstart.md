@@ -28,7 +28,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -43,7 +43,7 @@ This tutorial will also use a pgAdmin to connect and test PostgreSQL database, o
 
 Run the following command to install pgAdmin,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/pgadmin.yaml
 deployment.apps/pgadmin created
 service/pgadmin created
@@ -59,7 +59,7 @@ Now, you can open pgAdmin on your browser using following address `http://<clust
 
 If you are using minikube then open pgAdmin in your browser by running `minikube service pgadmin -n demo`. Or you can get the URL of Service `pgadmin` by running following command
 
-```console
+```bash
 $ minikube service pgadmin -n demo --url
 http://192.168.99.100:31983
 ```
@@ -70,7 +70,7 @@ To log into the pgAdmin, use username __`admin`__ and password __`admin`__.
 
 We will have to provide `StorageClass` in Postgres crd specification. Check available `StorageClass` in your cluster using following command,
 
-```console
+```bash
 $ kubectl get storageclass
 NAME                 PROVISIONER                AGE
 standard (default)   k8s.io/minikube-hostpath   5h
@@ -82,7 +82,7 @@ Here, we have `standard` StorageClass in our cluster.
 
 When you have installed KubeDB, it has created `PostgresVersion` crd for all supported PostgreSQL versions. Let's check available PostgresVersions by,
 
-```console
+```bash
 $ kubectl get postgresversions
 NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
 10.2       10.2      kubedb/postgres:10.2       true         54m
@@ -155,7 +155,7 @@ Here,
 
 Let's create Postgres crd,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres.yaml
 postgres.kubedb.com/quick-postgres created
 ```
@@ -166,7 +166,7 @@ If you are using RBAC enabled cluster, PostgreSQL specific RBAC permission is re
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created.
 
-```console
+```bash
 $  kubectl get pg -n demo quick-postgres -o wide
 NAME             VERSION   STATUS     AGE
 quick-postgres   10.2-v5   Creating   13s
@@ -174,7 +174,7 @@ quick-postgres   10.2-v5   Creating   13s
 
 Let's describe Postgres object `quick-postgres`
 
-```console
+```bash
 $ kubectl dba describe pg -n demo quick-postgres
 Name:               quick-postgres
 Namespace:          demo
@@ -254,7 +254,7 @@ Events:
 
 KubeDB has created two services for the Postgres object.
 
-```console
+```bash
 $ kubectl get service -n demo --selector=kubedb.com/kind=Postgres,kubedb.com/name=quick-postgres
 NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 quick-postgres            ClusterIP   10.108.152.107   <none>        5432/TCP   3m
@@ -313,14 +313,14 @@ Now, you can connect to this database from the pgAdmin dashboard using `quick-po
 
 - Username: Run following command to get *username*,
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\POSTGRES_USER}' | base64 -d
   postgres
   ```
 
 - Password: Run the following command to get *password*,
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
   DD8i56UBIcs63PVO
   ```
@@ -339,14 +339,14 @@ KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or lat
 
 In this tutorial, Postgres `quick-postgres` is created with `spec.terminationPolicy: DoNotTerminate`. So if you try to delete this Postgres object, admission webhook will nullify the delete operation.
 
-```console
+```bash
 $  kubectl delete pg -n demo quick-postgres
 Error from server (BadRequest): admission webhook "postgres.validators.kubedb.com" denied the request: postgres "quick-postgres" can't be paused. To delete, change spec.terminationPolicy
 ```
 
 To pause the database, we have to set `spec.terminationPolicy:` to `Pause` by updating it,
 
-```console
+```bash
 $ kubectl edit pg -n demo quick-postgres
 spec:
   terminationPolicy: Pause
@@ -356,14 +356,14 @@ Now, if you delete the Postgres object, KubeDB operator will create a matching D
 
 Let's delete the Postgres object,
 
-```console
+```bash
 $ kubectl delete pg -n demo quick-postgres
 postgres.kubedb.com "quick-postgres" deleted
 ```
 
 Check DormantDatabase has been created successfully,
 
-```console
+```bash
 $ kubectl get drmn -n demo quick-postgres
 NAME             STATUS    AGE
 quick-postgres   Paused    5m
@@ -444,7 +444,7 @@ In this tutorial, the DormantDatabase `quick-postgres` can be resumed by creatin
 
 Let's create the original Postgres object,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres.yaml
 postgres.kubedb.com/quick-postgres created
 ```
@@ -453,7 +453,7 @@ This will resume the previous database. All data that was inserted in previous d
 
 When the database is resumed, respective DormantDatabase object will be removed. Verify that the DormantDatabase object has been removed,
 
-```console
+```bash
 $ kubectl get drmn -n demo quick-postgres
 Error from server (NotFound): dormantdatabases.kubedb.com "quick-postgres" not found
 ```
@@ -474,7 +474,7 @@ If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object
 
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
-```console
+```bash
 $ kubectl delete drmn -n demo quick-postgres
 dormantdatabase.kubedb.com "quick-postgres" deleted
 ```
@@ -483,7 +483,7 @@ dormantdatabase.kubedb.com "quick-postgres" deleted
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo pg/quick-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/quick-postgres
 

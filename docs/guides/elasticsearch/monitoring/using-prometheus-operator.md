@@ -24,7 +24,7 @@ section_menu_id: guides
 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
-  ```console
+  ```bash
   $ kubectl create ns monitoring
   namespace/monitoring created
 
@@ -44,7 +44,7 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd
 
 At first, let's find out the available Prometheus server in our cluster.
 
-```console
+```bash
 $ kubectl get prometheus --all-namespaces
 NAMESPACE    NAME         AGE
 monitoring   prometheus   18m
@@ -124,14 +124,14 @@ Here,
 
 Let's create the Elasticsearch object that we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/monitoring/coreos-prom-es.yaml
 elasticsearch.kubedb.com/coreos-prom-es created
 ```
 
 Now, wait for the database to go into `Running` state.
 
-```console
+```bash
 $ kubectl get es -n demo coreos-prom-es
 NAME             VERSION   STATUS    AGE
 coreos-prom-es   7.3.2     Running   85s
@@ -139,7 +139,7 @@ coreos-prom-es   7.3.2     Running   85s
 
 KubeDB will create a separate stats service with name `{Elasticsearch crd name}-stats` for monitoring purpose.
 
-```console
+```bash
 $ kubectl get svc -n demo --selector="kubedb.com/name=coreos-prom-es"
 NAME                    TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)     AGE
 coreos-prom-es          ClusterIP   10.0.1.56    <none>        9200/TCP    77s
@@ -173,7 +173,7 @@ Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these informati
 
 KubeDB will also create a `ServiceMonitor` crd in `monitoring` namespace that select the endpoints of `coreos-prom-es-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
-```console
+```bash
 $ kubectl get servicemonitor -n monitoring
 NAME                         AGE
 kubedb-demo-coreos-prom-es   6m
@@ -226,7 +226,7 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
-```console
+```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                      READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-0   3/3     Running   1          63m
@@ -236,7 +236,7 @@ Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. 
 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
 
-```console
+```bash
 $ kubectl port-forward -n monitoring prometheus-prometheus-0 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
@@ -254,7 +254,7 @@ Check the `endpoint` and `service` labels marked by red rectangle. It verifies t
 
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
-```console
+```bash
 # cleanup database
 kubectl delete -n demo es/coreos-prom-es
 

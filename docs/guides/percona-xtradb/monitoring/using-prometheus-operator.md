@@ -23,7 +23,7 @@ menu_name: docs_{{ .version }}
 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
-  ```console
+  ```bash
   $ kubectl create ns monitoring
   namespace/monitoring created
 
@@ -43,7 +43,7 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` res
 
 At first, let's find out the available Prometheus server in our cluster.
 
-```console
+```bash
 $ kubectl get prometheus --all-namespaces
 NAMESPACE    NAME         AGE
 monitoring   prometheus   18m
@@ -127,14 +127,14 @@ Here,
 
 Let's create the `PerconaXtraDB` object that we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/px-coreos-prom.yaml
 perconaxtradb.kubedb.com/px-coreos-prom created
 ```
 
 Now, wait for the database to go into `Running` state.
 
-```console
+```bash
 $ kubectl get px -n demo px-coreos-prom
 NAME             VERSION       STATUS    AGE
 px-coreos-prom   5.7-cluster   Running   5m4s
@@ -142,7 +142,7 @@ px-coreos-prom   5.7-cluster   Running   5m4s
 
 KubeDB will create a separate stats service with name `{PerconaXtraDB_obj_name}-stats` for monitoring purpose.
 
-```console
+```bash
 $ kubectl get svc -n demo --selector="kubedb.com/name=px-coreos-prom"
 NAME                   TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
 px-coreos-prom         ClusterIP   10.107.58.214    <none>        3306/TCP    5m25s
@@ -176,7 +176,7 @@ Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these informati
 
 KubeDB will also create a `ServiceMonitor` resource in `monitoring` namespace that select the endpoints of `px-coreos-prom-stats` service. Verify that the `ServiceMonitor` resource has been created.
 
-```console
+```bash
 $ kubectl get servicemonitor -n monitoring
 NAME                         AGE
 kubedb-demo-px-coreos-prom   2m45s
@@ -229,7 +229,7 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 
 At first, let's find out the respective Prometheus Pod for `prometheus` Prometheus server.
 
-```console
+```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                      READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-0   3/3     Running   1          51m
@@ -239,7 +239,7 @@ Prometheus server is listening to port `9090` of `prometheus-prometheus-0` Pod. 
 
 Run the following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` Pod,
 
-```console
+```bash
 $ kubectl port-forward -n monitoring prometheus-prometheus-0 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
@@ -264,7 +264,7 @@ Now, you can view the collected metrics and create a graph from homepage of this
 
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
-```console
+```bash
 # cleanup database
 $ kubectl delete -n demo px/px-coreos-prom
 

@@ -18,7 +18,7 @@ KubeDB has native support for monitoring via [Prometheus](https://prometheus.io/
 
 ## Overview
 
-KubeDB operator pod runs an [Extension API Server](https://kubernetes.io/docs/tasks/access-kubernetes-api/setup-extension-api-server/) which self hosts [admission webhooks](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#admission-webhooks) such as [MutatingAdmissionWebhook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#mutatingadmissionwebhook) and [ValidatingAdmissionWebhook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#validatingadmissionwebhook). The extension API server exports some metrics in `/metrics` path of TLS secured `8443` port. KubeDB installation process creates a service with same name as KubeDB operator (i.e. `kubedb-operator`) in same namespace as the operator pod. Prometheus server can use `api` endpoint of this service to scrape those metrics.
+KubeDB operator pod runs an [Extension API Server](https://kubernetes.io/docs/tasks/access-kubernetes-api/setup-extension-api-server/) which self hosts [admission webhooks](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#admission-webhooks) such as [MutatingAdmissionWebhook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#mutatingadmissionwebhook) and [ValidatingAdmissionWebhook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#validatingadmissionwebhook). The extension API server exports some metrics in `/metrics` path of TLS secured `8443` port. KubeDB installation process creates a service with same name as KubeDB operator (i.e. `kubedb`) in same namespace as the operator pod. Prometheus server can use `api` endpoint of this service to scrape those metrics.
 
 ### Exported Metrics
 
@@ -101,8 +101,8 @@ You have to provides these flags while installing or upgrading or updating KubeD
 
 **Helm 3:**
 
-```console
-$ helm install kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
+```bash
+$ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/operator \
@@ -112,8 +112,8 @@ $ helm install kubedb-operator appscode/kubedb --version {{< param "info.version
 
 **Helm 2:**
 
-```console
-$ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.version" >}} \
+```bash
+$ helm install appscode/kubedb --name kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/operator \
@@ -123,8 +123,8 @@ $ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.
 
 **YAML (with Helm 3):**
 
-```console
-$ helm template kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
+```bash
+$ helm template kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/operator \

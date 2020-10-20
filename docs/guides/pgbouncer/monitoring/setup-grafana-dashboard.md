@@ -28,7 +28,7 @@ This tutorial will show you how to import our dashboard on Grafana to monitor Pg
 
 - To keep everything isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
-  ```console
+  ```bash
   $ kubectl create ns monitoring
   namespace/monitoring created
 
@@ -44,14 +44,14 @@ After you have made sure that you have a PgBouncer server running with Monitorin
 
 However, if you already have a Grafana server running in your cluster, feel free to skip this part. Otherwise, create one using:
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/monitoring/grafana.yaml
 deployment.apps/grafana created
 ```
 
 Let's get the name of the pod created by this deployment:
 
-```console
+```bash
 $ kubectl get pod -n monitoring -l "app=grafana"
 
 NAME                       READY   STATUS    RESTARTS   AGE
@@ -62,7 +62,7 @@ grafana-7cbd6b6f87-w9dkh   1/1     Running   0          57s
 
 Now, we have to expose the Grafana pod so that we can access it from a browser.
 
-```console
+```bash
 $ kubectl port-forward -n monitoring grafana-7cbd6b6f87-w9dkh 3000
 Forwarding from 127.0.0.1:3000 -> 3000
 Forwarding from [::1]:3000 -> 3000
@@ -74,7 +74,7 @@ Grafana should now be available on [localhost](http://localhost:3000/). Use defa
 
 First, we need to know the name of the service that exposes our prometheus server pods. In  this tutorial, we have used a service named `prometheus-operated` that exposes our prometheus metrics on port 9090.
 
-```console
+```bash
 $ kubectl get service -n monitoring
 NAME                  TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 prometheus-operated   ClusterIP   10.111.246.229   <none>        9090/TCP   38m
@@ -102,7 +102,7 @@ Now, go to [http://localhost:3000/dashboard/import](http://localhost:3000/dashbo
 
 To cleanup the Kubernetes resources created by this tutorial, run the following commands
 
-```console
+```bash
 # cleanup prometheus resources
 kubectl delete -n monitoring deployment grafana
 

@@ -116,7 +116,7 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 
 Example:
 
-```console
+```bash
 $ kubectl create secret generic demo-proxysql-for-mysql-auth -n demo \
 --from-literal=proxysqluser=proxysql \
 --from-literal=proxysqlpass=6q8u_2jMOW-OOZXk

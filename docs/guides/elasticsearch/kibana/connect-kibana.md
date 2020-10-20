@@ -28,7 +28,7 @@ As KubeDB uses [Search Guard](https://search-guard.com/) plugin for authenticati
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -142,7 +142,7 @@ kibanauser:
 
 Here, we have used `admin@secret` password for `admin` user and  `kibana@secret` password for `kibanauser` user. You can use `htpasswd` to generate the bcrypt encrypted password hashes.
 
-```console
+```bash
 $htpasswd -bnBC 12 "" <password_here>| tr -d ':\n'
 ```
 
@@ -187,7 +187,7 @@ searchguard:
 
 Now, create a secret with these Search Guard configuration files.
 
-```console
+```bash
  $ kubectl create secret generic -n demo es-auth \
 	--from-literal=ADMIN_USERNAME=admin \
 	--from-literal=ADMIN_PASSWORD=admin@secret \
@@ -230,7 +230,7 @@ searchguard.restapi.roles_enabled: ["sg_all_access","sg_kibana_user"]
 
 Create a ConfigMap using this file,
 
-```console
+```bash
 $ kubectl create configmap -n demo es-custom-config \
                         --from-file=./common-config.yml
 configmap/es-custom-config created
@@ -257,7 +257,7 @@ metadata:
 
 Now, create Elasticsearch crd specifying  `spec.databaseSecret` and `spec.configSource` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/kibana/es-kibana-demo.yaml
 elasticsearch.kubedb.com/es-kibana-demo created
 ```
@@ -291,7 +291,7 @@ Now, wait for few minutes. KubeDB will create necessary secrets, services, and s
 
 Check resources created in demo namespace by KubeDB,
 
-```console
+```bash
 $ kubectl get all -n demo -l=kubedb.com/name=es-kibana-demo
 NAME                   READY     STATUS    RESTARTS   AGE
 pod/es-kibana-demo-0   1/1       Running   0          39s
@@ -306,7 +306,7 @@ statefulset.apps/es-kibana-demo   1         1         42s
 
 Once everything is created, Elasticsearch will go to Running state. Check that Elasticsearch is in running state.
 
-```console
+```bash
 $ kubectl get es -n demo es-kibana-demo
 NAME             VERSION    STATUS    AGE
 es-kibana-demo   6.3.0-v1   Running   1m
@@ -314,7 +314,7 @@ es-kibana-demo   6.3.0-v1   Running   1m
 
 Now, check elasticsearch log to see if the cluster is ready to accept requests,
 
-```console
+```bash
 $ kubectl logs -n demo es-kibana-demo-0 -f
 ...
 Starting runit...
@@ -359,14 +359,14 @@ Notice the `elasticsearch.username` and `elasticsearch.password` field. Kibana w
 
 Now, create a ConfigMap with `kibana.yml` file. We will mount this ConfigMap in Kibana deployment so that Kibana starts with this configuration.
 
-```console
+```bash
 $ kubectl create configmap -n demo kibana-config \
                         --from-file=./kibana.yml
 configmap/kibana-config created
 ```
 
 Finally, deploy Kibana deployment,
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/kibana/kibana-deployment.yaml
 deployment.apps/kibana created
 ```
@@ -403,7 +403,7 @@ spec:
 
 Now, wait for few minutes. Let the Kibana pod  go in`Running` state. Check pod is in `Running` using this command,
 
-```console
+```bash
  $ kubectl get pods -n demo -l app=kibana
 NAME                      READY     STATUS    RESTARTS   AGE
 kibana-84b8cbcf7c-mg699   1/1       Running   0          3m
@@ -411,7 +411,7 @@ kibana-84b8cbcf7c-mg699   1/1       Running   0          3m
 
 Now, watch the Kibana pod's log to see if Kibana is ready to access,
 
-```console
+```bash
 $ kubectl logs -n demo kibana-84b8cbcf7c-mg699 -f
 ...
 {"type":"log","@timestamp":"2018-08-18T07:22:16Z","tags":["listening","info"],"pid":1,"message":"Server running at http://0.0.0.0:5601"}
@@ -423,7 +423,7 @@ Kibana is running on port `5601` in of `kibana-84b8cbcf7c-mg699` pod. In order t
 
 First, open a new terminal and run,
 
-```console
+```bash
 $ kubectl port-forward -n demo kibana-84b8cbcf7c-mg699 5601
 Forwarding from 127.0.0.1:5601 -> 5601
 Forwarding from [::1]:5601 -> 5601
@@ -510,7 +510,7 @@ Once we have created an index_pattern, we can use the Discovery UI.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 $ kubectl patch -n demo es/es-kibana-demo -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 
 $ kubectl delete -n demo es/es-kibana-demo

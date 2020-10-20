@@ -30,7 +30,7 @@ This tutorial will show you how to use KubeDB to run a PerconaXtraDB database.
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
-  ```console
+  ```bash
   $ kubectl get storageclasses
   NAME                 PROVISIONER                AGE
   standard (default)   k8s.io/minikube-hostpath   4h
@@ -38,7 +38,7 @@ This tutorial will show you how to use KubeDB to run a PerconaXtraDB database.
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -47,7 +47,7 @@ This tutorial will show you how to use KubeDB to run a PerconaXtraDB database.
 
 When you have installed KubeDB, it has created `PerconaXtraDBVersion` objects for all supported PerconaXtraDB versions. Check,
 
-```console
+```bash
 $ kubectl get pxversion
 NAME          VERSION   DB_IMAGE                            DEPRECATED   AGE
 5.7           5.7       kubedb/percona:5.7                               14m
@@ -80,7 +80,7 @@ spec:
   terminationPolicy: WipeOut
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/quickstart.yaml
 perconaxtradb.kubedb.com/demo-quickstart created
 ```
@@ -96,7 +96,7 @@ Here,
 
 KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes api. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching PerconaXtraDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<percona-xtradb-object-name>-gvr`, if one is not already present.
 
-```console
+```bash
 $ kubectl dba describe px -n demo demo-quickstart
 Name:         demo-quickstart
 Namespace:    demo
@@ -183,7 +183,7 @@ demo-quickstart-gvr   ClusterIP   None          <none>        3306/TCP   19m
 
 KubeDB operator sets the `.status.phase` to `"Running"` once the database is successfully created. Run the following command to see the modified `PerconaXtraDB` object:
 
-```console
+```bash
 $ kubectl get px -n demo demo-quickstart -o yaml
 ```
 
@@ -253,7 +253,7 @@ If you want to use an existing secret please specify that when creating the Perc
 
 Now, you can connect to this database using the database pod IP and and `root` user password.
 
-```console
+```bash
 $ kubectl get pods demo-quickstart-0 -n demo -o yaml | grep "podIP"
   podIP: 10.244.2.6
 
@@ -266,7 +266,7 @@ y9vpf8LSa8SLqiYC
 
 You can connect to the database Pod `demo-quickstart-0`. In that case you just need to specify the host name of the corresponding Pod (either PodIP or the fully-qualified-domain-name for that Pod using the governing service named <percona-xtradb-object-name>-gvr) by --host flag.
 
-```console
+```bash
 # connect to the server
 $ kubectl exec -it -n demo demo-quickstart-0 -- mysql -u root --password=y9vpf8LSa8SLqiYC --host=demo-quickstart-0.demo-quickstart-gvr.demo -e "select 1;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -302,7 +302,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidatingWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, it prevents users from deleting the database as long as the `.spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
-```console
+```bash
 $ kubectl delete px demo-quickstart -n demo
 Error from server (BadRequest): admission webhook "perconaxtradb.validators.kubedb.com" denied the request: percona-xtradb "demo/demo-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
@@ -315,7 +315,7 @@ Learn details of all `TerminationPolicy` [here](/docs/guides/percona-xtradb/conc
 
 When [TerminationPolicy](/docs/guides/percona-xtradb/concepts/overview.md#specterminationpolicy) is set to `Pause`, it will pause the PerconaXtraDB database instead of deleting it. Here, If you delete the PerconaXtraDB object, KubeDB operator will delete the StatefulSet and its Pods but leaves the PVCs and Secret unchanged. In KubeDB parlance, we say that `demo-quickstart` PerconaXtraDB database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
-```console
+```bash
 $ kubectl delete px demo-quickstart -n demo
 perconaxtradb.kubedb.com "demo-quickstart" deleted
 
@@ -417,7 +417,7 @@ In this tutorial, the dormant database can be resumed by creating original `Perc
 
 The below command will resume the DormantDatabase `demo-quickstart` that was created before.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/quickstart.yaml
 perconaxtradb.kubedb.com/demo-quickstart created
 ```
@@ -453,7 +453,7 @@ If `.spec.wipeOut` is not set to true while deleting the `DormantDatabase` objec
 
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `DormantDatabase`,
 
-```console
+```bash
 $ kubectl delete drmn demo-quickstart -n demo
 dormantdatabase.kubedb.com "demo-quickstart" deleted
 ```
@@ -462,7 +462,7 @@ dormantdatabase.kubedb.com "demo-quickstart" deleted
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 $ kubectl patch -n demo px/demo-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo px/demo-quickstart
 

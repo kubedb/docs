@@ -28,7 +28,7 @@ This tutorial will show you how to use KubeDB to run a Redis server.
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
-  ```console
+  ```bash
   $ kubectl get storageclasses
   NAME                 PROVISIONER                AGE
   standard (default)   k8s.io/minikube-hostpath   4h
@@ -36,7 +36,7 @@ This tutorial will show you how to use KubeDB to run a Redis server.
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
 
@@ -51,7 +51,7 @@ This tutorial will show you how to use KubeDB to run a Redis server.
 
 When you have installed KubeDB, it has created `RedisVersion` crd for all supported Redis versions. Check:
 
-```console
+```bash
 $ kubectl get redisversions
   NAME       VERSION   DB_IMAGE                DEPRECATED   AGE
   4          4         kubedb/redis:4          true         31s
@@ -91,7 +91,7 @@ spec:
         storage: 1Gi
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-1.yaml
 redis.kubedb.com/redis-quickstart created
 ```
@@ -107,7 +107,7 @@ Here,
 
 KubeDB operator watches for `Redis` objects using Kubernetes api. When a `Redis` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present.
 
-```console
+```bash
 $ kubectl get rd -n demo
 NAME               VERSION   STATUS    AGE
 redis-quickstart   4.0-v1    Running   1m
@@ -221,7 +221,7 @@ status:
 
 Now, you can connect to this database through [redis-cli](https://redis.io/topics/rediscli). In this tutorial, we are connecting to the Redis server from inside of pod.
 
-```console
+```bash
 $ kubectl exec -it redis-quickstart-0 -n demo sh
 
 > redis-cli
@@ -244,7 +244,7 @@ OK
 
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
-```console
+```bash
 $ kubectl delete rd redis-quickstart -n demo
 Error from server (BadRequest): admission webhook "redis.validators.kubedb.com" denied the request: redis "redis-quickstart" can't be paused. To delete, change spec.terminationPolicy
 ```
@@ -257,7 +257,7 @@ Learn details of all `TerminationPolicy` [here](/docs/guides/redis/concepts/over
 
 When [TerminationPolicy](/docs/guides/redis/concepts/overview.md#specterminationpolicy) is set to `Pause`, it will pause the Redis server instead of deleting it. Here, If you delete the Redis object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `redis-quickstart` Redis server has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
-```console
+```bash
 $ kubectl delete rd redis-quickstart -n demo
 redis.kubedb.com "redis-quickstart" deleted
 
@@ -335,7 +335,7 @@ In this tutorial, the dormant database can be resumed by creating original `Redi
 
 The below command will resume the DormantDatabase `redis-quickstart`.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-1.yaml
 redis.kubedb.com/redis-quickstart created
 ```
@@ -346,7 +346,7 @@ Now, if you exec into the database, you can see that the datas are intact.
 
 You can wipe out a DormantDatabase while deleting the objet by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `Redis` database (i.e, PVCs, Secrets).
 
-```console
+```bash
 $ kubectl edit drmn -n demo redis-quickstart
 apiVersion: kubedb.com/v1alpha2
 kind: DormantDatabase
@@ -368,7 +368,7 @@ If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object
 
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
-```console
+```bash
 $ kubectl delete drmn redis-quickstart -n demo
 dormantdatabase.kubedb.com "redis-quickstart" deleted
 ```
@@ -377,7 +377,7 @@ dormantdatabase.kubedb.com "redis-quickstart" deleted
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo rd/redis-quickstart
 

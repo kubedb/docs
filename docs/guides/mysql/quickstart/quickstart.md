@@ -147,7 +147,7 @@ Here,
 
 KubeDB operator watches for `MySQL` objects using Kubernetes api. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present.
 
-```console
+```bash
 $ kubectl dba describe my -n demo mysql-quickstart
 Name:               mysql-quickstart
 Namespace:          demo

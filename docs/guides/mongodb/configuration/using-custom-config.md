@@ -24,7 +24,7 @@ KubeDB supports providing custom configuration for MongoDB. This tutorial will s
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -55,7 +55,7 @@ Here, `maxIncomingConnections` is set to `10000`, whereas the default value is 6
 
 Now, create a configMap with this configuration file.
 
-```console
+```bash
 $ kubectl create configmap -n demo mg-custom-config --from-file=./mongod.conf
 configmap/mg-custom-config created
 ```
@@ -102,7 +102,7 @@ spec:
         name: mg-custom-config
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/demo-1.yaml
 mongodb.kubedb.com/mgo-custom-config created
 ```
@@ -111,7 +111,7 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset,
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo mgo-custom-config-0
 NAME                  READY     STATUS    RESTARTS   AGE
 mgo-custom-config-0   1/1       Running   0          1m
@@ -121,7 +121,7 @@ Now, we will check if the database has started with the custom configuration we 
 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
-```console
+```bash
 $ kubectl get secrets -n demo mgo-custom-config-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -172,7 +172,7 @@ As we can see from the configuration of running mongodb, the value of `maxIncomi
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mgo-custom-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-custom-config
 

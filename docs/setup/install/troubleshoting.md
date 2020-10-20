@@ -24,19 +24,6 @@ $ kubectl create clusterrolebinding "cluster-admin-$(whoami)" \
 
 In addition, if your GKE cluster is a [private cluster](https://cloud.google.com/kubernetes-engine/docs/how-to/private-clusters), you will need to either add an additional firewall rule that allows master nodes access port `8443/tcp` on worker nodes, or change the existing rule that allows access to ports `443/tcp` and `10250/tcp` to also allow access to port `8443/tcp`. The procedure to add or modify firewall rules is described in the official GKE documentation for private clusters mentioned before.
 
-## Configuring Network Volume Accessor
-
-For network volume such as NFS, KubeDB needs to deploy a helper deployment in the same namespace as the Repository that uses the NFS as backend to provide Snapshot listing facility. We call this helper deployment network volume accessor. You can configure its resources, user id, privileged permission etc. during installation as below,
-
-```bash
-$ helm install kubedb-enterprise appscode/kubedb-enterprise \
-    -n kube-system                                        \
-    --set netVolAccessor.cpu=200m                         \
-    --set netVolAccessor.memory=128Mi                     \
-    --set netVolAccessor.runAsUser=0                      \
-    --set netVolAccessor.privileged=true
-```
-
 ## Detect KubeDB version
 
 To detect KubeDB version, exec into the operator pod and run `kubedb version` command.

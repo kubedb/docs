@@ -25,7 +25,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For PerconaXtraDB, push `DB_IMAGE`, `EXPORTER_IMAGE` of following PerconaXtraDBVersions, where `deprecated` is not true, to your private registry.
 
-  ```console
+  ```bash
   $ kubectl get perconaxtradbversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME          VERSION   DB_IMAGE                            EXPORTER_IMAGE                   DEPRECATED
   5.7           5.7       kubedb/percona:5.7                  kubedb/mysqld-exporter:v0.11.0   <none>
@@ -57,7 +57,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
    ```
@@ -68,7 +68,7 @@ ImagePullSecrets is a type of a Kubernetes Secret whose sole purpose is to pull 
 
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
-```console
+```bash
 $ kubectl create secret docker-registry -n demo myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
@@ -118,14 +118,14 @@ spec:
 
 Now run the command to deploy this `PerconaXtraDB` object:
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/private-registry.yaml
 perconaxtradb.kubedb.com/px-pvt-reg created
 ```
 
 To check if the images pulled successfully from the repository, see if the `PerconaXtraDB` is in running state:
 
-```console
+```bash
 $ kubectl get pods -n demo
 NAME           READY     STATUS    RESTARTS   AGE
 px-pvt-reg-0   1/1       Running   0          56s
@@ -135,7 +135,7 @@ px-pvt-reg-0   1/1       Running   0          56s
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo perconaxtradb/px-pvt-reg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo perconaxtradb/px-pvt-reg
 

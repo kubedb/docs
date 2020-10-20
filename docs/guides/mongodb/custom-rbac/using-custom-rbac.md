@@ -24,7 +24,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -45,7 +45,7 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 
 At first, let's create a `Service Acoount` in `demo` namespace.
 
-```console
+```bash
 $ kubectl create serviceaccount -n demo my-custom-serviceaccount
 serviceaccount/my-custom-serviceaccount created
 ```
@@ -69,7 +69,7 @@ secrets:
 
 Now, we need to create a role that has necessary access permissions for the MongoDB instance named `quick-mongodb`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/custom-rbac/mg-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
@@ -97,7 +97,7 @@ This permission is required for MongoDB pods running on PSP enabled clusters.
 
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
-```console
+```bash
 $ kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
 rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
@@ -129,7 +129,7 @@ subjects:
 
 Now, create a MongoDB crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/custom-rbac/mg-custom-db.yaml
 mongodb.kubedb.com/quick-mongodb created
 ```
@@ -163,7 +163,7 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, deployme
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo quick-mongodb-0
 NAME                READY     STATUS    RESTARTS   AGE
 quick-mongodb-0   1/1       Running   0          14m
@@ -171,7 +171,7 @@ quick-mongodb-0   1/1       Running   0          14m
 
 Check the pod's log to see if the database is ready
 
-```console
+```bash
 $ kubectl logs -f -n demo quick-mongodb-0
 about to fork child process, waiting until server is ready for connections.
 forked process: 17
@@ -194,7 +194,7 @@ An existing service account can be reused in another MongoDB instance. No new ac
 
 Now, create MongoDB crd `minute-mongodb` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/custom-rbac/mg-custom-db-two.yaml
 mongodb.kubedb.com/quick-mongodb created
 ```
@@ -228,7 +228,7 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, stateful
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo minute-mongodb-0
 NAME                READY     STATUS    RESTARTS   AGE
 minute-mongodb-0   1/1       Running   0          14m
@@ -236,7 +236,7 @@ minute-mongodb-0   1/1       Running   0          14m
 
 Check the pod's log to see if the database is ready
 
-```console
+```bash
 $ kubectl logs -f -n demo minute-mongodb-0
 about to fork child process, waiting until server is ready for connections.
 forked process: 17
@@ -257,7 +257,7 @@ MongoDB init process complete; ready for start up.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/quick-mongodb -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/quick-mongodb
 

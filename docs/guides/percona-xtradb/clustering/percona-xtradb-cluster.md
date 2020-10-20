@@ -28,7 +28,7 @@ Before proceeding:
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -63,7 +63,7 @@ spec:
   terminationPolicy: WipeOut
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/demo-cluster.yaml
 perconaxtradb.kubedb.com/my-group created
 ```
@@ -75,7 +75,7 @@ Here,
 
 KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching `PerconaXtraDB` object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<percona-xtradb-object-name>-gvr`.
 
-```console
+```bash
 $ kubectl dba describe px -n demo demo-cluster
 Name:         demo-cluster
 Namespace:    demo
@@ -215,7 +215,7 @@ If you want to use an existing secret please specify that when creating the `Per
 
 Now, you can connect to this database from your terminal using the `root` user and password.
 
-```console
+```bash
 $ kubectl get secrets -n demo demo-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -227,7 +227,7 @@ The operator creates a cluster according to the newly created `PerconaXtraDB` ob
 
 You can connect to any of these cluster nodes. In that case you just need to specify the host name of the corresponding Pod (either PodIP or the fully-qualified-domain-name for that Pod using the governing service named `<percona-xtradb-object-name>-gvr`) by `--host` flag.
 
-```console
+```bash
 # first list the percona-xtradb pods list
 $ kubectl get pods -n demo -l kubedb.com/name=demo-cluster
 NAME             READY   STATUS    RESTARTS   AGE
@@ -251,7 +251,7 @@ Now you can connect to the database using the above info.
 
 > Ignore the warning message. It is happening for using password on the command line interface.
 
-```console
+```bash
 # connect to the 1st server
 $ kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-0.demo-cluster-gvr.demo -e "select 1;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -284,7 +284,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 Now, you are ready to check newly created group status. Connect and run the following commands from any of the hosts and you will get the same results.
 
-```console
+```bash
 $ kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-2.demo-cluster-gvr.demo -e "show status like 'wsrep%'"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------------------------+-------------------------------------------------+
@@ -364,7 +364,7 @@ Here,
 
 Let's check the cluster view,
 
-```console
+```bash
 $kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-2.demo-cluster-gvr.demo -e "select * from performance_schema.pxc_cluster_view;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------+--------------------------------------+--------+-------------+---------+
@@ -383,7 +383,7 @@ In a Percona XtraDB Cluster, you can read/write from/to every node. In this tuto
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 > Don't worry about the warning message. It appears, if you provide password on the command.
 
-```console
+```bash
 # create a database on 'demo-cluster-0'
 $ kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-0.demo-cluster-gvr.demo -e "CREATE DATABASE playground;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -428,7 +428,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 To test the cluster behavior during node failure, we will force one of the Primary Pods to restart. When it comes back to the cluster, it becomes the `JOINER` node and one of the existing nodes becomes the `DONOR` node. Then the `JOINER` node becomes `"Synced"` by receiving an IST/SST from the `DONOR` node. Let's see,
 
-```console
+```bash
 kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-2.demo-cluster-gvr.demo -e "select * from performance_schema.pxc_cluster_view;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------+--------------------------------------+--------+-------------+---------+
@@ -557,7 +557,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 Now, check the data,
 
-```console
+```bash
 # read data from 'demo-cluster-0'
 $ kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-0.demo-cluster-gvr.demo -e "SELECT * FROM playground.equipment;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -590,7 +590,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 Clean what you created in this tutorial.
 
-```console
+```bash
 $ kubectl delete -n demo px/demo-cluster
 perconaxtradb.kubedb.com "demo-cluster" deleted
 

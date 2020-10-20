@@ -24,7 +24,7 @@ KubeDB supports providing custom configuration for MongoDB via [PodTemplate](/do
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -92,7 +92,7 @@ spec:
     type: RollingUpdate
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/mgo-misc-config.yaml
 mongodb.kubedb.com/mgo-misc-config created
 ```
@@ -101,7 +101,7 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset,
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo
 NAME                READY     STATUS    RESTARTS   AGE
 mgo-misc-config-0   1/1       Running   0          14m
@@ -111,7 +111,7 @@ Now, check if the database has started with the custom configuration we have pro
 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
-```console
+```bash
 $ kubectl get secrets -n demo mgo-misc-config-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -182,7 +182,7 @@ spec:
       - --gzip
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/snapshot-misc-conf.yaml
 snapshot.kubedb.com/snap-mongodb-config created
 
@@ -220,7 +220,7 @@ status:
   phase: Running
 ```
 
-```console
+```bash
 $ kubectl get snap -n demo
 NAME                              DATABASENAME      STATUS      AGE
 mgo-misc-config-20181002-105247   mgo-misc-config   Succeeded   3m
@@ -234,7 +234,7 @@ snap-mongodb-config               mgo-misc-config   Succeeded   12m
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mgo-misc-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-misc-config
 

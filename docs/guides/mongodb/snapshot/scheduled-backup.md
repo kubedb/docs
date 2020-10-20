@@ -28,7 +28,7 @@ This tutorial will show you how to use KubeDB to take scheduled snapshot of a Mo
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -46,7 +46,7 @@ In this tutorial, snapshots will be stored in a Google Cloud Storage (GCS) bucke
 | `GOOGLE_PROJECT_ID` | `Required`. Google Cloud project ID |
 | `GOOGLE_SERVICE_ACCOUNT_JSON_KEY` | `Required`. Google Cloud service account json key |
 
-```console
+```bash
 $ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
 $ mv downloaded-sa-json.key > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
 $ kubectl create secret generic mg-snap-secret -n demo \
@@ -96,7 +96,7 @@ spec:
       bucket: kubedb-qa
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/snapshot/demo-4.yaml
 mongodb.kubedb.com/mgo-scheduled created
 ```
@@ -115,7 +115,7 @@ spec:
 
 Once the `spec.backupSchedule` is added, KubeDB operator will create a new Snapshot object on each tick of the cron expression. This triggers KubeDB operator to create a Job as it would for any regular instant backup process. You can see the snapshots as they are created using `kubectl get snap` command.
 
-```console
+```bash
 $ kubectl get snap -n demo
 NAME                            DATABASENAME    STATUS      AGE
 mgo-scheduled-20180924-112630   mgo-scheduled   Succeeded   3m
@@ -303,7 +303,7 @@ spec:
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mgo-scheduled -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-scheduled
 

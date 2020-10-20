@@ -22,21 +22,21 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 
 `kubectl create` creates a database CRD object in `default` namespace by default. Following command will create a MongoDB object as specified in `mongodb.yaml`.
 
-```console
+```bash
 $ kubectl create -f mongodb-demo.yaml
 mongodb.kubedb.com/mongodb-demo created
 ```
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
-```console
+```bash
 $ kubectl create -f mongodb-demo.yaml --namespace=kube-system
 mongodb.kubedb.com/mongodb-demo
 ```
 
 `kubectl create` command also considers `stdin` as input.
 
-```console
+```bash
 cat mongodb-demo.yaml | kubectl create -f -
 ```
 
@@ -44,7 +44,7 @@ cat mongodb-demo.yaml | kubectl create -f -
 
 `kubectl get` command allows users to list or find any KubeDB object. To list all MongoDB objects in `default` namespace, run the following command:
 
-```console
+```bash
 $ kubectl get mongodb
 NAME           VERSION   STATUS    AGE
 mongodb-demo   3.4-v3    Running   13m
@@ -121,13 +121,13 @@ status:
 
 To get JSON of an object, use `--output=json` flag.
 
-```console
+```bash
 kubectl get mongodb mongodb-demo --output=json
 ```
 
 To list all KubeDB objects, use following command:
 
-```console
+```bash
 $ kubectl get kubedb -o wide
 NAME                VERSION     STATUS  AGE
 mg/mongodb-demo     3.4         Running 3h
@@ -150,7 +150,7 @@ List command supports short names for each object types. You can use it like `ku
 
 You can print labels with objects. The following command will list all Snapshots with their corresponding labels.
 
-```console
+```bash
 $ kubectl get snap --show-labels
 NAME                            DATABASE                STATUS      AGE       LABELS
 mongodb-demo-20170605-073557    mg/mongodb-demo         Succeeded   11m       kubedb.com/kind=MongoDB,kubedb.com/name=mongodb-demo
@@ -159,7 +159,7 @@ snapshot-20171212-114700        mg/mongodb-demo         Succeeded   1h        ku
 
 You can also filter list using `--selector` flag.
 
-```console
+```bash
 $ kubectl get snap --selector='kubedb.com/kind=MongoDB' --show-labels
 NAME                            DATABASE           STATUS      AGE       LABELS
 mongodb-demo-20171212-073557    mg/mongodb-demo    Succeeded   14m       kubedb.com/kind=MongoDB,kubedb.com/name=mongodb-demo
@@ -168,7 +168,7 @@ snapshot-20171212-114700        mg/mongodb-demo    Succeeded   2h        kubedb.
 
 To print only object name, run the following command:
 
-```console
+```bash
 $ kubectl get all -o name
 mongodb/mongodb-demo
 mongodb/mongodb-dev
@@ -182,7 +182,7 @@ snapshot/snapshot-20170505-114700
 
 `kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe MongoDB database `mongodb-demo` with relevant information.
 
-```console
+```bash
 $ kubectl dba describe mg mongodb-demo
 Name:               mongodb-demo
 Namespace:          default
@@ -267,25 +267,25 @@ To hide events on KubeDB object, use flag `--show-events=false`
 
 To describe all MongoDB objects in `default` namespace, use following command
 
-```console
+```bash
 kubectl dba describe mg
 ```
 
 To describe all MongoDB objects from every namespace, provide `--all-namespaces` flag.
 
-```console
+```bash
 kubectl dba describe mg --all-namespaces
 ```
 
 To describe all KubeDB objects from every namespace, use the following command:
 
-```console
+```bash
 kubectl dba describe all --all-namespaces
 ```
 
 You can also describe KubeDb objects with matching labels. The following command will describe all MongoDB objects with specified labels from every namespace.
 
-```console
+```bash
 kubectl dba describe mg --all-namespaces --selector='group=dev'
 ```
 
@@ -297,7 +297,7 @@ To learn about various options of `describe` command, please visit [here](/docs/
 
 Let's edit an existing running MongoDB object to setup [Scheduled Backup](/docs/guides/mongodb/snapshot/scheduled-backup.md). The following command will open MongoDB `mongodb-demo` in editor.
 
-```console
+```bash
 $ kubectl edit mg mongodb-demo
 
 # Add following under Spec to configure periodic backups
@@ -334,27 +334,27 @@ For DormantDatabase, `spec.origin` can't be edited using `kubectl edit`
 
 `kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a MongoDB `mongodb-dev` in default namespace
 
-```console
+```bash
 $ kubectl delete mongodb mongodb-dev
 mongodb.kubedb.com "mongodb-dev" deleted
 ```
 
 You can also use YAML files to delete objects. The following command will delete a mongodb using the type and name specified in `mongodb.yaml`.
 
-```console
+```bash
 $ kubectl delete -f mongodb-demo.yaml
 mongodb.kubedb.com "mongodb-dev" deleted
 ```
 
 `kubectl delete` command also takes input from `stdin`.
 
-```console
+```bash
 cat mongodb-demo.yaml | kubectl delete -f -
 ```
 
 To delete database with matching labels, use `--selector` flag. The following command will delete mongodb with label `mongodb.kubedb.com/name=mongodb-demo`.
 
-```console
+```bash
 kubectl delete mongodb -l mongodb.kubedb.com/name=mongodb-demo
 ```
 
@@ -362,7 +362,7 @@ kubectl delete mongodb -l mongodb.kubedb.com/name=mongodb-demo
 
 You can use Kubectl with KubeDB objects like any other CRDs. Below are some common examples of using Kubectl with KubeDB objects.
 
-```console
+```bash
 # Create objects
 $ kubectl create -f
 

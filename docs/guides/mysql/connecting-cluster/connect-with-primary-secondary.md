@@ -26,7 +26,7 @@ KubeDB creates separate services for primary and secondary replicas. In this tut
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -68,7 +68,7 @@ spec:
 
 Let's create the MySQL CR we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/clustering/demo-1.yaml
 mysql.kubedb.com/my-group created
 ```
@@ -102,7 +102,7 @@ my-group-replicas   ClusterIP   10.102.85.170   <none>        3306/TCP   17m
 
 If you describe the object, you can find more details here,
 
-```console
+```bash
 $ kubectl dba describe my -n demo my-group
 Name:               my-group
 Namespace:          demo
@@ -303,7 +303,7 @@ KubeDB operator has created a new Secret called `my-group-auth` **(format: {mysq
 
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 
-```console
+```bash
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -444,7 +444,7 @@ my-group-replicas   10.244.2.11:3306,10.244.2.18:3306   112m
 
 Clean what you created in this tutorial.
 
-```console
+```bash
 $ kubectl patch -n demo my/my-group -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo my/my-group
 

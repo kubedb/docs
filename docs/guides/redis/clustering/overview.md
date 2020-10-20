@@ -139,7 +139,7 @@ For more parameters, see [here](http://download.redis.io/redis-stable/redis.conf
 
   The following is sample output of the [CLUSTER NODES](https://redis.io/commands/cluster-nodes) command sent to a master node in a small cluster of three nodes.
 
-  ```console
+  ```bash
   $ redis-cli cluster nodes
   d1861060fe6a534d42d8a19aeb36600e18785e04 127.0.0.1:6379 myself - 0 1318428930 1 connected 0-1364
   3886e65cc906bfd9b1f7e7bde468726a052d1dae 127.0.0.1:6380 master - 1318428930 1318428931 2 connected 1365-2729
@@ -166,7 +166,7 @@ For more parameters, see [here](http://download.redis.io/redis-stable/redis.conf
 
   - If a node presents itself with a `MEET` message. A meet message is exactly like a [PING](https://redis.io/commands/ping) message but forces the receiver to accept the node as part of the cluster. Nodes will send `MEET` messages to other nodes **only if** the system administrator requests this via the following command:
 
-    ```console
+    ```bash
     $ CLUSTER MEET ip port
     ```
 

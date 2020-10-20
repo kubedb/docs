@@ -103,7 +103,7 @@ status:
 
 To get JSON of an object, use `--output=json` flag.
 
-```console
+```bash
 kubectl get mysql mysql-demo --output=json
 ```
 
@@ -137,7 +137,7 @@ List command supports short names for each object types. You can use it like `ku
 
 To print only object name, run the following command:
 
-```console
+```bash
 $ kubectl get all -o name
 mysql/mysql-demo
 mysql/mysql-dev
@@ -275,25 +275,25 @@ To hide events on KubeDB object, use flag `--show-events=false`
 
 To describe all MySQL objects in `default` namespace, use following command
 
-```console
+```bash
 kubectl dba describe my
 ```
 
 To describe all MySQL objects from every namespace, provide `--all-namespaces` flag.
 
-```console
+```bash
 kubectl dba describe my --all-namespaces
 ```
 
 To describe all KubeDB objects from every namespace, use the following command:
 
-```console
+```bash
 kubectl dba describe all --all-namespaces
 ```
 
 You can also describe KubeDB objects with matching labels. The following command will describe all MySQL objects with specified labels from every namespace.
 
-```console
+```bash
 kubectl dba describe my --all-namespaces --selector='group=dev'
 ```
 
@@ -305,7 +305,7 @@ To learn about various options of `describe` command, please visit [here](/docs/
 
 Lets edit an existing running MySQL object to setup database [Halted](/docs/guides/mysql/concepts/overview.md#spechalted). The following command will open MySQL `mysql-demo` in editor.
 
-```console
+```bash
 $ kubectl edit my -n demo mysql-quickstart
 
 spec:
@@ -342,27 +342,27 @@ For DormantDatabase, `spec.origin` can't be edited using `kubectl edit`
 
 `kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a MySQL `mysql-dev` in default namespace
 
-```console
+```bash
 $ kubectl delete mysql mysql-dev
 mysql.kubedb.com "mysql-dev" deleted
 ```
 
 You can also use YAML files to delete objects. The following command will delete a mysql using the type and name specified in `mysql.yaml`.
 
-```console
+```bash
 $ kubectl delete -f mysql-demo.yaml
 mysql.kubedb.com "mysql-dev" deleted
 ```
 
 `kubectl delete` command also takes input from `stdin`.
 
-```console
+```bash
 cat mysql-demo.yaml | kubectl delete -f -
 ```
 
 To delete database with matching labels, use `--selector` flag. The following command will delete mysql with label `mysql.kubedb.com/name=mysql-demo`.
 
-```console
+```bash
 kubectl delete mysql -l mysql.kubedb.com/name=mysql-demo
 ```
 
@@ -370,7 +370,7 @@ kubectl delete mysql -l mysql.kubedb.com/name=mysql-demo
 
 You can use Kubectl with KubeDB objects like any other CRDs. Below are some common examples of using Kubectl with KubeDB objects.
 
-```console
+```bash
 # Create objects
 $ kubectl create -f
 

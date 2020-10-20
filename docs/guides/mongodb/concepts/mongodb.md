@@ -171,7 +171,7 @@ This secret contains a `user` key and a `password` key which contains the `usern
 
 Example:
 
-```console
+```bash
 $ kubectl create secret generic mgo1-auth -n demo \
 --from-literal=username=jhon-doe \
 --from-literal=password=6q8u_2jMOW-OOZXk

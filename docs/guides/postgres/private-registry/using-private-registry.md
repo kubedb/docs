@@ -22,7 +22,7 @@ At first, you need to have a Kubernetes cluster, and the kubectl command-line to
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -35,7 +35,7 @@ namespace/demo created
 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For postgres, push `DB_IMAGE`, `TOOLS_IMAGE`, `EXPORTER_IMAGE` of following PostgresVersions, where `deprecated` is not true, to your private registry.
 
-  ```console
+  ```bash
   $ kubectl get postgresversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,TOOLS_IMAGE:.spec.tools.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME       VERSION   DB_IMAGE                   TOOLS_IMAGE                      EXPORTER_IMAGE                    DEPRECATED
   10.2       10.2      kubedb/postgres:10.2       kubedb/postgres-tools:10.2       kubedb/operator:0.8.0             true
@@ -75,7 +75,7 @@ namespace/demo created
 - [kubedb/postgres-tools](https://hub.docker.com/r/kubedb/postgres-tools)
 - [kubedb/postgres_exporter](https://hub.docker.com/r/kubedb/postgres_exporter)
 
-```console
+```bash
 ```
 
 ## Create ImagePullSecret
@@ -84,7 +84,7 @@ ImagePullSecrets is a type of a Kubernetes Secret whose sole purpose is to pull 
 
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
-```console
+```bash
 $ kubectl create secret -n demo docker-registry myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
@@ -127,7 +127,7 @@ spec:
 
 Now, create the PostgresVersion crd,
 
-```console
+```bash
 $ kubectl apply -f pvt-postgresversion.yaml
 postgresversion.kubedb.com/pvt-10.2 created
 ```
@@ -161,14 +161,14 @@ spec:
 
 Now run the command to create this Postgres object:
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/private-registry/pvt-reg-postgres.yaml
 postgres.kubedb.com/pvt-reg-postgres created
 ```
 
 To check if the images pulled successfully from the repository, see if the PostgreSQL is in Running state:
 
-```console
+```bash
 $ kubectl get pods -n demo --selector="kubedb.com/name=pvt-reg-postgres"
 NAME                 READY     STATUS    RESTARTS   AGE
 pvt-reg-postgres-0   1/1       Running   0          3m
@@ -182,7 +182,7 @@ You can specify `imagePullSecret` for Snapshot objects in `spec.podTemplate.spec
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo pg/pvt-reg-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/pvt-reg-postgres
 

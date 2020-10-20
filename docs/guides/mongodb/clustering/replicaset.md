@@ -28,7 +28,7 @@ Before proceeding:
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -61,7 +61,7 @@ spec:
         storage: 1Gi
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/demo-1.yaml
 mongodb.kubedb.com/mgo-replicaset created
 ```
@@ -77,7 +77,7 @@ Here,
 
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-name>-gvr`.
 
-```console
+```bash
 $ kubectl dba describe mg -n demo mgo-replicaset
 Name:               mgo-replicaset
 Namespace:          demo
@@ -255,7 +255,7 @@ Now, you can connect to this database through [mongo-shell](https://docs.mongodb
 
 At first, insert data inside primary member `rs0:PRIMARY`.
 
-```console
+```bash
 $ kubectl get secrets -n demo mgo-replicaset-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -308,7 +308,7 @@ bye
 Now, check the redundancy and data availability in secondary members.
 We will exec in `mgo-replicaset-1`(which is secondary member right now) to check the data availability.
 
-```console
+```bash
 $ kubectl exec -it mgo-replicaset-1 -n demo bash
 mongodb@mgo-replicaset-1:/$ mongo admin -u root -p 5O4R2ze2bWXcWsdP
 MongoDB shell version v3.6.6
@@ -351,7 +351,7 @@ bye
 
 To test automatic failover, we will force the primary member to restart. As the primary member (`pod`) becomes unavailable, the rest of the members will elect a primary member by election.
 
-```console
+```bash
 $ kubectl get pods -n demo
 NAME               READY     STATUS    RESTARTS   AGE
 mgo-replicaset-0   1/1       Running   0          1h
@@ -371,7 +371,7 @@ mgo-replicaset-2   1/1       Running       0          1h
 
 Now verify the automatic failover, Let's exec in `mgo-replicaset-1` pod,
 
-```console
+```bash
 $ kubectl exec -it mgo-replicaset-1 -n demo bash
 mongodb@mgo-replicaset-1:/$ mongo admin -u root -p 5O4R2ze2bWXcWsdP
 MongoDB shell version v3.6.6
@@ -416,7 +416,7 @@ When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validat
 
 Since the MongoDB object created in this tutorial has `spec.terminationPolicy` set to `Pause` (default), if you delete the MongoDB object, KubeDB operator will create a dormant database while deleting the StatefulSet and its pods but leaves the PVCs unchanged.
 
-```console
+```bash
 $ kubectl delete mg mgo-replicaset -n demo
 mongodb.kubedb.com "mgo-replicaset" deleted
 
@@ -524,7 +524,7 @@ In this tutorial, the dormant database can be resumed by creating original Mongo
 
 The below command will resume the DormantDatabase `mgo-replicaset`.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/demo-1.yaml
 mongodb.kubedb.com/mgo-replicaset created
 ```
@@ -557,7 +557,7 @@ If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object
 
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
-```console
+```bash
 $ kubectl delete drmn mgo-replicaset -n demo
 dormantdatabase "mgo-replicaset" deleted
 ```
@@ -566,7 +566,7 @@ dormantdatabase "mgo-replicaset" deleted
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mgo-replicaset -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-replicaset
 

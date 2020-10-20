@@ -26,7 +26,7 @@ KubeDB supports providing TLS/SSL encryption (via, `sslMode` and `clusterAuthMod
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -120,14 +120,14 @@ spec:
 
 ### Deploy MongoDB Standalone
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/tls/mg-standalone-ssl.yaml
 mongodb.kubedb.com/mgo-tls created
 ```
 
 Now, wait until `mgo-tls created` has status `Running`. i.e,
 
-```console
+```bash
 $ watch kubectl get mg -n demo
 Every 2.0s: kubectl get mongodb -n demo
 NAME      VERSION     STATUS     AGE
@@ -138,7 +138,7 @@ mgo-tls   4.1.13-v1   Running    14s
 
 Now, connect to this database through [mongo-shell](https://docs.mongodb.com/v4.0/mongo/) and verify if `SSLMode` has been set up as intended (i.e, `requireSSL`).
 
-```console
+```bash
 $ kubectl describe secret -n demo mgo-tls-client-cert
 Name:         mgo-tls-client-cert
 Namespace:    demo
@@ -163,7 +163,7 @@ ca.crt:   1147 bytes
 
 Now, Let's exec into a mongodb container and find out the username to connect in a mongo shell,
 
-```console
+```bash
 $ kubectl exec -it mgo-tls-0 -n demo bash
 mongodb@mgo-tls-0:/$ ls /var/run/mongodb/tls
 ca.crt  client.pem  mongo.pem
@@ -173,14 +173,14 @@ subject=CN=root,OU=client,O=kubedb
 
 Now, we can connect using `CN=root,OU=client,O=kubedb` as root to connect to the mongo shell,
 
-```console
+```bash
 mongodb@mgo-tls-0:/$ mongo --tls --tlsCAFile /var/run/mongodb/tls/ca.crt --tlsCertificateKeyFile /var/run/mongodb/tls/client.pem admin --host localhost --authenticationMechanism MONGODB-X509 --authenticationDatabase='$external' -u "CN=root,OU=client,O=kubedb" --quiet
 >
 ```
 
 We are connected to the mongo shell. Let's run some command to verify the sslMode and the user,
 
-```console
+```bash
 > db.adminCommand({ getParameter:1, sslMode:1 })
 { "sslMode" : "requireSSL", "ok" : 1 }
 
@@ -215,7 +215,7 @@ User can update `sslMode` & `ClusterAuthMode` if needed. Some changes may be inv
 
 Good thing is, **KubeDB operator will throw error for invalid SSL specs while creating/updating the MongoDB object.** i.e.,
 
-```console
+```bash
 $ kubectl patch -n demo mg/mgo-tls -p '{"spec":{"sslMode": "disabled","clusterAuthMode": "x509"}}' --type="merge"
 Error from server (Forbidden): admission webhook "mongodb.validators.kubedb.com" denied the request: can't have disabled set to mongodb.spec.sslMode when mongodb.spec.clusterAuthMode is set to x509
 ```
@@ -226,7 +226,7 @@ To **upgrade from Keyfile Authentication to x.509 Authentication**, change the `
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete mongodb -n demo mgo-tls
 kubectl delete issuer -n demo mongo-ca-issuer
 kubectl delete ns demo

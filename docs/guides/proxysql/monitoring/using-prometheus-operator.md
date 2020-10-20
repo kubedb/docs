@@ -26,7 +26,7 @@ section_menu_id: guides
 - `monitoring` to deploy respective monitoring resources
 - `demo` to deploy respective resources from KubeDB
 
-  ```console
+  ```bash
   $ kubectl create ns monitoring
   namespace/monitoring created
 
@@ -46,7 +46,7 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` obj
 
 At first, let's find out the available Prometheus server in our cluster.
 
-```console
+```bash
 $ kubectl get prometheus --all-namespaces
 NAMESPACE    NAME         AGE
 monitoring   prometheus   2m56s
@@ -123,14 +123,14 @@ spec:
 
 Let's create the MySQL object we have shown above.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-my-group.yaml
 mysql.kubedb.com/my-group created
 ```
 
 Now, wait for the database to go into the `Running` state.
 
-```console
+```bash
 $ kubectl get my -n demo my-group
 NAME       VERSION   STATUS    AGE
 my-group   5.7.25    Running   3m
@@ -178,12 +178,12 @@ Here,
 
 Let's create the ProxySQL object that we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/coreos-prom-proxysql.yaml
 proxysql.kubedb.com/coreos-prom-mysql created
 ```
 
-```console
+```bash
 $ kubectl get proxysql -n demo coreos-prom-proxysql
 NAME                   VERSION   STATUS    AGE
 coreos-prom-proxysql   2.0.4     Running   14s
@@ -191,7 +191,7 @@ coreos-prom-proxysql   2.0.4     Running   14s
 
 KubeDB will create a separate stats service with the name `{ProxySQL object name}-stats` for monitoring purposes.
 
-```console
+```bash
 $ kubectl get svc -n demo --selector="proxysql.kubedb.com/name=coreos-prom-proxysql"
 NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 coreos-prom-proxysql         ClusterIP   10.101.10.235   <none>        6033/TCP    73s
@@ -225,7 +225,7 @@ Notice the `Labels` and `Port` fields. `ServiceMonitor` will use this informatio
 
 KubeDB will also create a `ServiceMonitor` object in `monitoring` namespace that select the endpoints of `coreos-prom-proxysql-stats` service. Verify that the `ServiceMonitor` object has been created.
 
-```console
+```bash
 $ kubectl get servicemonitor -n monitoring
 NAME                               AGE
 kubedb-demo-coreos-prom-proxysql   3m22s
@@ -279,7 +279,7 @@ Also, notice that the `ServiceMonitor` has a selector that matches the labels we
 
 At first, let's find out the respective Prometheus Pod for `prometheus` Prometheus server.
 
-```console
+```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                      READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-0   3/3     Running   1          56m
@@ -289,7 +289,7 @@ Prometheus server is listening to port `9090` of `Prometheus-prometheus-0` pod. 
 
 Run the following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
 
-```console
+```bash
 $ kubectl port-forward -n monitoring prometheus-prometheus-0 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
@@ -307,7 +307,7 @@ Check the `endpoint` and `service` labels marked by the red rectangles. It verif
 
 To clean up the Kubernetes resources created by this tutorial, run following commands
 
-```console
+```bash
 # cleanup prometheus resources
 $ kubectl delete -n monitoring prometheus prometheus
 $ kubectl delete -n monitoring clusterrolebinding prometheus

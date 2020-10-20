@@ -26,7 +26,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For mongodb, push `DB_IMAGE`, `TOOLS_IMAGE`, `EXPORTER_IMAGE` of following MongoDBVersions, where `deprecated` is not true, to your private registry.
 
-  ```console
+  ```bash
   $ kubectl get mongodbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,TOOLS_IMAGE:.spec.tools.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME       VERSION   DB_IMAGE                TOOLS_IMAGE                   EXPORTER_IMAGE                   DEPRECATED
   3.4        3.4       kubedb/mongo:3.4        kubedb/mongo-tools:3.4        kubedb/operator:0.8.0            true
@@ -79,7 +79,7 @@ ImagePullSecrets is a type of a Kubernete Secret whose sole purpose is to pull p
 
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
-```console
+```bash
 $ kubectl create secret docker-registry -n demo myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
@@ -100,7 +100,7 @@ When installing KubeDB operator, set the flags `--docker-registry` and `--image-
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -133,14 +133,14 @@ spec:
 
 Now run the command to deploy this `MongoDB` object:
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/private-registry/demo-2.yaml
 mongodb.kubedb.com/mgo-pvt-reg created
 ```
 
 To check if the images pulled successfully from the repository, see if the `MongoDB` is in running state:
 
-```console
+```bash
 $ kubectl get pods -n demo -w
 NAME            READY     STATUS              RESTARTS   AGE
 mgo-pvt-reg-0   0/1       Pending             0          0s
@@ -162,7 +162,7 @@ You can specify `imagePullSecret` for Snapshot objects in `spec.podTemplate.spec
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mgo-pvt-reg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-pvt-reg
 

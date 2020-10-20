@@ -24,7 +24,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -53,7 +53,7 @@ shared_buffers=256MB
 
 Now, create a configMap with this configuration file.
 
-```console
+```bash
 $ kubectl create configmap -n demo pg-custom-config --from-literal=user.conf="$(curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/user.conf)"
 configmap/pg-custom-config created
 ```
@@ -79,7 +79,7 @@ metadata:
 
 Now, create Postgres crd specifying `spec.configSource` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/pg-custom-config.yaml
 postgres.kubedb.com/custom-postgres created
 ```
@@ -110,7 +110,7 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset,
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo custom-postgres-0
 NAME                READY     STATUS    RESTARTS   AGE
 custom-postgres-0   1/1       Running   0          14m
@@ -118,7 +118,7 @@ custom-postgres-0   1/1       Running   0          14m
 
 Check the pod's log to see if the database is ready
 
-```console
+```bash
 $ kubectl logs -f -n demo custom-postgres-0
 I0705 12:05:51.697190       1 logs.go:19] FLAG: --alsologtostderr="false"
 I0705 12:05:51.717485       1 logs.go:19] FLAG: --enable-analytics="true"
@@ -152,7 +152,7 @@ Once we see `LOG:  database system is ready to accept connections` in the log, t
 
 Now, we will check if the database has started with the custom configuration we have provided. We will `exec` into the pod and use [SHOW](https://www.postgresql.org/docs/9.6/static/sql-show.html) query to check the run-time parameters.
 
-```console
+```bash
  $ kubectl exec -it -n demo custom-postgres-0 sh
  / #
  ## login as user "postgres". no authentication required from inside the pod because it is using trust authentication local connection.
@@ -192,7 +192,7 @@ WHERE name='max_connections' OR name='shared_buffers';
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo pg/custom-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/custom-postgres
 

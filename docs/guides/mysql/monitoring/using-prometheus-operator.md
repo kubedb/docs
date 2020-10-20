@@ -189,7 +189,7 @@ Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these informati
 
 KubeDB will also create a `ServiceMonitor` crd in `demo` namespace that select the endpoints of `coreos-prom-mysql-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
-```console
+```bash
 $ kubectl get servicemonitor -n demo
 NAME                            AGE
 kubedb-demo-coreos-prom-mysql   3m16s
@@ -247,7 +247,7 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
-```console
+```bash
 $ kubectl get pod -n default -l=app=prometheus
 NAME                      READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-0   3/3     Running   1          121m
@@ -257,7 +257,7 @@ Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. 
 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
 
-```console
+```bash
 $ kubectl port-forward -n default prometheus-prometheus-0 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
@@ -275,7 +275,7 @@ Check the `endpoint` and `service` labels marked by red rectangle. It verifies t
 
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
-```console
+```bash
 # cleanup database
 kubectl delete -n demo my/coreos-prom-mysql
 

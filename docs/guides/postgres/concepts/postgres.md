@@ -126,7 +126,7 @@ spec:
 
 `spec.version` is a required field that specifies the name of the [PostgresVersion](/docs/guides/postgres/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PostgresVersion` resources,
 
-```console
+```bash
 $ kubectl get pgversion
 NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
 10.2       10.2      kubedb/postgres:10.2       true         44m
@@ -204,14 +204,14 @@ If you want to use an existing or custom secret, please specify that when creati
 
 Example:
 
-```console
+```bash
 $ kubectl create secret generic p1-auth -n demo \
 --from-literal=POSTGRES_USER=not@user \
 --from-literal=POSTGRES_PASSWORD=not@secret
 secret "p1-auth" created
 ```
 
-```console
+```bash
 $ kubectl get secret -n demo p1-auth -o yaml
 apiVersion: v1
 data:

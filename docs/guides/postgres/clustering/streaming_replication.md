@@ -25,7 +25,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -71,7 +71,7 @@ Streaming Replication is **asynchronous** by default. As a result, there is a sm
 
 Following parameters are set in `postgresql.conf` for both *primary* and *standby* server
 
-```console
+```bash
 wal_level = replica
 max_wal_senders = 99
 wal_keep_segments = 32
@@ -83,7 +83,7 @@ Here,
 
 And followings are in `recovery.conf` for *standby* server
 
-```console
+```bash
 standby_mode = on
 trigger_file = '/tmp/pg-failover-trigger'
 recovery_target_timeline = 'latest'
@@ -97,14 +97,14 @@ Here,
 
 Now create this Postgres object with Streaming Replication support
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/clustering/ha-postgres.yaml
 postgres.kubedb.com/ha-postgres created
 ```
 
 KubeDB operator creates three Pod as PostgreSQL server.
 
-```console
+```bash
 $ kubectl get pods -n demo --selector="kubedb.com/name=ha-postgres" --show-labels
 NAME            READY   STATUS    RESTARTS   AGE   LABELS
 ha-postgres-0   1/1     Running   0          20s   controller-revision-hash=ha-postgres-6b7998ccfd,kubedb.com/kind=Postgres,kubedb.com/name=ha-postgres,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=ha-postgres-0
@@ -119,14 +119,14 @@ Here,
 
 And two services for Postgres `ha-postgres` are created.
 
-```console
+```bash
 $ kubectl get svc -n demo --selector="kubedb.com/name=ha-postgres"
 NAME                   TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 ha-postgres            ClusterIP   10.102.19.49   <none>        5432/TCP   4m
 ha-postgres-replicas   ClusterIP   10.97.36.117   <none>        5432/TCP   4m
 ```
 
-```console
+```bash
 $ kubectl get svc -n demo --selector="kubedb.com/name=ha-postgres" -o=custom-columns=NAME:.metadata.name,SELECTOR:.spec.selector
 NAME                   SELECTOR
 ha-postgres            map[kubedb.com/kind:Postgres kubedb.com/name:ha-postgres kubedb.com/role:primary]
@@ -151,21 +151,21 @@ Now connect to this *primary* server Pod `ha-postgres-0` using pgAdmin installed
 - Maintenance database: `postgres`
 - Username: Run following command to get *username*,
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\POSTGRES_USER}' | base64 -d
   postgres
   ```
 
 - Password: Run the following command to get *password*,
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
   MHRrOcuyddfh3YpU
   ```
 
 You can check `pg_stat_replication` information to know who is currently streaming from *primary*.
 
-```console
+```bash
 postgres=# select * from pg_stat_replication;
 ```
 
@@ -242,11 +242,11 @@ If *primary* server fails, another *standby* server will take over and serve as 
 
 Delete Pod `ha-postgres-0` to see the failover behavior.
 
-```console
+```bash
 kubectl delete pod -n demo ha-postgres-0
 ```
 
-```console
+```bash
 $ kubectl get pods -n demo --selector="kubedb.com/name=ha-postgres" --show-labels
 NAME            READY     STATUS    RESTARTS   AGE       LABELS
 ha-postgres-0   1/1       Running   0          10s       controller-revision-hash=ha-postgres-b8b4b5fc4,kubedb.com/kind=Postgres,kubedb.com/name=ha-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=ha-postgres-0
@@ -261,7 +261,7 @@ Here,
 
 And result from `pg_stat_replication`
 
-```console
+```bash
 postgres=# select * from pg_stat_replication;
 ```
 
@@ -313,7 +313,7 @@ In this examples:
 
 Following parameters are set in `postgresql.conf` for *standby* server
 
-```console
+```bash
 hot_standby = on
 ```
 
@@ -323,14 +323,14 @@ Here,
 
 Now create this Postgres object
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/clustering/hot-postgres.yaml
 postgres "hot-postgres" created
 ```
 
 KubeDB operator creates three Pod as PostgreSQL server.
 
-```console
+```bash
 $ kubectl get pods -n demo --selector="kubedb.com/name=hot-postgres" --show-labels
 NAME             READY     STATUS    RESTARTS   AGE       LABELS
 hot-postgres-0   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,kubedb.com/kind=Postgres,kubedb.com/name=hot-postgres,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=hot-postgres-0
@@ -358,28 +358,28 @@ Now connect to one of our *hot standby* servers Pod `hot-postgres-2` using pgAdm
 - Maintenance database: `postgres`
 - Username: Run following command to get *username*,
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo hot-postgres-auth -o jsonpath='{.data.\POSTGRES_USER}' | base64 -d
   postgres
   ```
 
 - Password: Run the following command to get *password*,
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo hot-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
   ZZgjjQMUdKJYy1W9
   ```
 
 Try to create a database (write operation)
 
-```console
+```bash
 postgres=# CREATE DATABASE standby;
 ERROR:  cannot execute CREATE DATABASE in a read-only transaction
 ```
 
 Failed to execute write operation. But it can execute following read query
 
-```console
+```bash
 postgres=# select pg_last_xlog_receive_location();
  pg_last_xlog_receive_location
 -------------------------------
@@ -392,7 +392,7 @@ So, you can see here that you can connect to *hot standby* and it only accepts r
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 $ kubectl patch -n demo pg/ha-postgres pg/hot-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo pg/ha-postgres pg/hot-postgres
 

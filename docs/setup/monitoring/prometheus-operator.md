@@ -22,7 +22,7 @@ aliases:
 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy Prometheus operator and respective resources.
 
-  ```console
+  ```bash
   $ kubectl create ns monitoring
   namespace/monitoring created
   ```
@@ -37,8 +37,8 @@ Let's install KubeDB operator with monitoring enabled.
 
 **Helm 3:**
 
-```console
-$ helm install kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
+```bash
+$ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --no-hooks \
   --set monitoring.enabled=true \
@@ -49,8 +49,8 @@ $ helm install kubedb-operator appscode/kubedb --version {{< param "info.version
 
 **Helm 2:**
 
-```console
-$ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.version" >}} \
+```bash
+$ helm install appscode/kubedb --name kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/operator \
@@ -60,8 +60,8 @@ $ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.
 
 **YAML (with Helm 3):**
 
-```console
-$ helm template kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
+```bash
+$ helm template kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --no-hooks \
   --set monitoring.enabled=true \
@@ -70,12 +70,12 @@ $ helm template kubedb-operator appscode/kubedb --version {{< param "info.versio
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus | kubectl apply -f -
 ```
 
-This will create a `ServiceMonitor` crd with name `kubedb-operator-servicemonitor` in `monitoring` namespace for monitoring endpoints of `kubedb-operator` service. This `ServiceMonitor` will have label `k8s-app: prometheus` as we have provided it by `--servicemonitor-label` flag. This label will be used by Prometheus crd to select this `ServiceMonitor`.
+This will create a `ServiceMonitor` crd with name `kubedb-servicemonitor` in `monitoring` namespace for monitoring endpoints of `kubedb` service. This `ServiceMonitor` will have label `k8s-app: prometheus` as we have provided it by `--servicemonitor-label` flag. This label will be used by Prometheus crd to select this `ServiceMonitor`.
 
 Let's check the ServiceMonitor crd using following command,
 
 ```yaml
-$ kubectl get servicemonitor -n monitoring kubedb-operator-servicemonitor -o yaml
+$ kubectl get servicemonitor -n monitoring kubedb-servicemonitor -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -83,10 +83,10 @@ metadata:
   generation: 1
   labels:
     k8s-app: prometheus
-  name: kubedb-operator-servicemonitor
+  name: kubedb-servicemonitor
   namespace: monitoring
   resourceVersion: "4329"
-  selfLink: /apis/monitoring.coreos.com/v1/namespaces/monitoring/servicemonitors/kubedb-operator-servicemonitor
+  selfLink: /apis/monitoring.coreos.com/v1/namespaces/monitoring/servicemonitors/kubedb-servicemonitor
   uid: c4b22d73-0d7c-11e9-9086-080027f411de
 spec:
   endpoints:
@@ -94,15 +94,15 @@ spec:
     port: api
     scheme: https
     tlsConfig:
-      caFile: /etc/prometheus/secrets/kubedb-operator-apiserver-cert/tls.crt
-      serverName: kubedb-operator.kube-system.svc
+      caFile: /etc/prometheus/secrets/kubedb-apiserver-cert/tls.crt
+      serverName: kubedb.kube-system.svc
   namespaceSelector:
     matchNames:
     - kube-system
   selector:
     matchLabels:
       app: kubedb
-      release: kubedb-operator
+      release: kubedb
 ```
 
 KubeDB operator exports  kubernetes extension apiserver metrics in TLS secured `api` endpoint. So, KubeDB has added flowing two section in `ServicMonitor` specification.
@@ -110,17 +110,17 @@ KubeDB operator exports  kubernetes extension apiserver metrics in TLS secured `
 - `tlsConfig` section to establish TLS secured connection.
 - `bearerTokenFile` to authorize Prometheus server to KubeDB extension apiserver.
 
-KubeDB has created a secret named `kubedb-operator-apiserver-cert` in `monitoring` namespace as we have specified it through `--prometheus-namespace`. This secret holds the public certificate of KubeDB extension apiserver that has been specified in `tlsConfig` section.
+KubeDB has created a secret named `kubedb-apiserver-cert` in `monitoring` namespace as we have specified it through `--prometheus-namespace`. This secret holds the public certificate of KubeDB extension apiserver that has been specified in `tlsConfig` section.
 
-Verify that the secret `kubedb-operator-apiserver-cert` has been created in `monitoring` namespace.
+Verify that the secret `kubedb-apiserver-cert` has been created in `monitoring` namespace.
 
-```console
+```bash
 $ kubectl get secret -n monitoring -l=app=kubedb
 NAME                             TYPE                DATA   AGE
-kubedb-operator-apiserver-cert   kubernetes.io/tls   2      40m
+kubedb-apiserver-cert   kubernetes.io/tls   2      40m
 ```
 
-We are going to specify this secret in [Prometheus](https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/design.md#prometheus) crd specification. Prometheus operator will mount this secret in `/etc/prometheus/secret/kubedb-operator-apiserver-cert` directory of respective Prometheus server pod.
+We are going to specify this secret in [Prometheus](https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/design.md#prometheus) crd specification. Prometheus operator will mount this secret in `/etc/prometheus/secret/kubedb-apiserver-cert` directory of respective Prometheus server pod.
 
 Here, `tlsConfig.caFile` indicates the certificate to use for TLS secured connection and `tlsConfig.serverName` is used to verify hostname for which this certificate is valid.
 
@@ -132,7 +132,7 @@ Now, we have to create or configure a `Prometheus` crd that selects above `Servi
 
 ### Configure Existing Prometheus Server
 
-If you already have a Prometheus crd and respective Prometheus server running, you have to update this Prometheus crd to select `kubedb-operator-servicemonitor` ServiceMonitor.
+If you already have a Prometheus crd and respective Prometheus server running, you have to update this Prometheus crd to select `kubedb-servicemonitor` ServiceMonitor.
 
 At first, add the ServiceMonitor's  label `k8s-app: prometheus` in `spec.serviceMonitorSelector.matchLabels` field of Prometheus crd.
 
@@ -142,11 +142,11 @@ serviceMonitorSelector:
     k8s-app: prometheus
 ```
 
-Then, add secret name `kubedb-operator-apiserver-cert` in `spec.secrets` section.
+Then, add secret name `kubedb-apiserver-cert` in `spec.secrets` section.
 
 ```yaml
 secrets:
-  - kubedb-operator-apiserver-cert
+  - kubedb-apiserver-cert
 ```
 
 >Warning: Updating Prometheus crd specification will cause restart of your Prometheus server. If you don't use a persistent volume for Prometheus storage, you will lost your previously scraped data.
@@ -159,7 +159,7 @@ If you don't have any existing Prometheus server running, you have to create a P
 
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
@@ -188,17 +188,17 @@ spec:
     matchLabels:
       k8s-app: prometheus # change this according to your setup
   secrets:
-    - kubedb-operator-apiserver-cert
+    - kubedb-apiserver-cert
   resources:
     requests:
       memory: 400Mi
 ```
 
-Here, `spec.serviceMonitorSelector` is used to select the `ServiceMonitor` crd that is created by KubeDB operator. We have provided `kubedb-operator-apiserver-cert` secret in `spec.secrets` field. This will be mounted in Prometheus pod.
+Here, `spec.serviceMonitorSelector` is used to select the `ServiceMonitor` crd that is created by KubeDB operator. We have provided `kubedb-apiserver-cert` secret in `spec.secrets` field. This will be mounted in Prometheus pod.
 
 Let's create the `Prometheus` object we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/operator/prometheus.yaml
 prometheus.monitoring.coreos.com/prometheus created
 ```
@@ -207,7 +207,7 @@ Prometheus operator watches for `Prometheus` crd. Once a `Prometheus` crd is cre
 
 Let's check `StatefulSet` has been created,
 
-```console
+```bash
 $ kubectl get statefulset -n monitoring
 NAME                    DESIRED   CURRENT   AGE
 prometheus-prometheus   1         1         2m14s
@@ -220,7 +220,7 @@ Prometheus server is listening to port `9090`. We are going to use [port forward
 
 At first, let's check if the Prometheus pod is in `Running` state.
 
-```console
+```bash
 $ kubectl get pod prometheus-prometheus-0 -n monitoring
 NAME                      READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-0   3/3     Running   1          2m40s
@@ -228,13 +228,13 @@ prometheus-prometheus-0   3/3     Running   1          2m40s
 
 Now, run following command on a separate terminal to forward 9090 port of `prometheus-prometheus-0` pod,
 
-```console
+```bash
 $ kubectl port-forward -n monitoring prometheus-prometheus-0 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `api` endpoint of `kubedb-operator` service as target.
+Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `api` endpoint of `kubedb` service as target.
 
 <p align="center">
   <img alt="Prometheus Target" src="/docs/images/monitoring/operator/coreos-prom-target.png" style="padding:10px">
@@ -244,11 +244,11 @@ Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:909
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 # cleanup Prometheus resources
 kubectl delete -n monitoring prometheus prometheus
-kubectl delete -n monitoring secret kubedb-operator-apiserver-cert
-kubectl delete -n monitoring servicemonitor kubedb-operator-servicemonitor
+kubectl delete -n monitoring secret kubedb-apiserver-cert
+kubectl delete -n monitoring servicemonitor kubedb-servicemonitor
 
 # delete namespace
 kubectl delete ns monitoring

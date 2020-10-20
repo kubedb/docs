@@ -30,7 +30,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to upgrade the 
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -75,14 +75,14 @@ spec:
 
 Let's create the `MongoDB` CR we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/upgrading/mg-shard.yaml
 mongodb.kubedb.com/mg-sharding created
 ```
 
 Now, wait until `mg-sharding` created has status `Running`. i.e,
 
-```console
+```bash
 $ k get mongodb -n demo                                                                                                                                             
 NAME          VERSION    STATUS    AGE
 mg-sharding   3.6.8-v1   Running   2m9s
@@ -120,7 +120,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/upgrading/mops-upgrade-shard.yaml
 mongodbopsrequest.ops.kubedb.com/mops-shard-upgrade created
 ```
@@ -131,7 +131,7 @@ If everything goes well, `KubeDB` Enterprise operator will update the image of `
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
-```console
+```bash
 $ kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                 TYPE      STATUS       AGE
@@ -140,7 +140,7 @@ mops-shard-upgrade   Upgrade   Successful   2m31s
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to upgrade the database.
 
-```console
+```bash
 $ kubectl describe mongodbopsrequest -n demo mops-shard-upgrade
 
 Name:         mops-shard-upgrade
@@ -293,7 +293,7 @@ Events:
 
 Now, we are going to verify whether the `MongoDB` and the related `StatefulSets` of `Mongos`, `Shard` and `ConfigeServer` and their `Pods` have the new version image. Let's check,
 
-```console
+```bash
 $ kubectl get mg -n demo mg-sharding -o=jsonpath='{.spec.version}{"\n"}'                                                                                           20:59:43
   4.0.5-v3
 
@@ -322,7 +322,7 @@ You can see from above, our `MongoDB` sharded database has been updated with the
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete mg -n demo mg-sharding
 kubectl delete mongodbopsrequest -n demo mops-shard-upgrade
 ```

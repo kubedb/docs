@@ -110,13 +110,13 @@ ConnectionPool is used to configure pgbouncer connection-pool. All the fields he
 
 - `spec.connectionPool.maxClientConnections`: specifies the value of max_client_conn. When increased then the file descriptor limits should also be increased. Note that actual number of file descriptors used is more than max_client_conn. Theoretical maximum used is:
 
-  ```console
+  ```bash
   max_client_conn + (max pool_size * total databases * total users)
   ```
 
   if each user connects under its own username to server. If a database user is specified in connect string (all users connect under same username), the theoretical maximum is:
 
-  ```console
+  ```bash
   max_client_conn + (max pool_size * total databases)
   ```
 

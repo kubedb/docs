@@ -143,7 +143,7 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 
 Example:
 
-```console
+```bash
 $ kubectl create secret generic m1-auth -n demo \
 --from-literal=user=root \
 --from-literal=password=6q8u_2jMOW-OOZXk

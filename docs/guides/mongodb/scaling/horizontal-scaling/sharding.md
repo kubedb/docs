@@ -31,7 +31,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to scale the sh
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -80,14 +80,14 @@ spec:
 
 Let's create the `MongoDB` CR we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/mg-shard.yaml
 mongodb.kubedb.com/mg-sharding created
 ```
 
 Now, wait until `mg-sharding` has status `Running`. i.e,
 
-```console
+```bash
 $ kubectl get mg -n demo                                                            
 NAME          VERSION    STATUS    AGE
 mg-sharding   3.6.8-v1   Running   10m
@@ -97,7 +97,7 @@ mg-sharding   3.6.8-v1   Running   10m
 
 Let's check the number of shards this database from the MongoDB object and the number of statefulsets it has,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.shard.shards'
 3
 
@@ -114,7 +114,7 @@ So, We can see from the both output that the database has 3 shards.
 
 Now, Let's check the number of replicas each shard has from the MongoDB object and the number of pod the statefulsets have,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.shard.replicas'
 2
 
@@ -127,7 +127,7 @@ We can see from both output that the database has 2 replicas in each shards.
 Also, we can verify the number of shard from an internal mongodb command by execing into a mongos node.
 
 First we need to get the username and password to connect to a mongos instance,
-```console
+```bash
 $ kubectl get secrets -n demo mg-sharding-auth -o jsonpath='{.data.\username}' | base64 -d 
 root
 
@@ -137,7 +137,7 @@ xBC-EwMFivFCgUlK
 
 Now let's connect to a mongos instance and run a mongodb internal command to check the number of shards,
 
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "sh.status()" --quiet  
 --- Sharding Status --- 
  sharding version: {
@@ -177,7 +177,7 @@ Also, we can verify the number of replicas each shard has from an internal mongo
 
 Now let's connect to a shard instance and run a mongodb internal command to check the number of replicas,
 
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
   [
   	{
@@ -238,7 +238,7 @@ We can see from the above output that the number of replica is 2.
 
 Let's check the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.configServer.replicas'                                                                                           11:02:09
 2
 
@@ -250,7 +250,7 @@ We can see from both command that the database has `2` replicas in the configSer
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet     15:37:23
   
   [
@@ -311,7 +311,7 @@ We can see from the above output that the configServer has 2 nodes.
 ##### Verify Number of Mongos
 Let's check the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.mongos.replicas'                                                                                           11:02:09
 2
 
@@ -323,7 +323,7 @@ We can see from both command that the database has `2` replicas in the mongos.
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "sh.status()" --quiet
  --- Sharding Status --- 
     sharding version: {
@@ -395,7 +395,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/horizontal-scaling/mops-hscale-up-shard.yaml
 mongodbopsrequest.ops.kubedb.com/mops-hscale-up-shard created
 ```
@@ -406,7 +406,7 @@ If everything goes well, `KubeDB` Enterprise operator will update the shard and 
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
-```console
+```bash
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                   TYPE                STATUS       AGE
@@ -415,7 +415,7 @@ mops-hscale-up-shard   HorizontalScaling   Successful   9m57s
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
-```console
+```bash
 $ kubectl describe mongodbopsrequest -n demo mops-hscale-up-shard                     
 Name:         mops-hscale-up-shard
 Namespace:    demo
@@ -549,7 +549,7 @@ Events:
 
 Now, we are going to verify the number of shards this database has from the MongoDB object, number of statefulsets it has,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.shard.shards'         
 4
 
@@ -564,7 +564,7 @@ mg-sharding-shard3      3/3     15m
 ```
 
 Now let's connect to a mongos instance and run a mongodb internal command to check the number of shards,
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "sh.status()" --quiet  
 --- Sharding Status --- 
  sharding version: {
@@ -603,7 +603,7 @@ From all the above outputs we can see that the number of shards are `4`.
 
 Now, we are going to verify the number of replicas each shard has from the MongoDB object, number of pods the statefulset have,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.shard.replicas'              
 3
 
@@ -612,7 +612,7 @@ $ kubectl get sts -n demo mg-sharding-shard0 -o json | jq '.spec.replicas'
 ```
 
 Now let's connect to a shard instance and run a mongodb internal command to check the number of replicas,
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
   [
   	{
@@ -699,7 +699,7 @@ From all the above outputs we can see that the replicas of each shard has is `3`
 #### Verify Number of ConfigServer Replicas
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.configServer.replicas'                                                                                           11:02:09
 3
 
@@ -708,7 +708,7 @@ $ kubectl get sts -n demo mg-sharding-configsvr -o json | jq '.spec.replicas'
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
   [
   	{
@@ -795,7 +795,7 @@ From all the above outputs we can see that the replicas of the configServer is `
 #### Verify Number of Mongos Replicas
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.mongos.replicas'                                                                                           11:02:09
 3
 
@@ -804,7 +804,7 @@ $ kubectl get sts -n demo mg-sharding-mongos -o json | jq '.spec.replicas'
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "sh.status()" --quiet
   --- Sharding Status --- 
     sharding version: {
@@ -884,7 +884,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/horizontal-scaling/mops-hscale-down-shard.yaml
 mongodbopsrequest.ops.kubedb.com/mops-hscale-down-shard created
 ```
@@ -895,7 +895,7 @@ If everything goes well, `KubeDB` Enterprise operator will update the shards and
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
-```console
+```bash
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                     TYPE                STATUS       AGE
@@ -904,7 +904,7 @@ mops-hscale-down-shard   HorizontalScaling   Successful   81s
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale down the the database.
 
-```console
+```bash
 $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-shard                     
  Name:         mops-hscale-down-shard
  Namespace:    demo
@@ -1044,7 +1044,7 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-shard
 
 Now, we are going to verify the number of shards this database has from the MongoDB object, number of statefulsets it has,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.shard.shards'     
 3
 
@@ -1058,7 +1058,7 @@ mg-sharding-shard2      2/2     78m
 ```
 
 Now let's connect to a mongos instance and run a mongodb internal command to check the number of shards,
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "sh.status()" --quiet  
 --- Sharding Status --- 
   sharding version: {
@@ -1096,7 +1096,7 @@ From all the above outputs we can see that the number of shards are `3`.
 
 Now, we are going to verify the number of replicas each shard has from the MongoDB object, number of pods the statefulset have,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.shard.replicas'                                                                            13:05:25
 2
 
@@ -1105,7 +1105,7 @@ $ kubectl get sts -n demo mg-sharding-shard0 -o json | jq '.spec.replicas'      
 ```
 
 Now let's connect to a shard instance and run a mongodb internal command to check the number of replicas,
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet        13:06:31
   [
   	{
@@ -1166,7 +1166,7 @@ From all the above outputs we can see that the replicas of each shard has is `2`
 
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.configServer.replicas'                                                                                           11:02:09
 3
 
@@ -1175,7 +1175,7 @@ $ kubectl get sts -n demo mg-sharding-configsvr -o json | jq '.spec.replicas'
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
 [
 	{
@@ -1236,7 +1236,7 @@ From all the above outputs we can see that the replicas of the configServer is `
 
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.mongos.replicas'                                                                                           11:02:09
 2
 
@@ -1245,7 +1245,7 @@ $ kubectl get sts -n demo mg-sharding-mongos -o json | jq '.spec.replicas'
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "sh.status()" --quiet
 --- Sharding Status --- 
   sharding version: {
@@ -1287,7 +1287,7 @@ So, we have successfully scaled down all the components of the MongoDB database.
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete mg -n demo mg-sharding
 kubectl delete mongodbopsrequest -n demo mops-vscale-up-shard mops-vscale-down-shard 
 ```

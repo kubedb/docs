@@ -24,7 +24,7 @@ KubeDB supports providing custom configuration for MySQL via [PodTemplate](/docs
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -94,7 +94,7 @@ spec:
     type: RollingUpdate
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/configuration/mysql-misc-config.yaml
 mysql.kubedb.com/mysql-misc-config created
 ```
@@ -160,7 +160,7 @@ url: http://172.18.0.4:30942
 
 Now, let's connect to the database from the phpMyAdmin dashboard using the database pod IP and MySQL user password.
 
-```console
+```bash
 $ kubectl get pods mysql-misc-config-0 -n demo -o yaml | grep IP
   ...
   hostIP: 10.0.2.15
@@ -183,7 +183,7 @@ Once, you have connected to the database with phpMyAdmin go to **SQL** tab and r
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo my/mysql-misc-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo my/mysql-misc-config
 

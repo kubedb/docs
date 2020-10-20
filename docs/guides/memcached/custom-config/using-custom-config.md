@@ -24,7 +24,7 @@ KubeDB supports providing custom configuration for Memcached. This tutorial will
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   
@@ -92,7 +92,7 @@ $ cat memcached.conf
 
 Now, create a configMap with this configuration file.
 
-```console
+```bash
  $ kubectl create configmap -n demo mc-custom-config --from-file=./memcached.conf
 configmap/mc-custom-config created
 ```
@@ -119,7 +119,7 @@ metadata:
 
 Now, create Memcached crd specifying `spec.configSource` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/mc-custom.yaml
 memcached.kubedb.com/custom-memcached created
 ```
@@ -153,7 +153,7 @@ Now, wait a few minutes. KubeDB operator will create the necessary deployment, s
 
 Check that the pods for the deployment is running:
 
-```console
+```bash
 $ kubectl get pods -n demo
 NAME                                READY     STATUS    RESTARTS   AGE
 custom-memcached-747b866f4b-j6clt   1/1       Running   0          5m
@@ -163,7 +163,7 @@ Now, we will check if the database has started with the custom configuration we 
 
 We will connect to `custom-memcached-5b5866f5b8-cbc2d` pod from local-machine using port-frowarding.
 
-```console
+```bash
 $ kubectl port-forward -n demo custom-memcached-5b5866f5b8-cbc2d  11211
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
@@ -171,7 +171,7 @@ Forwarding from [::1]:11211 -> 11211
 
 Now, connect to the memcached server from a different terminal through `telnet`.
 
-```console
+```bash
 $ telnet 127.0.0.1 11211
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
@@ -191,7 +191,7 @@ Here, `limit_maxbytes` is represented in bytes.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mc/custom-memcached -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mc/custom-memcached
 

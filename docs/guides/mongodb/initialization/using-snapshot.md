@@ -53,7 +53,7 @@ spec:
       namespace: demo
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/Initialization/demo-2.yaml
 mongodb.kubedb.com/mgo-init-snapshot created
 ```
@@ -64,7 +64,7 @@ Here,
 
 Now, wait several seconds. KubeDB operator will create a new `StatefulSet`. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snapshot-instant` Snapshot.
 
-```console
+```bash
 $ kubectl get mg -n demo
 NAME                VERSION   STATUS         AGE
 mgo-instant          3.4-v3    Running        4m
@@ -151,7 +151,7 @@ Events:
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mgo-instant mg/mgo-init-snapshot -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-instant mg/mgo-init-snapshot
 

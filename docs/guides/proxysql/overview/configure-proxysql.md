@@ -130,7 +130,7 @@ The following view and helper functions also need to be added to the replication
 
 Execute it from the primary member,
 
-```console
+```bash
 $ mysql --user=root --password={MYSQL_ROOT_PASSWORD} --host={PRIMARY_GROUP_MEMBER} < addition_to_sys.sql
 ```
 

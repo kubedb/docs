@@ -24,7 +24,7 @@ section_menu_id: guides
 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
-  ```console
+  ```bash
   $ kubectl create ns monitoring
   namespace/monitoring created
   ```
@@ -41,13 +41,13 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd
 
 As a prerequisite, we need to have Prometheus operator running, and a prometheus server created to monitor PgBouncer exporter. In this tutorial we are going to use a prometheus server named `promethus` in `monitoring` namespace. You can use the following to install `Prometheus operator`.
 
-```console
+```bash
 $ kubectl apply -f https://raw.githubusercontent.com/appscode/third-party-tools/master/monitoring/prometheus/coreos-operator/artifacts/operator.yaml
 ```
 
 Now, get a prometheus server up and running.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/monitoring/coreos-prom-server.yaml
 
 clusterrole.rbac.authorization.k8s.io/prometheus created
@@ -58,7 +58,7 @@ prometheus.monitoring.coreos.com/prometheus created
 
 Now, let's find out the available Prometheus server in our cluster.
 
-```console
+```bash
 
 $ kubectl get prometheus --all-namespaces
 NAMESPACE    NAME                                    AGE
@@ -144,14 +144,14 @@ Here,
 
 Let's create the PgBouncer object that we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/monitoring/coreos-prom-pgbouncer.yaml
 pgbouncer.kubedb.com/pgbouncer-server configured
 ```
 
 Now, wait for the database to go into `Running` state.
 
-```console
+```bash
 $ kubectl get pb -n demo pgbouncer-server
 NAME               VERSION   STATUS    AGE
 pgbouncer-server   1.11.0    Running   10s
@@ -159,7 +159,7 @@ pgbouncer-server   1.11.0    Running   10s
 
 KubeDB will create a separate stats service with name `{PgBouncer crd name}-stats` for monitoring purpose.
 
-```console
+```bash
 $  kubectl get svc -n demo --selector="kubedb.com/name=pgbouncer-server"
 NAME                     TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
 pgbouncer-server         ClusterIP   10.104.83.201    <none>        5432/TCP    52s
@@ -191,7 +191,7 @@ Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these informati
 
 KubeDB will also create a `ServiceMonitor` crd in `monitoring` namespace that select the endpoints of `pgbouncer-server-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
-```console
+```bash
 $ kubectl get servicemonitor -n monitoring
 NAME                           AGE
 kubedb-demo-pgbouncer-server   3m4s
@@ -244,7 +244,7 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
-```console
+```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                      READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-0   3/3     Running   1          35m
@@ -254,7 +254,7 @@ Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. 
 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
 
-```console
+```bash
 $ kubectl port-forward -n monitoring prometheus-prometheus-0 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
@@ -272,7 +272,7 @@ Check the `endpoint` and `service` labels which verify that the target is our ex
 
 To cleanup the Kubernetes resources created by this tutorial, run the following commands
 
-```console
+```bash
 # cleanup prometheus resources
 kubectl delete -n monitoring prometheus prometheus
 kubectl delete -n monitoring clusterrolebinding prometheus

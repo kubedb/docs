@@ -15,22 +15,10 @@ aliases:
 
 # KubeDB
 
-Running production quality databases in Kubernetes can be tricky. KubeDB is a framework for writing operators for any database that support the following operational requirements:
+Kubernetes has emerged as the de-facto way to deploy modern containerized apps on cloud or on-premises. Despite all that growth on the application layer, the data layer hasn’t gotten as much traction with containerization. That’s not surprising, since handling things like state (the database), availability to other layers of the application, and redundancy for a database makes it challenging to run a database in a distributed environment like Kubernetes.
 
-- Create a database declaratively using CRD.
-- Take one-off backups or period backups to various cloud stores, e.g., S3, GCS, etc.
-- Restore from backup or clone any database.
-- Native integration with Prometheus for monitoring via [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator).
-- Apply deletion lock to avoid accidental deletion of database.
-- Keep track of deleted databases, cleanup prior snapshots with a single command.
-- Use cli to manage databases like kubectl for Kubernetes.
-- ProxySQL Integration for MySQL/MySQL-fork database
+However, many developers want to treat data infrastructure the same as application stacks. Operators want to use the same tools for databases and applications and get the same benefits as the application layer in the data layer: rapid spin-up and repeatability across environments. This is where KubeDB by AppsCode comes as a solution. 
 
-Currently KubeDB includes support for following datastores:
+KubeDB by AppsCode is a production-grade cloud-native database management solution for Kubernetes. KubeDB simplifies and automates routine database tasks such as provisioning, patching, backup, recovery, failure detection, and repair for various popular databases on private and public clouds. It frees you to focus on your applications so you can give them the fast performance, high availability, security and compatibility they need.
 
-- Postgres
-- Elasticsearch
-- MySQL
-- MongoDB
-- Redis
-- Memcached
+KubeDB provides you with many familiar database engines to choose from, including PostgreSQL, MySQL, MongoDB, Elasticsearch, Redis and Memcached. And the list is growing. KubeDB’s native integration with Kubernetes makes a unique solution compared to competitive solutions from cloud providers and database vendors.

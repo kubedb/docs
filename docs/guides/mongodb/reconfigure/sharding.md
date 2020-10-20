@@ -30,7 +30,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to reconfigure 
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -56,7 +56,7 @@ Here, `maxIncomingConnections` is set to `10000`, whereas the default value is `
 
 Now, we will create a configMap with this configuration file.
 
-```console
+```bash
 $ kubectl create configmap -n demo mg-custom-config --from-file=./mongod.conf
 configmap/mg-custom-config created
 ```
@@ -102,14 +102,14 @@ spec:
 
 Let's create the `MongoDB` CR we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mg-shard-config.yaml
 mongodb.kubedb.com/mg-sharding created
 ```
 
 Now, wait until `mg-sharding` has status `Running`. i.e,
 
-```console
+```bash
 $ kubectl get mg -n demo                                                                                                                                             20:05:47
 NAME          VERSION    STATUS    AGE
 mg-sharding   3.6.8-v1   Running   3m23s
@@ -118,7 +118,7 @@ mg-sharding   3.6.8-v1   Running   3m23s
 Now, we will check if the database has started with the custom configuration we have provided.
 
 First we need to get the username and password to connect to a mongodb instance,
-```console
+```bash
 $ kubectl get secrets -n demo mg-sharding-auth -o jsonpath='{.data.\username}' | base64 -d                                                                         11:09:51
 root
 
@@ -128,7 +128,7 @@ Dv8F55zVNiEkhHM6
 
 Now let's connect to a mongodb instance from each type of nodes and run a mongodb internal command to check the configuration we have provided.
 
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
   {
   	"bindIp" : "0.0.0.0",
@@ -176,7 +176,7 @@ net:
 
 Then, we will create a new configMap with this configuration file.
 
-```console
+```bash
 $ kubectl create configmap -n demo new-custom-config --from-file=./mongod.conf
 configmap/mg-custom-config created
 ```
@@ -219,7 +219,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-shard.yaml
 mongodbopsrequest.ops.kubedb.com/mops-reconfigure-shard created
 ```
@@ -230,7 +230,7 @@ If everything goes well, `KubeDB` Enterprise operator will update the `configSou
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
-```console
+```bash
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                     TYPE          STATUS       AGE
@@ -239,7 +239,7 @@ mops-reconfigure-shard   Reconfigure   Successful   3m8s
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
-```console
+```bash
 $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-shard  
 Name:         mops-reconfigure-shard
 Namespace:    demo
@@ -374,7 +374,7 @@ Events:
 
 Now let's connect to a mongodb instance from each type of nodes and run a mongodb internal command to check the new configuration we have provided.
 
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
   {
   	"bindIp" : "0.0.0.0",
@@ -456,7 +456,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-data-shard.yaml
 mongodbopsrequest.ops.kubedb.com/mops-reconfigure-data-shard created
 ```
@@ -467,7 +467,7 @@ If everything goes well, `KubeDB` Enterprise operator will merge this new config
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
-```console
+```bash
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                          TYPE          STATUS       AGE
@@ -476,7 +476,7 @@ mops-reconfigure-data-shard   Reconfigure   Successful   3m24s
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
-```console
+```bash
 $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-data-shard
 Name:         mops-reconfigure-data-shard
 Namespace:    demo
@@ -609,7 +609,7 @@ Events:
 
 Now let's connect to a mongodb instance from each type of nodes and run a mongodb internal command to check the new configuration we have provided.
 
-```console
+```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
   {
   	"bindIp" : "0.0.0.0",
@@ -647,7 +647,7 @@ As we can see from the configuration of running mongodb, the value of `maxIncomi
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete mg -n demo mg-sharding
 kubectl delete mongodbopsrequest -n demo mops-reconfigure-shard mops-reconfigure-data-shard
 ```

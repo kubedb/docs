@@ -67,7 +67,7 @@ After starting ProxySQL, it uses a package-provided configuration file (default 
 
 First, access the administration interface. You’ll be prompted for a password which, on a default installation, is `admin`.
 
-```console
+```bash
 $ mysql --user=admin --password=admin --host=127.0.0.1 --port=6032 --prompt='ProxySQLAdmin> '
 ```
 
@@ -79,7 +79,7 @@ $ mysql --user=admin --password=admin --host=127.0.0.1 --port=6032 --prompt='Pro
 
 From the admin interface, we can see that there are a few databases available.
 
-```console
+```bash
 ProxySQLAdmin> show databases;
 +-----+---------------+-------------------------------------+
 | seq | name          | file                                |

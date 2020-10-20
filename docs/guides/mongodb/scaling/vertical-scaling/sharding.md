@@ -30,7 +30,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the r
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -79,14 +79,14 @@ spec:
 
 Let's create the `MongoDB` CR we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/mg-shard.yaml
 mongodb.kubedb.com/mg-sharding created
 ```
 
 Now, wait until `mg-sharding` has status `Running`. i.e,
 
-```console
+```bash
 $ kubectl get mg -n demo                                                            
 NAME          VERSION    STATUS    AGE
 mg-sharding   3.6.8-v1   Running   8m51s
@@ -94,7 +94,7 @@ mg-sharding   3.6.8-v1   Running   8m51s
 
 Let's check the Pod containers resources of various components (mongos, shard, configserver etc.) of the database,
 
-```console
+```bash
 $ kubectl get pod -n demo mg-sharding-mongos-0 -o json | jq '.spec.containers[].resources'
   {}
 
@@ -163,7 +163,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/vertical-scaling/mops-vscale-shard.yaml
 mongodbopsrequest.ops.kubedb.com/mops-vscale-shard created
 ```
@@ -174,7 +174,7 @@ If everything goes well, `KubeDB` Enterprise operator will update the resources 
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
-```console
+```bash
 $ kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                TYPE              STATUS       AGE
@@ -183,7 +183,7 @@ mops-vscale-shard   VerticalScaling   Successful   8m21s
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
-```console
+```bash
 $ kubectl describe mongodbopsrequest -n demo mops-vscale-shard
 Name:         mops-vscale-shard
 Namespace:    demo
@@ -368,7 +368,7 @@ Events:
 
 Now, we are going to verify from one of the Pod yaml whether the resources of the shard nodes has updated to meet up the desired state, Let's check,
 
-```console
+```bash
 $ kubectl get pod -n demo mg-sharding-shard0-0 -o json | jq '.spec.containers[].resources'                                                                           12:56:06
   {
     "limits": {
@@ -412,7 +412,7 @@ The above output verifies that we have successfully scaled the resources of all 
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete mg -n demo mg-shard
 kubectl delete mongodbopsrequest -n demo mops-vscale-shard
 ```
