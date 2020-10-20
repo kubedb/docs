@@ -9,7 +9,7 @@ menu:
 menu_name: docs_{{ .version }}
 ---
 
-> New to KubeDB? Please start [here](/docs/overview/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Monitoring PerconaXtraDB with builtin Prometheus
 

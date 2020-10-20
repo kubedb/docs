@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: concepts
 ---
 
-> New to KubeDB? Please start [here](/docs/overview/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # PgBouncer
 

@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/mongodb/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/overview/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 ## Supported MongoDB Features
 
