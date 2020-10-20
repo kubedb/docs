@@ -44,7 +44,7 @@ KubeDB uses following crd fields to enable SSL/TLS encryption in Mongodb.
     - `certificate`
   - `clusterAuthMode`
 
-Read about the fields in details in [mongodb concept](/docs/guides/mongodb/concepts/overview.md),
+Read about the fields in details in [mongodb concept](/docs/guides/mongodb/concepts/mongodb.md),
 
 `sslMode`, and `tls` is applicable for all types of MongoDB (i.e., `standalone`, `replicaset` and `sharding`), while `clusterAuthMode` provides [ClusterAuthMode](https://docs.mongodb.com/manual/reference/program/mongod/#cmdoption-mongod-clusterauthmode) for MongoDB clusters (i.e., `replicaset` and `sharding`).
 
@@ -93,7 +93,7 @@ issuer.cert-manager.io/mongo-ca-issuer created
 
 ## TLS/SSL encryption in MongoDB Standalone
 
-Below is the YAML for MongoDB Standalone. Here, [`spec.sslMode`](/docs/guides/mongodb/concepts/overview.md#specsslMode) specifies `sslMode` for `standalone` (which is `requireSSL`).
+Below is the YAML for MongoDB Standalone. Here, [`spec.sslMode`](/docs/guides/mongodb/concepts/mongodb.md#specsslMode) specifies `sslMode` for `standalone` (which is `requireSSL`).
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -234,7 +234,7 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/overview.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
 - [Snapshot and Restore](/docs/guides/mongodb/snapshot/backup-and-restore.md) process of MongoDB databases using KubeDB.
 - Take [Scheduled Snapshot](/docs/guides/mongodb/snapshot/scheduled-backup.md) of MongoDB databases using KubeDB.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
@@ -243,5 +243,5 @@ kubectl delete ns demo
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
 - Use [kubedb cli](/docs/guides/mongodb/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/overview.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

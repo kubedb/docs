@@ -477,9 +477,9 @@ A `MongoDBOpsRequest` object has the following fields in the `spec` section.
 
 #### spec.databaseRef
 
-`spec.databaseRef` is a required field that point to the [MongoDB](/docs/guides/mongodb/concepts/overview.md) object for which the administrative operations will be performed. This field consists of the following sub-field:
+`spec.databaseRef` is a required field that point to the [MongoDB](/docs/guides/mongodb/concepts/mongodb.md) object for which the administrative operations will be performed. This field consists of the following sub-field:
 
-- **spec.databaseRef.name :** specifies the name of the [MongoDB](/docs/guides/mongodb/concepts/overview.md) object.
+- **spec.databaseRef.name :** specifies the name of the [MongoDB](/docs/guides/mongodb/concepts/mongodb.md) object.
 
 #### spec.type
 

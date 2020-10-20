@@ -109,7 +109,7 @@ Starting in MongoDB 3.6, [change streams](https://docs.mongodb.com/manual/change
 ## Next Steps
 
 - [Deploy MongoDB ReplicaSet](/docs/guides/mongodb/clustering/replicaset.md) using KubeDB.
-- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/overview.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
 - Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 

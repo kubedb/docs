@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Run MongoDB with Custom Configuration
 
-KubeDB supports providing custom configuration for MongoDB via [PodTemplate](/docs/guides/mongodb/concepts/overview.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a MongoDB database with custom configuration using PodTemplate.
+KubeDB supports providing custom configuration for MongoDB via [PodTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a MongoDB database with custom configuration using PodTemplate.
 
 ## Before You Begin
 
@@ -55,11 +55,11 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - priority
   - securityContext
 
-Read about the fields in details in [PodTemplate concept](/docs/guides/mongodb/concepts/overview.md#specpodtemplate),
+Read about the fields in details in [PodTemplate concept](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate),
 
 ## CRD Configuration
 
-Below is the YAML for the MongoDB created in this example. Here, [`spec.podTemplate.spec.env`](/docs/guides/mongodb/concepts/overview.md#specpodtemplatespecenv) specifies environment variables and [`spec.podTemplate.spec.args`](/docs/guides/mongodb/concepts/overview.md#specpodtemplatespecargs) provides extra arguments for [MongoDB Docker Image](https://hub.docker.com/_/mongodb/).
+Below is the YAML for the MongoDB created in this example. Here, [`spec.podTemplate.spec.env`](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplatespecenv) specifies environment variables and [`spec.podTemplate.spec.args`](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplatespecargs) provides extra arguments for [MongoDB Docker Image](https://hub.docker.com/_/mongodb/).
 
 In this tutorial, `maxIncomingConnections` is set to `100` (default, 65536) through args `--maxConns=100`.
 
@@ -257,5 +257,5 @@ If you would like to uninstall KubeDB operator, please follow the steps [here](/
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
 - Use [kubedb cli](/docs/guides/mongodb/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/overview.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

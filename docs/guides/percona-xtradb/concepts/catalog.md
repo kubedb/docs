@@ -16,7 +16,7 @@ section_menu_id: concepts
 
 `PerconaXtraDBVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for PerconaXtraDB deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, a `PerconaXtraDBVersion` custom resource will be created automatically for every supported PerconaXtraDB versions. You have to specify the name of `PerconaXtraDBVersion` object in `.spec.version` field of [PerconaXtraDB](/docs/guides/percona-xtradb/concepts/overview.md) object. Then, KubeDB will use the docker images specified in the `PerconaXtraDBVersion` crd to create your expected PerconaXtraDBVersion instance.
+When you install KubeDB, a `PerconaXtraDBVersion` custom resource will be created automatically for every supported PerconaXtraDB versions. You have to specify the name of `PerconaXtraDBVersion` object in `.spec.version` field of [PerconaXtraDB](/docs/guides/percona-xtradb/concepts/percona-xtradb.md) object. Then, KubeDB will use the docker images specified in the `PerconaXtraDBVersion` crd to create your expected PerconaXtraDBVersion instance.
 
 Using a separate object for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the database.
 
@@ -44,7 +44,7 @@ spec:
 
 ### .metadata.name
 
-`.metadata.name` is a required field that specifies the name of the `PerconaXtraDBVersion` object. You have to specify this name in `.spec.version` field of [PerconaXtraDB](/docs/guides/percona-xtradb/concepts/overview.md) object.
+`.metadata.name` is a required field that specifies the name of the `PerconaXtraDBVersion` object. You have to specify this name in `.spec.version` field of [PerconaXtraDB](/docs/guides/percona-xtradb/concepts/percona-xtradb.md) object.
 
 We follow this convention for naming PerconaXtraDBVersion object:
 
@@ -76,5 +76,5 @@ The default value of this field is `false`. If `.spec.deprecated` is set `true`,
 
 ## Next Steps
 
-- Learn about PerconaXtraDB CRD [here](/docs/guides/percona-xtradb/concepts/overview.md).
+- Learn about PerconaXtraDB CRD [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md).
 - Deploy your first PerconaXtraDB database with KubeDB by following the guide [here](/docs/guides/percona-xtradb/quickstart/quickstart.md).

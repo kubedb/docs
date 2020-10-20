@@ -25,7 +25,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to expand the v
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MongoDB](/docs/guides/mongodb/concepts/overview.md)
+  - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
   - [Replicaset](/docs/guides/mongodb/clustering/replicaset.md)
   - [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
   - [Volume Expansion Overview](/docs/guides/mongodb/volume-expansion/overview.md)

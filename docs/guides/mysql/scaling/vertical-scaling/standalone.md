@@ -23,7 +23,7 @@ This guide will show you how to use `KubeDB` enterprise operator to update the r
 - Install `KubeDB` community and enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MySQL](/docs/guides/mysql/concepts/overview.md)
+  - [MySQL](/docs/guides/mysql/concepts/mysql.md)
   - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest.md)
   - [Vertical Scaling Overview](/docs/guides/mysql/scaling/vertical-scaling/overview.md)
 

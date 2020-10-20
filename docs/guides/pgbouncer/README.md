@@ -64,5 +64,5 @@ Here, &#10003; means supported and &#10007; means unsupported.
 - Monitor your PgBouncer with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
 - Monitor your PgBouncer with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/pgbouncer/private-registry/using-private-registry.md) to deploy PgBouncer with KubeDB.
-- Detail concepts of [PgBouncer object](/docs/guides/pgbouncer/concepts/overview.md).
+- Detail concepts of [PgBouncer object](/docs/guides/pgbouncer/concepts/pgbouncer.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

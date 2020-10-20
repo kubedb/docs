@@ -19,7 +19,7 @@ This guide will give you an overview of how KubeDB enterprise operator updates t
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MySQL](/docs/guides/mysql/concepts/overview.md)
+  - [MySQL](/docs/guides/mysql/concepts/mysql.md)
   - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest.md)
 
 ## How Vertical Scaling Process Works

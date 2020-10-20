@@ -66,5 +66,5 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - Monitor your Memcached server with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/memcached/private-registry/using-private-registry.md) to deploy Memcached with KubeDB.
 - Use [kubedb cli](/docs/guides/memcached/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [Memcached object](/docs/guides/memcached/concepts/overview.md).
+- Detail concepts of [Memcached object](/docs/guides/memcached/concepts/memcached.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

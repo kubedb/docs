@@ -160,5 +160,5 @@ kubectl delete ns demo
 
 - Monitor your Memcached server with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md).
 - Monitor your Memcached server with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md).
-- Detail concepts of [Memcached object](/docs/guides/memcached/concepts/overview.md).
+- Detail concepts of [Memcached object](/docs/guides/memcached/concepts/memcached.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

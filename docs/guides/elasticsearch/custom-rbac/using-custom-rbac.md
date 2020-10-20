@@ -256,6 +256,6 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 - Monitor your Elasticsearch instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
 - Use [kubedb cli](/docs/guides/elasticsearch/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/overview.md).
+- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 

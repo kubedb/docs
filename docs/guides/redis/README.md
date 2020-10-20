@@ -76,6 +76,6 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - Monitor your Redis server with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/redis/private-registry/using-private-registry.md) to deploy Redis with KubeDB.
 - Use [kubedb cli](/docs/guides/redis/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [Redis object](/docs/guides/redis/concepts/overview.md).
+- Detail concepts of [Redis object](/docs/guides/redis/concepts/redis.md).
 - Detail concepts of [RedisVersion object](/docs/guides/redis/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

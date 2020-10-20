@@ -464,6 +464,6 @@ kubectl delete ns demo
 - Learn about [custom PgBouncerVersions](/docs/guides/pgbouncer/custom-versions/setup.md).
 - Monitor your PgBouncer with KubeDB using [built-in Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
 - Monitor your PgBouncer with KubeDB using [Prometheus operator](/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md).
-- Detail concepts of [PgBouncer object](/docs/guides/pgbouncer/concepts/overview.md).
+- Detail concepts of [PgBouncer object](/docs/guides/pgbouncer/concepts/pgbouncer.md).
 - Use [private Docker registry](/docs/guides/pgbouncer/private-registry/using-private-registry.md) to deploy PgBouncer with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -293,7 +293,7 @@ kubectl delete ns demo
 ## Next Steps
 
 - Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
-- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/overview.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
 - Detail concepts of [MySQLVersion object](/docs/guides/mysql/concepts/catalog.md).
 - Initialize [MySQL with Script](/docs/guides/mysql/initialization/using-script.md).
 - Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MySQL with KubeDB.

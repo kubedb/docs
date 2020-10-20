@@ -23,7 +23,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to reconfigure 
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MongoDB](/docs/guides/mongodb/concepts/overview.md)
+  - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
   - [ReplicaSet](/docs/guides/mongodb/clustering/replicaset.md)
   - [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
   - [Reconfigure Overview](/docs/guides/mongodb/reconfigure/overview.md)

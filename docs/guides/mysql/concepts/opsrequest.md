@@ -118,9 +118,9 @@ A `MySQLOpsRequest` object has the following fields in the `spec` section.
 
 #### spec.databaseRef
 
-`spec.databaseRef` is a required field that point to the [MySQL](/docs/guides/mysql/concepts/overview.md) object where the administrative operations will be applied. This field consists of the following sub-field:
+`spec.databaseRef` is a required field that point to the [MySQL](/docs/guides/mysql/concepts/mysql.md) object where the administrative operations will be applied. This field consists of the following sub-field:
 
-- **spec.databaseRef.name :**  specifies the name of the [MySQL](/docs/guides/mysql/concepts/overview.md) object.
+- **spec.databaseRef.name :**  specifies the name of the [MySQL](/docs/guides/mysql/concepts/mysql.md) object.
 
 #### spec.type
 

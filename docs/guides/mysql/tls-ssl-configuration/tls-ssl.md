@@ -122,7 +122,7 @@ Here,
 - `spec.tls.issuerRef` refers to the `mysql-issuer` issuer.
 
 - `spec.tls.certificates` gives you a lot of options to configure so that the certificate will be renewed and kept up to date. 
-You can found more details from [here](/docs/guides/mysql/concepts/overview.md#tls)
+You can found more details from [here](/docs/guides/mysql/concepts/mysql.md#tls)
 
 **Deploy MySQL Standalone:**
 
@@ -567,4 +567,4 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/overview.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).

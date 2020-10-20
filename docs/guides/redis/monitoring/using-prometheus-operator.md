@@ -271,6 +271,6 @@ kubectl delete ns demo
 
 - Monitor your Redis server with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md).
 - Detail concepts of [RedisVersion object](/docs/guides/redis/concepts/catalog.md).
-- Detail concepts of [Redis object](/docs/guides/redis/concepts/overview.md).
+- Detail concepts of [Redis object](/docs/guides/redis/concepts/redis.md).
 - Use [private Docker registry](/docs/guides/redis/private-registry/using-private-registry.md) to deploy Redis with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

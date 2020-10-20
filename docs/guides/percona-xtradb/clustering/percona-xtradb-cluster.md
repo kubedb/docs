@@ -211,7 +211,7 @@ status:
 
 KubeDB operator has created a new Secret called `demo-cluster-auth` **(format: {percona-xtradb-cluster-object-name}-auth)** for storing the password for the superuser. This secret contains a `username` key which contains the **username** for the superuser and a `password` key which contains the **password** for the superuser.
 
-If you want to use an existing secret please specify that when creating the `PerconaXtraDB` object using `.spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/percona-xtradb/concepts/overview.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the `PerconaXtraDB` object using `.spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specdatabasesecret).
 
 Now, you can connect to this database from your terminal using the `root` user and password.
 
@@ -607,6 +607,6 @@ namespace "demo" deleted
 - How to use [custom configuration](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
 - How to use [custom rbac resource](/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac.md) for PerconaXtraDB.
 - Use Stash to [Backup PerconaXtraDB](/docs/guides/percona-xtradb/snapshot/stash.md).
-- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/overview.md).
+- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/percona-xtradb.md).
 - Detail concepts of [PerconaXtraDBVersion object](/docs/guides/percona-xtradb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

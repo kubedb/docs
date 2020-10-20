@@ -118,7 +118,7 @@ You can connect to a mongos the same way you connect to a mongod, such as via th
 
 - [Deploy MongoDB Sharding](/docs/guides/mongodb/clustering/sharding.md) using KubeDB.
 - Detail concepts of [MongoDB Sharding](https://docs.mongodb.com/manual/sharding/)
-- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/overview.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
 - Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 

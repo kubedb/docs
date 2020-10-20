@@ -16,7 +16,7 @@ section_menu_id: concepts
 
 `MySQLVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [MySQL](https://www.mysql.com) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, a `MySQLVersion` custom resource will be created automatically for every supported MySQL versions. You have to specify the name of `MySQLVersion` crd in `spec.version` field of [MySQL](/docs/guides/mysql/concepts/overview.md) crd. Then, KubeDB will use the docker images specified in the `MySQLVersion` crd to create your expected database.
+When you install KubeDB, a `MySQLVersion` custom resource will be created automatically for every supported MySQL versions. You have to specify the name of `MySQLVersion` crd in `spec.version` field of [MySQL](/docs/guides/mysql/concepts/mysql.md) crd. Then, KubeDB will use the docker images specified in the `MySQLVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator.  This will also allow the users to use a custom image for the database.
 
@@ -59,7 +59,7 @@ spec:
 
 ### metadata.name
 
-`metadata.name` is a required field that specifies the name of the `MySQLVersion` crd. You have to specify this name in `spec.version` field of [MySQL](/docs/guides/mysql/concepts/overview.md) crd.
+`metadata.name` is a required field that specifies the name of the `MySQLVersion` crd. You have to specify this name in `spec.version` field of [MySQL](/docs/guides/mysql/concepts/mysql.md) crd.
 
 We follow this convention for naming MySQLVersion crd:
 
@@ -114,5 +114,5 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 ## Next Steps
 
-- Learn about MySQL crd [here](/docs/guides/mysql/concepts/overview.md).
+- Learn about MySQL crd [here](/docs/guides/mysql/concepts/mysql.md).
 - Deploy your first MySQL database with KubeDB by following the guide [here](/docs/guides/mysql/quickstart/quickstart.md).

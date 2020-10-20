@@ -16,7 +16,7 @@ section_menu_id: concepts
 
 `ElasticsearchVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Elasticsearch](https://www.elastic.co/products/elasticsearch) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, an `ElasticsearchVersion` custom resource will be created automatically for every supported Elasticsearch versions. You have to specify the name of `ElasticsearchVersion` crd in `spec.version` field of [Elasticsearch](/docs/guides/elasticsearch/concepts/overview.md) crd. Then, KubeDB will use the docker images specified in the `ElasticsearchVersion` crd to create your expected database.
+When you install KubeDB, an `ElasticsearchVersion` custom resource will be created automatically for every supported Elasticsearch versions. You have to specify the name of `ElasticsearchVersion` crd in `spec.version` field of [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch.md) crd. Then, KubeDB will use the docker images specified in the `ElasticsearchVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for database.
 
@@ -47,7 +47,7 @@ spec:
 
 ### metadata.name
 
-`metadata.name` is a required field that specifies the name of the `ElasticsearchVersion` crd. You have to specify this name in `spec.version` field of [Elasticsearch](/docs/guides/elasticsearch/concepts/overview.md) crd.
+`metadata.name` is a required field that specifies the name of the `ElasticsearchVersion` crd. You have to specify this name in `spec.version` field of [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch.md) crd.
 
 We follow this convention for naming ElasticsearchVersion crd:
 - Name format: `{Original Elasticsearch version}-{modification tag}`
@@ -92,5 +92,5 @@ helm upgrade kubedb-operator appscode/kubedb --namespace kube-system \
 
 ## Next Steps
 
-- Learn about Elasticsearch crd [here](/docs/guides/elasticsearch/concepts/overview.md).
+- Learn about Elasticsearch crd [here](/docs/guides/elasticsearch/concepts/elasticsearch.md).
 - Deploy your first Elasticsearch database with KubeDB by following the guide [here](/docs/guides/elasticsearch/quickstart/quickstart.md).

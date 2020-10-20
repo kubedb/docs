@@ -303,7 +303,7 @@ To learn about various options of `describe` command, please visit [here](/docs/
 
 `kubectl edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
 
-Lets edit an existing running MySQL object to setup database [Halted](/docs/guides/mysql/concepts/overview.md#spechalted). The following command will open MySQL `mysql-demo` in editor.
+Lets edit an existing running MySQL object to setup database [Halted](/docs/guides/mysql/concepts/mysql.md#spechalted). The following command will open MySQL `mysql-demo` in editor.
 
 ```bash
 $ kubectl edit my -n demo mysql-quickstart

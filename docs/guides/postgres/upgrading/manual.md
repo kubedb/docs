@@ -391,7 +391,7 @@ Some other fields in CRD also got deprecated and some are added. The good thing 
 
 ## Upgrade CRD objects
 
-Note that, Once the DB version is updated, kubedb-operator will update the statefulsets too. This update strategy can be modified by `spec.updateStrategy`. Read [here](/docs/guides/postgres/concepts/overview.md#specupdatestrategy) for details about updateStrategy.
+Note that, Once the DB version is updated, kubedb-operator will update the statefulsets too. This update strategy can be modified by `spec.updateStrategy`. Read [here](/docs/guides/postgres/concepts/postgres.md#specupdatestrategy) for details about updateStrategy.
 
 Now, Before updating CRD, find Available PostgresVersion.
 
@@ -744,5 +744,5 @@ kubectl delete ns demo
 
 - Learn about [custom PostgresVersions](/docs/guides/postgres/custom-versions/setup.md).
 - Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)
-- Detail concepts of [Postgres object](/docs/guides/postgres/concepts/overview.md).
+- Detail concepts of [Postgres object](/docs/guides/postgres/concepts/postgres.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

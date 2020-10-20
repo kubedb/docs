@@ -90,7 +90,7 @@ Here,
 - `.spec.version` is the name of the PerconaXtraDBVersion object where the docker images are specified. In this tutorial, a PerconaXtraDB of version 5.7 is going to be created.
 - `.spec.storageType` specifies the type of storage that will be used for PerconaXtraDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create PerconaXtraDB database using `EmptyDir` volume. In this case, you don't have to specify `.spec.storage` field. This is useful for testing purposes.
 - `.spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `.spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PerconaXtraDB` object or which resources KubeDB should keep or delete when you delete `PerconaXtraDB` object. If admission webhook is enabled, It prevents users from deleting the database as long as the `.spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/percona-xtradb/concepts/overview.md#specterminationpolicy)
+- `.spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PerconaXtraDB` object or which resources KubeDB should keep or delete when you delete `PerconaXtraDB` object. If admission webhook is enabled, It prevents users from deleting the database as long as the `.spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specterminationpolicy)
 
 > Note: `.spec.storage` section is used to create PVC for database Pod. It will create PVC with storage size specified in `.spec.storage.resources.requests` field. Don't specify limits here. PVC does not get resized automatically.
 
@@ -249,7 +249,7 @@ status:
 
 KubeDB operator has created a new Secret called `demo-quickstart-auth` *(format: {percona-xtradb-object-name}-auth)* for storing the password for `mysql` superuser. This secret contains a `username` key which contains the **"username"** for `mysql` superuser and a `password` key which contains the **"password"** for the superuser.
 
-If you want to use an existing secret please specify that when creating the PerconaXtraDB object using `.spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys (`username` and `password`) in `.data` section and also make sure of using `root` as value of `username` key. For more details see [here](/docs/guides/percona-xtradb/concepts/overview.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the PerconaXtraDB object using `.spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys (`username` and `password`) in `.data` section and also make sure of using `root` as value of `username` key. For more details see [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specdatabasesecret).
 
 Now, you can connect to this database using the database pod IP and and `root` user password.
 
@@ -309,11 +309,11 @@ Error from server (BadRequest): admission webhook "perconaxtradb.validators.kube
 
 Now, run `$ kubectl edit px demo-quickstart -n demo` to set `.spec.terminationPolicy` to `Pause` (for which KubeDB operator creates `dormantdatabase` when the PerconaXtraDB object is deleted and it keeps PVC, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
 
-Learn details of all `TerminationPolicy` [here](/docs/guides/percona-xtradb/concepts/overview.md#specterminationpolicy).
+Learn details of all `TerminationPolicy` [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specterminationpolicy).
 
 ## Pause Database
 
-When [TerminationPolicy](/docs/guides/percona-xtradb/concepts/overview.md#specterminationpolicy) is set to `Pause`, it will pause the PerconaXtraDB database instead of deleting it. Here, If you delete the PerconaXtraDB object, KubeDB operator will delete the StatefulSet and its Pods but leaves the PVCs and Secret unchanged. In KubeDB parlance, we say that `demo-quickstart` PerconaXtraDB database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
+When [TerminationPolicy](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specterminationpolicy) is set to `Pause`, it will pause the PerconaXtraDB database instead of deleting it. Here, If you delete the PerconaXtraDB object, KubeDB operator will delete the StatefulSet and its Pods but leaves the PVCs and Secret unchanged. In KubeDB parlance, we say that `demo-quickstart` PerconaXtraDB database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
 ```bash
 $ kubectl delete px demo-quickstart -n demo
@@ -477,7 +477,7 @@ $ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database Pod fail. So, we recommend to use `.spec.storageType: Durable` and provide storage spec in `.spec.storage` section. For testing purpose, you can just use `.spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `.spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we create `DormantDatabase` and preserve all your `PVCs`, `Secrets`, etc. If you don't want to resume database, you can just use `.spec.terminationPolicy: WipeOut`. It will not create `DormantDatabase` and it will delete everything created by KubeDB for a particular PerconaXtraDB object when you delete the object. For more details about termination policy, please visit [here](/docs/guides/percona-xtradb/concepts/overview.md#specterminationpolicy).
+2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we create `DormantDatabase` and preserve all your `PVCs`, `Secrets`, etc. If you don't want to resume database, you can just use `.spec.terminationPolicy: WipeOut`. It will not create `DormantDatabase` and it will delete everything created by KubeDB for a particular PerconaXtraDB object when you delete the object. For more details about termination policy, please visit [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specterminationpolicy).
 
 ## Next Steps
 
@@ -489,6 +489,6 @@ If you are just testing some basic functionalities, you might want to avoid addi
 - How to use [custom configuration](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
 - How to use [custom rbac resource](/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac.md) for PerconaXtraDB.
 - Use Stash to [Backup PerconaXtraDB](/docs/guides/percona-xtradb/snapshot/stash.md).
-- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/overview.md).
+- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/percona-xtradb.md).
 - Detail concepts of [PerconaXtraDBVersion object](/docs/guides/percona-xtradb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

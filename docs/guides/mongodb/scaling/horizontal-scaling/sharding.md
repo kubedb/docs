@@ -24,7 +24,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to scale the sh
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MongoDB](/docs/guides/mongodb/concepts/overview.md)
+  - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
   - [Sharding](/docs/guides/mongodb/clustering/sharding.md) 
   - [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
   - [Horizontal Scaling Overview](/docs/guides/mongodb/scaling/horizontal-scaling/overview.md)

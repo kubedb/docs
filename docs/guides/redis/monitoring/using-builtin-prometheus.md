@@ -352,6 +352,6 @@ $ kubectl delete ns monitoring
 ## Next Steps
 
 - Monitor your Redis server with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
-- Detail concepts of [Redis object](/docs/guides/redis/concepts/overview.md).
+- Detail concepts of [Redis object](/docs/guides/redis/concepts/redis.md).
 - Use [private Docker registry](/docs/guides/redis/private-registry/using-private-registry.md) to deploy Redis with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

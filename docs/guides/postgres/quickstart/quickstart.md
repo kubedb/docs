@@ -297,7 +297,7 @@ type: Opaque
 This secret contains superuser name for `postgres` database as `POSTGRES_USER` key and
 password as `POSTGRES_PASSWORD` key. By default, superuser name is `postgres` and password is randomly generated.
 
-If you want to use custom password, please create the secret manually and specify that when creating the Postgres object using `spec.databaseSecret.secretName`. For more details see [here](/docs/guides/postgres/concepts/overview.md#specdatabasesecret).
+If you want to use custom password, please create the secret manually and specify that when creating the Postgres object using `spec.databaseSecret.secretName`. For more details see [here](/docs/guides/postgres/concepts/postgres.md#specdatabasesecret).
 
 > Note: Auth Secret name format: `{postgres-name}-auth`
 
@@ -495,7 +495,7 @@ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we create `DormantDatabase` and preserve all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will not create `DormantDatabase` and it will delete everything created by KubeDB for a particular Postgres crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/postgres/concepts/overview.md#specterminationpolicy).
+2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we create `DormantDatabase` and preserve all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will not create `DormantDatabase` and it will delete everything created by KubeDB for a particular Postgres crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/postgres/concepts/postgres.md#specterminationpolicy).
 
 ## Next Steps
 
@@ -507,6 +507,6 @@ If you are just testing some basic functionalities, you might want to avoid addi
 - Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)
 - Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
 - Monitor your PostgreSQL database with KubeDB using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
-- Detail concepts of [Postgres object](/docs/guides/postgres/concepts/overview.md).
+- Detail concepts of [Postgres object](/docs/guides/postgres/concepts/postgres.md).
 - Use [private Docker registry](/docs/guides/postgres/private-registry/using-private-registry.md) to deploy PostgreSQL with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

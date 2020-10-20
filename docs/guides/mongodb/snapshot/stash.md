@@ -40,7 +40,7 @@ As a dedicated backup and recovery tool, Stash has the following key benefits:
 
 In order to backup MongoDB database using Stash, follow the following steps:
 
-- **Install Stash:** At first, you have to install Stash. Please, follow the steps from [here](https://appscode.com/products/stash/latest/setup/install/).
+- **Install Stash:** At first, you have to install Stash. Please, follow the steps from [here](https://stash.run/docs/latest/setup/).
 
 - **Install MongoDB Addon:** Then, you have to install MongoDB addon for Stash. Please, follow the steps from [here](https://appscode.com/products/stash/latest/addons/mongodb/setup/install/).
 

@@ -177,6 +177,6 @@ For more parameters, see [here](http://download.redis.io/redis-stable/redis.conf
 ## Next Steps
 
 - [Deploy Redis Cluster](/docs/guides/redis/clustering/redis-cluster.md) using KubeDB.
-- Detail concepts of [Redis object](/docs/guides/redis/concepts/overview.md).
+- Detail concepts of [Redis object](/docs/guides/redis/concepts/redis.md).
 - Detail concepts of [RedisVersion object](/docs/guides/redis/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

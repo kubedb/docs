@@ -23,7 +23,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the r
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MongoDB](/docs/guides/mongodb/concepts/overview.md)
+  - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
   - [Replicaset](/docs/guides/mongodb/clustering/replicaset.md) 
   - [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
   - [Vertical Scaling Overview](/docs/guides/mongodb/scaling/vertical-scaling/overview.md)
