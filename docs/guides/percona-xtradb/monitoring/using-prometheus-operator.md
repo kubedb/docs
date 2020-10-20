@@ -108,10 +108,10 @@ spec:
   monitor:
     agent: prometheus.io/operator
     prometheus:
-      namespace: monitoring
-      labels:
-        k8s-app: prometheus
-      interval: 10s
+      serviceMonitor:
+        labels:
+          k8s-app: prometheus
+        interval: 10s
 ```
 
 Here,

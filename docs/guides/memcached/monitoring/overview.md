@@ -66,27 +66,28 @@ spec:
   monitor:
     agent: prometheus.io/operator
     prometheus:
-      namespace: monitoring
-      labels:
-        k8s-app: prometheus
-    args:
-    - --redis.password=$(REDIS_PASSWORD)
-    env:
-    - name: REDIS_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: _name_of_secret_with_redis_password
-          key: password # key with the password
-    resources:
-      requests:
-        memory: 512Mi
-        cpu: 200m
-      limits:
-        memory: 512Mi
-        cpu: 250m
-    securityContext:
-      runAsUser: 2000
-      allowPrivilegeEscalation: false
+      serviceMonitor:
+        labels:
+          k8s-app: prometheus
+      exporter:
+        args:
+        - --redis.password=$(REDIS_PASSWORD)
+        env:
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: _name_of_secret_with_redis_password
+              key: password # key with the password
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 200m
+          limits:
+            memory: 512Mi
+            cpu: 250m
+        securityContext:
+          runAsUser: 2000
+          allowPrivilegeEscalation: false
 ```
 
 Assume that above Redis is configured to use basic authentication. So, exporter image also need to provide password to collect metrics. We have provided it through `spec.monitor.args` field.

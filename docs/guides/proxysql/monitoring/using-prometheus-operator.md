@@ -157,11 +157,12 @@ spec:
   monitor:
     agent: prometheus.io/operator
     prometheus:
-      port: 42004
-      namespace: monitoring
-      labels:
-        k8s-app: prometheus
-      interval: 10s
+      exporter:
+        port: 42004
+      serviceMonitor:
+        labels:
+          k8s-app: prometheus
+        interval: 10s
 ```
 
 Here,

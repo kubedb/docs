@@ -44,10 +44,10 @@ spec:
   monitor:
     agent: prometheus.io/operator
     prometheus:
-      namespace: demo
-      labels:
-        app: kubedb
-      interval: 10s
+      serviceMonitor:
+        labels:
+          app: kubedb
+        interval: 10s
   podTemplate:
     annotations:
       passMe: ToDatabasePod

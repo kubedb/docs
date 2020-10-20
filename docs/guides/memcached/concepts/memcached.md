@@ -32,12 +32,12 @@ spec:
   replicas: 3
   version: 1.5.3-v1
   monitor:
-    agent: coreos-prometheus-operator
+    agent: prometheus.io/operator
     prometheus:
-      namespace: demo
-      labels:
-        app: kubedb
-      interval: 10s
+      serviceMonitor:
+        labels:
+          app: kubedb
+        interval: 10s
   configSecret:
     name: mc-custom-config
   podTemplate:

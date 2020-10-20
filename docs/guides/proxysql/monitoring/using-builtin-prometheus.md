@@ -107,7 +107,8 @@ spec:
   monitor:
     agent: prometheus.io/builtin
     prometheus:
-      port: 42004
+      exporter:
+        port: 42004
 ```
 
 - `.spec.monitor.agent: prometheus.io/builtin` specifies that we are going to monitor this server using builtin Prometheus scraper.

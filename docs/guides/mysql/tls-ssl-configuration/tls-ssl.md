@@ -100,7 +100,7 @@ spec:
   requireSSL: true
   tls:
     issuerRef:
-      apiGroup: cert-manager.io/v1beta1
+      apiGroup: cert-manager.io
       kind: Issuer
       name: mysql-issuer
     certificates:
@@ -341,7 +341,7 @@ spec:
   requireSSL: true
   tls:
     issuerRef:
-      apiGroup: cert-manager.io/v1beta1
+      apiGroup: cert-manager.io
       kind: Issuer
       name: mysql-issuer
     certificates:

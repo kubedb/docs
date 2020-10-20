@@ -52,14 +52,14 @@ spec:
   monitor:
     agent: prometheus.io/operator
     prometheus:
-      namespace: demo
-      labels:
-        app: kubedb
-      interval: 10s
+      serviceMonitor:
+        labels:
+          app: kubedb
+        interval: 10s
   requireSSL: true
   tls:
     issuerRef:
-      apiGroup: cert-manager.io/v1beta1
+      apiGroup: cert-manager.io
       kind: Issuer
       name: mysql-issuer
     certificates:

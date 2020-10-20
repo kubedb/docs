@@ -54,10 +54,10 @@ spec:
   monitor:
     agent: prometheus.io/operator
     prometheus:
-      namespace: demo
-      labels:
-        k8s-app: prometheus
-      interval: 10s
+      serviceMonitor:
+        labels:
+          k8s-app: prometheus
+        interval: 10s
 ```
 
 ### spec.version

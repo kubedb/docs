@@ -94,8 +94,9 @@ spec:
   monitor:
     agent: prometheus.io/builtin
     prometheus:
-      port: 56790
-    resources: {}
+      exporter:
+        port: 56790
+        resources: {}
   podTemplate:
     controller: {}
     metadata: {}
@@ -283,10 +284,10 @@ $ kubectl edit pb pgbouncer-demo
   monitor:
     agent: prometheus.io/operator
     prometheus:
-      namespace: demo
-      labels:
-        k8s-app: prometheus
-      interval: 10s
+      serviceMonitor:
+        labels:
+          k8s-app: prometheus
+        interval: 10s
 pgbouncer "pgbouncer-demo" edited
 ```
 

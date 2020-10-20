@@ -16,4 +16,5 @@ spec:
   monitor:
     agent: prometheus.io/builtin
     prometheus:
-      port: 42004
+      exporter:
+        port: 42004

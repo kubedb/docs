@@ -57,10 +57,10 @@ spec:
   monitor:
     agent: prometheus.io/operator
     prometheus:
-      namespace: demo
-      labels:
-        app: kubedb
-      interval: 10s
+      serviceMonitor:
+        labels:
+          app: kubedb
+        interval: 10s
   configSecret:
     name: es-custom-config
   podTemplate:
