@@ -88,7 +88,7 @@ KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are 
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [MemcachedVersion](/docs/concepts/catalog/memcached.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MemcachedVersion` resources,
+`spec.version` is a required field specifying the name of the [MemcachedVersion](/docs/guides/memcached/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MemcachedVersion` resources,
 
 - `1.5.4`, `1.5.4-v1`, `1.5`, `1.5-v1`
 

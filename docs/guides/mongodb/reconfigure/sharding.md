@@ -23,9 +23,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to reconfigure 
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MongoDB](/docs/concepts/databases/mongodb.md)
+  - [MongoDB](/docs/guides/mongodb/concepts/overview.md)
   - [Sharding](/docs/guides/mongodb/clustering/sharding.md)
-  - [MongoDBOpsRequest](/docs/concepts/day-2-operations/mongodbopsrequest.md)
+  - [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
   - [Reconfigure Overview](/docs/guides/mongodb/reconfigure/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.

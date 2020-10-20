@@ -90,7 +90,7 @@ spec:
 
 ### .spec.version
 
-`.spec.version` is a required field specifying the name of the [ProxySQLVersion](/docs/concepts/catalog/proxysql.md) CRD where the docker images are specified. Currently, when you install KubeDB, it creates the following `ProxySQLVersion` resources,
+`.spec.version` is a required field specifying the name of the [ProxySQLVersion](/docs/guides/proxysql/concepts/catalog.md) CRD where the docker images are specified. Currently, when you install KubeDB, it creates the following `ProxySQLVersion` resources,
 
 - `2.0.4`
 

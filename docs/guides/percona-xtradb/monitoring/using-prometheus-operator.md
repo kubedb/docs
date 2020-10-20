@@ -19,7 +19,7 @@ menu_name: docs_{{ .version }}
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/concepts/database-monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/percona-xtradb/monitoring/overview.md).
 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
@@ -294,6 +294,6 @@ $ kubectl delete ns demo
 - How to use [custom configuration](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
 - How to use [custom rbac resource](/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac.md) for PerconaXtraDB.
 - Use Stash to [Backup PerconaXtraDB](/docs/guides/percona-xtradb/snapshot/stash.md).
-- Detail concepts of [PerconaXtraDB object](/docs/concepts/databases/percona-xtradb.md).
-- Detail concepts of [PerconaXtraDBVersion object](/docs/concepts/catalog/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/overview.md).
+- Detail concepts of [PerconaXtraDBVersion object](/docs/guides/percona-xtradb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

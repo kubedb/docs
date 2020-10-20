@@ -85,7 +85,7 @@ NAME       VERSION   DB_IMAGE                        DEPRECATED   AGE
 
 Notice the `DEPRECATED` column. Here, `true` means that this ElasticsearchVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated ElasticsearchVersion.
 
-In this tutorial, we will use `7.3.2` ElasticsearchVersion crd to create Elasticsearch database. To know more about what is `ElasticsearchVersion` crd and why there is `6.3` and `7.3.2` variation, please visit [here](/docs/concepts/catalog/elasticsearch.md). You can also see supported ElasticsearchVersion in KubeDB 0.11.0 from [here](/docs/guides/elasticsearch/README.md#supported-elasticsearchversion-crd).
+In this tutorial, we will use `7.3.2` ElasticsearchVersion crd to create Elasticsearch database. To know more about what is `ElasticsearchVersion` crd and why there is `6.3` and `7.3.2` variation, please visit [here](/docs/guides/elasticsearch/concepts/catalog.md). You can also see supported ElasticsearchVersion in KubeDB 0.11.0 from [here](/docs/guides/elasticsearch/README.md#supported-elasticsearchversion-crd).
 
 ## Create an Elasticsearch database
 
@@ -581,7 +581,7 @@ $ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we create `DormantDatabase` and preserve all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will not create `DormantDatabase` and it will delete everything created by KubeDB for a particular Elasticsearch crd when you delete the crd. For more details about termination policy, please visit [here](/docs/concepts/databases/elasticsearch.md#specterminationpolicy).
+2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we create `DormantDatabase` and preserve all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will not create `DormantDatabase` and it will delete everything created by KubeDB for a particular Elasticsearch crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/elasticsearch/concepts/overview.md#specterminationpolicy).
 
 ## Next Steps
 
@@ -591,7 +591,7 @@ If you are just testing some basic functionalities, you might want to avoid addi
 - Learn how to configure [Elasticsearch Topology](/docs/guides/elasticsearch/clustering/topology.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
-- Detail concepts of [Elasticsearch object](/docs/concepts/databases/elasticsearch.md).
+- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/overview.md).
 - Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

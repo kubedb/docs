@@ -16,7 +16,7 @@ section_menu_id: concepts
 
 `RedisVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Redis](https://redis.io/) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, a `RedisVersion` custom resource will be created automatically for every supported Redis versions. You have to specify the name of `RedisVersion` crd in `spec.version` field of [Redis](/docs/concepts/databases/redis.md) crd. Then, KubeDB will use the docker images specified in the `RedisVersion` crd to create your expected database.
+When you install KubeDB, a `RedisVersion` custom resource will be created automatically for every supported Redis versions. You have to specify the name of `RedisVersion` crd in `spec.version` field of [Redis](/docs/guides/redis/concepts/overview.md) crd. Then, KubeDB will use the docker images specified in the `RedisVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the database.
 
@@ -43,7 +43,7 @@ spec:
 
 ### metadata.name
 
-`metadata.name` is a required field that specifies the name of the `RedisVersion` crd. You have to specify this name in `spec.version` field of [Redis](/docs/concepts/databases/redis.md) crd.
+`metadata.name` is a required field that specifies the name of the `RedisVersion` crd. You have to specify this name in `spec.version` field of [Redis](/docs/guides/redis/concepts/overview.md) crd.
 
 We follow this convention for naming RedisVersion crd:
 
@@ -80,5 +80,5 @@ helm upgrade kubedb-operator appscode/kubedb --namespace kube-system \
 
 ## Next Steps
 
-- Learn about Redis crd [here](/docs/concepts/databases/redis.md).
+- Learn about Redis crd [here](/docs/guides/redis/concepts/overview.md).
 - Deploy your first Redis server with KubeDB by following the guide [here](/docs/guides/redis/quickstart/quickstart.md).

@@ -141,7 +141,7 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [MongoDBVersion](/docs/concepts/catalog/mongodb.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MongoDBVersion` resources,
+`spec.version` is a required field specifying the name of the [MongoDBVersion](/docs/guides/mongodb/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MongoDBVersion` resources,
 
 - `3.4-v5`, `3.4-v4`, `3.4-v3`, `3.4-v2`, `3.4-v1`, `3.4`
 - `3.6-v5`, `3.6-v4`, `3.6-v3`, `3.6-v2`, `3.6-v1`, `3.6`
@@ -232,9 +232,9 @@ Available configurable fields:
 - `shards` represents number of shards for a mongodb deployment. Each shard is deployed as a [replicaset](/docs/guides/mongodb/clustering/replication_concept.md).
 - `replicas` represents number of replicas of each shard replicaset.
 - `prefix` represents the prefix of each shard node.
-- `configSource` is an optional field to provide custom configuration file for shards (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/concepts/databases/mongodb.md#specconfigsource) in details.
-- `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/concepts/databases/mongodb.md#specpodtemplate) in details.
-- `storage` to specify pvc spec for each node of sharding. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/concepts/databases/mongodb.md#specstorage) in details.
+- `configSource` is an optional field to provide custom configuration file for shards (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/guides/mongodb/concepts/overview.md#specconfigsource) in details.
+- `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/overview.md#specpodtemplate) in details.
+- `storage` to specify pvc spec for each node of sharding. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/guides/mongodb/concepts/overview.md#specstorage) in details.
 
 #### spec.shardTopology.configServer
 
@@ -244,9 +244,9 @@ Available configurable fields:
 
 - `replicas` represents number of replicas for configServer replicaset. Here, configServer is deployed as a replicaset of mongodb.
 - `prefix` represents the prefix of configServer nodes.
-- `configSource` is an optional field to provide custom configuration file for configSource (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/concepts/databases/mongodb.md#specconfigsource) in details.
-- `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/concepts/databases/mongodb.md#specpodtemplate) in details.
-- `storage` to specify pvc spec for each node of configServer. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/concepts/databases/mongodb.md#specstorage) in details.
+- `configSource` is an optional field to provide custom configuration file for configSource (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/guides/mongodb/concepts/overview.md#specconfigsource) in details.
+- `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/overview.md#specpodtemplate) in details.
+- `storage` to specify pvc spec for each node of configServer. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/guides/mongodb/concepts/overview.md#specstorage) in details.
 
 #### spec.shardTopology.mongos
 
@@ -256,8 +256,8 @@ Available configurable fields:
 
 - `replicas` represents number of replicas of `Mongos` instance. Here, Mongos is deployed as stateless (deployment) instance.
 - `prefix` represents the prefix of mongos nodes.
-- `configSource` is an optional field to provide custom configuration file for mongos (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/concepts/databases/mongodb.md#specconfigsource) in details.
-- `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/concepts/databases/mongodb.md#specpodtemplate) in details.
+- `configSource` is an optional field to provide custom configuration file for mongos (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSource](/docs/guides/mongodb/concepts/overview.md#specconfigsource) in details.
+- `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/overview.md#specpodtemplate) in details.
 - `strategy` is the deployment strategy to use to replace existing pods with new ones. This is optional. If not provided, kubernetes will use default deploymentStrategy, ie. `RollingUpdate`. See more about [Deployment Strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
 
 ### spec.sslMode

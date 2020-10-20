@@ -205,13 +205,13 @@ $ kubectl delete my -n demo my-group
 $ kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 
 - Monitor ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
 - Monitor ProxySQL with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md).
 - Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
-- Detail concepts of ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
-- Detail concepts of ProxySQLVersion CRD [here](/docs/concepts/catalog/proxysql.md).
+- Detail concepts of ProxySQL CRD [here](/docs/guides/proxysql/concepts/overview.md).
+- Detail concepts of ProxySQLVersion CRD [here](/docs/guides/proxysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

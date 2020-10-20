@@ -530,7 +530,7 @@ kubectl delete ns demo
 - Learn about initializing [Elasticsearch with Snapshot](/docs/guides/elasticsearch/initialization/snapshot_source.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
-- Detail concepts of [Elasticsearch object](/docs/concepts/databases/elasticsearch.md).
+- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/overview.md).
 - Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

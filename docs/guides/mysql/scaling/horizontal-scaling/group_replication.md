@@ -23,8 +23,8 @@ This guide will show you how to use `KubeDB` enterprise operator to increase/dec
 - Install `KubeDB` community and enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MySQL](/docs/concepts/databases/mysql.md)
-  - [MySQLOpsRequest](/docs/concepts/day-2-operations/mysqlopsrequest.md)
+  - [MySQL](/docs/guides/mysql/concepts/overview.md)
+  - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest.md)
   - [Horizontal Scaling Overview](/docs/guides/mysql/scaling/horizontal-scaling/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.

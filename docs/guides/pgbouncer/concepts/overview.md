@@ -62,7 +62,7 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field that specifies the name of the [PgBouncerVersion](/docs/concepts/catalog/pgbouncer.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PgBouncerVersion` resources,
+`spec.version` is a required field that specifies the name of the [PgBouncerVersion](/docs/guides/pgbouncer/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PgBouncerVersion` resources,
 
 - `1.7`
 - `1.7.1`

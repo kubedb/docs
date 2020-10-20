@@ -24,7 +24,7 @@ This tutorial will show you how to monitor ProxySQL using builtin [Prometheus](h
 
 - If you are not familiar with how to configure Prometheus to scrape metrics from various Kubernetes resources, please read the tutorial from [here](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/concepts/database-monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/proxysql/monitoring/overview.md).
 
 - To keep Prometheus resources isolated, we are going to use two different namespaces called,
   - `monitoring` to deploy respective monitoring resources

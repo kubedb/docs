@@ -81,7 +81,7 @@ Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in
 
 ## Create PgBouncerVersion CRD
 
-KubeDB uses images specified in PgBouncerVersion crd for pgbouncer server, and prometheus metrics exporter. You have to create a PgBouncerVersion crd specifying images from your private registry. Then, you have to point this PgBouncerVersion crd in `spec.version` field of Postgres object. For more details about PgBouncerVersion crd, please visit [here](/docs/concepts/catalog/pgbouncer.md).
+KubeDB uses images specified in PgBouncerVersion crd for pgbouncer server, and prometheus metrics exporter. You have to create a PgBouncerVersion crd specifying images from your private registry. Then, you have to point this PgBouncerVersion crd in `spec.version` field of Postgres object. For more details about PgBouncerVersion crd, please visit [here](/docs/guides/pgbouncer/concepts/catalog.md).
 
 Here, is an example of PgBouncerVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` with your private registry.
 
@@ -165,7 +165,7 @@ kubectl delete -n demo pb/pvt-reg-pgbouncer
 kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 

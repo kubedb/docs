@@ -23,8 +23,8 @@ This guide will show you how to use `KubeDB` enterprise operator to upgrade the 
 - Install `KubeDB` community and enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MySQL](/docs/concepts/databases/mysql.md)
-  - [MySQLOpsRequest](/docs/concepts/day-2-operations/mysqlopsrequest.md)
+  - [MySQL](/docs/guides/mysql/concepts/overview.md)
+  - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest.md)
   - [Upgrading Overview](/docs/guides/mysql/upgrading/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.

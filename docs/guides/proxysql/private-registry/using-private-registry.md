@@ -18,7 +18,7 @@ KubeDB operator supports using a private Docker registry. This tutorial will sho
 
 ## Before You Begin
 
-- Read [concept of ProxySQLVersion Catalog](/docs/concepts/catalog/proxysql.md) to learn detail concepts of `ProxySQLVersion` object.
+- Read [concept of ProxySQLVersion Catalog](/docs/guides/proxysql/concepts/catalog.md) to learn detail concepts of `ProxySQLVersion` object.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
@@ -144,6 +144,6 @@ kubectl delete ns demo
 - Monitor your ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
 - Monitor your ProxySQL with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md).
 - Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-custom-config.md).
-- Detail concepts of ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
-- Detail concepts of ProxySQLVersion CRD [here](/docs/concepts/catalog/proxysql.md).
+- Detail concepts of ProxySQL CRD [here](/docs/guides/proxysql/concepts/overview.md).
+- Detail concepts of ProxySQLVersion CRD [here](/docs/guides/proxysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

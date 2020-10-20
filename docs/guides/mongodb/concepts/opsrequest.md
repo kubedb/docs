@@ -477,9 +477,9 @@ A `MongoDBOpsRequest` object has the following fields in the `spec` section.
 
 #### spec.databaseRef
 
-`spec.databaseRef` is a required field that point to the [MongoDB](/docs/concepts/databases/mongodb.md) object for which the administrative operations will be performed. This field consists of the following sub-field:
+`spec.databaseRef` is a required field that point to the [MongoDB](/docs/guides/mongodb/concepts/overview.md) object for which the administrative operations will be performed. This field consists of the following sub-field:
 
-- **spec.databaseRef.name :** specifies the name of the [MongoDB](/docs/concepts/databases/mongodb.md) object.
+- **spec.databaseRef.name :** specifies the name of the [MongoDB](/docs/guides/mongodb/concepts/overview.md) object.
 
 #### spec.type
 
@@ -497,7 +497,7 @@ A `MongoDBOpsRequest` object has the following fields in the `spec` section.
 
 If you want to upgrade you MongoDB version, you have to specify the `spec.upgrade` section that specifies the desired version information. This field consists of the following sub-field:
 
-- `spec.upgrade.targetVersion` refers to a [MongoDBVersion](/docs/concepts/catalog/mongodb.md) CR that contains the MongoDB version information where you want to upgrade.
+- `spec.upgrade.targetVersion` refers to a [MongoDBVersion](/docs/guides/mongodb/concepts/catalog.md) CR that contains the MongoDB version information where you want to upgrade.
 
 > You can only upgrade between MongoDB versions. KubeDB does not support downgrade for MongoDB.
 

@@ -16,7 +16,7 @@ section_menu_id: concepts
 
 `MongoDBVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [MongoDB](https://www.mongodb.com/) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, a `MongoDBVersion` custom resource will be created automatically for every supported MongoDB versions. You have to specify the name of `MongoDBVersion` crd in `spec.version` field of [MongoDB](/docs/concepts/databases/mongodb.md) crd. Then, KubeDB will use the docker images specified in the `MongoDBVersion` crd to create your expected database.
+When you install KubeDB, a `MongoDBVersion` custom resource will be created automatically for every supported MongoDB versions. You have to specify the name of `MongoDBVersion` crd in `spec.version` field of [MongoDB](/docs/guides/mongodb/concepts/overview.md) crd. Then, KubeDB will use the docker images specified in the `MongoDBVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator.This will also allow the users to use a custom image for the database.
 
@@ -47,7 +47,7 @@ spec:
 
 ### metadata.name
 
-`metadata.name` is a required field that specifies the name of the `MongoDBVersion` crd. You have to specify this name in `spec.version` field of [MongoDB](/docs/concepts/databases/mongodb.md) crd.
+`metadata.name` is a required field that specifies the name of the `MongoDBVersion` crd. You have to specify this name in `spec.version` field of [MongoDB](/docs/guides/mongodb/concepts/overview.md) crd.
 
 We follow this convention for naming MongoDBVersion crd:
 
@@ -93,5 +93,5 @@ helm upgrade kubedb-operator appscode/kubedb --namespace kube-system \
 
 ## Next Steps
 
-- Learn about MongoDB crd [here](/docs/concepts/databases/mongodb.md).
+- Learn about MongoDB crd [here](/docs/guides/mongodb/concepts/overview.md).
 - Deploy your first MongoDB database with KubeDB by following the guide [here](/docs/guides/mongodb/quickstart/quickstart.md).

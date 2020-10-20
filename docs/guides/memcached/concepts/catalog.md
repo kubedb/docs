@@ -16,7 +16,7 @@ section_menu_id: concepts
 
 `MemcachedVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Memcached](https://memcached.org) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, a `MemcachedVersion` custom resource will be created automatically for every supported Memcached versions. You have to specify the name of `MemcachedVersion` crd in `spec.version` field of [Memcached](/docs/concepts/databases/memcached.md) crd. Then, KubeDB will use the docker images specified in the `MemcachedVersion` crd to create your expected database.
+When you install KubeDB, a `MemcachedVersion` custom resource will be created automatically for every supported Memcached versions. You have to specify the name of `MemcachedVersion` crd in `spec.version` field of [Memcached](/docs/guides/memcached/concepts/overview.md) crd. Then, KubeDB will use the docker images specified in the `MemcachedVersion` crd to create your expected database.
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the database.
 
@@ -43,7 +43,7 @@ spec:
 
 ### metadata.name
 
-`metadata.name` is a required field that specifies the name of the `MemcachedVersion` crd. You have to specify this name in `spec.version` field of [Memcached](/docs/concepts/databases/memcached.md) crd.
+`metadata.name` is a required field that specifies the name of the `MemcachedVersion` crd. You have to specify this name in `spec.version` field of [Memcached](/docs/guides/memcached/concepts/overview.md) crd.
 
 We follow this convention for naming MemcachedVersion crd:
 
@@ -80,5 +80,5 @@ helm upgrade kubedb-operator appscode/kubedb --namespace kube-system \
 
 ## Next Steps
 
-- Learn about Memcached crd [here](/docs/concepts/databases/memcached.md).
+- Learn about Memcached crd [here](/docs/guides/memcached/concepts/overview.md).
 - Deploy your first Memcached server with KubeDB by following the guide [here](/docs/guides/memcached/quickstart/quickstart.md).

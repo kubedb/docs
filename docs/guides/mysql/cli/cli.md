@@ -297,13 +297,13 @@ You can also describe KubeDB objects with matching labels. The following command
 kubectl dba describe my --all-namespaces --selector='group=dev'
 ```
 
-To learn about various options of `describe` command, please visit [here](/docs/examples/mysql/cli/kubectl-dba_describe.md).
+To learn about various options of `describe` command, please visit [here](/docs/reference/cli/kubectl-dba_describe.md).
 
 ### How to Edit Objects
 
 `kubectl edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
 
-Lets edit an existing running MySQL object to setup database [Halted](/docs/concepts/databases/mysql.md#spechalted). The following command will open MySQL `mysql-demo` in editor.
+Lets edit an existing running MySQL object to setup database [Halted](/docs/guides/mysql/concepts/overview.md#spechalted). The following command will open MySQL `mysql-demo` in editor.
 
 ```console
 $ kubectl edit my -n demo mysql-quickstart

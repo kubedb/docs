@@ -16,7 +16,7 @@ section_menu_id: concepts
 
 `ProxySQLVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [ProxySQL](https://www.proxysql.com/) deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, a `ProxySQLVersion` custom resource will be created automatically for supported ProxySQL versions. You have to specify the name of `ProxySQLVersion` object in `.spec.version` field of [ProxySQL](/docs/concepts/database-proxy/proxysql.md) object. Then, KubeDB will use the docker images specified in the `ProxySQLVersion` object to create your ProxySQL instance.
+When you install KubeDB, a `ProxySQLVersion` custom resource will be created automatically for supported ProxySQL versions. You have to specify the name of `ProxySQLVersion` object in `.spec.version` field of [ProxySQL](/docs/guides/proxysql/concepts/overview.md) object. Then, KubeDB will use the docker images specified in the `ProxySQLVersion` object to create your ProxySQL instance.
 
 Using a separate CRD for this purpose allows us to modify the images, and policies independent of KubeDB operator. This will also allow the users to use a custom image for the ProxySQL.
 
@@ -43,7 +43,7 @@ spec:
 
 ### .metadata.name
 
-`.metadata.name` is a required field that specifies the name of the `ProxySQLVersion` object. You have to specify this name in `.spec.version` field of [ProxySQL](/docs/concepts/database-proxy/proxysql.md) object.
+`.metadata.name` is a required field that specifies the name of the `ProxySQLVersion` object. You have to specify this name in `.spec.version` field of [ProxySQL](/docs/guides/proxysql/concepts/overview.md) object.
 
 We follow this convention for naming ProxySQLVersion object:
 
@@ -75,5 +75,5 @@ The default value of this field is `false`. If `.spec.deprecated` is set `true`,
 
 ## Next Steps
 
-- Learn about ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
+- Learn about ProxySQL CRD [here](/docs/guides/proxysql/concepts/overview.md).
 - Deploy your first ProxySQL to load balance MySQL Group Replication with KubeDB by following the guide [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).

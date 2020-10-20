@@ -502,4 +502,4 @@ $ kubectl delete -n demo deployment/kibana
 $ kubectl delete ns demo
 ```
 
-To uninstall KubeDB follow this [guide](/docs/setup/operator/uninstall.md).
+To uninstall KubeDB follow this [guide](/docs/setup/README.md).

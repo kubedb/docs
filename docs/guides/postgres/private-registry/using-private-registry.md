@@ -104,7 +104,7 @@ Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in
 
 ## Create PostgresVersion CRD
 
-KubeDB uses images specified in PostgresVersion crd for database, backup and exporting prometheus metrics. You have to create a PostgresVersion crd specifying images from your private registry. Then, you have to point this PostgresVersion crd in `spec.version` field of Postgres object. For more details about PostgresVersion crd, please visit [here](/docs/concepts/catalog/postgres.md).
+KubeDB uses images specified in PostgresVersion crd for database, backup and exporting prometheus metrics. You have to create a PostgresVersion crd specifying images from your private registry. Then, you have to point this PostgresVersion crd in `spec.version` field of Postgres object. For more details about PostgresVersion crd, please visit [here](/docs/guides/postgres/concepts/catalog.md).
 
 Here, is an example of PostgresVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` with your private registry.
 
@@ -189,7 +189,7 @@ kubectl delete -n demo pg/pvt-reg-postgres
 kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 

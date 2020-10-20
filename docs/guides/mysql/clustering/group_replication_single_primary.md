@@ -294,7 +294,7 @@ status:
 
 KubeDB operator has created a new Secret called `my-group-auth` **(format: {mysql-object-name}-auth)** for storing the password for `mysql` superuser. This secret contains a `username` key which contains the **username** for MySQL superuser and a `password` key which contains the **password** for MySQL superuser.
 
-If you want to use an existing secret please specify that when creating the MySQL object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/concepts/databases/mysql.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the MySQL object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/overview.md#specdatabasesecret).
 
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 
@@ -526,6 +526,6 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Detail concepts of [MySQL object](/docs/concepts/databases/mysql.md).
-- Detail concepts of [MySQLDBVersion object](/docs/concepts/catalog/mysql.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/overview.md).
+- Detail concepts of [MySQLDBVersion object](/docs/guides/mysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

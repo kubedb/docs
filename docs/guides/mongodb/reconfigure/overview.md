@@ -19,8 +19,8 @@ This guide will give an overview on how KubeDB Enterprise operator reconfigures 
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MongoDB](/docs/concepts/databases/mongodb.md)
-  - [MongoDBOpsRequest](/docs/concepts/day-2-operations/mongodbopsrequest.md)
+  - [MongoDB](/docs/guides/mongodb/concepts/overview.md)
+  - [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
 
 ## How Reconfiguring MongoDB Process Works
 

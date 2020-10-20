@@ -89,7 +89,7 @@ spec:
 
 ### .spec.version
 
-`.spec.version` is a required field specifying the name of the [PerconaXtraDBVersion](/docs/concepts/catalog/percona-xtradb.md) object where the docker images are specified. Currently, when you install KubeDB, it creates the following `PerconaXtraDBVersion` resources,
+`.spec.version` is a required field specifying the name of the [PerconaXtraDBVersion](/docs/guides/percona-xtradb/concepts/catalog.md) object where the docker images are specified. Currently, when you install KubeDB, it creates the following `PerconaXtraDBVersion` resources,
 
 - `5.7`
 - `5.7-cluster`

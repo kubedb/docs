@@ -58,7 +58,7 @@ $ kubectl get pgbouncerversions
 
 Notice the `DEPRECATED` column. Here, `true` means that this PgBouncerVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PgBouncerVersion.
 
-In this tutorial, we will use `1.11.0` PgBouncerVersion crd to create PgBouncer. To know more about what `PgBouncerVersion` crd is, please visit [here](/docs/concepts/catalog/pgbouncer.md). You can also see supported PgBouncerVersion [here](/docs/guides/pgbouncer/README.md#supported-pgbouncerversion-crd).
+In this tutorial, we will use `1.11.0` PgBouncerVersion crd to create PgBouncer. To know more about what `PgBouncerVersion` crd is, please visit [here](/docs/guides/pgbouncer/concepts/catalog.md). You can also see supported PgBouncerVersion [here](/docs/guides/pgbouncer/README.md#supported-pgbouncerversion-crd).
 
 ## Get PostgreSQL Server ready
 
@@ -464,6 +464,6 @@ kubectl delete ns demo
 - Learn about [custom PgBouncerVersions](/docs/guides/pgbouncer/custom-versions/setup.md).
 - Monitor your PgBouncer with KubeDB using [built-in Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
 - Monitor your PgBouncer with KubeDB using [Prometheus operator](/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md).
-- Detail concepts of [PgBouncer object](/docs/concepts/database-proxy/pgbouncer.md).
+- Detail concepts of [PgBouncer object](/docs/guides/pgbouncer/concepts/overview.md).
 - Use [private Docker registry](/docs/guides/pgbouncer/private-registry/using-private-registry.md) to deploy PgBouncer with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

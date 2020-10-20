@@ -19,8 +19,8 @@ This guide will give you an overview of how KubeDB enterprise operator scales up
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MySQL](/docs/concepts/databases/mysql.md)
-  - [MySQLOpsRequest](/docs/concepts/day-2-operations/mysqlopsrequest.md)
+  - [MySQL](/docs/guides/mysql/concepts/overview.md)
+  - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest.md)
 
 ## How Horizontal Scaling Process Works
 

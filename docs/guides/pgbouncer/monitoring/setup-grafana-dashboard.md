@@ -22,7 +22,7 @@ This tutorial will show you how to import our dashboard on Grafana to monitor Pg
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/concepts/database-monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/pgbouncer/monitoring/overview.md).
 
 - You need to have monitoring enabled using either [Builtin Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md) or [Prometheus operator](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
 

@@ -78,7 +78,7 @@ If you wish to follow other ways to pull private images see [official docs](http
 
 ## Create ElasticsearchVersion CRD
 
-KubeDB uses images specified in ElasticsearchVersion crd for database, backup and exporting prometheus metrics. You have to create an ElasticsearchVersion crd specifying images from your private registry. Then, you have to point this ElasticsearchVersion crd in `spec.version` field of Elasticsearch object. For more details about ElasticsearchVersion crd, please visit [here](/docs/concepts/catalog/elasticsearch.md).
+KubeDB uses images specified in ElasticsearchVersion crd for database, backup and exporting prometheus metrics. You have to create an ElasticsearchVersion crd specifying images from your private registry. Then, you have to point this ElasticsearchVersion crd in `spec.version` field of Elasticsearch object. For more details about ElasticsearchVersion crd, please visit [here](/docs/guides/elasticsearch/concepts/catalog.md).
 
 Here, is an example of ElasticsearchVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` with your private registry.
 
@@ -182,7 +182,7 @@ kubectl delete ns demo
 - Learn how to configure [Elasticsearch Topology](/docs/guides/elasticsearch/clustering/topology.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
-- Detail concepts of [Elasticsearch object](/docs/concepts/databases/elasticsearch.md).
+- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/overview.md).
 - Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 `

@@ -254,9 +254,9 @@ kubectl delete -n monitoring servicemonitor kubedb-operator-servicemonitor
 kubectl delete ns monitoring
 ```
 
-To uninstall KubeDB operator follow this [guide](/docs/setup/operator/uninstall.md).
+To uninstall KubeDB operator follow this [guide](/docs/setup/README.md).
 
 ## Next Steps
 
 - Learn what metrics KubeDB operator exports from [here](/docs/setup/monitoring/overview.md).
-- Learn how to monitor KubeDB operator using builtin Prometheus operator from [here](/docs/setup/monitoring/builtin.md).
+- Learn how to monitor KubeDB operator using builtin Prometheus operator from [here](/docs/setup/monitoring/builtin-prometheus.md).

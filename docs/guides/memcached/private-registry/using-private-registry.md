@@ -18,7 +18,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 ## Before You Begin
 
-- Read [concept of Memcached Version Catalog](/docs/concepts/catalog/memcached.md) to learn detail concepts of `MemcachedVersion` object.
+- Read [concept of Memcached Version Catalog](/docs/guides/memcached/concepts/catalog.md) to learn detail concepts of `MemcachedVersion` object.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
@@ -160,5 +160,5 @@ kubectl delete ns demo
 
 - Monitor your Memcached server with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md).
 - Monitor your Memcached server with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md).
-- Detail concepts of [Memcached object](/docs/concepts/databases/memcached.md).
+- Detail concepts of [Memcached object](/docs/guides/memcached/concepts/overview.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

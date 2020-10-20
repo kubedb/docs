@@ -289,7 +289,7 @@ You can also describe KubeDb objects with matching labels. The following command
 kubectl dba describe mg --all-namespaces --selector='group=dev'
 ```
 
-To learn about various options of `describe` command, please visit [here](/docs/reference/kubectl-dba_describe.md).
+To learn about various options of `describe` command, please visit [here](/docs/reference/cli/kubectl-dba_describe.md).
 
 ### How to Edit Objects
 

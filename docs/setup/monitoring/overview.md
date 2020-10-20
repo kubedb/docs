@@ -134,5 +134,5 @@ $ helm template kubedb-operator appscode/kubedb --version {{< param "info.versio
 
 ## Next Steps
 
-- Learn how to monitor KubeDB operator using built-in Prometheus from [here](/docs/setup/monitoring/builtin.md).
-- Learn how to monitor KubeDB operator using Prometheus operator from [here](/docs/setup/monitoring/coreos.md).
+- Learn how to monitor KubeDB operator using built-in Prometheus from [here](/docs/setup/monitoring/builtin-prometheus.md).
+- Learn how to monitor KubeDB operator using Prometheus operator from [here](/docs/setup/monitoring/prometheus-operator.md).

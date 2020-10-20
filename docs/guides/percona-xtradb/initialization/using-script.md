@@ -254,7 +254,7 @@ status:
 
 KubeDB operator has created a new Secret called `px-init-script-auth` *(format: {percona-xtradb-object-name}-auth)* for storing the password for `mysql` superuser. This secret contains a `username` key which contains the **"username"** for `mysql` superuser and a `password` key which contains the **"password"** for the superuser.
 
-If you want to use an existing secret please specify that when creating the PerconaXtraDB object using `.spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys (`username` and `password`) in `.data` section and also make sure of using `root` as value of `username` key. For more details see [here](/docs/concepts/databases/percona-xtradb.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the PerconaXtraDB object using `.spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys (`username` and `password`) in `.data` section and also make sure of using `root` as value of `username` key. For more details see [here](/docs/guides/percona-xtradb/concepts/overview.md#specdatabasesecret).
 
 Now, you can connect to this database using the database pod IP and and `root` user password.
 
@@ -337,6 +337,6 @@ kubectl delete ns demo
 - How to use [custom configuration](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
 - How to use [custom rbac resource](/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac.md) for PerconaXtraDB.
 - Use Stash to [Backup PerconaXtraDB](/docs/guides/percona-xtradb/snapshot/stash.md).
-- Detail concepts of [PerconaXtraDB object](/docs/concepts/databases/percona-xtradb.md).
-- Detail concepts of [PerconaXtraDBVersion object](/docs/concepts/catalog/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/overview.md).
+- Detail concepts of [PerconaXtraDBVersion object](/docs/guides/percona-xtradb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

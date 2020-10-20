@@ -118,9 +118,9 @@ A `MySQLOpsRequest` object has the following fields in the `spec` section.
 
 #### spec.databaseRef
 
-`spec.databaseRef` is a required field that point to the [MySQL](/docs/concepts/databases/mysql.md) object where the administrative operations will be applied. This field consists of the following sub-field:
+`spec.databaseRef` is a required field that point to the [MySQL](/docs/guides/mysql/concepts/overview.md) object where the administrative operations will be applied. This field consists of the following sub-field:
 
-- **spec.databaseRef.name :**  specifies the name of the [MySQL](/docs/concepts/databases/mysql.md) object.
+- **spec.databaseRef.name :**  specifies the name of the [MySQL](/docs/guides/mysql/concepts/overview.md) object.
 
 #### spec.type
 
@@ -136,7 +136,7 @@ A `MySQLOpsRequest` object has the following fields in the `spec` section.
 
 If you want to upgrade your MySQL version, you have to specify the `spec.upgrade`  section that specifies the desired version information. This field consists of the following sub-field:
 
-- `spec.upgrade.targetVersion` refers to a [MySQLVersion](/docs/concepts/catalog/mysql.md) CR that contains the MySQL version information where you want to upgrade.
+- `spec.upgrade.targetVersion` refers to a [MySQLVersion](/docs/guides/mysql/concepts/catalog.md) CR that contains the MySQL version information where you want to upgrade.
 
 >You can only upgrade between MySQL versions. KubeDB does not support downgrade for MySQL.
 
