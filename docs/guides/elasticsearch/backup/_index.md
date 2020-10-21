@@ -1,5 +1,5 @@
 ---
-title: Elasticsearch Backup
+title: Backup & Restore Elasticsearch
 menu:
   docs_{{ .version }}:
     identifier: es-backup

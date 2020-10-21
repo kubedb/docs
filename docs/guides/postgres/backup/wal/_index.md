@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: pg-wal
     name: WAL Archiving
-    parent: pg-snapshot-postgres
+    parent: pg-backup
     weight: 25
 menu_name: docs_{{ .version }}
 ---
