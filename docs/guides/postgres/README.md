@@ -104,13 +104,11 @@ Note: Here `Deprecated: true` `PostgresVersions` are not supported in {{< param 
 ## User Guide
 
 - [Quickstart PostgreSQL](/docs/guides/postgres/quickstart/quickstart.md) with KubeDB Operator.
-- Take [Instant Snapshot](/docs/guides/postgres/snapshot/instant_backup.md) of PostgreSQL database using KubeDB.
-- [Schedule backup](/docs/guides/postgres/snapshot/scheduled_backup.md) of PostgreSQL database using KubeDB.
+- How to [Backup & Restore](/docs/guides/postgres/backup/stash.md) PostgreSQL database using Stash.
 - Initialize [PostgreSQL with Script](/docs/guides/postgres/initialization/script_source.md).
-- Initialize [PostgreSQL with KubeDB Snapshot](/docs/guides/postgres/initialization/snapshot_source.md).
 - [PostgreSQL Clustering](/docs/guides/postgres/clustering/ha_cluster.md) supported by KubeDB Postgres.
 - [Streaming Replication](/docs/guides/postgres/clustering/streaming_replication.md) for PostgreSQL clustering.
-- [Continuous Archiving](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) of Write-Ahead Log by `wal-g`.
+- [Continuous Archiving](/docs/guides/postgres/backup/wal/continuous_archiving.md) of Write-Ahead Log by `wal-g`.
 - Monitor your PostgreSQL database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
 - Monitor your PostgreSQL database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/postgres/private-registry/using-private-registry.md) to deploy PostgreSQL with KubeDB.

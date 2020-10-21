@@ -581,9 +581,7 @@ If you are just testing some basic functionalities, you might want to avoid addi
 
 ## Next Steps
 
-- Learn about [taking instant backup](/docs/guides/elasticsearch/snapshot/instant_backup.md) of Elasticsearch database using KubeDB.
-- Learn how to [schedule backup](/docs/guides/elasticsearch/snapshot/scheduled_backup.md)  of Elasticsearch database.
-- Learn about initializing [Elasticsearch with Snapshot](/docs/guides/elasticsearch/initialization/snapshot_source.md).
+- Learn about [backup & restore](/docs/guides/elasticsearch/backup/stash.md) Elasticsearch database using Stash.
 - Learn how to configure [Elasticsearch Topology](/docs/guides/elasticsearch/clustering/topology.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).

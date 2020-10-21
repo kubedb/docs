@@ -286,4 +286,3 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 - Use [kubedb cli](/docs/guides/mysql/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
-

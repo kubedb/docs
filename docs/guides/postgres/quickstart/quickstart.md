@@ -497,10 +497,8 @@ If you are just testing some basic functionalities, you might want to avoid addi
 
 ## Next Steps
 
-- Learn about [taking instant backup](/docs/guides/postgres/snapshot/instant_backup.md) of PostgreSQL database using KubeDB Snapshot.
-- Learn how to [schedule backup](/docs/guides/postgres/snapshot/scheduled_backup.md)  of PostgreSQL database.
+- Learn about [backup and restore](/docs/guides/postgres/backup/stash.md) PostgreSQL database using Stash.
 - Learn about initializing [PostgreSQL with Script](/docs/guides/postgres/initialization/script_source.md).
-- Learn about initializing [PostgreSQL from KubeDB Snapshot](/docs/guides/postgres/initialization/snapshot_source.md).
 - Learn about [custom PostgresVersions](/docs/guides/postgres/custom-versions/setup.md).
 - Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)
 - Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
