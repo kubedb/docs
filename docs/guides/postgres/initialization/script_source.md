@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Initialize PostgreSQL with Script
 
@@ -24,7 +24,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -45,7 +45,7 @@ At first, we will create a ConfigMap from `data.sql` file. Then, we will provide
 
 Let's create a ConfigMap with initialization script,
 
-```console
+```bash
 $ kubectl create configmap -n demo pg-init-script \
 --from-literal=data.sql="$(curl -fsSL https://raw.githubusercontent.com/kubedb/postgres-init-scripts/master/data.sql)"
 configmap/pg-init-script created
@@ -84,14 +84,14 @@ VolumeSource provided in `init.scriptSource` will be mounted in Pod and will be 
 
 Now, let's create the Postgres crd which YAML we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/script-postgres.yaml
 postgres.kubedb.com/script-postgres created
 ```
 
 Now, wait until Postgres goes in `Running` state. Verify that the database is in `Running` state using following command,
 
-```console
+```bash
  $ kubectl get pg -n demo script-postgres
 NAME              VERSION    STATUS    AGE
 script-postgres   10.2-v5    Running   39s
@@ -99,7 +99,7 @@ script-postgres   10.2-v5    Running   39s
 
 You can use `kubectl dba describe` command to view which resources has been created by KubeDB for this Postgres object.
 
-```console
+```bash
 $ kubectl dba describe pg -n demo script-postgres
 Name:               script-postgres
 Namespace:          demo
@@ -198,21 +198,21 @@ Now let's connect to our Postgres `script-postgres`  using pgAdmin we have insta
 
 - Username: Run following command to get *username*,
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo script-postgres-auth -o jsonpath='{.data.\POSTGRES_USER}' | base64 -d
   postgres
   ```
 
 - Password: Run the following command to get *password*,
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo script-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
   NC1fEq0q5XqHazB8
   ```
 
 In PostgreSQL, run following query to check `pg_catalog.pg_tables` to confirm initialization.
 
-```console
+```bash
 select * from pg_catalog.pg_tables where schemaname = 'data';
 ```
 
@@ -226,7 +226,7 @@ We can see TABLE `dashboard` in `data` Schema which is created through initializ
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 $ kubectl patch -n demo pg/script-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo pg/script-postgres
 

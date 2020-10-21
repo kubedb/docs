@@ -18,6 +18,4 @@ spec:
     scriptSource:
       configMap:
         name: px-init-script
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: DoNotTerminate

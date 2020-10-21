@@ -13,8 +13,5 @@ spec:
       kind: MySQL
       name: my-group
     replicas: 3
-  configSource:
-    configMap:
-      name: my-custom-config
-  updateStrategy:
-    type: RollingUpdate
+  configSecret:
+    name: my-custom-config

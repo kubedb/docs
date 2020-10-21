@@ -5,8 +5,8 @@ metadata:
   namespace: demo
 spec:
   version: "10.2-v5"
-  databaseSecret:
-    secretName: script-postgres-auth
+  authSecret:
+    name: script-postgres-auth
   storage:
     storageClassName: "standard"
     accessModes:

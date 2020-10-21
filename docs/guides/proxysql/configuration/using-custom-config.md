@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using Custom Configuration File
 
@@ -24,7 +24,7 @@ KubeDB supports providing custom configuration for ProxySQL. This tutorial will 
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
 
@@ -43,7 +43,7 @@ ProxySQL allows to configure via configuration file. The default configuration f
 
 To know more about configuring ProxySQL see [configuration file](https://github.com/sysown/proxysql/wiki/Configuration-file) and [variables](https://github.com/sysown/proxysql/wiki/Global-variables).
 
-At first, you have to create a config file with name `custom-proxysql.cnf` containing your desired configurations. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `.spec.configSource` section while creating ProxySQL object. KubeDB will mount this volume into `/etc/custom-config` directory of the ProxySQL Pod.
+At first, you have to create a config file with name `custom-proxysql.cnf` containing your desired configurations. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `.spec.configSecret` section while creating ProxySQL object. KubeDB will mount this volume into `/etc/custom-config` directory of the ProxySQL Pod.
 
 In this tutorial, we will configure [mysql-connect_timeout_server](https://github.com/sysown/proxysql/wiki/Global-variables#mysql-connect_timeout_server) via the `custom-proxysql.cnf` file. We will use configMap as volume source.
 
@@ -54,7 +54,7 @@ At first, let's create `custom-proxysql.cnf` file setting `mysql-connect_timeout
 > Note: We recommend to include the line `interfaces="0.0.0.0:6033"` here in the `mysql_variables` block. Though without this line, ProxySQL will work fine but we recommend to include it.
 > The important thing you should keep in mind here is that never change the credential for admin interface for current version of ProxySQL image. It must be `admin:admin` (<username>:<password>).
 
-```console
+```bash
 cat <<EOF > custom-proxysql.cnf
 mysql_variables=
 {
@@ -75,7 +75,7 @@ Here, `connect_timeout_server` is set to 20 secondes in mili-second.
 
 Now, create a configMap with this configuration file.
 
-```console
+```bash
  $ kubectl create configmap -n demo my-custom-config --from-file=./custom-proxysql.cnf
 configmap/my-custom-config created
 ```
@@ -101,9 +101,9 @@ metadata:
 
 > **Note:** For this tutorial there must be a MySQL object with name `my-group` (Group Replication supported) running in the `demo` namespace in the cluster. You can deploy one by following section [create MySQL object with Group Replication](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md#Create-MySQL-Object).
 
-Now, create ProxySQL object specifying `.spec.configSource` field.
+Now, create ProxySQL object specifying `.spec.configSecret` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/custom-proxysql.yaml
 proxysql.kubedb.com/custom-proxysql created
 ```
@@ -126,18 +126,15 @@ spec:
       kind: MySQL
       name: my-group
     replicas: 3
-  configSource:
-    configMap:
-      name: my-custom-config
-  updateStrategy:
-    type: RollingUpdate
+  configSecret:
+    name: my-custom-config
 ```
 
 Now, wait a few minutes. KubeDB operator will create necessary statefulset, services, secret etc. If everything goes well, we will see that a Pod with the name `custom-proxysql-0` has been created.
 
 Check that the StatefulSet's Pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo
 NAME                READY     STATUS    RESTARTS   AGE
 custom-proxysql-0   1/1       Running   0          44s
@@ -145,7 +142,7 @@ custom-proxysql-0   1/1       Running   0          44s
 
 Check the Pod's log,
 
-```console
+```bash
 $ kubectl logs -f -n demo custom-proxysql-0
 ...
 2019/11/28 15:58:41 [entrypoint.sh] [INFO] Applying custom config using cmd 'proxysql -c /etc/custom-config/custom-proxysql.cnf --reload -f  &'
@@ -160,7 +157,7 @@ $ kubectl logs -f -n demo custom-proxysql-0
 
 Now, we will check if the ProxySQL has started with the custom configuration we have provided.
 
-```console
+```bash
 kubectl exec -it -n demo custom-proxysql-0 -- mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt="ProxySQL [Admin]> "
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 7
@@ -194,7 +191,7 @@ ProxySQL [Admin]> show global variables;
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 
 $ kubectl delete proxysql -n demo custom-proxysql
 
@@ -205,13 +202,13 @@ $ kubectl delete my -n demo my-group
 $ kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 
 - Monitor ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
-- Monitor ProxySQL with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/proxysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor ProxySQL with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md).
 - Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
-- Detail concepts of ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
-- Detail concepts of ProxySQLVersion CRD [here](/docs/concepts/catalog/proxysql.md).
+- Detail concepts of ProxySQL CRD [here](/docs/guides/proxysql/concepts/proxysql.md).
+- Detail concepts of ProxySQLVersion CRD [here](/docs/guides/proxysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

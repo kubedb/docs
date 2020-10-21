@@ -26,7 +26,7 @@ section_menu_id: guides
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -67,7 +67,7 @@ metadata:
   namespace: demo
 spec:
   ca:
-    secretName: my-ca
+    name: my-ca
 ```
 
 Let’s create the `Issuer` cr we have shown above,
@@ -100,7 +100,7 @@ spec:
   requireSSL: true
   tls:
     issuerRef:
-      apiGroup: cert-manager.io/v1beta1
+      apiGroup: cert-manager.io
       kind: Issuer
       name: mysql-issuer
     certificates:
@@ -122,13 +122,13 @@ Here,
 - `spec.tls.issuerRef` refers to the `mysql-issuer` issuer.
 
 - `spec.tls.certificates` gives you a lot of options to configure so that the certificate will be renewed and kept up to date. 
-You can found more details from [here](/docs/concepts/databases/mysql.md#tls)
+You can found more details from [here](/docs/guides/mysql/concepts/mysql.md#tls)
 
 **Deploy MySQL Standalone:**
 
 Let’s create the `MySQL` cr we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/tls-ssl/tls-standalone.yaml
 mysql.kubedb.com/my-standalone-tls created
 ```
@@ -137,7 +137,7 @@ mysql.kubedb.com/my-standalone-tls created
 
 Now, watch `MySQL` is going to `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
 
-```console
+```bash
 $ watch -n 3 kubectl get my -n demo my-standalone-tls
 Every 3.0s: kubectl get my -n demo my-standalone-tls            suaas-appscode: Thu Aug 13 18:12:39 2020
 
@@ -165,7 +165,7 @@ All tls-secret are created by `KubeDB` enterprise operator. Default tls-secret n
 
 Let's check the tls-secrets have created,
 
-```console
+```bash
 $ kubectl get secrets -n demo | grep "my-standalone-tls"
 my-standalone-tls-archiver-cert             kubernetes.io/tls                     3      33m
 my-standalone-tls-auth                      Opaque                                2      33m
@@ -181,7 +181,7 @@ Now, we are going to connect to the database for verifying the `MySQL` server ha
 
 Let's exec into the pod to verify TLS/SSL configuration,
 
-```console
+```bash
 $ kubectl exec -it -n  demo  my-standalone-tls-0 -- bash
 # ls /etc/mysql/certs/
 ca.crt  client.crt  client.key  server.crt  server.key
@@ -251,7 +251,7 @@ Now, you can create an SSL required user that will be used to connect to the dat
 
 Let's connect to the database server with a secure connection,
 
-```console
+```bash
 # creating SSL required user
 $ kubectl exec -it -n  demo  my-standalone-tls-0 -- bash
 
@@ -341,7 +341,7 @@ spec:
   requireSSL: true
   tls:
     issuerRef:
-      apiGroup: cert-manager.io/v1beta1
+      apiGroup: cert-manager.io
       kind: Issuer
       name: mysql-issuer
     certificates:
@@ -358,7 +358,7 @@ spec:
 
 **Deploy MySQL group replication:**
 
-```console
+```bash
 kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/tls-ssl/tls-group.yaml
 mysql.kubedb.com/my-group-tls created
 ```
@@ -367,7 +367,7 @@ mysql.kubedb.com/my-group-tls created
 
 Now, watch `MySQL` is going to `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
 
-```console
+```bash
 $ watch -n 3 kubectl get my -n demo my-group-tls
 Every 3.0s: kubectl get my -n demo my-group-tls                 suaas-appscode: Thu Aug 13 19:02:15 2020
 
@@ -397,7 +397,7 @@ All tls-secret are created by `KubeDB` enterprise operator. Default tls-secret n
 
 Let's check the tls-secrets have created,
 
-```console
+```bash
 $ kubectl get secrets -n demo | grep "my-group-tls"
 my-group-tls-archiver-cert                  kubernetes.io/tls                     3      13m
 my-group-tls-auth                           Opaque                                2      13m
@@ -413,7 +413,7 @@ Now, we are going to connect to the database for verifying the `MySQL` group rep
 
 Let's exec into the pod to verify TLS/SSL configuration,
 
-```console
+```bash
 $ kubectl exec -it -n  demo  my-group-tls-0 -c mysql -- bash
 root@my-group-0:/# ls /etc/mysql/certs/
 ca.crt  client.crt  client.key  server.crt  server.key
@@ -494,7 +494,7 @@ Now, you can create an SSL required user that will be used to connect to the dat
 
 Let's connect to the database server with a secure connection,
 
-```console
+```bash
 # creating SSL required user
 $ kubectl exec -it -n  demo  my-group-tls-0 -c mysql -- bash
 
@@ -559,7 +559,7 @@ From the above output, you can see that only using client certificate we can acc
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete my -n demo  my-standalone-tls
 kubectl delete my -n demo  my-group-tls
 kubectl delete ns demo
@@ -567,4 +567,4 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Detail concepts of [MySQL object](/docs/concepts/databases/mysql.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).

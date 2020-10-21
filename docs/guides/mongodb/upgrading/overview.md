@@ -19,8 +19,8 @@ This guide will give you an overview on how KubeDB Enterprise operator upgrade t
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MongoDB](/docs/concepts/databases/mongodb.md)
-  - [MongoDBOpsRequest](/docs/concepts/day-2-operations/mongodbopsrequest.md)
+  - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
+  - [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
 
 ## How Upgrade Process Works
 
@@ -43,7 +43,7 @@ The upgrading process consists of the following steps:
 
 5. `KubeDB` Enterprise operator watches the `MongoDBOpsRequest` CR.
 
-6. When it finds a `MongoDBOpsRequest` CR, it pauses the `MongoDB` object which is referred from the `MongoDBOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `MongoDB` object during the upgrading process.  
+6. When it finds a `MongoDBOpsRequest` CR, it halts the `MongoDB` object which is referred from the `MongoDBOpsRequest`. So, the `KubeDB` Community operator doesn't perform any operations on the `MongoDB` object during the upgrading process.  
 
 7. By looking at the target version from `MongoDBOpsRequest` CR, `KubeDB` Enterprise operator updates the images of all the `StatefulSets`. After each image update, the operator performs some checks such as if the oplog is synced and database size is almost same or not.
 

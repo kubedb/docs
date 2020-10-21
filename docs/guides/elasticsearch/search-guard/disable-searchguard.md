@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Disable Search Guard Plugin
 
@@ -26,7 +26,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -61,14 +61,14 @@ spec:
 
 Let's create the Elasticsearch object we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/es-sg-disabled.yaml
 elasticsearch.kubedb.com/es-sg-disabled created
 ```
 
 Wait for Elasticsearch to be ready,
 
-```console
+```bash
 $ kubectl get es -n demo es-sg-disabled
 NAME             VERSION   STATUS    AGE
 es-sg-disabled   6.3-v1    Running   27m
@@ -80,7 +80,7 @@ As we have disabled Search Guard plugin, we no longer require *username* and *pa
 
 At first, forward port 9200 of `es-sg-disabled-0` pod. Run following command in a separate terminal,
 
-```console
+```bash
 $ kubectl port-forward -n demo es-sg-disabled-0 9200
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
@@ -90,7 +90,7 @@ Now, we can connect with the database at `localhost:9200`.
 
 Let's check health of our Elasticsearch database.
 
-```console
+```bash
 $ curl "localhost:9200/_cluster/health?pretty"
 ```
 
@@ -118,7 +118,7 @@ $ curl "localhost:9200/_cluster/health?pretty"
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 $ kubectl patch -n demo es/es-sg-disabled -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo es/es-sg-disabled
 

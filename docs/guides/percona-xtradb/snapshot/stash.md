@@ -42,7 +42,7 @@ As a dedicated backup and recovery tool, Stash has the following key benefits:
 
 In order to backup PerconaXtraDB Cluster database using Stash, follow the following steps:
 
-- **Install Stash:** At first, you have to install Stash. Please, follow the steps from [here](https://appscode.com/products/stash/latest/setup/install/).
+- **Install Stash:** At first, you have to install Stash. Please, follow the steps from [here](https://stash.run/docs/latest/setup/).
 
 - **Install PerconaXtraDB Addon:** Then, you have to install PerconaXtraDB addon for Stash. Please, follow the steps from [here](https://appscode.com/products/stash/latest/addons/percona-xtradb/setup/install/).
 

@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Continuous Archiving to Local Storage
 
@@ -26,7 +26,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -45,8 +45,6 @@ spec:
   version: "11.1-v3"
   storageType: Durable
   replicas: 2
-  updateStrategy:
-    type: RollingUpdate
   storage:
     storageClassName: "standard"
     accessModes:
@@ -141,7 +139,7 @@ To configure Local backend, following parameters are available:
 
 Now create this Postgres object with continuous archiving support.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/snapshot/wal-postgres-local.yaml
 postgres.kubedb.com/wal-postgres created
 ```
@@ -160,7 +158,7 @@ The data will be intact in other scenarios.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo pg/wal-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/wal-postgres
 

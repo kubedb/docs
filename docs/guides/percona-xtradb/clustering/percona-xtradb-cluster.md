@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # KubeDB - Percona XtraDB Cluster
 
@@ -28,7 +28,7 @@ Before proceeding:
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -58,12 +58,10 @@ spec:
     resources:
       requests:
         storage: 50Mi
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: WipeOut
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/demo-cluster.yaml
 perconaxtradb.kubedb.com/my-group created
 ```
@@ -75,7 +73,7 @@ Here,
 
 KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching `PerconaXtraDB` object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<percona-xtradb-object-name>-gvr`.
 
-```console
+```bash
 $ kubectl dba describe px -n demo demo-cluster
 Name:         demo-cluster
 Namespace:    demo
@@ -173,8 +171,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/perconaxtradbs/demo-cluster
   uid: 1a128325-738d-406a-a130-c421a4970892
 spec:
-  databaseSecret:
-    secretName: demo-cluster-auth
+  authSecret:
+    name: demo-cluster-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -199,8 +197,6 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: WipeOut
-  updateStrategy:
-    type: RollingUpdate
   version: "5.7-cluster"
 status:
   observedGeneration: 2$4213139756412538772
@@ -211,11 +207,11 @@ status:
 
 KubeDB operator has created a new Secret called `demo-cluster-auth` **(format: {percona-xtradb-cluster-object-name}-auth)** for storing the password for the superuser. This secret contains a `username` key which contains the **username** for the superuser and a `password` key which contains the **password** for the superuser.
 
-If you want to use an existing secret please specify that when creating the `PerconaXtraDB` object using `.spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/concepts/databases/percona-xtradb.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the `PerconaXtraDB` object using `.spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specdatabasesecret).
 
 Now, you can connect to this database from your terminal using the `root` user and password.
 
-```console
+```bash
 $ kubectl get secrets -n demo demo-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -227,7 +223,7 @@ The operator creates a cluster according to the newly created `PerconaXtraDB` ob
 
 You can connect to any of these cluster nodes. In that case you just need to specify the host name of the corresponding Pod (either PodIP or the fully-qualified-domain-name for that Pod using the governing service named `<percona-xtradb-object-name>-gvr`) by `--host` flag.
 
-```console
+```bash
 # first list the percona-xtradb pods list
 $ kubectl get pods -n demo -l kubedb.com/name=demo-cluster
 NAME             READY   STATUS    RESTARTS   AGE
@@ -251,7 +247,7 @@ Now you can connect to the database using the above info.
 
 > Ignore the warning message. It is happening for using password on the command line interface.
 
-```console
+```bash
 # connect to the 1st server
 $ kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-0.demo-cluster-gvr.demo -e "select 1;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -284,7 +280,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 Now, you are ready to check newly created group status. Connect and run the following commands from any of the hosts and you will get the same results.
 
-```console
+```bash
 $ kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-2.demo-cluster-gvr.demo -e "show status like 'wsrep%'"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------------------------+-------------------------------------------------+
@@ -364,7 +360,7 @@ Here,
 
 Let's check the cluster view,
 
-```console
+```bash
 $kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-2.demo-cluster-gvr.demo -e "select * from performance_schema.pxc_cluster_view;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------+--------------------------------------+--------+-------------+---------+
@@ -383,7 +379,7 @@ In a Percona XtraDB Cluster, you can read/write from/to every node. In this tuto
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 > Don't worry about the warning message. It appears, if you provide password on the command.
 
-```console
+```bash
 # create a database on 'demo-cluster-0'
 $ kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-0.demo-cluster-gvr.demo -e "CREATE DATABASE playground;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -428,7 +424,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 To test the cluster behavior during node failure, we will force one of the Primary Pods to restart. When it comes back to the cluster, it becomes the `JOINER` node and one of the existing nodes becomes the `DONOR` node. Then the `JOINER` node becomes `"Synced"` by receiving an IST/SST from the `DONOR` node. Let's see,
 
-```console
+```bash
 kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-2.demo-cluster-gvr.demo -e "select * from performance_schema.pxc_cluster_view;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------+--------------------------------------+--------+-------------+---------+
@@ -526,7 +522,7 @@ partitioned {
 	protocols  = 0/9/3 (gcs/repl/appl),
 	group UUID = 2cb0d532-1d69-11ea-b1f5-13b666d13d7a
 2019-12-13T11:27:06.083251Z 0 [Note] WSREP: Flow-control interval: [173, 173]
-2019-12-13T11:27:06.083257Z 0 [Note] WSREP: Trying to continue unpaused monitor
+2019-12-13T11:27:06.083257Z 0 [Note] WSREP: Trying to continue unhalted monitor
 2019-12-13T11:27:06.083335Z 2 [Note] WSREP: REPL Protocols: 9 (4, 2)
 2019-12-13T11:27:06.083349Z 2 [Note] WSREP: New cluster view: global state: 2cb0d532-1d69-11ea-b1f5-13b666d13d7a:17, view# 9: Primary, number of nodes: 3, my index: 2, protocol version 3
 2019-12-13T11:27:06.083356Z 2 [Note] WSREP: Setting wsrep_ready to true
@@ -557,7 +553,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 Now, check the data,
 
-```console
+```bash
 # read data from 'demo-cluster-0'
 $ kubectl exec -it -n demo demo-cluster-0 -- mysql -u root --password=LFZAX7DoEg_SMOmL --host=demo-cluster-0.demo-cluster-gvr.demo -e "SELECT * FROM playground.equipment;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -590,7 +586,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 Clean what you created in this tutorial.
 
-```console
+```bash
 $ kubectl delete -n demo px/demo-cluster
 perconaxtradb.kubedb.com "demo-cluster" deleted
 
@@ -601,12 +597,12 @@ namespace "demo" deleted
 ## Next Steps
 
 - Initialize [PerconaXtraDB with Script](/docs/guides/percona-xtradb/initialization/using-script.md).
-- Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/percona-xtradb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/percona-xtradb/monitoring/using-prometheus-operator.md).
 - Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/percona-xtradb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/percona-xtradb/private-registry/using-private-registry.md) to deploy PerconaXtraDB with KubeDB.
 - How to use [custom configuration](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
 - How to use [custom rbac resource](/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac.md) for PerconaXtraDB.
 - Use Stash to [Backup PerconaXtraDB](/docs/guides/percona-xtradb/snapshot/stash.md).
-- Detail concepts of [PerconaXtraDB object](/docs/concepts/databases/percona-xtradb.md).
-- Detail concepts of [PerconaXtraDBVersion object](/docs/concepts/catalog/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDBVersion object](/docs/guides/percona-xtradb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

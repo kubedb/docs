@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # KubeDB Upgrade Manual
 
@@ -26,7 +26,7 @@ Now, install KubeDB 0.9.0 cli on your workstation and KubeDB operator in your cl
 
 In this tutorial we are using helm to install kubedb 0.9.0 release. But, user can install kubedb operator from script too.
 
-```console
+```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
 
@@ -72,7 +72,7 @@ kubedb-operator	1       	Fri Feb  8 11:18:46 2019	DEPLOYED	kubedb-0.9.0        	
 
 For helm, `upgrade` command works fine.
 
-```console
+```bash
 $ helm upgrade --install kubedb-operator appscode/kubedb --version 0.11.0 --namespace kube-system
 $ helm upgrade --install kubedb-catalog appscode/kubedb-catalog --version 0.11.0 --namespace kube-system
 

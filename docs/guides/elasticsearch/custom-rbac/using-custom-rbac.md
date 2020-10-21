@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using Custom RBAC resources
 
@@ -24,7 +24,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -45,7 +45,7 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 
 At first, let's create a `Service Acoount` in `demo` namespace.
 
-```console
+```bash
 $ kubectl create serviceaccount -n demo my-custom-serviceaccount
 serviceaccount/my-custom-serviceaccount created
 ```
@@ -69,7 +69,7 @@ secrets:
 
 Now, we need to create a role that has necessary access permissions for the Elasticsearch instance named `quick-elasticsearch`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/custom-rbac/es-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
@@ -97,7 +97,7 @@ This permission is required for Elasticsearch pods running on PSP enabled cluste
 
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
-```console
+```bash
 $ kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
 rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
@@ -128,7 +128,7 @@ subjects:
 
 Now, create an Elasticsearch crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/custom-rbac/es-custom-db.yaml
 elasticsearch.kubedb.com/quick-elasticsearch created
 ```
@@ -157,7 +157,7 @@ spec:
   terminationPolicy: DoNotTerminate
 ```
 
-```console
+```bash
 $ kubectl get es -n demo
 NAME                  VERSION   STATUS    AGE
 quick-elasticsearch   7.3.2     Running   74s
@@ -167,7 +167,7 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, stateful
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo quick-elasticsearch-0
 NAME                    READY   STATUS    RESTARTS   AGE
 quick-elasticsearch-0   1/1     Running   0          93s
@@ -179,7 +179,7 @@ An existing service account can be reused in another Elasticsearch Database. No 
 
 Now, create Elasticsearch crd `minute-elasticsearch` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/custom-rbac/es-custom-db-two.yaml
 elasticsearch.kubedb.com/quick-elasticsearch created
 ```
@@ -208,7 +208,7 @@ spec:
   terminationPolicy: DoNotTerminate
 ```
 
-```console
+```bash
 $ kubectl get es -n demo
 NAME                   VERSION   STATUS    AGE
 minute-elasticsearch   7.3.2     Running   59s
@@ -219,7 +219,7 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, stateful
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo minute-elasticsearch-0
 NAME                     READY   STATUS    RESTARTS   AGE
 minute-elasticsearch-0   1/1     Running   0          71s
@@ -229,7 +229,7 @@ minute-elasticsearch-0   1/1     Running   0          71s
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo es/quick-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/quick-elasticsearch
 
@@ -244,7 +244,7 @@ kubectl delete sa -n demo my-custom-serviceaccount
 kubectl delete ns demo
 ```
 
-If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 
@@ -252,11 +252,10 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 - [Snapshot](/docs/guides/elasticsearch/snapshot/instant_backup.md) process of Elasticsearch instances using KubeDB.
 - Take [Scheduled Snapshot](/docs/guides/elasticsearch/snapshot/scheduled_backup.md) of Elasticsearch instances using KubeDB.
 - Initialize [Elasticsearch with Snapshot](/docs/guides/elasticsearch/initialization/snapshot_source.md).
-- Monitor your Elasticsearch instance with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/elasticsearch/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your Elasticsearch instance with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Monitor your Elasticsearch instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
 - Use [kubedb cli](/docs/guides/elasticsearch/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [Elasticsearch object](/docs/concepts/databases/elasticsearch.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
+- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 

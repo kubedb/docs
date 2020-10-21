@@ -6,9 +6,8 @@ metadata:
 spec:
   version: "5.7"
   replicas: 1
-  configSource:
-    configMap:
-      name: my-custom-config
+  configSecret:
+    name: my-custom-config
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -17,6 +16,4 @@ spec:
     resources:
       requests:
         storage: 50Mi
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: DoNotTerminate

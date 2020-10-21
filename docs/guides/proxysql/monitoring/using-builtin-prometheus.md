@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Monitoring ProxySQL with builtin Prometheus
 
@@ -24,13 +24,13 @@ This tutorial will show you how to monitor ProxySQL using builtin [Prometheus](h
 
 - If you are not familiar with how to configure Prometheus to scrape metrics from various Kubernetes resources, please read the tutorial from [here](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/concepts/database-monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/proxysql/monitoring/overview.md).
 
 - To keep Prometheus resources isolated, we are going to use two different namespaces called,
   - `monitoring` to deploy respective monitoring resources
   - `demo` to deploy respective resources from KubeDB
 
-  ```console
+  ```bash
   $ kubectl create ns monitoring
   namespace/monitoring created
 
@@ -67,20 +67,18 @@ spec:
       requests:
         storage: 1Gi
   terminationPolicy: WipeOut
-  updateStrategy:
-    type: RollingUpdate
 ```
 
 Let's create the MySQL object we have shown above.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-my-group.yaml
 mysql.kubedb.com/my-group created
 ```
 
 Now, wait for the database to go into the `Running` state.
 
-```console
+```bash
 $ kubectl get my -n demo my-group
 NAME       VERSION   STATUS    AGE
 my-group   5.7.25    Running   3m
@@ -106,26 +104,25 @@ spec:
       kind: MySQL
       name: my-group
     replicas: 3
-  updateStrategy:
-    type: RollingUpdate
   monitor:
     agent: prometheus.io/builtin
     prometheus:
-      port: 42004
+      exporter:
+        port: 42004
 ```
 
 - `.spec.monitor.agent: prometheus.io/builtin` specifies that we are going to monitor this server using builtin Prometheus scraper.
 
 Let's create the ProxySQL object we have shown above.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/builtin-prom-proxysql.yaml
 proxysql.kubedb.com/builtin-prom-proxysql created
 ```
 
 Now, wait for the ProxySQL object to go into the `Running` state.
 
-```console
+```bash
 $ kubectl get proxysql -n demo builtin-prom-proxysql
 NAME                    VERSION   STATUS    AGE
 builtin-prom-proxysql   2.0.4     Running   3m
@@ -133,7 +130,7 @@ builtin-prom-proxysql   2.0.4     Running   3m
 
 KubeDB will create a separate stats service with the name `{ProxySQL object name}-stats` for monitoring purposes.
 
-```console
+```bash
 $ kubectl get svc -n demo --selector="proxysql.kubedb.com/name=builtin-prom-proxysql"
 NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 builtin-prom-proxysql         ClusterIP   10.101.12.24    <none>        6033/TCP    23m
@@ -142,7 +139,7 @@ builtin-prom-proxysql-stats   ClusterIP   10.97.112.192   <none>        42004/TC
 
 Here, `builtin-prom-proxysql-stats` service has been created for monitoring purposes. Let's describe the service.
 
-```console
+```bash
 $ kubectl describe svc -n demo builtin-prom-proxysql-stats
 Name:              builtin-prom-proxysql-stats
 Namespace:         demo
@@ -166,7 +163,7 @@ Events:            <none>
 
 You can see that the service contains the following annotations.
 
-```console
+```bash
 prometheus.io/path: /metrics
 prometheus.io/port: 42004
 prometheus.io/scrape: true
@@ -325,7 +322,7 @@ data:
 
 Let's create above `ConfigMap`,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
@@ -334,7 +331,7 @@ configmap/prometheus-config created
 
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuff for Prometheus,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
@@ -349,7 +346,7 @@ Now, we are ready to deploy the Prometheus server. We are going to use the follo
 
 Let's deploy the Prometheus server.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/deployment.yaml
 deployment.apps/prometheus created
 ```
@@ -360,7 +357,7 @@ Prometheus server is listening to port `9090`. We are going to use [port forward
 
 At first, let's check if the Prometheus pod is in `Running` state.
 
-```console
+```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                          READY   STATUS    RESTARTS   AGE
 prometheus-789c9695fc-v8gjg   1/1     Running   0          27s
@@ -368,7 +365,7 @@ prometheus-789c9695fc-v8gjg   1/1     Running   0          27s
 
 Now, run the following command on a separate terminal to forward 9090 port of `prometheus-789c9695fc-v8gjg` pod,
 
-```console
+```bash
 $ kubectl port-forward -n monitoring prometheus-8568c86d86-95zhn 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
@@ -388,7 +385,7 @@ Now, you can view the collected metrics and create a graph from the homepage of 
 
 To clean up the Kubernetes resources created by this tutorial, run following commands
 
-```console
+```bash
 $ kubectl delete -n monitoring deployment.apps/prometheus
 
 $ kubectl delete -n monitoring clusterrole.rbac.authorization.k8s.io/prometheus
@@ -404,7 +401,7 @@ $ kubectl delete ns monitoring
 
 ## Next Steps
 
-- Monitor your ProxySQL database with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/proxysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your ProxySQL database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md).
 - Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
 - Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-custom-config.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

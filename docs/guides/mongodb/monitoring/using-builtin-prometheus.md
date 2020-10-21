@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Monitoring MongoDB with builtin Prometheus
 
@@ -24,11 +24,11 @@ This tutorial will show you how to monitor MongoDB database using builtin [Prome
 
 - If you are not familiar with how to configure Prometheus to scrape metrics from various Kubernetes resources, please read the tutorial from [here](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/concepts/database-monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/mongodb/monitoring/overview.md).
 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
-  ```console
+  ```bash
   $ kubectl create ns monitoring
   namespace/monitoring created
 
@@ -68,14 +68,14 @@ Here,
 
 Let's create the MongoDB crd we have shown above.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/monitoring/builtin-prom-mgo.yaml
 mongodb.kubedb.com/builtin-prom-mgo created
 ```
 
 Now, wait for the database to go into `Running` state.
 
-```console
+```bash
 $ kubectl get mg -n demo builtin-prom-mgo
 NAME               VERSION   STATUS    AGE
 builtin-prom-mgo   3.4-v3    Running   1m
@@ -83,7 +83,7 @@ builtin-prom-mgo   3.4-v3    Running   1m
 
 KubeDB will create a separate stats service with name `{MongoDB crd name}-stats` for monitoring purpose.
 
-```console
+```bash
 $ kubectl get svc -n demo --selector="kubedb.com/name=builtin-prom-mgo"
 NAME                     TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 builtin-prom-mgo         ClusterIP   10.99.28.40    <none>        27017/TCP   55s
@@ -93,7 +93,7 @@ builtin-prom-mgo-stats   ClusterIP   10.98.202.26   <none>        56790/TCP   36
 
 Here, `builtin-prom-mgo-stats` service has been created for monitoring purpose. Let's describe the service.
 
-```console
+```bash
 $ kubectl describe svc -n demo builtin-prom-mgo-stats
 Name:              builtin-prom-mgo-stats
 Namespace:         demo
@@ -115,7 +115,7 @@ Events:            <none>
 
 You can see that the service contains following annotations.
 
-```console
+```bash
 prometheus.io/path: /metrics
 prometheus.io/port: 56790
 prometheus.io/scrape: true
@@ -274,7 +274,7 @@ data:
 
 Let's create above `ConfigMap`,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
@@ -283,7 +283,7 @@ configmap/prometheus-config created
 
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
@@ -298,7 +298,7 @@ Now, we are ready to deploy Prometheus server. We are going to use following [de
 
 Let's deploy the Prometheus server.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/deployment.yaml
 deployment.apps/prometheus created
 ```
@@ -309,7 +309,7 @@ Prometheus server is listening to port `9090`. We are going to use [port forward
 
 At first, let's check if the Prometheus pod is in `Running` state.
 
-```console
+```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                          READY   STATUS    RESTARTS   AGE
 prometheus-7bd56c6865-8dlpv   1/1     Running   0          28s
@@ -317,7 +317,7 @@ prometheus-7bd56c6865-8dlpv   1/1     Running   0          28s
 
 Now, run following command on a separate terminal to forward 9090 port of `prometheus-7bd56c6865-8dlpv` pod,
 
-```console
+```bash
 $ kubectl port-forward -n monitoring prometheus-7bd56c6865-8dlpv 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
@@ -337,7 +337,7 @@ Now, you can view the collected metrics and create a graph from homepage of this
 
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
-```console
+```bash
 kubectl delete -n demo mg/builtin-prom-mgo
 
 kubectl delete -n monitoring deployment.apps/prometheus
@@ -356,6 +356,6 @@ kubectl delete ns monitoring
 - Learn how to [schedule backup](/docs/guides/mongodb/snapshot/scheduled-backup.md)  of MongoDB database.
 - Learn about initializing [MongoDB with Snapshot](/docs/guides/mongodb/initialization/using-snapshot.md).
 - Learn how to configure [MongoDB Topology](/docs/guides/mongodb/clustering/sharding.md).
-- Monitor your MongoDB database with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/mongodb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MongoDB database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

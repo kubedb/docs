@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using Custom RBAC resources
 
@@ -24,7 +24,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -45,7 +45,7 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 
 At first, let's create a `Service Acoount` in `demo` namespace.
 
-```console
+```bash
 $ kubectl create serviceaccount -n demo my-custom-serviceaccount
 serviceaccount/my-custom-serviceaccount created
 ```
@@ -69,7 +69,7 @@ secrets:
 
 Now, we need to create a role that has necessary access permissions for the Redis instance named `quick-redis`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/custom-rbac/rd-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
@@ -97,7 +97,7 @@ This permission is required for Redis pods running on PSP enabled clusters.
 
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
-```console
+```bash
 $ kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
 rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
@@ -128,7 +128,7 @@ subjects:
 
 Now, create a Redis crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/custom-rbac/rd-custom-db.yaml
 redis.kubedb.com/quick-redis created
 ```
@@ -162,7 +162,7 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, stateful
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo quick-redis-0
 NAME                READY     STATUS    RESTARTS   AGE
 quick-redis-0   1/1       Running   0          14m
@@ -170,7 +170,7 @@ quick-redis-0   1/1       Running   0          14m
 
 Check the pod's log to see if the database is ready
 
-```console
+```bash
 $ kubectl logs -f -n demo quick-redis-0
 1:C 10 Jun 04:32:25.537 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
 1:C 10 Jun 04:32:25.537 # Redis version=4.0.11, bits=64, commit=00000000, modified=0, pid=1, just started
@@ -189,7 +189,7 @@ An existing service account can be reused in another Redis instance. No new acce
 
 Now, create Redis crd `minute-redis` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/custom-rbac/rd-custom-db-two.yaml
 redis.kubedb.com/quick-redis created
 ```
@@ -223,7 +223,7 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, stateful
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo minute-redis-0
 NAME                READY     STATUS    RESTARTS   AGE
 minute-redis-0   1/1       Running   0          14m
@@ -231,7 +231,7 @@ minute-redis-0   1/1       Running   0          14m
 
 Check the pod's log to see if the database is ready
 
-```console
+```bash
 $ kubectl logs -f -n demo minute-redis-0
 1:C 10 Jun 04:32:25.537 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
 1:C 10 Jun 04:32:25.537 # Redis version=4.0.11, bits=64, commit=00000000, modified=0, pid=1, just started
@@ -248,7 +248,7 @@ $ kubectl logs -f -n demo minute-redis-0
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo rd/quick-redis -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo rd/quick-redis
 
@@ -263,15 +263,15 @@ kubectl delete sa -n demo my-custom-serviceaccount
 kubectl delete ns demo
 ```
 
-If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 
 - [Quickstart Redis](/docs/guides/redis/quickstart/quickstart.md) with KubeDB Operator.
-- Monitor your Redis instance with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/redis/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your Redis instance with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
 - Monitor your Redis instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/redis/private-registry/using-private-registry.md) to deploy Redis with KubeDB.
 - Use [kubedb cli](/docs/guides/redis/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [Redis object](/docs/concepts/databases/redis.md).
+- Detail concepts of [Redis object](/docs/guides/redis/concepts/redis.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 

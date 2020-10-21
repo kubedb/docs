@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Search Guard Configuration
 
@@ -30,7 +30,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -41,13 +41,13 @@ demo    Active  5s
 
 We will use `htpasswd`** to hash user password. Install `apache2-utils` package for this.
 
-```console
+```bash
 $ sudo apt-get install apache2-utils
 ```
 
 To keep configuration files separated, open a new terminal and create a directory `/tmp/kubedb/sg`
 
-```console
+```bash
 mkdir -p /tmp/kubedb/sg
 cd /tmp/kubedb/sg
 ```
@@ -99,7 +99,7 @@ searchguard:
           type: internal
 ```
 
-```console
+```bash
 $ wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_config.yml
 ```
 
@@ -123,7 +123,7 @@ KubeDB needs user `admin` and `readall` for backup and restore process.
 
 Create two hashed password for user `admin` and `readall`
 
-```console
+```bash
 export ADMIN_PASSWORD=admin-password
 export READALL_PASSWORD=readall-password
 
@@ -148,11 +148,11 @@ readall:
 
 Run following command to write user information in `sg_internal_users.yml` file with password.
 
-```console
+```bash
 $ curl https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_internal_users.yml | envsubst > sg_internal_users.yml
 ```
 
-> Note: If user does not provide `spec.databaseSecret`, KubeDB will generate random password for both admin and readall user.
+> Note: If user does not provide `spec.authSecret`, KubeDB will generate random password for both admin and readall user.
 
 ### sg_action_groups.yml
 
@@ -172,7 +172,7 @@ See details about [action groups](http://docs.search-guard.com/v5/action-groups)
 
 Run following command to get action groups we will use in this tutorial
 
-```console
+```bash
 $ wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_action_groups.yml
 ```
 
@@ -254,7 +254,7 @@ sg_readall:
         - INDICES_KUBEDB_SNAPSHOT
 ```
 
-```console
+```bash
 $ wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_roles.yml
 ```
 
@@ -291,7 +291,7 @@ See details about [backend roles mapping](http://docs.search-guard.com/v5/mappin
 
 Get roles mapping by running
 
-```console
+```bash
 $ wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_roles_mapping.yml
 ```
 
@@ -317,7 +317,7 @@ sg_readall:
 
 Now create a Secret with these files to use in your Elasticsearch object.
 
-```console
+```bash
 $ kubectl create secret -n demo generic config-elasticsearch-auth \
                 --from-file=sg_config.yml \
                 --from-file=sg_internal_users.yml \
@@ -339,7 +339,7 @@ Here,
 
 If you do not use these two features of Snapshot, you can ignore adding these.
 
-```console
+```bash
 --from-literal=ADMIN_USERNAME=admin
 --from-literal=ADMIN_PASSWORD=$ADMIN_PASSWORD 
 --from-literal=READALL_USERNAME=readall
@@ -348,7 +348,7 @@ If you do not use these two features of Snapshot, you can ignore adding these.
 
 >Note: `ADMIN_PASSWORD` and `READALL_PASSWORD` are the same password you have provided as hashed value in `sg_internal_users.yml`. It is not possible for KubeDB to figure out the password from the hashed value. So, you have to provide these password as a separate key in the secret. Otherwise, KubeDB will not able to perform backup or initialization.
 
-Use this Secret `config-elasticsearch-auth` in `spec.databaseSecret` field of your Elasticsearch object.
+Use this Secret `config-elasticsearch-auth` in `spec.authSecret` field of your Elasticsearch object.
 
 ## Create an Elasticsearch database
 
@@ -363,8 +363,8 @@ metadata:
 spec:
   version: "6.3-v1"
   authPlugin: "SearchGuard"
-  databaseSecret:
-    secretName: config-elasticsearch-auth
+  authSecret:
+    name: config-elasticsearch-auth
   storage:
     storageClassName: "standard"
     accessModes:
@@ -376,18 +376,18 @@ spec:
 
 Here,
 
-- `spec.databaseSecret` specifies Secret with Search Guard configuration and basic auth for internal user.
+- `spec.authSecret` specifies Secret with Search Guard configuration and basic auth for internal user.
 
 Create example above with following command
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/config-elasticsearch.yaml
 elasticsearch.kubedb.com/config-elasticsearch created
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created.
 
-```console
+```bash
 $ kubectl get es -n demo config-elasticsearch -o wide
 NAME                   VERSION   STATUS    AGE
 config-elasticsearch   6.3-v1    Running   1m
@@ -397,7 +397,7 @@ config-elasticsearch   6.3-v1    Running   1m
 
 At first, forward port 9200 of `config-elasticsearch-0` pod. Run following command on a separate terminal,
 
-```console
+```bash
 $ kubectl port-forward -n demo config-elasticsearch-0 9200
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
@@ -405,7 +405,7 @@ Forwarding from [::1]:9200 -> 9200
 
 Now, you can connect to this database at `localhost:9200`.
 
-```console
+```bash
 $ curl --user "admin:$ADMIN_PASSWORD" "localhost:9200/_cluster/health?pretty"
 ```
 
@@ -433,7 +433,7 @@ $ curl --user "admin:$ADMIN_PASSWORD" "localhost:9200/_cluster/health?pretty"
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 $ kubectl patch -n demo es/config-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo es/config-elasticsearch
 

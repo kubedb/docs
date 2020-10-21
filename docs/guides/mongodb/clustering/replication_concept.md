@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # MongoDB Replication
 
@@ -109,8 +109,8 @@ Starting in MongoDB 3.6, [change streams](https://docs.mongodb.com/manual/change
 ## Next Steps
 
 - [Deploy MongoDB ReplicaSet](/docs/guides/mongodb/clustering/replicaset.md) using KubeDB.
-- Detail concepts of [MongoDB object](/docs/concepts/databases/mongodb.md).
-- Detail concepts of [MongoDBVersion object](/docs/concepts/catalog/mongodb.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
+- Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
 NB: The images in this page are taken from [MongoDB website](https://docs.mongodb.com/manual/replication/).

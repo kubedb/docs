@@ -25,13 +25,13 @@ This guide will show you how to use `KubeDB` Enterprise operator to expand the v
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MongoDB](/docs/concepts/databases/mongodb.md)
-  - [MongoDBOpsRequest](/docs/concepts/day-2-operations/mongodbopsrequest.md)
+  - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
+  - [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
   - [Volume Expansion Overview](/docs/guides/mongodb/volume-expansion/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -46,7 +46,7 @@ Here, we are going to deploy a `MongoDB` standalone using a supported version by
 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
-```console
+```bash
 $ kubectl get storageclass                                                                                                                                           20:22:33
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
@@ -80,14 +80,14 @@ spec:
 
 Let's create the `MongoDB` CR we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/volume-expansion/mg-standalone.yaml
 mongodb.kubedb.com/mg-standalone created
 ```
 
 Now, wait until `mg-standalone` has status `Running`. i.e,
 
-```console
+```bash
 $ kubectl get mg -n demo                                                                                                                                             20:05:47
   NAME            VERSION    STATUS    AGE
   mg-standalone   3.6.8-v1   Running   2m53s
@@ -95,7 +95,7 @@ $ kubectl get mg -n demo                                                        
 
 Let's check volume size from statefulset, and from the persistent volume,
 
-```console
+```bash
 $ kubectl get sts -n demo mg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 
@@ -138,7 +138,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/volume-expansion/mops-volume-exp-standalone.yaml
 mongodbopsrequest.ops.kubedb.com/mops-volume-exp-standalone created
 ```
@@ -149,14 +149,14 @@ If everything goes well, `KubeDB` Enterprise operator will update the volume siz
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`. Run the following command to watch `MongoDBOpsRequest` CR,
 
-```console
+```bash
 $ kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 ```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
-```console
+```bash
 $ kubectl describe mongodbopsrequest -n demo mops-volume-exp-standalone                                                                                              23:50:28
   Name:         mops-volume-exp-standalone
   Namespace:    demo
@@ -216,7 +216,7 @@ $ kubectl describe mongodbopsrequest -n demo mops-volume-exp-standalone         
 
 Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
 
-```console
+```bash
 $ kubectl get sts -n demo mg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "2Gi"
 
@@ -231,7 +231,7 @@ The above output verifies that we have successfully expanded the volume of the M
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete mg -n demo mg-standalone
 kubectl delete mongodbopsrequest -n demo mops-volume-exp-standalone
 ```

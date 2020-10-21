@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Monitoring Memcached with builtin Prometheus
 
@@ -24,11 +24,11 @@ This tutorial will show you how to monitor Memcached server using builtin [Prome
 
 - If you are not familiar with how to configure Prometheus to scrape metrics from various Kubernetes resources, please read the tutorial from [here](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/concepts/database-monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/memcached/monitoring/overview.md).
 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
-  ```console
+  ```bash
   $ kubectl create ns monitoring
   namespace/monitoring created
 
@@ -71,14 +71,14 @@ Here,
 
 Let's create the Memcached crd we have shown above.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/monitoring/builtin-prom-memcd.yaml
 memcached.kubedb.com/builtin-prom-memcd created
 ```
 
 Now, wait for the database to go into `Running` state.
 
-```console
+```bash
 $ kubectl get mc -n demo builtin-prom-memcd
 NAME                 VERSION    STATUS    AGE
 builtin-prom-memcd   1.5.4-v1   Running   1m
@@ -86,7 +86,7 @@ builtin-prom-memcd   1.5.4-v1   Running   1m
 
 KubeDB will create a separate stats service with name `{Memcached crd name}-stats` for monitoring purpose.
 
-```console
+```bash
 $ kubectl get svc -n demo --selector="kubedb.com/name=builtin-prom-memcd"
 NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 builtin-prom-memcd         ClusterIP   10.105.40.31    <none>        11211/TCP   2m6s
@@ -95,7 +95,7 @@ builtin-prom-memcd-stats   ClusterIP   10.110.89.251   <none>        56790/TCP  
 
 Here, `builtin-prom-memcd-stats` service has been created for monitoring purpose. Let's describe the service.
 
-```console
+```bash
 $ kubectl describe svc -n demo builtin-prom-memcd-stats
 Name:              builtin-prom-memcd-stats
 Namespace:         demo
@@ -117,7 +117,7 @@ Events:            <none>
 
 You can see that the service contains following annotations.
 
-```console
+```bash
 prometheus.io/path: /metrics
 prometheus.io/port: 56790
 prometheus.io/scrape: true
@@ -267,7 +267,7 @@ data:
 
 Let's create above `ConfigMap`,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
@@ -276,7 +276,7 @@ configmap/prometheus-config created
 
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
@@ -291,7 +291,7 @@ Now, we are ready to deploy Prometheus server. We are going to use following [de
 
 Let's deploy the Prometheus server.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/deployment.yaml
 deployment.apps/prometheus created
 ```
@@ -302,7 +302,7 @@ Prometheus server is listening to port `9090`. We are going to use [port forward
 
 At first, let's check if the Prometheus pod is in `Running` state.
 
-```console
+```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                          READY   STATUS    RESTARTS   AGE
 prometheus-8568c86d86-95zhn   1/1     Running   0          77s
@@ -310,7 +310,7 @@ prometheus-8568c86d86-95zhn   1/1     Running   0          77s
 
 Now, run following command on a separate terminal to forward 9090 port of `prometheus-8568c86d86-95zhn` pod,
 
-```console
+```bash
 $ kubectl port-forward -n monitoring prometheus-8568c86d86-95zhn 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
@@ -330,7 +330,7 @@ Now, you can view the collected metrics and create a graph from homepage of this
 
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
-```console
+```bash
 $ kubectl delete -n demo mc/builtin-prom-memcd
 
 $ kubectl delete -n monitoring deployment.apps/prometheus
@@ -345,6 +345,6 @@ $ kubectl delete ns monitoring
 
 ## Next Steps
 
-- Monitor your Memcached server with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/memcached/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your Memcached server with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/memcached/private-registry/using-private-registry.md) to deploy Memcached with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

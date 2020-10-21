@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/elasticsearch/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 ## Supported Elasticsearch Features
 
@@ -29,7 +29,7 @@ aliases:
 | Initialization from Script                                                            |   &#10007;   |
 | Initialization from Snapshot                                                          |   &#10003;   |
 | Builtin Prometheus Discovery                                                          |   &#10003;   |
-| Using CoreOS Prometheus Operator                                                      |   &#10003;   |
+| Using Prometheus operator                                                      |   &#10003;   |
 | Custom Configuration                                                                  |   &#10003;   |
 | Using Custom Docker Image                                                             |   &#10003;   |
 
@@ -97,9 +97,8 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - Initialize [Elasticsearch with Snapshot](/docs/guides/elasticsearch/initialization/snapshot_source.md).
 - [Elasticsearch Topology](/docs/guides/elasticsearch/clustering/topology.md) supported by KubeDB
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
-- Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/elasticsearch/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
 - Use [kubedb cli](/docs/guides/elasticsearch/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [Elasticsearch object](/docs/concepts/databases/elasticsearch.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
+- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

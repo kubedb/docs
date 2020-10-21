@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # MongoDB Sharding
 
@@ -28,7 +28,7 @@ Before proceeding:
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -71,7 +71,7 @@ spec:
         storageClassName: standard
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}//docs/examples/mongodb/clustering/mongo-sharding.yaml
 mongodb.kubedb.com/mongo-sh created
 ```
@@ -104,7 +104,7 @@ KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `Mong
 
 MongoDB `mongo-sh` state,
 
-```console
+```bash
 $ kubectl get mg -n demo
 NAME       VERSION   STATUS    AGE
 mongo-sh   3.6-v3    Running   9m41s
@@ -112,7 +112,7 @@ mongo-sh   3.6-v3    Running   9m41s
 
 `Sharding` and `ConfigServer` nodes are deployed as statefulset.
 
-```console
+```bash
 $ kubectl get statefulset -n demo
 NAME                 READY   AGE
 mongo-sh-configsvr   3/3     11m
@@ -123,7 +123,7 @@ mongo-sh-shard2      3/3     7m45s
 
 `Mongos` nodes are deployed as deployment.
 
-```console
+```bash
 $ kubectl get deployments -n demo
 NAME              READY   UP-TO-DATE   AVAILABLE   AGE
 mongo-sh-mongos   2/2     2            2           8m41s
@@ -131,7 +131,7 @@ mongo-sh-mongos   2/2     2            2           8m41s
 
 All PVCs and PVs for MongoDB `mongo-sh`,
 
-```console
+```bash
 $ kubectl get pvc -n demo
 NAME                           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 datadir-mongo-sh-configsvr-0   Bound    pvc-1db4185e-6a5f-11e9-a871-080027a851ba   1Gi        RWO            standard       16m
@@ -166,7 +166,7 @@ pvc-c5bb265f-6a5f-11e9-a871-080027a851ba   1Gi        RWO            Delete     
 
 Services created for MongoDB `mongo-sh`
 
-```console
+```bash
 $ kubectl get svc -n demo
 NAME                     TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
 mongo-sh                 ClusterIP   10.108.188.201   <none>        27017/TCP   18m
@@ -193,10 +193,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mongo-sh
   uid: 1d83622c-6a5f-11e9-a871-080027a851ba
 spec:
-  certificateSecret:
-    secretName: mongo-sh-keyfile
-  databaseSecret:
-    secretName: mongo-sh-auth
+  authSecret:
+    name: mongo-sh-auth
   serviceTemplate:
     metadata: {}
     spec: {}
@@ -310,9 +308,7 @@ spec:
             storage: 1Gi
         storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 3.6-v3
 status:
   observedGeneration: 3$4212299729528774793
@@ -321,7 +317,7 @@ status:
 
 Please note that KubeDB operator has created a new Secret called `mongo-sh-auth` _(format: {mongodb-object-name}-auth)_ for storing the password for `mongodb` superuser. This secret contains a `username` key which contains the _username_ for MongoDB superuser and a `password` key which contains the _password_ for MongoDB superuser.
 
-If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`. For more details, please see [here](/docs/concepts/databases/mongodb.md#specdatabasesecret).
+If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`. For more details, please see [here](/docs/guides/mongodb/concepts/mongodb.md#specdatabasesecret).
 
 ## Connection Information
 
@@ -331,14 +327,14 @@ If you want to use custom or existing secret please specify that when creating t
 - Port: `27017`
 - Username: Run following command to get _username_,
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo mongo-sh-auth -o jsonpath='{.data.\username}' | base64 -d
   root
   ```
 
 - Password: Run the following command to get _password_,
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo mongo-sh-auth -o jsonpath='{.data.\password}' | base64 -d
   7QiqLcuSCmZ8PU5a
   ```
@@ -349,7 +345,7 @@ Now, you can connect to this database through [mongo-shell](https://docs.mongodb
 
 In this tutorial, we will insert sharded and unsharded document, and we will see if the data actually sharded across cluster or not.
 
-```console
+```bash
 $ kubectl get po -n demo -l mongodb.kubedb.com/node.mongos=mongo-sh-mongos
 NAME                               READY   STATUS    RESTARTS   AGE
 mongo-sh-mongos-69b557f9f5-2kz68   1/1     Running   0          49m
@@ -381,7 +377,7 @@ mongos>
 
 To detect if the MongoDB instance that your client is connected to is mongos, use the isMaster command. When a client connects to a mongos, isMaster returns a document with a `msg` field that holds the string `isdbgrid`.
 
-```console
+```bash
 mongos> rs.isMaster()
 {
 	"ismaster" : true,
@@ -407,7 +403,7 @@ mongos> rs.isMaster()
 
 `mongo-sh` Shard status,
 
-```console
+```bash
 mongos> sh.status()
 --- Sharding Status ---
   sharding version: {
@@ -443,7 +439,7 @@ mongos> sh.status()
 
 Shard collection `test.testcoll` and insert document. See [`sh.shardCollection(namespace, key, unique, options)`](https://docs.mongodb.com/manual/reference/method/sh.shardCollection/#sh.shardCollection) for details about `shardCollection` command.
 
-```console
+```bash
 mongos> sh.enableSharding("test");
 {
 	"ok" : 1,
@@ -491,7 +487,7 @@ Run [`sh.status()`](https://docs.mongodb.com/manual/reference/method/sh.status/)
 
 The Sharded Collection section `sh.status.databases.<collection>` provides information on the sharding details for sharded collection(s) (E.g. `test.testcoll`). For each sharded collection, the section displays the shard key, the number of chunks per shard(s), the distribution of documents across chunks, and the tag information, if any, for shard key range(s).
 
-```console
+```bash
 mongos> sh.status();
 --- Sharding Status ---
   sharding version: {
@@ -615,7 +611,7 @@ Here a table of allowed actions are given for mongodb `ShardTopology`,
 
 Now edit MongoDB `mongo-sh` to increase `spec.shardTopology.shard.shards` to 4 and increase `spec.shardTopology.mongos` to 3.
 
-```console
+```bash
 $ kubectl edit mg -n demo mongo-sh
 apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
@@ -636,7 +632,7 @@ spec:
 
 Watch for pod changes,
 
-```console
+```bash
 $ kubectl get po --all-namespaces -w
 NAMESPACE     NAME                                    READY   STATUS    RESTARTS   AGE
 demo          mongo-sh-configsvr-0                    1/1     Running   0          8m12s
@@ -741,7 +737,7 @@ You can see that an extra statefulset `mongo-sh-shard3` is created as 4th shard 
 
 Notice that, all new mongos instances came up replacing old instances because of some changes in `shard` config. This update strategy follows `spec.shardTopology.mongos.strategy`, which is optional. If not provided, kubernetes will use default deploymentStrategy, ie. `RollingUpdate`. See more about [Deployment Strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
 
-```console
+```bash
 $ kubectl get deploy -n demo -w
 NAME              READY   UP-TO-DATE   AVAILABLE   AGE
 mongo-sh-mongos   2/2     2            2           12m
@@ -754,7 +750,7 @@ mongo-sh-mongos   3/3     3            3           13m
 
 Now check `sh.status()` in `mongos`,
 
-```console
+```bash
 $ kubectl get po -n demo -l mongodb.kubedb.com/node.mongos=mongo-sh-mongos
 NAME                               READY   STATUS    RESTARTS   AGE
 mongo-sh-mongos-598658d8f9-6j544   1/1     Running   0          17m
@@ -809,13 +805,13 @@ mongos> sh.status()
                         { "myfield" : { "$minKey" : 1 } } -->> { "myfield" : { "$maxKey" : 1 } } on : shard1 Timestamp(1, 0)
 ```
 
-## Pause Database
+## Halt Database
 
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
 
-Since the MongoDB object created in this tutorial has `spec.terminationPolicy` set to `Pause` (default), if you delete the MongoDB object, KubeDB operator will create a dormant database while deleting the StatefulSet and its pods but leaves the PVCs unchanged.
+Since the MongoDB object created in this tutorial has `spec.terminationPolicy` set to `Halt` (default), if you delete the MongoDB object, KubeDB operator will create a dormant database while deleting the StatefulSet and its pods but leaves the PVCs unchanged.
 
-```console
+```bash
 $ kubectl delete mg mongo-sh -n demo
 mongodb.kubedb.com "mongo-sh" deleted
 
@@ -825,7 +821,7 @@ mongo-sh   Pausing   13s
 
 $ kubectl get drmn -n demo mongo-sh
 NAME       STATUS   AGE
-mongo-sh   Paused   52s
+mongo-sh   Halted   52s
 ```
 
 ```yaml
@@ -852,10 +848,8 @@ spec:
       namespace: demo
     spec:
       mongodb:
-        certificateSecret:
-          secretName: mongo-sh-keyfile
-        databaseSecret:
-          secretName: mongo-sh-auth
+        authSecret:
+          name: mongo-sh-auth
         serviceTemplate:
           metadata: {}
           spec: {}
@@ -969,20 +963,20 @@ spec:
                   storage: 1Gi
               storageClassName: standard
         storageType: Durable
-        terminationPolicy: Pause
+        terminationPolicy: Halt
         updateStrategy:
           type: RollingUpdate
         version: 3.6-v3
 status:
   observedGeneration: 1$16440556888999634490
   pausingTime: "2019-04-29T11:24:41Z"
-  phase: Paused
+  phase: Halted
 ```
 
 Here,
 
 - `spec.origin` is the spec of the original spec of the original MongoDB object.
-- `status.phase` points to the current database state `Paused`.
+- `status.phase` points to the current database state `Halted`.
 
 ## Resume Dormant Database
 
@@ -992,12 +986,12 @@ In this tutorial, the dormant database can be resumed by creating original Mongo
 
 The below command will resume the DormantDatabase `mongo-sh`.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/mongo-sh.yaml
 mongodb.kubedb.com/mongo-sh created
 ```
 
-```console
+```bash
 $ kubectl get mg -n demo
 NAME       VERSION   STATUS    AGE
 mongo-sh   3.6-v3    Running   6m27s
@@ -1005,7 +999,7 @@ mongo-sh   3.6-v3    Running   6m27s
 
 Now, If you again exec into `pod` and look for previous data, you will see that, all the data persists.
 
-```console
+```bash
 $ kubectl get po -n demo -l mongodb.kubedb.com/node.mongos=mongo-sh-mongos
 NAME                               READY   STATUS    RESTARTS   AGE
 mongo-sh-mongos-69b557f9f5-62j76   1/1     Running   0          3m52s
@@ -1072,7 +1066,7 @@ mongos> sh.status()
 
 You can wipe out a DormantDatabase while deleting the object by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `MongoDB` database (i.e, PVCs, Secrets, Snapshots). It will also delete snapshot data stored in the Cloud Storage buckets.
 
-```console
+```bash
 $ kubectl delete mg mongo-sh -n demo
 mongodb.kubedb.com "mongo-sh" deleted
 ```
@@ -1089,7 +1083,7 @@ spec:
   wipeOut: true
   ...
 status:
-  phase: Paused
+  phase: Halted
   ...
 ```
 
@@ -1099,7 +1093,7 @@ If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object
 
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
-```console
+```bash
 $ kubectl delete drmn mongo-sh -n demo
 dormantdatabase.kubedb.com "mongo-sh" deleted
 ```
@@ -1108,7 +1102,7 @@ dormantdatabase.kubedb.com "mongo-sh" deleted
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mongo-sh -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mongo-sh
 
@@ -1124,9 +1118,9 @@ kubectl delete ns demo
 - Take [Scheduled Snapshot](/docs/guides/mongodb/snapshot/scheduled-backup.md) of MongoDB databases using KubeDB.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
 - Initialize [MongoDB with Snapshot](/docs/guides/mongodb/initialization/using-snapshot.md).
-- Monitor your MongoDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mongodb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
-- Detail concepts of [MongoDB object](/docs/concepts/databases/mongodb.md).
-- Detail concepts of [MongoDBVersion object](/docs/concepts/catalog/mongodb.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
+- Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Point-in-Time Recovery (PITR) from WAL Source
 
@@ -28,7 +28,7 @@ KubeDB supports Point-in-Time Recovery (PITR) from WAL archive. You can recover 
 
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace "demo" created
 ```
@@ -58,7 +58,7 @@ Let's deploy a sample database and configure continuous WAL archiving to `S3` bu
 
 At first, create a secret for `S3` bucket.
 
-```console
+```bash
 $ echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
 $ echo -n '<your-aws-secret-access-key-here>' > AWS_SECRET_ACCESS_KEY
 $ kubectl create secret -n demo generic s3-secret \
@@ -99,14 +99,14 @@ We have configured the above database to continuously backup WAL logs into `kube
 
 Let's create the database we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/pitr/pg-original.yaml
 postgres.kubedb.com/pg-original created
 ```
 
 Now, wait for the database to go into `Running` state.
 
-```console
+```bash
 $ kubectl get pg -n demo pg-original
 NAME          VERSION    STATUS    AGE
 pg-original   10.2-v5    Running   1m
@@ -116,7 +116,7 @@ pg-original   10.2-v5    Running   1m
 
 Now, `exec` into the database pod and insert some sample data. Here, we are going to create a table named `pitrDemo`. In order to track the insertion time of a data, we are going to use a separate column named `created_at`. Whenever, a new data is inserted, `created_at` column will be automatically set to the insertion time.
 
-```console
+```bash
 $ kubectl exec -it -n demo pg-original-0 sh
 # login as "postgres" superuser.
 / # psql -U postgres
@@ -180,7 +180,7 @@ Now, we are going to recover PostgreSQL database to an identical state of a spec
 
 At first, let's delete the `pg-original` database so that it does not keep holding the WAL archive.
 
-```console
+```bash
 $ kubectl delete -n demo pg/pg-original
 postgres.kubedb.com "pg-original" deleted
 ```
@@ -220,14 +220,14 @@ spec:
 
 Let's create the above Postgres crd,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/pitr/pitr-1.yaml
 postgres.kubedb.com/pitr-1 created
 ```
 
 Now, wait for the Postgres crd `pitr-1` to go into `Running` state.
 
-```console
+```bash
 $ kubectl get pg -n demo pitr-1
 NAME     VERSION    STATUS    AGE
 pitr-1   10.2-v5    Running   2m
@@ -235,7 +235,7 @@ pitr-1   10.2-v5    Running   2m
 
 Once, the database is running, `exec` into the database pod and check if the recovered database contains only first sample data.
 
-```console
+```bash
 $ kubectl exec -it -n demo pitr-1-0 sh
 / # psql -U postgres
 psql (10.2)
@@ -287,14 +287,14 @@ spec:
 
 Let's create the above Postgres crd,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/pitr/pitr-2.yaml
 postgres.kubedb.com/pitr-2 created
 ```
 
 Now, wait for the Postgres crd `pitr-2` to go into `Running` state.
 
-```console
+```bash
 $ kubectl get pg -n demo pitr-2
 NAME     VERSION    STATUS    AGE
 pitr-2   10.2-v5    Running   2m
@@ -302,7 +302,7 @@ pitr-2   10.2-v5    Running   2m
 
 Once, the database is running, `exec` into the database pod and check if the recovered database contains only the first two sample data.
 
-```console
+```bash
 $ kubectl exec -it -n demo pitr-2-0 sh
 / # psql -U postgres
 psql (10.2)
@@ -322,7 +322,7 @@ So, we can see that the PostgreSQL database has been recovered to a state where 
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo pg/pitr-1 -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/pitr-1
 

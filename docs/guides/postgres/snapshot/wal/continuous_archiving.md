@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Continuous Archiving with WAL-G
 
@@ -26,7 +26,7 @@ To know more about continuous archiving, please refer to the [ofiicial postgres 
 
 Following additional parameters are set in `postgresql.conf` for *primary* server
 
-```console
+```bash
 archive_command = 'wal-g wal-push %p'
 archive_timeout = 60
 ```

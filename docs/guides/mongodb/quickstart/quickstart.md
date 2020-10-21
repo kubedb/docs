@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # MongoDB QuickStart
 
@@ -28,7 +28,7 @@ This tutorial will show you how to use KubeDB to run a MongoDB database.
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
-  ```console
+  ```bash
   $ kubectl get storageclasses
   NAME                 PROVISIONER                AGE
   standard (default)   k8s.io/minikube-hostpath   4h
@@ -36,7 +36,7 @@ This tutorial will show you how to use KubeDB to run a MongoDB database.
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -47,7 +47,7 @@ This tutorial will show you how to use KubeDB to run a MongoDB database.
 
 When you have installed KubeDB, it has created `MongoDBVersion` crd for all supported MongoDB versions. Check 0
 
-```console
+```bash
 $ kubectl get mongodbversions
 NAME       VERSION   DB_IMAGE                    DEPRECATED   AGE
 3.4        3.4       maruftuhin/mongo:3.4        true         5h41m
@@ -89,7 +89,7 @@ spec:
   terminationPolicy: DoNotTerminate
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/quickstart/demo-1.yaml
 mongodb.kubedb.com/mgo-quickstart created
 ```
@@ -105,7 +105,7 @@ Here,
 
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-name>-gvr`.
 
-```console
+```bash
 $ kubectl dba describe mg -n demo mgo-quickstart
 Name:               mgo-quickstart
 Namespace:          demo
@@ -212,8 +212,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mgo-quickstart
   uid: 0c5c22d6-6b2e-11e9-97a6-0800278b6754
 spec:
-  databaseSecret:
-    secretName: mgo-quickstart-auth
+  authSecret:
+    name: mgo-quickstart-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -257,8 +257,6 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: DoNotTerminate
-  updateStrategy:
-    type: RollingUpdate
   version: 3.4-v3
 status:
   observedGeneration: 2$4213139756412538772
@@ -267,11 +265,11 @@ status:
 
 Please note that KubeDB operator has created a new Secret called `mgo-quickstart-auth` *(format: {mongodb-object-name}-auth)* for storing the password for `mongodb` superuser. This secret contains a `username` key which contains the *username* for MongoDB superuser and a `password` key which contains the *password* for MongoDB superuser.
 
-If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `user` and `password`. For more details, please see [here](/docs/concepts/databases/mongodb.md#specdatabasesecret).
+If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `user` and `password`. For more details, please see [here](/docs/guides/mongodb/concepts/mongodb.md#specdatabasesecret).
 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
-```console
+```bash
 $ kubectl get secrets -n demo mgo-quickstart-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -320,20 +318,20 @@ bye
 
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
 
-```console
+```bash
 $ kubectl delete mg mgo-quickstart -n demo
-Error from server (BadRequest): admission webhook "mongodb.validators.kubedb.com" denied the request: mongodb "mgo-quickstart" can't be paused. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "mongodb.validators.kubedb.com" denied the request: mongodb "mgo-quickstart" can't be halted. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubectl edit mg mgo-quickstart -n demo` to set `spec.terminationPolicy` to `Pause` (which creates `dormantdatabase` when mongodb is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Pause`). Then you will be able to delete/pause the database.
+Now, run `kubectl edit mg mgo-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` (which creates `dormantdatabase` when mongodb is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Halt`). Then you will be able to delete/halt the database.
 
-Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/mongodb.md#specterminationpolicy).
+Learn details of all `TerminationPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
 
-## Pause Database
+## Halt Database
 
-When [TerminationPolicy](/docs/concepts/databases/mongodb.md#specterminationpolicy) is set to `Pause`, it will pause the MongoDB database instead of deleting it. Here, If you delete the MongoDB object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `mgo-quickstart` MongoDB database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
+When [TerminationPolicy](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy) is set to `Halt`, it will halt the MongoDB database instead of deleting it. Here, If you delete the MongoDB object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `mgo-quickstart` MongoDB database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
 
-```console
+```bash
 $ kubectl delete mg mgo-quickstart -n demo
 mongodb.kubedb.com "mgo-quickstart" deleted
 
@@ -343,7 +341,7 @@ mgo-quickstart   Pausing   39s
 
 $ kubectl get drmn -n demo mgo-quickstart
 NAME             STATUS    AGE
-mgo-quickstart   Paused    21s
+mgo-quickstart   Halted    21s
 ```
 
 ```yaml
@@ -370,8 +368,8 @@ spec:
       namespace: demo
     spec:
       mongodb:
-        databaseSecret:
-          secretName: mgo-quickstart-auth
+        authSecret:
+          name: mgo-quickstart-auth
         podTemplate:
           controller: {}
           metadata: {}
@@ -414,20 +412,18 @@ spec:
               storage: 1Gi
           storageClassName: standard
         storageType: Durable
-        terminationPolicy: Pause
-        updateStrategy:
-          type: RollingUpdate
+        terminationPolicy: Halt
         version: 3.4-v3
 status:
   observedGeneration: 1$16440556888999634490
   pausingTime: "2019-04-30T09:57:44Z"
-  phase: Paused
+  phase: Halted
 ```
 
 Here,
 
 - `spec.origin` is the spec of the original spec of the original MongoDB object.
-- `status.phase` points to the current database state `Paused`.
+- `status.phase` points to the current database state `Halted`.
 
 ## Resume Dormant Database
 
@@ -437,7 +433,7 @@ In this tutorial, the dormant database can be resumed by creating original Mongo
 
 The below command will resume the DormantDatabase `mgo-quickstart`.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/quickstart/demo-1.yaml
 mongodb.kubedb.com/mgo-quickstart created
 ```
@@ -460,7 +456,7 @@ spec:
   wipeOut: true
   ...
 status:
-  phase: Paused
+  phase: Halted
   ...
 ```
 
@@ -470,7 +466,7 @@ If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object
 
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
-```console
+```bash
 $ kubectl delete drmn mgo-quickstart -n demo
 dormantdatabase "mgo-quickstart" deleted
 ```
@@ -479,7 +475,7 @@ dormantdatabase "mgo-quickstart" deleted
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-quickstart
 
@@ -494,7 +490,7 @@ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we create `DormantDatabase` and preserve all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will not create `DormantDatabase` and it will delete everything created by KubeDB for a particular MongoDB crd when you delete the crd. For more details about termination policy, please visit [here](/docs/concepts/databases/mongodb.md#specterminationpolicy).
+2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we create `DormantDatabase` and preserve all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will not create `DormantDatabase` and it will delete everything created by KubeDB for a particular MongoDB crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
 
 ## Next Steps
 
@@ -502,9 +498,9 @@ If you are just testing some basic functionalities, you might want to avoid addi
 - Take [Scheduled Snapshot](/docs/guides/mongodb/snapshot/scheduled-backup.md) of MongoDB databases using KubeDB.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
 - Initialize [MongoDB with Snapshot](/docs/guides/mongodb/initialization/using-snapshot.md).
-- Monitor your MongoDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mongodb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
-- Detail concepts of [MongoDB object](/docs/concepts/databases/mongodb.md).
-- Detail concepts of [MongoDBVersion object](/docs/concepts/catalog/mongodb.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
+- Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

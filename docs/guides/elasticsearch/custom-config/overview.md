@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using Custom Configuration File
 
@@ -55,7 +55,7 @@ When users create an Elasticsearch cluster using KubeDB without specifying `spec
 
 ## How to Provide Configuration Files
 
-At first, you have to create configuration files with name specified earlier with your desired configuration. Then you have to put these files into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSource` section while creating Elasticsearch crd. KubeDB will mount this volume into `/elasticsearch/custom-config` directory of the elasticsearch pod. Configurations from these files will be merged to `elasticsearch.yml` file according to cluster mode described earlier. Finally, Elasticsearch server will use this configuration file.
+At first, you have to create configuration files with name specified earlier with your desired configuration. Then you have to put these files into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSecret` section while creating Elasticsearch crd. KubeDB will mount this volume into `/elasticsearch/custom-config` directory of the elasticsearch pod. Configurations from these files will be merged to `elasticsearch.yml` file according to cluster mode described earlier. Finally, Elasticsearch server will use this configuration file.
 
 ## Next Steps
 

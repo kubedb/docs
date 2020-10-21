@@ -130,7 +130,7 @@ The following view and helper functions also need to be added to the replication
 
 Execute it from the primary member,
 
-```console
+```bash
 $ mysql --user=root --password={MYSQL_ROOT_PASSWORD} --host={PRIMARY_GROUP_MEMBER} < addition_to_sys.sql
 ```
 
@@ -259,7 +259,7 @@ transactions_behind: 0
 ## Next Steps
 
 - Overview of ProxySQL [here](/docs/guides/proxysql/overview/overview.md).
-- Detail concepts of ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
-- Detail concepts of ProxySQLVersion CRD [here](/docs/concepts/catalog/proxysql.md).
+- Detail concepts of ProxySQL CRD [here](/docs/guides/proxysql/concepts/proxysql.md).
+- Detail concepts of ProxySQLVersion CRD [here](/docs/guides/proxysql/concepts/catalog.md).
 - Quickstart ProxySQL to Load Balance MySQL Group Replication with KubeDB Operator [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

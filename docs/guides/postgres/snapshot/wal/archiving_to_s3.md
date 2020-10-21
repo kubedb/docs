@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Continuous Archiving to S3
 
@@ -26,7 +26,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -76,7 +76,7 @@ Storage Secret for **WAL-G** is needed with the following 2 keys:
 | `AWS_ACCESS_KEY_ID`     | `Required`. AWS access key ID     |
 | `AWS_SECRET_ACCESS_KEY` | `Required`. AWS secret access key |
 
-```console
+```bash
 $ echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
 $ echo -n '<your-aws-secret-access-key-here>' > AWS_SECRET_ACCESS_KEY
 $ kubectl create secret -n demo generic s3-secret \
@@ -113,7 +113,7 @@ To configure s3 backend, following parameters are available:
 
 Now create this Postgres object with continuous archiving support.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/snapshot/wal-postgres-s3.yaml
 postgres.kubedb.com/wal-postgres created
 ```
@@ -142,7 +142,7 @@ The data will be intact in other scenarios.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo pg/wal-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/wal-postgres
 

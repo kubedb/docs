@@ -9,7 +9,7 @@ menu:
 menu_name: docs_{{ .version }}
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Monitoring PerconaXtraDB with builtin Prometheus
 
@@ -23,11 +23,11 @@ This tutorial will show you how to monitor PerconaXtraDB database using builtin 
 
 - If you are not familiar with how to configure Prometheus to scrape metrics from various Kubernetes resources, please read the tutorial from [here](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/concepts/database-monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/percona-xtradb/monitoring/overview.md).
 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
-  ```console
+  ```bash
   $ kubectl create ns monitoring
   namespace/monitoring created
 
@@ -60,8 +60,6 @@ spec:
         storage: 50Mi
   monitor:
     agent: prometheus.io/builtin
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: WipeOut
 ```
 
@@ -71,14 +69,14 @@ Here,
 
 Let's create the `PerconaXtraDB` object we have shown above.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/px-builtin-prom.yaml
 perconaxtradb.kubedb.com/px-builtin-prom created
 ```
 
 Now, wait for the database to go into `Running` state.
 
-```console
+```bash
 $ kubectl get px -n demo px-builtin-prom
 NAME              VERSION       STATUS    AGE
 px-builtin-prom   5.7-cluster   Running   2m15s
@@ -86,7 +84,7 @@ px-builtin-prom   5.7-cluster   Running   2m15s
 
 KubeDB will create a separate stats service with name `{PerconaXtraDB_obj_name}-stats` for monitoring purpose.
 
-```console
+```bash
 $ kubectl get svc -n demo --selector="kubedb.com/name=px-builtin-prom"
 NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 px-builtin-prom         ClusterIP   10.108.52.120   <none>        3306/TCP    3m32s
@@ -96,7 +94,7 @@ px-builtin-prom-stats   ClusterIP   10.103.56.182   <none>        56790/TCP   80
 
 Here, `px-builtin-prom-stats` service has been created for monitoring purpose. Let's describe the service.
 
-```console
+```bash
 $ kubectl describe svc -n demo px-builtin-prom-stats
 Name:              px-builtin-prom-stats
 Namespace:         demo
@@ -119,7 +117,7 @@ Events:            <none>
 
 You can see that the service contains following annotations.
 
-```console
+```bash
 prometheus.io/path: /metrics
 prometheus.io/port: 56790
 prometheus.io/scrape: true
@@ -278,7 +276,7 @@ data:
 
 Let's create above `ConfigMap`,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
@@ -287,7 +285,7 @@ configmap/prometheus-config created
 
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
@@ -302,7 +300,7 @@ Now, we are ready to deploy Prometheus server. We are going to use following [De
 
 Let's deploy the Prometheus server.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/deployment.yaml
 deployment.apps/prometheus created
 ```
@@ -313,7 +311,7 @@ Prometheus server is listening to port `9090`. We are going to use [port forward
 
 At first, let's check if the Prometheus pod is in `Running` state.
 
-```console
+```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                          READY   STATUS    RESTARTS   AGE
 prometheus-599b4f759c-xtnqk   1/1     Running   0          35s
@@ -321,7 +319,7 @@ prometheus-599b4f759c-xtnqk   1/1     Running   0          35s
 
 Now, run following command on a separate terminal to forward 9090 port of `prometheus-599b4f759c-xtnqk` pod,
 
-```console
+```bash
 $ kubectl port-forward -n monitoring prometheus-599b4f759c-xtnqk 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
@@ -346,7 +344,7 @@ Now, you can view the collected metrics and create a graph from homepage of this
 
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
-```console
+```bash
 kubectl delete -n monitoring deployment.apps/prometheus
 
 kubectl delete clusterrole.rbac.authorization.k8s.io/prometheus
@@ -361,12 +359,12 @@ kubectl delete ns monitoring
 
 ## Next Steps
 
-- Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/percona-xtradb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/percona-xtradb/monitoring/using-prometheus-operator.md).
 - Initialize [PerconaXtraDB with Script](/docs/guides/percona-xtradb/initialization/using-script.md).
 - Use [private Docker registry](/docs/guides/percona-xtradb/private-registry/using-private-registry.md) to deploy PerconaXtraDB with KubeDB.
 - How to use [custom configuration](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
 - How to use [custom rbac resource](/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac.md) for PerconaXtraDB.
 - Use Stash to [Backup PerconaXtraDB](/docs/guides/percona-xtradb/snapshot/stash.md).
-- Detail concepts of [PerconaXtraDB object](/docs/concepts/databases/percona-xtradb.md).
-- Detail concepts of [PerconaXtraDBVersion object](/docs/concepts/catalog/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDBVersion object](/docs/guides/percona-xtradb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

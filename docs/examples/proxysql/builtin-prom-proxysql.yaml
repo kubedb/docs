@@ -13,9 +13,8 @@ spec:
       kind: MySQL
       name: my-group
     replicas: 3
-  updateStrategy:
-    type: RollingUpdate
   monitor:
     agent: prometheus.io/builtin
     prometheus:
-      port: 42004
+      exporter:
+        port: 42004

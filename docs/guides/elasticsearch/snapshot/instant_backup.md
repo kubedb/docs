@@ -12,7 +12,7 @@ section_menu_id: guides
 
 {{< notice type="warning" message="This doc has been deprecated and will be removed in a future release. We recommend using [Stash](/docs/guides/elasticsearch/snapshot/stash.md) to backup & restore Elasticsearch database." >}}
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # KubeDB Snapshot
 
@@ -26,7 +26,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace "demo" created
 
@@ -41,7 +41,7 @@ demo    Active  5s
 
 We need an Elasticsearch object in `Running` phase to perform backup operation. If you do not already have an Elasticsearch instance running, create one first.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/quickstart/instant-elasticsearch.yaml
 elasticsearch "instant-elasticsearch" created
 ```
@@ -64,7 +64,7 @@ Here, we have used `spec.storageType: Ephemeral`. So, we don't need to specify s
 
 Verify that the Elasticsearch is running,
 
-```console
+```bash
 $ kubectl get es -n demo instant-elasticsearch
 NAME                    VERSION   STATUS    AGE
 instant-elasticsearch   7.3.2     Running   41s
@@ -79,21 +79,21 @@ Let's insert some data so that we can verify that the snapshot contains those da
 - Address: `localhost:9200`
 - Username: Run following command to get *username*
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo instant-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
   elastic
   ```
 
 - Password: Run following command to get *password*
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo instant-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
   dy76ez7v
   ```
 
 Let's forward `9200` port of our database pod. Run following command on a separate terminal,
 
-```console
+```bash
 $ kubectl port-forward -n demo instant-elasticsearch-0 9200
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
@@ -146,7 +146,7 @@ $ curl -XPUT --user "elastic:dy76ez7v" "localhost:9200/test/snapshot2/2?pretty" 
 
 ```
 
-```console
+```bash
 $ curl -XGET --user "elastic:dy76ez7v" "localhost:9200/test/snapshot/1?pretty"
 ```
 
@@ -213,7 +213,7 @@ For that a storage Secret is needed with following 2 keys:
 | `GOOGLE_PROJECT_ID`               | `Required`. Google Cloud project ID                        |
 | `GOOGLE_SERVICE_ACCOUNT_JSON_KEY` | `Required`. Google Cloud service account json key          |
 
-```console
+```bash
 $ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
 $ mv downloaded-sa-json.key > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
 $ kubectl create secret -n demo generic gcs-secret \
@@ -256,14 +256,14 @@ To learn how to configure other storage destinations for snapshot data, please v
 
 Now, create the Snapshot object.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/snapshot/instant-snapshot.yaml
 snapshot.kubedb.com/instant-snapshot created
 ```
 
 Let's see Snapshot list of Elasticsearch `instant-elasticsearch`.
 
-```console
+```bash
 $ kubectl get snap -n demo --selector=kubedb.com/kind=Elasticsearch,kubedb.com/name=instant-elasticsearch
 NAME               DATABASENAME            STATUS      AGE
 instant-snapshot   instant-elasticsearch   Succeeded   26s
@@ -431,7 +431,7 @@ From the above output, we can see in `Snapshots:` section that we have one succe
 
 If you want to delete snapshot data from storage, you can delete Snapshot object.
 
-```console
+```bash
 $ kubectl delete snap -n demo instant-snapshot
 snapshot "instant-snapshot" deleted
 ```
@@ -550,7 +550,7 @@ spec:
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo es/instant-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/instant-elasticsearch
 
@@ -564,6 +564,6 @@ kubectl delete ns demo
 - Learn about initializing [Elasticsearch with Snapshot](/docs/guides/elasticsearch/initialization/snapshot_source.md).
 - Learn how to configure [Elasticsearch Topology](/docs/guides/elasticsearch/clustering/topology.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
-- Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/elasticsearch/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

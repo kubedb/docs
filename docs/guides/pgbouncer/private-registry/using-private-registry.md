@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using private Docker registry
 
@@ -22,7 +22,7 @@ At first, you need to have a Kubernetes cluster, and the kubectl command-line to
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -35,7 +35,7 @@ namespace/demo created
 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For pgbouncer, push `SERVER_IMAGE`, `EXPORTER_IMAGE` of following PgBouncerVersions, where `deprecated` is not true, to your private registry.
 
-  ```console
+  ```bash
   $ kubectl get pgbouncerversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.server.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME     VERSION   SERVER_IMAGE              EXPORTER_IMAGE                     DEPRECATED
   1.10.0   1.10.0    kubedb/pgbouncer:1.10.0   kubedb/pgbouncer_exporter:v0.1.1   false
@@ -61,7 +61,7 @@ ImagePullSecrets is a type of a Kubernetes Secret whose sole purpose is to pull 
 
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
-```console
+```bash
 $ kubectl create secret -n demo docker-registry myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
@@ -81,7 +81,7 @@ Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in
 
 ## Create PgBouncerVersion CRD
 
-KubeDB uses images specified in PgBouncerVersion crd for pgbouncer server, and prometheus metrics exporter. You have to create a PgBouncerVersion crd specifying images from your private registry. Then, you have to point this PgBouncerVersion crd in `spec.version` field of Postgres object. For more details about PgBouncerVersion crd, please visit [here](/docs/concepts/catalog/pgbouncer.md).
+KubeDB uses images specified in PgBouncerVersion crd for pgbouncer server, and prometheus metrics exporter. You have to create a PgBouncerVersion crd specifying images from your private registry. Then, you have to point this PgBouncerVersion crd in `spec.version` field of Postgres object. For more details about PgBouncerVersion crd, please visit [here](/docs/guides/pgbouncer/concepts/catalog.md).
 
 Here, is an example of PgBouncerVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` with your private registry.
 
@@ -103,7 +103,7 @@ spec:
 
 Now, create the PgBouncerVersion crd,
 
-```console
+```bash
 $ kubectl apply -f pvt-pgbouncerversion.yaml
 pgbouncerversion.kubedb.com/pvt-1.11.0 created
 ```
@@ -142,14 +142,14 @@ spec:
 
 Now run the command to create this pgbouncer server:
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/private-registry/pvt-reg-pgbouncer.yaml
 pgbouncer.kubedb.com/pvt-reg-pgbouncer created
 ```
 
 To check if the images pulled successfully from the repository, see if the PgBouncer is in Running state:
 
-```console
+```bash
 $ kubectl get pods -n demo --selector="kubedb.com/name=pvt-reg-pgbouncer"
 NAME                 READY     STATUS    RESTARTS   AGE
 pvt-reg-pgbouncer-0   1/1       Running   0          3m
@@ -159,16 +159,16 @@ pvt-reg-pgbouncer-0   1/1       Running   0          3m
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete -n demo pb/pvt-reg-pgbouncer
 
 kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 
 - Monitor your PgBouncer with KubeDB using [built-in Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
-- Monitor your PgBouncer with KubeDB using [CoreOS Prometheus Operator](/docs/guides/pgbouncer/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PgBouncer with KubeDB using [Prometheus operator](/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

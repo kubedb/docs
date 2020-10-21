@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Initialize PerconaXtraDB using Script
 
@@ -27,7 +27,7 @@ In this tutorial we will use .sql script stored in GitHub repository [kubedb/per
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -42,7 +42,7 @@ At first, we will create a ConfigMap from `init.sql` file. Then, we will provide
 
 Let's create a ConfigMap with initialization script,
 
-```console
+```bash
 $ kubectl create configmap -n demo px-init-script \
 --from-literal=init.sql="$(curl -fsSL https://github.com/kubedb/percona-xtradb-init-scripts/raw/master/init.sql)"
 configmap/px-init-script created
@@ -73,12 +73,10 @@ spec:
     scriptSource:
       configMap:
         name: px-init-script
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: DoNotTerminate
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/px-init-script.yaml
 perconaxtradb.kubedb.com/px-init-script created
 ```
@@ -89,7 +87,7 @@ Here,
 
 KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching PerconaXtraDB object name. KubeDB operator will also create a governing service for StatefulSets with the name ``<percona-xtradb-object-name>-gvr`, if one is not already present.
 
-```console
+```bash
 $ kubectl dba describe px -n demo px-init-script
 Name:         px-init-script
 Namespace:    demo
@@ -181,7 +179,7 @@ px-init-script-gvr   ClusterIP   None            <none>        3306/TCP   6m47s
 
 KubeDB operator sets the `.status.phase` to `Running` once the database is successfully created. Run the following command to see the modified PerconaXtraDB object:
 
-```console
+```bash
 $ kubectl get px -n demo px-init-script -o yaml
 ```
 
@@ -204,8 +202,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/perconaxtradbs/px-init-script
   uid: d7ad081e-8b2d-41d1-aae3-6141a01a66f1
 spec:
-  databaseSecret:
-    secretName: px-init-script-auth
+  authSecret:
+    name: px-init-script-auth
   init:
     scriptSource:
       configMap:
@@ -242,8 +240,6 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: DoNotTerminate
-  updateStrategy:
-    type: RollingUpdate
   version: "5.7"
 status:
   observedGeneration: 2
@@ -254,11 +250,11 @@ status:
 
 KubeDB operator has created a new Secret called `px-init-script-auth` *(format: {percona-xtradb-object-name}-auth)* for storing the password for `mysql` superuser. This secret contains a `username` key which contains the **"username"** for `mysql` superuser and a `password` key which contains the **"password"** for the superuser.
 
-If you want to use an existing secret please specify that when creating the PerconaXtraDB object using `.spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys (`username` and `password`) in `.data` section and also make sure of using `root` as value of `username` key. For more details see [here](/docs/concepts/databases/percona-xtradb.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the PerconaXtraDB object using `.spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys (`username` and `password`) in `.data` section and also make sure of using `root` as value of `username` key. For more details see [here](/docs/guides/percona-xtradb/concepts/percona-xtradb.md#specdatabasesecret).
 
 Now, you can connect to this database using the database pod IP and and `root` user password.
 
-```console
+```bash
 $ kubectl get pods px-init-script-0 -n demo -o yaml | grep podIP
   podIP: 10.244.2.52
 
@@ -273,7 +269,7 @@ To connect you just need to specify the host name for the database we created (e
 
 > Do not worry about the warning messages in the following output. Those are coming for providing a password on the command line
 
-```console
+```bash
 # connect to the server
 $ kubectl exec -it -n demo px-init-script-0 -- mysql -u root --password=B0BMhl1ECz1C0uIN --host=px-init-script.demo.svc -e "select 1;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -322,7 +318,7 @@ As you can see here, the initial script has successfully created a table named `
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo px/px-init-script -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo px/px-init-script
 
@@ -331,12 +327,12 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/percona-xtradb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/percona-xtradb/monitoring/using-prometheus-operator.md).
 - Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/percona-xtradb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/percona-xtradb/private-registry/using-private-registry.md) to deploy PerconaXtraDB with KubeDB.
 - How to use [custom configuration](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
 - How to use [custom rbac resource](/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac.md) for PerconaXtraDB.
 - Use Stash to [Backup PerconaXtraDB](/docs/guides/percona-xtradb/snapshot/stash.md).
-- Detail concepts of [PerconaXtraDB object](/docs/concepts/databases/percona-xtradb.md).
-- Detail concepts of [PerconaXtraDBVersion object](/docs/concepts/catalog/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDBVersion object](/docs/guides/percona-xtradb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

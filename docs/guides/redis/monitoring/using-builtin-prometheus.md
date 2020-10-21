@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Monitoring Redis with builtin Prometheus
 
@@ -24,11 +24,11 @@ This tutorial will show you how to monitor Redis server using builtin [Prometheu
 
 - If you are not familiar with how to configure Prometheus to scrape metrics from various Kubernetes resources, please read the tutorial from [here](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/concepts/database-monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/redis/monitoring/overview.md).
 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
-  ```console
+  ```bash
   $ kubectl create ns monitoring
   namespace/monitoring created
 
@@ -68,14 +68,14 @@ Here,
 
 Let's create the Redis crd we have shown above.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/monitoring/builtin-prom-redis.yaml
 redis.kubedb.com/builtin-prom-redis created
 ```
 
 Now, wait for the database to go into `Running` state.
 
-```console
+```bash
 $ kubectl get rd -n demo builtin-prom-redis
 NAME                 VERSION   STATUS    AGE
 builtin-prom-redis   4.0-v1    Running   41s
@@ -83,7 +83,7 @@ builtin-prom-redis   4.0-v1    Running   41s
 
 KubeDB will create a separate stats service with name `{Redis crd name}-stats` for monitoring purpose.
 
-```console
+```bash
 $ kubectl get svc -n demo --selector="kubedb.com/name=builtin-prom-redis"
 NAME                       TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
 builtin-prom-redis         ClusterIP   10.109.162.108   <none>        6379/TCP    59s
@@ -92,7 +92,7 @@ builtin-prom-redis-stats   ClusterIP   10.106.243.251   <none>        56790/TCP 
 
 Here, `builtin-prom-redis-stats` service has been created for monitoring purpose. Let's describe the service.
 
-```console
+```bash
 $ kubectl describe svc -n demo builtin-prom-redis-stats
 Name:              builtin-prom-redis-stats
 Namespace:         demo
@@ -114,7 +114,7 @@ Events:            <none>
 
 You can see that the service contains following annotations.
 
-```console
+```bash
 prometheus.io/path: /metrics
 prometheus.io/port: 56790
 prometheus.io/scrape: true
@@ -273,7 +273,7 @@ data:
 
 Let's create above `ConfigMap`,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
@@ -282,7 +282,7 @@ configmap/prometheus-config created
 
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
@@ -297,7 +297,7 @@ Now, we are ready to deploy Prometheus server. We are going to use following [de
 
 Let's deploy the Prometheus server.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/deployment.yaml
 deployment.apps/prometheus created
 ```
@@ -308,7 +308,7 @@ Prometheus server is listening to port `9090`. We are going to use [port forward
 
 At first, let's check if the Prometheus pod is in `Running` state.
 
-```console
+```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                          READY   STATUS    RESTARTS   AGE
 prometheus-8568c86d86-95zhn   1/1     Running   0          77s
@@ -316,7 +316,7 @@ prometheus-8568c86d86-95zhn   1/1     Running   0          77s
 
 Now, run following command on a separate terminal to forward 9090 port of `prometheus-8568c86d86-95zhn` pod,
 
-```console
+```bash
 $ kubectl port-forward -n monitoring prometheus-8568c86d86-95zhn 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
@@ -336,7 +336,7 @@ Now, you can view the collected metrics and create a graph from homepage of this
 
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
-```console
+```bash
 $ kubectl delete -n demo rd/builtin-prom-redis
 
 $ kubectl delete -n monitoring deployment.apps/prometheus
@@ -351,7 +351,7 @@ $ kubectl delete ns monitoring
 
 ## Next Steps
 
-- Monitor your Redis server with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/redis/monitoring/using-coreos-prometheus-operator.md).
-- Detail concepts of [Redis object](/docs/concepts/databases/redis.md).
+- Monitor your Redis server with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
+- Detail concepts of [Redis object](/docs/guides/redis/concepts/redis.md).
 - Use [private Docker registry](/docs/guides/redis/private-registry/using-private-registry.md) to deploy Redis with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

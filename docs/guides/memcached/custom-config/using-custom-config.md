@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using Custom Configuration File
 
@@ -24,7 +24,7 @@ KubeDB supports providing custom configuration for Memcached. This tutorial will
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   
@@ -41,7 +41,7 @@ Memcached does not allows to configuration via any file. However, configuration 
 
 To know more about configuring Memcached server see [here](https://github.com/memcached/memcached/wiki/ConfiguringServer).
 
-At first, you have to create a config file named `memcached.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSource` section while creating Memcached crd. KubeDB will mount this volume into `/usr/config` directory of the database pod.
+At first, you have to create a config file named `memcached.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSecret` section while creating Memcached crd. KubeDB will mount this volume into `/usr/config` directory of the database pod.
 
 In this tutorial, we will configure [max_connections](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L672) and [limit_maxbytes](https://github.com/memcached/memcached/blob/ee171109b3afe1f30ff053166d205768ce635342/doc/protocol.txt#L720) via a custom config file. We will use a ConfigMap as volume source.
 
@@ -92,7 +92,7 @@ $ cat memcached.conf
 
 Now, create a configMap with this configuration file.
 
-```console
+```bash
  $ kubectl create configmap -n demo mc-custom-config --from-file=./memcached.conf
 configmap/mc-custom-config created
 ```
@@ -117,9 +117,9 @@ metadata:
   uid: 7c38b5fd-c796-11e8-bb11-0800272ad446
 ```
 
-Now, create Memcached crd specifying `spec.configSource` field.
+Now, create Memcached crd specifying `spec.configSecret` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/mc-custom.yaml
 memcached.kubedb.com/custom-memcached created
 ```
@@ -135,9 +135,8 @@ metadata:
 spec:
   replicas: 1
   version: "1.5.4-v1"
-  configSource:
-    configMap:
-      name: mc-custom-config
+  configSecret:
+    name: mc-custom-config
   podTemplate:
     spec:
       resources:
@@ -153,7 +152,7 @@ Now, wait a few minutes. KubeDB operator will create the necessary deployment, s
 
 Check that the pods for the deployment is running:
 
-```console
+```bash
 $ kubectl get pods -n demo
 NAME                                READY     STATUS    RESTARTS   AGE
 custom-memcached-747b866f4b-j6clt   1/1       Running   0          5m
@@ -163,7 +162,7 @@ Now, we will check if the database has started with the custom configuration we 
 
 We will connect to `custom-memcached-5b5866f5b8-cbc2d` pod from local-machine using port-frowarding.
 
-```console
+```bash
 $ kubectl port-forward -n demo custom-memcached-5b5866f5b8-cbc2d  11211
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
@@ -171,7 +170,7 @@ Forwarding from [::1]:11211 -> 11211
 
 Now, connect to the memcached server from a different terminal through `telnet`.
 
-```console
+```bash
 $ telnet 127.0.0.1 11211
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
@@ -191,7 +190,7 @@ Here, `limit_maxbytes` is represented in bytes.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mc/custom-memcached -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mc/custom-memcached
 
@@ -203,7 +202,7 @@ kubectl delete -n demo configmap mc-custom-config
 kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 

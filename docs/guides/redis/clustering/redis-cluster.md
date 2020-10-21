@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # KubeDB - Redis Cluster
 
@@ -28,7 +28,7 @@ Before proceeding:
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -61,12 +61,10 @@ spec:
     storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/clustering/demo-1.yaml
 redis.kubedb.com/redis-cluster created
 ```
@@ -81,7 +79,7 @@ Here,
 
 KubeDB operator watches for `Redis` objects using Kubernetes API. When a `Redis` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for StatefulSets named `kubedb`, if one is not already present.
 
-```console
+```bash
 $ kubectl dba describe rd -n demo redis-cluster
 Name:               redis-cluster
 Namespace:          demo
@@ -201,10 +199,8 @@ spec:
   cluster:
     master: 3
     replicas: 1
-  configSource:
-    configMap:
-      defaultMode: 511
-      name: redis-cluster
+  configSecret:
+    name: redis-cluster
   mode: Cluster
   podTemplate:
     controller: {}
@@ -224,9 +220,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 4.0-v2
 status:
   observedGeneration: 2$4213139756412538772
@@ -237,7 +231,7 @@ status:
 
 The operator creates a cluster according to the newly created `Redis` object. This cluster has 3 masters and one replica per master. And every node in the cluster is responsible for a subset of the total **16384** hash slots.
 
-```console
+```bash
 # first list the redis pods list
 $ kubectl get pods --all-namespaces -o jsonpath='{range.items[*]}{.metadata.name} ---------- {.status.podIP}:6379{"\\n"}{end}' | grep redis
 redis-cluster-shard0-0 ---------- 172.17.0.4:6379
@@ -298,7 +292,7 @@ Now, you can connect to this database through [redis-cli](https://redis.io/topic
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
-```console
+```bash
 # here the hash slot for key 'hello' is 866 which is in 1st node
 # named 'redis-cluster-shard0-0' (0-5460)
 $ kubectl exec -it redis-cluster-shard0-0 -n demo -c redis -- redis-cli -c cluster keyslot hello
@@ -339,7 +333,7 @@ To test automatic failover, we will force a master node to restart. Since the ma
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
-```console
+```bash
 # connect to any node and get the master nodes info
 $ kubectl exec -it redis-cluster-shard0-0 -n demo -c redis -- sh
 /data # redis-cli -c cluster nodes | grep master
@@ -396,9 +390,9 @@ redis.kubedb.com "redis-cluster" deleted
 
 ## Next Steps
 
-- Monitor your Redis database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/redis/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your Redis database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
 - Monitor your Redis database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/redis/private-registry/using-private-registry.md) to deploy Redis with KubeDB.
-- Detail concepts of [Redis object](/docs/concepts/databases/redis.md).
-- Detail concepts of [RedisVersion object](/docs/concepts/catalog/redis.md).
+- Detail concepts of [Redis object](/docs/guides/redis/concepts/redis.md).
+- Detail concepts of [RedisVersion object](/docs/guides/redis/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Continuous Archiving to MinIO
 
@@ -26,7 +26,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -45,8 +45,6 @@ metadata:
 spec:
   version: "10.2-v5"
   replicas: 2
-  updateStrategy:
-    type: RollingUpdate
   storage:
     storageClassName: "standard"
     accessModes:
@@ -85,7 +83,7 @@ Storage Secret for **WAL-G** is needed with the following 2 keys:
 for MinIO server secured with custom CA,
 necessary certificates have to provided in the storage secret as `CA_CERT_DATA` to establish secure connection.
 
-```console
+```bash
 $ echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
 $ echo -n '<your-aws-secret-access-key-here>' > AWS_SECRET_ACCESS_KEY
 $ kubectl create secret -n demo generic s3-secret \
@@ -113,7 +111,7 @@ type: Opaque
 
 To create secret using custom CA:
 
-```console
+```bash
 $ echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
 $ echo -n '<your-aws-secret-access-key-here>' > AWS_SECRET_ACCESS_KEY
 $ kubectl create secret -n demo generic s3-secret \
@@ -153,7 +151,7 @@ To configure s3 backend, following parameters are available:
 
 Now create this Postgres object with continuous archiving support.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/snapshot/wal-postgres-minio.yaml
 postgres.kubedb.com/wal-postgres created
 ```
@@ -172,7 +170,7 @@ The data will be intact in other scenarios.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo pg/wal-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/wal-postgres
 

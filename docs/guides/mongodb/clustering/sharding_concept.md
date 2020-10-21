@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # MongoDB Sharding
 
@@ -118,8 +118,8 @@ You can connect to a mongos the same way you connect to a mongod, such as via th
 
 - [Deploy MongoDB Sharding](/docs/guides/mongodb/clustering/sharding.md) using KubeDB.
 - Detail concepts of [MongoDB Sharding](https://docs.mongodb.com/manual/sharding/)
-- Detail concepts of [MongoDB object](/docs/concepts/databases/mongodb.md).
-- Detail concepts of [MongoDBVersion object](/docs/concepts/catalog/mongodb.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
+- Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
 NB: The images in this page are taken from [MongoDB website](https://docs.mongodb.com/manual/sharding/).

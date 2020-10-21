@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/pgbouncer/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 >
 # Overview
 
@@ -29,7 +29,7 @@ KubeDB operator now comes bundled with PgBouncer crd to handle connection poolin
 | Customizable Pooling Configuration |   &#10003;   |
 | Custom docker images               |   &#10003;   |
 | Builtin Prometheus Discovery       |   &#10003;   |
-| Using CoreOS Prometheus Operator   |   &#10003;   |
+| Using Prometheus operator   |   &#10003;   |
 
 ## Supported PgBouncer Versions
 
@@ -62,7 +62,7 @@ Here, &#10003; means supported and &#10007; means unsupported.
 
 - [Quickstart PgBouncer](/docs/guides/pgbouncer/quickstart/quickstart.md) with KubeDB Operator.
 - Monitor your PgBouncer with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
-- Monitor your PgBouncer with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/pgbouncer/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PgBouncer with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/pgbouncer/private-registry/using-private-registry.md) to deploy PgBouncer with KubeDB.
-- Detail concepts of [PgBouncer object](/docs/concepts/database-proxy/pgbouncer.md).
+- Detail concepts of [PgBouncer object](/docs/guides/pgbouncer/concepts/pgbouncer.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

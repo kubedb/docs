@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 > Don't know how to take continuous backup?  Check this [tutorial](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) on Continuous Archiving.
 
 # PostgreSQL Initialization from S3
@@ -26,7 +26,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -39,7 +39,7 @@ Let's populate the database so that we can verify that the initialized database 
 
 At first, find out the primary replica using the following command,
 
-```console
+```bash
 $ kubectl get pods -n demo --selector="kubedb.com/name=wal-postgres","kubedb.com/role=primary"
 NAME             READY     STATUS    RESTARTS   AGE
 wal-postgres-0   1/1       Running   0          8m
@@ -47,7 +47,7 @@ wal-postgres-0   1/1       Running   0          8m
 
 Now, let's `exec` into the pod and create a table,
 
-```console
+```bash
 $ kubectl exec -it -n demo wal-postgres-0 sh
 # login as "postgres" superuser.
 / # psql -U postgres
@@ -107,8 +107,8 @@ metadata:
 spec:
   version: "11.1-v3"
   replicas: 2
-  databaseSecret:
-    secretName: wal-postgres-auth
+  authSecret:
+    name: wal-postgres-auth
   storage:
     storageClassName: "standard"
     accessModes:
@@ -140,7 +140,7 @@ Here, `{namespace}` & `{postgres-name}` indicates Postgres object whose WAL arch
 
 Now, let's create the Postgres object that's YAML has shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/replay-postgres-s3.yaml
 postgres.kubedb.com/replay-postgres created
 ```
@@ -153,7 +153,7 @@ Let's verify that the new database has been initialized successfully from the WA
 
 We will `exec` into new database pod and use `psql` command-line tool to list tables of `postgres` database.
 
-```console
+```bash
 $ kubectl exec -it -n demo replay-postgres-0 sh
 # login as "postgres" superuser
 / # psql -U postgres
@@ -197,7 +197,7 @@ So, we can see that our new database `replay-postgres` has been initialized succ
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo pg/replay-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/replay-postgres
 
@@ -210,5 +210,5 @@ Also cleanup the resources created for `wal-postgres` following the guide [here]
 
 - Learn about initializing [PostgreSQL with Script](/docs/guides/postgres/initialization/script_source.md).
 - Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
-- Monitor your PostgreSQL database with KubeDB using [CoreOS Prometheus Operator](/docs/guides/postgres/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PostgreSQL database with KubeDB using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

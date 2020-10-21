@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using Custom RBAC resources
 
@@ -24,7 +24,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -45,14 +45,14 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 
 At first, let's create a `Service Account` in `demo` namespace.
 
-```console
+```bash
 $ kubectl create serviceaccount -n demo px-custom-serviceaccount
 serviceaccount/px-custom-serviceaccount created
 ```
 
 It should create a service account.
 
-```console
+```bash
 $ kubectl get serviceaccount -n demo px-custom-serviceaccount -o yaml
 ```
 
@@ -74,7 +74,7 @@ secrets:
 
 Now, we need to create a role that has necessary access permissions for the PerconaXtraDB instance named `px-custom-rbac`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/px-custom-role.yaml
 role.rbac.authorization.k8s.io/px-custom-role created
 ```
@@ -102,14 +102,14 @@ This permission is required for PerconaXtraDB Pods running on PSP enabled cluste
 
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
-```console
+```bash
 $ kubectl create rolebinding px-custom-rolebinding --role=px-custom-role --serviceaccount=demo:px-custom-serviceaccount --namespace=demo
 rolebinding.rbac.authorization.k8s.io/px-custom-rolebinding created
 ```
 
 It should bind `px-custom-role` and `px-custom-serviceaccount` successfully.
 
-```console
+```bash
 $ kubectl get rolebinding -n demo px-custom-rolebinding -o yaml
 ```
 
@@ -137,7 +137,7 @@ subjects:
 
 Now, create a PerconaXtraDB object specifying `.spec.podTemplate.spec.serviceAccountName` field to `px-custom-serviceaccount`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/px-custom-rbac.yaml
 perconaxtradb.kubedb.com/px-custom-rbac created
 ```
@@ -171,7 +171,7 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, stateful
 
 Check that the StatefulSet's Pod is running.
 
-```console
+```bash
 $ kubectl get px -n demo px-custom-rbac
 NAME             VERSION   STATUS    AGE
 px-custom-rbac   5.7       Running   2m11s
@@ -183,7 +183,7 @@ px-custom-rbac-0   1/1     Running   0          29m
 
 Check the Pod's log to see if the database is ready.
 
-```console
+```bash
 $ kubectl logs -f -n demo px-custom-rbac-0
 Initializing database
 2020-01-09T10:20:17.263910Z 0 [Warning] TIMESTAMP with implicit DEFAULT value is deprecated. Please use --explicit_defaults_for_timestamp server option (see documentation for more details).
@@ -247,7 +247,7 @@ An existing service account can be reused in another PerconaXtraDB instance. No 
 
 Now, create another PerconaXtraDB object `minute-mysql` using the existing service account name `px-custom-serviceaccount` in the `.spec.podTemplate.spec.serviceAccountName` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/px-custom-rbac-two.yaml
 perconaxtradb.kubedb.com/px-custom-rbac-two created
 ```
@@ -281,7 +281,7 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, stateful
 
 Check that the StatefulSet's Pod is running
 
-```console
+```bash
 $ kubectl get px -n demo px-custom-rbac-two
 NAME                 VERSION   STATUS    AGE
 px-custom-rbac-two   5.7       Running   2m29s
@@ -293,7 +293,7 @@ px-custom-rbac-two-0   1/1     Running   0          3m7s
 
 Check the Pod's log to see if the database is ready
 
-```console
+```bash
 $ kubectl logs -f -n demo px-custom-rbac-two-0
 Initializing database
 2020-01-09T11:17:53.650798Z 0 [Warning] TIMESTAMP with implicit DEFAULT value is deprecated. Please use --explicit_defaults_for_timestamp server option (see documentation for more details).
@@ -354,7 +354,7 @@ Version: '5.7.26-29'  socket: '/var/lib/mysql/mysql.sock'  port: 3306  Percona S
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo px/px-custom-rbac-two -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo px/px-custom-rbac-two
 
@@ -369,16 +369,16 @@ kubectl delete sa -n demo px-custom-serviceaccount
 kubectl delete ns demo
 ```
 
-If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 
 - Initialize [PerconaXtraDB with Script](/docs/guides/percona-xtradb/initialization/using-script.md).
-- Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/percona-xtradb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/percona-xtradb/monitoring/using-prometheus-operator.md).
 - Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/percona-xtradb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/percona-xtradb/private-registry/using-private-registry.md) to deploy PerconaXtraDB with KubeDB.
 - How to use [custom configuration](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
 - Use Stash to [Backup PerconaXtraDB](/docs/guides/percona-xtradb/snapshot/stash.md).
-- Detail concepts of [PerconaXtraDB object](/docs/concepts/databases/percona-xtradb.md).
-- Detail concepts of [PerconaXtraDBVersion object](/docs/concepts/catalog/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDBVersion object](/docs/guides/percona-xtradb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

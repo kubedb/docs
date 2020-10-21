@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Disable X-Pack Plugin
 
@@ -26,7 +26,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -45,7 +45,7 @@ Here, we are going to use ElasticsearchVersion `7.3.2`.
 
 > To change authPlugin, it is recommended to create another `ElasticsearchVersion` CRD. Then, use that `ElasticsearchVersion` to install an Elasticsearch without authentication, or with other authPlugin.
 
-```console
+```bash
 $ kubectl get elasticsearchversions 7.3.2 -o yaml
 ```
 
@@ -107,14 +107,14 @@ spec:
 
 Let's create the Elasticsearch object,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/es-xpack-disabled.yaml
 elasticsearch.kubedb.com/es-xpack-disabled created
 ```
 
 Wait for Elasticsearch to be ready,
 
-```console
+```bash
 $ kubectl get es -n demo es-xpack-disabled
 NAME                VERSION   STATUS    AGE
 es-xpack-disabled   7.3.2     Running   6m14s
@@ -126,7 +126,7 @@ As we have disabled X-Pack security, we no longer require *username* and *passwo
 
 At first, forward port 9200 of `es-xpack-disabled-0` pod. Run following command in a separate terminal,
 
-```console
+```bash
 $ kubectl port-forward -n demo es-xpack-disabled-0 9200
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
@@ -136,7 +136,7 @@ Now, we can connect with the database at `localhost:9200`.
 
 Let's check health of our Elasticsearch database.
 
-```console
+```bash
 $ curl "localhost:9200/_cluster/health?pretty"
 ```
 
@@ -250,7 +250,7 @@ Here, `xpack.security.enabled` is set to `false`. As a result, `xpack` security 
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo es/es-xpack-disabled -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/es-xpack-disabled
 

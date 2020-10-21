@@ -32,7 +32,7 @@ KubeDB uses the following cr fields to enable SSL/TLS encryption in `MySQL`.
     - `issuerRef`
     - `certificates`
 
-Read about the fields in details from [mysql concept](/docs/concepts/databases/mysql.md#),
+Read about the fields in details from [mysql concept](/docs/guides/mysql/concepts/mysql.md#),
 
 When, `requireSSL` is set, the users must specify the `tls.issuerRef` field. `KubeDB` uses the `issuer` or `clusterIssuer` referenced in the `tls.issuerRef` field, and the certificate specs provided in `tls.certificate` to generate certificate secrets using `Issuer/ClusterIssuers` specification. These certificates secrets including `ca.crt`, `tls.crt` and `tls.key` etc. are used to configure `MySQL` server, exporter etc. respectively.
 

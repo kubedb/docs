@@ -14,11 +14,11 @@ aliases:
 
 # Monitoring KubeDB Operator
 
-KubeDB has native support for monitoring via [Prometheus](https://prometheus.io/). You can use builtin [Prometheus](https://github.com/prometheus/prometheus) scraper or [CoreOS Prometheus Operator](https://github.com/coreos/prometheus-operator) to monitor KubeDB supported databases as well as KubeDB operator itself. This tutorial will show you what metrics KubeDB operator exports and how to enable monitoring for the operator itself.
+KubeDB has native support for monitoring via [Prometheus](https://prometheus.io/). You can use builtin [Prometheus](https://github.com/prometheus/prometheus) scraper or [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) to monitor KubeDB supported databases as well as KubeDB operator itself. This tutorial will show you what metrics KubeDB operator exports and how to enable monitoring for the operator itself.
 
 ## Overview
 
-KubeDB operator pod runs an [Extension API Server](https://kubernetes.io/docs/tasks/access-kubernetes-api/setup-extension-api-server/) which self hosts [admission webhooks](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#admission-webhooks) such as [MutatingAdmissionWebhook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#mutatingadmissionwebhook) and [ValidatingAdmissionWebhook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#validatingadmissionwebhook). The extension API server exports some metrics in `/metrics` path of TLS secured `8443` port. KubeDB installation process creates a service with same name as KubeDB operator (i.e. `kubedb-operator`) in same namespace as the operator pod. Prometheus server can use `api` endpoint of this service to scrape those metrics.
+KubeDB operator pod runs an [Extension API Server](https://kubernetes.io/docs/tasks/access-kubernetes-api/setup-extension-api-server/) which self hosts [admission webhooks](https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#admission-webhooks) such as [MutatingAdmissionWebhook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#mutatingadmissionwebhook) and [ValidatingAdmissionWebhook](https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#validatingadmissionwebhook). The extension API server exports some metrics in `/metrics` path of TLS secured `8443` port. KubeDB installation process creates a service with same name as KubeDB operator (i.e. `kubedb`) in same namespace as the operator pod. Prometheus server can use `api` endpoint of this service to scrape those metrics.
 
 ### Exported Metrics
 
@@ -90,49 +90,49 @@ KubeDB operator exports following metrics.
 
 You can enable operator monitoring through some flags while installing or upgrading or updating KubeDB via both [script](/docs/setup/README.md#using-script) and [Helm](/docs/setup/README.md#using-helm). You can also choose which monitoring agent to use for monitoring. KubeDB will configure respective resources accordingly. Here, are the list of available flags and their uses,
 
-|       Script Flag        |            Helm Values             |                     Acceptable Values                      |                                                         Default                                                          |                                                                                    Uses                                                                                    |
-| ------------------------ | ---------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--monitoring-enable`    | `monitoring.enabled`               | `true` or `false`                                          | `false`                                                                                                                  | Specify whether to monitor KubeDB operator.                                                                                                                                |
-| `--monitoring-agent`     | `monitoring.agent`                 | `prometheus.io/builtin` or `prometheus.io/coreos-operator` | `none`                                                                                                                   | Specify which monitoring agent to use for monitoring KubeDB operator.                                                                                                      |
-| `--prometheus-namespace` | `monitoring.prometheus.namespace`  | any namespace                                              | same namespace as KubeDB operator                                                                                        | Specify the namespace where Prometheus server is running or will be deployed                                                                                               |
-| `--servicemonitor-label` | `monitoring.serviceMonitor.labels` | any label                                                  | For Helm installation, `app: <generated app name>` and `release: <release name>`. For script installation, `app: kubedb` | Specify the labels for ServiceMonitor. Prometheus crd will select ServiceMonitor using these labels. Only usable when monitoring agent is `prometheus.io/coreos-operator`. |
+|            Helm Values             |                     Acceptable Values               |                                                         Default                                                          |                                                                                    Uses                                                                             |
+| ---------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `monitoring.enabled`               | `true` or `false`                                   | `false`                                                                                                                  | Specify whether to monitor KubeDB operator.                                                                                                                         |
+| `monitoring.agent`                 | `prometheus.io/builtin` or `prometheus.io/operator` | `none`                                                                                                                   | Specify which monitoring agent to use for monitoring KubeDB operator.                                                                                               |
+| `monitoring.prometheus.namespace`  | any namespace                                       | same namespace as KubeDB operator                                                                                        | Specify the namespace where Prometheus server is running or will be deployed                                                                                        |
+| `monitoring.serviceMonitor.labels` | any label                                           | For Helm installation, `app: <generated app name>` and `release: <release name>`. For script installation, `app: kubedb` | Specify the labels for ServiceMonitor. Prometheus crd will select ServiceMonitor using these labels. Only usable when monitoring agent is `prometheus.io/operator`. |
 
-You have to provides these flags while installing or upgrading or updating KubeDB operator. Here, are examples for both script and Helm installation process are given which enable monitoring with `prometheus.io/coreos-operator` Prometheuse server for `operator` metrics.
+You have to provides these flags while installing or upgrading or updating KubeDB operator. Here, are examples for both script and Helm installation process are given which enable monitoring with `prometheus.io/operator` Prometheuse server for `operator` metrics.
 
 **Helm 3:**
 
-```console
-$ helm install kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
+```bash
+$ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/coreos-operator \
+  --set monitoring.agent=prometheus.io/operator \
   --set monitoring.prometheus.namespace=monitoring \
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus
 ```
 
 **Helm 2:**
 
-```console
-$ helm install appscode/kubedb --name kubedb-operator --version {{< param "info.version" >}} \
+```bash
+$ helm install appscode/kubedb --name kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/coreos-operator \
+  --set monitoring.agent=prometheus.io/operator \
   --set monitoring.prometheus.namespace=monitoring \
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus
 ```
 
 **YAML (with Helm 3):**
 
-```console
-$ helm template kubedb-operator appscode/kubedb --version {{< param "info.version" >}} \
+```bash
+$ helm template kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
   --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/coreos-operator \
+  --set monitoring.agent=prometheus.io/operator \
   --set monitoring.prometheus.namespace=monitoring \
   --set monitoring.serviceMonitor.labels.k8s-app=prometheus | kubectl apply -f -
 ```
 
 ## Next Steps
 
-- Learn how to monitor KubeDB operator using built-in Prometheus from [here](/docs/setup/monitoring/builtin.md).
-- Learn how to monitor KubeDB operator using CoreOS Prometheus operator from [here](/docs/setup/monitoring/coreos.md).
+- Learn how to monitor KubeDB operator using built-in Prometheus from [here](/docs/setup/monitoring/builtin-prometheus.md).
+- Learn how to monitor KubeDB operator using Prometheus operator from [here](/docs/setup/monitoring/prometheus-operator.md).

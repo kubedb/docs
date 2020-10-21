@@ -12,7 +12,7 @@ section_menu_id: guides
 
 {{< notice type="warning" message="This doc has been deprecated and will be removed in a future release. We recommend using [Stash](/docs/guides/postgres/snapshot/stash.md) to backup & restore PostgreSQL database." >}}
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Database Snapshot
 
@@ -28,7 +28,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -86,7 +86,7 @@ For GCS bucket, a storage Secret require to have following 2 keys:
 | `GOOGLE_PROJECT_ID`               | `Required`. Google Cloud project ID               |
 | `GOOGLE_SERVICE_ACCOUNT_JSON_KEY` | `Required`. Google Cloud service account json key |
 
-```console
+```bash
 $ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
 $ mv downloaded-sa-json.key > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
 $ kubectl create secret -n demo generic gcs-secret \
@@ -128,14 +128,14 @@ To learn how to configure other storage destinations for snapshot data, please v
 
 Now, let's create a Snapshot object.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/snapshot/instant-snapshot.yaml
 snapshot.kubedb.com/instant-snapshot created
 ```
 
 Verify that the Snapshot has been successfully created,
 
-```console
+```bash
 $ kubectl get snap -n demo --selector="kubedb.com/kind=Postgres,kubedb.com/name=script-postgres"
 NAME               DATABASENAME      STATUS    AGE
 instant-snapshot   script-postgres   Running   58s
@@ -149,7 +149,7 @@ Once the snapshot Job is completed, you can see the output of the `pg_dumpall` c
 
 Verify that the backup has been completed successfully using following command,
 
-```console
+```bash
 $ kubectl get snap -n demo --selector="kubedb.com/kind=Postgres,kubedb.com/name=script-postgres"
 NAME               DATABASENAME      STATUS      AGE
 instant-snapshot   script-postgres   Succeeded   36s
@@ -167,7 +167,7 @@ From the above image, you can see that the snapshot data file `dumpfile.sql` is 
 
 If you open this `dumpfile.sql` file, you will see the query to create `dashboard` TABLE.
 
-```console
+```bash
 
 --
 -- Name: dashboard; Type: TABLE; Schema: data; Owner: postgres
@@ -192,7 +192,7 @@ ALTER TABLE dashboard OWNER TO postgres;
 
 You can see the Snapshot list for Postgres `script-postgres` by running `kubectl dba describe` command.
 
-```console
+```bash
 $ kubectl dba describe pg -n demo script-postgres
 Name:               script-postgres
 Namespace:          demo
@@ -284,7 +284,7 @@ Events:
 
 If you want to delete snapshot data from storage, you can delete Snapshot object.
 
-```console
+```bash
 $ kubectl delete snap -n demo instant-snapshot
 snapshot "instant-snapshot" deleted
 ```
@@ -401,7 +401,7 @@ spec:
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 $ kubectl patch -n demo pg/script-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo pg/script-postgres
 

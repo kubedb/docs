@@ -23,13 +23,13 @@ This guide will show you how to use `KubeDB` enterprise operator to update the r
 - Install `KubeDB` community and enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MySQL](/docs/concepts/databases/mysql.md)
-  - [MySQLOpsRequest](/docs/concepts/day-2-operations/mysqlopsrequest.md)
+  - [MySQL](/docs/guides/mysql/concepts/mysql.md)
+  - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest.md)
   - [Vertical Scaling Overview](/docs/guides/mysql/scaling/vertical-scaling/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -48,7 +48,7 @@ At first, we are going to deploy a group replication server using a supported `M
 
 When you have installed `KubeDB`, it has created `MySQLVersion` CR for all supported `MySQL` versions.  Let's check the supported MySQL versions,
 
-```console
+```bash
 $ kubectl get mysqlversion
 NAME        VERSION   DB_IMAGE                 DEPRECATED   AGE
 5           5         kubedb/mysql:5           true         149m
@@ -109,7 +109,7 @@ spec:
 
 Let's create the `MySQL` cr we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/verticalscaling/group_replication.yaml
 mysql.kubedb.com/my-group created
 ```
@@ -119,7 +119,7 @@ mysql.kubedb.com/my-group created
 `KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc.
 Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
 
-```console
+```bash
 $ watch -n 3 kubectl get my -n demo my-group
 Every 3.0s: kubectl get my -n demo my-group                     suaas-appscode: Tue Jun 30 22:43:57 2020
 
@@ -143,7 +143,7 @@ my-group-2   2/2     Running   0          11m
 
 Let's check one of the StatefulSet's pod containers resources,
 
-```console
+```bash
 $ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources'
 {}
 ```
@@ -186,7 +186,7 @@ Here,
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/verticalscaling/vertical_scale_group.yaml
 mysqlopsrequest.ops.kubedb.com/my-scale-group created
 ```
@@ -197,7 +197,7 @@ If everything goes well, `KubeDB` enterprise operator will update the resources 
 
 First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
-```console
+```bash
 $ watch -n 3 kubectl get myops -n demo my-scale-group
 Every 3.0s: kubectl get myops -n demo my-sc...  suaas-appscode: Wed Aug 12 16:49:21 2020
 
@@ -207,7 +207,7 @@ my-scale-group   VerticalScaling   Successful   4m53s
 
 You can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the resources of the members of the `MySQL` group replication are updated.
 
-```console
+```bash
 $ kubectl describe myops -n demo my-scale-group
 Name:         my-scale-group
 Namespace:    demo
@@ -245,11 +245,11 @@ Status:
     Status:                True
     Type:                  Progressing
     Last Transition Time:  2020-08-12T10:44:28Z
-    Message:               Controller has successfully Paused the MySQL database: demo/my-group 
+    Message:               Controller has successfully Halted the MySQL database: demo/my-group 
     Observed Generation:   1
-    Reason:                SuccessfullyPausedDatabase
+    Reason:                SuccessfullyHaltedDatabase
     Status:                True
-    Type:                  PauseDatabase
+    Type:                  HaltDatabase
     Last Transition Time:  2020-08-12T10:44:28Z
     Message:               Vertical scaling started in MySQL: demo/my-group for MySQLOpsRequest: my-scale-group
     Observed Generation:   1
@@ -281,7 +281,7 @@ Events:
   ----    ------      ----   ----                        -------
   Normal  Starting    5m50s  KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-scale-group
   Normal  Starting    5m50s  KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-group
-  Normal  Successful  5m50s  KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-group for MySQLOpsRequest: my-scale-group
+  Normal  Successful  5m50s  KubeDB Enterprise Operator  Successfully halted MySQL database: demo/my-group for MySQLOpsRequest: my-scale-group
   Normal  Starting    5m50s  KubeDB Enterprise Operator  Vertical scaling started in MySQL: demo/my-group for MySQLOpsRequest: my-scale-group
   Normal  Successful  4m10s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1
   Normal  Successful  3m50s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1
@@ -309,7 +309,7 @@ Events:
 
 Now, we are going to verify whether the resources of the members of the cluster have updated to meet up the desired state, Let's check,
 
-```console
+```bash
 $ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources'
 {
   "limits": {
@@ -329,7 +329,7 @@ The above output verifies that we have successfully updated the resources of the
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete my -n demo my-group
 kubectl delete myops -n demo my-scale-group
 ```
