@@ -12,7 +12,7 @@ section_menu_id: guides
 
 # Backup & Restore Elasticsearch Using Stash
 
-[Stash](https://stash.run/) by [AppsCode](https://appscode.com) is a Kubernetes operator for backup and recovery of Kubernetes stateful workloads. Stash v0.9.0+ supports backup and restoration of Elasticsearch databases. KubeDB v0.14.0+ comes with built-in support for Stash.
+KubeDB uses [Stash](https://stash.run) to backup and restore databases. Stash by AppsCode is a cloud native data backup and recovery solution for Kubernetes workloads. Stash utilizes [restic](https://github.com/restic/restic) to securely backup stateful applications to any cloud or on-prem storage backends (for example, S3, GCS, Azure Blob storage, Minio, NetApp, Dell EMC etc.).
 
 <figure align="center">
   <img alt="KubeDB + Stash" src="/docs/images/kubedb_plus_stash.svg">
@@ -29,4 +29,4 @@ In order to backup Elasticsearch database using Stash, follow the following step
 
 - **Understand the Backup and Restore Flow:** Now, you can read about how Elasticsearch backup and restore works in Stash from [here](https://stash.run/docs/latest/addons/elasticsearch/overview/).
 
-- **Get Started:** Finally, follow the guidelines of your desired database version to go through the steps of backup and restore process from [here](https://stash.run/docs/latest/addons/elasticsearch/).
+- **Get Started:** Finally, follow the step by step guideline to backup or restore your desired database version from [here](https://stash.run/docs/latest/addons/elasticsearch/).
