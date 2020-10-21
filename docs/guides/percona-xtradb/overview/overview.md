@@ -87,6 +87,6 @@ Image ref: https://www.percona.com/doc/percona-xtradb-cluster/LATEST/intro.html
 
 ## Next Steps
 
-- Detail concepts of [PerconaXtraDB object](/docs/concepts/databases/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/percona-xtradb.md).
 - [Quickstart PerconaXtraDB](/docs/guides/percona-xtradb/quickstart/quickstart.md) with KubeDB Operator.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

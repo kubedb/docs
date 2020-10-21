@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Continuous Archiving to Swift
 
@@ -26,7 +26,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -92,7 +92,7 @@ Storage Secret for **WAL-G** is needed with the full set of v1, v2 or v3 authent
 | `OS_STORAGE_URL`         | For authentication based on tokens |
 | `OS_AUTH_TOKEN`          | For authentication based on tokens |
 
-```console
+```bash
 $ echo -n '<your-auth-url>' > OS_AUTH_URL
 $ echo -n '<your-tenant-id>' > OS_TENANT_ID
 $ echo -n '<your-tenant-name>' > OS_TENANT_NAME
@@ -141,7 +141,7 @@ To configure Swift backend, following parameters are available:
 
 Now create this Postgres object with continuous archiving support.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/snapshot/wal-postgres-swift.yaml
 postgres.kubedb.com/wal-postgres created
 ```
@@ -172,7 +172,7 @@ The data will be intact in other scenarios.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo pg/wal-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/wal-postgres
 

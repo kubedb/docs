@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using Custom Configuration in Elasticsearch with Topology
 
@@ -26,7 +26,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -77,7 +77,7 @@ path:
 
 Now, let's create a configMap with these configuration files,
 
-```console
+```bash
  $ kubectl create configmap -n demo es-custom-config \
                         --from-file=./common-config.yml \
                         --from-file=./master-config.yml \
@@ -120,7 +120,7 @@ metadata:
 
 Now, create an Elasticsearch crd with topology specified,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/custom-config/es-custom-with-topology.yaml
 elasticsearch.kubedb.com/custom-elasticsearch created
 ```
@@ -135,9 +135,8 @@ metadata:
   namespace: demo
 spec:
   version: 7.3.2
-  configSource:
-    configMap:
-      name: es-custom-config
+  configSecret:
+    name: es-custom-config
   topology:
     master:
       prefix: master
@@ -175,7 +174,7 @@ Now, wait for few minutes. KubeDB will create necessary secrets, services, and s
 
 Check resources created in `demo` namespace by KubeDB,
 
-```console
+```bash
 $ kubectl get all -n demo -l=kubedb.com/name=custom-elasticsearch
 NAME                                READY   STATUS    RESTARTS   AGE
 pod/client-custom-elasticsearch-0   1/1     Running   0          2m5s
@@ -198,7 +197,7 @@ appbinding.appcatalog.appscode.com/custom-elasticsearch   14s
 
 Check secrets created by KubeDB,
 
-```console
+```bash
 $ kubectl get secret -n demo -l=kubedb.com/name=custom-elasticsearch
 NAME                        TYPE     DATA   AGE
 custom-elasticsearch-auth   Opaque   2      2m35s
@@ -207,7 +206,7 @@ custom-elasticsearch-cert   Opaque   5      2m35s
 
 Once everything is created, Elasticsearch will go to `Running` state. Check that Elasticsearch is in running state.
 
-```console
+```bash
 $ kubectl get es -n demo custom-elasticsearch
 NAME                   VERSION   STATUS    AGE
 custom-elasticsearch   7.3.2     Running   2m51s
@@ -219,7 +218,7 @@ Now, we will connect with the Elasticsearch cluster we have created. We will que
 
 At first, forward `9200` port of `client-custom-elasticsearch-0` pod. Run following command on a separate terminal,
 
-```console
+```bash
 $ kubectl port-forward -n demo client-custom-elasticsearch-0 9200
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
@@ -232,21 +231,21 @@ Now, we can connect to the database at `localhost:9200`. Let's find out necessar
 - Address: `localhost:9200`
 - Username: Run following command to get *username*
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo custom-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
     elastic
   ```
 
 - Password: Run following command to get *password*
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo custom-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
     h4tcobpx
   ```
 
 Now, we will query for settings of all nodes in an Elasticsearch cluster,
 
-```console
+```bash
 $ curl --user "elastic:h4tcobpx" "localhost:9200/_nodes/_all/settings?pretty"
 ```
 
@@ -359,7 +358,7 @@ Note that, the `"path.logs"` field of each node is set to the value we have spec
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo es/custom-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/custom-elasticsearch
 
@@ -368,4 +367,4 @@ kubectl delete  -n demo configmap/es-custom-config
 kubectl delete ns demo
 ```
 
-To uninstall KubeDB follow this [guide](/docs/setup/operator/uninstall.md).
+To uninstall KubeDB follow this [guide](/docs/setup/README.md).

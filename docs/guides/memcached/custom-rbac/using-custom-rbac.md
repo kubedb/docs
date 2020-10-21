@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using Custom RBAC resources
 
@@ -24,7 +24,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -45,7 +45,7 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 
 At first, let's create a `Service Acoount` in `demo` namespace.
 
-```console
+```bash
 $ kubectl create serviceaccount -n demo my-custom-serviceaccount
 serviceaccount/my-custom-serviceaccount created
 ```
@@ -69,7 +69,7 @@ secrets:
 
 Now, we need to create a role that has necessary access permissions for the Memcached instance named `quick-memcached`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-rbac/mc-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
@@ -97,7 +97,7 @@ This permission is required for Memcached pods running on PSP enabled clusters.
 
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
-```console
+```bash
 $ kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
 rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
@@ -129,7 +129,7 @@ subjects:
 
 Now, create a Memcached crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-rbac/mc-custom-db.yaml
 memcached.kubedb.com/quick-memcached created
 ```
@@ -163,7 +163,7 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, deployme
 
 Check that the deployment's pod is running
 
-```console
+```bash
 $ kubectl get pods -n demo
 NAME                              READY   STATUS    RESTARTS   AGE
 quick-memcached-d866d6d89-sdlkx   1/1     Running   0          5m52s
@@ -181,7 +181,7 @@ An existing service account can be reused in another Memcached instance. No new 
 
 Now, create Memcached crd `minute-memcached` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-rbac/mc-custom-db-two.yaml
 memcached.kubedb.com/quick-memcached created
 ```
@@ -215,7 +215,7 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, deployme
 
 Check that the deployment's pod is running
 
-```console
+```bash
 $ kubectl get pods -n demo
 NAME                              READY   STATUS    RESTARTS   AGE
 minute-memcached-58798985f-47tm8  1/1     Running   0          5m52s
@@ -231,7 +231,7 @@ minute-memcached-58798985f-47tm8  1/1       Running   0          14m
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mc/quick-memcached -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mc/quick-memcached
 
@@ -246,15 +246,15 @@ kubectl delete sa -n demo my-custom-serviceaccount
 kubectl delete ns demo
 ```
 
-If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 
 - [Quickstart Memcached](/docs/guides/memcached/quickstart/quickstart.md) with KubeDB Operator.
-- Monitor your Memcached database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/memcached/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your Memcached database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md).
 - Monitor your Memcached database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/memcached/private-registry/using-private-registry.md) to deploy Memcached with KubeDB.
 - Use [kubedb cli](/docs/guides/memcached/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [Memcached object](/docs/concepts/databases/memcached.md).
+- Detail concepts of [Memcached object](/docs/guides/memcached/concepts/memcached.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 

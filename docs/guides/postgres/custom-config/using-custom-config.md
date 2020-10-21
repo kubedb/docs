@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using Custom Configuration File
 
@@ -24,7 +24,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -35,7 +35,7 @@ namespace/demo created
 
 PostgreSQL allows to configure database via **Configuration File**, **SQL** and **Shell**. The most common way is to edit configuration file `postgresql.conf`. When PostgreSQL docker image starts, it uses the configuration specified in `postgresql.conf` file. This file can have `include` directive which allows to include configuration from other files. One of these `include` directives is `include_if_exists` which accept a file reference. If the referenced file exists, it includes configuration from the file. Otherwise, it uses default configuration. KubeDB takes advantage of this feature to allow users to provide their custom configuration. To know more about configuring PostgreSQL see [here](https://www.postgresql.org/docs/current/static/runtime-config.html).
 
-At first, you have to create a config file named `user.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSource` section while creating Postgres crd. KubeDB will mount this volume into `/etc/config/` directory of the database pod which will be referenced by `include_if_exists` directive.
+At first, you have to create a config file named `user.conf` with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume in `spec.configSecret` section while creating Postgres crd. KubeDB will mount this volume into `/etc/config/` directory of the database pod which will be referenced by `include_if_exists` directive.
 
 In this tutorial, we will configure `max_connections` and `shared_buffers` via a custom config file. We will use configMap as volume source.
 
@@ -53,7 +53,7 @@ shared_buffers=256MB
 
 Now, create a configMap with this configuration file.
 
-```console
+```bash
 $ kubectl create configmap -n demo pg-custom-config --from-literal=user.conf="$(curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/user.conf)"
 configmap/pg-custom-config created
 ```
@@ -77,9 +77,9 @@ metadata:
   uid: 131b321f-2ad1-11e9-9d44-080027154f61
 ```
 
-Now, create Postgres crd specifying `spec.configSource` field.
+Now, create Postgres crd specifying `spec.configSecret` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/pg-custom-config.yaml
 postgres.kubedb.com/custom-postgres created
 ```
@@ -94,9 +94,8 @@ metadata:
   namespace: demo
 spec:
   version: "10.2-v5"
-  configSource:
-    configMap:
-      name: pg-custom-config
+  configSecret:
+    name: pg-custom-config
   storage:
     storageClassName: "standard"
     accessModes:
@@ -110,7 +109,7 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset,
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo custom-postgres-0
 NAME                READY     STATUS    RESTARTS   AGE
 custom-postgres-0   1/1       Running   0          14m
@@ -118,7 +117,7 @@ custom-postgres-0   1/1       Running   0          14m
 
 Check the pod's log to see if the database is ready
 
-```console
+```bash
 $ kubectl logs -f -n demo custom-postgres-0
 I0705 12:05:51.697190       1 logs.go:19] FLAG: --alsologtostderr="false"
 I0705 12:05:51.717485       1 logs.go:19] FLAG: --enable-analytics="true"
@@ -152,7 +151,7 @@ Once we see `LOG:  database system is ready to accept connections` in the log, t
 
 Now, we will check if the database has started with the custom configuration we have provided. We will `exec` into the pod and use [SHOW](https://www.postgresql.org/docs/9.6/static/sql-show.html) query to check the run-time parameters.
 
-```console
+```bash
  $ kubectl exec -it -n demo custom-postgres-0 sh
  / #
  ## login as user "postgres". no authentication required from inside the pod because it is using trust authentication local connection.
@@ -192,7 +191,7 @@ WHERE name='max_connections' OR name='shared_buffers';
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo pg/custom-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/custom-postgres
 
@@ -200,7 +199,7 @@ kubectl delete -n demo configmap pg-custom-config
 kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 
@@ -210,5 +209,5 @@ If you would like to uninstall KubeDB operator, please follow the steps [here](/
 - Learn about initializing [PostgreSQL from KubeDB Snapshot](/docs/guides/postgres/initialization/snapshot_source.md).
 - Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)
 - Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
-- Monitor your PostgreSQL database with KubeDB using [CoreOS Prometheus Operator](/docs/guides/postgres/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PostgreSQL database with KubeDB using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

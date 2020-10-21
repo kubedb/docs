@@ -10,11 +10,11 @@ menu_name: docs_{{ .version }}s
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 ## Setting up Custom PgBouncerVersions
 
-PgBouncerVersions are KubeDB crds that define the docker images KubeDB will use when deploying a pgbouncer server. For more details about PgBouncerVersion crd, please visit [here](/docs/concepts/catalog/pgbouncer.md).
+PgBouncerVersions are KubeDB crds that define the docker images KubeDB will use when deploying a pgbouncer server. For more details about PgBouncerVersion crd, please visit [here](/docs/guides/pgbouncer/concepts/catalog.md).
 
 ## Creating a Custom PgBouncer Image for KubeDB
 

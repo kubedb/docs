@@ -19,7 +19,7 @@ aliases:
 
 From here you can learn all about KubeDB's architecture and how to deploy and use KubeDB.
 
-- [Concepts](/docs/concepts/). Concepts explain some significant aspect of KubeDB. This is where you can learn about what KubeDB does and how it does it.
+- [Overview](/docs/overview/). Overview explains what KubeDB does and how it does it.
 
 - [Setup](/docs/setup/). Setup contains instructions for installing the KubeDB in various cloud providers.
 

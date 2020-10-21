@@ -67,7 +67,7 @@ After starting ProxySQL, it uses a package-provided configuration file (default 
 
 First, access the administration interface. You’ll be prompted for a password which, on a default installation, is `admin`.
 
-```console
+```bash
 $ mysql --user=admin --password=admin --host=127.0.0.1 --port=6032 --prompt='ProxySQLAdmin> '
 ```
 
@@ -79,7 +79,7 @@ $ mysql --user=admin --password=admin --host=127.0.0.1 --port=6032 --prompt='Pro
 
 From the admin interface, we can see that there are a few databases available.
 
-```console
+```bash
 ProxySQLAdmin> show databases;
 +-----+---------------+-------------------------------------+
 | seq | name          | file                                |
@@ -373,7 +373,7 @@ ProxySQLAdmin> SELECT * FROM global_variables ORDER BY variable_name;
 ## Next Steps
 
 - Configure ProxySQL for Group Replication [here](/docs/guides/proxysql/overview/configure-proxysql.md)
-- Detail concepts of ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
-- Detail concepts of ProxySQLVersion CRD [here](/docs/concepts/catalog/proxysql.md).
+- Detail concepts of ProxySQL CRD [here](/docs/guides/proxysql/concepts/proxysql.md).
+- Detail concepts of ProxySQLVersion CRD [here](/docs/guides/proxysql/concepts/catalog.md).
 - Quickstart ProxySQL to Load Balance MySQL Group Replication with KubeDB Operator [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -9,7 +9,7 @@ menu:
 menu_name: docs_{{ .version }}
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Deploy Percona XtraDB from private Docker registry
 
@@ -17,7 +17,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 ## Before You Begin
 
-- Read about [PerconaXtraDBVersion](/docs/concepts/catalog/percona-xtradb.md) to learn how it is used.
+- Read about [PerconaXtraDBVersion](/docs/guides/percona-xtradb/concepts/catalog.md) to learn how it is used.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
@@ -25,7 +25,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For PerconaXtraDB, push `DB_IMAGE`, `EXPORTER_IMAGE` of following PerconaXtraDBVersions, where `deprecated` is not true, to your private registry.
 
-  ```console
+  ```bash
   $ kubectl get perconaxtradbversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME          VERSION   DB_IMAGE                            EXPORTER_IMAGE                   DEPRECATED
   5.7           5.7       kubedb/percona:5.7                  kubedb/mysqld-exporter:v0.11.0   <none>
@@ -57,7 +57,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
    ```
@@ -68,7 +68,7 @@ ImagePullSecrets is a type of a Kubernetes Secret whose sole purpose is to pull 
 
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
-```console
+```bash
 $ kubectl create secret docker-registry -n demo myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
@@ -111,21 +111,19 @@ spec:
     spec:
       imagePullSecrets:
       - name: myregistrykey
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: WipeOut
 ```
 
 Now run the command to deploy this `PerconaXtraDB` object:
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/private-registry.yaml
 perconaxtradb.kubedb.com/px-pvt-reg created
 ```
 
 To check if the images pulled successfully from the repository, see if the `PerconaXtraDB` is in running state:
 
-```console
+```bash
 $ kubectl get pods -n demo
 NAME           READY     STATUS    RESTARTS   AGE
 px-pvt-reg-0   1/1       Running   0          56s
@@ -135,7 +133,7 @@ px-pvt-reg-0   1/1       Running   0          56s
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo perconaxtradb/px-pvt-reg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo perconaxtradb/px-pvt-reg
 
@@ -149,6 +147,6 @@ kubectl delete ns demo
 - How to use [custom configuration](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
 - How to use [custom rbac resource](/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac.md) for PerconaXtraDB.
 - Use Stash to [Backup PerconaXtraDB](/docs/guides/percona-xtradb/snapshot/stash.md).
-- Detail concepts of [PerconaXtraDB object](/docs/concepts/databases/percona-xtradb.md).
-- Detail concepts of [PerconaXtraDBVersion object](/docs/concepts/catalog/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDBVersion object](/docs/guides/percona-xtradb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

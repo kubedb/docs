@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using Custom RBAC resources
 
@@ -274,16 +274,16 @@ kubectl delete sa -n demo my-custom-serviceaccount
 kubectl delete ns demo
 ```
 
-If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 
 - [Quickstart MySQL](/docs/guides/mysql/quickstart/quickstart.md) with KubeDB Operator.
 - Initialize [MySQL with Script](/docs/guides/mysql/initialization/using-script.md).
-- Monitor your MySQL instance with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MySQL instance with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
 - Monitor your MySQL instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MySQL with KubeDB.
 - Use [kubedb cli](/docs/guides/mysql/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MySQL object](/docs/concepts/databases/mysql.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 

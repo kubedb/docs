@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Running PgBouncer
 
@@ -28,7 +28,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -41,7 +41,7 @@ namespace/demo created
 
 When you have installed KubeDB, it has created `PgBouncerVersion` crd for all supported PgBouncer versions. Let's check available PgBouncerVersion by,
 
-```console
+```bash
 $ kubectl get pgbouncerversions
 
     NAME     VERSION   DB_IMAGE   DEPRECATED   AGE
@@ -58,7 +58,7 @@ $ kubectl get pgbouncerversions
 
 Notice the `DEPRECATED` column. Here, `true` means that this PgBouncerVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PgBouncerVersion.
 
-In this tutorial, we will use `1.11.0` PgBouncerVersion crd to create PgBouncer. To know more about what `PgBouncerVersion` crd is, please visit [here](/docs/concepts/catalog/pgbouncer.md). You can also see supported PgBouncerVersion [here](/docs/guides/pgbouncer/README.md#supported-pgbouncerversion-crd).
+In this tutorial, we will use `1.11.0` PgBouncerVersion crd to create PgBouncer. To know more about what `PgBouncerVersion` crd is, please visit [here](/docs/guides/pgbouncer/concepts/catalog.md). You can also see supported PgBouncerVersion [here](/docs/guides/pgbouncer/README.md#supported-pgbouncerversion-crd).
 
 ## Get PostgreSQL Server ready
 
@@ -68,7 +68,7 @@ Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deplo
 
 In this tutorial, we will use a Postgres named `quick-postgres` in the `demo` namespace.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/quick-postgres.yaml
 postgres.kubedb.com/quick-postgres created
 ```
@@ -103,7 +103,7 @@ type: Opaque
 
 For the purpose of this tutorial, we will need to extract the username and password from database secret `quick-postgres-auth`.
 
-```console
+```bash
 $kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
 qTOzudbzusls6NTZ⏎
 
@@ -113,7 +113,7 @@ postgres⏎
 
 Now, to test connection with this database using the credentials obtained above, we will expose the service port associated with `quick-postgres`  to localhost.
 
-```console
+```bash
 $ kubectl port-forward -n demo svc/quick-postgres 5432
 Forwarding from 127.0.0.1:5432 -> 5432
 Forwarding from [::1]:5432 -> 5432
@@ -121,7 +121,7 @@ Forwarding from [::1]:5432 -> 5432
 
 With that done , we should now be able to connect to `postgres` database using username `postgres`, and password `qTOzudbzusls6NTZ`.
 
-```console
+```bash
 $ export PGPASSWORD=qTOzudbzusls6NTZ
 $ psql --host=localhost --port=5432 --username=postgres postgres
 psql (11.5 (Ubuntu 11.5-1.pgdg18.04+1), server 11.1)
@@ -132,7 +132,7 @@ postgres=#
 
 After establishing connection successfully, we will create a table in `postgres` database and populate it with data.
 
-```console
+```bash
 postgres=# CREATE TABLE COMPANY( NAME TEXT NOT NULL, EMPLOYEE INT NOT NULL);
 CREATE TABLE
 postgres=# INSERT INTO COMPANY (name, employee) VALUES ('Apple',10);
@@ -143,7 +143,7 @@ INSERT 0 1
 
 After data insertion, we need to verify that our data have been inserted successfully.
 
-```console
+```bash
 postgres=# SELECT * FROM company ORDER BY name;
   name  | employee
 --------+----------
@@ -238,7 +238,7 @@ In this tutorial we will use a standard userlist text file to create a secret fo
 
 We will need user `myuser` with password  `mypass` later in this tutorial.
 
-```console
+```bash
 $ kubectl create secret -n demo generic db-user-pass --from-file=https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/userlist.txt
 
 secret/db-user-pass created
@@ -246,7 +246,7 @@ secret/db-user-pass created
 
 Now that we've been introduced to the pgBouncer crd, let's create it,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server.yaml
 
 pgbouncer.kubedb.com/pgbouncer-server created
@@ -256,7 +256,7 @@ pgbouncer.kubedb.com/pgbouncer-server created
 
 To connect via pgBouncer we have to expose its service to localhost.
 
-```console
+```bash
 $ kubectl port-forward -n demo svc/pgbouncer-server 5432
 
 Forwarding from 127.0.0.1:5432 -> 5432
@@ -275,7 +275,7 @@ postgres=# \q
 
 If everything goes well, we'll be connected to the `postgres` database and be able to execute commands. Let's confirm if the company data we inserted in the  `postgres` database before are available via PgBouncer:
 
-```console
+```bash
 $ env PGPASSWORD=qTOzudbzusls6NTZ psql --host=localhost --port=5432 --username=postgres postgres --command='SELECT * FROM company ORDER BY name;'
   name  | employee
 --------+----------
@@ -290,14 +290,14 @@ We will add a new user and a new database to our PostgreSQL server `quick-postgr
 
 First lets create a new user `myuser` with password `mypass`
 
-```console
+```bash
 $ env PGPASSWORD=qTOzudbzusls6NTZ psql --host=localhost --port=5432 --username=postgres postgres --command="create user myuser with encrypted password 'mypass'"
 CREATE ROLE
 ```
 
 And then create a new database `mydb`
 
-```console
+```bash
 $ env PGPASSWORD=qTOzudbzusls6NTZ psql --host=localhost --port=5432 --username=postgres postgres --command="CREATE DATABASE mydb;"
 CREATE DATABASE
 ```
@@ -336,14 +336,14 @@ spec:
 
 We have given our newly added database an alias `tmpdb`.  We will now apply this modified file.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-mod.yaml
 pgbouncer.kubedb.com/pgbouncer-server configured
 ```
 
 Let's try to connect to `mydb` via PgBouncer.
 
-```console
+```bash
 $ env PGPASSWORD=mypass psql --host=localhost --port=5432 --username=myuser tmpdb
 psql (11.5 (Ubuntu 11.5-1.pgdg18.04+1), server 11.1)
 Type "help" for help.
@@ -353,7 +353,7 @@ tmpdb=>
 
 We can now switch our connection between our existing databases `postgres` and `mydb` as well.
 
-```console
+```bash
 tmpdb=>\c postgres
 psql (11.5 (Ubuntu 11.5-1.pgdg18.04+1), server 11.1)
 You are now connected to database "postgres" as user "myuser".
@@ -367,7 +367,7 @@ KubeDB operator watches for PgBouncer objects using Kubernetes api. When a PgBou
 
 KubeDB operator sets the `status.phase` to `Running` once the connection-pooling mechanism is ready.
 
-```console
+```bash
 $ kubectl get pb -n demo pgbouncer-server -o wide
 NAME               VERSION   STATUS    AGE
 pgbouncer-server   1.11.0    Running   2h
@@ -375,7 +375,7 @@ pgbouncer-server   1.11.0    Running   2h
 
 Let's describe PgBouncer object `pgbouncer-server`
 
-```console
+```bash
 $ kubectl dba describe pb -n demo pgbouncer-server
 Name:         pgbouncer-demo
 Namespace:    demo
@@ -436,7 +436,7 @@ Events:                 <none>
 
 KubeDB has created a service for the PgBouncer object.
 
-```console
+```bash
 $ kubectl get service -n demo --selector=kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-server
 NAME               TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 pgbouncer-server   ClusterIP   10.97.188.32   <none>        5432/TCP   2h
@@ -448,7 +448,7 @@ Here, Service *`pgbouncer-server`* targets random pods to carry out connection-p
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete -n demo pg/quick-postgres
 
 kubectl delete -n demo pb/pgbouncer-server
@@ -463,7 +463,7 @@ kubectl delete ns demo
 
 - Learn about [custom PgBouncerVersions](/docs/guides/pgbouncer/custom-versions/setup.md).
 - Monitor your PgBouncer with KubeDB using [built-in Prometheus](/docs/guides/pgbouncer/monitoring/using-builtin-prometheus.md).
-- Monitor your PgBouncer with KubeDB using [CoreOS Prometheus Operator](/docs/guides/pgbouncer/monitoring/using-coreos-prometheus-operator.md).
-- Detail concepts of [PgBouncer object](/docs/concepts/database-proxy/pgbouncer.md).
+- Monitor your PgBouncer with KubeDB using [Prometheus operator](/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md).
+- Detail concepts of [PgBouncer object](/docs/guides/pgbouncer/concepts/pgbouncer.md).
 - Use [private Docker registry](/docs/guides/pgbouncer/private-registry/using-private-registry.md) to deploy PgBouncer with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -23,14 +23,14 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the r
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MongoDB](/docs/concepts/databases/mongodb.md)
+  - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
   - [Replicaset](/docs/guides/mongodb/clustering/replicaset.md) 
-  - [MongoDBOpsRequest](/docs/concepts/day-2-operations/mongodbopsrequest.md)
+  - [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
   - [Vertical Scaling Overview](/docs/guides/mongodb/scaling/vertical-scaling/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -72,14 +72,14 @@ spec:
 
 Let's create the `MongoDB` CR we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/mg-replicaset.yaml
 mongodb.kubedb.com/mg-replicaset created
 ```
 
 Now, wait until `mg-replicaset` has status `Running`. i.e,
 
-```console
+```bash
 $ kubectl get mg -n demo                                                                                                                                             20:05:47
   NAME            VERSION    STATUS    AGE
   mg-replicaset   3.6.8-v1   Running   3m46s
@@ -87,7 +87,7 @@ $ kubectl get mg -n demo                                                        
 
 Let's check the Pod containers resources,
 
-```console
+```bash
 $ kubectl get pod -n demo mg-replicaset-0 -o json | jq '.spec.containers[].resources'
 {}
 ```
@@ -132,7 +132,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/vertical-scaling/mops-vscale-replicaset.yaml
 mongodbopsrequest.ops.kubedb.com/mops-vscale-replicaset created
 ```
@@ -143,7 +143,7 @@ If everything goes well, `KubeDB` Enterprise operator will update the resources 
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
-```console
+```bash
 $ kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                     TYPE              STATUS       AGE
@@ -152,7 +152,7 @@ mops-vscale-replicaset   VerticalScaling   Successful   3m56s
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
-```console
+```bash
 $ kubectl describe mongodbopsrequest -n demo mops-vscale-replicaset
  Name:         mops-vscale-replicaset
  Namespace:    demo
@@ -235,11 +235,11 @@ $ kubectl describe mongodbopsrequest -n demo mops-vscale-replicaset
      Status:                True
      Type:                  Scaling
      Last Transition Time:  2020-08-25T06:05:39Z
-     Message:               Successfully paused mongodb: mg-replicaset
+     Message:               Successfully halted mongodb: mg-replicaset
      Observed Generation:   1
-     Reason:                PauseDatabase
+     Reason:                HaltDatabase
      Status:                True
-     Type:                  PauseDatabase
+     Type:                  HaltDatabase
      Last Transition Time:  2020-08-25T06:05:39Z
      Message:               Successfully updated StatefulSets Resources
      Observed Generation:   1
@@ -269,8 +269,8 @@ $ kubectl describe mongodbopsrequest -n demo mops-vscale-replicaset
  Events:
    Type    Reason                      Age    From                        Message
    ----    ------                      ----   ----                        -------
-   Normal  PauseDatabase               4m38s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-   Normal  PauseDatabase               4m38s  KubeDB Enterprise Operator  Successfully Paused Mongodb mg-replicaset in Namespace demo
+   Normal  HaltDatabase               4m38s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
+   Normal  HaltDatabase               4m38s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
    Normal  Starting                    4m38s  KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-replicaset
    Normal  UpdateStatefulSetResources  4m38s  KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
    Normal  UpdateReplicaSetResources   4m38s  KubeDB Enterprise Operator  Updating ReplicaSet Resources
@@ -285,7 +285,7 @@ $ kubectl describe mongodbopsrequest -n demo mops-vscale-replicaset
 
 Now, we are going to verify from one of the Pod yaml whether the resources of the replicaset database has updated to meet up the desired state, Let's check,
 
-```console
+```bash
 $ kubectl get pod -n demo mg-replicaset-0 -o json | jq '.spec.containers[].resources'
   {
     "limits": {
@@ -305,7 +305,7 @@ The above output verifies that we have successfully scaled up the resources of t
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete mg -n demo mg-replicaset
 kubectl delete mongodbopsrequest -n demo mops-vscale-replicaset
 ```

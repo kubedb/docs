@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/mysql/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 ## Supported MySQL Features
 
@@ -28,7 +28,7 @@ aliases:
 | Custom Configuration                                    |   &#10003;   |
 | Using Custom docker image                               |   &#10003;   |
 | Builtin Prometheus Discovery                            |   &#10003;   |
-| Using CoreOS Prometheus Operator                        |   &#10003;   |
+| Using Prometheus operator                        |   &#10003;   |
 
 ## Life Cycle of a MySQL Object
 
@@ -82,11 +82,10 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - Take [Scheduled Snapshot](/docs/guides/mysql/snapshot/scheduled-backup.md) of MySQL databases using KubeDB.
 - Initialize [MySQL with Script](/docs/guides/mysql/initialization/using-script.md).
 - Initialize [MySQL with Snapshot](/docs/guides/mysql/initialization/using-snapshot.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MySQL with KubeDB.
 - Use [kubedb cli](/docs/guides/mysql/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MySQL object](/docs/concepts/databases/mysql.md).
-- Detail concepts of [MySQLVersion object](/docs/concepts/catalog/mysql.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
+- Detail concepts of [MySQLVersion object](/docs/guides/mysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

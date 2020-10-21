@@ -7,10 +7,8 @@ spec:
   version: 7.3.2
   replicas: 2
   enableSSL: true
-  certificateSecret:
-    secretName: e1-certs
-  databaseSecret:
-    secretName: e1-auth
+  authSecret:
+    name: e1-auth
   storageType: "Durable"
   storage:
     storageClassName: standard
@@ -30,15 +28,14 @@ spec:
       bucket: kubedb-qa
       prefix: demo
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
-      namespace: demo
-      labels:
-        app: kubedb
-      interval: 10s
-  configSource:
-    configMap:
-      name: es-custom-config
+      serviceMonitor:
+        labels:
+          app: kubedb
+        interval: 10s
+  configSecret:
+    name: es-custom-config
   podTemplate:
     annotations:
       passMe: ToDatabasePod
@@ -70,6 +67,4 @@ spec:
       - name:  http
         port:  9200
         targetPort: http
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: "DoNotTerminate"

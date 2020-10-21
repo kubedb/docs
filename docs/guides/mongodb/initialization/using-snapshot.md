@@ -12,7 +12,7 @@ section_menu_id: guides
 
 {{< notice type="warning" message="This doc has been deprecated and will be removed in a future release. We recommend using [Stash](/docs/guides/mongodb/snapshot/stash.md) to backup & restore MongoDB database." >}}
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Initialize MongoDB with Snapshot
 
@@ -53,7 +53,7 @@ spec:
       namespace: demo
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/Initialization/demo-2.yaml
 mongodb.kubedb.com/mgo-init-snapshot created
 ```
@@ -64,7 +64,7 @@ Here,
 
 Now, wait several seconds. KubeDB operator will create a new `StatefulSet`. Then KubeDB operator launches a Kubernetes Job to initialize the new database using the data from `snapshot-instant` Snapshot.
 
-```console
+```bash
 $ kubectl get mg -n demo
 NAME                VERSION   STATUS         AGE
 mgo-instant          3.4-v3    Running        4m
@@ -151,7 +151,7 @@ Events:
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mgo-instant mg/mgo-init-snapshot -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-instant mg/mgo-init-snapshot
 
@@ -163,10 +163,9 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Monitor your MongoDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mongodb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
-- Detail concepts of [MongoDB object](/docs/concepts/databases/mongodb.md).
-- Detail concepts of [MongoDBVersion object](/docs/concepts/catalog/mongodb.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
+- Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

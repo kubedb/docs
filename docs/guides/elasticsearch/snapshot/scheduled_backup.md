@@ -26,7 +26,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace "demo" created
 
@@ -48,7 +48,7 @@ In this tutorial, snapshots will be stored in a Google Cloud Storage (GCS) bucke
 | `GOOGLE_PROJECT_ID`               | `Required`. Google Cloud project ID                        |
 | `GOOGLE_SERVICE_ACCOUNT_JSON_KEY` | `Required`. Google Cloud service account json key          |
 
-```console
+```bash
 $ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
 $ mv downloaded-sa-json.key > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
 $ kubectl create secret -n demo generic gcs-secret \
@@ -92,14 +92,14 @@ Here,
 
 > Note: Secret object must be in the same namespace as Elasticsearch, `scheduled-es`, in this case.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/snapshot/scheduled-es.yaml
 elasticsearch.kubedb.com/scheduled-es created
 ```
 
 When Elasticsearch starts running successfully, KubeDB operator creates a Snapshot object immediately and registers to create a new Snapshot object on each tick of the cron expression.
 
-```console
+```bash
 $ kubectl get snap -n demo --selector="kubedb.com/kind=Elasticsearch,kubedb.com/name=scheduled-es"
 NAME                           DATABASENAME   STATUS      AGE
 scheduled-es-20191002-093224   scheduled-es   Succeeded   4m19s
@@ -116,7 +116,7 @@ If you already have a running Elasticsearch that takes backup periodically, you 
 
 Edit your Elasticsearch object and remove BackupSchedule. This will stop taking future backups for this schedule.
 
-```console
+```bash
 $ kubectl edit es -n demo scheduled-es
 spec:
 #  backupSchedule:
@@ -143,7 +143,7 @@ $ kubectl edit es scheduled-es -n demo
 
 Once the `spec.backupSchedule` is added, KubeDB operator creates a Snapshot object immediately and registers to create a new Snapshot object on each tick of the cron expression.
 
-```console
+```bash
 $ kubectl get snap -n demo --selector=kubedb.com/kind=Elasticsearch,kubedb.com/name=scheduled-es
 NAME                           DATABASE          STATUS      AGE
 scheduled-es-20180214-095019   es/scheduled-es   Succeeded   17m
@@ -294,7 +294,7 @@ spec:
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo es/scheduled-es -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/scheduled-es
 
@@ -307,6 +307,6 @@ kubectl delete ns demo
 - Learn about initializing [Elasticsearch with Snapshot](/docs/guides/elasticsearch/initialization/snapshot_source.md).
 - Learn how to configure [Elasticsearch Topology](/docs/guides/elasticsearch/clustering/topology.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
-- Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/elasticsearch/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

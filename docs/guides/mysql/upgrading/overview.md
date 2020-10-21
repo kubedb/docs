@@ -19,8 +19,8 @@ This guide will give you an overview of how KubeDB enterprise operator upgrades 
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MySQL](/docs/concepts/databases/mysql.md)
-  - [MySQLOpsRequest](/docs/concepts/day-2-operations/mysqlopsrequest.md)
+  - [MySQL](/docs/guides/mysql/concepts/mysql.md)
+  - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest.md)
 
 ## How Upgrade Process Works
 
@@ -43,7 +43,7 @@ The upgrading process consists of the following steps:
 
 5. `KubeDB` enterprise operator watches for `MySQLOpsRequest`.
 
-6. When it finds one, it pauses the `MySQL` object so that the `KubeDB` community operator doesn't perform any operation on the `MySQL` during the upgrading process.  
+6. When it finds one, it halts the `MySQL` object so that the `KubeDB` community operator doesn't perform any operation on the `MySQL` during the upgrading process.  
 
 7. By looking at the target version from `MySQLOpsRequest` cr, `KubeDB` enterprise operator takes one of the following steps:
    - either update the images of the `StatefulSet` for upgrading between patch/minor versions.

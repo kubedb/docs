@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using Custom Configuration File
 
@@ -24,7 +24,7 @@ KubeDB supports providing custom configuration for MongoDB. This tutorial will s
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -37,7 +37,7 @@ MongoDB allows to configure database via configuration file. The default configu
 
 > To learn available configuration option of MongoDB see [Configuration File Options](https://docs.mongodb.com/manual/reference/configuration-options/).
 
-At first, you have to create a config file named `mongod.conf`. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `spec.configSource` section while creating MongoDB crd. KubeDB will mount this volume into `/configdb-readonly/` directory of the database pod.
+At first, you have to create a config file named `mongod.conf`. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `spec.configSecret` section while creating MongoDB crd. KubeDB will mount this volume into `/configdb-readonly/` directory of the database pod.
 
 In this tutorial, we will configure [net.maxIncomingConnections](https://docs.mongodb.com/manual/reference/configuration-options/#net.maxIncomingConnections) (default value: 65536) via a custom config file. We will use configMap as volume source.
 
@@ -55,7 +55,7 @@ Here, `maxIncomingConnections` is set to `10000`, whereas the default value is 6
 
 Now, create a configMap with this configuration file.
 
-```console
+```bash
 $ kubectl create configmap -n demo mg-custom-config --from-file=./mongod.conf
 configmap/mg-custom-config created
 ```
@@ -79,7 +79,7 @@ metadata:
   uid: 7da0467c-29f6-11e9-aebf-080027875192
 ```
 
-Now, create MongoDB crd specifying `spec.configSource` field.
+Now, create MongoDB crd specifying `spec.configSecret` field.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -97,12 +97,11 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  configSource:
-      configMap:
-        name: mg-custom-config
+  configSecret:
+    name: mg-custom-config
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/demo-1.yaml
 mongodb.kubedb.com/mgo-custom-config created
 ```
@@ -111,7 +110,7 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset,
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo mgo-custom-config-0
 NAME                  READY     STATUS    RESTARTS   AGE
 mgo-custom-config-0   1/1       Running   0          1m
@@ -121,7 +120,7 @@ Now, we will check if the database has started with the custom configuration we 
 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
-```console
+```bash
 $ kubectl get secrets -n demo mgo-custom-config-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -172,7 +171,7 @@ As we can see from the configuration of running mongodb, the value of `maxIncomi
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mgo-custom-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-custom-config
 
@@ -190,11 +189,10 @@ kubectl delete ns demo
 - Take [Scheduled Snapshot](/docs/guides/mongodb/snapshot/scheduled-backup.md) of MongoDB databases using KubeDB.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
 - Initialize [MongoDB with Snapshot](/docs/guides/mongodb/initialization/using-snapshot.md).
-- Monitor your MongoDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mongodb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
 - Use [kubedb cli](/docs/guides/mongodb/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MongoDB object](/docs/concepts/databases/mongodb.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
-- Detail concepts of [MongoDBVersion object](/docs/concepts/catalog/mongodb.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
+- Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

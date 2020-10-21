@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # X-Pack Configuration
 
@@ -24,7 +24,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -43,7 +43,7 @@ The `spec.authPlugin` is an required field in ElasticsearchVersion CRD, which sp
 
 To see, which authPlugin is used in the target ElasticsearchVersion, run the following command:
 
-```console
+```bash
 kubectl get elasticsearchversions 7.3.2 -o yaml
 ```
 
@@ -108,7 +108,7 @@ spec:
         storage: 1Gi
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/config-elasticsearch.yaml
 elasticsearch.kubedb.com/config-elasticsearch created
 ```
@@ -131,10 +131,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/elasticsearches/config-elasticsearch
   uid: 13263dfa-e35d-11e9-85c8-42010a8c002f
 spec:
-  certificateSecret:
-    secretName: config-elasticsearch-cert
-  databaseSecret:
-    secretName: config-elasticsearch-auth
+  authSecret:
+    name: config-elasticsearch-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -153,9 +151,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 7.3.2
 status:
   observedGeneration: 1$4210395375389091791
@@ -168,7 +164,7 @@ As we can see, KubeDB has created a secret named `config-elasticsearch-auth`, wh
 
 If you want to provide your own password, you need to create a secret that contains two keys: `ADMIN_USERNAME`, `ADMIN_PASSWORD`.
 
-```console
+```bash
 $ export ADMIN_PASSWORD=admin-password
 $ kubectl create secret -n demo generic config-elasticsearch-auth \
                 --from-literal=ADMIN_USERNAME=elastic \
@@ -176,13 +172,13 @@ $ kubectl create secret -n demo generic config-elasticsearch-auth \
 secret/config-elasticsearch-auth created
 ```
 
-> Use this Secret `config-elasticsearch-auth` in `spec.databaseSecret` field of your Elasticsearch object while creating the elasticsearch for the 1st time. Changing the password after creating, won't work at this time.
+> Use this Secret `config-elasticsearch-auth` in `spec.authSecret` field of your Elasticsearch object while creating the elasticsearch for the 1st time. Changing the password after creating, won't work at this time.
 
 ## Connect to Elasticsearch Database
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created.
 
-```console
+```bash
 $ kubectl get es -n demo config-elasticsearch -o wide
 NAME                   VERSION   STATUS    AGE
 config-elasticsearch   7.3.2     Running   2m8s
@@ -190,7 +186,7 @@ config-elasticsearch   7.3.2     Running   2m8s
 
 To connect to the elasticsearch node, we are going to use port forward to the elasticsearch pod. Run following command on a separate terminal,
 
-```console
+```bash
 $ kubectl port-forward -n demo config-elasticsearch-0 9200
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
@@ -201,21 +197,21 @@ Forwarding from [::1]:9200 -> 9200
 - Address: `localhost:9200`
 - Username: Run following command to get *username*
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo config-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
     elastic
   ```
 
 - Password: Run following command to get *password*
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo config-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
     ruobj2eo
   ```
 
 Firstly, try to connect to this database without providing any authentication. You will face the following error:
 
-```console
+```bash
 $ curl "localhost:9200/_cluster/health?pretty"
 ```
 
@@ -366,7 +362,7 @@ As you can see, `xpack.security.enabled` is set to true.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo es/config-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/config-elasticsearch
 

@@ -23,14 +23,14 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the r
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MongoDB](/docs/concepts/databases/mongodb.md)
+  - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
   - [Replicaset](/docs/guides/mongodb/clustering/replicaset.md) 
-  - [MongoDBOpsRequest](/docs/concepts/day-2-operations/mongodbopsrequest.md)
+  - [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
   - [Vertical Scaling Overview](/docs/guides/mongodb/scaling/vertical-scaling/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -79,14 +79,14 @@ spec:
 
 Let's create the `MongoDB` CR we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/mg-shard.yaml
 mongodb.kubedb.com/mg-sharding created
 ```
 
 Now, wait until `mg-sharding` has status `Running`. i.e,
 
-```console
+```bash
 $ kubectl get mg -n demo                                                            
 NAME          VERSION    STATUS    AGE
 mg-sharding   3.6.8-v1   Running   8m51s
@@ -94,7 +94,7 @@ mg-sharding   3.6.8-v1   Running   8m51s
 
 Let's check the Pod containers resources of various components (mongos, shard, configserver etc.) of the database,
 
-```console
+```bash
 $ kubectl get pod -n demo mg-sharding-mongos-0 -o json | jq '.spec.containers[].resources'
   {}
 
@@ -163,7 +163,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/vertical-scaling/mops-vscale-shard.yaml
 mongodbopsrequest.ops.kubedb.com/mops-vscale-shard created
 ```
@@ -174,7 +174,7 @@ If everything goes well, `KubeDB` Enterprise operator will update the resources 
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
-```console
+```bash
 $ kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                TYPE              STATUS       AGE
@@ -183,7 +183,7 @@ mops-vscale-shard   VerticalScaling   Successful   8m21s
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
-```console
+```bash
 $ kubectl describe mongodbopsrequest -n demo mops-vscale-shard
 Name:         mops-vscale-shard
 Namespace:    demo
@@ -303,11 +303,11 @@ Status:
     Status:                True
     Type:                  VerticalScaling
     Last Transition Time:  2020-09-21T04:51:47Z
-    Message:               Successfully paused mongodb: mg-sharding
+    Message:               Successfully halted mongodb: mg-sharding
     Observed Generation:   1
-    Reason:                PauseDatabase
+    Reason:                HaltDatabase
     Status:                True
-    Type:                  PauseDatabase
+    Type:                  HaltDatabase
     Last Transition Time:  2020-09-21T04:51:47Z
     Message:               Successfully updated StatefulSets Resources
     Observed Generation:   1
@@ -350,13 +350,13 @@ Events:
   Type    Reason                       Age   From                        Message
   ----    ------                       ----  ----                        -------
   Normal  UpdateStatefulSetResources   29m   KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-  Normal  PauseDatabase                29m   KubeDB Enterprise Operator  Successfully Paused MongoDB mg-sharding in Namespace demo
+  Normal  HaltDatabase                29m   KubeDB Enterprise Operator  Successfully Halted MongoDB mg-sharding in Namespace demo
   Normal  Starting                     29m   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-mongos
   Normal  Starting                     29m   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-configsvr
   Normal  Starting                     29m   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-shard0
   Normal  Starting                     29m   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-shard1
   Normal  Starting                     29m   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-sharding-shard2
-  Normal  PauseDatabase                29m   KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
+  Normal  HaltDatabase                29m   KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
   Normal  UpdateConfigServerResources  28m   KubeDB Enterprise Operator  Successfully Vertically Scaled ConfigServer Resources
   Normal  UpdateShardResources         21m   KubeDB Enterprise Operator  Successfully Vertically Scaled Shard Resources
   Normal  UpdateMongosResources        20m   KubeDB Enterprise Operator  Successfully Vertically Scaled Mongos Resources
@@ -368,7 +368,7 @@ Events:
 
 Now, we are going to verify from one of the Pod yaml whether the resources of the shard nodes has updated to meet up the desired state, Let's check,
 
-```console
+```bash
 $ kubectl get pod -n demo mg-sharding-shard0-0 -o json | jq '.spec.containers[].resources'                                                                           12:56:06
   {
     "limits": {
@@ -412,7 +412,7 @@ The above output verifies that we have successfully scaled the resources of all 
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete mg -n demo mg-shard
 kubectl delete mongodbopsrequest -n demo mops-vscale-shard
 ```

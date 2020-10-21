@@ -23,14 +23,14 @@ This guide will show you how to use `KubeDB` Enterprise operator to scale the re
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MongoDB](/docs/concepts/databases/mongodb.md)
+  - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
   - [Replicaset](/docs/guides/mongodb/clustering/replicaset.md) 
-  - [MongoDBOpsRequest](/docs/concepts/day-2-operations/mongodbopsrequest.md)
+  - [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
   - [Horizontal Scaling Overview](/docs/guides/mongodb/scaling/horizontal-scaling/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -72,14 +72,14 @@ spec:
 
 Let's create the `MongoDB` CR we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/mg-replicaset.yaml
 mongodb.kubedb.com/mg-replicaset created
 ```
 
 Now, wait until `mg-replicaset` has status `Running`. i.e,
 
-```console
+```bash
 $ kubectl get mg -n demo                                                                                                                                             20:05:47
   NAME            VERSION    STATUS    AGE
   mg-replicaset   3.6.8-v1   Running   2m36s
@@ -87,7 +87,7 @@ $ kubectl get mg -n demo                                                        
 
 Let's check the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'                                                                                            11:02:09
 3
 
@@ -100,7 +100,7 @@ We can see from both command that the database has 3 replicas in the replicaset.
 Also, we can verify the replicas of the replicaset from an internal mongodb command by execing into a replica.
 
 First we need to get the username and password to connect to a mongodb instance,
-```console
+```bash
 $ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\username}' | base64 -d                                                                         11:09:51
 root
 
@@ -110,7 +110,7 @@ nrKuxni0wDSMrgwy
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 
-```console
+```bash
 $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
 [
     {
@@ -226,7 +226,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/horizontal-scaling/mops-hscale-up-replicaset.yaml
 mongodbopsrequest.ops.kubedb.com/mops-hscale-up-replicaset created
 ```
@@ -237,7 +237,7 @@ If everything goes well, `KubeDB` Enterprise operator will update the replicas o
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
-```console
+```bash
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                        TYPE                STATUS       AGE
@@ -246,7 +246,7 @@ mops-hscale-up-replicaset   HorizontalScaling   Successful   106s
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
-```console
+```bash
 $ kubectl describe mongodbopsrequest -n demo mops-hscale-up-replicaset                     
   Name:         mops-hscale-up-replicaset
   Namespace:    demo
@@ -309,11 +309,11 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-up-replicaset
       Status:                True
       Type:                  Scaling
       Last Transition Time:  2020-08-26T05:22:33Z
-      Message:               Successfully paused mongodb: mg-replicaset
+      Message:               Successfully halted mongodb: mg-replicaset
       Observed Generation:   1
-      Reason:                PauseDatabase
+      Reason:                HaltDatabase
       Status:                True
-      Type:                  PauseDatabase
+      Type:                  HaltDatabase
       Last Transition Time:  2020-08-26T05:23:18Z
       Message:               Successfully Scaled Up Replicas of StatefulSet
       Observed Generation:   1
@@ -337,10 +337,10 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-up-replicaset
   Events:
     Type    Reason             Age    From                        Message
     ----    ------             ----   ----                        -------
-    Normal  PauseDatabase      2m10s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-    Normal  PauseDatabase      2m10s  KubeDB Enterprise Operator  Successfully Paused Mongodb mg-replicaset in Namespace demo
-    Normal  PauseDatabase      2m10s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-    Normal  PauseDatabase      2m10s  KubeDB Enterprise Operator  Successfully Paused Mongodb mg-replicaset in Namespace demo
+    Normal  HaltDatabase      2m10s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
+    Normal  HaltDatabase      2m10s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
+    Normal  HaltDatabase      2m10s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
+    Normal  HaltDatabase      2m10s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
     Normal  ScaleUpReplicaSet  85s    KubeDB Enterprise Operator  Successfully Scaled Up Replicas of StatefulSet
     Normal  ResumeDatabase     85s    KubeDB Enterprise Operator  Resuming MongoDB
     Normal  ResumeDatabase     85s    KubeDB Enterprise Operator  Successfully Resumed mongodb
@@ -349,7 +349,7 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-up-replicaset
 
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'                                                                                            11:26:38
 4
 
@@ -358,7 +358,7 @@ $ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.replicas'           
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
-```console
+```bash
 $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet             11:28:20
   
   [
@@ -501,7 +501,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/horizontal-scaling/mops-hscale-down-replicaset.yaml
 mongodbopsrequest.ops.kubedb.com/mops-hscale-down-replicaset created
 ```
@@ -512,7 +512,7 @@ If everything goes well, `KubeDB` Enterprise operator will update the replicas o
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
-```console
+```bash
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                          TYPE                STATUS       AGE
@@ -521,7 +521,7 @@ mops-hscale-down-replicaset   HorizontalScaling   Successful   2m32s
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
-```console
+```bash
 $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-replicaset                     
  Name:         mops-hscale-down-replicaset
  Namespace:    demo
@@ -584,11 +584,11 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-replicaset
      Status:                True
      Type:                  Scaling
      Last Transition Time:  2020-08-26T05:36:49Z
-     Message:               Successfully paused mongodb: mg-replicaset
+     Message:               Successfully halted mongodb: mg-replicaset
      Observed Generation:   1
-     Reason:                PauseDatabase
+     Reason:                HaltDatabase
      Status:                True
-     Type:                  PauseDatabase
+     Type:                  HaltDatabase
      Last Transition Time:  2020-08-26T05:36:54Z
      Message:               Successfully Scale Down Replicas of Replicaset
      Observed Generation:   1
@@ -612,8 +612,8 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-replicaset
  Events:
    Type    Reason               Age    From                        Message
    ----    ------               ----   ----                        -------
-   Normal  PauseDatabase        3m1s   KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-   Normal  PauseDatabase        3m1s   KubeDB Enterprise Operator  Successfully Paused Mongodb mg-replicaset in Namespace demo
+   Normal  HaltDatabase        3m1s   KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
+   Normal  HaltDatabase        3m1s   KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
    Normal  ScalingDown          3m1s   KubeDB Enterprise Operator  Scaling Down Replicas of replicaSet
    Normal  ScalingDown          3m1s   KubeDB Enterprise Operator  Scaling Down Replicas of replicaSet
    Normal  ScaleDownReplicaSet  2m56s  KubeDB Enterprise Operator  Successfully Scale Down Replicas of Replicaset
@@ -624,7 +624,7 @@ $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-replicaset
 
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
-```console
+```bash
 $ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas' 
 3
 
@@ -633,7 +633,7 @@ $ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.replicas'
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
-```console
+```bash
 $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet 
 
 [
@@ -722,7 +722,7 @@ From all the above outputs we can see that the replicas of the replicaset is `3`
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete mg -n demo mg-replicaset
 kubectl delete mongodbopsrequest -n demo mops-vscale-replicaset
 ```

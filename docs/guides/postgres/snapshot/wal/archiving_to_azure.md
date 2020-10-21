@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Continuous Archiving to Azure
 
@@ -26,7 +26,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -76,7 +76,7 @@ Storage Secret for **WAL-G** is needed with the following 2 keys:
 | `AZURE_ACCOUNT_NAME` | `Required`. Azure Storage account name |
 | `AZURE_ACCOUNT_KEY`  | `Required`. Azure Storage account key  |
 
-```console
+```bash
 $ echo -n '<your-azure-storage-account-name>' > AZURE_ACCOUNT_NAME
 $ echo -n '<your-azure-storage-account-key>' > AZURE_ACCOUNT_KEY
 $ kubectl create secret generic azure-secret \
@@ -113,7 +113,7 @@ To configure Azure backend, following parameters are available:
 
 Now create this Postgres object with continuous archiving support.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/snapshot/wal-postgres-azure.yaml
 postgres.kubedb.com/wal-postgres created
 ```
@@ -142,7 +142,7 @@ The data will be intact in other scenarios.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo pg/wal-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/wal-postgres
 

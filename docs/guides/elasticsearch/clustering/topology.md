@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Elasticsearch Topology
 
@@ -24,7 +24,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -68,12 +68,12 @@ Here,
 
 Create example above with following command
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/clustering/multi-node-es.yaml
 elasticsearch.kubedb.com/multi-node-es created
 ```
 
-```console
+```bash
 $ kubectl get es -n demo
 NAME            VERSION   STATUS    AGE
 multi-node-es   7.3.2     Running   7m38s
@@ -261,14 +261,14 @@ Here,
 
 Let's create this Elasticsearch object
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/clustering/topology-es.yaml
 elasticsearch.kubedb.com/topology-es created
 ```
 
 When this object is created, Elasticsearch database has started with 5 pods under 3 different StatefulSets.
 
-```console
+```bash
 $ kubectl get statefulset -n demo --show-labels --selector="kubedb.com/kind=Elasticsearch,kubedb.com/name=topology-es"
 NAME                 READY   AGE     LABELS
 client-topology-es   2/2     2m44s   app.kubernetes.io/component=database,app.kubernetes.io/instance=topology-es,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearch,app.kubernetes.io/version=7.3.2,kubedb.com/kind=Elasticsearch,kubedb.com/name=topology-es,node.role.client=set
@@ -351,7 +351,7 @@ Three StatefulSets are created for *client*, *data* and *master* node respective
 
 Let's describe this Elasticsearch
 
-```console
+```bash
 $ kubectl dba describe es -n demo topology-es
 Name:               topology-es
 Namespace:          demo
@@ -516,7 +516,7 @@ Two services are also created for this Elasticsearch object.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo es/multi-node-es es/topology-es -p '{"spec":{"terminationPolicy": "WipeOut"}}' --type="merge"
 kubectl delete -n demo es/multi-node-es es/topology-es
 
@@ -529,8 +529,7 @@ kubectl delete ns demo
 - Learn how to [schedule backup](/docs/guides/elasticsearch/snapshot/scheduled_backup.md)  of Elasticsearch database.
 - Learn about initializing [Elasticsearch with Snapshot](/docs/guides/elasticsearch/initialization/snapshot_source.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
-- Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/elasticsearch/monitoring/using-coreos-prometheus-operator.md).
-- Detail concepts of [Elasticsearch object](/docs/concepts/databases/elasticsearch.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
+- Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
+- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

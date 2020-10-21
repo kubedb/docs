@@ -6,8 +6,6 @@ metadata:
 spec:
   version: "9.6.7-v3"
   replicas: 2
-  updateStrategy:
-    type: RollingUpdate
   storage:
     storageClassName: "standard"
     accessModes:

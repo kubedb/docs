@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # MySQL QuickStart
 
@@ -141,13 +141,13 @@ Here,
 - `spec.version` is the name of the MySQLVersion CRD where the docker images are specified. In this tutorial, a MySQL `8.0.21` database is going to create.
 - `spec.storageType` specifies the type of storage that will be used for MySQL database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MySQL database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/mysql.md#specterminationpolicy)
+- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/mysql.md#specterminationpolicy)
 
 > Note: spec.storage section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
 KubeDB operator watches for `MySQL` objects using Kubernetes api. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present.
 
-```console
+```bash
 $ kubectl dba describe my -n demo mysql-quickstart
 Name:               mysql-quickstart
 Namespace:          demo
@@ -161,7 +161,7 @@ Volume:
   StorageClass:      standard
   Capacity:          1Gi
   Access Modes:      RWO
-Paused:              false
+Halted:              false
 Halted:              false
 Termination Policy:  DoNotTerminate
 
@@ -304,8 +304,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mysqls/mysql-quickstart
   uid: 837ac85a-134a-457e-b126-f4681d92f117
 spec:
-  databaseSecret:
-    secretName: mysql-quickstart-auth
+  authSecret:
+    name: mysql-quickstart-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -325,8 +325,6 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: DoNotTerminate
-  updateStrategy:
-    type: RollingUpdate
   version: 8.0.21
 status:
   observedGeneration: 2
@@ -337,7 +335,7 @@ status:
 
 KubeDB operator has created a new Secret called `mysql-quickstart-auth` *(format: {mysql-object-name}-auth)* for storing the password for `mysql` superuser. This secret contains a `username` key which contains the *username* for MySQL superuser and a `password` key which contains the *password* for MySQL superuser.
 
-If you want to use an existing secret please specify that when creating the MySQL object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/concepts/databases/mysql.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the MySQL object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/mysql.md#specdatabasesecret).
 
 Now, you can connect to this database from the phpMyAdmin dashboard using the database pod IP and and `mysql` user password.
 
@@ -372,18 +370,18 @@ When `terminationPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `
 
 ```bash
 $ kubectl delete my mysql-quickstart -n demo
-Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" denied the request: mysql "mysql-quickstart" can't be paused. To delete, change spec.terminationPolicy
+Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" denied the request: mysql "mysql-quickstart" can't be halted. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubectl edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` (which deletes the mysql object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/pause the database.
+Now, run `kubectl edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` (which deletes the mysql object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
-Learn details of all `TerminationPolicy` [here](/docs/concepts/databases/mysql.md#specterminationpolicy).
+Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/mysql.md#specterminationpolicy).
 
 **Halt:**
 
 Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `MySQL` object `terminationPolicy` to `Halt`.
 
-When the [TerminationPolicy](/docs/concepts/databases/mysql.md#specterminationpolicy) is set to `halt` and the MySQL object is deleted, the KubeDB operator will delete the StatefulSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `halt` in existing database using `edit` command for testing.
+When the [TerminationPolicy](/docs/guides/mysql/concepts/mysql.md#specterminationpolicy) is set to `halt` and the MySQL object is deleted, the KubeDB operator will delete the StatefulSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `halt` in existing database using `edit` command for testing.
 
 At first, run `kubectl edit my mysql-quickstart -n demo` to set `spec.terminationPolicy` to `Halt`. Then delete the mysql object,
 
@@ -406,13 +404,13 @@ persistentvolumeclaim/data-mysql-quickstart-0   Bound    pvc-716f627c-9aa2-47b6-
 
 From the above output, you can see that all mysql resources(`StatefulSet`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your mysql again using this resources.
 
->You can also set the `terminationPolicy` to `Pause`(deprecated). It's behavior same as `halt` and right now `Pause` is replaced by `Halt`.
+>You can also set the `terminationPolicy` to `Halt`(deprecated). It's behavior same as `halt` and right now `Halt` is replaced by `Halt`.
 
 **Delete:**
 
 If you want to delete the existing database along with the volumes used, but want to restore the database from previously taken `snapshots` and `secrets` then you might want to set the `MySQL` object `terminationPolicy` to `Delete`. In this setting, `StatefulSet` and the volumes will be deleted. If you decide to restore the database, you can do so using the snapshots and the credentials.
 
-When the [TerminationPolicy](/docs/concepts/databases/mysql.md#specterminationpolicy) is set to `Delete` and the MySQL object is deleted, the KubeDB operator will delete the StatefulSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
+When the [TerminationPolicy](/docs/guides/mysql/concepts/mysql.md#specterminationpolicy) is set to `Delete` and the MySQL object is deleted, the KubeDB operator will delete the StatefulSet and its pods along with PVCs but leaves the `secret` and database backup data(`snapshots`) intact.
 
 Suppose, we have a database with `terminationPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
@@ -497,14 +495,14 @@ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular MySQL crd when you delete the crd. For more details about termination policy, please visit [here](/docs/concepts/databases/mysql.md#specterminationpolicy).
+2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular MySQL crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/mysql/concepts/mysql.md#specterminationpolicy).
 
 ## Next Steps
 
 - Initialize [MySQL with Script](/docs/guides/mysql/initialization/using-script.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MySQL with KubeDB.
-- Detail concepts of [MySQL object](/docs/concepts/databases/mysql.md).
-- Detail concepts of [MySQLVersion object](/docs/concepts/catalog/mysql.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
+- Detail concepts of [MySQLVersion object](/docs/guides/mysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

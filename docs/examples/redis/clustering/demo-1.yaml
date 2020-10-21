@@ -17,5 +17,3 @@ spec:
     storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
-  updateStrategy:
-    type: RollingUpdate

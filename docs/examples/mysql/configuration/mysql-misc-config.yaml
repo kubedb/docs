@@ -25,5 +25,3 @@ spec:
           memory: "1Gi"
           cpu: "250m"
   terminationPolicy: Halt
-  updateStrategy:
-    type: RollingUpdate

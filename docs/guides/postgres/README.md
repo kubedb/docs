@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/postgres/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 ## Supported PostgreSQL Features
 
@@ -33,7 +33,7 @@ aliases:
 | Initialization from Snapshot       |   &#10003;   |
 | Initialization using Script        |   &#10003;   |
 | Builtin Prometheus Discovery       |   &#10003;   |
-| Using CoreOS Prometheus Operator   |   &#10003;   |
+| Using Prometheus operator   |   &#10003;   |
 | Custom Configuration               |   &#10003;   |
 | Using Custom docker image          |   &#10003;   |
 
@@ -59,7 +59,7 @@ aliases:
 
 Supported PostgresVersion objects for KubeDB-{{< param "info.version" >}} release,
 
-```console
+```bash
 $ kubectl get postgresversions
 NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
 10.2       10.2      kubedb/postgres:10.2       true         75m
@@ -112,8 +112,7 @@ Note: Here `Deprecated: true` `PostgresVersions` are not supported in {{< param 
 - [Streaming Replication](/docs/guides/postgres/clustering/streaming_replication.md) for PostgreSQL clustering.
 - [Continuous Archiving](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) of Write-Ahead Log by `wal-g`.
 - Monitor your PostgreSQL database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
-- Monitor your PostgreSQL database with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/postgres/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PostgreSQL database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/postgres/private-registry/using-private-registry.md) to deploy PostgreSQL with KubeDB.
-- Detail concepts of [Postgres object](/docs/concepts/databases/postgres.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
+- Detail concepts of [Postgres object](/docs/guides/postgres/concepts/postgres.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

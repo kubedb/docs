@@ -10,11 +10,11 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Run MySQL with Custom Configuration
 
-KubeDB supports providing custom configuration for MySQL via [PodTemplate](/docs/concepts/databases/mysql.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a MySQL database with custom configuration using PodTemplate.
+KubeDB supports providing custom configuration for MySQL via [PodTemplate](/docs/guides/mysql/concepts/mysql.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a MySQL database with custom configuration using PodTemplate.
 
 ## Before You Begin
 
@@ -24,7 +24,7 @@ KubeDB supports providing custom configuration for MySQL via [PodTemplate](/docs
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -54,11 +54,11 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - priority
   - securityContext
 
-Read about the fields in details in [PodTemplate concept](/docs/concepts/databases/mysql.md#specpodtemplate),
+Read about the fields in details in [PodTemplate concept](/docs/guides/mysql/concepts/mysql.md#specpodtemplate),
 
 ## CRD Configuration
 
-Below is the YAML for the MySQL created in this example. Here, [`spec.podTemplate.spec.env`](/docs/concepts/databases/mysql.md#specpodtemplatespecenv) specifies environment variables and [`spec.podTemplate.spec.args`](/docs/concepts/databases/mysql.md#specpodtemplatespecargs) provides extra arguments for [MySQL Docker Image](https://hub.docker.com/_/mysql/).
+Below is the YAML for the MySQL created in this example. Here, [`spec.podTemplate.spec.env`](/docs/guides/mysql/concepts/mysql.md#specpodtemplatespecenv) specifies environment variables and [`spec.podTemplate.spec.args`](/docs/guides/mysql/concepts/mysql.md#specpodtemplatespecargs) provides extra arguments for [MySQL Docker Image](https://hub.docker.com/_/mysql/).
 
 In this tutorial, an initial database `myDB` will be created by providing `env` `MYSQL_DATABASE` while the server character set will be set to `utf8mb4` by adding extra `args`. Note that, `character-set-server` in `MySQL 5.7.31` is `latin1`.
 
@@ -90,11 +90,9 @@ spec:
           memory: "1Gi"
           cpu: "250m"
   terminationPolicy: WipeOut
-  updateStrategy:
-    type: RollingUpdate
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/configuration/mysql-misc-config.yaml
 mysql.kubedb.com/mysql-misc-config created
 ```
@@ -160,7 +158,7 @@ url: http://172.18.0.4:30942
 
 Now, let's connect to the database from the phpMyAdmin dashboard using the database pod IP and MySQL user password.
 
-```console
+```bash
 $ kubectl get pods mysql-misc-config-0 -n demo -o yaml | grep IP
   ...
   hostIP: 10.0.2.15
@@ -183,7 +181,7 @@ Once, you have connected to the database with phpMyAdmin go to **SQL** tab and r
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo my/mysql-misc-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo my/mysql-misc-config
 
@@ -193,15 +191,15 @@ kubectl delete service -n demo myadmin
 kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 
 - [Quickstart MySQL](/docs/guides/mysql/quickstart/quickstart.md) with KubeDB Operator.
 - Initialize [MySQL with Script](/docs/guides/mysql/initialization/using-script.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
 - Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MySQL with KubeDB.
 - Use [kubedb cli](/docs/guides/mysql/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MySQL object](/docs/concepts/databases/mysql.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

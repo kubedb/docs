@@ -23,13 +23,13 @@ This guide will show you how to use `KubeDB` enterprise operator to upgrade the 
 - Install `KubeDB` community and enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MySQL](/docs/concepts/databases/mysql.md)
-  - [MySQLOpsRequest](/docs/concepts/day-2-operations/mysqlopsrequest.md)
+  - [MySQL](/docs/guides/mysql/concepts/mysql.md)
+  - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest.md)
   - [Upgrading Overview](/docs/guides/mysql/upgrading/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -48,7 +48,7 @@ At first, we are going to deploy a group replication using supported that `MySQL
 
 When you have installed `KubeDB`, it has created `MySQLVersion` CR for all supported `MySQL` versions. Let’s check the supported `MySQL` versions,
 
-```console
+```bash
 $ kubectl get mysqlversion
 NAME        VERSION   DB_IMAGE                 DEPRECATED   AGE
 5           5         kubedb/mysql:5           true         149m
@@ -82,7 +82,7 @@ The version above that does not show `DEPRECATED` true is supported by `KubeDB` 
 
 Database version upgrade constraints is a constraint that shows whether it is possible or not possible to upgrade from one version to another. Let's check the version upgrade constraints of `MySQL` `5.7.29`,
 
-```console
+```bash
 $ kubectl get mysqlversion 5.7.29 -o yaml
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
@@ -157,7 +157,7 @@ spec:
 
 Let's create the `MySQL` cr we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/upgrading/minorversion/group_replication.yaml
 mysql.kubedb.com/my-group created
 ```
@@ -167,7 +167,7 @@ mysql.kubedb.com/my-group created
 `KubeDB` operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, `KubeDB` operator will create a new StatefulSet, Services, and Secrets, etc. A secret called `my-group-auth` (format: <em>{mysql-object-name}-auth</em>) will be created storing the password for mysql superuser.
 Now, watch `MySQL` is going to  `Running` state and also watch `StatefulSet` and its pod is created and going to `Running` state,
 
-```console
+```bash
 $ watch -n 3 kubectl get my -n demo my-group
 Every 3.0s: kubectl get my -n demo my-group                      suaas-appscode: Thu Jun 18 14:30:24 2020
 
@@ -191,7 +191,7 @@ my-group-2   2/2     Running   0          6m48s
 
 Let's verify the `MySQL`, the `StatefulSet` and its `Pod` image version,
 
-```console
+```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
 5.7.29
 
@@ -206,7 +206,7 @@ $ kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o j
 
 Let's also verify that the StatefulSet’s pods have joined into the group replication,
 
-```console
+```bash
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -256,7 +256,7 @@ Here,
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/upgrading/minorversion/upgrade_minor_version_group.yaml
 mysqlopsrequest.ops.kubedb.com/my-upgrade-minor-group created
 ```
@@ -267,7 +267,7 @@ If everything goes well, `KubeDB` enterprise operator will update the image of `
 
 At first, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
-```console
+```bash
 $ watch -n 3 kubectl get myops -n demo my-upgrade-minor-group
 Every 3.0s: kubectl get myops -n demo my-upgrade-minor-group     suaas-appscode: Sat Jul 25 21:41:39 2020
 
@@ -277,7 +277,7 @@ my-upgrade-minor-group   Upgrade   Successful   5m26s
 
 You can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the `MySQL` group replication is updated with the new version and the `StatefulSet` is created with a new image.
 
-```console
+```bash
 $ kubectl describe myops -n demo my-upgrade-minor-group
 Name:         my-upgrade-minor-group
 Namespace:    demo
@@ -309,11 +309,11 @@ Status:
     Status:                True
     Type:                  Progressing
     Last Transition Time:  2020-08-12T08:34:33Z
-    Message:               Controller has successfully Paused the MySQL database: demo/my-group 
+    Message:               Controller has successfully Halted the MySQL database: demo/my-group 
     Observed Generation:   1
-    Reason:                SuccessfullyPausedDatabase
+    Reason:                SuccessfullyHaltedDatabase
     Status:                True
-    Type:                  PauseDatabase
+    Type:                  HaltDatabase
     Last Transition Time:  2020-08-12T08:34:33Z
     Message:               MySQL version upgrading stated for MySQLOpsRequest: demo/my-upgrade-minor-group
     Observed Generation:   1
@@ -345,7 +345,7 @@ Events:
   ----    ------      ----   ----                        -------
   Normal  Starting    7m59s  KubeDB Enterprise Operator  Start processing for MySQLOpsRequest: demo/my-upgrade-minor-group
   Normal  Starting    7m59s  KubeDB Enterprise Operator  Pausing MySQL databse: demo/my-group
-  Normal  Successful  7m59s  KubeDB Enterprise Operator  Successfully paused MySQL database: demo/my-group for MySQLOpsRequest: my-upgrade-minor-group
+  Normal  Successful  7m59s  KubeDB Enterprise Operator  Successfully halted MySQL database: demo/my-group for MySQLOpsRequest: my-upgrade-minor-group
   Normal  Starting    7m59s  KubeDB Enterprise Operator  Upgrading MySQL images: demo/my-group for MySQLOpsRequest: my-upgrade-minor-group
   Normal  Successful  4m59s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1
   Normal  Successful  4m39s  KubeDB Enterprise Operator  Image successfully upgraded for Pod: demo/my-group-1
@@ -366,7 +366,7 @@ Events:
 
 Now, we are going to verify whether the `MySQL` and `StatefulSet` and it's `Pod` have updated with new image. Let's check,
 
-```console
+```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
 5.7.31
 
@@ -381,7 +381,7 @@ $ kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o j
 
 Let's also check the StatefulSet pods have joined the `MySQL` group replication,
 
-```console
+```bash
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -405,7 +405,7 @@ You can see above that our `MySQL` group replication now has updated members. It
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete my -n demo my-group
 kubectl delete myops -n demo my-upgrade-minor-group
 ```

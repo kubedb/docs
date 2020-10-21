@@ -13,8 +13,8 @@ spec:
       storageSecretName: s3-secret
       s3:
         bucket: kubedb
-  databaseSecret:
-    secretName: p1-auth
+  authSecret:
+    name: p1-auth
   storageType: "Durable"
   storage:
     storageClassName: standard
@@ -34,15 +34,14 @@ spec:
       bucket: kubedb-qa
       prefix: demo
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
-      namespace: demo
-      labels:
-        app: kubedb
-      interval: 10s
-  configSource:
-    configMap:
-      name: pg-custom-config
+      serviceMonitor:
+        labels:
+          app: kubedb
+        interval: 10s
+  configSecret:
+    name: pg-custom-config
   podTemplate:
     annotations:
       passMe: ToDatabasePod
@@ -74,6 +73,4 @@ spec:
       - name:  http
         port:  5432
         targetPort: http
-  updateStrategy:
-    type: RollingUpdate
   terminationPolicy: "DoNotTerminate"

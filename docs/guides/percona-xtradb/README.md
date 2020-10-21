@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/percona-xtradb/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 ## Supported PerconaXtraDB Features
 
@@ -28,7 +28,7 @@ aliases:
 | Custom Configuration                                    |   &#10003;   |
 | Using Custom docker image                               |   &#10003;   |
 | Builtin Prometheus Discovery                            |   &#10003;   |
-| Using CoreOS Prometheus Operator                        |   &#10003;   |
+| Using Prometheus operator                        |   &#10003;   |
 
 ## Life Cycle of a PerconaXtraDB Object
 
@@ -62,11 +62,11 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - [Overview](/docs/guides/percona-xtradb/overview/overview.md) of PerconaXtraDB.
 - [Quickstart PerconaXtraDB](/docs/guides/percona-xtradb/quickstart/quickstart.md) with KubeDB Operator.
 - How to run [PerconaXtraDB Cluster](/docs/guides/percona-xtradb/clustering/percona-xtradb-cluster.md).
-- Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/percona-xtradb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/percona-xtradb/monitoring/using-prometheus-operator.md).
 - Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/percona-xtradb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/percona-xtradb/private-registry/using-private-registry.md) to deploy PerconaXtraDB with KubeDB.
 - Use Stash to [Backup PerconaXtraDB](/docs/guides/percona-xtradb/snapshot/stash.md).
 - How to use [custom configuration](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
-- Detail concepts of [PerconaXtraDB object](/docs/concepts/databases/percona-xtradb.md).
-- Detail concepts of [PerconaXtraDBVersion object](/docs/concepts/catalog/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDBVersion object](/docs/guides/percona-xtradb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

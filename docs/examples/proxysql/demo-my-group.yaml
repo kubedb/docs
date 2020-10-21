@@ -20,5 +20,3 @@ spec:
       requests:
         storage: 1Gi
   terminationPolicy: WipeOut
-  updateStrategy:
-    type: RollingUpdate

@@ -10,11 +10,11 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Run MongoDB with Custom Configuration
 
-KubeDB supports providing custom configuration for MongoDB via [PodTemplate](/docs/concepts/databases/mongodb.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a MongoDB database with custom configuration using PodTemplate.
+KubeDB supports providing custom configuration for MongoDB via [PodTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a MongoDB database with custom configuration using PodTemplate.
 
 ## Before You Begin
 
@@ -24,7 +24,7 @@ KubeDB supports providing custom configuration for MongoDB via [PodTemplate](/do
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -55,11 +55,11 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - priority
   - securityContext
 
-Read about the fields in details in [PodTemplate concept](/docs/concepts/databases/mongodb.md#specpodtemplate),
+Read about the fields in details in [PodTemplate concept](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate),
 
 ## CRD Configuration
 
-Below is the YAML for the MongoDB created in this example. Here, [`spec.podTemplate.spec.env`](/docs/concepts/databases/mongodb.md#specpodtemplatespecenv) specifies environment variables and [`spec.podTemplate.spec.args`](/docs/concepts/databases/mongodb.md#specpodtemplatespecargs) provides extra arguments for [MongoDB Docker Image](https://hub.docker.com/_/mongodb/).
+Below is the YAML for the MongoDB created in this example. Here, [`spec.podTemplate.spec.env`](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplatespecenv) specifies environment variables and [`spec.podTemplate.spec.args`](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplatespecargs) provides extra arguments for [MongoDB Docker Image](https://hub.docker.com/_/mongodb/).
 
 In this tutorial, `maxIncomingConnections` is set to `100` (default, 65536) through args `--maxConns=100`.
 
@@ -87,12 +87,10 @@ spec:
         requests:
           memory: "1Gi"
           cpu: "250m"
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/mgo-misc-config.yaml
 mongodb.kubedb.com/mgo-misc-config created
 ```
@@ -101,7 +99,7 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset,
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo
 NAME                READY     STATUS    RESTARTS   AGE
 mgo-misc-config-0   1/1       Running   0          14m
@@ -111,7 +109,7 @@ Now, check if the database has started with the custom configuration we have pro
 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
-```console
+```bash
 $ kubectl get secrets -n demo mgo-misc-config-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -182,7 +180,7 @@ spec:
       - --gzip
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/snapshot-misc-conf.yaml
 snapshot.kubedb.com/snap-mongodb-config created
 
@@ -220,7 +218,7 @@ status:
   phase: Running
 ```
 
-```console
+```bash
 $ kubectl get snap -n demo
 NAME                              DATABASENAME      STATUS      AGE
 mgo-misc-config-20181002-105247   mgo-misc-config   Succeeded   3m
@@ -234,7 +232,7 @@ snap-mongodb-config               mgo-misc-config   Succeeded   12m
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mgo-misc-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-misc-config
 
@@ -244,7 +242,7 @@ kubectl delete -n demo drmn/mgo-misc-config
 kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 
@@ -253,10 +251,9 @@ If you would like to uninstall KubeDB operator, please follow the steps [here](/
 - Take [Scheduled Snapshot](/docs/guides/mongodb/snapshot/scheduled-backup.md) of MongoDB databases using KubeDB.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
 - Initialize [MongoDB with Snapshot](/docs/guides/mongodb/initialization/using-snapshot.md).
-- Monitor your MongoDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mongodb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
 - Use [kubedb cli](/docs/guides/mongodb/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MongoDB object](/docs/concepts/databases/mongodb.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

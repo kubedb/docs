@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Initialize MongoDB using Script
 
@@ -24,7 +24,7 @@ This tutorial will show you how to use KubeDB to initialize a MongoDB database w
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -43,7 +43,7 @@ At first, we will create a ConfigMap from `init.js` file. Then, we will provide 
 
 Let's create a ConfigMap with initialization script,
 
-```console
+```bash
 $ kubectl create configmap -n demo mg-init-script \
 --from-literal=init.js="$(curl -fsSL https://github.com/kubedb/mongodb-init-scripts/raw/master/init.js)"
 configmap/mg-init-script created
@@ -74,7 +74,7 @@ spec:
         name: mg-init-script
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/Initialization/demo-1.yaml
 mongodb.kubedb.com/mgo-init-script created
 ```
@@ -85,7 +85,7 @@ Here,
 
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-crd-name>-gvr`, if one is not already present. No MongoDB specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
 
-```console
+```bash
 $ kubectl dba describe mg -n demo mgo-init-script
 Name:               mgo-init-script
 Namespace:          demo
@@ -192,8 +192,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mgo-init-script
   uid: b7bde230-29f3-11e9-aebf-080027875192
 spec:
-  databaseSecret:
-    secretName: mgo-init-script-auth
+  authSecret:
+    name: mgo-init-script-auth
   init:
     scriptSource:
       configMap:
@@ -236,9 +236,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 3.4-v3
 status:
   observedGeneration: 2$4213139756412538772
@@ -246,9 +244,9 @@ status:
 ```
 
 Please note that KubeDB operator has created a new Secret called `mgo-init-script-auth` *(format: {mongodb-object-name}-auth)* for storing the password for MongoDB superuser. This secret contains a `username` key which contains the *username* for MongoDB superuser and a `password` key which contains the *password* for MongoDB superuser.
-If you want to use an existing secret please specify that when creating the MongoDB object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`.
+If you want to use an existing secret please specify that when creating the MongoDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`.
 
-```console
+```bash
 $ kubectl get secrets -n demo mgo-init-script-auth -o yaml
 apiVersion: v1
 data:
@@ -270,7 +268,7 @@ type: Opaque
 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
-```console
+```bash
 $ kubectl get secrets -n demo mgo-init-script-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -314,7 +312,7 @@ As you can see here, the initial script has successfully created a database name
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mgo-init-script -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-init-script
 
@@ -330,9 +328,9 @@ kubectl delete ns demo
 - [Snapshot and Restore](/docs/guides/mongodb/snapshot/backup-and-restore.md) process of MongoDB databases using KubeDB.
 - Take [Scheduled Snapshot](/docs/guides/mongodb/snapshot/scheduled-backup.md) of MongoDB databases using KubeDB.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
-- Monitor your MongoDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mongodb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
-- Detail concepts of [MongoDB object](/docs/concepts/databases/mongodb.md).
-- Detail concepts of [MongoDBVersion object](/docs/concepts/catalog/mongodb.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
+- Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

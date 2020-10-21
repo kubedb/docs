@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # KubeDB - MySQL Group Replication
 
@@ -28,7 +28,7 @@ Before proceeding:
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -66,7 +66,7 @@ spec:
   terminationPolicy: WipeOut
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/clustering/demo-1.yaml
 mysql.kubedb.com/my-group created
 ```
@@ -82,7 +82,7 @@ Here,
 
 KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mysql-object-name>-gvr`.
 
-```console
+```bash
 $ kubectl dba describe my -n demo my-group
 Name:               my-group
 Namespace:          demo
@@ -96,7 +96,7 @@ Volume:
   StorageClass:      standard
   Capacity:          1Gi
   Access Modes:      RWO
-Paused:              false
+Halted:              false
 Halted:              false
 Termination Policy:  WipeOut
 
@@ -256,8 +256,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mysqls/my-group
   uid: e9f3e216-6809-11e9-89c6-080027fc7fb2
 spec:
-  databaseSecret:
-    secretName: my-group-auth
+  authSecret:
+    name: my-group-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -282,8 +282,6 @@ spec:
       baseServerID: 100
       name: dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b
     mode: GroupReplication
-  updateStrategy:
-    type: RollingUpdate
   version: 5.7.25
 status:
   observedGeneration: 2$4213139756412538772
@@ -294,11 +292,11 @@ status:
 
 KubeDB operator has created a new Secret called `my-group-auth` **(format: {mysql-object-name}-auth)** for storing the password for `mysql` superuser. This secret contains a `username` key which contains the **username** for MySQL superuser and a `password` key which contains the **password** for MySQL superuser.
 
-If you want to use an existing secret please specify that when creating the MySQL object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/concepts/databases/mysql.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the MySQL object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/mysql.md#specdatabasesecret).
 
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 
-```console
+```bash
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -310,7 +308,7 @@ The operator creates a group according to the newly created `MySQL` object. This
 
 You can connect to any of these group members. In that case you just need to specify the host name of that member Pod (either PodIP or the fully-qualified-domain-name for that Pod using the governing service named `<mysql-object-name>-gvr`) by `--host` flag.
 
-```console
+```bash
 # first list the mysql pods list
 $ kubectl get pods -n demo -l kubedb.com/name=my-group
 NAME         READY   STATUS    RESTARTS   AGE
@@ -333,7 +331,7 @@ my-group-2 ........... 172.17.0.7 ............ my-group-2.my-group-gvr.demo
 
 Now you can connect to these database using the above info. Ignore the warning message. It is happening for using password in the command.
 
-```console
+```bash
 # connect to the 1st server
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "select 1;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -366,7 +364,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 Now, you are ready to check newly created group status. Connect and run the following commands from any of the hosts and you will get the same results.
 
-```console
+```bash
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "show status like '%primary%'"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------------------------+--------------------------------------+
@@ -378,7 +376,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 The value **37ed2c72-680a-11e9-8ac3-0242ac110005** in the above table means the ID of the primary member of the group.
 
-```console
+```bash
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=MpPhZ9xbVlxvoC4d --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
@@ -396,7 +394,7 @@ In a MySQL group, only the primary member can write not the secondary. But you c
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
-```console
+```bash
 # create a database on primary
 $ kubectl exec -it -n demo my-group-0 -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "CREATE DATABASE playground;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -442,7 +440,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 Only, primary member preserves the write permission. No secondary can write data.
 
-```console
+```bash
 # try to write on secondary-1
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-gvr.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -462,7 +460,7 @@ To test automatic failover, we will force the primary Pod to restart. Since the 
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
-```console
+```bash
 # delete the primary Pod my-group-0
 $ kubectl delete pod my-group-0 -n demo
 pod "my-group-0" deleted
@@ -519,13 +517,13 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 Clean what you created in this tutorial.
 
-```console
+```bash
 kubectl delete -n demo my/my-group
 kubectl delete ns demo
 ```
 
 ## Next Steps
 
-- Detail concepts of [MySQL object](/docs/concepts/databases/mysql.md).
-- Detail concepts of [MySQLDBVersion object](/docs/concepts/catalog/mysql.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
+- Detail concepts of [MySQLDBVersion object](/docs/guides/mysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

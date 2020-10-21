@@ -19,8 +19,8 @@ This guide will give you an overview of how KubeDB enterprise operator updates t
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MySQL](/docs/concepts/databases/mysql.md)
-  - [MySQLOpsRequest](/docs/concepts/day-2-operations/mysqlopsrequest.md)
+  - [MySQL](/docs/guides/mysql/concepts/mysql.md)
+  - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest.md)
 
 ## How Vertical Scaling Process Works
 
@@ -43,7 +43,7 @@ The vertical scaling process consists of the following steps:
 
 5. `KubeDB` enterprise operator watches for `MySQLOpsRequest`.
 
-6. When it finds one, it pauses the `MySQL` object so that the `KubeDB` community operator doesn't perform any operation on the `MySQL` during the scaling process.  
+6. When it finds one, it halts the `MySQL` object so that the `KubeDB` community operator doesn't perform any operation on the `MySQL` during the scaling process.  
 
 7. Then the `KubeDB` enterprise operator will update resources of the StatefulSet replicas to reach the desired state.
 

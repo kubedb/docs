@@ -26,7 +26,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 
@@ -57,8 +57,8 @@ metadata:
   namespace: demo
 spec:
   version: 7.3.2
-  databaseSecret:
-    secretName: instant-elasticsearch-auth
+  authSecret:
+    name: instant-elasticsearch-auth
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -81,7 +81,7 @@ Here,
 
 Snapshot `instant-snapshot` in `demo` namespace belongs to Elasticsearch `instant-elasticsearch`:
 
-```console
+```bash
 $ kubectl get snap -n demo instant-snapshot
 NAME               DATABASENAME            STATUS      AGE
 instant-snapshot   instant-elasticsearch   Succeeded   2m21s
@@ -93,14 +93,14 @@ instant-snapshot   instant-elasticsearch   Succeeded   2m21s
 
 Now, create the Elasticsearch object.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/initialization/recovered-es.yaml
 elasticsearch.kubedb.com/recovered-es created
 ```
 
 When Elasticsearch database is ready, KubeDB operator launches a Kubernetes Job to initialize this database using the data from Snapshot `instant-snapshot`.
 
-```console
+```bash
 $ kubectl get es -n demo recovered-es
 NAME           VERSION   STATUS         AGE
 recovered-es   7.3.2     Initializing   100s
@@ -112,7 +112,7 @@ recovered-es   7.3.2     Running   7m6s
 
 As a final step of initialization, KubeDB Job controller adds `kubedb.com/initialized` annotation in initialized Elasticsearch object. This prevents further invocation of initialization process.
 
-```console
+```bash
 $ kubectl dba describe es -n demo recovered-es
 Name:               recovered-es
 Namespace:          demo
@@ -249,7 +249,7 @@ Let's connect to our Elasticsearch `recovered-es` to verify that the database ha
 
 At first, forward `9200` port of `recovered-es` pod. Run following command on a separate terminal,
 
-```console
+```bash
 $ kubectl port-forward -n demo recovered-es-0 9200
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
@@ -262,21 +262,21 @@ Now, we can connect to the database at `localhost:9200`. Let's find out necessar
 - Address: `localhost:9200`
 - Username: Run following command to get *username*
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo instant-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
   elastic
   ```
 
 - Password: Run following command to get *password*
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo instant-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
   dy76ez7v
   ```
 
 We had created an index `test` before taking snapshot of `instant-elasticsearch` database. Let's check this index is present in newly initialized database `recovered-es`.
 
-```console
+```bash
 $ curl -XGET --user "elastic:dy76ez7v" "localhost:9200/test/_search?pretty"
 ```
 
@@ -319,7 +319,7 @@ We can see from above output that `test` index is present in `recovered-es` data
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo es/instant-elasticsearch es/recovered-es -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/instant-elasticsearch es/recovered-es
 
@@ -331,6 +331,6 @@ kubectl delete ns demo
 - Learn how to [schedule backup](/docs/guides/elasticsearch/snapshot/scheduled_backup.md)  of Elasticsearch database.
 - Learn how to configure [Elasticsearch Topology](/docs/guides/elasticsearch/clustering/topology.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
-- Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` CoreOS Prometheus Operator](/docs/guides/elasticsearch/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

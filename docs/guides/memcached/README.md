@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/memcached/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 ## Supported Memcached Features
 
@@ -28,7 +28,7 @@ aliases:
 | Custom Configuration             |   &#10003;   |
 | Using Custom docker image        |   &#10003;   |
 | Builtin Prometheus Discovery     |   &#10003;   |
-| Using CoreOS Prometheus Operator |   &#10003;   |
+| Using Prometheus operator |   &#10003;   |
 
 ## Life Cycle of a Memcached Object
 
@@ -62,9 +62,9 @@ Here, &#10003; means supported and &#10007; means deprecated.
 ## User Guide
 
 - [Quickstart Memcached](/docs/guides/memcached/quickstart/quickstart.md) with KubeDB Operator.
-- Monitor your Memcached server with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/memcached/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your Memcached server with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md).
 - Monitor your Memcached server with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/memcached/private-registry/using-private-registry.md) to deploy Memcached with KubeDB.
 - Use [kubedb cli](/docs/guides/memcached/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [Memcached object](/docs/concepts/databases/memcached.md).
+- Detail concepts of [Memcached object](/docs/guides/memcached/concepts/memcached.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

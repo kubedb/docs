@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/mongodb/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 ## Supported MongoDB Features
 
@@ -29,7 +29,7 @@ aliases:
 | Custom Configuration                         |   &#10003;   |
 | Using Custom docker image                    |   &#10003;   |
 | Builtin Prometheus Discovery                 |   &#10003;   |
-| Using CoreOS Prometheus Operator             |   &#10003;   |
+| Using Prometheus operator             |   &#10003;   |
 
 ## Life Cycle of a MongoDB Object
 
@@ -95,11 +95,10 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
 - Initialize [MongoDB with Snapshot](/docs/guides/mongodb/initialization/using-snapshot.md).
 - Start [MongoDB with Custom Config](/docs/guides/mongodb/configuration/using-custom-config.md).
-- Monitor your MongoDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mongodb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
 - Use [kubedb cli](/docs/guides/mongodb/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MongoDB object](/docs/concepts/databases/mongodb.md).
-- Detail concepts of [MongoDBVersion object](/docs/concepts/catalog/mongodb.md).
-- Detail concepts of [Snapshot object](/docs/concepts/snapshot.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
+- Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

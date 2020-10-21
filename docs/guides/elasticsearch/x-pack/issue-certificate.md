@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Issue TLS Certificates
 
@@ -35,7 +35,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -44,7 +44,7 @@ You also need to have [*OpenSSL*](https://www.openssl.org/source/) and Java *key
 
 In order to find out if you have OpenSSL installed, open a terminal and type
 
-```console
+```bash
 $ openssl version
 OpenSSL 1.0.2g  1 Mar 2016
 ```
@@ -53,7 +53,7 @@ Make sure it’s version 1.0.1k or higher
 
 And check *keytool* by calling
 
-```console
+```bash
 keytool
 ```
 
@@ -61,7 +61,7 @@ If already installed, it will print a list of available commands.
 
 To keep generated files separated, open a new terminal and create a directory `/tmp/kubedb/certs`
 
-```console
+```bash
 mkdir -p /tmp/kubedb/certs
 cd /tmp/kubedb/certs
 ```
@@ -76,7 +76,7 @@ You need to follow these steps
 
 1. Get root certificate configuration file
 
-    ```console
+    ```bash
     $ wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/openssl-config/openssl-ca.ini
     ```
 
@@ -102,7 +102,7 @@ You need to follow these steps
 
 2. Set a password of your keystore and truststore files
 
-    ```console
+    ```bash
     $ export KEY_PASS=secret
     ```
 
@@ -110,7 +110,7 @@ You need to follow these steps
 
 3. Generate private key and certificate
 
-    ```console
+    ```bash
     $ openssl req -x509 -config openssl-ca.ini -newkey rsa:4096 -sha256 -nodes -out root.pem -keyout root-key.pem -batch -passin "pass:$KEY_PASS"
     ```
 
@@ -121,7 +121,7 @@ You need to follow these steps
 
 4. Finally, import certificate as keystore
 
-    ```console
+    ```bash
     $ keytool -import -file root.pem -keystore root.jks -storepass $KEY_PASS -srcstoretype pkcs12 -noprompt
     ```
 
@@ -143,7 +143,7 @@ You need to follow these steps to generate three keystore.
 
 To sign certificate, we need another configuration file.
 
-```console
+```bash
 $ wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/info.version" >}}/docs/examples/elasticsearch/x-pack/openssl-config/openssl-sign.ini
 ```
 
@@ -189,7 +189,7 @@ Here,
 
 Also, you need to create a `index.txt` file and `serial.txt` file with value `01`
 
-```console
+```bash
 touch index.txt
 echo '01' > serial.txt
 ```
@@ -225,7 +225,7 @@ Here,
 
 Now run following commands
 
-```console
+```bash
 $ wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/openssl-config/openssl-node.ini
 $ openssl req -config openssl-node.ini -newkey rsa:4096 -sha256 -nodes -out node-csr.pem -keyout node-key.pem
 $ openssl ca -config openssl-sign.ini -batch -policy signing_policy -extensions signing_req -out node.pem -infiles node-csr.pem
@@ -266,7 +266,7 @@ Here,
 
 Now run following commands
 
-```console
+```bash
 $ wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/openssl-config/openssl-client.ini
 $ openssl req -config openssl-client.ini -newkey rsa:4096 -sha256 -nodes -out client-csr.pem -keyout client-key.pem
 $ openssl ca -config openssl-sign.ini -batch -policy signing_policy -extensions signing_req -out client.pem -infiles client-csr.pem
@@ -280,7 +280,7 @@ Generated `client.jks` will be used as keystore for http layer TLS.
 
 Now create a Secret with these certificates to use in your Elasticsearch object.
 
-```console
+```bash
 $ kubectl create secret -n demo generic custom-certificate-es-ssl-cert \
                 --from-file=root.pem \
                 --from-file=root.jks \
@@ -308,8 +308,6 @@ metadata:
 spec:
   version: 7.3.2
   enableSSL: true
-  certificateSecret:
-    secretName: custom-certificate-es-ssl-cert
   storage:
     storageClassName: "standard"
     accessModes:
@@ -325,14 +323,14 @@ Here,
 
 Create example above with following command
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/custom-certificate-es-ssl.yaml
 elasticsearch.kubedb.com/custom-certificate-es-ssl created
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created.
 
-```console
+```bash
 $ kubectl get es -n demo custom-certificate-es-ssl -o wide
 NAME               VERSION   STATUS    AGE
 custom-certificate-es-ssl   7.3.2    Running   1m
@@ -344,7 +342,7 @@ We need to provide `root.pem` to connect to elasticsearch nodes.
 
 Let's forward port 9200 of `custom-certificate-es-ssl-0` pod. Run following command in a separate terminal,
 
-```console
+```bash
 $ kubectl port-forward -n demo custom-certificate-es-ssl-0 9200
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
@@ -357,27 +355,27 @@ Now, we can connect with the database at `localhost:9200`.
 - Address: `localhost:9200`
 - Username: Run following command to get *username*
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo custom-certificate-es-ssl-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
   elastic
   ```
 
 - Password: Run following command to get *password*
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo custom-certificate-es-ssl-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
   uft73z6j
   ```
 
 - Root CA: Run following command to get `root.pem` file
 
-  ```console
+  ```bash
   $ kubectl get secrets -n demo custom-certificate-es-ssl-cert -o jsonpath='{.data.\root\.pem}' | base64 --decode > root.pem
   ```
 
 Now, let's check health of our Elasticsearch database.
 
-```console
+```bash
 $ curl --user "elastic:uft73z6j" "https://localhost:9200/_cluster/health?pretty" --cacert root.pem
 ```
 
@@ -502,7 +500,7 @@ $ curl --user "elastic:uft73z6j" "https://localhost:9200/_nodes/_all/settings?pr
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo es/custom-certificate-es-ssl -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/custom-certificate-es-ssl
 

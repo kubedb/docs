@@ -21,11 +21,11 @@ Before proceeding:
 - Read [mysql group replication concept](/docs/guides/mysql/clustering/overview.md) to learn about MySQL Group Replication.
 - You need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 - Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
-- You have to be familiar with the [ProxySQL](/docs/concepts/database-proxy/proxysql.md) CRD.
+- You have to be familiar with the [ProxySQL](/docs/guides/proxysql/concepts/proxysql.md) CRD.
 
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial. Create `demo` namespace if you haven't created yet.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -71,7 +71,7 @@ spec:
 
 Create the above `MySQL` object,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-my-group.yaml
 mysql.kubedb.com/my-group created
 ```
@@ -80,7 +80,7 @@ KubeDB will deploy a single primary MySQL Group Replication according to the abo
 
 Let's check if the database is ready to use,
 
-```console
+```bash
 $ kubectl get my -n demo my-group
 NAME       VERSION   STATUS    AGE
 my-group   5.7.25    Running   5m37s
@@ -88,7 +88,7 @@ my-group   5.7.25    Running   5m37s
 
 The database is `Running`. Verify that KubeDB has created necessary Secret for this database using the following commands,
 
-```console
+```bash
 $ kubectl get secret -n demo -l=kubedb.com/name=my-group
 NAME            TYPE     DATA   AGE
 my-group-auth   Opaque   2      10m
@@ -100,7 +100,7 @@ Here, we have to use the secret `my-group-auth` to connect with the database.
 
 Now, we are going to exec into the database pod and create some sample data. At first, find out the database Pod using the following command,
 
-```console
+```bash
 $ kubectl get pods -n demo --selector="kubedb.com/name=my-group"
 NAME         READY   STATUS    RESTARTS   AGE
 my-group-0   1/1     Running   0          12m
@@ -110,7 +110,7 @@ my-group-2   1/1     Running   0          12m
 
 Copy the username and password of the `root` user to access into `mysql` shell.
 
-```console
+```bash
 $ kubectl get secret -n demo  my-group-auth -o jsonpath='{.data.username}'| base64 -d
 root⏎
 
@@ -120,7 +120,7 @@ tiIKEbjwnKLxAJP9⏎
 
 Now, let's exec into the Pod to enter into `mysql` shell and create a database and a table,
 
-```console
+```bash
 $ kubectl exec -it -n demo my-group-0 -- mysql --user=root --password=tiIKEbjwnKLxAJP9
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -202,13 +202,11 @@ spec:
       kind: MySQL
       name: my-group
     replicas: 3
-  updateStrategy:
-    type: RollingUpdate
 ```
 
 Now, create this,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/demo-proxy-my-group.yaml
 proxysql.kubedb.com/proxy-my-group created
 ```
@@ -219,7 +217,7 @@ KubeDB will deploy one replica for proxysql pointing to backend MySQL servers as
 
 Let's check if the ProxySQL object is ready to use,
 
-```console
+```bash
 $ kubectl get proxysql -n demo proxy-my-group
 NAME             VERSION   STATUS    AGE
 proxy-my-group   2.0.4     Running   129m
@@ -227,7 +225,7 @@ proxy-my-group   2.0.4     Running   129m
 
 The status is `Running`. Verify that KubeDB has created necessary Secret and Service for this object using the following commands,
 
-```console
+```bash
 $ kubectl get secret -n demo -l=proxysql.kubedb.com/name=proxy-my-group
 NAME                  TYPE     DATA   AGE
 proxy-my-group-auth   Opaque   2      132m
@@ -243,7 +241,7 @@ Here, we have to use service `proxy-my-group` and secret `proxy-my-group-auth` t
 
 So, KubeDB creates two different users (`proxysql` and `admin`) in the MySQL database for proxysql. The `admin` user is responsible for setting up admin configuration for proxysql and the `proxysql` user is for requesting query to the MySQL servers. KubeDB stores the credentials of `proxysql` user in the Secret `proxy-my-group-auth`, where the username and password of the `admin` user are fixed and they are `admin` and `admin` respectively.
 
-```console
+```bash
 kubectl describe secret -n demo proxy-my-group-auth
 Name:         proxy-my-group-auth
 Namespace:    demo
@@ -262,7 +260,7 @@ proxysqluser:  8 bytes
 
 Copy the username and password of the `proxysql` user to access into `mysql` shell.
 
-```console
+```bash
 $ kubectl get secret -n demo  proxy-my-group-auth -o jsonpath='{.data.proxysqluser}'| base64 -d
 proxysql⏎
 
@@ -274,7 +272,7 @@ jxOlSObHgvvjOk1v⏎
 
 Now, let's exec into the proxysql Pod to enter into `mysql` shell using `proxysql` user credentials and read the existing database and table,
 
-```console
+```bash
 $ kubectl exec -it -n demo proxy-my-group-0 -- mysql --user=proxysql --password=jxOlSObHgvvjOk1v --host proxy-my-group.demo --port=6033 --prompt='MySQL [proxysql]> '
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 9
@@ -318,7 +316,7 @@ Bye
 
 Exec into the Pod to enter into `mysql` shell using `admin` user credentials and see the query counts,
 
-```console
+```bash
 kubectl exec -it -n demo proxy-my-group-0 -- mysql --user=admin --password=admin --host 127.0.0.1 --port=6032 --prompt='MySQL [admin]> '
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 12
@@ -395,7 +393,7 @@ Bye
 
 This time exec into the proxysql Pod to enter into `mysql` shell using `proxysql` user credentials to create new database and table,
 
-```console
+```bash
 kubectl exec -it -n demo proxy-my-group-0 -- mysql --user=proxysql --password=jxOlSObHgvvjOk1v --host proxy-my-group.demo --port=6033 --prompt='MySQL [proxysql]> '
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 13
@@ -428,7 +426,7 @@ Bye
 
 Again, exec into the Pod to enter into `mysql` shell using `admin` user credentials and see the query counts,
 
-```console
+```bash
 kubectl exec -it -n demo proxy-my-group-0 -- mysql --user=admin --password=admin --host 127.0.0.1 --port=6032 --prompt='MySQL [admin]> '
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 14
@@ -505,7 +503,7 @@ Bye
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 $ kubectl delete proxysql -n demo proxy-my-group
 $ kubectl delete my -n demo my-group
 ```
@@ -513,9 +511,9 @@ $ kubectl delete my -n demo my-group
 ## Next Steps
 
 - Monitor ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
-- Monitor ProxySQL with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/proxysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor ProxySQL with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md).
 - Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
 - Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-custom-config.md).
-- Detail concepts of ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
-- Detail concepts of ProxySQLVersion CRD [here](/docs/concepts/catalog/proxysql.md).
+- Detail concepts of ProxySQL CRD [here](/docs/guides/proxysql/concepts/proxysql.md).
+- Detail concepts of ProxySQLVersion CRD [here](/docs/guides/proxysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

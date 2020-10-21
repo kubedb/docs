@@ -14,9 +14,9 @@ spec:
       requests:
         storage: 1Gi
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
-      namespace: monitoring
-      labels:
-        k8s-app: prometheus
-      interval: 10s
+      serviceMonitor:
+        labels:
+          k8s-app: prometheus
+        interval: 10s

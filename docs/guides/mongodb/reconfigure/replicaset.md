@@ -23,14 +23,14 @@ This guide will show you how to use `KubeDB` Enterprise operator to reconfigure 
 - Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here]().
 
 - You should be familiar with the following `KubeDB` concepts:
-  - [MongoDB](/docs/concepts/databases/mongodb.md)
+  - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
   - [ReplicaSet](/docs/guides/mongodb/clustering/replicaset.md)
-  - [MongoDBOpsRequest](/docs/concepts/day-2-operations/mongodbopsrequest.md)
+  - [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
   - [Reconfigure Overview](/docs/guides/mongodb/reconfigure/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -56,12 +56,12 @@ Here, `maxIncomingConnections` is set to `10000`, whereas the default value is `
 
 Now, we will create a configMap with this configuration file.
 
-```console
+```bash
 $ kubectl create configmap -n demo mg-custom-config --from-file=./mongod.conf
 configmap/mg-custom-config created
 ```
 
-In this section, we are going to create a MongoDB object specifying `spec.configSource` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
+In this section, we are going to create a MongoDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
 
@@ -69,14 +69,14 @@ In this section, we are going to create a MongoDB object specifying `spec.config
 
 Let's create the `MongoDB` CR we have shown above,
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mg-replicaset-config.yaml
 mongodb.kubedb.com/mg-replicaset created
 ```
 
 Now, wait until `mg-replicaset` has status `Running`. i.e,
 
-```console
+```bash
 $ kubectl get mg -n demo                                                                                                                                             20:05:47
 
 ```
@@ -84,7 +84,7 @@ $ kubectl get mg -n demo                                                        
 Now, we will check if the database has started with the custom configuration we have provided.
 
 First we need to get the username and password to connect to a mongodb instance,
-```console
+```bash
 $ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\username}' | base64 -d                                                                         11:09:51
 root
 
@@ -94,7 +94,7 @@ nrKuxni0wDSMrgwy
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the configuration we have provided.
 
-```console
+```bash
 $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet                          18:35:59
 
 ```
@@ -115,7 +115,7 @@ net:
 
 Then, we will create a new configMap with this configuration file.
 
-```console
+```bash
 $ kubectl create configmap -n demo new-custom-config --from-file=./mongod.conf
 configmap/mg-custom-config created
 ```
@@ -148,7 +148,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-replicaset.yaml
 mongodbopsrequest.ops.kubedb.com/mops-reconfigure-replicaset created
 ```
@@ -159,7 +159,7 @@ If everything goes well, `KubeDB` Enterprise operator will update the `configSou
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
-```console
+```bash
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                          TYPE          STATUS       AGE
@@ -168,7 +168,7 @@ mops-reconfigure-replicaset   Reconfigure   Successful   113s
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
-```console
+```bash
 $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-replicaset 
  Name:         mops-reconfigure-replicaset
  Namespace:    demo
@@ -237,11 +237,11 @@ $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-replicaset
      Status:                True
      Type:                  Scaling
      Last Transition Time:  2020-08-26T18:40:06Z
-     Message:               Successfully paused mongodb: mg-replicaset
+     Message:               Successfully halted mongodb: mg-replicaset
      Observed Generation:   1
-     Reason:                PauseDatabase
+     Reason:                HaltDatabase
      Status:                True
-     Type:                  PauseDatabase
+     Type:                  HaltDatabase
      Last Transition Time:  2020-08-26T18:41:26Z
      Message:               Successfully Reconfigured mongodb
      Observed Generation:   1
@@ -265,8 +265,8 @@ $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-replicaset
  Events:
    Type    Reason                 Age    From                        Message
    ----    ------                 ----   ----                        -------
-   Normal  PauseDatabase          2m23s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-   Normal  PauseDatabase          2m23s  KubeDB Enterprise Operator  Successfully Paused Mongodb mg-replicaset in Namespace demo
+   Normal  HaltDatabase          2m23s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
+   Normal  HaltDatabase          2m23s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
    Normal  ReconfigureReplicaset  63s    KubeDB Enterprise Operator  Successfully Reconfigured mongodb
    Normal  ResumeDatabase         63s    KubeDB Enterprise Operator  Resuming MongoDB
    Normal  ResumeDatabase         63s    KubeDB Enterprise Operator  Successfully Started Balancer
@@ -275,7 +275,7 @@ $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-replicaset
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.
 
-```console
+```bash
 $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
 {
 	"argv" : [
@@ -361,7 +361,7 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-data-replicaset.yaml
 mongodbopsrequest.ops.kubedb.com/mops-reconfigure-data-replicaset created
 ```
@@ -372,7 +372,7 @@ If everything goes well, `KubeDB` Enterprise operator will merge this new config
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
-```console
+```bash
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                               TYPE          STATUS       AGE
@@ -381,7 +381,7 @@ mops-reconfigure-data-replicaset   Reconfigure   Successful   109s
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
-```console
+```bash
 $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-data-replicaset
 Name:         mops-reconfigure-data-replicaset
 Namespace:    demo
@@ -482,7 +482,7 @@ Events:
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.
 
-```console
+```bash
 $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
 {
 	"argv" : [
@@ -538,7 +538,7 @@ As we can see from the configuration of running mongodb, the value of `maxIncomi
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete mg -n demo mg-replicaset
 kubectl delete mongodbopsrequest -n demo mops-reconfigure-replicaset mops-reconfigure-data-replicaset
 ```

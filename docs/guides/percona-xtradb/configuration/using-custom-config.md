@@ -9,7 +9,7 @@ menu:
 menu_name: docs_{{ .version }}
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using Custom Configuration File
 
@@ -23,7 +23,7 @@ KubeDB supports providing custom configuration for PerconaXtraDB. This tutorial 
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -37,7 +37,7 @@ PerconaXtraDB allows to configure database via configuration file. The default c
 - For standalone server, it looks into `/etc/my.cnf.d/`and `/etc/percona-server.conf.d/` directories. Here, KubeDB uses the later one `/etc/percona-server.conf.d/` for custom configurations. If configuration file exists, the `mysqld` will use combined startup setting from both `/etc/my.cnf` and `*.cnf` files in `/etc/percona-server.conf.d/` directory. This custom configuration will overwrite the existing default one.
 - For cluster, the `mysqld` process looks into `/etc/my.cnf.d/`, and `/etc/percona-xtradb-cluster.conf.d/` directories. Here, KubeDB uses the later one `/etc/percona-xtradb-cluster.conf.d/` for custom configurations. If any configuration file exists, the `mysqld` will use combined startup settings from both `/etc/my.cnf` and `*.cnf` files in `/etc/percona-xtradb-cluster.conf.d/` directory. This custom configuration will overwrite the existing default one.
 
-At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `.spec.configSource` section while creating PerconaXtraDB object. KubeDB will mount this volume into the directory (specified above) of the database Pod.
+At first, you have to create a config file with `.cnf` extension with your desired configuration. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `.spec.configSecret` section while creating PerconaXtraDB object. KubeDB will mount this volume into the directory (specified above) of the database Pod.
 
 In this tutorial, we will configure [max_connections](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_max_connections) and [read_buffer_size](https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_read_buffer_size) via a custom config file for a standalone percona server. We will use ConfigMap as volume source.
 
@@ -45,7 +45,7 @@ In this tutorial, we will configure [max_connections](https://dev.mysql.com/doc/
 
 At first, let's create `my-config.cnf` file setting `max_connections` and `read_buffer_size` parameters.
 
-```console
+```bash
 $ cat <<EOF > my-config.cnf
 [mysqld]
 max_connections = 200
@@ -62,14 +62,14 @@ Here, `read_buffer_size` is set to 1MB in bytes.
 
 Now, create a ConfigMap with this configuration file.
 
-```console
+```bash
  $ kubectl create configmap -n demo my-custom-config --from-file=./my-config.cnf
 configmap/my-custom-config created
 ```
 
 Verify the ConfigMap has the configuration file.
 
-```console
+```bash
 $ kubectl get configmap -n demo my-custom-config -o yaml
 ```
 
@@ -89,9 +89,9 @@ metadata:
   ...
 ```
 
-Now, create PerconaXtraDB object specifying `.spec.configSource` field.
+Now, create PerconaXtraDB object specifying `.spec.configSecret` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/custom-config.yaml
 perconaxtradb.kubedb.com/custom-px created
 ```
@@ -107,9 +107,8 @@ metadata:
 spec:
   version: "5.7"
   replicas: 1
-  configSource:
-    configMap:
-      name: my-custom-config
+  configSecret:
+    name: my-custom-config
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -118,8 +117,6 @@ spec:
     resources:
       requests:
         storage: 50Mi
-  updateStrategy:
-    type: "RollingUpdate"
   terminationPolicy: DoNotTerminate
 ```
 
@@ -127,7 +124,7 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset,
 
 Check that the StatefulSet's Pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo
 NAME          READY     STATUS    RESTARTS   AGE
 custom-px-0   1/1       Running   0          44s
@@ -135,7 +132,7 @@ custom-px-0   1/1       Running   0          44s
 
 Check the Pod's log to see if the database is ready
 
-```console
+```bash
 $ kubectl logs -f -n demo custom-px-0
 ...
 2019-12-24T13:43:51.050366Z 0 [Note] mysqld: ready for connections.
@@ -146,7 +143,7 @@ Once we see `[Note] mysqld: ready for connections.` in the log, the database is 
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
-```console
+```bash
 $ kubectl get secret -n demo  custom-px-auth -o jsonpath='{.data.password}'| base64 -d
 5ujF0R5wnUh5_gDk⏎
 
@@ -173,7 +170,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 $ kubectl patch -n demo px/custom-px -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo px/custom-px
 
@@ -183,7 +180,7 @@ $ rm ./my-config.cnf
 $ kubectl delete ns demo
 ```
 
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 
@@ -192,6 +189,6 @@ If you would like to uninstall KubeDB operator, please follow the steps [here](/
 - Use [private Docker registry](/docs/guides/percona-xtradb/private-registry/using-private-registry.md) to deploy PerconaXtraDB with KubeDB.
 - How to use [custom rbac resource](/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac.md) for PerconaXtraDB.
 - Use Stash to [Backup PerconaXtraDB](/docs/guides/percona-xtradb/snapshot/stash.md).
-- Detail concepts of [PerconaXtraDB object](/docs/concepts/databases/percona-xtradb.md).
-- Detail concepts of [PerconaXtraDBVersion object](/docs/concepts/catalog/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/percona-xtradb.md).
+- Detail concepts of [PerconaXtraDBVersion object](/docs/guides/percona-xtradb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

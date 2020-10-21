@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Manage KubeDB objects using CLIs
 
@@ -22,21 +22,21 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 
 `kubectl create` creates a pgbouncer CRD object in `default` namespace by default. Following command will create a PgBouncer object as specified in `pgbouncer.yaml`.
 
-```console
+```bash
 $ kubectl create -f pgbouncer-demo.yaml
 pgbouncer "pgbouncer-demo" created
 ```
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
-```console
+```bash
 $ kubectl create -f pgbouncer-demo.yaml --namespace=kube-system
 pgbouncer "pgbouncer-demo" created
 ```
 
 `kubectl create` command also considers `stdin` as input.
 
-```console
+```bash
 cat pgbouncer-demo.yaml | kubectl create -f -
 ```
 
@@ -44,7 +44,7 @@ cat pgbouncer-demo.yaml | kubectl create -f -
 
 `kubectl get` command allows users to list or find any KubeDB object. To list all PgBouncer objects in `default` namespace, run the following command:
 
-```console
+```bash
 $ kubectl get pgbouncer
 NAME            VERSION   STATUS    AGE
 pgbouncer-demo   1.11.0    Running   13m
@@ -94,8 +94,9 @@ spec:
   monitor:
     agent: prometheus.io/builtin
     prometheus:
-      port: 56790
-    resources: {}
+      exporter:
+        port: 56790
+        resources: {}
   podTemplate:
     controller: {}
     metadata: {}
@@ -115,13 +116,13 @@ status:
 
 To get JSON of an object, use `--output=json` flag.
 
-```console
+```bash
 kubectl get pgbouncer pgbouncer-demo --output=json
 ```
 
 To list all KubeDB objects, use following command:
 
-```console
+```bash
 $ kubectl get all -n demo -o wide
 NAME                   READY   STATUS    RESTARTS   AGE     IP           NODE          NOMINATED NODE   READINESS GATES
 pod/pgbouncer-demo-0   2/2     Running   0          5m53s   10.244.1.3   kind-worker   <none>           <none>
@@ -150,7 +151,7 @@ List command supports short names for each object types. You can use it like `ku
 
 You can print labels with objects. The following command will list all Snapshots with their corresponding labels.
 
-```console
+```bash
 $ kubectl get pb -n demo --show-labels
 NAME                            DATABASE                STATUS      AGE       LABELS
 pgbouncer-demo                  pb/pgbouncer-demo       Succeeded   11m       kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-demo
@@ -159,7 +160,7 @@ pgbouncer-tmp                   pb/postgres-demo        Succeeded   1h        ku
 
 You can also filter list using `--selector` flag.
 
-```console
+```bash
 $ kubectl get pb --selector='kubedb.com/kind=PgBouncer' --show-labels
 NAME                            DATABASE           STATUS      AGE       LABELS
 pgbouncer-demo                  pb/pgbouncer-demo  Succeeded   11m       kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-demo
@@ -168,7 +169,7 @@ pgbouncer-dev                   pb/postgres-demo   Succeeded   1h        kubedb.
 
 To print only object name, run the following command:
 
-```console
+```bash
 $ kubectl get all -n demo -o name
 pod/pgbouncer-demo-0
 service/kubedb
@@ -182,7 +183,7 @@ pgbouncer.kubedb.com/pgbouncer-demo
 
 `kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe PgBouncer `pgbouncer-demo` with relevant information.
 
-```console
+```bash
 Name:         pgbouncer-demo
 Namespace:    default
 API Version:  kubedb.com/v1alpha2
@@ -246,47 +247,47 @@ To hide events on KubeDB object, use flag `--show-events=false`
 
 To describe all PgBouncer objects in `default` namespace, use following command
 
-```console
+```bash
 kubectl dba describe pb
 ```
 
 To describe all PgBouncer objects from every namespace, provide `--all-namespaces` flag.
 
-```console
+```bash
 kubectl dba describe pb --all-namespaces
 ```
 
 To describe all KubeDB objects from every namespace, use the following command:
 
-```console
+```bash
 kubectl dba describe all --all-namespaces
 ```
 
 You can also describe KubeDb objects with matching labels. The following command will describe all Elasticsearch & PgBouncer objects with specified labels from every namespace.
 
-```console
+```bash
 kubectl dba describe pg,es --all-namespaces --selector='group=dev'
 ```
 
-To learn about various options of `describe` command, please visit [here](/docs/reference/kubectl-dba_describe.md).
+To learn about various options of `describe` command, please visit [here](/docs/reference/cli/kubectl-dba_describe.md).
 
 ### How to Edit Objects
 
 `kubectl edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
 
-Let's edit an existing running PgBouncer object to setup [Monitoring](/docs/guides/pgbouncer/monitoring/using-coreos-prometheus-operator.md). The following command will open PgBouncer `pgbouncer-demo` in editor.
+Let's edit an existing running PgBouncer object to setup [Monitoring](/docs/guides/pgbouncer/monitoring/using-prometheus-operator.md). The following command will open PgBouncer `pgbouncer-demo` in editor.
 
-```console
+```bash
 $ kubectl edit pb pgbouncer-demo
 
 # Add following to Spec to configure monitoring:
   monitor:
-    agent: prometheus.io/coreos-operator
+    agent: prometheus.io/operator
     prometheus:
-      namespace: demo
-      labels:
-        k8s-app: prometheus
-      interval: 10s
+      serviceMonitor:
+        labels:
+          k8s-app: prometheus
+        interval: 10s
 pgbouncer "pgbouncer-demo" edited
 ```
 
@@ -303,27 +304,27 @@ Various fields of a KubeDb object can't be edited using `edit` command. The foll
 
 `kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a PgBouncer `pgbouncer-dev` in default namespace
 
-```console
+```bash
 $ kubectl delete pgbouncer pgbouncer-dev
 pgbouncer "pgbouncer-dev" deleted
 ```
 
 You can also use YAML files to delete objects. The following command will delete a PgBouncer using the type and name specified in `pgbouncer.yaml`.
 
-```console
+```bash
 $ kubectl delete -f pgbouncer.yaml
 PgBouncer "pgbouncer-dev" deleted
 ```
 
 `kubectl delete` command also takes input from `stdin`.
 
-```console
+```bash
 cat pgbouncer.yaml | kubectl delete -f -
 ```
 
 To delete objects with matching labels, use `--selector` flag. The following command will delete PgBouncers with label `pgbouncer.kubedb.com/name=pgbouncer-demo`.
 
-```console
+```bash
 kubectl delete pgbouncer -l pgbouncer.kubedb.com/name=pgbouncer-demo
 ```
 
@@ -331,7 +332,7 @@ kubectl delete pgbouncer -l pgbouncer.kubedb.com/name=pgbouncer-demo
 
 You can use Kubectl with KubeDB objects like any other CRDs. Below are some common examples of using Kubectl with KubeDB objects.
 
-```console
+```bash
 # Create objects
 $ kubectl create -f
 

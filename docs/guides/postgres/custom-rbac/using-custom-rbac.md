@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Using Custom RBAC resources
 
@@ -24,7 +24,7 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```console
+```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
@@ -45,7 +45,7 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 
 At first, let's create a `Service Acoount` in `demo` namespace.
 
-```console
+```bash
 $ kubectl create serviceaccount -n demo my-custom-serviceaccount
 serviceaccount/my-custom-serviceaccount created
 ```
@@ -69,7 +69,7 @@ secrets:
 
 Now, we need to create a role that has necessary access permissions for the PostgreSQl Database named `quick-postgres`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-rbac/pg-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
@@ -127,7 +127,7 @@ Please note that resourceNames `quick-postgres` and `quick-postgres-leader-lock`
 
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
-```console
+```bash
 $ kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
 rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
@@ -159,7 +159,7 @@ subjects:
 
 Now, create a Postgres CRD specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-rbac/pg-custom-db.yaml
 postgres.kubedb.com/quick-postgres created
 ```
@@ -195,7 +195,7 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, stateful
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo quick-postgres-0
 NAME                READY     STATUS    RESTARTS   AGE
 quick-postgres-0   1/1       Running   0          14m
@@ -203,7 +203,7 @@ quick-postgres-0   1/1       Running   0          14m
 
 Check the pod's log to see if the database is ready
 
-```console
+```bash
 $ kubectl logs -f -n demo quick-postgres-0
 I0705 12:05:51.697190       1 logs.go:19] FLAG: --alsologtostderr="false"
 I0705 12:05:51.717485       1 logs.go:19] FLAG: --enable-analytics="true"
@@ -241,7 +241,7 @@ An existing service account can be reused in another Postgres Database. However,
 
 For example, to reuse `my-custom-serviceaccount` in a new Database `minute-postgres`, create a role that has all the necessary access permissions for this PostgreSQl Database.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-rbac/pg-custom-role-two.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
@@ -276,7 +276,7 @@ rules:
 
 Now create a `RoleBinding` to bind `my-custom-role-two` with the already created `my-custom-serviceaccount`.
 
-```console
+```bash
 $ kubectl create rolebinding my-custom-rolebinding-two --role=my-custom-role-two --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
 rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding-two created
 
@@ -284,7 +284,7 @@ rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding-two created
 
 Now, create Postgres CRD `minute-postgres` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
-```console
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-rbac/pg-custom-db-two.yaml
 postgres.kubedb.com/quick-postgres created
 ```
@@ -320,7 +320,7 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, stateful
 
 Check that the statefulset's pod is running
 
-```console
+```bash
 $ kubectl get pod -n demo minute-postgres-0
 NAME                READY     STATUS    RESTARTS   AGE
 minute-postgres-0   1/1       Running   0          14m
@@ -328,7 +328,7 @@ minute-postgres-0   1/1       Running   0          14m
 
 Check the pod's log to see if the database is ready
 
-```console
+```bash
 $ kubectl logs -f -n demo minute-postgres-0
 I0705 12:05:51.697190       1 logs.go:19] FLAG: --alsologtostderr="false"
 I0705 12:05:51.717485       1 logs.go:19] FLAG: --enable-analytics="true"
@@ -364,7 +364,7 @@ LOG:  autovacuum launcher started
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo pg/quick-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/quick-postgres
 
@@ -382,7 +382,7 @@ kubectl delete sa -n demo my-custom-serviceaccount
 kubectl delete ns demo
 ```
 
-If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/operator/uninstall.md).
+If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
 ## Next Steps
 
@@ -392,5 +392,5 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 - Learn about initializing [PostgreSQL from KubeDB Snapshot](/docs/guides/postgres/initialization/snapshot_source.md).
 - Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)
 - Monitor your PostgreSQL instance with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
-- Monitor your PostgreSQL instance with KubeDB using [CoreOS Prometheus Operator](/docs/guides/postgres/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your PostgreSQL instance with KubeDB using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

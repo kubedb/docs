@@ -32,7 +32,7 @@ KubeDB uses following crd fields to enable SSL/TLS encryption in `MongoDB`.
     - `issuerRef`
     - `certificates`
   - `clusterAuthMode`
-Read about the fields in details from [mongodb concept](/docs/concepts/databases/mongodb.md),
+Read about the fields in details from [mongodb concept](/docs/guides/mongodb/concepts/mongodb.md),
 
 When, `sslMode` is set to `requireSSL`, the users must specify the `tls.issuerRef` field. `KubeDB` uses the `issuer` or `clusterIssuer` referenced in the `tls.issuerRef` field, and the certificate specs provided in `tls.certificate` to generate certificate secrets using `Issuer/ClusterIssuers` specification. These certificates secrets including `ca.crt`, `tls.crt` and `tls.key` etc. are used to configure `MongoDB` server, exporter etc. respectively.
 

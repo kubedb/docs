@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # KubeDB - MongoDB ReplicaSet
 
@@ -28,7 +28,7 @@ Before proceeding:
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -61,7 +61,7 @@ spec:
         storage: 1Gi
 ```
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/demo-1.yaml
 mongodb.kubedb.com/mgo-replicaset created
 ```
@@ -77,7 +77,7 @@ Here,
 
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-name>-gvr`.
 
-```console
+```bash
 $ kubectl dba describe mg -n demo mgo-replicaset
 Name:               mgo-replicaset
 Namespace:          demo
@@ -188,10 +188,8 @@ metadata:
   selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mgo-replicaset
   uid: a7aa351c-6b2c-11e9-97a6-0800278b6754
 spec:
-  certificateSecret:
-    secretName: mgo-replicaset-keyfile
-  databaseSecret:
-    secretName: mgo-replicaset-auth
+  authSecret:
+    name: mgo-replicaset-auth
   podTemplate:
     controller: {}
     metadata: {}
@@ -236,9 +234,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: Pause
-  updateStrategy:
-    type: RollingUpdate
+  terminationPolicy: Halt
   version: 3.6-v3
 status:
   observedGeneration: 3$4212299729528774793
@@ -247,7 +243,7 @@ status:
 
 Please note that KubeDB operator has created a new Secret called `mgo-replicaset-auth` *(format: {mongodb-object-name}-auth)* for storing the password for `mongodb` superuser. This secret contains a `username` key which contains the *username* for MongoDB superuser and a `password` key which contains the *password* for MongoDB superuser.
 
-If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.databaseSecret.secretName`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`. For more details, please see [here](/docs/concepts/databases/mongodb.md#specdatabasesecret).
+If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`. For more details, please see [here](/docs/guides/mongodb/concepts/mongodb.md#specdatabasesecret).
 
 ## Redundancy and Data Availability
 
@@ -255,7 +251,7 @@ Now, you can connect to this database through [mongo-shell](https://docs.mongodb
 
 At first, insert data inside primary member `rs0:PRIMARY`.
 
-```console
+```bash
 $ kubectl get secrets -n demo mgo-replicaset-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
@@ -308,7 +304,7 @@ bye
 Now, check the redundancy and data availability in secondary members.
 We will exec in `mgo-replicaset-1`(which is secondary member right now) to check the data availability.
 
-```console
+```bash
 $ kubectl exec -it mgo-replicaset-1 -n demo bash
 mongodb@mgo-replicaset-1:/$ mongo admin -u root -p 5O4R2ze2bWXcWsdP
 MongoDB shell version v3.6.6
@@ -351,7 +347,7 @@ bye
 
 To test automatic failover, we will force the primary member to restart. As the primary member (`pod`) becomes unavailable, the rest of the members will elect a primary member by election.
 
-```console
+```bash
 $ kubectl get pods -n demo
 NAME               READY     STATUS    RESTARTS   AGE
 mgo-replicaset-0   1/1       Running   0          1h
@@ -371,7 +367,7 @@ mgo-replicaset-2   1/1       Running       0          1h
 
 Now verify the automatic failover, Let's exec in `mgo-replicaset-1` pod,
 
-```console
+```bash
 $ kubectl exec -it mgo-replicaset-1 -n demo bash
 mongodb@mgo-replicaset-1:/$ mongo admin -u root -p 5O4R2ze2bWXcWsdP
 MongoDB shell version v3.6.6
@@ -410,13 +406,13 @@ rs0:SECONDARY> db.movie.find().pretty()
 { "_id" : ObjectId("5b5efeea9d097ca0600694a3"), "name" : "batman" }
 ```
 
-## Pause Database
+## Halt Database
 
 When `terminationPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
 
-Since the MongoDB object created in this tutorial has `spec.terminationPolicy` set to `Pause` (default), if you delete the MongoDB object, KubeDB operator will create a dormant database while deleting the StatefulSet and its pods but leaves the PVCs unchanged.
+Since the MongoDB object created in this tutorial has `spec.terminationPolicy` set to `Halt` (default), if you delete the MongoDB object, KubeDB operator will create a dormant database while deleting the StatefulSet and its pods but leaves the PVCs unchanged.
 
-```console
+```bash
 $ kubectl delete mg mgo-replicaset -n demo
 mongodb.kubedb.com "mgo-replicaset" deleted
 
@@ -426,7 +422,7 @@ mgo-replicaset   Pausing   25s
 
 $ kubectl get drmn -n demo mgo-replicaset
 NAME             STATUS    AGE
-mgo-replicaset   Paused    1m
+mgo-replicaset   Halted    1m
 ```
 
 ```yaml
@@ -453,10 +449,8 @@ spec:
       namespace: demo
     spec:
       mongodb:
-        certificateSecret:
-          secretName: mgo-replicaset-keyfile
-        databaseSecret:
-          secretName: mgo-replicaset-auth
+        authSecret:
+          name: mgo-replicaset-auth
         podTemplate:
           controller: {}
           metadata: {}
@@ -501,20 +495,18 @@ spec:
               storage: 1Gi
           storageClassName: standard
         storageType: Durable
-        terminationPolicy: Pause
-        updateStrategy:
-          type: RollingUpdate
+        terminationPolicy: Halt
         version: 3.6-v3
 status:
   observedGeneration: 1$16440556888999634490
   pausingTime: "2019-04-30T09:48:24Z"
-  phase: Paused
+  phase: Halted
 ```
 
 Here,
 
 - `spec.origin` is the spec of the original spec of the original MongoDB object.
-- `status.phase` points to the current database state `Paused`.
+- `status.phase` points to the current database state `Halted`.
 
 ## Resume Dormant Database
 
@@ -524,7 +516,7 @@ In this tutorial, the dormant database can be resumed by creating original Mongo
 
 The below command will resume the DormantDatabase `mgo-replicaset`.
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/demo-1.yaml
 mongodb.kubedb.com/mgo-replicaset created
 ```
@@ -547,7 +539,7 @@ spec:
   wipeOut: true
   ...
 status:
-  phase: Paused
+  phase: Halted
   ...
 ```
 
@@ -557,7 +549,7 @@ If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object
 
 As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
 
-```console
+```bash
 $ kubectl delete drmn mgo-replicaset -n demo
 dormantdatabase "mgo-replicaset" deleted
 ```
@@ -566,7 +558,7 @@ dormantdatabase "mgo-replicaset" deleted
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl patch -n demo mg/mgo-replicaset -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-replicaset
 
@@ -582,9 +574,9 @@ kubectl delete ns demo
 - Take [Scheduled Snapshot](/docs/guides/mongodb/snapshot/scheduled-backup.md) of MongoDB databases using KubeDB.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
 - Initialize [MongoDB with Snapshot](/docs/guides/mongodb/initialization/using-snapshot.md).
-- Monitor your MongoDB database with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/mongodb/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.
-- Detail concepts of [MongoDB object](/docs/concepts/databases/mongodb.md).
-- Detail concepts of [MongoDBVersion object](/docs/concepts/catalog/mongodb.md).
+- Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
+- Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

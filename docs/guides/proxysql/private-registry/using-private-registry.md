@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 # Deploy ProxySQL from private Docker registry
 
@@ -18,7 +18,7 @@ KubeDB operator supports using a private Docker registry. This tutorial will sho
 
 ## Before You Begin
 
-- Read [concept of ProxySQLVersion Catalog](/docs/concepts/catalog/proxysql.md) to learn detail concepts of `ProxySQLVersion` object.
+- Read [concept of ProxySQLVersion Catalog](/docs/guides/proxysql/concepts/catalog.md) to learn detail concepts of `ProxySQLVersion` object.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
@@ -26,7 +26,7 @@ KubeDB operator supports using a private Docker registry. This tutorial will sho
 
 - You have to push the required images from KubeDB's [Dockerhub account](https://hub.docker.com/r/kubedb/) into your private registry. For proxysql, push `PROXYSQL_IMAGE`, `EXPORTER_IMAGE` of following ProxySQLVersion, where `deprecated` is not true, to your private registry. Currently, KubeDB includes the following ProxySQLVersion object.
 
-  ```console
+  ```bash
   $ kubectl get proxysqlversions  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,PROXYSQL_IMAGE:.spec.proxysql.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME     VERSION   PROXYSQL_IMAGE          EXPORTER_IMAGE                   DEPRECATED
   2.0.4    2.0.4     kubedb/proxysql:v2.0.4   kubedb/proxysql-exporter:v1.1.0   <none>
@@ -58,7 +58,7 @@ KubeDB operator supports using a private Docker registry. This tutorial will sho
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
-  ```console
+  ```bash
   $ kubectl create ns demo
   namespace/demo created
   ```
@@ -69,7 +69,7 @@ ImagePullSecrets is a type of a Kubernetes Secret whose sole purpose is to pull 
 
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
-```console
+```bash
 $ kubectl create secret docker-registry -n demo myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
@@ -107,8 +107,6 @@ spec:
       kind: MySQL
       name: my-group
     replicas: 3
-  updateStrategy:
-    type: RollingUpdate
   podTemplate:
     spec:
       imagePullSecrets:
@@ -117,14 +115,14 @@ spec:
 
 Now run the command to deploy this `ProxySQL` object:
 
-```console
+```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/proxysql/private-registry.yaml
 proxysql.kubedb.com/proxysql-pvt-reg created
 ```
 
 To check if the images pulled successfully from the repository, see if the `ProxySQL` is in running state:
 
-```console
+```bash
 $ kubectl get pods -n demo
 NAME                 READY     STATUS    RESTARTS   AGE
 proxysql-pvt-reg-0   1/1       Running   0          56s
@@ -134,7 +132,7 @@ proxysql-pvt-reg-0   1/1       Running   0          56s
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```console
+```bash
 kubectl delete -n demo proxysql/proxysql-pvt-reg
 kubectl delete ns demo
 ```
@@ -142,8 +140,8 @@ kubectl delete ns demo
 ## Next Steps
 
 - Monitor your ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
-- Monitor your ProxySQL with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/proxysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your ProxySQL with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md).
 - Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-custom-config.md).
-- Detail concepts of ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
-- Detail concepts of ProxySQLVersion CRD [here](/docs/concepts/catalog/proxysql.md).
+- Detail concepts of ProxySQL CRD [here](/docs/guides/proxysql/concepts/proxysql.md).
+- Detail concepts of ProxySQLVersion CRD [here](/docs/guides/proxysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

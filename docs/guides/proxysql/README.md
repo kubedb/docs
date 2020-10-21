@@ -13,7 +13,7 @@ aliases:
   - /docs/{{ .version }}/guides/proxysql/README/
 ---
 
-> New to KubeDB? Please start [here](/docs/concepts/README.md).
+> New to KubeDB? Please start [here](/docs/README.md).
 
 ## Supported ProxySQL Features
 
@@ -24,7 +24,7 @@ aliases:
 | Custom Configuration                                    |   &#10003;   |
 | Using Custom docker image                               |   &#10003;   |
 | Builtin Prometheus Discovery                            |   &#10003;   |
-| Using CoreOS Prometheus Operator                        |   &#10003;   |
+| Using Prometheus operator                        |   &#10003;   |
 
 ## Supported ProxySQL Versions
 
@@ -52,9 +52,9 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - Configure ProxySQL for Group Replication [here](/docs/guides/proxysql/overview/configure-proxysql.md).
 - Learn to use ProxySQL to Load Balance MySQL Group Replication with KubeDB Operator [here](/docs/guides/proxysql/quickstart/load-balance-mysql-group-replication.md).
 - Monitor your ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
-- Monitor your ProxySQL with KubeDB using [out-of-the-box CoreOS Prometheus Operator](/docs/guides/proxysql/monitoring/using-coreos-prometheus-operator.md).
+- Monitor your ProxySQL with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md).
 - Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
 - Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-custom-config.md).
-- Detail concepts of ProxySQL CRD [here](/docs/concepts/database-proxy/proxysql.md).
-- Detail concepts of ProxySQLVersion CRD [here](/docs/concepts/catalog/proxysql.md).
+- Detail concepts of ProxySQL CRD [here](/docs/guides/proxysql/concepts/proxysql.md).
+- Detail concepts of ProxySQLVersion CRD [here](/docs/guides/proxysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
