@@ -323,30 +323,10 @@ $ kubectl create secret -n demo generic config-elasticsearch-auth \
                 --from-file=sg_internal_users.yml \
                 --from-file=sg_action_groups.yml \
                 --from-file=sg_roles.yml \
-                --from-file=sg_roles_mapping.yml \
-                --from-literal=ADMIN_USERNAME=admin \
-                --from-literal=ADMIN_PASSWORD=$ADMIN_PASSWORD \
-                --from-literal=READALL_USERNAME=readall \
-                --from-literal=READALL_PASSWORD=$READALL_PASSWORD
+                --from-file=sg_roles_mapping.yml
 
 secret/config-elasticsearch-auth created
 ```
-
-Here,
-
-- `ADMIN_USERNAME` and `ADMIN_PASSWORD` password is used for initializing database from previous Snapshot. For more details about initialization  from snapshot, please visit [here](/docs/guides/elasticsearch/initialization/snapshot_source.md).
-- `READALL_USERNAME` and `READALL_PASSWORD` password is used for taking backup. For more details about backup Elastisearch database, please visit [here](/docs/guides/elasticsearch/snapshot/instant_backup.md).
-
-If you do not use these two features of Snapshot, you can ignore adding these.
-
-```bash
---from-literal=ADMIN_USERNAME=admin
---from-literal=ADMIN_PASSWORD=$ADMIN_PASSWORD 
---from-literal=READALL_USERNAME=readall
---from-literal=READALL_PASSWORD=$READALL_PASSWORD
-```
-
->Note: `ADMIN_PASSWORD` and `READALL_PASSWORD` are the same password you have provided as hashed value in `sg_internal_users.yml`. It is not possible for KubeDB to figure out the password from the hashed value. So, you have to provide these password as a separate key in the secret. Otherwise, KubeDB will not able to perform backup or initialization.
 
 Use this Secret `config-elasticsearch-auth` in `spec.authSecret` field of your Elasticsearch object.
 

@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Continuous Archiving to Azure
 
-**WAL-G** is used to continuously archive PostgreSQL WAL files. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) to learn more about it.
+**WAL-G** is used to continuously archive PostgreSQL WAL files. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/backup/wal/continuous_archiving.md) to learn more about it.
 
 ## Before You Begin
 
@@ -114,7 +114,7 @@ To configure Azure backend, following parameters are available:
 Now create this Postgres object with continuous archiving support.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/snapshot/wal-postgres-azure.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/backup/wal-postgres-azure.yaml
 postgres.kubedb.com/wal-postgres created
 ```
 

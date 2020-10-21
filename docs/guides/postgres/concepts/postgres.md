@@ -191,7 +191,7 @@ If the Cluster machine is powerful, user can reduce the times. But, Do not make 
 
 Continuous archiving data will be stored in a folder called `{bucket}/{prefix}/kubedb/{namespace}/{postgres-name}/archive/`.
 
-Follow [this link](/docs/concepts/snapshot.md#google-cloud-storage-gcs) to learn how to create secret for S3 or GCS. To learn more about how to configure Postgres to archive WAL data continuously in AWS S3 bucket, please visit [here](/docs/guides/postgres/snapshot/wal/continuous_archiving.md).
+Follow [this link](/docs/concepts/snapshot.md#google-cloud-storage-gcs) to learn how to create secret for S3 or GCS. To learn more about how to configure Postgres to archive WAL data continuously in AWS S3 bucket, please visit [here](/docs/guides/postgres/backup/wal/continuous_archiving.md).
 
 ### spec.authSecret
 
@@ -271,34 +271,6 @@ spec:
 ```
 
 In the above example, Postgres will execute provided script once the database is running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/postgres/initialization/script_source.md).
-
-#### Initialize from Snapshots
-
-To initialize from prior Snapshot, set the `spec.init.snapshotSource` section when creating a Postgres object. In this case, `snapshotSource` must have the following information:
-
-- `name:` Name of the Snapshot
-- `namespace:` Namespace of the Snapshot
-
-```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: Postgres
-metadata:
-  name: postgres-db
-spec:
-  version: "10.2-v5"
-  authSecret:
-    name: postgres-old-auth
-  init:
-    snapshotSource:
-      name: "snapshot-xyz"
-      namespace: "demo"
-```
-
-In the above example, PostgreSQL database will be initialized from Snapshot `snapshot-xyz` of `demo` namespace. Here, KubeDB operator will launch a Job to initialize PostgreSQL once StatefulSet pods are running.
-
-When initializing from Snapshot, superuser credentials must have to match with the previous one. For example, let's say, Snapshot `snapshot-xyz` is for Postgres `postgres-old`. In this case, new Postgres `postgres-db` should use the same credentials for superuser of `postgres-old`. Otherwise, the restoration process will fail.
-
-For more details tutorial on how to initialize from snapshot, please visit [here](/docs/guides/postgres/initialization/snapshot_source.md).
 
 #### Initialize from WAL archive
 

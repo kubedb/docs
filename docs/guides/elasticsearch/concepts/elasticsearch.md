@@ -293,39 +293,7 @@ spec:
       namespace: demo
 ```
 
-In the above example, Elasticsearch cluster will be initialized from Snapshot `snapshot-xyz` in `demo` namespace. Here, KubeDB operator will launch a Job to initialize Elasticsearch, once StatefulSet pods are running. For details tutorial on how to initialize Elasticsearch from snapshot, please visit [here](/docs/guides/elasticsearch/initialization/snapshot_source.md).
-
-### spec.backupSchedule
-
-KubeDB supports taking periodic snapshots for Elasticsearch database. This is an optional section in `.spec`. When `spec.backupSchedule` section is added, KubeDB operator immediately takes a backup to validate this information. After that, at each tick KubeDB operator creates a [Snapshot](/docs/concepts/snapshot.md) object. This triggers operator to create a Job to take backup.
-
-You have to specify following fields to take periodic backup of your Elasticsearch database:
-
- - `spec.backupSchedule.cronExpression` is a required [cron expression](https://github.com/robfig/cron/blob/v2/doc.go#L26). This specifies the schedule for backup operations.
- - `spec.backupSchedule.{storage}` is a required field that is used as the destination for storing snapshot data. KubeDB supports cloud storage providers like S3, GCS, Azure, and OpenStack Swift. It also supports any locally mounted Kubernetes volumes, like NFS, Ceph, etc. Only one backend can be used at a time. To learn how to configure this, please visit [here](/docs/concepts/snapshot.md).
-
-You can also specify a template for pod of backup job through `spec.backupSchedule.podTemplate`. KubeDB will use the information you have provided in `podTemplate` to create the backup job. KubeDB accept following fields to set in `spec.backupSchedule.podTemplate`:
-
-- metadata
-  - annotations (pod's annotation)
-- controller
-  - annotations (job's annotation)
-- spec:
-  - args
-  - env
-  - resources
-  - imagePullSecrets
-  - initContainers
-  - nodeSelector
-  - affinity
-  - schedulerName
-  - tolerations
-  - priorityClassName
-  - priority
-  - securityContext
-  - livenessProbe
-  - readinessProbe
-  - lifecycle
+In the above example, Elasticsearch cluster will be initialized from Snapshot `snapshot-xyz` in `demo` namespace. Here, KubeDB operator will launch a Job to initialize Elasticsearch, once StatefulSet pods are running. For details tutorial on how to initialize Elasticsearch from Stash backup, please visit [here](/docs/guides/elasticsearch/backup/stash.md).
 
 ### spec.monitor
 
@@ -498,5 +466,4 @@ If you don't specify `spec.terminationPolicy` KubeDB uses `Halt` termination pol
 ## Next Steps
 
 - Learn how to use KubeDB to run an Elasticsearch database [here](/docs/guides/elasticsearch/README.md).
-- See the list of supported storage providers for snapshots [here](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

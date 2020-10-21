@@ -198,7 +198,7 @@ In the above example, PerconaXtraDB cluster will be initialized from Snapshot `s
 
 When initializing from Snapshot, root user credentials must have to match with the previous one. For example, let's say, Snapshot `snapshot-xyz` is for PerconaXtraDB `px-old`. In this case, new PerconaXtraDB `px-new` should use the same credentials for root user of `px-old`. Otherwise, the restoration process will fail.
 
-For more details tutorial on how to initialize from snapshot, please visit [here](/docs/guides/percona-xtradb/snapshot/stash.md).
+For more details tutorial on how to initialize from snapshot, please visit [here](/docs/guides/percona-xtradb/backup/stash.md).
 
 ### .spec.monitor
 
