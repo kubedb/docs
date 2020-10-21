@@ -335,13 +335,13 @@ secret/config-elasticsearch-auth created
 Here,
 
 - `ADMIN_USERNAME` and `ADMIN_PASSWORD` password is used for initializing database from previous Snapshot. For more details about initialization  from snapshot, please visit [here](/docs/guides/elasticsearch/initialization/snapshot_source.md).
-- `READALL_USERNAME` and `READALL_PASSWORD` password is used for taking backup. For more details about backup Elastisearch database, please visit [here](/docs/guides/elasticsearch/snapshot/instant_backup.md).
+- `READALL_USERNAME` and `READALL_PASSWORD` password is used for taking backup.
 
 If you do not use these two features of Snapshot, you can ignore adding these.
 
 ```bash
 --from-literal=ADMIN_USERNAME=admin
---from-literal=ADMIN_PASSWORD=$ADMIN_PASSWORD 
+--from-literal=ADMIN_PASSWORD=$ADMIN_PASSWORD
 --from-literal=READALL_USERNAME=readall
 --from-literal=READALL_PASSWORD=$READALL_PASSWORD
 ```

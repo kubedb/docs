@@ -1,20 +1,20 @@
 ---
-title: Continuous Archiving to Azure
+title: Continuous Archiving to S3
 menu:
   docs_{{ .version }}:
-    identifier: pg-wal-azure
-    name: To Azure
+    identifier: pg-wal-s3
+    name: To S3
     parent: pg-wal
-    weight: 30
+    weight: 25
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Continuous Archiving to Azure
+# Continuous Archiving to S3
 
-**WAL-G** is used to continuously archive PostgreSQL WAL files. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) to learn more about it.
+**WAL-G** is used to continuously archive PostgreSQL WAL files. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/backup/wal/continuous_archiving.md) to learn more about it.
 
 ## Before You Begin
 
@@ -33,7 +33,7 @@ namespace/demo created
 
 ## Create PostgreSQL with Continuous Archiving
 
-For archiving, we need storage Secret, and storage backend information. Below is a Postgres object created with Continuous Archiving support to backup WAL files to Azure Storage.
+For archiving, we need storage Secret, and storage backend information. Below is a Postgres object created with Continuous Archiving support to backup WAL files to Amazon S3.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -53,17 +53,17 @@ spec:
         storage: 1Gi
   archiver:
     storage:
-      storageSecretName: azure-secret
-      azure:
-        container: kubedb
+      storageSecretName: s3-secret
+      s3:
+        bucket: kubedb
 ```
 
 Here,
 
 - `spec.archiver.storage` specifies storage information that will be used by `WAL-G`
   - `storage.storageSecretName` points to the Secret containing the credentials for cloud storage destination.
-  - `storage.azure` points to Azure storage configuration.
-  - `storage.azure.container` points to the bucket name used to store continuous archiving data.
+  - `storage.s3` points to s3 storage configuration.
+  - `storage.s3.bucket` points to the bucket name used to store continuous archiving data.
 
 **Archiver Storage Secret**
 
@@ -71,62 +71,62 @@ Storage Secret should contain credentials that will be used to access storage de
 
 Storage Secret for **WAL-G** is needed with the following 2 keys:
 
-| Key                  | Description                            |
-| -------------------- | -------------------------------------- |
-| `AZURE_ACCOUNT_NAME` | `Required`. Azure Storage account name |
-| `AZURE_ACCOUNT_KEY`  | `Required`. Azure Storage account key  |
+| Key                     | Description                               |
+| ----------------------- | ----------------------------------------- |
+| `AWS_ACCESS_KEY_ID`     | `Required`. AWS access key ID     |
+| `AWS_SECRET_ACCESS_KEY` | `Required`. AWS secret access key |
 
 ```bash
-$ echo -n '<your-azure-storage-account-name>' > AZURE_ACCOUNT_NAME
-$ echo -n '<your-azure-storage-account-key>' > AZURE_ACCOUNT_KEY
-$ kubectl create secret generic azure-secret \
-    --from-file=./AZURE_ACCOUNT_NAME \
-    --from-file=./AZURE_ACCOUNT_KEY
-secret "azure-secret" created
+$ echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
+$ echo -n '<your-aws-secret-access-key-here>' > AWS_SECRET_ACCESS_KEY
+$ kubectl create secret -n demo generic s3-secret \
+    --from-file=./AWS_ACCESS_KEY_ID \
+    --from-file=./AWS_SECRET_ACCESS_KEY
+secret "s3-secret" created
 ```
 
 ```yaml
-$ kubectl get secret azure-secret -o yaml
+$ kubectl get secret -n demo s3-secret -o yaml
 apiVersion: v1
 data:
-  AZURE_ACCOUNT_KEY: PHlvdXItYXp1cmUtc3RvcmFnZS1hY2NvdW50LWtleT4=
-  AZURE_ACCOUNT_NAME: PHlvdXItYXp1cmUtc3RvcmFnZS1hY2NvdW50LW5hbWU+
+  AWS_ACCESS_KEY_ID: PHlvdXItYXdzLWFjY2Vzcy1rZXktaWQtaGVyZT4=
+  AWS_SECRET_ACCESS_KEY: PHlvdXItYXdzLXNlY3JldC1hY2Nlc3Mta2V5LWhlcmU+
 kind: Secret
 metadata:
-  creationTimestamp: 2017-06-28T13:27:16Z
-  name: azure-secret
-  namespace: default
-  resourceVersion: "6809"
-  selfLink: /api/v1/namespaces/default/secrets/azure-secret
-  uid: 80f658d1-5c05-11e7-bb52-08002711f4aa
+  creationTimestamp: 2018-02-06T09:12:37Z
+  name: s3-secret
+  namespace: demo
+  resourceVersion: "59225"
+  selfLink: /api/v1/namespaces/demo/secrets/s3-secret
+  uid: dfbe6b06-0b1d-11e8-9fb9-42010a800064
 type: Opaque
 ```
 
 **Archiver Storage Backend**
 
-To configure Azure backend, following parameters are available:
+To configure s3 backend, following parameters are available:
 
-| Parameter                               | Description                                                  |
-| --------------------------------------- | ------------------------------------------------------------ |
-| `spec.archiver.storage.azure.container` | `Required`. Name of Storage container                        |
-| `spec.archiver.storage.azure.prefix`    | `Optional`. Path prefix into bucket where snapshot will be stored |
+| Parameter                           | Description                                                  |
+| ----------------------------------- | ------------------------------------------------------------ |
+| `spec.archiver.storage.s3.bucket`   | `Required`. Name of Bucket                                   |
+| `spec.archiver.storage.s3.prefix`   | `Optional`. Path prefix into bucket where snapshot will be stores |
 
 Now create this Postgres object with continuous archiving support.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/snapshot/wal-postgres-azure.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/backup/wal-postgres-s3.yaml
 postgres.kubedb.com/wal-postgres created
 ```
 
 When database is ready, **WAL-G** takes a base backup and uploads it to the cloud storage defined by storage backend.
 
-Archived data is stored in a folder called `{container}/{prefix}/kubedb/{namespace}/{postgres-name}/archive/`.
+Archived data is stored in a folder called `{bucket}/{prefix}/kubedb/{namespace}/{postgres-name}/archive/`.
 
-You can see continuous archiving data stored in azure container.
+You can see continuous archiving data stored in S3 bucket.
 
 <p align="center">
   <kbd>
-    <img alt="continuous-archiving"  src="/docs/images/postgres/wal-postgres-azure.png">
+    <img alt="continuous-archiving"  src="/docs/images/postgres/wal-postgres.png">
   </kbd>
 </p>
 
@@ -146,7 +146,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 kubectl patch -n demo pg/wal-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/wal-postgres
 
-kubectl delete -n demo secret/azure-secret
+kubectl delete -n demo secret/s3-secret
 kubectl delete ns demo
 ```
 

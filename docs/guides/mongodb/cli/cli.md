@@ -289,25 +289,6 @@ kubectl dba describe mg --all-namespaces --selector='group=dev'
 
 To learn about various options of `describe` command, please visit [here](/docs/reference/cli/kubectl-dba_describe.md).
 
-### How to Edit Objects
-
-`kubectl edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `vim`.
-
-Let's edit an existing running MongoDB object to setup [Scheduled Backup](/docs/guides/mongodb/snapshot/scheduled-backup.md). The following command will open MongoDB `mongodb-demo` in editor.
-
-```bash
-$ kubectl edit mg mongodb-demo
-
-# Add following under Spec to configure periodic backups
-#  backupSchedule:
-#    cronExpression: '@every 1m'
-#    storageSecretName: mg-snap-secret
-#    gcs:
-#      bucket: bucket-name
-
-mongodb "mongodb-demo" edited
-```
-
 #### Edit Restrictions
 
 Various fields of a KubeDb object can't be edited using `edit` command. The following fields are restricted from updates for all KubeDB objects:

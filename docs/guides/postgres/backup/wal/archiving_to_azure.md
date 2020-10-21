@@ -1,20 +1,20 @@
 ---
-title: Continuous Archiving to GCS
+title: Continuous Archiving to Azure
 menu:
   docs_{{ .version }}:
-    identifier: pg-wal-gcs
-    name: To GCS
+    identifier: pg-wal-azure
+    name: To Azure
     parent: pg-wal
-    weight: 35
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Continuous Archiving to GCS
+# Continuous Archiving to Azure
 
-**WAL-G** is used to continuously archive PostgreSQL WAL files. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) to learn more about it.
+**WAL-G** is used to continuously archive PostgreSQL WAL files. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/backup/wal/continuous_archiving.md) to learn more about it.
 
 ## Before You Begin
 
@@ -33,7 +33,7 @@ namespace/demo created
 
 ## Create PostgreSQL with Continuous Archiving
 
-For archiving, we need storage Secret, and storage backend information. Below is a Postgres object created with Continuous Archiving support to backup WAL files to Google Cloud Storage.
+For archiving, we need storage Secret, and storage backend information. Below is a Postgres object created with Continuous Archiving support to backup WAL files to Azure Storage.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -53,17 +53,17 @@ spec:
         storage: 1Gi
   archiver:
     storage:
-      storageSecretName: gcs-secret
-      gcs:
-        bucket: kubedb
+      storageSecretName: azure-secret
+      azure:
+        container: kubedb
 ```
 
 Here,
 
 - `spec.archiver.storage` specifies storage information that will be used by `WAL-G`
   - `storage.storageSecretName` points to the Secret containing the credentials for cloud storage destination.
-  - `storage.gcs` points to GCS configuration.
-  - `storage.gcs.bucket` points to the bucket name used to store continuous archiving data.
+  - `storage.azure` points to Azure storage configuration.
+  - `storage.azure.container` points to the bucket name used to store continuous archiving data.
 
 **Archiver Storage Secret**
 
@@ -71,65 +71,64 @@ Storage Secret should contain credentials that will be used to access storage de
 
 Storage Secret for **WAL-G** is needed with the following 2 keys:
 
-| Key                               | Description                                       |
-| --------------------------------- | ------------------------------------------------- |
-| `GOOGLE_PROJECT_ID`               | `Required`. Google Cloud project ID               |
-| `GOOGLE_SERVICE_ACCOUNT_JSON_KEY` | `Required`. Google Cloud service account json key |
+| Key                  | Description                            |
+| -------------------- | -------------------------------------- |
+| `AZURE_ACCOUNT_NAME` | `Required`. Azure Storage account name |
+| `AZURE_ACCOUNT_KEY`  | `Required`. Azure Storage account key  |
 
 ```bash
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ mv downloaded-sa-json.key GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic gcs-secret \
-    --from-file=./GOOGLE_PROJECT_ID \
-    --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret "gcs-secret" created
+$ echo -n '<your-azure-storage-account-name>' > AZURE_ACCOUNT_NAME
+$ echo -n '<your-azure-storage-account-key>' > AZURE_ACCOUNT_KEY
+$ kubectl create secret generic azure-secret \
+    --from-file=./AZURE_ACCOUNT_NAME \
+    --from-file=./AZURE_ACCOUNT_KEY
+secret "azure-secret" created
 ```
 
 ```yaml
-$ kubectl get secret gcs-secret -o yaml
+$ kubectl get secret azure-secret -o yaml
 apiVersion: v1
 data:
-  GOOGLE_PROJECT_ID: PHlvdXItcHJvamVjdC1pZD4=
-  GOOGLE_SERVICE_ACCOUNT_JSON_KEY: ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3V...9tIgp9Cg==
+  AZURE_ACCOUNT_KEY: PHlvdXItYXp1cmUtc3RvcmFnZS1hY2NvdW50LWtleT4=
+  AZURE_ACCOUNT_NAME: PHlvdXItYXp1cmUtc3RvcmFnZS1hY2NvdW50LW5hbWU+
 kind: Secret
 metadata:
-  creationTimestamp: 2017-06-28T13:06:51Z
-  name: gcs-secret
+  creationTimestamp: 2017-06-28T13:27:16Z
+  name: azure-secret
   namespace: default
-  resourceVersion: "5461"
-  selfLink: /api/v1/namespaces/default/secrets/gcs-secret
-  uid: a6983b00-5c02-11e7-bb52-08002711f4aa
+  resourceVersion: "6809"
+  selfLink: /api/v1/namespaces/default/secrets/azure-secret
+  uid: 80f658d1-5c05-11e7-bb52-08002711f4aa
 type: Opaque
 ```
 
 **Archiver Storage Backend**
 
-To configure GCS backend, following parameters are available:
+To configure Azure backend, following parameters are available:
 
-| Parameter                          | Description                                                  |
-| ---------------------------------- | ------------------------------------------------------------ |
-| `spec.archiver.storage.gcs.bucket` | `Required`. Name of Bucket                                   |
-| `spec.archiver.storage.gcs.prefix` | `Optional`. Path prefix into bucket where snapshot will be stored |
+| Parameter                               | Description                                                  |
+| --------------------------------------- | ------------------------------------------------------------ |
+| `spec.archiver.storage.azure.container` | `Required`. Name of Storage container                        |
+| `spec.archiver.storage.azure.prefix`    | `Optional`. Path prefix into bucket where snapshot will be stored |
 
 Now create this Postgres object with continuous archiving support.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/snapshot/wal-postgres-gcs.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/backup/wal-postgres-azure.yaml
 postgres.kubedb.com/wal-postgres created
 ```
 
 When database is ready, **WAL-G** takes a base backup and uploads it to the cloud storage defined by storage backend.
 
-Archived data is stored in a folder called `{bucket}/{prefix}/kubedb/{namespace}/{postgres-name}/archive/`.
+Archived data is stored in a folder called `{container}/{prefix}/kubedb/{namespace}/{postgres-name}/archive/`.
 
-You can see continuous archiving data stored in GCS bucket.
+You can see continuous archiving data stored in azure container.
 
 <p align="center">
   <kbd>
-    <img alt="continuous-archiving"  src="/docs/images/postgres/wal-postgres-gcs.png">
+    <img alt="continuous-archiving"  src="/docs/images/postgres/wal-postgres-azure.png">
   </kbd>
 </p>
-
 
 From the above image, you can see that the archived data is stored in a folder `kubedb/kubedb/demo/wal-postgres/archive`.
 
@@ -147,7 +146,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 kubectl patch -n demo pg/wal-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/wal-postgres
 
-kubectl delete -n demo secret/gcs-secret
+kubectl delete -n demo secret/azure-secret
 kubectl delete ns demo
 ```
 

@@ -90,10 +90,8 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - [Quickstart MongoDB](/docs/guides/mongodb/quickstart/quickstart.md) with KubeDB Operator.
 - [MongoDB Replicaset](/docs/guides/mongodb/clustering/replicaset.md) with KubeDB Operator.
 - [MongoDB Sharding](/docs/guides/mongodb/clustering/sharding.md) with KubeDB Operator.
-- [Snapshot and Restore](/docs/guides/mongodb/snapshot/backup-and-restore.md) process of MongoDB databases using KubeDB.
-- Take [Scheduled Snapshot](/docs/guides/mongodb/snapshot/scheduled-backup.md) of MongoDB databases using KubeDB.
+- [Backup & Restore](/docs/guides/mongodb/backup/stash.md) MongoDB databases using Stash.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
-- Initialize [MongoDB with Snapshot](/docs/guides/mongodb/initialization/using-snapshot.md).
 - Start [MongoDB with Custom Config](/docs/guides/mongodb/configuration/using-custom-config.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).

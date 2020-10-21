@@ -231,25 +231,6 @@ kubectl dba describe pg,es --all-namespaces --selector='group=dev'
 
 To learn about various options of `describe` command, please visit [here](/docs/reference/cli/kubectl-dba_describe.md).
 
-### How to Edit Objects
-
-`kubectl edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
-
-Let's edit an existing running Postgres object to setup [Scheduled Backup](/docs/guides/postgres/snapshot/scheduled_backup.md). The following command will open Postgres `postgres-demo` in editor.
-
-```bash
-$ kubectl edit pg postgres-demo
-
-# Add following under Spec to configure periodic backups
-# backupSchedule:
-#    cronExpression: "@every 2m"
-#    storageSecretName: "secret-name"
-#   gcs:
-#      bucket: "bucket-name"
-
-postgres "postgres-demo" edited
-```
-
 #### Edit restrictions
 
 Various fields of a KubeDb object can't be edited using `edit` command. The following fields are restricted from updates for all KubeDB objects:

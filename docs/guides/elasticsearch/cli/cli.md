@@ -339,24 +339,6 @@ $ kubectl dba describe es --all-namespaces --selector='group=dev'
 
 To learn about various options of `describe` command, please visit [here](/docs/reference/cli/kubectl-dba_describe.md).
 
-### How to Edit Objects
-
-`kubectl edit` command allows users to directly edit any KubeDB object. It will open the editor defined by _KUBEDB_EDITOR_, or _EDITOR_ environment variables, or fall back to `nano`.
-
-Let's edit an existing running Elasticsearch object to setup [Scheduled Backup](/docs/guides/elasticsearch/snapshot/scheduled_backup.md). The following command will open Elasticsearch `elasticsearch-demo` in editor.
-
-```bash
-$ kubectl edit es elasticsearch-demo
-
-# Add following under Spec to configure periodic backups
-#  backupSchedule:
-#    cronExpression: "@every 2m"
-#    storageSecretName: "secret-name"
-#    gcs:
-#      bucket: "bucket-name"
-
-elasticsearch "elasticsearch-demo" edited
-```
 
 #### Edit restrictions
 

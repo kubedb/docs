@@ -60,9 +60,9 @@ archive_timeout = 60
 
 ## Next Steps
 
-- Learn about archiving to [Amazon S3](/docs/guides/postgres/snapshot/wal/archiving_to_s3.md).
-- Learn about archiving to [S3 MinIO](/docs/guides/postgres/snapshot/wal/archiving_to_minio.md).
-- Learn about archiving to [Google Cloud Storage](/docs/guides/postgres/snapshot/wal/archiving_to_gcs.md).
-- Learn about archiving to [Azure Storage](/docs/guides/postgres/snapshot/wal/archiving_to_azure.md).
-- Learn about archiving to [OpenStack Object Storage (Swift)](/docs/guides/postgres/snapshot/wal/archiving_to_swift.md).
-- Learn about archiving to [Local Storage](/docs/guides/postgres/snapshot/wal/archiving_to_local.md).
+- Learn about archiving to [Amazon S3](/docs/guides/postgres/backup/wal/archiving_to_s3.md).
+- Learn about archiving to [S3 MinIO](/docs/guides/postgres/backup/wal/archiving_to_minio.md).
+- Learn about archiving to [Google Cloud Storage](/docs/guides/postgres/backup/wal/archiving_to_gcs.md).
+- Learn about archiving to [Azure Storage](/docs/guides/postgres/backup/wal/archiving_to_azure.md).
+- Learn about archiving to [OpenStack Object Storage (Swift)](/docs/guides/postgres/backup/wal/archiving_to_swift.md).
+- Learn about archiving to [Local Storage](/docs/guides/postgres/backup/wal/archiving_to_local.md).
