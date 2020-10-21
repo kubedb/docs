@@ -1,9 +1,9 @@
 ---
-title: Elasticsearch Snapshotting
+title: Elasticsearch Backup
 menu:
   docs_{{ .version }}:
-    identifier: es-snapshot-elasticsearch
-    name: Snapshotting
+    identifier: es-backup
+    name: Backup & Restore
     parent: es-elasticsearch-guides
     weight: 25
 menu_name: docs_{{ .version }}

@@ -5,7 +5,7 @@ menu:
     identifier: elasticsearh-version
     name: ElasticsearchVersion
     parent: catalog
-    weight: 10
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: concepts
 ---
