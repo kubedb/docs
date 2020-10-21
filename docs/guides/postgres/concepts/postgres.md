@@ -191,7 +191,7 @@ If the Cluster machine is powerful, user can reduce the times. But, Do not make 
 
 Continuous archiving data will be stored in a folder called `{bucket}/{prefix}/kubedb/{namespace}/{postgres-name}/archive/`.
 
-Follow [this link](/docs/concepts/snapshot.md#google-cloud-storage-gcs) to learn how to create secret for S3 or GCS. To learn more about how to configure Postgres to archive WAL data continuously in AWS S3 bucket, please visit [here](/docs/guides/postgres/snapshot/wal/continuous_archiving.md).
+To learn more about how to configure Postgres to archive WAL data continuously in AWS S3 bucket, please visit [here](/docs/guides/postgres/backup/wal/continuous_archiving.md).
 
 ### spec.authSecret
 
@@ -272,34 +272,6 @@ spec:
 
 In the above example, Postgres will execute provided script once the database is running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/postgres/initialization/script_source.md).
 
-#### Initialize from Snapshots
-
-To initialize from prior Snapshot, set the `spec.init.snapshotSource` section when creating a Postgres object. In this case, `snapshotSource` must have the following information:
-
-- `name:` Name of the Snapshot
-- `namespace:` Namespace of the Snapshot
-
-```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: Postgres
-metadata:
-  name: postgres-db
-spec:
-  version: "10.2-v5"
-  authSecret:
-    name: postgres-old-auth
-  init:
-    snapshotSource:
-      name: "snapshot-xyz"
-      namespace: "demo"
-```
-
-In the above example, PostgreSQL database will be initialized from Snapshot `snapshot-xyz` of `demo` namespace. Here, KubeDB operator will launch a Job to initialize PostgreSQL once StatefulSet pods are running.
-
-When initializing from Snapshot, superuser credentials must have to match with the previous one. For example, let's say, Snapshot `snapshot-xyz` is for Postgres `postgres-old`. In this case, new Postgres `postgres-db` should use the same credentials for superuser of `postgres-old`. Otherwise, the restoration process will fail.
-
-For more details tutorial on how to initialize from snapshot, please visit [here](/docs/guides/postgres/initialization/snapshot_source.md).
-
 #### Initialize from WAL archive
 
 To initialize from WAL archive, set the `spec.init.postgresWAL` section when creating a Postgres object.
@@ -329,38 +301,6 @@ In the above example, PostgreSQL database will be initialized from WAL archive.
 When initializing from WAL archive, superuser credentials must have to match with the previous one. For example, let's say, we want to initialize this database from `postgres-old` WAL archive. In this case, superuser credentials of new Postgres should be the same as `postgres-old`. Otherwise, the restoration process will be failed.
 
 For more details tutorial on how to initialize from wal archive, please visit [here](/docs/guides/postgres/initialization/wal/wal_source.md).
-
-### spec.backupSchedule
-
-KubeDB supports taking periodic snapshots for Postgres database. This is an optional section in `.spec`. When `spec.backupSchedule` section is added, KubeDB operator immediately takes a backup to validate this information. After that, at each tick KubeDB operator creates a [Snapshot](/docs/concepts/snapshot.md) object. This triggers operator to create a Job to take backup.
-
-You have to specify following fields to take periodic backup of your Postgres database:
-
-- `spec.backupSchedule.cronExpression` is a required [cron expression](https://github.com/robfig/cron/blob/v2/doc.go#L26). This specifies the schedule for backup operations.
-- `spec.backupSchedule.{storage}` is a required field that is used as the destination for storing snapshot data. KubeDB supports cloud storage providers like S3, GCS, Azure, and OpenStack Swift. It also supports any locally mounted Kubernetes volumes, like NFS, Ceph, etc. Only one backend can be used at a time. To learn how to configure this, please visit [here](/docs/concepts/snapshot.md).
-
-You can also specify a template for pod of backup job through `spec.backupSchedule.podTemplate`. KubeDB will use the information you have provided in `podTemplate` to create the backup job. KubeDB accept following fields to set in `spec.backupSchedule.podTemplate`:
-
-- metadata
-  - annotations (pod's annotation)
-- controller
-  - annotations (job's annotation)
-- spec:
-  - args
-  - env
-  - resources
-  - imagePullSecrets
-  - initContainers
-  - nodeSelector
-  - affinity
-  - schedulerName
-  - tolerations
-  - priorityClassName
-  - priority
-  - securityContext
-  - livenessProbe
-  - readinessProbe
-  - lifecycle
 
 ### spec.monitor
 
@@ -533,5 +473,4 @@ If you don't specify `spec.terminationPolicy` KubeDB uses `Halt` termination pol
 ## Next Steps
 
 - Learn how to use KubeDB to run a PostgreSQL database [here](/docs/guides/postgres/README.md).
-- See the list of supported storage providers for snapshots [here](/docs/concepts/snapshot.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -174,10 +174,8 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- [Snapshot and Restore](/docs/guides/mongodb/snapshot/backup-and-restore.md) process of MongoDB databases using KubeDB.
-- Take [Scheduled Snapshot](/docs/guides/mongodb/snapshot/scheduled-backup.md) of MongoDB databases using KubeDB.
+- [Backup and Restore](/docs/guides/mongodb/backup/stash.md) MongoDB databases using Stash.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
-- Initialize [MongoDB with Snapshot](/docs/guides/mongodb/initialization/using-snapshot.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).

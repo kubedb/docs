@@ -5,7 +5,7 @@ menu:
     identifier: appbinding-overview
     name: AppBinding
     parent: concepts
-    weight: 34
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: concepts
 ---

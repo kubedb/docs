@@ -11,7 +11,7 @@ section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
-> Don't know how to take continuous backup?  Check this [tutorial](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) on Continuous Archiving.
+> Don't know how to take continuous backup?  Check this [tutorial](/docs/guides/postgres/backup/wal/continuous_archiving.md) on Continuous Archiving.
 
 # PostgreSQL Initialization from Local Storage
 
@@ -33,7 +33,7 @@ namespace/demo created
 
 ## Prepare WAL Archive
 
-We need a WAL archive to perform initialization. If you don't have a WAL archive ready, create one by following the tutorial [here](/docs/guides/postgres/snapshot/wal/continuous_archiving.md).
+We need a WAL archive to perform initialization. If you don't have a WAL archive ready, create one by following the tutorial [here](/docs/guides/postgres/backup/wal/continuous_archiving.md).
 
 Let's populate the database so that we can verify that the initialized database has the same data. We will `exec` into the database pod and use `psql` command-line tool to create a table.
 
@@ -204,7 +204,7 @@ kubectl delete -n demo pg/replay-postgres
 kubectl delete ns demo
 ```
 
-Also cleanup the resources created for `wal-postgres` following the guide [here](/docs/guides/postgres/snapshot/wal/archiving_to_local.md#cleaning-up).
+Also cleanup the resources created for `wal-postgres` following the guide [here](/docs/guides/postgres/backup/wal/archiving_to_local.md#cleaning-up).
 
 ## Next Steps
 

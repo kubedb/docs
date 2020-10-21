@@ -236,7 +236,6 @@ $ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn about [taking instant backup](/docs/guides/postgres/snapshot/instant_backup.md) of PostgreSQL database using KubeDB Snapshot.
-- Learn about initializing [PostgreSQL from KubeDB Snapshot](/docs/guides/postgres/initialization/snapshot_source.md).
+- Learn about [backup and restore](/docs/guides/postgres/backup/stash.md) PostgreSQL database using Stash.
 - Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

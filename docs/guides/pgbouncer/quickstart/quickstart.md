@@ -157,7 +157,7 @@ If no error occurs, `quick-postgres` is ready to be used by PgBouncer.
 
 You can also use any other tool to deploy your PostgreSQL server and create a database `postgres` for user `postgres`.
 
-Should you choose not to use KubeDB to deploy Postgres, create AppBinding(s) to point PgBouncer to your PostgreSQL server(s) where your target databases are located. Click [here](/docs/concepts/appbinding.md) for detailed instructions on how to manually create AppBindings for Postgres.
+Should you choose not to use KubeDB to deploy Postgres, create AppBinding(s) to point PgBouncer to your PostgreSQL server(s) where your target databases are located. Click [here](/docs/guides/pgbouncer/concepts/appbinding.md) for detailed instructions on how to manually create AppBindings for Postgres.
 
 ## Create a PgBouncer Server
 

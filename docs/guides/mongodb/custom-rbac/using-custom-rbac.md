@@ -277,10 +277,8 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 ## Next Steps
 
 - [Quickstart MongoDB](/docs/guides/mongodb/quickstart/quickstart.md) with KubeDB Operator.
-- [Snapshot and Restore](/docs/guides/mongodb/snapshot/backup-and-restore.md) process of MongoDB instances using KubeDB.
-- Take [Scheduled Snapshot](/docs/guides/mongodb/snapshot/scheduled-backup.md) of MongoDB instances using KubeDB.
+- [Backup and Restore](/docs/guides/mongodb/backup/stash.md) MongoDB instances using Stash.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
-- Initialize [MongoDB with Snapshot](/docs/guides/mongodb/initialization/using-snapshot.md).
 - Monitor your MongoDB instance with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.

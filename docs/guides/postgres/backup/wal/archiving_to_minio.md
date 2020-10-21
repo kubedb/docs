@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Continuous Archiving to MinIO
 
-[MinIO](https://docs.min.io/) is an open source object storage server compatible with Amazon S3 APIs. **WAL-G** is used to continuously archive PostgreSQL WAL files to MinIO. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) to learn more.
+[MinIO](https://docs.min.io/) is an open source object storage server compatible with Amazon S3 APIs. **WAL-G** is used to continuously archive PostgreSQL WAL files to MinIO. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/backup/wal/continuous_archiving.md) to learn more.
 
 ## Before You Begin
 
@@ -152,7 +152,7 @@ To configure s3 backend, following parameters are available:
 Now create this Postgres object with continuous archiving support.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/snapshot/wal-postgres-minio.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/backup/wal-postgres-minio.yaml
 postgres.kubedb.com/wal-postgres created
 ```
 

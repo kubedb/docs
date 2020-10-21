@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Continuous Archiving to Local Storage
 
-**WAL-G** is used to continuously archive PostgreSQL WAL files. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/snapshot/wal/continuous_archiving.md) to learn more.
+**WAL-G** is used to continuously archive PostgreSQL WAL files. Please refer to [continuous archiving in KubeDB](/docs/guides/postgres/backup/wal/continuous_archiving.md) to learn more.
 
 ## Before You Begin
 
@@ -140,7 +140,7 @@ To configure Local backend, following parameters are available:
 Now create this Postgres object with continuous archiving support.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/snapshot/wal-postgres-local.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/backup/wal-postgres-local.yaml
 postgres.kubedb.com/wal-postgres created
 ```
 

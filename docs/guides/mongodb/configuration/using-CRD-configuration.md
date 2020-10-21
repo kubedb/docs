@@ -155,79 +155,6 @@ bye
 
 You can see the maximum connection is set to `100` in `parsed.net.maxIncomingConnections`.
 
-## Snapshot Configuration
-
-`Snapshot` also has the scope to be configured through `spec.podTemplate`. In this tutorial, an extra argument `--gzip` is passed to snapshot crd so that the output of `mongodump` is saved in `gzip`.
-
-Below is the Snapshot CRD that is deployed in this tutorial. Create a secret `mg-snap-secret` from [here](/docs/guides/mongodb/snapshot/backup-and-restore.md#instant-backups) for snapshot. 
-
-```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: Snapshot
-metadata:
-  name: snap-mgo-config
-  namespace: demo
-  labels:
-    kubedb.com/kind: MongoDB
-spec:
-  databaseName: mgo-misc-config
-  storageSecretName: mg-snap-secret
-  gcs:
-    bucket: kubedb-qa
-  podTemplate:
-    spec:
-      args:
-      - --gzip
-```
-
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/snapshot-misc-conf.yaml
-snapshot.kubedb.com/snap-mongodb-config created
-
-
-$ kubectl get snap -n demo
-NAME              DATABASENAME      STATUS      AGE
-snap-mgo-config   mgo-misc-config   Succeeded   50m
-```
-
-## Scheduled Backups
-
-To configure BackupScheduler, add the require changes in PodTemplate just like snapshot object.
-
-```yaml
-$ kubectl edit mg mgo-misc-config -n demo
-apiVersion: kubedb.com/v1alpha2
-kind: MongoDB
-metadata:
-  name: mgo-misc-config
-  namespace: demo
-  ...
-spec:
-  backupSchedule:
-    cronExpression: '@every 1m'
-    storageSecretName: mg-snap-secret
-    gcs:
-      bucket: kubedb-qa
-    podTemplate:
-      spec:
-        args:
-        - --gzip
-  ...
-status:
-  observedGeneration: 3$4212299729528774793
-  phase: Running
-```
-
-```bash
-$ kubectl get snap -n demo
-NAME                              DATABASENAME      STATUS      AGE
-mgo-misc-config-20181002-105247   mgo-misc-config   Succeeded   3m
-mgo-misc-config-20181002-105349   mgo-misc-config   Succeeded   2m
-mgo-misc-config-20181002-105449   mgo-misc-config   Succeeded   1m
-mgo-misc-config-20181002-105549   mgo-misc-config   Succeeded   43s
-snap-mongodb-config               mgo-misc-config   Succeeded   12m
-```
-
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
@@ -247,10 +174,8 @@ If you would like to uninstall KubeDB operator, please follow the steps [here](/
 ## Next Steps
 
 - [Quickstart MongoDB](/docs/guides/mongodb/quickstart/quickstart.md) with KubeDB Operator.
-- [Snapshot and Restore](/docs/guides/mongodb/snapshot/backup-and-restore.md) process of MongoDB databases using KubeDB.
-- Take [Scheduled Snapshot](/docs/guides/mongodb/snapshot/scheduled-backup.md) of MongoDB databases using KubeDB.
+- [Backup and Restore](/docs/guides/mongodb/backup/stash.md) MongoDB databases using Stash.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
-- Initialize [MongoDB with Snapshot](/docs/guides/mongodb/initialization/using-snapshot.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.

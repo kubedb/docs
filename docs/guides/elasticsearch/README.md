@@ -92,9 +92,7 @@ Here, &#10003; means supported and &#10007; means deprecated.
 ## User Guide
 
 - [Quickstart Elasticsearch](/docs/guides/elasticsearch/quickstart/quickstart.md) with KubeDB Operator.
-- [Take instant backup](/docs/guides/elasticsearch/snapshot/instant_backup.md) of Elasticsearch database using KubeDB.
-- [Schedule backup](/docs/guides/elasticsearch/snapshot/scheduled_backup.md) of Elasticsearch database.
-- Initialize [Elasticsearch with Snapshot](/docs/guides/elasticsearch/initialization/snapshot_source.md).
+- [Backup & Restore Elasticsearch](/docs/guides/elasticsearch/backup/stash.md) database using Stash.
 - [Elasticsearch Topology](/docs/guides/elasticsearch/clustering/topology.md) supported by KubeDB
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
