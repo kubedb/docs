@@ -3,9 +3,9 @@ title: Monitoring Redis Using Builtin Prometheus Discovery
 menu:
   docs_{{ .version }}:
     identifier: rd-using-builtin-prometheus-monitoring
-    name: Builtin Prometheus Discovery
+    name: Builtin Prometheus
     parent: rd-monitoring-redis
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

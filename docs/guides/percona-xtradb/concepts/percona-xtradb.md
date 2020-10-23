@@ -1,13 +1,13 @@
 ---
-title: PerconaXtraDB
+title: PerconaXtraDB CRD
 menu:
   docs_{{ .version }}:
-    identifier: percona-xtradb-db
+    identifier: px-percona-xtradb-concepts
     name: PerconaXtraDB
-    parent: databases
-    weight: 40
+    parent: px-concepts-percona-xtradb
+    weight: 10
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).

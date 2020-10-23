@@ -5,7 +5,7 @@ menu:
     identifier: my-using-prometheus-operator-monitoring
     name: Prometheus Operator
     parent: my-monitoring-mysql
-    weight: 10
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

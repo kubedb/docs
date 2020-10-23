@@ -1,13 +1,13 @@
 ---
-title: Postgres
+title: Postgres CRD
 menu:
   docs_{{ .version }}:
-    identifier: postgres-db
+    identifier: pg-postgres-concepts
     name: Postgres
-    parent: databases
-    weight: 30
+    parent: pg-concepts-postgres
+    weight: 10
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).

@@ -3,9 +3,9 @@ title: Monitor Percona XtraDB using Builtin Prometheus Discovery
 menu:
   docs_{{ .version }}:
     identifier: px-monitoring-using-builtin-prometheus
-    name: Builtin Prometheus Discovery
+    name: Builtin Prometheus
     parent: px-monitoring
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 ---
 

@@ -1,13 +1,13 @@
 ---
-title: MongoDBVersion
+title: MongoDBVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: mongodb-version
+    identifier: mg-catalog-concepts
     name: MongoDBVersion
-    parent: catalog
-    weight: 30
+    parent: mg-concepts-mongodb
+    weight: 15
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 # MongoDBVersion

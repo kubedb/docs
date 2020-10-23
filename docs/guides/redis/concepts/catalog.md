@@ -1,13 +1,13 @@
 ---
-title: RedisVersion
+title: RedisVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: redis-version
+    identifier: rd-catalog-concepts
     name: RedisVersion
-    parent: catalog
-    weight: 30
+    parent: rd-concepts-redis
+    weight: 15
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 # RedisVersion

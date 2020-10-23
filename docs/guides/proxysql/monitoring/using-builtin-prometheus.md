@@ -3,9 +3,9 @@ title: Monitor ProxySQL using Builtin Prometheus Discovery
 menu:
   docs_{{ .version }}:
     identifier: monitor-proxysql-using-builtin-prometheus
-    name: Builtin Prometheus Discovery
+    name: Builtin Prometheus
     parent: proxysql-monitoring
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

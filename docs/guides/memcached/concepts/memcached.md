@@ -2,12 +2,12 @@
 title: Memcached
 menu:
   docs_{{ .version }}:
-    identifier: memcached-db
+    identifier: mc-memcached-concepts
     name: Memcached
-    parent: databases
-    weight: 15
+    parent: mc-concepts-memcached
+    weight: 10
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).

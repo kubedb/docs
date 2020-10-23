@@ -1,13 +1,13 @@
 ---
-title: MySQL
+title: MySQL CRD
 menu:
   docs_{{ .version }}:
-    identifier: mysql-db
+    identifier: my-mysql-concepts
     name: MySQL
-    parent: databases
-    weight: 25
+    parent: my-concepts-mysql
+    weight: 10
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).

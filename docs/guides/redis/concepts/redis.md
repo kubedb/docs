@@ -1,13 +1,13 @@
 ---
-title: Redis
+title: Redis CRD
 menu:
   docs_{{ .version }}:
-    identifier: redis-db
+    identifier: rd-redis-concepts
     name: Redis
-    parent: databases
-    weight: 35
+    parent: rd-concepts-redis
+    weight: 10
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).

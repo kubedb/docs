@@ -1,13 +1,13 @@
 ---
-title: MySQLVersion
+title: MySQLVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: mysql-version
+    identifier: my-catalog-concetps
     name: MySQLVersion
-    parent: catalog
-    weight: 30
+    parent: my-concepts-mysql
+    weight: 15
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 # MySQLVersion

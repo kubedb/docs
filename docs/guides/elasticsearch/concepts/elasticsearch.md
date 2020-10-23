@@ -1,13 +1,13 @@
 ---
-title: Elasticsearch
+title: Elasticsearch CRD
 menu:
   docs_{{ .version }}:
-    identifier: elasticsearch-db
+    identifier: es-elasticsearch-concepts
     name: Elasticsearch
-    parent: databases
+    parent: es-concepts-elasticsearch
     weight: 10
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
