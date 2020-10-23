@@ -2,9 +2,9 @@
 title: Monitor ProxySQL using Prometheus Operator
 menu:
   docs_{{ .version }}:
-    identifier: monitor-proxysql-using-prometheus-operator
+    identifier: prx-using-prometheus-operator-monitoring
     name: Prometheus Operator
-    parent: proxysql-monitoring
+    parent: prx-monitoring-proxysql
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -330,7 +330,7 @@ $ kubectl delete ns demo
 ## Next Steps
 
 - Monitor your ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
-- Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-custom-config.md).
+- Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-config-file.md).
 - Detail concepts of ProxySQL CRD [here](/docs/guides/proxysql/concepts/proxysql.md).
 - Detail concepts of ProxySQLVersion CRD [here](/docs/guides/proxysql/concepts/catalog.md).
 - Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).

@@ -3,9 +3,9 @@ title: Monitor Elasticsearch using Builtin Prometheus Discovery
 menu:
   docs_{{ .version }}:
     identifier: es-using-builtin-prometheus-monitoring
-    name: Builtin Prometheus Discovery
+    name: Builtin Prometheus
     parent: es-monitoring-elasticsearch
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

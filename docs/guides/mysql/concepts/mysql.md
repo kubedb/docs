@@ -1,13 +1,13 @@
 ---
-title: MySQL
+title: MySQL CRD
 menu:
   docs_{{ .version }}:
-    identifier: mysql-db
+    identifier: my-mysql-concepts
     name: MySQL
-    parent: databases
-    weight: 25
+    parent: my-concepts-mysql
+    weight: 10
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
@@ -257,7 +257,7 @@ The following fields are configurable in the `spec.tls` section:
 
 ### spec.configSecret
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for MySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/using-custom-config.md).
+`spec.configSecret` is an optional field that allows users to provide custom configuration for MySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/using-config-file.md).
 
 ### spec.podTemplate
 

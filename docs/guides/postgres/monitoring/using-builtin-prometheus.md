@@ -3,9 +3,9 @@ title: Monitor PostgreSQL using Builtin Prometheus Discovery
 menu:
   docs_{{ .version }}:
     identifier: pg-using-builtin-prometheus-monitoring
-    name: Builtin Prometheus Discovery
+    name: Builtin Prometheus
     parent: pg-monitoring-postgres
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

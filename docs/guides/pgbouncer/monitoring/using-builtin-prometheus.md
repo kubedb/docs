@@ -3,9 +3,9 @@ title: Monitor PgBouncer using Builtin Prometheus Discovery
 menu:
   docs_{{ .version }}:
     identifier: pb-using-builtin-prometheus-monitoring
-    name: Builtin Prometheus Discovery
+    name: Builtin Prometheus
     parent: pb-monitoring-pgbouncer
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

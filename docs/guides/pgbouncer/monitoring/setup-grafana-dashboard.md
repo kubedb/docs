@@ -5,7 +5,7 @@ menu:
     identifier: pb-setup-grafana-dashboard-monitoring
     name: Setup Grafana Dashboard
     parent: pb-monitoring-pgbouncer
-    weight: 20
+    weight: 25
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

@@ -5,7 +5,7 @@ menu:
     identifier: es-using-prometheus-operator-monitoring
     name: Prometheus Operator
     parent: es-monitoring-elasticsearch
-    weight: 10
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

@@ -1,13 +1,13 @@
 ---
-title: MemcachedVersion
+title: MemcachedVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: memcached-version
+    identifier: mc-catalog-concepts
     name: MemcachedVersion
-    parent: catalog
-    weight: 30
+    parent: mc-concepts-memcached
+    weight: 15
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 # MemcachedVersion

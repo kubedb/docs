@@ -1,13 +1,13 @@
 ---
-title: MySQLOpsRequests
+title: MySQLOpsRequests CRD
 menu:
   docs_{{ .version }}:
-    identifier: concepts-opsrequests-mysqlopsrequests
-    name: MySQLOpsRequests
-    parent: concepts-opsrequests
-    weight: 10
+    identifier: my-opsrequest-concepts
+    name: MySQLOpsRequest
+    parent: my-concepts-mysql
+    weight: 25
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 {{< notice type="warning" message="This doc has described only the KubeDB enterprise feature. If you are a KubeDB enterprise user then you have to explore it" >}}

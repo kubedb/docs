@@ -3,9 +3,9 @@ title: Monitor Percona XtraDB using Builtin Prometheus Discovery
 menu:
   docs_{{ .version }}:
     identifier: px-monitoring-using-builtin-prometheus
-    name: Builtin Prometheus Discovery
+    name: Builtin Prometheus
     parent: px-monitoring
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 ---
 
@@ -362,7 +362,7 @@ kubectl delete ns monitoring
 - Monitor your PerconaXtraDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/percona-xtradb/monitoring/using-prometheus-operator.md).
 - Initialize [PerconaXtraDB with Script](/docs/guides/percona-xtradb/initialization/using-script.md).
 - Use [private Docker registry](/docs/guides/percona-xtradb/private-registry/using-private-registry.md) to deploy PerconaXtraDB with KubeDB.
-- How to use [custom configuration](/docs/guides/percona-xtradb/configuration/using-custom-config.md).
+- How to use [custom configuration](/docs/guides/percona-xtradb/configuration/using-config-file.md).
 - How to use [custom rbac resource](/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac.md) for PerconaXtraDB.
 - Use Stash to [Backup PerconaXtraDB](/docs/guides/percona-xtradb/backup/stash.md).
 - Detail concepts of [PerconaXtraDB object](/docs/guides/percona-xtradb/concepts/percona-xtradb.md).

@@ -1,13 +1,13 @@
 ---
-title: PgBouncerVersion
+title: PgBouncerVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: pgbouncer-version
+    identifier: pb-pgbouncer-concepts
     name: PgBouncerVersion
-    parent: catalog
-    weight: 50
+    parent: pb-concepts-pgbouncer
+    weight: 15
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 # PgBouncerVersion

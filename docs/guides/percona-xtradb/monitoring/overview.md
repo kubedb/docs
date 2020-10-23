@@ -1,17 +1,17 @@
 ---
-title: Database Monitoring Overview
-description: Database Monitoring Overview
+title: Percona XtraDB Monitoring Overview
+description: Percona XtraDB Monitoring Overview
 menu:
   docs_{{ .version }}:
-    identifier: database-monitoring-overview
+    identifier: px-monitoring-overview
     name: Overview
-    parent: database-monitoring
+    parent: px-monitoring
     weight: 10
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
-# Monitoring Database with KubeDB
+# Monitoring Percona XtraDB with KubeDB
 
 KubeDB has native support for monitoring via [Prometheus](https://prometheus.io/). You can use builtin [Prometheus](https://github.com/prometheus/prometheus) scraper or [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) to monitor KubeDB managed databases. This tutorial will show you how database monitoring works with KubeDB and how to configure Database crd to enable monitoring.
 

@@ -2,7 +2,7 @@
 title: Run Elasticsearch with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: es-custom-config
+    identifier: es-configuration
     name: Custom Configuration
     parent: es-elasticsearch-guides
     weight: 40

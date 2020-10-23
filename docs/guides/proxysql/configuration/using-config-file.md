@@ -2,9 +2,9 @@
 title: Run ProxySQL with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: proxysql-custom-configuration
-    name: Using Custom Config File
-    parent: proxysql-custom-config
+    identifier: prx-using-config-file-configuration
+    name: Config File
+    parent: prx-configuration
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -37,7 +37,7 @@ KubeDB supports providing custom configuration for ProxySQL. This tutorial will 
 
 ## Overview
 
-ProxySQL allows to configure via configuration file. The default configuration for ProxySQL can be found in `/etc/proxysql.cnf` file. In our Docker image (for ProxySQL), we used the file `/etc/custom-config/custom-proxysql.cnf` as the custom configuration file. The procedure is such that if the configuration file exist, ProxySQL instance will use combined startup settings from both `/etc/proxysql.cnf` and `/etc/custom-config/custom-proxysql.cnf` files. This custom configuration will overwrite the existing default one. For example config file:
+ProxySQL allows to configure via configuration file. The default configuration for ProxySQL can be found in `/etc/proxysql.cnf` file. In our Docker image (for ProxySQL), we used the file `/etc/configuration/custom-proxysql.cnf` as the custom configuration file. The procedure is such that if the configuration file exist, ProxySQL instance will use combined startup settings from both `/etc/proxysql.cnf` and `/etc/configuration/custom-proxysql.cnf` files. This custom configuration will overwrite the existing default one. For example config file:
 
 - [v2.0.4](https://github.com/sysown/proxysql/blob/v2.0.4/src/proxysql.cfg).
 
@@ -145,12 +145,12 @@ Check the Pod's log,
 ```bash
 $ kubectl logs -f -n demo custom-proxysql-0
 ...
-2019/11/28 15:58:41 [entrypoint.sh] [INFO] Applying custom config using cmd 'proxysql -c /etc/custom-config/custom-proxysql.cnf --reload -f  &'
+2019/11/28 15:58:41 [entrypoint.sh] [INFO] Applying custom config using cmd 'proxysql -c /etc/configuration/custom-proxysql.cnf --reload -f  &'
 2019/11/28 15:58:41 [entrypoint.sh] [INFO] Configuring proxysql ...
 2019/11/28 15:58:41 [configure-proxysql.sh] [] From configure-proxysql.sh
 2019/11/28 15:58:41 [configure-proxysql.sh] [INFO] Provided peers are my-group-0.my-group-gvr.demo my-group-1.my-group-gvr.demo my-group-2.my-group-gvr.demo
 2019/11/28 15:58:41 [configure-proxysql.sh] [INFO] Waiting for host my-group-0.my-group-gvr.demo to be online ...
-2019-11-28 15:58:41 [INFO] Using config file /etc/custom-config/custom-proxysql.cnf
+2019-11-28 15:58:41 [INFO] Using config file /etc/configuration/custom-proxysql.cnf
 2019-11-28 15:58:41 [INFO] No SSL keys/certificates found in datadir (/). Generating new keys/certificates.
 ....
 ```

@@ -3,9 +3,9 @@ title: Monitor MongoDB using Builtin Prometheus Discovery
 menu:
   docs_{{ .version }}:
     identifier: mg-using-builtin-prometheus-monitoring
-    name: Builtin Prometheus Discovery
+    name: Builtin Prometheus
     parent: mg-monitoring-mongodb
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

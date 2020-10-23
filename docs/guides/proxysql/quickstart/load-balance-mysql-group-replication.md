@@ -2,9 +2,9 @@
 title: Load Balance MySQL Group Replication Using ProxySQL
 menu:
   docs_{{ .version }}:
-    identifier: load-balance-mysql-group-replication-using-proxysql
+    identifier: prx-load-balance-mysql-group-replication-quickstart
     name: Load Balance MySQL Group Replication Using ProxySQL
-    parent: proxysql-quickstart
+    parent: prx-quickstart-proxysql
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -513,7 +513,7 @@ $ kubectl delete my -n demo my-group
 - Monitor ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
 - Monitor ProxySQL with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md).
 - Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
-- Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-custom-config.md).
+- Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-config-file.md).
 - Detail concepts of ProxySQL CRD [here](/docs/guides/proxysql/concepts/proxysql.md).
 - Detail concepts of ProxySQLVersion CRD [here](/docs/guides/proxysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

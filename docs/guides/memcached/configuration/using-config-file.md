@@ -2,9 +2,9 @@
 title: Run Memcached with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: mc-custom-config-quickstart
-    name: Quickstart
-    parent: mc-custom-config
+    identifier: mc-using-config-file-configuration
+    name: Config File
+    parent: mc-configuration
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -93,14 +93,14 @@ $ cat memcached.conf
 Now, create a configMap with this configuration file.
 
 ```bash
- $ kubectl create configmap -n demo mc-custom-config --from-file=./memcached.conf
-configmap/mc-custom-config created
+ $ kubectl create configmap -n demo mc-configuration --from-file=./memcached.conf
+configmap/mc-configuration created
 ```
 
 Verify the config map has the configuration file.
 
 ```yaml
-$ kubectl get configmaps -n demo mc-custom-config -o yaml
+$ kubectl get configmaps -n demo mc-configuration -o yaml
 apiVersion: v1
 data:
   memcached.conf: |
@@ -110,17 +110,17 @@ data:
 kind: ConfigMap
 metadata:
   creationTimestamp: 2018-10-04T05:29:37Z
-  name: mc-custom-config
+  name: mc-configuration
   namespace: demo
   resourceVersion: "4505"
-  selfLink: /api/v1/namespaces/demo/configmaps/mc-custom-config
+  selfLink: /api/v1/namespaces/demo/configmaps/mc-configuration
   uid: 7c38b5fd-c796-11e8-bb11-0800272ad446
 ```
 
 Now, create Memcached crd specifying `spec.configSecret` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/mc-custom.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/configuration/mc-custom.yaml
 memcached.kubedb.com/custom-memcached created
 ```
 
@@ -136,7 +136,7 @@ spec:
   replicas: 1
   version: "1.5.4-v1"
   configSecret:
-    name: mc-custom-config
+    name: mc-configuration
   podTemplate:
     spec:
       resources:
@@ -197,7 +197,7 @@ kubectl delete -n demo mc/custom-memcached
 kubectl patch -n demo drmn/custom-memcached -p '{"spec":{"wipeOut":true}}' --type="merge"
 kubectl delete -n demo drmn/custom-memcached
 
-kubectl delete -n demo configmap mc-custom-config
+kubectl delete -n demo configmap mc-configuration
 
 kubectl delete ns demo
 ```

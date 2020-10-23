@@ -2,9 +2,9 @@
 title: Run PostgreSQL with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: pg-custom-config-quickstart
-    name: Quickstart
-    parent: pg-custom-config
+    identifier: pg-using-config-file-configuration
+    name: Config File
+    parent: pg-configuration
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -54,14 +54,14 @@ shared_buffers=256MB
 Now, create a configMap with this configuration file.
 
 ```bash
-$ kubectl create configmap -n demo pg-custom-config --from-literal=user.conf="$(curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/user.conf)"
-configmap/pg-custom-config created
+$ kubectl create configmap -n demo pg-configuration --from-literal=user.conf="$(curl -fsSL https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/configuration/user.conf)"
+configmap/pg-configuration created
 ```
 
 Verify the config map has the configuration file.
 
 ```yaml
-$ kubectl get configmap -n demo pg-custom-config -o yaml
+$ kubectl get configmap -n demo pg-configuration -o yaml
 apiVersion: v1
 data:
   user.conf: |-
@@ -70,17 +70,17 @@ data:
 kind: ConfigMap
 metadata:
   creationTimestamp: "2019-02-07T12:08:26Z"
-  name: pg-custom-config
+  name: pg-configuration
   namespace: demo
   resourceVersion: "44214"
-  selfLink: /api/v1/namespaces/demo/configmaps/pg-custom-config
+  selfLink: /api/v1/namespaces/demo/configmaps/pg-configuration
   uid: 131b321f-2ad1-11e9-9d44-080027154f61
 ```
 
 Now, create Postgres crd specifying `spec.configSecret` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/pg-custom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/configuration/pg-configuration.yaml
 postgres.kubedb.com/custom-postgres created
 ```
 
@@ -95,7 +95,7 @@ metadata:
 spec:
   version: "10.2-v5"
   configSecret:
-    name: pg-custom-config
+    name: pg-configuration
   storage:
     storageClassName: "standard"
     accessModes:
@@ -195,7 +195,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 kubectl patch -n demo pg/custom-postgres -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo pg/custom-postgres
 
-kubectl delete -n demo configmap pg-custom-config
+kubectl delete -n demo configmap pg-configuration
 kubectl delete ns demo
 ```
 

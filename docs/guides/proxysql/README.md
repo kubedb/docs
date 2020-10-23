@@ -2,9 +2,9 @@
 title: ProxySQL
 menu:
   docs_{{ .version }}:
-    identifier: proxysql-readme
+    identifier: prx-readme-proxysql
     name: ProxySQL
-    parent: proxysql-guides
+    parent: prx-proxysql-guides
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -24,7 +24,7 @@ aliases:
 | Custom Configuration                                    |   &#10003;   |
 | Using Custom docker image                               |   &#10003;   |
 | Builtin Prometheus Discovery                            |   &#10003;   |
-| Using Prometheus operator                        |   &#10003;   |
+| Using Prometheus operator                               |   &#10003;   |
 
 ## Supported ProxySQL Versions
 
@@ -54,7 +54,7 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - Monitor your ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
 - Monitor your ProxySQL with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md).
 - Use private Docker registry to deploy ProxySQL with KubeDB [here](/docs/guides/proxysql/private-registry/using-private-registry.md).
-- Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-custom-config.md).
+- Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-config-file.md).
 - Detail concepts of ProxySQL CRD [here](/docs/guides/proxysql/concepts/proxysql.md).
 - Detail concepts of ProxySQLVersion CRD [here](/docs/guides/proxysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

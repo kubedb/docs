@@ -2,9 +2,9 @@
 title: Run Redis with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: rd-custom-config-quickstart
+    identifier: rd-using-config-file-configuration
     name: Quickstart
-    parent: rd-custom-config
+    parent: rd-configuration
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -63,14 +63,14 @@ maxclients 500
 Now, create a configMap with this configuration file.
 
 ```bash
-$ kubectl create configmap -n demo rd-custom-config --from-file=./redis.conf
-configmap/rd-custom-config created
+$ kubectl create configmap -n demo rd-configuration --from-file=./redis.conf
+configmap/rd-configuration created
 ```
 
 Verify the config map has the configuration file.
 
 ```yaml
-$ kubectl get configmap -n demo rd-custom-config -o yaml
+$ kubectl get configmap -n demo rd-configuration -o yaml
 apiVersion: v1
 data:
   redis.conf: |
@@ -78,14 +78,14 @@ data:
     maxclients 500
 kind: ConfigMap
 metadata:
-  name: rd-custom-config
+  name: rd-configuration
   namespace: demo
 ```
 
 Now, create Redis crd specifying `spec.configSecret` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/custom-config/redis-custom.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/configuration/redis-custom.yaml
 redis.kubedb.com "custom-redis" created
 ```
 
@@ -100,7 +100,7 @@ metadata:
 spec:
   version: "4.0-v1"
   configSecret:
-    name: rd-custom-config
+    name: rd-configuration
   storage:
     storageClassName: "standard"
     accessModes:
@@ -163,7 +163,7 @@ kubectl delete -n demo rd/custom-redis
 kubectl patch -n demo drmn/custom-redis -p '{"spec":{"wipeOut":true}}' --type="merge"
 kubectl delete -n demo drmn/custom-redis
 
-kubectl delete -n demo configmap rd-custom-config
+kubectl delete -n demo configmap rd-configuration
 
 kubectl delete ns demo
 ```
