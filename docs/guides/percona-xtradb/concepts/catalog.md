@@ -1,13 +1,13 @@
 ---
-title: PerconaXtraDBVersion
+title: PerconaXtraDBVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: percona-xtradb-version
+    identifier: px-catalog-concepts
     name: PerconaXtraDBVersion
-    parent: catalog
-    weight: 40
+    parent: px-concepts-percona-xtradb
+    weight: 15
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 # PerconaXtraDBVersion

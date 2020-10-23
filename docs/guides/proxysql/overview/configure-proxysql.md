@@ -2,9 +2,9 @@
 title: Configure ProxySQL
 menu:
   docs_{{ .version }}:
-    identifier: configure-proxysql
+    identifier: prx-configure-proxysql-overview
     name: Configure ProxySQL
-    parent: proxysql-overview
+    parent: prx-overview-proxysql
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides

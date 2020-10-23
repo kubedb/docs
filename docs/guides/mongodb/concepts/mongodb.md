@@ -1,13 +1,13 @@
 ---
-title: MongoDB
+title: MongoDB CRD
 menu:
   docs_{{ .version }}:
-    identifier: mongodb-db
+    identifier: mg-mongodb-concepts
     name: MongoDB
-    parent: databases
-    weight: 20
+    parent: mg-concepts-mongodb
+    weight: 10
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
@@ -376,7 +376,7 @@ MongoDB managed by KubeDB can be monitored with builtin-Prometheus and Prometheu
 
 > Please note that, the configfile name needs to be `mongod.conf` for mongodb.
 
-To learn more about how to use a custom configuration file see [here](/docs/guides/mongodb/configuration/using-custom-config.md).
+To learn more about how to use a custom configuration file see [here](/docs/guides/mongodb/configuration/using-config-file.md).
 
 NB. If `spec.shardTopology` is set, then `spec.configsource` needs to be empty. Instead use `spec.shardTopology.<shard/configServer/mongos>.configSource`
 

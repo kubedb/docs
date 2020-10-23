@@ -1,13 +1,13 @@
 ---
-title: PgBouncer
+title: PgBouncer CRD
 menu:
   docs_{{ .version }}:
-    identifier: pgbouncer
+    identifier: pb-pgbouncer-concepts
     name: PgBouncer
-    parent: database-proxy
-    weight: 30
+    parent: pb-concepts-pgbouncer
+    weight: 10
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).

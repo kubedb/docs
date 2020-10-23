@@ -2,7 +2,7 @@
 title: Run PostgreSQL with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: pg-custom-config
+    identifier: pg-configuration
     name: Custom Configuration
     parent: pg-postgres-guides
     weight: 40

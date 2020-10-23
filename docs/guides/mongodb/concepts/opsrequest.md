@@ -1,13 +1,13 @@
 ---
-title: MongoDBOpsRequests
+title: MongoDBOpsRequests CRD
 menu:
   docs_{{ .version }}:
-    identifier: concepts-opsrequests-mongodblopsrequests
-    name: MongoDBOpsRequests
-    parent: concepts-opsrequests
-    weight: 10
+    identifier: mg-opsrequest-concepts
+    name: MongoDBOpsRequest
+    parent: mg-concepts-mongodb
+    weight: 25
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 {{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}

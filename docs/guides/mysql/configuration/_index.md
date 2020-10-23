@@ -2,7 +2,7 @@
 title: Run MySQL with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: my-custom-config
+    identifier: my-configuration
     name: Custom Configuration
     parent: my-mysql-guides
     weight: 50

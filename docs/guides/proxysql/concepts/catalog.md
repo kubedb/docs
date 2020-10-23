@@ -1,13 +1,13 @@
 ---
-title: ProxySQLVersion
+title: ProxySQLVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: proxysql-version
+    identifier: prx-catalog-concepts
     name: ProxySQLVersion
-    parent: catalog
-    weight: 30
+    parent: prx-concepts-proxysql
+    weight: 15
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 # ProxySQLVersion

@@ -2,7 +2,7 @@
 title: Percona XtraDB with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: px-custom-config
+    identifier: px-configuration
     name: Custom Configuration
     parent: px-percona-xtradb-guides
     weight: 35

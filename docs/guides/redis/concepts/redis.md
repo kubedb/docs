@@ -1,13 +1,13 @@
 ---
-title: Redis
+title: Redis CRD
 menu:
   docs_{{ .version }}:
-    identifier: redis-db
+    identifier: rd-redis-concepts
     name: Redis
-    parent: databases
-    weight: 35
+    parent: rd-concepts-redis
+    weight: 10
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
@@ -133,7 +133,7 @@ Redis managed by KubeDB can be monitored with builtin-Prometheus and Prometheus 
 
 ### spec.configSecret
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for Redis. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/redis/custom-config/using-custom-config.md).
+`spec.configSecret` is an optional field that allows users to provide custom configuration for Redis. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/redis/configuration/using-config-file.md).
 
 ### spec.podTemplate
 

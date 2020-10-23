@@ -1,13 +1,13 @@
 ---
-title: AppBinding Overview
+title: AppBinding CRD
 menu:
   docs_{{ .version }}:
-    identifier: appbinding-overview
+    identifier: px-appbinding-concepts
     name: AppBinding
-    parent: concepts
-    weight: 34
+    parent: px-concepts-percona-xtradb
+    weight: 20
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).

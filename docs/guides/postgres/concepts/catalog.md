@@ -1,13 +1,13 @@
 ---
-title: PostgresVersion
+title: PostgresVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: postgres-version
+    identifier: pg-catalog-concepts
     name: PostgresVersion
-    parent: catalog
-    weight: 30
+    parent: pg-concepts-postgres
+    weight: 15
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 # PostgresVersion

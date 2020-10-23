@@ -1,13 +1,13 @@
 ---
-title: AppBinding Overview
+title: AppBinding CRD
 menu:
   docs_{{ .version }}:
-    identifier: appbinding-overview
+    identifier: rd-appbinding-concepts
     name: AppBinding
-    parent: concepts
-    weight: 34
+    parent: rd-concepts-redis
+    weight: 20
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).

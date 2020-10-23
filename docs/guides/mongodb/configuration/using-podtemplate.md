@@ -2,8 +2,8 @@
 title: Run MongoDB with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: mg-crd-configuration
-    name: Using CRD Config
+    identifier: using-podtemplate-configuration
+    name: Customize PodTemplate
     parent: mg-configuration
     weight: 15
 menu_name: docs_{{ .version }}
@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Run MongoDB with Custom Configuration
+# Run MongoDB with Custom PodTemplate
 
 KubeDB supports providing custom configuration for MongoDB via [PodTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a MongoDB database with custom configuration using PodTemplate.
 

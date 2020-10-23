@@ -1,13 +1,13 @@
 ---
-title: ElasticsearchVersion
+title: ElasticsearchVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: elasticsearh-version
+    identifier: es-catalog-concepts
     name: ElasticsearchVersion
-    parent: catalog
+    parent: es-concepts-elasticsearch
     weight: 15
 menu_name: docs_{{ .version }}
-section_menu_id: concepts
+section_menu_id: guides
 ---
 
 # ElasticsearchVersion

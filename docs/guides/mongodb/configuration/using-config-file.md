@@ -2,8 +2,8 @@
 title: Run MongoDB with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: mg-custom-config-quickstart
-    name: Quickstart
+    identifier: mg-using-config-file-configuration
+    name: Config File
     parent: mg-configuration
     weight: 10
 menu_name: docs_{{ .version }}
@@ -56,14 +56,14 @@ Here, `maxIncomingConnections` is set to `10000`, whereas the default value is 6
 Now, create a configMap with this configuration file.
 
 ```bash
-$ kubectl create configmap -n demo mg-custom-config --from-file=./mongod.conf
-configmap/mg-custom-config created
+$ kubectl create configmap -n demo mg-configuration --from-file=./mongod.conf
+configmap/mg-configuration created
 ```
 
 Verify the config map has the configuration file.
 
 ```yaml
-$  kubectl get configmap -n demo mg-custom-config -o yaml
+$  kubectl get configmap -n demo mg-configuration -o yaml
 apiVersion: v1
 data:
   mongod.conf: |+
@@ -72,10 +72,10 @@ data:
 kind: ConfigMap
 metadata:
   creationTimestamp: "2019-02-06T10:03:45Z"
-  name: mg-custom-config
+  name: mg-configuration
   namespace: demo
   resourceVersion: "91905"
-  selfLink: /api/v1/namespaces/demo/configmaps/mg-custom-config
+  selfLink: /api/v1/namespaces/demo/configmaps/mg-configuration
   uid: 7da0467c-29f6-11e9-aebf-080027875192
 ```
 
@@ -98,7 +98,7 @@ spec:
       requests:
         storage: 1Gi
   configSecret:
-    name: mg-custom-config
+    name: mg-configuration
 ```
 
 ```bash
@@ -178,7 +178,7 @@ kubectl delete -n demo mg/mgo-custom-config
 kubectl patch -n demo drmn/mgo-custom-config -p '{"spec":{"wipeOut":true}}' --type="merge"
 kubectl delete -n demo drmn/mgo-custom-config
 
-kubectl delete -n demo configmap mg-custom-config
+kubectl delete -n demo configmap mg-configuration
 
 kubectl delete ns demo
 ```
