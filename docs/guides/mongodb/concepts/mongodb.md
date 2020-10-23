@@ -376,7 +376,7 @@ MongoDB managed by KubeDB can be monitored with builtin-Prometheus and Prometheu
 
 > Please note that, the configfile name needs to be `mongod.conf` for mongodb.
 
-To learn more about how to use a custom configuration file see [here](/docs/guides/mongodb/configuration/using-custom-config.md).
+To learn more about how to use a custom configuration file see [here](/docs/guides/mongodb/configuration/using-config-file.md).
 
 NB. If `spec.shardTopology` is set, then `spec.configsource` needs to be empty. Instead use `spec.shardTopology.<shard/configServer/mongos>.configSource`
 

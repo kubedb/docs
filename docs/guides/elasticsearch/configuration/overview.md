@@ -2,9 +2,9 @@
 title: Run Elasticsearch with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: es-custom-config-overview
+    identifier: es-overview-configuration
     name: Overview
-    parent: es-custom-config
+    parent: es-configuration
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -59,5 +59,5 @@ At first, you have to create configuration files with name specified earlier wit
 
 ## Next Steps
 
-- Learn how to use custom configuration specifying topology from [here](/docs/guides/elasticsearch/custom-config/with-topology.md).
-- Learn how to use custom configuration without specifying topology from [here](/docs/guides/elasticsearch/custom-config/without-topology.md).
+- Learn how to use custom configuration specifying topology from [here](/docs/guides/elasticsearch/configuration/with-topology.md).
+- Learn how to use custom configuration without specifying topology from [here](/docs/guides/elasticsearch/configuration/without-topology.md).

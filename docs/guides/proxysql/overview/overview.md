@@ -2,9 +2,9 @@
 title: About ProxySQL
 menu:
   docs_{{ .version }}:
-    identifier: about-proxysql
+    identifier: prx-overview-overview
     name: About ProxySQL
-    parent: proxysql-overview
+    parent: prx-overview-proxysql
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

@@ -1,10 +1,10 @@
 ---
-title: Run MySQL with Custom Configuration
+title: Run MySQL with Custom PodTemplate
 menu:
   docs_{{ .version }}:
-    identifier: my-crd-configuration
-    name: Using CRD Config
-    parent: my-custom-config
+    identifier: my-using-podtemplate-configuration
+    name: Customize PodTemplate
+    parent: my-configuration
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Run MySQL with Custom Configuration
+# Run MySQL with Custom PodTemplate
 
 KubeDB supports providing custom configuration for MySQL via [PodTemplate](/docs/guides/mysql/concepts/mysql.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a MySQL database with custom configuration using PodTemplate.
 

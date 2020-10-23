@@ -92,7 +92,7 @@ Here, &#10003; means supported and &#10007; means deprecated.
 - [MongoDB Sharding](/docs/guides/mongodb/clustering/sharding.md) with KubeDB Operator.
 - [Backup & Restore](/docs/guides/mongodb/backup/stash.md) MongoDB databases using Stash.
 - Initialize [MongoDB with Script](/docs/guides/mongodb/initialization/using-script.md).
-- Start [MongoDB with Custom Config](/docs/guides/mongodb/configuration/using-custom-config.md).
+- Start [MongoDB with Custom Config](/docs/guides/mongodb/configuration/using-config-file.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
 - Monitor your MongoDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md).
 - Use [private Docker registry](/docs/guides/mongodb/private-registry/using-private-registry.md) to deploy MongoDB with KubeDB.

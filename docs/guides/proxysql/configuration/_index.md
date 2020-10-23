@@ -2,9 +2,9 @@
 title: Run ProxySQL with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: proxysql-custom-config
+    identifier: prx-configuration
     name: Custom Configuration
-    parent: proxysql-guides
+    parent: prx-proxysql-guides
     weight: 30
 menu_name: docs_{{ .version }}
 ---

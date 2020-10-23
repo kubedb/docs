@@ -2,7 +2,7 @@
 title: Run Memcached with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: mc-custom-config
+    identifier: mc-configuration
     name: Custom Configuration
     parent: mc-memcached-guides
     weight: 50

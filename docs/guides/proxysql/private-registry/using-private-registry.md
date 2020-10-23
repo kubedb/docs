@@ -2,9 +2,9 @@
 title: Run ProxySQL using Private Registry
 menu:
   docs_{{ .version }}:
-    identifier: proxysql-using-private-registry
-    name: Run ProxySQL using Private Registry
-    parent: proxysql-private-registry
+    identifier: prx-using-private-registry-private-registry
+    name: Quickstart
+    parent: prx-private-registry-proxysql
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -141,7 +141,7 @@ kubectl delete ns demo
 
 - Monitor your ProxySQL with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/proxysql/monitoring/using-builtin-prometheus.md).
 - Monitor your ProxySQL with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/proxysql/monitoring/using-prometheus-operator.md).
-- Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-custom-config.md).
+- Use custom config file to configure ProxySQL [here](/docs/guides/proxysql/configuration/using-config-file.md).
 - Detail concepts of ProxySQL CRD [here](/docs/guides/proxysql/concepts/proxysql.md).
 - Detail concepts of ProxySQLVersion CRD [here](/docs/guides/proxysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

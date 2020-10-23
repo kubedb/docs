@@ -2,9 +2,9 @@
 title: Using Custom Configuration in Elasticsearch without Topology
 menu:
   docs_{{ .version }}:
-    identifier: es-custom-config-without-topology
+    identifier: es-without-topology-configuration
     name: Without Topology
-    parent: es-custom-config
+    parent: es-configuration
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -16,7 +16,7 @@ section_menu_id: guides
 
 This tutorial will show you how to use custom configuration in an Elasticsearch cluster in KubeDB without specifying `spec.topology` field.
 
-If you don't know how KubeDB handles custom configuration for an Elasticsearch cluster, please visit [here](/docs/guides/elasticsearch/custom-config/overview.md).
+If you don't know how KubeDB handles custom configuration for an Elasticsearch cluster, please visit [here](/docs/guides/elasticsearch/configuration/overview.md).
 
 ## Before You Begin
 
@@ -73,17 +73,17 @@ This time we have added an additional field `http.compression: false` in `data-c
 Now, let's create a configMap with these configuration files,
 
 ```bash
- $ kubectl create configmap  -n demo es-custom-config \
+ $ kubectl create configmap  -n demo es-configuration \
                         --from-file=./common-config.yml \
                         --from-file=./master-config.yml \
                         --from-file=./data-config.yml
-configmap/es-custom-config created
+configmap/es-configuration created
 ```
 
 Check that the configMap has these configuration files,
 
 ```yaml
-$ kubectl get configmap -n demo es-custom-config -o yaml
+$ kubectl get configmap -n demo es-configuration -o yaml
 apiVersion: v1
 data:
   common-config.yml: |
@@ -103,14 +103,14 @@ data:
       data: ["/usr/share/elasticsearch/data/master-datadir"]
 kind: ConfigMap
 metadata:
-  name: es-custom-config
+  name: es-configuration
   namespace: demo
 ```
 
 Now, create an Elasticsearch crd without topology,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/custom-config/es-custom.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/configuration/es-custom.yaml
 elasticsearch.kubedb.com/custom-elasticsearch created
 ```
 
@@ -126,7 +126,7 @@ spec:
   version: 7.3.2
   replicas: 2
   configSecret:
-    name: es-custom-config
+    name: es-configuration
   storage:
     storageClassName: "standard"
     accessModes:
@@ -292,7 +292,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 kubectl patch -n demo es/custom-elasticsearch -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo es/custom-elasticsearch
 
-kubectl delete  -n demo configmap/es-custom-config
+kubectl delete  -n demo configmap/es-configuration
 
 kubectl delete ns demo
 ```

@@ -2,9 +2,9 @@
 title: Run MySQL with Custom Configuration
 menu:
   docs_{{ .version }}:
-    identifier: my-custom-config-file
-    name: Using Config File
-    parent: my-custom-config
+    identifier: my-using-config-file-configuration
+    name: Config File
+    parent: my-configuration
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -65,14 +65,14 @@ Here, `read_buffer_size` is set to 1MB in bytes.
 Now, create a configMap with this configuration file.
 
 ```bash
-$ kubectl create configmap -n demo my-custom-config --from-file=./my-config.cnf
-configmap/my-custom-config created
+$ kubectl create configmap -n demo my-configuration --from-file=./my-config.cnf
+configmap/my-configuration created
 ```
 
 Verify the config map has the configuration file.
 
 ```yaml
-$ kubectl get configmap -n demo my-custom-config -o yaml
+$ kubectl get configmap -n demo my-configuration -o yaml
 apiVersion: v1
 data:
   my-config.cnf: |
@@ -81,7 +81,7 @@ data:
     read_buffer_size = 1048576
 kind: ConfigMap
 metadata:
-  name: my-custom-config
+  name: my-configuration
   namespace: demo
   ...
 ```
@@ -104,7 +104,7 @@ metadata:
 spec:
   version: "8.0.21"
   configSecret:
-    name: my-custom-config
+    name: my-configuration
   storage:
     storageClassName: "standard"
     accessModes:
