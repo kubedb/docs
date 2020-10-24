@@ -30,7 +30,7 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 )
 
-func (c *Controller) waitUntilPaused(db *api.MongoDB) error {
+func (c *Controller) waitUntilHalted(db *api.MongoDB) error {
 	log.Infof("waiting for pods for Mongodb %v/%v to be deleted\n", db.Namespace, db.Name)
 	if err := core_util.WaitUntilPodDeletedBySelector(context.TODO(), c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootSelectors())); err != nil {
 		return err
@@ -46,10 +46,6 @@ func (c *Controller) waitUntilPaused(db *api.MongoDB) error {
 	}
 
 	if err := c.waitUntilStatefulSetsDeleted(db); err != nil {
-		return err
-	}
-
-	if err := c.waitUntilDeploymentsDeleted(db); err != nil {
 		return err
 	}
 
@@ -69,16 +65,6 @@ func (c *Controller) waitUntilStatefulSetsDeleted(db *api.MongoDB) error {
 	log.Infof("waiting for statefulsets for Mongodb %v/%v to be deleted\n", db.Namespace, db.Name)
 	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
 		if sts, err := c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String()}); err != nil && kerr.IsNotFound(err) || len(sts.Items) == 0 {
-			return true, nil
-		}
-		return false, nil
-	})
-}
-
-func (c *Controller) waitUntilDeploymentsDeleted(db *api.MongoDB) error {
-	log.Infof("waiting for deployments for Mongodb %v/%v to be deleted\n", db.Namespace, db.Name)
-	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
-		if deploys, err := c.Client.AppsV1().Deployments(db.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String()}); err != nil && kerr.IsNotFound(err) || len(deploys.Items) == 0 {
 			return true, nil
 		}
 		return false, nil

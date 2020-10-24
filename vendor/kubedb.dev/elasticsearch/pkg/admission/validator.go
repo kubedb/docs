@@ -32,12 +32,10 @@ import (
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
@@ -136,7 +134,7 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 				oldElasticsearch.Spec.AuthSecret = elasticsearch.Spec.AuthSecret
 			}
 
-			if err := validateUpdate(elasticsearch, oldElasticsearch, elasticsearch.Status.Conditions); err != nil {
+			if err := validateUpdate(elasticsearch, oldElasticsearch); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
 		}
@@ -270,8 +268,8 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 	return nil
 }
 
-func validateUpdate(obj, oldObj runtime.Object, conditions []kmapi.Condition) error {
-	preconditions := getPreconditionFunc(conditions)
+func validateUpdate(obj, oldObj *api.Elasticsearch) error {
+	preconditions := getPreconditionFunc(oldObj)
 	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
@@ -282,7 +280,7 @@ func validateUpdate(obj, oldObj runtime.Object, conditions []kmapi.Condition) er
 	return nil
 }
 
-func getPreconditionFunc(conditions []kmapi.Condition) []mergepatch.PreconditionFunc {
+func getPreconditionFunc(es *api.Elasticsearch) []mergepatch.PreconditionFunc {
 	preconditions := []mergepatch.PreconditionFunc{
 		mergepatch.RequireKeyUnchanged("apiVersion"),
 		mergepatch.RequireKeyUnchanged("kind"),
@@ -290,8 +288,8 @@ func getPreconditionFunc(conditions []kmapi.Condition) []mergepatch.Precondition
 		mergepatch.RequireMetadataKeyUnchanged("namespace"),
 	}
 
-	// Once the database has been provisioned, don't let update the "spec.init" section
-	if kmapi.IsConditionTrue(conditions, api.DatabaseProvisioned) {
+	// Once the database has been initialized, don't let update the "spec.init" section
+	if es.Spec.Init != nil && es.Spec.Init.Initialized {
 		preconditionSpecFields.Insert("spec.init")
 	}
 

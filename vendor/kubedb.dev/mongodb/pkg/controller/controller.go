@@ -17,13 +17,10 @@ limitations under the License.
 package controller
 
 import (
-	"context"
-
 	catlog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha2"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
@@ -33,7 +30,7 @@ import (
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -55,12 +52,15 @@ type Controller struct {
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
 	// LabelSelector to filter Stash restore invokers only for this database
-	selector metav1.LabelSelector
+	selector meta.LabelSelector
 
 	// MongoDB
 	mgQueue    *queue.Worker
 	mgInformer cache.SharedIndexInformer
 	mgLister   api_listers.MongoDBLister
+
+	// StatefulSet Watcher
+	mgStsInformer cache.SharedIndexInformer
 }
 
 func New(
@@ -71,7 +71,7 @@ func New(
 	dc dynamic.Interface,
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
-	opt amc.Config,
+	amcConfig amc.Config,
 	topology *core_util.Topology,
 	recorder record.EventRecorder,
 ) *Controller {
@@ -86,9 +86,9 @@ func New(
 			ClusterTopology:  topology,
 			Recorder:         recorder,
 		},
-		Config:     opt,
+		Config:     amcConfig,
 		promClient: promClient,
-		selector: metav1.LabelSelector{
+		selector: meta.LabelSelector{
 			MatchLabels: map[string]string{
 				api.LabelDatabaseKind: api.ResourceKindMongoDB,
 			},
@@ -111,6 +111,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 func (c *Controller) Init() error {
 	c.initWatcher()
 	c.initSecretWatcher()
+	c.stsWatcher()
 	return nil
 }
 
@@ -118,6 +119,9 @@ func (c *Controller) Init() error {
 func (c *Controller) RunControllers(stopCh <-chan struct{}) {
 	// Start MongoDB Controller
 	c.mgQueue.Run(stopCh)
+
+	// Start MongoDB health checker
+	c.RunHealthChecker(stopCh)
 }
 
 // Blocks caller. Intended to be called as a Go routine.
@@ -179,26 +183,4 @@ func (c *Controller) pushFailureEvent(mongodb *api.MongoDB, reason string) {
 		mongodb.Name,
 		reason,
 	)
-
-	mg, err := util.UpdateMongoDBStatus(
-		context.TODO(),
-		c.DBClient.KubedbV1alpha2(),
-		mongodb.ObjectMeta,
-		func(in *api.MongoDBStatus) *api.MongoDBStatus {
-			in.Phase = api.DatabasePhaseNotReady
-			in.ObservedGeneration = mongodb.Generation
-			return in
-		},
-		metav1.UpdateOptions{},
-	)
-	if err != nil {
-		c.Recorder.Eventf(
-			mongodb,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			err.Error(),
-		)
-
-	}
-	mongodb.Status = mg.Status
 }

@@ -171,19 +171,6 @@ func (c *Controller) haltDatabase(db *api.MySQL) error {
 		return err
 	}
 
-	// delete deployment collection offshoot labels
-	log.Infof("deleting Deployments of MySQL %v/%v.", db.Namespace, db.Name)
-	if err := c.Client.
-		AppsV1().
-		Deployments(db.Namespace).
-		DeleteCollection(
-			context.TODO(),
-			metav1.DeleteOptions{PropagationPolicy: &policy},
-			metav1.ListOptions{LabelSelector: labelSelector},
-		); err != nil {
-		return err
-	}
-
 	// delete rbacs: rolebinding, roles, serviceaccounts
 	log.Infof("deleting RoleBindings of MySQL %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.

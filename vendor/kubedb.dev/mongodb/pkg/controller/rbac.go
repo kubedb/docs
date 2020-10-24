@@ -55,7 +55,7 @@ func (c *Controller) createServiceAccount(db *api.MongoDB, saName string) error 
 func (c *Controller) ensureRole(db *api.MongoDB, name string, pspName string) error {
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
-	// Create new Role for ElasticSearch and it's Snapshot
+	// Create new Role for MongoDB and it's Snapshot
 	_, _, err := rbac_util.CreateOrPatchRole(
 		context.TODO(),
 		c.Client,
@@ -93,7 +93,7 @@ func (c *Controller) ensureRole(db *api.MongoDB, name string, pspName string) er
 
 func (c *Controller) createRoleBinding(db *api.MongoDB, roleName string, saName string) error {
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
-	// Ensure new RoleBindings for ElasticSearch and it's Snapshot
+	// Ensure new RoleBindings for MongoDB and it's Snapshot
 	_, _, err := rbac_util.CreateOrPatchRoleBinding(
 		context.TODO(),
 		c.Client,

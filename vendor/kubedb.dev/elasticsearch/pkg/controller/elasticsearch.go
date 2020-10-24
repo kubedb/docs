@@ -296,6 +296,26 @@ func (c *Controller) halt(db *api.Elasticsearch) error {
 				ObservedGeneration: db.Generation,
 				Message:            fmt.Sprintf("Elasticseach %s/%s successfully halted.", db.Namespace, db.Name),
 			})
+			// make "AcceptingConnection" and "Ready" conditions false.
+			// Because these are handled from health checker at a certain interval,
+			// if consecutive halt and un-halt occurs in the meantime,
+			// phase might still be on the "Ready" state.
+			in.Conditions = kmapi.SetCondition(in.Conditions,
+				kmapi.Condition{
+					Type:               api.DatabaseAcceptingConnection,
+					Status:             core.ConditionFalse,
+					Reason:             api.DatabaseHaltedSuccessfully,
+					ObservedGeneration: db.Generation,
+					Message:            fmt.Sprintf("The Elasticsearch: %s/%s is not accepting client requests.", db.Namespace, db.Name),
+				})
+			in.Conditions = kmapi.SetCondition(in.Conditions,
+				kmapi.Condition{
+					Type:               api.DatabaseReady,
+					Status:             core.ConditionFalse,
+					Reason:             api.DatabaseHaltedSuccessfully,
+					ObservedGeneration: db.Generation,
+					Message:            fmt.Sprintf("The Elasticsearch: %s/%s is not ready.", db.Namespace, db.Name),
+				})
 			return in
 		},
 		metav1.UpdateOptions{},

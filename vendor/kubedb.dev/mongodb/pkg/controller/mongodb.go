@@ -47,17 +47,6 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		return nil
 	}
 
-	if mongodb.Status.Phase == "" {
-		mg, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
-			in.Phase = api.DatabasePhaseProvisioning
-			return in
-		}, metav1.UpdateOptions{})
-		if err != nil {
-			return err
-		}
-		mongodb.Status = mg.Status
-	}
-
 	// create Governing Service
 	if err := c.ensureMongoGvrSvc(mongodb); err != nil {
 		return fmt.Errorf(`failed to create governing Service for "%v/%v". Reason: %v`, mongodb.Namespace, mongodb.Name, err)
@@ -125,8 +114,12 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 
 	// ensure database StatefulSet
 	vt2, err := c.ensureMongoDBNode(mongodb)
-	if err != nil {
+	if err != nil && err != ErrStsNotReady {
 		return err
+	}
+
+	if err == ErrStsNotReady {
+		return nil
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
@@ -169,16 +162,6 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		}
 	}
 
-	mg, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
-		in.Phase = api.DatabasePhaseReady
-		in.ObservedGeneration = mongodb.Generation
-		return in
-	}, metav1.UpdateOptions{})
-	if err != nil {
-		return err
-	}
-	mongodb.Status = mg.Status
-
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(mongodb); err != nil {
 		c.Recorder.Eventf(
@@ -204,6 +187,52 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		return nil
 	}
 
+	// Check: ReplicaReady --> AcceptingConnection --> Ready --> Provisioned
+	// If spec.Init.WaitForInitialRestore is true, but data wasn't restored successfully,
+	// process won't reach here (returned nil at the beginning). As it is here, that means data was restored successfully.
+	// No need to check for IsConditionTrue(DataRestored).
+	if kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseReplicaReady) &&
+		kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseAcceptingConnection) &&
+		kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseReady) &&
+		!kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseProvisioned) {
+		_, err := util.UpdateMongoDBStatus(
+			context.TODO(),
+			c.DBClient.KubedbV1alpha2(),
+			mongodb.ObjectMeta,
+			func(in *api.MongoDBStatus) *api.MongoDBStatus {
+				in.Conditions = kmapi.SetCondition(in.Conditions,
+					kmapi.Condition{
+						Type:               api.DatabaseProvisioned,
+						Status:             core.ConditionTrue,
+						Reason:             api.DatabaseSuccessfullyProvisioned,
+						ObservedGeneration: mongodb.Generation,
+						Message:            fmt.Sprintf("The MongoDB: %s/%s is successfully provisioned.", mongodb.Namespace, mongodb.Name),
+					})
+				return in
+			},
+			metav1.UpdateOptions{},
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	// If the database is successfully provisioned,
+	// Set spec.Init.Initialized to true, if init!=nil.
+	// This will prevent the operator from re-initializing the database.
+	if mongodb.Spec.Init != nil &&
+		!mongodb.Spec.Init.Initialized &&
+		kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseProvisioned) {
+		_, _, err := util.CreateOrPatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb.ObjectMeta, func(in *api.MongoDB) *api.MongoDB {
+			in.Spec.Init.Initialized = true
+			return in
+		}, metav1.PatchOptions{})
+
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -215,13 +244,18 @@ func (c *Controller) halt(db *api.MongoDB) error {
 	if err := c.haltDatabase(db); err != nil {
 		return err
 	}
-	if err := c.waitUntilPaused(db); err != nil {
+	if err := c.waitUntilHalted(db); err != nil {
 		return err
 	}
 	log.Infof("update status of MongoDB %v/%v to Halted.", db.Namespace, db.Name)
 	if _, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
-		in.Phase = api.DatabasePhaseHalted
-		in.ObservedGeneration = db.Generation
+		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
+			Type:               api.DatabaseHalted,
+			Status:             core.ConditionTrue,
+			Reason:             api.DatabaseHaltedSuccessfully,
+			ObservedGeneration: db.Generation,
+			Message:            fmt.Sprintf("MongoDB %s/%s successfully halted.", db.Namespace, db.Name),
+		})
 		return in
 	}, metav1.UpdateOptions{}); err != nil {
 		return err

@@ -33,12 +33,10 @@ import (
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	kmapi "kmodules.xyz/client-go/api/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
@@ -132,7 +130,7 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 				oldMySQL.Spec.AuthSecret = mysql.Spec.AuthSecret
 			}
 
-			if err := validateUpdate(mysql, oldMySQL, mysql.Status.Conditions); err != nil {
+			if err := validateUpdate(mysql, oldMySQL); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
 		}
@@ -284,8 +282,8 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 	return nil
 }
 
-func validateUpdate(obj, oldObj runtime.Object, conditions []kmapi.Condition) error {
-	preconditions := getPreconditionFunc(conditions)
+func validateUpdate(obj, oldObj *api.MySQL) error {
+	preconditions := getPreconditionFunc(oldObj)
 	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
@@ -296,15 +294,15 @@ func validateUpdate(obj, oldObj runtime.Object, conditions []kmapi.Condition) er
 	return nil
 }
 
-func getPreconditionFunc(conditions []kmapi.Condition) []mergepatch.PreconditionFunc {
+func getPreconditionFunc(db *api.MySQL) []mergepatch.PreconditionFunc {
 	preconditions := []mergepatch.PreconditionFunc{
 		mergepatch.RequireKeyUnchanged("apiVersion"),
 		mergepatch.RequireKeyUnchanged("kind"),
 		mergepatch.RequireMetadataKeyUnchanged("name"),
 		mergepatch.RequireMetadataKeyUnchanged("namespace"),
 	}
-	// Once the database has been provisioned, don't let update the "spec.init" section
-	if kmapi.IsConditionTrue(conditions, api.DatabaseProvisioned) {
+	// Once the database has been initialized, don't let update the "spec.init" section
+	if db.Spec.Init != nil && db.Spec.Init.Initialized {
 		preconditionSpecFields.Insert("spec.init")
 	}
 	for _, field := range preconditionSpecFields.List() {
@@ -318,7 +316,7 @@ func getPreconditionFunc(conditions []kmapi.Condition) []mergepatch.Precondition
 var preconditionSpecFields = sets.NewString(
 	"spec.storageType",
 	"spec.storage",
-	"spec.databaseSecret",
+	"spec.authSecret",
 	"spec.podTemplate.spec.nodeSelector",
 )
 
