@@ -1105,7 +1105,7 @@ kmodules.xyz/custom-resources/client/informers/externalversions/appcatalog/v1alp
 kmodules.xyz/custom-resources/client/informers/externalversions/internalinterfaces
 kmodules.xyz/custom-resources/client/listers/appcatalog/v1alpha1
 kmodules.xyz/custom-resources/crds
-# kmodules.xyz/monitoring-agent-api v0.0.0-20201007104803-408a1ff2de8d
+# kmodules.xyz/monitoring-agent-api v0.0.0-20201022103441-f51a42fb9ac8
 kmodules.xyz/monitoring-agent-api/agents
 kmodules.xyz/monitoring-agent-api/agents/prometheus
 kmodules.xyz/monitoring-agent-api/agents/prometheusbuiltin
@@ -1122,7 +1122,7 @@ kmodules.xyz/prober/api/v1
 # kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.14.0-beta.3.0.20201023043049-a57a7df5b78a
+# kubedb.dev/apimachinery v0.14.0-beta.3.0.20201024022825-61b265325dc8
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
 kubedb.dev/apimachinery/apis/autoscaling/v1alpha1
