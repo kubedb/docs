@@ -112,6 +112,9 @@ func (c *Controller) Init() error {
 func (c *Controller) RunControllers(stopCh <-chan struct{}) {
 	// Start MySQL controller
 	c.myQueue.Run(stopCh)
+
+	// Start MySQL health checker
+	c.RunHealthChecker(stopCh)
 }
 
 // Blocks caller. Intended to be called as a Go routine.

@@ -23,6 +23,7 @@ import (
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
+	"kubedb.dev/apimachinery/pkg/eventer"
 
 	passgen "gomodules.xyz/password-generator"
 	core "k8s.io/api/core/v1"
@@ -36,38 +37,40 @@ const (
 	mysqlUser = "root"
 )
 
-func (c *Controller) ensureAuthSecret(mysql *api.MySQL) error {
-	if mysql.Spec.AuthSecret == nil {
-		authSecret, err := c.createAuthSecret(mysql)
+func (c *Controller) ensureAuthSecret(db *api.MySQL) error {
+	if db.Spec.AuthSecret == nil {
+		authSecretName, err := c.createAuthSecret(db)
 		if err != nil {
 			return err
 		}
 
-		ms, _, err := util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), mysql, func(in *api.MySQL) *api.MySQL {
-			in.Spec.AuthSecret = authSecret
+		ms, _, err := util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.MySQL) *api.MySQL {
+			in.Spec.AuthSecret = &core.LocalObjectReference{
+				Name: authSecretName,
+			}
 			return in
 		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
-		mysql.Spec.AuthSecret = ms.Spec.AuthSecret
+		db.Spec.AuthSecret = ms.Spec.AuthSecret
 		return nil
 	}
-	return c.upgradeAuthSecret(mysql)
+	return c.upgradeAuthSecret(db)
 }
 
-func (c *Controller) createAuthSecret(mysql *api.MySQL) (*core.LocalObjectReference, error) {
-	authSecretName := mysql.Name + "-auth"
+func (c *Controller) createAuthSecret(db *api.MySQL) (string, error) {
+	authSecretName := db.Name + "-auth"
 
-	sc, err := c.checkSecret(authSecretName, mysql)
+	sc, err := c.checkSecret(authSecretName, db)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	if sc == nil {
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   authSecretName,
-				Labels: mysql.OffshootLabels(),
+				Labels: db.OffshootLabels(),
 			},
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
@@ -75,21 +78,26 @@ func (c *Controller) createAuthSecret(mysql *api.MySQL) (*core.LocalObjectRefere
 				core.BasicAuthPasswordKey: passgen.Generate(api.DefaultPasswordLength),
 			},
 		}
-		if _, err := c.Client.CoreV1().Secrets(mysql.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
-			return nil, err
+		secret, err := c.Client.CoreV1().Secrets(db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
+		if err == nil {
+			c.Recorder.Eventf(
+				db,
+				core.EventTypeNormal,
+				eventer.EventReasonSuccessful,
+				"Successfully created database auth secret",
+			)
 		}
+		return secret.Name, err
 	}
-	return &core.LocalObjectReference{
-		Name: authSecretName,
-	}, nil
+	return sc.Name, nil
 }
 
 // This is done to fix 0.8.0 -> 0.9.0 upgrade due to
 // https://github.com/kubedb/mysql/pull/115/files#diff-10ddaf307bbebafda149db10a28b9c24R17 commit
-func (c *Controller) upgradeAuthSecret(mysql *api.MySQL) error {
+func (c *Controller) upgradeAuthSecret(db *api.MySQL) error {
 	meta := metav1.ObjectMeta{
-		Name:      mysql.Spec.AuthSecret.Name,
-		Namespace: mysql.Namespace,
+		Name:      db.Spec.AuthSecret.Name,
+		Namespace: db.Namespace,
 	}
 
 	_, _, err := core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {
@@ -103,8 +111,8 @@ func (c *Controller) upgradeAuthSecret(mysql *api.MySQL) error {
 	return err
 }
 
-func (c *Controller) checkSecret(secretName string, mysql *api.MySQL) (*core.Secret, error) {
-	secret, err := c.Client.CoreV1().Secrets(mysql.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
+func (c *Controller) checkSecret(secretName string, db *api.MySQL) (*core.Secret, error) {
+	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil
@@ -113,8 +121,8 @@ func (c *Controller) checkSecret(secretName string, mysql *api.MySQL) (*core.Sec
 	}
 
 	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindMySQL ||
-		secret.Labels[api.LabelDatabaseName] != mysql.Name {
-		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, mysql.Namespace, secretName)
+		secret.Labels[api.LabelDatabaseName] != db.Name {
+		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, db.Namespace, secretName)
 	}
 	return secret, nil
 }

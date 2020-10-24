@@ -560,10 +560,6 @@ func (es *Elasticsearch) upsertContainerEnv(envList []core.EnvVar) []core.EnvVar
 				},
 			},
 		},
-		{
-			Name:  "JAVA_OPTS",
-			Value: "-XX:UseContainerSupport",
-		},
 	}...)
 
 	if strings.HasPrefix(es.esVersion.Spec.Version, "7.") {

@@ -71,6 +71,8 @@ const (
 	initialKeyDirectoryPath = "/keydir-readonly"
 )
 
+var ErrStsNotReady = fmt.Errorf("statefulSet is not updated yet")
+
 type workloadOptions struct {
 	// App level options
 	stsName   string
@@ -118,8 +120,8 @@ func (c *Controller) ensureTopologyCluster(mongodb *api.MongoDB) (kutil.VerbType
 	sts = append(sts, st)
 	if vt1 != kutil.VerbUnchanged || vt2 != kutil.VerbUnchanged {
 		for _, st := range sts {
-			if err := c.checkStatefulSetPodStatus(st); err != nil {
-				return kutil.VerbUnchanged, err
+			if !app_util.IsStatefulSetReady(st) {
+				return "", ErrStsNotReady
 			}
 			c.Recorder.Eventf(
 				mongodb,
@@ -137,8 +139,8 @@ func (c *Controller) ensureTopologyCluster(mongodb *api.MongoDB) (kutil.VerbType
 	}
 
 	if vt3 != kutil.VerbUnchanged {
-		if err := c.checkStatefulSetPodStatus(mongosSts); err != nil {
-			return kutil.VerbUnchanged, err
+		if !app_util.IsStatefulSetReady(mongosSts) {
+			return "", ErrStsNotReady
 		}
 		c.Recorder.Eventf(
 			mongodb,
@@ -764,8 +766,8 @@ func (c *Controller) ensureNonTopology(mongodb *api.MongoDB) (kutil.VerbType, er
 		return kutil.VerbUnchanged, err
 	}
 	if vt != kutil.VerbUnchanged {
-		if err := c.checkStatefulSetPodStatus(st); err != nil {
-			return kutil.VerbUnchanged, err
+		if !app_util.IsStatefulSetReady(st) {
+			return "", ErrStsNotReady
 		}
 		c.Recorder.Eventf(
 			mongodb,
@@ -1186,21 +1188,6 @@ func upsertEnv(template core.PodTemplateSpec, mongodb *api.MongoDB) core.PodTemp
 		}
 	}
 	return template
-}
-
-func (c *Controller) checkStatefulSetPodStatus(sts *apps.StatefulSet) error {
-	log.Infof("Waiting for running phase for statefulset %v/%v.", sts.Namespace, sts.Name)
-	err := core_util.WaitUntilPodRunningBySelector(
-		context.TODO(),
-		c.Client,
-		sts.Namespace,
-		sts.Spec.Selector,
-		int(types.Int32(sts.Spec.Replicas)),
-	)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func getExporterContainer(mongodb *api.MongoDB, mongodbVersion *v1alpha1.MongoDBVersion) core.Container {

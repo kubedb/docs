@@ -30,16 +30,15 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
 )
 
-func (c *Controller) create(mysql *api.MySQL) error {
-	if err := validator.ValidateMySQL(c.Client, c.DBClient, mysql, true); err != nil {
+func (c *Controller) create(db *api.MySQL) error {
+	if err := validator.ValidateMySQL(c.Client, c.DBClient, db, true); err != nil {
 		c.Recorder.Event(
-			mysql,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
 			err.Error(),
@@ -48,141 +47,109 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		return nil
 	}
 
-	if mysql.Status.Phase == "" {
-		my, err := util.UpdateMySQLStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
-			in.Phase = api.DatabasePhaseProvisioning
-			return in
-		}, metav1.UpdateOptions{})
-		if err != nil {
-			return err
-		}
-		mysql.Status = my.Status
-	}
-
-	// create Governing Service
-	governingService, err := c.createMySQLGoverningService(mysql)
-	if err != nil {
-		return fmt.Errorf(`failed to create Service: "%v/%v". Reason: %v`, mysql.Namespace, governingService, err)
-	}
-
 	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
-	if err := c.ensureDatabaseRBAC(mysql); err != nil {
+	if err := c.ensureDatabaseRBAC(db); err != nil {
 		return err
+	}
+
+	// ensure Governing Service
+	if err := c.ensureMySQLGoverningService(db); err != nil {
+		return fmt.Errorf(`failed to create governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 
 	// ensure database Service
-	vt1, err := c.ensurePrimaryService(mysql)
-	if err != nil {
+	if err := c.ensureService(db); err != nil {
 		return err
 	}
 
-	// create Service only for master/primary pod
-	if mysql.UsesGroupReplication() {
-		vt, err := c.ensureSecondaryService(mysql)
-		if err != nil {
-			return err
-		}
-		if vt == kutil.VerbCreated {
-			c.Recorder.Event(
-				mysql,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully created service for secondary replicas",
-			)
-		} else if vt == kutil.VerbPatched {
-			c.Recorder.Event(
-				mysql,
-				core.EventTypeNormal,
-				eventer.EventReasonSuccessful,
-				"Successfully patched service for secondary replicas",
-			)
-		}
-	}
-
-	if err := c.ensureAuthSecret(mysql); err != nil {
+	if err := c.ensureAuthSecret(db); err != nil {
 		return err
 	}
 
 	// wait for certificates
-	if mysql.Spec.TLS != nil && mysql.Spec.TLS.IssuerRef != nil {
+	if db.Spec.TLS != nil && db.Spec.TLS.IssuerRef != nil {
 		ok, err := dynamic_util.ResourcesExists(
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
-			mysql.Namespace,
-			mysql.MustCertSecretName(api.MySQLServerCert),
-			mysql.MustCertSecretName(api.MySQLClientCert),
-			mysql.MustCertSecretName(api.MySQLMetricsExporterCert),
-			meta_util.NameWithSuffix(mysql.Name, api.MySQLMetricsExporterConfigSecretSuffix),
+			db.Namespace,
+			db.MustCertSecretName(api.MySQLServerCert),
+			db.MustCertSecretName(api.MySQLClientCert),
+			db.MustCertSecretName(api.MySQLMetricsExporterCert),
+			meta_util.NameWithSuffix(db.Name, api.MySQLMetricsExporterConfigSecretSuffix),
 		)
 		if err != nil {
 			return err
 		}
 		if !ok {
-			log.Infoln(fmt.Sprintf("wait for all necessary secrets for mysql %s/%s", mysql.Namespace, mysql.Name))
+			log.Infoln(fmt.Sprintf("wait for all necessary secrets for db %s/%s", db.Namespace, db.Name))
 			return nil
 		}
 	}
 
 	// ensure database StatefulSet
-	vt2, err := c.ensureStatefulSet(mysql)
-	if err != nil {
+	if err := c.ensureStatefulSet(db); err != nil {
 		return err
-	}
-
-	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.Recorder.Event(
-			mysql,
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully created MySQL",
-		)
-	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.Recorder.Event(
-			mysql,
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully patched MySQL",
-		)
 	}
 
 	// ensure appbinding before ensuring Restic scheduler and restore
-	_, err = c.ensureAppBinding(mysql)
+	_, err := c.ensureAppBinding(db)
 	if err != nil {
 		log.Errorln(err)
 		return err
 	}
 
-	//======================== Wait for the initial restore =====================================
-	if mysql.Spec.Init != nil && mysql.Spec.Init.WaitForInitialRestore {
-		// Only wait for the first restore.
-		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
-		if !kmapi.HasCondition(mysql.Status.Conditions, api.DatabaseProvisioned) &&
-			!kmapi.IsConditionTrue(mysql.Status.Conditions, api.DatabaseDataRestored) {
-			// write log indicating that the database is waiting for the data to be restored by external initializer
-			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
-				mysql.Kind,
-				mysql.Namespace,
-				mysql.Name,
-			)
-			// Rest of the processing will execute after the the restore process completed. So, just return for now.
-			return nil
+	if db.Spec.Init != nil {
+		//======================== Wait for the initial restore =====================================
+		if db.Spec.Init.WaitForInitialRestore {
+			// Only wait for the first restore.
+			// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
+			if !kmapi.HasCondition(db.Status.Conditions, api.DatabaseProvisioned) &&
+				!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseDataRestored) {
+				// write log indicating that the database is waiting for the data to be restored by external initializer
+				log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
+					db.Kind,
+					db.Namespace,
+					db.Name,
+				)
+				// Rest of the processing will execute after the the restore process completed. So, just return for now.
+				return nil
+			}
+		}
+		//======================== Wait for initialize script =====================================
+		if db.Spec.Init.Script != nil {
+			if !kmapi.HasCondition(db.Status.Conditions, api.DatabaseProvisioned) &&
+				!kmapi.HasCondition(db.Status.Conditions, api.DatabaseDataRestored) &&
+				kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReplicaReady) &&
+				kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseAcceptingConnection) &&
+				kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReady) {
+				_, err := util.UpdateMySQLStatus(
+					context.TODO(),
+					c.DBClient.KubedbV1alpha2(),
+					db.ObjectMeta,
+					func(in *api.MySQLStatus) *api.MySQLStatus {
+						in.Conditions = kmapi.SetCondition(in.Conditions,
+							kmapi.Condition{
+								Type:               api.DatabaseDataRestored,
+								Status:             core.ConditionTrue,
+								Reason:             api.DatabaseSuccessfullyRestored,
+								ObservedGeneration: db.Generation,
+								Message:            fmt.Sprintf("Data successfully restored into The MySQL databse: %s/%s", db.Namespace, db.Name),
+							})
+						return in
+					},
+					metav1.UpdateOptions{},
+				)
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
 
-	my, err := util.UpdateMySQLStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), mysql.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
-		in.Phase = api.DatabasePhaseReady
-		in.ObservedGeneration = mysql.Generation
-		return in
-	}, metav1.UpdateOptions{})
-	if err != nil {
-		return err
-	}
-	mysql.Status = my.Status
-
 	// ensure StatsService for desired monitoring
-	if _, err := c.ensureStatsService(mysql); err != nil {
+	if _, err := c.ensureStatsService(db); err != nil {
 		c.Recorder.Eventf(
-			mysql,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -192,9 +159,9 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		return nil
 	}
 
-	if err := c.manageMonitor(mysql); err != nil {
+	if err := c.manageMonitor(db); err != nil {
 		c.Recorder.Eventf(
-			mysql,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -202,6 +169,52 @@ func (c *Controller) create(mysql *api.MySQL) error {
 		)
 		log.Errorln(err)
 		return nil
+	}
+
+	// Check: ReplicaReady --> AcceptingConnection --> Ready --> Provisioned
+	// If spec.Init.WaitForInitialRestore is true, but data wasn't restored successfully,
+	// process won't reach here (returned nil at the beginning). As it is here, that means data was restored successfully.
+	// No need to check for IsConditionTrue(DataRestored).
+	if kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReplicaReady) &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseAcceptingConnection) &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReady) &&
+		!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
+		_, err := util.UpdateMySQLStatus(
+			context.TODO(),
+			c.DBClient.KubedbV1alpha2(),
+			db.ObjectMeta,
+			func(in *api.MySQLStatus) *api.MySQLStatus {
+				in.Conditions = kmapi.SetCondition(in.Conditions,
+					kmapi.Condition{
+						Type:               api.DatabaseProvisioned,
+						Status:             core.ConditionTrue,
+						Reason:             api.DatabaseSuccessfullyProvisioned,
+						ObservedGeneration: db.Generation,
+						Message:            fmt.Sprintf("The MySQL: %s/%s is successfully provisioned.", db.Namespace, db.Name),
+					})
+				return in
+			},
+			metav1.UpdateOptions{},
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	// If the database is successfully provisioned,
+	// Set spec.Init.Initialized to true, if init!=nil.
+	// This will prevent the operator from re-initializing the database.
+	if db.Spec.Init != nil &&
+		!db.Spec.Init.Initialized &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
+		_, _, err := util.CreateOrPatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MySQL) *api.MySQL {
+			in.Spec.Init.Initialized = true
+			return in
+		}, metav1.PatchOptions{})
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -219,36 +232,66 @@ func (c *Controller) halt(db *api.MySQL) error {
 		return err
 	}
 	log.Infof("update status of MySQL %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMySQLStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MySQLStatus) *api.MySQLStatus {
-		in.Phase = api.DatabasePhaseHalted
-		in.ObservedGeneration = db.Generation
-		return in
-	}, metav1.UpdateOptions{}); err != nil {
+	if _, err := util.UpdateMySQLStatus(
+		context.TODO(),
+		c.DBClient.KubedbV1alpha2(),
+		db.ObjectMeta,
+		func(in *api.MySQLStatus) *api.MySQLStatus {
+			in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
+				Type:               api.DatabaseHalted,
+				Status:             core.ConditionTrue,
+				Reason:             api.DatabaseHaltedSuccessfully,
+				ObservedGeneration: db.Generation,
+				Message:            fmt.Sprintf("MySQL %s/%s successfully halted.", db.Namespace, db.Name),
+			})
+			// make "AcceptingConnection" and "Ready" conditions false.
+			// Because these are handled from health checker at a certain interval,
+			// if consecutive halt and un-halt occurs in the meantime,
+			// phase might still be on the "Ready" state.
+			in.Conditions = kmapi.SetCondition(in.Conditions,
+				kmapi.Condition{
+					Type:               api.DatabaseAcceptingConnection,
+					Status:             core.ConditionFalse,
+					Reason:             api.DatabaseHaltedSuccessfully,
+					ObservedGeneration: db.Generation,
+					Message:            fmt.Sprintf("The MySQL: %s/%s is not accepting client requests.", db.Namespace, db.Name),
+				})
+			in.Conditions = kmapi.SetCondition(in.Conditions,
+				kmapi.Condition{
+					Type:               api.DatabaseReady,
+					Status:             core.ConditionFalse,
+					Reason:             api.DatabaseHaltedSuccessfully,
+					ObservedGeneration: db.Generation,
+					Message:            fmt.Sprintf("The MySQL: %s/%s is not ready.", db.Namespace, db.Name),
+				})
+			return in
+		},
+		metav1.UpdateOptions{}); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *Controller) terminate(mysql *api.MySQL) error {
-	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
+func (c *Controller) terminate(db *api.MySQL) error {
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
 	// If TerminationPolicy is "halt", keep PVCs and Secrets intact.
 	// TerminationPolicyHalt is deprecated and will be removed in future.
-	if mysql.Spec.TerminationPolicy == api.TerminationPolicyHalt {
-		if err := c.removeOwnerReferenceFromOffshoots(mysql); err != nil {
+	if db.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+		if err := c.removeOwnerReferenceFromOffshoots(db); err != nil {
 			return err
 		}
 	} else {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
 		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
 		// In both these cases, don't create dormantdatabase
-		if err := c.setOwnerReferenceToOffshoots(mysql, owner); err != nil {
+		if err := c.setOwnerReferenceToOffshoots(db, owner); err != nil {
 			return err
 		}
 	}
 
-	if mysql.Spec.Monitor != nil {
-		if err := c.deleteMonitor(mysql); err != nil {
+	if db.Spec.Monitor != nil {
+		if err := c.deleteMonitor(db); err != nil {
 			log.Errorln(err)
 			return nil
 		}
@@ -256,13 +299,13 @@ func (c *Controller) terminate(mysql *api.MySQL) error {
 	return nil
 }
 
-func (c *Controller) setOwnerReferenceToOffshoots(mysql *api.MySQL, owner *metav1.OwnerReference) error {
-	selector := labels.SelectorFromSet(mysql.OffshootSelectors())
+func (c *Controller) setOwnerReferenceToOffshoots(db *api.MySQL, owner *metav1.OwnerReference) error {
+	selector := labels.SelectorFromSet(db.OffshootSelectors())
 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
-	if mysql.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		if err := c.wipeOutDatabase(mysql.ObjectMeta, mysql.Spec.GetPersistentSecrets(), owner); err != nil {
+	if db.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
+		if err := c.wipeOutDatabase(db.ObjectMeta, db.Spec.GetPersistentSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
@@ -271,9 +314,9 @@ func (c *Controller) setOwnerReferenceToOffshoots(mysql *api.MySQL, owner *metav
 			context.TODO(),
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
-			mysql.Namespace,
-			mysql.Spec.GetPersistentSecrets(),
-			mysql); err != nil {
+			db.Namespace,
+			db.Spec.GetPersistentSecrets(),
+			db); err != nil {
 			return err
 		}
 	}
@@ -282,31 +325,31 @@ func (c *Controller) setOwnerReferenceToOffshoots(mysql *api.MySQL, owner *metav
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
-		mysql.Namespace,
+		db.Namespace,
 		selector,
 		owner)
 }
 
-func (c *Controller) removeOwnerReferenceFromOffshoots(mysql *api.MySQL) error {
+func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.MySQL) error {
 	// First, Get LabelSelector for Other Components
-	labelSelector := labels.SelectorFromSet(mysql.OffshootSelectors())
+	labelSelector := labels.SelectorFromSet(db.OffshootSelectors())
 
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
-		mysql.Namespace,
+		db.Namespace,
 		labelSelector,
-		mysql); err != nil {
+		db); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
-		mysql.Namespace,
-		mysql.Spec.GetPersistentSecrets(),
-		mysql); err != nil {
+		db.Namespace,
+		db.Spec.GetPersistentSecrets(),
+		db); err != nil {
 		return err
 	}
 	return nil

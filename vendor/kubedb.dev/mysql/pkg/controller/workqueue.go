@@ -18,10 +18,12 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
+	"kubedb.dev/apimachinery/pkg/phase"
 
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
@@ -52,21 +54,21 @@ func (c *Controller) runMySQL(key string) error {
 	} else {
 		// Note that you also have to check the uid if you have a local controlled resource, which
 		// is dependent on the actual instance, to detect that a MySQL was recreated with the same name
-		mysql := obj.(*api.MySQL).DeepCopy()
-		if mysql.DeletionTimestamp != nil {
-			if core_util.HasFinalizer(mysql.ObjectMeta, kubedb.GroupName) {
-				if err := c.terminate(mysql); err != nil {
+		db := obj.(*api.MySQL).DeepCopy()
+		if db.DeletionTimestamp != nil {
+			if core_util.HasFinalizer(db.ObjectMeta, kubedb.GroupName) {
+				if err := c.terminate(db); err != nil {
 					log.Errorln(err)
 					return err
 				}
-				_, _, err = util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), mysql, func(in *api.MySQL) *api.MySQL {
+				_, _, err = util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.MySQL) *api.MySQL {
 					in.ObjectMeta = core_util.RemoveFinalizer(in.ObjectMeta, kubedb.GroupName)
 					return in
 				}, metav1.PatchOptions{})
 				return err
 			}
 		} else {
-			mysql, _, err = util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), mysql, func(in *api.MySQL) *api.MySQL {
+			db, _, err = util.PatchMySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.MySQL) *api.MySQL {
 				in.ObjectMeta = core_util.AddFinalizer(in.ObjectMeta, kubedb.GroupName)
 				return in
 			}, metav1.PatchOptions{})
@@ -74,20 +76,91 @@ func (c *Controller) runMySQL(key string) error {
 				return err
 			}
 
-			if kmapi.IsConditionTrue(mysql.Status.Conditions, api.DatabasePaused) {
+			// Get MySQL phase from condition
+			// If new phase is not equal to old phase,
+			// update MySQL phase.
+			phase := phase.PhaseFromCondition(db.Status.Conditions)
+			if db.Status.Phase != phase {
+				_, err := util.UpdateMySQLStatus(
+					context.TODO(),
+					c.DBClient.KubedbV1alpha2(),
+					db.ObjectMeta,
+					func(in *api.MySQLStatus) *api.MySQLStatus {
+						in.Phase = phase
+						in.ObservedGeneration = db.Generation
+						return in
+					},
+					metav1.UpdateOptions{},
+				)
+				if err != nil {
+					c.pushFailureEvent(db, err.Error())
+					return err
+				}
+				// drop the object from queue,
+				// the object will be enqueued again from this update event.
 				return nil
 			}
 
-			if mysql.Spec.Halted {
-				if err := c.halt(mysql); err != nil {
+			// if conditions are empty, set initial condition "ProvisioningStarted" to "true"
+			if !kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioningStarted) {
+				_, err := util.UpdateMySQLStatus(
+					context.TODO(),
+					c.DBClient.KubedbV1alpha2(),
+					db.ObjectMeta,
+					func(in *api.MySQLStatus) *api.MySQLStatus {
+						in.Conditions = kmapi.SetCondition(in.Conditions,
+							kmapi.Condition{
+								Type:    api.DatabaseProvisioningStarted,
+								Status:  core.ConditionTrue,
+								Reason:  api.DatabaseProvisioningStartedSuccessfully,
+								Message: fmt.Sprintf("The KubeDB operator has started the provisioning of MySQL: %s/%s", db.Namespace, db.Name),
+							})
+						return in
+					},
+					metav1.UpdateOptions{},
+				)
+				if err != nil {
+					return err
+				}
+				// drop the object from queue,
+				// the object will be enqueued again from this update event.
+				return nil
+			}
+
+			// If the DB object is Paused, the operator will ignore the change events from
+			// the DB object.
+			if kmapi.IsConditionTrue(db.Status.Conditions, api.DatabasePaused) {
+				return nil
+			}
+
+			if db.Spec.Halted {
+				if err := c.halt(db); err != nil {
 					log.Errorln(err)
-					c.pushFailureEvent(mysql, err.Error())
+					c.pushFailureEvent(db, err.Error())
 					return err
 				}
 			} else {
-				if err := c.create(mysql); err != nil {
+				// Here, spec.halted=false, remove the halted condition if exists.
+				if kmapi.HasCondition(db.Status.Conditions, api.DatabaseHalted) {
+					if _, err := util.UpdateMySQLStatus(
+						context.TODO(),
+						c.DBClient.KubedbV1alpha2(),
+						db.ObjectMeta,
+						func(in *api.MySQLStatus) *api.MySQLStatus {
+							in.Conditions = kmapi.RemoveCondition(in.Conditions, api.DatabaseHalted)
+							return in
+						},
+						metav1.UpdateOptions{},
+					); err != nil {
+						return err
+					}
+					// return from here, will be enqueued again from the event.
+					return nil
+				}
+				// process db object
+				if err := c.create(db); err != nil {
 					log.Errorln(err)
-					c.pushFailureEvent(mysql, err.Error())
+					c.pushFailureEvent(db, err.Error())
 					return err
 				}
 			}

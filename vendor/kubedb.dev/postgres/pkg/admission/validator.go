@@ -33,13 +33,11 @@ import (
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/leaderelection"
-	kmapi "kmodules.xyz/client-go/api/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
@@ -131,7 +129,7 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 				oldPostgres.Spec.AuthSecret = postgres.Spec.AuthSecret
 			}
 
-			if err := validateUpdate(postgres, oldPostgres, postgres.Status.Conditions); err != nil {
+			if err := validateUpdate(postgres, oldPostgres); err != nil {
 				return hookapi.StatusBadRequest(fmt.Errorf("%v", err))
 			}
 		}
@@ -270,8 +268,8 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 	return nil
 }
 
-func validateUpdate(obj, oldObj runtime.Object, conditions []kmapi.Condition) error {
-	preconditions := getPreconditionFunc(conditions)
+func validateUpdate(obj, oldObj *api.Postgres) error {
+	preconditions := getPreconditionFunc(oldObj)
 	_, err := meta_util.CreateStrategicPatch(oldObj, obj, preconditions...)
 	if err != nil {
 		if mergepatch.IsPreconditionFailed(err) {
@@ -282,7 +280,7 @@ func validateUpdate(obj, oldObj runtime.Object, conditions []kmapi.Condition) er
 	return nil
 }
 
-func getPreconditionFunc(conditions []kmapi.Condition) []mergepatch.PreconditionFunc {
+func getPreconditionFunc(pg *api.Postgres) []mergepatch.PreconditionFunc {
 	preconditions := []mergepatch.PreconditionFunc{
 		mergepatch.RequireKeyUnchanged("apiVersion"),
 		mergepatch.RequireKeyUnchanged("kind"),
@@ -290,8 +288,8 @@ func getPreconditionFunc(conditions []kmapi.Condition) []mergepatch.Precondition
 		mergepatch.RequireMetadataKeyUnchanged("namespace"),
 	}
 
-	// Once the database has been provisioned, don't let update the "spec.init" section
-	if kmapi.IsConditionTrue(conditions, api.DatabaseProvisioned) {
+	// Once the database has been initialized, don't let update the "spec.init" section
+	if pg.Spec.Init != nil && pg.Spec.Init.Initialized {
 		preconditionSpecFields.Insert("spec.init")
 	}
 

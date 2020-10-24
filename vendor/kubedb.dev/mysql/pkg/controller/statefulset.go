@@ -39,53 +39,52 @@ import (
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
-func (c *Controller) ensureStatefulSet(mysql *api.MySQL) (kutil.VerbType, error) {
-	stsName, stsCur, err := c.findStatefulSet(mysql)
+func (c *Controller) ensureStatefulSet(db *api.MySQL) error {
+	stsName, stsCur, err := c.findStatefulSet(db)
 	if err != nil {
-		return kutil.VerbUnchanged, err
+		return err
 	}
 
-	vt := kutil.VerbUnchanged
 	if stsCur == nil {
 		// Create statefulSet for MySQL database
 		var stsNew *apps.StatefulSet
-		stsNew, vt, err = c.createStatefulSet(mysql, stsName)
+		stsNew, vt, err := c.createStatefulSet(db, stsName)
 		if err != nil {
-			return kutil.VerbUnchanged, err
+			return err
 		}
 
 		// Check StatefulSet Pod status
 		if vt != kutil.VerbUnchanged {
 			if err := c.checkStatefulSetPodStatus(stsNew); err != nil {
-				return kutil.VerbUnchanged, err
+				return err
 			}
 			c.Recorder.Eventf(
-				mysql,
+				db,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,
 				"Successfully %v StatefulSet",
 				vt,
 			)
 		}
-		stsCur = stsNew
+
+		// ensure pdb
+		if err := c.CreateStatefulSetPodDisruptionBudget(stsNew); err != nil {
+			return err
+		}
+		log.Info("Successfully created/patched PodDisruptionBudget")
 	}
 
-	// ensure pdb
-	if err := c.CreateStatefulSetPodDisruptionBudget(stsCur); err != nil {
-		return kutil.VerbUnchanged, err
-	}
-
-	return vt, nil
+	return nil
 }
 
-func (c *Controller) createStatefulSet(mysql *api.MySQL, stsName string) (*apps.StatefulSet, kutil.VerbType, error) {
+func (c *Controller) createStatefulSet(db *api.MySQL, stsName string) (*apps.StatefulSet, kutil.VerbType, error) {
 	statefulSetMeta := metav1.ObjectMeta{
 		Name:      stsName,
-		Namespace: mysql.Namespace,
+		Namespace: db.Namespace,
 	}
-	owner := metav1.NewControllerRef(mysql, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
-	mysqlVersion, err := c.DBClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), mysql.Spec.Version, metav1.GetOptions{})
+	mysqlVersion, err := c.DBClient.CatalogV1alpha1().MySQLVersions().Get(context.TODO(), db.Spec.Version, metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -95,17 +94,17 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL, stsName string) (*apps.
 		c.Client,
 		statefulSetMeta,
 		func(in *apps.StatefulSet) *apps.StatefulSet {
-			in.Labels = mysql.OffshootLabels()
-			in.Annotations = mysql.Spec.PodTemplate.Controller.Annotations
+			in.Labels = db.OffshootLabels()
+			in.Annotations = db.Spec.PodTemplate.Controller.Annotations
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
-			in.Spec.Replicas = mysql.Spec.Replicas
-			in.Spec.ServiceName = mysql.GoverningServiceName()
+			in.Spec.Replicas = db.Spec.Replicas
+			in.Spec.ServiceName = db.GoverningServiceName()
 			in.Spec.Selector = &metav1.LabelSelector{
-				MatchLabels: mysql.OffshootSelectors(),
+				MatchLabels: db.OffshootSelectors(),
 			}
-			in.Spec.Template.Labels = mysql.OffshootSelectors()
-			in.Spec.Template.Annotations = mysql.Spec.PodTemplate.Annotations
+			in.Spec.Template.Labels = db.OffshootSelectors()
+			in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
 				in.Spec.Template.Spec.InitContainers,
 				append(
@@ -125,10 +124,10 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL, stsName string) (*apps.
 									MountPath: "/var/lib/mysql",
 								},
 							},
-							Resources: mysql.Spec.PodTemplate.Spec.Resources,
+							Resources: db.Spec.PodTemplate.Spec.Resources,
 						},
 					},
-					mysql.Spec.PodTemplate.Spec.InitContainers...,
+					db.Spec.PodTemplate.Spec.InitContainers...,
 				),
 			)
 
@@ -136,11 +135,11 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL, stsName string) (*apps.
 				Name:            api.ResourceSingularMySQL,
 				Image:           mysqlVersion.Spec.DB.Image,
 				ImagePullPolicy: core.PullIfNotPresent,
-				Args:            mysql.Spec.PodTemplate.Spec.Args,
-				Resources:       mysql.Spec.PodTemplate.Spec.Resources,
-				LivenessProbe:   mysql.Spec.PodTemplate.Spec.LivenessProbe,
-				ReadinessProbe:  mysql.Spec.PodTemplate.Spec.ReadinessProbe,
-				Lifecycle:       mysql.Spec.PodTemplate.Spec.Lifecycle,
+				Args:            db.Spec.PodTemplate.Spec.Args,
+				Resources:       db.Spec.PodTemplate.Spec.Resources,
+				LivenessProbe:   db.Spec.PodTemplate.Spec.LivenessProbe,
+				ReadinessProbe:  db.Spec.PodTemplate.Spec.ReadinessProbe,
+				Lifecycle:       db.Spec.PodTemplate.Spec.Lifecycle,
 				Ports: []core.ContainerPort{
 					{
 						Name:          "db",
@@ -157,7 +156,7 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL, stsName string) (*apps.
 			}
 
 			// add ssl certs flag into args to configure TLS for standalone
-			if mysql.Spec.Topology == nil && mysql.Spec.TLS != nil {
+			if db.Spec.Topology == nil && db.Spec.TLS != nil {
 				args := container.Args
 				tlsArgs := []string{
 					"--ssl-capath=/etc/mysql/certs",
@@ -166,20 +165,20 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL, stsName string) (*apps.
 					"--ssl-key=/etc/mysql/certs/server.key",
 				}
 				args = append(args, tlsArgs...)
-				if mysql.Spec.RequireSSL {
+				if db.Spec.RequireSSL {
 					args = append(args, "--require-secure-transport=ON")
 				}
 				container.Args = args
 			}
 
-			if mysql.UsesGroupReplication() {
+			if db.UsesGroupReplication() {
 				// replicationModeDetector is used to continuous select primary pod
 				// and add label as primary
 				replicationModeDetector := core.Container{
 					Name:            api.MySQLContainerReplicationModeDetectorName,
 					Image:           mysqlVersion.Spec.ReplicationModeDetector.Image,
 					ImagePullPolicy: core.PullIfNotPresent,
-					Args:            append([]string{"run", fmt.Sprintf("--db-name=%s", mysql.Name)}, c.LoggerOptions.ToFlags()...),
+					Args:            append([]string{"run", fmt.Sprintf("--db-name=%s", db.Name)}, c.LoggerOptions.ToFlags()...),
 				}
 
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, replicationModeDetector)
@@ -188,10 +187,10 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL, stsName string) (*apps.
 					"peer-finder",
 				}
 
-				args := mysql.Spec.PodTemplate.Spec.Args
+				args := db.Spec.PodTemplate.Spec.Args
 
 				// add ssl certs flag into args in peer-finder to configure TLS for group replication
-				if mysql.Spec.TLS != nil {
+				if db.Spec.TLS != nil {
 					tlsArgs := []string{
 						"--ssl-capath=/etc/mysql/certs",
 						"--ssl-ca=/etc/mysql/certs/ca.crt",
@@ -199,14 +198,14 @@ func (c *Controller) createStatefulSet(mysql *api.MySQL, stsName string) (*apps.
 						"--ssl-key=/etc/mysql/certs/server.key",
 					}
 					args = append(args, tlsArgs...)
-					if mysql.Spec.RequireSSL {
+					if db.Spec.RequireSSL {
 						args = append(args, "--require-secure-transport=ON ")
 					}
 				}
 
 				providedArgs := strings.Join(args, " ")
 				container.Args = []string{
-					fmt.Sprintf("-service=%s", mysql.GoverningServiceName()),
+					fmt.Sprintf("-service=%s", db.GoverningServiceName()),
 					fmt.Sprintf("-on-start=/on-start.sh %s", providedArgs),
 				}
 				if container.LivenessProbe != nil && structs.IsZero(*container.LivenessProbe) {
@@ -232,7 +231,7 @@ mysql -h localhost -nsLNE -e "select 1;" 2>/dev/null | grep -v "*"
 					},
 				},
 			}
-			if mysql.Spec.Topology == nil {
+			if db.Spec.Topology == nil {
 				container.ReadinessProbe = &probe
 				container.LivenessProbe = &probe
 			}
@@ -254,24 +253,24 @@ mysql -h localhost -nsLNE -e "select 1;" 2>/dev/null | grep -v "*"
 				},
 			}
 
-			if mysql.Spec.Monitor != nil && mysql.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
+			if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 				var argsStr string
 				var args []string
 
-				args = mysql.Spec.Monitor.Prometheus.Exporter.Args
+				args = db.Spec.Monitor.Prometheus.Exporter.Args
 				// pass config.my-cnf flag into exporter to configure TLS
-				if mysql.Spec.TLS != nil {
+				if db.Spec.TLS != nil {
 					// ref: https://github.com/prometheus/mysqld_exporter#general-flags
 					// https://github.com/prometheus/mysqld_exporter#customizing-configuration-for-a-ssl-connection
 					args = append(args, "--config.my-cnf=/etc/mysql/certs/exporter.cnf ")
 					argsStr = fmt.Sprintf(`/bin/mysqld_exporter --web.listen-address=:%v --web.telemetry-path=%v %v`,
-						mysql.Spec.Monitor.Prometheus.Exporter.Port, mysql.StatsService().Path(), strings.Join(args, " "))
+						db.Spec.Monitor.Prometheus.Exporter.Port, db.StatsService().Path(), strings.Join(args, " "))
 				} else {
 					// DATA_SOURCE_NAME=user:password@tcp(localhost:5555)/dbname
 					// ref: https://github.com/prometheus/mysqld_exporter#setting-the-mysql-servers-data-source-name
 					argsStr = fmt.Sprintf(`export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"
 						/bin/mysqld_exporter --web.listen-address=:%v --web.telemetry-path=%v %v`,
-						mysql.Spec.Monitor.Prometheus.Exporter.Port, mysql.StatsService().Path(), strings.Join(args, " "))
+						db.Spec.Monitor.Prometheus.Exporter.Port, db.StatsService().Path(), strings.Join(args, " "))
 				}
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 					Name: api.ContainerExporterName,
@@ -287,51 +286,51 @@ mysql -h localhost -nsLNE -e "select 1;" 2>/dev/null | grep -v "*"
 						{
 							Name:          mona.PrometheusExporterPortName,
 							Protocol:      core.ProtocolTCP,
-							ContainerPort: mysql.Spec.Monitor.Prometheus.Exporter.Port,
+							ContainerPort: db.Spec.Monitor.Prometheus.Exporter.Port,
 						},
 					},
-					Env:             mysql.Spec.Monitor.Prometheus.Exporter.Env,
-					Resources:       mysql.Spec.Monitor.Prometheus.Exporter.Resources,
-					SecurityContext: mysql.Spec.Monitor.Prometheus.Exporter.SecurityContext,
+					Env:             db.Spec.Monitor.Prometheus.Exporter.Env,
+					Resources:       db.Spec.Monitor.Prometheus.Exporter.Resources,
+					SecurityContext: db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 				})
 			}
 			// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
-			in = upsertEnv(in, mysql, stsName)
-			in = upsertDataVolume(in, mysql)
-			in = upsertCustomConfig(in, mysql)
+			in = upsertEnv(in, db, stsName)
+			in = upsertDataVolume(in, db)
+			in = upsertCustomConfig(in, db)
 
-			if mysql.Spec.Init != nil && mysql.Spec.Init.Script != nil {
-				in = upsertInitScript(in, mysql.Spec.Init.Script.VolumeSource)
+			if db.Spec.Init != nil && db.Spec.Init.Script != nil {
+				in = upsertInitScript(in, db.Spec.Init.Script.VolumeSource)
 			}
 
-			in.Spec.Template.Spec.NodeSelector = mysql.Spec.PodTemplate.Spec.NodeSelector
-			in.Spec.Template.Spec.Affinity = mysql.Spec.PodTemplate.Spec.Affinity
-			if mysql.Spec.PodTemplate.Spec.SchedulerName != "" {
-				in.Spec.Template.Spec.SchedulerName = mysql.Spec.PodTemplate.Spec.SchedulerName
+			in.Spec.Template.Spec.NodeSelector = db.Spec.PodTemplate.Spec.NodeSelector
+			in.Spec.Template.Spec.Affinity = db.Spec.PodTemplate.Spec.Affinity
+			if db.Spec.PodTemplate.Spec.SchedulerName != "" {
+				in.Spec.Template.Spec.SchedulerName = db.Spec.PodTemplate.Spec.SchedulerName
 			}
-			in.Spec.Template.Spec.Tolerations = mysql.Spec.PodTemplate.Spec.Tolerations
-			in.Spec.Template.Spec.ImagePullSecrets = mysql.Spec.PodTemplate.Spec.ImagePullSecrets
-			in.Spec.Template.Spec.PriorityClassName = mysql.Spec.PodTemplate.Spec.PriorityClassName
-			in.Spec.Template.Spec.Priority = mysql.Spec.PodTemplate.Spec.Priority
+			in.Spec.Template.Spec.Tolerations = db.Spec.PodTemplate.Spec.Tolerations
+			in.Spec.Template.Spec.ImagePullSecrets = db.Spec.PodTemplate.Spec.ImagePullSecrets
+			in.Spec.Template.Spec.PriorityClassName = db.Spec.PodTemplate.Spec.PriorityClassName
+			in.Spec.Template.Spec.Priority = db.Spec.PodTemplate.Spec.Priority
 			if in.Spec.Template.Spec.SecurityContext == nil {
-				in.Spec.Template.Spec.SecurityContext = mysql.Spec.PodTemplate.Spec.SecurityContext
+				in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
 			}
-			in.Spec.Template.Spec.ServiceAccountName = mysql.Spec.PodTemplate.Spec.ServiceAccountName
+			in.Spec.Template.Spec.ServiceAccountName = db.Spec.PodTemplate.Spec.ServiceAccountName
 			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
 				Type: apps.OnDeleteStatefulSetStrategyType,
 			}
-			in = upsertUserEnv(in, mysql)
+			in = upsertUserEnv(in, db)
 
 			// configure tls
-			if mysql.Spec.TLS != nil {
-				in = upsertTLSVolume(in, mysql)
+			if db.Spec.TLS != nil {
+				in = upsertTLSVolume(in, db)
 			}
 
 			return in
 		}, metav1.PatchOptions{})
 }
 
-func upsertDataVolume(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
+func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMySQL {
 			volumeMount := core.VolumeMount{
@@ -342,8 +341,8 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.Sta
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
-			pvcSpec := mysql.Spec.Storage
-			if mysql.Spec.StorageType == api.StorageTypeEphemeral {
+			pvcSpec := db.Spec.Storage
+			if db.Spec.StorageType == api.StorageTypeEphemeral {
 				ed := core.EmptyDirVolumeSource{}
 				if pvcSpec != nil {
 					if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
@@ -385,7 +384,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.Sta
 	return statefulSet
 }
 
-func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL, stsName string) *apps.StatefulSet {
+func upsertEnv(statefulSet *apps.StatefulSet, db *api.MySQL, stsName string) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMySQL || container.Name == api.ContainerExporterName || container.Name == api.MySQLContainerReplicationModeDetectorName {
 			envs := []core.EnvVar{
@@ -394,7 +393,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL, stsName string) 
 					ValueFrom: &core.EnvVarSource{
 						SecretKeyRef: &core.SecretKeySelector{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: mysql.Spec.AuthSecret.Name,
+								Name: db.Spec.AuthSecret.Name,
 							},
 							Key: core.BasicAuthPasswordKey,
 						},
@@ -405,14 +404,14 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL, stsName string) 
 					ValueFrom: &core.EnvVarSource{
 						SecretKeyRef: &core.SecretKeySelector{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: mysql.Spec.AuthSecret.Name,
+								Name: db.Spec.AuthSecret.Name,
 							},
 							Key: core.BasicAuthUsernameKey,
 						},
 					},
 				},
 			}
-			if mysql.UsesGroupReplication() &&
+			if db.UsesGroupReplication() &&
 				container.Name == api.ResourceSingularMySQL {
 				envs = append(envs, []core.EnvVar{
 					{
@@ -421,7 +420,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL, stsName string) 
 					},
 					{
 						Name:  "GOV_SVC",
-						Value: mysql.GoverningServiceName(),
+						Value: db.GoverningServiceName(),
 					},
 					{
 						Name: "POD_NAMESPACE",
@@ -433,11 +432,11 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL, stsName string) 
 					},
 					{
 						Name:  "GROUP_NAME",
-						Value: mysql.Spec.Topology.Group.Name,
+						Value: db.Spec.Topology.Group.Name,
 					},
 					{
 						Name:  "BASE_SERVER_ID",
-						Value: strconv.Itoa(int(*mysql.Spec.Topology.Group.BaseServerID)),
+						Value: strconv.Itoa(int(*db.Spec.Topology.Group.BaseServerID)),
 					},
 				}...)
 			}
@@ -461,10 +460,10 @@ func upsertEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL, stsName string) 
 }
 
 // upsertUserEnv add/overwrite env from user provided env in crd spec
-func upsertUserEnv(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
+func upsertUserEnv(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMySQL {
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, mysql.Spec.PodTemplate.Spec.Env...)
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Env...)
 			return statefulSet
 		}
 	}
@@ -507,8 +506,8 @@ func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 	)
 }
 
-func upsertCustomConfig(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
-	if mysql.Spec.ConfigSecret != nil {
+func upsertCustomConfig(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
+	if db.Spec.ConfigSecret != nil {
 		for i, container := range statefulSet.Spec.Template.Spec.Containers {
 			if container.Name == api.ResourceSingularMySQL {
 				configVolumeMount := core.VolumeMount{
@@ -523,7 +522,7 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.S
 					Name: "custom-config",
 					VolumeSource: core.VolumeSource{
 						Secret: &core.SecretVolumeSource{
-							SecretName: mysql.Spec.ConfigSecret.Name,
+							SecretName: db.Spec.ConfigSecret.Name,
 						},
 					},
 				}
@@ -538,9 +537,9 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, mysql *api.MySQL) *apps.S
 	return statefulSet
 }
 
-func (c *Controller) findStatefulSet(mysql *api.MySQL) (string, *apps.StatefulSet, error) {
-	stsList, err := c.Client.AppsV1().StatefulSets(mysql.Namespace).List(context.TODO(), metav1.ListOptions{
-		LabelSelector: labels.SelectorFromSet(mysql.OffshootSelectors()).String(),
+func (c *Controller) findStatefulSet(db *api.MySQL) (string, *apps.StatefulSet, error) {
+	stsList, err := c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{
+		LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String(),
 	})
 	if err != nil {
 		return "", nil, err
@@ -549,7 +548,7 @@ func (c *Controller) findStatefulSet(mysql *api.MySQL) (string, *apps.StatefulSe
 	count := 0
 	var cur *apps.StatefulSet
 	for i, sts := range stsList.Items {
-		if metav1.IsControlledBy(&sts, mysql) {
+		if metav1.IsControlledBy(&sts, db) {
 			count++
 			cur = &stsList.Items[i]
 		}
@@ -557,14 +556,14 @@ func (c *Controller) findStatefulSet(mysql *api.MySQL) (string, *apps.StatefulSe
 
 	switch count {
 	case 0:
-		return mysql.OffshootName(), nil, nil
+		return db.OffshootName(), nil, nil
 	case 1:
 		return cur.Name, cur, nil
 	}
-	return "", nil, fmt.Errorf("more then one StatefulSet found for MySQL %s/%s", mysql.Namespace, mysql.Name)
+	return "", nil, fmt.Errorf("more then one StatefulSet found for MySQL %s/%s", db.Namespace, db.Name)
 }
 
-func upsertTLSVolume(sts *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet {
+func upsertTLSVolume(sts *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
 	for i, container := range sts.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMySQL {
 			volumeMount := core.VolumeMount{
@@ -595,7 +594,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet 
 					{
 						Secret: &core.SecretProjection{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: mysql.MustCertSecretName(api.MySQLServerCert),
+								Name: db.MustCertSecretName(api.MySQLServerCert),
 							},
 							Items: []core.KeyToPath{
 								{
@@ -616,7 +615,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet 
 					{
 						Secret: &core.SecretProjection{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: mysql.MustCertSecretName(api.MySQLClientCert),
+								Name: db.MustCertSecretName(api.MySQLClientCert),
 							},
 							Items: []core.KeyToPath{
 								{
@@ -643,7 +642,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet 
 					{
 						Secret: &core.SecretProjection{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: mysql.MustCertSecretName(api.MySQLMetricsExporterCert),
+								Name: db.MustCertSecretName(api.MySQLMetricsExporterCert),
 							},
 							Items: []core.KeyToPath{
 								{
@@ -664,7 +663,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, mysql *api.MySQL) *apps.StatefulSet 
 					{
 						Secret: &core.SecretProjection{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: meta_util.NameWithSuffix(mysql.Name, api.MySQLMetricsExporterConfigSecretSuffix),
+								Name: meta_util.NameWithSuffix(db.Name, api.MySQLMetricsExporterConfigSecretSuffix),
 							},
 							Items: []core.KeyToPath{
 								{
