@@ -3,7 +3,7 @@ title: Uninstall KubeDB kubectl Plugin
 description: Uninstallation guide for KubeDB kubectl Plugin
 menu:
   docs_{{ .version }}:
-  identifier: uninstall-kubedb-kubectl-plugin
+    identifier: uninstall-kubedb-kubectl-plugin
     name: KubeDB kubectl Plugin
     parent: uninstallation-guide
     weight: 30
