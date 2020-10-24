@@ -1174,7 +1174,7 @@ kmodules.xyz/prober/api/v1
 # kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.14.0-beta.3.0.20201024022825-61b265325dc8
+# kubedb.dev/apimachinery v0.14.0-beta.4
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
 kubedb.dev/apimachinery/apis/autoscaling/v1alpha1
@@ -1216,7 +1216,7 @@ kubedb.dev/apimachinery/pkg/controller/statefulset
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/phase
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.14.0-beta.3.0.20201024062434-149314b5cd87
+# kubedb.dev/elasticsearch v0.14.0-beta.4
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
 kubedb.dev/elasticsearch/pkg/distribution
@@ -1228,30 +1228,30 @@ kubedb.dev/elasticsearch/pkg/lib/cert
 kubedb.dev/elasticsearch/pkg/lib/cert/pkcs8
 kubedb.dev/elasticsearch/pkg/lib/user
 kubedb.dev/elasticsearch/pkg/util/go-es
-# kubedb.dev/memcached v0.7.0-beta.3.0.20201024062445-25677a68a947
+# kubedb.dev/memcached v0.7.0-beta.4
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.7.0-beta.3.0.20201024101852-11f6573e3512
+# kubedb.dev/mongodb v0.7.0-beta.4
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.7.0-beta.3.0.20201024101833-dcab13f9b003
+# kubedb.dev/mysql v0.7.0-beta.4
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.1.0-beta.3.0.20201024062515-eff1d265ebc9
+# kubedb.dev/percona-xtradb v0.1.0-beta.4
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
-# kubedb.dev/pg-leader-election v0.2.0-beta.3
+# kubedb.dev/pg-leader-election v0.2.0-beta.4
 kubedb.dev/pg-leader-election/pkg/leader_election
-# kubedb.dev/pgbouncer v0.1.0-beta.3.0.20201024062526-c3daaa90e0d6
+# kubedb.dev/pgbouncer v0.1.0-beta.4
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.14.0-beta.3.0.20201024062656-e6b373654217
+# kubedb.dev/postgres v0.14.0-beta.4
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.1.0-beta.3.0.20201024062508-15deb4df47fa
+# kubedb.dev/proxysql v0.1.0-beta.4
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.7.0-beta.3.0.20201024062705-bfecc0c59797
+# kubedb.dev/redis v0.7.0-beta.4
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster
 kubedb.dev/redis/pkg/controller
