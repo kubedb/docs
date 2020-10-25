@@ -1,5 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/kubedb.dev/operator)](https://goreportcard.com/report/kubedb.dev/operator)
-[![Build Status](https://github.com/kubedb/operator/workflows/CI/badge.svg)](https://github.com/kubedb/operator/actions?workflow=CI)
+![CI](https://github.com/kubedb/operator/workflows/CI/badge.svg)
 [![Docker Pulls](https://img.shields.io/docker/pulls/kubedb/operator.svg)](https://hub.docker.com/r/kubedb/operator/)
 [![Slack](http://slack.kubernetes.io/badge.svg)](http://slack.kubernetes.io/#kubedb)
 [![Twitter](https://img.shields.io/twitter/follow/kubedb.svg?style=social&logo=twitter&label=Follow)](https://twitter.com/intent/follow?screen_name=KubeDB)
