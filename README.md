@@ -1,11 +1,8 @@
 [![Go Report Card](https://goreportcard.com/badge/kubedb.dev/operator)](https://goreportcard.com/report/kubedb.dev/operator)
 [![Build Status](https://github.com/kubedb/operator/workflows/CI/badge.svg)](https://github.com/kubedb/operator/actions?workflow=CI)
-[![codecov](https://codecov.io/gh/kubedb/operator/branch/master/graph/badge.svg)](https://codecov.io/gh/kubedb/operator)
 [![Docker Pulls](https://img.shields.io/docker/pulls/kubedb/operator.svg)](https://hub.docker.com/r/kubedb/operator/)
 [![Slack](http://slack.kubernetes.io/badge.svg)](http://slack.kubernetes.io/#kubedb)
-[![mailing list](https://img.shields.io/badge/mailing_list-join-blue.svg)](https://groups.google.com/forum/#!forum/kubedb)
 [![Twitter](https://img.shields.io/twitter/follow/kubedb.svg?style=social&logo=twitter&label=Follow)](https://twitter.com/intent/follow?screen_name=kubedb)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fkubedb%2Foperator.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fkubedb%2Foperator?ref=badge_shield)
 
 # KubeDB by AppsCode
 
@@ -19,34 +16,52 @@ KubeDB by AppsCode is a production-grade cloud-native database management soluti
 
 KubeDB provides you with many familiar database engines to choose from, including **PostgreSQL**, **MySQL**, **MongoDB**, **Elasticsearch**, **Redis**, **Memcached**, and **Percona XtraDB**. KubeDB’s native integration with Kubernetes makes a unique solution compared to competitive solutions from cloud providers and database vendors.
 
-## Supported Versions
+## Features
 
-Please pick a version of KubeDB that matches your Kubernetes installation.
-
-| KubeDB Version                                                                     | Docs                                                        | Kubernetes Version |
-| ---------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------ |
-| [v0.13.0-rc.0](https://github.com/kubedb/cli/releases/tag/v0.13.0-rc.0) (uses CRD) | [User Guide](https://kubedb.com/docs/v0.13.0-rc.0/)         | 1.11.x +           |
-| [0.12.0](https://github.com/kubedb/cli/releases/tag/0.12.0) (uses CRD)             | [User Guide](https://kubedb.com/docs/0.12.0/)               | 1.9.x +            |
-| [0.11.0](https://github.com/kubedb/cli/releases/tag/0.11.0) (uses CRD)             | [User Guide](https://kubedb.com/docs/0.11.0/)               | 1.9.x +            |
-| [0.10.0](https://github.com/kubedb/cli/releases/tag/0.10.0) (uses CRD)             | [User Guide](https://kubedb.com/docs/0.10.0/)               | 1.9.x +            |
-| [0.9.0](https://github.com/kubedb/cli/releases/tag/0.9.0) (uses CRD)               | [User Guide](https://kubedb.com/docs/0.9.0/)                | 1.9.x +            |
-| [0.8.0](https://github.com/kubedb/cli/releases/tag/0.8.0) (uses CRD)               | [User Guide](https://kubedb.com/docs/0.8.0/)                | 1.9.x +            |
-| [0.6.0](https://github.com/kubedb/cli/releases/tag/0.6.0) (uses TPR)               | [User Guide](https://github.com/kubedb/cli/tree/0.6.0/docs) | 1.5.x - 1.7.x      |
+|                                          | Community                            | Enterprise                                |
+| ---------------------------------------- | ------------------------------------ | ----------------------------------------- |
+|                                          | Open source KubeDB Free for everyone | Open Core KubeDB for production databases |
+| PostgreSQL                               | √                                    | √                                         |
+| MySQL                                    | √                                    | √                                         |
+| Elasticsearch                            | √                                    | √                                         |
+| MongoDB                                  | √                                    | √                                         |
+| Redis                                    | √                                    | √                                         |
+| Memcached                                | √                                    | √                                         |
+| MariaDB                                  | √                                    | √                                         |
+| Percona XtraDB                           | √                                    | √                                         |
+| PgBouncer                                | x                                    | √                                         |
+| ProxySQL                                 | x                                    | √                                         |
+| Database Clustering                      | √                                    | √                                         |
+| Cloud / On-prem / Air-gapped clusters    | √                                    | √                                         |
+| Multizone Cluster                        | √                                    | √                                         |
+| Private Registry                         | √                                    | √                                         |
+| CLI                                      | √                                    | √                                         |
+| Halt & resume database                   | √                                    | √                                         |
+| Custom Configuration                     | √                                    | √                                         |
+| Custom Extensions                        | √                                    | √                                         |
+| Prometheus Metrics                       | √                                    | √                                         |
+| Protect against accidental deletion      | x                                    | √                                         |
+| Managed Backup/Recovery using Stash      | x                                    | √                                         |
+| Managed Patch Upgrades                   | x                                    | √                                         |
+| Managed Horizontal Scaling               | x                                    | √                                         |
+| Managed Vertical Scaling                 | x                                    | √                                         |
+| Managed Volume Expansion                 | x                                    | √                                         |
+| Managed Reconfiguration                  | x                                    | √                                         |
+| Managed Restarts                         | x                                    | √                                         |
+| Role Based Access Control (RBAC)         | √                                    | √                                         |
+| Open Policy Agent (OPA)                  | √                                    | √                                         |
+| Pod Security Policy (PSP)                | √                                    | √                                         |
+| Network Policy                           | √                                    | √                                         |
+| User & Secret Management using KubeVault | x                                    | √                                         |
+| Managed TLS using cert-manager           | x                                    | √                                         |
 
 ## Installation
 
-To install KubeDB, please follow the guide [here](https://kubedb.com/docs/latest/setup/install/).
+To install KubeDB, please follow the guide [here](https://kubedb.com/docs/latest/setup/).
 
 ## Using KubeDB
 
 Want to learn how to use KubeDB? Please start [here](https://kubedb.com/docs/latest/guides/).
-
-## KubeDB API Clients
-
-You can use KubeDB api clients to programmatically access its CRD objects. Here are the supported clients:
-
-- Go: [https://github.com/kubedb/apimachinery](https://github.com/kubedb/apimachinery/tree/master/client/clientset/versioned)
-- Java: https://github.com/kubedb-client/java
 
 ## Contribution guidelines
 
@@ -54,9 +69,11 @@ Want to help improve KubeDB? Please start [here](https://kubedb.com/docs/latest/
 
 ## Support
 
-We use Slack for public discussions. To chit chat with us or the rest of the community, join us in the [Kubernetes Slack team](https://kubernetes.slack.com/messages/C8149MREV/) channel `#kubedb`. To sign up, use our [Slack inviter](http://slack.kubernetes.io/).
+To speak with us, please leave a message on [our website](https://appscode.com/contact/).
 
-To receive product annoucements, please join our [mailing list](https://groups.google.com/forum/#!forum/kubedb) or follow us on [Twitter](https://twitter.com/KubeDB). Our mailing list is also used to share design docs shared via Google docs.
+To join public discussions with the KubeDB community, join us in the [Kubernetes Slack team](https://kubernetes.slack.com/messages/C8149MREV/) channel `#kubedb`. To sign up, use our [Slack inviter](http://slack.kubernetes.io/).
+
+To receive product annoucements, follow us on [Twitter](https://twitter.com/KubeDB).
 
 If you have found a bug with KubeDB or want to request for new features, please [file an issue](https://github.com/kubedb/project/issues/new).
 
