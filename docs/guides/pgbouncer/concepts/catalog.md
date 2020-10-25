@@ -2,7 +2,7 @@
 title: PgBouncerVersion CRD
 menu:
   docs_{{ .version }}:
-    identifier: pb-pgbouncer-concepts
+    identifier: pb-catalog-concepts
     name: PgBouncerVersion
     parent: pb-concepts-pgbouncer
     weight: 15
