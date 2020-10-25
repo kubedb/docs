@@ -22,3 +22,42 @@ However, many developers want to treat data infrastructure the same as applicati
 KubeDB by AppsCode is a production-grade cloud-native database management solution for Kubernetes. KubeDB simplifies and automates routine database tasks such as provisioning, patching, backup, recovery, failure detection, and repair for various popular databases on private and public clouds. It frees you to focus on your applications so you can give them the fast performance, high availability, security and compatibility they need.
 
 KubeDB provides you with many familiar database engines to choose from, including PostgreSQL, MySQL, MongoDB, Elasticsearch, Redis and Memcached. And the list is growing. KubeDB’s native integration with Kubernetes makes a unique solution compared to competitive solutions from cloud providers and database vendors.
+
+## Features
+
+|                                          | Community                            | Enterprise                                |
+| ---------------------------------------- | ------------------------------------ | ----------------------------------------- |
+|                                          | Open source KubeDB Free for everyone | Open Core KubeDB for production databases |
+| PostgreSQL                               | √                                    | √                                         |
+| MySQL                                    | √                                    | √                                         |
+| Elasticsearch                            | √                                    | √                                         |
+| MongoDB                                  | √                                    | √                                         |
+| Redis                                    | √                                    | √                                         |
+| Memcached                                | √                                    | √                                         |
+| MariaDB                                  | √                                    | √                                         |
+| Percona XtraDB                           | √                                    | √                                         |
+| PgBouncer                                | x                                    | √                                         |
+| ProxySQL                                 | x                                    | √                                         |
+| Database Clustering                      | √                                    | √                                         |
+| Cloud / On-prem / Air-gapped clusters    | √                                    | √                                         |
+| Multizone Cluster                        | √                                    | √                                         |
+| Private Registry                         | √                                    | √                                         |
+| CLI                                      | √                                    | √                                         |
+| Halt & resume database                   | √                                    | √                                         |
+| Custom Configuration                     | √                                    | √                                         |
+| Custom Extensions                        | √                                    | √                                         |
+| Prometheus Metrics                       | √                                    | √                                         |
+| Protect against accidental deletion      | x                                    | √                                         |
+| Managed Backup/Recovery using Stash      | x                                    | √                                         |
+| Managed Patch Upgrades                   | x                                    | √                                         |
+| Managed Horizontal Scaling               | x                                    | √                                         |
+| Managed Vertical Scaling                 | x                                    | √                                         |
+| Managed Volume Expansion                 | x                                    | √                                         |
+| Managed Reconfiguration                  | x                                    | √                                         |
+| Managed Restarts                         | x                                    | √                                         |
+| Role Based Access Control (RBAC)         | √                                    | √                                         |
+| Open Policy Agent (OPA)                  | √                                    | √                                         |
+| Pod Security Policy (PSP)                | √                                    | √                                         |
+| Network Policy                           | √                                    | √                                         |
+| User & Secret Management using KubeVault | x                                    | √                                         |
+| Managed TLS using cert-manager           | x                                    | √                                         |
