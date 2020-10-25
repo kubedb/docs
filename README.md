@@ -2,13 +2,13 @@
 [![Build Status](https://github.com/kubedb/operator/workflows/CI/badge.svg)](https://github.com/kubedb/operator/actions?workflow=CI)
 [![Docker Pulls](https://img.shields.io/docker/pulls/kubedb/operator.svg)](https://hub.docker.com/r/kubedb/operator/)
 [![Slack](http://slack.kubernetes.io/badge.svg)](http://slack.kubernetes.io/#kubedb)
-[![Twitter](https://img.shields.io/twitter/follow/kubedb.svg?style=social&logo=twitter&label=Follow)](https://twitter.com/intent/follow?screen_name=kubedb)
+[![Twitter](https://img.shields.io/twitter/follow/kubedb.svg?style=social&logo=twitter&label=Follow)](https://twitter.com/intent/follow?screen_name=KubeDB)
 
 # KubeDB by AppsCode
 
 > Making running production-grade databases easy on Kubernetes
 
-Kubernetes has emerged as the de-facto way to deploy modern containerized apps on cloud or on-premises. “Despite all that growth on the application layer, the data layer hasn’t gotten as much traction with containerization” - [Google](https://cloud.google.com/blog/products/databases/to-run-or-not-to-run-a-database-on-kubernetes-what-to-consider). That’s not surprising, since handling things like state (the database), availability to other layers of the application, and redundancy for a database makes it challenging to run a database in a distributed environment like Kubernetes.
+Kubernetes has emerged as the de-facto way to deploy modern containerized apps on cloud or on-premises. *"Despite all that growth on the application layer, the data layer hasn’t gotten as much traction with containerization"* - [Google](https://cloud.google.com/blog/products/databases/to-run-or-not-to-run-a-database-on-kubernetes-what-to-consider). That’s not surprising, since handling things like state (the database), availability to other layers of the application, and redundancy for a database makes it challenging to run a database in a distributed environment like Kubernetes.
 
 However, many developers want to treat data infrastructure the same as application stacks. Operators want to use the same tools for databases and applications and get the same benefits as the application layer in the data layer: rapid spin-up and repeatability across environments. This is where KubeDB comes as a solution.
 
