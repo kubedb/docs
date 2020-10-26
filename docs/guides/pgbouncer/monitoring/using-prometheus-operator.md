@@ -12,6 +12,8 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
+{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
+
 # Monitoring PgBouncer using Prometheus operator
 
 [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use Prometheus operator to monitor PgBouncer deployed with KubeDB.

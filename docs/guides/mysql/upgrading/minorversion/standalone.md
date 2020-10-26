@@ -10,7 +10,9 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-{{< notice type="warning" message="Upgrading is an Enterprise feature of KubeDB. You must have a KubeDB Enterprise operator installed to test this feature." >}}
+> New to KubeDB? Please start [here](/docs/README.md).
+
+{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
 
 # Upgrade minor version of MySQL Standalone
 
@@ -20,7 +22,7 @@ This guide will show you how to use `KubeDB` enterprise operator to upgrade the 
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` community and enterprise operator in your cluster following the steps [here]().
+- Install `KubeDB` community and enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MySQL](/docs/guides/mysql/concepts/mysql.md)
@@ -34,7 +36,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/day-2-operations/mysql](/docs/examples/day-2-operations/mysql) directory of [kubedb/docs](https://github.com/kube/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/mysql](/docs/examples/mysql) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
 ### Apply Version Upgrading on Standalone
 
@@ -143,7 +145,7 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/upgrading/minorversin/standalone.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/upgrading/minorversin/standalone.yaml
 mysql.kubedb.com/my-standalone created
 ```
 
@@ -218,7 +220,7 @@ Here,
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/day-2-operations/mysql/upgrading/minorversion/upgrade_minor_version_standalone.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/upgrading/minorversion/upgrade_minor_version_standalone.yaml
 mysqlopsrequest.ops.kubedb.com/my-upgrade-minor-standalone created
 ```
 

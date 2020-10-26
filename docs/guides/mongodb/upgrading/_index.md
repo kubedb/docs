@@ -5,6 +5,6 @@ menu:
     identifier: mg-upgrading
     name: Upgrading
     parent: mg-mongodb-guides
-    weight: 70
+    weight: 42
 menu_name: docs_{{ .version }}
 ---

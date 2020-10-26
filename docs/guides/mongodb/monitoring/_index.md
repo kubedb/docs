@@ -5,6 +5,6 @@ menu:
     identifier: mg-monitoring-mongodb
     name: Monitoring
     parent: mg-mongodb-guides
-    weight: 35
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

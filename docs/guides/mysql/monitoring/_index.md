@@ -5,6 +5,6 @@ menu:
     identifier: my-monitoring-mysql
     name: Monitoring
     parent: my-mysql-guides
-    weight: 35
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

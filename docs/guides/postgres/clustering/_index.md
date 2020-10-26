@@ -5,6 +5,6 @@ menu:
     identifier: pg-clustering-postgres
     name: Clustering
     parent: pg-postgres-guides
-    weight: 20
+    weight: 25
 menu_name: docs_{{ .version }}
 ---

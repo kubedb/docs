@@ -12,6 +12,8 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
+{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
+
 ## Setting up Custom PgBouncerVersions
 
 PgBouncerVersions are KubeDB crds that define the docker images KubeDB will use when deploying a pgbouncer server. For more details about PgBouncerVersion crd, please visit [here](/docs/guides/pgbouncer/concepts/catalog.md).

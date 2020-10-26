@@ -5,6 +5,6 @@ menu:
     identifier: px-configuration
     name: Custom Configuration
     parent: px-percona-xtradb-guides
-    weight: 35
+    weight: 30
 menu_name: docs_{{ .version }}
 ---

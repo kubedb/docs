@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# PerconaXtraDB QuickStart
+# Percona XtraDB QuickStart
 
 This tutorial will show you how to use KubeDB to run a PerconaXtraDB database.
 

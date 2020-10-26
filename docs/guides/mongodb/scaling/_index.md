@@ -5,6 +5,6 @@ menu:
     identifier: mg-scaling
     name: Scaling
     parent: mg-mongodb-guides
-    weight: 80
+    weight: 43
 menu_name: docs_{{ .version }}
 ---

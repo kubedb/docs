@@ -5,7 +5,7 @@ menu:
     identifier: es-cli-cli
     name: Quickstart
     parent: es-cli-elasticsearch
-    weight: 10
+    weight: 100
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

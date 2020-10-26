@@ -10,6 +10,10 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
+> New to KubeDB? Please start [here](/docs/README.md).
+
+{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
+
 # Load Balance MySQL Group Replication Using ProxySQL
 
 ProxySQL supports load balancing for MySQL Group Replication. This guide will show you how you can load balance MySQL Group Replication using ProxySQL.

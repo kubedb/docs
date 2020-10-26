@@ -5,6 +5,6 @@ menu:
     identifier: mg-backup
     name: Backup & Restore
     parent: mg-mongodb-guides
-    weight: 20
+    weight: 40
 menu_name: docs_{{ .version }}
 ---

@@ -5,6 +5,6 @@ menu:
     identifier: my-concepts-mysql
     name: Concepts
     parent: my-mysql-guides
-    weight: 1
+    weight: 20
 menu_name: docs_{{ .version }}
 ---

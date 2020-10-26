@@ -10,7 +10,11 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Backup & Restore PerconaXtraDB Using Stash
+> New to KubeDB? Please start [here](/docs/README.md).
+
+{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
+
+# Backup & Restore Percona XtraDB Using Stash
 
 KubeDB uses [Stash](https://stash.run) to backup and restore databases. Stash by AppsCode is a cloud native data backup and recovery solution for Kubernetes workloads. Stash utilizes [restic](https://github.com/restic/restic) to securely backup stateful applications to any cloud or on-prem storage backends (for example, S3, GCS, Azure Blob storage, Minio, NetApp, Dell EMC etc.).
 

@@ -5,6 +5,6 @@ menu:
     identifier: es-cli-elasticsearch
     name: CLI
     parent: es-elasticsearch-guides
-    weight: 65
+    weight: 100
 menu_name: docs_{{ .version }}
 ---

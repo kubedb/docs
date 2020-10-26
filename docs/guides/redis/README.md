@@ -17,56 +17,24 @@ aliases:
 
 ## Supported Redis Features
 
-| Features                         | Availability |
-| -------------------------------- | :----------: |
-| Clustering                       |   &#10003;   |
-| Instant Backup                   |   &#10007;   |
-| Scheduled Backup                 |   &#10007;   |
-| Persistent Volume                |   &#10003;   |
-| Initialize using Snapshot        |   &#10007;   |
-| Initialize using Script          |   &#10007;   |
-| Custom Configuration             |   &#10003;   |
-| Using Custom docker image        |   &#10003;   |
-| Builtin Prometheus Discovery     |   &#10003;   |
-| Using Prometheus operator |   &#10003;   |
+| Features                     | Availability |
+| ---------------------------- | :----------: |
+| Clustering                   |   &#10003;   |
+| Instant Backup               |   &#10007;   |
+| Scheduled Backup             |   &#10007;   |
+| Persistent Volume            |   &#10003;   |
+| Initialize using Snapshot    |   &#10007;   |
+| Initialize using Script      |   &#10007;   |
+| Custom Configuration         |   &#10003;   |
+| Using Custom docker image    |   &#10003;   |
+| Builtin Prometheus Discovery |   &#10003;   |
+| Using Prometheus operator    |   &#10003;   |
 
 ## Life Cycle of a Redis Object
 
 <p align="center">
   <img alt="lifecycle"  src="/docs/images/redis/redis-lifecycle.svg">
 </p>
-
-## Supported Redis Versions
-
-| KubeDB Version | Redis:4.0.6 | Redis:5.0.3 |
-| :------------: | :---------: | :---------: |
-| 0.1.0 - 0.7.0  |  &#10007;   |  &#10007;   |
-|     0.8.0      |  &#10003;   |  &#10007;   |
-|     0.9.0      |  &#10003;   |  &#10007;   |
-|     0.10.0     |  &#10003;   |  &#10003;   |
-|     0.11.0     |  &#10003;   |  &#10003;   |
-|     0.12.0     |  &#10003;   |  &#10003;   |
-|  v0.13.0-rc.0  |  &#10003;   |  &#10003;   |
-
-## Supported RedisVersion CRD
-
-Here, &#10003; means supported and &#10007; means deprecated.
-
-|   NAME   | VERSION  | KubeDB: 0.9.0 | KubeDB: 0.10.0 | KubeDB: 0.11.0 | KubeDB: 0.12.0 | KubeDB: v0.13.0-rc.0 |
-| :------: | :------: | :-----------: | :------------: | :------------: | :------------: | :------------------: |
-|    4     |    4     |   &#10007;    |    &#10007;    |    &#10007;    |    &#10007;    |       &#10007;       |
-|   4-v1   |    4     |   &#10003;    |    &#10007;    |    &#10007;    |    &#10007;    |       &#10007;       |
-|   4.0    |   4.0    |   &#10007;    |    &#10007;    |    &#10007;    |    &#10007;    |       &#10007;       |
-|  4.0-v1  |   4.0    |   &#10003;    |    &#10003;    |    &#10003;    |    &#10003;    |       &#10003;       |
-|  4.0-v2  |   4.0    |   &#10007;    |    &#10003;    |    &#10003;    |    &#10003;    |       &#10003;       |
-|  4.0.6   |  4.0.6   |   &#10007;    |    &#10007;    |    &#10007;    |    &#10007;    |       &#10007;       |
-| 4.0.6-v1 |  4.0.6   |   &#10003;    |    &#10003;    |    &#10003;    |    &#10003;    |       &#10003;       |
-| 4.0.6-v2 |  4.0.6   |   &#10007;    |    &#10003;    |    &#10003;    |    &#10003;    |       &#10003;       |
-|  4.0.11  |  4.0.11  |   &#10007;    |    &#10003;    |    &#10003;    |    &#10003;    |       &#10003;       |
-|   5.0    |   5.0    |   &#10003;    |    &#10003;    |    &#10003;    |    &#10003;    |       &#10003;       |
-|  5.0-v1  |  5.0-v1  |   &#10007;    |    &#10007;    |    &#10003;    |    &#10003;    |       &#10003;       |
-|  5.0.3   |  5.0.3   |   &#10003;    |    &#10003;    |    &#10003;    |    &#10003;    |       &#10003;       |
-| 5.0.3-v1 | 5.0.3-v1 |   &#10007;    |    &#10007;    |    &#10003;    |    &#10003;    |       &#10003;       |
 
 ## User Guide
 
