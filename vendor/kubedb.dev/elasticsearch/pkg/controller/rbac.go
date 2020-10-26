@@ -125,39 +125,39 @@ func (c *Controller) getPolicyNames(db *api.Elasticsearch) (string, error) {
 	return dbPolicyName, nil
 }
 
-func (c *Controller) ensureDatabaseRBAC(elasticsearch *api.Elasticsearch) error {
-	saName := elasticsearch.Spec.PodTemplate.Spec.ServiceAccountName
+func (c *Controller) ensureDatabaseRBAC(db *api.Elasticsearch) error {
+	saName := db.Spec.PodTemplate.Spec.ServiceAccountName
 	if saName == "" {
-		saName = elasticsearch.OffshootName()
-		elasticsearch.Spec.PodTemplate.Spec.ServiceAccountName = saName
+		saName = db.OffshootName()
+		db.Spec.PodTemplate.Spec.ServiceAccountName = saName
 	}
 
-	sa, err := c.Client.CoreV1().ServiceAccounts(elasticsearch.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
+	sa, err := c.Client.CoreV1().ServiceAccounts(db.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		// create service account, since it does not exist
-		if err = c.createServiceAccount(elasticsearch, saName); err != nil {
+		if err = c.createServiceAccount(db, saName); err != nil {
 			if !kerr.IsAlreadyExists(err) {
 				return err
 			}
 		}
 	} else if err != nil {
 		return err
-	} else if owned, _ := core_util.IsOwnedBy(sa, elasticsearch); !owned {
+	} else if owned, _ := core_util.IsOwnedBy(sa, db); !owned {
 		// user provided the service account, so do nothing.
 		return nil
 	}
 
 	// Create New Role
-	pspName, err := c.getPolicyNames(elasticsearch)
+	pspName, err := c.getPolicyNames(db)
 	if err != nil {
 		return err
 	}
-	if err := c.ensureRole(elasticsearch, elasticsearch.OffshootName(), pspName); err != nil {
+	if err := c.ensureRole(db, db.OffshootName(), pspName); err != nil {
 		return err
 	}
 
 	// Create New RoleBinding
-	if err := c.createRoleBinding(elasticsearch, elasticsearch.OffshootName(), saName); err != nil {
+	if err := c.createRoleBinding(db, db.OffshootName(), saName); err != nil {
 		return err
 	}
 

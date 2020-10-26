@@ -206,7 +206,7 @@ func (c *Controller) GetMongoClient(db *api.MongoDB, url string) (*mongo.Client,
 
 func (c *Controller) GetURL(db *api.MongoDB, clientPodName string) string {
 	nodeType := clientPodName[:strings.LastIndex(clientPodName, "-")]
-	return fmt.Sprintf("%s.%s.%s.svc", clientPodName, db.GvrSvcName(nodeType), db.Namespace)
+	return fmt.Sprintf("%s.%s.%s.svc", clientPodName, db.GoverningServiceName(nodeType), db.Namespace)
 }
 
 func (c *Controller) GetMongoDBClientOpts(db *api.MongoDB, url string, isReplSet ...bool) (*mgoptions.ClientOptions, error) {

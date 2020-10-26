@@ -147,14 +147,14 @@ func (a *PerconaXtraDBValidator) Admit(req *admission.AdmissionRequest) *admissi
 }
 
 // validateCluster checks whether the configurations for PerconaXtraDB Cluster are ok
-func validateCluster(px *api.PerconaXtraDB) error {
-	if px.IsCluster() {
-		clusterName := px.ClusterName()
+func validateCluster(db *api.PerconaXtraDB) error {
+	if db.IsCluster() {
+		clusterName := db.ClusterName()
 		if len(clusterName) > api.PerconaXtraDBMaxClusterNameLength {
 			return errors.Errorf(`'spec.px.clusterName' "%s" shouldn't have more than %d characters'`,
 				clusterName, api.PerconaXtraDBMaxClusterNameLength)
 		}
-		if px.Spec.Init != nil && px.Spec.Init.Script != nil {
+		if db.Spec.Init != nil && db.Spec.Init.Script != nil {
 			return fmt.Errorf("`.spec.init.scriptSource` is not supported for cluster. For PerconaXtraDB cluster initialization see https://stash.run/docs/latest/addons/percona-xtradb/guides/5.7/clusterd/")
 		}
 	}
@@ -164,64 +164,64 @@ func validateCluster(px *api.PerconaXtraDB) error {
 
 // ValidatePerconaXtraDB checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidatePerconaXtraDB(client kubernetes.Interface, extClient cs.Interface, px *api.PerconaXtraDB, strictValidation bool) error {
-	if px.Spec.Version == "" {
+func ValidatePerconaXtraDB(client kubernetes.Interface, extClient cs.Interface, db *api.PerconaXtraDB, strictValidation bool) error {
+	if db.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
 
-	if px.Spec.Replicas == nil {
+	if db.Spec.Replicas == nil {
 		return fmt.Errorf(`'spec.replicas' "%v" invalid. Value must be 1 for standalone percona-xtradb server, but for percona-xtradb cluster, value must be greater than 0`,
-			*px.Spec.Replicas)
+			*db.Spec.Replicas)
 	}
 
-	if pxVersion, err := extClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(px.Spec.Version), metav1.GetOptions{}); err != nil {
+	if pxVersion, err := extClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
-	} else if px.IsCluster() && pxVersion.Spec.Version != api.PerconaXtraDBClusterRecommendedVersion {
+	} else if db.IsCluster() && pxVersion.Spec.Version != api.PerconaXtraDBClusterRecommendedVersion {
 		return errors.Errorf("unsupported version for xtradb cluster, recommended version is %s",
 			api.PerconaXtraDBClusterRecommendedVersion)
 	}
 
-	if px.IsCluster() && *px.Spec.Replicas < api.PerconaXtraDBDefaultClusterSize {
+	if db.IsCluster() && *db.Spec.Replicas < api.PerconaXtraDBDefaultClusterSize {
 		return fmt.Errorf(`'spec.replicas' "%v" invalid. Value must be %d for xtradb cluster`,
-			px.Spec.Replicas, api.PerconaXtraDBDefaultClusterSize)
+			db.Spec.Replicas, api.PerconaXtraDBDefaultClusterSize)
 	}
 
-	if err := validateCluster(px); err != nil {
+	if err := validateCluster(db); err != nil {
 		return err
 	}
 
-	if err := amv.ValidateEnvVar(px.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindPerconaXtraDB); err != nil {
+	if err := amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindPerconaXtraDB); err != nil {
 		return err
 	}
 
-	if px.Spec.StorageType == "" {
+	if db.Spec.StorageType == "" {
 		return fmt.Errorf(`'spec.storageType' is missing`)
 	}
-	if px.Spec.StorageType != api.StorageTypeDurable && px.Spec.StorageType != api.StorageTypeEphemeral {
-		return fmt.Errorf(`'spec.storageType' %s is invalid`, px.Spec.StorageType)
+	if db.Spec.StorageType != api.StorageTypeDurable && db.Spec.StorageType != api.StorageTypeEphemeral {
+		return fmt.Errorf(`'spec.storageType' %s is invalid`, db.Spec.StorageType)
 	}
-	if err := amv.ValidateStorage(client, px.Spec.StorageType, px.Spec.Storage); err != nil {
+	if err := amv.ValidateStorage(client, db.Spec.StorageType, db.Spec.Storage); err != nil {
 		return err
 	}
 
-	authSecret := px.Spec.AuthSecret
+	authSecret := db.Spec.AuthSecret
 
 	if strictValidation {
 		if authSecret != nil {
-			if _, err := client.CoreV1().Secrets(px.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
+			if _, err := client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
 
 		// Check if percona-xtradb Version is deprecated.
 		// If deprecated, return error
-		pxVersion, err := extClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(px.Spec.Version), metav1.GetOptions{})
+		pxVersion, err := extClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
 
 		if pxVersion.Spec.Deprecated {
-			return fmt.Errorf("percona-xtradb %s/%s is using deprecated version %v. Skipped processing", px.Namespace, px.Name, pxVersion.Name)
+			return fmt.Errorf("percona-xtradb %s/%s is using deprecated version %v. Skipped processing", db.Namespace, db.Name, pxVersion.Name)
 		}
 
 		if err := pxVersion.ValidateSpecs(); err != nil {
@@ -230,15 +230,15 @@ func ValidatePerconaXtraDB(client kubernetes.Interface, extClient cs.Interface, 
 		}
 	}
 
-	if px.Spec.TerminationPolicy == "" {
+	if db.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
-	if px.Spec.StorageType == api.StorageTypeEphemeral && px.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+	if db.Spec.StorageType == api.StorageTypeEphemeral && db.Spec.TerminationPolicy == api.TerminationPolicyHalt {
 		return fmt.Errorf(`'spec.terminationPolicy: Halt' can not be used for 'Ephemeral' storage`)
 	}
 
-	monitorSpec := px.Spec.Monitor
+	monitorSpec := db.Spec.Monitor
 	if monitorSpec != nil {
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
 			return err
@@ -260,7 +260,7 @@ func validateUpdate(obj, oldObj *api.PerconaXtraDB) error {
 	return nil
 }
 
-func getPreconditionFunc(px *api.PerconaXtraDB) []mergepatch.PreconditionFunc {
+func getPreconditionFunc(db *api.PerconaXtraDB) []mergepatch.PreconditionFunc {
 	preconditions := []mergepatch.PreconditionFunc{
 		mergepatch.RequireKeyUnchanged("apiVersion"),
 		mergepatch.RequireKeyUnchanged("kind"),
@@ -269,7 +269,7 @@ func getPreconditionFunc(px *api.PerconaXtraDB) []mergepatch.PreconditionFunc {
 	}
 
 	// Once the database has been initialized, don't let update the "spec.init" section
-	if px.Spec.Init != nil && px.Spec.Init.Initialized {
+	if db.Spec.Init != nil && db.Spec.Init.Initialized {
 		preconditionSpecFields.Insert("spec.init")
 	}
 

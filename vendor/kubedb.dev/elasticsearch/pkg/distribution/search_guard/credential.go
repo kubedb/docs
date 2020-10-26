@@ -39,7 +39,7 @@ func (es *Elasticsearch) EnsureAuthSecret() error {
 	}
 
 	// For admin user
-	authSecret := es.elasticsearch.Spec.AuthSecret
+	authSecret := es.db.Spec.AuthSecret
 	if authSecret == nil {
 		// create admin credential secret.
 		// If the secret already exists in the same name,
@@ -52,7 +52,7 @@ func (es *Elasticsearch) EnsureAuthSecret() error {
 
 		// update the ES object,
 		// Add admin credential secret name to Spec.AuthSecret.
-		newES, _, err := util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+		newES, _, err := util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.db, func(in *api.Elasticsearch) *api.Elasticsearch {
 			in.Spec.AuthSecret = authSecret
 			return in
 		}, metav1.PatchOptions{})
@@ -60,12 +60,12 @@ func (es *Elasticsearch) EnsureAuthSecret() error {
 			return err
 		}
 
-		es.elasticsearch = newES
+		es.db = newES
 	} else {
 		// Get the secret and validate it.
-		dbSecret, err := es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{})
+		dbSecret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{})
 		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to get credential secret: %s/%s", es.elasticsearch.Namespace, authSecret.Name))
+			return errors.Wrap(err, fmt.Sprintf("failed to get credential secret: %s/%s", es.db.Namespace, authSecret.Name))
 		}
 
 		err = es.validateAndSyncLabels(dbSecret)
@@ -75,7 +75,7 @@ func (es *Elasticsearch) EnsureAuthSecret() error {
 	}
 
 	// For all internal users
-	for username := range es.elasticsearch.Spec.InternalUsers {
+	for username := range es.db.Spec.InternalUsers {
 		// secret for admin user is handled separately
 		if username == string(api.ElasticsearchInternalUserAdmin) {
 			continue
@@ -92,7 +92,7 @@ func (es *Elasticsearch) EnsureAuthSecret() error {
 
 func (es *Elasticsearch) createOrSyncUserCredSecret(username, password string) (*core.LocalObjectReference, error) {
 
-	dbSecret, err := es.findSecret(es.elasticsearch.UserCredSecretName(username))
+	dbSecret, err := es.findSecret(es.db.UserCredSecretName(username))
 	if err != nil {
 		return nil, err
 	}
@@ -122,18 +122,18 @@ func (es *Elasticsearch) createOrSyncUserCredSecret(username, password string) (
 
 	secret := &core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   es.elasticsearch.UserCredSecretName(username),
-			Labels: es.elasticsearch.OffshootLabels(),
+			Name:   es.db.UserCredSecretName(username),
+			Labels: es.db.OffshootLabels(),
 		},
 		Type: core.SecretTypeBasicAuth,
 		Data: data,
 	}
 
 	// add owner reference
-	owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+	owner := metav1.NewControllerRef(es.db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 	core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
 
-	if _, err := es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
+	if _, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 		return nil, err
 	}
 
@@ -161,11 +161,11 @@ func (es *Elasticsearch) validateAndSyncLabels(secret *core.Secret) error {
 	// should be synced.
 	ctrl := metav1.GetControllerOf(secret)
 	if ctrl != nil &&
-		ctrl.Kind == api.ResourceKindElasticsearch && ctrl.Name == es.elasticsearch.Name {
+		ctrl.Kind == api.ResourceKindElasticsearch && ctrl.Name == es.db.Name {
 
 		// sync labels
 		if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secret.ObjectMeta, func(in *core.Secret) *core.Secret {
-			in.Labels = core_util.UpsertMap(in.Labels, es.elasticsearch.OffshootLabels())
+			in.Labels = core_util.UpsertMap(in.Labels, es.db.OffshootLabels())
 			return in
 		}, metav1.PatchOptions{}); err != nil {
 			return err
@@ -179,8 +179,8 @@ func (es *Elasticsearch) setMissingUsersAndRolesMapping() error {
 
 	// Users
 	userList := make(map[string]api.ElasticsearchUserSpec)
-	if es.elasticsearch.Spec.InternalUsers != nil {
-		userList = es.elasticsearch.Spec.InternalUsers
+	if es.db.Spec.InternalUsers != nil {
+		userList = es.db.Spec.InternalUsers
 	}
 
 	user.SetMissingUser(userList, api.ElasticsearchInternalUserAdmin, api.ElasticsearchUserSpec{Reserved: true})
@@ -193,7 +193,7 @@ func (es *Elasticsearch) setMissingUsersAndRolesMapping() error {
 	// Ref:
 	// - https://docs.search-guard.com/latest/upgrading-6-7
 	// Set user for metrics-exporter sidecar, if monitoring is enabled.
-	if es.elasticsearch.Spec.Monitor != nil {
+	if es.db.Spec.Monitor != nil {
 		user.SetMissingUser(userList, api.ElasticsearchInternalUserMetricsExporter, api.ElasticsearchUserSpec{
 			Reserved: false,
 		})
@@ -201,12 +201,12 @@ func (es *Elasticsearch) setMissingUsersAndRolesMapping() error {
 
 	// RolesMapping
 	rolesMapping := make(map[string]api.ElasticsearchRoleMapSpec)
-	if es.elasticsearch.Spec.RolesMapping != nil {
-		rolesMapping = es.elasticsearch.Spec.RolesMapping
+	if es.db.Spec.RolesMapping != nil {
+		rolesMapping = es.db.Spec.RolesMapping
 	}
 
 	// Add permission for metrics-exporter sidecar, if monitoring is enabled.
-	if es.elasticsearch.Spec.Monitor != nil {
+	if es.db.Spec.Monitor != nil {
 		// The metrics_exporter user will need to have access to
 		// readall_and_monitor role.
 
@@ -230,7 +230,7 @@ func (es *Elasticsearch) setMissingUsersAndRolesMapping() error {
 		}
 	}
 
-	newES, _, err := util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+	newES, _, err := util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.db, func(in *api.Elasticsearch) *api.Elasticsearch {
 		in.Spec.InternalUsers = userList
 		in.Spec.RolesMapping = rolesMapping
 		return in
@@ -238,7 +238,7 @@ func (es *Elasticsearch) setMissingUsersAndRolesMapping() error {
 	if err != nil {
 		return err
 	}
-	es.elasticsearch = newES
+	es.db = newES
 	return nil
 }
 

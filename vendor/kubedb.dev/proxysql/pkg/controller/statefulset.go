@@ -81,8 +81,8 @@ func (c *Controller) ensureProxySQLNode(db *api.ProxySQL) (kutil.VerbType, error
 
 	var ports = []core.ContainerPort{
 		{
-			Name:          "mysql",
-			ContainerPort: api.ProxySQLMySQLNodePort,
+			Name:          api.ProxySQLDatabasePortName,
+			ContainerPort: api.ProxySQLDatabasePort,
 			Protocol:      core.ProtocolTCP,
 		},
 		{
@@ -178,7 +178,7 @@ func (c *Controller) ensureProxySQLNode(db *api.ProxySQL) (kutil.VerbType, error
 		ports:            ports,
 		envList:          envList,
 		initContainers:   nil,
-		gvrSvcName:       c.GoverningService,
+		gvrSvcName:       db.GoverningServiceName(),
 		podTemplate:      &db.Spec.PodTemplate,
 		configSecret:     db.Spec.ConfigSecret,
 		replicas:         db.Spec.Replicas,
@@ -190,9 +190,9 @@ func (c *Controller) ensureProxySQLNode(db *api.ProxySQL) (kutil.VerbType, error
 	return c.ensureStatefulSet(db, opts)
 }
 
-func (c *Controller) checkStatefulSet(proxysql *api.ProxySQL, stsName string) error {
+func (c *Controller) checkStatefulSet(db *api.ProxySQL, stsName string) error {
 	// StatefulSet for ProxySQL database
-	statefulSet, err := c.Client.AppsV1().StatefulSets(proxysql.Namespace).Get(context.TODO(), stsName, metav1.GetOptions{})
+	statefulSet, err := c.Client.AppsV1().StatefulSets(db.Namespace).Get(context.TODO(), stsName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -201,8 +201,8 @@ func (c *Controller) checkStatefulSet(proxysql *api.ProxySQL, stsName string) er
 	}
 
 	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindProxySQL ||
-		statefulSet.Labels[api.LabelProxySQLName] != proxysql.Name {
-		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, proxysql.Namespace, stsName)
+		statefulSet.Labels[api.LabelProxySQLName] != db.Name {
+		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, db.Namespace, stsName)
 	}
 
 	return nil
@@ -375,7 +375,7 @@ func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 	return nil
 }
 
-func upsertEnv(statefulSet *apps.StatefulSet, proxysql *api.ProxySQL) *apps.StatefulSet {
+func upsertEnv(statefulSet *apps.StatefulSet, db *api.ProxySQL) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularProxySQL || container.Name == "exporter" {
 			envs := []core.EnvVar{
@@ -384,7 +384,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, proxysql *api.ProxySQL) *apps.Stat
 					ValueFrom: &core.EnvVarSource{
 						SecretKeyRef: &core.SecretKeySelector{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: proxysql.Spec.AuthSecret.Name,
+								Name: db.Spec.AuthSecret.Name,
 							},
 							Key: core.BasicAuthUsernameKey,
 						},
@@ -395,7 +395,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, proxysql *api.ProxySQL) *apps.Stat
 					ValueFrom: &core.EnvVarSource{
 						SecretKeyRef: &core.SecretKeySelector{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: proxysql.Spec.AuthSecret.Name,
+								Name: db.Spec.AuthSecret.Name,
 							},
 							Key: core.BasicAuthPasswordKey,
 						},

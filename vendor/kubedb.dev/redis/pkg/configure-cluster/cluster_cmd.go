@@ -158,7 +158,7 @@ func (v version5) DeleteNodeCmd(useTLS bool, existingAddr, deletingNodeID string
 }
 
 func (v version5) ReshardCmd(useTLS bool, srcIP, srcID, dstIP, dstID string, slotStart, slotEnd int) []string {
-	existingAddr := fmt.Sprintf("%s:%d", srcIP, api.RedisNodePort)
+	existingAddr := fmt.Sprintf("%s:%d", srcIP, api.RedisDatabasePort)
 	command := []string{"redis-cli"}
 	if useTLS {
 		command = append(command, tlsArgs...)

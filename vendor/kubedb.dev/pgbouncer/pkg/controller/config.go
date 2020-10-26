@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/eventer"
@@ -33,11 +34,6 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-)
-
-const (
-	mutatingWebhookConfig   = "mutators.kubedb.com"
-	validatingWebhookConfig = "validators.kubedb.com"
 )
 
 type OperatorConfig struct {
@@ -86,13 +82,13 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	}
 
 	if c.EnableMutatingWebhook {
-		if err := reg_util.UpdateMutatingWebhookCABundle(c.ClientConfig, mutatingWebhookConfig); err != nil {
+		if err := reg_util.UpdateMutatingWebhookCABundle(c.ClientConfig, kubedb.MutatorGroupName); err != nil {
 			return nil, err
 		}
 	}
 
 	if c.EnableValidatingWebhook {
-		if err := reg_util.UpdateValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig); err != nil {
+		if err := reg_util.UpdateValidatingWebhookCABundle(c.ClientConfig, kubedb.ValidatorGroupName); err != nil {
 			return nil, err
 		}
 	}

@@ -28,15 +28,22 @@ import (
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
 	api_util "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_util "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1/util"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 func (c *Controller) ensureAppBinding(db *api.Elasticsearch) (kutil.VerbType, error) {
+	port, err := c.GetPrimaryServicePort(db)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
 	appmeta := db.AppBindingMeta()
 
 	meta := metav1.ObjectMeta{
@@ -88,7 +95,7 @@ func (c *Controller) ensureAppBinding(db *api.Elasticsearch) (kutil.VerbType, er
 			in.Spec.ClientConfig.Service = &appcat.ServiceReference{
 				Scheme: db.GetConnectionScheme(),
 				Name:   db.ServiceName(),
-				Port:   defaultRestPort.Port,
+				Port:   port,
 			}
 			in.Spec.ClientConfig.CABundle = caBundle
 			in.Spec.ClientConfig.InsecureSkipTLSVerify = false
@@ -114,4 +121,21 @@ func (c *Controller) ensureAppBinding(db *api.Elasticsearch) (kutil.VerbType, er
 		)
 	}
 	return vt, nil
+}
+
+func (c *Controller) GetPrimaryServicePort(db *api.Elasticsearch) (int32, error) {
+	ports := ofst.MergeServicePorts([]core.ServicePort{
+		{
+			Name:       api.ElasticsearchRestPortName,
+			Port:       api.ElasticsearchRestPort,
+			TargetPort: intstr.FromString(api.ElasticsearchRestPortName),
+		},
+	}, db.Spec.ServiceTemplate.Spec.Ports)
+
+	for _, p := range ports {
+		if p.Name == api.ElasticsearchRestPortName {
+			return p.Port, nil
+		}
+	}
+	return 0, fmt.Errorf("failed to detect primary port for Elasticsearch %s/%s", db.Namespace, db.Name)
 }

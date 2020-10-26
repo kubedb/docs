@@ -133,7 +133,7 @@ func (c *Controller) getPolicyNames(db *api.MongoDB) (string, error) {
 	return dbPolicyName, nil
 }
 
-func (c *Controller) ensureDatabaseRBAC(mongodb *api.MongoDB) error {
+func (c *Controller) ensureDatabaseRBAC(db *api.MongoDB) error {
 	var createDatabaseRBAC = func(podTemplate *v1.PodTemplateSpec) error {
 		if podTemplate == nil {
 			return errors.New("Pod Template can not be empty.")
@@ -141,52 +141,52 @@ func (c *Controller) ensureDatabaseRBAC(mongodb *api.MongoDB) error {
 
 		saName := podTemplate.Spec.ServiceAccountName
 		if saName == "" {
-			saName = mongodb.OffshootName() // in case mutator was disabled
+			saName = db.OffshootName() // in case mutator was disabled
 			podTemplate.Spec.ServiceAccountName = saName
 		}
-		sa, err := c.Client.CoreV1().ServiceAccounts(mongodb.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
+		sa, err := c.Client.CoreV1().ServiceAccounts(db.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			// create service account, since it does not exist
-			if err = c.createServiceAccount(mongodb, saName); err != nil {
+			if err = c.createServiceAccount(db, saName); err != nil {
 				if !kerr.IsAlreadyExists(err) {
 					return err
 				}
 			}
 		} else if err != nil {
 			return err
-		} else if _, controller := core_util.IsOwnedBy(sa, mongodb); !controller {
+		} else if _, controller := core_util.IsOwnedBy(sa, db); !controller {
 			// user provided the service account, so do nothing.
 			return nil
 		}
 
 		// Create New Role
-		pspName, err := c.getPolicyNames(mongodb)
+		pspName, err := c.getPolicyNames(db)
 		if err != nil {
 			return err
 		}
-		if err = c.ensureRole(mongodb, mongodb.OffshootName(), pspName); err != nil {
+		if err = c.ensureRole(db, db.OffshootName(), pspName); err != nil {
 			return err
 		}
 
 		// Create New RoleBinding
-		if err = c.createRoleBinding(mongodb, mongodb.OffshootName(), saName); err != nil {
+		if err = c.createRoleBinding(db, db.OffshootName(), saName); err != nil {
 			return err
 		}
 		return nil
 	}
 
-	if mongodb.Spec.ShardTopology != nil {
-		if err := createDatabaseRBAC(&mongodb.Spec.ShardTopology.ConfigServer.PodTemplate); err != nil {
+	if db.Spec.ShardTopology != nil {
+		if err := createDatabaseRBAC(&db.Spec.ShardTopology.ConfigServer.PodTemplate); err != nil {
 			return err
 		}
-		if err := createDatabaseRBAC(&mongodb.Spec.ShardTopology.Mongos.PodTemplate); err != nil {
+		if err := createDatabaseRBAC(&db.Spec.ShardTopology.Mongos.PodTemplate); err != nil {
 			return err
 		}
-		if err := createDatabaseRBAC(&mongodb.Spec.ShardTopology.Shard.PodTemplate); err != nil {
+		if err := createDatabaseRBAC(&db.Spec.ShardTopology.Shard.PodTemplate); err != nil {
 			return err
 		}
 	} else {
-		if err := createDatabaseRBAC(mongodb.Spec.PodTemplate); err != nil {
+		if err := createDatabaseRBAC(db.Spec.PodTemplate); err != nil {
 			return err
 		}
 	}

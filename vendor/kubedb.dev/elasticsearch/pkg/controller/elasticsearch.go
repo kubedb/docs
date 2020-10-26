@@ -37,10 +37,10 @@ import (
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
 
-func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
-	if err := validator.ValidateElasticsearch(c.Client, c.DBClient, elasticsearch, true); err != nil {
+func (c *Controller) create(db *api.Elasticsearch) error {
+	if err := validator.ValidateElasticsearch(c.Client, c.DBClient, db, true); err != nil {
 		c.Recorder.Event(
-			elasticsearch,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
 			err.Error(),
@@ -50,18 +50,18 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	// create Governing Service
-	if err := c.ensureElasticGvrSvc(elasticsearch); err != nil {
-		return fmt.Errorf(`failed to create governing Service for "%v/%v". Reason: %v`, elasticsearch.Namespace, elasticsearch.Name, err)
+	if err := c.ensureGoverningService(db); err != nil {
+		return fmt.Errorf(`failed to create governing Service for "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 
 	// ensure database Service
-	vt1, err := c.ensureService(elasticsearch)
+	vt1, err := c.ensureService(db)
 	if err != nil {
 		return err
 	}
 
 	// ensure database StatefulSet
-	elasticsearch, vt2, err := c.ensureElasticsearchNode(elasticsearch)
+	db, vt2, err := c.ensureElasticsearchNode(db)
 	if err != nil {
 		return err
 	}
@@ -69,20 +69,20 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	// If both err==nil & elasticsearch == nil,
 	// the object was dropped from the work-queue, to process later.
 	// return nil.
-	if elasticsearch == nil {
+	if db == nil {
 		return nil
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
 		c.Recorder.Event(
-			elasticsearch,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created Elasticsearch",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
 		c.Recorder.Event(
-			elasticsearch,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully patched Elasticsearch",
@@ -90,23 +90,23 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	// ensure appbinding before ensuring Restic scheduler and restore
-	_, err = c.ensureAppBinding(elasticsearch)
+	_, err = c.ensureAppBinding(db)
 	if err != nil {
 		log.Errorln(err)
 		return err
 	}
 
 	//======================== Wait for the initial restore =====================================
-	if elasticsearch.Spec.Init != nil && elasticsearch.Spec.Init.WaitForInitialRestore {
+	if db.Spec.Init != nil && db.Spec.Init.WaitForInitialRestore {
 		// Only wait for the first restore.
 		// For initial restore,  elasticsearch.Spec.Init.Initialized will be "false" and "DataRestored" condition either won't exist or will be "False".
-		if !elasticsearch.Spec.Init.Initialized &&
-			!kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseDataRestored) {
+		if !db.Spec.Init.Initialized &&
+			!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseDataRestored) {
 			// write log indicating that the database is waiting for the data to be restored by external initializer
 			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
-				elasticsearch.Kind,
-				elasticsearch.Namespace,
-				elasticsearch.Name,
+				db.Kind,
+				db.Namespace,
+				db.Name,
 			)
 			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
@@ -114,9 +114,9 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	}
 
 	// ensure StatsService for desired monitoring
-	if _, err := c.ensureStatsService(elasticsearch); err != nil {
+	if _, err := c.ensureStatsService(db); err != nil {
 		c.Recorder.Eventf(
-			elasticsearch,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -126,9 +126,9 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 		return nil
 	}
 
-	if err := c.manageMonitor(elasticsearch); err != nil {
+	if err := c.manageMonitor(db); err != nil {
 		c.Recorder.Eventf(
-			elasticsearch,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -142,22 +142,22 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	// If spec.Init.WaitForInitialRestore is true, but data wasn't restored successfully,
 	// process won't reach here (returned nil at the beginning). As it is here, that means data was restored successfully.
 	// No need to check for IsConditionTrue(DataRestored).
-	if kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseReplicaReady) &&
-		kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseAcceptingConnection) &&
-		kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseReady) &&
-		!kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseProvisioned) {
+	if kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReplicaReady) &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseAcceptingConnection) &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReady) &&
+		!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
 		_, err := util.UpdateElasticsearchStatus(
 			context.TODO(),
 			c.DBClient.KubedbV1alpha2(),
-			elasticsearch.ObjectMeta,
+			db.ObjectMeta,
 			func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
 				in.Conditions = kmapi.SetCondition(in.Conditions,
 					kmapi.Condition{
 						Type:               api.DatabaseProvisioned,
 						Status:             core.ConditionTrue,
 						Reason:             api.DatabaseSuccessfullyProvisioned,
-						ObservedGeneration: elasticsearch.Generation,
-						Message:            fmt.Sprintf("The Elasticsearch: %s/%s is successfully provisioned.", elasticsearch.Namespace, elasticsearch.Name),
+						ObservedGeneration: db.Generation,
+						Message:            fmt.Sprintf("The Elasticsearch: %s/%s is successfully provisioned.", db.Namespace, db.Name),
 					})
 				return in
 			},
@@ -171,10 +171,10 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	// If the database is successfully provisioned,
 	// Set spec.Init.Initialized to true, if init!=nil.
 	// This will prevent the operator from re-initializing the database.
-	if elasticsearch.Spec.Init != nil &&
-		!elasticsearch.Spec.Init.Initialized &&
-		kmapi.IsConditionTrue(elasticsearch.Status.Conditions, api.DatabaseProvisioned) {
-		_, _, err := util.CreateOrPatchElasticsearch(context.TODO(), c.DBClient.KubedbV1alpha2(), elasticsearch.ObjectMeta, func(in *api.Elasticsearch) *api.Elasticsearch {
+	if db.Spec.Init != nil &&
+		!db.Spec.Init.Initialized &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
+		_, _, err := util.CreateOrPatchElasticsearch(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.Elasticsearch) *api.Elasticsearch {
 			in.Spec.Init.Initialized = true
 			return in
 		}, metav1.PatchOptions{})
@@ -187,12 +187,12 @@ func (c *Controller) create(elasticsearch *api.Elasticsearch) error {
 	return nil
 }
 
-func (c *Controller) ensureElasticsearchNode(es *api.Elasticsearch) (*api.Elasticsearch, kutil.VerbType, error) {
-	if es == nil {
+func (c *Controller) ensureElasticsearchNode(db *api.Elasticsearch) (*api.Elasticsearch, kutil.VerbType, error) {
+	if db == nil {
 		return nil, kutil.VerbUnchanged, errors.New("Elasticsearch object is empty")
 	}
 
-	elastic, err := distribution.NewElasticsearch(c.Client, c.DBClient, es)
+	elastic, err := distribution.NewElasticsearch(c.Client, c.DBClient, db)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to get elasticsearch distribution")
 	}
@@ -215,7 +215,7 @@ func (c *Controller) ensureElasticsearchNode(es *api.Elasticsearch) (*api.Elasti
 	ok, err := dynamic_util.ResourcesExists(
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
-		es.Namespace,
+		db.Namespace,
 		sNames...,
 	)
 	if err != nil {
@@ -228,7 +228,7 @@ func (c *Controller) ensureElasticsearchNode(es *api.Elasticsearch) (*api.Elasti
 		// drop the elasticsearch object from work queue (i.e. return nil with no error).
 		// When any secret owned by this elasticsearch object is created/updated,
 		// this elasticsearch object will be enqueued again for processing.
-		log.Infoln(fmt.Sprintf("Required secrets for Elasticsearch: %s/%s are not ready yet", es.Namespace, es.Name))
+		log.Infoln(fmt.Sprintf("Required secrets for Elasticsearch: %s/%s are not ready yet", db.Namespace, db.Name))
 		return nil, kutil.VerbUnchanged, nil
 	}
 
@@ -325,26 +325,26 @@ func (c *Controller) halt(db *api.Elasticsearch) error {
 	return nil
 }
 
-func (c *Controller) terminate(elasticsearch *api.Elasticsearch) error {
-	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+func (c *Controller) terminate(db *api.Elasticsearch) error {
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 	// If TerminationPolicy is "halt", keep PVCs,Secrets intact.
 	// TerminationPolicyPause is deprecated and will be removed in future.
-	if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyHalt {
-		if err := c.removeOwnerReferenceFromOffshoots(elasticsearch); err != nil {
+	if db.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+		if err := c.removeOwnerReferenceFromOffshoots(db); err != nil {
 			return err
 		}
 	} else {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
 		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
 		// In both these cases, don't create dormantdatabase
-		if err := c.setOwnerReferenceToOffshoots(elasticsearch, owner); err != nil {
+		if err := c.setOwnerReferenceToOffshoots(db, owner); err != nil {
 			return err
 		}
 	}
 
-	if elasticsearch.Spec.Monitor != nil {
-		if err := c.deleteMonitor(elasticsearch); err != nil {
+	if db.Spec.Monitor != nil {
+		if err := c.deleteMonitor(db); err != nil {
 			log.Errorln(err)
 			return nil
 		}
@@ -352,13 +352,13 @@ func (c *Controller) terminate(elasticsearch *api.Elasticsearch) error {
 	return nil
 }
 
-func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsearch, owner *metav1.OwnerReference) error {
-	selector := labels.SelectorFromSet(elasticsearch.OffshootSelectors())
+func (c *Controller) setOwnerReferenceToOffshoots(db *api.Elasticsearch, owner *metav1.OwnerReference) error {
+	selector := labels.SelectorFromSet(db.OffshootSelectors())
 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
-	if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		if err := c.wipeOutDatabase(elasticsearch.ObjectMeta, elasticsearch.GetPersistentSecrets(), owner); err != nil {
+	if db.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
+		if err := c.wipeOutDatabase(db.ObjectMeta, db.GetPersistentSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
@@ -367,9 +367,9 @@ func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsear
 			context.TODO(),
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
-			elasticsearch.Namespace,
-			elasticsearch.GetPersistentSecrets(),
-			elasticsearch); err != nil {
+			db.Namespace,
+			db.GetPersistentSecrets(),
+			db); err != nil {
 			return err
 		}
 	}
@@ -378,31 +378,31 @@ func (c *Controller) setOwnerReferenceToOffshoots(elasticsearch *api.Elasticsear
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
-		elasticsearch.Namespace,
+		db.Namespace,
 		selector,
 		owner)
 }
 
-func (c *Controller) removeOwnerReferenceFromOffshoots(elasticsearch *api.Elasticsearch) error {
+func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.Elasticsearch) error {
 	// First, Get LabelSelector for Other Components
-	labelSelector := labels.SelectorFromSet(elasticsearch.OffshootSelectors())
+	labelSelector := labels.SelectorFromSet(db.OffshootSelectors())
 
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
-		elasticsearch.Namespace,
+		db.Namespace,
 		labelSelector,
-		elasticsearch); err != nil {
+		db); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
-		elasticsearch.Namespace,
-		elasticsearch.GetPersistentSecrets(),
-		elasticsearch); err != nil {
+		db.Namespace,
+		db.GetPersistentSecrets(),
+		db); err != nil {
 		return err
 	}
 	return nil

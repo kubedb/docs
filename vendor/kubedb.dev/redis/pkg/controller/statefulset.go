@@ -47,14 +47,14 @@ const (
 	CONFIG_MOUNT_PATH = "/usr/local/etc/redis/"
 )
 
-func (c *Controller) ensureStatefulSet(redis *api.Redis, statefulSetName string, removeSlave bool) (kutil.VerbType, error) {
-	err := c.checkStatefulSet(redis, statefulSetName)
+func (c *Controller) ensureStatefulSet(db *api.Redis, statefulSetName string, removeSlave bool) (kutil.VerbType, error) {
+	err := c.checkStatefulSet(db, statefulSetName)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
 	// Create statefulSet for Redis database
-	statefulSet, vt, err := c.createStatefulSet(redis, statefulSetName, removeSlave)
+	statefulSet, vt, err := c.createStatefulSet(db, statefulSetName, removeSlave)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -71,7 +71,7 @@ func (c *Controller) ensureStatefulSet(redis *api.Redis, statefulSetName string,
 		}
 
 		c.Recorder.Eventf(
-			redis,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %v StatefulSet",
@@ -82,29 +82,29 @@ func (c *Controller) ensureStatefulSet(redis *api.Redis, statefulSetName string,
 	return vt, nil
 }
 
-func (c *Controller) ensureRedisNodes(redis *api.Redis) (kutil.VerbType, error) {
+func (c *Controller) ensureRedisNodes(db *api.Redis) (kutil.VerbType, error) {
 	var (
 		vt  kutil.VerbType
 		err error
 	)
 
-	if redis.Spec.Mode == api.RedisModeStandalone {
-		vt, err = c.ensureStatefulSet(redis, redis.OffshootName(), false)
+	if db.Spec.Mode == api.RedisModeStandalone {
+		vt, err = c.ensureStatefulSet(db, db.OffshootName(), false)
 		if err != nil {
 			return vt, err
 		}
 	} else {
-		for i := 0; i < int(*redis.Spec.Cluster.Master); i++ {
-			vt, err = c.ensureStatefulSet(redis, redis.StatefulSetNameWithShard(i), false)
+		for i := 0; i < int(*db.Spec.Cluster.Master); i++ {
+			vt, err = c.ensureStatefulSet(db, db.StatefulSetNameWithShard(i), false)
 			if err != nil {
 				return vt, err
 			}
 		}
 
-		statefulSets, err := c.Client.AppsV1().StatefulSets(redis.Namespace).List(context.TODO(), metav1.ListOptions{
+		statefulSets, err := c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels.Set{
 				api.LabelDatabaseKind: api.ResourceKindRedis,
-				api.LabelDatabaseName: redis.Name,
+				api.LabelDatabaseName: db.Name,
 			}.String(),
 		})
 		if err != nil {
@@ -113,44 +113,44 @@ func (c *Controller) ensureRedisNodes(redis *api.Redis) (kutil.VerbType, error) 
 
 		pods := make([][]*core.Pod, len(statefulSets.Items))
 		for i := 0; i < len(statefulSets.Items); i++ {
-			stsIndex, _ := strconv.Atoi(statefulSets.Items[i].Name[len(redis.BaseNameForShard()):])
+			stsIndex, _ := strconv.Atoi(statefulSets.Items[i].Name[len(db.BaseNameForShard()):])
 			pods[stsIndex] = make([]*core.Pod, *statefulSets.Items[i].Spec.Replicas)
 			for j := 0; j < int(*statefulSets.Items[i].Spec.Replicas); j++ {
 				podName := fmt.Sprintf("%s-%d", statefulSets.Items[i].Name, j)
-				pods[stsIndex][j], err = c.Client.CoreV1().Pods(redis.Namespace).Get(context.TODO(), podName, metav1.GetOptions{})
+				pods[stsIndex][j], err = c.Client.CoreV1().Pods(db.Namespace).Get(context.TODO(), podName, metav1.GetOptions{})
 				if err != nil {
 					return vt, err
 				}
 			}
 		}
 
-		redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
+		redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return vt, err
 		}
-		if err := configure_cluster.ConfigureRedisCluster(c.ClientConfig, redis, redisVersion.Spec.Version, pods); err != nil {
+		if err := configure_cluster.ConfigureRedisCluster(c.ClientConfig, db, redisVersion.Spec.Version, pods); err != nil {
 			return vt, errors.Wrap(err, "failed to configure required cluster")
 		}
 
 		log.Infoln("Cluster configured")
 		log.Infoln("Checking for removing master(s)...")
-		statefulSets, err = c.Client.AppsV1().StatefulSets(redis.Namespace).List(context.TODO(), metav1.ListOptions{
+		statefulSets, err = c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels.Set{
 				api.LabelDatabaseKind: api.ResourceKindRedis,
-				api.LabelDatabaseName: redis.Name,
+				api.LabelDatabaseName: db.Name,
 			}.String(),
 		})
 		if err != nil {
 			return vt, err
 		}
-		if len(statefulSets.Items) > int(*redis.Spec.Cluster.Master) {
+		if len(statefulSets.Items) > int(*db.Spec.Cluster.Master) {
 			log.Infoln("Removing masters...")
 
 			foregroundPolicy := metav1.DeletePropagationForeground
-			for i := int(*redis.Spec.Cluster.Master); i < len(statefulSets.Items); i++ {
+			for i := int(*db.Spec.Cluster.Master); i < len(statefulSets.Items); i++ {
 				err = c.Client.AppsV1().
-					StatefulSets(redis.Namespace).
-					Delete(context.TODO(), redis.StatefulSetNameWithShard(i), metav1.DeleteOptions{
+					StatefulSets(db.Namespace).
+					Delete(context.TODO(), db.StatefulSetNameWithShard(i), metav1.DeleteOptions{
 						PropagationPolicy: &foregroundPolicy,
 					})
 				if err != nil {
@@ -163,20 +163,20 @@ func (c *Controller) ensureRedisNodes(redis *api.Redis) (kutil.VerbType, error) 
 
 		// update the the statefulSets with reduced replicas as some of their slaves have been
 		// removed when redis.spec.cluster.replicas field is reduced
-		statefulSets, err = c.Client.AppsV1().StatefulSets(redis.Namespace).List(context.TODO(), metav1.ListOptions{
+		statefulSets, err = c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels.Set{
 				api.LabelDatabaseKind: api.ResourceKindRedis,
-				api.LabelDatabaseName: redis.Name,
+				api.LabelDatabaseName: db.Name,
 			}.String(),
 		})
 		if err != nil {
 			return vt, err
 		}
-		for i := 0; i < int(*redis.Spec.Cluster.Master); i++ {
-			if int(*statefulSets.Items[i].Spec.Replicas) > int(*redis.Spec.Cluster.Replicas)+1 {
+		for i := 0; i < int(*db.Spec.Cluster.Master); i++ {
+			if int(*statefulSets.Items[i].Spec.Replicas) > int(*db.Spec.Cluster.Replicas)+1 {
 				log.Infoln("Removing slaves...")
 
-				vt, err = c.ensureStatefulSet(redis, redis.StatefulSetNameWithShard(i), true)
+				vt, err = c.ensureStatefulSet(db, db.StatefulSetNameWithShard(i), true)
 				if err != nil {
 					return vt, err
 				}
@@ -187,9 +187,9 @@ func (c *Controller) ensureRedisNodes(redis *api.Redis) (kutil.VerbType, error) 
 	return vt, nil
 }
 
-func (c *Controller) checkStatefulSet(redis *api.Redis, statefulSetName string) error {
+func (c *Controller) checkStatefulSet(db *api.Redis, statefulSetName string) error {
 	// SatatefulSet for Redis
-	statefulSet, err := c.Client.AppsV1().StatefulSets(redis.Namespace).Get(context.TODO(), statefulSetName, metav1.GetOptions{})
+	statefulSet, err := c.Client.AppsV1().StatefulSets(db.Namespace).Get(context.TODO(), statefulSetName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -198,64 +198,64 @@ func (c *Controller) checkStatefulSet(redis *api.Redis, statefulSetName string) 
 	}
 
 	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindRedis ||
-		statefulSet.Labels[api.LabelDatabaseName] != redis.Name {
-		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, redis.Namespace, redis.OffshootName())
+		statefulSet.Labels[api.LabelDatabaseName] != db.Name {
+		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, db.Namespace, db.OffshootName())
 	}
 
 	return nil
 }
 
-func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string, removeSlave bool) (*apps.StatefulSet, kutil.VerbType, error) {
+func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, removeSlave bool) (*apps.StatefulSet, kutil.VerbType, error) {
 	statefulSetMeta := metav1.ObjectMeta{
 		Name:      statefulSetName,
-		Namespace: redis.Namespace,
+		Namespace: db.Namespace,
 	}
 
-	owner := metav1.NewControllerRef(redis, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
-	redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(redis.Spec.Version), metav1.GetOptions{})
+	redisVersion, err := c.DBClient.CatalogV1alpha1().RedisVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 
 	var affinity *core.Affinity
 
-	if redis.Spec.Mode == api.RedisModeCluster {
+	if db.Spec.Mode == api.RedisModeCluster {
 		// https://play.golang.org/p/TZPjGg8T0Zn
-		re := regexp.MustCompile(fmt.Sprintf(`^%s(\d+)$`, redis.BaseNameForShard()))
+		re := regexp.MustCompile(fmt.Sprintf(`^%s(\d+)$`, db.BaseNameForShard()))
 		matches := re.FindStringSubmatch(statefulSetName)
 		if len(matches) == 0 {
 			return nil, kutil.VerbUnchanged, fmt.Errorf("failed to detect shard index for statefulset %s", statefulSetName)
 		}
-		affinity, err = parseAffinityTemplate(redis.Spec.PodTemplate.Spec.Affinity.DeepCopy(), matches[1])
+		affinity, err = parseAffinityTemplate(db.Spec.PodTemplate.Spec.Affinity.DeepCopy(), matches[1])
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
 	}
 
 	return app_util.CreateOrPatchStatefulSet(context.TODO(), c.Client, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
-		in.Labels = redis.OffshootLabels()
-		in.Annotations = redis.Spec.PodTemplate.Controller.Annotations
+		in.Labels = db.OffshootLabels()
+		in.Annotations = db.Spec.PodTemplate.Controller.Annotations
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
-		if redis.Spec.Mode == api.RedisModeStandalone {
+		if db.Spec.Mode == api.RedisModeStandalone {
 			in.Spec.Replicas = types.Int32P(1)
-		} else if redis.Spec.Mode == api.RedisModeCluster {
+		} else if db.Spec.Mode == api.RedisModeCluster {
 			// while creating first time, in.Spec.Replicas is 'nil'
 			if in.Spec.Replicas == nil ||
 				// while adding slave(s), (*in.Spec.Replicas < *redis.Spec.Cluster.Replicas + 1) is true
-				*in.Spec.Replicas < *redis.Spec.Cluster.Replicas+1 ||
+				*in.Spec.Replicas < *db.Spec.Cluster.Replicas+1 ||
 				// removeSlave is true only after deleting slave node(s) in the stage of configuring redis cluster
 				removeSlave {
-				in.Spec.Replicas = types.Int32P(*redis.Spec.Cluster.Replicas + 1)
+				in.Spec.Replicas = types.Int32P(*db.Spec.Cluster.Replicas + 1)
 			}
 		}
-		in.Spec.ServiceName = c.GoverningService
+		in.Spec.ServiceName = db.GoverningServiceName()
 
-		labels := redis.OffshootSelectors()
-		if redis.Spec.Mode == api.RedisModeCluster {
+		labels := db.OffshootSelectors()
+		if db.Spec.Mode == api.RedisModeCluster {
 			labels = core_util.UpsertMap(labels, map[string]string{
-				api.RedisShardKey: statefulSetName[len(redis.BaseNameForShard()):],
+				api.RedisShardKey: statefulSetName[len(db.BaseNameForShard()):],
 			})
 		}
 		in.Spec.Selector = &metav1.LabelSelector{
@@ -263,25 +263,26 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 		}
 		in.Spec.Template.Labels = labels
 
-		in.Spec.Template.Annotations = redis.Spec.PodTemplate.Annotations
+		in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
 		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
 			in.Spec.Template.Spec.InitContainers,
-			redis.Spec.PodTemplate.Spec.InitContainers,
+			db.Spec.PodTemplate.Spec.InitContainers,
 		)
 
 		var (
 			ports = []core.ContainerPort{
 				{
-					Name:          "db",
-					ContainerPort: api.RedisNodePort,
+					Name:          api.RedisDatabasePortName,
+					ContainerPort: api.RedisDatabasePort,
 					Protocol:      core.ProtocolTCP,
 				},
 			}
 		)
-		if redis.Spec.Mode == api.RedisModeCluster {
+		if db.Spec.Mode == api.RedisModeCluster {
 			ports = append(ports, core.ContainerPort{
-				Name:          "gossip",
+				Name:          api.RedisGossipPortName,
 				ContainerPort: api.RedisGossipPort,
+				Protocol:      core.ProtocolTCP,
 			})
 		}
 
@@ -289,7 +290,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 			Name:            api.ResourceSingularRedis,
 			Image:           redisVersion.Spec.DB.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
-			Args:            redis.Spec.PodTemplate.Spec.Args,
+			Args:            db.Spec.PodTemplate.Spec.Args,
 			Ports:           ports,
 			Env: []core.EnvVar{
 				{
@@ -301,13 +302,13 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 					},
 				},
 			},
-			Resources:      redis.Spec.PodTemplate.Spec.Resources,
-			LivenessProbe:  redis.Spec.PodTemplate.Spec.LivenessProbe,
-			ReadinessProbe: redis.Spec.PodTemplate.Spec.ReadinessProbe,
-			Lifecycle:      redis.Spec.PodTemplate.Spec.Lifecycle,
+			Resources:      db.Spec.PodTemplate.Spec.Resources,
+			LivenessProbe:  db.Spec.PodTemplate.Spec.LivenessProbe,
+			ReadinessProbe: db.Spec.PodTemplate.Spec.ReadinessProbe,
+			Lifecycle:      db.Spec.PodTemplate.Spec.Lifecycle,
 		}
 
-		if redis.Spec.Mode == api.RedisModeStandalone {
+		if db.Spec.Mode == api.RedisModeStandalone {
 
 			args := container.Args
 			// for backup redis data
@@ -316,7 +317,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 			}
 			args = append(args, customArgs...)
 
-			if redis.Spec.TLS != nil {
+			if db.Spec.TLS != nil {
 				// tls arguments for redis standalone
 				tlsArgs := []string{
 					"--tls-port 6379",
@@ -329,7 +330,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 			}
 			container.Args = args
 
-		} else if redis.Spec.Mode == api.RedisModeCluster && redis.Spec.TLS != nil {
+		} else if db.Spec.Mode == api.RedisModeCluster && db.Spec.TLS != nil {
 			args := container.Args
 			// tls arguments for redis cluster
 			tlsArgs := []string{
@@ -349,13 +350,13 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 		//upsert the container
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, container)
 
-		if redis.Spec.Monitor != nil && redis.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
+		if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 
 			args := []string{
-				fmt.Sprintf("--web.listen-address=:%v", redis.Spec.Monitor.Prometheus.Exporter.Port),
-				fmt.Sprintf("--web.telemetry-path=%v", redis.StatsService().Path()),
+				fmt.Sprintf("--web.listen-address=:%v", db.Spec.Monitor.Prometheus.Exporter.Port),
+				fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
 			}
-			if redis.Spec.TLS != nil {
+			if db.Spec.TLS != nil {
 				tlsArgs := []string{
 					"--redis.addr=rediss://localhost:6379",
 					"--tls-client-cert-file=/certs/exporter.crt",
@@ -366,48 +367,48 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 			}
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 				Name:            "exporter",
-				Args:            append(args, redis.Spec.Monitor.Prometheus.Exporter.Args...),
+				Args:            append(args, db.Spec.Monitor.Prometheus.Exporter.Args...),
 				Image:           redisVersion.Spec.Exporter.Image,
 				ImagePullPolicy: core.PullIfNotPresent,
 				Ports: []core.ContainerPort{
 					{
 						Name:          mona.PrometheusExporterPortName,
 						Protocol:      core.ProtocolTCP,
-						ContainerPort: redis.Spec.Monitor.Prometheus.Exporter.Port,
+						ContainerPort: db.Spec.Monitor.Prometheus.Exporter.Port,
 					},
 				},
-				Env:             redis.Spec.Monitor.Prometheus.Exporter.Env,
-				Resources:       redis.Spec.Monitor.Prometheus.Exporter.Resources,
-				SecurityContext: redis.Spec.Monitor.Prometheus.Exporter.SecurityContext,
+				Env:             db.Spec.Monitor.Prometheus.Exporter.Env,
+				Resources:       db.Spec.Monitor.Prometheus.Exporter.Resources,
+				SecurityContext: db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 			})
 
 		}
 
-		in = upsertDataVolume(in, redis)
+		in = upsertDataVolume(in, db)
 
-		in.Spec.Template.Spec.NodeSelector = redis.Spec.PodTemplate.Spec.NodeSelector
+		in.Spec.Template.Spec.NodeSelector = db.Spec.PodTemplate.Spec.NodeSelector
 		in.Spec.Template.Spec.Affinity = affinity
-		if redis.Spec.PodTemplate.Spec.SchedulerName != "" {
-			in.Spec.Template.Spec.SchedulerName = redis.Spec.PodTemplate.Spec.SchedulerName
+		if db.Spec.PodTemplate.Spec.SchedulerName != "" {
+			in.Spec.Template.Spec.SchedulerName = db.Spec.PodTemplate.Spec.SchedulerName
 		}
-		in.Spec.Template.Spec.Tolerations = redis.Spec.PodTemplate.Spec.Tolerations
-		in.Spec.Template.Spec.ImagePullSecrets = redis.Spec.PodTemplate.Spec.ImagePullSecrets
-		in.Spec.Template.Spec.PriorityClassName = redis.Spec.PodTemplate.Spec.PriorityClassName
-		in.Spec.Template.Spec.Priority = redis.Spec.PodTemplate.Spec.Priority
-		in.Spec.Template.Spec.SecurityContext = redis.Spec.PodTemplate.Spec.SecurityContext
-		in.Spec.Template.Spec.ServiceAccountName = redis.Spec.PodTemplate.Spec.ServiceAccountName
+		in.Spec.Template.Spec.Tolerations = db.Spec.PodTemplate.Spec.Tolerations
+		in.Spec.Template.Spec.ImagePullSecrets = db.Spec.PodTemplate.Spec.ImagePullSecrets
+		in.Spec.Template.Spec.PriorityClassName = db.Spec.PodTemplate.Spec.PriorityClassName
+		in.Spec.Template.Spec.Priority = db.Spec.PodTemplate.Spec.Priority
+		in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
+		in.Spec.Template.Spec.ServiceAccountName = db.Spec.PodTemplate.Spec.ServiceAccountName
 		in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
 			Type: apps.OnDeleteStatefulSetStrategyType,
 		}
 		if in.Spec.Template.Spec.SecurityContext == nil {
-			in.Spec.Template.Spec.SecurityContext = redis.Spec.PodTemplate.Spec.SecurityContext
+			in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
 		}
-		in = upsertUserEnv(in, redis)
-		in = upsertCustomConfig(in, redis)
+		in = upsertUserEnv(in, db)
+		in = upsertCustomConfig(in, db)
 
 		// configure tls volume
-		if redis.Spec.TLS != nil {
-			in = upsertTLSVolume(in, redis)
+		if db.Spec.TLS != nil {
+			in = upsertTLSVolume(in, db)
 
 		}
 
@@ -415,7 +416,7 @@ func (c *Controller) createStatefulSet(redis *api.Redis, statefulSetName string,
 	}, metav1.PatchOptions{})
 }
 
-func upsertDataVolume(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.StatefulSet {
+func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularRedis {
 			volumeMount := core.VolumeMount{
@@ -426,8 +427,8 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.Sta
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
-			pvcSpec := redis.Spec.Storage
-			if redis.Spec.StorageType == api.StorageTypeEphemeral {
+			pvcSpec := db.Spec.Storage
+			if db.Spec.StorageType == api.StorageTypeEphemeral {
 				ed := core.EmptyDirVolumeSource{}
 				if pvcSpec != nil {
 					if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
@@ -471,7 +472,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.Sta
 }
 
 // adding tls key , cert and ca-cert
-func upsertTLSVolume(sts *apps.StatefulSet, redis *api.Redis) *apps.StatefulSet {
+func upsertTLSVolume(sts *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 	for i, container := range sts.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularRedis {
 			volumeMount := core.VolumeMount{
@@ -504,7 +505,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, redis *api.Redis) *apps.StatefulSet 
 					{
 						Secret: &core.SecretProjection{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: redis.MustCertSecretName(api.RedisServerCert),
+								Name: db.MustCertSecretName(api.RedisServerCert),
 							},
 							Items: []core.KeyToPath{
 								{
@@ -525,7 +526,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, redis *api.Redis) *apps.StatefulSet 
 					{
 						Secret: &core.SecretProjection{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: redis.MustCertSecretName(api.RedisClientCert),
+								Name: db.MustCertSecretName(api.RedisClientCert),
 							},
 							Items: []core.KeyToPath{
 								{
@@ -552,7 +553,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, redis *api.Redis) *apps.StatefulSet 
 					{
 						Secret: &core.SecretProjection{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: redis.MustCertSecretName(api.RedisMetricsExporterCert),
+								Name: db.MustCertSecretName(api.RedisMetricsExporterCert),
 							},
 							Items: []core.KeyToPath{
 								{
@@ -595,18 +596,18 @@ func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 }
 
 // upsertUserEnv add/overwrite env from user provided env in crd spec
-func upsertUserEnv(statefulset *apps.StatefulSet, redis *api.Redis) *apps.StatefulSet {
+func upsertUserEnv(statefulset *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 	for i, container := range statefulset.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularRedis {
-			statefulset.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, redis.Spec.PodTemplate.Spec.Env...)
+			statefulset.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Env...)
 			return statefulset
 		}
 	}
 	return statefulset
 }
 
-func upsertCustomConfig(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.StatefulSet {
-	if redis.Spec.ConfigSecret != nil {
+func upsertCustomConfig(statefulSet *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
+	if db.Spec.ConfigSecret != nil {
 		for i, container := range statefulSet.Spec.Template.Spec.Containers {
 			if container.Name == api.ResourceSingularRedis {
 				configVolumeMount := core.VolumeMount{
@@ -621,7 +622,7 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, redis *api.Redis) *apps.S
 					Name: "custom-config",
 					VolumeSource: core.VolumeSource{
 						Secret: &core.SecretVolumeSource{
-							SecretName:  redis.Spec.ConfigSecret.Name,
+							SecretName:  db.Spec.ConfigSecret.Name,
 							DefaultMode: types.Int32P(0777),
 						},
 					},

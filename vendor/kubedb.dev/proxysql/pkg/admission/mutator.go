@@ -111,12 +111,12 @@ func (a *ProxySQLMutator) Admit(req *admission.AdmissionRequest) *admission.Admi
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a MySQL database
-func setDefaultValues(proxysql *api.ProxySQL) (runtime.Object, error) {
-	if proxysql.Spec.Version == "" {
+func setDefaultValues(db *api.ProxySQL) (runtime.Object, error) {
+	if db.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
 	}
 
-	proxysql.SetDefaults()
+	db.SetDefaults()
 
-	return proxysql, nil
+	return db, nil
 }

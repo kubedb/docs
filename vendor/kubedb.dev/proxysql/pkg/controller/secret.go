@@ -34,9 +34,9 @@ const (
 	proxysqlUser = "proxysql"
 )
 
-func (c *Controller) ensureAuthSecret(proxysql *api.ProxySQL) error {
-	if proxysql.Spec.AuthSecret == nil {
-		authSecret, err := c.createAuthSecret(proxysql)
+func (c *Controller) ensureAuthSecret(db *api.ProxySQL) error {
+	if db.Spec.AuthSecret == nil {
+		authSecret, err := c.createAuthSecret(db)
 		if err != nil {
 			return err
 		}
@@ -44,7 +44,7 @@ func (c *Controller) ensureAuthSecret(proxysql *api.ProxySQL) error {
 		proxysqlPathced, _, err := util.PatchProxySQL(
 			context.TODO(),
 			c.DBClient.KubedbV1alpha2(),
-			proxysql,
+			db,
 			func(in *api.ProxySQL) *api.ProxySQL {
 				in.Spec.AuthSecret = authSecret
 				return in
@@ -54,28 +54,28 @@ func (c *Controller) ensureAuthSecret(proxysql *api.ProxySQL) error {
 		if err != nil {
 			return err
 		}
-		proxysql.Spec.AuthSecret = proxysqlPathced.Spec.AuthSecret
+		db.Spec.AuthSecret = proxysqlPathced.Spec.AuthSecret
 	}
 
 	return nil
 }
 
-func (c *Controller) createAuthSecret(proxysql *api.ProxySQL) (*core.LocalObjectReference, error) {
-	authSecretName := proxysql.Name + "-auth"
+func (c *Controller) createAuthSecret(db *api.ProxySQL) (*core.LocalObjectReference, error) {
+	authSecretName := db.Name + "-auth"
 
-	sc, err := c.checkSecret(authSecretName, proxysql)
+	sc, err := c.checkSecret(authSecretName, db)
 	if err != nil {
 		return nil, err
 	}
 
-	owner := metav1.NewControllerRef(proxysql, api.SchemeGroupVersion.WithKind(api.ResourceKindProxySQL))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindProxySQL))
 
 	if sc == nil {
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      authSecretName,
-				Namespace: proxysql.Namespace,
-				Labels:    proxysql.OffshootSelectors(),
+				Namespace: db.Namespace,
+				Labels:    db.OffshootSelectors(),
 			},
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
@@ -86,7 +86,7 @@ func (c *Controller) createAuthSecret(proxysql *api.ProxySQL) (*core.LocalObject
 
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
 
-		if _, err := c.Client.CoreV1().Secrets(proxysql.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
+		if _, err := c.Client.CoreV1().Secrets(db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return nil, err
 		}
 	}
@@ -95,8 +95,8 @@ func (c *Controller) createAuthSecret(proxysql *api.ProxySQL) (*core.LocalObject
 	}, nil
 }
 
-func (c *Controller) checkSecret(secretName string, proxysql *api.ProxySQL) (*core.Secret, error) {
-	secret, err := c.Client.CoreV1().Secrets(proxysql.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
+func (c *Controller) checkSecret(secretName string, db *api.ProxySQL) (*core.Secret, error) {
+	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil
@@ -105,8 +105,8 @@ func (c *Controller) checkSecret(secretName string, proxysql *api.ProxySQL) (*co
 	}
 
 	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindProxySQL ||
-		secret.Labels[api.LabelProxySQLName] != proxysql.Name {
-		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, proxysql.Namespace, secretName)
+		secret.Labels[api.LabelProxySQLName] != db.Name {
+		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, db.Namespace, secretName)
 	}
 	return secret, nil
 }

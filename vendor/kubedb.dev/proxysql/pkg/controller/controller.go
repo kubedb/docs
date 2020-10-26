@@ -155,29 +155,29 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	log.Infoln("Stopping KubeDB controller")
 }
 
-func (c *Controller) pushFailureEvent(proxysql *api.ProxySQL, reason string) {
+func (c *Controller) pushFailureEvent(db *api.ProxySQL, reason string) {
 	c.recorder.Eventf(
-		proxysql,
+		db,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready ProxySQL: "%v". Reason: %v`,
-		proxysql.Name,
+		db.Name,
 		reason,
 	)
 
-	proxysqlUpd, err := util.UpdateProxySQLStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), proxysql.ObjectMeta, func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
+	proxysqlUpd, err := util.UpdateProxySQLStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
 		in.Phase = api.DatabasePhaseNotReady
-		in.ObservedGeneration = proxysql.Generation
+		in.ObservedGeneration = db.Generation
 		return in
 	}, metav1.UpdateOptions{})
 
 	if err != nil {
 		c.recorder.Eventf(
-			proxysql,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			err.Error(),
 		)
 	}
-	proxysql.Status = proxysqlUpd.Status
+	db.Status = proxysqlUpd.Status
 }

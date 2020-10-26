@@ -134,21 +134,21 @@ func (pbValidator *PgBouncerValidator) Admit(req *admission.AdmissionRequest) *a
 
 // ValidatePgBouncer checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidatePgBouncer(client kubernetes.Interface, extClient cs.Interface, pgbouncer *api.PgBouncer, strictValidation bool) error {
-	if pgbouncer.Spec.Replicas == nil || *pgbouncer.Spec.Replicas < 1 {
-		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be greater than zero`, pgbouncer.Spec.Replicas)
+func ValidatePgBouncer(client kubernetes.Interface, extClient cs.Interface, db *api.PgBouncer, strictValidation bool) error {
+	if db.Spec.Replicas == nil || *db.Spec.Replicas < 1 {
+		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be greater than zero`, db.Spec.Replicas)
 	}
 
-	if pgbouncer.Spec.Version == "" {
+	if db.Spec.Version == "" {
 		return fmt.Errorf(`spec.Version can't be empty`)
 	}
 
-	if pgbouncer.Spec.TLS != nil {
-		if pgbouncer.Spec.TLS != nil {
-			if *pgbouncer.Spec.TLS.IssuerRef.APIGroup != cm_api.SchemeGroupVersion.Group {
+	if db.Spec.TLS != nil {
+		if db.Spec.TLS != nil {
+			if *db.Spec.TLS.IssuerRef.APIGroup != cm_api.SchemeGroupVersion.Group {
 				return fmt.Errorf(`spec.tls.client.issuerRef.apiGroup must be %s`, cm_api.SchemeGroupVersion.Group)
 			}
-			if (pgbouncer.Spec.TLS.IssuerRef.Kind != cm_api.IssuerKind) && (pgbouncer.Spec.TLS.IssuerRef.Kind != cm_api.ClusterIssuerKind) {
+			if (db.Spec.TLS.IssuerRef.Kind != cm_api.IssuerKind) && (db.Spec.TLS.IssuerRef.Kind != cm_api.ClusterIssuerKind) {
 				return fmt.Errorf(`spec.tls.client.issuerRef.issuerKind must be either %s or %s`, cm_api.IssuerKind, cm_api.ClusterIssuerKind)
 			}
 		}
@@ -157,13 +157,13 @@ func ValidatePgBouncer(client kubernetes.Interface, extClient cs.Interface, pgbo
 	if strictValidation {
 		// Check if pgbouncerVersion is absent or deprecated.
 		// If deprecated, return error
-		pgbouncerVersion, err := extClient.CatalogV1alpha1().PgBouncerVersions().Get(context.TODO(), string(pgbouncer.Spec.Version), metav1.GetOptions{})
+		pgbouncerVersion, err := extClient.CatalogV1alpha1().PgBouncerVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
 		if pgbouncerVersion.Spec.Deprecated {
 			return fmt.Errorf("pgbouncer %s/%s is using deprecated version %v. Skipped processing",
-				pgbouncer.Namespace, pgbouncer.Name, pgbouncerVersion.Name)
+				db.Namespace, db.Name, pgbouncerVersion.Name)
 		}
 	}
 	return nil

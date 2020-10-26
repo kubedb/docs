@@ -18,14 +18,12 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
@@ -34,32 +32,14 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-const (
-	MongoDBPort = 27017
-)
-
-var (
-	defaultDBPort = core.ServicePort{
-		Name:       "db",
-		Protocol:   core.ProtocolTCP,
-		Port:       MongoDBPort,
-		TargetPort: intstr.FromString("db"),
-	}
-)
-
-func (c *Controller) ensureService(mongodb *api.MongoDB) (kutil.VerbType, error) {
-	// Check if service name exists
-	if err := c.checkService(mongodb, mongodb.ServiceName()); err != nil {
-		return kutil.VerbUnchanged, err
-	}
-
+func (c *Controller) ensureService(db *api.MongoDB) (kutil.VerbType, error) {
 	// create database Service
-	vt, err := c.createService(mongodb)
+	vt, err := c.ensurePrimaryService(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.Recorder.Eventf(
-			mongodb,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s Service",
@@ -69,33 +49,16 @@ func (c *Controller) ensureService(mongodb *api.MongoDB) (kutil.VerbType, error)
 	return vt, nil
 }
 
-func (c *Controller) checkService(mongodb *api.MongoDB, serviceName string) error {
-	service, err := c.Client.CoreV1().Services(mongodb.Namespace).Get(context.TODO(), serviceName, metav1.GetOptions{})
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			return nil
-		}
-		return err
-	}
-
-	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindMongoDB ||
-		service.Labels[api.LabelDatabaseName] != mongodb.Name {
-		return fmt.Errorf(`intended service "%v/%v" already exists`, mongodb.Namespace, serviceName)
-	}
-
-	return nil
-}
-
-func (c *Controller) createService(mongodb *api.MongoDB) (kutil.VerbType, error) {
+func (c *Controller) ensurePrimaryService(db *api.MongoDB) (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
-		Name:      mongodb.OffshootName(),
-		Namespace: mongodb.Namespace,
+		Name:      db.OffshootName(),
+		Namespace: db.Namespace,
 	}
-	owner := metav1.NewControllerRef(mongodb, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
-	selector := mongodb.OffshootSelectors()
-	if mongodb.Spec.ShardTopology != nil {
-		selector = mongodb.MongosSelectors()
+	selector := db.OffshootSelectors()
+	if db.Spec.ShardTopology != nil {
+		selector = db.MongosSelectors()
 	}
 
 	_, ok, err := core_util.CreateOrPatchService(
@@ -104,27 +67,34 @@ func (c *Controller) createService(mongodb *api.MongoDB) (kutil.VerbType, error)
 		meta,
 		func(in *core.Service) *core.Service {
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-			in.Labels = mongodb.OffshootLabels()
-			in.Annotations = mongodb.Spec.ServiceTemplate.Annotations
+			in.Labels = db.OffshootLabels()
+			in.Annotations = db.Spec.ServiceTemplate.Annotations
 
 			in.Spec.Selector = selector
 			in.Spec.Ports = ofst.MergeServicePorts(
-				core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
-				mongodb.Spec.ServiceTemplate.Spec.Ports,
+				core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+					{
+						Name:       api.MongoDBPrimaryServicePortName,
+						Protocol:   core.ProtocolTCP,
+						Port:       api.MongoDBDatabasePort,
+						TargetPort: intstr.FromString(api.MongoDBDatabasePortName),
+					},
+				}),
+				db.Spec.ServiceTemplate.Spec.Ports,
 			)
 
-			if mongodb.Spec.ServiceTemplate.Spec.ClusterIP != "" {
-				in.Spec.ClusterIP = mongodb.Spec.ServiceTemplate.Spec.ClusterIP
+			if db.Spec.ServiceTemplate.Spec.ClusterIP != "" {
+				in.Spec.ClusterIP = db.Spec.ServiceTemplate.Spec.ClusterIP
 			}
-			if mongodb.Spec.ServiceTemplate.Spec.Type != "" {
-				in.Spec.Type = mongodb.Spec.ServiceTemplate.Spec.Type
+			if db.Spec.ServiceTemplate.Spec.Type != "" {
+				in.Spec.Type = db.Spec.ServiceTemplate.Spec.Type
 			}
-			in.Spec.ExternalIPs = mongodb.Spec.ServiceTemplate.Spec.ExternalIPs
-			in.Spec.LoadBalancerIP = mongodb.Spec.ServiceTemplate.Spec.LoadBalancerIP
-			in.Spec.LoadBalancerSourceRanges = mongodb.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
-			in.Spec.ExternalTrafficPolicy = mongodb.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
-			if mongodb.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
-				in.Spec.HealthCheckNodePort = mongodb.Spec.ServiceTemplate.Spec.HealthCheckNodePort
+			in.Spec.ExternalIPs = db.Spec.ServiceTemplate.Spec.ExternalIPs
+			in.Spec.LoadBalancerIP = db.Spec.ServiceTemplate.Spec.LoadBalancerIP
+			in.Spec.LoadBalancerSourceRanges = db.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
+			in.Spec.ExternalTrafficPolicy = db.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
+			if db.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
+				in.Spec.HealthCheckNodePort = db.Spec.ServiceTemplate.Spec.HealthCheckNodePort
 			}
 			return in
 		},
@@ -133,24 +103,19 @@ func (c *Controller) createService(mongodb *api.MongoDB) (kutil.VerbType, error)
 	return ok, err
 }
 
-func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, error) {
+func (c *Controller) ensureStatsService(db *api.MongoDB) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
-	if mongodb.Spec.Monitor == nil || mongodb.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
+	if db.Spec.Monitor == nil || db.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
 		log.Infoln("spec.monitor.agent is not provided by prometheus.io")
 		return kutil.VerbUnchanged, nil
 	}
 
-	// Check if stats Service name exists
-	if err := c.checkService(mongodb, mongodb.StatsService().ServiceName()); err != nil {
-		return kutil.VerbUnchanged, err
-	}
-
-	owner := metav1.NewControllerRef(mongodb, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
 	// create/patch stats Service
 	meta := metav1.ObjectMeta{
-		Name:      mongodb.StatsService().ServiceName(),
-		Namespace: mongodb.Namespace,
+		Name:      db.StatsService().ServiceName(),
+		Namespace: db.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(
 		context.TODO(),
@@ -158,13 +123,13 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 		meta,
 		func(in *core.Service) *core.Service {
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-			in.Labels = mongodb.StatsServiceLabels()
-			in.Spec.Selector = mongodb.OffshootSelectors()
+			in.Labels = db.StatsServiceLabels()
+			in.Spec.Selector = db.OffshootSelectors()
 			in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
 					Name:       mona.PrometheusExporterPortName,
 					Protocol:   core.ProtocolTCP,
-					Port:       mongodb.Spec.Monitor.Prometheus.Exporter.Port,
+					Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
 					TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 				},
 			})
@@ -176,7 +141,7 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.Recorder.Eventf(
-			mongodb,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s stats service",
@@ -186,19 +151,14 @@ func (c *Controller) ensureStatsService(mongodb *api.MongoDB) (kutil.VerbType, e
 	return vt, nil
 }
 
-func (c *Controller) ensureMongoGvrSvc(mongodb *api.MongoDB) error {
-	owner := metav1.NewControllerRef(mongodb, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
+func (c *Controller) ensureGoverningService(db *api.MongoDB) error {
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
 	svcFunc := func(svcName string, labels, selectors map[string]string) error {
 
-		// Check if service name exists with different db kind
-		if err := c.checkService(mongodb, svcName); err != nil {
-			return err
-		}
-
 		meta := metav1.ObjectMeta{
 			Name:      svcName,
-			Namespace: mongodb.Namespace,
+			Namespace: db.Namespace,
 		}
 
 		_, vt, err := core_util.CreateOrPatchService(
@@ -208,23 +168,12 @@ func (c *Controller) ensureMongoGvrSvc(mongodb *api.MongoDB) error {
 			func(in *core.Service) *core.Service {
 				core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 				in.Labels = labels
-				// 'tolerate-unready-endpoints' annotation is deprecated.
-				// Use: spec.PublishNotReadyAddresses
-				// ref: https://github.com/kubernetes/kubernetes/pull/63742.
-				// TODO: delete this annotation
-				in.Annotations = map[string]string{
-					"service.alpha.kubernetes.io/tolerate-unready-endpoints": "true",
-				}
-				in.Spec.Selector = selectors
+
 				in.Spec.Type = core.ServiceTypeClusterIP
 				in.Spec.ClusterIP = core.ClusterIPNone
+				in.Spec.Selector = selectors
 				in.Spec.PublishNotReadyAddresses = true
-				in.Spec.Ports = []core.ServicePort{
-					{
-						Name: "db",
-						Port: MongoDBPort,
-					},
-				}
+
 				return in
 			},
 			metav1.PatchOptions{},
@@ -232,7 +181,7 @@ func (c *Controller) ensureMongoGvrSvc(mongodb *api.MongoDB) error {
 
 		if err == nil {
 			c.Recorder.Eventf(
-				mongodb,
+				db,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,
 				"Successfully %s stats service",
@@ -242,38 +191,38 @@ func (c *Controller) ensureMongoGvrSvc(mongodb *api.MongoDB) error {
 		return err
 	}
 
-	if mongodb.Spec.ShardTopology != nil {
-		topology := mongodb.Spec.ShardTopology
+	if db.Spec.ShardTopology != nil {
+		topology := db.Spec.ShardTopology
 		// create shard governing service
 		for i := int32(0); i < topology.Shard.Shards; i++ {
-			if err := svcFunc(mongodb.GvrSvcName(
-				mongodb.ShardNodeName(i)),
-				mongodb.ShardLabels(i),
-				mongodb.ShardSelectors(i),
+			if err := svcFunc(db.GoverningServiceName(
+				db.ShardNodeName(i)),
+				db.ShardLabels(i),
+				db.ShardSelectors(i),
 			); err != nil {
 				return err
 			}
 		}
 		// create configsvr governing service
-		if err := svcFunc(mongodb.GvrSvcName(
-			mongodb.ConfigSvrNodeName()),
-			mongodb.ConfigSvrLabels(),
-			mongodb.ConfigSvrSelectors(),
+		if err := svcFunc(db.GoverningServiceName(
+			db.ConfigSvrNodeName()),
+			db.ConfigSvrLabels(),
+			db.ConfigSvrSelectors(),
 		); err != nil {
 			return err
 		}
 
 		// create mongos governing service
-		return svcFunc(mongodb.GvrSvcName(
-			mongodb.MongosNodeName()),
-			mongodb.MongosLabels(),
-			mongodb.MongosSelectors(),
+		return svcFunc(db.GoverningServiceName(
+			db.MongosNodeName()),
+			db.MongosLabels(),
+			db.MongosSelectors(),
 		)
 	}
 	// create mongodb governing service
-	return svcFunc(mongodb.GvrSvcName(
-		mongodb.OffshootName()),
-		mongodb.OffshootLabels(),
-		mongodb.OffshootSelectors(),
+	return svcFunc(db.GoverningServiceName(
+		db.OffshootName()),
+		db.OffshootLabels(),
+		db.OffshootSelectors(),
 	)
 }

@@ -57,7 +57,7 @@ xpack.security.http.ssl.enabled: false
 `
 
 func (es *Elasticsearch) EnsureDefaultConfig() error {
-	secret, err := es.findSecret(es.elasticsearch.ConfigSecretName())
+	secret, err := es.findSecret(es.db.ConfigSecretName())
 	if err != nil {
 		return err
 	}
@@ -75,11 +75,11 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 		// should be synced.
 		ctrl := metav1.GetControllerOf(secret)
 		if ctrl != nil &&
-			ctrl.Kind == api.ResourceKindElasticsearch && ctrl.Name == es.elasticsearch.Name {
+			ctrl.Kind == api.ResourceKindElasticsearch && ctrl.Name == es.db.Name {
 
 			// sync labels
 			if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secret.ObjectMeta, func(in *core.Secret) *core.Secret {
-				in.Labels = core_util.UpsertMap(in.Labels, es.elasticsearch.OffshootLabels())
+				in.Labels = core_util.UpsertMap(in.Labels, es.db.OffshootLabels())
 				return in
 			}, metav1.PatchOptions{}); err != nil {
 				return err
@@ -91,19 +91,19 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 
 	// config secret isn't created yet.
 	// let's create it.
-	owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+	owner := metav1.NewControllerRef(es.db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 	secretMeta := metav1.ObjectMeta{
-		Name:      es.elasticsearch.ConfigSecretName(),
-		Namespace: es.elasticsearch.Namespace,
+		Name:      es.db.ConfigSecretName(),
+		Namespace: es.db.Namespace,
 	}
 
 	var config string
 
-	if !es.elasticsearch.Spec.DisableSecurity {
+	if !es.db.Spec.DisableSecurity {
 		config = xpack_security_enabled
 
 		// If rest layer is secured with certs
-		if es.elasticsearch.Spec.EnableSSL {
+		if es.db.Spec.EnableSSL {
 			config += https_enabled
 		} else {
 			config += https_disabled
@@ -114,7 +114,7 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 	}
 
 	if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secretMeta, func(in *core.Secret) *core.Secret {
-		in.Labels = core_util.UpsertMap(in.Labels, es.elasticsearch.OffshootLabels())
+		in.Labels = core_util.UpsertMap(in.Labels, es.db.OffshootLabels())
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Data = map[string][]byte{
 			ConfigFileName: []byte(config),

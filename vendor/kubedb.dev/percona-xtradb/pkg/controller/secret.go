@@ -34,30 +34,30 @@ const (
 	mysqlUser = "root"
 )
 
-func (c *Controller) ensureAuthSecret(px *api.PerconaXtraDB) error {
-	if px.Spec.AuthSecret == nil {
-		authSecret, err := c.createAuthSecret(px)
+func (c *Controller) ensureAuthSecret(db *api.PerconaXtraDB) error {
+	if db.Spec.AuthSecret == nil {
+		authSecret, err := c.createAuthSecret(db)
 		if err != nil {
 			return err
 		}
 
-		per, _, err := util.PatchPerconaXtraDB(context.TODO(), c.DBClient.KubedbV1alpha2(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
+		per, _, err := util.PatchPerconaXtraDB(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
 			in.Spec.AuthSecret = authSecret
 			return in
 		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
-		px.Spec.AuthSecret = per.Spec.AuthSecret
+		db.Spec.AuthSecret = per.Spec.AuthSecret
 		return nil
 	}
-	return c.upgradeAuthSecret(px)
+	return c.upgradeAuthSecret(db)
 }
 
-func (c *Controller) createAuthSecret(px *api.PerconaXtraDB) (*core.LocalObjectReference, error) {
-	authSecretName := px.Name + "-auth"
+func (c *Controller) createAuthSecret(db *api.PerconaXtraDB) (*core.LocalObjectReference, error) {
+	authSecretName := db.Name + "-auth"
 
-	sc, err := c.checkSecret(authSecretName, px)
+	sc, err := c.checkSecret(authSecretName, db)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +65,7 @@ func (c *Controller) createAuthSecret(px *api.PerconaXtraDB) (*core.LocalObjectR
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   authSecretName,
-				Labels: px.OffshootLabels(),
+				Labels: db.OffshootLabels(),
 			},
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
@@ -74,7 +74,7 @@ func (c *Controller) createAuthSecret(px *api.PerconaXtraDB) (*core.LocalObjectR
 			},
 		}
 
-		if _, err := c.Client.CoreV1().Secrets(px.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
+		if _, err := c.Client.CoreV1().Secrets(db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return nil, err
 		}
 	}
@@ -85,10 +85,10 @@ func (c *Controller) createAuthSecret(px *api.PerconaXtraDB) (*core.LocalObjectR
 
 // This is done to fix 0.8.0 -> 0.9.0 upgrade due to
 // https://github.com/kubedb/percona-xtradb/pull/115/files#diff-10ddaf307bbebafda149db10a28b9c24R17 commit
-func (c *Controller) upgradeAuthSecret(px *api.PerconaXtraDB) error {
+func (c *Controller) upgradeAuthSecret(db *api.PerconaXtraDB) error {
 	meta := metav1.ObjectMeta{
-		Name:      px.Spec.AuthSecret.Name,
-		Namespace: px.Namespace,
+		Name:      db.Spec.AuthSecret.Name,
+		Namespace: db.Namespace,
 	}
 
 	_, _, err := core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {
@@ -102,8 +102,8 @@ func (c *Controller) upgradeAuthSecret(px *api.PerconaXtraDB) error {
 	return err
 }
 
-func (c *Controller) checkSecret(secretName string, px *api.PerconaXtraDB) (*core.Secret, error) {
-	secret, err := c.Client.CoreV1().Secrets(px.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
+func (c *Controller) checkSecret(secretName string, db *api.PerconaXtraDB) (*core.Secret, error) {
+	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil
@@ -112,8 +112,8 @@ func (c *Controller) checkSecret(secretName string, px *api.PerconaXtraDB) (*cor
 	}
 
 	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindPerconaXtraDB ||
-		secret.Labels[api.LabelDatabaseName] != px.Name {
-		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, px.Namespace, secretName)
+		secret.Labels[api.LabelDatabaseName] != db.Name {
+		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, db.Namespace, secretName)
 	}
 	return secret, nil
 }

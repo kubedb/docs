@@ -35,30 +35,30 @@ const (
 	EnvPostgresPassword = "POSTGRES_PASSWORD"
 )
 
-func (c *Controller) ensureAuthSecret(postgres *api.Postgres) error {
-	authSecret := postgres.Spec.AuthSecret
+func (c *Controller) ensureAuthSecret(db *api.Postgres) error {
+	authSecret := db.Spec.AuthSecret
 	if authSecret == nil {
 		var err error
-		if authSecret, err = c.createAuthSecret(postgres); err != nil {
+		if authSecret, err = c.createAuthSecret(db); err != nil {
 			return err
 		}
-		pg, _, err := util.PatchPostgres(context.TODO(), c.DBClient.KubedbV1alpha2(), postgres, func(in *api.Postgres) *api.Postgres {
+		pg, _, err := util.PatchPostgres(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.Postgres) *api.Postgres {
 			in.Spec.AuthSecret = authSecret
 			return in
 		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
-		postgres.Spec.AuthSecret = pg.Spec.AuthSecret
+		db.Spec.AuthSecret = pg.Spec.AuthSecret
 		return nil
 	}
-	return c.upgradeAuthSecret(postgres)
+	return c.upgradeAuthSecret(db)
 }
 
-func (c *Controller) findAuthSecret(postgres *api.Postgres) (*core.Secret, error) {
-	name := postgres.OffshootName() + "-auth"
+func (c *Controller) findAuthSecret(db *api.Postgres) (*core.Secret, error) {
+	name := db.OffshootName() + "-auth"
 
-	secret, err := c.Client.CoreV1().Secrets(postgres.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil
@@ -67,15 +67,15 @@ func (c *Controller) findAuthSecret(postgres *api.Postgres) (*core.Secret, error
 	}
 
 	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindPostgres ||
-		secret.Labels[api.LabelDatabaseName] != postgres.Name {
-		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, postgres.Namespace, name)
+		secret.Labels[api.LabelDatabaseName] != db.Name {
+		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, db.Namespace, name)
 	}
 
 	return secret, nil
 }
 
-func (c *Controller) createAuthSecret(postgres *api.Postgres) (*core.LocalObjectReference, error) {
-	databaseSecret, err := c.findAuthSecret(postgres)
+func (c *Controller) createAuthSecret(db *api.Postgres) (*core.LocalObjectReference, error) {
+	databaseSecret, err := c.findAuthSecret(db)
 	if err != nil {
 		return nil, err
 	}
@@ -85,11 +85,11 @@ func (c *Controller) createAuthSecret(postgres *api.Postgres) (*core.LocalObject
 		}, nil
 	}
 
-	name := fmt.Sprintf("%v-auth", postgres.OffshootName())
+	name := fmt.Sprintf("%v-auth", db.OffshootName())
 	secret := &core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   name,
-			Labels: postgres.OffshootLabels(),
+			Labels: db.OffshootLabels(),
 		},
 		Type: core.SecretTypeOpaque,
 		Data: map[string][]byte{
@@ -97,7 +97,7 @@ func (c *Controller) createAuthSecret(postgres *api.Postgres) (*core.LocalObject
 			core.BasicAuthPasswordKey: []byte(passgen.Generate(api.DefaultPasswordLength)),
 		},
 	}
-	if _, err := c.Client.CoreV1().Secrets(postgres.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
+	if _, err := c.Client.CoreV1().Secrets(db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 		return nil, err
 	}
 
@@ -108,10 +108,10 @@ func (c *Controller) createAuthSecret(postgres *api.Postgres) (*core.LocalObject
 
 // This is done to fix 0.8.0 -> 0.9.0 upgrade due to
 // https://github.com/kubedb/postgres/pull/179/files#diff-10ddaf307bbebafda149db10a28b9c24R20 commit
-func (c *Controller) upgradeAuthSecret(postgres *api.Postgres) error {
+func (c *Controller) upgradeAuthSecret(db *api.Postgres) error {
 	meta := metav1.ObjectMeta{
-		Name:      postgres.Spec.AuthSecret.Name,
-		Namespace: postgres.Namespace,
+		Name:      db.Spec.AuthSecret.Name,
+		Namespace: db.Namespace,
 	}
 
 	_, _, err := core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {

@@ -31,25 +31,25 @@ import (
 )
 
 func (es *Elasticsearch) EnsureAuthSecret() error {
-	authSecret := es.elasticsearch.Spec.AuthSecret
+	authSecret := es.db.Spec.AuthSecret
 	if authSecret == nil {
 		var err error
 		if authSecret, err = es.createAdminCredSecret(); err != nil {
 			return err
 		}
-		newES, _, err := util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.elasticsearch, func(in *api.Elasticsearch) *api.Elasticsearch {
+		newES, _, err := util.PatchElasticsearch(context.TODO(), es.extClient.KubedbV1alpha2(), es.db, func(in *api.Elasticsearch) *api.Elasticsearch {
 			in.Spec.AuthSecret = authSecret
 			return in
 		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
-		es.elasticsearch = newES
+		es.db = newES
 	} else {
 		// Get the secret and validate it.
-		dbSecret, err := es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{})
+		dbSecret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{})
 		if err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to get credential secret: %s/%s", es.elasticsearch.Namespace, authSecret.Name))
+			return errors.Wrap(err, fmt.Sprintf("failed to get credential secret: %s/%s", es.db.Namespace, authSecret.Name))
 		}
 
 		err = es.validateAndSyncLabels(dbSecret)
@@ -61,7 +61,7 @@ func (es *Elasticsearch) EnsureAuthSecret() error {
 }
 
 func (es *Elasticsearch) createAdminCredSecret() (*core.LocalObjectReference, error) {
-	dbSecret, err := es.findSecret(es.elasticsearch.UserCredSecretName(string(api.ElasticsearchInternalUserElastic)))
+	dbSecret, err := es.findSecret(es.db.UserCredSecretName(string(api.ElasticsearchInternalUserElastic)))
 	if err != nil {
 		return nil, err
 	}
@@ -90,18 +90,18 @@ func (es *Elasticsearch) createAdminCredSecret() (*core.LocalObjectReference, er
 
 	secret := &core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   es.elasticsearch.UserCredSecretName(string(api.ElasticsearchInternalUserElastic)),
-			Labels: es.elasticsearch.OffshootLabels(),
+			Name:   es.db.UserCredSecretName(string(api.ElasticsearchInternalUserElastic)),
+			Labels: es.db.OffshootLabels(),
 		},
 		Type: core.SecretTypeBasicAuth,
 		Data: data,
 	}
 
 	// add owner reference
-	owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+	owner := metav1.NewControllerRef(es.db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 	core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
 
-	if _, err := es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
+	if _, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 		return nil, err
 	}
 
@@ -129,11 +129,11 @@ func (es *Elasticsearch) validateAndSyncLabels(secret *core.Secret) error {
 	// should be synced.
 	ctrl := metav1.GetControllerOf(secret)
 	if ctrl != nil &&
-		ctrl.Kind == api.ResourceKindElasticsearch && ctrl.Name == es.elasticsearch.Name {
+		ctrl.Kind == api.ResourceKindElasticsearch && ctrl.Name == es.db.Name {
 
 		// sync labels
 		if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secret.ObjectMeta, func(in *core.Secret) *core.Secret {
-			in.Labels = core_util.UpsertMap(in.Labels, es.elasticsearch.OffshootLabels())
+			in.Labels = core_util.UpsertMap(in.Labels, es.db.OffshootLabels())
 			return in
 		}, metav1.PatchOptions{}); err != nil {
 			return err

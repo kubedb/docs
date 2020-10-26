@@ -65,15 +65,15 @@ func (c *Controller) manageAppBindingEvent(key string) error {
 	return nil
 }
 
-func (c *Controller) checkAppBindingsInPgBouncerSpec(appBindingInfo map[string]string, pgbouncer *api.PgBouncer) error {
-	if pgbouncer.Spec.Databases != nil && len(pgbouncer.Spec.Databases) > 0 {
-		for _, db := range pgbouncer.Spec.Databases {
-			if db.DatabaseRef.Name == appBindingInfo[nameKey] {
-				err := c.manageService(pgbouncer)
+func (c *Controller) checkAppBindingsInPgBouncerSpec(appBindingInfo map[string]string, db *api.PgBouncer) error {
+	if db.Spec.Databases != nil && len(db.Spec.Databases) > 0 {
+		for _, pg := range db.Spec.Databases {
+			if pg.DatabaseRef.Name == appBindingInfo[nameKey] {
+				err := c.ensureService(db)
 				if err != nil {
 					return err
 				}
-				err = c.manageConfigMap(pgbouncer)
+				err = c.manageSecret(db)
 				if err != nil {
 					return err
 				}
@@ -83,11 +83,11 @@ func (c *Controller) checkAppBindingsInPgBouncerSpec(appBindingInfo map[string]s
 	return nil
 }
 
-func (c *Controller) getCABundlesFromAppBindingsInPgBouncerSpec(pgbouncer *api.PgBouncer) (string, error) {
+func (c *Controller) getCABundlesFromAppBindingsInPgBouncerSpec(db *api.PgBouncer) (string, error) {
 	isCAForAppBindingInserted := map[string]bool{}
 	var myCAStrings string
-	if pgbouncer.Spec.Databases != nil && len(pgbouncer.Spec.Databases) > 0 {
-		for _, db := range pgbouncer.Spec.Databases {
+	if db.Spec.Databases != nil && len(db.Spec.Databases) > 0 {
+		for _, db := range db.Spec.Databases {
 			appBinding, err := c.AppCatalogClient.AppcatalogV1alpha1().AppBindings(db.DatabaseRef.Namespace).Get(context.TODO(), db.DatabaseRef.Name, metav1.GetOptions{})
 			if err != nil {
 				if kerr.IsNotFound(err) {

@@ -33,7 +33,9 @@ import (
 	rdc "kubedb.dev/redis/pkg/controller"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	"go.bytebuilders.dev/license-verifier/kubernetes/apis/licenses/v1alpha1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/metadata"
@@ -54,6 +56,7 @@ type OperatorConfig struct {
 	amc.Config
 
 	LicenseFile      string
+	License          v1alpha1.License
 	ClientConfig     *rest.Config
 	KubeClient       kubernetes.Interface
 	CRDClient        crd_cs.Interface
@@ -98,11 +101,14 @@ func (c *OperatorConfig) New() (*Controller, error) {
 	ctrl.mcCtrl = mcc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder)
 	ctrl.mgCtrl = mgc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder)
 	ctrl.myCtrl = myc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, c.Recorder)
-	ctrl.pgbCtrl = pgb.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder)
 	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder)
-	ctrl.prCtrl = prc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.PromClient, ctrl.Config, c.Recorder)
 	ctrl.pxCtrl = pxc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, c.Recorder)
 	ctrl.rdCtrl = rdc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder)
+
+	if sets.NewString(c.License.Products...).Has("kubedb-enterprise") {
+		ctrl.pgbCtrl = pgb.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder)
+		ctrl.prCtrl = prc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.PromClient, ctrl.Config, c.Recorder)
+	}
 
 	if err := ctrl.Init(); err != nil {
 		return nil, err
@@ -143,16 +149,20 @@ func (c *Controller) Init() error {
 		return err
 	}
 
-	if err := c.pgbCtrl.Init(); err != nil {
-		return err
+	if c.pgbCtrl != nil {
+		if err := c.pgbCtrl.Init(); err != nil {
+			return err
+		}
 	}
 
 	if err := c.pgCtrl.Init(); err != nil {
 		return err
 	}
 
-	if err := c.prCtrl.Init(); err != nil {
-		return err
+	if c.prCtrl != nil {
+		if err := c.prCtrl.Init(); err != nil {
+			return err
+		}
 	}
 
 	if err := c.pxCtrl.Init(); err != nil {

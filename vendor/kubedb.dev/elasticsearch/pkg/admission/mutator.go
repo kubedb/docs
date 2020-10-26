@@ -112,19 +112,19 @@ func (a *ElasticsearchMutator) Admit(req *admission.AdmissionRequest) *admission
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a Elasticsearch database
-func setDefaultValues(extClient cs.Interface, elasticsearch *api.Elasticsearch, clusterTopology *core_util.Topology) (runtime.Object, error) {
-	if elasticsearch.Spec.Version == "" {
+func setDefaultValues(extClient cs.Interface, db *api.Elasticsearch, clusterTopology *core_util.Topology) (runtime.Object, error) {
+	if db.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
 	}
 
-	if elasticsearch.Spec.Halted {
-		if elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
+	if db.Spec.Halted {
+		if db.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
 			return nil, errors.New(`Can't halt, since termination policy is 'DoNotTerminate'`)
 		}
-		elasticsearch.Spec.TerminationPolicy = api.TerminationPolicyHalt
+		db.Spec.TerminationPolicy = api.TerminationPolicyHalt
 	}
 
-	topology := elasticsearch.Spec.Topology
+	topology := db.Spec.Topology
 	if topology != nil {
 		if topology.Ingest.Replicas == nil {
 			topology.Ingest.Replicas = types.Int32P(1)
@@ -138,17 +138,17 @@ func setDefaultValues(extClient cs.Interface, elasticsearch *api.Elasticsearch, 
 			topology.Data.Replicas = types.Int32P(1)
 		}
 	} else {
-		if elasticsearch.Spec.Replicas == nil {
-			elasticsearch.Spec.Replicas = types.Int32P(1)
+		if db.Spec.Replicas == nil {
+			db.Spec.Replicas = types.Int32P(1)
 		}
 	}
 
-	esversion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), elasticsearch.Spec.Version, metav1.GetOptions{})
+	esversion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), db.Spec.Version, metav1.GetOptions{})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to get ElasticsearchVersion: %s", elasticsearch.Spec.Version)
+		return nil, errors.Wrapf(err, "failed to get ElasticsearchVersion: %s", db.Spec.Version)
 	}
 
-	elasticsearch.SetDefaults(esversion, clusterTopology)
+	db.SetDefaults(esversion, clusterTopology)
 
-	return elasticsearch, nil
+	return db, nil
 }

@@ -111,19 +111,19 @@ func (a *PerconaXtraDBMutator) Admit(req *admission.AdmissionRequest) *admission
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a MySQL database
-func setDefaultValues(px *api.PerconaXtraDB) (runtime.Object, error) {
-	if px.Spec.Version == "" {
+func setDefaultValues(db *api.PerconaXtraDB) (runtime.Object, error) {
+	if db.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
 	}
 
-	if px.Spec.Halted {
-		if px.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
+	if db.Spec.Halted {
+		if db.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
 			return nil, errors.New(`Can't halt, since termination policy is 'DoNotTerminate'`)
 		}
-		px.Spec.TerminationPolicy = api.TerminationPolicyHalt
+		db.Spec.TerminationPolicy = api.TerminationPolicyHalt
 	}
 
-	px.SetDefaults()
+	db.SetDefaults()
 
-	return px, nil
+	return db, nil
 }

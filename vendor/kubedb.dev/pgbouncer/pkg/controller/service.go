@@ -18,14 +18,12 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
@@ -34,100 +32,77 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-const (
-	PgBouncerPortName = "api"
-)
+func (c *Controller) ensureGoverningService(db *api.PgBouncer) error {
+	meta := metav1.ObjectMeta{
+		Name:      db.GoverningServiceName(),
+		Namespace: db.Namespace,
+	}
 
-func (c *Controller) ensureService(pgbouncer *api.PgBouncer) (kutil.VerbType, error) {
-	// Check if service name exists
-	err := c.checkService(pgbouncer, pgbouncer.OffshootName())
-	if err != nil {
-		return kutil.VerbUnchanged, err
-	}
-	// create database Service
-	vt1, err := c.createOrPatchService(pgbouncer)
-	if err != nil {
-		return kutil.VerbUnchanged, err
-	}
-	if vt1 != kutil.VerbUnchanged {
-		c.recorder.Eventf(
-			pgbouncer,
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
+
+	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+		in.Labels = db.OffshootLabels()
+
+		in.Spec.Type = core.ServiceTypeClusterIP
+		in.Spec.ClusterIP = core.ClusterIPNone
+		in.Spec.Selector = db.OffshootSelectors()
+		in.Spec.PublishNotReadyAddresses = true
+
+		return in
+	}, metav1.PatchOptions{})
+	if err == nil && (vt == kutil.VerbCreated || vt == kutil.VerbPatched) {
+		c.Recorder.Eventf(
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
-			"Successfully %s Service",
-			vt1,
+			"Successfully %s governing service",
+			vt,
 		)
 	}
 
-	return vt1, nil
+	return err
 }
 
-func (c *Controller) checkService(pgbouncer *api.PgBouncer, name string) error {
-	//returns error if Service already exists
-	service, err := c.Client.CoreV1().Services(pgbouncer.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			return nil
-		}
-		return err
-	}
-
-	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindPgBouncer ||
-		service.Labels[api.LabelDatabaseName] != pgbouncer.Name {
-		return fmt.Errorf(`intended service "%v/%v" already exists`, pgbouncer.Namespace, name)
-	}
-
-	return nil
-}
-
-func (c *Controller) createOrPatchService(pgbouncer *api.PgBouncer) (kutil.VerbType, error) {
+func (c *Controller) ensurePrimaryService(db *api.PgBouncer) (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
-		Name:      pgbouncer.OffshootName(),
-		Namespace: pgbouncer.Namespace,
+		Name:      db.OffshootName(),
+		Namespace: db.Namespace,
 	}
 
 	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
-		ref := metav1.NewControllerRef(pgbouncer, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
+		ref := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
 		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
-		in.Labels = pgbouncer.OffshootLabels()
+		in.Labels = db.OffshootLabels()
 
-		in.Spec.Selector = pgbouncer.OffshootSelectors()
-		in.Spec.Ports = upsertServicePort(in, pgbouncer)
+		in.Spec.Selector = db.OffshootSelectors()
+		in.Spec.Ports = ofst.MergeServicePorts(
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+				{
+					Name:       api.PgBouncerPrimaryServicePortName,
+					Port:       api.PgBouncerDatabasePort,
+					TargetPort: intstr.FromString(api.PgBouncerDatabasePortName),
+				},
+			}),
+			db.Spec.ServiceTemplate.Spec.Ports,
+		)
 
-		if pgbouncer.Spec.ServiceTemplate.Spec.ClusterIP != "" {
-			in.Spec.ClusterIP = pgbouncer.Spec.ServiceTemplate.Spec.ClusterIP
+		if db.Spec.ServiceTemplate.Spec.ClusterIP != "" {
+			in.Spec.ClusterIP = db.Spec.ServiceTemplate.Spec.ClusterIP
 		}
-		if pgbouncer.Spec.ServiceTemplate.Spec.Type != "" {
-			in.Spec.Type = pgbouncer.Spec.ServiceTemplate.Spec.Type
+		if db.Spec.ServiceTemplate.Spec.Type != "" {
+			in.Spec.Type = db.Spec.ServiceTemplate.Spec.Type
 		}
-		in.Spec.ExternalIPs = pgbouncer.Spec.ServiceTemplate.Spec.ExternalIPs
-		in.Spec.LoadBalancerIP = pgbouncer.Spec.ServiceTemplate.Spec.LoadBalancerIP
-		in.Spec.LoadBalancerSourceRanges = pgbouncer.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
-		in.Spec.ExternalTrafficPolicy = pgbouncer.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
-		if pgbouncer.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
-			in.Spec.HealthCheckNodePort = pgbouncer.Spec.ServiceTemplate.Spec.HealthCheckNodePort
+		in.Spec.ExternalIPs = db.Spec.ServiceTemplate.Spec.ExternalIPs
+		in.Spec.LoadBalancerIP = db.Spec.ServiceTemplate.Spec.LoadBalancerIP
+		in.Spec.LoadBalancerSourceRanges = db.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
+		in.Spec.ExternalTrafficPolicy = db.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
+		if db.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
+			in.Spec.HealthCheckNodePort = db.Spec.ServiceTemplate.Spec.HealthCheckNodePort
 		}
 		return in
 	}, metav1.PatchOptions{})
 	return ok, err
-}
-
-func upsertServicePort(in *core.Service, pgbouncer *api.PgBouncer) []core.ServicePort {
-	if pgbouncer.Spec.ConnectionPool == nil {
-		return ofst.MergeServicePorts(
-			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{}),
-			pgbouncer.Spec.ServiceTemplate.Spec.Ports,
-		)
-	}
-	defaultDBPort := core.ServicePort{
-		Name:       PgBouncerPortName,
-		Port:       *pgbouncer.Spec.ConnectionPool.Port,
-		TargetPort: intstr.FromString(PgBouncerPortName),
-	}
-	return ofst.MergeServicePorts(
-		core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
-		pgbouncer.Spec.ServiceTemplate.Spec.Ports,
-	)
 }
 
 func (c *Controller) ensureStatsService(db *api.PgBouncer) (kutil.VerbType, error) {
@@ -137,20 +112,16 @@ func (c *Controller) ensureStatsService(db *api.PgBouncer) (kutil.VerbType, erro
 		return kutil.VerbUnchanged, nil
 	}
 
-	// Check if statsService name exists
-	if err := c.checkService(db, db.StatsService().ServiceName()); err != nil {
-		return kutil.VerbUnchanged, err
-	}
-
 	// reconcile stats service
 	meta := metav1.ObjectMeta{
 		Name:      db.StatsService().ServiceName(),
 		Namespace: db.Namespace,
 	}
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
-		ref := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
-		core_util.EnsureOwnerReference(&in.ObjectMeta, ref)
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.StatsServiceLabels()
+
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{

@@ -32,38 +32,38 @@ import (
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
-func (c *Controller) newMonitorController(proxysql *api.ProxySQL) (mona.Agent, error) {
-	monitorSpec := proxysql.Spec.Monitor
+func (c *Controller) newMonitorController(db *api.ProxySQL) (mona.Agent, error) {
+	monitorSpec := db.Spec.Monitor
 
 	if monitorSpec == nil {
-		return nil, fmt.Errorf("MonitorSpec not found for ProxySQL %v/%v in %v", proxysql.Namespace, proxysql.Name, proxysql.Spec)
+		return nil, fmt.Errorf("MonitorSpec not found for ProxySQL %v/%v in %v", db.Namespace, db.Name, db.Spec)
 	}
 
 	if monitorSpec.Prometheus != nil {
 		return agents.New(monitorSpec.Agent, c.Client, c.promClient), nil
 	}
 
-	return nil, fmt.Errorf("monitoring controller not found for ProxySQL %v/%v in %v", proxysql.Namespace, proxysql.Name, monitorSpec)
+	return nil, fmt.Errorf("monitoring controller not found for ProxySQL %v/%v in %v", db.Namespace, db.Name, monitorSpec)
 }
 
-func (c *Controller) addOrUpdateMonitor(proxysql *api.ProxySQL) (kutil.VerbType, error) {
-	agent, err := c.newMonitorController(proxysql)
+func (c *Controller) addOrUpdateMonitor(db *api.ProxySQL) (kutil.VerbType, error) {
+	agent, err := c.newMonitorController(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.CreateOrUpdate(proxysql.StatsService(), proxysql.Spec.Monitor)
+	return agent.CreateOrUpdate(db.StatsService(), db.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(proxysql *api.ProxySQL) (kutil.VerbType, error) {
-	agent, err := c.newMonitorController(proxysql)
+func (c *Controller) deleteMonitor(db *api.ProxySQL) (kutil.VerbType, error) {
+	agent, err := c.newMonitorController(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.Delete(proxysql.StatsService())
+	return agent.Delete(db.StatsService())
 }
 
-func (c *Controller) getOldAgent(proxysql *api.ProxySQL) mona.Agent {
-	service, err := c.Client.CoreV1().Services(proxysql.Namespace).Get(context.TODO(), proxysql.StatsService().ServiceName(), metav1.GetOptions{})
+func (c *Controller) getOldAgent(db *api.ProxySQL) mona.Agent {
+	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), db.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -71,35 +71,35 @@ func (c *Controller) getOldAgent(proxysql *api.ProxySQL) mona.Agent {
 	return agents.New(mona.AgentType(oldAgentType), c.Client, c.promClient)
 }
 
-func (c *Controller) setNewAgent(proxysql *api.ProxySQL) error {
-	service, err := c.Client.CoreV1().Services(proxysql.Namespace).Get(context.TODO(), proxysql.StatsService().ServiceName(), metav1.GetOptions{})
+func (c *Controller) setNewAgent(db *api.ProxySQL) error {
+	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), db.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 	_, _, err = core_util.PatchService(context.TODO(), c.Client, service, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
-			mona.KeyAgent: string(proxysql.Spec.Monitor.Agent),
+			mona.KeyAgent: string(db.Spec.Monitor.Agent),
 		})
 		return in
 	}, metav1.PatchOptions{})
 	return err
 }
 
-func (c *Controller) manageMonitor(proxysql *api.ProxySQL) error {
-	oldAgent := c.getOldAgent(proxysql)
-	if proxysql.Spec.Monitor != nil {
+func (c *Controller) manageMonitor(db *api.ProxySQL) error {
+	oldAgent := c.getOldAgent(db)
+	if db.Spec.Monitor != nil {
 		if oldAgent != nil &&
-			oldAgent.GetType() != proxysql.Spec.Monitor.Agent {
-			if _, err := oldAgent.Delete(proxysql.StatsService()); err != nil {
+			oldAgent.GetType() != db.Spec.Monitor.Agent {
+			if _, err := oldAgent.Delete(db.StatsService()); err != nil {
 				log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 			}
 		}
-		if _, err := c.addOrUpdateMonitor(proxysql); err != nil {
+		if _, err := c.addOrUpdateMonitor(db); err != nil {
 			return err
 		}
-		return c.setNewAgent(proxysql)
+		return c.setNewAgent(db)
 	} else if oldAgent != nil {
-		if _, err := oldAgent.Delete(proxysql.StatsService()); err != nil {
+		if _, err := oldAgent.Delete(db.StatsService()); err != nil {
 			log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 		}
 	}

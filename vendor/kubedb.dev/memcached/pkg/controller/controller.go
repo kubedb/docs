@@ -156,28 +156,28 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	log.Infoln("Stopping KubeDB controller")
 }
 
-func (c *Controller) pushFailureEvent(memcached *api.Memcached, reason string) {
+func (c *Controller) pushFailureEvent(db *api.Memcached, reason string) {
 	c.Recorder.Eventf(
-		memcached,
+		db,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready Memcached: "%v". Reason: %v`,
-		memcached.Name,
+		db.Name,
 		reason,
 	)
 
-	mc, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+	mc, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseNotReady
-		in.ObservedGeneration = memcached.Generation
+		in.ObservedGeneration = db.Generation
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
 		c.Recorder.Eventf(
-			memcached,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			err.Error(),
 		)
 	}
-	memcached.Status = mc.Status
+	db.Status = mc.Status
 }

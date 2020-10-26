@@ -27,14 +27,21 @@ import (
 	"github.com/appscode/go/types"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_util "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1/util"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 func (c *Controller) ensureAppBinding(db *api.MySQL) (kutil.VerbType, error) {
+	port, err := c.GetPrimaryServicePort(db)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
 	appmeta := db.AppBindingMeta()
 
 	meta := metav1.ObjectMeta{
@@ -56,11 +63,11 @@ func (c *Controller) ensureAppBinding(db *api.MySQL) (kutil.VerbType, error) {
 
 		in.Spec.Type = appmeta.Type()
 		in.Spec.Version = mysqlVersion.Spec.Version
-		in.Spec.ClientConfig.URL = types.StringP(fmt.Sprintf("tcp(%s:%d)/", db.ServiceName(), defaultDBPort.Port))
+		in.Spec.ClientConfig.URL = types.StringP(fmt.Sprintf("tcp(%s:%d)/", db.ServiceName(), port))
 		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
 			Scheme: "mysql",
 			Name:   db.ServiceName(),
-			Port:   defaultDBPort.Port,
+			Port:   port,
 			Path:   "/",
 		}
 		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
@@ -84,4 +91,21 @@ func (c *Controller) ensureAppBinding(db *api.MySQL) (kutil.VerbType, error) {
 		)
 	}
 	return vt, nil
+}
+
+func (c *Controller) GetPrimaryServicePort(db *api.MySQL) (int32, error) {
+	ports := ofst.MergeServicePorts([]core.ServicePort{
+		{
+			Name:       api.MySQLPrimaryServicePortName,
+			Port:       api.MySQLDatabasePort,
+			TargetPort: intstr.FromString(api.MySQLDatabasePortName),
+		},
+	}, db.Spec.ServiceTemplate.Spec.Ports)
+
+	for _, p := range ports {
+		if p.Name == api.MySQLPrimaryServicePortName {
+			return p.Port, nil
+		}
+	}
+	return 0, fmt.Errorf("failed to detect primary port for MySQL %s/%s", db.Namespace, db.Name)
 }

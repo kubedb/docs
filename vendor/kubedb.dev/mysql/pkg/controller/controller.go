@@ -168,13 +168,13 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	log.Infoln("Stopping KubeDB controller")
 }
 
-func (c *Controller) pushFailureEvent(mysql *api.MySQL, reason string) {
+func (c *Controller) pushFailureEvent(db *api.MySQL, reason string) {
 	c.Recorder.Eventf(
-		mysql,
+		db,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready MySQL: "%v". Reason: %v`,
-		mysql.Name,
+		db.Name,
 		reason,
 	)
 }

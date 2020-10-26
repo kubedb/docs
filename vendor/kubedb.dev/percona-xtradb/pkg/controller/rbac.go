@@ -125,26 +125,26 @@ func (c *Controller) getPolicyNames(db *api.PerconaXtraDB) (string, error) {
 	return dbPolicyName, nil
 }
 
-func (c *Controller) ensureRBACStuff(px *api.PerconaXtraDB) error {
-	dbPolicyName, err := c.getPolicyNames(px)
+func (c *Controller) ensureRBACStuff(db *api.PerconaXtraDB) error {
+	dbPolicyName, err := c.getPolicyNames(db)
 	if err != nil {
 		return err
 	}
 
 	// Create New ServiceAccount
-	if err := c.createServiceAccount(px, px.OffshootName()); err != nil {
+	if err := c.createServiceAccount(db, db.OffshootName()); err != nil {
 		if !kerr.IsAlreadyExists(err) {
 			return err
 		}
 	}
 
 	// Create New Role
-	if err := c.ensureRole(px, px.OffshootName(), dbPolicyName); err != nil {
+	if err := c.ensureRole(db, db.OffshootName(), dbPolicyName); err != nil {
 		return err
 	}
 
 	// Create New RoleBinding
-	if err := c.createRoleBinding(px, px.OffshootName()); err != nil {
+	if err := c.createRoleBinding(db, db.OffshootName()); err != nil {
 		return err
 	}
 

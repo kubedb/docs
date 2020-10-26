@@ -123,39 +123,39 @@ func (c *Controller) getPolicyNames(db *api.Memcached) (string, error) {
 	return dbPolicyName, nil
 }
 
-func (c *Controller) ensureRBACStuff(memcached *api.Memcached) error {
-	saName := memcached.Spec.PodTemplate.Spec.ServiceAccountName
+func (c *Controller) ensureRBACStuff(db *api.Memcached) error {
+	saName := db.Spec.PodTemplate.Spec.ServiceAccountName
 	if saName == "" {
-		saName = memcached.OffshootName()
-		memcached.Spec.PodTemplate.Spec.ServiceAccountName = saName
+		saName = db.OffshootName()
+		db.Spec.PodTemplate.Spec.ServiceAccountName = saName
 	}
 
-	sa, err := c.Client.CoreV1().ServiceAccounts(memcached.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
+	sa, err := c.Client.CoreV1().ServiceAccounts(db.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		// create service account, since it does not exist
-		if err = c.createServiceAccount(memcached, saName); err != nil {
+		if err = c.createServiceAccount(db, saName); err != nil {
 			if !kerr.IsAlreadyExists(err) {
 				return err
 			}
 		}
 	} else if err != nil {
 		return err
-	} else if owned, _ := core_util.IsOwnedBy(sa, memcached); !owned {
+	} else if owned, _ := core_util.IsOwnedBy(sa, db); !owned {
 		// user provided the service account, so do nothing.
 		return nil
 	}
 
 	// Create New Role
-	pspName, err := c.getPolicyNames(memcached)
+	pspName, err := c.getPolicyNames(db)
 	if err != nil {
 		return err
 	}
-	if err := c.ensureRole(memcached, memcached.OffshootName(), pspName); err != nil {
+	if err := c.ensureRole(db, db.OffshootName(), pspName); err != nil {
 		return err
 	}
 
 	// Create New RoleBinding
-	if err := c.createRoleBinding(memcached, memcached.OffshootName(), saName); err != nil {
+	if err := c.createRoleBinding(db, db.OffshootName(), saName); err != nil {
 		return err
 	}
 

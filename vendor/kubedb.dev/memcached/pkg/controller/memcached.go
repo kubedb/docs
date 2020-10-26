@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
@@ -31,10 +32,10 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func (c *Controller) create(memcached *api.Memcached) error {
-	if err := validator.ValidateMemcached(c.Client, c.DBClient, memcached, true); err != nil {
+func (c *Controller) create(db *api.Memcached) error {
+	if err := validator.ValidateMemcached(c.Client, c.DBClient, db, true); err != nil {
 		c.Recorder.Event(
-			memcached,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
 			err.Error(),
@@ -43,64 +44,69 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		return nil // user error so just record error and don't retry.
 	}
 
-	if memcached.Status.Phase == "" {
-		mc, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+	if db.Status.Phase == "" {
+		mc, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
-		memcached.Status = mc.Status
+		db.Status = mc.Status
 	}
 
 	// Ensure ClusterRoles for stss
-	if err := c.ensureRBACStuff(memcached); err != nil {
+	if err := c.ensureRBACStuff(db); err != nil {
 		return err
 	}
 
+	// ensure Governing Service
+	if err := c.ensureGoverningService(db); err != nil {
+		return fmt.Errorf(`failed to create governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
+	}
+
 	// ensure database Service
-	vt1, err := c.ensureService(memcached)
+	vt1, err := c.ensureService(db)
 	if err != nil {
 		return err
 	}
 
 	// ensure database StatefulSet
-	vt2, err := c.ensureStatefulSet(memcached)
+	vt2, err := c.ensureStatefulSet(db)
 	if err != nil {
 		return err
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
 		c.Recorder.Event(
-			memcached,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created Memcached",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
 		c.Recorder.Event(
-			memcached,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully patched Memcached",
 		)
 	}
 
-	mc, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), memcached.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+	mc, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
 		in.Phase = api.DatabasePhaseReady
-		in.ObservedGeneration = memcached.Generation
+		in.ObservedGeneration = db.Generation
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
-	memcached.Status = mc.Status
+	db.Status = mc.Status
 
 	// ensure StatsService for desired monitoring
-	if _, err := c.ensureStatsService(memcached); err != nil {
+	if _, err := c.ensureStatsService(db); err != nil {
 		c.Recorder.Eventf(
-			memcached,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -110,9 +116,9 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		return nil
 	}
 
-	if err := c.manageMonitor(memcached); err != nil {
+	if err := c.manageMonitor(db); err != nil {
 		c.Recorder.Eventf(
-			memcached,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -122,7 +128,7 @@ func (c *Controller) create(memcached *api.Memcached) error {
 		return nil
 	}
 
-	_, err = c.ensureAppBinding(memcached)
+	_, err = c.ensureAppBinding(db)
 	if err != nil {
 		log.Errorln(err)
 		return err
@@ -152,7 +158,7 @@ func (c *Controller) halt(db *api.Memcached) error {
 	return nil
 }
 
-func (c *Controller) terminate(memcached *api.Memcached) error {
+func (c *Controller) terminate(db *api.Memcached) error {
 	// If TerminationPolicy is "terminate", keep everything (ie, PVCs,Secrets,Snapshots) intact
 
 	// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
@@ -162,8 +168,8 @@ func (c *Controller) terminate(memcached *api.Memcached) error {
 	// At this moment, No elements of memcached to wipe out.
 	// In future. if we add any secrets or other component, handle here
 
-	if memcached.Spec.Monitor != nil {
-		if err := c.deleteMonitor(memcached); err != nil {
+	if db.Spec.Monitor != nil {
+		if err := c.deleteMonitor(db); err != nil {
 			log.Errorln(err)
 			return nil
 		}

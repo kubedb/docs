@@ -42,19 +42,18 @@ import (
 const (
 	configMountPath             = "/etc/config"
 	UserListMountPath           = "/var/run/pgbouncer/secret"
-	ServingServerCertMountPath  = "/var/run/pgbouncer/tls/serving/server"
-	ServingClientCertMountPath  = "/var/run/pgbouncer/tls/serving/client"
+	ServingCertMountPath        = "/var/run/pgbouncer/tls/serving"
 	UpstreamServerCertMountPath = "/var/run/pgbouncer/tls/upstream/server"
 )
 
 func (c *Controller) ensureStatefulSet(
-	pgbouncer *api.PgBouncer,
+	db *api.PgBouncer,
 	pgbouncerVersion *catalog.PgBouncerVersion,
 	envList []core.EnvVar,
 ) (kutil.VerbType, error) {
-	if err := c.checkConfigMap(pgbouncer); err != nil {
+	if err := c.checkSecret(db); err != nil {
 		if kerr.IsNotFound(err) {
-			_, err := c.ensureConfigMapFromCRD(pgbouncer)
+			_, err := c.ensureConfigSecret(db)
 			if err != nil {
 				log.Infoln(err)
 				return kutil.VerbUnchanged, err
@@ -66,21 +65,21 @@ func (c *Controller) ensureStatefulSet(
 		}
 	}
 
-	if err := c.checkStatefulSet(pgbouncer); err != nil {
+	if err := c.checkStatefulSet(db); err != nil {
 		log.Infoln(err)
 		return kutil.VerbUnchanged, err
 	}
 
 	statefulSetMeta := metav1.ObjectMeta{
-		Name:      pgbouncer.OffshootName(),
-		Namespace: pgbouncer.Namespace,
+		Name:      db.OffshootName(),
+		Namespace: db.Namespace,
 	}
 
-	owner := metav1.NewControllerRef(pgbouncer, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer))
 
 	replicas := int32(1)
-	if pgbouncer.Spec.Replicas != nil {
-		replicas = types.Int32(pgbouncer.Spec.Replicas)
+	if db.Spec.Replicas != nil {
+		replicas = types.Int32(db.Spec.Replicas)
 	}
 	image := pgbouncerVersion.Spec.Server.Image
 
@@ -89,68 +88,59 @@ func (c *Controller) ensureStatefulSet(
 		c.Client,
 		statefulSetMeta,
 		func(in *apps.StatefulSet) *apps.StatefulSet {
-			in.Annotations = pgbouncer.Annotations //TODO: actual annotations
-			in.Labels = pgbouncer.OffshootLabels()
+			in.Annotations = db.Annotations //TODO: actual annotations
+			in.Labels = db.OffshootLabels()
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 			in.Spec.Replicas = types.Int32P(replicas)
 
-			in.Spec.ServiceName = c.GoverningService
+			in.Spec.ServiceName = db.GoverningServiceName()
 			in.Spec.Selector = &metav1.LabelSelector{
-				MatchLabels: pgbouncer.OffshootSelectors(),
+				MatchLabels: db.OffshootSelectors(),
 			}
-			in.Spec.Template.Labels = pgbouncer.OffshootSelectors()
+			in.Spec.Template.Labels = db.OffshootSelectors()
 
 			var volumes []core.Volume
-			configMapVolume := core.Volume{
-				Name: pgbouncer.OffshootName(),
+			secretVolume := core.Volume{
+				Name: db.OffshootName(),
 				VolumeSource: core.VolumeSource{
-					ConfigMap: &core.ConfigMapVolumeSource{
-						LocalObjectReference: core.LocalObjectReference{
-							Name: pgbouncer.OffshootName(),
-						},
+					Secret: &core.SecretVolumeSource{
+						SecretName: db.OffshootName(),
 					},
 				},
 			}
-			volumes = append(volumes, configMapVolume)
+			volumes = append(volumes, secretVolume)
 
 			var volumeMounts []core.VolumeMount
-			configMapVolumeMount := core.VolumeMount{
-				Name:      pgbouncer.OffshootName(),
+			secretVolumeMount := core.VolumeMount{
+				Name:      db.OffshootName(),
 				MountPath: configMountPath,
 			}
-			volumeMounts = append(volumeMounts, configMapVolumeMount)
+			volumeMounts = append(volumeMounts, secretVolumeMount)
 
-			secretVolume, secretVolumeMount, err := c.getVolumeAndVolumeMountForDefaultUserList(pgbouncer)
-			if err == nil {
-				volumes = append(volumes, *secretVolume)
-				volumeMounts = append(volumeMounts, *secretVolumeMount)
-			}
+			cfgVolume, cfgVolumeMount := c.getVolumeAndVolumeMountForAuthSecret(db)
+			volumes = append(volumes, *cfgVolume)
+			volumeMounts = append(volumeMounts, *cfgVolumeMount)
 
-			if pgbouncer.Spec.TLS != nil {
+			if db.Spec.TLS != nil {
 				//TLS is enabled
 				//mount client crt (CT is short for client-tls)
-				if pgbouncer.Spec.TLS.IssuerRef != nil {
-					servingServerSecretVolume, servingServerSecretVolumeMount, err := c.getVolumeAndVolumeMountForServingServerCertificate(pgbouncer)
-					if err == nil {
-						volumes = append(volumes, *servingServerSecretVolume)
-						volumeMounts = append(volumeMounts, *servingServerSecretVolumeMount)
-					}
-					servingClientSecretVolume, servingClientVolumeMount, err := c.getVolumeAndVolumeMountForServingClientCertificate(pgbouncer)
-					if err == nil {
-						volumes = append(volumes, *servingClientSecretVolume)
-						volumeMounts = append(volumeMounts, *servingClientVolumeMount)
-					}
-					//add exporter certificate volume
-					exporterSecretVolume, _, err := c.getVolumeAndVolumeMountForExporterClientCertificate(pgbouncer)
-					if err == nil {
-						volumes = append(volumes, *exporterSecretVolume)
-					}
+				if db.Spec.TLS.IssuerRef != nil {
+					servingServerSecretVolume, servingServerSecretVolumeMount := c.getVolumeAndVolumeMountForCertificate(db, api.PgBouncerServerCert)
+					volumes = append(volumes, *servingServerSecretVolume)
+					volumeMounts = append(volumeMounts, *servingServerSecretVolumeMount)
 
+					servingClientSecretVolume, servingClientVolumeMount := c.getVolumeAndVolumeMountForCertificate(db, api.PgBouncerClientCert)
+					volumes = append(volumes, *servingClientSecretVolume)
+					volumeMounts = append(volumeMounts, *servingClientVolumeMount)
+
+					//add exporter certificate volume
+					exporterSecretVolume, _ := c.getVolumeAndVolumeMountForCertificate(db, api.PgBouncerMetricsExporterCert)
+					volumes = append(volumes, *exporterSecretVolume)
 				}
 			}
 
-			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, pgbouncer.Spec.PodTemplate.Spec.InitContainers)
+			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, db.Spec.PodTemplate.Spec.InitContainers)
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 				in.Spec.Template.Spec.Containers,
 				core.Container{
@@ -162,33 +152,40 @@ func (c *Controller) ensureStatefulSet(
 					Env: []core.EnvVar{
 						{
 							Name:  "PGBOUNCER_PORT",
-							Value: fmt.Sprintf("%d", *pgbouncer.Spec.ConnectionPool.Port),
+							Value: fmt.Sprintf("%d", *db.Spec.ConnectionPool.Port),
 						},
 					},
 
 					Image:           image,
 					ImagePullPolicy: core.PullIfNotPresent,
 					VolumeMounts:    volumeMounts,
+					Ports: []core.ContainerPort{
+						{
+							Name:          api.PgBouncerDatabasePortName,
+							ContainerPort: *db.Spec.ConnectionPool.Port,
+							Protocol:      core.ProtocolTCP,
+						},
+					},
 
-					Resources:      pgbouncer.Spec.PodTemplate.Spec.Resources,
-					LivenessProbe:  pgbouncer.Spec.PodTemplate.Spec.LivenessProbe,
-					ReadinessProbe: pgbouncer.Spec.PodTemplate.Spec.ReadinessProbe,
-					Lifecycle:      pgbouncer.Spec.PodTemplate.Spec.Lifecycle,
+					Resources:      db.Spec.PodTemplate.Spec.Resources,
+					LivenessProbe:  db.Spec.PodTemplate.Spec.LivenessProbe,
+					ReadinessProbe: db.Spec.PodTemplate.Spec.ReadinessProbe,
+					Lifecycle:      db.Spec.PodTemplate.Spec.Lifecycle,
 				})
-			in = upsertEnv(in, pgbouncer, envList)
+			in = upsertEnv(in, db, envList)
 			in.Spec.Template.Spec.Volumes = volumes
-			in = upsertUserEnv(in, pgbouncer)
-			in = upsertPort(in, pgbouncer)
-			in.Spec.Template.Spec.NodeSelector = pgbouncer.Spec.PodTemplate.Spec.NodeSelector
-			in.Spec.Template.Spec.Affinity = pgbouncer.Spec.PodTemplate.Spec.Affinity
-			in.Spec.Template.Spec.Tolerations = pgbouncer.Spec.PodTemplate.Spec.Tolerations
-			in.Spec.Template.Spec.ImagePullSecrets = pgbouncer.Spec.PodTemplate.Spec.ImagePullSecrets
-			in.Spec.Template.Spec.PriorityClassName = pgbouncer.Spec.PodTemplate.Spec.PriorityClassName
-			in.Spec.Template.Spec.Priority = pgbouncer.Spec.PodTemplate.Spec.Priority
+			in = upsertUserEnv(in, db)
+
+			in.Spec.Template.Spec.NodeSelector = db.Spec.PodTemplate.Spec.NodeSelector
+			in.Spec.Template.Spec.Affinity = db.Spec.PodTemplate.Spec.Affinity
+			in.Spec.Template.Spec.Tolerations = db.Spec.PodTemplate.Spec.Tolerations
+			in.Spec.Template.Spec.ImagePullSecrets = db.Spec.PodTemplate.Spec.ImagePullSecrets
+			in.Spec.Template.Spec.PriorityClassName = db.Spec.PodTemplate.Spec.PriorityClassName
+			in.Spec.Template.Spec.Priority = db.Spec.PodTemplate.Spec.Priority
 			if in.Spec.Template.Spec.SecurityContext != nil {
-				in.Spec.Template.Spec.SecurityContext = pgbouncer.Spec.PodTemplate.Spec.SecurityContext
+				in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
 			}
-			in = c.upsertMonitoringContainer(in, pgbouncer, pgbouncerVersion)
+			in = c.upsertMonitoringContainer(in, db, pgbouncerVersion)
 
 			return in
 		},
@@ -207,7 +204,7 @@ func (c *Controller) ensureStatefulSet(
 		}
 
 		c.recorder.Eventf(
-			pgbouncer,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %v StatefulSet",
@@ -237,12 +234,12 @@ func (c *Controller) CheckStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 	return nil
 }
 
-func (c *Controller) checkStatefulSet(pgbouncer *api.PgBouncer) error {
+func (c *Controller) checkStatefulSet(db *api.PgBouncer) error {
 	//Name validation for StatefulSet
 	// Check whether PgBouncer's StatefulSet (not managed by KubeDB) already exists
-	name := pgbouncer.OffshootName()
+	name := db.OffshootName()
 	// SatatefulSet for PgBouncer database
-	statefulSet, err := c.Client.AppsV1().StatefulSets(pgbouncer.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	statefulSet, err := c.Client.AppsV1().StatefulSets(db.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -253,18 +250,18 @@ func (c *Controller) checkStatefulSet(pgbouncer *api.PgBouncer) error {
 
 	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindPgBouncer ||
 		statefulSet.Labels[api.LabelDatabaseName] != name {
-		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, pgbouncer.Namespace, name)
+		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, db.Namespace, name)
 	}
 
 	return nil
 }
 
-func (c *Controller) checkConfigMap(pgbouncer *api.PgBouncer) error {
-	//Name validation for configMap
-	// Check whether a non-kubedb managed configMap by this name already exists
-	name := pgbouncer.OffshootName()
-	// configMap for PgBouncer
-	configMap, err := c.Client.CoreV1().ConfigMaps(pgbouncer.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
+func (c *Controller) checkSecret(db *api.PgBouncer) error {
+	//Name validation for secret
+	// Check whether a non-kubedb managed secret by this name already exists
+	name := db.OffshootName()
+	// secret for PgBouncer
+	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -273,44 +270,22 @@ func (c *Controller) checkConfigMap(pgbouncer *api.PgBouncer) error {
 		}
 	}
 
-	if configMap.Labels[api.LabelDatabaseKind] != api.ResourceKindPgBouncer ||
-		configMap.Labels[api.LabelDatabaseName] != name {
-		return fmt.Errorf(`intended configMap "%v/%v" already exists`, pgbouncer.Namespace, name)
+	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindPgBouncer ||
+		secret.Labels[api.LabelDatabaseName] != name {
+		return fmt.Errorf(`intended secret "%v/%v" already exists`, db.Namespace, name)
 	}
 
 	return nil
 }
 
 // upsertUserEnv add/overwrite env from user provided env in crd spec
-func upsertUserEnv(statefulSet *apps.StatefulSet, pgbouncer *api.PgBouncer) *apps.StatefulSet {
+func upsertUserEnv(statefulSet *apps.StatefulSet, db *api.PgBouncer) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularPgBouncer {
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, pgbouncer.Spec.PodTemplate.Spec.Env...)
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Env...)
 			return statefulSet
 		}
 	}
-	return statefulSet
-}
-
-func upsertPort(statefulSet *apps.StatefulSet, pgbouncer *api.PgBouncer) *apps.StatefulSet {
-	getPorts := func() []core.ContainerPort {
-		portList := []core.ContainerPort{
-			{
-				Name:          PgBouncerPortName,
-				ContainerPort: *pgbouncer.Spec.ConnectionPool.Port,
-				Protocol:      core.ProtocolTCP,
-			},
-		}
-		return portList
-	}
-
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPgBouncer {
-			statefulSet.Spec.Template.Spec.Containers[i].Ports = getPorts()
-			return statefulSet
-		}
-	}
-
 	return statefulSet
 }
 
@@ -321,31 +296,23 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db
 			monitorArgs = db.Spec.Monitor.Prometheus.Exporter.Args
 		}
 
-		adminSecretSpec := c.GetDefaultSecretSpec(db)
-		err := c.isSecretExists(adminSecretSpec.ObjectMeta)
-		if err != nil {
-			log.Infoln(err)
-			return statefulSet //Dont make changes if error occurs
-		}
-
-		dataSource := fmt.Sprintf("postgres://%s:@localhost:%d/%s?sslmode=disable", pbAdminUser, *db.Spec.ConnectionPool.Port, pbAdminDatabase)
+		dataSource := fmt.Sprintf("postgres://%s:@localhost:%d/%s?sslmode=disable", api.PgBouncerAdminUsername, *db.Spec.ConnectionPool.Port, pbAdminDatabase)
 
 		var volumeMounts []core.VolumeMount
 		if db.Spec.TLS != nil {
 			// TLS is enabled
 			if db.Spec.TLS.IssuerRef != nil {
 				// mount exporter client-cert in exporter container
-				_, ctClientVolumeMount, err := c.getVolumeAndVolumeMountForExporterClientCertificate(db)
-				if err == nil {
-					volumeMounts = append(volumeMounts, *ctClientVolumeMount)
-				}
+				_, ctClientVolumeMount := c.getVolumeAndVolumeMountForCertificate(db, api.PgBouncerMetricsExporterCert)
+				volumeMounts = append(volumeMounts, *ctClientVolumeMount)
+
 				// update dataSource
 				dataSource = fmt.Sprintf("postgres://%s:@localhost:%d/%s?sslmode=verify-full"+
 					"&sslrootcert=%s&sslcert=%s&sslkey=%s",
-					pbAdminUser, *db.Spec.ConnectionPool.Port, pbAdminDatabase,
-					filepath.Join(ServingClientCertMountPath, "ca.crt"),
-					filepath.Join(ServingClientCertMountPath, "tls.crt"),
-					filepath.Join(ServingClientCertMountPath, "tls.key"))
+					api.PgBouncerAdminUsername, *db.Spec.ConnectionPool.Port, pbAdminDatabase,
+					filepath.Join(ServingCertMountPath, string(api.PgBouncerClientCert), "ca.crt"),
+					filepath.Join(ServingCertMountPath, string(api.PgBouncerClientCert), "tls.crt"),
+					filepath.Join(ServingCertMountPath, string(api.PgBouncerClientCert), "tls.key"))
 
 			}
 		}
@@ -380,9 +347,9 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db
 				ValueFrom: &core.EnvVarSource{
 					SecretKeyRef: &core.SecretKeySelector{
 						LocalObjectReference: core.LocalObjectReference{
-							Name: adminSecretSpec.Name,
+							Name: db.AuthSecretName(),
 						},
-						Key: pbAdminPassword,
+						Key: pbAdminPasswordKey,
 					},
 				},
 			},
@@ -396,15 +363,15 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db
 	return statefulSet
 }
 
-func upsertEnv(statefulSet *apps.StatefulSet, pgbouncer *api.PgBouncer, envs []core.EnvVar) *apps.StatefulSet {
+func upsertEnv(statefulSet *apps.StatefulSet, db *api.PgBouncer, envs []core.EnvVar) *apps.StatefulSet {
 	envList := []core.EnvVar{
 		{
 			Name:  "NAMESPACE",
-			Value: pgbouncer.Namespace,
+			Value: db.Namespace,
 		},
 		{
 			Name:  "PRIMARY_HOST",
-			Value: pgbouncer.ServiceName(),
+			Value: db.ServiceName(),
 		},
 	}
 

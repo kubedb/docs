@@ -169,34 +169,34 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	log.Infoln("Stopping KubeDB controller")
 }
 
-func (c *Controller) pushFailureEvent(postgres *api.Postgres, reason string) {
+func (c *Controller) pushFailureEvent(db *api.Postgres, reason string) {
 	c.Recorder.Eventf(
-		postgres,
+		db,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready Postgres: "%v". Reason: %v`,
-		postgres.Name,
+		db.Name,
 		reason,
 	)
 
 	pg, err := kutildb.UpdatePostgresStatus(
 		context.TODO(),
 		c.DBClient.KubedbV1alpha2(),
-		postgres.ObjectMeta,
+		db.ObjectMeta,
 		func(in *api.PostgresStatus) *api.PostgresStatus {
 			in.Phase = api.DatabasePhaseNotReady
-			in.ObservedGeneration = postgres.Generation
+			in.ObservedGeneration = db.Generation
 			return in
 		},
 		metav1.UpdateOptions{},
 	)
 	if err != nil {
 		c.Recorder.Eventf(
-			postgres,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			err.Error(),
 		)
 	}
-	postgres.Status = pg.Status
+	db.Status = pg.Status
 }

@@ -29,8 +29,8 @@ import (
 )
 
 func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
-	statefulSetName := es.elasticsearch.OffshootName()
-	masterNode := es.elasticsearch.Spec.Topology.Master
+	statefulSetName := es.db.OffshootName()
+	masterNode := es.db.Spec.Topology.Master
 
 	if masterNode.Prefix != "" {
 		statefulSetName = fmt.Sprintf("%v-%v", masterNode.Prefix, statefulSetName)
@@ -95,7 +95,7 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 	envList = es.upsertContainerEnv(envList)
 
 	// add/overwrite user provided env; these are provided via crd spec
-	envList = core_util.UpsertEnvVars(envList, es.elasticsearch.Spec.PodTemplate.Spec.Env...)
+	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
@@ -117,8 +117,8 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 }
 
 func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
-	statefulSetName := es.elasticsearch.OffshootName()
-	dataNode := es.elasticsearch.Spec.Topology.Data
+	statefulSetName := es.db.OffshootName()
+	dataNode := es.db.Spec.Topology.Data
 
 	if dataNode.Prefix != "" {
 		statefulSetName = fmt.Sprintf("%v-%v", dataNode.Prefix, statefulSetName)
@@ -161,7 +161,7 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 	envList = es.upsertContainerEnv(envList)
 
 	// add/overwrite user provided env; these are provided via crd spec
-	envList = core_util.UpsertEnvVars(envList, es.elasticsearch.Spec.PodTemplate.Spec.Env...)
+	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
@@ -189,8 +189,8 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 }
 
 func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
-	statefulSetName := es.elasticsearch.OffshootName()
-	ingestNode := es.elasticsearch.Spec.Topology.Ingest
+	statefulSetName := es.db.OffshootName()
+	ingestNode := es.db.Spec.Topology.Ingest
 
 	if ingestNode.Prefix != "" {
 		statefulSetName = fmt.Sprintf("%v-%v", ingestNode.Prefix, statefulSetName)
@@ -233,7 +233,7 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 	envList = es.upsertContainerEnv(envList)
 
 	// add/overwrite user provided env; these are provided via crd spec
-	envList = core_util.UpsertEnvVars(envList, es.elasticsearch.Spec.PodTemplate.Spec.Env...)
+	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
@@ -260,7 +260,7 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 }
 
 func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
-	statefulSetName := es.elasticsearch.OffshootName()
+	statefulSetName := es.db.OffshootName()
 	combinedNode := es.getCombinedNode()
 
 	// Each node performs all three roles; master, data, and ingest.
@@ -323,7 +323,7 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 	envList = es.upsertContainerEnv(envList)
 
 	// add/overwrite user provided env; these are provided via crd spec
-	envList = core_util.UpsertEnvVars(envList, es.elasticsearch.Spec.PodTemplate.Spec.Env...)
+	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
@@ -350,10 +350,10 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 // to maintain the similar code structure.
 func (es *Elasticsearch) getCombinedNode() *api.ElasticsearchNode {
 	return &api.ElasticsearchNode{
-		Replicas:       es.elasticsearch.Spec.Replicas,
-		Storage:        es.elasticsearch.Spec.Storage,
-		Resources:      es.elasticsearch.Spec.PodTemplate.Spec.Resources,
-		MaxUnavailable: es.elasticsearch.Spec.MaxUnavailable,
+		Replicas:       es.db.Spec.Replicas,
+		Storage:        es.db.Spec.Storage,
+		Resources:      es.db.Spec.PodTemplate.Spec.Resources,
+		MaxUnavailable: es.db.Spec.MaxUnavailable,
 	}
 }
 

@@ -32,11 +32,11 @@ import (
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
-func (c *Controller) newMonitorController(mongodb *api.MongoDB) (mona.Agent, error) {
-	monitorSpec := mongodb.Spec.Monitor
+func (c *Controller) newMonitorController(db *api.MongoDB) (mona.Agent, error) {
+	monitorSpec := db.Spec.Monitor
 
 	if monitorSpec == nil {
-		return nil, fmt.Errorf("MonitorSpec not found in %v", mongodb.Spec)
+		return nil, fmt.Errorf("MonitorSpec not found in %v", db.Spec)
 	}
 
 	if monitorSpec.Prometheus != nil {
@@ -46,25 +46,25 @@ func (c *Controller) newMonitorController(mongodb *api.MongoDB) (mona.Agent, err
 	return nil, fmt.Errorf("monitoring controller not found for %v", monitorSpec)
 }
 
-func (c *Controller) addOrUpdateMonitor(mongodb *api.MongoDB) (kutil.VerbType, error) {
-	agent, err := c.newMonitorController(mongodb)
+func (c *Controller) addOrUpdateMonitor(db *api.MongoDB) (kutil.VerbType, error) {
+	agent, err := c.newMonitorController(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.CreateOrUpdate(mongodb.StatsService(), mongodb.Spec.Monitor)
+	return agent.CreateOrUpdate(db.StatsService(), db.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(mongodb *api.MongoDB) error {
-	agent, err := c.newMonitorController(mongodb)
+func (c *Controller) deleteMonitor(db *api.MongoDB) error {
+	agent, err := c.newMonitorController(db)
 	if err != nil {
 		return err
 	}
-	_, err = agent.Delete(mongodb.StatsService())
+	_, err = agent.Delete(db.StatsService())
 	return err
 }
 
-func (c *Controller) getOldAgent(mongodb *api.MongoDB) mona.Agent {
-	service, err := c.Client.CoreV1().Services(mongodb.Namespace).Get(context.TODO(), mongodb.StatsService().ServiceName(), metav1.GetOptions{})
+func (c *Controller) getOldAgent(db *api.MongoDB) mona.Agent {
+	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), db.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -72,14 +72,14 @@ func (c *Controller) getOldAgent(mongodb *api.MongoDB) mona.Agent {
 	return agents.New(mona.AgentType(oldAgentType), c.Client, c.promClient)
 }
 
-func (c *Controller) setNewAgent(mongodb *api.MongoDB) error {
-	service, err := c.Client.CoreV1().Services(mongodb.Namespace).Get(context.TODO(), mongodb.StatsService().ServiceName(), metav1.GetOptions{})
+func (c *Controller) setNewAgent(db *api.MongoDB) error {
+	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), db.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 	_, _, err = core_util.PatchService(context.TODO(), c.Client, service, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
-			mona.KeyAgent: string(mongodb.Spec.Monitor.Agent),
+			mona.KeyAgent: string(db.Spec.Monitor.Agent),
 		},
 		)
 		return in
@@ -87,20 +87,20 @@ func (c *Controller) setNewAgent(mongodb *api.MongoDB) error {
 	return err
 }
 
-func (c *Controller) manageMonitor(mongodb *api.MongoDB) error {
-	oldAgent := c.getOldAgent(mongodb)
-	if mongodb.Spec.Monitor != nil {
-		if oldAgent != nil && oldAgent.GetType() != mongodb.Spec.Monitor.Agent {
-			if _, err := oldAgent.Delete(mongodb.StatsService()); err != nil {
+func (c *Controller) manageMonitor(db *api.MongoDB) error {
+	oldAgent := c.getOldAgent(db)
+	if db.Spec.Monitor != nil {
+		if oldAgent != nil && oldAgent.GetType() != db.Spec.Monitor.Agent {
+			if _, err := oldAgent.Delete(db.StatsService()); err != nil {
 				log.Errorf("error in deleting Prometheus agent. Reason: %v", err.Error())
 			}
 		}
-		if _, err := c.addOrUpdateMonitor(mongodb); err != nil {
+		if _, err := c.addOrUpdateMonitor(db); err != nil {
 			return err
 		}
-		return c.setNewAgent(mongodb)
+		return c.setNewAgent(db)
 	} else if oldAgent != nil {
-		if _, err := oldAgent.Delete(mongodb.StatsService()); err != nil {
+		if _, err := oldAgent.Delete(db.StatsService()); err != nil {
 			log.Errorf("error in deleting Prometheus agent. Reason: %v", err.Error())
 		}
 	}

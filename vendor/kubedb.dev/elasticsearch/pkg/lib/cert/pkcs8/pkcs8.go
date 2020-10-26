@@ -80,9 +80,9 @@ func CreateCaCertificate(commonName string, certPath string) (*rsa.PrivateKey, *
 //	- ca.crt : ca.crt
 //	- tls.crt: transport-layer.crt ( signed by ca.crt)
 // 	- tls.key: transport-layer.key
-func CreateTransportCertificate(certPath string, elasticsearch *api.Elasticsearch, caKey *rsa.PrivateKey, caCert *x509.Certificate) error {
+func CreateTransportCertificate(certPath string, db *api.Elasticsearch, caKey *rsa.PrivateKey, caCert *x509.Certificate) error {
 	cfg := cert.Config{
-		CommonName:   elasticsearch.ClientCertificateCN(api.ElasticsearchTransportCert),
+		CommonName:   db.ClientCertificateCN(api.ElasticsearchTransportCert),
 		Organization: []string{kubedb.GroupName},
 		Usages: []x509.ExtKeyUsage{
 			x509.ExtKeyUsageServerAuth,
@@ -122,14 +122,14 @@ func CreateTransportCertificate(certPath string, elasticsearch *api.Elasticsearc
 //	- ca.crt : ca.crt
 //	- tls.crt: http-layer.crt ( signed by ca.crt)
 // 	- tls.key: http-layer.key
-func CreateHTTPCertificate(certPath string, elasticsearch *api.Elasticsearch, caKey *rsa.PrivateKey, caCert *x509.Certificate) error {
+func CreateHTTPCertificate(certPath string, db *api.Elasticsearch, caKey *rsa.PrivateKey, caCert *x509.Certificate) error {
 	cfg := cert.Config{
-		CommonName:   elasticsearch.ClientCertificateCN(api.ElasticsearchHTTPCert),
+		CommonName:   db.ClientCertificateCN(api.ElasticsearchHTTPCert),
 		Organization: []string{kubedb.GroupName},
 		AltNames: cert.AltNames{
 			DNSNames: []string{
 				"localhost",
-				fmt.Sprintf("%v.%v.svc", elasticsearch.OffshootName(), elasticsearch.Namespace),
+				fmt.Sprintf("%v.%v.svc", db.OffshootName(), db.Namespace),
 			},
 		},
 		Usages: []x509.ExtKeyUsage{
@@ -169,9 +169,9 @@ func CreateHTTPCertificate(certPath string, elasticsearch *api.Elasticsearch, ca
 //	- ca.crt : ca.crt
 //	- tls.crt: client.crt ( signed by ca.crt)
 // 	- tls.key: client.key
-func CreateClientCertificate(alias string, certPath string, elasticsearch *api.Elasticsearch, caKey *rsa.PrivateKey, caCert *x509.Certificate) error {
+func CreateClientCertificate(alias string, certPath string, db *api.Elasticsearch, caKey *rsa.PrivateKey, caCert *x509.Certificate) error {
 	cfg := cert.Config{
-		CommonName:   elasticsearch.ClientCertificateCN(api.ElasticsearchCertificateAlias(alias)),
+		CommonName:   db.ClientCertificateCN(api.ElasticsearchCertificateAlias(alias)),
 		Organization: []string{kubedb.GroupName},
 		Usages: []x509.ExtKeyUsage{
 			x509.ExtKeyUsageClientAuth,

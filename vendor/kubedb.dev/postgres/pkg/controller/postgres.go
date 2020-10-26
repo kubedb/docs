@@ -38,10 +38,10 @@ import (
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
 
-func (c *Controller) create(postgres *api.Postgres) error {
-	if err := validator.ValidatePostgres(c.Client, c.DBClient, postgres, true); err != nil {
+func (c *Controller) create(db *api.Postgres) error {
+	if err := validator.ValidatePostgres(c.Client, c.DBClient, db, true); err != nil {
 		c.Recorder.Event(
-			postgres,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
 			err.Error(),
@@ -50,49 +50,48 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		return nil // user error so just record error and don't retry.
 	}
 
-	if postgres.Status.Phase == "" {
-		pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+	if db.Status.Phase == "" {
+		pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
-		postgres.Status = pg.Status
+		db.Status = pg.Status
 	}
 
-	// create Governing Service
-	governingService := c.GoverningService
-	if err := c.CreateGoverningService(governingService, postgres.Namespace); err != nil {
-		return fmt.Errorf(`failed to create Service: "%v/%v". Reason: %v`, postgres.Namespace, governingService, err)
+	// ensure Governing Service
+	if err := c.ensureGoverningService(db); err != nil {
+		return fmt.Errorf(`failed to create governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 
 	// ensure database Service
-	vt1, err := c.ensureService(postgres)
+	vt1, err := c.ensureService(db)
 	if err != nil {
 		return err
 	}
 
 	// ensure database StatefulSet
-	postgresVersion, err := c.DBClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), string(postgres.Spec.Version), metav1.GetOptions{})
+	postgresVersion, err := c.DBClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	vt2, err := c.ensurePostgresNode(postgres, postgresVersion)
+	vt2, err := c.ensurePostgresNode(db, postgresVersion)
 	if err != nil {
 		return err
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
 		c.Recorder.Event(
-			postgres,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created Postgres",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
 		c.Recorder.Event(
-			postgres,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully patched Postgres",
@@ -100,43 +99,43 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	}
 
 	// ensure appbinding before ensuring Restic scheduler and restore
-	_, err = c.ensureAppBinding(postgres, postgresVersion)
+	_, err = c.ensureAppBinding(db, postgresVersion)
 	if err != nil {
 		log.Errorln(err)
 		return err
 	}
 
 	//======================== Wait for the initial restore =====================================
-	if postgres.Spec.Init != nil && postgres.Spec.Init.WaitForInitialRestore {
+	if db.Spec.Init != nil && db.Spec.Init.WaitForInitialRestore {
 		// Only wait for the first restore.
 		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
-		if !kmapi.HasCondition(postgres.Status.Conditions, api.DatabaseProvisioned) &&
-			!kmapi.IsConditionTrue(postgres.Status.Conditions, api.DatabaseDataRestored) {
+		if !kmapi.HasCondition(db.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseDataRestored) {
 			// write log indicating that the database is waiting for the data to be restored by external initializer
 			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
-				postgres.Kind,
-				postgres.Namespace,
-				postgres.Name,
+				db.Kind,
+				db.Namespace,
+				db.Name,
 			)
 			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
 		}
 	}
 
-	pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), postgres.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+	pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
 		in.Phase = api.DatabasePhaseReady
-		in.ObservedGeneration = postgres.Generation
+		in.ObservedGeneration = db.Generation
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
-	postgres.Status = pg.Status
+	db.Status = pg.Status
 
 	// ensure StatsService for desired monitoring
-	if _, err := c.ensureStatsService(postgres); err != nil {
+	if _, err := c.ensureStatsService(db); err != nil {
 		c.Recorder.Eventf(
-			postgres,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -146,9 +145,9 @@ func (c *Controller) create(postgres *api.Postgres) error {
 		return nil
 	}
 
-	if err := c.manageMonitor(postgres); err != nil {
+	if err := c.manageMonitor(db); err != nil {
 		c.Recorder.Eventf(
-			postgres,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -161,19 +160,19 @@ func (c *Controller) create(postgres *api.Postgres) error {
 	return nil
 }
 
-func (c *Controller) ensurePostgresNode(postgres *api.Postgres, postgresVersion *catalog.PostgresVersion) (kutil.VerbType, error) {
+func (c *Controller) ensurePostgresNode(db *api.Postgres, postgresVersion *catalog.PostgresVersion) (kutil.VerbType, error) {
 	var err error
 
-	if err = c.ensureAuthSecret(postgres); err != nil {
+	if err = c.ensureAuthSecret(db); err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
 	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
-	if err := c.ensureDatabaseRBAC(postgres); err != nil {
+	if err := c.ensureDatabaseRBAC(db); err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
-	vt, err := c.ensureCombinedNode(postgres, postgresVersion)
+	vt, err := c.ensureCombinedNode(db, postgresVersion)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -203,26 +202,26 @@ func (c *Controller) halt(db *api.Postgres) error {
 	return nil
 }
 
-func (c *Controller) terminate(postgres *api.Postgres) error {
-	owner := metav1.NewControllerRef(postgres, api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres))
+func (c *Controller) terminate(db *api.Postgres) error {
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres))
 
 	// If TerminationPolicy is "halt", keep PVCs and Secrets intact.
 	// TerminationPolicyPause is deprecated and will be removed in future.
-	if postgres.Spec.TerminationPolicy == api.TerminationPolicyHalt {
-		if err := c.removeOwnerReferenceFromOffshoots(postgres); err != nil {
+	if db.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+		if err := c.removeOwnerReferenceFromOffshoots(db); err != nil {
 			return err
 		}
 	} else {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots,WAL-data).
 		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets, wal-data intact.
 		// In both these cases, don't create dormantdatabase
-		if err := c.setOwnerReferenceToOffshoots(postgres, owner); err != nil {
+		if err := c.setOwnerReferenceToOffshoots(db, owner); err != nil {
 			return err
 		}
 	}
 
-	if postgres.Spec.Monitor != nil {
-		if err := c.deleteMonitor(postgres); err != nil {
+	if db.Spec.Monitor != nil {
+		if err := c.deleteMonitor(db); err != nil {
 			log.Errorln(err)
 			return nil
 		}
@@ -230,18 +229,18 @@ func (c *Controller) terminate(postgres *api.Postgres) error {
 	return nil
 }
 
-func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, owner *metav1.OwnerReference) error {
-	selector := labels.SelectorFromSet(postgres.OffshootSelectors())
+func (c *Controller) setOwnerReferenceToOffshoots(db *api.Postgres, owner *metav1.OwnerReference) error {
+	selector := labels.SelectorFromSet(db.OffshootSelectors())
 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
-	if postgres.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
+	if db.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
 		// at first, pause the database transactions by deleting the statefulsets. otherwise wiping out may not be accurate.
 		// because, while operator is trying to delete the wal data, the database pod may still trying to push new data.
 		policy := metav1.DeletePropagationForeground
 		if err := c.Client.
 			AppsV1().
-			StatefulSets(postgres.Namespace).
+			StatefulSets(db.Namespace).
 			DeleteCollection(
 				context.TODO(),
 				metav1.DeleteOptions{PropagationPolicy: &policy},
@@ -251,19 +250,19 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, owner 
 		}
 		// Let's give statefulsets some time to breath and then be deleted.
 		if err := wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
-			podList, err := c.Client.CoreV1().Pods(postgres.Namespace).List(context.TODO(), metav1.ListOptions{
+			podList, err := c.Client.CoreV1().Pods(db.Namespace).List(context.TODO(), metav1.ListOptions{
 				LabelSelector: selector.String(),
 			})
 			return len(podList.Items) == 0, err
 		}); err != nil {
 			fmt.Printf("got error while waiting for db pods to be deleted: %v. coninuing with further deletion steps.\n", err.Error())
 		}
-		if err := c.wipeOutDatabase(postgres.ObjectMeta, postgres.Spec.GetPersistentSecrets(), owner); err != nil {
+		if err := c.wipeOutDatabase(db.ObjectMeta, db.Spec.GetPersistentSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 		// if wal archiver was configured, remove wal data from backend
-		if postgres.Spec.Archiver != nil {
-			if err := c.wipeOutWalData(postgres.ObjectMeta, &postgres.Spec); err != nil {
+		if db.Spec.Archiver != nil {
+			if err := c.wipeOutWalData(db.ObjectMeta, &db.Spec); err != nil {
 				return err
 			}
 		}
@@ -273,9 +272,9 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, owner 
 			context.TODO(),
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
-			postgres.Namespace,
-			postgres.Spec.GetPersistentSecrets(),
-			postgres); err != nil {
+			db.Namespace,
+			db.Spec.GetPersistentSecrets(),
+			db); err != nil {
 			return err
 		}
 	}
@@ -284,31 +283,31 @@ func (c *Controller) setOwnerReferenceToOffshoots(postgres *api.Postgres, owner 
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
-		postgres.Namespace,
+		db.Namespace,
 		selector,
 		owner)
 }
 
-func (c *Controller) removeOwnerReferenceFromOffshoots(postgres *api.Postgres) error {
+func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.Postgres) error {
 	// First, Get LabelSelector for Other Components
-	labelSelector := labels.SelectorFromSet(postgres.OffshootSelectors())
+	labelSelector := labels.SelectorFromSet(db.OffshootSelectors())
 
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
-		postgres.Namespace,
+		db.Namespace,
 		labelSelector,
-		postgres); err != nil {
+		db); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
-		postgres.Namespace,
-		postgres.Spec.GetPersistentSecrets(),
-		postgres); err != nil {
+		db.Namespace,
+		db.Spec.GetPersistentSecrets(),
+		db); err != nil {
 		return err
 	}
 	return nil

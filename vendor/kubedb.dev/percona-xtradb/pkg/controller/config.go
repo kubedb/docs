@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"kubedb.dev/apimachinery/apis/kubedb"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 
@@ -29,11 +30,6 @@ import (
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/discovery"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
-)
-
-const (
-	mutatingWebhookConfig   = "mutators.kubedb.com"
-	validatingWebhookConfig = "validators.kubedb.com"
 )
 
 type OperatorConfig struct {
@@ -77,12 +73,12 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 	if c.EnableMutatingWebhook {
-		if err := reg_util.UpdateMutatingWebhookCABundle(c.ClientConfig, mutatingWebhookConfig); err != nil {
+		if err := reg_util.UpdateMutatingWebhookCABundle(c.ClientConfig, kubedb.MutatorGroupName); err != nil {
 			return nil, err
 		}
 	}
 	if c.EnableValidatingWebhook {
-		if err := reg_util.UpdateValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig); err != nil {
+		if err := reg_util.UpdateValidatingWebhookCABundle(c.ClientConfig, kubedb.ValidatorGroupName); err != nil {
 			return nil, err
 		}
 	}

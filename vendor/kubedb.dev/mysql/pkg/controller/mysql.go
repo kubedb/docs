@@ -53,7 +53,7 @@ func (c *Controller) create(db *api.MySQL) error {
 	}
 
 	// ensure Governing Service
-	if err := c.ensureMySQLGoverningService(db); err != nil {
+	if err := c.ensureGoverningService(db); err != nil {
 		return fmt.Errorf(`failed to create governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 

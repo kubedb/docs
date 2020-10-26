@@ -58,9 +58,9 @@ func (c *Controller) waitUntilHalted(db *api.MySQL) error {
 	return nil
 }
 
-func (c *Controller) waitUntilRBACStuffDeleted(mysql *api.MySQL) error {
+func (c *Controller) waitUntilRBACStuffDeleted(db *api.MySQL) error {
 	// Delete ServiceAccount
-	if err := core_util.WaitUntillServiceAccountDeleted(context.TODO(), c.Client, mysql.ObjectMeta); err != nil {
+	if err := core_util.WaitUntillServiceAccountDeleted(context.TODO(), c.Client, db.ObjectMeta); err != nil {
 		return err
 	}
 	return nil

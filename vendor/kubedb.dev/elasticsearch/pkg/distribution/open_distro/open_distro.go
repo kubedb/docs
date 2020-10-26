@@ -30,44 +30,44 @@ import (
 )
 
 type Elasticsearch struct {
-	kClient       kubernetes.Interface
-	extClient     cs.Interface
-	elasticsearch *api.Elasticsearch
-	esVersion     *catalog.ElasticsearchVersion
+	kClient   kubernetes.Interface
+	extClient cs.Interface
+	db        *api.Elasticsearch
+	esVersion *catalog.ElasticsearchVersion
 }
 
 var _ distapi.ElasticsearchInterface = &Elasticsearch{}
 
-func New(kc kubernetes.Interface, extClient cs.Interface, es *api.Elasticsearch, esVersion *catalog.ElasticsearchVersion) *Elasticsearch {
+func New(kc kubernetes.Interface, extClient cs.Interface, db *api.Elasticsearch, esVersion *catalog.ElasticsearchVersion) *Elasticsearch {
 	return &Elasticsearch{
-		kClient:       kc,
-		extClient:     extClient,
-		elasticsearch: es,
-		esVersion:     esVersion,
+		kClient:   kc,
+		extClient: extClient,
+		db:        db,
+		esVersion: esVersion,
 	}
 }
 
 func (es *Elasticsearch) UpdatedElasticsearch() *api.Elasticsearch {
-	return es.elasticsearch
+	return es.db
 }
 
 func (es *Elasticsearch) RequiredCertSecretNames() []string {
-	if !es.elasticsearch.Spec.DisableSecurity {
+	if !es.db.Spec.DisableSecurity {
 		var sNames []string
 		// transport layer is always secured with certificate
-		sNames = append(sNames, es.elasticsearch.MustCertSecretName(api.ElasticsearchTransportCert))
+		sNames = append(sNames, es.db.MustCertSecretName(api.ElasticsearchTransportCert))
 
 		// If SSL is enabled for REST layer
-		if es.elasticsearch.Spec.EnableSSL {
+		if es.db.Spec.EnableSSL {
 			// http server certificate
-			sNames = append(sNames, es.elasticsearch.MustCertSecretName(api.ElasticsearchHTTPCert))
+			sNames = append(sNames, es.db.MustCertSecretName(api.ElasticsearchHTTPCert))
 			// admin certificate
-			sNames = append(sNames, es.elasticsearch.MustCertSecretName(api.ElasticsearchAdminCert))
+			sNames = append(sNames, es.db.MustCertSecretName(api.ElasticsearchAdminCert))
 			// archiver certificate
-			sNames = append(sNames, es.elasticsearch.MustCertSecretName(api.ElasticsearchArchiverCert))
+			sNames = append(sNames, es.db.MustCertSecretName(api.ElasticsearchArchiverCert))
 			// metrics exporter certificate, if monitoring is enabled
-			if es.elasticsearch.Spec.Monitor != nil {
-				sNames = append(sNames, es.elasticsearch.MustCertSecretName(api.ElasticsearchMetricsExporterCert))
+			if es.db.Spec.Monitor != nil {
+				sNames = append(sNames, es.db.MustCertSecretName(api.ElasticsearchMetricsExporterCert))
 			}
 		}
 		return sNames

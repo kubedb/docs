@@ -26,9 +26,9 @@ import (
 	"gomodules.xyz/version"
 )
 
-func (c *Controller) getTLSArgs(mongoDB *api.MongoDB, mgVersion *v1alpha1.MongoDBVersion) ([]string, error) {
+func (c *Controller) getTLSArgs(db *api.MongoDB, mgVersion *v1alpha1.MongoDBVersion) ([]string, error) {
 	var sslArgs []string
-	sslMode := string(mongoDB.Spec.SSLMode)
+	sslMode := string(db.Spec.SSLMode)
 	breakingVer, err := version.NewVersion("4.2")
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (c *Controller) getTLSArgs(mongoDB *api.MongoDB, mgVersion *v1alpha1.MongoD
 			fmt.Sprintf("--tlsMode=%v", tlsMode),
 		}
 
-		if mongoDB.Spec.SSLMode != api.SSLModeDisabled {
+		if db.Spec.SSLMode != api.SSLModeDisabled {
 			//xREF: https://github.com/docker-library/mongo/issues/367
 			sslArgs = append(sslArgs, []string{
 				fmt.Sprintf("--tlsCAFile=%v/%v", api.MongoCertDirectory, api.TLSCACertFileName),
@@ -60,7 +60,7 @@ func (c *Controller) getTLSArgs(mongoDB *api.MongoDB, mgVersion *v1alpha1.MongoD
 		sslArgs = []string{
 			fmt.Sprintf("--sslMode=%v", sslMode),
 		}
-		if mongoDB.Spec.SSLMode != api.SSLModeDisabled {
+		if db.Spec.SSLMode != api.SSLModeDisabled {
 			sslArgs = append(sslArgs, []string{
 				fmt.Sprintf("--sslCAFile=%v/%v", api.MongoCertDirectory, api.TLSCACertFileName),
 				fmt.Sprintf("--sslPEMKeyFile=%v/%v", api.MongoCertDirectory, api.MongoPemFileName),

@@ -32,11 +32,11 @@ import (
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
-func (c *Controller) newMonitorController(memcached *api.Memcached) (mona.Agent, error) {
-	monitorSpec := memcached.Spec.Monitor
+func (c *Controller) newMonitorController(db *api.Memcached) (mona.Agent, error) {
+	monitorSpec := db.Spec.Monitor
 
 	if monitorSpec == nil {
-		return nil, fmt.Errorf("MonitorSpec not found in %v", memcached.Spec)
+		return nil, fmt.Errorf("MonitorSpec not found in %v", db.Spec)
 	}
 
 	if monitorSpec.Prometheus != nil {
@@ -46,25 +46,25 @@ func (c *Controller) newMonitorController(memcached *api.Memcached) (mona.Agent,
 	return nil, fmt.Errorf("monitoring controller not found for %v", monitorSpec)
 }
 
-func (c *Controller) addOrUpdateMonitor(memcached *api.Memcached) (kutil.VerbType, error) {
-	agent, err := c.newMonitorController(memcached)
+func (c *Controller) addOrUpdateMonitor(db *api.Memcached) (kutil.VerbType, error) {
+	agent, err := c.newMonitorController(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.CreateOrUpdate(memcached.StatsService(), memcached.Spec.Monitor)
+	return agent.CreateOrUpdate(db.StatsService(), db.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(memcached *api.Memcached) error {
-	agent, err := c.newMonitorController(memcached)
+func (c *Controller) deleteMonitor(db *api.Memcached) error {
+	agent, err := c.newMonitorController(db)
 	if err != nil {
 		return err
 	}
-	_, err = agent.Delete(memcached.StatsService())
+	_, err = agent.Delete(db.StatsService())
 	return err
 }
 
-func (c *Controller) getOldAgent(memcached *api.Memcached) mona.Agent {
-	service, err := c.Client.CoreV1().Services(memcached.Namespace).Get(context.TODO(), memcached.StatsService().ServiceName(), metav1.GetOptions{})
+func (c *Controller) getOldAgent(db *api.Memcached) mona.Agent {
+	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), db.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -72,35 +72,35 @@ func (c *Controller) getOldAgent(memcached *api.Memcached) mona.Agent {
 	return agents.New(mona.AgentType(oldAgentType), c.Client, c.promClient)
 }
 
-func (c *Controller) setNewAgent(memcached *api.Memcached) error {
-	service, err := c.Client.CoreV1().Services(memcached.Namespace).Get(context.TODO(), memcached.StatsService().ServiceName(), metav1.GetOptions{})
+func (c *Controller) setNewAgent(db *api.Memcached) error {
+	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), db.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 	_, _, err = core_util.PatchService(context.TODO(), c.Client, service, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
-			mona.KeyAgent: string(memcached.Spec.Monitor.Agent),
+			mona.KeyAgent: string(db.Spec.Monitor.Agent),
 		})
 		return in
 	}, metav1.PatchOptions{})
 	return err
 }
 
-func (c *Controller) manageMonitor(memcached *api.Memcached) error {
-	oldAgent := c.getOldAgent(memcached)
-	if memcached.Spec.Monitor != nil {
+func (c *Controller) manageMonitor(db *api.Memcached) error {
+	oldAgent := c.getOldAgent(db)
+	if db.Spec.Monitor != nil {
 		if oldAgent != nil &&
-			oldAgent.GetType() != memcached.Spec.Monitor.Agent {
-			if _, err := oldAgent.Delete(memcached.StatsService()); err != nil {
+			oldAgent.GetType() != db.Spec.Monitor.Agent {
+			if _, err := oldAgent.Delete(db.StatsService()); err != nil {
 				log.Error("error in deleting Prometheus agent:", err)
 			}
 		}
-		if _, err := c.addOrUpdateMonitor(memcached); err != nil {
+		if _, err := c.addOrUpdateMonitor(db); err != nil {
 			return err
 		}
-		return c.setNewAgent(memcached)
+		return c.setNewAgent(db)
 	} else if oldAgent != nil {
-		if _, err := oldAgent.Delete(memcached.StatsService()); err != nil {
+		if _, err := oldAgent.Delete(db.StatsService()); err != nil {
 			log.Error("error in deleting Prometheus agent:", err)
 		}
 	}

@@ -97,7 +97,7 @@ func processNodesConf(nodesConf string) map[string]*RedisNode {
 			nd := RedisNode{
 				ID:   parts[0],
 				IP:   strings.Split(parts[1], ":")[0],
-				Port: api.RedisNodePort,
+				Port: api.RedisDatabasePort,
 				Role: nodeFlagMaster,
 				Down: false,
 			}
@@ -140,7 +140,7 @@ func processNodesConf(nodesConf string) map[string]*RedisNode {
 			nd := RedisNode{
 				ID:   parts[0],
 				IP:   strings.Split(parts[1], ":")[0],
-				Port: api.RedisNodePort,
+				Port: api.RedisDatabasePort,
 				Role: nodeFlagSlave,
 				Down: false,
 			}
@@ -160,7 +160,7 @@ func processNodesConf(nodesConf string) map[string]*RedisNode {
 }
 
 func nodeAddress(ip string) string {
-	return fmt.Sprintf("%s:%d", ip, api.RedisNodePort)
+	return fmt.Sprintf("%s:%d", ip, api.RedisDatabasePort)
 }
 
 func countNodesInNodesConf(nodesConf, nodeFlag string) int {

@@ -210,6 +210,11 @@ func (c *Controller) checkMySQLStandaloneHealth(engine *xorm.Engine) (bool, erro
 }
 
 func (c *Controller) getMySQLClient(db *api.MySQL) (*xorm.Engine, error) {
+	port, err := c.GetPrimaryServicePort(db)
+	if err != nil {
+		return nil, err
+	}
+
 	user, pass, err := c.getMySQLBasicAuth(db)
 	if err != nil {
 		return nil, fmt.Errorf("password basic auth for MySQL %v/%v", db.Namespace, db.Name)
@@ -238,7 +243,7 @@ func (c *Controller) getMySQLClient(db *api.MySQL) (*xorm.Engine, error) {
 		}
 	}
 
-	cnnstr := fmt.Sprintf("%v:%v@tcp(%s:%d)/%s?%s", user, pass, getURL(db), api.MySQLNodePort, api.ResourceSingularMySQL, tlsConfig)
+	cnnstr := fmt.Sprintf("%v:%v@tcp(%s:%d)/%s?%s", user, pass, getURL(db), port, api.ResourceSingularMySQL, tlsConfig)
 	return xorm.NewEngine(api.ResourceSingularMySQL, cnnstr)
 }
 

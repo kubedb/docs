@@ -18,14 +18,12 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
@@ -34,45 +32,28 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-var (
-	defaultRestPort = core.ServicePort{
-		Name:       api.ElasticsearchRestPortName,
-		Port:       api.ElasticsearchRestPort,
-		TargetPort: intstr.FromString(api.ElasticsearchRestPortName),
-	}
-	defaultTransportPort = core.ServicePort{
-		Name:       api.ElasticsearchTransportPortName,
-		Port:       api.ElasticsearchTransportPort,
-		TargetPort: intstr.FromString(api.ElasticsearchTransportPortName),
-	}
-)
-
-func (c *Controller) ensureElasticGvrSvc(elasticsearch *api.Elasticsearch) error {
-	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
-
-	// Check if service name exists with different db kind
-	if err := c.checkService(elasticsearch, elasticsearch.GvrSvcName()); err != nil {
-		return err
-	}
-
+func (c *Controller) ensureGoverningService(db *api.Elasticsearch) error {
 	meta := metav1.ObjectMeta{
-		Name:      elasticsearch.GvrSvcName(),
-		Namespace: elasticsearch.Namespace,
+		Name:      db.GoverningServiceName(),
+		Namespace: db.Namespace,
 	}
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = elasticsearch.OffshootLabels()
-		in.Spec.Selector = elasticsearch.OffshootSelectors()
+		in.Labels = db.OffshootLabels()
+
 		in.Spec.Type = core.ServiceTypeClusterIP
 		in.Spec.ClusterIP = core.ClusterIPNone
-		in.Spec.Ports = []core.ServicePort{defaultTransportPort, defaultRestPort}
+		in.Spec.Selector = db.OffshootSelectors()
+		in.Spec.PublishNotReadyAddresses = true
+
 		return in
 	}, metav1.PatchOptions{})
 
 	if err == nil {
 		c.Recorder.Eventf(
-			elasticsearch,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s governing service",
@@ -82,19 +63,14 @@ func (c *Controller) ensureElasticGvrSvc(elasticsearch *api.Elasticsearch) error
 	return err
 }
 
-func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
-	// Check if service name exists
-	err := c.checkService(elasticsearch, elasticsearch.OffshootName())
-	if err != nil {
-		return kutil.VerbUnchanged, err
-	}
+func (c *Controller) ensureService(db *api.Elasticsearch) (kutil.VerbType, error) {
 	// create database Service
-	vt1, err := c.createService(elasticsearch)
+	vt1, err := c.createService(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt1 != kutil.VerbUnchanged {
 		c.Recorder.Eventf(
-			elasticsearch,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s Service",
@@ -102,18 +78,13 @@ func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.Verb
 		)
 	}
 
-	// Check if service name exists
-	err = c.checkService(elasticsearch, elasticsearch.MasterServiceName())
-	if err != nil {
-		return kutil.VerbUnchanged, err
-	}
 	// create database Service
-	vt2, err := c.createMasterService(elasticsearch)
+	vt2, err := c.createMasterService(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt2 != kutil.VerbUnchanged {
 		c.Recorder.Eventf(
-			elasticsearch,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s Service",
@@ -130,112 +101,106 @@ func (c *Controller) ensureService(elasticsearch *api.Elasticsearch) (kutil.Verb
 	return kutil.VerbUnchanged, nil
 }
 
-func (c *Controller) checkService(elasticsearch *api.Elasticsearch, name string) error {
-	service, err := c.Client.CoreV1().Services(elasticsearch.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			return nil
-		}
-		return err
-	}
-
-	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindElasticsearch ||
-		service.Labels[api.LabelDatabaseName] != elasticsearch.Name {
-		return fmt.Errorf(`intended service "%v/%v" already exists`, elasticsearch.Namespace, name)
-	}
-
-	return nil
-}
-
-func (c *Controller) createService(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
+func (c *Controller) createService(db *api.Elasticsearch) (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
-		Name:      elasticsearch.OffshootName(),
-		Namespace: elasticsearch.Namespace,
+		Name:      db.OffshootName(),
+		Namespace: db.Namespace,
 	}
 
-	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = elasticsearch.OffshootLabels()
-		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
+		in.Labels = db.OffshootLabels()
+		in.Annotations = db.Spec.ServiceTemplate.Annotations
 
-		in.Spec.Selector = elasticsearch.OffshootSelectors()
+		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Selector[api.ElasticsearchNodeRoleIngest] = api.ElasticsearchNodeRoleSet
 		in.Spec.Ports = ofst.MergeServicePorts(
-			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultRestPort}),
-			elasticsearch.Spec.ServiceTemplate.Spec.Ports,
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+				{
+					Name:       api.ElasticsearchRestPortName,
+					Port:       api.ElasticsearchRestPort,
+					TargetPort: intstr.FromString(api.ElasticsearchRestPortName),
+				},
+			}),
+			db.Spec.ServiceTemplate.Spec.Ports,
 		)
 
-		if elasticsearch.Spec.ServiceTemplate.Spec.ClusterIP != "" {
-			in.Spec.ClusterIP = elasticsearch.Spec.ServiceTemplate.Spec.ClusterIP
+		if db.Spec.ServiceTemplate.Spec.ClusterIP != "" {
+			in.Spec.ClusterIP = db.Spec.ServiceTemplate.Spec.ClusterIP
 		}
-		if elasticsearch.Spec.ServiceTemplate.Spec.Type != "" {
-			in.Spec.Type = elasticsearch.Spec.ServiceTemplate.Spec.Type
+		if db.Spec.ServiceTemplate.Spec.Type != "" {
+			in.Spec.Type = db.Spec.ServiceTemplate.Spec.Type
 		}
-		in.Spec.ExternalIPs = elasticsearch.Spec.ServiceTemplate.Spec.ExternalIPs
-		in.Spec.LoadBalancerIP = elasticsearch.Spec.ServiceTemplate.Spec.LoadBalancerIP
-		in.Spec.LoadBalancerSourceRanges = elasticsearch.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
-		in.Spec.ExternalTrafficPolicy = elasticsearch.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
-		if elasticsearch.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
-			in.Spec.HealthCheckNodePort = elasticsearch.Spec.ServiceTemplate.Spec.HealthCheckNodePort
+		in.Spec.ExternalIPs = db.Spec.ServiceTemplate.Spec.ExternalIPs
+		in.Spec.LoadBalancerIP = db.Spec.ServiceTemplate.Spec.LoadBalancerIP
+		in.Spec.LoadBalancerSourceRanges = db.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
+		in.Spec.ExternalTrafficPolicy = db.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
+		if db.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
+			in.Spec.HealthCheckNodePort = db.Spec.ServiceTemplate.Spec.HealthCheckNodePort
 		}
 		return in
 	}, metav1.PatchOptions{})
 	return ok, err
 }
 
-func (c *Controller) createMasterService(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
+func (c *Controller) createMasterService(db *api.Elasticsearch) (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
-		Name:      elasticsearch.MasterServiceName(),
-		Namespace: elasticsearch.Namespace,
+		Name:      db.MasterServiceName(),
+		Namespace: db.Namespace,
 	}
 
-	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = elasticsearch.OffshootLabels()
-		in.Annotations = elasticsearch.Spec.ServiceTemplate.Annotations
-		in.Spec.Selector = elasticsearch.OffshootSelectors()
+		in.Labels = db.OffshootLabels()
+		in.Annotations = db.Spec.ServiceTemplate.Annotations
+		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Selector[api.ElasticsearchNodeRoleMaster] = api.ElasticsearchNodeRoleSet
 
 		in.Spec.Type = core.ServiceTypeClusterIP
 		in.Spec.ClusterIP = core.ClusterIPNone
-		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultTransportPort})
+		in.Spec.Ports = ofst.MergeServicePorts(
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+				{
+					Name:       api.ElasticsearchTransportPortName,
+					Port:       api.ElasticsearchTransportPort,
+					TargetPort: intstr.FromString(api.ElasticsearchTransportPortName),
+				},
+			}),
+			db.Spec.ServiceTemplate.Spec.Ports,
+		)
+
 		return in
 	}, metav1.PatchOptions{})
 	return ok, err
 }
 
-func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil.VerbType, error) {
+func (c *Controller) ensureStatsService(db *api.Elasticsearch) (kutil.VerbType, error) {
 	// return if monitoring is not prometheus
-	if elasticsearch.Spec.Monitor == nil || elasticsearch.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
+	if db.Spec.Monitor == nil || db.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
 		log.Infoln("spec.monitor.agent is not provided by prometheus.io")
 		return kutil.VerbUnchanged, nil
 	}
 
-	// Check if statsService name exists
-	if err := c.checkService(elasticsearch, elasticsearch.StatsService().ServiceName()); err != nil {
-		return kutil.VerbUnchanged, err
-	}
-
-	owner := metav1.NewControllerRef(elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 	// reconcile statsService
 	meta := metav1.ObjectMeta{
-		Name:      elasticsearch.StatsService().ServiceName(),
-		Namespace: elasticsearch.Namespace,
+		Name:      db.StatsService().ServiceName(),
+		Namespace: db.Namespace,
 	}
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = elasticsearch.StatsServiceLabels()
-		in.Spec.Selector = elasticsearch.OffshootSelectors()
+		in.Labels = db.StatsServiceLabels()
+		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
 				Name:       mona.PrometheusExporterPortName,
 				Protocol:   core.ProtocolTCP,
-				Port:       elasticsearch.Spec.Monitor.Prometheus.Exporter.Port,
+				Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
 				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},
 		})
@@ -245,7 +210,7 @@ func (c *Controller) ensureStatsService(elasticsearch *api.Elasticsearch) (kutil
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.Recorder.Eventf(
-			elasticsearch,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s stats service",

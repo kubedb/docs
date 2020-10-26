@@ -28,16 +28,16 @@ import (
 	"kmodules.xyz/objectstore-api/osm"
 )
 
-func WalDataDir(postgres *api.Postgres) string {
-	spec := postgres.Spec.Archiver.Storage
+func WalDataDir(db *api.Postgres) string {
+	spec := db.Spec.Archiver.Storage
 	if spec.S3 != nil {
-		return filepath.Join(spec.S3.Prefix, api.DatabaseNamePrefix, postgres.Namespace, postgres.Name, "archive")
+		return filepath.Join(spec.S3.Prefix, api.DatabaseNamePrefix, db.Namespace, db.Name, "archive")
 	} else if spec.GCS != nil {
-		return filepath.Join(spec.GCS.Prefix, api.DatabaseNamePrefix, postgres.Namespace, postgres.Name, "archive")
+		return filepath.Join(spec.GCS.Prefix, api.DatabaseNamePrefix, db.Namespace, db.Name, "archive")
 	} else if spec.Azure != nil {
-		return filepath.Join(spec.Azure.Prefix, api.DatabaseNamePrefix, postgres.Namespace, postgres.Name, "archive")
+		return filepath.Join(spec.Azure.Prefix, api.DatabaseNamePrefix, db.Namespace, db.Name, "archive")
 	} else if spec.Swift != nil {
-		return filepath.Join(spec.Swift.Prefix, api.DatabaseNamePrefix, postgres.Namespace, postgres.Name, "archive")
+		return filepath.Join(spec.Swift.Prefix, api.DatabaseNamePrefix, db.Namespace, db.Name, "archive")
 	} else if spec.Local != nil {
 		return os.Getenv("RESTORE_FILE_PREFIX") //never gets called
 	}
