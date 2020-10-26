@@ -18,42 +18,42 @@ KubeDB provides you with many familiar database engines to choose from, includin
 
 ## Features
 
-|                                          | Community                            | Enterprise                                |
-| ---------------------------------------- | ------------------------------------ | ----------------------------------------- |
-|                                          | Open source KubeDB Free for everyone | Open Core KubeDB for production databases |
-| PostgreSQL                               | √                                    | √                                         |
-| MySQL                                    | √                                    | √                                         |
-| Elasticsearch                            | √                                    | √                                         |
-| MongoDB                                  | √                                    | √                                         |
-| Redis                                    | √                                    | √                                         |
-| Memcached                                | √                                    | √                                         |
-| MariaDB                                  | √                                    | √                                         |
-| Percona XtraDB                           | √                                    | √                                         |
-| PgBouncer                                | x                                    | √                                         |
-| ProxySQL                                 | x                                    | √                                         |
-| Database Clustering                      | √                                    | √                                         |
-| Cloud / On-prem / Air-gapped clusters    | √                                    | √                                         |
-| Multizone Cluster                        | √                                    | √                                         |
-| Private Registry                         | √                                    | √                                         |
-| CLI                                      | √                                    | √                                         |
-| Halt & resume database                   | √                                    | √                                         |
-| Custom Configuration                     | √                                    | √                                         |
-| Custom Extensions                        | √                                    | √                                         |
-| Prometheus Metrics                       | √                                    | √                                         |
-| Protect against accidental deletion      | x                                    | √                                         |
-| Managed Backup/Recovery using Stash      | x                                    | √                                         |
-| Managed Patch Upgrades                   | x                                    | √                                         |
-| Managed Horizontal Scaling               | x                                    | √                                         |
-| Managed Vertical Scaling                 | x                                    | √                                         |
-| Managed Volume Expansion                 | x                                    | √                                         |
-| Managed Reconfiguration                  | x                                    | √                                         |
-| Managed Restarts                         | x                                    | √                                         |
-| Role Based Access Control (RBAC)         | √                                    | √                                         |
-| Open Policy Agent (OPA)                  | √                                    | √                                         |
-| Pod Security Policy (PSP)                | √                                    | √                                         |
-| Network Policy                           | √                                    | √                                         |
-| User & Secret Management using KubeVault | x                                    | √                                         |
-| Managed TLS using cert-manager           | x                                    | √                                         |
+|                                                                   | Community                            | Enterprise                                |
+| ----------------------------------------------------------------- | ------------------------------------ | ----------------------------------------- |
+|                                                                   | Open source KubeDB Free for everyone | Open Core KubeDB for production databases |
+| PostgreSQL                                                        | √                                    | √                                         |
+| MySQL                                                             | √                                    | √                                         |
+| Elasticsearch                                                     | √                                    | √                                         |
+| MongoDB                                                           | √                                    | √                                         |
+| Redis                                                             | √                                    | √                                         |
+| Memcached                                                         | √                                    | √                                         |
+| MariaDB                                                           | √                                    | √                                         |
+| Percona XtraDB                                                    | √                                    | √                                         |
+| PgBouncer                                                         | x                                    | √                                         |
+| ProxySQL                                                          | x                                    | √                                         |
+| Database Clustering                                               | √                                    | √                                         |
+| Cloud / On-prem / Air-gapped clusters                             | √                                    | √                                         |
+| Multizone Cluster                                                 | √                                    | √                                         |
+| Private Registry                                                  | √                                    | √                                         |
+| CLI                                                               | √                                    | √                                         |
+| Halt & resume database                                            | √                                    | √                                         |
+| Custom Configuration                                              | √                                    | √                                         |
+| Custom Extensions                                                 | √                                    | √                                         |
+| Prometheus Metrics                                                | √                                    | √                                         |
+| Protect against accidental deletion                               | x                                    | √                                         |
+| Managed Backup/Recovery using [Stash](https://stash.run)          | x                                    | √                                         |
+| Managed Patch Upgrades                                            | x                                    | √                                         |
+| Managed Horizontal Scaling                                        | x                                    | √                                         |
+| Managed Vertical Scaling                                          | x                                    | √                                         |
+| Managed Volume Expansion                                          | x                                    | √                                         |
+| Managed Reconfiguration                                           | x                                    | √                                         |
+| Managed Restarts                                                  | x                                    | √                                         |
+| Role Based Access Control (RBAC)                                  | √                                    | √                                         |
+| Open Policy Agent (OPA)                                           | √                                    | √                                         |
+| Pod Security Policy (PSP)                                         | √                                    | √                                         |
+| Network Policy                                                    | √                                    | √                                         |
+| User & Secret Management using [KubeVault](https://kubevault.com) | x                                    | √                                         |
+| Managed TLS using [cert-manager](https://cert-manager.io)         | x                                    | √                                         |
 
 ## Installation
 
