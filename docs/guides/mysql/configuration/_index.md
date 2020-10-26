@@ -5,6 +5,6 @@ menu:
     identifier: my-configuration
     name: Custom Configuration
     parent: my-mysql-guides
-    weight: 50
+    weight: 30
 menu_name: docs_{{ .version }}
 ---

@@ -5,6 +5,6 @@ menu:
     identifier: mg-clustering-mongodb
     name: Clustering
     parent: mg-mongodb-guides
-    weight: 17
+    weight: 25
 menu_name: docs_{{ .version }}
 ---

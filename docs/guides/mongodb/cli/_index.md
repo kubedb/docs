@@ -5,6 +5,6 @@ menu:
     identifier: mg-cli-mongodb
     name: Cli
     parent: mg-mongodb-guides
-    weight: 45
+    weight: 100
 menu_name: docs_{{ .version }}
 ---

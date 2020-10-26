@@ -5,6 +5,6 @@ menu:
     identifier: rd-cli-redis
     name: Cli
     parent: rd-redis-guides
-    weight: 45
+    weight: 100
 menu_name: docs_{{ .version }}
 ---

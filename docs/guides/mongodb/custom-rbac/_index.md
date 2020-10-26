@@ -5,6 +5,6 @@ menu:
     identifier: mg-custom-rbac
     name: Custom RBAC
     parent: mg-mongodb-guides
-    weight: 65
+    weight: 31
 menu_name: docs_{{ .version }}
 ---

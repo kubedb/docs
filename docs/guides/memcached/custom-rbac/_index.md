@@ -5,6 +5,6 @@ menu:
     identifier: mc-custom-rbac
     name: Custom RBAC
     parent: mc-memcached-guides
-    weight: 85
+    weight: 31
 menu_name: docs_{{ .version }}
 ---

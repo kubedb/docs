@@ -5,6 +5,6 @@ menu:
     identifier: rd-concepts-redis
     name: Concepts
     parent: rd-redis-guides
-    weight: 1
+    weight: 20
 menu_name: docs_{{ .version }}
 ---

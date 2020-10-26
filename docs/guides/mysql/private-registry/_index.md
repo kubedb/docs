@@ -5,6 +5,6 @@ menu:
     identifier: my-private-registry-mysql
     name: Private Registry
     parent: my-mysql-guides
-    weight: 30
+    weight: 35
 menu_name: docs_{{ .version }}
 ---

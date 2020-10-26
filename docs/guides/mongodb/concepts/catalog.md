@@ -10,6 +10,8 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
+> New to KubeDB? Please start [here](/docs/README.md).
+
 # MongoDBVersion
 
 ## What is MongoDBVersion
@@ -20,7 +22,7 @@ When you install KubeDB, a `MongoDBVersion` custom resource will be created auto
 
 Using a separate crd for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of KubeDB operator.This will also allow the users to use a custom image for the database.
 
-## MongoDBVersion Specification
+## MongoDBVersion Spec
 
 As with all other Kubernetes objects, a MongoDBVersion needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section.
 

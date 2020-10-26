@@ -5,6 +5,6 @@ menu:
     identifier: connecting-primary-secondary-replicas
     name: Connecting MySQL Clustering
     parent: my-mysql-guides
-    weight: 12
+    weight: 105
 menu_name: docs_{{ .version }}
 ---

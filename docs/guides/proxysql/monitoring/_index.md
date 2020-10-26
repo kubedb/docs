@@ -5,6 +5,6 @@ menu:
     identifier: prx-monitoring-proxysql
     name: Monitoring
     parent: prx-proxysql-guides
-    weight: 45
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

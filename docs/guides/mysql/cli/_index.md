@@ -5,6 +5,6 @@ menu:
     identifier: my-cli-mysql
     name: Cli
     parent: my-mysql-guides
-    weight: 45
+    weight: 100
 menu_name: docs_{{ .version }}
 ---

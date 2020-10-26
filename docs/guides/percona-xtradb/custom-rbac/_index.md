@@ -5,6 +5,6 @@ menu:
     identifier: px-custom-rbac
     name: Custom RBAC
     parent: px-percona-xtradb-guides
-    weight: 45
+    weight: 31
 menu_name: docs_{{ .version }}
 ---

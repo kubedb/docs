@@ -5,6 +5,6 @@ menu:
     identifier: es-backup
     name: Backup & Restore
     parent: es-elasticsearch-guides
-    weight: 25
+    weight: 40
 menu_name: docs_{{ .version }}
 ---

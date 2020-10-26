@@ -15,36 +15,18 @@ aliases:
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
+{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
+
 ## Supported ProxySQL Features
 
-|                        Features                         | Availability |
-| ------------------------------------------------------- | :----------: |
-| Load balance MySQL Group Replication                    |   &#10003;   |
-| Load balance PerconaXtraDB Cluster                      |   &#10007;   |
-| Custom Configuration                                    |   &#10003;   |
-| Using Custom docker image                               |   &#10003;   |
-| Builtin Prometheus Discovery                            |   &#10003;   |
-| Using Prometheus operator                               |   &#10003;   |
-
-## Supported ProxySQL Versions
-
-| KubeDB Version | ProxySQL:2.0.4 |
-| :------------: | :------------: |
-|  v0.13.0-rc.1  |    &#10003;    |
-
-## Supported ProxySQLVersion CRD
-
-Here, &#10003; means supported and &#10007; means deprecated.
-
-|  NAME  | VERSION | KubeDB: v0.13.0-rc.0 | KubeDB: v0.13.0-rc.0 |
-| :----: | :-----: | :-----------: | :------------: |
-|   2.0.4    |    2.0.4    |   &#10007;    |    &#10003;    |
-
-## External tools dependency
-
-|                                Tool                               | Version |
-| :---------------------------------------------------------------: | :-----: |
-| [proxysql-exporter](https://github.com/percona/proxysql_exporter) | latest  |
+| Features                             | Availability |
+| ------------------------------------ | :----------: |
+| Load balance MySQL Group Replication |   &#10003;   |
+| Load balance PerconaXtraDB Cluster   |   &#10007;   |
+| Custom Configuration                 |   &#10003;   |
+| Using Custom docker image            |   &#10003;   |
+| Builtin Prometheus Discovery         |   &#10003;   |
+| Using Prometheus operator            |   &#10003;   |
 
 ## User Guide
 

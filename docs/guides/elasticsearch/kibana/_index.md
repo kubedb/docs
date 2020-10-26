@@ -5,6 +5,6 @@ menu:
     identifier: es-kibana
     name: Kibana
     parent: es-elasticsearch-guides
-    weight: 55
+    weight: 65
 menu_name: docs_{{ .version }}
 ---
