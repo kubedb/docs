@@ -37,13 +37,6 @@ aliases:
   <img alt="lifecycle"  src="/docs/images/mongodb/mgo-lifecycle.png">
 </p>
 
-## External tools dependency
-
-| Tool                                                   | Version |
-| ------------------------------------------------------ | :-----: |
-| [peer-finder](https://github.com/kmodules/peer-finder) | latest  |
-| [osm](https://github.com/appscode/osm)                 |  0.9.1  |
-
 ## User Guide
 
 - [Quickstart MongoDB](/docs/guides/mongodb/quickstart/quickstart.md) with KubeDB Operator.

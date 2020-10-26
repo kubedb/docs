@@ -36,13 +36,6 @@ aliases:
   <img alt="lifecycle"  src="/docs/images/mysql/mysql-lifecycle.png" >
 </p>
 
-## External tools dependency
-
-|                                     Tool                                     | Version |
-| :--------------------------------------------------------------------------: | :-----: |
-| [peer-finder](https://github.com/kubernetes/contrib/tree/master/peer-finder) | latest  |
-|                    [osm](https://github.com/appscode/osm)                    |  0.9.1  |
-
 ## User Guide
 
 - [Quickstart MySQL](/docs/guides/mysql/quickstart/quickstart.md) with KubeDB Operator.
