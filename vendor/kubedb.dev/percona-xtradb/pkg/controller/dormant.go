@@ -60,10 +60,10 @@ func (c *Controller) waitUntilPaused(db *api.PerconaXtraDB) error {
 	return nil
 }
 
-func (c *Controller) waitUntilRBACStuffDeleted(px *api.PerconaXtraDB) error {
-	log.Infof("waiting for RBACs for PerconaXtraDB %v/%v to be deleted\n", px.Namespace, px.Name)
+func (c *Controller) waitUntilRBACStuffDeleted(db *api.PerconaXtraDB) error {
+	log.Infof("waiting for RBACs for PerconaXtraDB %v/%v to be deleted\n", db.Namespace, db.Name)
 	// Delete ServiceAccount
-	if err := core_util.WaitUntillServiceAccountDeleted(context.TODO(), c.Client, px.ObjectMeta); err != nil {
+	if err := core_util.WaitUntillServiceAccountDeleted(context.TODO(), c.Client, db.ObjectMeta); err != nil {
 		return err
 	}
 	return nil

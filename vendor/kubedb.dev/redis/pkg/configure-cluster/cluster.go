@@ -157,7 +157,7 @@ func (c Config) ensureAllNodesKnowEachOther(useTLS bool, pods [][]*core.Pod) err
 						// sender node, then send a MEET packet.
 						if nodeCntInReceiver > 1 &&
 							!strings.Contains(senderConf, receiverIP) {
-							if err = c.clusterMeet(useTLS, execPodSnd, senderIP, receiverIP, strconv.Itoa(api.RedisNodePort)); err != nil {
+							if err = c.clusterMeet(useTLS, execPodSnd, senderIP, receiverIP, strconv.Itoa(api.RedisDatabasePort)); err != nil {
 								return err
 							}
 						}

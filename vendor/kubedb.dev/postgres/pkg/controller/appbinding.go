@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	"kubedb.dev/apimachinery/apis/kubedb"
@@ -26,14 +27,21 @@ import (
 
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_util "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1/util"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 func (c *Controller) ensureAppBinding(db *api.Postgres, postgresVersion *catalog.PostgresVersion) (kutil.VerbType, error) {
+	port, err := c.GetPrimaryServicePort(db)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
 	appmeta := db.AppBindingMeta()
 
 	meta := metav1.ObjectMeta{
@@ -57,7 +65,7 @@ func (c *Controller) ensureAppBinding(db *api.Postgres, postgresVersion *catalog
 			in.Spec.ClientConfig.Service = &appcat.ServiceReference{
 				Scheme: "postgresql",
 				Name:   db.ServiceName(),
-				Port:   defaultDBPort.Port,
+				Port:   port,
 				Path:   "/",
 				Query:  "sslmode=disable", // TODO: Fix when sslmode is supported
 			}
@@ -83,4 +91,21 @@ func (c *Controller) ensureAppBinding(db *api.Postgres, postgresVersion *catalog
 		)
 	}
 	return vt, nil
+}
+
+func (c *Controller) GetPrimaryServicePort(db *api.Postgres) (int32, error) {
+	ports := ofst.MergeServicePorts([]core.ServicePort{
+		{
+			Name:       api.PostgresPrimaryServicePortName,
+			Port:       api.PostgresDatabasePort,
+			TargetPort: intstr.FromString(api.PostgresDatabasePortName),
+		},
+	}, db.Spec.ServiceTemplate.Spec.Ports)
+
+	for _, p := range ports {
+		if p.Name == api.PostgresPrimaryServicePortName {
+			return p.Port, nil
+		}
+	}
+	return 0, fmt.Errorf("failed to detect primary port for Postgres %s/%s", db.Namespace, db.Name)
 }

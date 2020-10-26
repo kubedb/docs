@@ -23,20 +23,19 @@ import (
 )
 
 const (
-	systemNamespace = "kube-system"
-	publicNamespace = "kube-public"
-	namespaceKey    = "namespace"
-	nameKey         = "name"
-	pbAdminUser     = "kubedb"
-	pbAdminDatabase = "pgbouncer"
-	pbAdminPassword = "pb-password"
-	pbAdminData     = "pb-admin"
-	pbUserData      = "pb-user"
+	systemNamespace    = "kube-system"
+	publicNamespace    = "kube-public"
+	namespaceKey       = "namespace"
+	nameKey            = "name"
+	pbAdminDatabase    = "pgbouncer"
+	pbAdminPasswordKey = "pb-password"
+	pbAdminDataKey     = "pb-admin"
+	pbUserDataKey      = "pb-user"
 )
 
 func (c *Controller) initWatcher() {
 	c.pbInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().PgBouncers().Informer()
-	c.pbQueue = queue.New("PgBouncer", c.MaxNumRequeues, c.NumThreads, c.managePgBouncerEvent)
+	c.pbQueue = queue.New("PgBouncer", c.MaxNumRequeues, c.NumThreads, c.runPgBouncer)
 	c.pbLister = c.KubedbInformerFactory.Kubedb().V1alpha2().PgBouncers().Lister()
 	c.pbInformer.AddEventHandler(queue.NewChangeHandler(c.pbQueue.GetQueue()))
 }

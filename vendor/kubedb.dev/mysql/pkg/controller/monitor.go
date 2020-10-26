@@ -54,12 +54,12 @@ func (c *Controller) addOrUpdateMonitor(db *api.MySQL) (kutil.VerbType, error) {
 	return agent.CreateOrUpdate(db.StatsService(), db.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(mysql *api.MySQL) error {
-	agent, err := c.newMonitorController(mysql)
+func (c *Controller) deleteMonitor(db *api.MySQL) error {
+	agent, err := c.newMonitorController(db)
 	if err != nil {
 		return err
 	}
-	_, err = agent.Delete(mysql.StatsService())
+	_, err = agent.Delete(db.StatsService())
 	return err
 }
 

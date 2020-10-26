@@ -32,11 +32,11 @@ import (
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
-func (c *Controller) newMonitorController(pgbouncer *api.PgBouncer) (mona.Agent, error) {
-	monitorSpec := pgbouncer.Spec.Monitor
+func (c *Controller) newMonitorController(db *api.PgBouncer) (mona.Agent, error) {
+	monitorSpec := db.Spec.Monitor
 
 	if monitorSpec == nil {
-		return nil, fmt.Errorf("MonitorSpec not found in %v", pgbouncer.Spec)
+		return nil, fmt.Errorf("MonitorSpec not found in %v", db.Spec)
 	}
 
 	if monitorSpec.Prometheus != nil {
@@ -46,16 +46,16 @@ func (c *Controller) newMonitorController(pgbouncer *api.PgBouncer) (mona.Agent,
 	return nil, fmt.Errorf("monitoring controller not found for %v", monitorSpec)
 }
 
-func (c *Controller) addOrUpdateMonitor(pgbouncer *api.PgBouncer) (kutil.VerbType, error) {
-	agent, err := c.newMonitorController(pgbouncer)
+func (c *Controller) addOrUpdateMonitor(db *api.PgBouncer) (kutil.VerbType, error) {
+	agent, err := c.newMonitorController(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.CreateOrUpdate(pgbouncer.StatsService(), pgbouncer.Spec.Monitor)
+	return agent.CreateOrUpdate(db.StatsService(), db.Spec.Monitor)
 }
 
-func (c *Controller) getOldAgent(pgbouncer *api.PgBouncer) mona.Agent {
-	service, err := c.Client.CoreV1().Services(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.StatsService().ServiceName(), metav1.GetOptions{})
+func (c *Controller) getOldAgent(db *api.PgBouncer) mona.Agent {
+	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), db.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -63,36 +63,36 @@ func (c *Controller) getOldAgent(pgbouncer *api.PgBouncer) mona.Agent {
 	return agents.New(mona.AgentType(oldAgentType), c.Client, c.promClient)
 }
 
-func (c *Controller) setNewAgent(pgbouncer *api.PgBouncer) error {
-	service, err := c.Client.CoreV1().Services(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.StatsService().ServiceName(), metav1.GetOptions{})
+func (c *Controller) setNewAgent(db *api.PgBouncer) error {
+	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), db.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 	_, _, err = core_util.PatchService(context.TODO(), c.Client, service, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
-			mona.KeyAgent: string(pgbouncer.Spec.Monitor.Agent),
+			mona.KeyAgent: string(db.Spec.Monitor.Agent),
 		})
 		return in
 	}, metav1.PatchOptions{})
 	return err
 }
 
-func (c *Controller) manageMonitor(pgbouncer *api.PgBouncer) error {
-	oldAgent := c.getOldAgent(pgbouncer)
+func (c *Controller) manageMonitor(db *api.PgBouncer) error {
+	oldAgent := c.getOldAgent(db)
 
-	if pgbouncer.Spec.Monitor != nil {
+	if db.Spec.Monitor != nil {
 		if oldAgent != nil &&
-			oldAgent.GetType() != pgbouncer.Spec.Monitor.Agent {
-			if _, err := oldAgent.Delete(pgbouncer.StatsService()); err != nil {
+			oldAgent.GetType() != db.Spec.Monitor.Agent {
+			if _, err := oldAgent.Delete(db.StatsService()); err != nil {
 				log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 			}
 		}
-		if _, err := c.addOrUpdateMonitor(pgbouncer); err != nil {
+		if _, err := c.addOrUpdateMonitor(db); err != nil {
 			return err
 		}
-		return c.setNewAgent(pgbouncer)
+		return c.setNewAgent(db)
 	} else if oldAgent != nil {
-		if _, err := oldAgent.Delete(pgbouncer.StatsService()); err != nil {
+		if _, err := oldAgent.Delete(db.StatsService()); err != nil {
 			log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 		}
 	}

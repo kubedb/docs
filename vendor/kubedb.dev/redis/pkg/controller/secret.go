@@ -36,12 +36,12 @@ func (c *Controller) RedisForSecret(s *core.Secret) cache.ExplicitKey {
 	return cache.ExplicitKey(s.Namespace + "/" + ctrl.Name)
 }
 
-func (c *Controller) GetRedisSecrets(redis *api.Redis) []string {
-	if redis.Spec.TLS != nil {
+func (c *Controller) GetRedisSecrets(db *api.Redis) []string {
+	if db.Spec.TLS != nil {
 		return []string{
-			redis.MustCertSecretName(api.RedisServerCert),
-			redis.MustCertSecretName(api.RedisClientCert),
-			redis.MustCertSecretName(api.RedisMetricsExporterCert),
+			db.MustCertSecretName(api.RedisServerCert),
+			db.MustCertSecretName(api.RedisClientCert),
+			db.MustCertSecretName(api.RedisMetricsExporterCert),
 		}
 	}
 	return nil

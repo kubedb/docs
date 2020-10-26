@@ -174,13 +174,13 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	log.Infoln("Stopping KubeDB controller")
 }
 
-func (c *Controller) pushFailureEvent(mongodb *api.MongoDB, reason string) {
+func (c *Controller) pushFailureEvent(db *api.MongoDB, reason string) {
 	c.Recorder.Eventf(
-		mongodb,
+		db,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready MongoDB: "%v". Reason: %v`,
-		mongodb.Name,
+		db.Name,
 		reason,
 	)
 }

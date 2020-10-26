@@ -63,19 +63,19 @@ func (c *Controller) waitUntilPaused(db *api.Postgres) error {
 	return nil
 }
 
-func (c *Controller) waitUntilRBACStuffDeleted(postgres *api.Postgres) error {
+func (c *Controller) waitUntilRBACStuffDeleted(db *api.Postgres) error {
 	// Delete Existing Role
-	if err := rbac_util.WaitUntillRoleDeleted(context.TODO(), c.Client, postgres.ObjectMeta); err != nil {
+	if err := rbac_util.WaitUntillRoleDeleted(context.TODO(), c.Client, db.ObjectMeta); err != nil {
 		return err
 	}
 
 	// Delete RoleBinding
-	if err := rbac_util.WaitUntillRoleBindingDeleted(context.TODO(), c.Client, postgres.ObjectMeta); err != nil {
+	if err := rbac_util.WaitUntillRoleBindingDeleted(context.TODO(), c.Client, db.ObjectMeta); err != nil {
 		return err
 	}
 
 	// Delete ServiceAccount
-	if err := core_util.WaitUntillServiceAccountDeleted(context.TODO(), c.Client, postgres.ObjectMeta); err != nil {
+	if err := core_util.WaitUntillServiceAccountDeleted(context.TODO(), c.Client, db.ObjectMeta); err != nil {
 		return err
 	}
 	return nil

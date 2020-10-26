@@ -149,23 +149,23 @@ func (a *MongoDBValidator) Admit(req *admission.AdmissionRequest) *admission.Adm
 
 // ValidateMongoDB checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongodb *api.MongoDB, strictValidation bool) error {
-	if mongodb.Spec.Version == "" {
+func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, db *api.MongoDB, strictValidation bool) error {
+	if db.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if _, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
-	top := mongodb.Spec.ShardTopology
+	top := db.Spec.ShardTopology
 	if top != nil {
-		if mongodb.Spec.Replicas != nil {
+		if db.Spec.Replicas != nil {
 			return fmt.Errorf(`doesn't support 'spec.replicas' when spec.shardTopology is set`)
 		}
-		if mongodb.Spec.PodTemplate != nil {
+		if db.Spec.PodTemplate != nil {
 			return fmt.Errorf(`doesn't support 'spec.podTemplate' when spec.shardTopology is set`)
 		}
-		if mongodb.Spec.ConfigSecret != nil {
+		if db.Spec.ConfigSecret != nil {
 			return fmt.Errorf(`doesn't support 'spec.configSecret' when spec.shardTopology is set`)
 		}
 
@@ -194,94 +194,94 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, mongod
 			return err
 		}
 	} else {
-		if mongodb.Spec.Replicas == nil || *mongodb.Spec.Replicas < 1 {
-			return fmt.Errorf(`spec.replicas "%v" invalid. Must be greater than zero in non-shardTopology`, mongodb.Spec.Replicas)
+		if db.Spec.Replicas == nil || *db.Spec.Replicas < 1 {
+			return fmt.Errorf(`spec.replicas "%v" invalid. Must be greater than zero in non-shardTopology`, db.Spec.Replicas)
 		}
 
-		if mongodb.Spec.Replicas == nil || (mongodb.Spec.ReplicaSet == nil && *mongodb.Spec.Replicas != 1) {
-			return fmt.Errorf(`spec.replicas "%v" invalid for 'MongoDB Standalone' instance. Value must be one`, mongodb.Spec.Replicas)
+		if db.Spec.Replicas == nil || (db.Spec.ReplicaSet == nil && *db.Spec.Replicas != 1) {
+			return fmt.Errorf(`spec.replicas "%v" invalid for 'MongoDB Standalone' instance. Value must be one`, db.Spec.Replicas)
 		}
 
-		if mongodb.Spec.PodTemplate != nil {
-			if err := amv.ValidateEnvVar(mongodb.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
+		if db.Spec.PodTemplate != nil {
+			if err := amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
 				return err
 			}
 		}
 	}
 
-	if mongodb.Spec.StorageType == "" {
+	if db.Spec.StorageType == "" {
 		return fmt.Errorf(`'spec.storageType' is missing`)
 	}
-	if mongodb.Spec.StorageType != api.StorageTypeDurable && mongodb.Spec.StorageType != api.StorageTypeEphemeral {
-		return fmt.Errorf(`'spec.storageType' %s is invalid`, mongodb.Spec.StorageType)
+	if db.Spec.StorageType != api.StorageTypeDurable && db.Spec.StorageType != api.StorageTypeEphemeral {
+		return fmt.Errorf(`'spec.storageType' %s is invalid`, db.Spec.StorageType)
 	}
 	// Validate storage for ClusterTopology or non-ClusterTopology
 	if top != nil {
-		if mongodb.Spec.Storage != nil {
+		if db.Spec.Storage != nil {
 			return fmt.Errorf("doesn't support 'spec.storage' when spec.shardTopology is set")
 		}
-		if err := amv.ValidateStorage(client, mongodb.Spec.StorageType, top.Shard.Storage, "spec.shardTopology.shard.storage"); err != nil {
+		if err := amv.ValidateStorage(client, db.Spec.StorageType, top.Shard.Storage, "spec.shardTopology.shard.storage"); err != nil {
 			return err
 		}
-		if err := amv.ValidateStorage(client, mongodb.Spec.StorageType, top.ConfigServer.Storage, "spec.shardTopology.configServer.storage"); err != nil {
+		if err := amv.ValidateStorage(client, db.Spec.StorageType, top.ConfigServer.Storage, "spec.shardTopology.configServer.storage"); err != nil {
 			return err
 		}
 	} else {
-		if err := amv.ValidateStorage(client, mongodb.Spec.StorageType, mongodb.Spec.Storage); err != nil {
+		if err := amv.ValidateStorage(client, db.Spec.StorageType, db.Spec.Storage); err != nil {
 			return err
 		}
 	}
 
-	if (mongodb.Spec.ClusterAuthMode == api.ClusterAuthModeX509 || mongodb.Spec.ClusterAuthMode == api.ClusterAuthModeSendX509) &&
-		(mongodb.Spec.SSLMode == api.SSLModeDisabled || mongodb.Spec.SSLMode == api.SSLModeAllowSSL) {
+	if (db.Spec.ClusterAuthMode == api.ClusterAuthModeX509 || db.Spec.ClusterAuthMode == api.ClusterAuthModeSendX509) &&
+		(db.Spec.SSLMode == api.SSLModeDisabled || db.Spec.SSLMode == api.SSLModeAllowSSL) {
 		return fmt.Errorf("can't have %v set to mongodb.spec.sslMode when mongodb.spec.clusterAuthMode is set to %v",
-			mongodb.Spec.SSLMode, mongodb.Spec.ClusterAuthMode)
+			db.Spec.SSLMode, db.Spec.ClusterAuthMode)
 	}
 
-	if mongodb.Spec.ClusterAuthMode == api.ClusterAuthModeSendKeyFile && mongodb.Spec.SSLMode == api.SSLModeDisabled {
+	if db.Spec.ClusterAuthMode == api.ClusterAuthModeSendKeyFile && db.Spec.SSLMode == api.SSLModeDisabled {
 		return fmt.Errorf("can't have %v set to mongodb.spec.sslMode when mongodb.spec.clusterAuthMode is set to %v",
-			mongodb.Spec.SSLMode, mongodb.Spec.ClusterAuthMode)
+			db.Spec.SSLMode, db.Spec.ClusterAuthMode)
 	}
 
 	if strictValidation {
-		if mongodb.Spec.AuthSecret != nil {
-			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), mongodb.Spec.AuthSecret.Name, metav1.GetOptions{}); err != nil {
+		if db.Spec.AuthSecret != nil {
+			if _, err := client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
 
-		if mongodb.Spec.KeyFileSecret != nil {
-			if _, err := client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), mongodb.Spec.KeyFileSecret.Name, metav1.GetOptions{}); err != nil {
+		if db.Spec.KeyFileSecret != nil {
+			if _, err := client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.KeyFileSecret.Name, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
 
 		// Check if mongodbVersion is deprecated.
 		// If deprecated, return error
-		mongodbVersion, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(mongodb.Spec.Version), metav1.GetOptions{})
+		mongodbVersion, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
 		if mongodbVersion.Spec.Deprecated {
 			return fmt.Errorf("mongoDB %s/%s is using deprecated version %v. Skipped processing",
-				mongodb.Namespace, mongodb.Name, mongodbVersion.Name)
+				db.Namespace, db.Name, mongodbVersion.Name)
 		}
 
 		if err := mongodbVersion.ValidateSpecs(); err != nil {
-			return fmt.Errorf("mongodb %s/%s is using invalid mongodbVersion %v. Skipped processing. reason: %v", mongodb.Namespace,
-				mongodb.Name, mongodbVersion.Name, err)
+			return fmt.Errorf("mongodb %s/%s is using invalid mongodbVersion %v. Skipped processing. reason: %v", db.Namespace,
+				db.Name, mongodbVersion.Name, err)
 		}
 	}
 
-	if mongodb.Spec.TerminationPolicy == "" {
+	if db.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
-	if mongodb.Spec.StorageType == api.StorageTypeEphemeral && mongodb.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+	if db.Spec.StorageType == api.StorageTypeEphemeral && db.Spec.TerminationPolicy == api.TerminationPolicyHalt {
 		return fmt.Errorf(`'spec.terminationPolicy: Halt' can not be used for 'Ephemeral' storage`)
 	}
 
-	monitorSpec := mongodb.Spec.Monitor
+	monitorSpec := db.Spec.Monitor
 	if monitorSpec != nil {
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
 			return err
@@ -303,7 +303,7 @@ func validateUpdate(obj, oldObj *api.MongoDB) error {
 	return nil
 }
 
-func getPreconditionFunc(mg *api.MongoDB) []mergepatch.PreconditionFunc {
+func getPreconditionFunc(db *api.MongoDB) []mergepatch.PreconditionFunc {
 	preconditions := []mergepatch.PreconditionFunc{
 		mergepatch.RequireKeyUnchanged("apiVersion"),
 		mergepatch.RequireKeyUnchanged("kind"),
@@ -312,7 +312,7 @@ func getPreconditionFunc(mg *api.MongoDB) []mergepatch.PreconditionFunc {
 	}
 
 	// Once the database has been initialized, don't let update the "spec.init" section
-	if mg.Spec.Init != nil && mg.Spec.Init.Initialized {
+	if db.Spec.Init != nil && db.Spec.Init.Initialized {
 		preconditionSpecFields.Insert("spec.init")
 	}
 

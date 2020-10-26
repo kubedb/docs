@@ -41,17 +41,17 @@ import (
 // EnsureCertSecrets creates certificates if they don't exist.
 // If the "TLS.IssuerRef" is set, the operator won't create certificates.
 func (es *Elasticsearch) EnsureCertSecrets() error {
-	if es.elasticsearch.Spec.DisableSecurity {
+	if es.db.Spec.DisableSecurity {
 		return nil
 	}
 
-	if es.elasticsearch.Spec.TLS == nil {
+	if es.db.Spec.TLS == nil {
 		return errors.New("tls configuration is missing")
 	}
 
 	// Certificates are managed by the enterprise operator.
 	// Ignore sync/creation.
-	if es.elasticsearch.Spec.TLS.IssuerRef != nil {
+	if es.db.Spec.TLS.IssuerRef != nil {
 		return nil
 	}
 
@@ -70,7 +70,7 @@ func (es *Elasticsearch) EnsureCertSecrets() error {
 		return errors.Wrap(err, "failed to create/sync transport-cert secret")
 	}
 
-	if es.elasticsearch.Spec.EnableSSL {
+	if es.db.Spec.EnableSSL {
 		// When SSL is enabled, create certificates for HTTP layer
 		err = es.createHTTPCertSecret(caKey, caCert, certPath)
 		if err != nil {
@@ -78,7 +78,7 @@ func (es *Elasticsearch) EnsureCertSecrets() error {
 		}
 
 		// Create certificates for metrics exporter, if monitoring is enabled.
-		if es.elasticsearch.Spec.Monitor != nil {
+		if es.db.Spec.Monitor != nil {
 			err = es.createExporterCertSecret(caKey, caCert, certPath)
 			if err != nil {
 				return errors.Wrap(err, "failed to create/sync metrics-exporter-cert secret")
@@ -95,14 +95,14 @@ func (es *Elasticsearch) EnsureCertSecrets() error {
 }
 
 func (es *Elasticsearch) createCACertSecret(cPath string) (*rsa.PrivateKey, *x509.Certificate, error) {
-	rSecret, err := es.findSecret(es.elasticsearch.MustCertSecretName(api.ElasticsearchCACert))
+	rSecret, err := es.findSecret(es.db.MustCertSecretName(api.ElasticsearchCACert))
 	if err != nil {
 		return nil, nil, err
 	}
 
 	if rSecret == nil {
 		// create certs here
-		caKey, caCert, err := pkcs8.CreateCaCertificate(es.elasticsearch.ClientCertificateCN(api.ElasticsearchCACert), cPath)
+		caKey, caCert, err := pkcs8.CreateCaCertificate(es.db.ClientCertificateCN(api.ElasticsearchCACert), cPath)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -120,19 +120,19 @@ func (es *Elasticsearch) createCACertSecret(cPath string) (*rsa.PrivateKey, *x50
 			certlib.TLSKey:  rootKey,
 		}
 
-		owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+		owner := metav1.NewControllerRef(es.db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   es.elasticsearch.MustCertSecretName(api.ElasticsearchCACert),
-				Labels: es.elasticsearch.OffshootLabels(),
+				Name:   es.db.MustCertSecretName(api.ElasticsearchCACert),
+				Labels: es.db.OffshootLabels(),
 			},
 			Type: core.SecretTypeTLS,
 			Data: data,
 		}
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
 
-		_, err = es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
+		_, err = es.kClient.CoreV1().Secrets(es.db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
 		if err != nil {
 			return nil, nil, err
 		}
@@ -172,14 +172,14 @@ func (es *Elasticsearch) createCACertSecret(cPath string) (*rsa.PrivateKey, *x50
 }
 
 func (es *Elasticsearch) createTransportCertSecret(caKey *rsa.PrivateKey, caCert *x509.Certificate, cPath string) error {
-	nSecret, err := es.findSecret(es.elasticsearch.MustCertSecretName(api.ElasticsearchTransportCert))
+	nSecret, err := es.findSecret(es.db.MustCertSecretName(api.ElasticsearchTransportCert))
 	if err != nil {
 		return err
 	}
 
 	if nSecret == nil {
 		// create certs here
-		err := pkcs8.CreateTransportCertificate(cPath, es.elasticsearch, caKey, caCert)
+		err := pkcs8.CreateTransportCertificate(cPath, es.db, caKey, caCert)
 		if err != nil {
 			return err
 		}
@@ -205,19 +205,19 @@ func (es *Elasticsearch) createTransportCertSecret(caKey *rsa.PrivateKey, caCert
 			certlib.TLSCert: nodeCert,
 		}
 
-		owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+		owner := metav1.NewControllerRef(es.db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   es.elasticsearch.MustCertSecretName(api.ElasticsearchTransportCert),
-				Labels: es.elasticsearch.OffshootLabels(),
+				Name:   es.db.MustCertSecretName(api.ElasticsearchTransportCert),
+				Labels: es.db.OffshootLabels(),
 			},
 			Type: core.SecretTypeTLS,
 			Data: data,
 		}
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
 
-		_, err = es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
+		_, err = es.kClient.CoreV1().Secrets(es.db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}
@@ -243,14 +243,14 @@ func (es *Elasticsearch) createTransportCertSecret(caKey *rsa.PrivateKey, caCert
 }
 
 func (es *Elasticsearch) createHTTPCertSecret(caKey *rsa.PrivateKey, caCert *x509.Certificate, cPath string) error {
-	cSecret, err := es.findSecret(es.elasticsearch.MustCertSecretName(api.ElasticsearchHTTPCert))
+	cSecret, err := es.findSecret(es.db.MustCertSecretName(api.ElasticsearchHTTPCert))
 	if err != nil {
 		return err
 	}
 
 	if cSecret == nil {
 		// create certs here
-		if err := pkcs8.CreateHTTPCertificate(cPath, es.elasticsearch, caKey, caCert); err != nil {
+		if err := pkcs8.CreateHTTPCertificate(cPath, es.db, caKey, caCert); err != nil {
 			return err
 		}
 
@@ -275,19 +275,19 @@ func (es *Elasticsearch) createHTTPCertSecret(caKey *rsa.PrivateKey, caCert *x50
 			certlib.TLSCert: clientCert,
 		}
 
-		owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+		owner := metav1.NewControllerRef(es.db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   es.elasticsearch.MustCertSecretName(api.ElasticsearchHTTPCert),
-				Labels: es.elasticsearch.OffshootLabels(),
+				Name:   es.db.MustCertSecretName(api.ElasticsearchHTTPCert),
+				Labels: es.db.OffshootLabels(),
 			},
 			Type: core.SecretTypeTLS,
 			Data: data,
 		}
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
 
-		_, err = es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
+		_, err = es.kClient.CoreV1().Secrets(es.db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}
@@ -313,14 +313,14 @@ func (es *Elasticsearch) createHTTPCertSecret(caKey *rsa.PrivateKey, caCert *x50
 }
 
 func (es *Elasticsearch) createExporterCertSecret(caKey *rsa.PrivateKey, caCert *x509.Certificate, cPath string) error {
-	cSecret, err := es.findSecret(es.elasticsearch.MustCertSecretName(api.ElasticsearchMetricsExporterCert))
+	cSecret, err := es.findSecret(es.db.MustCertSecretName(api.ElasticsearchMetricsExporterCert))
 	if err != nil {
 		return err
 	}
 
 	if cSecret == nil {
 		// create certs here
-		if err := pkcs8.CreateClientCertificate(string(api.ElasticsearchMetricsExporterCert), cPath, es.elasticsearch, caKey, caCert); err != nil {
+		if err := pkcs8.CreateClientCertificate(string(api.ElasticsearchMetricsExporterCert), cPath, es.db, caKey, caCert); err != nil {
 			return err
 		}
 
@@ -345,19 +345,19 @@ func (es *Elasticsearch) createExporterCertSecret(caKey *rsa.PrivateKey, caCert 
 			certlib.TLSCert: clientCert,
 		}
 
-		owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+		owner := metav1.NewControllerRef(es.db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   es.elasticsearch.MustCertSecretName(api.ElasticsearchMetricsExporterCert),
-				Labels: es.elasticsearch.OffshootLabels(),
+				Name:   es.db.MustCertSecretName(api.ElasticsearchMetricsExporterCert),
+				Labels: es.db.OffshootLabels(),
 			},
 			Type: core.SecretTypeTLS,
 			Data: data,
 		}
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
 
-		_, err = es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
+		_, err = es.kClient.CoreV1().Secrets(es.db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}
@@ -383,14 +383,14 @@ func (es *Elasticsearch) createExporterCertSecret(caKey *rsa.PrivateKey, caCert 
 }
 
 func (es *Elasticsearch) createArchiverCertSecret(caKey *rsa.PrivateKey, caCert *x509.Certificate, cPath string) error {
-	cSecret, err := es.findSecret(es.elasticsearch.MustCertSecretName(api.ElasticsearchArchiverCert))
+	cSecret, err := es.findSecret(es.db.MustCertSecretName(api.ElasticsearchArchiverCert))
 	if err != nil {
 		return err
 	}
 
 	if cSecret == nil {
 		// create certs here
-		if err := pkcs8.CreateClientCertificate(string(api.ElasticsearchArchiverCert), cPath, es.elasticsearch, caKey, caCert); err != nil {
+		if err := pkcs8.CreateClientCertificate(string(api.ElasticsearchArchiverCert), cPath, es.db, caKey, caCert); err != nil {
 			return err
 		}
 
@@ -415,19 +415,19 @@ func (es *Elasticsearch) createArchiverCertSecret(caKey *rsa.PrivateKey, caCert 
 			certlib.TLSCert: clientCert,
 		}
 
-		owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+		owner := metav1.NewControllerRef(es.db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   es.elasticsearch.MustCertSecretName(api.ElasticsearchArchiverCert),
-				Labels: es.elasticsearch.OffshootLabels(),
+				Name:   es.db.MustCertSecretName(api.ElasticsearchArchiverCert),
+				Labels: es.db.OffshootLabels(),
 			},
 			Type: core.SecretTypeTLS,
 			Data: data,
 		}
 		core_util.EnsureOwnerReference(&secret.ObjectMeta, owner)
 
-		_, err = es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
+		_, err = es.kClient.CoreV1().Secrets(es.db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{})
 		if err != nil {
 			return err
 		}
@@ -454,7 +454,7 @@ func (es *Elasticsearch) createArchiverCertSecret(caKey *rsa.PrivateKey, caCert 
 
 func (es *Elasticsearch) findSecret(name string) (*core.Secret, error) {
 
-	secret, err := es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	secret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil

@@ -152,17 +152,17 @@ func (c *Controller) getPolicyNames(db *api.Postgres) (string, error) {
 	return dbPolicyName, nil
 }
 
-func (c *Controller) ensureDatabaseRBAC(postgres *api.Postgres) error {
-	saName := postgres.Spec.PodTemplate.Spec.ServiceAccountName
+func (c *Controller) ensureDatabaseRBAC(db *api.Postgres) error {
+	saName := db.Spec.PodTemplate.Spec.ServiceAccountName
 	if saName == "" {
-		saName = postgres.OffshootName()
-		postgres.Spec.PodTemplate.Spec.ServiceAccountName = saName
+		saName = db.OffshootName()
+		db.Spec.PodTemplate.Spec.ServiceAccountName = saName
 	}
 
-	sa, err := c.Client.CoreV1().ServiceAccounts(postgres.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
+	sa, err := c.Client.CoreV1().ServiceAccounts(db.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		// create service account, since it does not exist
-		if err = c.createServiceAccount(postgres, saName); err != nil {
+		if err = c.createServiceAccount(db, saName); err != nil {
 			if !kerr.IsAlreadyExists(err) {
 				return err
 			}
@@ -175,16 +175,16 @@ func (c *Controller) ensureDatabaseRBAC(postgres *api.Postgres) error {
 	}
 
 	// Create New Role
-	pspName, err := c.getPolicyNames(postgres)
+	pspName, err := c.getPolicyNames(db)
 	if err != nil {
 		return err
 	}
-	if err := c.ensureRole(postgres, pspName); err != nil {
+	if err := c.ensureRole(db, pspName); err != nil {
 		return err
 	}
 
 	// Create New RoleBinding
-	if err := c.createRoleBinding(postgres, saName); err != nil {
+	if err := c.createRoleBinding(db, saName); err != nil {
 		return err
 	}
 

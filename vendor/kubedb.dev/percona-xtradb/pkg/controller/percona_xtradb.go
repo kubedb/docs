@@ -35,10 +35,10 @@ import (
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
 
-func (c *Controller) create(px *api.PerconaXtraDB) error {
-	if err := validator.ValidatePerconaXtraDB(c.Client, c.DBClient, px, true); err != nil {
+func (c *Controller) create(db *api.PerconaXtraDB) error {
+	if err := validator.ValidatePerconaXtraDB(c.Client, c.DBClient, db, true); err != nil {
 		c.Recorder.Event(
-			px,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
 			err.Error(),
@@ -48,82 +48,80 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		return nil
 	}
 
-	if px.Status.Phase == "" {
-		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+	if db.Status.Phase == "" {
+		perconaxtradb, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
-		px.Status = perconaxtradb.Status
+		db.Status = perconaxtradb.Status
 	}
 
 	// For Percona XtraDB Cluster (px.spec.replicas > 1), Stash restores the data into some PVCs.
 	// Then, KubeDB should create the StatefulSet using those PVCs. So, for clustering mode, we are going to
 	// wait for restore process to complete before creating the StatefulSet.
 	//======================== Wait for the initial restore =====================================
-	if px.Spec.Init != nil && px.Spec.Init.WaitForInitialRestore && px.IsCluster() {
+	if db.Spec.Init != nil && db.Spec.Init.WaitForInitialRestore && db.IsCluster() {
 		// Only wait for the first restore.
 		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
-		if !kmapi.HasCondition(px.Status.Conditions, api.DatabaseProvisioned) &&
-			!kmapi.IsConditionTrue(px.Status.Conditions, api.DatabaseDataRestored) {
+		if !kmapi.HasCondition(db.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseDataRestored) {
 			// write log indicating that the database is waiting for the data to be restored by external initializer
 			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
-				px.Kind,
-				px.Namespace,
-				px.Name,
+				db.Kind,
+				db.Namespace,
+				db.Name,
 			)
 			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
 		}
 	}
 
-	// create Governing Service
-	governingService, err := c.createPerconaXtraDBGoverningService(px)
-	if err != nil {
-		return fmt.Errorf(`failed to create Service: "%v/%v". Reason: %v`, px.Namespace, governingService, err)
+	// ensure Governing Service
+	if err := c.ensureGoverningService(db); err != nil {
+		return fmt.Errorf(`failed to create governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
-	c.GoverningService = governingService
 
 	// Ensure ClusterRoles for statefulsets
-	if err := c.ensureRBACStuff(px); err != nil {
+	if err := c.ensureRBACStuff(db); err != nil {
 		return err
 	}
 
 	// ensure database Service
-	vt1, err := c.ensureService(px)
+	vt1, err := c.ensureService(db)
 	if err != nil {
 		return err
 	}
 
-	if err := c.ensureAuthSecret(px); err != nil {
+	if err := c.ensureAuthSecret(db); err != nil {
 		return err
 	}
 
 	// ensure database StatefulSet
-	vt2, err := c.ensurePerconaXtraDB(px)
+	vt2, err := c.ensurePerconaXtraDB(db)
 	if err != nil {
 		return err
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
 		c.Recorder.Event(
-			px,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created PerconaXtraDB",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
 		c.Recorder.Event(
-			px,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully patched PerconaXtraDB",
 		)
 	}
 
-	_, err = c.ensureAppBinding(px)
+	_, err = c.ensureAppBinding(db)
 	if err != nil {
 		log.Errorln(err)
 		return err
@@ -132,36 +130,36 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 	// For Standalone Percona XtraDB (px.spec.replicas = 1),, Stash directly restore into the database.
 	// So, for standalone mode, we are going to wait for restore process to complete after creating the StatefulSet.
 	//======================== Wait for the initial restore =====================================
-	if px.Spec.Init != nil && px.Spec.Init.WaitForInitialRestore && !px.IsCluster() {
+	if db.Spec.Init != nil && db.Spec.Init.WaitForInitialRestore && !db.IsCluster() {
 		// Only wait for the first restore.
 		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
-		if !kmapi.HasCondition(px.Status.Conditions, api.DatabaseProvisioned) &&
-			!kmapi.IsConditionTrue(px.Status.Conditions, api.DatabaseDataRestored) {
+		if !kmapi.HasCondition(db.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseDataRestored) {
 			// write log indicating that the database is waiting for the data to be restored by external initializer
 			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
-				px.Kind,
-				px.Namespace,
-				px.Name,
+				db.Kind,
+				db.Namespace,
+				db.Name,
 			)
 			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
 		}
 	}
 
-	per, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), px.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
+	per, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus {
 		in.Phase = api.DatabasePhaseReady
-		in.ObservedGeneration = px.Generation
+		in.ObservedGeneration = db.Generation
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
-	px.Status = per.Status
+	db.Status = per.Status
 
 	// ensure StatsService for desired monitoring
-	if _, err := c.ensureStatsService(px); err != nil {
+	if _, err := c.ensureStatsService(db); err != nil {
 		c.Recorder.Eventf(
-			px,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -171,9 +169,9 @@ func (c *Controller) create(px *api.PerconaXtraDB) error {
 		return nil
 	}
 
-	if err := c.manageMonitor(px); err != nil {
+	if err := c.manageMonitor(db); err != nil {
 		c.Recorder.Eventf(
-			px,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -208,24 +206,24 @@ func (c *Controller) halt(db *api.PerconaXtraDB) error {
 	return nil
 }
 
-func (c *Controller) terminate(px *api.PerconaXtraDB) error {
+func (c *Controller) terminate(db *api.PerconaXtraDB) error {
 	// If TerminationPolicy is "halt", keep PVCs and Secrets intact.
 	// TerminationPolicyPause is deprecated and will be removed in future.
-	if px.Spec.TerminationPolicy == api.TerminationPolicyHalt {
-		if err := c.removeOwnerReferenceFromOffshoots(px); err != nil {
+	if db.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+		if err := c.removeOwnerReferenceFromOffshoots(db); err != nil {
 			return err
 		}
 	} else {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
 		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
 		// In both these cases, don't create dormantdatabase
-		if err := c.setOwnerReferenceToOffshoots(px); err != nil {
+		if err := c.setOwnerReferenceToOffshoots(db); err != nil {
 			return err
 		}
 	}
 
-	if px.Spec.Monitor != nil {
-		if err := c.deleteMonitor(px); err != nil {
+	if db.Spec.Monitor != nil {
+		if err := c.deleteMonitor(db); err != nil {
 			log.Errorln(err)
 			return nil
 		}
@@ -233,14 +231,14 @@ func (c *Controller) terminate(px *api.PerconaXtraDB) error {
 	return nil
 }
 
-func (c *Controller) setOwnerReferenceToOffshoots(px *api.PerconaXtraDB) error {
-	owner := metav1.NewControllerRef(px, api.SchemeGroupVersion.WithKind(api.ResourceKindPerconaXtraDB))
-	selector := labels.SelectorFromSet(px.OffshootSelectors())
+func (c *Controller) setOwnerReferenceToOffshoots(db *api.PerconaXtraDB) error {
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPerconaXtraDB))
+	selector := labels.SelectorFromSet(db.OffshootSelectors())
 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
-	if px.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		if err := c.wipeOutDatabase(px.ObjectMeta, px.Spec.GetPersistentSecrets(), owner); err != nil {
+	if db.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
+		if err := c.wipeOutDatabase(db.ObjectMeta, db.Spec.GetPersistentSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
@@ -249,9 +247,9 @@ func (c *Controller) setOwnerReferenceToOffshoots(px *api.PerconaXtraDB) error {
 			context.TODO(),
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
-			px.Namespace,
-			px.Spec.GetPersistentSecrets(),
-			px); err != nil {
+			db.Namespace,
+			db.Spec.GetPersistentSecrets(),
+			db); err != nil {
 			return err
 		}
 	}
@@ -260,31 +258,31 @@ func (c *Controller) setOwnerReferenceToOffshoots(px *api.PerconaXtraDB) error {
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
-		px.Namespace,
+		db.Namespace,
 		selector,
 		owner)
 }
 
-func (c *Controller) removeOwnerReferenceFromOffshoots(px *api.PerconaXtraDB) error {
+func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.PerconaXtraDB) error {
 	// First, Get LabelSelector for Other Components
-	labelSelector := labels.SelectorFromSet(px.OffshootSelectors())
+	labelSelector := labels.SelectorFromSet(db.OffshootSelectors())
 
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
-		px.Namespace,
+		db.Namespace,
 		labelSelector,
-		px); err != nil {
+		db); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
-		px.Namespace,
-		px.Spec.GetPersistentSecrets(),
-		px); err != nil {
+		db.Namespace,
+		db.Spec.GetPersistentSecrets(),
+		db); err != nil {
 		return err
 	}
 	return nil

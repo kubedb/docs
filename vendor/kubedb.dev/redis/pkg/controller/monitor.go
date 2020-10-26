@@ -32,11 +32,11 @@ import (
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
-func (c *Controller) newMonitorController(redis *api.Redis) (mona.Agent, error) {
-	monitorSpec := redis.Spec.Monitor
+func (c *Controller) newMonitorController(db *api.Redis) (mona.Agent, error) {
+	monitorSpec := db.Spec.Monitor
 
 	if monitorSpec == nil {
-		return nil, fmt.Errorf("MonitorSpec not found in %v", redis.Spec)
+		return nil, fmt.Errorf("MonitorSpec not found in %v", db.Spec)
 	}
 
 	if monitorSpec.Prometheus != nil {
@@ -46,25 +46,25 @@ func (c *Controller) newMonitorController(redis *api.Redis) (mona.Agent, error) 
 	return nil, fmt.Errorf("monitoring controller not found for %v", monitorSpec)
 }
 
-func (c *Controller) addOrUpdateMonitor(redis *api.Redis) (kutil.VerbType, error) {
-	agent, err := c.newMonitorController(redis)
+func (c *Controller) addOrUpdateMonitor(db *api.Redis) (kutil.VerbType, error) {
+	agent, err := c.newMonitorController(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.CreateOrUpdate(redis.StatsService(), redis.Spec.Monitor)
+	return agent.CreateOrUpdate(db.StatsService(), db.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(redis *api.Redis) error {
-	agent, err := c.newMonitorController(redis)
+func (c *Controller) deleteMonitor(db *api.Redis) error {
+	agent, err := c.newMonitorController(db)
 	if err != nil {
 		return err
 	}
-	_, err = agent.Delete(redis.StatsService())
+	_, err = agent.Delete(db.StatsService())
 	return err
 }
 
-func (c *Controller) getOldAgent(redis *api.Redis) mona.Agent {
-	service, err := c.Client.CoreV1().Services(redis.Namespace).Get(context.TODO(), redis.StatsService().ServiceName(), metav1.GetOptions{})
+func (c *Controller) getOldAgent(db *api.Redis) mona.Agent {
+	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), db.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -72,34 +72,34 @@ func (c *Controller) getOldAgent(redis *api.Redis) mona.Agent {
 	return agents.New(mona.AgentType(oldAgentType), c.Client, c.promClient)
 }
 
-func (c *Controller) setNewAgent(redis *api.Redis) error {
-	service, err := c.Client.CoreV1().Services(redis.Namespace).Get(context.TODO(), redis.StatsService().ServiceName(), metav1.GetOptions{})
+func (c *Controller) setNewAgent(db *api.Redis) error {
+	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), db.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 	_, _, err = core_util.PatchService(context.TODO(), c.Client, service, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
-			mona.KeyAgent: string(redis.Spec.Monitor.Agent),
+			mona.KeyAgent: string(db.Spec.Monitor.Agent),
 		})
 		return in
 	}, metav1.PatchOptions{})
 	return err
 }
 
-func (c *Controller) manageMonitor(redis *api.Redis) error {
-	oldAgent := c.getOldAgent(redis)
-	if redis.Spec.Monitor != nil {
-		if oldAgent != nil && oldAgent.GetType() != redis.Spec.Monitor.Agent {
-			if _, err := oldAgent.Delete(redis.StatsService()); err != nil {
+func (c *Controller) manageMonitor(db *api.Redis) error {
+	oldAgent := c.getOldAgent(db)
+	if db.Spec.Monitor != nil {
+		if oldAgent != nil && oldAgent.GetType() != db.Spec.Monitor.Agent {
+			if _, err := oldAgent.Delete(db.StatsService()); err != nil {
 				log.Error("error in deleting Prometheus agent:", err)
 			}
 		}
-		if _, err := c.addOrUpdateMonitor(redis); err != nil {
+		if _, err := c.addOrUpdateMonitor(db); err != nil {
 			return err
 		}
-		return c.setNewAgent(redis)
+		return c.setNewAgent(db)
 	} else if oldAgent != nil {
-		if _, err := oldAgent.Delete(redis.StatsService()); err != nil {
+		if _, err := oldAgent.Delete(db.StatsService()); err != nil {
 			log.Error("error in deleting Prometheus agent:", err)
 		}
 	}

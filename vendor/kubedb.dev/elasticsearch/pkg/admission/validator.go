@@ -149,30 +149,30 @@ func (a *ElasticsearchValidator) Admit(req *admission.AdmissionRequest) *admissi
 
 // ValidateElasticsearch checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, elasticsearch *api.Elasticsearch, strictValidation bool) error {
-	if elasticsearch.Spec.Version == "" {
+func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, db *api.Elasticsearch, strictValidation bool) error {
+	if db.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if _, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), string(elasticsearch.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
-	if elasticsearch.Spec.StorageType == "" {
+	if db.Spec.StorageType == "" {
 		return fmt.Errorf(`'spec.storageType' is missing`)
 	}
-	if elasticsearch.Spec.StorageType != api.StorageTypeDurable && elasticsearch.Spec.StorageType != api.StorageTypeEphemeral {
-		return fmt.Errorf(`'spec.storageType' %s is invalid`, elasticsearch.Spec.StorageType)
+	if db.Spec.StorageType != api.StorageTypeDurable && db.Spec.StorageType != api.StorageTypeEphemeral {
+		return fmt.Errorf(`'spec.storageType' %s is invalid`, db.Spec.StorageType)
 	}
 
-	topology := elasticsearch.Spec.Topology
+	topology := db.Spec.Topology
 	if topology != nil {
-		if elasticsearch.Spec.Replicas != nil {
+		if db.Spec.Replicas != nil {
 			return errors.New("doesn't support spec.replicas when spec.topology is set")
 		}
-		if elasticsearch.Spec.Storage != nil {
+		if db.Spec.Storage != nil {
 			return errors.New("doesn't support spec.storage when spec.topology is set")
 		}
-		if elasticsearch.Spec.PodTemplate.Spec.Resources.Size() != 0 {
+		if db.Spec.PodTemplate.Spec.Resources.Size() != 0 {
 			return errors.New("doesn't support spec.resources when spec.topology is set")
 		}
 
@@ -189,76 +189,76 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		if topology.Ingest.Replicas == nil || *topology.Ingest.Replicas < 1 {
 			return fmt.Errorf(`topology.ingest.replicas "%v" invalid. Must be greater than zero`, topology.Ingest.Replicas)
 		}
-		if err := amv.ValidateStorage(client, elasticsearch.Spec.StorageType, topology.Ingest.Storage); err != nil {
+		if err := amv.ValidateStorage(client, db.Spec.StorageType, topology.Ingest.Storage); err != nil {
 			return err
 		}
 
 		if topology.Master.Replicas == nil || *topology.Master.Replicas < 1 {
 			return fmt.Errorf(`topology.master.replicas "%v" invalid. Must be greater than zero`, topology.Master.Replicas)
 		}
-		if err := amv.ValidateStorage(client, elasticsearch.Spec.StorageType, topology.Master.Storage); err != nil {
+		if err := amv.ValidateStorage(client, db.Spec.StorageType, topology.Master.Storage); err != nil {
 			return err
 		}
 
 		if topology.Data.Replicas == nil || *topology.Data.Replicas < 1 {
 			return fmt.Errorf(`topology.data.replicas "%v" invalid. Must be greater than zero`, topology.Data.Replicas)
 		}
-		if err := amv.ValidateStorage(client, elasticsearch.Spec.StorageType, topology.Data.Storage); err != nil {
+		if err := amv.ValidateStorage(client, db.Spec.StorageType, topology.Data.Storage); err != nil {
 			return err
 		}
 	} else {
-		if elasticsearch.Spec.Replicas == nil || *elasticsearch.Spec.Replicas < 1 {
-			return fmt.Errorf(`spec.replicas "%v" invalid. Must be greater than zero`, elasticsearch.Spec.Replicas)
+		if db.Spec.Replicas == nil || *db.Spec.Replicas < 1 {
+			return fmt.Errorf(`spec.replicas "%v" invalid. Must be greater than zero`, db.Spec.Replicas)
 		}
 
-		if err := amv.ValidateStorage(client, elasticsearch.Spec.StorageType, elasticsearch.Spec.Storage); err != nil {
+		if err := amv.ValidateStorage(client, db.Spec.StorageType, db.Spec.Storage); err != nil {
 			return err
 		}
 	}
 
-	if err := amv.ValidateEnvVar(elasticsearch.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindElasticsearch); err != nil {
+	if err := amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindElasticsearch); err != nil {
 		return err
 	}
 
 	if strictValidation {
-		authSecret := elasticsearch.Spec.AuthSecret
+		authSecret := db.Spec.AuthSecret
 		if authSecret != nil {
-			if _, err := client.CoreV1().Secrets(elasticsearch.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
+			if _, err := client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
 
 		// Check if elasticsearchVersion is deprecated.
 		// If deprecated, return error
-		elasticsearchVersion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), string(elasticsearch.Spec.Version), metav1.GetOptions{})
+		elasticsearchVersion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
 
 		if elasticsearchVersion.Spec.Deprecated {
-			return fmt.Errorf("elasticsearch %s/%s is using deprecated version %v. Skipped processing", elasticsearch.Namespace,
-				elasticsearch.Name, elasticsearchVersion.Name)
+			return fmt.Errorf("elasticsearch %s/%s is using deprecated version %v. Skipped processing", db.Namespace,
+				db.Name, elasticsearchVersion.Name)
 		}
 
 		if err := elasticsearchVersion.ValidateSpecs(); err != nil {
-			return fmt.Errorf("elasticsearch %s/%s is using invalid elasticsearchVersion %v. Skipped processing. reason: %v", elasticsearch.Namespace,
-				elasticsearch.Name, elasticsearchVersion.Name, err)
+			return fmt.Errorf("elasticsearch %s/%s is using invalid elasticsearchVersion %v. Skipped processing. reason: %v", db.Namespace,
+				db.Name, elasticsearchVersion.Name, err)
 		}
 	}
 
-	if elasticsearch.Spec.TerminationPolicy == "" {
+	if db.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
 	}
 
-	if elasticsearch.Spec.StorageType == api.StorageTypeEphemeral && elasticsearch.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+	if db.Spec.StorageType == api.StorageTypeEphemeral && db.Spec.TerminationPolicy == api.TerminationPolicyHalt {
 		return fmt.Errorf(`'spec.terminationPolicy: Halt' can not be set for 'Ephemeral' storage`)
 	}
 
-	if elasticsearch.Spec.DisableSecurity && elasticsearch.Spec.EnableSSL {
+	if db.Spec.DisableSecurity && db.Spec.EnableSSL {
 		return fmt.Errorf(`to enable 'spec.enableSSL', 'spec.disableSecurity' needs to be set to false`)
 	}
 
-	monitorSpec := elasticsearch.Spec.Monitor
+	monitorSpec := db.Spec.Monitor
 	if monitorSpec != nil {
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
 			return err
@@ -280,7 +280,7 @@ func validateUpdate(obj, oldObj *api.Elasticsearch) error {
 	return nil
 }
 
-func getPreconditionFunc(es *api.Elasticsearch) []mergepatch.PreconditionFunc {
+func getPreconditionFunc(db *api.Elasticsearch) []mergepatch.PreconditionFunc {
 	preconditions := []mergepatch.PreconditionFunc{
 		mergepatch.RequireKeyUnchanged("apiVersion"),
 		mergepatch.RequireKeyUnchanged("kind"),
@@ -289,7 +289,7 @@ func getPreconditionFunc(es *api.Elasticsearch) []mergepatch.PreconditionFunc {
 	}
 
 	// Once the database has been initialized, don't let update the "spec.init" section
-	if es.Spec.Init != nil && es.Spec.Init.Initialized {
+	if db.Spec.Init != nil && db.Spec.Init.Initialized {
 		preconditionSpecFields.Insert("spec.init")
 	}
 

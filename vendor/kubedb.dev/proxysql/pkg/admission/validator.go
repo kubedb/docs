@@ -145,17 +145,17 @@ func (a *ProxySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 }
 
 // validateBackendWithMode checks whether the backend configurations for ProxySQL are ok
-func validateBackendWithMode(extClient cs.Interface, proxysql *api.ProxySQL) error {
-	if proxysql.Spec.Mode == nil {
+func validateBackendWithMode(extClient cs.Interface, db *api.ProxySQL) error {
+	if db.Spec.Mode == nil {
 		return errors.New("'.spec.mode' is missing")
 	}
-	if mode := proxysql.Spec.Mode; *mode != api.LoadBalanceModeGalera &&
+	if mode := db.Spec.Mode; *mode != api.LoadBalanceModeGalera &&
 		*mode != api.LoadBalanceModeGroupReplication {
 		return errors.Errorf("'.spec.mode' must be either %q or %q",
 			api.LoadBalanceModeGalera, api.LoadBalanceModeGroupReplication)
 	}
 
-	backend := proxysql.Spec.Backend
+	backend := db.Spec.Backend
 	if backend == nil || backend.Replicas == nil || backend.Ref == nil || backend.Ref.APIGroup == nil {
 		return errors.New(`'.spec.backend' and all of its subfields are required`)
 	}
@@ -167,11 +167,11 @@ func validateBackendWithMode(extClient cs.Interface, proxysql *api.ProxySQL) err
 	switch gk {
 	case api.Kind(api.ResourceKindPerconaXtraDB):
 		requiredMode = api.LoadBalanceModeGalera
-		_, err = extClient.KubedbV1alpha2().PerconaXtraDBs(proxysql.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
+		_, err = extClient.KubedbV1alpha2().PerconaXtraDBs(db.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
 
 	case api.Kind(api.ResourceKindMySQL):
 		requiredMode = api.LoadBalanceModeGroupReplication
-		_, err = extClient.KubedbV1alpha2().MySQLs(proxysql.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
+		_, err = extClient.KubedbV1alpha2().MySQLs(db.Namespace).Get(context.TODO(), backend.Ref.Name, metav1.GetOptions{})
 
 	// TODO: add other cases for MySQL and MariaDB when they will be configured
 
@@ -179,7 +179,7 @@ func validateBackendWithMode(extClient cs.Interface, proxysql *api.ProxySQL) err
 		return errors.Errorf("invalid group kind '%v' is specified", gk.String())
 	}
 
-	if *proxysql.Spec.Mode != requiredMode {
+	if *db.Spec.Mode != requiredMode {
 		return errors.Errorf("'.spec.mode' must be %q for %v",
 			requiredMode, backend.Ref.Kind)
 	}
@@ -194,38 +194,38 @@ func validateBackendWithMode(extClient cs.Interface, proxysql *api.ProxySQL) err
 
 // ValidateProxySQL checks if the object satisfies all the requirements.
 // It is not method of Interface, because it is referenced from controller package too.
-func ValidateProxySQL(client kubernetes.Interface, extClient cs.Interface, proxysql *api.ProxySQL, strictValidation bool) error {
-	if proxysql.Spec.Version == "" {
+func ValidateProxySQL(client kubernetes.Interface, extClient cs.Interface, db *api.ProxySQL, strictValidation bool) error {
+	if db.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
 	var proxysqlVersion *catalog_api.ProxySQLVersion
 	var err error
-	if proxysqlVersion, err = extClient.CatalogV1alpha1().ProxySQLVersions().Get(context.TODO(), string(proxysql.Spec.Version), metav1.GetOptions{}); err != nil {
+	if proxysqlVersion, err = extClient.CatalogV1alpha1().ProxySQLVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
 	}
 
-	if proxysql.Spec.Replicas == nil {
+	if db.Spec.Replicas == nil {
 		return errors.New("'.spec.replicas' is missing")
 	}
 
-	if *proxysql.Spec.Replicas != 1 {
+	if *db.Spec.Replicas != 1 {
 		return errors.Errorf(`'.spec.replicas' "%v" is invalid. Currently, supported replicas for proxysql is 1`,
-			*proxysql.Spec.Replicas)
+			*db.Spec.Replicas)
 	}
 
-	if err = validateBackendWithMode(extClient, proxysql); err != nil {
+	if err = validateBackendWithMode(extClient, db); err != nil {
 		return err
 	}
 
-	if err = amv.ValidateEnvVar(proxysql.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindProxySQL); err != nil {
+	if err = amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindProxySQL); err != nil {
 		return err
 	}
 
-	authSecret := proxysql.Spec.AuthSecret
+	authSecret := db.Spec.AuthSecret
 
 	if strictValidation {
 		if authSecret != nil {
-			if _, err = client.CoreV1().Secrets(proxysql.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
+			if _, err = client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
 				return err
 			}
 		}
@@ -233,11 +233,11 @@ func ValidateProxySQL(client kubernetes.Interface, extClient cs.Interface, proxy
 		// Check if proxysql Version is deprecated.
 		// If deprecated, return error
 		if proxysqlVersion.Spec.Deprecated {
-			return fmt.Errorf("proxysql %s/%s is using deprecated version %v. Skipped processing", proxysql.Namespace, proxysql.Name, proxysqlVersion.Name)
+			return fmt.Errorf("proxysql %s/%s is using deprecated version %v. Skipped processing", db.Namespace, db.Name, proxysqlVersion.Name)
 		}
 	}
 
-	monitorSpec := proxysql.Spec.Monitor
+	monitorSpec := db.Spec.Monitor
 	if monitorSpec != nil {
 		if err = amv.ValidateMonitorSpec(monitorSpec); err != nil {
 			return err

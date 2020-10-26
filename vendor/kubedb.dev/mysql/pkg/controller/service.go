@@ -18,14 +18,12 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
@@ -34,32 +32,7 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-var defaultDBPort = core.ServicePort{
-	Name:       "db",
-	Protocol:   core.ProtocolTCP,
-	Port:       3306,
-	TargetPort: intstr.FromString("db"),
-}
-
-func (c *Controller) checkService(db *api.MySQL, name string) error {
-	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			return nil
-		}
-		return err
-	}
-
-	// check services labels which are related to MySQL database or not
-	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindMySQL ||
-		service.Labels[api.LabelDatabaseName] != db.Name {
-		return fmt.Errorf(`intended service "%v/%v" already exists`, db.Namespace, name)
-	}
-
-	return nil
-}
-
-func (c *Controller) ensureMySQLGoverningService(db *api.MySQL) error {
+func (c *Controller) ensureGoverningService(db *api.MySQL) error {
 	meta := metav1.ObjectMeta{
 		Name:      db.GoverningServiceName(),
 		Namespace: db.Namespace,
@@ -67,25 +40,15 @@ func (c *Controller) ensureMySQLGoverningService(db *api.MySQL) error {
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMySQL))
 
-	// Check if service name exists with different db kind
-	if err := c.checkService(db, db.GoverningServiceName()); err != nil {
-		return err
-	}
-
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootLabels()
-		// 'tolerate-unready-endpoints' annotation is deprecated.
-		// owner: https://github.com/kubernetes/kubernetes/pull/63742
-		in.Annotations = map[string]string{
-			"service.alpha.kubernetes.io/tolerate-unready-endpoints": "true",
-		}
-		in.Spec.Selector = db.OffshootSelectors()
+
 		in.Spec.Type = core.ServiceTypeClusterIP
 		in.Spec.ClusterIP = core.ClusterIPNone
-		in.Spec.Ports = []core.ServicePort{
-			defaultDBPort,
-		}
+		in.Spec.Selector = db.OffshootSelectors()
+		in.Spec.PublishNotReadyAddresses = true
+
 		return in
 	}, metav1.PatchOptions{})
 	if err == nil && (vt == kutil.VerbCreated || vt == kutil.VerbPatched) {
@@ -108,9 +71,6 @@ func (c *Controller) ensureService(db *api.MySQL) error {
 	// and for the group replication, it will be used for selecting primary pod.
 	// Check if service name exists with different db kind, name
 	// then create/patch the service
-	if err := c.checkService(db, db.ServiceName()); err != nil {
-		return err
-	}
 	vt, err := c.ensurePrimaryService(db)
 	if err != nil {
 		return err
@@ -137,10 +97,7 @@ func (c *Controller) ensureService(db *api.MySQL) error {
 	// Check if service name exists with different db kind, name
 	// the create/patch the service
 	if db.UsesGroupReplication() {
-		if err := c.checkService(db, db.SecondaryServiceName()); err != nil {
-			return err
-		}
-		vt, err := c.ensureSecondaryService(db)
+		vt, err := c.ensureStandbyService(db)
 		if err != nil {
 			return err
 		}
@@ -185,7 +142,14 @@ func (c *Controller) ensurePrimaryService(db *api.MySQL) (kutil.VerbType, error)
 		}
 
 		in.Spec.Ports = ofst.MergeServicePorts(
-			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+				{
+					Name:       api.MySQLPrimaryServicePortName,
+					Protocol:   core.ProtocolTCP,
+					Port:       api.MySQLDatabasePort,
+					TargetPort: intstr.FromString(api.MySQLDatabasePortName),
+				},
+			}),
 			db.Spec.ServiceTemplate.Spec.Ports,
 		)
 
@@ -208,9 +172,9 @@ func (c *Controller) ensurePrimaryService(db *api.MySQL) (kutil.VerbType, error)
 	return vt, err
 }
 
-func (c *Controller) ensureSecondaryService(db *api.MySQL) (kutil.VerbType, error) {
+func (c *Controller) ensureStandbyService(db *api.MySQL) (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
-		Name:      db.SecondaryServiceName(),
+		Name:      db.StandbyServiceName(),
 		Namespace: db.Namespace,
 	}
 
@@ -222,10 +186,17 @@ func (c *Controller) ensureSecondaryService(db *api.MySQL) (kutil.VerbType, erro
 		in.Annotations = db.Spec.ServiceTemplate.Annotations
 		in.Spec.Selector = db.OffshootSelectors()
 		//add extra selector to select only secondary pod
-		in.Spec.Selector[api.MySQLLabelRole] = api.MySQLPodSecondary
+		in.Spec.Selector[api.MySQLLabelRole] = api.MySQLPodStandby
 
 		in.Spec.Ports = ofst.MergeServicePorts(
-			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+				{
+					Name:       api.MySQLStandbyServicePortName,
+					Protocol:   core.ProtocolTCP,
+					Port:       api.MySQLDatabasePort,
+					TargetPort: intstr.FromString(api.MySQLDatabasePortName),
+				},
+			}),
 			db.Spec.ServiceTemplate.Spec.Ports,
 		)
 
@@ -254,15 +225,9 @@ func (c *Controller) ensureStatsService(db *api.MySQL) (kutil.VerbType, error) {
 		return kutil.VerbUnchanged, nil
 	}
 
-	stateServiceName := db.StatsService().ServiceName()
-
-	if err := c.checkService(db, stateServiceName); err != nil {
-		return kutil.VerbUnchanged, err
-	}
-
 	// stats Service
 	meta := metav1.ObjectMeta{
-		Name:      stateServiceName,
+		Name:      db.StatsService().ServiceName(),
 		Namespace: db.Namespace,
 	}
 

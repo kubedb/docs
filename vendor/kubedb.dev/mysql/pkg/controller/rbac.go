@@ -146,39 +146,39 @@ func (c *Controller) getPolicyNames(db *api.MySQL) (string, error) {
 	return dbPolicyName, nil
 }
 
-func (c *Controller) ensureDatabaseRBAC(mysql *api.MySQL) error {
-	saName := mysql.Spec.PodTemplate.Spec.ServiceAccountName
+func (c *Controller) ensureDatabaseRBAC(db *api.MySQL) error {
+	saName := db.Spec.PodTemplate.Spec.ServiceAccountName
 	if saName == "" {
-		saName = mysql.OffshootName()
-		mysql.Spec.PodTemplate.Spec.ServiceAccountName = saName
+		saName = db.OffshootName()
+		db.Spec.PodTemplate.Spec.ServiceAccountName = saName
 	}
 
-	sa, err := c.Client.CoreV1().ServiceAccounts(mysql.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
+	sa, err := c.Client.CoreV1().ServiceAccounts(db.Namespace).Get(context.TODO(), saName, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		// create service account, since it does not exist
-		if err = c.createServiceAccount(mysql, saName); err != nil {
+		if err = c.createServiceAccount(db, saName); err != nil {
 			if !kerr.IsAlreadyExists(err) {
 				return err
 			}
 		}
 	} else if err != nil {
 		return err
-	} else if owned, _ := core_util.IsOwnedBy(sa, mysql); !owned {
+	} else if owned, _ := core_util.IsOwnedBy(sa, db); !owned {
 		// user provided the service account, so do nothing.
 		return nil
 	}
 
 	// Create New Role
-	pspName, err := c.getPolicyNames(mysql)
+	pspName, err := c.getPolicyNames(db)
 	if err != nil {
 		return err
 	}
-	if err := c.ensureRole(mysql, mysql.OffshootName(), pspName); err != nil {
+	if err := c.ensureRole(db, db.OffshootName(), pspName); err != nil {
 		return err
 	}
 
 	// Create New RoleBinding
-	if err := c.createRoleBinding(mysql, mysql.OffshootName(), saName); err != nil {
+	if err := c.createRoleBinding(db, db.OffshootName(), saName); err != nil {
 		return err
 	}
 

@@ -32,39 +32,39 @@ import (
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
-func (c *Controller) newMonitorController(px *api.PerconaXtraDB) (mona.Agent, error) {
-	monitorSpec := px.Spec.Monitor
+func (c *Controller) newMonitorController(db *api.PerconaXtraDB) (mona.Agent, error) {
+	monitorSpec := db.Spec.Monitor
 
 	if monitorSpec == nil {
-		return nil, fmt.Errorf("MonitorSpec not found for PerconaXtraDB %v/%v in %v", px.Namespace, px.Name, px.Spec)
+		return nil, fmt.Errorf("MonitorSpec not found for PerconaXtraDB %v/%v in %v", db.Namespace, db.Name, db.Spec)
 	}
 
 	if monitorSpec.Prometheus != nil {
 		return agents.New(monitorSpec.Agent, c.Client, c.promClient), nil
 	}
 
-	return nil, fmt.Errorf("monitoring controller not found for PerconaXtraDB %v/%v in %v", px.Namespace, px.Name, monitorSpec)
+	return nil, fmt.Errorf("monitoring controller not found for PerconaXtraDB %v/%v in %v", db.Namespace, db.Name, monitorSpec)
 }
 
-func (c *Controller) addOrUpdateMonitor(px *api.PerconaXtraDB) (kutil.VerbType, error) {
-	agent, err := c.newMonitorController(px)
+func (c *Controller) addOrUpdateMonitor(db *api.PerconaXtraDB) (kutil.VerbType, error) {
+	agent, err := c.newMonitorController(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	return agent.CreateOrUpdate(px.StatsService(), px.Spec.Monitor)
+	return agent.CreateOrUpdate(db.StatsService(), db.Spec.Monitor)
 }
 
-func (c *Controller) deleteMonitor(px *api.PerconaXtraDB) error {
-	agent, err := c.newMonitorController(px)
+func (c *Controller) deleteMonitor(db *api.PerconaXtraDB) error {
+	agent, err := c.newMonitorController(db)
 	if err != nil {
 		return err
 	}
-	_, err = agent.Delete(px.StatsService())
+	_, err = agent.Delete(db.StatsService())
 	return err
 }
 
-func (c *Controller) getOldAgent(px *api.PerconaXtraDB) mona.Agent {
-	service, err := c.Client.CoreV1().Services(px.Namespace).Get(context.TODO(), px.StatsService().ServiceName(), metav1.GetOptions{})
+func (c *Controller) getOldAgent(db *api.PerconaXtraDB) mona.Agent {
+	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), db.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return nil
 	}
@@ -72,35 +72,35 @@ func (c *Controller) getOldAgent(px *api.PerconaXtraDB) mona.Agent {
 	return agents.New(mona.AgentType(oldAgentType), c.Client, c.promClient)
 }
 
-func (c *Controller) setNewAgent(px *api.PerconaXtraDB) error {
-	service, err := c.Client.CoreV1().Services(px.Namespace).Get(context.TODO(), px.StatsService().ServiceName(), metav1.GetOptions{})
+func (c *Controller) setNewAgent(db *api.PerconaXtraDB) error {
+	service, err := c.Client.CoreV1().Services(db.Namespace).Get(context.TODO(), db.StatsService().ServiceName(), metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 	_, _, err = core_util.PatchService(context.TODO(), c.Client, service, func(in *core.Service) *core.Service {
 		in.Annotations = core_util.UpsertMap(in.Annotations, map[string]string{
-			mona.KeyAgent: string(px.Spec.Monitor.Agent),
+			mona.KeyAgent: string(db.Spec.Monitor.Agent),
 		})
 		return in
 	}, metav1.PatchOptions{})
 	return err
 }
 
-func (c *Controller) manageMonitor(px *api.PerconaXtraDB) error {
-	oldAgent := c.getOldAgent(px)
-	if px.Spec.Monitor != nil {
+func (c *Controller) manageMonitor(db *api.PerconaXtraDB) error {
+	oldAgent := c.getOldAgent(db)
+	if db.Spec.Monitor != nil {
 		if oldAgent != nil &&
-			oldAgent.GetType() != px.Spec.Monitor.Agent {
-			if _, err := oldAgent.Delete(px.StatsService()); err != nil {
+			oldAgent.GetType() != db.Spec.Monitor.Agent {
+			if _, err := oldAgent.Delete(db.StatsService()); err != nil {
 				log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 			}
 		}
-		if _, err := c.addOrUpdateMonitor(px); err != nil {
+		if _, err := c.addOrUpdateMonitor(db); err != nil {
 			return err
 		}
-		return c.setNewAgent(px)
+		return c.setNewAgent(db)
 	} else if oldAgent != nil {
-		if _, err := oldAgent.Delete(px.StatsService()); err != nil {
+		if _, err := oldAgent.Delete(db.StatsService()); err != nil {
 			log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 		}
 	}

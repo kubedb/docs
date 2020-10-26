@@ -42,37 +42,37 @@ const (
 	AuthSecretSuffix = "-auth"
 )
 
-func (c *Controller) ensureAuthSecret(mongodb *api.MongoDB) error {
-	if mongodb.Spec.AuthSecret == nil {
-		authSecret, err := c.createAuthSecret(mongodb)
+func (c *Controller) ensureAuthSecret(db *api.MongoDB) error {
+	if db.Spec.AuthSecret == nil {
+		authSecret, err := c.createAuthSecret(db)
 		if err != nil {
 			return err
 		}
 
-		ms, _, err := util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb, func(in *api.MongoDB) *api.MongoDB {
+		ms, _, err := util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.MongoDB) *api.MongoDB {
 			in.Spec.AuthSecret = authSecret
 			return in
 		}, metav1.PatchOptions{})
 		if err != nil {
 			return err
 		}
-		mongodb.Spec.AuthSecret = ms.Spec.AuthSecret
+		db.Spec.AuthSecret = ms.Spec.AuthSecret
 	}
 
 	return nil
 }
 
-func (c *Controller) ensureKeyFileSecret(mongodb *api.MongoDB) error {
-	if !mongodb.KeyFileRequired() {
+func (c *Controller) ensureKeyFileSecret(db *api.MongoDB) error {
+	if !db.KeyFileRequired() {
 		return nil
 	}
 
-	secretName := mongodb.Name + api.MongoDBKeyFileSecretSuffix
-	if mongodb.Spec.KeyFileSecret != nil && mongodb.Spec.KeyFileSecret.Name != "" {
-		secretName = mongodb.Spec.KeyFileSecret.Name
+	secretName := db.Name + api.MongoDBKeyFileSecretSuffix
+	if db.Spec.KeyFileSecret != nil && db.Spec.KeyFileSecret.Name != "" {
+		secretName = db.Spec.KeyFileSecret.Name
 	}
 
-	secret, err := c.checkSecret(secretName, mongodb)
+	secret, err := c.checkSecret(secretName, db)
 	if err != nil {
 		return err
 	}
@@ -83,14 +83,14 @@ func (c *Controller) ensureKeyFileSecret(mongodb *api.MongoDB) error {
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   secretName,
-				Labels: mongodb.OffshootLabels(),
+				Labels: db.OffshootLabels(),
 			},
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
 				KeyForKeyFile: base64Token,
 			},
 		}
-		if _, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
+		if _, err := c.Client.CoreV1().Secrets(db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return err
 		}
 	}
@@ -98,7 +98,7 @@ func (c *Controller) ensureKeyFileSecret(mongodb *api.MongoDB) error {
 	keyFile := &core.LocalObjectReference{
 		Name: secretName,
 	}
-	_, _, err = util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb, func(in *api.MongoDB) *api.MongoDB {
+	_, _, err = util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.MongoDB) *api.MongoDB {
 		in.Spec.KeyFileSecret = keyFile
 		return in
 	}, metav1.PatchOptions{})
@@ -106,14 +106,14 @@ func (c *Controller) ensureKeyFileSecret(mongodb *api.MongoDB) error {
 		return err
 	}
 
-	mongodb.Spec.KeyFileSecret = keyFile
+	db.Spec.KeyFileSecret = keyFile
 	return nil
 }
 
-func (c *Controller) createAuthSecret(mongodb *api.MongoDB) (*core.LocalObjectReference, error) {
-	authSecretName := mongodb.Name + AuthSecretSuffix
+func (c *Controller) createAuthSecret(db *api.MongoDB) (*core.LocalObjectReference, error) {
+	authSecretName := db.Name + AuthSecretSuffix
 
-	sc, err := c.checkSecret(authSecretName, mongodb)
+	sc, err := c.checkSecret(authSecretName, db)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +121,7 @@ func (c *Controller) createAuthSecret(mongodb *api.MongoDB) (*core.LocalObjectRe
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:   authSecretName,
-				Labels: mongodb.OffshootLabels(),
+				Labels: db.OffshootLabels(),
 			},
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
@@ -129,7 +129,7 @@ func (c *Controller) createAuthSecret(mongodb *api.MongoDB) (*core.LocalObjectRe
 				core.BasicAuthPasswordKey: passgen.Generate(api.DefaultPasswordLength),
 			},
 		}
-		if _, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
+		if _, err := c.Client.CoreV1().Secrets(db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
 			return nil, err
 		}
 	}
@@ -138,8 +138,8 @@ func (c *Controller) createAuthSecret(mongodb *api.MongoDB) (*core.LocalObjectRe
 	}, nil
 }
 
-func (c *Controller) checkSecret(secretName string, mongodb *api.MongoDB) (*core.Secret, error) {
-	secret, err := c.Client.CoreV1().Secrets(mongodb.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
+func (c *Controller) checkSecret(secretName string, db *api.MongoDB) (*core.Secret, error) {
+	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil, nil
@@ -147,8 +147,8 @@ func (c *Controller) checkSecret(secretName string, mongodb *api.MongoDB) (*core
 		return nil, err
 	}
 	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindMongoDB ||
-		secret.Labels[api.LabelDatabaseName] != mongodb.Name {
-		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, mongodb.Namespace, secretName)
+		secret.Labels[api.LabelDatabaseName] != db.Name {
+		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, db.Namespace, secretName)
 	}
 	return secret, nil
 }

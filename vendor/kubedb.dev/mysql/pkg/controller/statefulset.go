@@ -142,8 +142,8 @@ func (c *Controller) createStatefulSet(db *api.MySQL, stsName string) (*apps.Sta
 				Lifecycle:       db.Spec.PodTemplate.Spec.Lifecycle,
 				Ports: []core.ContainerPort{
 					{
-						Name:          "db",
-						ContainerPort: api.MySQLNodePort,
+						Name:          api.MySQLDatabasePortName,
+						ContainerPort: api.MySQLDatabasePort,
 						Protocol:      core.ProtocolTCP,
 					},
 				},

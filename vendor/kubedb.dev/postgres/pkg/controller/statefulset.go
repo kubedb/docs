@@ -43,25 +43,25 @@ import (
 )
 
 func (c *Controller) ensureStatefulSet(
-	postgres *api.Postgres,
+	db *api.Postgres,
 	postgresVersion *catalog.PostgresVersion,
 	envList []core.EnvVar,
 ) (kutil.VerbType, error) {
 
-	if err := c.checkStatefulSet(postgres); err != nil {
+	if err := c.checkStatefulSet(db); err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
 	statefulSetMeta := metav1.ObjectMeta{
-		Name:      postgres.OffshootName(),
-		Namespace: postgres.Namespace,
+		Name:      db.OffshootName(),
+		Namespace: db.Namespace,
 	}
 
-	owner := metav1.NewControllerRef(postgres, api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres))
 
 	replicas := int32(1)
-	if postgres.Spec.Replicas != nil {
-		replicas = types.Int32(postgres.Spec.Replicas)
+	if db.Spec.Replicas != nil {
+		replicas = types.Int32(db.Spec.Replicas)
 	}
 
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(
@@ -69,19 +69,19 @@ func (c *Controller) ensureStatefulSet(
 		c.Client,
 		statefulSetMeta,
 		func(in *apps.StatefulSet) *apps.StatefulSet {
-			in.Labels = postgres.OffshootLabels()
-			in.Annotations = postgres.Spec.PodTemplate.Controller.Annotations
+			in.Labels = db.OffshootLabels()
+			in.Annotations = db.Spec.PodTemplate.Controller.Annotations
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 			in.Spec.Replicas = types.Int32P(replicas)
 
-			in.Spec.ServiceName = c.GoverningService
+			in.Spec.ServiceName = db.GoverningServiceName()
 			in.Spec.Selector = &metav1.LabelSelector{
-				MatchLabels: postgres.OffshootSelectors(),
+				MatchLabels: db.OffshootSelectors(),
 			}
-			in.Spec.Template.Labels = postgres.OffshootSelectors()
-			in.Spec.Template.Annotations = postgres.Spec.PodTemplate.Annotations
-			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, postgres.Spec.PodTemplate.Spec.InitContainers)
+			in.Spec.Template.Labels = db.OffshootSelectors()
+			in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
+			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, db.Spec.PodTemplate.Spec.InitContainers)
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 				in.Spec.Template.Spec.Containers,
 				core.Container{
@@ -96,11 +96,18 @@ func (c *Controller) ensureStatefulSet(
 							Value: c.AnalyticsClientID,
 						},
 					},
-					Image:          postgresVersion.Spec.DB.Image,
-					Resources:      postgres.Spec.PodTemplate.Spec.Resources,
-					LivenessProbe:  postgres.Spec.PodTemplate.Spec.LivenessProbe,
-					ReadinessProbe: postgres.Spec.PodTemplate.Spec.ReadinessProbe,
-					Lifecycle:      postgres.Spec.PodTemplate.Spec.Lifecycle,
+					Image: postgresVersion.Spec.DB.Image,
+					Ports: []core.ContainerPort{
+						{
+							Name:          api.PostgresDatabasePortName,
+							ContainerPort: api.PostgresDatabasePort,
+							Protocol:      core.ProtocolTCP,
+						},
+					},
+					Resources:      db.Spec.PodTemplate.Spec.Resources,
+					LivenessProbe:  db.Spec.PodTemplate.Spec.LivenessProbe,
+					ReadinessProbe: db.Spec.PodTemplate.Spec.ReadinessProbe,
+					Lifecycle:      db.Spec.PodTemplate.Spec.Lifecycle,
 					SecurityContext: &core.SecurityContext{
 						Privileged: types.BoolP(false),
 						Capabilities: &core.Capabilities{
@@ -108,48 +115,47 @@ func (c *Controller) ensureStatefulSet(
 						},
 					},
 				})
-			in = upsertEnv(in, postgres, envList)
-			in = upsertUserEnv(in, postgres)
-			in = upsertPort(in)
+			in = upsertEnv(in, db, envList)
+			in = upsertUserEnv(in, db)
 
-			in.Spec.Template.Spec.NodeSelector = postgres.Spec.PodTemplate.Spec.NodeSelector
-			in.Spec.Template.Spec.Affinity = postgres.Spec.PodTemplate.Spec.Affinity
-			if postgres.Spec.PodTemplate.Spec.SchedulerName != "" {
-				in.Spec.Template.Spec.SchedulerName = postgres.Spec.PodTemplate.Spec.SchedulerName
+			in.Spec.Template.Spec.NodeSelector = db.Spec.PodTemplate.Spec.NodeSelector
+			in.Spec.Template.Spec.Affinity = db.Spec.PodTemplate.Spec.Affinity
+			if db.Spec.PodTemplate.Spec.SchedulerName != "" {
+				in.Spec.Template.Spec.SchedulerName = db.Spec.PodTemplate.Spec.SchedulerName
 			}
-			in.Spec.Template.Spec.Tolerations = postgres.Spec.PodTemplate.Spec.Tolerations
-			in.Spec.Template.Spec.ImagePullSecrets = postgres.Spec.PodTemplate.Spec.ImagePullSecrets
-			in.Spec.Template.Spec.PriorityClassName = postgres.Spec.PodTemplate.Spec.PriorityClassName
-			in.Spec.Template.Spec.Priority = postgres.Spec.PodTemplate.Spec.Priority
-			in.Spec.Template.Spec.SecurityContext = postgres.Spec.PodTemplate.Spec.SecurityContext
+			in.Spec.Template.Spec.Tolerations = db.Spec.PodTemplate.Spec.Tolerations
+			in.Spec.Template.Spec.ImagePullSecrets = db.Spec.PodTemplate.Spec.ImagePullSecrets
+			in.Spec.Template.Spec.PriorityClassName = db.Spec.PodTemplate.Spec.PriorityClassName
+			in.Spec.Template.Spec.Priority = db.Spec.PodTemplate.Spec.Priority
+			in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
 
-			in = c.upsertMonitoringContainer(in, postgres, postgresVersion)
-			if postgres.Spec.Archiver != nil {
-				if postgres.Spec.Archiver.Storage != nil {
+			in = c.upsertMonitoringContainer(in, db, postgresVersion)
+			if db.Spec.Archiver != nil {
+				if db.Spec.Archiver.Storage != nil {
 					//Creating secret for cloud providers
-					archiverStorage := postgres.Spec.Archiver.Storage
+					archiverStorage := db.Spec.Archiver.Storage
 					if archiverStorage.Local == nil {
 						in = upsertArchiveSecret(in, archiverStorage.StorageSecretName)
 					}
 				}
 			}
 
-			if !kmapi.HasCondition(postgres.Status.Conditions, api.DatabaseDataRestored) {
-				initSource := postgres.Spec.Init
+			if !kmapi.HasCondition(db.Status.Conditions, api.DatabaseDataRestored) {
+				initSource := db.Spec.Init
 				if initSource != nil && initSource.PostgresWAL != nil && initSource.PostgresWAL.Local == nil {
 					//Getting secret for cloud providers
-					in = upsertInitWalSecret(in, postgres.Spec.Init.PostgresWAL.StorageSecretName)
+					in = upsertInitWalSecret(in, db.Spec.Init.PostgresWAL.StorageSecretName)
 				}
 				if initSource != nil && initSource.Script != nil {
-					in = upsertInitScript(in, postgres.Spec.Init.Script.VolumeSource)
+					in = upsertInitScript(in, db.Spec.Init.Script.VolumeSource)
 				}
 			}
 
 			in = upsertShm(in)
-			in = upsertDataVolume(in, postgres)
-			in = upsertCustomConfig(in, postgres)
+			in = upsertDataVolume(in, db)
+			in = upsertCustomConfig(in, db)
 
-			in.Spec.Template.Spec.ServiceAccountName = postgres.Spec.PodTemplate.Spec.ServiceAccountName
+			in.Spec.Template.Spec.ServiceAccountName = db.Spec.PodTemplate.Spec.ServiceAccountName
 			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
 				Type: apps.OnDeleteStatefulSetStrategyType,
 			}
@@ -170,7 +176,7 @@ func (c *Controller) ensureStatefulSet(
 		}
 
 		c.Recorder.Eventf(
-			postgres,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %v StatefulSet",
@@ -199,15 +205,15 @@ func (c *Controller) CheckStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 	return nil
 }
 
-func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion *catalog.PostgresVersion) (kutil.VerbType, error) {
+func (c *Controller) ensureCombinedNode(db *api.Postgres, postgresVersion *catalog.PostgresVersion) (kutil.VerbType, error) {
 	standbyMode := api.WarmPostgresStandbyMode
 	streamingMode := api.AsynchronousPostgresStreamingMode
 
-	if postgres.Spec.StandbyMode != nil {
-		standbyMode = *postgres.Spec.StandbyMode
+	if db.Spec.StandbyMode != nil {
+		standbyMode = *db.Spec.StandbyMode
 	}
-	if postgres.Spec.StreamingMode != nil {
-		streamingMode = *postgres.Spec.StreamingMode
+	if db.Spec.StreamingMode != nil {
+		streamingMode = *db.Spec.StreamingMode
 	}
 
 	envList := []core.EnvVar{
@@ -221,25 +227,25 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion 
 		},
 	}
 
-	if postgres.Spec.LeaderElection != nil {
+	if db.Spec.LeaderElection != nil {
 		envList = append(envList, []core.EnvVar{
 			{
 				Name:  leader_election.LeaseDurationEnv,
-				Value: strconv.Itoa(int(postgres.Spec.LeaderElection.LeaseDurationSeconds)),
+				Value: strconv.Itoa(int(db.Spec.LeaderElection.LeaseDurationSeconds)),
 			},
 			{
 				Name:  leader_election.RenewDeadlineEnv,
-				Value: strconv.Itoa(int(postgres.Spec.LeaderElection.RenewDeadlineSeconds)),
+				Value: strconv.Itoa(int(db.Spec.LeaderElection.RenewDeadlineSeconds)),
 			},
 			{
 				Name:  leader_election.RetryPeriodEnv,
-				Value: strconv.Itoa(int(postgres.Spec.LeaderElection.RetryPeriodSeconds)),
+				Value: strconv.Itoa(int(db.Spec.LeaderElection.RetryPeriodSeconds)),
 			},
 		}...)
 	}
 
-	if postgres.Spec.Archiver != nil {
-		archiverStorage := postgres.Spec.Archiver.Storage
+	if db.Spec.Archiver != nil {
+		archiverStorage := db.Spec.Archiver.Storage
 		if archiverStorage != nil {
 			envList = append(envList,
 				core.EnvVar{
@@ -251,7 +257,7 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion 
 				envList = append(envList,
 					core.EnvVar{
 						Name:  "ARCHIVE_S3_PREFIX",
-						Value: fmt.Sprintf("s3://%v/%v", archiverStorage.S3.Bucket, WalDataDir(postgres)),
+						Value: fmt.Sprintf("s3://%v/%v", archiverStorage.S3.Bucket, WalDataDir(db)),
 					},
 				)
 				if archiverStorage.S3.Endpoint != "" && !strings.HasSuffix(archiverStorage.S3.Endpoint, ".amazonaws.com") {
@@ -275,21 +281,21 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion 
 				envList = append(envList,
 					core.EnvVar{
 						Name:  "ARCHIVE_GS_PREFIX",
-						Value: fmt.Sprintf("gs://%v/%v", archiverStorage.GCS.Bucket, WalDataDir(postgres)),
+						Value: fmt.Sprintf("gs://%v/%v", archiverStorage.GCS.Bucket, WalDataDir(db)),
 					},
 				)
 			} else if archiverStorage.Azure != nil {
 				envList = append(envList,
 					core.EnvVar{
 						Name:  "ARCHIVE_AZ_PREFIX",
-						Value: fmt.Sprintf("azure://%v/%v", archiverStorage.Azure.Container, WalDataDir(postgres)),
+						Value: fmt.Sprintf("azure://%v/%v", archiverStorage.Azure.Container, WalDataDir(db)),
 					},
 				)
 			} else if archiverStorage.Swift != nil {
 				envList = append(envList,
 					core.EnvVar{
 						Name:  "ARCHIVE_SWIFT_PREFIX",
-						Value: fmt.Sprintf("swift://%v/%v", archiverStorage.Swift.Container, WalDataDir(postgres)),
+						Value: fmt.Sprintf("swift://%v/%v", archiverStorage.Swift.Container, WalDataDir(db)),
 					},
 				)
 			} else if archiverStorage.Local != nil {
@@ -303,20 +309,20 @@ func (c *Controller) ensureCombinedNode(postgres *api.Postgres, postgresVersion 
 		}
 	}
 
-	if postgres.Spec.Init != nil {
-		wal := postgres.Spec.Init.PostgresWAL
+	if db.Spec.Init != nil {
+		wal := db.Spec.Init.PostgresWAL
 		if wal != nil {
 			envList = append(envList, walRecoveryConfig(wal)...)
 		}
 	}
 
-	return c.ensureStatefulSet(postgres, postgresVersion, envList)
+	return c.ensureStatefulSet(db, postgresVersion, envList)
 }
 
-func (c *Controller) checkStatefulSet(postgres *api.Postgres) error {
-	name := postgres.OffshootName()
+func (c *Controller) checkStatefulSet(db *api.Postgres) error {
+	name := db.OffshootName()
 	// SatatefulSet for Postgres database
-	statefulSet, err := c.Client.AppsV1().StatefulSets(postgres.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
+	statefulSet, err := c.Client.AppsV1().StatefulSets(db.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -327,13 +333,13 @@ func (c *Controller) checkStatefulSet(postgres *api.Postgres) error {
 
 	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindPostgres ||
 		statefulSet.Labels[api.LabelDatabaseName] != name {
-		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, postgres.Namespace, name)
+		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, db.Namespace, name)
 	}
 
 	return nil
 }
 
-func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []core.EnvVar) *apps.StatefulSet {
+func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, envs []core.EnvVar) *apps.StatefulSet {
 	envList := []core.EnvVar{
 		{
 			Name: "NAMESPACE",
@@ -345,14 +351,14 @@ func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []cor
 		},
 		{
 			Name:  "PRIMARY_HOST",
-			Value: postgres.ServiceName(),
+			Value: db.ServiceName(),
 		},
 		{
 			Name: EnvPostgresUser,
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
-						Name: postgres.Spec.AuthSecret.Name,
+						Name: db.Spec.AuthSecret.Name,
 					},
 					Key: core.BasicAuthUsernameKey,
 				},
@@ -363,7 +369,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, postgres *api.Postgres, envs []cor
 			ValueFrom: &core.EnvVarSource{
 				SecretKeyRef: &core.SecretKeySelector{
 					LocalObjectReference: core.LocalObjectReference{
-						Name: postgres.Spec.AuthSecret.Name,
+						Name: db.Spec.AuthSecret.Name,
 					},
 					Key: core.BasicAuthPasswordKey,
 				},
@@ -395,60 +401,38 @@ func upsertUserEnv(statefulSet *apps.StatefulSet, postgress *api.Postgres) *apps
 	return statefulSet
 }
 
-func upsertPort(statefulSet *apps.StatefulSet) *apps.StatefulSet {
-	getPorts := func() []core.ContainerPort {
-		portList := []core.ContainerPort{
-			{
-				Name:          PostgresPortName,
-				ContainerPort: PostgresPort,
-				Protocol:      core.ProtocolTCP,
-			},
-		}
-		return portList
-	}
-
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPostgres {
-			statefulSet.Spec.Template.Spec.Containers[i].Ports = getPorts()
-			return statefulSet
-		}
-	}
-
-	return statefulSet
-}
-
-func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, postgres *api.Postgres, postgresVersion *catalog.PostgresVersion) *apps.StatefulSet {
-	if postgres.Spec.Monitor != nil && postgres.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
+func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion *catalog.PostgresVersion) *apps.StatefulSet {
+	if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 		container := core.Container{
 			Name: "exporter",
 			Args: append([]string{
 				"--log.level=info",
-			}, postgres.Spec.Monitor.Prometheus.Exporter.Args...),
+			}, db.Spec.Monitor.Prometheus.Exporter.Args...),
 			Image:           postgresVersion.Spec.Exporter.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
 				{
 					Name:          mona.PrometheusExporterPortName,
 					Protocol:      core.ProtocolTCP,
-					ContainerPort: int32(postgres.Spec.Monitor.Prometheus.Exporter.Port),
+					ContainerPort: int32(db.Spec.Monitor.Prometheus.Exporter.Port),
 				},
 			},
-			Env:             postgres.Spec.Monitor.Prometheus.Exporter.Env,
-			Resources:       postgres.Spec.Monitor.Prometheus.Exporter.Resources,
-			SecurityContext: postgres.Spec.Monitor.Prometheus.Exporter.SecurityContext,
+			Env:             db.Spec.Monitor.Prometheus.Exporter.Env,
+			Resources:       db.Spec.Monitor.Prometheus.Exporter.Resources,
+			SecurityContext: db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 		}
 
 		envList := []core.EnvVar{
 			{
 				Name:  "DATA_SOURCE_URI",
-				Value: fmt.Sprintf("localhost:%d/?sslmode=disable", PostgresPort),
+				Value: fmt.Sprintf("localhost:%d/?sslmode=disable", api.PostgresDatabasePort),
 			},
 			{
 				Name: "DATA_SOURCE_USER",
 				ValueFrom: &core.EnvVarSource{
 					SecretKeyRef: &core.SecretKeySelector{
 						LocalObjectReference: core.LocalObjectReference{
-							Name: postgres.Spec.AuthSecret.Name,
+							Name: db.Spec.AuthSecret.Name,
 						},
 						Key: core.BasicAuthUsernameKey,
 					},
@@ -459,7 +443,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 				ValueFrom: &core.EnvVarSource{
 					SecretKeyRef: &core.SecretKeySelector{
 						LocalObjectReference: core.LocalObjectReference{
-							Name: postgres.Spec.AuthSecret.Name,
+							Name: db.Spec.AuthSecret.Name,
 						},
 						Key: core.BasicAuthPasswordKey,
 					},
@@ -467,11 +451,11 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, po
 			},
 			{
 				Name:  "PG_EXPORTER_WEB_LISTEN_ADDRESS",
-				Value: fmt.Sprintf(":%d", postgres.Spec.Monitor.Prometheus.Exporter.Port),
+				Value: fmt.Sprintf(":%d", db.Spec.Monitor.Prometheus.Exporter.Port),
 			},
 			{
 				Name:  "PG_EXPORTER_WEB_TELEMETRY_PATH",
-				Value: postgres.StatsService().Path(),
+				Value: db.StatsService().Path(),
 			},
 		}
 
@@ -591,13 +575,13 @@ func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *
 	return statefulSet
 }
 
-func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
-	if postgres.Spec.Archiver != nil || postgres.Spec.Init != nil {
+func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.Postgres) *apps.StatefulSet {
+	if db.Spec.Archiver != nil || db.Spec.Init != nil {
 		// Add a PV
-		if postgres.Spec.Archiver != nil &&
-			postgres.Spec.Archiver.Storage != nil &&
-			postgres.Spec.Archiver.Storage.Local != nil {
-			pgLocalVol := postgres.Spec.Archiver.Storage.Local
+		if db.Spec.Archiver != nil &&
+			db.Spec.Archiver.Storage != nil &&
+			db.Spec.Archiver.Storage.Local != nil {
+			pgLocalVol := db.Spec.Archiver.Storage.Local
 			podSpec := statefulSet.Spec.Template.Spec
 			if pgLocalVol != nil {
 				volume := core.Volume{
@@ -614,10 +598,10 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *ap
 				})
 			}
 		}
-		if postgres.Spec.Init != nil &&
-			postgres.Spec.Init.PostgresWAL != nil &&
-			postgres.Spec.Init.PostgresWAL.Local != nil {
-			pgLocalVol := postgres.Spec.Init.PostgresWAL.Local
+		if db.Spec.Init != nil &&
+			db.Spec.Init.PostgresWAL != nil &&
+			db.Spec.Init.PostgresWAL.Local != nil {
+			pgLocalVol := db.Spec.Init.PostgresWAL.Local
 			podSpec := statefulSet.Spec.Template.Spec
 			if pgLocalVol != nil {
 				volume := core.Volume{
@@ -646,8 +630,8 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *ap
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
-			pvcSpec := postgres.Spec.Storage
-			if postgres.Spec.StorageType == api.StorageTypeEphemeral {
+			pvcSpec := db.Spec.Storage
+			if db.Spec.StorageType == api.StorageTypeEphemeral {
 				ed := core.EmptyDirVolumeSource{}
 				if pvcSpec != nil {
 					if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
@@ -689,8 +673,8 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, postgres *api.Postgres) *ap
 	return statefulSet
 }
 
-func upsertCustomConfig(statefulSet *apps.StatefulSet, postgres *api.Postgres) *apps.StatefulSet {
-	if postgres.Spec.ConfigSecret != nil {
+func upsertCustomConfig(statefulSet *apps.StatefulSet, db *api.Postgres) *apps.StatefulSet {
+	if db.Spec.ConfigSecret != nil {
 		for i, container := range statefulSet.Spec.Template.Spec.Containers {
 			if container.Name == api.ResourceSingularPostgres {
 				configVolumeMount := core.VolumeMount{
@@ -705,7 +689,7 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, postgres *api.Postgres) *
 					Name: "custom-config",
 					VolumeSource: core.VolumeSource{
 						Secret: &core.SecretVolumeSource{
-							SecretName: postgres.Spec.ConfigSecret.Name,
+							SecretName: db.Spec.ConfigSecret.Name,
 						},
 					},
 				}

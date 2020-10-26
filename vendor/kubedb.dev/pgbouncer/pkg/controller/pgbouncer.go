@@ -32,11 +32,7 @@ import (
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
 
-const (
-	AuthSecretSuffix = "auth"
-)
-
-func (c *Controller) managePgBouncerEvent(key string) error {
+func (c *Controller) runPgBouncer(key string) error {
 	log.Debugln("started processing, key:", key)
 	obj, exists, err := c.pbInformer.GetIndexer().GetByKey(key)
 	if err != nil {
@@ -52,7 +48,7 @@ func (c *Controller) managePgBouncerEvent(key string) error {
 		// is dependent on the actual instance, to detect that a PgBouncer was recreated with the same name
 		pgbouncer := obj.(*api.PgBouncer).DeepCopy()
 
-		if err := c.manageCreateOrPatchEvent(pgbouncer); err != nil {
+		if err := c.syncPgBouncer(pgbouncer); err != nil {
 			log.Errorln(err)
 			c.pushFailureEvent(pgbouncer, err.Error())
 			return err
@@ -61,68 +57,66 @@ func (c *Controller) managePgBouncerEvent(key string) error {
 	return nil
 }
 
-func (c *Controller) manageCreateOrPatchEvent(pgbouncer *api.PgBouncer) error {
-	if err := c.manageValidation(pgbouncer); err != nil {
+func (c *Controller) syncPgBouncer(db *api.PgBouncer) error {
+	if err := c.manageValidation(db); err != nil {
 		log.Infoln(err)
 		return nil // user err, dont' retry.
 	}
-	if err := c.manageInitialPhase(pgbouncer); err != nil {
+	if err := c.manageInitialPhase(db); err != nil {
 		log.Infoln(err)
 		return err
 	}
-	// create Governing Service
-	governingService := c.GoverningService
-	if err := c.CreateGoverningService(governingService, pgbouncer.Namespace); err != nil {
-		log.Infoln(err)
-		return fmt.Errorf(`failed to create Service: "%v/%v". Reason: %v`, pgbouncer.Namespace, governingService, err)
+	// ensure Governing Service
+	if err := c.ensureGoverningService(db); err != nil {
+		return fmt.Errorf(`failed to create governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 	// create or patch Service
-	if err := c.manageService(pgbouncer); err != nil {
+	if err := c.ensureService(db); err != nil {
 		log.Infoln(err)
 		return err
 	}
 	// create or patch default Secret
-	if err := c.manageDefaultSecret(pgbouncer); err != nil {
+	if err := c.syncAuthSecret(db); err != nil {
 		log.Infoln(err)
 		return err
 	}
-	// create or patch ConfigMap
-	if err := c.manageConfigMap(pgbouncer); err != nil {
+	// create or patch Secret
+	if err := c.manageSecret(db); err != nil {
 		log.Infoln(err)
 		return err
 	}
 	// wait for certificates
-	if pgbouncer.Spec.TLS != nil {
+	if db.Spec.TLS != nil {
 		ok, err := dynamic_util.ResourcesExists(
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
-			pgbouncer.Namespace,
-			pgbouncer.MustCertSecretName(api.PgBouncerServerCert),
-			pgbouncer.MustCertSecretName(api.PgBouncerClientCert),
-			pgbouncer.MustCertSecretName(api.PgBouncerMetricsExporterCert),
+			db.Namespace,
+			db.MustCertSecretName(api.PgBouncerServerCert),
+			db.MustCertSecretName(api.PgBouncerClientCert),
+			db.MustCertSecretName(api.PgBouncerMetricsExporterCert),
 		)
 		if err != nil {
 			return err
 		}
 		if !ok {
-			log.Infof("wait for all certificate secrets for pgbouncer %s/%s", pgbouncer.Namespace, pgbouncer.Name)
+			log.Infof("wait for all certificate secrets for pgbouncer %s/%s", db.Namespace, db.Name)
 			return nil
 		}
 	}
 	// create or patch StatefulSet
-	if err := c.manageStatefulSet(pgbouncer); err != nil {
+	if err := c.manageStatefulSet(db); err != nil {
 		log.Infoln(err)
 		return err
 	}
 	// create or patch Stat service
-	if err := c.manageStatService(pgbouncer); err != nil {
+	if err := c.syncStatService(db); err != nil {
 		log.Infoln(err)
 		return err
 	}
 
-	if err := c.manageMonitor(pgbouncer); err != nil {
+	if err := c.manageMonitor(db); err != nil {
 		c.recorder.Eventf(
-			pgbouncer,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -133,17 +127,17 @@ func (c *Controller) manageCreateOrPatchEvent(pgbouncer *api.PgBouncer) error {
 	}
 
 	// Add initialized or running phase
-	if err := c.manageFinalPhase(pgbouncer); err != nil {
+	if err := c.manageFinalPhase(db); err != nil {
 		log.Infoln(err)
 		return err
 	}
 	return nil
 }
 
-func (c *Controller) manageValidation(pgbouncer *api.PgBouncer) error {
-	if err := validator.ValidatePgBouncer(c.Client, c.DBClient, pgbouncer, true); err != nil {
+func (c *Controller) manageValidation(db *api.PgBouncer) error {
+	if err := validator.ValidatePgBouncer(c.Client, c.DBClient, db, true); err != nil {
 		c.recorder.Event(
-			pgbouncer,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
 			err.Error(),
@@ -153,14 +147,14 @@ func (c *Controller) manageValidation(pgbouncer *api.PgBouncer) error {
 	}
 
 	// Check if userList is absent.
-	if pgbouncer.Spec.UserListSecretRef != nil && pgbouncer.Spec.UserListSecretRef.Name != "" {
-		if pgbouncer.Spec.ConnectionPool != nil && pgbouncer.Spec.ConnectionPool.AuthType != "any" {
-			if _, err := c.Client.CoreV1().Secrets(pgbouncer.GetNamespace()).Get(context.TODO(), pgbouncer.Spec.UserListSecretRef.Name, metav1.GetOptions{}); err != nil {
+	if db.Spec.UserListSecretRef != nil && db.Spec.UserListSecretRef.Name != "" {
+		if db.Spec.ConnectionPool != nil && db.Spec.ConnectionPool.AuthType != "any" {
+			if _, err := c.Client.CoreV1().Secrets(db.GetNamespace()).Get(context.TODO(), db.Spec.UserListSecretRef.Name, metav1.GetOptions{}); err != nil {
 				c.recorder.Eventf(
-					pgbouncer,
+					db,
 					core.EventTypeWarning,
 					"UserListMissing",
-					"user-list secret %s not found", pgbouncer.Spec.UserListSecretRef.Name)
+					"user-list secret %s not found", db.Spec.UserListSecretRef.Name)
 			}
 		}
 	}
@@ -168,54 +162,54 @@ func (c *Controller) manageValidation(pgbouncer *api.PgBouncer) error {
 	return nil
 }
 
-func (c *Controller) manageInitialPhase(pgbouncer *api.PgBouncer) error {
-	if pgbouncer.Status.Phase == "" {
-		pg, err := util.UpdatePgBouncerStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), pgbouncer.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
+func (c *Controller) manageInitialPhase(db *api.PgBouncer) error {
+	if db.Status.Phase == "" {
+		pg, err := util.UpdatePgBouncerStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
 			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
-		pgbouncer.Status = pg.Status
+		db.Status = pg.Status
 	}
 	return nil
 }
 
-func (c *Controller) manageFinalPhase(pgbouncer *api.PgBouncer) error {
-	if !c.PgBouncerExists(pgbouncer) {
+func (c *Controller) manageFinalPhase(db *api.PgBouncer) error {
+	if !c.PgBouncerExists(db) {
 		return nil
 	}
 
-	pg, err := util.UpdatePgBouncerStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), pgbouncer.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
+	pg, err := util.UpdatePgBouncerStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
 		in.Phase = api.DatabasePhaseReady
-		in.ObservedGeneration = pgbouncer.Generation
+		in.ObservedGeneration = db.Generation
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
 		log.Infoln(err)
 		return err
 	}
-	pgbouncer.Status = pg.Status
+	db.Status = pg.Status
 	return nil
 }
 
-func (c *Controller) manageDefaultSecret(pgbouncer *api.PgBouncer) error {
-	sVerb, err := c.CreateOrPatchDefaultSecret(pgbouncer)
+func (c *Controller) syncAuthSecret(db *api.PgBouncer) error {
+	sVerb, err := c.ensureAuthSecret(db)
 	if err != nil {
 		return err
 	}
 
 	if sVerb == kutil.VerbCreated {
 		c.recorder.Event(
-			pgbouncer,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created PgBouncer Fallback Secret",
 		)
 	} else if sVerb == kutil.VerbPatched {
 		c.recorder.Event(
-			pgbouncer,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully patched PgBouncer Fallback Secret",
@@ -227,57 +221,57 @@ func (c *Controller) manageDefaultSecret(pgbouncer *api.PgBouncer) error {
 	return nil
 }
 
-func (c *Controller) manageConfigMap(pgbouncer *api.PgBouncer) error {
-	configMapVerb, err := c.ensureConfigMapFromCRD(pgbouncer)
+func (c *Controller) manageSecret(db *api.PgBouncer) error {
+	secretVerb, err := c.ensureConfigSecret(db)
 	if err != nil {
 		log.Infoln(err)
 		return err
 	}
 
-	if configMapVerb == kutil.VerbCreated {
+	if secretVerb == kutil.VerbCreated {
 		c.recorder.Event(
-			pgbouncer,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
-			"Successfully created PgBouncer configMap",
+			"Successfully created PgBouncer secret",
 		)
-	} else if configMapVerb == kutil.VerbPatched {
+	} else if secretVerb == kutil.VerbPatched {
 		c.recorder.Event(
-			pgbouncer,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
-			"Successfully patched PgBouncer configMap",
+			"Successfully patched PgBouncer secret",
 		)
 	}
-	if configMapVerb != kutil.VerbUnchanged {
-		log.Infoln("ConfigMap ", configMapVerb)
+	if secretVerb != kutil.VerbUnchanged {
+		log.Infoln("Secret ", secretVerb)
 	}
 
 	return nil
 }
 
-func (c *Controller) manageStatefulSet(pgbouncer *api.PgBouncer) error {
-	pgBouncerVersion, err := c.DBClient.CatalogV1alpha1().PgBouncerVersions().Get(context.TODO(), pgbouncer.Spec.Version, metav1.GetOptions{})
+func (c *Controller) manageStatefulSet(db *api.PgBouncer) error {
+	pgBouncerVersion, err := c.DBClient.CatalogV1alpha1().PgBouncerVersions().Get(context.TODO(), db.Spec.Version, metav1.GetOptions{})
 	if err != nil {
 		log.Infoln(err)
 		return err
 	}
 
-	statefulSetVerb, err := c.ensureStatefulSet(pgbouncer, pgBouncerVersion, []core.EnvVar{})
+	statefulSetVerb, err := c.ensureStatefulSet(db, pgBouncerVersion, []core.EnvVar{})
 	if err != nil {
 		log.Infoln(err)
 		return err
 	}
 	if statefulSetVerb == kutil.VerbCreated {
 		c.recorder.Event(
-			pgbouncer,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created PgBouncer statefulset",
 		)
 	} else if statefulSetVerb == kutil.VerbPatched {
 		c.recorder.Event(
-			pgbouncer,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully patched PgBouncer statefulset",
@@ -289,47 +283,41 @@ func (c *Controller) manageStatefulSet(pgbouncer *api.PgBouncer) error {
 	return nil
 }
 
-func (c *Controller) manageService(pgbouncer *api.PgBouncer) error {
-	serviceVerb, err := c.ensureService(pgbouncer)
+func (c *Controller) ensureService(db *api.PgBouncer) error {
+	vt, err := c.ensurePrimaryService(db)
 	if err != nil {
 		return err
 	}
-	if serviceVerb == kutil.VerbCreated {
-		c.recorder.Event(
-			pgbouncer,
+	if vt != kutil.VerbUnchanged {
+		c.recorder.Eventf(
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
-			"Successfully created Service",
-		)
-	} else if serviceVerb == kutil.VerbPatched {
-		c.recorder.Event(
-			pgbouncer,
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully patched Service",
+			"Successfully %s Service",
+			vt,
 		)
 	}
-	if serviceVerb != kutil.VerbUnchanged {
-		log.Infoln("Service ", serviceVerb)
+	if vt != kutil.VerbUnchanged {
+		log.Infoln("Service ", vt)
 	}
 	return nil
 }
 
-func (c *Controller) manageStatService(pgbouncer *api.PgBouncer) error {
-	statServiceVerb, err := c.ensureStatsService(pgbouncer)
+func (c *Controller) syncStatService(db *api.PgBouncer) error {
+	statServiceVerb, err := c.ensureStatsService(db)
 	if err != nil {
 		return err
 	}
 	if statServiceVerb == kutil.VerbCreated {
 		c.recorder.Event(
-			pgbouncer,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created Stat Service",
 		)
 	} else if statServiceVerb == kutil.VerbPatched {
 		c.recorder.Event(
-			pgbouncer,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully patched Stat Service",
@@ -341,7 +329,7 @@ func (c *Controller) manageStatService(pgbouncer *api.PgBouncer) error {
 	return nil
 }
 
-func (c *Controller) PgBouncerExists(pgbouncer *api.PgBouncer) bool {
-	_, err := c.DBClient.KubedbV1alpha2().PgBouncers(pgbouncer.Namespace).Get(context.TODO(), pgbouncer.Name, metav1.GetOptions{})
+func (c *Controller) PgBouncerExists(db *api.PgBouncer) bool {
+	_, err := c.DBClient.KubedbV1alpha2().PgBouncers(db.Namespace).Get(context.TODO(), db.Name, metav1.GetOptions{})
 	return err == nil
 }

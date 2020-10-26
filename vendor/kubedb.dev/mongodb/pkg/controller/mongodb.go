@@ -35,10 +35,10 @@ import (
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
 
-func (c *Controller) create(mongodb *api.MongoDB) error {
-	if err := validator.ValidateMongoDB(c.Client, c.DBClient, mongodb, true); err != nil {
+func (c *Controller) create(db *api.MongoDB) error {
+	if err := validator.ValidateMongoDB(c.Client, c.DBClient, db, true); err != nil {
 		c.Recorder.Event(
-			mongodb,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
 			err.Error(),
@@ -48,72 +48,72 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	// create Governing Service
-	if err := c.ensureMongoGvrSvc(mongodb); err != nil {
-		return fmt.Errorf(`failed to create governing Service for "%v/%v". Reason: %v`, mongodb.Namespace, mongodb.Name, err)
+	if err := c.ensureGoverningService(db); err != nil {
+		return fmt.Errorf(`failed to create governing Service for "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 
 	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
-	if err := c.ensureDatabaseRBAC(mongodb); err != nil {
+	if err := c.ensureDatabaseRBAC(db); err != nil {
 		return err
 	}
 
 	// ensure database Service
-	vt1, err := c.ensureService(mongodb)
+	vt1, err := c.ensureService(db)
 	if err != nil {
 		return err
 	}
 
-	if err := c.ensureAuthSecret(mongodb); err != nil {
+	if err := c.ensureAuthSecret(db); err != nil {
 		return err
 	}
 
 	// ensure certificate or keyfile for cluster
-	sslMode := mongodb.Spec.SSLMode
+	sslMode := db.Spec.SSLMode
 	if (sslMode != api.SSLModeDisabled && sslMode != "") ||
-		mongodb.Spec.ReplicaSet != nil || mongodb.Spec.ShardTopology != nil {
-		if err := c.ensureKeyFileSecret(mongodb); err != nil {
+		db.Spec.ReplicaSet != nil || db.Spec.ShardTopology != nil {
+		if err := c.ensureKeyFileSecret(db); err != nil {
 			return err
 		}
 	}
 
 	// wait for certificates
-	if mongodb.Spec.TLS != nil {
+	if db.Spec.TLS != nil {
 		var secrets []string
-		if mongodb.Spec.ShardTopology != nil {
+		if db.Spec.ShardTopology != nil {
 			// for config server
-			secrets = append(secrets, mongodb.MustCertSecretName(api.MongoDBServerCert, mongodb.ConfigSvrNodeName()))
+			secrets = append(secrets, db.MustCertSecretName(api.MongoDBServerCert, db.ConfigSvrNodeName()))
 			// for shards
-			for i := 0; i < int(mongodb.Spec.ShardTopology.Shard.Shards); i++ {
-				secrets = append(secrets, mongodb.MustCertSecretName(api.MongoDBServerCert, mongodb.ShardNodeName(int32(i))))
+			for i := 0; i < int(db.Spec.ShardTopology.Shard.Shards); i++ {
+				secrets = append(secrets, db.MustCertSecretName(api.MongoDBServerCert, db.ShardNodeName(int32(i))))
 			}
 			// for mongos
-			secrets = append(secrets, mongodb.MustCertSecretName(api.MongoDBServerCert, mongodb.MongosNodeName()))
+			secrets = append(secrets, db.MustCertSecretName(api.MongoDBServerCert, db.MongosNodeName()))
 		} else {
 			// ReplicaSet or Standalone
-			secrets = append(secrets, mongodb.MustCertSecretName(api.MongoDBServerCert, ""))
+			secrets = append(secrets, db.MustCertSecretName(api.MongoDBServerCert, ""))
 		}
 		// for stash/user
-		secrets = append(secrets, mongodb.MustCertSecretName(api.MongoDBClientCert, ""))
+		secrets = append(secrets, db.MustCertSecretName(api.MongoDBClientCert, ""))
 		// for prometheus exporter
-		secrets = append(secrets, mongodb.MustCertSecretName(api.MongoDBMetricsExporterCert, ""))
+		secrets = append(secrets, db.MustCertSecretName(api.MongoDBMetricsExporterCert, ""))
 
 		ok, err := dynamic_util.ResourcesExists(
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
-			mongodb.Namespace,
+			db.Namespace,
 			secrets...,
 		)
 		if err != nil {
 			return err
 		}
 		if !ok {
-			log.Infof("wait for all certificate secrets for MongoDB %s/%s", mongodb.Namespace, mongodb.Name)
+			log.Infof("wait for all certificate secrets for MongoDB %s/%s", db.Namespace, db.Name)
 			return nil
 		}
 	}
 
 	// ensure database StatefulSet
-	vt2, err := c.ensureMongoDBNode(mongodb)
+	vt2, err := c.ensureMongoDBNode(db)
 	if err != nil && err != ErrStsNotReady {
 		return err
 	}
@@ -124,14 +124,14 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
 		c.Recorder.Event(
-			mongodb,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created MongoDB",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
 		c.Recorder.Event(
-			mongodb,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully patched MongoDB",
@@ -139,23 +139,23 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	// ensure appbinding before ensuring Restic scheduler and restore
-	_, err = c.ensureAppBinding(mongodb)
+	_, err = c.ensureAppBinding(db)
 	if err != nil {
 		log.Errorln(err)
 		return err
 	}
 
 	//======================== Wait for the initial restore =====================================
-	if mongodb.Spec.Init != nil && mongodb.Spec.Init.WaitForInitialRestore {
+	if db.Spec.Init != nil && db.Spec.Init.WaitForInitialRestore {
 		// Only wait for the first restore.
 		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
-		if !kmapi.HasCondition(mongodb.Status.Conditions, api.DatabaseProvisioned) &&
-			!kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseDataRestored) {
+		if !kmapi.HasCondition(db.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseDataRestored) {
 			// write log indicating that the database is waiting for the data to be restored by external initializer
 			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
-				mongodb.Kind,
-				mongodb.Namespace,
-				mongodb.Name,
+				db.Kind,
+				db.Namespace,
+				db.Name,
 			)
 			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
@@ -163,9 +163,9 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	}
 
 	// ensure StatsService for desired monitoring
-	if _, err := c.ensureStatsService(mongodb); err != nil {
+	if _, err := c.ensureStatsService(db); err != nil {
 		c.Recorder.Eventf(
-			mongodb,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -175,9 +175,9 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 		return nil
 	}
 
-	if err := c.manageMonitor(mongodb); err != nil {
+	if err := c.manageMonitor(db); err != nil {
 		c.Recorder.Eventf(
-			mongodb,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -191,22 +191,22 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	// If spec.Init.WaitForInitialRestore is true, but data wasn't restored successfully,
 	// process won't reach here (returned nil at the beginning). As it is here, that means data was restored successfully.
 	// No need to check for IsConditionTrue(DataRestored).
-	if kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseReplicaReady) &&
-		kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseAcceptingConnection) &&
-		kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseReady) &&
-		!kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseProvisioned) {
+	if kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReplicaReady) &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseAcceptingConnection) &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReady) &&
+		!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
 		_, err := util.UpdateMongoDBStatus(
 			context.TODO(),
 			c.DBClient.KubedbV1alpha2(),
-			mongodb.ObjectMeta,
+			db.ObjectMeta,
 			func(in *api.MongoDBStatus) *api.MongoDBStatus {
 				in.Conditions = kmapi.SetCondition(in.Conditions,
 					kmapi.Condition{
 						Type:               api.DatabaseProvisioned,
 						Status:             core.ConditionTrue,
 						Reason:             api.DatabaseSuccessfullyProvisioned,
-						ObservedGeneration: mongodb.Generation,
-						Message:            fmt.Sprintf("The MongoDB: %s/%s is successfully provisioned.", mongodb.Namespace, mongodb.Name),
+						ObservedGeneration: db.Generation,
+						Message:            fmt.Sprintf("The MongoDB: %s/%s is successfully provisioned.", db.Namespace, db.Name),
 					})
 				return in
 			},
@@ -220,10 +220,10 @@ func (c *Controller) create(mongodb *api.MongoDB) error {
 	// If the database is successfully provisioned,
 	// Set spec.Init.Initialized to true, if init!=nil.
 	// This will prevent the operator from re-initializing the database.
-	if mongodb.Spec.Init != nil &&
-		!mongodb.Spec.Init.Initialized &&
-		kmapi.IsConditionTrue(mongodb.Status.Conditions, api.DatabaseProvisioned) {
-		_, _, err := util.CreateOrPatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), mongodb.ObjectMeta, func(in *api.MongoDB) *api.MongoDB {
+	if db.Spec.Init != nil &&
+		!db.Spec.Init.Initialized &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
+		_, _, err := util.CreateOrPatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MongoDB) *api.MongoDB {
 			in.Spec.Init.Initialized = true
 			return in
 		}, metav1.PatchOptions{})

@@ -47,21 +47,21 @@ appendonly yes
 protected-mode no
 `
 
-func (c *Controller) ensureRedisConfig(redis *api.Redis) error {
+func (c *Controller) ensureRedisConfig(db *api.Redis) error {
 	// TODO: Need to support if user provided config needs to merge with our default config
-	if redis.Spec.ConfigSecret == nil {
+	if db.Spec.ConfigSecret == nil {
 		// Check if secret name exists
-		if err := c.checkSecret(redis); err != nil {
+		if err := c.checkSecret(db); err != nil {
 			return err
 		}
 
 		// create configmap for redis
-		configSecret, vt, err := c.createSecret(redis)
+		configSecret, vt, err := c.createSecret(db)
 		if err != nil {
 			return errors.Wrap(err, "Failed to CreateOrPatch configmap")
 		} else if vt != kutil.VerbUnchanged {
 			// add configmap to redis.spec.configSource
-			rd, _, err := kutildb.PatchRedis(context.TODO(), c.DBClient.KubedbV1alpha2(), redis, func(in *api.Redis) *api.Redis {
+			rd, _, err := kutildb.PatchRedis(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.Redis) *api.Redis {
 				in.Spec.ConfigSecret = &core.LocalObjectReference{
 					Name: configSecret.Name,
 				}
@@ -71,9 +71,9 @@ func (c *Controller) ensureRedisConfig(redis *api.Redis) error {
 				return errors.Wrap(err, "Failed to Patch redis while updating redis.spec.configSource")
 			}
 
-			redis.Spec.ConfigSecret = rd.Spec.ConfigSecret
+			db.Spec.ConfigSecret = rd.Spec.ConfigSecret
 			c.Recorder.Eventf(
-				redis,
+				db,
 				core.EventTypeNormal,
 				eventer.EventReasonSuccessful,
 				"Successfully %s Secret",
@@ -85,9 +85,9 @@ func (c *Controller) ensureRedisConfig(redis *api.Redis) error {
 	return nil
 }
 
-func (c *Controller) checkSecret(redis *api.Redis) error {
+func (c *Controller) checkSecret(db *api.Redis) error {
 	// Secret for Redis configuration
-	configmap, err := c.Client.CoreV1().Secrets(redis.Namespace).Get(context.TODO(), redis.ConfigSecretName(), metav1.GetOptions{})
+	configmap, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.ConfigSecretName(), metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -96,25 +96,25 @@ func (c *Controller) checkSecret(redis *api.Redis) error {
 	}
 
 	if configmap.Labels[api.LabelDatabaseKind] != api.ResourceKindRedis ||
-		configmap.Labels[api.LabelDatabaseName] != redis.Name {
-		return fmt.Errorf(`intended configmap "%v" already exists`, redis.ConfigSecretName())
+		configmap.Labels[api.LabelDatabaseName] != db.Name {
+		return fmt.Errorf(`intended configmap "%v" already exists`, db.ConfigSecretName())
 	}
 
 	return nil
 }
 
-func (c *Controller) createSecret(redis *api.Redis) (*core.Secret, kutil.VerbType, error) {
+func (c *Controller) createSecret(db *api.Redis) (*core.Secret, kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
-		Name:      redis.ConfigSecretName(),
-		Namespace: redis.Namespace,
+		Name:      db.ConfigSecretName(),
+		Namespace: db.Namespace,
 	}
 
-	owner := metav1.NewControllerRef(redis, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
 	return core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = redis.OffshootSelectors()
-		in.Annotations = redis.Spec.ServiceTemplate.Annotations
+		in.Labels = db.OffshootSelectors()
+		in.Annotations = db.Spec.ServiceTemplate.Annotations
 
 		in.StringData = map[string]string{
 			RedisConfigKey: redisConfig,

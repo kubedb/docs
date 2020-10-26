@@ -82,10 +82,10 @@ func (es *Elasticsearch) ensureStatefulSet(
 
 	statefulSetMeta := metav1.ObjectMeta{
 		Name:      stsName,
-		Namespace: es.elasticsearch.Namespace,
+		Namespace: es.db.Namespace,
 	}
 
-	owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+	owner := metav1.NewControllerRef(es.db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 	// Make a new map "labelSelector", so that it remains
 	// unchanged even if the "labels" changes.
@@ -93,11 +93,11 @@ func (es *Elasticsearch) ensureStatefulSet(
 	//	-	kubedb.com/kind: ResourceKindElasticsearch
 	//	-	kubedb.com/name: elasticsearch.Name
 	//	-	node.role.<master/data/ingest>: set
-	labelSelector := es.elasticsearch.OffshootSelectors()
+	labelSelector := es.db.OffshootSelectors()
 	labelSelector = core_util.UpsertMap(labelSelector, labels)
 
 	// Node affinity is added to support, multi-regional cluster.
-	affinity, err := parseAffinityTemplate(es.elasticsearch.Spec.PodTemplate.Spec.Affinity.DeepCopy(), nodeRole)
+	affinity, err := parseAffinityTemplate(es.db.Spec.PodTemplate.Spec.Affinity.DeepCopy(), nodeRole)
 	if err != nil {
 		return kutil.VerbUnchanged, errors.Wrap(err, "failed to parse the affinity template")
 	}
@@ -109,7 +109,7 @@ func (es *Elasticsearch) ensureStatefulSet(
 	}
 
 	// Add/Overwrite user provided initContainers
-	initContainers = core_util.UpsertContainers(initContainers, es.elasticsearch.Spec.PodTemplate.Spec.InitContainers)
+	initContainers = core_util.UpsertContainers(initContainers, es.db.Spec.PodTemplate.Spec.InitContainers)
 
 	// Get elasticsearch container.
 	// Also get monitoring sidecar if any.
@@ -124,31 +124,31 @@ func (es *Elasticsearch) ensureStatefulSet(
 	}
 
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(context.TODO(), es.kClient, statefulSetMeta, func(in *apps.StatefulSet) *apps.StatefulSet {
-		in.Labels = core_util.UpsertMap(labels, es.elasticsearch.OffshootLabels())
-		in.Annotations = es.elasticsearch.Spec.PodTemplate.Controller.Annotations
+		in.Labels = core_util.UpsertMap(labels, es.db.OffshootLabels())
+		in.Annotations = es.db.Spec.PodTemplate.Controller.Annotations
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 		in.Spec.Replicas = replicas
-		in.Spec.ServiceName = es.elasticsearch.GvrSvcName()
+		in.Spec.ServiceName = es.db.GoverningServiceName()
 
 		in.Spec.Selector = &metav1.LabelSelector{MatchLabels: labelSelector}
 		in.Spec.Template.Labels = labelSelector
 
-		in.Spec.Template.Annotations = es.elasticsearch.Spec.PodTemplate.Annotations
+		in.Spec.Template.Annotations = es.db.Spec.PodTemplate.Annotations
 
 		in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, initContainers)
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainers(in.Spec.Template.Spec.Containers, containers)
 
-		in.Spec.Template.Spec.NodeSelector = es.elasticsearch.Spec.PodTemplate.Spec.NodeSelector
+		in.Spec.Template.Spec.NodeSelector = es.db.Spec.PodTemplate.Spec.NodeSelector
 		in.Spec.Template.Spec.Affinity = affinity
-		if es.elasticsearch.Spec.PodTemplate.Spec.SchedulerName != "" {
-			in.Spec.Template.Spec.SchedulerName = es.elasticsearch.Spec.PodTemplate.Spec.SchedulerName
+		if es.db.Spec.PodTemplate.Spec.SchedulerName != "" {
+			in.Spec.Template.Spec.SchedulerName = es.db.Spec.PodTemplate.Spec.SchedulerName
 		}
-		in.Spec.Template.Spec.Tolerations = es.elasticsearch.Spec.PodTemplate.Spec.Tolerations
-		in.Spec.Template.Spec.ImagePullSecrets = es.elasticsearch.Spec.PodTemplate.Spec.ImagePullSecrets
-		in.Spec.Template.Spec.PriorityClassName = es.elasticsearch.Spec.PodTemplate.Spec.PriorityClassName
-		in.Spec.Template.Spec.Priority = es.elasticsearch.Spec.PodTemplate.Spec.Priority
-		in.Spec.Template.Spec.SecurityContext = es.elasticsearch.Spec.PodTemplate.Spec.SecurityContext
+		in.Spec.Template.Spec.Tolerations = es.db.Spec.PodTemplate.Spec.Tolerations
+		in.Spec.Template.Spec.ImagePullSecrets = es.db.Spec.PodTemplate.Spec.ImagePullSecrets
+		in.Spec.Template.Spec.PriorityClassName = es.db.Spec.PodTemplate.Spec.PriorityClassName
+		in.Spec.Template.Spec.Priority = es.db.Spec.PodTemplate.Spec.Priority
+		in.Spec.Template.Spec.SecurityContext = es.db.Spec.PodTemplate.Spec.SecurityContext
 
 		if in.Spec.Template.Spec.SecurityContext == nil {
 			in.Spec.Template.Spec.SecurityContext = &core.PodSecurityContext{
@@ -156,7 +156,7 @@ func (es *Elasticsearch) ensureStatefulSet(
 			}
 		}
 
-		in.Spec.Template.Spec.ServiceAccountName = es.elasticsearch.Spec.PodTemplate.Spec.ServiceAccountName
+		in.Spec.Template.Spec.ServiceAccountName = es.db.Spec.PodTemplate.Spec.ServiceAccountName
 
 		// Upsert volumeClaimTemplates if any
 		if pvc != nil {
@@ -209,7 +209,7 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 
 	// Default configuration files, will be stored in a temporary directory.
 	// i.e. "/elasticsearch/temp-config"
-	secretName := es.elasticsearch.ConfigSecretName()
+	secretName := es.db.ConfigSecretName()
 	volumes = core_util.UpsertVolume(volumes, core.Volume{
 		Name: "temp-esconfig",
 		VolumeSource: core.VolumeSource{
@@ -223,7 +223,7 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 	// with user provided security-config files(if any) from "config-merger" init container
 	// and later those files will be mounted on this shared volume so that elasticsearch container
 	// can use them.
-	if !es.elasticsearch.Spec.DisableSecurity {
+	if !es.db.Spec.DisableSecurity {
 		volumes = core_util.UpsertVolume(volumes, core.Volume{
 			Name: "security-config",
 			VolumeSource: core.VolumeSource{
@@ -235,12 +235,12 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 	// Upsert Volume for user provided custom configuration.
 	// These configuration will be merged to default config yaml (ie. elasticsearch.yaml)
 	// from config-merger initContainer.
-	if es.elasticsearch.Spec.ConfigSecret != nil {
+	if es.db.Spec.ConfigSecret != nil {
 		volumes = core_util.UpsertVolume(volumes, core.Volume{
 			Name: "custom-config",
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					SecretName: es.elasticsearch.Spec.ConfigSecret.Name,
+					SecretName: es.db.Spec.ConfigSecret.Name,
 				},
 			},
 		})
@@ -249,7 +249,7 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 	// Upsert Volume for data directory.
 	// If storageType is "Ephemeral", add volume of "EmptyDir" type.
 	// The storageType is default to "Durable".
-	if es.elasticsearch.Spec.StorageType == api.StorageTypeEphemeral {
+	if es.db.Spec.StorageType == api.StorageTypeEphemeral {
 		ed := core.EmptyDirVolumeSource{}
 		if esNode.Storage != nil {
 			if sz, found := esNode.Storage.Resources.Requests[core.ResourceStorage]; found {
@@ -284,16 +284,16 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 	}
 
 	// Upsert Volume for certificates
-	if es.elasticsearch.Spec.TLS == nil && !es.elasticsearch.Spec.DisableSecurity {
+	if es.db.Spec.TLS == nil && !es.db.Spec.DisableSecurity {
 		return nil, nil, errors.New("spec.TLS configuration is empty")
 	}
-	if !es.elasticsearch.Spec.DisableSecurity {
+	if !es.db.Spec.DisableSecurity {
 		// transport layer is always secured
 		volumes = core_util.UpsertVolume(volumes, core.Volume{
-			Name: es.elasticsearch.CertSecretVolumeName(api.ElasticsearchTransportCert),
+			Name: es.db.CertSecretVolumeName(api.ElasticsearchTransportCert),
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					SecretName: es.elasticsearch.MustCertSecretName(api.ElasticsearchTransportCert),
+					SecretName: es.db.MustCertSecretName(api.ElasticsearchTransportCert),
 					Items: []core.KeyToPath{
 						{
 							Key:  certlib.CACert,
@@ -313,12 +313,12 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 		})
 
 		// if security is enabled at rest layer
-		if es.elasticsearch.Spec.EnableSSL {
+		if es.db.Spec.EnableSSL {
 			volumes = core_util.UpsertVolume(volumes, core.Volume{
-				Name: es.elasticsearch.CertSecretVolumeName(api.ElasticsearchHTTPCert),
+				Name: es.db.CertSecretVolumeName(api.ElasticsearchHTTPCert),
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
-						SecretName: es.elasticsearch.MustCertSecretName(api.ElasticsearchHTTPCert),
+						SecretName: es.db.MustCertSecretName(api.ElasticsearchHTTPCert),
 						Items: []core.KeyToPath{
 							{
 								Key:  certlib.CACert,
@@ -342,15 +342,15 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 
 	// Upsert Volume for monitoring sidecar.
 	// This volume is only used for ingest nodes.
-	if es.elasticsearch.Spec.Monitor != nil &&
-		es.elasticsearch.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus &&
-		es.elasticsearch.Spec.EnableSSL &&
+	if es.db.Spec.Monitor != nil &&
+		es.db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus &&
+		es.db.Spec.EnableSSL &&
 		nodeRole == api.ElasticsearchNodeRoleIngest {
 		volumes = core_util.UpsertVolume(volumes, core.Volume{
-			Name: es.elasticsearch.CertSecretVolumeName(api.ElasticsearchMetricsExporterCert),
+			Name: es.db.CertSecretVolumeName(api.ElasticsearchMetricsExporterCert),
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					SecretName: es.elasticsearch.MustCertSecretName(api.ElasticsearchMetricsExporterCert),
+					SecretName: es.db.MustCertSecretName(api.ElasticsearchMetricsExporterCert),
 					Items: []core.KeyToPath{
 						{
 							Key:  certlib.CACert,
@@ -394,22 +394,22 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 	// Add volumeMounts for elasticsearch container
 	// 		- security config directory
 	//		- certificates directory
-	if !es.elasticsearch.Spec.DisableSecurity {
+	if !es.db.Spec.DisableSecurity {
 		volumeMount = core_util.UpsertVolumeMount(volumeMount, []core.VolumeMount{
 			{
 				Name:      "security-config",
 				MountPath: api.ElasticsearchOpendistroSecurityConfigDir,
 			},
 			{
-				Name:      es.elasticsearch.CertSecretVolumeName(api.ElasticsearchTransportCert),
-				MountPath: es.elasticsearch.CertSecretVolumeMountPath(api.ElasticsearchConfigDir, api.ElasticsearchTransportCert),
+				Name:      es.db.CertSecretVolumeName(api.ElasticsearchTransportCert),
+				MountPath: es.db.CertSecretVolumeMountPath(api.ElasticsearchConfigDir, api.ElasticsearchTransportCert),
 			},
 		}...)
 
-		if es.elasticsearch.Spec.EnableSSL {
+		if es.db.Spec.EnableSSL {
 			volumeMount = core_util.UpsertVolumeMount(volumeMount, core.VolumeMount{
-				Name:      es.elasticsearch.CertSecretVolumeName(api.ElasticsearchHTTPCert),
-				MountPath: es.elasticsearch.CertSecretVolumeMountPath(api.ElasticsearchConfigDir, api.ElasticsearchHTTPCert),
+				Name:      es.db.CertSecretVolumeName(api.ElasticsearchHTTPCert),
+				MountPath: es.db.CertSecretVolumeMountPath(api.ElasticsearchConfigDir, api.ElasticsearchHTTPCert),
 			})
 		}
 	}
@@ -434,16 +434,16 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 			},
 			Resources:      esNode.Resources,
 			VolumeMounts:   volumeMount,
-			LivenessProbe:  es.elasticsearch.Spec.PodTemplate.Spec.LivenessProbe,
-			ReadinessProbe: es.elasticsearch.Spec.PodTemplate.Spec.ReadinessProbe,
-			Lifecycle:      es.elasticsearch.Spec.PodTemplate.Spec.Lifecycle,
+			LivenessProbe:  es.db.Spec.PodTemplate.Spec.LivenessProbe,
+			ReadinessProbe: es.db.Spec.PodTemplate.Spec.ReadinessProbe,
+			Lifecycle:      es.db.Spec.PodTemplate.Spec.Lifecycle,
 		},
 	}
 
 	// upsert metrics exporter sidecar for monitoring purpose.
 	// add monitoring sidecar only for ingest nodes.
 	var err error
-	if es.elasticsearch.Spec.Monitor != nil && nodeRole == api.ElasticsearchNodeRoleIngest {
+	if es.db.Spec.Monitor != nil && nodeRole == api.ElasticsearchNodeRoleIngest {
 		containers, err = es.upsertMonitoringContainer(containers)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get monitoring container")
@@ -491,7 +491,7 @@ func (es *Elasticsearch) upsertConfigMergerInitContainer(initCon []core.Containe
 		},
 	}
 
-	if !es.elasticsearch.Spec.DisableSecurity {
+	if !es.db.Spec.DisableSecurity {
 		volumeMounts = core_util.UpsertVolumeMount(volumeMounts, core.VolumeMount{
 			Name:      "security-config",
 			MountPath: api.ElasticsearchOpendistroSecurityConfigDir,
@@ -499,7 +499,7 @@ func (es *Elasticsearch) upsertConfigMergerInitContainer(initCon []core.Containe
 	}
 
 	// mount path for custom configuration
-	if es.elasticsearch.Spec.ConfigSecret != nil {
+	if es.db.Spec.ConfigSecret != nil {
 		volumeMounts = core_util.UpsertVolumeMount(volumeMounts, core.VolumeMount{
 			Name:      "custom-config",
 			MountPath: api.ElasticsearchCustomConfigDir,
@@ -518,10 +518,10 @@ func (es *Elasticsearch) upsertConfigMergerInitContainer(initCon []core.Containe
 }
 
 func (es *Elasticsearch) checkStatefulSet(sName string) error {
-	elasticsearchName := es.elasticsearch.OffshootName()
+	elasticsearchName := es.db.OffshootName()
 
 	// StatefulSet for Elasticsearch database
-	statefulSet, err := es.kClient.AppsV1().StatefulSets(es.elasticsearch.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
+	statefulSet, err := es.kClient.AppsV1().StatefulSets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -531,7 +531,7 @@ func (es *Elasticsearch) checkStatefulSet(sName string) error {
 
 	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindElasticsearch ||
 		statefulSet.Labels[api.LabelDatabaseName] != elasticsearchName {
-		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, es.elasticsearch.Namespace, sName)
+		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, es.db.Namespace, sName)
 	}
 
 	return nil
@@ -550,7 +550,7 @@ func (es *Elasticsearch) upsertContainerEnv(envList []core.EnvVar) []core.EnvVar
 		},
 		{
 			Name:  "cluster.name",
-			Value: es.elasticsearch.Name,
+			Value: es.db.Name,
 		},
 		{
 			Name:  "network.host",
@@ -561,12 +561,12 @@ func (es *Elasticsearch) upsertContainerEnv(envList []core.EnvVar) []core.EnvVar
 	if strings.HasPrefix(es.esVersion.Spec.Version, "1.") {
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "discovery.seed_hosts",
-			Value: es.elasticsearch.MasterServiceName(),
+			Value: es.db.MasterServiceName(),
 		})
 	} else {
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "discovery.zen.ping.unicast.hosts",
-			Value: es.elasticsearch.MasterServiceName(),
+			Value: es.db.MasterServiceName(),
 		})
 	}
 
@@ -603,20 +603,20 @@ func parseAffinityTemplate(affinity *core.Affinity, nodeRole string) (*core.Affi
 // INITIAL_MASTER_NODES value for >= ES7
 func (es *Elasticsearch) getInitialMasterNodes() string {
 	var value string
-	stsName := es.elasticsearch.OffshootName()
-	replicas := types.Int32(es.elasticsearch.Spec.Replicas)
-	if es.elasticsearch.Spec.Topology != nil {
+	stsName := es.db.OffshootName()
+	replicas := types.Int32(es.db.Spec.Replicas)
+	if es.db.Spec.Topology != nil {
 		// If replicas is not provided, default to 1
-		if es.elasticsearch.Spec.Topology.Master.Replicas != nil {
-			replicas = types.Int32(es.elasticsearch.Spec.Topology.Master.Replicas)
+		if es.db.Spec.Topology.Master.Replicas != nil {
+			replicas = types.Int32(es.db.Spec.Topology.Master.Replicas)
 		} else {
 			replicas = 1
 		}
 
 		// If master.prefix is provided, name will be "GivenPrefix-ESName".
 		// The master.prefix is default to "master".
-		if es.elasticsearch.Spec.Topology.Master.Prefix != "" {
-			stsName = fmt.Sprintf("%s-%s", es.elasticsearch.Spec.Topology.Master.Prefix, stsName)
+		if es.db.Spec.Topology.Master.Prefix != "" {
+			stsName = fmt.Sprintf("%s-%s", es.db.Spec.Topology.Master.Prefix, stsName)
 		} else {
 			stsName = fmt.Sprintf("%s-%s", api.ElasticsearchMasterNodePrefix, stsName)
 		}

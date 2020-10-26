@@ -20,6 +20,7 @@ import (
 	"context"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
@@ -131,11 +132,11 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 	go c.StartAndRunControllers(stopCh)
 
 	if c.EnableMutatingWebhook {
-		cancel1, _ := reg_util.SyncMutatingWebhookCABundle(c.ClientConfig, mutatingWebhookConfig)
+		cancel1, _ := reg_util.SyncMutatingWebhookCABundle(c.ClientConfig, kubedb.MutatorGroupName)
 		defer cancel1()
 	}
 	if c.EnableValidatingWebhook {
-		cancel2, _ := reg_util.SyncValidatingWebhookCABundle(c.ClientConfig, validatingWebhookConfig)
+		cancel2, _ := reg_util.SyncValidatingWebhookCABundle(c.ClientConfig, kubedb.ValidatorGroupName)
 		defer cancel2()
 	}
 
@@ -182,34 +183,34 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	<-stopCh
 }
 
-func (c *Controller) pushFailureEvent(pgbouncer *api.PgBouncer, reason string) {
+func (c *Controller) pushFailureEvent(db *api.PgBouncer, reason string) {
 	c.recorder.Eventf(
-		pgbouncer,
+		db,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready PgBouncer: "%v". Reason: %v`,
-		pgbouncer.Name,
+		db.Name,
 		reason,
 	)
 
 	pg, err := kutildb.UpdatePgBouncerStatus(
 		context.TODO(),
 		c.DBClient.KubedbV1alpha2(),
-		pgbouncer.ObjectMeta,
+		db.ObjectMeta,
 		func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
 			in.Phase = api.DatabasePhaseNotReady
-			in.ObservedGeneration = pgbouncer.Generation
+			in.ObservedGeneration = db.Generation
 			return in
 		},
 		metav1.UpdateOptions{},
 	)
 	if err != nil {
 		c.recorder.Eventf(
-			pgbouncer,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			err.Error(),
 		)
 	}
-	pgbouncer.Status = pg.Status
+	db.Status = pg.Status
 }

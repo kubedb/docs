@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
@@ -32,10 +33,10 @@ import (
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
 
-func (c *Controller) create(proxysql *api.ProxySQL) error {
-	if err := validator.ValidateProxySQL(c.Client, c.DBClient, proxysql, true); err != nil {
+func (c *Controller) create(db *api.ProxySQL) error {
+	if err := validator.ValidateProxySQL(c.Client, c.DBClient, db, true); err != nil {
 		c.recorder.Event(
-			proxysql,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
 			err.Error(),
@@ -44,11 +45,11 @@ func (c *Controller) create(proxysql *api.ProxySQL) error {
 		return nil
 	}
 
-	if proxysql.Status.Phase == "" {
+	if db.Status.Phase == "" {
 		proxysqlUpd, err := util.UpdateProxySQLStatus(
 			context.TODO(),
 			c.DBClient.KubedbV1alpha2(),
-			proxysql.ObjectMeta,
+			db.ObjectMeta,
 			func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
 				in.Phase = api.DatabasePhaseProvisioning
 				return in
@@ -58,45 +59,45 @@ func (c *Controller) create(proxysql *api.ProxySQL) error {
 		if err != nil {
 			return err
 		}
-		proxysql.Status = proxysqlUpd.Status
+		db.Status = proxysqlUpd.Status
 	}
 
-	// create Governing Service
-	if err := c.CreateGoverningService(c.GoverningService, proxysql.Namespace); err != nil {
-		return err
+	// ensure Governing Service
+	if err := c.ensureGoverningService(db); err != nil {
+		return fmt.Errorf(`failed to create governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 
 	// Ensure ClusterRoles for statefulsets
-	if err := c.ensureRBACStuff(proxysql); err != nil {
+	if err := c.ensureRBACStuff(db); err != nil {
 		return err
 	}
 
 	// ensure database Service
-	vt1, err := c.ensureService(proxysql)
+	vt1, err := c.ensureService(db)
 	if err != nil {
 		return err
 	}
 
-	if err := c.ensureAuthSecret(proxysql); err != nil {
+	if err := c.ensureAuthSecret(db); err != nil {
 		return err
 	}
 
 	// ensure proxysql StatefulSet
-	vt2, err := c.ensureProxySQLNode(proxysql)
+	vt2, err := c.ensureProxySQLNode(db)
 	if err != nil {
 		return err
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
 		c.recorder.Event(
-			proxysql,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created ProxySQL",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
 		c.recorder.Event(
-			proxysql,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully patched ProxySQL",
@@ -106,10 +107,10 @@ func (c *Controller) create(proxysql *api.ProxySQL) error {
 	proxysqlUpd, err := util.UpdateProxySQLStatus(
 		context.TODO(),
 		c.DBClient.KubedbV1alpha2(),
-		proxysql.ObjectMeta,
+		db.ObjectMeta,
 		func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
 			in.Phase = api.DatabasePhaseReady
-			in.ObservedGeneration = proxysql.Generation
+			in.ObservedGeneration = db.Generation
 			return in
 		},
 		metav1.UpdateOptions{},
@@ -117,12 +118,12 @@ func (c *Controller) create(proxysql *api.ProxySQL) error {
 	if err != nil {
 		return err
 	}
-	proxysql.Status = proxysqlUpd.Status
+	db.Status = proxysqlUpd.Status
 
 	// ensure StatsService for desired monitoring
-	if _, err := c.ensureStatsService(proxysql); err != nil {
+	if _, err := c.ensureStatsService(db); err != nil {
 		c.recorder.Eventf(
-			proxysql,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -132,9 +133,9 @@ func (c *Controller) create(proxysql *api.ProxySQL) error {
 		return nil
 	}
 
-	if err := c.manageMonitor(proxysql); err != nil {
+	if err := c.manageMonitor(db); err != nil {
 		c.recorder.Eventf(
-			proxysql,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -147,23 +148,23 @@ func (c *Controller) create(proxysql *api.ProxySQL) error {
 	return nil
 }
 
-func (c *Controller) terminate(proxysql *api.ProxySQL) error {
-	owner := metav1.NewControllerRef(proxysql, api.SchemeGroupVersion.WithKind(api.ResourceKindProxySQL))
+func (c *Controller) terminate(db *api.ProxySQL) error {
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindProxySQL))
 
 	// delete PVC
-	selector := labels.SelectorFromSet(proxysql.OffshootSelectors())
+	selector := labels.SelectorFromSet(db.OffshootSelectors())
 	if err := dynamic_util.EnsureOwnerReferenceForSelector(
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
-		proxysql.Namespace,
+		db.Namespace,
 		selector,
 		owner); err != nil {
 		return err
 	}
 
-	if proxysql.Spec.Monitor != nil {
-		if _, err := c.deleteMonitor(proxysql); err != nil {
+	if db.Spec.Monitor != nil {
+		if _, err := c.deleteMonitor(db); err != nil {
 			log.Errorln(err)
 			return nil
 		}

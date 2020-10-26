@@ -113,26 +113,26 @@ func (a *MongoDBMutator) Admit(req *admission.AdmissionRequest) *admission.Admis
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a MongoDB database
-func (a *MongoDBMutator) setDefaultValues(extClient cs.Interface, mongodb *api.MongoDB) (runtime.Object, error) {
-	if mongodb.Spec.Version == "" {
+func (a *MongoDBMutator) setDefaultValues(extClient cs.Interface, db *api.MongoDB) (runtime.Object, error) {
+	if db.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
 	}
 
-	if mongodb.Spec.Halted {
-		if mongodb.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
+	if db.Spec.Halted {
+		if db.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
 			return nil, errors.New(`Can't halt, since termination policy is 'DoNotTerminate'`)
 		}
-		mongodb.Spec.TerminationPolicy = api.TerminationPolicyHalt
+		db.Spec.TerminationPolicy = api.TerminationPolicyHalt
 	}
 
-	mgVersion, err := getMongoDBVersion(extClient, mongodb.Spec.Version)
+	mgVersion, err := getMongoDBVersion(extClient, db.Spec.Version)
 	if err != nil {
 		return nil, err
 	}
 
-	mongodb.SetDefaults(mgVersion, a.ClusterTopology)
+	db.SetDefaults(mgVersion, a.ClusterTopology)
 
-	return mongodb, nil
+	return db, nil
 }
 
 // getMongoDBVersion returns MongoDBVersion.

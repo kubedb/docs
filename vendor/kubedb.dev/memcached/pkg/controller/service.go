@@ -18,14 +18,12 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/appscode/go/log"
 	core "k8s.io/api/core/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
@@ -34,25 +32,46 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-var defaultDBPort = core.ServicePort{
-	Name:       "db",
-	Protocol:   core.ProtocolTCP,
-	Port:       11211,
-	TargetPort: intstr.FromString("db"),
+func (c *Controller) ensureGoverningService(db *api.Memcached) error {
+	meta := metav1.ObjectMeta{
+		Name:      db.GoverningServiceName(),
+		Namespace: db.Namespace,
+	}
+
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMemcached))
+
+	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
+		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
+		in.Labels = db.OffshootLabels()
+
+		in.Spec.Type = core.ServiceTypeClusterIP
+		in.Spec.ClusterIP = core.ClusterIPNone
+		in.Spec.Selector = db.OffshootSelectors()
+		in.Spec.PublishNotReadyAddresses = true
+
+		return in
+	}, metav1.PatchOptions{})
+	if err == nil && (vt == kutil.VerbCreated || vt == kutil.VerbPatched) {
+		c.Recorder.Eventf(
+			db,
+			core.EventTypeNormal,
+			eventer.EventReasonSuccessful,
+			"Successfully %s governing service",
+			vt,
+		)
+	}
+
+	return err
 }
 
-func (c *Controller) ensureService(memcached *api.Memcached) (kutil.VerbType, error) {
-	// Check if service name exists
-	if err := c.checkService(memcached, memcached.ServiceName()); err != nil {
-		return kutil.VerbUnchanged, err
-	}
+func (c *Controller) ensureService(db *api.Memcached) (kutil.VerbType, error) {
 	// create database Service
-	vt, err := c.createService(memcached)
+	vt, err := c.ensurePrimaryService(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
 		c.Recorder.Eventf(
-			memcached,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %s Service",
@@ -62,54 +81,44 @@ func (c *Controller) ensureService(memcached *api.Memcached) (kutil.VerbType, er
 	return vt, nil
 }
 
-func (c *Controller) checkService(memcached *api.Memcached, serviceName string) error {
-	service, err := c.Client.CoreV1().Services(memcached.Namespace).Get(context.TODO(), serviceName, metav1.GetOptions{})
-	if err != nil {
-		if kerr.IsNotFound(err) {
-			return nil
-		}
-		return err
-	}
-
-	if service.Labels[api.LabelDatabaseKind] != api.ResourceKindMemcached ||
-		service.Labels[api.LabelDatabaseName] != memcached.Name {
-		return fmt.Errorf(`intended service "%v/%v" already exists`, memcached.Namespace, serviceName)
-	}
-
-	return nil
-}
-
-func (c *Controller) createService(memcached *api.Memcached) (kutil.VerbType, error) {
+func (c *Controller) ensurePrimaryService(db *api.Memcached) (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
-		Name:      memcached.OffshootName(),
-		Namespace: memcached.Namespace,
+		Name:      db.ServiceName(),
+		Namespace: db.Namespace,
 	}
 
-	owner := metav1.NewControllerRef(memcached, api.SchemeGroupVersion.WithKind(api.ResourceKindMemcached))
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMemcached))
 
 	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Labels = memcached.OffshootLabels()
-		in.Annotations = memcached.Spec.ServiceTemplate.Annotations
+		in.Labels = db.OffshootLabels()
+		in.Annotations = db.Spec.ServiceTemplate.Annotations
 
-		in.Spec.Selector = memcached.OffshootSelectors()
+		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Ports = ofst.MergeServicePorts(
-			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{defaultDBPort}),
-			memcached.Spec.ServiceTemplate.Spec.Ports,
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+				{
+					Name:       api.MemcachedPrimaryServicePortName,
+					Protocol:   core.ProtocolTCP,
+					Port:       api.MemcachedDatabasePort,
+					TargetPort: intstr.FromString(api.MySQLDatabasePortName),
+				},
+			}),
+			db.Spec.ServiceTemplate.Spec.Ports,
 		)
 
-		if memcached.Spec.ServiceTemplate.Spec.ClusterIP != "" {
-			in.Spec.ClusterIP = memcached.Spec.ServiceTemplate.Spec.ClusterIP
+		if db.Spec.ServiceTemplate.Spec.ClusterIP != "" {
+			in.Spec.ClusterIP = db.Spec.ServiceTemplate.Spec.ClusterIP
 		}
-		if memcached.Spec.ServiceTemplate.Spec.Type != "" {
-			in.Spec.Type = memcached.Spec.ServiceTemplate.Spec.Type
+		if db.Spec.ServiceTemplate.Spec.Type != "" {
+			in.Spec.Type = db.Spec.ServiceTemplate.Spec.Type
 		}
-		in.Spec.ExternalIPs = memcached.Spec.ServiceTemplate.Spec.ExternalIPs
-		in.Spec.LoadBalancerIP = memcached.Spec.ServiceTemplate.Spec.LoadBalancerIP
-		in.Spec.LoadBalancerSourceRanges = memcached.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
-		in.Spec.ExternalTrafficPolicy = memcached.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
-		if memcached.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
-			in.Spec.HealthCheckNodePort = memcached.Spec.ServiceTemplate.Spec.HealthCheckNodePort
+		in.Spec.ExternalIPs = db.Spec.ServiceTemplate.Spec.ExternalIPs
+		in.Spec.LoadBalancerIP = db.Spec.ServiceTemplate.Spec.LoadBalancerIP
+		in.Spec.LoadBalancerSourceRanges = db.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
+		in.Spec.ExternalTrafficPolicy = db.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
+		if db.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
+			in.Spec.HealthCheckNodePort = db.Spec.ServiceTemplate.Spec.HealthCheckNodePort
 		}
 		return in
 	}, metav1.PatchOptions{})
@@ -121,11 +130,6 @@ func (c *Controller) ensureStatsService(db *api.Memcached) (kutil.VerbType, erro
 	if db.Spec.Monitor == nil || db.Spec.Monitor.Agent.Vendor() != mona.VendorPrometheus {
 		log.Infoln("spec.monitor.agent is not provided by prometheus.io")
 		return kutil.VerbUnchanged, nil
-	}
-
-	// Check if Stats Service name exists
-	if err := c.checkService(db, db.StatsService().ServiceName()); err != nil {
-		return kutil.VerbUnchanged, err
 	}
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMemcached))

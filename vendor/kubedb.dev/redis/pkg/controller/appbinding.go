@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
@@ -25,14 +26,21 @@ import (
 
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_util "kmodules.xyz/custom-resources/client/clientset/versioned/typed/appcatalog/v1alpha1/util"
+	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
 func (c *Controller) ensureAppBinding(db *api.Redis) (kutil.VerbType, error) {
+	port, err := c.GetPrimaryServicePort(db)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
 	appmeta := db.AppBindingMeta()
 
 	meta := metav1.ObjectMeta{
@@ -53,10 +61,15 @@ func (c *Controller) ensureAppBinding(db *api.Redis) (kutil.VerbType, error) {
 
 		in.Spec.Type = appmeta.Type()
 		in.Spec.Version = redisVersion.Spec.Version
+
+		scheme := "redis"
+		if db.Spec.TLS != nil {
+			scheme = "rediss"
+		}
 		in.Spec.ClientConfig.Service = &appcat.ServiceReference{
-			Scheme: "redis",
+			Scheme: scheme,
 			Name:   db.ServiceName(),
-			Port:   defaultDBPort.Port,
+			Port:   port,
 		}
 		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
 
@@ -75,4 +88,21 @@ func (c *Controller) ensureAppBinding(db *api.Redis) (kutil.VerbType, error) {
 		)
 	}
 	return vt, nil
+}
+
+func (c *Controller) GetPrimaryServicePort(db *api.Redis) (int32, error) {
+	ports := ofst.MergeServicePorts([]core.ServicePort{
+		{
+			Name:       api.RedisPrimaryServicePortName,
+			Port:       api.RedisDatabasePort,
+			TargetPort: intstr.FromString(api.RedisDatabasePortName),
+		},
+	}, db.Spec.ServiceTemplate.Spec.Ports)
+
+	for _, p := range ports {
+		if p.Name == api.RedisPrimaryServicePortName {
+			return p.Port, nil
+		}
+	}
+	return 0, fmt.Errorf("failed to detect primary port for Redis %s/%s", db.Namespace, db.Name)
 }

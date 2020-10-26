@@ -172,13 +172,13 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	log.Infoln("Stopping KubeDB controller")
 }
 
-func (c *Controller) pushFailureEvent(elasticsearch *api.Elasticsearch, reason string) {
+func (c *Controller) pushFailureEvent(db *api.Elasticsearch, reason string) {
 	c.Recorder.Eventf(
-		elasticsearch,
+		db,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready Elasticsearch: "%v". Reason: %v`,
-		elasticsearch.Name,
+		db.Name,
 		reason,
 	)
 }

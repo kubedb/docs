@@ -40,13 +40,13 @@ const (
 	DATA_SOURCE_VOLUME_MOUNTPATH   = "/data"
 )
 
-func (c *Controller) ensureStatefulSet(memcached *api.Memcached) (kutil.VerbType, error) {
-	if err := c.checkStatefulSet(memcached); err != nil {
+func (c *Controller) ensureStatefulSet(db *api.Memcached) (kutil.VerbType, error) {
+	if err := c.checkStatefulSet(db); err != nil {
 		return kutil.VerbUnchanged, err
 	}
 
 	// Create statefulSet for Memcached database
-	sts, vt, err := c.createStatefulSet(memcached)
+	sts, vt, err := c.createStatefulSet(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
@@ -56,7 +56,7 @@ func (c *Controller) ensureStatefulSet(memcached *api.Memcached) (kutil.VerbType
 			return kutil.VerbUnchanged, err
 		}
 		c.Recorder.Eventf(
-			memcached,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully %v StatefulSet",
@@ -71,9 +71,9 @@ func (c *Controller) ensureStatefulSet(memcached *api.Memcached) (kutil.VerbType
 	return vt, nil
 }
 
-func (c *Controller) checkStatefulSet(memcached *api.Memcached) error {
+func (c *Controller) checkStatefulSet(db *api.Memcached) error {
 	// StatefulSet for Memcached database
-	sts, err := c.Client.AppsV1().StatefulSets(memcached.Namespace).Get(context.TODO(), memcached.OffshootName(), metav1.GetOptions{})
+	sts, err := c.Client.AppsV1().StatefulSets(db.Namespace).Get(context.TODO(), db.OffshootName(), metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -81,8 +81,8 @@ func (c *Controller) checkStatefulSet(memcached *api.Memcached) error {
 		return err
 	}
 	if sts.Labels[api.LabelDatabaseKind] != api.ResourceKindMemcached ||
-		sts.Labels[api.LabelDatabaseName] != memcached.Name {
-		return fmt.Errorf(`intended sts "%v/%v" already exists`, memcached.Namespace, memcached.OffshootName())
+		sts.Labels[api.LabelDatabaseName] != db.Name {
+		return fmt.Errorf(`intended sts "%v/%v" already exists`, db.Namespace, db.OffshootName())
 	}
 	return nil
 }
@@ -120,8 +120,8 @@ func (c *Controller) createStatefulSet(db *api.Memcached) (*apps.StatefulSet, ku
 			Args:            db.Spec.PodTemplate.Spec.Args,
 			Ports: []core.ContainerPort{
 				{
-					Name:          "db",
-					ContainerPort: 11211,
+					Name:          api.MySQLDatabasePortName,
+					ContainerPort: api.MemcachedDatabasePort,
 					Protocol:      core.ProtocolTCP,
 				},
 			},
@@ -175,10 +175,10 @@ func (c *Controller) createStatefulSet(db *api.Memcached) (*apps.StatefulSet, ku
 }
 
 // upsertUserEnv add/overwrite env from user provided env in crd spec
-func upsertUserEnv(sts *apps.StatefulSet, memcached *api.Memcached) *apps.StatefulSet {
+func upsertUserEnv(sts *apps.StatefulSet, db *api.Memcached) *apps.StatefulSet {
 	for i, container := range sts.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMemcached {
-			sts.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, memcached.Spec.PodTemplate.Spec.Env...)
+			sts.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Env...)
 			return sts
 		}
 	}
@@ -186,8 +186,8 @@ func upsertUserEnv(sts *apps.StatefulSet, memcached *api.Memcached) *apps.Statef
 }
 
 // upsertCustomConfig insert custom configuration volume if provided.
-func upsertCustomConfig(sts *apps.StatefulSet, memcached *api.Memcached) *apps.StatefulSet {
-	if memcached.Spec.ConfigSecret != nil {
+func upsertCustomConfig(sts *apps.StatefulSet, db *api.Memcached) *apps.StatefulSet {
+	if db.Spec.ConfigSecret != nil {
 		for i, container := range sts.Spec.Template.Spec.Containers {
 			if container.Name == api.ResourceSingularMemcached {
 
@@ -204,7 +204,7 @@ func upsertCustomConfig(sts *apps.StatefulSet, memcached *api.Memcached) *apps.S
 					Name: CONFIG_SOURCE_VOLUME,
 					VolumeSource: core.VolumeSource{
 						Secret: &core.SecretVolumeSource{
-							SecretName: memcached.Spec.ConfigSecret.Name,
+							SecretName: db.Spec.ConfigSecret.Name,
 						},
 					},
 				}
@@ -222,8 +222,8 @@ func upsertCustomConfig(sts *apps.StatefulSet, memcached *api.Memcached) *apps.S
 
 // upsertDataVolume insert additional data volume if provided and ensures that it is useable
 // by memcached.
-func upsertDataVolume(sts *apps.StatefulSet, memcached *api.Memcached, memcachedImage string) *apps.StatefulSet {
-	if memcached.Spec.DataVolume != nil {
+func upsertDataVolume(sts *apps.StatefulSet, db *api.Memcached, memcachedImage string) *apps.StatefulSet {
+	if db.Spec.DataVolume != nil {
 		dataVolumeMount := core.VolumeMount{
 			Name:      DATA_SOURCE_VOLUME,
 			MountPath: DATA_SOURCE_VOLUME_MOUNTPATH,
@@ -237,7 +237,7 @@ func upsertDataVolume(sts *apps.StatefulSet, memcached *api.Memcached, memcached
 
 				dataVolume := core.Volume{
 					Name:         DATA_SOURCE_VOLUME,
-					VolumeSource: *memcached.Spec.DataVolume,
+					VolumeSource: *db.Spec.DataVolume,
 				}
 
 				volumes := sts.Spec.Template.Spec.Volumes

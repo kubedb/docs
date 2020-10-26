@@ -59,9 +59,9 @@ func (c *Controller) waitUntilHalted(db *api.Elasticsearch) error {
 	return nil
 }
 
-func (c *Controller) waitUntilRBACStuffDeleted(elasticsearch *api.Elasticsearch) error {
+func (c *Controller) waitUntilRBACStuffDeleted(db *api.Elasticsearch) error {
 	// Delete ServiceAccount
-	if err := core_util.WaitUntillServiceAccountDeleted(context.TODO(), c.Client, elasticsearch.ObjectMeta); err != nil {
+	if err := core_util.WaitUntillServiceAccountDeleted(context.TODO(), c.Client, db.ObjectMeta); err != nil {
 		return err
 	}
 	return nil

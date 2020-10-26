@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
@@ -34,10 +35,10 @@ import (
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
 
-func (c *Controller) create(redis *api.Redis) error {
-	if err := validator.ValidateRedis(c.Client, c.DBClient, redis, true); err != nil {
+func (c *Controller) create(db *api.Redis) error {
+	if err := validator.ValidateRedis(c.Client, c.DBClient, db, true); err != nil {
 		c.Recorder.Event(
-			redis,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
 			err.Error(),
@@ -46,125 +47,124 @@ func (c *Controller) create(redis *api.Redis) error {
 		return nil // user error so just record error and don't retry.
 	}
 
-	if redis.Status.Phase == "" {
-		rd, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+	if db.Status.Phase == "" {
+		rd, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 			in.Phase = api.DatabasePhaseProvisioning
 			return in
 		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
 		}
-		redis.Status = rd.Status
+		db.Status = rd.Status
 	}
 
-	// create Governing Service
-	governingService := c.GoverningService
-	if err := c.CreateGoverningService(governingService, redis.Namespace); err != nil {
-		return err
+	// ensure Governing Service
+	if err := c.ensureGoverningService(db); err != nil {
+		return fmt.Errorf(`failed to create governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 
 	// ensure ConfigMap for redis configuration file (i.e. redis.conf)
-	if redis.Spec.Mode == api.RedisModeCluster {
-		if err := c.ensureRedisConfig(redis); err != nil {
+	if db.Spec.Mode == api.RedisModeCluster {
+		if err := c.ensureRedisConfig(db); err != nil {
 			return err
 		}
 	}
 
 	// Ensure ClusterRoles for statefulsets
-	if err := c.ensureRBACStuff(redis); err != nil {
+	if err := c.ensureRBACStuff(db); err != nil {
 		return err
 	}
 
 	// ensure database Service
-	vt1, err := c.ensureService(redis)
+	vt1, err := c.ensureService(db)
 	if err != nil {
 		return err
 	}
 
 	// wait for  Certificates secrets
-	if redis.Spec.TLS != nil {
+	if db.Spec.TLS != nil {
 		ok, err := dynamic_util.ResourcesExists(
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
-			redis.Namespace,
-			redis.MustCertSecretName(api.RedisServerCert),
-			redis.MustCertSecretName(api.RedisClientCert),
-			redis.MustCertSecretName(api.RedisMetricsExporterCert),
+			db.Namespace,
+			db.MustCertSecretName(api.RedisServerCert),
+			db.MustCertSecretName(api.RedisClientCert),
+			db.MustCertSecretName(api.RedisMetricsExporterCert),
 		)
 		if err != nil {
 			return err
 		}
 		if !ok {
-			log.Infof("wait for all certificate secrets for Redis %s/%s", redis.Namespace, redis.Name)
+			log.Infof("wait for all certificate secrets for Redis %s/%s", db.Namespace, db.Name)
 			return nil
 		}
 	}
 
 	// ensure database StatefulSet
-	vt2, err := c.ensureRedisNodes(redis)
+	vt2, err := c.ensureRedisNodes(db)
 	if err != nil {
 		return err
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
 		c.Recorder.Event(
-			redis,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created Redis",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
 		c.Recorder.Event(
-			redis,
+			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully patched Redis",
 		)
 	}
 
-	_, err = c.ensureAppBinding(redis)
+	_, err = c.ensureAppBinding(db)
 	if err != nil {
 		log.Errorln(err)
 		return err
 	}
 
 	//======================== Wait for the initial restore =====================================
-	if redis.Spec.Init != nil && redis.Spec.Init.WaitForInitialRestore {
+	if db.Spec.Init != nil && db.Spec.Init.WaitForInitialRestore {
 		// Only wait for the first restore.
 		// For initial restore, "Provisioned" condition won't exist and "DataRestored" condition either won't exist or will be "False".
-		if !kmapi.HasCondition(redis.Status.Conditions, api.DatabaseProvisioned) &&
-			!kmapi.IsConditionTrue(redis.Status.Conditions, api.DatabaseDataRestored) {
+		if !kmapi.HasCondition(db.Status.Conditions, api.DatabaseProvisioned) &&
+			!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseDataRestored) {
 			// write log indicating that the database is waiting for the data to be restored by external initializer
 			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
-				redis.Kind,
-				redis.Namespace,
-				redis.Name,
+				db.Kind,
+				db.Namespace,
+				db.Name,
 			)
 			// Rest of the processing will execute after the the restore process completed. So, just return for now.
 			return nil
 		}
 	}
 
-	rd, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+	rd, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseReady
-		in.ObservedGeneration = redis.Generation
+		in.ObservedGeneration = db.Generation
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
 		c.Recorder.Eventf(
-			redis,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			err.Error(),
 		)
 		return err
 	}
-	redis.Status = rd.Status
+	db.Status = rd.Status
 
 	// ensure StatsService for desired monitoring
-	if _, err := c.ensureStatsService(redis); err != nil {
+	if _, err := c.ensureStatsService(db); err != nil {
 		c.Recorder.Eventf(
-			redis,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -174,9 +174,9 @@ func (c *Controller) create(redis *api.Redis) error {
 		return nil
 	}
 
-	if err := c.manageMonitor(redis); err != nil {
+	if err := c.manageMonitor(db); err != nil {
 		c.Recorder.Eventf(
-			redis,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
 			"Failed to manage monitoring system. Reason: %v",
@@ -211,23 +211,23 @@ func (c *Controller) halt(db *api.Redis) error {
 	return nil
 }
 
-func (c *Controller) terminate(redis *api.Redis) error {
+func (c *Controller) terminate(db *api.Redis) error {
 	// If TerminationPolicy is "halt", keep PVCs,Secrets intact.
-	if redis.Spec.TerminationPolicy == api.TerminationPolicyHalt {
-		if err := c.removeOwnerReferenceFromOffshoots(redis); err != nil {
+	if db.Spec.TerminationPolicy == api.TerminationPolicyHalt {
+		if err := c.removeOwnerReferenceFromOffshoots(db); err != nil {
 			return err
 		}
 	} else {
 		// If TerminationPolicy is "wipeOut", delete everything (ie, PVCs,Secrets,Snapshots).
 		// If TerminationPolicy is "delete", delete PVCs and keep snapshots,secrets intact.
 		// In both these cases, don't create dormantdatabase
-		if err := c.setOwnerReferenceToOffshoots(redis); err != nil {
+		if err := c.setOwnerReferenceToOffshoots(db); err != nil {
 			return err
 		}
 	}
 
-	if redis.Spec.Monitor != nil {
-		if err := c.deleteMonitor(redis); err != nil {
+	if db.Spec.Monitor != nil {
+		if err := c.deleteMonitor(db); err != nil {
 			log.Errorln(err)
 			return nil
 		}
@@ -235,14 +235,14 @@ func (c *Controller) terminate(redis *api.Redis) error {
 	return nil
 }
 
-func (c *Controller) setOwnerReferenceToOffshoots(redis *api.Redis) error {
-	owner := metav1.NewControllerRef(redis, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
-	selector := labels.SelectorFromSet(redis.OffshootSelectors())
+func (c *Controller) setOwnerReferenceToOffshoots(db *api.Redis) error {
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
+	selector := labels.SelectorFromSet(db.OffshootSelectors())
 
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
-	if redis.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		if err := c.wipeOutDatabase(redis.ObjectMeta, c.GetRedisSecrets(redis), owner); err != nil {
+	if db.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
+		if err := c.wipeOutDatabase(db.ObjectMeta, c.GetRedisSecrets(db), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
 	} else {
@@ -251,9 +251,9 @@ func (c *Controller) setOwnerReferenceToOffshoots(redis *api.Redis) error {
 			context.TODO(),
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
-			redis.Namespace,
-			c.GetRedisSecrets(redis),
-			redis); err != nil {
+			db.Namespace,
+			c.GetRedisSecrets(db),
+			db); err != nil {
 			return err
 		}
 	}
@@ -263,30 +263,30 @@ func (c *Controller) setOwnerReferenceToOffshoots(redis *api.Redis) error {
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
-		redis.Namespace,
+		db.Namespace,
 		selector,
 		owner)
 }
 
-func (c *Controller) removeOwnerReferenceFromOffshoots(redis *api.Redis) error {
+func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.Redis) error {
 	// First, Get LabelSelector for Other Components
-	labelSelector := labels.SelectorFromSet(redis.OffshootSelectors())
+	labelSelector := labels.SelectorFromSet(db.OffshootSelectors())
 	if err := dynamic_util.RemoveOwnerReferenceForItems(
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
-		redis.Namespace,
-		c.GetRedisSecrets(redis),
-		redis); err != nil {
+		db.Namespace,
+		c.GetRedisSecrets(db),
+		db); err != nil {
 		return err
 	}
 	if err := dynamic_util.RemoveOwnerReferenceForSelector(
 		context.TODO(),
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("persistentvolumeclaims"),
-		redis.Namespace,
+		db.Namespace,
 		labelSelector,
-		redis); err != nil {
+		db); err != nil {
 		return err
 	}
 	return nil

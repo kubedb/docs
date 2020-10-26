@@ -34,8 +34,7 @@ import (
 )
 
 const (
-	defaultListenPort = int32(5432)
-	defaultPoolMode   = "session"
+	defaultPoolMode = "session"
 )
 
 type PgBouncerMutator struct {
@@ -110,22 +109,22 @@ func (a *PgBouncerMutator) Admit(req *admission.AdmissionRequest) *admission.Adm
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a PgBouncer database
-func setDefaultValues(pgbouncer *api.PgBouncer) runtime.Object {
-	if pgbouncer.Spec.Replicas == nil {
-		pgbouncer.Spec.Replicas = types.Int32P(1)
+func setDefaultValues(db *api.PgBouncer) runtime.Object {
+	if db.Spec.Replicas == nil {
+		db.Spec.Replicas = types.Int32P(1)
 	}
 
 	//TODO: Make sure an image path is set
 
-	if pgbouncer.Spec.ConnectionPool != nil {
-		if pgbouncer.Spec.ConnectionPool.Port == nil {
-			pgbouncer.Spec.ConnectionPool.Port = types.Int32P(defaultListenPort)
+	if db.Spec.ConnectionPool != nil {
+		if db.Spec.ConnectionPool.Port == nil {
+			db.Spec.ConnectionPool.Port = types.Int32P(api.PgBouncerDatabasePort)
 		}
-		if pgbouncer.Spec.ConnectionPool.PoolMode == "" {
-			pgbouncer.Spec.ConnectionPool.PoolMode = defaultPoolMode
+		if db.Spec.ConnectionPool.PoolMode == "" {
+			db.Spec.ConnectionPool.PoolMode = defaultPoolMode
 		}
 	}
-	pgbouncer.SetDefaults()
+	db.SetDefaults()
 
-	return pgbouncer
+	return db
 }

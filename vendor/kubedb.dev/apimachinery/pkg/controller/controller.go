@@ -81,8 +81,6 @@ type Config struct {
 	StsInformer cache.SharedIndexInformer
 	StsLister   appslister.StatefulSetLister
 
-	OperatorNamespace       string
-	GoverningService        string
 	ResyncPeriod            time.Duration
 	ReadinessProbeInterval  time.Duration
 	MaxNumRequeues          int

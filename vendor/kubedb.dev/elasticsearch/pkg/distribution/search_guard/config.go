@@ -87,7 +87,7 @@ searchguard.ssl.http.enabled: false
 `
 
 func (es *Elasticsearch) EnsureDefaultConfig() error {
-	secret, err := es.findSecret(es.elasticsearch.ConfigSecretName())
+	secret, err := es.findSecret(es.db.ConfigSecretName())
 	if err != nil {
 		return err
 	}
@@ -105,11 +105,11 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 		// should be synced.
 		ctrl := metav1.GetControllerOf(secret)
 		if ctrl != nil &&
-			ctrl.Kind == api.ResourceKindElasticsearch && ctrl.Name == es.elasticsearch.Name {
+			ctrl.Kind == api.ResourceKindElasticsearch && ctrl.Name == es.db.Name {
 
 			// sync labels
 			if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secret.ObjectMeta, func(in *core.Secret) *core.Secret {
-				in.Labels = core_util.UpsertMap(in.Labels, es.elasticsearch.OffshootLabels())
+				in.Labels = core_util.UpsertMap(in.Labels, es.db.OffshootLabels())
 				return in
 			}, metav1.PatchOptions{}); err != nil {
 				return err
@@ -121,15 +121,15 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 
 	// config secret isn't created yet.
 	// let's create it.
-	owner := metav1.NewControllerRef(es.elasticsearch, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
+	owner := metav1.NewControllerRef(es.db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 	secretMeta := metav1.ObjectMeta{
-		Name:      es.elasticsearch.ConfigSecretName(),
-		Namespace: es.elasticsearch.Namespace,
+		Name:      es.db.ConfigSecretName(),
+		Namespace: es.db.Namespace,
 	}
 
 	var config, inUserConfig, rolesMapping string
 
-	if !es.elasticsearch.Spec.DisableSecurity {
+	if !es.db.Spec.DisableSecurity {
 		config = searchguard_security_enabled
 
 		// password for default users: admin, kibanaserver, etc.
@@ -144,21 +144,21 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 		}
 
 		// If rest layer is secured with certs
-		if es.elasticsearch.Spec.EnableSSL {
-			if es.elasticsearch.Spec.TLS == nil {
+		if es.db.Spec.EnableSSL {
+			if es.db.Spec.TLS == nil {
 				return errors.New("spec.TLS configuration is empty")
 			}
 
 			// Get transport layer cert secret.
 			// Parse the tls.cert to extract the nodeDNs.
-			sName, exist := api_util.GetCertificateSecretName(es.elasticsearch.Spec.TLS.Certificates, string(api.ElasticsearchTransportCert))
+			sName, exist := api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchTransportCert))
 			if !exist {
 				return errors.New("transport-cert secret is missing")
 			}
 
-			cSecret, err := es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
+			cSecret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.elasticsearch.Namespace, sName))
+				return errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.db.Namespace, sName))
 			}
 
 			nodesDN := ""
@@ -172,14 +172,14 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 
 			// Get searchguard admin cert secret.
 			// Parse the tls.cert to extract the adminDNs.
-			sName, exist = api_util.GetCertificateSecretName(es.elasticsearch.Spec.TLS.Certificates, string(api.ElasticsearchAdminCert))
+			sName, exist = api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchAdminCert))
 			if !exist {
 				return errors.New("admin-cert secret is missing")
 			}
 
-			cSecret, err = es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
+			cSecret, err = es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.elasticsearch.Namespace, sName))
+				return errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.db.Namespace, sName))
 			}
 
 			adminDN := ""
@@ -207,7 +207,7 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 	}
 
 	if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secretMeta, func(in *core.Secret) *core.Secret {
-		in.Labels = core_util.UpsertMap(in.Labels, es.elasticsearch.OffshootLabels())
+		in.Labels = core_util.UpsertMap(in.Labels, es.db.OffshootLabels())
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Data = data
 		return in
@@ -219,7 +219,7 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 }
 
 func (es *Elasticsearch) getInternalUserConfig() (string, error) {
-	userList := es.elasticsearch.Spec.InternalUsers
+	userList := es.db.Spec.InternalUsers
 	if userList == nil {
 		return "", errors.New("spec.internalUsers is empty")
 	}
@@ -229,14 +229,14 @@ func (es *Elasticsearch) getInternalUserConfig() (string, error) {
 		var err error
 
 		if username == string(api.ElasticsearchInternalUserAdmin) {
-			pass, err = es.getPasswordFromSecret(es.elasticsearch.Spec.AuthSecret.Name)
+			pass, err = es.getPasswordFromSecret(es.db.Spec.AuthSecret.Name)
 			if err != nil {
-				return "", errors.Wrap(err, fmt.Sprintf("failed to get password from secret: %s/%s", es.elasticsearch.Namespace, es.elasticsearch.Spec.AuthSecret.Name))
+				return "", errors.Wrap(err, fmt.Sprintf("failed to get password from secret: %s/%s", es.db.Namespace, es.db.Spec.AuthSecret.Name))
 			}
 		} else {
-			pass, err = es.getPasswordFromSecret(es.elasticsearch.UserCredSecretName(username))
+			pass, err = es.getPasswordFromSecret(es.db.UserCredSecretName(username))
 			if err != nil {
-				return "", errors.Wrap(err, fmt.Sprintf("failed to get password from secret: %s/%s", es.elasticsearch.Namespace, es.elasticsearch.UserCredSecretName(username)))
+				return "", errors.Wrap(err, fmt.Sprintf("failed to get password from secret: %s/%s", es.db.Namespace, es.db.UserCredSecretName(username)))
 			}
 		}
 
@@ -255,7 +255,7 @@ func (es *Elasticsearch) getInternalUserConfig() (string, error) {
 }
 
 func (es *Elasticsearch) getRolesMapping() (string, error) {
-	rolesMapping := es.elasticsearch.Spec.RolesMapping
+	rolesMapping := es.db.Spec.RolesMapping
 	// if rolesMapping is nil, return empty string
 	// no need to  perform yaml.Marshal().
 	// coz it will generate ( `{}` ).
@@ -272,7 +272,7 @@ func (es *Elasticsearch) getRolesMapping() (string, error) {
 }
 
 func (es *Elasticsearch) getPasswordFromSecret(sName string) (string, error) {
-	secret, err := es.kClient.CoreV1().Secrets(es.elasticsearch.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
+	secret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
 	if err != nil {
 		return "", err
 	}
@@ -281,5 +281,5 @@ func (es *Elasticsearch) getPasswordFromSecret(sName string) (string, error) {
 		return string(value), nil
 	}
 
-	return "", errors.New(fmt.Sprintf("password is missing in secret: %s/%s", es.elasticsearch.Namespace, sName))
+	return "", errors.New(fmt.Sprintf("password is missing in secret: %s/%s", es.db.Namespace, sName))
 }

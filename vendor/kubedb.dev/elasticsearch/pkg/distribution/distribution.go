@@ -33,29 +33,29 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func NewElasticsearch(kc kubernetes.Interface, extClient cs.Interface, es *api.Elasticsearch) (distapi.ElasticsearchInterface, error) {
+func NewElasticsearch(kc kubernetes.Interface, extClient cs.Interface, db *api.Elasticsearch) (distapi.ElasticsearchInterface, error) {
 	if kc == nil {
 		return nil, errors.New("Kubernetes client is empty")
 	}
 	if extClient == nil {
 		return nil, errors.New("KubeDB client is empty")
 	}
-	if es == nil {
+	if db == nil {
 		return nil, errors.New("Elasticsearch object is empty")
 	}
 
-	v := es.Spec.Version
+	v := db.Spec.Version
 	esVersion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), v, metav1.GetOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("failed to get elasticsearchVersion: %s", v))
 	}
 
 	if esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginXpack {
-		return elastic_stack.New(kc, extClient, es, esVersion), nil
+		return elastic_stack.New(kc, extClient, db, esVersion), nil
 	} else if esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginOpenDistro {
-		return open_distro.New(kc, extClient, es, esVersion), nil
+		return open_distro.New(kc, extClient, db, esVersion), nil
 	} else if esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginSearchGuard {
-		return search_guard.New(kc, extClient, es, esVersion), nil
+		return search_guard.New(kc, extClient, db, esVersion), nil
 	} else {
 		return nil, errors.New("Unknown elasticsearch auth plugin")
 	}

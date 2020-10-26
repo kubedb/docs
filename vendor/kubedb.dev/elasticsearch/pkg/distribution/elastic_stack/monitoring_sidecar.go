@@ -31,12 +31,12 @@ import (
 )
 
 func (es *Elasticsearch) upsertMonitoringContainer(containers []core.Container) ([]core.Container, error) {
-	if es.elasticsearch.Spec.Monitor != nil && es.elasticsearch.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
+	if es.db.Spec.Monitor != nil && es.db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 		var uri string
-		if es.elasticsearch.Spec.DisableSecurity {
-			uri = fmt.Sprintf("%s://localhost:%d", es.elasticsearch.GetConnectionScheme(), api.ElasticsearchRestPort)
+		if es.db.Spec.DisableSecurity {
+			uri = fmt.Sprintf("%s://localhost:%d", es.db.GetConnectionScheme(), api.ElasticsearchRestPort)
 		} else {
-			uri = fmt.Sprintf("%s://$(DB_USER):$(DB_PASSWORD)@localhost:%d", es.elasticsearch.GetConnectionScheme(), api.ElasticsearchRestPort)
+			uri = fmt.Sprintf("%s://$(DB_USER):$(DB_PASSWORD)@localhost:%d", es.db.GetConnectionScheme(), api.ElasticsearchRestPort)
 		}
 
 		container := core.Container{
@@ -44,13 +44,13 @@ func (es *Elasticsearch) upsertMonitoringContainer(containers []core.Container) 
 			Args: append([]string{
 				fmt.Sprintf("--es.uri=%s", uri),
 				fmt.Sprintf("--web.listen-address=:%d", func() int32 {
-					if es.elasticsearch.Spec.Monitor.Prometheus != nil {
-						return es.elasticsearch.Spec.Monitor.Prometheus.Exporter.Port
+					if es.db.Spec.Monitor.Prometheus != nil {
+						return es.db.Spec.Monitor.Prometheus.Exporter.Port
 					}
 					return int32(mona.PrometheusExporterPortNumber)
 				}()),
-				fmt.Sprintf("--web.telemetry-path=%s", es.elasticsearch.StatsService().Path()),
-			}, es.elasticsearch.Spec.Monitor.Prometheus.Exporter.Args...),
+				fmt.Sprintf("--web.telemetry-path=%s", es.db.StatsService().Path()),
+			}, es.db.Spec.Monitor.Prometheus.Exporter.Args...),
 			Image:           es.esVersion.Spec.Exporter.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
@@ -58,26 +58,26 @@ func (es *Elasticsearch) upsertMonitoringContainer(containers []core.Container) 
 					Name:     mona.PrometheusExporterPortName,
 					Protocol: core.ProtocolTCP,
 					ContainerPort: func() int32 {
-						if es.elasticsearch.Spec.Monitor.Prometheus != nil {
-							return es.elasticsearch.Spec.Monitor.Prometheus.Exporter.Port
+						if es.db.Spec.Monitor.Prometheus != nil {
+							return es.db.Spec.Monitor.Prometheus.Exporter.Port
 						}
 						return int32(mona.PrometheusExporterPortNumber)
 					}(),
 				},
 			},
-			Env:             es.elasticsearch.Spec.Monitor.Prometheus.Exporter.Env,
-			Resources:       es.elasticsearch.Spec.Monitor.Prometheus.Exporter.Resources,
-			SecurityContext: es.elasticsearch.Spec.Monitor.Prometheus.Exporter.SecurityContext,
+			Env:             es.db.Spec.Monitor.Prometheus.Exporter.Env,
+			Resources:       es.db.Spec.Monitor.Prometheus.Exporter.Resources,
+			SecurityContext: es.db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 		}
 
-		if !es.elasticsearch.Spec.DisableSecurity {
+		if !es.db.Spec.DisableSecurity {
 			envList := []core.EnvVar{
 				{
 					Name: "DB_USER",
 					ValueFrom: &core.EnvVarSource{
 						SecretKeyRef: &core.SecretKeySelector{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: es.elasticsearch.Spec.AuthSecret.Name,
+								Name: es.db.Spec.AuthSecret.Name,
 							},
 							Key: core.BasicAuthUsernameKey,
 						},
@@ -88,7 +88,7 @@ func (es *Elasticsearch) upsertMonitoringContainer(containers []core.Container) 
 					ValueFrom: &core.EnvVarSource{
 						SecretKeyRef: &core.SecretKeySelector{
 							LocalObjectReference: core.LocalObjectReference{
-								Name: es.elasticsearch.Spec.AuthSecret.Name,
+								Name: es.db.Spec.AuthSecret.Name,
 							},
 							Key: core.BasicAuthPasswordKey,
 						},
@@ -98,9 +98,9 @@ func (es *Elasticsearch) upsertMonitoringContainer(containers []core.Container) 
 			container.Env = core_util.UpsertEnvVars(container.Env, envList...)
 		}
 
-		if es.elasticsearch.Spec.EnableSSL {
+		if es.db.Spec.EnableSSL {
 			certVolumeMount := core.VolumeMount{
-				Name:      es.elasticsearch.CertSecretVolumeName(api.ElasticsearchMetricsExporterCert),
+				Name:      es.db.CertSecretVolumeName(api.ElasticsearchMetricsExporterCert),
 				MountPath: ExporterCertDir,
 			}
 			container.VolumeMounts = core_util.UpsertVolumeMount(container.VolumeMounts, certVolumeMount)

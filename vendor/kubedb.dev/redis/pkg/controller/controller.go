@@ -168,28 +168,28 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	log.Infoln("Stopping KubeDB controller")
 }
 
-func (c *Controller) pushFailureEvent(redis *api.Redis, reason string) {
+func (c *Controller) pushFailureEvent(db *api.Redis, reason string) {
 	c.Recorder.Eventf(
-		redis,
+		db,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
 		`Fail to be ready Redis: "%v". Reason: %v`,
-		redis.Name,
+		db.Name,
 		reason,
 	)
 
-	rd, err := kutildb.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), redis.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+	rd, err := kutildb.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
 		in.Phase = api.DatabasePhaseNotReady
-		in.ObservedGeneration = redis.Generation
+		in.ObservedGeneration = db.Generation
 		return in
 	}, metav1.UpdateOptions{})
 	if err != nil {
 		c.Recorder.Eventf(
-			redis,
+			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,
 			err.Error(),
 		)
 	}
-	redis.Status = rd.Status
+	db.Status = rd.Status
 }
