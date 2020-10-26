@@ -5,6 +5,6 @@ menu:
     identifier: my-upgrading-mysql
     name: Upgrading MySQL
     parent: my-mysql-guides
-    weight: 60
+    weight: 42
 menu_name: docs_{{ .version }}
 ---

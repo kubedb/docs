@@ -5,6 +5,6 @@ menu:
     identifier: mg-initialization-mongodb
     name: Initialization
     parent: mg-mongodb-guides
-    weight: 25
+    weight: 41
 menu_name: docs_{{ .version }}
 ---

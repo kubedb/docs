@@ -10,6 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
+> New to KubeDB? Please start [here](/docs/README.md).
 
 {{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
 
@@ -21,7 +22,7 @@ This guide will show you how to use `KubeDB` Enterprise operator to scale the sh
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here]().
+- Install `KubeDB` Community and Enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
   - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)

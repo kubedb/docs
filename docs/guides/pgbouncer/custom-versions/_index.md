@@ -5,6 +5,6 @@ menu:
     identifier: pb-custom-versions-pgbouncer
     name: Custom Versions
     parent: pb-pgbouncer-guides
-    weight: 45
+    weight: 36
 menu_name: docs_{{ .version }}
 ---

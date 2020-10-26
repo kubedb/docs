@@ -5,6 +5,6 @@ menu:
     identifier: rd-monitoring-redis
     name: Monitoring
     parent: rd-redis-guides
-    weight: 25
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

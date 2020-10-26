@@ -5,6 +5,6 @@ menu:
     identifier: pg-cli-postgres
     name: CLI
     parent: pg-postgres-guides
-    weight: 55
+    weight: 100
 menu_name: docs_{{ .version }}
 ---

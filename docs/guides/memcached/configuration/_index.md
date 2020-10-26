@@ -5,6 +5,6 @@ menu:
     identifier: mc-configuration
     name: Custom Configuration
     parent: mc-memcached-guides
-    weight: 50
+    weight: 30
 menu_name: docs_{{ .version }}
 ---

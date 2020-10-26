@@ -5,6 +5,6 @@ menu:
     identifier: px-monitoring
     name: Monitoring
     parent: px-percona-xtradb-guides
-    weight: 25
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

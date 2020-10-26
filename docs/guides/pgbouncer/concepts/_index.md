@@ -5,6 +5,6 @@ menu:
     identifier: pb-concepts-pgbouncer
     name: Concepts
     parent: pb-pgbouncer-guides
-    weight: 1
+    weight: 20
 menu_name: docs_{{ .version }}
 ---

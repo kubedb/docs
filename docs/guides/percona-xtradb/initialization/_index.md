@@ -5,6 +5,6 @@ menu:
     identifier: px-initialization
     name: Initialization
     parent: px-percona-xtradb-guides
-    weight: 50
+    weight: 41
 menu_name: docs_{{ .version }}
 ---

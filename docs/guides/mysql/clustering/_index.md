@@ -5,6 +5,6 @@ menu:
     identifier: my-clustering-mysql
     name: MySQL Clustering
     parent: my-mysql-guides
-    weight: 10
+    weight: 25
 menu_name: docs_{{ .version }}
 ---

@@ -5,6 +5,6 @@ menu:
     identifier: es-configuration
     name: Custom Configuration
     parent: es-elasticsearch-guides
-    weight: 40
+    weight: 30
 menu_name: docs_{{ .version }}
 ---

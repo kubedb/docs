@@ -5,6 +5,6 @@ menu:
     identifier: px-overview
     name: PerconaXtraDB Overview
     parent: px-percona-xtradb-guides
-    weight: 10
+    weight: 11
 menu_name: docs_{{ .version }}
 ---

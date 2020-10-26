@@ -5,6 +5,6 @@ menu:
     identifier: mg-volume-expansion
     name: Volume Expansion
     parent: mg-mongodb-guides
-    weight: 90
+    weight: 44
 menu_name: docs_{{ .version }}
 ---

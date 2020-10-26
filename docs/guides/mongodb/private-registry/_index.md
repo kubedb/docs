@@ -5,6 +5,6 @@ menu:
     identifier: mg-private-registry-mongodb
     name: Private Registry
     parent: mg-mongodb-guides
-    weight: 30
+    weight: 35
 menu_name: docs_{{ .version }}
 ---

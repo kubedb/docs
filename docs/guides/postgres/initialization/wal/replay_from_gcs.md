@@ -11,6 +11,7 @@ section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
+
 > Don't know how to take continuous backup?  Check this [tutorial](/docs/guides/postgres/backup/wal/continuous_archiving.md) on Continuous Archiving.
 
 # PostgreSQL Initialization from GCS

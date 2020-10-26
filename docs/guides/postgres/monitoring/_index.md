@@ -5,6 +5,6 @@ menu:
     identifier: pg-monitoring-postgres
     name: Monitoring
     parent: pg-postgres-guides
-    weight: 50
+    weight: 40
 menu_name: docs_{{ .version }}
 ---
