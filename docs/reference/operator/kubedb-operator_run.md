@@ -70,7 +70,6 @@ kubedb-operator run [flags]
       --egress-selector-config-file string                      File with apiserver egress selector configuration.
       --enable-mutating-webhook                                 If true, enables mutating webhooks for KubeDB CRDs.
       --enable-validating-webhook                               If true, enables validating webhooks for KubeDB CRDs.
-      --governing-service string                                Governing service for database statefulset (default "kubedb")
   -h, --help                                                    help for run
       --http2-max-streams-per-connection int                    The limit that the server gives to clients for the maximum number of streams in an HTTP/2 connection. Zero means to use golang's default. (default 1000)
       --kubeconfig string                                       kubeconfig file pointing at the 'core' kubernetes server.
@@ -84,7 +83,6 @@ kubedb-operator run [flags]
       --requestheader-extra-headers-prefix strings              List of request header prefixes to inspect. X-Remote-Extra- is suggested. (default [x-remote-extra-])
       --requestheader-group-headers strings                     List of request headers to inspect for groups. X-Remote-Group is suggested. (default [x-remote-group])
       --requestheader-username-headers strings                  List of request headers to inspect for usernames. X-Remote-User is common. (default [x-remote-user])
-      --restrict-to-operator-namespace                          If true, KubeDB operator will only handle Kubernetes objects in its own namespace.
       --resync-period duration                                  If non-zero, will re-list this often. Otherwise, re-list will be delayed aslong as possible (until the upstream source closes the watch or times out. (default 10m0s)
       --secure-port int                                         The port on which to serve HTTPS with authentication and authorization. If 0, don't serve HTTPS at all. (default 443)
       --tls-cert-file string                                    File containing the default x509 Certificate for HTTPS. (CA cert, if any, concatenated after server cert). If HTTPS serving is enabled, and --tls-cert-file and --tls-private-key-file are not provided, a self-signed certificate and key are generated for the public address and saved to the directory specified by --cert-dir.
