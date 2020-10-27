@@ -80,7 +80,9 @@ func NewLicenseEnforcer(config *rest.Config, licenseFile string) *LicenseEnforce
 }
 
 func (le *LicenseEnforcer) createClients() (err error) {
-	le.k8sClient, err = kubernetes.NewForConfig(le.config)
+	if le.k8sClient == nil {
+		le.k8sClient, err = kubernetes.NewForConfig(le.config)
+	}
 	return err
 }
 
@@ -176,6 +178,8 @@ func (le *LicenseEnforcer) Install(c *mux.PathRecorderMux) {
 }
 
 func (le *LicenseEnforcer) LoadLicense() v1alpha1.License {
+	utilruntime.Must(le.createClients())
+
 	var license v1alpha1.License
 	license.TypeMeta = metav1.TypeMeta{
 		APIVersion: v1alpha1.SchemeGroupVersion.String(),
