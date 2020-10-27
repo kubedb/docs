@@ -45,9 +45,19 @@ func (c *Controller) ensureGoverningService(db *api.Redis) error {
 		in.Labels = db.OffshootLabels()
 
 		in.Spec.Type = core.ServiceTypeClusterIP
+		// create headless service
 		in.Spec.ClusterIP = core.ClusterIPNone
+		// create pod dns records
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.PublishNotReadyAddresses = true
+		// create SRV records with pod DNS name as service provider
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       api.RedisDatabasePortName,
+				Port:       api.RedisDatabasePort,
+				TargetPort: intstr.FromString(api.RedisDatabasePortName),
+			},
+		})
 
 		return in
 	}, metav1.PatchOptions{})
@@ -95,11 +105,10 @@ func (c *Controller) ensurePrimaryService(db *api.Redis) (kutil.VerbType, error)
 		in.Annotations = db.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Selector = db.OffshootSelectors()
-		in.Spec.Ports = ofst.MergeServicePorts(
+		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
 					Name:       api.RedisPrimaryServicePortName,
-					Protocol:   core.ProtocolTCP,
 					Port:       api.RedisDatabasePort,
 					TargetPort: intstr.FromString(api.MySQLDatabasePortName),
 				},
@@ -146,7 +155,6 @@ func (c *Controller) ensureStatsService(db *api.Redis) (kutil.VerbType, error) {
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
 				Name:       mona.PrometheusExporterPortName,
-				Protocol:   core.ProtocolTCP,
 				Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
 				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},

@@ -46,9 +46,19 @@ func (c *Controller) ensureGoverningService(db *api.Postgres) error {
 		in.Labels = db.OffshootLabels()
 
 		in.Spec.Type = core.ServiceTypeClusterIP
+		// create headless service
 		in.Spec.ClusterIP = core.ClusterIPNone
+		// create pod dns records
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.PublishNotReadyAddresses = true
+		// create SRV records with pod DNS name as service provider
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       api.PostgresDatabasePortName,
+				Port:       api.PostgresDatabasePort,
+				TargetPort: intstr.FromString(api.PostgresDatabasePortName),
+			},
+		})
 
 		return in
 	}, metav1.PatchOptions{})
@@ -125,7 +135,7 @@ func (c *Controller) ensurePrimaryService(db *api.Postgres) (kutil.VerbType, err
 
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Selector[api.PostgresLabelRole] = api.PostgresPodPrimary
-		in.Spec.Ports = ofst.MergeServicePorts(
+		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
 					Name:       api.PostgresPrimaryServicePortName,
@@ -169,7 +179,7 @@ func (c *Controller) ensureStandbyService(db *api.Postgres) (kutil.VerbType, err
 
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Selector[api.PostgresLabelRole] = api.PostgresPodStandby
-		in.Spec.Ports = ofst.MergeServicePorts(
+		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
 					Name:       api.PostgresStandbyServicePortName,
@@ -219,7 +229,6 @@ func (c *Controller) ensureStatsService(db *api.Postgres) (kutil.VerbType, error
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
 				Name:       mona.PrometheusExporterPortName,
-				Protocol:   core.ProtocolTCP,
 				Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
 				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},

@@ -71,11 +71,10 @@ func (c *Controller) ensurePrimaryService(db *api.MongoDB) (kutil.VerbType, erro
 			in.Annotations = db.Spec.ServiceTemplate.Annotations
 
 			in.Spec.Selector = selector
-			in.Spec.Ports = ofst.MergeServicePorts(
+			in.Spec.Ports = ofst.PatchServicePorts(
 				core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 					{
 						Name:       api.MongoDBPrimaryServicePortName,
-						Protocol:   core.ProtocolTCP,
 						Port:       api.MongoDBDatabasePort,
 						TargetPort: intstr.FromString(api.MongoDBDatabasePortName),
 					},
@@ -128,7 +127,6 @@ func (c *Controller) ensureStatsService(db *api.MongoDB) (kutil.VerbType, error)
 			in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
 					Name:       mona.PrometheusExporterPortName,
-					Protocol:   core.ProtocolTCP,
 					Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
 					TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 				},
@@ -170,9 +168,19 @@ func (c *Controller) ensureGoverningService(db *api.MongoDB) error {
 				in.Labels = labels
 
 				in.Spec.Type = core.ServiceTypeClusterIP
+				// create headless service
 				in.Spec.ClusterIP = core.ClusterIPNone
+				// create pod dns records
 				in.Spec.Selector = selectors
 				in.Spec.PublishNotReadyAddresses = true
+				// create SRV records with pod DNS name as service provider
+				in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+					{
+						Name:       api.MongoDBDatabasePortName,
+						Port:       api.MongoDBDatabasePort,
+						TargetPort: intstr.FromString(api.MongoDBDatabasePortName),
+					},
+				})
 
 				return in
 			},

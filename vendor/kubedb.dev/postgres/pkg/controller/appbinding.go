@@ -94,7 +94,7 @@ func (c *Controller) ensureAppBinding(db *api.Postgres, postgresVersion *catalog
 }
 
 func (c *Controller) GetPrimaryServicePort(db *api.Postgres) (int32, error) {
-	ports := ofst.MergeServicePorts([]core.ServicePort{
+	ports := ofst.PatchServicePorts([]core.ServicePort{
 		{
 			Name:       api.PostgresPrimaryServicePortName,
 			Port:       api.PostgresDatabasePort,

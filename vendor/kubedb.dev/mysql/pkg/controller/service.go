@@ -45,9 +45,19 @@ func (c *Controller) ensureGoverningService(db *api.MySQL) error {
 		in.Labels = db.OffshootLabels()
 
 		in.Spec.Type = core.ServiceTypeClusterIP
+		// create headless service
 		in.Spec.ClusterIP = core.ClusterIPNone
+		// create pod dns records
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.PublishNotReadyAddresses = true
+		// create SRV records with pod DNS name as service provider
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       api.MySQLDatabasePortName,
+				Port:       api.MySQLDatabasePort,
+				TargetPort: intstr.FromString(api.MySQLDatabasePortName),
+			},
+		})
 
 		return in
 	}, metav1.PatchOptions{})
@@ -141,11 +151,10 @@ func (c *Controller) ensurePrimaryService(db *api.MySQL) (kutil.VerbType, error)
 			in.Spec.Selector[api.MySQLLabelRole] = api.MySQLPodPrimary
 		}
 
-		in.Spec.Ports = ofst.MergeServicePorts(
+		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
 					Name:       api.MySQLPrimaryServicePortName,
-					Protocol:   core.ProtocolTCP,
 					Port:       api.MySQLDatabasePort,
 					TargetPort: intstr.FromString(api.MySQLDatabasePortName),
 				},
@@ -188,11 +197,10 @@ func (c *Controller) ensureStandbyService(db *api.MySQL) (kutil.VerbType, error)
 		//add extra selector to select only secondary pod
 		in.Spec.Selector[api.MySQLLabelRole] = api.MySQLPodStandby
 
-		in.Spec.Ports = ofst.MergeServicePorts(
+		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
 					Name:       api.MySQLStandbyServicePortName,
-					Protocol:   core.ProtocolTCP,
 					Port:       api.MySQLDatabasePort,
 					TargetPort: intstr.FromString(api.MySQLDatabasePortName),
 				},
@@ -240,7 +248,6 @@ func (c *Controller) ensureStatsService(db *api.MySQL) (kutil.VerbType, error) {
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
 				Name:       mona.PrometheusExporterPortName,
-				Protocol:   core.ProtocolTCP,
 				Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
 				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},

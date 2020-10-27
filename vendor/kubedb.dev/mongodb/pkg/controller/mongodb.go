@@ -256,6 +256,28 @@ func (c *Controller) halt(db *api.MongoDB) error {
 			ObservedGeneration: db.Generation,
 			Message:            fmt.Sprintf("MongoDB %s/%s successfully halted.", db.Namespace, db.Name),
 		})
+
+		// make "AcceptingConnection" and "Ready" conditions false.
+		// Because these are handled from health checker at a certain interval,
+		// if consecutive halt and un-halt occurs in the meantime,
+		// phase might still be on the "Ready" state.
+		in.Conditions = kmapi.SetCondition(in.Conditions,
+			kmapi.Condition{
+				Type:               api.DatabaseAcceptingConnection,
+				Status:             core.ConditionFalse,
+				Reason:             api.DatabaseHaltedSuccessfully,
+				ObservedGeneration: db.Generation,
+				Message:            fmt.Sprintf("The MongoDB: %s/%s is not accepting client requests.", db.Namespace, db.Name),
+			})
+		in.Conditions = kmapi.SetCondition(in.Conditions,
+			kmapi.Condition{
+				Type:               api.DatabaseReady,
+				Status:             core.ConditionFalse,
+				Reason:             api.DatabaseHaltedSuccessfully,
+				ObservedGeneration: db.Generation,
+				Message:            fmt.Sprintf("The MongoDB: %s/%s is not ready.", db.Namespace, db.Name),
+			})
+
 		return in
 	}, metav1.UpdateOptions{}); err != nil {
 		return err

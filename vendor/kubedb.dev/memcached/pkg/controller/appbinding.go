@@ -86,7 +86,7 @@ func (c *Controller) ensureAppBinding(db *api.Memcached) (kutil.VerbType, error)
 }
 
 func (c *Controller) GetPrimaryServicePort(db *api.Memcached) (int32, error) {
-	ports := ofst.MergeServicePorts([]core.ServicePort{
+	ports := ofst.PatchServicePorts([]core.ServicePort{
 		{
 			Name:       api.MemcachedPrimaryServicePortName,
 			Port:       api.MemcachedDatabasePort,

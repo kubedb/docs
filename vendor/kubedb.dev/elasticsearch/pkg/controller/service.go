@@ -44,9 +44,19 @@ func (c *Controller) ensureGoverningService(db *api.Elasticsearch) error {
 		in.Labels = db.OffshootLabels()
 
 		in.Spec.Type = core.ServiceTypeClusterIP
+		// create headless service
 		in.Spec.ClusterIP = core.ClusterIPNone
+		// create pod dns records
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.PublishNotReadyAddresses = true
+		// create SRV records with pod DNS name as service provider
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       api.ElasticsearchRestPortName,
+				Port:       api.ElasticsearchRestPort,
+				TargetPort: intstr.FromString(api.ElasticsearchRestPortName),
+			},
+		})
 
 		return in
 	}, metav1.PatchOptions{})
@@ -116,7 +126,7 @@ func (c *Controller) createService(db *api.Elasticsearch) (kutil.VerbType, error
 
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Selector[api.ElasticsearchNodeRoleIngest] = api.ElasticsearchNodeRoleSet
-		in.Spec.Ports = ofst.MergeServicePorts(
+		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
 					Name:       api.ElasticsearchRestPortName,
@@ -162,7 +172,7 @@ func (c *Controller) createMasterService(db *api.Elasticsearch) (kutil.VerbType,
 
 		in.Spec.Type = core.ServiceTypeClusterIP
 		in.Spec.ClusterIP = core.ClusterIPNone
-		in.Spec.Ports = ofst.MergeServicePorts(
+		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
 					Name:       api.ElasticsearchTransportPortName,
@@ -199,7 +209,6 @@ func (c *Controller) ensureStatsService(db *api.Elasticsearch) (kutil.VerbType, 
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
 				Name:       mona.PrometheusExporterPortName,
-				Protocol:   core.ProtocolTCP,
 				Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
 				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},
