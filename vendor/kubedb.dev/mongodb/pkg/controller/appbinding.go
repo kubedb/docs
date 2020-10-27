@@ -153,7 +153,7 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 }
 
 func (c *Controller) GetPrimaryServicePort(db *api.MongoDB) (int32, error) {
-	ports := ofst.MergeServicePorts([]core.ServicePort{
+	ports := ofst.PatchServicePorts([]core.ServicePort{
 		{
 			Name:       api.MongoDBPrimaryServicePortName,
 			Port:       api.MongoDBDatabasePort,

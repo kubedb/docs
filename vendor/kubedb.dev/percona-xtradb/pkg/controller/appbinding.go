@@ -136,7 +136,7 @@ func (c *Controller) ensureAppBinding(db *api.PerconaXtraDB) (kutil.VerbType, er
 }
 
 func (c *Controller) GetPrimaryServicePort(db *api.PerconaXtraDB) (int32, error) {
-	ports := ofst.MergeServicePorts([]core.ServicePort{
+	ports := ofst.PatchServicePorts([]core.ServicePort{
 		{
 			Name:       api.MySQLPrimaryServicePortName,
 			Port:       api.MySQLDatabasePort,

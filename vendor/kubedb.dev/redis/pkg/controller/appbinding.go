@@ -91,7 +91,7 @@ func (c *Controller) ensureAppBinding(db *api.Redis) (kutil.VerbType, error) {
 }
 
 func (c *Controller) GetPrimaryServicePort(db *api.Redis) (int32, error) {
-	ports := ofst.MergeServicePorts([]core.ServicePort{
+	ports := ofst.PatchServicePorts([]core.ServicePort{
 		{
 			Name:       api.RedisPrimaryServicePortName,
 			Port:       api.RedisDatabasePort,

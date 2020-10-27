@@ -25,6 +25,7 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
+	"github.com/appscode/go/log"
 	"github.com/golang/glog"
 	"go.mongodb.org/mongo-driver/mongo"
 	mgoptions "go.mongodb.org/mongo-driver/mongo/options"
@@ -33,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kmapi "kmodules.xyz/client-go/api/v1"
+	"kmodules.xyz/client-go/tools/certholder"
 )
 
 func (c *Controller) RunHealthChecker(stopCh <-chan struct{}) {
@@ -212,13 +214,28 @@ func (c *Controller) GetURL(db *api.MongoDB, clientPodName string) string {
 func (c *Controller) GetMongoDBClientOpts(db *api.MongoDB, url string, isReplSet ...bool) (*mgoptions.ClientOptions, error) {
 	var clientOpts *mgoptions.ClientOptions
 	if db.Spec.SSLMode == api.SSLModeRequireSSL {
-		//paths, err := c.certs.Get(c.db.MustCertSecretName(api.MongoDBClientCert, ""))
-		//if err != nil {
-		//	return nil, err
-		//}
-		//
-		//uri := fmt.Sprintf("mongodb://%s/admin?tls=true&authMechanism=MONGODB-X509&tlsCAFile=%v&tlsCertificateKeyFile=%v", url, paths.CACert, paths.Pem)
-		//clientOpts = mgoptions.Client().ApplyURI(uri)
+		secretName := db.MustCertSecretName(api.MongoDBClientCert, "")
+		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
+		if err != nil {
+			log.Error(err, "failed to get certificate secret", "Secret", secretName)
+			return nil, err
+		}
+
+		certs, _ := certholder.DefaultHolder.
+			ForResource(api.SchemeGroupVersion.WithResource(api.ResourcePluralMongoDB), db.ObjectMeta)
+		_, err = certs.Save(certSecret)
+		if err != nil {
+			log.Error(err, "failed to save certificate")
+			return nil, err
+		}
+
+		paths, err := certs.Get(db.MustCertSecretName(api.MongoDBClientCert, ""))
+		if err != nil {
+			return nil, err
+		}
+
+		uri := fmt.Sprintf("mongodb://%s/admin?tls=true&authMechanism=MONGODB-X509&tlsCAFile=%v&tlsCertificateKeyFile=%v", url, paths.CACert, paths.Pem)
+		clientOpts = mgoptions.Client().ApplyURI(uri)
 	} else {
 		user, pass, err := c.GetMongoDBRootCredentials(db)
 		if err != nil {

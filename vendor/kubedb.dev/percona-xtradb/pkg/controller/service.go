@@ -45,9 +45,19 @@ func (c *Controller) ensureGoverningService(db *api.PerconaXtraDB) error {
 		in.Labels = db.OffshootLabels()
 
 		in.Spec.Type = core.ServiceTypeClusterIP
+		// create headless service
 		in.Spec.ClusterIP = core.ClusterIPNone
+		// create pod dns records
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.PublishNotReadyAddresses = true
+		// create SRV records with pod DNS name as service provider
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       api.MySQLDatabasePortName,
+				Port:       api.MySQLDatabasePort,
+				TargetPort: intstr.FromString(api.MySQLDatabasePortName),
+			},
+		})
 
 		return in
 	}, metav1.PatchOptions{})
@@ -95,11 +105,10 @@ func (c *Controller) createPrimaryService(db *api.PerconaXtraDB) (kutil.VerbType
 		in.Annotations = db.Spec.ServiceTemplate.Annotations
 
 		in.Spec.Selector = db.OffshootSelectors()
-		in.Spec.Ports = ofst.MergeServicePorts(
+		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
 					Name:       api.MySQLPrimaryServicePortName,
-					Protocol:   core.ProtocolTCP,
 					Port:       api.MySQLDatabasePort,
 					TargetPort: intstr.FromString(api.MySQLDatabasePortName),
 				},
@@ -146,7 +155,6 @@ func (c *Controller) ensureStatsService(db *api.PerconaXtraDB) (kutil.VerbType, 
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
 				Name:       mona.PrometheusExporterPortName,
-				Protocol:   core.ProtocolTCP,
 				Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
 				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},

@@ -45,9 +45,19 @@ func (c *Controller) ensureGoverningService(db *api.PgBouncer) error {
 		in.Labels = db.OffshootLabels()
 
 		in.Spec.Type = core.ServiceTypeClusterIP
+		// create headless service
 		in.Spec.ClusterIP = core.ClusterIPNone
+		// create pod dns records
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.PublishNotReadyAddresses = true
+		// create SRV records with pod DNS name as service provider
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       api.PgBouncerDatabasePortName,
+				Port:       api.PgBouncerDatabasePort,
+				TargetPort: intstr.FromString(api.PgBouncerDatabasePortName),
+			},
+		})
 
 		return in
 	}, metav1.PatchOptions{})
@@ -76,7 +86,7 @@ func (c *Controller) ensurePrimaryService(db *api.PgBouncer) (kutil.VerbType, er
 		in.Labels = db.OffshootLabels()
 
 		in.Spec.Selector = db.OffshootSelectors()
-		in.Spec.Ports = ofst.MergeServicePorts(
+		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
 					Name:       api.PgBouncerPrimaryServicePortName,
@@ -126,7 +136,6 @@ func (c *Controller) ensureStatsService(db *api.PgBouncer) (kutil.VerbType, erro
 		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 			{
 				Name:       mona.PrometheusExporterPortName,
-				Protocol:   core.ProtocolTCP,
 				Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
 				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
 			},

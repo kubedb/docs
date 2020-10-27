@@ -94,7 +94,7 @@ func (c *Controller) ensureAppBinding(db *api.MySQL) (kutil.VerbType, error) {
 }
 
 func (c *Controller) GetPrimaryServicePort(db *api.MySQL) (int32, error) {
-	ports := ofst.MergeServicePorts([]core.ServicePort{
+	ports := ofst.PatchServicePorts([]core.ServicePort{
 		{
 			Name:       api.MySQLPrimaryServicePortName,
 			Port:       api.MySQLDatabasePort,
