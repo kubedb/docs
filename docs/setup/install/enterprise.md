@@ -14,7 +14,7 @@ section_menu_id: setup
 
 # Install KubeDB Enterprise Edition
 
-KubeDB Enterprise edition is the open core version of [KubeDB](https://github.com/kubedb/operator). It all the features (clustering, etc.) of KubeDB Community Edition and extends it by automating Day 2 operations, improving security and productivity.
+KubeDB Enterprise edition is the open core version of [KubeDB](https://github.com/kubedb/operator). It includes all the features (clustering, etc.) of KubeDB Community Edition and extends it by automating Day 2 operations, improving security and productivity.
 
 - Back and recovery - KubeDB will provide backup & recovery of databases using Stash.
 - Upgrade and Scaling - KubeDB will provide operator managed human-in-the-loop patch and minor upgrade, downgrade and scaling operations
