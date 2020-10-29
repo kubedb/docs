@@ -1,0 +1,2204 @@
+---
+title: Changelog | KubeDB
+description: Changelog
+menu:
+  docs_{{.version}}:
+    identifier: changelog-kubedb-v2020.10.28
+    name: Changelog-v2020.10.28
+    parent: welcome
+    weight: 20201028
+product_name: kubedb
+menu_name: docs_{{.version}}
+section_menu_id: welcome
+url: /docs/{{.version}}/welcome/changelog-v2020.10.28/
+aliases:
+  - /docs/{{.version}}/CHANGELOG-v2020.10.28/
+---
+
+# KubeDB v2020.10.28 (2020-10-29)
+
+
+## [appscode/kubedb-enterprise](https://github.com/appscode/kubedb-enterprise)
+
+### [v0.1.0](https://github.com/appscode/kubedb-enterprise/releases/tag/v0.1.0)
+
+- [3c20bdae](https://github.com/appscode/kubedb-enterprise/commit/3c20bdae) Prepare for release v0.1.0 (#88)
+- [9bd093fc](https://github.com/appscode/kubedb-enterprise/commit/9bd093fc) Change selector to podNames (#86)
+- [c2e95f74](https://github.com/appscode/kubedb-enterprise/commit/c2e95f74) Prepare for release v0.1.0-rc.2 (#84)
+- [095e631c](https://github.com/appscode/kubedb-enterprise/commit/095e631c) Prepare for release v0.1.0-rc.1 (#83)
+- [5df3d1e9](https://github.com/appscode/kubedb-enterprise/commit/5df3d1e9) Prepare for release v0.1.0-beta.6 (#82)
+- [c7bf3943](https://github.com/appscode/kubedb-enterprise/commit/c7bf3943) Prepare for release v0.1.0-beta.5 (#81)
+- [1bf37b01](https://github.com/appscode/kubedb-enterprise/commit/1bf37b01) Update KubeDB api (#80)
+- [a99c4e9f](https://github.com/appscode/kubedb-enterprise/commit/a99c4e9f) Update readme
+- [2ad24272](https://github.com/appscode/kubedb-enterprise/commit/2ad24272) Update repository config (#79)
+- [d045bd2d](https://github.com/appscode/kubedb-enterprise/commit/d045bd2d) Prepare for release v0.1.0-beta.4 (#78)
+- [5fbe4b48](https://github.com/appscode/kubedb-enterprise/commit/5fbe4b48) Update KubeDB api (#73)
+- [00db6203](https://github.com/appscode/kubedb-enterprise/commit/00db6203) Replace getConditions with kmapi.NewCondition (#71)
+- [aea1f64a](https://github.com/appscode/kubedb-enterprise/commit/aea1f64a) Update License header (#70)
+- [1c15c2b8](https://github.com/appscode/kubedb-enterprise/commit/1c15c2b8) Add RedisOpsRequest Controller (#28)
+- [5cedb8fd](https://github.com/appscode/kubedb-enterprise/commit/5cedb8fd) Add MySQL OpsRequest Controller (#14)
+- [f0f282c0](https://github.com/appscode/kubedb-enterprise/commit/f0f282c0) Add Reconfigure TLS (#69)
+- [cea85618](https://github.com/appscode/kubedb-enterprise/commit/cea85618) Add Restart Operation, Readiness Criteria and Remove Configuration (#59)
+- [68cd3dcc](https://github.com/appscode/kubedb-enterprise/commit/68cd3dcc) Update repository config (#66)
+- [feef09ab](https://github.com/appscode/kubedb-enterprise/commit/feef09ab) Publish docker images to ghcr.io (#65)
+- [199d4bd2](https://github.com/appscode/kubedb-enterprise/commit/199d4bd2) Update repository config (#60)
+- [2ae29633](https://github.com/appscode/kubedb-enterprise/commit/2ae29633) Reconfigure MongoDB with Vertical Scaling (#57)
+- [9a98fc29](https://github.com/appscode/kubedb-enterprise/commit/9a98fc29) Fix MongoDB Upgrade (#51)
+- [9a1a792a](https://github.com/appscode/kubedb-enterprise/commit/9a1a792a) Integrate cert-manager for Elasticsearch (#56)
+- [b02cda77](https://github.com/appscode/kubedb-enterprise/commit/b02cda77) Update repository config (#54)
+- [947c33e2](https://github.com/appscode/kubedb-enterprise/commit/947c33e2) Update repository config (#52)
+- [12edf6f1](https://github.com/appscode/kubedb-enterprise/commit/12edf6f1) Update Kubernetes v1.18.9 dependencies (#49)
+- [08f6a4ac](https://github.com/appscode/kubedb-enterprise/commit/08f6a4ac) Add license verifier (#50)
+- [30ceb1a5](https://github.com/appscode/kubedb-enterprise/commit/30ceb1a5) Add MongoDBOpsRequest Controller (#20)
+- [164ed838](https://github.com/appscode/kubedb-enterprise/commit/164ed838) Use cert-manager v1 api (#47)
+- [7612ec19](https://github.com/appscode/kubedb-enterprise/commit/7612ec19) Update apis (#45)
+- [00550fe0](https://github.com/appscode/kubedb-enterprise/commit/00550fe0) Dynamically Generate Cluster Domain (#43)
+- [e1c3193f](https://github.com/appscode/kubedb-enterprise/commit/e1c3193f) Use updated certstore & blobfs (#42)
+- [0d5d05bb](https://github.com/appscode/kubedb-enterprise/commit/0d5d05bb) Add TLS support for redis (#35)
+- [bb53fc86](https://github.com/appscode/kubedb-enterprise/commit/bb53fc86) Various fixes (#41)
+- [023c5dfd](https://github.com/appscode/kubedb-enterprise/commit/023c5dfd) Add TLS/SSL configuration using Cert Manager for MySQL (#34)
+- [e1795b97](https://github.com/appscode/kubedb-enterprise/commit/e1795b97) Update certificate spec for MongoDB and PgBouncer (#40)
+- [5e82443d](https://github.com/appscode/kubedb-enterprise/commit/5e82443d) Update new Subject sped for certificates (#38)
+- [099abfb8](https://github.com/appscode/kubedb-enterprise/commit/099abfb8) Update to cert-manager v0.16.0 (#37)
+- [b14346d3](https://github.com/appscode/kubedb-enterprise/commit/b14346d3) Update to Kubernetes v1.18.3 (#36)
+- [c569a8eb](https://github.com/appscode/kubedb-enterprise/commit/c569a8eb) Fix cert-manager integration for PgBouncer (#32)
+- [28548950](https://github.com/appscode/kubedb-enterprise/commit/28548950) Update to Kubernetes v1.18.3 (#31)
+- [1ba9573e](https://github.com/appscode/kubedb-enterprise/commit/1ba9573e) Include Makefile.env (#30)
+- [54133b44](https://github.com/appscode/kubedb-enterprise/commit/54133b44) Disable e2e tests (#29)
+- [3939ece7](https://github.com/appscode/kubedb-enterprise/commit/3939ece7) Update to Kubernetes v1.18.3 (#27)
+- [95c6b535](https://github.com/appscode/kubedb-enterprise/commit/95c6b535) Update .kodiak.toml
+- [a88032cd](https://github.com/appscode/kubedb-enterprise/commit/a88032cd) Add script to update release tracker on pr merge (#26)
+- [a90f68e7](https://github.com/appscode/kubedb-enterprise/commit/a90f68e7) Rename docker image to kubedb-enterprise
+- [ccb9967f](https://github.com/appscode/kubedb-enterprise/commit/ccb9967f) Create .kodiak.toml
+- [fb6222ab](https://github.com/appscode/kubedb-enterprise/commit/fb6222ab) Format CI files
+- [93756db8](https://github.com/appscode/kubedb-enterprise/commit/93756db8) Fix e2e tests (#25)
+- [48ada32b](https://github.com/appscode/kubedb-enterprise/commit/48ada32b) Fix e2e tests using self-hosted GitHub action runners (#23)
+- [12b15d00](https://github.com/appscode/kubedb-enterprise/commit/12b15d00) Update to kubedb.dev/apimachinery@v0.14.0-alpha.6 (#24)
+- [9f32ab11](https://github.com/appscode/kubedb-enterprise/commit/9f32ab11) Update to Kubernetes v1.18.3 (#21)
+- [cd3422a7](https://github.com/appscode/kubedb-enterprise/commit/cd3422a7) Use CRD v1 for Kubernetes >= 1.16 (#19)
+- [4cc2f714](https://github.com/appscode/kubedb-enterprise/commit/4cc2f714) Update to Kubernetes v1.18.3 (#18)
+- [7fb86dfb](https://github.com/appscode/kubedb-enterprise/commit/7fb86dfb) Update cert-manager util
+- [1c8e1e32](https://github.com/appscode/kubedb-enterprise/commit/1c8e1e32) Configure GCR Docker credential helper in release pipeline
+- [cd74a0c2](https://github.com/appscode/kubedb-enterprise/commit/cd74a0c2) Vendor kubedb.dev/apimachinery@v0.14.0-beta.0
+- [5522f7ef](https://github.com/appscode/kubedb-enterprise/commit/5522f7ef) Revendor kubedb.dev/apimachinery@master
+- [e52cecfb](https://github.com/appscode/kubedb-enterprise/commit/e52cecfb) Update crazy-max/ghaction-docker-buildx flag
+- [9ce414ca](https://github.com/appscode/kubedb-enterprise/commit/9ce414ca) Merge pull request #17 from appscode/x7
+- [1938de61](https://github.com/appscode/kubedb-enterprise/commit/1938de61) Remove existing cluster
+- [262dae05](https://github.com/appscode/kubedb-enterprise/commit/262dae05) Remove support for k8s 1.11
+- [a00f342c](https://github.com/appscode/kubedb-enterprise/commit/a00f342c) Run e2e tests on GitHub actions
+- [b615b1ac](https://github.com/appscode/kubedb-enterprise/commit/b615b1ac) Use GCR_SERVICE_ACCOUNT_JSON_KEY env in CI
+- [41668265](https://github.com/appscode/kubedb-enterprise/commit/41668265) Use gcr.io/appscode as docker registry (#16)
+- [2e5df236](https://github.com/appscode/kubedb-enterprise/commit/2e5df236) Run on self-hosted hosts
+- [3da6adef](https://github.com/appscode/kubedb-enterprise/commit/3da6adef) Store enterprise images in `gcr.io/appscode` (#15)
+- [bd4a8eb1](https://github.com/appscode/kubedb-enterprise/commit/bd4a8eb1) Use stash.appscode.dev/apimachinery@v0.9.0-rc.6 (#12)
+- [c5436b50](https://github.com/appscode/kubedb-enterprise/commit/c5436b50) Don't handle deleted objects. (#11)
+- [ee5eea66](https://github.com/appscode/kubedb-enterprise/commit/ee5eea66) Fix MongoDB cert-manager integration (#10)
+- [105f08b8](https://github.com/appscode/kubedb-enterprise/commit/105f08b8) Add cert-manager integration for MongoDB (#9)
+- [b2a3af53](https://github.com/appscode/kubedb-enterprise/commit/b2a3af53) Refactor PgBouncer controller into its pkg (#8)
+- [b0e90f75](https://github.com/appscode/kubedb-enterprise/commit/b0e90f75) Use SecretInformer from apimachinery (#5)
+- [8dabbb1b](https://github.com/appscode/kubedb-enterprise/commit/8dabbb1b) Use non-deprecated Exporter fields (#4)
+- [de22842e](https://github.com/appscode/kubedb-enterprise/commit/de22842e) Cert-Manager support for PgBouncer [Client TLS] (#2)
+- [1a6794b7](https://github.com/appscode/kubedb-enterprise/commit/1a6794b7) Fix plain text secret in exporter container of StatefulSet (#5)
+- [ab104a9f](https://github.com/appscode/kubedb-enterprise/commit/ab104a9f) Update client-go to kubernetes-1.16.3 (#7)
+- [68dbb142](https://github.com/appscode/kubedb-enterprise/commit/68dbb142) Use charts to install operator (#6)
+- [30e3e729](https://github.com/appscode/kubedb-enterprise/commit/30e3e729) Add add-license make target
+- [6c1a78a0](https://github.com/appscode/kubedb-enterprise/commit/6c1a78a0) Enable e2e tests in GitHub actions (#4)
+- [0960f805](https://github.com/appscode/kubedb-enterprise/commit/0960f805) Initial implementation (#2)
+- [a8a9b1db](https://github.com/appscode/kubedb-enterprise/commit/a8a9b1db) Update go.yml
+- [bc3b2624](https://github.com/appscode/kubedb-enterprise/commit/bc3b2624) Enable GitHub actions
+- [2e33db2b](https://github.com/appscode/kubedb-enterprise/commit/2e33db2b) Clone kubedb/postgres repo (#1)
+- [45a7cace](https://github.com/appscode/kubedb-enterprise/commit/45a7cace) Merge commit 'f78de886ed657650438f99574c3b002dd3607497' as 'hack/libbuild'
+
+
+
+## [kubedb/apimachinery](https://github.com/kubedb/apimachinery)
+
+### [v0.14.0](https://github.com/kubedb/apimachinery/releases/tag/v0.14.0)
+
+- [dbc93cda](https://github.com/kubedb/apimachinery/commit/dbc93cda) Add dnsConfig and dnsPolicy to podTemplate (#636)
+- [57468b4d](https://github.com/kubedb/apimachinery/commit/57468b4d) Add docker badge
+- [cd358dda](https://github.com/kubedb/apimachinery/commit/cd358dda) Update MergeServicePort and PatchServicePort apis
+- [b72968d5](https://github.com/kubedb/apimachinery/commit/b72968d5) Add port constants (#635)
+- [6ce39fbe](https://github.com/kubedb/apimachinery/commit/6ce39fbe) Create separate governing service for each database (#634)
+- [ecfb5d85](https://github.com/kubedb/apimachinery/commit/ecfb5d85) Update readme
+- [61b26532](https://github.com/kubedb/apimachinery/commit/61b26532) Add MySQL constants (#633)
+- [42888647](https://github.com/kubedb/apimachinery/commit/42888647) Update Kubernetes v1.18.9 dependencies (#632)
+- [a57a7df5](https://github.com/kubedb/apimachinery/commit/a57a7df5) Set prx as ProxySQL short code (#631)
+- [282992ea](https://github.com/kubedb/apimachinery/commit/282992ea) Update for release Stash@v2020.10.21 (#630)
+- [5f17e1b4](https://github.com/kubedb/apimachinery/commit/5f17e1b4) Set default CA secret name even if the SSL is disabled. (#624)
+- [c3710b61](https://github.com/kubedb/apimachinery/commit/c3710b61) Add host functions for different components of MongoDB (#625)
+- [028d939d](https://github.com/kubedb/apimachinery/commit/028d939d) Refine api (#629)
+- [4f4cfb3b](https://github.com/kubedb/apimachinery/commit/4f4cfb3b) Update Kubernetes v1.18.9 dependencies (#626)
+- [47eaa486](https://github.com/kubedb/apimachinery/commit/47eaa486) Add MongoDBCustomConfigFile constant
+- [5201c39b](https://github.com/kubedb/apimachinery/commit/5201c39b) Update MySQL ops request custom config api (#623)
+- [06c2076f](https://github.com/kubedb/apimachinery/commit/06c2076f) Rename redis ConfigMapName to ConfigSecretName
+- [0d4040b4](https://github.com/kubedb/apimachinery/commit/0d4040b4) API refinement (#622)
+- [2eabe4c2](https://github.com/kubedb/apimachinery/commit/2eabe4c2) Update Kubernetes v1.18.9 dependencies (#621)
+- [ac3ff1a6](https://github.com/kubedb/apimachinery/commit/ac3ff1a6) Handle halted condition (#620)
+- [8ed26973](https://github.com/kubedb/apimachinery/commit/8ed26973) Update constants for Elasticsearch conditions (#618)
+- [97c32f71](https://github.com/kubedb/apimachinery/commit/97c32f71) Use core/v1 ConditionStatus (#619)
+- [304c48b8](https://github.com/kubedb/apimachinery/commit/304c48b8) Update Kubernetes v1.18.9 dependencies (#617)
+- [a841401e](https://github.com/kubedb/apimachinery/commit/a841401e) Fix StatefulSet controller (#616)
+- [517285ea](https://github.com/kubedb/apimachinery/commit/517285ea) Add spec.init.initialized field (#615)
+- [057d3aef](https://github.com/kubedb/apimachinery/commit/057d3aef) Implement ReplicasAreReady (#614)
+- [32105113](https://github.com/kubedb/apimachinery/commit/32105113) Update appcatalog dependency
+- [34bf142e](https://github.com/kubedb/apimachinery/commit/34bf142e) Update swagger.json
+- [7d9095af](https://github.com/kubedb/apimachinery/commit/7d9095af) Fix build (#613)
+- [ad7988a8](https://github.com/kubedb/apimachinery/commit/ad7988a8) Fix build
+- [0cf6469d](https://github.com/kubedb/apimachinery/commit/0cf6469d) Switch kubedb apiVersion to v1alpha2 (#612)
+- [fd3131cd](https://github.com/kubedb/apimachinery/commit/fd3131cd) Add Volume Expansion and Configuration for MySQL OpsRequest (#607)
+- [fd285012](https://github.com/kubedb/apimachinery/commit/fd285012) Add `alias` in the name of MongoDB server certificates (#611)
+- [e562def9](https://github.com/kubedb/apimachinery/commit/e562def9) Remove GetMonitoringVendor method
+- [a71f9b7e](https://github.com/kubedb/apimachinery/commit/a71f9b7e) Fix build
+- [c97abe0d](https://github.com/kubedb/apimachinery/commit/c97abe0d) Update monitoring api dependency (#610)
+- [d6070fc7](https://github.com/kubedb/apimachinery/commit/d6070fc7) Remove deprecated fields for monitoring (#609)
+- [8d2f606a](https://github.com/kubedb/apimachinery/commit/8d2f606a) Add framework support for conditions (#608)
+- [a74ea7a4](https://github.com/kubedb/apimachinery/commit/a74ea7a4) Bring back mysql ops spec StatefulSetOrdinal field
+- [bda2d85a](https://github.com/kubedb/apimachinery/commit/bda2d85a) Add VerticalAutoscaler type (#606)
+- [b9b22a35](https://github.com/kubedb/apimachinery/commit/b9b22a35) Add MySQL constant (#604)
+- [2b887957](https://github.com/kubedb/apimachinery/commit/2b887957) Fix typo
+- [c31cd2fd](https://github.com/kubedb/apimachinery/commit/c31cd2fd) Update ops request enumerations
+- [41083a9d](https://github.com/kubedb/apimachinery/commit/41083a9d) Revise ops request apis (#603)
+- [acfb1564](https://github.com/kubedb/apimachinery/commit/acfb1564) Revise api conditions (#602)
+- [5c12de3a](https://github.com/kubedb/apimachinery/commit/5c12de3a) Update DB condition types and phases (#598)
+- [f27cb720](https://github.com/kubedb/apimachinery/commit/f27cb720) Write data restore completion event using dynamic client (#601)
+- [60ada14c](https://github.com/kubedb/apimachinery/commit/60ada14c) Update Kubernetes v1.18.9 dependencies (#600)
+- [5779a5d7](https://github.com/kubedb/apimachinery/commit/5779a5d7) Update for release Stash@v2020.09.29 (#599)
+- [86121dad](https://github.com/kubedb/apimachinery/commit/86121dad) Update Kubernetes v1.18.9 dependencies (#597)
+- [da9fbe59](https://github.com/kubedb/apimachinery/commit/da9fbe59) Add DB conditions
+- [7399d13f](https://github.com/kubedb/apimachinery/commit/7399d13f) Rename ES root-cert to ca-cert (#594)
+- [1cd75609](https://github.com/kubedb/apimachinery/commit/1cd75609) Remove spec.paused & deprecated fields DB crds (#596)
+- [9c85f9f1](https://github.com/kubedb/apimachinery/commit/9c85f9f1) Use `status.conditions` to handle database initialization (#593)
+- [87e8e58b](https://github.com/kubedb/apimachinery/commit/87e8e58b) Update Kubernetes v1.18.9 dependencies (#595)
+- [32206db2](https://github.com/kubedb/apimachinery/commit/32206db2) Add helper methods for MySQL (#592)
+- [10aca81a](https://github.com/kubedb/apimachinery/commit/10aca81a) Rename client node to ingest node (#583)
+- [d8bbd5ec](https://github.com/kubedb/apimachinery/commit/d8bbd5ec) Update repository config (#591)
+- [4d51a066](https://github.com/kubedb/apimachinery/commit/4d51a066) Update repository config (#590)
+- [5905c2cb](https://github.com/kubedb/apimachinery/commit/5905c2cb) Update Kubernetes v1.18.9 dependencies (#589)
+- [3dc3d970](https://github.com/kubedb/apimachinery/commit/3dc3d970) Update Kubernetes v1.18.3 dependencies (#588)
+- [53b42277](https://github.com/kubedb/apimachinery/commit/53b42277) Add event recorder in controller struct (#587)
+- [ec58309a](https://github.com/kubedb/apimachinery/commit/ec58309a) Update Kubernetes v1.18.3 dependencies (#586)
+- [38050bae](https://github.com/kubedb/apimachinery/commit/38050bae) Initialize db from stash restoresession/restoreBatch (#567)
+- [ec3efa91](https://github.com/kubedb/apimachinery/commit/ec3efa91) Update for release Stash@v2020.09.16 (#585)
+- [5ddfd53a](https://github.com/kubedb/apimachinery/commit/5ddfd53a) Update Kubernetes v1.18.3 dependencies (#584)
+- [24398515](https://github.com/kubedb/apimachinery/commit/24398515) Add some `MongoDB` and `MongoDBOpsRequest` Constants (#582)
+- [584a4bf6](https://github.com/kubedb/apimachinery/commit/584a4bf6) Add primary and secondary role constant for MySQL (#581)
+- [82299808](https://github.com/kubedb/apimachinery/commit/82299808) Update Kubernetes v1.18.3 dependencies (#580)
+- [ecd1d17f](https://github.com/kubedb/apimachinery/commit/ecd1d17f) Add Functions to get Default Probes (#579)
+- [76ac9bc0](https://github.com/kubedb/apimachinery/commit/76ac9bc0) Remove CertManagerClient client
+- [b99048f4](https://github.com/kubedb/apimachinery/commit/b99048f4) Remove unused constants for ProxySQL
+- [152cef57](https://github.com/kubedb/apimachinery/commit/152cef57) Update Kubernetes v1.18.3 dependencies (#578)
+- [24c5e829](https://github.com/kubedb/apimachinery/commit/24c5e829) Update redis constants (#575)
+- [7075b38d](https://github.com/kubedb/apimachinery/commit/7075b38d) Remove spec.updateStrategy field (#577)
+- [dfd11955](https://github.com/kubedb/apimachinery/commit/dfd11955) Remove description from CRD yamls (#576)
+- [2d1b5878](https://github.com/kubedb/apimachinery/commit/2d1b5878) Add autoscaling crds (#554)
+- [68ed8127](https://github.com/kubedb/apimachinery/commit/68ed8127) Fix build
+- [63d18f0d](https://github.com/kubedb/apimachinery/commit/63d18f0d) Rename PgBouncer archiver to client
+- [a219c251](https://github.com/kubedb/apimachinery/commit/a219c251) Handle shard scenario for MongoDB cert names (#574)
+- [d2c80e55](https://github.com/kubedb/apimachinery/commit/d2c80e55) Add MongoDB Custom Config Spec (#562)
+- [1e69fb02](https://github.com/kubedb/apimachinery/commit/1e69fb02) Support multiple certificates per DB (#555)
+- [9bbed3d1](https://github.com/kubedb/apimachinery/commit/9bbed3d1) Update Kubernetes v1.18.3 dependencies (#573)
+- [7df78c7a](https://github.com/kubedb/apimachinery/commit/7df78c7a) Update CRD yamls
+- [406d895d](https://github.com/kubedb/apimachinery/commit/406d895d) Implement ServiceMonitorAdditionalLabels method (#572)
+- [cfe4374a](https://github.com/kubedb/apimachinery/commit/cfe4374a) Make ServiceMonitor name same as stats service (#563)
+- [d2ed6b4a](https://github.com/kubedb/apimachinery/commit/d2ed6b4a) Update for release Stash@v2020.08.27 (#571)
+- [749b9084](https://github.com/kubedb/apimachinery/commit/749b9084) Update for release Stash@v2020.08.27-rc.0 (#570)
+- [5d8bf42c](https://github.com/kubedb/apimachinery/commit/5d8bf42c) Update for release Stash@v2020.08.26-rc.1 (#569)
+- [6edc4782](https://github.com/kubedb/apimachinery/commit/6edc4782) Update for release Stash@v2020.08.26-rc.0 (#568)
+- [c451ff3a](https://github.com/kubedb/apimachinery/commit/c451ff3a) Update Kubernetes v1.18.3 dependencies (#565)
+- [fdc6e2d6](https://github.com/kubedb/apimachinery/commit/fdc6e2d6) Update Kubernetes v1.18.3 dependencies (#564)
+- [2f509c26](https://github.com/kubedb/apimachinery/commit/2f509c26) Update Kubernetes v1.18.3 dependencies (#561)
+- [da655afe](https://github.com/kubedb/apimachinery/commit/da655afe) Update Kubernetes v1.18.3 dependencies (#560)
+- [9c2c06a9](https://github.com/kubedb/apimachinery/commit/9c2c06a9) Fix MySQL enterprise condition's  constant (#559)
+- [81ed2724](https://github.com/kubedb/apimachinery/commit/81ed2724) Update Kubernetes v1.18.3 dependencies (#558)
+- [738b7ade](https://github.com/kubedb/apimachinery/commit/738b7ade) Update Kubernetes v1.18.3 dependencies (#557)
+- [93f0af4b](https://github.com/kubedb/apimachinery/commit/93f0af4b) Add MySQL Constants (#553)
+- [6049554d](https://github.com/kubedb/apimachinery/commit/6049554d) Add {Horizontal,Vertical}ScalingSpec for Redis (#534)
+- [28552272](https://github.com/kubedb/apimachinery/commit/28552272) Enable TLS for Redis (#546)
+- [68e00844](https://github.com/kubedb/apimachinery/commit/68e00844) Add Spec for MongoDB Volume Expansion (#548)
+- [759a800a](https://github.com/kubedb/apimachinery/commit/759a800a) Add Subject spec for Certificate (#552)
+- [b1552628](https://github.com/kubedb/apimachinery/commit/b1552628) Add email SANs for certificate (#551)
+- [fdfad57e](https://github.com/kubedb/apimachinery/commit/fdfad57e) Update to cert-manager@v0.16.0 (#550)
+- [3b5e9ece](https://github.com/kubedb/apimachinery/commit/3b5e9ece) Update to Kubernetes v1.18.3 (#549)
+- [0c5a1e9b](https://github.com/kubedb/apimachinery/commit/0c5a1e9b) Make ElasticsearchVersion spec.tools optional (#526)
+- [01a0b4b3](https://github.com/kubedb/apimachinery/commit/01a0b4b3) Add Conditions Constant for MongoDBOpsRequest (#535)
+- [34a9ed61](https://github.com/kubedb/apimachinery/commit/34a9ed61) Update to Kubernetes v1.18.3 (#547)
+- [6392f19e](https://github.com/kubedb/apimachinery/commit/6392f19e) Add Storage Engine Support for Percona Server MongoDB (#538)
+- [02d205bc](https://github.com/kubedb/apimachinery/commit/02d205bc) Remove extra - from prefix/suffix (#543)
+- [06158f51](https://github.com/kubedb/apimachinery/commit/06158f51) Update to Kubernetes v1.18.3 (#542)
+- [157a8724](https://github.com/kubedb/apimachinery/commit/157a8724) Update for release Stash@v2020.07.09-beta.0 (#541)
+- [0e86bdbd](https://github.com/kubedb/apimachinery/commit/0e86bdbd) Update for release Stash@v2020.07.08-beta.0 (#540)
+- [f4a22d0c](https://github.com/kubedb/apimachinery/commit/f4a22d0c) Update License notice (#539)
+- [3c598500](https://github.com/kubedb/apimachinery/commit/3c598500) Use Allowlist and Denylist in MySQLVersion (#537)
+- [3c58c062](https://github.com/kubedb/apimachinery/commit/3c58c062) Update to Kubernetes v1.18.3 (#536)
+- [e1f3d603](https://github.com/kubedb/apimachinery/commit/e1f3d603) Update update-release-tracker.sh
+- [0cf4a01f](https://github.com/kubedb/apimachinery/commit/0cf4a01f) Update update-release-tracker.sh
+- [bfbd1f8d](https://github.com/kubedb/apimachinery/commit/bfbd1f8d) Add script to update release tracker on pr merge (#533)
+- [b817d87c](https://github.com/kubedb/apimachinery/commit/b817d87c) Update .kodiak.toml
+- [772e8d2f](https://github.com/kubedb/apimachinery/commit/772e8d2f) Add Ops Request const (#529)
+- [453d67ca](https://github.com/kubedb/apimachinery/commit/453d67ca) Add constants for mutator & validator group names (#532)
+- [69f997b5](https://github.com/kubedb/apimachinery/commit/69f997b5) Unwrap top level api folder (#531)
+- [a8ccec51](https://github.com/kubedb/apimachinery/commit/a8ccec51) Make RedisOpsRequest Namespaced (#530)
+- [8a076bfb](https://github.com/kubedb/apimachinery/commit/8a076bfb) Update .kodiak.toml
+- [6a8e51b9](https://github.com/kubedb/apimachinery/commit/6a8e51b9) Update to Kubernetes v1.18.3 (#527)
+- [2ef41962](https://github.com/kubedb/apimachinery/commit/2ef41962) Create .kodiak.toml
+- [8e596d4e](https://github.com/kubedb/apimachinery/commit/8e596d4e) Update to Kubernetes v1.18.3
+- [31f72200](https://github.com/kubedb/apimachinery/commit/31f72200) Update comments
+- [27bc9265](https://github.com/kubedb/apimachinery/commit/27bc9265) Use CRD v1 for Kubernetes >= 1.16 (#525)
+- [d1be7d1d](https://github.com/kubedb/apimachinery/commit/d1be7d1d) Remove defaults from CRD v1beta1
+- [5c73d507](https://github.com/kubedb/apimachinery/commit/5c73d507) Use crd.Interface in Controller (#524)
+- [27763544](https://github.com/kubedb/apimachinery/commit/27763544) Generate both v1beta1 and v1 CRD YAML (#523)
+- [5a0f0a93](https://github.com/kubedb/apimachinery/commit/5a0f0a93) Update to Kubernetes v1.18.3 (#520)
+- [25008c1a](https://github.com/kubedb/apimachinery/commit/25008c1a) Change MySQL `[]ContainerResources` to `core.ResourceRequirements` (#522)
+- [abc99620](https://github.com/kubedb/apimachinery/commit/abc99620) Merge pull request #521 from kubedb/mongo-vertical
+- [f38a109c](https://github.com/kubedb/apimachinery/commit/f38a109c) Change `[]ContainerResources` to `core.ResourceRequirements`
+- [e3058f85](https://github.com/kubedb/apimachinery/commit/e3058f85) Update `modification request` to `ops request` (#519)
+- [bd3c7d01](https://github.com/kubedb/apimachinery/commit/bd3c7d01) Fix linter warnings
+- [d70848d7](https://github.com/kubedb/apimachinery/commit/d70848d7) Rename api group to ops.kubedb.com (#518)
+- [745f2438](https://github.com/kubedb/apimachinery/commit/745f2438) Merge pull request #511 from pohly/memcached-pmem
+- [75c949aa](https://github.com/kubedb/apimachinery/commit/75c949aa) memcached: add dataVolume
+- [3e5cdc03](https://github.com/kubedb/apimachinery/commit/3e5cdc03) Merge pull request #517 from kubedb/mg-scaling
+- [0c9e2b4f](https://github.com/kubedb/apimachinery/commit/0c9e2b4f) Flatten api structure
+- [9c98fbc1](https://github.com/kubedb/apimachinery/commit/9c98fbc1) Add MongoDBModificationRequest Scaling Spec
+- [22b199b6](https://github.com/kubedb/apimachinery/commit/22b199b6) Update comment for UpgradeSpec
+- [c66fda4b](https://github.com/kubedb/apimachinery/commit/c66fda4b) Review DBA crds (#516)
+- [bc1e13f7](https://github.com/kubedb/apimachinery/commit/bc1e13f7) Merge pull request #509 from kubedb/mysql-upgrade
+- [2c9ae147](https://github.com/kubedb/apimachinery/commit/2c9ae147) Fix type names and definition
+- [4c7c5074](https://github.com/kubedb/apimachinery/commit/4c7c5074) Update MySQLModificationRequest CRD
+- [4096642c](https://github.com/kubedb/apimachinery/commit/4096642c) Merge pull request #501 from kubedb/redis-modification
+- [3d683e58](https://github.com/kubedb/apimachinery/commit/3d683e58) Use standard condition from kmodules
+- [7be4a3dd](https://github.com/kubedb/apimachinery/commit/7be4a3dd) Update RedisModificationRequest CRD
+- [a594bdb9](https://github.com/kubedb/apimachinery/commit/a594bdb9) Merge pull request #503 from kubedb/elastic-upgrade
+- [ee0eada4](https://github.com/kubedb/apimachinery/commit/ee0eada4) Use standard conditions from kmodules
+- [22cb24f6](https://github.com/kubedb/apimachinery/commit/22cb24f6) Update dba api for elasticsearchModificationRequest
+- [a2768752](https://github.com/kubedb/apimachinery/commit/a2768752) Merge pull request #499 from kubedb/mongodb-modification
+- [be5dde87](https://github.com/kubedb/apimachinery/commit/be5dde87) Use standard conditions from kmodules
+- [9bf2c80e](https://github.com/kubedb/apimachinery/commit/9bf2c80e) Add MongoDBModificationRequest Spec
+- [9ee80efd](https://github.com/kubedb/apimachinery/commit/9ee80efd) Fix Update***Status helpers (#515)
+- [2c75e77d](https://github.com/kubedb/apimachinery/commit/2c75e77d) Merge pull request #512 from kubedb/prestop-mongos
+- [e13d73c5](https://github.com/kubedb/apimachinery/commit/e13d73c5) Use recommended kubernetes app labels (#514)
+- [50856267](https://github.com/kubedb/apimachinery/commit/50856267) Add Enum markers to api types
+- [95e00c8e](https://github.com/kubedb/apimachinery/commit/95e00c8e) Add Default PreStop Hook for Mongos
+- [d99a1001](https://github.com/kubedb/apimachinery/commit/d99a1001) Trigger the workflow on push or pull request
+- [b8047fc0](https://github.com/kubedb/apimachinery/commit/b8047fc0) Regenerate api types
+- [83c8e40a](https://github.com/kubedb/apimachinery/commit/83c8e40a) Update CHANGELOG.md
+- [ddb1f266](https://github.com/kubedb/apimachinery/commit/ddb1f266) Add requireSSL field to MySQL crd (#506)
+- [c0c293bd](https://github.com/kubedb/apimachinery/commit/c0c293bd) Rename Elasticsearch NODE_ROLE constant
+- [9bfe7f2c](https://github.com/kubedb/apimachinery/commit/9bfe7f2c) Rename Mongo SHARD_INDEX constant
+- [e6f72c37](https://github.com/kubedb/apimachinery/commit/e6f72c37) Add default affinity rules for Redis (#508)
+- [ab738acf](https://github.com/kubedb/apimachinery/commit/ab738acf) Set default affinity if not provided for Elasticsearch (#507)
+- [3ea77524](https://github.com/kubedb/apimachinery/commit/3ea77524) Use stash.appscode.dev/apimachinery@v0.9.0-rc.6 (#504)
+- [d39a1db6](https://github.com/kubedb/apimachinery/commit/d39a1db6) Defau;t replica count for etcd
+- [5b2fb5e2](https://github.com/kubedb/apimachinery/commit/5b2fb5e2) Rename CA key and cert file name constants
+- [116ebb65](https://github.com/kubedb/apimachinery/commit/116ebb65) Add constants for MongoDB cert-manager integration
+- [46525cfa](https://github.com/kubedb/apimachinery/commit/46525cfa) Generate keyFile for sendX509 auth mode in Mongo (#502)
+- [fef64435](https://github.com/kubedb/apimachinery/commit/fef64435) Update MongoDB keyFile comments
+- [cf53627d](https://github.com/kubedb/apimachinery/commit/cf53627d) Redesign keyFile secrets for replicaset and sharing MongoDBs (#500)
+- [2d144e0d](https://github.com/kubedb/apimachinery/commit/2d144e0d) Ensure that statefulset PDP allows at least 1 unavailable pod
+- [518ce3c4](https://github.com/kubedb/apimachinery/commit/518ce3c4) Add labeler field into mysqlversions CRD (#497)
+- [b5069f30](https://github.com/kubedb/apimachinery/commit/b5069f30) TLS config for mongoDB, Issuer ref for mysql,percona,postgres,proxysql (#496)
+- [a02d04eb](https://github.com/kubedb/apimachinery/commit/a02d04eb) Update for percona-xtradb standalone restore (#491)
+- [0e1d5e0d](https://github.com/kubedb/apimachinery/commit/0e1d5e0d) Add PgBouncer constants
+- [1267de93](https://github.com/kubedb/apimachinery/commit/1267de93) Add secret informer and lister to controller (#495)
+- [b88239d7](https://github.com/kubedb/apimachinery/commit/b88239d7) Update defautl affinity rules
+- [b32bf152](https://github.com/kubedb/apimachinery/commit/b32bf152) validate prometheus agent spec (#493)
+- [c046f673](https://github.com/kubedb/apimachinery/commit/c046f673) Change termination policy to Halt from Pause (#492)
+- [118d374d](https://github.com/kubedb/apimachinery/commit/118d374d) Affinity defaulting for mongodb (#490)
+- [de5af664](https://github.com/kubedb/apimachinery/commit/de5af664) Add method for ES governing service name (#487)
+- [8763e5ef](https://github.com/kubedb/apimachinery/commit/8763e5ef)  Cleanup DB helper defaulting functions (#489)
+- [3c552237](https://github.com/kubedb/apimachinery/commit/3c552237) Delete dormant and snapshot CRD (#486)
+- [e4285d11](https://github.com/kubedb/apimachinery/commit/e4285d11) Revendor stash@v0.9.0-rc.4
+- [722f0b21](https://github.com/kubedb/apimachinery/commit/722f0b21) Update cron and stow libraries (#485)
+- [75099611](https://github.com/kubedb/apimachinery/commit/75099611) Vendor stash@v0.9.0-rc.3 (#484)
+- [a483a070](https://github.com/kubedb/apimachinery/commit/a483a070) Fix the const value for the max possible base-server id for MySQ… (#483)
+- [5dd537e5](https://github.com/kubedb/apimachinery/commit/5dd537e5) Fix linter errors.
+- [1d4b76df](https://github.com/kubedb/apimachinery/commit/1d4b76df) Fix typo.
+- [95749a7f](https://github.com/kubedb/apimachinery/commit/95749a7f) Add spec.halted as a replacement for DormantDatabase crd (#482)
+- [17bd64fb](https://github.com/kubedb/apimachinery/commit/17bd64fb) Bring back support for k8s 1.11 (#481)
+- [8e913f55](https://github.com/kubedb/apimachinery/commit/8e913f55) Enable Status subresource for MySQL crd. (#480)
+- [3f83b38c](https://github.com/kubedb/apimachinery/commit/3f83b38c) Update mount path for custom config for ProxySQL & PerconaXtraDB (#478)
+- [0daeb688](https://github.com/kubedb/apimachinery/commit/0daeb688) Deprecate Pause termination policy (#479)
+- [5176ab93](https://github.com/kubedb/apimachinery/commit/5176ab93) Cert-Manager for PgBouncer (#467)
+- [b9ec93d3](https://github.com/kubedb/apimachinery/commit/b9ec93d3) API Review (#476)
+- [29ed98ef](https://github.com/kubedb/apimachinery/commit/29ed98ef) Fix MySQL base server id data type (#475)
+- [1c9ad3d0](https://github.com/kubedb/apimachinery/commit/1c9ad3d0) Fixed mongodb ssl args (#471)
+- [67931063](https://github.com/kubedb/apimachinery/commit/67931063) Introduce KubeDB DBA resources (#470)
+- [c6f7c72d](https://github.com/kubedb/apimachinery/commit/c6f7c72d) Update client-go to kubernetes-1.16.3 (#468)
+- [eeb91084](https://github.com/kubedb/apimachinery/commit/eeb91084) Always create RBAC roles (#474)
+- [bd389625](https://github.com/kubedb/apimachinery/commit/bd389625) Use 2-way merge patch in Patch helpers (#472)
+- [2929bb25](https://github.com/kubedb/apimachinery/commit/2929bb25) Show AUTH_PLUGIN for ESVersion (#469)
+- [2ff472ad](https://github.com/kubedb/apimachinery/commit/2ff472ad) Add helper library for CRDs (#466)
+- [530d9124](https://github.com/kubedb/apimachinery/commit/530d9124) Use kubebuilder generated CRD yamls (#465)
+- [b4b5db7e](https://github.com/kubedb/apimachinery/commit/b4b5db7e) Use controller-tools@v0.2.2 to generate structural schema (#464)
+- [6788ee91](https://github.com/kubedb/apimachinery/commit/6788ee91) Generate protobuf files for api types (#463)
+- [b043ee97](https://github.com/kubedb/apimachinery/commit/b043ee97) Add add-license make target
+- [73931d22](https://github.com/kubedb/apimachinery/commit/73931d22) Add license header to files (#462)
+- [0b18633a](https://github.com/kubedb/apimachinery/commit/0b18633a) Verify Go modules in ci (#461)
+- [bed5a9c0](https://github.com/kubedb/apimachinery/commit/bed5a9c0) Use stash@v0.9.0-rc.2 (#460)
+- [6fa677b3](https://github.com/kubedb/apimachinery/commit/6fa677b3) Update badge
+- [40cc465c](https://github.com/kubedb/apimachinery/commit/40cc465c) Show diff when files `make verify` fails (#459)
+- [ef58dbd0](https://github.com/kubedb/apimachinery/commit/ef58dbd0) Split imports into 3 blocks (#458)
+- [03dbc5bf](https://github.com/kubedb/apimachinery/commit/03dbc5bf) Remove travis.yml
+- [1480eaea](https://github.com/kubedb/apimachinery/commit/1480eaea) Fix make ci command
+- [41a05a48](https://github.com/kubedb/apimachinery/commit/41a05a48) Remove EnableStatusSubresource (#457)
+- [e2aca118](https://github.com/kubedb/apimachinery/commit/e2aca118) Update linter command
+- [c95171ef](https://github.com/kubedb/apimachinery/commit/c95171ef) Run fmt before verify-gen
+- [a75ba832](https://github.com/kubedb/apimachinery/commit/a75ba832) Fix linter issues (#456)
+- [42521d29](https://github.com/kubedb/apimachinery/commit/42521d29) Verify generated files are up to date (#454)
+- [948c9096](https://github.com/kubedb/apimachinery/commit/948c9096) Rename workflow pipeline
+- [fc97357b](https://github.com/kubedb/apimachinery/commit/fc97357b) Use utilruntime.Must to check for errors (#453)
+- [bac255d3](https://github.com/kubedb/apimachinery/commit/bac255d3) Prepare v0.13.0-rc.1 release (#452)
+- [d4f718b4](https://github.com/kubedb/apimachinery/commit/d4f718b4) Update Makefile
+- [d3ef169d](https://github.com/kubedb/apimachinery/commit/d3ef169d) Generate swagger.json (#451)
+- [b862382f](https://github.com/kubedb/apimachinery/commit/b862382f) Remove client dir from linter
+- [7c01ece1](https://github.com/kubedb/apimachinery/commit/7c01ece1) Add ProxySQLVersion types (#442)
+- [7fdba5b2](https://github.com/kubedb/apimachinery/commit/7fdba5b2) Add ProxySQL to Load Balance MySQL Query Requests (#439)
+- [86289539](https://github.com/kubedb/apimachinery/commit/86289539) Update dependencies
+- [78b79df1](https://github.com/kubedb/apimachinery/commit/78b79df1) Add Readiness probe for PerconaXtraDB (#448)
+- [a7283390](https://github.com/kubedb/apimachinery/commit/a7283390) Added helper functions to dbVersions to check for valid specs (#450)
+- [630714c2](https://github.com/kubedb/apimachinery/commit/630714c2) Fix linter errors (#449)
+- [1b2a09bf](https://github.com/kubedb/apimachinery/commit/1b2a09bf) Add PgBouncer types and clientset (#424)
+- [9b4868f1](https://github.com/kubedb/apimachinery/commit/9b4868f1) Added authPlugin field in Version Catalog spec (#447)
+- [f828d922](https://github.com/kubedb/apimachinery/commit/f828d922) Remove additional print column PROXYSQL_IMAGE from PerconaXtraDBVersion (#446)
+- [262aab46](https://github.com/kubedb/apimachinery/commit/262aab46) Run make ci
+- [e5fd19f8](https://github.com/kubedb/apimachinery/commit/e5fd19f8) Add GitHub actions file
+- [20e376b0](https://github.com/kubedb/apimachinery/commit/20e376b0) Add helper methods to configure proxysql for group replication (#441)
+- [74daad34](https://github.com/kubedb/apimachinery/commit/74daad34) Change to configure proxysql for group replication (#443)
+- [f617c0f6](https://github.com/kubedb/apimachinery/commit/f617c0f6) Change default termination policy as Delete. (#444)
+- [5cffe0c3](https://github.com/kubedb/apimachinery/commit/5cffe0c3) Remove ProxySQL image field from PerconaXtraDBVersion type (#445)
+- [d28870c9](https://github.com/kubedb/apimachinery/commit/d28870c9) Use authentication for readiness and liveness probes (#440)
+- [93079ac4](https://github.com/kubedb/apimachinery/commit/93079ac4) Update changelog
+- [f61829ac](https://github.com/kubedb/apimachinery/commit/f61829ac) Update github.com/kmodules/apiserver fork
+- [598495bf](https://github.com/kubedb/apimachinery/commit/598495bf) Update galera arbitrator helper methods and constants (#438)
+- [ee40af4f](https://github.com/kubedb/apimachinery/commit/ee40af4f) Use github.com/Azure/go-autorest/autorest@v0.7.0 (#437)
+- [a796cc43](https://github.com/kubedb/apimachinery/commit/a796cc43) Add logic to get the PerconaXtraDB object name (#436)
+- [9d4e953d](https://github.com/kubedb/apimachinery/commit/9d4e953d) Add galera arbitrator config (#420)
+- [c0f65020](https://github.com/kubedb/apimachinery/commit/c0f65020) Delete hack/codegen.sh
+- [264d09f6](https://github.com/kubedb/apimachinery/commit/264d09f6) Use github.com/golang/protobuf@v1.2.0 (#435)
+- [3ee2a599](https://github.com/kubedb/apimachinery/commit/3ee2a599) Fix defaulting ClusterAuthMode (#426)
+- [b750710e](https://github.com/kubedb/apimachinery/commit/b750710e) Update tls file paths in default probes (#425)
+- [6539c67a](https://github.com/kubedb/apimachinery/commit/6539c67a) Bring back MongoDBConfiguration (#434)
+- [9549fe9c](https://github.com/kubedb/apimachinery/commit/9549fe9c) Delete authorization and config api types (#433)
+- [51b8c03e](https://github.com/kubedb/apimachinery/commit/51b8c03e) Rename from Percona to PerconaXtraDB (#432)
+- [270ef77d](https://github.com/kubedb/apimachinery/commit/270ef77d) Remove hack/gencrd folder from Makefile
+- [78fa42a7](https://github.com/kubedb/apimachinery/commit/78fa42a7) Update Makefile
+- [19156024](https://github.com/kubedb/apimachinery/commit/19156024) Apply label to CRD yamls (#430)
+- [7fedf00b](https://github.com/kubedb/apimachinery/commit/7fedf00b) Add naming patterns for CRDs (#429)
+- [e86ef0f5](https://github.com/kubedb/apimachinery/commit/e86ef0f5) Use kubebuilder to generate crd yamls (#427)
+- [3d76f0f8](https://github.com/kubedb/apimachinery/commit/3d76f0f8) Delete Report types (#428)
+- [6973f90f](https://github.com/kubedb/apimachinery/commit/6973f90f) Fix travis build (#423)
+- [db6703a7](https://github.com/kubedb/apimachinery/commit/db6703a7) Change package path to kubedb.dev/apimachinery (#422)
+- [5f6c0b43](https://github.com/kubedb/apimachinery/commit/5f6c0b43) Update azure-sdk-for-go to v31.1.0
+- [337d6f57](https://github.com/kubedb/apimachinery/commit/337d6f57) Mongodb config parameter for stash-mongodb integration (#421)
+- [fae41781](https://github.com/kubedb/apimachinery/commit/fae41781) API for SSL support in mongodb (#400)
+- [4c1abd1d](https://github.com/kubedb/apimachinery/commit/4c1abd1d) Add util functions for Percona (#409)
+- [d3391c78](https://github.com/kubedb/apimachinery/commit/d3391c78) Update dormant for percona and mariadb (#408)
+- [6dd3b303](https://github.com/kubedb/apimachinery/commit/6dd3b303) Add percona version api, client (#407)
+- [aca334d6](https://github.com/kubedb/apimachinery/commit/aca334d6) Add license header to make files (#419)
+- [8e981d5f](https://github.com/kubedb/apimachinery/commit/8e981d5f) Use robfig/cron@v3 (#418)
+- [484c1e50](https://github.com/kubedb/apimachinery/commit/484c1e50) Add MaxUnavailable to ElasticsearchNode
+- [c9bc03fe](https://github.com/kubedb/apimachinery/commit/c9bc03fe) Add Maxunavaiable for Elasticsearch PDB support (#414)
+- [7517175a](https://github.com/kubedb/apimachinery/commit/7517175a) Use stopch to cancel BlockOnStashOperator (#413)
+- [0e7a57f2](https://github.com/kubedb/apimachinery/commit/0e7a57f2) Integrate stash/restic with kubedb (#398)
+- [48e4bab6](https://github.com/kubedb/apimachinery/commit/48e4bab6) Add Makefile (#412)
+- [3e0be30e](https://github.com/kubedb/apimachinery/commit/3e0be30e) Using PDB createOrPatch (#411)
+- [ab265d62](https://github.com/kubedb/apimachinery/commit/ab265d62) PDB creator for StatefulSets and Deployments (#410)
+- [dd30b7c2](https://github.com/kubedb/apimachinery/commit/dd30b7c2) Add Service Account name to Database CRDs (#404)
+- [276e07f3](https://github.com/kubedb/apimachinery/commit/276e07f3) Add Percona api, client (#405)
+- [26e83bdb](https://github.com/kubedb/apimachinery/commit/26e83bdb) Add MariaDB api, client (#406)
+- [5ba91534](https://github.com/kubedb/apimachinery/commit/5ba91534) Update to k8s 1.14.0 client libraries using go.mod (#403)
+- [d0115fa0](https://github.com/kubedb/apimachinery/commit/d0115fa0) Update changelog
+
+
+
+## [kubedb/cli](https://github.com/kubedb/cli)
+
+### [v0.14.0](https://github.com/kubedb/cli/releases/tag/v0.14.0)
+
+
+
+
+## [kubedb/elasticsearch](https://github.com/kubedb/elasticsearch)
+
+### [v0.14.0](https://github.com/kubedb/elasticsearch/releases/tag/v0.14.0)
+
+- [14cb3a98](https://github.com/kubedb/elasticsearch/commit/14cb3a98) Prepare for release v0.14.0 (#397)
+- [846ea8ee](https://github.com/kubedb/elasticsearch/commit/846ea8ee) Prepare for release v0.14.0-rc.2 (#396)
+- [709ba7d2](https://github.com/kubedb/elasticsearch/commit/709ba7d2) Prepare for release v0.14.0-rc.1 (#395)
+- [58dac2ba](https://github.com/kubedb/elasticsearch/commit/58dac2ba) Prepare for release v0.14.0-beta.6 (#394)
+- [5d4ad40c](https://github.com/kubedb/elasticsearch/commit/5d4ad40c) Update MergeServicePort and PatchServicePort apis (#393)
+- [992edb90](https://github.com/kubedb/elasticsearch/commit/992edb90) Always set protocol for service ports
+- [0f408cbf](https://github.com/kubedb/elasticsearch/commit/0f408cbf) Create SRV records for governing service (#392)
+- [97f34417](https://github.com/kubedb/elasticsearch/commit/97f34417) Prepare for release v0.14.0-beta.5 (#391)
+- [a3e9a733](https://github.com/kubedb/elasticsearch/commit/a3e9a733) Create separate governing service for each database (#390)
+- [ce8f80b5](https://github.com/kubedb/elasticsearch/commit/ce8f80b5) Update KubeDB api (#389)
+- [0fe8d617](https://github.com/kubedb/elasticsearch/commit/0fe8d617) Update readme
+- [657797fe](https://github.com/kubedb/elasticsearch/commit/657797fe) Update repository config (#388)
+- [d6f5ae41](https://github.com/kubedb/elasticsearch/commit/d6f5ae41) Prepare for release v0.14.0-beta.4 (#387)
+- [149314b5](https://github.com/kubedb/elasticsearch/commit/149314b5) Update KubeDB api (#386)
+- [1de4b578](https://github.com/kubedb/elasticsearch/commit/1de4b578) Make database's phase NotReady as soon as the halted is removed (#375)
+- [57704afa](https://github.com/kubedb/elasticsearch/commit/57704afa) Update Kubernetes v1.18.9 dependencies (#385)
+- [16d37657](https://github.com/kubedb/elasticsearch/commit/16d37657) Update Kubernetes v1.18.9 dependencies (#383)
+- [828f8ab8](https://github.com/kubedb/elasticsearch/commit/828f8ab8) Update KubeDB api (#382)
+- [d70e68a8](https://github.com/kubedb/elasticsearch/commit/d70e68a8) Update for release Stash@v2020.10.21 (#381)
+- [05a687bc](https://github.com/kubedb/elasticsearch/commit/05a687bc) Fix init validator (#379)
+- [24d7f2c8](https://github.com/kubedb/elasticsearch/commit/24d7f2c8) Update KubeDB api (#380)
+- [8c981e08](https://github.com/kubedb/elasticsearch/commit/8c981e08) Update KubeDB api (#378)
+- [cf833e49](https://github.com/kubedb/elasticsearch/commit/cf833e49) Update Kubernetes v1.18.9 dependencies (#377)
+- [fb335a43](https://github.com/kubedb/elasticsearch/commit/fb335a43) Update KubeDB api (#376)
+- [e652a7ec](https://github.com/kubedb/elasticsearch/commit/e652a7ec) Update KubeDB api (#374)
+- [c22b7f31](https://github.com/kubedb/elasticsearch/commit/c22b7f31) Update KubeDB api (#373)
+- [a7d8e3b0](https://github.com/kubedb/elasticsearch/commit/a7d8e3b0) Integrate cert-manager and status.conditions (#357)
+- [370f0df1](https://github.com/kubedb/elasticsearch/commit/370f0df1) Update repository config (#372)
+- [78bdc59e](https://github.com/kubedb/elasticsearch/commit/78bdc59e) Update repository config (#371)
+- [b8003d4b](https://github.com/kubedb/elasticsearch/commit/b8003d4b) Update repository config (#370)
+- [d4ff1ac2](https://github.com/kubedb/elasticsearch/commit/d4ff1ac2) Publish docker images to ghcr.io (#369)
+- [5f5ef393](https://github.com/kubedb/elasticsearch/commit/5f5ef393) Update repository config (#363)
+- [e537ae40](https://github.com/kubedb/elasticsearch/commit/e537ae40) Update Kubernetes v1.18.9 dependencies (#362)
+- [a5a5b084](https://github.com/kubedb/elasticsearch/commit/a5a5b084) Update for release Stash@v2020.09.29 (#361)
+- [11eebe39](https://github.com/kubedb/elasticsearch/commit/11eebe39) Update Kubernetes v1.18.9 dependencies (#360)
+- [a5b47b08](https://github.com/kubedb/elasticsearch/commit/a5b47b08) Update Kubernetes v1.18.9 dependencies (#358)
+- [91f1dc00](https://github.com/kubedb/elasticsearch/commit/91f1dc00) Rename client node to ingest node (#346)
+- [318a8b19](https://github.com/kubedb/elasticsearch/commit/318a8b19) Update repository config (#356)
+- [a8773921](https://github.com/kubedb/elasticsearch/commit/a8773921) Update repository config (#355)
+- [55bef891](https://github.com/kubedb/elasticsearch/commit/55bef891) Update Kubernetes v1.18.9 dependencies (#354)
+- [1a3e421a](https://github.com/kubedb/elasticsearch/commit/1a3e421a) Use common event recorder (#353)
+- [4df32f60](https://github.com/kubedb/elasticsearch/commit/4df32f60) Update Kubernetes v1.18.3 dependencies (#352)
+- [9fb43795](https://github.com/kubedb/elasticsearch/commit/9fb43795) Prepare for release v0.14.0-beta.3 (#351)
+- [a279a60c](https://github.com/kubedb/elasticsearch/commit/a279a60c) Use new `spec.init` section (#350)
+- [a1e2e2f6](https://github.com/kubedb/elasticsearch/commit/a1e2e2f6) Update Kubernetes v1.18.3 dependencies (#349)
+- [0aaf4530](https://github.com/kubedb/elasticsearch/commit/0aaf4530) Add license verifier (#348)
+- [bbacb00b](https://github.com/kubedb/elasticsearch/commit/bbacb00b) Update for release Stash@v2020.09.16 (#347)
+- [98c1ad83](https://github.com/kubedb/elasticsearch/commit/98c1ad83) Update Kubernetes v1.18.3 dependencies (#345)
+- [1ebf168d](https://github.com/kubedb/elasticsearch/commit/1ebf168d) Use background propagation policy
+- [9d7997df](https://github.com/kubedb/elasticsearch/commit/9d7997df) Update Kubernetes v1.18.3 dependencies (#343)
+- [42786958](https://github.com/kubedb/elasticsearch/commit/42786958) Use AppsCode Community License (#342)
+- [a96b0bd3](https://github.com/kubedb/elasticsearch/commit/a96b0bd3) Fix unit tests (#341)
+- [c9905966](https://github.com/kubedb/elasticsearch/commit/c9905966) Update Kubernetes v1.18.3 dependencies (#340)
+- [3b83c316](https://github.com/kubedb/elasticsearch/commit/3b83c316) Prepare for release v0.14.0-beta.2 (#339)
+- [662823ae](https://github.com/kubedb/elasticsearch/commit/662823ae) Update release.yml
+- [ada6c2d3](https://github.com/kubedb/elasticsearch/commit/ada6c2d3) Add support for Open-Distro-for-Elasticsearch (#303)
+- [a9c7ba33](https://github.com/kubedb/elasticsearch/commit/a9c7ba33) Update Kubernetes v1.18.3 dependencies (#333)
+- [c67b1290](https://github.com/kubedb/elasticsearch/commit/c67b1290) Update Kubernetes v1.18.3 dependencies (#332)
+- [aa1d64ad](https://github.com/kubedb/elasticsearch/commit/aa1d64ad) Update Kubernetes v1.18.3 dependencies (#331)
+- [3d6c3e91](https://github.com/kubedb/elasticsearch/commit/3d6c3e91) Update Kubernetes v1.18.3 dependencies (#330)
+- [bb318e74](https://github.com/kubedb/elasticsearch/commit/bb318e74) Update Kubernetes v1.18.3 dependencies (#329)
+- [6b6b4d2d](https://github.com/kubedb/elasticsearch/commit/6b6b4d2d) Update Kubernetes v1.18.3 dependencies (#328)
+- [06cef782](https://github.com/kubedb/elasticsearch/commit/06cef782) Remove dependency on enterprise operator (#327)
+- [20a2c7d4](https://github.com/kubedb/elasticsearch/commit/20a2c7d4) Update to cert-manager v0.16.0 (#326)
+- [e767c356](https://github.com/kubedb/elasticsearch/commit/e767c356) Build images in e2e workflow (#325)
+- [ae696dbe](https://github.com/kubedb/elasticsearch/commit/ae696dbe) Update to Kubernetes v1.18.3 (#324)
+- [a511d8d6](https://github.com/kubedb/elasticsearch/commit/a511d8d6) Allow configuring k8s & db version in e2e tests (#323)
+- [a50b503d](https://github.com/kubedb/elasticsearch/commit/a50b503d) Trigger e2e tests on /ok-to-test command (#322)
+- [107faff2](https://github.com/kubedb/elasticsearch/commit/107faff2) Update to Kubernetes v1.18.3 (#321)
+- [60fb6d9b](https://github.com/kubedb/elasticsearch/commit/60fb6d9b) Update to Kubernetes v1.18.3 (#320)
+- [9aae4782](https://github.com/kubedb/elasticsearch/commit/9aae4782) Prepare for release v0.14.0-beta.1 (#319)
+- [312e5682](https://github.com/kubedb/elasticsearch/commit/312e5682) Update for release Stash@v2020.07.09-beta.0 (#317)
+- [681f3e87](https://github.com/kubedb/elasticsearch/commit/681f3e87) Include Makefile.env
+- [e460af51](https://github.com/kubedb/elasticsearch/commit/e460af51) Allow customizing chart registry (#316)
+- [64e15a33](https://github.com/kubedb/elasticsearch/commit/64e15a33) Update for release Stash@v2020.07.08-beta.0 (#315)
+- [1f2ef7a6](https://github.com/kubedb/elasticsearch/commit/1f2ef7a6) Update License (#314)
+- [16ce6c90](https://github.com/kubedb/elasticsearch/commit/16ce6c90) Update to Kubernetes v1.18.3 (#313)
+- [3357faa3](https://github.com/kubedb/elasticsearch/commit/3357faa3) Update ci.yml
+- [cb44a1eb](https://github.com/kubedb/elasticsearch/commit/cb44a1eb) Load stash version from .env file for make (#312)
+- [cf212019](https://github.com/kubedb/elasticsearch/commit/cf212019) Update update-release-tracker.sh
+- [5127428e](https://github.com/kubedb/elasticsearch/commit/5127428e) Update update-release-tracker.sh
+- [7f790940](https://github.com/kubedb/elasticsearch/commit/7f790940) Add script to update release tracker on pr merge (#311)
+- [340b6112](https://github.com/kubedb/elasticsearch/commit/340b6112) Update .kodiak.toml
+- [e01c4eec](https://github.com/kubedb/elasticsearch/commit/e01c4eec) Various fixes (#310)
+- [11517f71](https://github.com/kubedb/elasticsearch/commit/11517f71) Update to Kubernetes v1.18.3 (#309)
+- [53d7b117](https://github.com/kubedb/elasticsearch/commit/53d7b117) Update to Kubernetes v1.18.3
+- [7eacc7dd](https://github.com/kubedb/elasticsearch/commit/7eacc7dd) Create .kodiak.toml
+- [b91b23d9](https://github.com/kubedb/elasticsearch/commit/b91b23d9) Use CRD v1 for Kubernetes >= 1.16 (#308)
+- [08c1d2a8](https://github.com/kubedb/elasticsearch/commit/08c1d2a8) Update to Kubernetes v1.18.3 (#307)
+- [32cdb8a4](https://github.com/kubedb/elasticsearch/commit/32cdb8a4) Fix e2e tests (#306)
+- [0bca1a04](https://github.com/kubedb/elasticsearch/commit/0bca1a04) Merge pull request #302 from kubedb/multi-region
+- [bf0c26ee](https://github.com/kubedb/elasticsearch/commit/bf0c26ee) Revendor kubedb.dev/apimachinery@v0.14.0-beta.0
+- [7c00c63c](https://github.com/kubedb/elasticsearch/commit/7c00c63c) Add support for multi-regional cluster
+- [363322df](https://github.com/kubedb/elasticsearch/commit/363322df) Update stash install commands
+- [a0138a36](https://github.com/kubedb/elasticsearch/commit/a0138a36) Update crazy-max/ghaction-docker-buildx flag
+- [3076eb46](https://github.com/kubedb/elasticsearch/commit/3076eb46) Use updated operator labels in e2e tests (#304)
+- [d537b91b](https://github.com/kubedb/elasticsearch/commit/d537b91b) Pass annotations from CRD to AppBinding (#305)
+- [48f9399c](https://github.com/kubedb/elasticsearch/commit/48f9399c) Trigger the workflow on push or pull request
+- [7b8d56cb](https://github.com/kubedb/elasticsearch/commit/7b8d56cb) Update CHANGELOG.md
+- [939f6882](https://github.com/kubedb/elasticsearch/commit/939f6882) Update labelSelector for statefulsets (#300)
+- [ed1c0553](https://github.com/kubedb/elasticsearch/commit/ed1c0553) Make master service headless & add rest-port to all db nodes (#299)
+- [b7e7c8d7](https://github.com/kubedb/elasticsearch/commit/b7e7c8d7) Use stash.appscode.dev/apimachinery@v0.9.0-rc.6 (#301)
+- [e51555d5](https://github.com/kubedb/elasticsearch/commit/e51555d5) Introduce spec.halted and removed dormant and snapshot crd (#296)
+- [8255276f](https://github.com/kubedb/elasticsearch/commit/8255276f) Add spec.selector fields to the governing service (#297)
+- [13bc760f](https://github.com/kubedb/elasticsearch/commit/13bc760f) Use stash@v0.9.0-rc.4 release (#298)
+- [6a21fb86](https://github.com/kubedb/elasticsearch/commit/6a21fb86) Add `Pause` feature (#295)
+- [1b25070c](https://github.com/kubedb/elasticsearch/commit/1b25070c) Refactor CI pipeline to build once (#294)
+- [ace3d779](https://github.com/kubedb/elasticsearch/commit/ace3d779) Fix e2e tests on GitHub actions (#292)
+- [7a7eb8d1](https://github.com/kubedb/elasticsearch/commit/7a7eb8d1) fix bug (#293)
+- [0641649e](https://github.com/kubedb/elasticsearch/commit/0641649e) Use Go 1.13 in CI (#291)
+- [97790e1e](https://github.com/kubedb/elasticsearch/commit/97790e1e) Take out elasticsearch docker images and Matrix test (#289)
+- [3a20c1db](https://github.com/kubedb/elasticsearch/commit/3a20c1db) Fix default make command
+- [ece073a2](https://github.com/kubedb/elasticsearch/commit/ece073a2) Update catalog values for make install command
+- [8df4697b](https://github.com/kubedb/elasticsearch/commit/8df4697b) Use charts to install operator (#290)
+- [5cbde391](https://github.com/kubedb/elasticsearch/commit/5cbde391) Add add-license make target
+- [b7012bc5](https://github.com/kubedb/elasticsearch/commit/b7012bc5) Skip libbuild folder from checking license
+- [d56db3a0](https://github.com/kubedb/elasticsearch/commit/d56db3a0) Add license header to files (#288)
+- [1d0c368a](https://github.com/kubedb/elasticsearch/commit/1d0c368a) Enable make ci (#287)
+- [2e835dff](https://github.com/kubedb/elasticsearch/commit/2e835dff) Remove EnableStatusSubresource (#286)
+- [bcd0ebd9](https://github.com/kubedb/elasticsearch/commit/bcd0ebd9) Fix E2E tests in github action (#285)
+- [865dc774](https://github.com/kubedb/elasticsearch/commit/865dc774) Prepare v0.13.0-rc.1 release (#284)
+- [9348ba60](https://github.com/kubedb/elasticsearch/commit/9348ba60) Run e2e tests using GitHub actions (#283)
+- [aea27214](https://github.com/kubedb/elasticsearch/commit/aea27214) Validate DBVersionSpecs and fixed broken build (#282)
+- [cb48734f](https://github.com/kubedb/elasticsearch/commit/cb48734f) Update elasticdump version for es7.3, 7.2 and 6.8 (#281)
+- [7bd05be9](https://github.com/kubedb/elasticsearch/commit/7bd05be9) Added Es7.3 (#280)
+- [ca0cc981](https://github.com/kubedb/elasticsearch/commit/ca0cc981) Added support for Xpack in es6.8 and es7.2 (#278)
+- [c5f54840](https://github.com/kubedb/elasticsearch/commit/c5f54840) Add support for 7.2.0 (#268)
+- [0531464e](https://github.com/kubedb/elasticsearch/commit/0531464e) Run e2e tests using GitHub actions (#279)
+- [67965e99](https://github.com/kubedb/elasticsearch/commit/67965e99) Update go.yml
+- [a5d848ca](https://github.com/kubedb/elasticsearch/commit/a5d848ca) Enable GitHub actions
+- [723383c6](https://github.com/kubedb/elasticsearch/commit/723383c6)  Fixed snapshot for 6.8.0 (#276)
+- [c5421e61](https://github.com/kubedb/elasticsearch/commit/c5421e61) Add support for Elasticsearch 6.8.0 (#265)
+- [4b665fbb](https://github.com/kubedb/elasticsearch/commit/4b665fbb) Support configuration options for exporter sidecar (#275)
+- [04ac9729](https://github.com/kubedb/elasticsearch/commit/04ac9729) Update changelog
+- [d4b41b55](https://github.com/kubedb/elasticsearch/commit/d4b41b55) Remove linux/arm support
+- [f99f7e8f](https://github.com/kubedb/elasticsearch/commit/f99f7e8f) Revendor
+- [61e89f4b](https://github.com/kubedb/elasticsearch/commit/61e89f4b) Add e2e test commands to Makefile (#274)
+- [7e56a7c0](https://github.com/kubedb/elasticsearch/commit/7e56a7c0) Use docker buildx to build docker image
+- [3dd46b3f](https://github.com/kubedb/elasticsearch/commit/3dd46b3f) Update dependencies (#273)
+- [73edeb82](https://github.com/kubedb/elasticsearch/commit/73edeb82) Don't set annotation to AppBinding (#272)
+- [699d41ce](https://github.com/kubedb/elasticsearch/commit/699d41ce) Set database version in AppBinding (#271)
+- [cf3522a5](https://github.com/kubedb/elasticsearch/commit/cf3522a5) Fix travis yaml
+- [a410aed9](https://github.com/kubedb/elasticsearch/commit/a410aed9) Change package path to kubedb.dev/elasticsearch (#270)
+- [2cebf0eb](https://github.com/kubedb/elasticsearch/commit/2cebf0eb) Support initializing from stash restoresession. (#267)
+- [c363bf68](https://github.com/kubedb/elasticsearch/commit/c363bf68) Pod Disruption Budget for Elasticsearch (#262)
+- [27a27b04](https://github.com/kubedb/elasticsearch/commit/27a27b04) Fix UpsertDatabaseAnnotation() function (#266)
+- [780837b3](https://github.com/kubedb/elasticsearch/commit/780837b3) Add license header to Makefiles (#269)
+- [35e5b873](https://github.com/kubedb/elasticsearch/commit/35e5b873) Update Makefile
+- [00328da8](https://github.com/kubedb/elasticsearch/commit/00328da8) Add install, uninstall and purge command in makefile (#264)
+- [7445850e](https://github.com/kubedb/elasticsearch/commit/7445850e) Update .gitignore
+- [ba0f0140](https://github.com/kubedb/elasticsearch/commit/ba0f0140) Handling resource ownership (#261)
+- [59328b8d](https://github.com/kubedb/elasticsearch/commit/59328b8d) Add Makefile (#263)
+- [e8fbea4b](https://github.com/kubedb/elasticsearch/commit/e8fbea4b) Update to k8s 1.14.0 client libraries using go.mod (#260)
+- [8adbe567](https://github.com/kubedb/elasticsearch/commit/8adbe567) Update README.md
+- [3ca67679](https://github.com/kubedb/elasticsearch/commit/3ca67679) Start next dev cycle
+
+
+
+## [kubedb/installer](https://github.com/kubedb/installer)
+
+### [v0.14.0](https://github.com/kubedb/installer/releases/tag/v0.14.0)
+
+
+
+
+## [kubedb/memcached](https://github.com/kubedb/memcached)
+
+### [v0.7.0](https://github.com/kubedb/memcached/releases/tag/v0.7.0)
+
+- [e98bc3a2](https://github.com/kubedb/memcached/commit/e98bc3a2) Prepare for release v0.7.0 (#229)
+- [a63e015b](https://github.com/kubedb/memcached/commit/a63e015b) Prepare for release v0.7.0-rc.2 (#228)
+- [85527a82](https://github.com/kubedb/memcached/commit/85527a82) Prepare for release v0.7.0-rc.1 (#227)
+- [704cf9f2](https://github.com/kubedb/memcached/commit/704cf9f2) Prepare for release v0.7.0-beta.6 (#226)
+- [47039c68](https://github.com/kubedb/memcached/commit/47039c68) Create SRV records for governing service (#225)
+- [0fbfc766](https://github.com/kubedb/memcached/commit/0fbfc766) Prepare for release v0.7.0-beta.5 (#224)
+- [7a01e878](https://github.com/kubedb/memcached/commit/7a01e878) Create separate governing service for each database (#223)
+- [6cecdfec](https://github.com/kubedb/memcached/commit/6cecdfec) Update KubeDB api (#222)
+- [5942b1ff](https://github.com/kubedb/memcached/commit/5942b1ff) Update readme
+- [49da218c](https://github.com/kubedb/memcached/commit/49da218c) Prepare for release v0.7.0-beta.4 (#221)
+- [25677a68](https://github.com/kubedb/memcached/commit/25677a68) Update KubeDB api (#220)
+- [b4cd7a06](https://github.com/kubedb/memcached/commit/b4cd7a06) Update Kubernetes v1.18.9 dependencies (#219)
+- [553c98d4](https://github.com/kubedb/memcached/commit/553c98d4) Update KubeDB api (#218)
+- [2e9af5f1](https://github.com/kubedb/memcached/commit/2e9af5f1) Update KubeDB api (#217)
+- [86b20622](https://github.com/kubedb/memcached/commit/86b20622) Update KubeDB api (#216)
+- [8a46e900](https://github.com/kubedb/memcached/commit/8a46e900) Update Kubernetes v1.18.9 dependencies (#215)
+- [366531e0](https://github.com/kubedb/memcached/commit/366531e0) Update KubeDB api (#214)
+- [1a45a5d3](https://github.com/kubedb/memcached/commit/1a45a5d3) Update KubeDB api (#213)
+- [40afd78d](https://github.com/kubedb/memcached/commit/40afd78d) Update KubeDB api (#212)
+- [bee3d626](https://github.com/kubedb/memcached/commit/bee3d626) Update KubeDB api (#211)
+- [3a71917a](https://github.com/kubedb/memcached/commit/3a71917a) Update Kubernetes v1.18.9 dependencies (#210)
+- [efaeb8f1](https://github.com/kubedb/memcached/commit/efaeb8f1) Update KubeDB api (#209)
+- [f8bcc2ac](https://github.com/kubedb/memcached/commit/f8bcc2ac) Update KubeDB api (#208)
+- [de050491](https://github.com/kubedb/memcached/commit/de050491) Update KubeDB api (#207)
+- [f59d7b22](https://github.com/kubedb/memcached/commit/f59d7b22) Update repository config (#206)
+- [ef1b61d7](https://github.com/kubedb/memcached/commit/ef1b61d7) Update repository config (#205)
+- [2401e6a4](https://github.com/kubedb/memcached/commit/2401e6a4) Update repository config (#204)
+- [59b4a20b](https://github.com/kubedb/memcached/commit/59b4a20b) Update KubeDB api (#203)
+- [7ceab937](https://github.com/kubedb/memcached/commit/7ceab937) Update Kubernetes v1.18.9 dependencies (#202)
+- [22ed0d2f](https://github.com/kubedb/memcached/commit/22ed0d2f) Publish docker images to ghcr.io (#201)
+- [059535f1](https://github.com/kubedb/memcached/commit/059535f1) Update KubeDB api (#200)
+- [480c5281](https://github.com/kubedb/memcached/commit/480c5281) Update KubeDB api (#199)
+- [60980557](https://github.com/kubedb/memcached/commit/60980557) Update KubeDB api (#198)
+- [57091fac](https://github.com/kubedb/memcached/commit/57091fac) Update KubeDB api (#197)
+- [4fa3793d](https://github.com/kubedb/memcached/commit/4fa3793d) Update repository config (#196)
+- [9891c8e3](https://github.com/kubedb/memcached/commit/9891c8e3) Update Kubernetes v1.18.9 dependencies (#195)
+- [d4dbb4a6](https://github.com/kubedb/memcached/commit/d4dbb4a6) Update KubeDB api (#192)
+- [8e27b6ef](https://github.com/kubedb/memcached/commit/8e27b6ef) Update Kubernetes v1.18.9 dependencies (#193)
+- [f8fefd18](https://github.com/kubedb/memcached/commit/f8fefd18) Update Kubernetes v1.18.9 dependencies (#191)
+- [0c8250d9](https://github.com/kubedb/memcached/commit/0c8250d9) Update repository config (#190)
+- [08cd9670](https://github.com/kubedb/memcached/commit/08cd9670) Update repository config (#189)
+- [c15513f2](https://github.com/kubedb/memcached/commit/c15513f2) Update Kubernetes v1.18.9 dependencies (#188)
+- [f6115aaa](https://github.com/kubedb/memcached/commit/f6115aaa) Use common event recorder (#187)
+- [bbf717a9](https://github.com/kubedb/memcached/commit/bbf717a9) Update Kubernetes v1.18.3 dependencies (#186)
+- [a9edb56d](https://github.com/kubedb/memcached/commit/a9edb56d) Prepare for release v0.7.0-beta.3 (#185)
+- [ce99d040](https://github.com/kubedb/memcached/commit/ce99d040) Update Kubernetes v1.18.3 dependencies (#184)
+- [dd19f634](https://github.com/kubedb/memcached/commit/dd19f634) Add license verifier (#183)
+- [fc482bc2](https://github.com/kubedb/memcached/commit/fc482bc2) Update Kubernetes v1.18.3 dependencies (#182)
+- [b85b6742](https://github.com/kubedb/memcached/commit/b85b6742) Use background deletion policy
+- [d46f41f9](https://github.com/kubedb/memcached/commit/d46f41f9) Update Kubernetes v1.18.3 dependencies (#180)
+- [d958c241](https://github.com/kubedb/memcached/commit/d958c241) Use AppsCode Community License (#179)
+- [64410c11](https://github.com/kubedb/memcached/commit/64410c11) Update Kubernetes v1.18.3 dependencies (#178)
+- [b8fe927b](https://github.com/kubedb/memcached/commit/b8fe927b) Prepare for release v0.7.0-beta.2 (#177)
+- [0f5014d2](https://github.com/kubedb/memcached/commit/0f5014d2) Update release.yml
+- [1b627013](https://github.com/kubedb/memcached/commit/1b627013) Remove updateStrategy field (#176)
+- [66f008d6](https://github.com/kubedb/memcached/commit/66f008d6) Update Kubernetes v1.18.3 dependencies (#175)
+- [09ff8589](https://github.com/kubedb/memcached/commit/09ff8589) Update Kubernetes v1.18.3 dependencies (#174)
+- [92e344d8](https://github.com/kubedb/memcached/commit/92e344d8) Update Kubernetes v1.18.3 dependencies (#173)
+- [51e977f3](https://github.com/kubedb/memcached/commit/51e977f3) Update Kubernetes v1.18.3 dependencies (#172)
+- [f32d7e9c](https://github.com/kubedb/memcached/commit/f32d7e9c) Update Kubernetes v1.18.3 dependencies (#171)
+- [2cdba698](https://github.com/kubedb/memcached/commit/2cdba698) Update Kubernetes v1.18.3 dependencies (#170)
+- [9486876e](https://github.com/kubedb/memcached/commit/9486876e) Update Kubernetes v1.18.3 dependencies (#169)
+- [81648447](https://github.com/kubedb/memcached/commit/81648447) Update Kubernetes v1.18.3 dependencies (#168)
+- [e9c3f98d](https://github.com/kubedb/memcached/commit/e9c3f98d) Fix install target
+- [6dff8f7b](https://github.com/kubedb/memcached/commit/6dff8f7b) Remove dependency on enterprise operator (#167)
+- [707d4d83](https://github.com/kubedb/memcached/commit/707d4d83) Build images in e2e workflow (#166)
+- [ff1b144e](https://github.com/kubedb/memcached/commit/ff1b144e) Allow configuring k8s & db version in e2e tests (#165)
+- [0b1699d8](https://github.com/kubedb/memcached/commit/0b1699d8) Update to Kubernetes v1.18.3 (#164)
+- [b141122a](https://github.com/kubedb/memcached/commit/b141122a) Trigger e2e tests on /ok-to-test command (#163)
+- [36b03266](https://github.com/kubedb/memcached/commit/36b03266) Update to Kubernetes v1.18.3 (#162)
+- [3ede9dcc](https://github.com/kubedb/memcached/commit/3ede9dcc) Update to Kubernetes v1.18.3 (#161)
+- [3f7c1b90](https://github.com/kubedb/memcached/commit/3f7c1b90) Prepare for release v0.7.0-beta.1 (#160)
+- [1278cd57](https://github.com/kubedb/memcached/commit/1278cd57) include Makefile.env (#158)
+- [676222b7](https://github.com/kubedb/memcached/commit/676222b7) Update License (#157)
+- [216fdcd4](https://github.com/kubedb/memcached/commit/216fdcd4) Update to Kubernetes v1.18.3 (#156)
+- [dc59abf4](https://github.com/kubedb/memcached/commit/dc59abf4) Update ci.yml
+- [071589c5](https://github.com/kubedb/memcached/commit/071589c5) Update update-release-tracker.sh
+- [79bc96d8](https://github.com/kubedb/memcached/commit/79bc96d8) Update update-release-tracker.sh
+- [31f5fca6](https://github.com/kubedb/memcached/commit/31f5fca6) Add script to update release tracker on pr merge (#155)
+- [05d1d6ab](https://github.com/kubedb/memcached/commit/05d1d6ab) Update .kodiak.toml
+- [522b617f](https://github.com/kubedb/memcached/commit/522b617f) Various fixes (#154)
+- [2ed2c3a0](https://github.com/kubedb/memcached/commit/2ed2c3a0) Update to Kubernetes v1.18.3 (#152)
+- [10cea9ad](https://github.com/kubedb/memcached/commit/10cea9ad) Update to Kubernetes v1.18.3
+- [582177b0](https://github.com/kubedb/memcached/commit/582177b0) Create .kodiak.toml
+- [bf1900b6](https://github.com/kubedb/memcached/commit/bf1900b6) Run flaky e2e test (#151)
+- [aa09abfc](https://github.com/kubedb/memcached/commit/aa09abfc) Use CRD v1 for Kubernetes >= 1.16 (#150)
+- [b2586151](https://github.com/kubedb/memcached/commit/b2586151) Merge pull request #146 from pohly/pmem
+- [dbd5b2b0](https://github.com/kubedb/memcached/commit/dbd5b2b0) Fix build
+- [d0722c34](https://github.com/kubedb/memcached/commit/d0722c34) WIP: implement PMEM support
+- [f16b1198](https://github.com/kubedb/memcached/commit/f16b1198) Makefile: adapt to recent installer repo changes
+- [32f71c56](https://github.com/kubedb/memcached/commit/32f71c56) Makefile: support e2e testing with arbitrary KUBECONFIG file
+- [6ed07efc](https://github.com/kubedb/memcached/commit/6ed07efc) Update to Kubernetes v1.18.3 (#149)
+- [ce702669](https://github.com/kubedb/memcached/commit/ce702669) Fix e2e tests (#148)
+- [18917f8d](https://github.com/kubedb/memcached/commit/18917f8d) Revendor kubedb.dev/apimachinery@master (#147)
+- [e51d327c](https://github.com/kubedb/memcached/commit/e51d327c) Update crazy-max/ghaction-docker-buildx flag
+- [1202c059](https://github.com/kubedb/memcached/commit/1202c059) Use updated operator labels in e2e tests (#144)
+- [e02d42a4](https://github.com/kubedb/memcached/commit/e02d42a4) Pass annotations from CRD to AppBinding (#145)
+- [2c91d63b](https://github.com/kubedb/memcached/commit/2c91d63b) Trigger the workflow on push or pull request
+- [67c83a9a](https://github.com/kubedb/memcached/commit/67c83a9a) Update CHANGELOG.md
+- [85e3cf54](https://github.com/kubedb/memcached/commit/85e3cf54) Use stash.appscode.dev/apimachinery@v0.9.0-rc.6 (#143)
+- [e61dd2e6](https://github.com/kubedb/memcached/commit/e61dd2e6) Update error msg to reject halt when termination policy is 'DoNotTerminate'
+- [bc079b7b](https://github.com/kubedb/memcached/commit/bc079b7b) Introduce spec.halted and removed dormant crd (#142)
+- [f31610c3](https://github.com/kubedb/memcached/commit/f31610c3) Refactor CI pipeline to run build once (#141)
+- [f5eec5e4](https://github.com/kubedb/memcached/commit/f5eec5e4) Update kubernetes client-go to 1.16.3 (#140)
+- [f645174a](https://github.com/kubedb/memcached/commit/f645174a) Update catalog values for make install command
+- [2a297c89](https://github.com/kubedb/memcached/commit/2a297c89) Use charts to install operator (#139)
+- [83e2ba17](https://github.com/kubedb/memcached/commit/83e2ba17) Moved out docker files and added matrix github actions ci/cd (#138)
+- [97e3a5bd](https://github.com/kubedb/memcached/commit/97e3a5bd) Add add-license make target
+- [7b79fbfe](https://github.com/kubedb/memcached/commit/7b79fbfe) Add license header to files (#137)
+- [2afa406f](https://github.com/kubedb/memcached/commit/2afa406f) Enable make ci (#136)
+- [bab32534](https://github.com/kubedb/memcached/commit/bab32534) Remove EnableStatusSubresource (#135)
+- [b28d4b1e](https://github.com/kubedb/memcached/commit/b28d4b1e) Prepare v0.6.0-rc.1 release (#134)
+- [c7aad4dd](https://github.com/kubedb/memcached/commit/c7aad4dd) Run e2e tests using GitHub actions (#132)
+- [66efb2de](https://github.com/kubedb/memcached/commit/66efb2de) Validate DBVersionSpecs and fixed broken build (#133)
+- [c16091ba](https://github.com/kubedb/memcached/commit/c16091ba) Update go.yml
+- [69b2dc70](https://github.com/kubedb/memcached/commit/69b2dc70) Enable GitHub actions
+- [93edca95](https://github.com/kubedb/memcached/commit/93edca95) Update changelog
+- [d46cda1f](https://github.com/kubedb/memcached/commit/d46cda1f) Remove linux/arm support
+- [378ad5e1](https://github.com/kubedb/memcached/commit/378ad5e1) Revendor
+- [85f05095](https://github.com/kubedb/memcached/commit/85f05095) Improve test: Use installed memcachedversions (#131)
+- [47444708](https://github.com/kubedb/memcached/commit/47444708) Use docker buildx to build docker image xref: https://community.arm.com/developer/tools-software/tools/b/tools-software-ides-blog/posts/getting-started-with-docker-for-arm-on-linux
+- [ee1082b4](https://github.com/kubedb/memcached/commit/ee1082b4) Update dependencies (#130)
+- [ac9391b5](https://github.com/kubedb/memcached/commit/ac9391b5) Don't set annotation to AppBinding (#129)
+- [4a2f42a1](https://github.com/kubedb/memcached/commit/4a2f42a1) Set database version in AppBinding (#128)
+- [dab1a2fc](https://github.com/kubedb/memcached/commit/dab1a2fc) Change package path to kubedb.dev/memcached (#127)
+- [3e92762f](https://github.com/kubedb/memcached/commit/3e92762f) Add license header to Makefiles (#126)
+- [50491fd3](https://github.com/kubedb/memcached/commit/50491fd3) Update Makefile
+- [66e955a2](https://github.com/kubedb/memcached/commit/66e955a2) Add install, uninstall and purge command in Makefile (#125)
+- [9f4b0865](https://github.com/kubedb/memcached/commit/9f4b0865) Update .gitignore
+- [9a760f7c](https://github.com/kubedb/memcached/commit/9a760f7c) Pod Disruption Budget for Memcached (#123)
+- [ced8e75c](https://github.com/kubedb/memcached/commit/ced8e75c) Handling resource ownership (#122)
+- [0a01c5ea](https://github.com/kubedb/memcached/commit/0a01c5ea) Add Makefile (#124)
+- [4a80b9af](https://github.com/kubedb/memcached/commit/4a80b9af) Update to k8s 1.14.0 client libraries using go.mod (#121)
+- [a7bbcf54](https://github.com/kubedb/memcached/commit/a7bbcf54) Update README.md
+- [44ddb0d6](https://github.com/kubedb/memcached/commit/44ddb0d6) Start next dev cycle
+
+
+
+## [kubedb/mongodb](https://github.com/kubedb/mongodb)
+
+### [v0.7.0](https://github.com/kubedb/mongodb/releases/tag/v0.7.0)
+
+- [eceea248](https://github.com/kubedb/mongodb/commit/eceea248) Prepare for release v0.7.0 (#299)
+- [d87c55bb](https://github.com/kubedb/mongodb/commit/d87c55bb) Prepare for release v0.7.0-rc.2 (#298)
+- [f428010d](https://github.com/kubedb/mongodb/commit/f428010d) Prepare for release v0.7.0-rc.1 (#297)
+- [0d32b697](https://github.com/kubedb/mongodb/commit/0d32b697) Prepare for release v0.7.0-beta.6 (#296)
+- [1f75de65](https://github.com/kubedb/mongodb/commit/1f75de65) Update MergeServicePort and PatchServicePort apis (#295)
+- [984fd7c2](https://github.com/kubedb/mongodb/commit/984fd7c2) Create SRV records for governing service (#294)
+- [fc973dd0](https://github.com/kubedb/mongodb/commit/fc973dd0) Make database's phase NotReady as soon as the halted is removed (#293)
+- [f1818bb1](https://github.com/kubedb/mongodb/commit/f1818bb1) Prepare for release v0.7.0-beta.5 (#292)
+- [7d1586f7](https://github.com/kubedb/mongodb/commit/7d1586f7) Create separate governing service for each database (#291)
+- [1e281abb](https://github.com/kubedb/mongodb/commit/1e281abb) Update KubeDB api (#290)
+- [23d8785f](https://github.com/kubedb/mongodb/commit/23d8785f) Update readme
+- [007e3ccd](https://github.com/kubedb/mongodb/commit/007e3ccd) Prepare for release v0.7.0-beta.4 (#289)
+- [11f6573e](https://github.com/kubedb/mongodb/commit/11f6573e) Update MongoDB Conditions (#280)
+- [a964af9b](https://github.com/kubedb/mongodb/commit/a964af9b) Update KubeDB api (#288)
+- [38fd31b3](https://github.com/kubedb/mongodb/commit/38fd31b3) Update Kubernetes v1.18.9 dependencies (#287)
+- [b0110bea](https://github.com/kubedb/mongodb/commit/b0110bea) Update KubeDB api (#286)
+- [bfad7e48](https://github.com/kubedb/mongodb/commit/bfad7e48) Update for release Stash@v2020.10.21 (#285)
+- [2eebd6eb](https://github.com/kubedb/mongodb/commit/2eebd6eb) Fix init validator (#283)
+- [7912e726](https://github.com/kubedb/mongodb/commit/7912e726) Update KubeDB api (#284)
+- [ebf85b6d](https://github.com/kubedb/mongodb/commit/ebf85b6d) Update KubeDB api (#282)
+- [7fa4958c](https://github.com/kubedb/mongodb/commit/7fa4958c) Update Kubernetes v1.18.9 dependencies (#281)
+- [705843b8](https://github.com/kubedb/mongodb/commit/705843b8) Use MongoDBCustomConfigFile constant
+- [dac6262d](https://github.com/kubedb/mongodb/commit/dac6262d) Update KubeDB api (#279)
+- [7e7a960e](https://github.com/kubedb/mongodb/commit/7e7a960e) Update KubeDB api (#278)
+- [aed9bd49](https://github.com/kubedb/mongodb/commit/aed9bd49) Update KubeDB api (#277)
+- [18ec2e99](https://github.com/kubedb/mongodb/commit/18ec2e99) Update Kubernetes v1.18.9 dependencies (#276)
+- [dbec1f66](https://github.com/kubedb/mongodb/commit/dbec1f66) Update KubeDB api (#275)
+- [ad028b51](https://github.com/kubedb/mongodb/commit/ad028b51) Update KubeDB api (#274)
+- [a21dfd6a](https://github.com/kubedb/mongodb/commit/a21dfd6a) Update KubeDB api (#272)
+- [932ac34b](https://github.com/kubedb/mongodb/commit/932ac34b) Update repository config (#271)
+- [3f52a364](https://github.com/kubedb/mongodb/commit/3f52a364) Update repository config (#270)
+- [d3bf87db](https://github.com/kubedb/mongodb/commit/d3bf87db) Initialize statefulset watcher from cmd/server/options.go (#269)
+- [e3e15b7f](https://github.com/kubedb/mongodb/commit/e3e15b7f) Update KubeDB api (#268)
+- [406ae5a2](https://github.com/kubedb/mongodb/commit/406ae5a2) Update Kubernetes v1.18.9 dependencies (#267)
+- [0339503d](https://github.com/kubedb/mongodb/commit/0339503d) Publish docker images to ghcr.io (#266)
+- [ffccdc3c](https://github.com/kubedb/mongodb/commit/ffccdc3c) Update KubeDB api (#265)
+- [05b7a0bd](https://github.com/kubedb/mongodb/commit/05b7a0bd) Update KubeDB api (#264)
+- [d6447024](https://github.com/kubedb/mongodb/commit/d6447024) Update KubeDB api (#263)
+- [e7c1e3a3](https://github.com/kubedb/mongodb/commit/e7c1e3a3) Update KubeDB api (#262)
+- [5647960a](https://github.com/kubedb/mongodb/commit/5647960a) Update repository config (#261)
+- [e7481d8d](https://github.com/kubedb/mongodb/commit/e7481d8d) Use conditions to handle initialization (#258)
+- [d406586a](https://github.com/kubedb/mongodb/commit/d406586a) Update Kubernetes v1.18.9 dependencies (#260)
+- [93708d02](https://github.com/kubedb/mongodb/commit/93708d02) Remove redundant volume mounts (#259)
+- [bf28af80](https://github.com/kubedb/mongodb/commit/bf28af80) Update for release Stash@v2020.09.29 (#257)
+- [b34e2326](https://github.com/kubedb/mongodb/commit/b34e2326) Update Kubernetes v1.18.9 dependencies (#256)
+- [86e84d48](https://github.com/kubedb/mongodb/commit/86e84d48) Remove bootstrap container (#248)
+- [0b66e225](https://github.com/kubedb/mongodb/commit/0b66e225) Update Kubernetes v1.18.9 dependencies (#254)
+- [1a06f223](https://github.com/kubedb/mongodb/commit/1a06f223) Update repository config (#253)
+- [c199b164](https://github.com/kubedb/mongodb/commit/c199b164) Update repository config (#252)
+- [1268868d](https://github.com/kubedb/mongodb/commit/1268868d) Update Kubernetes v1.18.9 dependencies (#251)
+- [de63158f](https://github.com/kubedb/mongodb/commit/de63158f) Use common event recorder (#249)
+- [2f96b75a](https://github.com/kubedb/mongodb/commit/2f96b75a) Update Kubernetes v1.18.3 dependencies (#250)
+- [2867a4ef](https://github.com/kubedb/mongodb/commit/2867a4ef) Prepare for release v0.7.0-beta.3 (#247)
+- [8e6c12e7](https://github.com/kubedb/mongodb/commit/8e6c12e7) Use new `spec.init` section (#246)
+- [96aefe31](https://github.com/kubedb/mongodb/commit/96aefe31) Update Kubernetes v1.18.3 dependencies (#245)
+- [59e2a89c](https://github.com/kubedb/mongodb/commit/59e2a89c) Add license verifier (#244)
+- [2824cb71](https://github.com/kubedb/mongodb/commit/2824cb71) Update for release Stash@v2020.09.16 (#243)
+- [3c626235](https://github.com/kubedb/mongodb/commit/3c626235) Update Kubernetes v1.18.3 dependencies (#242)
+- [86b205ef](https://github.com/kubedb/mongodb/commit/86b205ef) Update Constants (#241)
+- [1910e947](https://github.com/kubedb/mongodb/commit/1910e947) Use common constant across MongoDB Community and Enterprise operator (#240)
+- [05364676](https://github.com/kubedb/mongodb/commit/05364676) Run e2e tests from kubedb/tests repo (#238)
+- [80a78fe7](https://github.com/kubedb/mongodb/commit/80a78fe7) Set Delete Propagation Policy to Background (#237)
+- [9a9d101c](https://github.com/kubedb/mongodb/commit/9a9d101c) Update Kubernetes v1.18.3 dependencies (#236)
+- [d596ca68](https://github.com/kubedb/mongodb/commit/d596ca68) Use AppsCode Community License (#235)
+- [8fd389de](https://github.com/kubedb/mongodb/commit/8fd389de) Prepare for release v0.7.0-beta.2 (#234)
+- [3e4981ee](https://github.com/kubedb/mongodb/commit/3e4981ee) Update release.yml
+- [c1d5cdb8](https://github.com/kubedb/mongodb/commit/c1d5cdb8) Always use OnDelete UpdateStrategy (#233)
+- [a135b2c7](https://github.com/kubedb/mongodb/commit/a135b2c7) Fix build (#232)
+- [cfb1788b](https://github.com/kubedb/mongodb/commit/cfb1788b) Use updated certificate spec (#221)
+- [486e820a](https://github.com/kubedb/mongodb/commit/486e820a) Remove `storage` Validation Check (#231)
+- [12e621ed](https://github.com/kubedb/mongodb/commit/12e621ed) Update Kubernetes v1.18.3 dependencies (#225)
+- [0d7ea7d7](https://github.com/kubedb/mongodb/commit/0d7ea7d7) Update Kubernetes v1.18.3 dependencies (#224)
+- [e79d1dfe](https://github.com/kubedb/mongodb/commit/e79d1dfe) Update Kubernetes v1.18.3 dependencies (#223)
+- [d0ff5e1d](https://github.com/kubedb/mongodb/commit/d0ff5e1d) Update Kubernetes v1.18.3 dependencies (#222)
+- [d22ade32](https://github.com/kubedb/mongodb/commit/d22ade32) Add `inMemory` Storage Engine Support for Percona MongoDB Server (#205)
+- [90847996](https://github.com/kubedb/mongodb/commit/90847996) Update Kubernetes v1.18.3 dependencies (#220)
+- [1098974f](https://github.com/kubedb/mongodb/commit/1098974f) Update Kubernetes v1.18.3 dependencies (#219)
+- [e7d1407a](https://github.com/kubedb/mongodb/commit/e7d1407a) Fix install target
+- [a5742d11](https://github.com/kubedb/mongodb/commit/a5742d11) Remove dependency on enterprise operator (#218)
+- [1de4fbee](https://github.com/kubedb/mongodb/commit/1de4fbee) Build images in e2e workflow (#217)
+- [b736c57e](https://github.com/kubedb/mongodb/commit/b736c57e) Update to Kubernetes v1.18.3 (#216)
+- [180ae28d](https://github.com/kubedb/mongodb/commit/180ae28d) Allow configuring k8s & db version in e2e tests (#215)
+- [c2f09a6f](https://github.com/kubedb/mongodb/commit/c2f09a6f) Trigger e2e tests on /ok-to-test command (#214)
+- [c1c7fa39](https://github.com/kubedb/mongodb/commit/c1c7fa39) Update to Kubernetes v1.18.3 (#213)
+- [8fb6cf78](https://github.com/kubedb/mongodb/commit/8fb6cf78) Update to Kubernetes v1.18.3 (#212)
+- [b82a8fa7](https://github.com/kubedb/mongodb/commit/b82a8fa7) Prepare for release v0.7.0-beta.1 (#211)
+- [a63d53ae](https://github.com/kubedb/mongodb/commit/a63d53ae) Update for release Stash@v2020.07.09-beta.0 (#209)
+- [4e33e978](https://github.com/kubedb/mongodb/commit/4e33e978) include Makefile.env
+- [1aa81a18](https://github.com/kubedb/mongodb/commit/1aa81a18) Allow customizing chart registry (#208)
+- [05355e75](https://github.com/kubedb/mongodb/commit/05355e75) Update for release Stash@v2020.07.08-beta.0 (#207)
+- [4f6be7b4](https://github.com/kubedb/mongodb/commit/4f6be7b4) Update License (#206)
+- [cc54f7d3](https://github.com/kubedb/mongodb/commit/cc54f7d3) Update to Kubernetes v1.18.3 (#204)
+- [d1a51b8e](https://github.com/kubedb/mongodb/commit/d1a51b8e) Update ci.yml
+- [3a993329](https://github.com/kubedb/mongodb/commit/3a993329) Load stash version from .env file for make (#203)
+- [7180a98c](https://github.com/kubedb/mongodb/commit/7180a98c) Update update-release-tracker.sh
+- [745085fd](https://github.com/kubedb/mongodb/commit/745085fd) Update update-release-tracker.sh
+- [07d83ac0](https://github.com/kubedb/mongodb/commit/07d83ac0) Add script to update release tracker on pr merge (#202)
+- [bbe205bb](https://github.com/kubedb/mongodb/commit/bbe205bb) Update .kodiak.toml
+- [998e656e](https://github.com/kubedb/mongodb/commit/998e656e) Various fixes (#201)
+- [ca03db09](https://github.com/kubedb/mongodb/commit/ca03db09) Update to Kubernetes v1.18.3 (#200)
+- [975fc700](https://github.com/kubedb/mongodb/commit/975fc700) Update to Kubernetes v1.18.3
+- [52972dcf](https://github.com/kubedb/mongodb/commit/52972dcf) Create .kodiak.toml
+- [39168e53](https://github.com/kubedb/mongodb/commit/39168e53) Use CRD v1 for Kubernetes >= 1.16 (#199)
+- [d6d87e16](https://github.com/kubedb/mongodb/commit/d6d87e16) Update to Kubernetes v1.18.3 (#198)
+- [09cd5809](https://github.com/kubedb/mongodb/commit/09cd5809) Fix e2e tests (#197)
+- [f47c4846](https://github.com/kubedb/mongodb/commit/f47c4846) Update stash install commands
+- [010d0294](https://github.com/kubedb/mongodb/commit/010d0294) Revendor kubedb.dev/apimachinery@master (#196)
+- [31ef2632](https://github.com/kubedb/mongodb/commit/31ef2632) Pass annotations from CRD to AppBinding (#195)
+- [9594e92f](https://github.com/kubedb/mongodb/commit/9594e92f) Update crazy-max/ghaction-docker-buildx flag
+- [0693d7a0](https://github.com/kubedb/mongodb/commit/0693d7a0) Use updated operator labels in e2e tests (#193)
+- [5aaeeb90](https://github.com/kubedb/mongodb/commit/5aaeeb90) Trigger the workflow on push or pull request
+- [2af16e3c](https://github.com/kubedb/mongodb/commit/2af16e3c) Update CHANGELOG.md
+- [288c5d2f](https://github.com/kubedb/mongodb/commit/288c5d2f) Use SHARD_INDEX constant from apimachinery
+- [4482edf3](https://github.com/kubedb/mongodb/commit/4482edf3) Use stash.appscode.dev/apimachinery@v0.9.0-rc.6 (#191)
+- [0f20ff3a](https://github.com/kubedb/mongodb/commit/0f20ff3a) Manage SSL certificates using cert-manager (#190)
+- [6f0c1aef](https://github.com/kubedb/mongodb/commit/6f0c1aef) Use Minio storage for testing (#188)
+- [f8c56bac](https://github.com/kubedb/mongodb/commit/f8c56bac) Support affinity templating in mongodb-shard (#186)
+- [71283767](https://github.com/kubedb/mongodb/commit/71283767) Use stash@v0.9.0-rc.4 release (#185)
+- [f480de35](https://github.com/kubedb/mongodb/commit/f480de35) Fix `Pause` Logic (#184)
+- [263e1bac](https://github.com/kubedb/mongodb/commit/263e1bac) Refactor CI pipeline to build once (#182)
+- [e383f271](https://github.com/kubedb/mongodb/commit/e383f271) Add `Pause` Feature (#181)
+- [584ecde6](https://github.com/kubedb/mongodb/commit/584ecde6) Delete backupconfig before attempting restoresession. (#180)
+- [a78bc2a7](https://github.com/kubedb/mongodb/commit/a78bc2a7) Wipeout if custom databaseSecret has been deleted (#179)
+- [e90cd386](https://github.com/kubedb/mongodb/commit/e90cd386) Matrix test and Moved out mongo docker files (#178)
+- [c132db8f](https://github.com/kubedb/mongodb/commit/c132db8f) Add add-license makefile target
+- [cc545e04](https://github.com/kubedb/mongodb/commit/cc545e04) Update Makefile
+- [7a2eab2c](https://github.com/kubedb/mongodb/commit/7a2eab2c) Add license header to files (#177)
+- [eecdb2cb](https://github.com/kubedb/mongodb/commit/eecdb2cb) Fix E2E tests in github action (#176)
+- [dfe3b310](https://github.com/kubedb/mongodb/commit/dfe3b310) Run e2e tests using GitHub actions (#174)
+- [a322a894](https://github.com/kubedb/mongodb/commit/a322a894) Validate DBVersionSpecs and fixed broken build (#175)
+- [d7061739](https://github.com/kubedb/mongodb/commit/d7061739) Update go.yml
+- [5a9a0f13](https://github.com/kubedb/mongodb/commit/5a9a0f13) Enable GitHub actions
+- [5489feb7](https://github.com/kubedb/mongodb/commit/5489feb7) Fix unauthorized readiness and liveness probe (#173)
+- [f662df33](https://github.com/kubedb/mongodb/commit/f662df33) Update changelog
+- [3bc16064](https://github.com/kubedb/mongodb/commit/3bc16064) Remove linux/arm support
+- [43822991](https://github.com/kubedb/mongodb/commit/43822991) Revendor
+- [6966e187](https://github.com/kubedb/mongodb/commit/6966e187) Add e2e test commands to Makefile (#172)
+- [674e7504](https://github.com/kubedb/mongodb/commit/674e7504) Support more mongodb versions (#171)
+- [b25e93a2](https://github.com/kubedb/mongodb/commit/b25e93a2) Fix create database secret will end with dead loop (#170)
+- [172be98d](https://github.com/kubedb/mongodb/commit/172be98d) Ensure client.pem subject as root user (#166)
+- [3a2acacd](https://github.com/kubedb/mongodb/commit/3a2acacd) Update dependencies (#169)
+- [946208da](https://github.com/kubedb/mongodb/commit/946208da) Don't set annotation to AppBinding (#168)
+- [cc2e2026](https://github.com/kubedb/mongodb/commit/cc2e2026) Set database version in AppBinding (#167)
+- [66296595](https://github.com/kubedb/mongodb/commit/66296595) Fix travis build
+- [1f88cb94](https://github.com/kubedb/mongodb/commit/1f88cb94) Change package path to kubedb.dev/mongodb (#165)
+- [c8db7ec2](https://github.com/kubedb/mongodb/commit/c8db7ec2) SSL support in mongodb (#158)
+- [99b9df63](https://github.com/kubedb/mongodb/commit/99b9df63) Improve stash integration (#164)
+- [e7052c38](https://github.com/kubedb/mongodb/commit/e7052c38) Fix UpsertDatabaseAnnotation() function (#162)
+- [3eb07820](https://github.com/kubedb/mongodb/commit/3eb07820) Add license header to Makefiles (#163)
+- [016a7bf8](https://github.com/kubedb/mongodb/commit/016a7bf8) Update Makefile
+- [d6d28abe](https://github.com/kubedb/mongodb/commit/d6d28abe) Makefile install uninstall & purge command (#161)
+- [03ad552b](https://github.com/kubedb/mongodb/commit/03ad552b) Integrate stash/restic with mongodb (#157)
+- [a0633f4b](https://github.com/kubedb/mongodb/commit/a0633f4b) Cleanup ensureDatabaseRBAC
+- [0c7789f6](https://github.com/kubedb/mongodb/commit/0c7789f6) Handling resource ownership (#156)
+- [8cf3d3fc](https://github.com/kubedb/mongodb/commit/8cf3d3fc) Pod Disruption Budget for Mongo (#159)
+- [6cf2756c](https://github.com/kubedb/mongodb/commit/6cf2756c) Add Makefile (#160)
+- [f4167b84](https://github.com/kubedb/mongodb/commit/f4167b84) Update to k8s 1.14.0 client libraries using go.mod (#155)
+- [14fe6a0b](https://github.com/kubedb/mongodb/commit/14fe6a0b) Update changelog
+- [5cc20768](https://github.com/kubedb/mongodb/commit/5cc20768) Update README.md
+- [4de5dcb4](https://github.com/kubedb/mongodb/commit/4de5dcb4) Start next dev cycle
+
+
+
+## [kubedb/mysql](https://github.com/kubedb/mysql)
+
+### [v0.7.0](https://github.com/kubedb/mysql/releases/tag/v0.7.0)
+
+
+
+
+## [kubedb/mysql-replication-mode-detector](https://github.com/kubedb/mysql-replication-mode-detector)
+
+### [v0.1.0](https://github.com/kubedb/mysql-replication-mode-detector/releases/tag/v0.1.0)
+
+- [4ee489b](https://github.com/kubedb/mysql-replication-mode-detector/commit/4ee489b) Prepare for release v0.1.0 (#77)
+- [b49e098](https://github.com/kubedb/mysql-replication-mode-detector/commit/b49e098) Prepare for release v0.1.0-rc.2 (#76)
+- [7c0b82f](https://github.com/kubedb/mysql-replication-mode-detector/commit/7c0b82f) Prepare for release v0.1.0-rc.1 (#75)
+- [67ec09b](https://github.com/kubedb/mysql-replication-mode-detector/commit/67ec09b) Prepare for release v0.1.0-beta.6 (#74)
+- [724eaa9](https://github.com/kubedb/mysql-replication-mode-detector/commit/724eaa9) Update KubeDB api (#73)
+- [a82a26e](https://github.com/kubedb/mysql-replication-mode-detector/commit/a82a26e) Fix sql query to find primary host for different version of MySQL (#66)
+- [e251fd6](https://github.com/kubedb/mysql-replication-mode-detector/commit/e251fd6) Prepare for release v0.1.0-beta.5 (#72)
+- [633ba00](https://github.com/kubedb/mysql-replication-mode-detector/commit/633ba00) Update KubeDB api (#71)
+- [557e8f7](https://github.com/kubedb/mysql-replication-mode-detector/commit/557e8f7) Prepare for release v0.1.0-beta.4 (#70)
+- [4dd885a](https://github.com/kubedb/mysql-replication-mode-detector/commit/4dd885a) Update KubeDB api (#69)
+- [dc0ed39](https://github.com/kubedb/mysql-replication-mode-detector/commit/dc0ed39) Update Kubernetes v1.18.9 dependencies (#68)
+- [f49a1d1](https://github.com/kubedb/mysql-replication-mode-detector/commit/f49a1d1) Update Kubernetes v1.18.9 dependencies (#65)
+- [306235a](https://github.com/kubedb/mysql-replication-mode-detector/commit/306235a) Update KubeDB api (#64)
+- [3c9e99a](https://github.com/kubedb/mysql-replication-mode-detector/commit/3c9e99a) Update KubeDB api (#63)
+- [974a940](https://github.com/kubedb/mysql-replication-mode-detector/commit/974a940) Update KubeDB api (#62)
+- [8521462](https://github.com/kubedb/mysql-replication-mode-detector/commit/8521462) Update Kubernetes v1.18.9 dependencies (#61)
+- [38f7a4c](https://github.com/kubedb/mysql-replication-mode-detector/commit/38f7a4c) Update KubeDB api (#60)
+- [a7b7c87](https://github.com/kubedb/mysql-replication-mode-detector/commit/a7b7c87) Update KubeDB api (#59)
+- [daa02dd](https://github.com/kubedb/mysql-replication-mode-detector/commit/daa02dd) Update KubeDB api (#58)
+- [341b6b6](https://github.com/kubedb/mysql-replication-mode-detector/commit/341b6b6) Add tls config (#40)
+- [04161c8](https://github.com/kubedb/mysql-replication-mode-detector/commit/04161c8) Update KubeDB api (#57)
+- [fdd705d](https://github.com/kubedb/mysql-replication-mode-detector/commit/fdd705d) Update Kubernetes v1.18.9 dependencies (#56)
+- [22cb410](https://github.com/kubedb/mysql-replication-mode-detector/commit/22cb410) Update KubeDB api (#55)
+- [11b1758](https://github.com/kubedb/mysql-replication-mode-detector/commit/11b1758) Update KubeDB api (#54)
+- [9df3045](https://github.com/kubedb/mysql-replication-mode-detector/commit/9df3045) Update KubeDB api (#53)
+- [6557f92](https://github.com/kubedb/mysql-replication-mode-detector/commit/6557f92) Update KubeDB api (#52)
+- [43c3694](https://github.com/kubedb/mysql-replication-mode-detector/commit/43c3694) Update Kubernetes v1.18.9 dependencies (#51)
+- [511e974](https://github.com/kubedb/mysql-replication-mode-detector/commit/511e974) Publish docker images to ghcr.io (#50)
+- [093a995](https://github.com/kubedb/mysql-replication-mode-detector/commit/093a995) Update KubeDB api (#49)
+- [49c07e9](https://github.com/kubedb/mysql-replication-mode-detector/commit/49c07e9) Update KubeDB api (#48)
+- [91ead1c](https://github.com/kubedb/mysql-replication-mode-detector/commit/91ead1c) Update KubeDB api (#47)
+- [45956b4](https://github.com/kubedb/mysql-replication-mode-detector/commit/45956b4) Update KubeDB api (#46)
+- [a6c57a7](https://github.com/kubedb/mysql-replication-mode-detector/commit/a6c57a7) Update KubeDB api (#45)
+- [8a2fd20](https://github.com/kubedb/mysql-replication-mode-detector/commit/8a2fd20) Update KubeDB api (#44)
+- [be63987](https://github.com/kubedb/mysql-replication-mode-detector/commit/be63987) Update KubeDB api (#43)
+- [f33220a](https://github.com/kubedb/mysql-replication-mode-detector/commit/f33220a) Update KubeDB api (#42)
+- [46b7d44](https://github.com/kubedb/mysql-replication-mode-detector/commit/46b7d44) Update KubeDB api (#41)
+- [c151070](https://github.com/kubedb/mysql-replication-mode-detector/commit/c151070) Update KubeDB api (#38)
+- [7a04763](https://github.com/kubedb/mysql-replication-mode-detector/commit/7a04763) Update KubeDB api (#37)
+- [4367ef5](https://github.com/kubedb/mysql-replication-mode-detector/commit/4367ef5) Update KubeDB api (#36)
+- [6bc4f1c](https://github.com/kubedb/mysql-replication-mode-detector/commit/6bc4f1c) Update Kubernetes v1.18.9 dependencies (#35)
+- [fdaff01](https://github.com/kubedb/mysql-replication-mode-detector/commit/fdaff01) Update KubeDB api (#34)
+- [087170a](https://github.com/kubedb/mysql-replication-mode-detector/commit/087170a) Update KubeDB api (#33)
+- [127efe7](https://github.com/kubedb/mysql-replication-mode-detector/commit/127efe7) Update Kubernetes v1.18.9 dependencies (#32)
+- [1df3573](https://github.com/kubedb/mysql-replication-mode-detector/commit/1df3573) Move constant to apimachinery repo (#24)
+- [74b41b0](https://github.com/kubedb/mysql-replication-mode-detector/commit/74b41b0) Update repository config (#31)
+- [b0932a7](https://github.com/kubedb/mysql-replication-mode-detector/commit/b0932a7) Update repository config (#30)
+- [8e9c235](https://github.com/kubedb/mysql-replication-mode-detector/commit/8e9c235) Update Kubernetes v1.18.9 dependencies (#29)
+- [8f61ebc](https://github.com/kubedb/mysql-replication-mode-detector/commit/8f61ebc) Update Kubernetes v1.18.3 dependencies (#28)
+- [eedb970](https://github.com/kubedb/mysql-replication-mode-detector/commit/eedb970) Prepare for release v0.1.0-beta.3 (#27)
+- [e4c3962](https://github.com/kubedb/mysql-replication-mode-detector/commit/e4c3962) Update Kubernetes v1.18.3 dependencies (#26)
+- [9c20bfb](https://github.com/kubedb/mysql-replication-mode-detector/commit/9c20bfb) Update Kubernetes v1.18.3 dependencies (#25)
+- [a1f5dbd](https://github.com/kubedb/mysql-replication-mode-detector/commit/a1f5dbd) Update Kubernetes v1.18.3 dependencies (#23)
+- [feedb97](https://github.com/kubedb/mysql-replication-mode-detector/commit/feedb97) Use AppsCode Community License (#22)
+- [eb878dc](https://github.com/kubedb/mysql-replication-mode-detector/commit/eb878dc) Prepare for release v0.1.0-beta.2 (#21)
+- [6c214b8](https://github.com/kubedb/mysql-replication-mode-detector/commit/6c214b8) Update Kubernetes v1.18.3 dependencies (#19)
+- [00800e8](https://github.com/kubedb/mysql-replication-mode-detector/commit/00800e8) Update Kubernetes v1.18.3 dependencies (#18)
+- [373ab6d](https://github.com/kubedb/mysql-replication-mode-detector/commit/373ab6d) Update Kubernetes v1.18.3 dependencies (#17)
+- [8b61313](https://github.com/kubedb/mysql-replication-mode-detector/commit/8b61313) Update Kubernetes v1.18.3 dependencies (#16)
+- [f2a68e3](https://github.com/kubedb/mysql-replication-mode-detector/commit/f2a68e3) Update Kubernetes v1.18.3 dependencies (#15)
+- [3bce396](https://github.com/kubedb/mysql-replication-mode-detector/commit/3bce396) Update Kubernetes v1.18.3 dependencies (#14)
+- [32603a2](https://github.com/kubedb/mysql-replication-mode-detector/commit/32603a2) Don't push binary with release
+- [bb47e58](https://github.com/kubedb/mysql-replication-mode-detector/commit/bb47e58) Remove port-forwarding and Refactor Code (#13)
+- [df73419](https://github.com/kubedb/mysql-replication-mode-detector/commit/df73419) Update to Kubernetes v1.18.3 (#12)
+- [61fe2ea](https://github.com/kubedb/mysql-replication-mode-detector/commit/61fe2ea) Update to Kubernetes v1.18.3 (#11)
+- [b7ccc85](https://github.com/kubedb/mysql-replication-mode-detector/commit/b7ccc85) Update to Kubernetes v1.18.3 (#10)
+- [3e62838](https://github.com/kubedb/mysql-replication-mode-detector/commit/3e62838) Prepare for release v0.1.0-beta.1 (#9)
+- [e54c4c0](https://github.com/kubedb/mysql-replication-mode-detector/commit/e54c4c0) Update License (#7)
+- [e071b02](https://github.com/kubedb/mysql-replication-mode-detector/commit/e071b02) Update to Kubernetes v1.18.3 (#6)
+- [8992bcb](https://github.com/kubedb/mysql-replication-mode-detector/commit/8992bcb) Update update-release-tracker.sh
+- [acc1038](https://github.com/kubedb/mysql-replication-mode-detector/commit/acc1038) Add script to update release tracker on pr merge (#5)
+- [706b5b0](https://github.com/kubedb/mysql-replication-mode-detector/commit/706b5b0) Update .kodiak.toml
+- [4e52c03](https://github.com/kubedb/mysql-replication-mode-detector/commit/4e52c03) Update to Kubernetes v1.18.3 (#4)
+- [adb05ae](https://github.com/kubedb/mysql-replication-mode-detector/commit/adb05ae) Merge branch 'master' into gomod-refresher-1591418508
+- [3a99f80](https://github.com/kubedb/mysql-replication-mode-detector/commit/3a99f80) Create .kodiak.toml
+- [6289807](https://github.com/kubedb/mysql-replication-mode-detector/commit/6289807) Update to Kubernetes v1.18.3
+- [1dd24be](https://github.com/kubedb/mysql-replication-mode-detector/commit/1dd24be) Update to Kubernetes v1.18.3 (#3)
+- [6d02366](https://github.com/kubedb/mysql-replication-mode-detector/commit/6d02366) Update Makefile and CI configuration (#2)
+- [fc95884](https://github.com/kubedb/mysql-replication-mode-detector/commit/fc95884) Add primary role labeler controller (#1)
+- [99dfb12](https://github.com/kubedb/mysql-replication-mode-detector/commit/99dfb12) add readme.md
+
+
+
+## [kubedb/operator](https://github.com/kubedb/operator)
+
+### [v0.14.0](https://github.com/kubedb/operator/releases/tag/v0.14.0)
+
+- [22ee7d88](https://github.com/kubedb/operator/commit/22ee7d88) Prepare for release v0.14.0 (#337)
+- [cd4b5292](https://github.com/kubedb/operator/commit/cd4b5292) Update README.md
+- [a06c98d1](https://github.com/kubedb/operator/commit/a06c98d1) Prepare for release v0.14.0-rc.2 (#336)
+- [7a74c49c](https://github.com/kubedb/operator/commit/7a74c49c) Prepare for release v0.14.0-rc.1 (#335)
+- [7c0e97a2](https://github.com/kubedb/operator/commit/7c0e97a2) Prepare for release v0.14.0-beta.6 (#334)
+- [17b42fd3](https://github.com/kubedb/operator/commit/17b42fd3) Update KubeDB api (#333)
+- [6dbde882](https://github.com/kubedb/operator/commit/6dbde882) Update Kubernetes v1.18.9 dependencies (#332)
+- [ce62c61a](https://github.com/kubedb/operator/commit/ce62c61a) Use go.bytebuilders.dev/license-verifier v0.4.0
+- [bcada180](https://github.com/kubedb/operator/commit/bcada180) Prepare for release v0.14.0-beta.5 (#331)
+- [07d63285](https://github.com/kubedb/operator/commit/07d63285) Enable PgBoucner & ProxySQL for enterprise license (#330)
+- [35b75a05](https://github.com/kubedb/operator/commit/35b75a05) Update readme.md
+- [14304e05](https://github.com/kubedb/operator/commit/14304e05) Update KubeDB api (#329)
+- [df61aae3](https://github.com/kubedb/operator/commit/df61aae3) Update readme
+- [c9882619](https://github.com/kubedb/operator/commit/c9882619) Format readme
+- [73b725e3](https://github.com/kubedb/operator/commit/73b725e3) Update readme (#328)
+- [541c2460](https://github.com/kubedb/operator/commit/541c2460) Update repository config (#327)
+- [2145978d](https://github.com/kubedb/operator/commit/2145978d) Prepare for release v0.14.0-beta.4 (#326)
+- [8fd3b682](https://github.com/kubedb/operator/commit/8fd3b682) Add --readiness-probe-interval flag (#325)
+- [7bf0c3c5](https://github.com/kubedb/operator/commit/7bf0c3c5) Update KubeDB api (#324)
+- [25c7dc21](https://github.com/kubedb/operator/commit/25c7dc21) Update Kubernetes v1.18.9 dependencies (#323)
+- [bb7525d6](https://github.com/kubedb/operator/commit/bb7525d6) Update Kubernetes v1.18.9 dependencies (#321)
+- [6db45b57](https://github.com/kubedb/operator/commit/6db45b57) Update KubeDB api (#320)
+- [fa1438e3](https://github.com/kubedb/operator/commit/fa1438e3) Update KubeDB api (#319)
+- [6be49e7e](https://github.com/kubedb/operator/commit/6be49e7e) Update KubeDB api (#318)
+- [00bf9bec](https://github.com/kubedb/operator/commit/00bf9bec) Update Kubernetes v1.18.9 dependencies (#317)
+- [fd529403](https://github.com/kubedb/operator/commit/fd529403) Update KubeDB api (#316)
+- [f03305e1](https://github.com/kubedb/operator/commit/f03305e1) Update KubeDB api (#315)
+- [fb5e4873](https://github.com/kubedb/operator/commit/fb5e4873) Update KubeDB api (#312)
+- [f3843a05](https://github.com/kubedb/operator/commit/f3843a05) Update repository config (#311)
+- [18f29e73](https://github.com/kubedb/operator/commit/18f29e73) Update repository config (#310)
+- [25405c38](https://github.com/kubedb/operator/commit/25405c38) Update repository config (#309)
+- [e464d336](https://github.com/kubedb/operator/commit/e464d336) Update KubeDB api (#308)
+- [eeccd59e](https://github.com/kubedb/operator/commit/eeccd59e) Update Kubernetes v1.18.9 dependencies (#307)
+- [dd2f176f](https://github.com/kubedb/operator/commit/dd2f176f) Publish docker images to ghcr.io (#306)
+- [d65d299f](https://github.com/kubedb/operator/commit/d65d299f) Update KubeDB api (#305)
+- [3f681cef](https://github.com/kubedb/operator/commit/3f681cef) Update KubeDB api (#304)
+- [bc58d3d7](https://github.com/kubedb/operator/commit/bc58d3d7) Refactor initializer code + Use common event recorder (#292)
+- [952e1b33](https://github.com/kubedb/operator/commit/952e1b33) Update repository config (#301)
+- [66bee9c3](https://github.com/kubedb/operator/commit/66bee9c3) Update Kubernetes v1.18.9 dependencies (#300)
+- [4e508002](https://github.com/kubedb/operator/commit/4e508002) Update for release Stash@v2020.09.29 (#299)
+- [b6a4caa4](https://github.com/kubedb/operator/commit/b6a4caa4) Update Kubernetes v1.18.9 dependencies (#298)
+- [201aed32](https://github.com/kubedb/operator/commit/201aed32) Update Kubernetes v1.18.9 dependencies (#296)
+- [36ed325d](https://github.com/kubedb/operator/commit/36ed325d) Update repository config (#295)
+- [36ec3035](https://github.com/kubedb/operator/commit/36ec3035) Update repository config (#294)
+- [32e61f43](https://github.com/kubedb/operator/commit/32e61f43) Update Kubernetes v1.18.9 dependencies (#293)
+- [078e7062](https://github.com/kubedb/operator/commit/078e7062) Update Kubernetes v1.18.3 dependencies (#291)
+- [900626dd](https://github.com/kubedb/operator/commit/900626dd) Update Kubernetes v1.18.3 dependencies (#290)
+- [7bf1e16e](https://github.com/kubedb/operator/commit/7bf1e16e) Use AppsCode Community license (#289)
+- [ba436a4b](https://github.com/kubedb/operator/commit/ba436a4b) Add license verifier (#288)
+- [0a02a313](https://github.com/kubedb/operator/commit/0a02a313) Update for release Stash@v2020.09.16 (#287)
+- [9ae202e1](https://github.com/kubedb/operator/commit/9ae202e1) Update Kubernetes v1.18.3 dependencies (#286)
+- [5bea03b9](https://github.com/kubedb/operator/commit/5bea03b9) Update Kubernetes v1.18.3 dependencies (#284)
+- [b1375565](https://github.com/kubedb/operator/commit/b1375565) Update Kubernetes v1.18.3 dependencies (#282)
+- [a13ca48b](https://github.com/kubedb/operator/commit/a13ca48b) Prepare for release v0.14.0-beta.2 (#281)
+- [fc6c1e9e](https://github.com/kubedb/operator/commit/fc6c1e9e) Update Kubernetes v1.18.3 dependencies (#280)
+- [cd74716b](https://github.com/kubedb/operator/commit/cd74716b) Update Kubernetes v1.18.3 dependencies (#275)
+- [5b3c76ed](https://github.com/kubedb/operator/commit/5b3c76ed) Update Kubernetes v1.18.3 dependencies (#274)
+- [397a7e60](https://github.com/kubedb/operator/commit/397a7e60) Update Kubernetes v1.18.3 dependencies (#273)
+- [616ea78d](https://github.com/kubedb/operator/commit/616ea78d) Update Kubernetes v1.18.3 dependencies (#272)
+- [b7b0d2b9](https://github.com/kubedb/operator/commit/b7b0d2b9) Update Kubernetes v1.18.3 dependencies (#271)
+- [3afadb7a](https://github.com/kubedb/operator/commit/3afadb7a) Update Kubernetes v1.18.3 dependencies (#270)
+- [60b15632](https://github.com/kubedb/operator/commit/60b15632) Remove dependency on enterprise operator (#269)
+- [b3648cde](https://github.com/kubedb/operator/commit/b3648cde) Build images in e2e workflow (#268)
+- [73dee065](https://github.com/kubedb/operator/commit/73dee065) Update to Kubernetes v1.18.3 (#266)
+- [a8a42ab8](https://github.com/kubedb/operator/commit/a8a42ab8) Allow configuring k8s in e2e tests (#267)
+- [4b7d6ee3](https://github.com/kubedb/operator/commit/4b7d6ee3) Trigger e2e tests on /ok-to-test command (#265)
+- [024fc40a](https://github.com/kubedb/operator/commit/024fc40a) Update to Kubernetes v1.18.3 (#264)
+- [bd1da662](https://github.com/kubedb/operator/commit/bd1da662) Update to Kubernetes v1.18.3 (#263)
+- [a2bba612](https://github.com/kubedb/operator/commit/a2bba612) Prepare for release v0.14.0-beta.1 (#262)
+- [22bc85ec](https://github.com/kubedb/operator/commit/22bc85ec) Allow customizing chart registry (#261)
+- [52cc1dc7](https://github.com/kubedb/operator/commit/52cc1dc7) Update for release Stash@v2020.07.09-beta.0 (#260)
+- [2e8b709f](https://github.com/kubedb/operator/commit/2e8b709f) Update for release Stash@v2020.07.08-beta.0 (#259)
+- [7b58b548](https://github.com/kubedb/operator/commit/7b58b548) Update License (#258)
+- [d4cd1a93](https://github.com/kubedb/operator/commit/d4cd1a93) Update to Kubernetes v1.18.3 (#256)
+- [f6091845](https://github.com/kubedb/operator/commit/f6091845) Update ci.yml
+- [5324d2b6](https://github.com/kubedb/operator/commit/5324d2b6) Update ci.yml
+- [c888d7fd](https://github.com/kubedb/operator/commit/c888d7fd) Add workflow to update docs (#255)
+- [ba843e17](https://github.com/kubedb/operator/commit/ba843e17) Update update-release-tracker.sh
+- [b93c5ab4](https://github.com/kubedb/operator/commit/b93c5ab4) Update update-release-tracker.sh
+- [6b8d2149](https://github.com/kubedb/operator/commit/6b8d2149) Add script to update release tracker on pr merge (#254)
+- [bb1290dc](https://github.com/kubedb/operator/commit/bb1290dc) Update .kodiak.toml
+- [9bb85c3b](https://github.com/kubedb/operator/commit/9bb85c3b) Register validator & mutators for all supported dbs (#253)
+- [1a524d9c](https://github.com/kubedb/operator/commit/1a524d9c) Various fixes (#252)
+- [4860f2a7](https://github.com/kubedb/operator/commit/4860f2a7) Update to Kubernetes v1.18.3 (#251)
+- [1a163c6a](https://github.com/kubedb/operator/commit/1a163c6a) Create .kodiak.toml
+- [1eda36b9](https://github.com/kubedb/operator/commit/1eda36b9) Update to Kubernetes v1.18.3 (#247)
+- [77b8b858](https://github.com/kubedb/operator/commit/77b8b858) Update enterprise operator tag (#246)
+- [96ca876e](https://github.com/kubedb/operator/commit/96ca876e) Revendor kubedb.dev/apimachinery@master (#245)
+- [43a3a7f1](https://github.com/kubedb/operator/commit/43a3a7f1) Use recommended kubernetes app labels
+- [1ae7045f](https://github.com/kubedb/operator/commit/1ae7045f) Update crazy-max/ghaction-docker-buildx flag
+- [f25034ef](https://github.com/kubedb/operator/commit/f25034ef) Trigger the workflow on push or pull request
+- [ba486319](https://github.com/kubedb/operator/commit/ba486319) Update readme (#244)
+- [5f7191f4](https://github.com/kubedb/operator/commit/5f7191f4) Update CHANGELOG.md
+- [5b14af4b](https://github.com/kubedb/operator/commit/5b14af4b) Add license scan report and status (#241)
+- [9848932b](https://github.com/kubedb/operator/commit/9848932b) Pass the topology object to common controller
+- [90d1c873](https://github.com/kubedb/operator/commit/90d1c873) Initialize topology for MonogDB webhooks (#243)
+- [8ecb87c8](https://github.com/kubedb/operator/commit/8ecb87c8) Fix nil pointer exception (#242)
+- [b12c3392](https://github.com/kubedb/operator/commit/b12c3392) Update operator dependencies (#237)
+- [f714bb1b](https://github.com/kubedb/operator/commit/f714bb1b) Always create RBAC resources (#238)
+- [f43a588e](https://github.com/kubedb/operator/commit/f43a588e) Use Go 1.13 in CI
+- [e8ab3580](https://github.com/kubedb/operator/commit/e8ab3580) Update client-go to kubernetes-1.16.3 (#239)
+- [1dc84a67](https://github.com/kubedb/operator/commit/1dc84a67) Update CI badge
+- [d9d1cc0a](https://github.com/kubedb/operator/commit/d9d1cc0a) Bundle PgBouncer operator (#236)
+- [720303c1](https://github.com/kubedb/operator/commit/720303c1) Fix linter errors (#235)
+- [4c53a71f](https://github.com/kubedb/operator/commit/4c53a71f) Update go.yml
+- [e65fc457](https://github.com/kubedb/operator/commit/e65fc457) Enable GitHub actions
+- [2dcb0d6d](https://github.com/kubedb/operator/commit/2dcb0d6d) Update changelog
+- [1e407192](https://github.com/kubedb/operator/commit/1e407192) Remove linux/arm support
+- [b97a2028](https://github.com/kubedb/operator/commit/b97a2028) RestoreSession watcher added (#233)
+- [2cfbbb15](https://github.com/kubedb/operator/commit/2cfbbb15) Fix dev deployment script for operator (part-2) (#231)
+- [b673c6cc](https://github.com/kubedb/operator/commit/b673c6cc) Fix dev deployment script for operator (#228)
+- [ed7e2eb1](https://github.com/kubedb/operator/commit/ed7e2eb1) Fix build (#230)
+- [83123ce6](https://github.com/kubedb/operator/commit/83123ce6) Fix travis build
+- [cd2fb26c](https://github.com/kubedb/operator/commit/cd2fb26c) Change package path to kubedb.dev/operator (#229)
+- [375c1f2b](https://github.com/kubedb/operator/commit/375c1f2b) Fix #596 validating and mutating yaml file missing when run oper… (#227)
+- [c833a4f5](https://github.com/kubedb/operator/commit/c833a4f5) Update .gitignore
+- [b0de0a8f](https://github.com/kubedb/operator/commit/b0de0a8f) Fix calling `deploy/kubedb.sh` (#226)
+- [e528ace1](https://github.com/kubedb/operator/commit/e528ace1) Add make install, uninstall, purge commands (#225)
+- [1ce21404](https://github.com/kubedb/operator/commit/1ce21404) Add Makefile (#224)
+- [872801c0](https://github.com/kubedb/operator/commit/872801c0) Update to k8s 1.14.0 client libraries using go.mod (#223)
+- [95c8d2ee](https://github.com/kubedb/operator/commit/95c8d2ee) Start next dev cycle
+
+
+
+## [kubedb/percona-xtradb](https://github.com/kubedb/percona-xtradb)
+
+### [v0.1.0](https://github.com/kubedb/percona-xtradb/releases/tag/v0.1.0)
+
+- [3b2593ce](https://github.com/kubedb/percona-xtradb/commit/3b2593ce) Prepare for release v0.1.0 (#121)
+- [ae82716f](https://github.com/kubedb/percona-xtradb/commit/ae82716f) Prepare for release v0.1.0-rc.2 (#120)
+- [4ac07f08](https://github.com/kubedb/percona-xtradb/commit/4ac07f08) Prepare for release v0.1.0-rc.1 (#119)
+- [397607a3](https://github.com/kubedb/percona-xtradb/commit/397607a3) Prepare for release v0.1.0-beta.6 (#118)
+- [a3b7642d](https://github.com/kubedb/percona-xtradb/commit/a3b7642d) Create SRV records for governing service (#117)
+- [9866a420](https://github.com/kubedb/percona-xtradb/commit/9866a420) Prepare for release v0.1.0-beta.5 (#116)
+- [f92081d1](https://github.com/kubedb/percona-xtradb/commit/f92081d1) Create separate governing service for each database (#115)
+- [6010b189](https://github.com/kubedb/percona-xtradb/commit/6010b189) Update KubeDB api (#114)
+- [95b57c72](https://github.com/kubedb/percona-xtradb/commit/95b57c72) Update readme
+- [14b2f1b2](https://github.com/kubedb/percona-xtradb/commit/14b2f1b2) Prepare for release v0.1.0-beta.4 (#113)
+- [eff1d265](https://github.com/kubedb/percona-xtradb/commit/eff1d265) Update KubeDB api (#112)
+- [a2878d4a](https://github.com/kubedb/percona-xtradb/commit/a2878d4a) Update Kubernetes v1.18.9 dependencies (#111)
+- [51f0d104](https://github.com/kubedb/percona-xtradb/commit/51f0d104) Update KubeDB api (#110)
+- [fcf5343b](https://github.com/kubedb/percona-xtradb/commit/fcf5343b) Update for release Stash@v2020.10.21 (#109)
+- [9fe68d43](https://github.com/kubedb/percona-xtradb/commit/9fe68d43) Fix init validator (#107)
+- [1c528cff](https://github.com/kubedb/percona-xtradb/commit/1c528cff) Update KubeDB api (#108)
+- [99d23f3d](https://github.com/kubedb/percona-xtradb/commit/99d23f3d) Update KubeDB api (#106)
+- [d0807640](https://github.com/kubedb/percona-xtradb/commit/d0807640) Update Kubernetes v1.18.9 dependencies (#105)
+- [bac7705b](https://github.com/kubedb/percona-xtradb/commit/bac7705b) Update KubeDB api (#104)
+- [475aabd5](https://github.com/kubedb/percona-xtradb/commit/475aabd5) Update KubeDB api (#103)
+- [60f7e5a9](https://github.com/kubedb/percona-xtradb/commit/60f7e5a9) Update KubeDB api (#102)
+- [84a97ced](https://github.com/kubedb/percona-xtradb/commit/84a97ced) Update KubeDB api (#101)
+- [d4a7b7c5](https://github.com/kubedb/percona-xtradb/commit/d4a7b7c5) Update Kubernetes v1.18.9 dependencies (#100)
+- [b818a4c5](https://github.com/kubedb/percona-xtradb/commit/b818a4c5) Update KubeDB api (#99)
+- [03df7739](https://github.com/kubedb/percona-xtradb/commit/03df7739) Update KubeDB api (#98)
+- [2f3ce0e6](https://github.com/kubedb/percona-xtradb/commit/2f3ce0e6) Update KubeDB api (#96)
+- [94e009e8](https://github.com/kubedb/percona-xtradb/commit/94e009e8) Update repository config (#95)
+- [fc61d440](https://github.com/kubedb/percona-xtradb/commit/fc61d440) Update repository config (#94)
+- [35f5b2bb](https://github.com/kubedb/percona-xtradb/commit/35f5b2bb) Update repository config (#93)
+- [d01e39dd](https://github.com/kubedb/percona-xtradb/commit/d01e39dd) Initialize statefulset watcher from cmd/server/options.go (#92)
+- [41bf932f](https://github.com/kubedb/percona-xtradb/commit/41bf932f) Update KubeDB api (#91)
+- [da92a1f3](https://github.com/kubedb/percona-xtradb/commit/da92a1f3) Update Kubernetes v1.18.9 dependencies (#90)
+- [554beafb](https://github.com/kubedb/percona-xtradb/commit/554beafb) Publish docker images to ghcr.io (#89)
+- [4c7031e1](https://github.com/kubedb/percona-xtradb/commit/4c7031e1) Update KubeDB api (#88)
+- [418c767a](https://github.com/kubedb/percona-xtradb/commit/418c767a) Update KubeDB api (#87)
+- [94eef91e](https://github.com/kubedb/percona-xtradb/commit/94eef91e) Update KubeDB api (#86)
+- [f3c2a360](https://github.com/kubedb/percona-xtradb/commit/f3c2a360) Update KubeDB api (#85)
+- [107bb6a6](https://github.com/kubedb/percona-xtradb/commit/107bb6a6) Update repository config (#84)
+- [938e64bc](https://github.com/kubedb/percona-xtradb/commit/938e64bc) Cleanup monitoring spec api (#83)
+- [deeaad8f](https://github.com/kubedb/percona-xtradb/commit/deeaad8f) Use conditions to handle database initialization (#80)
+- [798c3ddc](https://github.com/kubedb/percona-xtradb/commit/798c3ddc) Update Kubernetes v1.18.9 dependencies (#82)
+- [16c72ba6](https://github.com/kubedb/percona-xtradb/commit/16c72ba6) Updated the exporter port and service (#81)
+- [9314faf1](https://github.com/kubedb/percona-xtradb/commit/9314faf1) Update for release Stash@v2020.09.29 (#79)
+- [6cb53efc](https://github.com/kubedb/percona-xtradb/commit/6cb53efc) Update Kubernetes v1.18.9 dependencies (#78)
+- [fd2b8cdd](https://github.com/kubedb/percona-xtradb/commit/fd2b8cdd) Update Kubernetes v1.18.9 dependencies (#76)
+- [9d1038db](https://github.com/kubedb/percona-xtradb/commit/9d1038db) Update repository config (#75)
+- [41a05a44](https://github.com/kubedb/percona-xtradb/commit/41a05a44) Update repository config (#74)
+- [eccd2acd](https://github.com/kubedb/percona-xtradb/commit/eccd2acd) Update Kubernetes v1.18.9 dependencies (#73)
+- [27635f1c](https://github.com/kubedb/percona-xtradb/commit/27635f1c) Update Kubernetes v1.18.3 dependencies (#72)
+- [792326c7](https://github.com/kubedb/percona-xtradb/commit/792326c7) Use common event recorder (#71)
+- [0ff583b8](https://github.com/kubedb/percona-xtradb/commit/0ff583b8) Prepare for release v0.1.0-beta.3 (#70)
+- [627bc039](https://github.com/kubedb/percona-xtradb/commit/627bc039) Use new `spec.init` section (#69)
+- [f79e4771](https://github.com/kubedb/percona-xtradb/commit/f79e4771) Update Kubernetes v1.18.3 dependencies (#68)
+- [257954c2](https://github.com/kubedb/percona-xtradb/commit/257954c2) Add license verifier (#67)
+- [e06eec6b](https://github.com/kubedb/percona-xtradb/commit/e06eec6b) Update for release Stash@v2020.09.16 (#66)
+- [29901348](https://github.com/kubedb/percona-xtradb/commit/29901348) Update Kubernetes v1.18.3 dependencies (#65)
+- [02d5bfde](https://github.com/kubedb/percona-xtradb/commit/02d5bfde) Use background deletion policy
+- [6e6d8b5b](https://github.com/kubedb/percona-xtradb/commit/6e6d8b5b) Update Kubernetes v1.18.3 dependencies (#63)
+- [7601a237](https://github.com/kubedb/percona-xtradb/commit/7601a237) Use AppsCode Community License (#62)
+- [4d1a2424](https://github.com/kubedb/percona-xtradb/commit/4d1a2424) Update Kubernetes v1.18.3 dependencies (#61)
+- [471b6def](https://github.com/kubedb/percona-xtradb/commit/471b6def) Prepare for release v0.1.0-beta.2 (#60)
+- [9423a70f](https://github.com/kubedb/percona-xtradb/commit/9423a70f) Update release.yml
+- [85d1d036](https://github.com/kubedb/percona-xtradb/commit/85d1d036) Use updated apis (#59)
+- [6811b8dc](https://github.com/kubedb/percona-xtradb/commit/6811b8dc) Update Kubernetes v1.18.3 dependencies (#53)
+- [4212d2a0](https://github.com/kubedb/percona-xtradb/commit/4212d2a0) Update Kubernetes v1.18.3 dependencies (#52)
+- [659d646c](https://github.com/kubedb/percona-xtradb/commit/659d646c) Update Kubernetes v1.18.3 dependencies (#51)
+- [a868e0c3](https://github.com/kubedb/percona-xtradb/commit/a868e0c3) Update Kubernetes v1.18.3 dependencies (#50)
+- [162e6ca4](https://github.com/kubedb/percona-xtradb/commit/162e6ca4) Update Kubernetes v1.18.3 dependencies (#49)
+- [a7fa1fbf](https://github.com/kubedb/percona-xtradb/commit/a7fa1fbf) Update Kubernetes v1.18.3 dependencies (#48)
+- [b6a4583f](https://github.com/kubedb/percona-xtradb/commit/b6a4583f) Remove dependency on enterprise operator (#47)
+- [a8909b38](https://github.com/kubedb/percona-xtradb/commit/a8909b38) Allow configuring k8s & db version in e2e tests (#46)
+- [4d79d26e](https://github.com/kubedb/percona-xtradb/commit/4d79d26e) Update to Kubernetes v1.18.3 (#45)
+- [189f3212](https://github.com/kubedb/percona-xtradb/commit/189f3212) Trigger e2e tests on /ok-to-test command (#44)
+- [a037bd03](https://github.com/kubedb/percona-xtradb/commit/a037bd03) Update to Kubernetes v1.18.3 (#43)
+- [33cabdf3](https://github.com/kubedb/percona-xtradb/commit/33cabdf3) Update to Kubernetes v1.18.3 (#42)
+- [28b9fc0f](https://github.com/kubedb/percona-xtradb/commit/28b9fc0f) Prepare for release v0.1.0-beta.1 (#41)
+- [fb4f5444](https://github.com/kubedb/percona-xtradb/commit/fb4f5444) Update for release Stash@v2020.07.09-beta.0 (#39)
+- [ad221aa2](https://github.com/kubedb/percona-xtradb/commit/ad221aa2) include Makefile.env
+- [841ec855](https://github.com/kubedb/percona-xtradb/commit/841ec855) Allow customizing chart registry (#38)
+- [bb608980](https://github.com/kubedb/percona-xtradb/commit/bb608980) Update License (#37)
+- [cf8cd2fa](https://github.com/kubedb/percona-xtradb/commit/cf8cd2fa) Update for release Stash@v2020.07.08-beta.0 (#36)
+- [7b28c4b9](https://github.com/kubedb/percona-xtradb/commit/7b28c4b9) Update to Kubernetes v1.18.3 (#35)
+- [848ff94a](https://github.com/kubedb/percona-xtradb/commit/848ff94a) Update ci.yml
+- [d124dd6a](https://github.com/kubedb/percona-xtradb/commit/d124dd6a) Load stash version from .env file for make (#34)
+- [1de40e1d](https://github.com/kubedb/percona-xtradb/commit/1de40e1d) Update update-release-tracker.sh
+- [7a4503be](https://github.com/kubedb/percona-xtradb/commit/7a4503be) Update update-release-tracker.sh
+- [ad0dfaf8](https://github.com/kubedb/percona-xtradb/commit/ad0dfaf8) Add script to update release tracker on pr merge (#33)
+- [aaca6bd9](https://github.com/kubedb/percona-xtradb/commit/aaca6bd9) Update .kodiak.toml
+- [9a495724](https://github.com/kubedb/percona-xtradb/commit/9a495724) Various fixes (#32)
+- [9b6c9a53](https://github.com/kubedb/percona-xtradb/commit/9b6c9a53) Update to Kubernetes v1.18.3 (#31)
+- [67912547](https://github.com/kubedb/percona-xtradb/commit/67912547) Update to Kubernetes v1.18.3
+- [fc8ce4cc](https://github.com/kubedb/percona-xtradb/commit/fc8ce4cc) Create .kodiak.toml
+- [8aba5ef2](https://github.com/kubedb/percona-xtradb/commit/8aba5ef2) Use CRD v1 for Kubernetes >= 1.16 (#30)
+- [e81d2b4c](https://github.com/kubedb/percona-xtradb/commit/e81d2b4c) Update to Kubernetes v1.18.3 (#29)
+- [2a32730a](https://github.com/kubedb/percona-xtradb/commit/2a32730a) Fix e2e tests (#28)
+- [a79626d9](https://github.com/kubedb/percona-xtradb/commit/a79626d9) Update stash install commands
+- [52fc2059](https://github.com/kubedb/percona-xtradb/commit/52fc2059) Use recommended kubernetes app labels (#27)
+- [93dc10ec](https://github.com/kubedb/percona-xtradb/commit/93dc10ec) Update crazy-max/ghaction-docker-buildx flag
+- [ce5717e2](https://github.com/kubedb/percona-xtradb/commit/ce5717e2) Revendor kubedb.dev/apimachinery@master (#26)
+- [c1ca649d](https://github.com/kubedb/percona-xtradb/commit/c1ca649d) Pass annotations from CRD to AppBinding (#25)
+- [f327cc01](https://github.com/kubedb/percona-xtradb/commit/f327cc01) Trigger the workflow on push or pull request
+- [02432393](https://github.com/kubedb/percona-xtradb/commit/02432393) Update CHANGELOG.md
+- [a89dbc55](https://github.com/kubedb/percona-xtradb/commit/a89dbc55) Use stash.appscode.dev/apimachinery@v0.9.0-rc.6 (#24)
+- [e69742de](https://github.com/kubedb/percona-xtradb/commit/e69742de) Update for percona-xtradb standalone restoresession (#23)
+- [958877a1](https://github.com/kubedb/percona-xtradb/commit/958877a1) Various fixes (#21)
+- [fb0d7a35](https://github.com/kubedb/percona-xtradb/commit/fb0d7a35) Update kubernetes client-go to 1.16.3 (#20)
+- [293fe9a4](https://github.com/kubedb/percona-xtradb/commit/293fe9a4) Fix default make command
+- [39358e3b](https://github.com/kubedb/percona-xtradb/commit/39358e3b) Use charts to install operator (#19)
+- [6c5b3395](https://github.com/kubedb/percona-xtradb/commit/6c5b3395) Several fixes and update tests (#18)
+- [84ff139f](https://github.com/kubedb/percona-xtradb/commit/84ff139f) Various Makefile improvements (#16)
+- [e2737f65](https://github.com/kubedb/percona-xtradb/commit/e2737f65) Remove EnableStatusSubresource (#17)
+- [fb886b07](https://github.com/kubedb/percona-xtradb/commit/fb886b07) Run e2e tests using GitHub actions (#12)
+- [35b155d9](https://github.com/kubedb/percona-xtradb/commit/35b155d9) Validate DBVersionSpecs and fixed broken build (#15)
+- [67794bd9](https://github.com/kubedb/percona-xtradb/commit/67794bd9) Update go.yml
+- [f7666354](https://github.com/kubedb/percona-xtradb/commit/f7666354) Various changes for Percona XtraDB (#13)
+- [ceb7ba67](https://github.com/kubedb/percona-xtradb/commit/ceb7ba67) Enable GitHub actions
+- [f5a112af](https://github.com/kubedb/percona-xtradb/commit/f5a112af) Refactor for ProxySQL Integration (#11)
+- [26602049](https://github.com/kubedb/percona-xtradb/commit/26602049) Revendor
+- [71957d40](https://github.com/kubedb/percona-xtradb/commit/71957d40) Rename from perconaxtradb to percona-xtradb (#10)
+- [b526ccd8](https://github.com/kubedb/percona-xtradb/commit/b526ccd8) Set database version in AppBinding (#7)
+- [336e7203](https://github.com/kubedb/percona-xtradb/commit/336e7203) Percona XtraDB Cluster support (#9)
+- [71a42f7a](https://github.com/kubedb/percona-xtradb/commit/71a42f7a) Don't set annotation to AppBinding (#8)
+- [282298cb](https://github.com/kubedb/percona-xtradb/commit/282298cb) Fix UpsertDatabaseAnnotation() function (#4)
+- [2ab9dddf](https://github.com/kubedb/percona-xtradb/commit/2ab9dddf) Add license header to Makefiles (#6)
+- [df135c08](https://github.com/kubedb/percona-xtradb/commit/df135c08) Add install, uninstall and purge command in Makefile (#3)
+- [73d3a845](https://github.com/kubedb/percona-xtradb/commit/73d3a845) Update .gitignore
+- [59a4e754](https://github.com/kubedb/percona-xtradb/commit/59a4e754) Add Makefile (#2)
+- [f3551ddc](https://github.com/kubedb/percona-xtradb/commit/f3551ddc) Rename package path (#1)
+- [56a241d6](https://github.com/kubedb/percona-xtradb/commit/56a241d6) Use explicit IP whitelist instead of automatic IP whitelist (#151)
+- [9f0b5ca3](https://github.com/kubedb/percona-xtradb/commit/9f0b5ca3) Update to k8s 1.14.0 client libraries using go.mod (#147)
+- [73ad7c30](https://github.com/kubedb/percona-xtradb/commit/73ad7c30) Update changelog
+- [ccc36b5c](https://github.com/kubedb/percona-xtradb/commit/ccc36b5c) Update README.md
+- [9769e8e1](https://github.com/kubedb/percona-xtradb/commit/9769e8e1) Start next dev cycle
+- [a3fa468a](https://github.com/kubedb/percona-xtradb/commit/a3fa468a) Prepare release 0.5.0
+- [6d8862de](https://github.com/kubedb/percona-xtradb/commit/6d8862de) Mysql Group Replication tests (#146)
+- [49544e55](https://github.com/kubedb/percona-xtradb/commit/49544e55) Mysql Group Replication (#144)
+- [a85d4b44](https://github.com/kubedb/percona-xtradb/commit/a85d4b44) Revendor dependencies
+- [9c538460](https://github.com/kubedb/percona-xtradb/commit/9c538460) Changed Role to exclude psp without name (#143)
+- [6cace93b](https://github.com/kubedb/percona-xtradb/commit/6cace93b) Modify mutator validator names (#142)
+- [da0c19b9](https://github.com/kubedb/percona-xtradb/commit/da0c19b9) Update changelog
+- [b79c80d6](https://github.com/kubedb/percona-xtradb/commit/b79c80d6) Start next dev cycle
+- [838d9459](https://github.com/kubedb/percona-xtradb/commit/838d9459) Prepare release 0.4.0
+- [bf0f2c14](https://github.com/kubedb/percona-xtradb/commit/bf0f2c14) Added PSP names and init container image in testing framework (#141)
+- [3d227570](https://github.com/kubedb/percona-xtradb/commit/3d227570) Added PSP support for mySQL (#137)
+- [7b766657](https://github.com/kubedb/percona-xtradb/commit/7b766657) Don't inherit app.kubernetes.io labels from CRD into offshoots (#140)
+- [29e23470](https://github.com/kubedb/percona-xtradb/commit/29e23470) Support for init container (#139)
+- [3e1556f6](https://github.com/kubedb/percona-xtradb/commit/3e1556f6) Add role label to stats service (#138)
+- [ee078af9](https://github.com/kubedb/percona-xtradb/commit/ee078af9) Update changelog
+- [978f1139](https://github.com/kubedb/percona-xtradb/commit/978f1139) Update Kubernetes client libraries to 1.13.0 release (#136)
+- [821f23d1](https://github.com/kubedb/percona-xtradb/commit/821f23d1) Start next dev cycle
+- [678b26aa](https://github.com/kubedb/percona-xtradb/commit/678b26aa) Prepare release 0.3.0
+- [40ad7a23](https://github.com/kubedb/percona-xtradb/commit/40ad7a23) Initial RBAC support: create and use K8s service account for MySQL (#134)
+- [98f03387](https://github.com/kubedb/percona-xtradb/commit/98f03387) Revendor dependencies (#135)
+- [dfe92615](https://github.com/kubedb/percona-xtradb/commit/dfe92615) Revendor dependencies : Retry Failed Scheduler Snapshot (#133)
+- [71f8a350](https://github.com/kubedb/percona-xtradb/commit/71f8a350) Added ephemeral StorageType support (#132)
+- [0a6b6e46](https://github.com/kubedb/percona-xtradb/commit/0a6b6e46) Added support of MySQL 8.0.14 (#131)
+- [99e57a9e](https://github.com/kubedb/percona-xtradb/commit/99e57a9e) Use PVC spec from snapshot if provided (#130)
+- [61497be6](https://github.com/kubedb/percona-xtradb/commit/61497be6) Revendored and updated tests for 'Prevent prefix matching of multiple snapshots' (#129)
+- [7eafe088](https://github.com/kubedb/percona-xtradb/commit/7eafe088) Add certificate health checker (#128)
+- [973ec416](https://github.com/kubedb/percona-xtradb/commit/973ec416) Update E2E test: Env update is not restricted anymore (#127)
+- [339975ff](https://github.com/kubedb/percona-xtradb/commit/339975ff) Fix AppBinding (#126)
+- [62050a72](https://github.com/kubedb/percona-xtradb/commit/62050a72) Update changelog
+- [2d454043](https://github.com/kubedb/percona-xtradb/commit/2d454043) Prepare release 0.2.0
+- [6941ea59](https://github.com/kubedb/percona-xtradb/commit/6941ea59) Reuse event recorder (#125)
+- [b77e66c4](https://github.com/kubedb/percona-xtradb/commit/b77e66c4) OSM binary upgraded in mysql-tools (#123)
+- [c9228086](https://github.com/kubedb/percona-xtradb/commit/c9228086) Revendor dependencies (#124)
+- [97837120](https://github.com/kubedb/percona-xtradb/commit/97837120) Test for faulty snapshot (#122)
+- [c3e995b6](https://github.com/kubedb/percona-xtradb/commit/c3e995b6) Start next dev cycle
+- [8a4f3b13](https://github.com/kubedb/percona-xtradb/commit/8a4f3b13) Prepare release 0.2.0-rc.2
+- [79942191](https://github.com/kubedb/percona-xtradb/commit/79942191) Upgrade database secret keys (#121)
+- [1747fdf5](https://github.com/kubedb/percona-xtradb/commit/1747fdf5) Ignore mutation of fields to default values during update (#120)
+- [d902d588](https://github.com/kubedb/percona-xtradb/commit/d902d588) Support configuration options for exporter sidecar (#119)
+- [dd7c3f44](https://github.com/kubedb/percona-xtradb/commit/dd7c3f44) Use flags.DumpAll (#118)
+- [bc1ef05b](https://github.com/kubedb/percona-xtradb/commit/bc1ef05b) Start next dev cycle
+- [9d33c1a0](https://github.com/kubedb/percona-xtradb/commit/9d33c1a0) Prepare release 0.2.0-rc.1
+- [b076e141](https://github.com/kubedb/percona-xtradb/commit/b076e141) Apply cleanup (#117)
+- [7dc5641f](https://github.com/kubedb/percona-xtradb/commit/7dc5641f) Set periodic analytics (#116)
+- [90ea6acc](https://github.com/kubedb/percona-xtradb/commit/90ea6acc) Introduce AppBinding support (#115)
+- [a882d76a](https://github.com/kubedb/percona-xtradb/commit/a882d76a) Fix Analytics (#114)
+- [0961009c](https://github.com/kubedb/percona-xtradb/commit/0961009c) Error out from cron job for deprecated dbversion (#113)
+- [da1f4e27](https://github.com/kubedb/percona-xtradb/commit/da1f4e27) Add CRDs without observation when operator starts (#112)
+- [0a754d2f](https://github.com/kubedb/percona-xtradb/commit/0a754d2f) Update changelog
+- [b09bc6e1](https://github.com/kubedb/percona-xtradb/commit/b09bc6e1) Start next dev cycle
+- [0d467ccb](https://github.com/kubedb/percona-xtradb/commit/0d467ccb) Prepare release 0.2.0-rc.0
+- [c757007a](https://github.com/kubedb/percona-xtradb/commit/c757007a) Merge commit 'cc6607a3589a79a5e61bb198d370ea0ae30b9d09'
+- [ddfe4be1](https://github.com/kubedb/percona-xtradb/commit/ddfe4be1) Support custom user passowrd for backup (#111)
+- [8c84ba20](https://github.com/kubedb/percona-xtradb/commit/8c84ba20) Support providing resources for monitoring container (#110)
+- [7bcfbc48](https://github.com/kubedb/percona-xtradb/commit/7bcfbc48) Update kubernetes client libraries to 1.12.0 (#109)
+- [145bba2b](https://github.com/kubedb/percona-xtradb/commit/145bba2b) Add validation webhook xray (#108)
+- [6da1887f](https://github.com/kubedb/percona-xtradb/commit/6da1887f) Various Fixes (#107)
+- [111519e9](https://github.com/kubedb/percona-xtradb/commit/111519e9) Merge ports from service template (#105)
+- [38147ef1](https://github.com/kubedb/percona-xtradb/commit/38147ef1) Replace doNotPause with TerminationPolicy = DoNotTerminate (#104)
+- [e28ebc47](https://github.com/kubedb/percona-xtradb/commit/e28ebc47) Pass resources to NamespaceValidator (#103)
+- [aed12bf5](https://github.com/kubedb/percona-xtradb/commit/aed12bf5) Various fixes (#102)
+- [3d372ef6](https://github.com/kubedb/percona-xtradb/commit/3d372ef6) Support Livecycle hook and container probes (#101)
+- [b6ef6887](https://github.com/kubedb/percona-xtradb/commit/b6ef6887) Check if Kubernetes version is supported before running operator (#100)
+- [d89e7783](https://github.com/kubedb/percona-xtradb/commit/d89e7783) Update package alias (#99)
+- [f0b44b3a](https://github.com/kubedb/percona-xtradb/commit/f0b44b3a) Start next dev cycle
+- [a79ff03b](https://github.com/kubedb/percona-xtradb/commit/a79ff03b) Prepare release 0.2.0-beta.1
+- [0d8d3cca](https://github.com/kubedb/percona-xtradb/commit/0d8d3cca) Revendor api (#98)
+- [2f850243](https://github.com/kubedb/percona-xtradb/commit/2f850243) Fix tests (#97)
+- [4ced0bfe](https://github.com/kubedb/percona-xtradb/commit/4ced0bfe) Revendor api for catalog apigroup (#96)
+- [e7695400](https://github.com/kubedb/percona-xtradb/commit/e7695400) Update chanelog
+- [8e358aea](https://github.com/kubedb/percona-xtradb/commit/8e358aea) Use --pull flag with docker build (#20) (#95)
+- [d2a97d90](https://github.com/kubedb/percona-xtradb/commit/d2a97d90) Merge commit '16c769ee4686576f172a6b79a10d25bfd79ca4a4'
+- [d1fe8a8a](https://github.com/kubedb/percona-xtradb/commit/d1fe8a8a) Start next dev cycle
+- [04eb9bb5](https://github.com/kubedb/percona-xtradb/commit/04eb9bb5) Prepare release 0.2.0-beta.0
+- [9dfea960](https://github.com/kubedb/percona-xtradb/commit/9dfea960) Pass extra args to tools.sh (#93)
+- [47dd3cad](https://github.com/kubedb/percona-xtradb/commit/47dd3cad) Don't try to wipe out Snapshot data for Local backend (#92)
+- [9c4d485b](https://github.com/kubedb/percona-xtradb/commit/9c4d485b) Add missing alt-tag docker folder mysql-tools images (#91)
+- [be72f784](https://github.com/kubedb/percona-xtradb/commit/be72f784) Use suffix for updated DBImage & Stop working for deprecated *Versions (#90)
+- [05c8f14d](https://github.com/kubedb/percona-xtradb/commit/05c8f14d) Search used secrets within same namespace of DB object (#89)
+- [0d94c946](https://github.com/kubedb/percona-xtradb/commit/0d94c946) Support Termination Policy (#88)
+- [8775ddf7](https://github.com/kubedb/percona-xtradb/commit/8775ddf7) Update builddeps.sh
+- [796c93da](https://github.com/kubedb/percona-xtradb/commit/796c93da) Revendor k8s.io/apiserver (#87)
+- [5a1e3f57](https://github.com/kubedb/percona-xtradb/commit/5a1e3f57) Revendor kubernetes-1.11.3 (#86)
+- [809a3c49](https://github.com/kubedb/percona-xtradb/commit/809a3c49) Support UpdateStrategy (#84)
+- [372c52ef](https://github.com/kubedb/percona-xtradb/commit/372c52ef) Add TerminationPolicy for databases (#83)
+- [c01b55e8](https://github.com/kubedb/percona-xtradb/commit/c01b55e8) Revendor api (#82)
+- [5e196b95](https://github.com/kubedb/percona-xtradb/commit/5e196b95) Use IntHash as status.observedGeneration (#81)
+- [2da3bb1b](https://github.com/kubedb/percona-xtradb/commit/2da3bb1b) fix github status (#80)
+- [121d0a98](https://github.com/kubedb/percona-xtradb/commit/121d0a98) Update pipeline (#79)
+- [532e3137](https://github.com/kubedb/percona-xtradb/commit/532e3137) Fix E2E test for minikube (#78)
+- [0f107815](https://github.com/kubedb/percona-xtradb/commit/0f107815) Update pipeline (#77)
+- [851679e2](https://github.com/kubedb/percona-xtradb/commit/851679e2) Migrate MySQL (#75)
+- [0b997855](https://github.com/kubedb/percona-xtradb/commit/0b997855) Use official exporter image (#74)
+- [702d5736](https://github.com/kubedb/percona-xtradb/commit/702d5736) Fix uninstall for concourse (#70)
+- [9ee88bd2](https://github.com/kubedb/percona-xtradb/commit/9ee88bd2) Update status.ObservedGeneration for failure phase (#73)
+- [559cdb6a](https://github.com/kubedb/percona-xtradb/commit/559cdb6a) Keep track of ObservedGenerationHash (#72)
+- [61c8b898](https://github.com/kubedb/percona-xtradb/commit/61c8b898) Use NewObservableHandler (#71)
+- [421274dc](https://github.com/kubedb/percona-xtradb/commit/421274dc) Merge commit '887037c7e36289e3135dda99346fccc7e2ce303b'
+- [6a41d9bc](https://github.com/kubedb/percona-xtradb/commit/6a41d9bc) Fix uninstall for concourse (#69)
+- [f1af09db](https://github.com/kubedb/percona-xtradb/commit/f1af09db) Update README.md
+- [bf3f1823](https://github.com/kubedb/percona-xtradb/commit/bf3f1823) Revise immutable spec fields (#68)
+- [26adec3b](https://github.com/kubedb/percona-xtradb/commit/26adec3b) Merge commit '5f83049fc01dc1d0709ac0014d6f3a0f74a39417'
+- [31a97820](https://github.com/kubedb/percona-xtradb/commit/31a97820) Support passing args via PodTemplate (#67)
+- [60f4ee23](https://github.com/kubedb/percona-xtradb/commit/60f4ee23) Introduce storageType : ephemeral (#66)
+- [bfd3fcd6](https://github.com/kubedb/percona-xtradb/commit/bfd3fcd6) Add support for running tests on cncf cluster (#63)
+- [fba47b19](https://github.com/kubedb/percona-xtradb/commit/fba47b19) Merge commit 'e010cbb302c8d59d4cf69dd77085b046ff423b78'
+- [6be96ce0](https://github.com/kubedb/percona-xtradb/commit/6be96ce0) Revendor api (#65)
+- [0f629ab3](https://github.com/kubedb/percona-xtradb/commit/0f629ab3) Keep track of observedGeneration in status (#64)
+- [c9a9596f](https://github.com/kubedb/percona-xtradb/commit/c9a9596f) Separate StatsService for monitoring (#62)
+- [62854641](https://github.com/kubedb/percona-xtradb/commit/62854641) Use MySQLVersion for MySQL images (#61)
+- [3c170c56](https://github.com/kubedb/percona-xtradb/commit/3c170c56) Use updated crd spec (#60)
+- [873c285e](https://github.com/kubedb/percona-xtradb/commit/873c285e) Rename OffshootLabels to OffshootSelectors (#59)
+- [2fd02169](https://github.com/kubedb/percona-xtradb/commit/2fd02169) Revendor api (#58)
+- [a127d6cd](https://github.com/kubedb/percona-xtradb/commit/a127d6cd) Use kmodules monitoring and objectstore api (#57)
+- [2f79a038](https://github.com/kubedb/percona-xtradb/commit/2f79a038) Support custom configuration (#52)
+- [49c67f00](https://github.com/kubedb/percona-xtradb/commit/49c67f00) Merge commit '44e6d4985d93556e39ddcc4677ada5437fc5be64'
+- [fb28bc6c](https://github.com/kubedb/percona-xtradb/commit/fb28bc6c) Refactor concourse scripts (#56)
+- [4de4ced1](https://github.com/kubedb/percona-xtradb/commit/4de4ced1) Fix command `./hack/make.py test e2e` (#55)
+- [3082123e](https://github.com/kubedb/percona-xtradb/commit/3082123e) Set generated binary name to my-operator (#54)
+- [5698f314](https://github.com/kubedb/percona-xtradb/commit/5698f314) Don't add admission/v1beta1 group as a prioritized version (#53)
+- [696135d5](https://github.com/kubedb/percona-xtradb/commit/696135d5) Fix travis build (#48)
+- [c519ef89](https://github.com/kubedb/percona-xtradb/commit/c519ef89) Format shell script (#51)
+- [c93e2f40](https://github.com/kubedb/percona-xtradb/commit/c93e2f40) Enable status subresource for crds (#50)
+- [edd951ca](https://github.com/kubedb/percona-xtradb/commit/edd951ca) Update client-go to v8.0.0 (#49)
+- [520597a6](https://github.com/kubedb/percona-xtradb/commit/520597a6) Merge commit '71850e2c90cda8fc588b7dedb340edf3d316baea'
+- [f1549e95](https://github.com/kubedb/percona-xtradb/commit/f1549e95) Support ENV variables in CRDs (#46)
+- [67f37780](https://github.com/kubedb/percona-xtradb/commit/67f37780) Updated osm version to 0.7.1 (#47)
+- [10e309c0](https://github.com/kubedb/percona-xtradb/commit/10e309c0) Prepare release 0.1.0
+- [62a8fbbd](https://github.com/kubedb/percona-xtradb/commit/62a8fbbd) Fixed missing error return (#45)
+- [8c05bb83](https://github.com/kubedb/percona-xtradb/commit/8c05bb83) Revendor dependencies (#44)
+- [ca811a2e](https://github.com/kubedb/percona-xtradb/commit/ca811a2e) Fix release script (#43)
+- [b79541f6](https://github.com/kubedb/percona-xtradb/commit/b79541f6) Add changelog (#42)
+- [a2d13c82](https://github.com/kubedb/percona-xtradb/commit/a2d13c82) Concourse (#41)
+- [95b2186e](https://github.com/kubedb/percona-xtradb/commit/95b2186e) Fixed kubeconfig plugin for Cloud Providers && Storage is required for MySQL (#40)
+- [37762093](https://github.com/kubedb/percona-xtradb/commit/37762093) Refactored E2E testing to support E2E testing with admission webhook in cloud (#38)
+- [b6fe72ca](https://github.com/kubedb/percona-xtradb/commit/b6fe72ca) Remove lost+found directory before initializing mysql (#39)
+- [18ebb959](https://github.com/kubedb/percona-xtradb/commit/18ebb959) Skip delete requests for empty resources (#37)
+- [eeb7add0](https://github.com/kubedb/percona-xtradb/commit/eeb7add0) Don't panic if admission options is nil (#36)
+- [ccb59db0](https://github.com/kubedb/percona-xtradb/commit/ccb59db0) Disable admission controllers for webhook server (#35)
+- [b1c6c149](https://github.com/kubedb/percona-xtradb/commit/b1c6c149) Separate ApiGroup for Mutating and Validating webhook && upgraded osm to 0.7.0 (#34)
+- [b1890f7c](https://github.com/kubedb/percona-xtradb/commit/b1890f7c) Update client-go to 7.0.0 (#33)
+- [08c81726](https://github.com/kubedb/percona-xtradb/commit/08c81726) Added update script for mysql-tools:8 (#32)
+- [4bbe6c9f](https://github.com/kubedb/percona-xtradb/commit/4bbe6c9f) Added support of mysql:5.7 (#31)
+- [e657f512](https://github.com/kubedb/percona-xtradb/commit/e657f512) Add support for one informer and N-eventHandler for snapshot, dromantDB and Job (#30)
+- [bbcd48d6](https://github.com/kubedb/percona-xtradb/commit/bbcd48d6) Use metrics from kube apiserver (#29)
+- [1687e197](https://github.com/kubedb/percona-xtradb/commit/1687e197) Bundle webhook server and Use SharedInformerFactory (#28)
+- [cd0efc00](https://github.com/kubedb/percona-xtradb/commit/cd0efc00) Move MySQL AdmissionWebhook packages into MySQL repository (#27)
+- [46065e18](https://github.com/kubedb/percona-xtradb/commit/46065e18) Use mysql:8.0.3 image as mysql:8.0 (#26)
+- [1b73529f](https://github.com/kubedb/percona-xtradb/commit/1b73529f) Update README.md
+- [62eaa397](https://github.com/kubedb/percona-xtradb/commit/62eaa397) Update README.md
+- [c53704c7](https://github.com/kubedb/percona-xtradb/commit/c53704c7) Remove Docker pull count
+- [b9ec877e](https://github.com/kubedb/percona-xtradb/commit/b9ec877e) Add travis yaml (#25)
+- [ade3571c](https://github.com/kubedb/percona-xtradb/commit/ade3571c) Start next dev cycle
+- [b4b749df](https://github.com/kubedb/percona-xtradb/commit/b4b749df) Prepare release 0.1.0-beta.2
+- [4d46d95d](https://github.com/kubedb/percona-xtradb/commit/4d46d95d) Migrating to apps/v1 (#23)
+- [5ee1ac8c](https://github.com/kubedb/percona-xtradb/commit/5ee1ac8c) Update validation (#22)
+- [dd023c50](https://github.com/kubedb/percona-xtradb/commit/dd023c50)  Fix dormantDB matching: pass same type to Equal method (#21)
+- [37a1e4fd](https://github.com/kubedb/percona-xtradb/commit/37a1e4fd) Use official code generator scripts (#20)
+- [485d3d7c](https://github.com/kubedb/percona-xtradb/commit/485d3d7c) Fixed dormantdb matching & Raised throttling time & Fixed MySQL version Checking (#19)
+- [6db2ae8d](https://github.com/kubedb/percona-xtradb/commit/6db2ae8d) Prepare release 0.1.0-beta.1
+- [ebbfec2f](https://github.com/kubedb/percona-xtradb/commit/ebbfec2f) converted to k8s 1.9 & Improved InitSpec in DormantDB & Added support for Job watcher & Improved Tests (#17)
+- [a484e0e5](https://github.com/kubedb/percona-xtradb/commit/a484e0e5) Fixed logger, analytics and removed rbac stuff (#16)
+- [7aa2d1d2](https://github.com/kubedb/percona-xtradb/commit/7aa2d1d2) Add rbac stuffs for mysql-exporter (#15)
+- [078098c8](https://github.com/kubedb/percona-xtradb/commit/078098c8)  Review Mysql docker images and Fixed monitring (#14)
+- [6877108a](https://github.com/kubedb/percona-xtradb/commit/6877108a) Update README.md
+- [1f84a5da](https://github.com/kubedb/percona-xtradb/commit/1f84a5da) Start next dev cycle
+- [2f1e4b7d](https://github.com/kubedb/percona-xtradb/commit/2f1e4b7d) Prepare release 0.1.0-beta.0
+- [dce1e88e](https://github.com/kubedb/percona-xtradb/commit/dce1e88e) Add release script
+- [60ed55cb](https://github.com/kubedb/percona-xtradb/commit/60ed55cb) Rename ms-operator to my-operator (#13)
+- [5451d166](https://github.com/kubedb/percona-xtradb/commit/5451d166) Fix Analytics and pass client-id as ENV to Snapshot Job (#12)
+- [788ae178](https://github.com/kubedb/percona-xtradb/commit/788ae178) update docker image validation (#11)
+- [c966efd5](https://github.com/kubedb/percona-xtradb/commit/c966efd5) Add docker-registry and WorkQueue  (#10)
+- [be340103](https://github.com/kubedb/percona-xtradb/commit/be340103) Set client id for analytics (#9)
+- [ca11f683](https://github.com/kubedb/percona-xtradb/commit/ca11f683) Fix CRD Registration (#8)
+- [2f95c13d](https://github.com/kubedb/percona-xtradb/commit/2f95c13d) Update issue repo link
+- [6fffa713](https://github.com/kubedb/percona-xtradb/commit/6fffa713) Update pkg paths to kubedb org (#7)
+- [2d4d5c44](https://github.com/kubedb/percona-xtradb/commit/2d4d5c44) Assign default Prometheus Monitoring Port (#6)
+- [a7595613](https://github.com/kubedb/percona-xtradb/commit/a7595613) Add Snapshot Backup, Restore and Backup-Scheduler (#4)
+- [17a782c6](https://github.com/kubedb/percona-xtradb/commit/17a782c6) Update Dockerfile
+- [e92bfec9](https://github.com/kubedb/percona-xtradb/commit/e92bfec9) Add mysql-util docker image (#5)
+- [2a4b25ac](https://github.com/kubedb/percona-xtradb/commit/2a4b25ac) Mysql db - Inititalizing  (#2)
+- [cbfbc878](https://github.com/kubedb/percona-xtradb/commit/cbfbc878) Update README.md
+- [01cab651](https://github.com/kubedb/percona-xtradb/commit/01cab651) Update README.md
+- [0aa81cdf](https://github.com/kubedb/percona-xtradb/commit/0aa81cdf) Use client-go 5.x
+- [3de10d7f](https://github.com/kubedb/percona-xtradb/commit/3de10d7f) Update ./hack folder (#3)
+- [46f05b1f](https://github.com/kubedb/percona-xtradb/commit/46f05b1f) Add skeleton for mysql (#1)
+- [73147dba](https://github.com/kubedb/percona-xtradb/commit/73147dba) Merge commit 'be70502b4993171bbad79d2ff89a9844f1c24caa' as 'hack/libbuild'
+
+
+
+## [kubedb/pg-leader-election](https://github.com/kubedb/pg-leader-election)
+
+### [v0.2.0](https://github.com/kubedb/pg-leader-election/releases/tag/v0.2.0)
+
+
+
+
+## [kubedb/pgbouncer](https://github.com/kubedb/pgbouncer)
+
+### [v0.1.0](https://github.com/kubedb/pgbouncer/releases/tag/v0.1.0)
+
+- [464cc54a](https://github.com/kubedb/pgbouncer/commit/464cc54a) Prepare for release v0.1.0 (#94)
+- [c4083972](https://github.com/kubedb/pgbouncer/commit/c4083972) Prepare for release v0.1.0-rc.2 (#93)
+- [b77fa7c8](https://github.com/kubedb/pgbouncer/commit/b77fa7c8) Prepare for release v0.1.0-rc.1 (#92)
+- [e82f1017](https://github.com/kubedb/pgbouncer/commit/e82f1017) Prepare for release v0.1.0-beta.6 (#91)
+- [8d2fa953](https://github.com/kubedb/pgbouncer/commit/8d2fa953) Create SRV records for governing service (#90)
+- [96144773](https://github.com/kubedb/pgbouncer/commit/96144773) Prepare for release v0.1.0-beta.5 (#89)
+- [bb574108](https://github.com/kubedb/pgbouncer/commit/bb574108) Create separate governing service for each database (#88)
+- [28f29e3c](https://github.com/kubedb/pgbouncer/commit/28f29e3c) Update KubeDB api (#87)
+- [79a3e3f7](https://github.com/kubedb/pgbouncer/commit/79a3e3f7) Update readme
+- [f42d28f9](https://github.com/kubedb/pgbouncer/commit/f42d28f9) Update repository config (#86)
+- [4c292933](https://github.com/kubedb/pgbouncer/commit/4c292933) Prepare for release v0.1.0-beta.4 (#85)
+- [c3daaa90](https://github.com/kubedb/pgbouncer/commit/c3daaa90) Update KubeDB api (#84)
+- [19784f7a](https://github.com/kubedb/pgbouncer/commit/19784f7a) Update Kubernetes v1.18.9 dependencies (#83)
+- [a7ea74e4](https://github.com/kubedb/pgbouncer/commit/a7ea74e4) Update KubeDB api (#82)
+- [49391b30](https://github.com/kubedb/pgbouncer/commit/49391b30) Update KubeDB api (#81)
+- [2ad0016d](https://github.com/kubedb/pgbouncer/commit/2ad0016d) Update KubeDB api (#80)
+- [e0169139](https://github.com/kubedb/pgbouncer/commit/e0169139) Update Kubernetes v1.18.9 dependencies (#79)
+- [ade8edf9](https://github.com/kubedb/pgbouncer/commit/ade8edf9) Update KubeDB api (#78)
+- [86387966](https://github.com/kubedb/pgbouncer/commit/86387966) Update KubeDB api (#77)
+- [d5fa2ce7](https://github.com/kubedb/pgbouncer/commit/d5fa2ce7) Update KubeDB api (#76)
+- [938d61f6](https://github.com/kubedb/pgbouncer/commit/938d61f6) Update KubeDB api (#75)
+- [89ceecb1](https://github.com/kubedb/pgbouncer/commit/89ceecb1) Update Kubernetes v1.18.9 dependencies (#74)
+- [3b8fc849](https://github.com/kubedb/pgbouncer/commit/3b8fc849) Update KubeDB api (#73)
+- [89ed5bf0](https://github.com/kubedb/pgbouncer/commit/89ed5bf0) Update KubeDB api (#72)
+- [187eaff5](https://github.com/kubedb/pgbouncer/commit/187eaff5) Update KubeDB api (#71)
+- [1222c935](https://github.com/kubedb/pgbouncer/commit/1222c935) Update repository config (#70)
+- [f9c72f8c](https://github.com/kubedb/pgbouncer/commit/f9c72f8c) Update repository config (#69)
+- [a55e0a9f](https://github.com/kubedb/pgbouncer/commit/a55e0a9f) Update repository config (#68)
+- [20f01c3b](https://github.com/kubedb/pgbouncer/commit/20f01c3b) Update KubeDB api (#67)
+- [ea907c2f](https://github.com/kubedb/pgbouncer/commit/ea907c2f) Update Kubernetes v1.18.9 dependencies (#66)
+- [86f92e64](https://github.com/kubedb/pgbouncer/commit/86f92e64) Publish docker images to ghcr.io (#65)
+- [189ab8b8](https://github.com/kubedb/pgbouncer/commit/189ab8b8) Update KubeDB api (#64)
+- [d30a59c2](https://github.com/kubedb/pgbouncer/commit/d30a59c2) Update KubeDB api (#63)
+- [545ee043](https://github.com/kubedb/pgbouncer/commit/545ee043) Update KubeDB api (#62)
+- [cc01e1ca](https://github.com/kubedb/pgbouncer/commit/cc01e1ca) Update KubeDB api (#61)
+- [40bc916f](https://github.com/kubedb/pgbouncer/commit/40bc916f) Update repository config (#60)
+- [00313b21](https://github.com/kubedb/pgbouncer/commit/00313b21) Update Kubernetes v1.18.9 dependencies (#59)
+- [080b77f3](https://github.com/kubedb/pgbouncer/commit/080b77f3) Update KubeDB api (#56)
+- [fa479841](https://github.com/kubedb/pgbouncer/commit/fa479841) Update Kubernetes v1.18.9 dependencies (#57)
+- [559d7421](https://github.com/kubedb/pgbouncer/commit/559d7421) Update Kubernetes v1.18.9 dependencies (#55)
+- [1bfe4067](https://github.com/kubedb/pgbouncer/commit/1bfe4067) Update repository config (#54)
+- [5ac28f25](https://github.com/kubedb/pgbouncer/commit/5ac28f25) Update repository config (#53)
+- [162034f0](https://github.com/kubedb/pgbouncer/commit/162034f0) Update Kubernetes v1.18.9 dependencies (#52)
+- [71697842](https://github.com/kubedb/pgbouncer/commit/71697842) Update Kubernetes v1.18.3 dependencies (#51)
+- [3a868c6d](https://github.com/kubedb/pgbouncer/commit/3a868c6d) Prepare for release v0.1.0-beta.3 (#50)
+- [72745988](https://github.com/kubedb/pgbouncer/commit/72745988) Add license verifier (#49)
+- [36e16b55](https://github.com/kubedb/pgbouncer/commit/36e16b55) Use AppsCode Trial license (#48)
+- [d3917d72](https://github.com/kubedb/pgbouncer/commit/d3917d72) Update Kubernetes v1.18.3 dependencies (#47)
+- [c5fb3b0e](https://github.com/kubedb/pgbouncer/commit/c5fb3b0e) Update Kubernetes v1.18.3 dependencies (#46)
+- [64f27a21](https://github.com/kubedb/pgbouncer/commit/64f27a21) Update Kubernetes v1.18.3 dependencies (#44)
+- [817891a9](https://github.com/kubedb/pgbouncer/commit/817891a9) Use AppsCode Community License (#43)
+- [11826ae7](https://github.com/kubedb/pgbouncer/commit/11826ae7) Update Kubernetes v1.18.3 dependencies (#42)
+- [e083d550](https://github.com/kubedb/pgbouncer/commit/e083d550) Prepare for release v0.1.0-beta.2 (#41)
+- [fe847905](https://github.com/kubedb/pgbouncer/commit/fe847905) Update release.yml
+- [ddf5a857](https://github.com/kubedb/pgbouncer/commit/ddf5a857) Use updated certificate spec (#35)
+- [d5cd5bfd](https://github.com/kubedb/pgbouncer/commit/d5cd5bfd) Update Kubernetes v1.18.3 dependencies (#39)
+- [21693c76](https://github.com/kubedb/pgbouncer/commit/21693c76) Update Kubernetes v1.18.3 dependencies (#38)
+- [39ad48db](https://github.com/kubedb/pgbouncer/commit/39ad48db) Update Kubernetes v1.18.3 dependencies (#37)
+- [7f1ecc77](https://github.com/kubedb/pgbouncer/commit/7f1ecc77) Update Kubernetes v1.18.3 dependencies (#36)
+- [8d9d379a](https://github.com/kubedb/pgbouncer/commit/8d9d379a) Update Kubernetes v1.18.3 dependencies (#34)
+- [c9b8300c](https://github.com/kubedb/pgbouncer/commit/c9b8300c) Update Kubernetes v1.18.3 dependencies (#33)
+- [66c72a40](https://github.com/kubedb/pgbouncer/commit/66c72a40) Remove dependency on enterprise operator (#32)
+- [757dc104](https://github.com/kubedb/pgbouncer/commit/757dc104) Update to cert-manager v0.16.0 (#30)
+- [0a183d15](https://github.com/kubedb/pgbouncer/commit/0a183d15) Build images in e2e workflow (#29)
+- [ca61e88c](https://github.com/kubedb/pgbouncer/commit/ca61e88c) Allow configuring k8s & db version in e2e tests (#28)
+- [a87278b1](https://github.com/kubedb/pgbouncer/commit/a87278b1) Update to Kubernetes v1.18.3 (#27)
+- [5abe86f3](https://github.com/kubedb/pgbouncer/commit/5abe86f3) Fix formatting
+- [845f7a35](https://github.com/kubedb/pgbouncer/commit/845f7a35) Trigger e2e tests on /ok-to-test command (#26)
+- [2cc23c03](https://github.com/kubedb/pgbouncer/commit/2cc23c03) Fix cert-manager integration for PgBouncer (#25)
+- [2a148c26](https://github.com/kubedb/pgbouncer/commit/2a148c26) Update to Kubernetes v1.18.3 (#24)
+- [f6eb8120](https://github.com/kubedb/pgbouncer/commit/f6eb8120) Update Makefile.env
+- [bbf810c5](https://github.com/kubedb/pgbouncer/commit/bbf810c5) Prepare for release v0.1.0-beta.1 (#23)
+- [5a6e361a](https://github.com/kubedb/pgbouncer/commit/5a6e361a) include Makefile.env (#22)
+- [2d52d66e](https://github.com/kubedb/pgbouncer/commit/2d52d66e) Update License (#21)
+- [33305d5f](https://github.com/kubedb/pgbouncer/commit/33305d5f) Update to Kubernetes v1.18.3 (#20)
+- [b443a550](https://github.com/kubedb/pgbouncer/commit/b443a550) Update ci.yml
+- [d3bedc9b](https://github.com/kubedb/pgbouncer/commit/d3bedc9b) Update update-release-tracker.sh
+- [d9100ecc](https://github.com/kubedb/pgbouncer/commit/d9100ecc) Update update-release-tracker.sh
+- [9b86bdaa](https://github.com/kubedb/pgbouncer/commit/9b86bdaa) Add script to update release tracker on pr merge (#19)
+- [3362cef7](https://github.com/kubedb/pgbouncer/commit/3362cef7) Update .kodiak.toml
+- [11ebebda](https://github.com/kubedb/pgbouncer/commit/11ebebda) Use POSTGRES_TAG v0.14.0-alpha.0
+- [dbe95b54](https://github.com/kubedb/pgbouncer/commit/dbe95b54) Various fixes (#18)
+- [c50c65de](https://github.com/kubedb/pgbouncer/commit/c50c65de) Update to Kubernetes v1.18.3 (#17)
+- [483fa438](https://github.com/kubedb/pgbouncer/commit/483fa438) Update to Kubernetes v1.18.3
+- [c0fa8e49](https://github.com/kubedb/pgbouncer/commit/c0fa8e49) Create .kodiak.toml
+- [5e338016](https://github.com/kubedb/pgbouncer/commit/5e338016) Use CRD v1 for Kubernetes >= 1.16 (#16)
+- [ef7fe475](https://github.com/kubedb/pgbouncer/commit/ef7fe475) Update to Kubernetes v1.18.3 (#15)
+- [063339fc](https://github.com/kubedb/pgbouncer/commit/063339fc) Fix e2e tests (#14)
+- [7cd92ba4](https://github.com/kubedb/pgbouncer/commit/7cd92ba4) Update crazy-max/ghaction-docker-buildx flag
+- [e7a47a50](https://github.com/kubedb/pgbouncer/commit/e7a47a50) Revendor kubedb.dev/apimachinery@master (#13)
+- [9d009160](https://github.com/kubedb/pgbouncer/commit/9d009160) Use updated operator labels in e2e tests (#12)
+- [778924af](https://github.com/kubedb/pgbouncer/commit/778924af) Trigger the workflow on push or pull request
+- [77be6b9e](https://github.com/kubedb/pgbouncer/commit/77be6b9e) Update CHANGELOG.md
+- [a9decb98](https://github.com/kubedb/pgbouncer/commit/a9decb98) Use stash.appscode.dev/apimachinery@v0.9.0-rc.6 (#11)
+- [cd4d2721](https://github.com/kubedb/pgbouncer/commit/cd4d2721) Fix build
+- [b21b1a11](https://github.com/kubedb/pgbouncer/commit/b21b1a11) Revendor and update enterprise sidecar image (#10)
+- [463f7bc0](https://github.com/kubedb/pgbouncer/commit/463f7bc0) Update enterprise operator tag (#9)
+- [6e015884](https://github.com/kubedb/pgbouncer/commit/6e015884) Use kubedb/installer master branch in CI
+- [88b98a49](https://github.com/kubedb/pgbouncer/commit/88b98a49) Update pgbouncer controller (#8)
+- [a6b71bc3](https://github.com/kubedb/pgbouncer/commit/a6b71bc3) Update variable names
+- [1a6794b7](https://github.com/kubedb/pgbouncer/commit/1a6794b7) Fix plain text secret in exporter container of StatefulSet (#5)
+- [ab104a9f](https://github.com/kubedb/pgbouncer/commit/ab104a9f) Update client-go to kubernetes-1.16.3 (#7)
+- [68dbb142](https://github.com/kubedb/pgbouncer/commit/68dbb142) Use charts to install operator (#6)
+- [30e3e729](https://github.com/kubedb/pgbouncer/commit/30e3e729) Add add-license make target
+- [6c1a78a0](https://github.com/kubedb/pgbouncer/commit/6c1a78a0) Enable e2e tests in GitHub actions (#4)
+- [0960f805](https://github.com/kubedb/pgbouncer/commit/0960f805) Initial implementation (#2)
+- [a8a9b1db](https://github.com/kubedb/pgbouncer/commit/a8a9b1db) Update go.yml
+- [bc3b2624](https://github.com/kubedb/pgbouncer/commit/bc3b2624) Enable GitHub actions
+- [2e33db2b](https://github.com/kubedb/pgbouncer/commit/2e33db2b) Clone kubedb/postgres repo (#1)
+- [45a7cace](https://github.com/kubedb/pgbouncer/commit/45a7cace) Merge commit 'f78de886ed657650438f99574c3b002dd3607497' as 'hack/libbuild'
+
+
+
+## [kubedb/postgres](https://github.com/kubedb/postgres)
+
+### [v0.14.0](https://github.com/kubedb/postgres/releases/tag/v0.14.0)
+
+- [50fb579a](https://github.com/kubedb/postgres/commit/50fb579a) Prepare for release v0.14.0 (#407)
+- [2ed7a29c](https://github.com/kubedb/postgres/commit/2ed7a29c) Prepare for release v0.14.0-rc.2 (#406)
+- [c1ea472a](https://github.com/kubedb/postgres/commit/c1ea472a) Prepare for release v0.14.0-rc.1 (#405)
+- [9e1a642e](https://github.com/kubedb/postgres/commit/9e1a642e) Prepare for release v0.14.0-beta.6 (#404)
+- [8b869c02](https://github.com/kubedb/postgres/commit/8b869c02) Create SRV records for governing service (#402)
+- [c6e802a7](https://github.com/kubedb/postgres/commit/c6e802a7) Prepare for release v0.14.0-beta.5 (#401)
+- [4da12584](https://github.com/kubedb/postgres/commit/4da12584) Simplify port assignment (#400)
+- [71420f2b](https://github.com/kubedb/postgres/commit/71420f2b) Create separate governing service for each database (#399)
+- [49792ddb](https://github.com/kubedb/postgres/commit/49792ddb) Update KubeDB api (#398)
+- [721f5e16](https://github.com/kubedb/postgres/commit/721f5e16) Update readme
+- [c036ee15](https://github.com/kubedb/postgres/commit/c036ee15) Update Kubernetes v1.18.9 dependencies (#397)
+- [ed9a22ac](https://github.com/kubedb/postgres/commit/ed9a22ac) Prepare for release v0.14.0-beta.4 (#396)
+- [e6b37365](https://github.com/kubedb/postgres/commit/e6b37365) Update KubeDB api (#395)
+- [825f55c3](https://github.com/kubedb/postgres/commit/825f55c3) Update Kubernetes v1.18.9 dependencies (#394)
+- [c879e7e8](https://github.com/kubedb/postgres/commit/c879e7e8) Update KubeDB api (#393)
+- [c90ad84e](https://github.com/kubedb/postgres/commit/c90ad84e) Update for release Stash@v2020.10.21 (#392)
+- [9db225c0](https://github.com/kubedb/postgres/commit/9db225c0) Fix init validator (#390)
+- [e56e5ae6](https://github.com/kubedb/postgres/commit/e56e5ae6) Update KubeDB api (#391)
+- [5da16a5c](https://github.com/kubedb/postgres/commit/5da16a5c) Update KubeDB api (#389)
+- [221eb7cf](https://github.com/kubedb/postgres/commit/221eb7cf) Update Kubernetes v1.18.9 dependencies (#388)
+- [261aaaf3](https://github.com/kubedb/postgres/commit/261aaaf3) Update KubeDB api (#387)
+- [6d8efe23](https://github.com/kubedb/postgres/commit/6d8efe23) Update KubeDB api (#386)
+- [0df8a375](https://github.com/kubedb/postgres/commit/0df8a375) Update KubeDB api (#385)
+- [b0b4f7e7](https://github.com/kubedb/postgres/commit/b0b4f7e7) Update KubeDB api (#384)
+- [c10ff311](https://github.com/kubedb/postgres/commit/c10ff311) Update Kubernetes v1.18.9 dependencies (#383)
+- [4f237fc0](https://github.com/kubedb/postgres/commit/4f237fc0) Update KubeDB api (#382)
+- [b31defb8](https://github.com/kubedb/postgres/commit/b31defb8) Update KubeDB api (#381)
+- [667a4ec8](https://github.com/kubedb/postgres/commit/667a4ec8) Update KubeDB api (#379)
+- [da86f8d7](https://github.com/kubedb/postgres/commit/da86f8d7) Update repository config (#378)
+- [1da3afb9](https://github.com/kubedb/postgres/commit/1da3afb9) Update repository config (#377)
+- [29b8a231](https://github.com/kubedb/postgres/commit/29b8a231) Update repository config (#376)
+- [22612534](https://github.com/kubedb/postgres/commit/22612534) Initialize statefulset watcher from cmd/server/options.go (#375)
+- [bfd6eae7](https://github.com/kubedb/postgres/commit/bfd6eae7) Update KubeDB api (#374)
+- [10566771](https://github.com/kubedb/postgres/commit/10566771) Update Kubernetes v1.18.9 dependencies (#373)
+- [1eb7c29b](https://github.com/kubedb/postgres/commit/1eb7c29b) Publish docker images to ghcr.io (#372)
+- [49dd7946](https://github.com/kubedb/postgres/commit/49dd7946) Only keep username/password keys in Postgres secret
+- [f1131a2c](https://github.com/kubedb/postgres/commit/f1131a2c) Update KubeDB api (#371)
+- [ccadf274](https://github.com/kubedb/postgres/commit/ccadf274) Update KubeDB api (#370)
+- [bddd6692](https://github.com/kubedb/postgres/commit/bddd6692) Update KubeDB api (#369)
+- [d76bbe3d](https://github.com/kubedb/postgres/commit/d76bbe3d) Don't add secretTransformation in AppBinding section by default (#316)
+- [ae29ba5e](https://github.com/kubedb/postgres/commit/ae29ba5e) Update KubeDB api (#368)
+- [4bb1c171](https://github.com/kubedb/postgres/commit/4bb1c171) Update repository config (#367)
+- [a7b1138f](https://github.com/kubedb/postgres/commit/a7b1138f) Use conditions to handle initialization (#365)
+- [126e20f1](https://github.com/kubedb/postgres/commit/126e20f1) Update Kubernetes v1.18.9 dependencies (#366)
+- [29a99b8d](https://github.com/kubedb/postgres/commit/29a99b8d) Update for release Stash@v2020.09.29 (#364)
+- [b097b330](https://github.com/kubedb/postgres/commit/b097b330) Update Kubernetes v1.18.9 dependencies (#363)
+- [26e2f90c](https://github.com/kubedb/postgres/commit/26e2f90c) Update Kubernetes v1.18.9 dependencies (#361)
+- [67c6d618](https://github.com/kubedb/postgres/commit/67c6d618) Update repository config (#360)
+- [6fc5fbce](https://github.com/kubedb/postgres/commit/6fc5fbce) Update repository config (#359)
+- [4e566391](https://github.com/kubedb/postgres/commit/4e566391) Update Kubernetes v1.18.9 dependencies (#358)
+- [7236b6e1](https://github.com/kubedb/postgres/commit/7236b6e1) Use common event recorder (#357)
+- [d1293558](https://github.com/kubedb/postgres/commit/d1293558) Update Kubernetes v1.18.3 dependencies (#356)
+- [0dd8903e](https://github.com/kubedb/postgres/commit/0dd8903e) Prepare for release v0.14.0-beta.3 (#355)
+- [8f59199a](https://github.com/kubedb/postgres/commit/8f59199a) Use new `sepc.init` section (#354)
+- [32305e6d](https://github.com/kubedb/postgres/commit/32305e6d) Update Kubernetes v1.18.3 dependencies (#353)
+- [e65ecdf3](https://github.com/kubedb/postgres/commit/e65ecdf3) Add license verifier (#352)
+- [55b2f61e](https://github.com/kubedb/postgres/commit/55b2f61e) Update for release Stash@v2020.09.16 (#351)
+- [66f45a55](https://github.com/kubedb/postgres/commit/66f45a55) Update Kubernetes v1.18.3 dependencies (#350)
+- [80f3cc3b](https://github.com/kubedb/postgres/commit/80f3cc3b) Use background deletion policy
+- [63119dba](https://github.com/kubedb/postgres/commit/63119dba) Update Kubernetes v1.18.3 dependencies (#348)
+- [ac48cf6a](https://github.com/kubedb/postgres/commit/ac48cf6a) Use AppsCode Community License (#347)
+- [03449359](https://github.com/kubedb/postgres/commit/03449359) Update Kubernetes v1.18.3 dependencies (#346)
+- [6e6fe6fe](https://github.com/kubedb/postgres/commit/6e6fe6fe) Prepare for release v0.14.0-beta.2 (#345)
+- [5ee33bb8](https://github.com/kubedb/postgres/commit/5ee33bb8) Update release.yml
+- [9208f754](https://github.com/kubedb/postgres/commit/9208f754) Always use OnDelete update strategy
+- [74367d01](https://github.com/kubedb/postgres/commit/74367d01) Update Kubernetes v1.18.3 dependencies (#344)
+- [01843533](https://github.com/kubedb/postgres/commit/01843533) Update Kubernetes v1.18.3 dependencies (#343)
+- [34a3a460](https://github.com/kubedb/postgres/commit/34a3a460) Update Kubernetes v1.18.3 dependencies (#338)
+- [455bf56a](https://github.com/kubedb/postgres/commit/455bf56a) Update Kubernetes v1.18.3 dependencies (#337)
+- [960d1efa](https://github.com/kubedb/postgres/commit/960d1efa) Update Kubernetes v1.18.3 dependencies (#336)
+- [9b428745](https://github.com/kubedb/postgres/commit/9b428745) Update Kubernetes v1.18.3 dependencies (#335)
+- [cc95c5f5](https://github.com/kubedb/postgres/commit/cc95c5f5) Update Kubernetes v1.18.3 dependencies (#334)
+- [c0694d83](https://github.com/kubedb/postgres/commit/c0694d83) Update Kubernetes v1.18.3 dependencies (#333)
+- [8d0977d3](https://github.com/kubedb/postgres/commit/8d0977d3) Remove dependency on enterprise operator (#332)
+- [daa5b77c](https://github.com/kubedb/postgres/commit/daa5b77c) Build images in e2e workflow (#331)
+- [197f1b2b](https://github.com/kubedb/postgres/commit/197f1b2b) Update to Kubernetes v1.18.3 (#329)
+- [e732d319](https://github.com/kubedb/postgres/commit/e732d319) Allow configuring k8s & db version in e2e tests (#330)
+- [f37180ec](https://github.com/kubedb/postgres/commit/f37180ec) Trigger e2e tests on /ok-to-test command (#328)
+- [becb3e2c](https://github.com/kubedb/postgres/commit/becb3e2c) Update to Kubernetes v1.18.3 (#327)
+- [91bf7440](https://github.com/kubedb/postgres/commit/91bf7440) Update to Kubernetes v1.18.3 (#326)
+- [3848a43e](https://github.com/kubedb/postgres/commit/3848a43e) Prepare for release v0.14.0-beta.1 (#325)
+- [d4ea0ba7](https://github.com/kubedb/postgres/commit/d4ea0ba7) Update for release Stash@v2020.07.09-beta.0 (#323)
+- [6974afda](https://github.com/kubedb/postgres/commit/6974afda) Allow customizing kube namespace for Stash
+- [d7d79ea1](https://github.com/kubedb/postgres/commit/d7d79ea1) Allow customizing chart registry (#322)
+- [ba0423ac](https://github.com/kubedb/postgres/commit/ba0423ac) Update for release Stash@v2020.07.08-beta.0 (#321)
+- [7e855763](https://github.com/kubedb/postgres/commit/7e855763) Update License
+- [7bea404a](https://github.com/kubedb/postgres/commit/7bea404a) Update to Kubernetes v1.18.3 (#320)
+- [eab0e83f](https://github.com/kubedb/postgres/commit/eab0e83f) Update ci.yml
+- [4949f76e](https://github.com/kubedb/postgres/commit/4949f76e) Load stash version from .env file for make (#319)
+- [79e9d8d9](https://github.com/kubedb/postgres/commit/79e9d8d9) Update update-release-tracker.sh
+- [ca966b7b](https://github.com/kubedb/postgres/commit/ca966b7b) Update update-release-tracker.sh
+- [31bbecfe](https://github.com/kubedb/postgres/commit/31bbecfe) Add script to update release tracker on pr merge (#318)
+- [540d977f](https://github.com/kubedb/postgres/commit/540d977f) Update .kodiak.toml
+- [3e7514a7](https://github.com/kubedb/postgres/commit/3e7514a7) Various fixes (#317)
+- [1a5df17c](https://github.com/kubedb/postgres/commit/1a5df17c) Update to Kubernetes v1.18.3 (#315)
+- [717cfb3f](https://github.com/kubedb/postgres/commit/717cfb3f) Update to Kubernetes v1.18.3
+- [95537169](https://github.com/kubedb/postgres/commit/95537169) Create .kodiak.toml
+- [02579005](https://github.com/kubedb/postgres/commit/02579005) Use CRD v1 for Kubernetes >= 1.16 (#314)
+- [6ce6deb1](https://github.com/kubedb/postgres/commit/6ce6deb1) Update to Kubernetes v1.18.3 (#313)
+- [97f25ba0](https://github.com/kubedb/postgres/commit/97f25ba0) Fix e2e tests (#312)
+- [a989c377](https://github.com/kubedb/postgres/commit/a989c377) Update stash install commands
+- [6af12596](https://github.com/kubedb/postgres/commit/6af12596) Revendor kubedb.dev/apimachinery@master (#311)
+- [9969b064](https://github.com/kubedb/postgres/commit/9969b064) Update crazy-max/ghaction-docker-buildx flag
+- [e3360119](https://github.com/kubedb/postgres/commit/e3360119) Use updated operator labels in e2e tests (#309)
+- [c183007c](https://github.com/kubedb/postgres/commit/c183007c) Pass annotations from CRD to AppBinding (#310)
+- [55581f79](https://github.com/kubedb/postgres/commit/55581f79) Trigger the workflow on push or pull request
+- [931b88cf](https://github.com/kubedb/postgres/commit/931b88cf) Update CHANGELOG.md
+- [6f481749](https://github.com/kubedb/postgres/commit/6f481749) Use stash.appscode.dev/apimachinery@v0.9.0-rc.6 (#308)
+- [15f0611d](https://github.com/kubedb/postgres/commit/15f0611d) Fix error msg to reject halt when termination policy is 'DoNotTerminate'
+- [18aba058](https://github.com/kubedb/postgres/commit/18aba058) Change Pause to Halt (#307)
+- [7e9b1c69](https://github.com/kubedb/postgres/commit/7e9b1c69) feat: allow changes to nodeSelector (#298)
+- [a602faa1](https://github.com/kubedb/postgres/commit/a602faa1) Introduce spec.halted and removed dormant and snapshot crd (#305)
+- [cdd384d7](https://github.com/kubedb/postgres/commit/cdd384d7) Moved leader election to kubedb/pg-leader-election (#304)
+- [32c41db6](https://github.com/kubedb/postgres/commit/32c41db6) Use stash@v0.9.0-rc.4 release (#306)
+- [fa55b472](https://github.com/kubedb/postgres/commit/fa55b472) Make e2e tests stable in github actions (#303)
+- [afdc5fda](https://github.com/kubedb/postgres/commit/afdc5fda) Update client-go to kubernetes-1.16.3 (#301)
+- [d28eb55a](https://github.com/kubedb/postgres/commit/d28eb55a) Take out postgres docker images and Matrix test (#297)
+- [13fee32d](https://github.com/kubedb/postgres/commit/13fee32d) Fix default make command
+- [55dfb368](https://github.com/kubedb/postgres/commit/55dfb368) Update catalog values for make install command
+- [25f5b79c](https://github.com/kubedb/postgres/commit/25f5b79c) Use charts to install operator (#302)
+- [c5a4ed77](https://github.com/kubedb/postgres/commit/c5a4ed77) Add add-license make target
+- [aa1d98d0](https://github.com/kubedb/postgres/commit/aa1d98d0) Add license header to files (#296)
+- [fd356006](https://github.com/kubedb/postgres/commit/fd356006) Fix E2E testing for github actions (#295)
+- [6a3443a7](https://github.com/kubedb/postgres/commit/6a3443a7) Minio and S3 compatible storage fixes (#292)
+- [5150cf34](https://github.com/kubedb/postgres/commit/5150cf34) Run e2e tests using GitHub actions (#293)
+- [a4a3785b](https://github.com/kubedb/postgres/commit/a4a3785b) Validate DBVersionSpecs and fixed broken build (#294)
+- [b171a244](https://github.com/kubedb/postgres/commit/b171a244) Update go.yml
+- [1a61bf29](https://github.com/kubedb/postgres/commit/1a61bf29) Enable GitHub actions
+- [6b869b15](https://github.com/kubedb/postgres/commit/6b869b15) Update changelog
+- [87e67898](https://github.com/kubedb/postgres/commit/87e67898) Remove linux/arm support
+- [1ca28812](https://github.com/kubedb/postgres/commit/1ca28812) Revendor
+- [05b7ef5a](https://github.com/kubedb/postgres/commit/05b7ef5a) Implement proper shutdown procedure for postgres (#284)
+- [b82a36b8](https://github.com/kubedb/postgres/commit/b82a36b8) Use Go 1.12.9
+- [b4a50eaa](https://github.com/kubedb/postgres/commit/b4a50eaa) Delete builddeps.sh
+- [b3b6b855](https://github.com/kubedb/postgres/commit/b3b6b855) Add e2e test commands to Makefile (#291)
+- [af93201a](https://github.com/kubedb/postgres/commit/af93201a) Update dependencies (#290)
+- [be2abd85](https://github.com/kubedb/postgres/commit/be2abd85) Don't set annotation to AppBinding (#289)
+- [de42e37a](https://github.com/kubedb/postgres/commit/de42e37a) Set database version in AppBinding (#288)
+- [8ed3f84d](https://github.com/kubedb/postgres/commit/8ed3f84d) Change package path to kubedb.dev/postgres (#287)
+- [b69cfbdc](https://github.com/kubedb/postgres/commit/b69cfbdc) Add shared memory /dev/shm volume (#269)
+- [30937fd1](https://github.com/kubedb/postgres/commit/30937fd1) Fix UpsertDatabaseAnnotation() function (#283)
+- [140ea546](https://github.com/kubedb/postgres/commit/140ea546) Add license header to Makefiles (#285)
+- [a4511f97](https://github.com/kubedb/postgres/commit/a4511f97) Update Makefile
+- [6f458d8e](https://github.com/kubedb/postgres/commit/6f458d8e) Add install, uninstall and purge command in Makefile (#281)
+- [13e06b3d](https://github.com/kubedb/postgres/commit/13e06b3d) Integrate stash/restic with postgres (#273)
+- [119bdd0a](https://github.com/kubedb/postgres/commit/119bdd0a) Provide role and rolebinding for existing sa managed by kubedb (#280)
+- [b5ff93c8](https://github.com/kubedb/postgres/commit/b5ff93c8) Pod Disruption Budget for Postgres (#278)
+- [8355cbb6](https://github.com/kubedb/postgres/commit/8355cbb6) Handling resource ownership (#276)
+- [4542d6e4](https://github.com/kubedb/postgres/commit/4542d6e4) Added ARM64 support to the install script and manifest
+- [22305620](https://github.com/kubedb/postgres/commit/22305620) Add Makefile (#279)
+- [7e69d665](https://github.com/kubedb/postgres/commit/7e69d665) Update to k8s 1.14.0 client libraries using go.mod (#277)
+- [a314b60d](https://github.com/kubedb/postgres/commit/a314b60d) Update README.md
+- [d040d227](https://github.com/kubedb/postgres/commit/d040d227) Start next dev cycle
+
+
+
+## [kubedb/proxysql](https://github.com/kubedb/proxysql)
+
+### [v0.1.0](https://github.com/kubedb/proxysql/releases/tag/v0.1.0)
+
+- [ee27f53b](https://github.com/kubedb/proxysql/commit/ee27f53b) Prepare for release v0.1.0 (#103)
+- [8a5443d9](https://github.com/kubedb/proxysql/commit/8a5443d9) Prepare for release v0.1.0-rc.2 (#102)
+- [e3f4999c](https://github.com/kubedb/proxysql/commit/e3f4999c) Prepare for release v0.1.0-rc.1 (#101)
+- [d01512de](https://github.com/kubedb/proxysql/commit/d01512de) Prepare for release v0.1.0-beta.6 (#100)
+- [6a0d52ff](https://github.com/kubedb/proxysql/commit/6a0d52ff) Create SRV records for governing service (#99)
+- [4269db9c](https://github.com/kubedb/proxysql/commit/4269db9c) Prepare for release v0.1.0-beta.5 (#98)
+- [e48bd006](https://github.com/kubedb/proxysql/commit/e48bd006) Create separate governing service for each database (#97)
+- [23f1c6de](https://github.com/kubedb/proxysql/commit/23f1c6de) Update KubeDB api (#96)
+- [13abe9ff](https://github.com/kubedb/proxysql/commit/13abe9ff) Update readme
+- [78ef0d29](https://github.com/kubedb/proxysql/commit/78ef0d29) Update repository config (#95)
+- [d344e43f](https://github.com/kubedb/proxysql/commit/d344e43f) Prepare for release v0.1.0-beta.4 (#94)
+- [15deb4df](https://github.com/kubedb/proxysql/commit/15deb4df) Update KubeDB api (#93)
+- [dc59184c](https://github.com/kubedb/proxysql/commit/dc59184c) Update Kubernetes v1.18.9 dependencies (#92)
+- [b2b11084](https://github.com/kubedb/proxysql/commit/b2b11084) Update KubeDB api (#91)
+- [535820ff](https://github.com/kubedb/proxysql/commit/535820ff) Update for release Stash@v2020.10.21 (#90)
+- [c00f0b6a](https://github.com/kubedb/proxysql/commit/c00f0b6a) Update KubeDB api (#89)
+- [af8ab91c](https://github.com/kubedb/proxysql/commit/af8ab91c) Update KubeDB api (#88)
+- [154fff60](https://github.com/kubedb/proxysql/commit/154fff60) Update Kubernetes v1.18.9 dependencies (#87)
+- [608ca467](https://github.com/kubedb/proxysql/commit/608ca467) Update KubeDB api (#86)
+- [c0b1286b](https://github.com/kubedb/proxysql/commit/c0b1286b) Update KubeDB api (#85)
+- [d2f326c7](https://github.com/kubedb/proxysql/commit/d2f326c7) Update KubeDB api (#84)
+- [01ea3c3c](https://github.com/kubedb/proxysql/commit/01ea3c3c) Update KubeDB api (#83)
+- [4ae700ed](https://github.com/kubedb/proxysql/commit/4ae700ed) Update Kubernetes v1.18.9 dependencies (#82)
+- [d0ad0b70](https://github.com/kubedb/proxysql/commit/d0ad0b70) Update KubeDB api (#81)
+- [8f1e0d51](https://github.com/kubedb/proxysql/commit/8f1e0d51) Update KubeDB api (#80)
+- [7b02bebb](https://github.com/kubedb/proxysql/commit/7b02bebb) Update KubeDB api (#79)
+- [4f95e854](https://github.com/kubedb/proxysql/commit/4f95e854) Update repository config (#78)
+- [c229a939](https://github.com/kubedb/proxysql/commit/c229a939) Update repository config (#77)
+- [89dbb47f](https://github.com/kubedb/proxysql/commit/89dbb47f) Update repository config (#76)
+- [d28494ab](https://github.com/kubedb/proxysql/commit/d28494ab) Update KubeDB api (#75)
+- [b25cb7db](https://github.com/kubedb/proxysql/commit/b25cb7db) Update Kubernetes v1.18.9 dependencies (#74)
+- [d4b026a4](https://github.com/kubedb/proxysql/commit/d4b026a4) Publish docker images to ghcr.io (#73)
+- [e263f9c3](https://github.com/kubedb/proxysql/commit/e263f9c3) Update KubeDB api (#72)
+- [07ea3acb](https://github.com/kubedb/proxysql/commit/07ea3acb) Update KubeDB api (#71)
+- [946e292b](https://github.com/kubedb/proxysql/commit/946e292b) Update KubeDB api (#70)
+- [66eb2156](https://github.com/kubedb/proxysql/commit/66eb2156) Update KubeDB api (#69)
+- [d3fe09ae](https://github.com/kubedb/proxysql/commit/d3fe09ae) Update repository config (#68)
+- [10c7cde0](https://github.com/kubedb/proxysql/commit/10c7cde0) Update Kubernetes v1.18.9 dependencies (#67)
+- [ed5d24a9](https://github.com/kubedb/proxysql/commit/ed5d24a9) Update KubeDB api (#65)
+- [a4f6dd4c](https://github.com/kubedb/proxysql/commit/a4f6dd4c) Update KubeDB api (#62)
+- [2956b1bd](https://github.com/kubedb/proxysql/commit/2956b1bd) Update for release Stash@v2020.09.29 (#64)
+- [9cbd0244](https://github.com/kubedb/proxysql/commit/9cbd0244) Update Kubernetes v1.18.9 dependencies (#63)
+- [4cd9bb02](https://github.com/kubedb/proxysql/commit/4cd9bb02) Update Kubernetes v1.18.9 dependencies (#61)
+- [a9a9caf0](https://github.com/kubedb/proxysql/commit/a9a9caf0) Update repository config (#60)
+- [af3a2a68](https://github.com/kubedb/proxysql/commit/af3a2a68) Update repository config (#59)
+- [25f47ff4](https://github.com/kubedb/proxysql/commit/25f47ff4) Update Kubernetes v1.18.9 dependencies (#58)
+- [05e57476](https://github.com/kubedb/proxysql/commit/05e57476) Update Kubernetes v1.18.3 dependencies (#57)
+- [8b0af94b](https://github.com/kubedb/proxysql/commit/8b0af94b) Prepare for release v0.1.0-beta.3 (#56)
+- [f2a98806](https://github.com/kubedb/proxysql/commit/f2a98806) Update Makefile
+- [f59b73a1](https://github.com/kubedb/proxysql/commit/f59b73a1) Use AppsCode Trial license (#55)
+- [2ae32d3c](https://github.com/kubedb/proxysql/commit/2ae32d3c) Update Kubernetes v1.18.3 dependencies (#54)
+- [724b9829](https://github.com/kubedb/proxysql/commit/724b9829) Add license verifier (#53)
+- [8a2aafb5](https://github.com/kubedb/proxysql/commit/8a2aafb5) Update for release Stash@v2020.09.16 (#52)
+- [4759525b](https://github.com/kubedb/proxysql/commit/4759525b) Update Kubernetes v1.18.3 dependencies (#51)
+- [f55b1402](https://github.com/kubedb/proxysql/commit/f55b1402) Update Kubernetes v1.18.3 dependencies (#49)
+- [f7036236](https://github.com/kubedb/proxysql/commit/f7036236) Use AppsCode Community License (#48)
+- [d922196f](https://github.com/kubedb/proxysql/commit/d922196f) Update Kubernetes v1.18.3 dependencies (#47)
+- [f86bb6cd](https://github.com/kubedb/proxysql/commit/f86bb6cd) Prepare for release v0.1.0-beta.2 (#46)
+- [e74f3803](https://github.com/kubedb/proxysql/commit/e74f3803) Update release.yml
+- [7f5349cc](https://github.com/kubedb/proxysql/commit/7f5349cc) Use updated apis (#45)
+- [27faefef](https://github.com/kubedb/proxysql/commit/27faefef) Update for release Stash@v2020.08.27 (#43)
+- [65bc5bca](https://github.com/kubedb/proxysql/commit/65bc5bca) Update for release Stash@v2020.08.27-rc.0 (#42)
+- [833ac78b](https://github.com/kubedb/proxysql/commit/833ac78b) Update for release Stash@v2020.08.26-rc.1 (#41)
+- [fe13ce42](https://github.com/kubedb/proxysql/commit/fe13ce42) Update for release Stash@v2020.08.26-rc.0 (#40)
+- [b1a72843](https://github.com/kubedb/proxysql/commit/b1a72843) Update Kubernetes v1.18.3 dependencies (#39)
+- [a9c40618](https://github.com/kubedb/proxysql/commit/a9c40618) Update Kubernetes v1.18.3 dependencies (#38)
+- [664c974a](https://github.com/kubedb/proxysql/commit/664c974a) Update Kubernetes v1.18.3 dependencies (#37)
+- [69ed46d5](https://github.com/kubedb/proxysql/commit/69ed46d5) Update Kubernetes v1.18.3 dependencies (#36)
+- [a93d80d4](https://github.com/kubedb/proxysql/commit/a93d80d4) Update Kubernetes v1.18.3 dependencies (#35)
+- [84fc9e37](https://github.com/kubedb/proxysql/commit/84fc9e37) Update Kubernetes v1.18.3 dependencies (#34)
+- [b09f89d0](https://github.com/kubedb/proxysql/commit/b09f89d0) Remove dependency on enterprise operator (#33)
+- [78ad5a88](https://github.com/kubedb/proxysql/commit/78ad5a88) Build images in e2e workflow (#32)
+- [6644058e](https://github.com/kubedb/proxysql/commit/6644058e) Update to Kubernetes v1.18.3 (#30)
+- [2c03dadd](https://github.com/kubedb/proxysql/commit/2c03dadd) Allow configuring k8s & db version in e2e tests (#31)
+- [2c6e04bc](https://github.com/kubedb/proxysql/commit/2c6e04bc) Trigger e2e tests on /ok-to-test command (#29)
+- [c7830af8](https://github.com/kubedb/proxysql/commit/c7830af8) Update to Kubernetes v1.18.3 (#28)
+- [f2da8746](https://github.com/kubedb/proxysql/commit/f2da8746) Update to Kubernetes v1.18.3 (#27)
+- [2ed7d0e8](https://github.com/kubedb/proxysql/commit/2ed7d0e8) Prepare for release v0.1.0-beta.1 (#26)
+- [3b5ee481](https://github.com/kubedb/proxysql/commit/3b5ee481) Update for release Stash@v2020.07.09-beta.0 (#25)
+- [92b04b33](https://github.com/kubedb/proxysql/commit/92b04b33) include Makefile.env (#24)
+- [eace7e26](https://github.com/kubedb/proxysql/commit/eace7e26) Update for release Stash@v2020.07.08-beta.0 (#23)
+- [0c647c01](https://github.com/kubedb/proxysql/commit/0c647c01) Update License (#22)
+- [3c1b41be](https://github.com/kubedb/proxysql/commit/3c1b41be) Update to Kubernetes v1.18.3 (#21)
+- [dfa95bb8](https://github.com/kubedb/proxysql/commit/dfa95bb8) Update ci.yml
+- [87390932](https://github.com/kubedb/proxysql/commit/87390932) Update update-release-tracker.sh
+- [772a0c6a](https://github.com/kubedb/proxysql/commit/772a0c6a) Update update-release-tracker.sh
+- [a3b2ae92](https://github.com/kubedb/proxysql/commit/a3b2ae92) Add script to update release tracker on pr merge (#20)
+- [7578cae3](https://github.com/kubedb/proxysql/commit/7578cae3) Update .kodiak.toml
+- [4ba876bc](https://github.com/kubedb/proxysql/commit/4ba876bc) Update operator tags
+- [399aa60b](https://github.com/kubedb/proxysql/commit/399aa60b) Various fixes (#19)
+- [7235b0c5](https://github.com/kubedb/proxysql/commit/7235b0c5) Update to Kubernetes v1.18.3 (#18)
+- [427c1f21](https://github.com/kubedb/proxysql/commit/427c1f21) Update to Kubernetes v1.18.3
+- [1ac8da55](https://github.com/kubedb/proxysql/commit/1ac8da55) Create .kodiak.toml
+- [3243d446](https://github.com/kubedb/proxysql/commit/3243d446) Use CRD v1 for Kubernetes >= 1.16 (#17)
+- [4f5bea8d](https://github.com/kubedb/proxysql/commit/4f5bea8d) Update to Kubernetes v1.18.3 (#16)
+- [a0d2611a](https://github.com/kubedb/proxysql/commit/a0d2611a) Fix e2e tests (#15)
+- [987fbf60](https://github.com/kubedb/proxysql/commit/987fbf60) Update crazy-max/ghaction-docker-buildx flag
+- [c2fad78e](https://github.com/kubedb/proxysql/commit/c2fad78e) Use updated operator labels in e2e tests (#14)
+- [c5a01db8](https://github.com/kubedb/proxysql/commit/c5a01db8) Revendor kubedb.dev/apimachinery@master (#13)
+- [756c8f8f](https://github.com/kubedb/proxysql/commit/756c8f8f) Trigger the workflow on push or pull request
+- [fdf84e27](https://github.com/kubedb/proxysql/commit/fdf84e27) Update CHANGELOG.md
+- [9075b453](https://github.com/kubedb/proxysql/commit/9075b453) Use stash.appscode.dev/apimachinery@v0.9.0-rc.6 (#12)
+- [f4d1c024](https://github.com/kubedb/proxysql/commit/f4d1c024) Matrix Tests on Github Actions (#11)
+- [4e021072](https://github.com/kubedb/proxysql/commit/4e021072) Update mount path for custom config (#8)
+- [b0922173](https://github.com/kubedb/proxysql/commit/b0922173) Enable ProxySQL monitoring (#6)
+- [70be4e67](https://github.com/kubedb/proxysql/commit/70be4e67) ProxySQL test for MySQL (#4)
+- [0a444b9e](https://github.com/kubedb/proxysql/commit/0a444b9e) Use charts to install operator (#7)
+- [a51fbb51](https://github.com/kubedb/proxysql/commit/a51fbb51) ProxySQL operator for MySQL databases (#2)
+- [883fa437](https://github.com/kubedb/proxysql/commit/883fa437) Update go.yml
+- [2c0cf51c](https://github.com/kubedb/proxysql/commit/2c0cf51c) Enable GitHub actions
+- [52e15cd2](https://github.com/kubedb/proxysql/commit/52e15cd2) percona-xtradb -> proxysql (#1)
+- [dc71bffe](https://github.com/kubedb/proxysql/commit/dc71bffe) Revendor
+- [71957d40](https://github.com/kubedb/proxysql/commit/71957d40) Rename from perconaxtradb to percona-xtradb (#10)
+- [b526ccd8](https://github.com/kubedb/proxysql/commit/b526ccd8) Set database version in AppBinding (#7)
+- [336e7203](https://github.com/kubedb/proxysql/commit/336e7203) Percona XtraDB Cluster support (#9)
+- [71a42f7a](https://github.com/kubedb/proxysql/commit/71a42f7a) Don't set annotation to AppBinding (#8)
+- [282298cb](https://github.com/kubedb/proxysql/commit/282298cb) Fix UpsertDatabaseAnnotation() function (#4)
+- [2ab9dddf](https://github.com/kubedb/proxysql/commit/2ab9dddf) Add license header to Makefiles (#6)
+- [df135c08](https://github.com/kubedb/proxysql/commit/df135c08) Add install, uninstall and purge command in Makefile (#3)
+- [73d3a845](https://github.com/kubedb/proxysql/commit/73d3a845) Update .gitignore
+- [59a4e754](https://github.com/kubedb/proxysql/commit/59a4e754) Add Makefile (#2)
+- [f3551ddc](https://github.com/kubedb/proxysql/commit/f3551ddc) Rename package path (#1)
+- [56a241d6](https://github.com/kubedb/proxysql/commit/56a241d6) Use explicit IP whitelist instead of automatic IP whitelist (#151)
+- [9f0b5ca3](https://github.com/kubedb/proxysql/commit/9f0b5ca3) Update to k8s 1.14.0 client libraries using go.mod (#147)
+- [73ad7c30](https://github.com/kubedb/proxysql/commit/73ad7c30) Update changelog
+- [ccc36b5c](https://github.com/kubedb/proxysql/commit/ccc36b5c) Update README.md
+- [9769e8e1](https://github.com/kubedb/proxysql/commit/9769e8e1) Start next dev cycle
+- [a3fa468a](https://github.com/kubedb/proxysql/commit/a3fa468a) Prepare release 0.5.0
+- [6d8862de](https://github.com/kubedb/proxysql/commit/6d8862de) Mysql Group Replication tests (#146)
+- [49544e55](https://github.com/kubedb/proxysql/commit/49544e55) Mysql Group Replication (#144)
+- [a85d4b44](https://github.com/kubedb/proxysql/commit/a85d4b44) Revendor dependencies
+- [9c538460](https://github.com/kubedb/proxysql/commit/9c538460) Changed Role to exclude psp without name (#143)
+- [6cace93b](https://github.com/kubedb/proxysql/commit/6cace93b) Modify mutator validator names (#142)
+- [da0c19b9](https://github.com/kubedb/proxysql/commit/da0c19b9) Update changelog
+- [b79c80d6](https://github.com/kubedb/proxysql/commit/b79c80d6) Start next dev cycle
+- [838d9459](https://github.com/kubedb/proxysql/commit/838d9459) Prepare release 0.4.0
+- [bf0f2c14](https://github.com/kubedb/proxysql/commit/bf0f2c14) Added PSP names and init container image in testing framework (#141)
+- [3d227570](https://github.com/kubedb/proxysql/commit/3d227570) Added PSP support for mySQL (#137)
+- [7b766657](https://github.com/kubedb/proxysql/commit/7b766657) Don't inherit app.kubernetes.io labels from CRD into offshoots (#140)
+- [29e23470](https://github.com/kubedb/proxysql/commit/29e23470) Support for init container (#139)
+- [3e1556f6](https://github.com/kubedb/proxysql/commit/3e1556f6) Add role label to stats service (#138)
+- [ee078af9](https://github.com/kubedb/proxysql/commit/ee078af9) Update changelog
+- [978f1139](https://github.com/kubedb/proxysql/commit/978f1139) Update Kubernetes client libraries to 1.13.0 release (#136)
+- [821f23d1](https://github.com/kubedb/proxysql/commit/821f23d1) Start next dev cycle
+- [678b26aa](https://github.com/kubedb/proxysql/commit/678b26aa) Prepare release 0.3.0
+- [40ad7a23](https://github.com/kubedb/proxysql/commit/40ad7a23) Initial RBAC support: create and use K8s service account for MySQL (#134)
+- [98f03387](https://github.com/kubedb/proxysql/commit/98f03387) Revendor dependencies (#135)
+- [dfe92615](https://github.com/kubedb/proxysql/commit/dfe92615) Revendor dependencies : Retry Failed Scheduler Snapshot (#133)
+- [71f8a350](https://github.com/kubedb/proxysql/commit/71f8a350) Added ephemeral StorageType support (#132)
+- [0a6b6e46](https://github.com/kubedb/proxysql/commit/0a6b6e46) Added support of MySQL 8.0.14 (#131)
+- [99e57a9e](https://github.com/kubedb/proxysql/commit/99e57a9e) Use PVC spec from snapshot if provided (#130)
+- [61497be6](https://github.com/kubedb/proxysql/commit/61497be6) Revendored and updated tests for 'Prevent prefix matching of multiple snapshots' (#129)
+- [7eafe088](https://github.com/kubedb/proxysql/commit/7eafe088) Add certificate health checker (#128)
+- [973ec416](https://github.com/kubedb/proxysql/commit/973ec416) Update E2E test: Env update is not restricted anymore (#127)
+- [339975ff](https://github.com/kubedb/proxysql/commit/339975ff) Fix AppBinding (#126)
+- [62050a72](https://github.com/kubedb/proxysql/commit/62050a72) Update changelog
+- [2d454043](https://github.com/kubedb/proxysql/commit/2d454043) Prepare release 0.2.0
+- [6941ea59](https://github.com/kubedb/proxysql/commit/6941ea59) Reuse event recorder (#125)
+- [b77e66c4](https://github.com/kubedb/proxysql/commit/b77e66c4) OSM binary upgraded in mysql-tools (#123)
+- [c9228086](https://github.com/kubedb/proxysql/commit/c9228086) Revendor dependencies (#124)
+- [97837120](https://github.com/kubedb/proxysql/commit/97837120) Test for faulty snapshot (#122)
+- [c3e995b6](https://github.com/kubedb/proxysql/commit/c3e995b6) Start next dev cycle
+- [8a4f3b13](https://github.com/kubedb/proxysql/commit/8a4f3b13) Prepare release 0.2.0-rc.2
+- [79942191](https://github.com/kubedb/proxysql/commit/79942191) Upgrade database secret keys (#121)
+- [1747fdf5](https://github.com/kubedb/proxysql/commit/1747fdf5) Ignore mutation of fields to default values during update (#120)
+- [d902d588](https://github.com/kubedb/proxysql/commit/d902d588) Support configuration options for exporter sidecar (#119)
+- [dd7c3f44](https://github.com/kubedb/proxysql/commit/dd7c3f44) Use flags.DumpAll (#118)
+- [bc1ef05b](https://github.com/kubedb/proxysql/commit/bc1ef05b) Start next dev cycle
+- [9d33c1a0](https://github.com/kubedb/proxysql/commit/9d33c1a0) Prepare release 0.2.0-rc.1
+- [b076e141](https://github.com/kubedb/proxysql/commit/b076e141) Apply cleanup (#117)
+- [7dc5641f](https://github.com/kubedb/proxysql/commit/7dc5641f) Set periodic analytics (#116)
+- [90ea6acc](https://github.com/kubedb/proxysql/commit/90ea6acc) Introduce AppBinding support (#115)
+- [a882d76a](https://github.com/kubedb/proxysql/commit/a882d76a) Fix Analytics (#114)
+- [0961009c](https://github.com/kubedb/proxysql/commit/0961009c) Error out from cron job for deprecated dbversion (#113)
+- [da1f4e27](https://github.com/kubedb/proxysql/commit/da1f4e27) Add CRDs without observation when operator starts (#112)
+- [0a754d2f](https://github.com/kubedb/proxysql/commit/0a754d2f) Update changelog
+- [b09bc6e1](https://github.com/kubedb/proxysql/commit/b09bc6e1) Start next dev cycle
+- [0d467ccb](https://github.com/kubedb/proxysql/commit/0d467ccb) Prepare release 0.2.0-rc.0
+- [c757007a](https://github.com/kubedb/proxysql/commit/c757007a) Merge commit 'cc6607a3589a79a5e61bb198d370ea0ae30b9d09'
+- [ddfe4be1](https://github.com/kubedb/proxysql/commit/ddfe4be1) Support custom user passowrd for backup (#111)
+- [8c84ba20](https://github.com/kubedb/proxysql/commit/8c84ba20) Support providing resources for monitoring container (#110)
+- [7bcfbc48](https://github.com/kubedb/proxysql/commit/7bcfbc48) Update kubernetes client libraries to 1.12.0 (#109)
+- [145bba2b](https://github.com/kubedb/proxysql/commit/145bba2b) Add validation webhook xray (#108)
+- [6da1887f](https://github.com/kubedb/proxysql/commit/6da1887f) Various Fixes (#107)
+- [111519e9](https://github.com/kubedb/proxysql/commit/111519e9) Merge ports from service template (#105)
+- [38147ef1](https://github.com/kubedb/proxysql/commit/38147ef1) Replace doNotPause with TerminationPolicy = DoNotTerminate (#104)
+- [e28ebc47](https://github.com/kubedb/proxysql/commit/e28ebc47) Pass resources to NamespaceValidator (#103)
+- [aed12bf5](https://github.com/kubedb/proxysql/commit/aed12bf5) Various fixes (#102)
+- [3d372ef6](https://github.com/kubedb/proxysql/commit/3d372ef6) Support Livecycle hook and container probes (#101)
+- [b6ef6887](https://github.com/kubedb/proxysql/commit/b6ef6887) Check if Kubernetes version is supported before running operator (#100)
+- [d89e7783](https://github.com/kubedb/proxysql/commit/d89e7783) Update package alias (#99)
+- [f0b44b3a](https://github.com/kubedb/proxysql/commit/f0b44b3a) Start next dev cycle
+- [a79ff03b](https://github.com/kubedb/proxysql/commit/a79ff03b) Prepare release 0.2.0-beta.1
+- [0d8d3cca](https://github.com/kubedb/proxysql/commit/0d8d3cca) Revendor api (#98)
+- [2f850243](https://github.com/kubedb/proxysql/commit/2f850243) Fix tests (#97)
+- [4ced0bfe](https://github.com/kubedb/proxysql/commit/4ced0bfe) Revendor api for catalog apigroup (#96)
+- [e7695400](https://github.com/kubedb/proxysql/commit/e7695400) Update chanelog
+- [8e358aea](https://github.com/kubedb/proxysql/commit/8e358aea) Use --pull flag with docker build (#20) (#95)
+- [d2a97d90](https://github.com/kubedb/proxysql/commit/d2a97d90) Merge commit '16c769ee4686576f172a6b79a10d25bfd79ca4a4'
+- [d1fe8a8a](https://github.com/kubedb/proxysql/commit/d1fe8a8a) Start next dev cycle
+- [04eb9bb5](https://github.com/kubedb/proxysql/commit/04eb9bb5) Prepare release 0.2.0-beta.0
+- [9dfea960](https://github.com/kubedb/proxysql/commit/9dfea960) Pass extra args to tools.sh (#93)
+- [47dd3cad](https://github.com/kubedb/proxysql/commit/47dd3cad) Don't try to wipe out Snapshot data for Local backend (#92)
+- [9c4d485b](https://github.com/kubedb/proxysql/commit/9c4d485b) Add missing alt-tag docker folder mysql-tools images (#91)
+- [be72f784](https://github.com/kubedb/proxysql/commit/be72f784) Use suffix for updated DBImage & Stop working for deprecated *Versions (#90)
+- [05c8f14d](https://github.com/kubedb/proxysql/commit/05c8f14d) Search used secrets within same namespace of DB object (#89)
+- [0d94c946](https://github.com/kubedb/proxysql/commit/0d94c946) Support Termination Policy (#88)
+- [8775ddf7](https://github.com/kubedb/proxysql/commit/8775ddf7) Update builddeps.sh
+- [796c93da](https://github.com/kubedb/proxysql/commit/796c93da) Revendor k8s.io/apiserver (#87)
+- [5a1e3f57](https://github.com/kubedb/proxysql/commit/5a1e3f57) Revendor kubernetes-1.11.3 (#86)
+- [809a3c49](https://github.com/kubedb/proxysql/commit/809a3c49) Support UpdateStrategy (#84)
+- [372c52ef](https://github.com/kubedb/proxysql/commit/372c52ef) Add TerminationPolicy for databases (#83)
+- [c01b55e8](https://github.com/kubedb/proxysql/commit/c01b55e8) Revendor api (#82)
+- [5e196b95](https://github.com/kubedb/proxysql/commit/5e196b95) Use IntHash as status.observedGeneration (#81)
+- [2da3bb1b](https://github.com/kubedb/proxysql/commit/2da3bb1b) fix github status (#80)
+- [121d0a98](https://github.com/kubedb/proxysql/commit/121d0a98) Update pipeline (#79)
+- [532e3137](https://github.com/kubedb/proxysql/commit/532e3137) Fix E2E test for minikube (#78)
+- [0f107815](https://github.com/kubedb/proxysql/commit/0f107815) Update pipeline (#77)
+- [851679e2](https://github.com/kubedb/proxysql/commit/851679e2) Migrate MySQL (#75)
+- [0b997855](https://github.com/kubedb/proxysql/commit/0b997855) Use official exporter image (#74)
+- [702d5736](https://github.com/kubedb/proxysql/commit/702d5736) Fix uninstall for concourse (#70)
+- [9ee88bd2](https://github.com/kubedb/proxysql/commit/9ee88bd2) Update status.ObservedGeneration for failure phase (#73)
+- [559cdb6a](https://github.com/kubedb/proxysql/commit/559cdb6a) Keep track of ObservedGenerationHash (#72)
+- [61c8b898](https://github.com/kubedb/proxysql/commit/61c8b898) Use NewObservableHandler (#71)
+- [421274dc](https://github.com/kubedb/proxysql/commit/421274dc) Merge commit '887037c7e36289e3135dda99346fccc7e2ce303b'
+- [6a41d9bc](https://github.com/kubedb/proxysql/commit/6a41d9bc) Fix uninstall for concourse (#69)
+- [f1af09db](https://github.com/kubedb/proxysql/commit/f1af09db) Update README.md
+- [bf3f1823](https://github.com/kubedb/proxysql/commit/bf3f1823) Revise immutable spec fields (#68)
+- [26adec3b](https://github.com/kubedb/proxysql/commit/26adec3b) Merge commit '5f83049fc01dc1d0709ac0014d6f3a0f74a39417'
+- [31a97820](https://github.com/kubedb/proxysql/commit/31a97820) Support passing args via PodTemplate (#67)
+- [60f4ee23](https://github.com/kubedb/proxysql/commit/60f4ee23) Introduce storageType : ephemeral (#66)
+- [bfd3fcd6](https://github.com/kubedb/proxysql/commit/bfd3fcd6) Add support for running tests on cncf cluster (#63)
+- [fba47b19](https://github.com/kubedb/proxysql/commit/fba47b19) Merge commit 'e010cbb302c8d59d4cf69dd77085b046ff423b78'
+- [6be96ce0](https://github.com/kubedb/proxysql/commit/6be96ce0) Revendor api (#65)
+- [0f629ab3](https://github.com/kubedb/proxysql/commit/0f629ab3) Keep track of observedGeneration in status (#64)
+- [c9a9596f](https://github.com/kubedb/proxysql/commit/c9a9596f) Separate StatsService for monitoring (#62)
+- [62854641](https://github.com/kubedb/proxysql/commit/62854641) Use MySQLVersion for MySQL images (#61)
+- [3c170c56](https://github.com/kubedb/proxysql/commit/3c170c56) Use updated crd spec (#60)
+- [873c285e](https://github.com/kubedb/proxysql/commit/873c285e) Rename OffshootLabels to OffshootSelectors (#59)
+- [2fd02169](https://github.com/kubedb/proxysql/commit/2fd02169) Revendor api (#58)
+- [a127d6cd](https://github.com/kubedb/proxysql/commit/a127d6cd) Use kmodules monitoring and objectstore api (#57)
+- [2f79a038](https://github.com/kubedb/proxysql/commit/2f79a038) Support custom configuration (#52)
+- [49c67f00](https://github.com/kubedb/proxysql/commit/49c67f00) Merge commit '44e6d4985d93556e39ddcc4677ada5437fc5be64'
+- [fb28bc6c](https://github.com/kubedb/proxysql/commit/fb28bc6c) Refactor concourse scripts (#56)
+- [4de4ced1](https://github.com/kubedb/proxysql/commit/4de4ced1) Fix command `./hack/make.py test e2e` (#55)
+- [3082123e](https://github.com/kubedb/proxysql/commit/3082123e) Set generated binary name to my-operator (#54)
+- [5698f314](https://github.com/kubedb/proxysql/commit/5698f314) Don't add admission/v1beta1 group as a prioritized version (#53)
+- [696135d5](https://github.com/kubedb/proxysql/commit/696135d5) Fix travis build (#48)
+- [c519ef89](https://github.com/kubedb/proxysql/commit/c519ef89) Format shell script (#51)
+- [c93e2f40](https://github.com/kubedb/proxysql/commit/c93e2f40) Enable status subresource for crds (#50)
+- [edd951ca](https://github.com/kubedb/proxysql/commit/edd951ca) Update client-go to v8.0.0 (#49)
+- [520597a6](https://github.com/kubedb/proxysql/commit/520597a6) Merge commit '71850e2c90cda8fc588b7dedb340edf3d316baea'
+- [f1549e95](https://github.com/kubedb/proxysql/commit/f1549e95) Support ENV variables in CRDs (#46)
+- [67f37780](https://github.com/kubedb/proxysql/commit/67f37780) Updated osm version to 0.7.1 (#47)
+- [10e309c0](https://github.com/kubedb/proxysql/commit/10e309c0) Prepare release 0.1.0
+- [62a8fbbd](https://github.com/kubedb/proxysql/commit/62a8fbbd) Fixed missing error return (#45)
+- [8c05bb83](https://github.com/kubedb/proxysql/commit/8c05bb83) Revendor dependencies (#44)
+- [ca811a2e](https://github.com/kubedb/proxysql/commit/ca811a2e) Fix release script (#43)
+- [b79541f6](https://github.com/kubedb/proxysql/commit/b79541f6) Add changelog (#42)
+- [a2d13c82](https://github.com/kubedb/proxysql/commit/a2d13c82) Concourse (#41)
+- [95b2186e](https://github.com/kubedb/proxysql/commit/95b2186e) Fixed kubeconfig plugin for Cloud Providers && Storage is required for MySQL (#40)
+- [37762093](https://github.com/kubedb/proxysql/commit/37762093) Refactored E2E testing to support E2E testing with admission webhook in cloud (#38)
+- [b6fe72ca](https://github.com/kubedb/proxysql/commit/b6fe72ca) Remove lost+found directory before initializing mysql (#39)
+- [18ebb959](https://github.com/kubedb/proxysql/commit/18ebb959) Skip delete requests for empty resources (#37)
+- [eeb7add0](https://github.com/kubedb/proxysql/commit/eeb7add0) Don't panic if admission options is nil (#36)
+- [ccb59db0](https://github.com/kubedb/proxysql/commit/ccb59db0) Disable admission controllers for webhook server (#35)
+- [b1c6c149](https://github.com/kubedb/proxysql/commit/b1c6c149) Separate ApiGroup for Mutating and Validating webhook && upgraded osm to 0.7.0 (#34)
+- [b1890f7c](https://github.com/kubedb/proxysql/commit/b1890f7c) Update client-go to 7.0.0 (#33)
+- [08c81726](https://github.com/kubedb/proxysql/commit/08c81726) Added update script for mysql-tools:8 (#32)
+- [4bbe6c9f](https://github.com/kubedb/proxysql/commit/4bbe6c9f) Added support of mysql:5.7 (#31)
+- [e657f512](https://github.com/kubedb/proxysql/commit/e657f512) Add support for one informer and N-eventHandler for snapshot, dromantDB and Job (#30)
+- [bbcd48d6](https://github.com/kubedb/proxysql/commit/bbcd48d6) Use metrics from kube apiserver (#29)
+- [1687e197](https://github.com/kubedb/proxysql/commit/1687e197) Bundle webhook server and Use SharedInformerFactory (#28)
+- [cd0efc00](https://github.com/kubedb/proxysql/commit/cd0efc00) Move MySQL AdmissionWebhook packages into MySQL repository (#27)
+- [46065e18](https://github.com/kubedb/proxysql/commit/46065e18) Use mysql:8.0.3 image as mysql:8.0 (#26)
+- [1b73529f](https://github.com/kubedb/proxysql/commit/1b73529f) Update README.md
+- [62eaa397](https://github.com/kubedb/proxysql/commit/62eaa397) Update README.md
+- [c53704c7](https://github.com/kubedb/proxysql/commit/c53704c7) Remove Docker pull count
+- [b9ec877e](https://github.com/kubedb/proxysql/commit/b9ec877e) Add travis yaml (#25)
+- [ade3571c](https://github.com/kubedb/proxysql/commit/ade3571c) Start next dev cycle
+- [b4b749df](https://github.com/kubedb/proxysql/commit/b4b749df) Prepare release 0.1.0-beta.2
+- [4d46d95d](https://github.com/kubedb/proxysql/commit/4d46d95d) Migrating to apps/v1 (#23)
+- [5ee1ac8c](https://github.com/kubedb/proxysql/commit/5ee1ac8c) Update validation (#22)
+- [dd023c50](https://github.com/kubedb/proxysql/commit/dd023c50)  Fix dormantDB matching: pass same type to Equal method (#21)
+- [37a1e4fd](https://github.com/kubedb/proxysql/commit/37a1e4fd) Use official code generator scripts (#20)
+- [485d3d7c](https://github.com/kubedb/proxysql/commit/485d3d7c) Fixed dormantdb matching & Raised throttling time & Fixed MySQL version Checking (#19)
+- [6db2ae8d](https://github.com/kubedb/proxysql/commit/6db2ae8d) Prepare release 0.1.0-beta.1
+- [ebbfec2f](https://github.com/kubedb/proxysql/commit/ebbfec2f) converted to k8s 1.9 & Improved InitSpec in DormantDB & Added support for Job watcher & Improved Tests (#17)
+- [a484e0e5](https://github.com/kubedb/proxysql/commit/a484e0e5) Fixed logger, analytics and removed rbac stuff (#16)
+- [7aa2d1d2](https://github.com/kubedb/proxysql/commit/7aa2d1d2) Add rbac stuffs for mysql-exporter (#15)
+- [078098c8](https://github.com/kubedb/proxysql/commit/078098c8)  Review Mysql docker images and Fixed monitring (#14)
+- [6877108a](https://github.com/kubedb/proxysql/commit/6877108a) Update README.md
+- [1f84a5da](https://github.com/kubedb/proxysql/commit/1f84a5da) Start next dev cycle
+- [2f1e4b7d](https://github.com/kubedb/proxysql/commit/2f1e4b7d) Prepare release 0.1.0-beta.0
+- [dce1e88e](https://github.com/kubedb/proxysql/commit/dce1e88e) Add release script
+- [60ed55cb](https://github.com/kubedb/proxysql/commit/60ed55cb) Rename ms-operator to my-operator (#13)
+- [5451d166](https://github.com/kubedb/proxysql/commit/5451d166) Fix Analytics and pass client-id as ENV to Snapshot Job (#12)
+- [788ae178](https://github.com/kubedb/proxysql/commit/788ae178) update docker image validation (#11)
+- [c966efd5](https://github.com/kubedb/proxysql/commit/c966efd5) Add docker-registry and WorkQueue  (#10)
+- [be340103](https://github.com/kubedb/proxysql/commit/be340103) Set client id for analytics (#9)
+- [ca11f683](https://github.com/kubedb/proxysql/commit/ca11f683) Fix CRD Registration (#8)
+- [2f95c13d](https://github.com/kubedb/proxysql/commit/2f95c13d) Update issue repo link
+- [6fffa713](https://github.com/kubedb/proxysql/commit/6fffa713) Update pkg paths to kubedb org (#7)
+- [2d4d5c44](https://github.com/kubedb/proxysql/commit/2d4d5c44) Assign default Prometheus Monitoring Port (#6)
+- [a7595613](https://github.com/kubedb/proxysql/commit/a7595613) Add Snapshot Backup, Restore and Backup-Scheduler (#4)
+- [17a782c6](https://github.com/kubedb/proxysql/commit/17a782c6) Update Dockerfile
+- [e92bfec9](https://github.com/kubedb/proxysql/commit/e92bfec9) Add mysql-util docker image (#5)
+- [2a4b25ac](https://github.com/kubedb/proxysql/commit/2a4b25ac) Mysql db - Inititalizing  (#2)
+- [cbfbc878](https://github.com/kubedb/proxysql/commit/cbfbc878) Update README.md
+- [01cab651](https://github.com/kubedb/proxysql/commit/01cab651) Update README.md
+- [0aa81cdf](https://github.com/kubedb/proxysql/commit/0aa81cdf) Use client-go 5.x
+- [3de10d7f](https://github.com/kubedb/proxysql/commit/3de10d7f) Update ./hack folder (#3)
+- [46f05b1f](https://github.com/kubedb/proxysql/commit/46f05b1f) Add skeleton for mysql (#1)
+- [73147dba](https://github.com/kubedb/proxysql/commit/73147dba) Merge commit 'be70502b4993171bbad79d2ff89a9844f1c24caa' as 'hack/libbuild'
+
+
+
+## [kubedb/redis](https://github.com/kubedb/redis)
+
+### [v0.7.0](https://github.com/kubedb/redis/releases/tag/v0.7.0)
+
+- [978d89ef](https://github.com/kubedb/redis/commit/978d89ef) Prepare for release v0.7.0 (#248)
+- [ac0d5b08](https://github.com/kubedb/redis/commit/ac0d5b08) Prepare for release v0.7.0-rc.2 (#247)
+- [b9e54a66](https://github.com/kubedb/redis/commit/b9e54a66) Prepare for release v0.7.0-rc.1 (#246)
+- [50f709bf](https://github.com/kubedb/redis/commit/50f709bf) Prepare for release v0.7.0-beta.6 (#245)
+- [d4aaaf38](https://github.com/kubedb/redis/commit/d4aaaf38) Create SRV records for governing service (#244)
+- [57743070](https://github.com/kubedb/redis/commit/57743070) Prepare for release v0.7.0-beta.5 (#243)
+- [5e8f1a25](https://github.com/kubedb/redis/commit/5e8f1a25) Create separate governing service for each database (#242)
+- [ebeda2c7](https://github.com/kubedb/redis/commit/ebeda2c7) Update KubeDB api (#241)
+- [b0a39a3c](https://github.com/kubedb/redis/commit/b0a39a3c) Update readme
+- [d31b919a](https://github.com/kubedb/redis/commit/d31b919a) Prepare for release v0.7.0-beta.4 (#240)
+- [bfecc0c5](https://github.com/kubedb/redis/commit/bfecc0c5) Update KubeDB api (#239)
+- [307efbef](https://github.com/kubedb/redis/commit/307efbef) Update Kubernetes v1.18.9 dependencies (#238)
+- [34b09d4c](https://github.com/kubedb/redis/commit/34b09d4c) Update KubeDB api (#237)
+- [4aefb939](https://github.com/kubedb/redis/commit/4aefb939) Fix init validator (#236)
+- [4ea47108](https://github.com/kubedb/redis/commit/4ea47108) Update KubeDB api (#235)
+- [8c4c8a54](https://github.com/kubedb/redis/commit/8c4c8a54) Update KubeDB api (#234)
+- [cbee9597](https://github.com/kubedb/redis/commit/cbee9597) Update Kubernetes v1.18.9 dependencies (#233)
+- [9fb1b23c](https://github.com/kubedb/redis/commit/9fb1b23c) Update KubeDB api (#232)
+- [c5fb9a6d](https://github.com/kubedb/redis/commit/c5fb9a6d) Update KubeDB api (#230)
+- [2e2f2d7b](https://github.com/kubedb/redis/commit/2e2f2d7b) Update KubeDB api (#229)
+- [3c8e6c6d](https://github.com/kubedb/redis/commit/3c8e6c6d) Update KubeDB api (#228)
+- [8467464d](https://github.com/kubedb/redis/commit/8467464d) Update Kubernetes v1.18.9 dependencies (#227)
+- [5febd393](https://github.com/kubedb/redis/commit/5febd393) Update KubeDB api (#226)
+- [d8024e4d](https://github.com/kubedb/redis/commit/d8024e4d) Update KubeDB api (#225)
+- [12d112de](https://github.com/kubedb/redis/commit/12d112de) Update KubeDB api (#223)
+- [8a9f5398](https://github.com/kubedb/redis/commit/8a9f5398) Update repository config (#222)
+- [b3b48a91](https://github.com/kubedb/redis/commit/b3b48a91) Update repository config (#221)
+- [2fa45230](https://github.com/kubedb/redis/commit/2fa45230) Update repository config (#220)
+- [552f1f80](https://github.com/kubedb/redis/commit/552f1f80) Initialize statefulset watcher from cmd/server/options.go (#219)
+- [446b4b55](https://github.com/kubedb/redis/commit/446b4b55) Update KubeDB api (#218)
+- [f6203009](https://github.com/kubedb/redis/commit/f6203009) Update Kubernetes v1.18.9 dependencies (#217)
+- [b7172fb8](https://github.com/kubedb/redis/commit/b7172fb8) Publish docker images to ghcr.io (#216)
+- [9897bab9](https://github.com/kubedb/redis/commit/9897bab9) Update KubeDB api (#215)
+- [00f07b4f](https://github.com/kubedb/redis/commit/00f07b4f) Update KubeDB api (#214)
+- [f2133f26](https://github.com/kubedb/redis/commit/f2133f26) Update KubeDB api (#213)
+- [b1f3b76a](https://github.com/kubedb/redis/commit/b1f3b76a) Update KubeDB api (#212)
+- [a3144e30](https://github.com/kubedb/redis/commit/a3144e30) Update repository config (#211)
+- [8472ff88](https://github.com/kubedb/redis/commit/8472ff88) Add support to initialize Redis using Stash (#188)
+- [20ba04a7](https://github.com/kubedb/redis/commit/20ba04a7) Update Kubernetes v1.18.9 dependencies (#210)
+- [457611a1](https://github.com/kubedb/redis/commit/457611a1) Update Kubernetes v1.18.9 dependencies (#209)
+- [2bd8b281](https://github.com/kubedb/redis/commit/2bd8b281) Update Kubernetes v1.18.9 dependencies (#207)
+- [8779c7ea](https://github.com/kubedb/redis/commit/8779c7ea) Update repository config (#206)
+- [db9280b7](https://github.com/kubedb/redis/commit/db9280b7) Update repository config (#205)
+- [ada18bca](https://github.com/kubedb/redis/commit/ada18bca) Update Kubernetes v1.18.9 dependencies (#204)
+- [17a55147](https://github.com/kubedb/redis/commit/17a55147) Use common event recorder (#203)
+- [71a34b6a](https://github.com/kubedb/redis/commit/71a34b6a) Update Kubernetes v1.18.3 dependencies (#202)
+- [32dadab6](https://github.com/kubedb/redis/commit/32dadab6) Prepare for release v0.7.0-beta.3 (#201)
+- [e41222a1](https://github.com/kubedb/redis/commit/e41222a1) Update Kubernetes v1.18.3 dependencies (#200)
+- [41172908](https://github.com/kubedb/redis/commit/41172908) Add license verifier (#199)
+- [d46d0dbd](https://github.com/kubedb/redis/commit/d46d0dbd) Update Kubernetes v1.18.3 dependencies (#198)
+- [283c2777](https://github.com/kubedb/redis/commit/283c2777) Use background deletion policy
+- [5ee6470d](https://github.com/kubedb/redis/commit/5ee6470d) Update Kubernetes v1.18.3 dependencies (#195)
+- [e391f0d6](https://github.com/kubedb/redis/commit/e391f0d6) Use AppsCode Community License (#194)
+- [12211e40](https://github.com/kubedb/redis/commit/12211e40) Update Kubernetes v1.18.3 dependencies (#193)
+- [73cf267e](https://github.com/kubedb/redis/commit/73cf267e) Prepare for release v0.7.0-beta.2 (#192)
+- [d2911ea9](https://github.com/kubedb/redis/commit/d2911ea9) Update release.yml
+- [c76ee46e](https://github.com/kubedb/redis/commit/c76ee46e) Update dependencies (#191)
+- [0b030534](https://github.com/kubedb/redis/commit/0b030534) Fix build
+- [408216ab](https://github.com/kubedb/redis/commit/408216ab) Add support for Redis v6.0.6 and TLS (#180)
+- [944327df](https://github.com/kubedb/redis/commit/944327df) Update Kubernetes v1.18.3 dependencies (#187)
+- [40b7cde6](https://github.com/kubedb/redis/commit/40b7cde6) Update Kubernetes v1.18.3 dependencies (#186)
+- [f2bf110d](https://github.com/kubedb/redis/commit/f2bf110d) Update Kubernetes v1.18.3 dependencies (#184)
+- [61485cfa](https://github.com/kubedb/redis/commit/61485cfa) Update Kubernetes v1.18.3 dependencies (#183)
+- [184ae35d](https://github.com/kubedb/redis/commit/184ae35d) Update Kubernetes v1.18.3 dependencies (#182)
+- [bc72b51b](https://github.com/kubedb/redis/commit/bc72b51b) Update Kubernetes v1.18.3 dependencies (#181)
+- [ca540560](https://github.com/kubedb/redis/commit/ca540560) Remove dependency on enterprise operator (#179)
+- [09bade2e](https://github.com/kubedb/redis/commit/09bade2e) Allow configuring k8s & db version in e2e tests (#178)
+- [2bafb114](https://github.com/kubedb/redis/commit/2bafb114) Update to Kubernetes v1.18.3 (#177)
+- [b2fe59ef](https://github.com/kubedb/redis/commit/b2fe59ef) Trigger e2e tests on /ok-to-test command (#176)
+- [df5131e1](https://github.com/kubedb/redis/commit/df5131e1) Update to Kubernetes v1.18.3 (#175)
+- [a404ae08](https://github.com/kubedb/redis/commit/a404ae08) Update to Kubernetes v1.18.3 (#174)
+- [768962f4](https://github.com/kubedb/redis/commit/768962f4) Prepare for release v0.7.0-beta.1 (#173)
+- [9efbb8e4](https://github.com/kubedb/redis/commit/9efbb8e4) include Makefile.env (#171)
+- [b343c559](https://github.com/kubedb/redis/commit/b343c559) Update License (#170)
+- [d666ac18](https://github.com/kubedb/redis/commit/d666ac18) Update to Kubernetes v1.18.3 (#169)
+- [602354f6](https://github.com/kubedb/redis/commit/602354f6) Update ci.yml
+- [59f2d238](https://github.com/kubedb/redis/commit/59f2d238) Update update-release-tracker.sh
+- [64c96db5](https://github.com/kubedb/redis/commit/64c96db5) Update update-release-tracker.sh
+- [49cd15a9](https://github.com/kubedb/redis/commit/49cd15a9) Add script to update release tracker on pr merge (#167)
+- [c711be8f](https://github.com/kubedb/redis/commit/c711be8f) chore: replica alert typo (#166)
+- [2d752316](https://github.com/kubedb/redis/commit/2d752316) Update .kodiak.toml
+- [ea3b206d](https://github.com/kubedb/redis/commit/ea3b206d) Various fixes (#165)
+- [e441809c](https://github.com/kubedb/redis/commit/e441809c) Update to Kubernetes v1.18.3 (#164)
+- [1e5ecfb7](https://github.com/kubedb/redis/commit/1e5ecfb7) Update to Kubernetes v1.18.3
+- [742679dd](https://github.com/kubedb/redis/commit/742679dd) Create .kodiak.toml
+- [2eb77b80](https://github.com/kubedb/redis/commit/2eb77b80) Update apis (#163)
+- [7cf9e7d3](https://github.com/kubedb/redis/commit/7cf9e7d3) Use CRD v1 for Kubernetes >= 1.16 (#162)
+- [bf072134](https://github.com/kubedb/redis/commit/bf072134) Update kind command
+- [cb2a748d](https://github.com/kubedb/redis/commit/cb2a748d) Update dependencies
+- [a30cd6eb](https://github.com/kubedb/redis/commit/a30cd6eb) Update to Kubernetes v1.18.3 (#161)
+- [9cdac95f](https://github.com/kubedb/redis/commit/9cdac95f) Fix e2e tests (#160)
+- [429141b4](https://github.com/kubedb/redis/commit/429141b4) Revendor kubedb.dev/apimachinery@master (#159)
+- [664c086b](https://github.com/kubedb/redis/commit/664c086b) Use recommended kubernetes app labels
+- [2e6a2f03](https://github.com/kubedb/redis/commit/2e6a2f03) Update crazy-max/ghaction-docker-buildx flag
+- [88417e86](https://github.com/kubedb/redis/commit/88417e86) Pass annotations from CRD to AppBinding (#158)
+- [84167d7a](https://github.com/kubedb/redis/commit/84167d7a) Trigger the workflow on push or pull request
+- [2f43dd9a](https://github.com/kubedb/redis/commit/2f43dd9a) Use helm --wait
+- [36399173](https://github.com/kubedb/redis/commit/36399173) Use updated operator labels in e2e tests (#156)
+- [c6582491](https://github.com/kubedb/redis/commit/c6582491) Update CHANGELOG.md
+- [197b4973](https://github.com/kubedb/redis/commit/197b4973) Support PodAffinity Templating (#155)
+- [cdfbb77d](https://github.com/kubedb/redis/commit/cdfbb77d) Use stash.appscode.dev/apimachinery@v0.9.0-rc.6 (#154)
+- [c1db4c43](https://github.com/kubedb/redis/commit/c1db4c43) Version update to resolve security issue in github.com/apache/th… (#153)
+- [7acc502b](https://github.com/kubedb/redis/commit/7acc502b) Use rancher/local-path-provisioner@v0.0.12 (#152)
+- [d00f765e](https://github.com/kubedb/redis/commit/d00f765e) Introduce spec.halted and removed dormant crd (#151)
+- [9ed1d97e](https://github.com/kubedb/redis/commit/9ed1d97e) Add `Pause` Feature (#150)
+- [39ed60c4](https://github.com/kubedb/redis/commit/39ed60c4) Refactor CI pipeline to build once (#149)
+- [1707e0c7](https://github.com/kubedb/redis/commit/1707e0c7) Update kubernetes client-go to 1.16.3 (#148)
+- [dcbb4be4](https://github.com/kubedb/redis/commit/dcbb4be4) Update catalog values for make install command
+- [9fa3ef1c](https://github.com/kubedb/redis/commit/9fa3ef1c) Update catalog values for make install command (#147)
+- [44538409](https://github.com/kubedb/redis/commit/44538409) Use charts to install operator (#146)
+- [05e3b95a](https://github.com/kubedb/redis/commit/05e3b95a) Matrix test for github actions (#145)
+- [e76f96f6](https://github.com/kubedb/redis/commit/e76f96f6) Add add-license make target
+- [6ccd651c](https://github.com/kubedb/redis/commit/6ccd651c) Update Makefile
+- [2a56f27f](https://github.com/kubedb/redis/commit/2a56f27f) Add license header to files (#144)
+- [5ce5e5e0](https://github.com/kubedb/redis/commit/5ce5e5e0) Run e2e tests in parallel (#142)
+- [77012ddf](https://github.com/kubedb/redis/commit/77012ddf) Use log.Fatal instead of Must() (#143)
+- [aa7f1673](https://github.com/kubedb/redis/commit/aa7f1673) Enable make ci (#141)
+- [abd6a605](https://github.com/kubedb/redis/commit/abd6a605) Remove EnableStatusSubresource (#140)
+- [08cfe0ca](https://github.com/kubedb/redis/commit/08cfe0ca) Fix tests for github actions (#139)
+- [09e72f63](https://github.com/kubedb/redis/commit/09e72f63) Prepend redis.conf to args list (#136)
+- [101afa35](https://github.com/kubedb/redis/commit/101afa35) Run e2e tests using GitHub actions (#137)
+- [bbf5cb9f](https://github.com/kubedb/redis/commit/bbf5cb9f) Validate DBVersionSpecs and fixed broken build (#138)
+- [26f0c88b](https://github.com/kubedb/redis/commit/26f0c88b) Update go.yml
+- [9dab8c06](https://github.com/kubedb/redis/commit/9dab8c06) Enable GitHub actions
+- [6a722f20](https://github.com/kubedb/redis/commit/6a722f20) Update changelog
+- [0bbe3319](https://github.com/kubedb/redis/commit/0bbe3319) Remove linux/arm support
+- [50d8a79e](https://github.com/kubedb/redis/commit/50d8a79e) Revendor
+- [29606494](https://github.com/kubedb/redis/commit/29606494) Improve test: Use installed redisversions (#135)
+- [2428be41](https://github.com/kubedb/redis/commit/2428be41) Use docker buildx to build docker image xref: https://community.arm.com/developer/tools-software/tools/b/tools-software-ides-blog/posts/getting-started-with-docker-for-arm-on-linux
+- [82a1d8de](https://github.com/kubedb/redis/commit/82a1d8de) Update dependencies (#134)
+- [55a971e4](https://github.com/kubedb/redis/commit/55a971e4) Don't set annotation to AppBinding (#133)
+- [1d684981](https://github.com/kubedb/redis/commit/1d684981) Set database version in AppBinding (#132)
+- [c046a975](https://github.com/kubedb/redis/commit/c046a975) Change package path to kubedb.dev/redis (#131)
+- [61417d3f](https://github.com/kubedb/redis/commit/61417d3f) Add license header to Makefiles (#130)
+- [56e4a2b6](https://github.com/kubedb/redis/commit/56e4a2b6) Update Makefile
+- [7b0594cd](https://github.com/kubedb/redis/commit/7b0594cd) Add install, uninstall and purge command in Makefile (#129)
+- [4c8ff160](https://github.com/kubedb/redis/commit/4c8ff160) Update .gitignore
+- [95d791b0](https://github.com/kubedb/redis/commit/95d791b0) Pod Disruption Budget for Redis (#127)
+- [a3ca9ce8](https://github.com/kubedb/redis/commit/a3ca9ce8) Handling resource ownership (#126)
+- [201493ca](https://github.com/kubedb/redis/commit/201493ca) Update .travis.yml
+- [fa84a9f5](https://github.com/kubedb/redis/commit/fa84a9f5) Add Makefile (#128)
+- [3699dfb2](https://github.com/kubedb/redis/commit/3699dfb2) Update to k8s 1.14.0 client libraries using go.mod (#125)
+- [d92eb4ff](https://github.com/kubedb/redis/commit/d92eb4ff) Update README.md
+- [c6121adf](https://github.com/kubedb/redis/commit/c6121adf) Start next dev cycle
+
+
+
+
