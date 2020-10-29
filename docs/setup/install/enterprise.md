@@ -86,14 +86,18 @@ KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://g
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
+
 $ helm search repo appscode/kubedb --version {{< param "info.community" >}}
 NAME                        CHART VERSION APP VERSION   DESCRIPTION
 appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
 appscode/kubedb-catalog     {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Catalog by AppsCode - Catalog for database versions
+
+$ helm search repo appscode/kubedb-enterprise --version {{< param "info.enterprise" >}}
+NAME                        CHART VERSION APP VERSION DESCRIPTION
 appscode/kubedb-enterprise  {{< param "info.enterprise" >}}  {{< param "info.enterprise" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
 
 # Step 1: Install KubeDB Community operator chart
-$ helm install kubedb-community kubedb appscode/kubedb \
+$ helm install kubedb-community appscode/kubedb \
   --version {{< param "info.community" >}}      \
   --namespace kube-system                       \
   --set-file license=/path/to/the/license.txt
@@ -145,10 +149,14 @@ KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://g
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm search appscode/kubedb --version {{< param "info.community" >}}
+
+$ helm search repo appscode/kubedb --version {{< param "info.community" >}}
 NAME                        CHART VERSION APP VERSION   DESCRIPTION
 appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
 appscode/kubedb-catalog     {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Catalog by AppsCode - Catalog for database versions
+
+$ helm search repo appscode/kubedb-enterprise --version {{< param "info.enterprise" >}}
+NAME                        CHART VERSION APP VERSION DESCRIPTION
 appscode/kubedb-enterprise  {{< param "info.enterprise" >}}  {{< param "info.enterprise" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
 
 # Step 1: Install KubeDB Community operator chart
@@ -204,10 +212,14 @@ If you prefer to not use Helm, you can generate YAMLs from KubeDB chart and depl
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
+
 $ helm search repo appscode/kubedb --version {{< param "info.community" >}}
 NAME                        CHART VERSION APP VERSION   DESCRIPTION
 appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
 appscode/kubedb-catalog     {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Catalog by AppsCode - Catalog for database versions
+
+$ helm search repo appscode/kubedb-enterprise --version {{< param "info.enterprise" >}}
+NAME                        CHART VERSION APP VERSION DESCRIPTION
 appscode/kubedb-enterprise  {{< param "info.enterprise" >}}  {{< param "info.enterprise" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
 
 # Step 1: Install KubeDB Community operator chart
