@@ -1175,7 +1175,7 @@ kmodules.xyz/prober/api/v1
 # kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.14.0-rc.2
+# kubedb.dev/apimachinery v0.14.0
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
 kubedb.dev/apimachinery/apis/autoscaling/v1alpha1
@@ -1217,7 +1217,7 @@ kubedb.dev/apimachinery/pkg/controller/statefulset
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/phase
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.14.0-rc.2
+# kubedb.dev/elasticsearch v0.14.0
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
 kubedb.dev/elasticsearch/pkg/distribution
@@ -1229,30 +1229,30 @@ kubedb.dev/elasticsearch/pkg/lib/cert
 kubedb.dev/elasticsearch/pkg/lib/cert/pkcs8
 kubedb.dev/elasticsearch/pkg/lib/user
 kubedb.dev/elasticsearch/pkg/util/go-es
-# kubedb.dev/memcached v0.7.0-rc.2
+# kubedb.dev/memcached v0.7.0
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.7.0-rc.2
+# kubedb.dev/mongodb v0.7.0
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.7.0-rc.2
+# kubedb.dev/mysql v0.7.0
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.1.0-rc.2
+# kubedb.dev/percona-xtradb v0.1.0
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
-# kubedb.dev/pg-leader-election v0.2.0-rc.2
+# kubedb.dev/pg-leader-election v0.2.0
 kubedb.dev/pg-leader-election/pkg/leader_election
-# kubedb.dev/pgbouncer v0.1.0-rc.2
+# kubedb.dev/pgbouncer v0.1.0
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.14.0-rc.2
+# kubedb.dev/postgres v0.14.0
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.1.0-rc.2
+# kubedb.dev/proxysql v0.1.0
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.7.0-rc.2
+# kubedb.dev/redis v0.7.0
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster
 kubedb.dev/redis/pkg/controller
