@@ -1711,8 +1711,8 @@ kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de h1:uWgv78OoOWx9e
 kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de/go.mod h1:5A8s2nvrNAZGrt0OlsiiuZIik3xWyKW6+ZSwgljIm78=
 kubedb.dev/apimachinery v0.14.0 h1:XMm9yesMqKtZdUDRVWkiqzyyqlHCG3+lW+UlTgq5P4I=
 kubedb.dev/apimachinery v0.14.0/go.mod h1:JLcA8wGUyJrgAYYIybdp4OcqTv1PrhpgJsqeMjvDEhM=
-kubedb.dev/apimachinery v0.14.1-0.20201029213229-a0cc0f912b4c h1:K4sM7fxBO+Jc9GrC9TzMFO4Aprq7IZ0ZSe9Wbq27pgQ=
-kubedb.dev/apimachinery v0.14.1-0.20201029213229-a0cc0f912b4c/go.mod h1:njnoAk+2RB8FDRDEqcU4IAKE9CJLdSNROU6DMdsbC8k=
+kubedb.dev/apimachinery v0.14.1-0.20201030200006-92af33bde233 h1:LjgDUNb0Z7SD2v/LOxevmuxn3xgEUf16VvqIUCiN1lA=
+kubedb.dev/apimachinery v0.14.1-0.20201030200006-92af33bde233/go.mod h1:xuK6xlS2RCQgDTCRnLOP2RrBqu9lM9iJZdL74RCIcmA=
 kubedb.dev/elasticsearch v0.14.0 h1:OGEniMuKAuM7rYWP11JMREja58BoQ3tTO6gni4f6hgA=
 kubedb.dev/elasticsearch v0.14.0/go.mod h1:jiHD2DSBCCIKSX7MExV8zTSxOCxPNzyY8VC9yM4Wr34=
 kubedb.dev/memcached v0.7.0 h1:PhCPuKv7uHKUhI2I28M5IwGHKnwI7RSIbJ9HCWkPOlQ=
@@ -1763,8 +1763,8 @@ sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0/go.mod h1
 sourcegraph.com/sqs/pbtypes v0.0.0-20180604144634-d3ebe8f20ae4/go.mod h1:ketZ/q3QxT9HOBeFhu6RdvsftgpsbFHBF5Cas6cDKZ0=
 stash.appscode.dev/apimachinery v0.11.3 h1:QtDA1w1Piu350toPE++99NvKM1y+zqv44A9sr7LBRCw=
 stash.appscode.dev/apimachinery v0.11.3/go.mod h1:j6XQeyMu0BoUwI9+n3wuts0RpZzU8HNYaGOrCuD3I6U=
-stash.appscode.dev/apimachinery v0.11.4 h1:o+pykfApSyv17hKE651znHhK2A0uNDLDSxTxD5ltUSU=
-stash.appscode.dev/apimachinery v0.11.4/go.mod h1:AyJyyOJVup+KU0JJtNYV+xfDC1wNLgYHE/DCQLMftrg=
+stash.appscode.dev/apimachinery v0.11.5 h1:+3bWu7ZMGGo2ypJIJ8YFqyPvVLcXP1s2x9pkQbIXfT0=
+stash.appscode.dev/apimachinery v0.11.5/go.mod h1:AyJyyOJVup+KU0JJtNYV+xfDC1wNLgYHE/DCQLMftrg=
 vbom.ml/util v0.0.0-20160121211510-db5cfe13f5cc/go.mod h1:so/NYdZXCz+E3ZpW0uAoCj6uzU2+8OWDFv/HxUSs7kI=
 xorm.io/builder v0.3.6 h1:ha28mQ2M+TFx96Hxo+iq6tQgnkC9IZkM6D8w9sKHHF8=
 xorm.io/builder v0.3.6/go.mod h1:LEFAPISnRzG+zxaxj2vPicRwz67BdhFreKg8yv8/TgU=
