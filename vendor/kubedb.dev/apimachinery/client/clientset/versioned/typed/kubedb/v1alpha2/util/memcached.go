@@ -106,15 +106,20 @@ func UpdateMemcachedStatus(
 	ctx context.Context,
 	c cs.KubedbV1alpha2Interface,
 	meta metav1.ObjectMeta,
-	transform func(*api.MemcachedStatus) *api.MemcachedStatus,
+	transform func(*api.MemcachedStatus) (types.UID, *api.MemcachedStatus),
 	opts metav1.UpdateOptions,
 ) (result *api.Memcached, err error) {
 	apply := func(x *api.Memcached) *api.Memcached {
+		uid, updatedStatus := transform(x.Status.DeepCopy())
+		// Ignore status update when uid does not match
+		if uid != "" && uid != x.UID {
+			return x
+		}
 		return &api.Memcached{
 			TypeMeta:   x.TypeMeta,
 			ObjectMeta: x.ObjectMeta,
 			Spec:       x.Spec,
-			Status:     *transform(x.Status.DeepCopy()),
+			Status:     *updatedStatus,
 		}
 	}
 

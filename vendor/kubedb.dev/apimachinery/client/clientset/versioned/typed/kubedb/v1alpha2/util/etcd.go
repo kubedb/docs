@@ -106,15 +106,20 @@ func UpdateEtcdStatus(
 	ctx context.Context,
 	c cs.KubedbV1alpha2Interface,
 	meta metav1.ObjectMeta,
-	transform func(*api.EtcdStatus) *api.EtcdStatus,
+	transform func(*api.EtcdStatus) (types.UID, *api.EtcdStatus),
 	opts metav1.UpdateOptions,
 ) (result *api.Etcd, err error) {
 	apply := func(x *api.Etcd) *api.Etcd {
+		uid, updatedStatus := transform(x.Status.DeepCopy())
+		// Ignore status update when uid does not match
+		if uid != "" && uid != x.UID {
+			return x
+		}
 		return &api.Etcd{
 			TypeMeta:   x.TypeMeta,
 			ObjectMeta: x.ObjectMeta,
 			Spec:       x.Spec,
-			Status:     *transform(x.Status.DeepCopy()),
+			Status:     *updatedStatus,
 		}
 	}
 

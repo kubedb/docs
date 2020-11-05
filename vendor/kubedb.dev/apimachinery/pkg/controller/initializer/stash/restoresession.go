@@ -19,7 +19,7 @@ package stash
 import (
 	"time"
 
-	"github.com/appscode/go/log"
+	"gomodules.xyz/x/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 	"stash.appscode.dev/apimachinery/apis/stash/v1beta1"

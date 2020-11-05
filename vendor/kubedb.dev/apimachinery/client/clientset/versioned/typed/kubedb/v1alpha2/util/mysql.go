@@ -106,15 +106,20 @@ func UpdateMySQLStatus(
 	ctx context.Context,
 	c cs.KubedbV1alpha2Interface,
 	meta metav1.ObjectMeta,
-	transform func(*api.MySQLStatus) *api.MySQLStatus,
+	transform func(*api.MySQLStatus) (types.UID, *api.MySQLStatus),
 	opts metav1.UpdateOptions,
 ) (result *api.MySQL, err error) {
 	apply := func(x *api.MySQL) *api.MySQL {
+		uid, updatedStatus := transform(x.Status.DeepCopy())
+		// Ignore status update when uid does not match
+		if uid != "" && uid != x.UID {
+			return x
+		}
 		return &api.MySQL{
 			TypeMeta:   x.TypeMeta,
 			ObjectMeta: x.ObjectMeta,
 			Spec:       x.Spec,
-			Status:     *transform(x.Status.DeepCopy()),
+			Status:     *updatedStatus,
 		}
 	}
 

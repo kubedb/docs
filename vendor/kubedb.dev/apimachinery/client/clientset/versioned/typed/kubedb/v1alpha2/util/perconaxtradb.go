@@ -106,15 +106,20 @@ func UpdatePerconaXtraDBStatus(
 	ctx context.Context,
 	c cs.KubedbV1alpha2Interface,
 	meta metav1.ObjectMeta,
-	transform func(*api.PerconaXtraDBStatus) *api.PerconaXtraDBStatus,
+	transform func(*api.PerconaXtraDBStatus) (types.UID, *api.PerconaXtraDBStatus),
 	opts metav1.UpdateOptions,
 ) (result *api.PerconaXtraDB, err error) {
 	apply := func(x *api.PerconaXtraDB) *api.PerconaXtraDB {
+		uid, updatedStatus := transform(x.Status.DeepCopy())
+		// Ignore status update when uid does not match
+		if uid != "" && uid != x.UID {
+			return x
+		}
 		return &api.PerconaXtraDB{
 			TypeMeta:   x.TypeMeta,
 			ObjectMeta: x.ObjectMeta,
 			Spec:       x.Spec,
-			Status:     *transform(x.Status.DeepCopy()),
+			Status:     *updatedStatus,
 		}
 	}
 

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package apis
+package invoker
 
 import (
 	"context"
@@ -28,6 +28,7 @@ import (
 
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/reference"
 	kmapi "kmodules.xyz/client-go/api/v1"
@@ -165,13 +166,13 @@ func ExtractRestoreInvokerInfo(kubeClient kubernetes.Interface, stashClient cs.I
 
 		}
 		invoker.SetCondition = func(target *v1beta1.TargetRef, condition kmapi.Condition) error {
-			_, err = v1beta1_util.UpdateRestoreBatchStatus(context.TODO(), stashClient.StashV1beta1(), restoreBatch.ObjectMeta, func(in *v1beta1.RestoreBatchStatus) *v1beta1.RestoreBatchStatus {
+			_, err = v1beta1_util.UpdateRestoreBatchStatus(context.TODO(), stashClient.StashV1beta1(), restoreBatch.ObjectMeta, func(in *v1beta1.RestoreBatchStatus) (types.UID, *v1beta1.RestoreBatchStatus) {
 				if target != nil {
 					in.Members = setRestoreMemberCondition(in.Members, *target, condition)
 				} else {
 					in.Conditions = kmapi.SetCondition(in.Conditions, condition)
 				}
-				return in
+				return restoreBatch.UID, in
 			}, metav1.UpdateOptions{})
 			return err
 		}
@@ -206,7 +207,7 @@ func ExtractRestoreInvokerInfo(kubeClient kubernetes.Interface, stashClient cs.I
 				context.TODO(),
 				stashClient.StashV1beta1(),
 				invoker.ObjectMeta,
-				func(in *v1beta1.RestoreBatchStatus) *v1beta1.RestoreBatchStatus {
+				func(in *v1beta1.RestoreBatchStatus) (types.UID, *v1beta1.RestoreBatchStatus) {
 					if status.Phase != "" {
 						in.Phase = status.Phase
 					}
@@ -221,7 +222,7 @@ func ExtractRestoreInvokerInfo(kubeClient kubernetes.Interface, stashClient cs.I
 							in.Members = upsertRestoreMemberStatus(in.Members, status.TargetStatus[i])
 						}
 					}
-					return in
+					return invoker.ObjectMeta.UID, in
 				},
 				metav1.UpdateOptions{},
 			)
@@ -319,9 +320,9 @@ func ExtractRestoreInvokerInfo(kubeClient kubernetes.Interface, stashClient cs.I
 			return idx, cond, nil
 		}
 		invoker.SetCondition = func(target *v1beta1.TargetRef, condition kmapi.Condition) error {
-			_, err = v1beta1_util.UpdateRestoreSessionStatus(context.TODO(), stashClient.StashV1beta1(), restoreSession.ObjectMeta, func(in *v1beta1.RestoreSessionStatus) *v1beta1.RestoreSessionStatus {
+			_, err = v1beta1_util.UpdateRestoreSessionStatus(context.TODO(), stashClient.StashV1beta1(), restoreSession.ObjectMeta, func(in *v1beta1.RestoreSessionStatus) (types.UID, *v1beta1.RestoreSessionStatus) {
 				in.Conditions = kmapi.SetCondition(in.Conditions, condition)
-				return in
+				return restoreSession.UID, in
 			}, metav1.UpdateOptions{})
 			return err
 		}
@@ -353,7 +354,7 @@ func ExtractRestoreInvokerInfo(kubeClient kubernetes.Interface, stashClient cs.I
 				context.TODO(),
 				stashClient.StashV1beta1(),
 				invoker.ObjectMeta,
-				func(in *v1beta1.RestoreSessionStatus) *v1beta1.RestoreSessionStatus {
+				func(in *v1beta1.RestoreSessionStatus) (types.UID, *v1beta1.RestoreSessionStatus) {
 					if status.Phase != "" {
 						in.Phase = status.Phase
 					}
@@ -378,7 +379,7 @@ func ExtractRestoreInvokerInfo(kubeClient kubernetes.Interface, stashClient cs.I
 							in.Phase = v1beta1.RestorePhase(targetStatus.Phase)
 						}
 					}
-					return in
+					return invoker.ObjectMeta.UID, in
 				},
 				metav1.UpdateOptions{},
 			)

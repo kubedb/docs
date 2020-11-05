@@ -106,15 +106,20 @@ func UpdateRedisStatus(
 	ctx context.Context,
 	c cs.KubedbV1alpha2Interface,
 	meta metav1.ObjectMeta,
-	transform func(*api.RedisStatus) *api.RedisStatus,
+	transform func(*api.RedisStatus) (types.UID, *api.RedisStatus),
 	opts metav1.UpdateOptions,
 ) (result *api.Redis, err error) {
 	apply := func(x *api.Redis) *api.Redis {
+		uid, updatedStatus := transform(x.Status.DeepCopy())
+		// Ignore status update when uid does not match
+		if uid != "" && uid != x.UID {
+			return x
+		}
 		return &api.Redis{
 			TypeMeta:   x.TypeMeta,
 			ObjectMeta: x.ObjectMeta,
 			Spec:       x.Spec,
-			Status:     *transform(x.Status.DeepCopy()),
+			Status:     *updatedStatus,
 		}
 	}
 

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package apis
+package invoker
 
 import (
 	"context"
@@ -28,6 +28,7 @@ import (
 
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/reference"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -35,7 +36,7 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-type TargetInfo struct {
+type BackupTargetInfo struct {
 	Task                  v1beta1.TaskRef
 	Target                *v1beta1.BackupTarget
 	RuntimeSettings       ofst.RuntimeSettings
@@ -44,7 +45,7 @@ type TargetInfo struct {
 	Hooks                 *v1beta1.BackupHooks
 }
 
-type Invoker struct {
+type BackupInvoker struct {
 	TypeMeta           metav1.TypeMeta
 	ObjectMeta         metav1.ObjectMeta
 	Labels             map[string]string
@@ -56,7 +57,7 @@ type Invoker struct {
 	RetentionPolicy    v1alpha1.RetentionPolicy
 	RuntimeSettings    ofst.RuntimeSettings
 	BackupHistoryLimit *int32
-	TargetsInfo        []TargetInfo
+	TargetsInfo        []BackupTargetInfo
 	ExecutionOrder     v1beta1.ExecutionOrder
 	Hooks              *v1beta1.BackupHooks
 	ObjectRef          *core.ObjectReference
@@ -71,8 +72,8 @@ type Invoker struct {
 	NextInOrder        func(v1beta1.TargetRef, []v1beta1.BackupTargetStatus) bool
 }
 
-func ExtractBackupInvokerInfo(stashClient cs.Interface, invokerType, invokerName, namespace string) (Invoker, error) {
-	var invoker Invoker
+func ExtractBackupInvokerInfo(stashClient cs.Interface, invokerType, invokerName, namespace string) (BackupInvoker, error) {
+	var invoker BackupInvoker
 	switch invokerType {
 	case v1beta1.ResourceKindBackupBatch:
 		// get BackupBatch
@@ -108,7 +109,7 @@ func ExtractBackupInvokerInfo(stashClient cs.Interface, invokerType, invokerName
 		}
 
 		for _, member := range backupBatch.Spec.Members {
-			invoker.TargetsInfo = append(invoker.TargetsInfo, TargetInfo{
+			invoker.TargetsInfo = append(invoker.TargetsInfo, BackupTargetInfo{
 				Task:                  member.Task,
 				Target:                member.Target,
 				RuntimeSettings:       member.RuntimeSettings,
@@ -155,13 +156,13 @@ func ExtractBackupInvokerInfo(stashClient cs.Interface, invokerType, invokerName
 
 		}
 		invoker.SetCondition = func(target *v1beta1.TargetRef, condition kmapi.Condition) error {
-			_, err = v1beta1_util.UpdateBackupBatchStatus(context.TODO(), stashClient.StashV1beta1(), backupBatch.ObjectMeta, func(in *v1beta1.BackupBatchStatus) *v1beta1.BackupBatchStatus {
+			_, err = v1beta1_util.UpdateBackupBatchStatus(context.TODO(), stashClient.StashV1beta1(), backupBatch.ObjectMeta, func(in *v1beta1.BackupBatchStatus) (types.UID, *v1beta1.BackupBatchStatus) {
 				if target != nil {
 					in.MemberConditions = setMemberCondition(in.MemberConditions, *target, condition)
 				} else {
 					in.Conditions = kmapi.SetCondition(in.Conditions, condition)
 				}
-				return in
+				return backupBatch.UID, in
 			}, metav1.UpdateOptions{})
 			return err
 		}
@@ -220,7 +221,7 @@ func ExtractBackupInvokerInfo(stashClient cs.Interface, invokerType, invokerName
 			return invoker, err
 		}
 
-		invoker.TargetsInfo = append(invoker.TargetsInfo, TargetInfo{
+		invoker.TargetsInfo = append(invoker.TargetsInfo, BackupTargetInfo{
 			Task:                  backupConfig.Spec.Task,
 			Target:                backupConfig.Spec.Target,
 			RuntimeSettings:       backupConfig.Spec.RuntimeSettings,
@@ -258,9 +259,9 @@ func ExtractBackupInvokerInfo(stashClient cs.Interface, invokerType, invokerName
 			return idx, cond, nil
 		}
 		invoker.SetCondition = func(target *v1beta1.TargetRef, condition kmapi.Condition) error {
-			_, err = v1beta1_util.UpdateBackupConfigurationStatus(context.TODO(), stashClient.StashV1beta1(), backupConfig.ObjectMeta, func(in *v1beta1.BackupConfigurationStatus) *v1beta1.BackupConfigurationStatus {
+			_, err = v1beta1_util.UpdateBackupConfigurationStatus(context.TODO(), stashClient.StashV1beta1(), backupConfig.ObjectMeta, func(in *v1beta1.BackupConfigurationStatus) (types.UID, *v1beta1.BackupConfigurationStatus) {
 				in.Conditions = kmapi.SetCondition(in.Conditions, condition)
-				return in
+				return backupConfig.UID, in
 			}, metav1.UpdateOptions{})
 			return err
 		}

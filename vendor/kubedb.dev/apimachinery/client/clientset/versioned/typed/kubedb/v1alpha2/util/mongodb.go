@@ -106,15 +106,20 @@ func UpdateMongoDBStatus(
 	ctx context.Context,
 	c cs.KubedbV1alpha2Interface,
 	meta metav1.ObjectMeta,
-	transform func(*api.MongoDBStatus) *api.MongoDBStatus,
+	transform func(*api.MongoDBStatus) (types.UID, *api.MongoDBStatus),
 	opts metav1.UpdateOptions,
 ) (result *api.MongoDB, err error) {
 	apply := func(x *api.MongoDB) *api.MongoDB {
+		uid, updatedStatus := transform(x.Status.DeepCopy())
+		// Ignore status update when uid does not match
+		if uid != "" && uid != x.UID {
+			return x
+		}
 		return &api.MongoDB{
 			TypeMeta:   x.TypeMeta,
 			ObjectMeta: x.ObjectMeta,
 			Spec:       x.Spec,
-			Status:     *transform(x.Status.DeepCopy()),
+			Status:     *updatedStatus,
 		}
 	}
 
