@@ -17,10 +17,6 @@ aliases:
 
 KubeDB operator by AppsCode
 
-### Synopsis
-
-KubeDB operator by AppsCode
-
 ### Options
 
 ```
