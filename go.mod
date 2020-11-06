@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/appscode/go v0.0.0-20201006035845-a0302ac8e3d3
 	github.com/prometheus-operator/prometheus-operator v0.42.0
-	github.com/spf13/cobra v1.0.0
+	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	go.bytebuilders.dev/license-verifier v0.4.0
 	go.bytebuilders.dev/license-verifier/kubernetes v0.4.0
@@ -14,9 +14,13 @@ require (
 	k8s.io/apimachinery v0.18.9
 	k8s.io/apiserver v0.18.9
 	k8s.io/client-go v0.18.9
-	kmodules.xyz/client-go v0.0.0-20201027113349-01a6d453d836
-	kmodules.xyz/custom-resources v0.0.0-20201008012351-6d8090f759d4
-	kmodules.xyz/webhook-runtime v0.0.0-20200922211931-8337935590de
+	kmodules.xyz/client-go v0.0.0-20201105071625-0b277310b9b8
+	kmodules.xyz/custom-resources v0.0.0-20201105075444-3c6af51b4f79
+	kmodules.xyz/monitoring-agent-api v0.0.0-20201105074044-be7a1044891a // indirect
+	kmodules.xyz/objectstore-api v0.0.0-20201105133858-cbb2af88d50a // indirect
+	kmodules.xyz/offshoot-api v0.0.0-20201105074700-8675f5f686f2 // indirect
+	kmodules.xyz/prober v0.0.0-20201105074402-a243b3a27fd8 // indirect
+	kmodules.xyz/webhook-runtime v0.0.0-20201105073856-2dc7382b88c6
 	kubedb.dev/apimachinery v0.14.1-0.20201030200006-92af33bde233
 	kubedb.dev/elasticsearch v0.14.0
 	kubedb.dev/memcached v0.7.0
