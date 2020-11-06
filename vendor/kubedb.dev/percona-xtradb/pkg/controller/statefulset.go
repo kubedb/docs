@@ -24,9 +24,9 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
-	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
 	"github.com/fatih/structs"
+	"gomodules.xyz/pointer"
+	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -344,7 +344,7 @@ func (c *Controller) ensureStatefulSet(db *api.PerconaXtraDB, opts workloadOptio
 			in = upsertDataVolume(in, db)
 
 			if opts.configSecret != nil {
-				in.Spec.Template = upsertCustomConfig(in.Spec.Template, opts.configSecret, types.Int32(db.Spec.Replicas))
+				in.Spec.Template = upsertCustomConfig(in.Spec.Template, opts.configSecret, pointer.Int32(db.Spec.Replicas))
 			}
 
 			in.Spec.Template.Spec.NodeSelector = pt.Spec.NodeSelector
@@ -484,7 +484,7 @@ func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 		c.Client,
 		statefulSet.Namespace,
 		statefulSet.Spec.Selector,
-		int(types.Int32(statefulSet.Spec.Replicas)),
+		int(pointer.Int32(statefulSet.Spec.Replicas)),
 	)
 	if err != nil {
 		return err

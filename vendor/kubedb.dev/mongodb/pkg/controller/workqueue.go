@@ -25,10 +25,11 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/phase"
 
-	"github.com/appscode/go/log"
+	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/cache"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	v1 "kmodules.xyz/client-go/apps/v1"
@@ -90,10 +91,10 @@ func (c *Controller) runMongoDB(key string) error {
 					context.TODO(),
 					c.DBClient.KubedbV1alpha2(),
 					db.ObjectMeta,
-					func(in *api.MongoDBStatus) *api.MongoDBStatus {
+					func(in *api.MongoDBStatus) (types.UID, *api.MongoDBStatus) {
 						in.Phase = phase
 						in.ObservedGeneration = db.Generation
-						return in
+						return db.UID, in
 					},
 					metav1.UpdateOptions{},
 				)
@@ -112,7 +113,7 @@ func (c *Controller) runMongoDB(key string) error {
 					context.TODO(),
 					c.DBClient.KubedbV1alpha2(),
 					db.ObjectMeta,
-					func(in *api.MongoDBStatus) *api.MongoDBStatus {
+					func(in *api.MongoDBStatus) (types.UID, *api.MongoDBStatus) {
 						in.Conditions = kmapi.SetCondition(in.Conditions,
 							kmapi.Condition{
 								Type:    api.DatabaseProvisioningStarted,
@@ -120,7 +121,7 @@ func (c *Controller) runMongoDB(key string) error {
 								Reason:  api.DatabaseProvisioningStartedSuccessfully,
 								Message: fmt.Sprintf("The KubeDB operator has started the provisioning of MongoDB: %s/%s", db.Namespace, db.Name),
 							})
-						return in
+						return db.UID, in
 					},
 					metav1.UpdateOptions{},
 				)
@@ -151,9 +152,9 @@ func (c *Controller) runMongoDB(key string) error {
 						context.TODO(),
 						c.DBClient.KubedbV1alpha2(),
 						db.ObjectMeta,
-						func(in *api.MongoDBStatus) *api.MongoDBStatus {
+						func(in *api.MongoDBStatus) (types.UID, *api.MongoDBStatus) {
 							in.Conditions = kmapi.RemoveCondition(in.Conditions, api.DatabaseHalted)
-							return in
+							return db.UID, in
 						},
 						metav1.UpdateOptions{},
 					); err != nil {

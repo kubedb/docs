@@ -26,8 +26,8 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
-	"github.com/appscode/go/log"
 	cm_api "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1beta1"
+	"gomodules.xyz/x/log"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

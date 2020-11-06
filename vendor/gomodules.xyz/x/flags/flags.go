@@ -9,9 +9,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/appscode/go/sets"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"gomodules.xyz/sets"
 )
 
 func init() {

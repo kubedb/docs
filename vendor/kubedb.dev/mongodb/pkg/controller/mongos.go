@@ -24,7 +24,7 @@ import (
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
-	"github.com/appscode/go/types"
+	"gomodules.xyz/pointer"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -261,7 +261,7 @@ func mongosInitContainer(
 			Name: initialKeyDirectoryName, // FIXIT: mounted where?
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					DefaultMode: types.Int32P(0400),
+					DefaultMode: pointer.Int32P(0400),
 					SecretName:  db.Spec.KeyFileSecret.Name,
 				},
 			},

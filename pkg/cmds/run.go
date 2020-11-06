@@ -21,8 +21,8 @@ import (
 
 	"kubedb.dev/operator/pkg/cmds/server"
 
-	"github.com/appscode/go/log"
 	"github.com/spf13/cobra"
+	"gomodules.xyz/x/log"
 	"kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/cli"
 )

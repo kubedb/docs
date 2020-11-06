@@ -31,8 +31,8 @@ import (
 	prc "kubedb.dev/proxysql/pkg/controller"
 	rdc "kubedb.dev/redis/pkg/controller"
 
-	"github.com/appscode/go/log"
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	"gomodules.xyz/x/log"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"

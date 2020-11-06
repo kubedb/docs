@@ -26,12 +26,13 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/postgres/pkg/admission"
 
-	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
@@ -51,9 +52,9 @@ func (c *Controller) create(db *api.Postgres) error {
 	}
 
 	if db.Status.Phase == "" {
-		pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+		pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) (types.UID, *api.PostgresStatus) {
 			in.Phase = api.DatabasePhaseProvisioning
-			return in
+			return db.UID, in
 		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
@@ -122,10 +123,10 @@ func (c *Controller) create(db *api.Postgres) error {
 		}
 	}
 
-	pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+	pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) (types.UID, *api.PostgresStatus) {
 		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = db.Generation
-		return in
+		return db.UID, in
 	}, metav1.UpdateOptions{})
 	if err != nil {
 		return err
@@ -192,10 +193,10 @@ func (c *Controller) halt(db *api.Postgres) error {
 		return err
 	}
 	log.Infof("update status of Postgres %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) *api.PostgresStatus {
+	if _, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) (types.UID, *api.PostgresStatus) {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
-		return in
+		return db.UID, in
 	}, metav1.UpdateOptions{}); err != nil {
 		return err
 	}

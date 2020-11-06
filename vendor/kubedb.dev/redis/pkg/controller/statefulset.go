@@ -28,10 +28,10 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	configure_cluster "kubedb.dev/redis/pkg/configure-cluster"
 
-	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
 	"gomodules.xyz/envsubst"
+	"gomodules.xyz/pointer"
+	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -239,7 +239,7 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
 		if db.Spec.Mode == api.RedisModeStandalone {
-			in.Spec.Replicas = types.Int32P(1)
+			in.Spec.Replicas = pointer.Int32P(1)
 		} else if db.Spec.Mode == api.RedisModeCluster {
 			// while creating first time, in.Spec.Replicas is 'nil'
 			if in.Spec.Replicas == nil ||
@@ -247,7 +247,7 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 				*in.Spec.Replicas < *db.Spec.Cluster.Replicas+1 ||
 				// removeSlave is true only after deleting slave node(s) in the stage of configuring redis cluster
 				removeSlave {
-				in.Spec.Replicas = types.Int32P(*db.Spec.Cluster.Replicas + 1)
+				in.Spec.Replicas = pointer.Int32P(*db.Spec.Cluster.Replicas + 1)
 			}
 		}
 		in.Spec.ServiceName = db.GoverningServiceName()
@@ -591,7 +591,7 @@ func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 		c.Client,
 		statefulSet.Namespace,
 		statefulSet.Spec.Selector,
-		int(types.Int32(statefulSet.Spec.Replicas)),
+		int(pointer.Int32(statefulSet.Spec.Replicas)),
 	)
 }
 
@@ -623,7 +623,7 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, db *api.Redis) *apps.Stat
 					VolumeSource: core.VolumeSource{
 						Secret: &core.SecretVolumeSource{
 							SecretName:  db.Spec.ConfigSecret.Name,
-							DefaultMode: types.Int32P(0777),
+							DefaultMode: pointer.Int32P(0777),
 						},
 					},
 				}

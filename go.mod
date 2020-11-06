@@ -3,12 +3,13 @@ module kubedb.dev/operator
 go 1.12
 
 require (
-	github.com/appscode/go v0.0.0-20201006035845-a0302ac8e3d3
 	github.com/prometheus-operator/prometheus-operator v0.42.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
-	go.bytebuilders.dev/license-verifier v0.4.0
-	go.bytebuilders.dev/license-verifier/kubernetes v0.4.0
+	go.bytebuilders.dev/license-verifier v0.4.1
+	go.bytebuilders.dev/license-verifier/kubernetes v0.4.1
+	gomodules.xyz/runtime v0.0.0-20201104200926-d838b09dda8b
+	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
 	k8s.io/api v0.18.9
 	k8s.io/apiextensions-apiserver v0.18.9
 	k8s.io/apimachinery v0.18.9
@@ -18,15 +19,15 @@ require (
 	kmodules.xyz/custom-resources v0.0.0-20201105075444-3c6af51b4f79
 	kmodules.xyz/webhook-runtime v0.0.0-20201105073856-2dc7382b88c6
 	kubedb.dev/apimachinery v0.14.1-0.20201105213239-f74effb9db37
-	kubedb.dev/elasticsearch v0.14.0
-	kubedb.dev/memcached v0.7.0
-	kubedb.dev/mongodb v0.7.0
-	kubedb.dev/mysql v0.7.0
-	kubedb.dev/percona-xtradb v0.1.0
-	kubedb.dev/pgbouncer v0.1.0
-	kubedb.dev/postgres v0.14.0
-	kubedb.dev/proxysql v0.1.0
-	kubedb.dev/redis v0.7.0
+	kubedb.dev/elasticsearch v0.14.1-0.20201106050342-6cad94767635
+	kubedb.dev/memcached v0.7.1-0.20201106071342-d9093f08bd57
+	kubedb.dev/mongodb v0.7.1-0.20201106042716-4e0884524c9f
+	kubedb.dev/mysql v0.7.1-0.20201106052836-99beba223e44
+	kubedb.dev/percona-xtradb v0.1.1-0.20201106073800-5f7253b60ec4
+	kubedb.dev/pgbouncer v0.1.1-0.20201106070418-36a100b62acb
+	kubedb.dev/postgres v0.14.1-0.20201106071410-7db04cddcb25
+	kubedb.dev/proxysql v0.1.1-0.20201106074001-dff77ecf014f
+	kubedb.dev/redis v0.7.1-0.20201106054848-83acb92ad1b1
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d

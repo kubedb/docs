@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"sync/atomic"
 
-	"github.com/appscode/go/log"
-	"github.com/appscode/go/sets"
 	"github.com/fsnotify/fsnotify"
+	"gomodules.xyz/sets"
+	"gomodules.xyz/x/log"
 )
 
 type Watcher struct {

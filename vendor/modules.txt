@@ -22,17 +22,6 @@ github.com/NYTimes/gziphandler
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
-# github.com/appscode/go v0.0.0-20201006035845-a0302ac8e3d3
-github.com/appscode/go/context
-github.com/appscode/go/crypto/rand
-github.com/appscode/go/flags
-github.com/appscode/go/ioutil
-github.com/appscode/go/log
-github.com/appscode/go/log/golog
-github.com/appscode/go/runtime
-github.com/appscode/go/sets
-github.com/appscode/go/types
-github.com/appscode/go/version
 # github.com/appscode/osm v0.15.1
 github.com/appscode/osm/context
 # github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e
@@ -317,10 +306,10 @@ github.com/yudai/gojsondiff
 github.com/yudai/gojsondiff/formatter
 # github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82
 github.com/yudai/golcs
-# go.bytebuilders.dev/license-verifier v0.4.0
+# go.bytebuilders.dev/license-verifier v0.4.1
 go.bytebuilders.dev/license-verifier
 go.bytebuilders.dev/license-verifier/info
-# go.bytebuilders.dev/license-verifier/kubernetes v0.4.0
+# go.bytebuilders.dev/license-verifier/kubernetes v0.4.1
 go.bytebuilders.dev/license-verifier/kubernetes
 go.bytebuilders.dev/license-verifier/kubernetes/apis/licenses
 go.bytebuilders.dev/license-verifier/kubernetes/apis/licenses/v1alpha1
@@ -483,7 +472,7 @@ golang.org/x/tools/internal/packagesinternal
 # golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
-# gomodules.xyz/cert v1.1.2
+# gomodules.xyz/cert v1.2.0
 gomodules.xyz/cert
 # gomodules.xyz/envsubst v0.1.0
 gomodules.xyz/envsubst
@@ -497,6 +486,8 @@ gomodules.xyz/jsonpatch/v2
 gomodules.xyz/password-generator
 # gomodules.xyz/pointer v0.0.0-20201105071923-daf60fa55209
 gomodules.xyz/pointer
+# gomodules.xyz/runtime v0.0.0-20201104200926-d838b09dda8b
+gomodules.xyz/runtime
 # gomodules.xyz/sets v0.0.0-20200930152147-4f4543544799
 gomodules.xyz/sets
 # gomodules.xyz/stow v0.2.4
@@ -512,10 +503,14 @@ gomodules.xyz/version
 gomodules.xyz/x/analytics
 gomodules.xyz/x/arrays
 gomodules.xyz/x/context
+gomodules.xyz/x/crypto/rand
 gomodules.xyz/x/encoding/yaml
+gomodules.xyz/x/flags
+gomodules.xyz/x/ioutil
 gomodules.xyz/x/log
 gomodules.xyz/x/log/golog
 gomodules.xyz/x/strings
+gomodules.xyz/x/version
 # google.golang.org/api v0.26.0 => google.golang.org/api v0.14.0
 google.golang.org/api/googleapi
 google.golang.org/api/googleapi/transport
@@ -1223,7 +1218,7 @@ kubedb.dev/apimachinery/pkg/controller/statefulset
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/phase
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.14.0
+# kubedb.dev/elasticsearch v0.14.1-0.20201106050342-6cad94767635
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
 kubedb.dev/elasticsearch/pkg/distribution
@@ -1235,30 +1230,30 @@ kubedb.dev/elasticsearch/pkg/lib/cert
 kubedb.dev/elasticsearch/pkg/lib/cert/pkcs8
 kubedb.dev/elasticsearch/pkg/lib/user
 kubedb.dev/elasticsearch/pkg/util/go-es
-# kubedb.dev/memcached v0.7.0
+# kubedb.dev/memcached v0.7.1-0.20201106071342-d9093f08bd57
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.7.0
+# kubedb.dev/mongodb v0.7.1-0.20201106042716-4e0884524c9f
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.7.0
+# kubedb.dev/mysql v0.7.1-0.20201106052836-99beba223e44
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.1.0
+# kubedb.dev/percona-xtradb v0.1.1-0.20201106073800-5f7253b60ec4
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
-# kubedb.dev/pg-leader-election v0.2.0
+# kubedb.dev/pg-leader-election v0.2.1-0.20201106053454-41dc2c9f3c56
 kubedb.dev/pg-leader-election/pkg/leader_election
-# kubedb.dev/pgbouncer v0.1.0
+# kubedb.dev/pgbouncer v0.1.1-0.20201106070418-36a100b62acb
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.14.0
+# kubedb.dev/postgres v0.14.1-0.20201106071410-7db04cddcb25
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.1.0
+# kubedb.dev/proxysql v0.1.1-0.20201106074001-dff77ecf014f
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.7.0
+# kubedb.dev/redis v0.7.1-0.20201106054848-83acb92ad1b1
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster
 kubedb.dev/redis/pkg/controller

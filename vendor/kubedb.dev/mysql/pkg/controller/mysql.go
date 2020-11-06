@@ -25,11 +25,12 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/mysql/pkg/admission"
 
-	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -126,7 +127,7 @@ func (c *Controller) create(db *api.MySQL) error {
 					context.TODO(),
 					c.DBClient.KubedbV1alpha2(),
 					db.ObjectMeta,
-					func(in *api.MySQLStatus) *api.MySQLStatus {
+					func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
 						in.Conditions = kmapi.SetCondition(in.Conditions,
 							kmapi.Condition{
 								Type:               api.DatabaseDataRestored,
@@ -135,7 +136,7 @@ func (c *Controller) create(db *api.MySQL) error {
 								ObservedGeneration: db.Generation,
 								Message:            fmt.Sprintf("Data successfully restored into The MySQL databse: %s/%s", db.Namespace, db.Name),
 							})
-						return in
+						return db.UID, in
 					},
 					metav1.UpdateOptions{},
 				)
@@ -183,7 +184,7 @@ func (c *Controller) create(db *api.MySQL) error {
 			context.TODO(),
 			c.DBClient.KubedbV1alpha2(),
 			db.ObjectMeta,
-			func(in *api.MySQLStatus) *api.MySQLStatus {
+			func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
 				in.Conditions = kmapi.SetCondition(in.Conditions,
 					kmapi.Condition{
 						Type:               api.DatabaseProvisioned,
@@ -192,7 +193,7 @@ func (c *Controller) create(db *api.MySQL) error {
 						ObservedGeneration: db.Generation,
 						Message:            fmt.Sprintf("The MySQL: %s/%s is successfully provisioned.", db.Namespace, db.Name),
 					})
-				return in
+				return db.UID, in
 			},
 			metav1.UpdateOptions{},
 		)
@@ -236,7 +237,7 @@ func (c *Controller) halt(db *api.MySQL) error {
 		context.TODO(),
 		c.DBClient.KubedbV1alpha2(),
 		db.ObjectMeta,
-		func(in *api.MySQLStatus) *api.MySQLStatus {
+		func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
 			in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
 				Type:               api.DatabaseHalted,
 				Status:             core.ConditionTrue,
@@ -264,7 +265,7 @@ func (c *Controller) halt(db *api.MySQL) error {
 					ObservedGeneration: db.Generation,
 					Message:            fmt.Sprintf("The MySQL: %s/%s is not ready.", db.Namespace, db.Name),
 				})
-			return in
+			return db.UID, in
 		},
 		metav1.UpdateOptions{}); err != nil {
 		return err

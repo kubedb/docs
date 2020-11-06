@@ -28,8 +28,8 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	"kubedb.dev/pg-leader-election/pkg/leader_election"
 
-	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
+	"gomodules.xyz/pointer"
+	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -61,7 +61,7 @@ func (c *Controller) ensureStatefulSet(
 
 	replicas := int32(1)
 	if db.Spec.Replicas != nil {
-		replicas = types.Int32(db.Spec.Replicas)
+		replicas = pointer.Int32(db.Spec.Replicas)
 	}
 
 	statefulSet, vt, err := app_util.CreateOrPatchStatefulSet(
@@ -73,7 +73,7 @@ func (c *Controller) ensureStatefulSet(
 			in.Annotations = db.Spec.PodTemplate.Controller.Annotations
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 
-			in.Spec.Replicas = types.Int32P(replicas)
+			in.Spec.Replicas = pointer.Int32P(replicas)
 
 			in.Spec.ServiceName = db.GoverningServiceName()
 			in.Spec.Selector = &metav1.LabelSelector{
@@ -109,7 +109,7 @@ func (c *Controller) ensureStatefulSet(
 					ReadinessProbe: db.Spec.PodTemplate.Spec.ReadinessProbe,
 					Lifecycle:      db.Spec.PodTemplate.Spec.Lifecycle,
 					SecurityContext: &core.SecurityContext{
-						Privileged: types.BoolP(false),
+						Privileged: pointer.BoolP(false),
 						Capabilities: &core.Capabilities{
 							Add: []core.Capability{"IPC_LOCK", "SYS_RESOURCE"},
 						},
@@ -197,7 +197,7 @@ func (c *Controller) CheckStatefulSetPodStatus(statefulSet *apps.StatefulSet) er
 		c.Client,
 		statefulSet.Namespace,
 		statefulSet.Spec.Selector,
-		int(types.Int32(statefulSet.Spec.Replicas)),
+		int(pointer.Int32(statefulSet.Spec.Replicas)),
 	)
 	if err != nil {
 		return err

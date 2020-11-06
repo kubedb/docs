@@ -28,6 +28,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kmapi "kmodules.xyz/client-go/api/v1"
 )
@@ -60,7 +61,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 					context.TODO(),
 					c.DBClient.KubedbV1alpha2(),
 					db.ObjectMeta,
-					func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+					func(in *api.ElasticsearchStatus) (types.UID, *api.ElasticsearchStatus) {
 						in.Conditions = kmapi.SetCondition(in.Conditions,
 							kmapi.Condition{
 								Type:               api.DatabaseAcceptingConnection,
@@ -77,7 +78,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 								ObservedGeneration: db.Generation,
 								Message:            fmt.Sprintf("The Elasticsearch: %s/%s is not ready.", db.Namespace, db.Name),
 							})
-						return in
+						return db.UID, in
 					},
 					metav1.UpdateOptions{},
 				)
@@ -96,7 +97,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 				context.TODO(),
 				c.DBClient.KubedbV1alpha2(),
 				db.ObjectMeta,
-				func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+				func(in *api.ElasticsearchStatus) (types.UID, *api.ElasticsearchStatus) {
 					in.Conditions = kmapi.SetCondition(in.Conditions,
 						kmapi.Condition{
 							Type:               api.DatabaseAcceptingConnection,
@@ -105,7 +106,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 							ObservedGeneration: db.Generation,
 							Message:            fmt.Sprintf("The Elasticsearch: %s/%s is accepting client requests.", db.Namespace, db.Name),
 						})
-					return in
+					return db.UID, in
 				},
 				metav1.UpdateOptions{},
 			)
@@ -135,7 +136,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 					context.TODO(),
 					c.DBClient.KubedbV1alpha2(),
 					db.ObjectMeta,
-					func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+					func(in *api.ElasticsearchStatus) (types.UID, *api.ElasticsearchStatus) {
 						in.Conditions = kmapi.SetCondition(in.Conditions,
 							kmapi.Condition{
 								Type:               api.DatabaseReady,
@@ -144,7 +145,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 								ObservedGeneration: db.Generation,
 								Message:            fmt.Sprintf("The Elasticsearch: %s/%s is ready.", db.Namespace, db.Name),
 							})
-						return in
+						return db.UID, in
 					},
 					metav1.UpdateOptions{},
 				)

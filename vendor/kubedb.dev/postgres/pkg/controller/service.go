@@ -22,8 +22,8 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
-	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
+	"gomodules.xyz/pointer"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -94,7 +94,7 @@ func (c *Controller) ensureService(db *api.Postgres) (kutil.VerbType, error) {
 	vt2 := kutil.VerbUnchanged
 	replicas := int32(1)
 	if db.Spec.Replicas != nil {
-		replicas = types.Int32(db.Spec.Replicas)
+		replicas = pointer.Int32(db.Spec.Replicas)
 	}
 	if replicas > 1 {
 		vt2, err = c.ensureStandbyService(db)

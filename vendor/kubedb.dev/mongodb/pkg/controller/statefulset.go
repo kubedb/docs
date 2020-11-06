@@ -27,11 +27,11 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
-	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
 	"github.com/fatih/structs"
 	"github.com/pkg/errors"
 	"gomodules.xyz/envsubst"
+	"gomodules.xyz/pointer"
+	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -297,7 +297,7 @@ func (c *Controller) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kuti
 				Name: initialKeyDirectoryName, // FIXIT: mounted where?
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
-						DefaultMode: types.Int32P(0400),
+						DefaultMode: pointer.Int32P(0400),
 						SecretName:  db.Spec.KeyFileSecret.Name,
 					},
 				},
@@ -504,7 +504,7 @@ func (c *Controller) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 			Name: initialKeyDirectoryName, // FIXIT: mounted where?
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					DefaultMode: types.Int32P(0400),
+					DefaultMode: pointer.Int32P(0400),
 					SecretName:  db.Spec.KeyFileSecret.Name,
 				},
 			},
@@ -714,7 +714,7 @@ func (c *Controller) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 				Name: initialKeyDirectoryName, // FIXIT: mounted where?
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
-						DefaultMode: types.Int32P(0400),
+						DefaultMode: pointer.Int32P(0400),
 						SecretName:  db.Spec.KeyFileSecret.Name,
 					},
 				},
@@ -1029,7 +1029,7 @@ func installInitContainer(
 				Name: ClientCertDirectoryName,
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
-						DefaultMode: types.Int32P(0400),
+						DefaultMode: pointer.Int32P(0400),
 						SecretName:  db.MustCertSecretName(api.MongoDBClientCert, ""),
 					},
 				},
@@ -1038,7 +1038,7 @@ func installInitContainer(
 				Name: ServerCertDirectoryName,
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
-						DefaultMode: types.Int32P(0400),
+						DefaultMode: pointer.Int32P(0400),
 						SecretName:  db.MustCertSecretName(api.MongoDBServerCert, stsName),
 					},
 				},
@@ -1064,7 +1064,7 @@ func installInitContainer(
 			Name: initialKeyDirectoryName,
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					DefaultMode: types.Int32P(0400),
+					DefaultMode: pointer.Int32P(0400),
 					SecretName:  db.Spec.KeyFileSecret.Name,
 				},
 			},

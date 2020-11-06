@@ -25,11 +25,12 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/mongodb/pkg/admission"
 
-	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
@@ -199,7 +200,7 @@ func (c *Controller) create(db *api.MongoDB) error {
 			context.TODO(),
 			c.DBClient.KubedbV1alpha2(),
 			db.ObjectMeta,
-			func(in *api.MongoDBStatus) *api.MongoDBStatus {
+			func(in *api.MongoDBStatus) (types.UID, *api.MongoDBStatus) {
 				in.Conditions = kmapi.SetCondition(in.Conditions,
 					kmapi.Condition{
 						Type:               api.DatabaseProvisioned,
@@ -208,7 +209,7 @@ func (c *Controller) create(db *api.MongoDB) error {
 						ObservedGeneration: db.Generation,
 						Message:            fmt.Sprintf("The MongoDB: %s/%s is successfully provisioned.", db.Namespace, db.Name),
 					})
-				return in
+				return db.UID, in
 			},
 			metav1.UpdateOptions{},
 		)
@@ -248,7 +249,7 @@ func (c *Controller) halt(db *api.MongoDB) error {
 		return err
 	}
 	log.Infof("update status of MongoDB %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MongoDBStatus) *api.MongoDBStatus {
+	if _, err := util.UpdateMongoDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MongoDBStatus) (types.UID, *api.MongoDBStatus) {
 		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
 			Type:               api.DatabaseHalted,
 			Status:             core.ConditionTrue,
@@ -278,7 +279,7 @@ func (c *Controller) halt(db *api.MongoDB) error {
 				Message:            fmt.Sprintf("The MongoDB: %s/%s is not ready.", db.Namespace, db.Name),
 			})
 
-		return in
+		return db.UID, in
 	}, metav1.UpdateOptions{}); err != nil {
 		return err
 	}

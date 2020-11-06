@@ -10,8 +10,8 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/appscode/go/sets"
 	"github.com/golang/glog"
+	"gomodules.xyz/sets"
 )
 
 const (

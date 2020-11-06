@@ -23,9 +23,9 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
-	"github.com/appscode/go/types"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"gomodules.xyz/pointer"
 	admission "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -135,7 +135,7 @@ func setDefaultValues(mysql *api.MySQL) (runtime.Object, error) {
 		}
 
 		if mysql.Spec.Topology.Group.BaseServerID == nil {
-			mysql.Spec.Topology.Group.BaseServerID = types.Int64P(api.MySQLDefaultBaseServerID)
+			mysql.Spec.Topology.Group.BaseServerID = pointer.Int64P(api.MySQLDefaultBaseServerID)
 		}
 	}
 
