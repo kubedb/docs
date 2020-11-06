@@ -22,7 +22,7 @@ import (
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
-	"github.com/appscode/go/types"
+	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -43,7 +43,7 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 	}
 
 	// If replicas is not provided, default to 1.
-	replicas := types.Int32P(1)
+	replicas := pointer.Int32P(1)
 	if masterNode.Replicas != nil {
 		replicas = masterNode.Replicas
 	}
@@ -179,7 +179,7 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 		},
 	}
 
-	replicas := types.Int32P(1)
+	replicas := pointer.Int32P(1)
 	if dataNode.Replicas != nil {
 		replicas = dataNode.Replicas
 	}
@@ -251,7 +251,7 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 		},
 	}
 
-	replicas := types.Int32P(1)
+	replicas := pointer.Int32P(1)
 	if ingestNode.Replicas != nil {
 		replicas = ingestNode.Replicas
 	}
@@ -271,7 +271,7 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 	}
 
 	// If replicas is not provided, default to 1.
-	replicas := types.Int32P(1)
+	replicas := pointer.Int32P(1)
 	if combinedNode.Replicas != nil {
 		replicas = combinedNode.Replicas
 	}

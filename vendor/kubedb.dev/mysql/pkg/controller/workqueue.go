@@ -25,9 +25,10 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/phase"
 
-	"github.com/appscode/go/log"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/cache"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -85,10 +86,10 @@ func (c *Controller) runMySQL(key string) error {
 					context.TODO(),
 					c.DBClient.KubedbV1alpha2(),
 					db.ObjectMeta,
-					func(in *api.MySQLStatus) *api.MySQLStatus {
+					func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
 						in.Phase = phase
 						in.ObservedGeneration = db.Generation
-						return in
+						return db.UID, in
 					},
 					metav1.UpdateOptions{},
 				)
@@ -107,7 +108,7 @@ func (c *Controller) runMySQL(key string) error {
 					context.TODO(),
 					c.DBClient.KubedbV1alpha2(),
 					db.ObjectMeta,
-					func(in *api.MySQLStatus) *api.MySQLStatus {
+					func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
 						in.Conditions = kmapi.SetCondition(in.Conditions,
 							kmapi.Condition{
 								Type:    api.DatabaseProvisioningStarted,
@@ -115,7 +116,7 @@ func (c *Controller) runMySQL(key string) error {
 								Reason:  api.DatabaseProvisioningStartedSuccessfully,
 								Message: fmt.Sprintf("The KubeDB operator has started the provisioning of MySQL: %s/%s", db.Namespace, db.Name),
 							})
-						return in
+						return db.UID, in
 					},
 					metav1.UpdateOptions{},
 				)
@@ -146,9 +147,9 @@ func (c *Controller) runMySQL(key string) error {
 						context.TODO(),
 						c.DBClient.KubedbV1alpha2(),
 						db.ObjectMeta,
-						func(in *api.MySQLStatus) *api.MySQLStatus {
+						func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
 							in.Conditions = kmapi.RemoveCondition(in.Conditions, api.DatabaseHalted)
-							return in
+							return db.UID, in
 						},
 						metav1.UpdateOptions{},
 					); err != nil {

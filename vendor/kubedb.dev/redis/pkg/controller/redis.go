@@ -25,11 +25,12 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/redis/pkg/admission"
 
-	"github.com/appscode/go/log"
 	"github.com/pkg/errors"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
@@ -48,9 +49,9 @@ func (c *Controller) create(db *api.Redis) error {
 	}
 
 	if db.Status.Phase == "" {
-		rd, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+		rd, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisStatus) (types.UID, *api.RedisStatus) {
 			in.Phase = api.DatabasePhaseProvisioning
-			return in
+			return db.UID, in
 		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
@@ -145,10 +146,10 @@ func (c *Controller) create(db *api.Redis) error {
 		}
 	}
 
-	rd, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+	rd, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisStatus) (types.UID, *api.RedisStatus) {
 		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = db.Generation
-		return in
+		return db.UID, in
 	}, metav1.UpdateOptions{})
 	if err != nil {
 		c.Recorder.Eventf(
@@ -201,10 +202,10 @@ func (c *Controller) halt(db *api.Redis) error {
 		return err
 	}
 	log.Infof("update status of Redis %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisStatus) *api.RedisStatus {
+	if _, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisStatus) (types.UID, *api.RedisStatus) {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
-		return in
+		return db.UID, in
 	}, metav1.UpdateOptions{}); err != nil {
 		return err
 	}

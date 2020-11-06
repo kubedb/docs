@@ -26,9 +26,10 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/memcached/pkg/admission"
 
-	"github.com/appscode/go/log"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	kutil "kmodules.xyz/client-go"
 )
 
@@ -45,9 +46,9 @@ func (c *Controller) create(db *api.Memcached) error {
 	}
 
 	if db.Status.Phase == "" {
-		mc, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+		mc, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MemcachedStatus) (types.UID, *api.MemcachedStatus) {
 			in.Phase = api.DatabasePhaseProvisioning
-			return in
+			return db.UID, in
 		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
@@ -93,10 +94,10 @@ func (c *Controller) create(db *api.Memcached) error {
 		)
 	}
 
-	mc, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+	mc, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MemcachedStatus) (types.UID, *api.MemcachedStatus) {
 		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = db.Generation
-		return in
+		return db.UID, in
 	}, metav1.UpdateOptions{})
 	if err != nil {
 		return err
@@ -148,10 +149,10 @@ func (c *Controller) halt(db *api.Memcached) error {
 		return err
 	}
 	log.Infof("update status of Memcached %v/%v to Halted.", db.Namespace, db.Name)
-	if _, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MemcachedStatus) *api.MemcachedStatus {
+	if _, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MemcachedStatus) (types.UID, *api.MemcachedStatus) {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
-		return in
+		return db.UID, in
 	}, metav1.UpdateOptions{}); err != nil {
 		return err
 	}

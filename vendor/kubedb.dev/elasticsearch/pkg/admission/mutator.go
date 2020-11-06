@@ -24,8 +24,8 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
-	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
+	"gomodules.xyz/pointer"
 	admission "k8s.io/api/admission/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -127,19 +127,19 @@ func setDefaultValues(extClient cs.Interface, db *api.Elasticsearch, clusterTopo
 	topology := db.Spec.Topology
 	if topology != nil {
 		if topology.Ingest.Replicas == nil {
-			topology.Ingest.Replicas = types.Int32P(1)
+			topology.Ingest.Replicas = pointer.Int32P(1)
 		}
 
 		if topology.Master.Replicas == nil {
-			topology.Master.Replicas = types.Int32P(1)
+			topology.Master.Replicas = pointer.Int32P(1)
 		}
 
 		if topology.Data.Replicas == nil {
-			topology.Data.Replicas = types.Int32P(1)
+			topology.Data.Replicas = pointer.Int32P(1)
 		}
 	} else {
 		if db.Spec.Replicas == nil {
-			db.Spec.Replicas = types.Int32P(1)
+			db.Spec.Replicas = pointer.Int32P(1)
 		}
 	}
 

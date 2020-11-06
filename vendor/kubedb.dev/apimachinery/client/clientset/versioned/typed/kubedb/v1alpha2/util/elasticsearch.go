@@ -106,15 +106,20 @@ func UpdateElasticsearchStatus(
 	ctx context.Context,
 	c cs.KubedbV1alpha2Interface,
 	meta metav1.ObjectMeta,
-	transform func(*api.ElasticsearchStatus) *api.ElasticsearchStatus,
+	transform func(*api.ElasticsearchStatus) (types.UID, *api.ElasticsearchStatus),
 	opts metav1.UpdateOptions,
 ) (result *api.Elasticsearch, err error) {
 	apply := func(x *api.Elasticsearch) *api.Elasticsearch {
+		uid, updatedStatus := transform(x.Status.DeepCopy())
+		// Ignore status update when uid does not match
+		if uid != "" && uid != x.UID {
+			return x
+		}
 		return &api.Elasticsearch{
 			TypeMeta:   x.TypeMeta,
 			ObjectMeta: x.ObjectMeta,
 			Spec:       x.Spec,
-			Status:     *transform(x.Status.DeepCopy()),
+			Status:     *updatedStatus,
 		}
 	}
 

@@ -33,6 +33,7 @@ import (
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kmapi "kmodules.xyz/client-go/api/v1"
 )
@@ -70,7 +71,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 					context.TODO(),
 					c.DBClient.KubedbV1alpha2(),
 					db.ObjectMeta,
-					func(in *api.MySQLStatus) *api.MySQLStatus {
+					func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
 						in.Conditions = kmapi.SetCondition(in.Conditions,
 							kmapi.Condition{
 								Type:               api.DatabaseAcceptingConnection,
@@ -79,7 +80,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 								ObservedGeneration: db.Generation,
 								Message:            fmt.Sprintf("The MySQL: %s/%s is not accepting client requests, reason: %s", db.Namespace, db.Name, err.Error()),
 							})
-						return in
+						return db.UID, in
 					},
 					metav1.UpdateOptions{},
 				)
@@ -98,7 +99,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 				context.TODO(),
 				c.DBClient.KubedbV1alpha2(),
 				db.ObjectMeta,
-				func(in *api.MySQLStatus) *api.MySQLStatus {
+				func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
 					in.Conditions = kmapi.SetCondition(in.Conditions,
 						kmapi.Condition{
 							Type:               api.DatabaseAcceptingConnection,
@@ -107,7 +108,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 							ObservedGeneration: db.Generation,
 							Message:            fmt.Sprintf("The MySQL: %s/%s is accepting client requests.", db.Namespace, db.Name),
 						})
-					return in
+					return db.UID, in
 				},
 				metav1.UpdateOptions{},
 			)
@@ -140,7 +141,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 				context.TODO(),
 				c.DBClient.KubedbV1alpha2(),
 				db.ObjectMeta,
-				func(in *api.MySQLStatus) *api.MySQLStatus {
+				func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
 					in.Conditions = kmapi.SetCondition(in.Conditions,
 						kmapi.Condition{
 							Type:               api.DatabaseReady,
@@ -149,7 +150,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 							ObservedGeneration: db.Generation,
 							Message:            fmt.Sprintf("The MySQL: %s/%s is ready.", db.Namespace, db.Name),
 						})
-					return in
+					return db.UID, in
 				},
 				metav1.UpdateOptions{},
 			)

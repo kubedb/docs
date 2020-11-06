@@ -25,9 +25,10 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/pgbouncer/pkg/admission"
 
-	"github.com/appscode/go/log"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	kutil "kmodules.xyz/client-go"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
@@ -164,9 +165,9 @@ func (c *Controller) manageValidation(db *api.PgBouncer) error {
 
 func (c *Controller) manageInitialPhase(db *api.PgBouncer) error {
 	if db.Status.Phase == "" {
-		pg, err := util.UpdatePgBouncerStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
+		pg, err := util.UpdatePgBouncerStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PgBouncerStatus) (types.UID, *api.PgBouncerStatus) {
 			in.Phase = api.DatabasePhaseProvisioning
-			return in
+			return db.UID, in
 		}, metav1.UpdateOptions{})
 		if err != nil {
 			return err
@@ -181,10 +182,10 @@ func (c *Controller) manageFinalPhase(db *api.PgBouncer) error {
 		return nil
 	}
 
-	pg, err := util.UpdatePgBouncerStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PgBouncerStatus) *api.PgBouncerStatus {
+	pg, err := util.UpdatePgBouncerStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PgBouncerStatus) (types.UID, *api.PgBouncerStatus) {
 		in.Phase = api.DatabasePhaseReady
 		in.ObservedGeneration = db.Generation
-		return in
+		return db.UID, in
 	}, metav1.UpdateOptions{})
 	if err != nil {
 		log.Infoln(err)

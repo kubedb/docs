@@ -26,12 +26,13 @@ import (
 	validator "kubedb.dev/elasticsearch/pkg/admission"
 	"kubedb.dev/elasticsearch/pkg/distribution"
 
-	"github.com/appscode/go/log"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
@@ -150,7 +151,7 @@ func (c *Controller) create(db *api.Elasticsearch) error {
 			context.TODO(),
 			c.DBClient.KubedbV1alpha2(),
 			db.ObjectMeta,
-			func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+			func(in *api.ElasticsearchStatus) (types.UID, *api.ElasticsearchStatus) {
 				in.Conditions = kmapi.SetCondition(in.Conditions,
 					kmapi.Condition{
 						Type:               api.DatabaseProvisioned,
@@ -159,7 +160,7 @@ func (c *Controller) create(db *api.Elasticsearch) error {
 						ObservedGeneration: db.Generation,
 						Message:            fmt.Sprintf("The Elasticsearch: %s/%s is successfully provisioned.", db.Namespace, db.Name),
 					})
-				return in
+				return db.UID, in
 			},
 			metav1.UpdateOptions{},
 		)
@@ -288,7 +289,7 @@ func (c *Controller) halt(db *api.Elasticsearch) error {
 		context.TODO(),
 		c.DBClient.KubedbV1alpha2(),
 		db.ObjectMeta,
-		func(in *api.ElasticsearchStatus) *api.ElasticsearchStatus {
+		func(in *api.ElasticsearchStatus) (types.UID, *api.ElasticsearchStatus) {
 			in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
 				Type:               api.DatabaseHalted,
 				Status:             core.ConditionTrue,
@@ -316,7 +317,7 @@ func (c *Controller) halt(db *api.Elasticsearch) error {
 					ObservedGeneration: db.Generation,
 					Message:            fmt.Sprintf("The Elasticsearch: %s/%s is not ready.", db.Namespace, db.Name),
 				})
-			return in
+			return db.UID, in
 		},
 		metav1.UpdateOptions{},
 	); err != nil {

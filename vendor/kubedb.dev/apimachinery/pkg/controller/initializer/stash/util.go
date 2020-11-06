@@ -26,8 +26,8 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/scheme"
 
-	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
+	"gomodules.xyz/pointer"
+	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,46 +43,47 @@ import (
 	sapis "stash.appscode.dev/apimachinery/apis"
 	"stash.appscode.dev/apimachinery/apis/stash"
 	"stash.appscode.dev/apimachinery/apis/stash/v1beta1"
+	"stash.appscode.dev/apimachinery/pkg/invoker"
 )
 
-func (c *Controller) extractRestoreInfo(invoker interface{}) (*restoreInfo, error) {
+func (c *Controller) extractRestoreInfo(inv interface{}) (*restoreInfo, error) {
 	ri := &restoreInfo{
 		invoker: core.TypedLocalObjectReference{
-			APIGroup: types.StringP(stash.GroupName),
+			APIGroup: pointer.StringP(stash.GroupName),
 		},
 		do: dmcond.DynamicOptions{
 			Client: c.DynamicClient,
 		},
 	}
 	var err error
-	switch invoker := invoker.(type) {
+	switch inv := inv.(type) {
 	case *v1beta1.RestoreSession:
 		// invoker information
-		ri.invoker.Kind = invoker.Kind
-		ri.invoker.Name = invoker.Name
+		ri.invoker.Kind = inv.Kind
+		ri.invoker.Name = inv.Name
 		// target information
-		ri.target = invoker.Spec.Target
+		ri.target = inv.Spec.Target
 		// restore status
-		ri.phase = invoker.Status.Phase
+		ri.phase = inv.Status.Phase
 		// database information
-		ri.do.Namespace = invoker.Namespace
-		ri.do.Kind = invoker.Labels[api.LabelDatabaseKind]
+		ri.do.Namespace = inv.Namespace
+		ri.do.Kind = inv.Labels[api.LabelDatabaseKind]
 	case *v1beta1.RestoreBatch:
 		// invoker information
-		ri.invoker.Kind = invoker.Kind
-		ri.invoker.Name = invoker.Name
+		ri.invoker.Kind = inv.Kind
+		ri.invoker.Name = inv.Name
 		// target information
 		// RestoreBatch can have multiple targets. In this case, only the database related target'c phase does matter.
-		ri.target, err = c.identifyTarget(invoker.Spec.Members, ri.do.Namespace)
+		ri.target, err = c.identifyTarget(inv.Spec.Members, ri.do.Namespace)
 		if err != nil {
 			return ri, err
 		}
 		// restore status
 		// RestoreBatch can have multiple targets. In this case, finding the appropriate target is necessary.
-		ri.phase = getTargetPhase(invoker.Status, ri.target)
+		ri.phase = getTargetPhase(inv.Status, ri.target)
 		// database information
-		ri.do.Namespace = invoker.Namespace
-		ri.do.Kind = invoker.Labels[api.LabelDatabaseKind]
+		ri.do.Namespace = inv.Namespace
+		ri.do.Kind = inv.Labels[api.LabelDatabaseKind]
 	default:
 		return ri, fmt.Errorf("unknown restore invoker type")
 	}
@@ -199,7 +200,7 @@ func (c *Controller) identifyTarget(members []v1beta1.RestoreTargetSpec, namespa
 func getTargetPhase(status v1beta1.RestoreBatchStatus, target *v1beta1.RestoreTarget) v1beta1.RestorePhase {
 	if target != nil {
 		for _, m := range status.Members {
-			if sapis.TargetMatched(m.Ref, target.Ref) {
+			if invoker.TargetMatched(m.Ref, target.Ref) {
 				return v1beta1.RestorePhase(m.Phase)
 			}
 		}

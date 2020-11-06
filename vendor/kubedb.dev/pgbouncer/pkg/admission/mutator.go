@@ -23,7 +23,7 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
-	"github.com/appscode/go/types"
+	"gomodules.xyz/pointer"
 	admission "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -111,14 +111,14 @@ func (a *PgBouncerMutator) Admit(req *admission.AdmissionRequest) *admission.Adm
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a PgBouncer database
 func setDefaultValues(db *api.PgBouncer) runtime.Object {
 	if db.Spec.Replicas == nil {
-		db.Spec.Replicas = types.Int32P(1)
+		db.Spec.Replicas = pointer.Int32P(1)
 	}
 
 	//TODO: Make sure an image path is set
 
 	if db.Spec.ConnectionPool != nil {
 		if db.Spec.ConnectionPool.Port == nil {
-			db.Spec.ConnectionPool.Port = types.Int32P(api.PgBouncerDatabasePort)
+			db.Spec.ConnectionPool.Port = pointer.Int32P(api.PgBouncerDatabasePort)
 		}
 		if db.Spec.ConnectionPool.PoolMode == "" {
 			db.Spec.ConnectionPool.PoolMode = defaultPoolMode

@@ -23,8 +23,8 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
-	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
+	"gomodules.xyz/pointer"
 	admission "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -120,7 +120,7 @@ func setDefaultValues(postgres *api.Postgres) (runtime.Object, error) {
 	}
 
 	if postgres.Spec.Replicas == nil {
-		postgres.Spec.Replicas = types.Int32P(1)
+		postgres.Spec.Replicas = pointer.Int32P(1)
 	}
 	postgres.SetDefaults()
 

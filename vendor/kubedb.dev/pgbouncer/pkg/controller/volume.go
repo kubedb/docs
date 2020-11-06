@@ -21,7 +21,7 @@ import (
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
-	"github.com/appscode/go/types"
+	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
 )
 
@@ -51,7 +51,7 @@ func (c *Controller) getVolumeAndVolumeMountForCertificate(db *api.PgBouncer, al
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
 				SecretName:  secretName,
-				DefaultMode: types.Int32P(0600),
+				DefaultMode: pointer.Int32P(0600),
 			},
 		},
 	}

@@ -19,7 +19,7 @@ package controller
 import (
 	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
 
-	"github.com/appscode/go/log"
+	"gomodules.xyz/x/log"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 )

@@ -25,10 +25,10 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	certlib "kubedb.dev/elasticsearch/pkg/lib/cert"
 
-	"github.com/appscode/go/log"
-	"github.com/appscode/go/types"
 	"github.com/pkg/errors"
 	"gomodules.xyz/envsubst"
+	"gomodules.xyz/pointer"
+	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -152,7 +152,7 @@ func (es *Elasticsearch) ensureStatefulSet(
 
 		if in.Spec.Template.Spec.SecurityContext == nil {
 			in.Spec.Template.Spec.SecurityContext = &core.PodSecurityContext{
-				FSGroup: types.Int64P(1000),
+				FSGroup: pointer.Int64P(1000),
 			}
 		}
 
@@ -427,7 +427,7 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 			// The DBA controller uses the restPort to check health of a node.
 			Ports: []core.ContainerPort{defaultRestPort, defaultTransportPort, defaultMetricsPort},
 			SecurityContext: &core.SecurityContext{
-				Privileged: types.BoolP(false),
+				Privileged: pointer.BoolP(false),
 				Capabilities: &core.Capabilities{
 					Add: []core.Capability{"IPC_LOCK", "SYS_RESOURCE"},
 				},
@@ -465,7 +465,7 @@ func (es *Elasticsearch) getInitContainers(esNode *api.ElasticsearchNode, envLis
 			ImagePullPolicy: core.PullIfNotPresent,
 			Command:         []string{"sysctl", "-w", "vm.max_map_count=262144"},
 			SecurityContext: &core.SecurityContext{
-				Privileged: types.BoolP(true),
+				Privileged: pointer.BoolP(true),
 			},
 			Resources: esNode.Resources,
 		},
@@ -604,11 +604,11 @@ func parseAffinityTemplate(affinity *core.Affinity, nodeRole string) (*core.Affi
 func (es *Elasticsearch) getInitialMasterNodes() string {
 	var value string
 	stsName := es.db.OffshootName()
-	replicas := types.Int32(es.db.Spec.Replicas)
+	replicas := pointer.Int32(es.db.Spec.Replicas)
 	if es.db.Spec.Topology != nil {
 		// If replicas is not provided, default to 1
 		if es.db.Spec.Topology.Master.Replicas != nil {
-			replicas = types.Int32(es.db.Spec.Topology.Master.Replicas)
+			replicas = pointer.Int32(es.db.Spec.Topology.Master.Replicas)
 		} else {
 			replicas = 1
 		}

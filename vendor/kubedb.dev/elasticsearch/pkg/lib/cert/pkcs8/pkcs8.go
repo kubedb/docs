@@ -33,9 +33,9 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	certlib "kubedb.dev/elasticsearch/pkg/lib/cert"
 
-	"github.com/appscode/go/ioutil"
 	"github.com/pkg/errors"
 	"gomodules.xyz/cert"
+	"gomodules.xyz/x/ioutil"
 )
 
 // Creates pkcs8 encoded certificates in pem format.

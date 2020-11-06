@@ -22,8 +22,8 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	kubedbinformers "kubedb.dev/apimachinery/client/informers/externalversions"
 
-	"github.com/appscode/go/log/golog"
 	cmInformers "github.com/jetstack/cert-manager/pkg/client/informers/externalversions"
+	"gomodules.xyz/x/log/golog"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	externalInformers "k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions"
 	"k8s.io/client-go/dynamic"

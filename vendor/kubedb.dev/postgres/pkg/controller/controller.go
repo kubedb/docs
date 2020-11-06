@@ -28,11 +28,12 @@ import (
 	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
-	"github.com/appscode/go/log"
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -183,10 +184,10 @@ func (c *Controller) pushFailureEvent(db *api.Postgres, reason string) {
 		context.TODO(),
 		c.DBClient.KubedbV1alpha2(),
 		db.ObjectMeta,
-		func(in *api.PostgresStatus) *api.PostgresStatus {
+		func(in *api.PostgresStatus) (types.UID, *api.PostgresStatus) {
 			in.Phase = api.DatabasePhaseNotReady
 			in.ObservedGeneration = db.Generation
-			return in
+			return db.UID, in
 		},
 		metav1.UpdateOptions{},
 	)

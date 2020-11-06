@@ -25,13 +25,14 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
-	"github.com/appscode/go/log"
 	"github.com/golang/glog"
 	"go.mongodb.org/mongo-driver/mongo"
 	mgoptions "go.mongodb.org/mongo-driver/mongo/options"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	"kmodules.xyz/client-go/tools/certholder"
@@ -117,7 +118,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 				context.TODO(),
 				c.DBClient.KubedbV1alpha2(),
 				db.ObjectMeta,
-				func(in *api.MongoDBStatus) *api.MongoDBStatus {
+				func(in *api.MongoDBStatus) (types.UID, *api.MongoDBStatus) {
 					in.Conditions = kmapi.SetCondition(in.Conditions,
 						kmapi.Condition{
 							Type:               api.DatabaseAcceptingConnection,
@@ -126,7 +127,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 							ObservedGeneration: db.Generation,
 							Message:            fmt.Sprintf("The MongoDB: %s/%s is accepting client requests.", db.Namespace, db.Name),
 						})
-					return in
+					return db.UID, in
 				},
 				metav1.UpdateOptions{},
 			)
@@ -265,7 +266,7 @@ func (c *Controller) updateErrorAcceptingConnections(db *api.MongoDB, connection
 		context.TODO(),
 		c.DBClient.KubedbV1alpha2(),
 		db.ObjectMeta,
-		func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		func(in *api.MongoDBStatus) (types.UID, *api.MongoDBStatus) {
 			in.Conditions = kmapi.SetCondition(in.Conditions,
 				kmapi.Condition{
 					Type:               api.DatabaseAcceptingConnection,
@@ -282,7 +283,7 @@ func (c *Controller) updateErrorAcceptingConnections(db *api.MongoDB, connection
 					ObservedGeneration: db.Generation,
 					Message:            fmt.Sprintf("The MongoDB: %s/%s is not ready.", db.Namespace, db.Name),
 				})
-			return in
+			return db.UID, in
 		},
 		metav1.UpdateOptions{},
 	)
@@ -296,7 +297,7 @@ func (c *Controller) updateDatabaseReady(db *api.MongoDB) {
 		context.TODO(),
 		c.DBClient.KubedbV1alpha2(),
 		db.ObjectMeta,
-		func(in *api.MongoDBStatus) *api.MongoDBStatus {
+		func(in *api.MongoDBStatus) (types.UID, *api.MongoDBStatus) {
 			in.Conditions = kmapi.SetCondition(in.Conditions,
 				kmapi.Condition{
 					Type:               api.DatabaseReady,
@@ -305,7 +306,7 @@ func (c *Controller) updateDatabaseReady(db *api.MongoDB) {
 					ObservedGeneration: db.Generation,
 					Message:            fmt.Sprintf("The MongoDB: %s/%s is ready.", db.Namespace, db.Name),
 				})
-			return in
+			return db.UID, in
 		},
 		metav1.UpdateOptions{},
 	)

@@ -25,10 +25,11 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/proxysql/pkg/admission"
 
-	"github.com/appscode/go/log"
+	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	kutil "kmodules.xyz/client-go"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
@@ -50,9 +51,9 @@ func (c *Controller) create(db *api.ProxySQL) error {
 			context.TODO(),
 			c.DBClient.KubedbV1alpha2(),
 			db.ObjectMeta,
-			func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
+			func(in *api.ProxySQLStatus) (types.UID, *api.ProxySQLStatus) {
 				in.Phase = api.DatabasePhaseProvisioning
-				return in
+				return db.UID, in
 			},
 			metav1.UpdateOptions{},
 		)
@@ -108,10 +109,10 @@ func (c *Controller) create(db *api.ProxySQL) error {
 		context.TODO(),
 		c.DBClient.KubedbV1alpha2(),
 		db.ObjectMeta,
-		func(in *api.ProxySQLStatus) *api.ProxySQLStatus {
+		func(in *api.ProxySQLStatus) (types.UID, *api.ProxySQLStatus) {
 			in.Phase = api.DatabasePhaseReady
 			in.ObservedGeneration = db.Generation
-			return in
+			return db.UID, in
 		},
 		metav1.UpdateOptions{},
 	)

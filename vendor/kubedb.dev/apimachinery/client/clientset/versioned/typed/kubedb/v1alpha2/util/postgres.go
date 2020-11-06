@@ -106,15 +106,20 @@ func UpdatePostgresStatus(
 	ctx context.Context,
 	c cs.KubedbV1alpha2Interface,
 	meta metav1.ObjectMeta,
-	transform func(*api.PostgresStatus) *api.PostgresStatus,
+	transform func(*api.PostgresStatus) (types.UID, *api.PostgresStatus),
 	opts metav1.UpdateOptions,
 ) (result *api.Postgres, err error) {
 	apply := func(x *api.Postgres) *api.Postgres {
+		uid, updatedStatus := transform(x.Status.DeepCopy())
+		// Ignore status update when uid does not match
+		if uid != "" && uid != x.UID {
+			return x
+		}
 		return &api.Postgres{
 			TypeMeta:   x.TypeMeta,
 			ObjectMeta: x.ObjectMeta,
 			Spec:       x.Spec,
-			Status:     *transform(x.Status.DeepCopy()),
+			Status:     *updatedStatus,
 		}
 	}
 
