@@ -12,10 +12,6 @@ section_menu_id: reference
 
 Prints binary version number.
 
-### Synopsis
-
-Prints binary version number.
-
 ```
 kubedb-operator version [flags]
 ```

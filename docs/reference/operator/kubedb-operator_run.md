@@ -12,10 +12,6 @@ section_menu_id: reference
 
 Run kubedb operator in Kubernetes
 
-### Synopsis
-
-Run kubedb operator in Kubernetes
-
 ```
 kubedb-operator run [flags]
 ```
