@@ -6,8 +6,8 @@ require (
 	github.com/prometheus-operator/prometheus-operator v0.42.0
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
-	go.bytebuilders.dev/license-verifier v0.4.1
-	go.bytebuilders.dev/license-verifier/kubernetes v0.4.1
+	go.bytebuilders.dev/license-verifier v0.5.0
+	go.bytebuilders.dev/license-verifier/kubernetes v0.5.0
 	gomodules.xyz/runtime v0.0.0-20201104200926-d838b09dda8b
 	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
 	k8s.io/api v0.18.9
