@@ -175,10 +175,10 @@ func (c *Controller) createStatefulSet(db *api.MySQL, stsName string) (*apps.Sta
 				// replicationModeDetector is used to continuous select primary pod
 				// and add label as primary
 				replicationModeDetector := core.Container{
-					Name:            api.MySQLContainerReplicationModeDetectorName,
+					Name:            api.ReplicationModeDetectorContainerName,
 					Image:           mysqlVersion.Spec.ReplicationModeDetector.Image,
 					ImagePullPolicy: core.PullIfNotPresent,
-					Args:            append([]string{"run", fmt.Sprintf("--db-name=%s", db.Name)}, c.LoggerOptions.ToFlags()...),
+					Args:            append([]string{"run", fmt.Sprintf("--db-name=%s", db.Name), fmt.Sprintf("--db-kind=%s", api.ResourceKindMySQL)}, c.LoggerOptions.ToFlags()...),
 				}
 
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, replicationModeDetector)
@@ -203,10 +203,10 @@ func (c *Controller) createStatefulSet(db *api.MySQL, stsName string) (*apps.Sta
 					}
 				}
 
-				providedArgs := strings.Join(args, " ")
 				container.Args = []string{
 					fmt.Sprintf("-service=%s", db.GoverningServiceName()),
-					fmt.Sprintf("-on-start=/on-start.sh %s", providedArgs),
+					"-on-start",
+					strings.Join(append([]string{"/on-start.sh"}, args...), " "),
 				}
 				if container.LivenessProbe != nil && structs.IsZero(*container.LivenessProbe) {
 					container.LivenessProbe = nil
@@ -254,24 +254,32 @@ mysql -h localhost -nsLNE -e "select 1;" 2>/dev/null | grep -v "*"
 			}
 
 			if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
-				var argsStr string
-				var args []string
-
-				args = db.Spec.Monitor.Prometheus.Exporter.Args
+				var commands []string
 				// pass config.my-cnf flag into exporter to configure TLS
 				if db.Spec.TLS != nil {
 					// ref: https://github.com/prometheus/mysqld_exporter#general-flags
 					// https://github.com/prometheus/mysqld_exporter#customizing-configuration-for-a-ssl-connection
-					args = append(args, "--config.my-cnf=/etc/mysql/certs/exporter.cnf ")
-					argsStr = fmt.Sprintf(`/bin/mysqld_exporter --web.listen-address=:%v --web.telemetry-path=%v %v`,
-						db.Spec.Monitor.Prometheus.Exporter.Port, db.StatsService().Path(), strings.Join(args, " "))
+					cmd := strings.Join(append([]string{
+						"/bin/mysqld_exporter",
+						fmt.Sprintf("--web.listen-address=:%d", db.Spec.Monitor.Prometheus.Exporter.Port),
+						fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
+						"--config.my-cnf=/etc/mysql/certs/exporter.cnf",
+					}, db.Spec.Monitor.Prometheus.Exporter.Args...), " ")
+					commands = []string{cmd}
 				} else {
 					// DATA_SOURCE_NAME=user:password@tcp(localhost:5555)/dbname
 					// ref: https://github.com/prometheus/mysqld_exporter#setting-the-mysql-servers-data-source-name
-					argsStr = fmt.Sprintf(`export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"
-						/bin/mysqld_exporter --web.listen-address=:%v --web.telemetry-path=%v %v`,
-						db.Spec.Monitor.Prometheus.Exporter.Port, db.StatsService().Path(), strings.Join(args, " "))
+					cmd := strings.Join(append([]string{
+						"/bin/mysqld_exporter",
+						fmt.Sprintf("--web.listen-address=:%d", db.Spec.Monitor.Prometheus.Exporter.Port),
+						fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
+					}, db.Spec.Monitor.Prometheus.Exporter.Args...), " ")
+					commands = []string{
+						`export DATA_SOURCE_NAME="${MYSQL_ROOT_USERNAME:-}:${MYSQL_ROOT_PASSWORD:-}@(127.0.0.1:3306)/"`,
+						cmd,
+					}
 				}
+				script := strings.Join(commands, ";")
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
 					Name: api.ContainerExporterName,
 					Command: []string{
@@ -279,7 +287,7 @@ mysql -h localhost -nsLNE -e "select 1;" 2>/dev/null | grep -v "*"
 					},
 					Args: []string{
 						"-c",
-						argsStr,
+						script,
 					},
 					Image: mysqlVersion.Spec.Exporter.Image,
 					Ports: []core.ContainerPort{
@@ -386,7 +394,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.Statef
 
 func upsertEnv(statefulSet *apps.StatefulSet, db *api.MySQL, stsName string) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularMySQL || container.Name == api.ContainerExporterName || container.Name == api.MySQLContainerReplicationModeDetectorName {
+		if container.Name == api.ResourceSingularMySQL || container.Name == api.ContainerExporterName || container.Name == api.ReplicationModeDetectorContainerName {
 			envs := []core.EnvVar{
 				{
 					Name: "MYSQL_ROOT_PASSWORD",
@@ -440,7 +448,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.MySQL, stsName string) *ap
 					},
 				}...)
 			}
-			if container.Name == api.MySQLContainerReplicationModeDetectorName {
+			if container.Name == api.ReplicationModeDetectorContainerName {
 				envs = append(envs, []core.EnvVar{
 					{
 						Name: "POD_NAME",

@@ -863,6 +863,19 @@ func (c *Controller) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 					VolumeMounts:   opts.volumeMount,
 				})
 
+			if db.Spec.ReplicaSet != nil {
+				// replicationModeDetector is used to continuous select primary pod
+				// and add label as primary
+				replicationModeDetector := core.Container{
+					Name:            api.ReplicationModeDetectorContainerName,
+					Image:           mongodbVersion.Spec.ReplicationModeDetector.Image,
+					ImagePullPolicy: core.PullIfNotPresent,
+					Args:            append([]string{"run", fmt.Sprintf("--db-name=%s", db.Name), fmt.Sprintf("--db-kind=%s", api.ResourceKindMongoDB)}, c.LoggerOptions.ToFlags()...),
+				}
+
+				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, replicationModeDetector)
+			}
+
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
 				in.Spec.Template.Spec.InitContainers,
 				opts.initContainers,
@@ -1181,9 +1194,18 @@ func upsertEnv(template core.PodTemplateSpec, db *api.MongoDB) core.PodTemplateS
 				},
 			},
 		},
+		{
+			Name: "POD_NAME",
+			ValueFrom: &core.EnvVarSource{
+				FieldRef: &core.ObjectFieldSelector{
+					APIVersion: "v1",
+					FieldPath:  "metadata.name",
+				},
+			},
+		},
 	}
 	for i, container := range template.Spec.Containers {
-		if container.Name == api.MongoDBContainerName || container.Name == api.ContainerExporterName {
+		if container.Name == api.MongoDBContainerName || container.Name == api.ContainerExporterName || container.Name == api.ReplicationModeDetectorContainerName {
 			template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
 		}
 	}

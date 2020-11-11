@@ -51,7 +51,6 @@ func (m Memcached) OffshootSelectors() map[string]string {
 func (m Memcached) OffshootLabels() map[string]string {
 	out := m.OffshootSelectors()
 	out[meta_util.NameLabelKey] = ResourceSingularMemcached
-	out[meta_util.VersionLabelKey] = string(m.Spec.Version)
 	out[meta_util.InstanceLabelKey] = m.Name
 	out[meta_util.ComponentLabelKey] = ComponentDatabase
 	out[meta_util.ManagedByLabelKey] = kubedb.GroupName
@@ -151,6 +150,7 @@ func (m *Memcached) SetDefaults() {
 	}
 
 	m.Spec.Monitor.SetDefaults()
+	setDefaultResourceLimits(&m.Spec.PodTemplate.Spec.Resources)
 }
 
 func (m *MemcachedSpec) GetPersistentSecrets() []string {

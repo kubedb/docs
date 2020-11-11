@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/pkg/errors"
@@ -76,14 +77,26 @@ func (c *Controller) ensureRole(db *api.MongoDB, name string, pspName string) er
 				}
 				in.Rules = append(in.Rules, pspRule)
 			}
-			// keep this rule even if the psp needs to be removed.
-			// rbac for secret is used by init-containers to read cert-secret
-			secretRule := rbac.PolicyRule{
-				APIGroups: []string{""},
-				Resources: []string{"secrets"},
-				Verbs:     []string{"get"},
+
+			podRule := []rbac.PolicyRule{
+				{
+					APIGroups: []string{""},
+					Resources: []string{"pods"},
+					Verbs:     []string{"*"},
+				},
+				{
+					APIGroups: []string{kubedb.GroupName},
+					Resources: []string{api.ResourcePluralMongoDB},
+					Verbs:     []string{"get"},
+				},
+				{
+					APIGroups: []string{""},
+					Resources: []string{"secrets"},
+					Verbs:     []string{"get"},
+				},
 			}
-			in.Rules = append(in.Rules, secretRule)
+
+			in.Rules = append(in.Rules, podRule...)
 			return in
 		},
 		metav1.PatchOptions{},

@@ -96,13 +96,13 @@ func (c *Controller) createPrimaryService(db *api.PerconaXtraDB) (kutil.VerbType
 		Name:      db.OffshootName(),
 		Namespace: db.Namespace,
 	}
-
+	svcTemplate := api.GetServiceTemplate(db.Spec.ServiceTemplates, api.PrimaryServiceAlias)
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPerconaXtraDB))
 
 	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootLabels()
-		in.Annotations = db.Spec.ServiceTemplate.Annotations
+		in.Annotations = svcTemplate.Annotations
 
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Ports = ofst.PatchServicePorts(
@@ -113,21 +113,20 @@ func (c *Controller) createPrimaryService(db *api.PerconaXtraDB) (kutil.VerbType
 					TargetPort: intstr.FromString(api.MySQLDatabasePortName),
 				},
 			}),
-			db.Spec.ServiceTemplate.Spec.Ports,
+			svcTemplate.Spec.Ports,
 		)
-
-		if db.Spec.ServiceTemplate.Spec.ClusterIP != "" {
-			in.Spec.ClusterIP = db.Spec.ServiceTemplate.Spec.ClusterIP
+		if svcTemplate.Spec.ClusterIP != "" {
+			in.Spec.ClusterIP = svcTemplate.Spec.ClusterIP
 		}
-		if db.Spec.ServiceTemplate.Spec.Type != "" {
-			in.Spec.Type = db.Spec.ServiceTemplate.Spec.Type
+		if svcTemplate.Spec.Type != "" {
+			in.Spec.Type = svcTemplate.Spec.Type
 		}
-		in.Spec.ExternalIPs = db.Spec.ServiceTemplate.Spec.ExternalIPs
-		in.Spec.LoadBalancerIP = db.Spec.ServiceTemplate.Spec.LoadBalancerIP
-		in.Spec.LoadBalancerSourceRanges = db.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
-		in.Spec.ExternalTrafficPolicy = db.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
-		if db.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
-			in.Spec.HealthCheckNodePort = db.Spec.ServiceTemplate.Spec.HealthCheckNodePort
+		in.Spec.ExternalIPs = svcTemplate.Spec.ExternalIPs
+		in.Spec.LoadBalancerIP = svcTemplate.Spec.LoadBalancerIP
+		in.Spec.LoadBalancerSourceRanges = svcTemplate.Spec.LoadBalancerSourceRanges
+		in.Spec.ExternalTrafficPolicy = svcTemplate.Spec.ExternalTrafficPolicy
+		if svcTemplate.Spec.HealthCheckNodePort > 0 {
+			in.Spec.HealthCheckNodePort = svcTemplate.Spec.HealthCheckNodePort
 		}
 		return in
 	}, metav1.PatchOptions{})
@@ -141,24 +140,42 @@ func (c *Controller) ensureStatsService(db *api.PerconaXtraDB) (kutil.VerbType, 
 		return kutil.VerbUnchanged, nil
 	}
 
-	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPerconaXtraDB))
-
 	// reconcile stats Service
 	meta := metav1.ObjectMeta{
 		Name:      db.StatsService().ServiceName(),
 		Namespace: db.Namespace,
 	}
+	svcTemplate := api.GetServiceTemplate(db.Spec.ServiceTemplates, api.PrimaryServiceAlias)
+	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPerconaXtraDB))
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.StatsServiceLabels()
+		in.Annotations = svcTemplate.Annotations
+
 		in.Spec.Selector = db.OffshootSelectors()
-		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
-			{
-				Name:       mona.PrometheusExporterPortName,
-				Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
-				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
-			},
-		})
+		in.Spec.Ports = ofst.PatchServicePorts(
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+				{
+					Name:       mona.PrometheusExporterPortName,
+					Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
+					TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
+				},
+			}),
+			svcTemplate.Spec.Ports,
+		)
+		if svcTemplate.Spec.ClusterIP != "" {
+			in.Spec.ClusterIP = svcTemplate.Spec.ClusterIP
+		}
+		if svcTemplate.Spec.Type != "" {
+			in.Spec.Type = svcTemplate.Spec.Type
+		}
+		in.Spec.ExternalIPs = svcTemplate.Spec.ExternalIPs
+		in.Spec.LoadBalancerIP = svcTemplate.Spec.LoadBalancerIP
+		in.Spec.LoadBalancerSourceRanges = svcTemplate.Spec.LoadBalancerSourceRanges
+		in.Spec.ExternalTrafficPolicy = svcTemplate.Spec.ExternalTrafficPolicy
+		if svcTemplate.Spec.HealthCheckNodePort > 0 {
+			in.Spec.HealthCheckNodePort = svcTemplate.Spec.HealthCheckNodePort
+		}
 		return in
 	}, metav1.PatchOptions{})
 	if err != nil {

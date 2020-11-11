@@ -100,7 +100,7 @@ func (c *Controller) GetPrimaryServicePort(db *api.MySQL) (int32, error) {
 			Port:       api.MySQLDatabasePort,
 			TargetPort: intstr.FromString(api.MySQLDatabasePortName),
 		},
-	}, db.Spec.ServiceTemplate.Spec.Ports)
+	}, api.GetServiceTemplate(db.Spec.ServiceTemplates, api.PrimaryServiceAlias).Spec.Ports)
 
 	for _, p := range ports {
 		if p.Name == api.MySQLPrimaryServicePortName {

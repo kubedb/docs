@@ -53,7 +53,6 @@ func (p PerconaXtraDB) OffshootSelectors() map[string]string {
 func (p PerconaXtraDB) OffshootLabels() map[string]string {
 	out := p.OffshootSelectors()
 	out[meta_util.NameLabelKey] = ResourceSingularPerconaXtraDB
-	out[meta_util.VersionLabelKey] = string(p.Spec.Version)
 	out[meta_util.InstanceLabelKey] = p.Name
 	out[meta_util.ComponentLabelKey] = ComponentDatabase
 	out[meta_util.ManagedByLabelKey] = kubedb.GroupName
@@ -172,6 +171,7 @@ func (p *PerconaXtraDB) SetDefaults() {
 
 	p.Spec.setDefaultProbes()
 	p.Spec.Monitor.SetDefaults()
+	setDefaultResourceLimits(&p.Spec.PodTemplate.Spec.Resources)
 }
 
 // setDefaultProbes sets defaults only when probe fields are nil.

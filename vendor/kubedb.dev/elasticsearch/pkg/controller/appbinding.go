@@ -130,7 +130,7 @@ func (c *Controller) GetPrimaryServicePort(db *api.Elasticsearch) (int32, error)
 			Port:       api.ElasticsearchRestPort,
 			TargetPort: intstr.FromString(api.ElasticsearchRestPortName),
 		},
-	}, db.Spec.ServiceTemplate.Spec.Ports)
+	}, api.GetServiceTemplate(db.Spec.ServiceTemplates, api.PrimaryServiceAlias).Spec.Ports)
 
 	for _, p := range ports {
 		if p.Name == api.ElasticsearchRestPortName {

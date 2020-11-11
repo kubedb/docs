@@ -61,7 +61,6 @@ func (r Redis) OffshootSelectors() map[string]string {
 func (r Redis) OffshootLabels() map[string]string {
 	out := r.OffshootSelectors()
 	out[meta_util.NameLabelKey] = ResourceSingularRedis
-	out[meta_util.VersionLabelKey] = string(r.Spec.Version)
 	out[meta_util.InstanceLabelKey] = r.Name
 	out[meta_util.ComponentLabelKey] = ComponentDatabase
 	out[meta_util.ManagedByLabelKey] = kubedb.GroupName
@@ -197,6 +196,7 @@ func (r *Redis) SetDefaults(topology *core_util.Topology) {
 	r.Spec.Monitor.SetDefaults()
 
 	r.SetTLSDefaults()
+	setDefaultResourceLimits(&r.Spec.PodTemplate.Spec.Resources)
 }
 
 func (r *Redis) SetTLSDefaults() {

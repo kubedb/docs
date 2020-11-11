@@ -21,6 +21,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
+	"time"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
@@ -54,133 +56,139 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 			return
 		}
 
-		for _, db := range dbList {
-			var err error
-			var dbClient, configSvrClient, mongosClient *mongo.Client
-			shardClient := make([]*mongo.Client, 0)
-			// Create database client
-			if db.Spec.ShardTopology == nil {
-				dbClient, err = c.GetMongoClient(db, strings.Join(db.Hosts(), ","))
-				if err != nil {
-					// Since the client was unable to connect the database,
-					// update "AcceptingConnection" to "false".
-					// update "Ready" to "false"
-					c.updateErrorAcceptingConnections(db, err)
-					// Since the client isn't created, skip rest operations.
-					continue
-				}
-			} else {
-				configSvrClient, err = c.GetMongoClient(db, strings.Join(db.ConfigSvrHosts(), ","))
-				if err != nil {
-					// Since the client was unable to connect to the config server,
-					// update "AcceptingConnection" to "false".
-					// update "Ready" to "false"
-					c.updateErrorAcceptingConnections(db, err)
-					// Since the client isn't created, skip rest operations.
-					continue
-				}
+		var wg sync.WaitGroup
+		for idx := range dbList {
+			db := dbList[idx]
 
-				cont := false
-				shardClient = make([]*mongo.Client, db.Spec.ShardTopology.Shard.Shards)
-				for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
-					shardClient[i], err = c.GetMongoClient(db, strings.Join(db.ShardHosts(i), ","))
+			glog.Infof("Starting health check for db %s/%s", db.Namespace, db.Name)
+			if db.DeletionTimestamp != nil {
+				continue
+			}
+
+			wg.Add(1)
+			go func() {
+				defer func() {
+					glog.Infof("Ending health check for db %s/%s", db.Namespace, db.Name)
+					wg.Done()
+				}()
+				var err error
+				var dbClient, configSvrClient, mongosClient *mongo.Client
+				shardClient := make([]*mongo.Client, 0)
+				// Create database client
+				if db.Spec.ShardTopology == nil {
+					dbClient, err = c.GetMongoClient(db, strings.Join(db.Hosts(), ","))
 					if err != nil {
-						// Since the client was unable to connect to the shard nodes,
+						// Since the client was unable to connect the database,
 						// update "AcceptingConnection" to "false".
 						// update "Ready" to "false"
 						c.updateErrorAcceptingConnections(db, err)
 						// Since the client isn't created, skip rest operations.
-						cont = true
-						break
+						return
 					}
-				}
-
-				if cont {
-					continue
-				}
-
-				mongosClient, err = c.GetMongoClient(db, strings.Join(db.MongosHosts(), ","))
-				if err != nil {
-					// Since the client was unable to connect to the mongos,
-					// update "AcceptingConnection" to "false".
-					// update "Ready" to "false"
-					c.updateErrorAcceptingConnections(db, err)
-					// Since the client isn't created, skip rest operations.
-					continue
-				}
-			}
-
-			// While creating the client, we perform a health check along with it.
-			// If the client is created without any error,
-			// the database is accepting connection.
-			// Update "AcceptingConnection" to "true".
-			_, err = util.UpdateMongoDBStatus(
-				context.TODO(),
-				c.DBClient.KubedbV1alpha2(),
-				db.ObjectMeta,
-				func(in *api.MongoDBStatus) (types.UID, *api.MongoDBStatus) {
-					in.Conditions = kmapi.SetCondition(in.Conditions,
-						kmapi.Condition{
-							Type:               api.DatabaseAcceptingConnection,
-							Status:             core.ConditionTrue,
-							Reason:             api.DatabaseAcceptingConnectionRequest,
-							ObservedGeneration: db.Generation,
-							Message:            fmt.Sprintf("The MongoDB: %s/%s is accepting client requests.", db.Namespace, db.Name),
-						})
-					return db.UID, in
-				},
-				metav1.UpdateOptions{},
-			)
-			if err != nil {
-				glog.Errorf("Failed to update status for MongoDB: %s/%s", db.Namespace, db.Name)
-				// Since condition update failed, skip remaining operations.
-				continue
-			}
-
-			if db.Spec.ShardTopology == nil {
-				// Update to "Ready" condition to "true" only if the database ping is successful.
-				err = dbClient.Ping(context.TODO(), nil)
-				if err != nil {
-					glog.Errorf("Failed to ping database for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
-					// Since the get status failed, skip remaining operations.
-					continue
-				}
-
-				c.updateDatabaseReady(db)
-			} else {
-				// Update to "Ready" condition to "true" only if the config server and shard ping is successful.
-				err = configSvrClient.Ping(context.TODO(), nil)
-				if err != nil {
-					glog.Errorf("Failed to ping config server for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
-					// Since the get status failed, skip remaining operations.
-					continue
-				}
-
-				cont := false
-				for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
-					err = shardClient[i].Ping(context.TODO(), nil)
+				} else {
+					configSvrClient, err = c.GetMongoClient(db, strings.Join(db.ConfigSvrHosts(), ","))
 					if err != nil {
-						glog.Errorf("Failed to ping shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, err.Error())
-						// Since the get status failed, skip remaining operations.
-						cont = true
-						break
+						// Since the client was unable to connect to the config server,
+						// update "AcceptingConnection" to "false".
+						// update "Ready" to "false"
+						c.updateErrorAcceptingConnections(db, err)
+						// Since the client isn't created, skip rest operations.
+						return
+					}
+
+					shardClient = make([]*mongo.Client, db.Spec.ShardTopology.Shard.Shards)
+					for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
+						shardClient[i], err = c.GetMongoClient(db, strings.Join(db.ShardHosts(i), ","))
+						if err != nil {
+							// Since the client was unable to connect to the shard nodes,
+							// update "AcceptingConnection" to "false".
+							// update "Ready" to "false"
+							c.updateErrorAcceptingConnections(db, err)
+							// Since the client isn't created, skip rest operations.
+							return
+						}
+					}
+
+					mongosClient, err = c.GetMongoClient(db, strings.Join(db.MongosHosts(), ","))
+					if err != nil {
+						// Since the client was unable to connect to the mongos,
+						// update "AcceptingConnection" to "false".
+						// update "Ready" to "false"
+						c.updateErrorAcceptingConnections(db, err)
+						// Since the client isn't created, skip rest operations.
+						return
 					}
 				}
 
-				if cont {
-					continue
-				}
-
-				err = mongosClient.Ping(context.TODO(), nil)
+				// While creating the client, we perform a health check along with it.
+				// If the client is created without any error,
+				// the database is accepting connection.
+				// Update "AcceptingConnection" to "true".
+				_, err = util.UpdateMongoDBStatus(
+					context.TODO(),
+					c.DBClient.KubedbV1alpha2(),
+					db.ObjectMeta,
+					func(in *api.MongoDBStatus) (types.UID, *api.MongoDBStatus) {
+						in.Conditions = kmapi.SetCondition(in.Conditions,
+							kmapi.Condition{
+								Type:               api.DatabaseAcceptingConnection,
+								Status:             core.ConditionTrue,
+								Reason:             api.DatabaseAcceptingConnectionRequest,
+								ObservedGeneration: db.Generation,
+								Message:            fmt.Sprintf("The MongoDB: %s/%s is accepting client requests.", db.Namespace, db.Name),
+							})
+						return db.UID, in
+					},
+					metav1.UpdateOptions{},
+				)
 				if err != nil {
-					glog.Errorf("Failed to ping mongos for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
-					// Since the get status failed, skip remaining operations.
-					continue
+					glog.Errorf("Failed to update status for MongoDB: %s/%s", db.Namespace, db.Name)
+					// Since condition update failed, skip remaining operations.
+					return
 				}
 
-				c.updateDatabaseReady(db)
-			}
+				if db.Spec.ShardTopology == nil {
+					// Update to "Ready" condition to "true" only if the database ping is successful.
+					err = dbClient.Ping(context.TODO(), nil)
+					if err != nil {
+						glog.Errorf("Failed to ping database for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+						// Since the get status failed, skip remaining operations.
+						return
+					}
+
+					c.updateDatabaseReady(db)
+				} else {
+					// Update to "Ready" condition to "true" only if the config server and shard ping is successful.
+					err = configSvrClient.Ping(context.TODO(), nil)
+					if err != nil {
+						glog.Errorf("Failed to ping config server for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+						// Since the get status failed, skip remaining operations.
+						return
+					}
+
+					for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
+						err = shardClient[i].Ping(context.TODO(), nil)
+						if err != nil {
+							glog.Errorf("Failed to ping shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, err.Error())
+							// Since the get status failed, skip remaining operations.
+							return
+						}
+					}
+
+					err = mongosClient.Ping(context.TODO(), nil)
+					if err != nil {
+						glog.Errorf("Failed to ping mongos for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+						// Since the get status failed, skip remaining operations.
+						return
+					}
+
+					c.updateDatabaseReady(db)
+				}
+			}()
 		}
+
+		wg.Wait()
+		glog.Info("Ending health check loop")
 	}, c.ReadinessProbeInterval, stopCh)
 
 	// will wait here until stopCh is closed.
@@ -212,7 +220,7 @@ func (c *Controller) GetURL(db *api.MongoDB, clientPodName string) string {
 	return fmt.Sprintf("%s.%s.%s.svc", clientPodName, db.GoverningServiceName(nodeType), db.Namespace)
 }
 
-func (c *Controller) GetMongoDBClientOpts(db *api.MongoDB, url string, isReplSet ...bool) (*mgoptions.ClientOptions, error) {
+func (c *Controller) GetMongoDBClientOpts(db *api.MongoDB, url string) (*mgoptions.ClientOptions, error) {
 	var clientOpts *mgoptions.ClientOptions
 	if db.Spec.SSLMode == api.SSLModeRequireSSL {
 		secretName := db.MustCertSecretName(api.MongoDBClientCert, "")
@@ -246,6 +254,7 @@ func (c *Controller) GetMongoDBClientOpts(db *api.MongoDB, url string, isReplSet
 	}
 
 	clientOpts.SetDirect(true)
+	clientOpts.SetConnectTimeout(5 * time.Second)
 
 	return clientOpts, nil
 }

@@ -114,7 +114,6 @@ func (c *Controller) createSecret(db *api.Redis) (*core.Secret, kutil.VerbType, 
 	return core_util.CreateOrPatchSecret(context.TODO(), c.Client, meta, func(in *core.Secret) *core.Secret {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootSelectors()
-		in.Annotations = db.Spec.ServiceTemplate.Annotations
 
 		in.StringData = map[string]string{
 			RedisConfigKey: redisConfig,
