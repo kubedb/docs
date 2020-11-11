@@ -159,7 +159,7 @@ func (c *Controller) GetPrimaryServicePort(db *api.MongoDB) (int32, error) {
 			Port:       api.MongoDBDatabasePort,
 			TargetPort: intstr.FromString(api.MongoDBDatabasePortName),
 		},
-	}, db.Spec.ServiceTemplate.Spec.Ports)
+	}, api.GetServiceTemplate(db.Spec.ServiceTemplates, api.PrimaryServiceAlias).Spec.Ports)
 
 	for _, p := range ports {
 		if p.Name == api.MongoDBPrimaryServicePortName {

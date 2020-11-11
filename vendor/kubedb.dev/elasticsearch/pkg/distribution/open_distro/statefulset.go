@@ -40,8 +40,7 @@ import (
 )
 
 const (
-	ExporterCertDir               = "/usr/config/certs"
-	ConfigMergerInitContainerName = "config-merger"
+	ExporterCertDir = "/usr/config/certs"
 )
 
 var (
@@ -56,7 +55,7 @@ var (
 		Protocol:      core.ProtocolTCP,
 	}
 	defaultMetricsPort = core.ContainerPort{
-		Name:          api.ElasticsearchMetricsPortName,
+		Name:          mona.PrometheusExporterPortName,
 		ContainerPort: api.ElasticsearchMetricsPort,
 		Protocol:      core.ProtocolTCP,
 	}
@@ -416,7 +415,7 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 
 	containers := []core.Container{
 		{
-			Name:            api.ResourceSingularElasticsearch,
+			Name:            api.ElasticsearchContainerName,
 			Image:           es.esVersion.Spec.DB.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Env:             envList,
@@ -460,7 +459,7 @@ func (es *Elasticsearch) getInitContainers(esNode *api.ElasticsearchNode, envLis
 
 	initContainers := []core.Container{
 		{
-			Name:            "init-sysctl",
+			Name:            api.ElasticsearchInitSysctlContainerName,
 			Image:           es.esVersion.Spec.InitContainer.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Command:         []string{"sysctl", "-w", "vm.max_map_count=262144"},
@@ -507,7 +506,7 @@ func (es *Elasticsearch) upsertConfigMergerInitContainer(initCon []core.Containe
 	}
 
 	configMerger := core.Container{
-		Name:            ConfigMergerInitContainerName,
+		Name:            api.ElasticsearchInitConfigMergerContainerName,
 		Image:           es.esVersion.Spec.InitContainer.YQImage,
 		ImagePullPolicy: core.PullIfNotPresent,
 		Env:             envList,
@@ -561,12 +560,12 @@ func (es *Elasticsearch) upsertContainerEnv(envList []core.EnvVar) []core.EnvVar
 	if strings.HasPrefix(es.esVersion.Spec.Version, "1.") {
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "discovery.seed_hosts",
-			Value: es.db.MasterServiceName(),
+			Value: es.db.MasterDiscoveryServiceName(),
 		})
 	} else {
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{
 			Name:  "discovery.zen.ping.unicast.hosts",
-			Value: es.db.MasterServiceName(),
+			Value: es.db.MasterDiscoveryServiceName(),
 		})
 	}
 

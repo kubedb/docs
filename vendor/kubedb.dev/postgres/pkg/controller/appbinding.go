@@ -100,7 +100,7 @@ func (c *Controller) GetPrimaryServicePort(db *api.Postgres) (int32, error) {
 			Port:       api.PostgresDatabasePort,
 			TargetPort: intstr.FromString(api.PostgresDatabasePortName),
 		},
-	}, db.Spec.ServiceTemplate.Spec.Ports)
+	}, api.GetServiceTemplate(db.Spec.ServiceTemplates, api.PrimaryServiceAlias).Spec.Ports)
 
 	for _, p := range ports {
 		if p.Name == api.PostgresPrimaryServicePortName {

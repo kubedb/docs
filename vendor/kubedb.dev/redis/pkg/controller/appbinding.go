@@ -97,7 +97,7 @@ func (c *Controller) GetPrimaryServicePort(db *api.Redis) (int32, error) {
 			Port:       api.RedisDatabasePort,
 			TargetPort: intstr.FromString(api.RedisDatabasePortName),
 		},
-	}, db.Spec.ServiceTemplate.Spec.Ports)
+	}, api.GetServiceTemplate(db.Spec.ServiceTemplates, api.PrimaryServiceAlias).Spec.Ports)
 
 	for _, p := range ports {
 		if p.Name == api.RedisPrimaryServicePortName {

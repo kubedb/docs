@@ -40,7 +40,7 @@ func (es *Elasticsearch) upsertMonitoringContainer(containers []core.Container) 
 		}
 
 		container := core.Container{
-			Name: "exporter",
+			Name: api.ElasticsearchExporterContainerName,
 			Args: append([]string{
 				fmt.Sprintf("--es.uri=%s", uri),
 				fmt.Sprintf("--web.listen-address=:%d", func() int32 {

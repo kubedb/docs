@@ -89,7 +89,7 @@ func (c *Controller) ensureService(db *api.Elasticsearch) (kutil.VerbType, error
 	}
 
 	// create database Service
-	vt2, err := c.createMasterService(db)
+	vt2, err := c.createMasterDiscoveryService(db)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt2 != kutil.VerbUnchanged {
@@ -116,13 +116,13 @@ func (c *Controller) createService(db *api.Elasticsearch) (kutil.VerbType, error
 		Name:      db.OffshootName(),
 		Namespace: db.Namespace,
 	}
-
+	svcTemplate := api.GetServiceTemplate(db.Spec.ServiceTemplates, api.PrimaryServiceAlias)
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootLabels()
-		in.Annotations = db.Spec.ServiceTemplate.Annotations
+		in.Annotations = svcTemplate.Annotations
 
 		in.Spec.Selector = db.OffshootSelectors()
 		in.Spec.Selector[api.ElasticsearchNodeRoleIngest] = api.ElasticsearchNodeRoleSet
@@ -134,30 +134,30 @@ func (c *Controller) createService(db *api.Elasticsearch) (kutil.VerbType, error
 					TargetPort: intstr.FromString(api.ElasticsearchRestPortName),
 				},
 			}),
-			db.Spec.ServiceTemplate.Spec.Ports,
+			svcTemplate.Spec.Ports,
 		)
+		if svcTemplate.Spec.ClusterIP != "" {
+			in.Spec.ClusterIP = svcTemplate.Spec.ClusterIP
+		}
+		if svcTemplate.Spec.Type != "" {
+			in.Spec.Type = svcTemplate.Spec.Type
+		}
+		in.Spec.ExternalIPs = svcTemplate.Spec.ExternalIPs
+		in.Spec.LoadBalancerIP = svcTemplate.Spec.LoadBalancerIP
+		in.Spec.LoadBalancerSourceRanges = svcTemplate.Spec.LoadBalancerSourceRanges
+		in.Spec.ExternalTrafficPolicy = svcTemplate.Spec.ExternalTrafficPolicy
+		if svcTemplate.Spec.HealthCheckNodePort > 0 {
+			in.Spec.HealthCheckNodePort = svcTemplate.Spec.HealthCheckNodePort
+		}
 
-		if db.Spec.ServiceTemplate.Spec.ClusterIP != "" {
-			in.Spec.ClusterIP = db.Spec.ServiceTemplate.Spec.ClusterIP
-		}
-		if db.Spec.ServiceTemplate.Spec.Type != "" {
-			in.Spec.Type = db.Spec.ServiceTemplate.Spec.Type
-		}
-		in.Spec.ExternalIPs = db.Spec.ServiceTemplate.Spec.ExternalIPs
-		in.Spec.LoadBalancerIP = db.Spec.ServiceTemplate.Spec.LoadBalancerIP
-		in.Spec.LoadBalancerSourceRanges = db.Spec.ServiceTemplate.Spec.LoadBalancerSourceRanges
-		in.Spec.ExternalTrafficPolicy = db.Spec.ServiceTemplate.Spec.ExternalTrafficPolicy
-		if db.Spec.ServiceTemplate.Spec.HealthCheckNodePort > 0 {
-			in.Spec.HealthCheckNodePort = db.Spec.ServiceTemplate.Spec.HealthCheckNodePort
-		}
 		return in
 	}, metav1.PatchOptions{})
 	return ok, err
 }
 
-func (c *Controller) createMasterService(db *api.Elasticsearch) (kutil.VerbType, error) {
+func (c *Controller) createMasterDiscoveryService(db *api.Elasticsearch) (kutil.VerbType, error) {
 	meta := metav1.ObjectMeta{
-		Name:      db.MasterServiceName(),
+		Name:      db.MasterDiscoveryServiceName(),
 		Namespace: db.Namespace,
 	}
 
@@ -166,22 +166,23 @@ func (c *Controller) createMasterService(db *api.Elasticsearch) (kutil.VerbType,
 	_, ok, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootLabels()
-		in.Annotations = db.Spec.ServiceTemplate.Annotations
-		in.Spec.Selector = db.OffshootSelectors()
-		in.Spec.Selector[api.ElasticsearchNodeRoleMaster] = api.ElasticsearchNodeRoleSet
 
 		in.Spec.Type = core.ServiceTypeClusterIP
+		// create headless service
 		in.Spec.ClusterIP = core.ClusterIPNone
-		in.Spec.Ports = ofst.PatchServicePorts(
-			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
-				{
-					Name:       api.ElasticsearchTransportPortName,
-					Port:       api.ElasticsearchTransportPort,
-					TargetPort: intstr.FromString(api.ElasticsearchTransportPortName),
-				},
-			}),
-			db.Spec.ServiceTemplate.Spec.Ports,
-		)
+		// create pod dns records
+		in.Spec.Selector = db.OffshootSelectors()
+		in.Spec.Selector[api.ElasticsearchNodeRoleMaster] = api.ElasticsearchNodeRoleSet
+		// TODO: Uncomment if needed
+		// in.Spec.PublishNotReadyAddresses = true
+		// create SRV records with pod DNS name as service provider
+		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+			{
+				Name:       api.ElasticsearchTransportPortName,
+				Port:       api.ElasticsearchTransportPort,
+				TargetPort: intstr.FromString(api.ElasticsearchTransportPortName),
+			},
+		})
 
 		return in
 	}, metav1.PatchOptions{})
@@ -194,7 +195,7 @@ func (c *Controller) ensureStatsService(db *api.Elasticsearch) (kutil.VerbType, 
 		log.Infoln("spec.monitor.agent is not provided by prometheus.io")
 		return kutil.VerbUnchanged, nil
 	}
-
+	svcTemplate := api.GetServiceTemplate(db.Spec.ServiceTemplates, api.StatsServiceAlias)
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch))
 
 	// reconcile statsService
@@ -205,14 +206,33 @@ func (c *Controller) ensureStatsService(db *api.Elasticsearch) (kutil.VerbType, 
 	_, vt, err := core_util.CreateOrPatchService(context.TODO(), c.Client, meta, func(in *core.Service) *core.Service {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.StatsServiceLabels()
+		in.Annotations = svcTemplate.Annotations
+
 		in.Spec.Selector = db.OffshootSelectors()
-		in.Spec.Ports = core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
-			{
-				Name:       mona.PrometheusExporterPortName,
-				Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
-				TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
-			},
-		})
+		in.Spec.Ports = ofst.PatchServicePorts(
+			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
+				{
+					Name:       mona.PrometheusExporterPortName,
+					Port:       db.Spec.Monitor.Prometheus.Exporter.Port,
+					TargetPort: intstr.FromString(mona.PrometheusExporterPortName),
+				},
+			}),
+			svcTemplate.Spec.Ports,
+		)
+		if svcTemplate.Spec.ClusterIP != "" {
+			in.Spec.ClusterIP = svcTemplate.Spec.ClusterIP
+		}
+		if svcTemplate.Spec.Type != "" {
+			in.Spec.Type = svcTemplate.Spec.Type
+		}
+		in.Spec.ExternalIPs = svcTemplate.Spec.ExternalIPs
+		in.Spec.LoadBalancerIP = svcTemplate.Spec.LoadBalancerIP
+		in.Spec.LoadBalancerSourceRanges = svcTemplate.Spec.LoadBalancerSourceRanges
+		in.Spec.ExternalTrafficPolicy = svcTemplate.Spec.ExternalTrafficPolicy
+		if svcTemplate.Spec.HealthCheckNodePort > 0 {
+			in.Spec.HealthCheckNodePort = svcTemplate.Spec.HealthCheckNodePort
+		}
+
 		return in
 	}, metav1.PatchOptions{})
 	if err != nil {

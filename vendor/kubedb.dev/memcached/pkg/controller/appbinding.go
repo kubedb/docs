@@ -92,7 +92,7 @@ func (c *Controller) GetPrimaryServicePort(db *api.Memcached) (int32, error) {
 			Port:       api.MemcachedDatabasePort,
 			TargetPort: intstr.FromString(api.MemcachedDatabasePortName),
 		},
-	}, db.Spec.ServiceTemplate.Spec.Ports)
+	}, api.GetServiceTemplate(db.Spec.ServiceTemplates, api.PrimaryServiceAlias).Spec.Ports)
 
 	for _, p := range ports {
 		if p.Name == api.MemcachedPrimaryServicePortName {
