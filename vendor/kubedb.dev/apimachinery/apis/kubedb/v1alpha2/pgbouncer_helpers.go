@@ -54,7 +54,6 @@ func (p PgBouncer) OffshootLabels() map[string]string {
 	out[meta_util.NameLabelKey] = ResourceSingularPgBouncer
 	out[meta_util.InstanceLabelKey] = p.Name
 	out[meta_util.ComponentLabelKey] = "connection-pooler"
-	out[meta_util.VersionLabelKey] = string(p.Spec.Version)
 	out[meta_util.ManagedByLabelKey] = kubedb.GroupName
 	return meta_util.FilterKeys(kubedb.GroupName, out, p.Labels)
 }
@@ -156,6 +155,7 @@ func (p *PgBouncer) SetDefaults() {
 	p.Spec.Monitor.SetDefaults()
 
 	p.SetTLSDefaults()
+	setDefaultResourceLimits(&p.Spec.PodTemplate.Spec.Resources)
 }
 
 func (p *PgBouncer) SetTLSDefaults() {

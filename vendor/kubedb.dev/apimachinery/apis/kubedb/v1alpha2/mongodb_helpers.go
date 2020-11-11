@@ -155,7 +155,6 @@ func (m MongoDB) MongosSelectors() map[string]string {
 func (m MongoDB) OffshootLabels() map[string]string {
 	out := m.OffshootSelectors()
 	out[meta_util.NameLabelKey] = ResourceSingularMongoDB
-	out[meta_util.VersionLabelKey] = string(m.Spec.Version)
 	out[meta_util.InstanceLabelKey] = m.Name
 	out[meta_util.ComponentLabelKey] = ComponentDatabase
 	out[meta_util.ManagedByLabelKey] = kubedb.GroupName
@@ -364,6 +363,10 @@ func (m *MongoDB) SetDefaults(mgVersion *v1alpha1.MongoDBVersion, topology *core
 	}
 
 	if m.Spec.ShardTopology != nil {
+		setDefaultResourceLimits(&m.Spec.ShardTopology.Mongos.PodTemplate.Spec.Resources)
+		setDefaultResourceLimits(&m.Spec.ShardTopology.Shard.PodTemplate.Spec.Resources)
+		setDefaultResourceLimits(&m.Spec.ShardTopology.ConfigServer.PodTemplate.Spec.Resources)
+
 		if m.Spec.ShardTopology.Mongos.PodTemplate.Spec.Lifecycle == nil {
 			m.Spec.ShardTopology.Mongos.PodTemplate.Spec.Lifecycle = new(core.Lifecycle)
 		}
@@ -421,6 +424,8 @@ func (m *MongoDB) SetDefaults(mgVersion *v1alpha1.MongoDBVersion, topology *core
 		m.setDefaultProbes(m.Spec.PodTemplate, mgVersion)
 		// set default affinity (PodAntiAffinity)
 		m.setDefaultAffinity(m.Spec.PodTemplate, m.OffshootSelectors(), topology)
+
+		setDefaultResourceLimits(&m.Spec.PodTemplate.Spec.Resources)
 	}
 
 	m.SetTLSDefaults()
