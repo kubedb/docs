@@ -157,7 +157,9 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 			&pgbAdmsn.PgBouncerMutator{},
 			&pgAdmsn.PostgresMutator{},
 			&prAdmsn.ProxySQLMutator{},
-			&rdAdmsn.RedisMutator{},
+			&rdAdmsn.RedisMutator{
+				ClusterTopology: ctrl.ClusterTopology,
+			},
 		}
 	}
 	if c.OperatorConfig.EnableValidatingWebhook {
@@ -174,7 +176,9 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 			&pgbAdmsn.PgBouncerValidator{},
 			&pgAdmsn.PostgresValidator{},
 			&prAdmsn.ProxySQLValidator{},
-			&rdAdmsn.RedisValidator{},
+			&rdAdmsn.RedisValidator{
+				ClusterTopology: ctrl.ClusterTopology,
+			},
 			&namespace.NamespaceValidator{
 				Resources: []string{
 					api.ResourcePluralElasticsearch,
