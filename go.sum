@@ -1631,6 +1631,8 @@ kmodules.xyz/webhook-runtime v0.0.0-20201105073856-2dc7382b88c6 h1:9+EIwxUrXrM8Q
 kmodules.xyz/webhook-runtime v0.0.0-20201105073856-2dc7382b88c6/go.mod h1:xLgewoOzwR5ZrVOHQ2SR0P4E7tgCyBWbYlUawEXgeF4=
 kubedb.dev/apimachinery v0.15.0 h1:xgGEXoAZEZnyDzl9lnyJwg5jneUBIXfNMKq92Mv9LZw=
 kubedb.dev/apimachinery v0.15.0/go.mod h1:4H3J+V7lZy8dLgz0+z/Nzd13cEgZHnwbMaH729rxl/M=
+kubedb.dev/apimachinery v0.15.1-0.20201111204019-44d1f43bc6dd h1:Nnm0UEdGAeiSCO0HSJyDfGT3CuHRpiukNTyyf0Fl7pI=
+kubedb.dev/apimachinery v0.15.1-0.20201111204019-44d1f43bc6dd/go.mod h1:4H3J+V7lZy8dLgz0+z/Nzd13cEgZHnwbMaH729rxl/M=
 kubedb.dev/elasticsearch v0.15.0 h1:g9NW1xbtYP06JEkMXJHWp8DBvAybh4D/28fTdHvNlO0=
 kubedb.dev/elasticsearch v0.15.0/go.mod h1:E1LaikWZy04+oSBWtC9FsqqtKncDu81vwxJalr9XZr8=
 kubedb.dev/memcached v0.8.0 h1:Q3OqQHPWNJ6OF+rn261+qctB9+wYbmG+xwKOrm1SPUo=
