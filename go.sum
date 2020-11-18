@@ -1631,8 +1631,8 @@ kmodules.xyz/webhook-runtime v0.0.0-20201105073856-2dc7382b88c6 h1:9+EIwxUrXrM8Q
 kmodules.xyz/webhook-runtime v0.0.0-20201105073856-2dc7382b88c6/go.mod h1:xLgewoOzwR5ZrVOHQ2SR0P4E7tgCyBWbYlUawEXgeF4=
 kubedb.dev/apimachinery v0.15.1 h1:Wi82S9kFcmsqDH0pmm6W/VL6MtTv67hfJ/39bSg1Fbg=
 kubedb.dev/apimachinery v0.15.1/go.mod h1:4H3J+V7lZy8dLgz0+z/Nzd13cEgZHnwbMaH729rxl/M=
-kubedb.dev/apimachinery v0.15.2-0.20201116115516-b2fb44c80e18 h1:0i1a7pt1me/D6C3duPU2xmQrEo+Co/RKFp6HlRVyv9o=
-kubedb.dev/apimachinery v0.15.2-0.20201116115516-b2fb44c80e18/go.mod h1:4H3J+V7lZy8dLgz0+z/Nzd13cEgZHnwbMaH729rxl/M=
+kubedb.dev/apimachinery v0.15.2-0.20201117210058-03a5a9a72f49 h1:nlpI666eU29Z4TrvL7EOqW05A1S2LM/3HpGbw5uTw/s=
+kubedb.dev/apimachinery v0.15.2-0.20201117210058-03a5a9a72f49/go.mod h1:x9dyua1HIvlvIErZg5P3KhP7Dchy5sM33MRcJX7cqkA=
 kubedb.dev/elasticsearch v0.15.1 h1:45nuxAzGYtDudjWflc2Wo65I9tRzqhlk0lcwAsn5xjw=
 kubedb.dev/elasticsearch v0.15.1/go.mod h1:KeCmChZuWhXvy4ePPqO9P+mXk7zP1K3hMYhOLuW19Qo=
 kubedb.dev/memcached v0.8.1 h1:4K3/UDXY7+6IzxS5cFIHfrUyIPrk4cXegYCkdAHJVHo=
@@ -1683,6 +1683,8 @@ sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0/go.mod h1
 sourcegraph.com/sqs/pbtypes v0.0.0-20180604144634-d3ebe8f20ae4/go.mod h1:ketZ/q3QxT9HOBeFhu6RdvsftgpsbFHBF5Cas6cDKZ0=
 stash.appscode.dev/apimachinery v0.11.6 h1:6JPVYugF6YdeSuLtFqeXTyi6k04owD6E6PxDTBpRsn4=
 stash.appscode.dev/apimachinery v0.11.6/go.mod h1:JQtqMYDOMkcxmcsUnOiRhi/BIvFWlceAIcauBw1a48M=
+stash.appscode.dev/apimachinery v0.11.7 h1:NgAES2E1YWPAKJE7agHPOC9jGV2rFB/zW3XjRcSlyUo=
+stash.appscode.dev/apimachinery v0.11.7/go.mod h1:QnuI/VQTYxiT5ikxHqwOmqO96emPJPykbxfEp7pgjhk=
 vbom.ml/util v0.0.0-20160121211510-db5cfe13f5cc/go.mod h1:so/NYdZXCz+E3ZpW0uAoCj6uzU2+8OWDFv/HxUSs7kI=
 xorm.io/builder v0.3.6 h1:ha28mQ2M+TFx96Hxo+iq6tQgnkC9IZkM6D8w9sKHHF8=
 xorm.io/builder v0.3.6/go.mod h1:LEFAPISnRzG+zxaxj2vPicRwz67BdhFreKg8yv8/TgU=
