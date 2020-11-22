@@ -43,8 +43,8 @@ if [ "$ENFORCE_LICENSE" != "true" ]; then
     ENFORCE_LICENSE=false
 fi
 
-go install                                              \
-    -installsuffix "static"                             \
+go install \
+    -installsuffix "static" \
     -ldflags "                                          \
       -X main.Version=${VERSION}                        \
       -X main.VersionStrategy=${version_strategy:-}     \
