@@ -1,8 +1,3 @@
-# Usage: /ok-to-test [k8s-version] [db-version]
-# Examples:
-# /ok-to-test
-# /ok-to-test v1.18.4
-
 name: e2e
 
 on:
@@ -10,11 +5,9 @@ on:
     types: [created]
 
 jobs:
-  config:
+  build:
     if: contains(github.event.issue.html_url, '/pull/') && startsWith(github.event.comment.body, '/ok-to-test')
     runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - uses: actions/checkout@v1
 
@@ -25,28 +18,6 @@ jobs:
           buildx-version: latest
           qemu-version: latest
 
-      - id: set-matrix
-        name: Generate test matrix
-        run: |
-          k8s=(v1.14.10 v1.16.9 v1.18.8 v1.19.1)
-
-          IFS=' '
-          read -ra COMMENT <<< "${{ github.event.comment.body }}"
-          if [ ! -z ${COMMENT[1]} ]; then
-            k8s=(${COMMENT[1]})
-          fi
-
-          matrix=()
-          for x in ${k8s[@]}; do
-            matrix+=( $( jq -n -c --arg x "$x" '{"k8s":$x}' ) )
-          done
-
-          # https://stackoverflow.com/a/63046305/244009
-          function join { local IFS="$1"; shift; echo "$*"; }
-          matrix=$(echo "{"include":[$(join , ${matrix[@]})]}")
-          echo $matrix
-          echo "::set-output name=matrix::$matrix"
-
       - name: Checkout pr
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -56,20 +27,39 @@ jobs:
           sudo mv bin/hub /usr/local/bin
           hub pr checkout $PR_NUMBER
 
-      - name: Build
+      - name: Login Docker
         env:
-          REGISTRY: kubedbci
           DOCKER_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           USERNAME: 1gtm
         run: |
           docker login --username ${USERNAME} --password ${DOCKER_TOKEN}
+
+      - name: Build
+        env:
+          REGISTRY: kubedbci
+        run: |
           make push
+
+  config:
+    runs-on: ubuntu-latest
+    needs: build
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      e2e_ref: ${{ steps.set-matrix.outputs.e2e_ref }}
+    steps:
+      - uses: actions/checkout@v1
+
+      - id: set-matrix
+        name: Generate test matrix
+        run: |
+          ./hack/scripts/generate-kubedb-test-config.sh ${{ github.event.comment.body }}
 
   kubernetes:
     name: Kubernetes
     needs: config
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix: ${{ fromJson(needs.config.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v1
@@ -96,22 +86,19 @@ jobs:
         env:
           USERNAME: 1gtm
           REGISTRY_SECRET: regcred
-          GCR_SERVICE_ACCOUNT_JSON_KEY: ${{ secrets.GCR_SERVICE_ACCOUNT_JSON_KEY }}
+          DOCKER_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
           echo "waiting for nodes to be ready ..."
           kubectl wait --for=condition=Ready nodes --all --timeout=5m
           kubectl get nodes
+          kubectl wait --for=condition=Ready pods -n kube-system --all --timeout=10m
+          kubectl get pods -n kube-system
           echo
           echo "install helm 3"
           curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
           echo
           echo "create docker-registry secret"
-          kubectl create secret docker-registry ${REGISTRY_SECRET} \
-            --namespace=kube-system \
-            --docker-server=https://gcr.io \
-            --docker-username=_json_key \
-            --docker-email=${USERNAME}@appscode.com \
-            --docker-password="$(echo $GCR_SERVICE_ACCOUNT_JSON_KEY)"
+          kubectl create secret docker-registry ${REGISTRY_SECRET} --namespace=kube-system --docker-server=https://index.docker.io/v1/ --docker-username=${USERNAME} --docker-password=${DOCKER_TOKEN}
 
       - name: Install cert-manager
         run: |
@@ -121,9 +108,9 @@ jobs:
           eval MAJOR=`echo ${{ matrix.k8s }} | sed -e "s#$RE#\1#"`
           eval MINOR=`echo ${{ matrix.k8s }} | sed -e "s#$RE#\2#"`
           if [ $MAJOR -eq 1 ] && [ $MINOR -lt 15 ]; then
-            kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager-legacy.yaml
+            kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.4/cert-manager-legacy.yaml
           else
-            kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v0.15.1/cert-manager.yaml
+            kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.4/cert-manager.yaml
           fi
 
       - name: Check out installer
@@ -137,7 +124,7 @@ jobs:
         run: |
           make stash-install
 
-      - name: Run e2e tests
+      - name: Install operator
         env:
           REGISTRY: kubedbci
           REGISTRY_SECRET: regcred
@@ -150,5 +137,21 @@ jobs:
           echo >> hack/config/.env
           echo "GOOGLE_SERVICE_ACCOUNT_JSON_KEY=$(echo $GOOGLE_SERVICE_ACCOUNT_JSON_KEY)" >> hack/config/.env
           make install
-          # echo
-          # make e2e-parallel
+
+      - name: Run e2e tests
+        env:
+          REGISTRY: kubedbci
+          REGISTRY_SECRET: regcred
+          TEST_CREDENTIALS: ${{ secrets.TEST_CREDENTIALS }}
+          GOOGLE_SERVICE_ACCOUNT_JSON_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON_KEY }}
+        run: |
+          cd ..
+          git clone https://github.com/kubedb/tests.git
+          cd tests
+          git checkout ${{ needs.config.outputs.e2e_ref }}
+          echo "preparing test credentials"
+          mkdir -p hack/config
+          echo -n "$TEST_CREDENTIALS" > hack/config/.env
+          echo >> hack/config/.env
+          echo "GOOGLE_SERVICE_ACCOUNT_JSON_KEY=$(echo $GOOGLE_SERVICE_ACCOUNT_JSON_KEY)" >> hack/config/.env
+          make e2e-tests GINKGO_ARGS="--flakeAttempts=2" TEST_ARGS="--db-type=${{ matrix.db }} --db-version=${{ matrix.version }} --test-profiles=${{ matrix.profiles }} --ssl=${{ matrix.ssl }}" || (kubectl describe deployment -n kube-system  -l 'app.kubernetes.io/name in (kubedb,kubedb-enterprise)'; kubectl logs -n kube-system -l 'app.kubernetes.io/name in (kubedb,kubedb-enterprise)'; kubectl describe deployment -n kube-system stash-operator; kubectl logs -n kube-system deployment/stash-operator operator; exit 1;)
