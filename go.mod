@@ -16,7 +16,7 @@ require (
 	k8s.io/apiserver v0.18.9
 	k8s.io/client-go v0.18.9
 	kmodules.xyz/client-go v0.0.0-20201105071625-0b277310b9b8
-	kmodules.xyz/custom-resources v0.0.0-20201105075444-3c6af51b4f79
+	kmodules.xyz/custom-resources v0.0.0-20201124062543-bd8d35c21b0c
 	kmodules.xyz/webhook-runtime v0.0.0-20201105073856-2dc7382b88c6
 	kubedb.dev/apimachinery v0.15.2-0.20201122170734-a022a50249dc
 	kubedb.dev/elasticsearch v0.15.1
