@@ -1,0 +1,17 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RedisOpsRequest
+metadata:
+  name: redisops-vertical
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: redis-cluster
+  verticalScaling:
+    redis:
+      requests:
+        memory: "300Mi"
+        cpu: "200m"
+      limits:
+        memory: "800Mi"
+        cpu: "500m"
