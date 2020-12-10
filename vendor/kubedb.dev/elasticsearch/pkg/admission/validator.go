@@ -30,6 +30,7 @@ import (
 	"github.com/pkg/errors"
 	"gomodules.xyz/sets"
 	admission "k8s.io/api/admission/v1beta1"
+	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -206,6 +207,19 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		if err := amv.ValidateStorage(client, db.Spec.StorageType, topology.Data.Storage); err != nil {
 			return err
 		}
+
+		// Resources validation
+		// Heap size is the 50% of memory & it cannot be less than 128Mi(some say 97Mi)
+		// So, minimum memory request should be twice of 128Mi, i.e. 256Mi.
+		if value, ok := topology.Master.Resources.Requests[core.ResourceMemory]; ok && value.Value() < 2*api.ElasticsearchMinHeapSize {
+			return fmt.Errorf("master.resources.reqeusts.memory cannot be less than %dMi, given %dMi", (2*api.ElasticsearchMinHeapSize)/(1024*1024), value.Value()/(1024*1024))
+		}
+		if value, ok := topology.Data.Resources.Requests[core.ResourceMemory]; ok && value.Value() < 2*api.ElasticsearchMinHeapSize {
+			return fmt.Errorf("data.resources.reqeusts.memory cannot be less than %dMi, given %dMi", (2*api.ElasticsearchMinHeapSize)/(1024*1024), value.Value()/(1024*1024))
+		}
+		if value, ok := topology.Ingest.Resources.Requests[core.ResourceMemory]; ok && value.Value() < 2*api.ElasticsearchMinHeapSize {
+			return fmt.Errorf("ingest.resources.reqeusts.memory cannot be less than %dMi, given %dMi", (2*api.ElasticsearchMinHeapSize)/(1024*1024), value.Value()/(1024*1024))
+		}
 	} else {
 		if db.Spec.Replicas == nil || *db.Spec.Replicas < 1 {
 			return fmt.Errorf(`spec.replicas "%v" invalid. Must be greater than zero`, db.Spec.Replicas)
@@ -213,6 +227,13 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 
 		if err := amv.ValidateStorage(client, db.Spec.StorageType, db.Spec.Storage); err != nil {
 			return err
+		}
+
+		// Resources validation
+		// Heap size is the 50% of memory & it cannot be less than 128Mi(some say 97Mi)
+		// So, minimum memory request should be twice of 128Mi, i.e. 256Mi.
+		if value, ok := db.Spec.PodTemplate.Spec.Resources.Requests[core.ResourceMemory]; ok && value.Value() < 2*api.ElasticsearchMinHeapSize {
+			return fmt.Errorf("PodTemplate.Spec.Resources.Requests.memory cannot be less than %dMi, given %dMi", (2*api.ElasticsearchMinHeapSize)/(1024*1024), value.Value()/(1024*1024))
 		}
 	}
 
