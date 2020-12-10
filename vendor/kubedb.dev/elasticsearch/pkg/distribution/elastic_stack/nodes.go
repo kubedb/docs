@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	"kubedb.dev/elasticsearch/pkg/lib/heap"
 
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
@@ -50,7 +51,7 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 
 	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
 	if request, found := masterNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
-		heapSize = getHeapSizeForNode(request.Value())
+		heapSize = heap.GetHeapSizeFromMemory(request.Value())
 	}
 
 	// Environment variable list for main container.
@@ -132,7 +133,7 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 
 	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
 	if request, found := dataNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
-		heapSize = getHeapSizeForNode(request.Value())
+		heapSize = heap.GetHeapSizeFromMemory(request.Value())
 	}
 
 	// Environment variable list for main container.
@@ -204,7 +205,7 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 
 	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
 	if request, found := ingestNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
-		heapSize = getHeapSizeForNode(request.Value())
+		heapSize = heap.GetHeapSizeFromMemory(request.Value())
 	}
 
 	// Environment variable list for main container.
@@ -278,7 +279,7 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 
 	heapSize := int64(api.ElasticsearchMinHeapSize) // 128mb
 	if request, found := combinedNode.Resources.Requests[core.ResourceMemory]; found && request.Value() > 0 {
-		heapSize = getHeapSizeForNode(request.Value())
+		heapSize = heap.GetHeapSizeFromMemory(request.Value())
 	}
 
 	// Environment variable list for main container.
@@ -355,20 +356,4 @@ func (es *Elasticsearch) getCombinedNode() *api.ElasticsearchNode {
 		Resources:      es.db.Spec.PodTemplate.Spec.Resources,
 		MaxUnavailable: es.db.Spec.MaxUnavailable,
 	}
-}
-
-// Ref:
-//	- https://www.elastic.co/guide/en/elasticsearch/reference/7.6/heap-size.html#heap-size
-//	- no more than 50% of your physical RAM
-//	- no more than 32GB that the JVM uses for compressed object pointers (compressed oops)
-// 	- no more than 26GB for zero-based compressed oops;
-func getHeapSizeForNode(val int64) int64 {
-	// no more than 50% of main memory (RAM)
-	ret := (val / 100) * 50
-
-	// 26 GB is safe on most systems
-	if ret > api.ElasticsearchMaxHeapSize {
-		ret = api.ElasticsearchMaxHeapSize
-	}
-	return ret
 }

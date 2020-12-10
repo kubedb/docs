@@ -461,7 +461,6 @@ func (es *Elasticsearch) getInitContainers(esNode *api.ElasticsearchNode, envLis
 			SecurityContext: &core.SecurityContext{
 				Privileged: pointer.BoolP(true),
 			},
-			Resources: esNode.Resources,
 		},
 	}
 
