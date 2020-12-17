@@ -109,14 +109,6 @@ func (a *NamespaceValidator) Admit(req *admission.AdmissionRequest) *admission.A
 
 					results[idx] = list.EachListItem(func(o runtime.Object) error {
 						u := o.(*unstructured.Unstructured)
-						doNotPause, found, err := unstructured.NestedBool(u.Object, "spec", "doNotPause")
-						if err != nil {
-							return err
-						}
-						if found && doNotPause {
-							return fmt.Errorf("%s %s/%s can't be paused", u.GetKind(), u.GetNamespace(), u.GetName())
-						}
-
 						terminationPolicy, found, err := unstructured.NestedString(u.Object, "spec", "terminationPolicy")
 						if err != nil {
 							return err
