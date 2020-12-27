@@ -59,8 +59,6 @@ spec:
         storageClassName: standard
     mongos:
       replicas: 2
-      strategy:
-        type: RollingUpdate
     shard:
       replicas: 3
       shards: 3
@@ -97,7 +95,6 @@ Here,
     - `prefix` represents the prefix of mongos nodes.
     - `configSource` is an optional field to provide custom configuration file for mongos (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used.
     - `podTemplate` is an optional configuration for pods.
-    - `strategy` is the deployment strategy to use to replace existing pods with new ones. This is optional. If not provided, kubernetes will use default deploymentStrategy, ie. `RollingUpdate`. See more about [Deployment Strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
 - `spec.certificateSecret` (optional) is a secret name that contains keyfile(a random string) against `key.txt` key. Each mongod replica set instances in the topology uses the contents of the keyfile as the shared password for authenticating other members in the replicaset. Only mongod instances with the correct keyfile can join the replica set. _User can provide the `CertificateSecret` by creating a secret with key `key.txt`. See [here](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/#create-a-keyfile) to create the string for `CertificateSecret`._ If `CertificateSecret` is not given, KubeDB operator will generate a `CertificateSecret` itself.
 
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create governing services for StatefulSets with the name `<mongodb-name>-<node-type>-gvr`.
@@ -267,8 +264,6 @@ spec:
             runAsNonRoot: true
             runAsUser: 999
       replicas: 2
-      strategy:
-        type: RollingUpdate
     shard:
       podTemplate:
         controller: {}
@@ -735,7 +730,7 @@ demo          mongo-sh-mongos-69b557f9f5-2qvb7        0/1     Terminating       
 
 You can see that an extra statefulset `mongo-sh-shard3` is created as 4th shard and one extra mongos instance also came up.
 
-Notice that, all new mongos instances came up replacing old instances because of some changes in `shard` config. This update strategy follows `spec.shardTopology.mongos.strategy`, which is optional. If not provided, kubernetes will use default deploymentStrategy, ie. `RollingUpdate`. See more about [Deployment Strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
+Notice that, all new mongos instances came up replacing old instances because of some changes in `shard` config. 
 
 ```bash
 $ kubectl get deploy -n demo -w
@@ -922,8 +917,6 @@ spec:
                   runAsNonRoot: true
                   runAsUser: 999
             replicas: 2
-            strategy:
-              type: RollingUpdate
           shard:
             podTemplate:
               controller: {}
@@ -964,8 +957,6 @@ spec:
               storageClassName: standard
         storageType: Durable
         terminationPolicy: Halt
-        updateStrategy:
-          type: RollingUpdate
         version: 3.6-v3
 status:
   observedGeneration: 1$16440556888999634490

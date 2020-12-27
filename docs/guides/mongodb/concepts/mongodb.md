@@ -48,8 +48,6 @@ spec:
     mongos:
       podTemplate: {}
       replicas: 2
-      strategy:
-        type: RollingUpdate
     shard:
       podTemplate: {}
       replicas: 3
@@ -253,7 +251,6 @@ Available configurable fields:
 - `prefix` represents the prefix of mongos nodes.
 - `configSource` is an optional field to provide custom configuration file for mongos (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsource) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
-- `strategy` is the deployment strategy to use to replace existing pods with new ones. This is optional. If not provided, kubernetes will use default deploymentStrategy, ie. `RollingUpdate`. See more about [Deployment Strategy](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy).
 
 ### spec.sslMode
 
