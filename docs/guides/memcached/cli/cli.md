@@ -87,8 +87,6 @@ spec:
   serviceTemplate:
     metadata: {}
     spec: {}
-  strategy:
-    type: RollingUpdate
   terminationPolicy: Halt
   version: 1.5.4-v1
 status:

@@ -116,8 +116,6 @@ Spec:
     Storage Class Name:  standard
   Storage Type:          Durable
   Termination Policy:    WipeOut
-  Update Strategy:
-    Type:   RollingUpdate
   Version:  5.7-cluster
 Status:
   Observed Generation:  2$4213139756412538772
