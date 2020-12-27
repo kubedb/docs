@@ -23,4 +23,4 @@ jobs:
 
       - name: Check links
         run: |
-          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*)$'
+          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*github.com.*|.*api.slack.com.*|.*twitter.com.*)$'

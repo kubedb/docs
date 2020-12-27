@@ -145,8 +145,6 @@ fi
     Storage Class Name:  standard
   Storage Type:          Durable
   Termination Policy:    WipeOut
-  Update Strategy:
-    Type:   RollingUpdate
   Version:  5.7
 Status:
   Observed Generation:  2
