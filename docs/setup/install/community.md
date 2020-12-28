@@ -83,7 +83,7 @@ $ helm install kubedb-community appscode/kubedb \
   --set-file license=/path/to/the/license.txt
 
 # Step 2: wait until crds are registered
-$ kubectl get crds -l app=kubedb -w
+$ kubectl get crds -l app.kubernetes.io/name=kubedb -w
 NAME                               AGE
 elasticsearches.kubedb.com         12s
 elasticsearchversions.kubedb.com   8s
@@ -135,7 +135,7 @@ $ helm install appscode/kubedb --name kubedb-community \
   --set-file license=/path/to/the/license.txt
 
 # Step 2: wait until crds are registered
-$ kubectl get crds -l app=kubedb -w
+$ kubectl get crds -l app.kubernetes.io/name=kubedb -w
 NAME                               AGE
 elasticsearches.kubedb.com         12s
 elasticsearchversions.kubedb.com   8s
@@ -188,7 +188,7 @@ $ helm template kubedb-community appscode/kubedb \
   --no-hooks | kubectl apply -f -
 
 # Step 2: wait until crds are registered
-$ kubectl get crds -l app=kubedb -w
+$ kubectl get crds -l app.kubernetes.io/name=kubedb -w
 NAME                               AGE
 elasticsearches.kubedb.com         12s
 elasticsearchversions.kubedb.com   8s
