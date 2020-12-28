@@ -39,7 +39,7 @@ MongoDB supports initialization with `.sh` and `.js` files. In this tutorial, we
 
 We will use a ConfigMap as script source. You can use any Kubernetes supported [volume](https://kubernetes.io/docs/concepts/storage/volumes) as script source.
 
-At first, we will create a ConfigMap from `init.js` file. Then, we will provide this ConfigMap as script source in `init.scriptSource` of MongoDB crd spec.
+At first, we will create a ConfigMap from `init.js` file. Then, we will provide this ConfigMap as script source in `init.script` of MongoDB crd spec.
 
 Let's create a ConfigMap with initialization script,
 
@@ -69,7 +69,7 @@ spec:
       requests:
         storage: 1Gi
   init:
-    scriptSource:
+    script:
       configMap:
         name: mg-init-script
 ```
@@ -81,7 +81,7 @@ mongodb.kubedb.com/mgo-init-script created
 
 Here,
 
-- `spec.init.scriptSource` specifies a script source used to initialize the database before database server starts. The scripts will be executed alphabatically. In this tutorial, a sample .js script from the git repository `https://github.com/kubedb/mongodb-init-scripts.git` is used to create a test database. You can use other [volume sources](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes).  The \*.js and/or \*.sh sripts that are stored inside the root folder will be executed alphabatically. The scripts inside child folders will be skipped.
+- `spec.init.script` specifies a script source used to initialize the database before database server starts. The scripts will be executed alphabatically. In this tutorial, a sample .js script from the git repository `https://github.com/kubedb/mongodb-init-scripts.git` is used to create a test database. You can use other [volume sources](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes).  The \*.js and/or \*.sh sripts that are stored inside the root folder will be executed alphabatically. The scripts inside child folders will be skipped.
 
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-crd-name>-gvr`, if one is not already present. No MongoDB specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
 
@@ -195,7 +195,7 @@ spec:
   authSecret:
     name: mgo-init-script-auth
   init:
-    scriptSource:
+    script:
       configMap:
         name: mg-init-script
   podTemplate:

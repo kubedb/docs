@@ -15,7 +15,7 @@ spec:
       requests:
         storage: 50Mi
   init:
-    scriptSource:
+    script:
       configMap:
         name: px-init-script
   terminationPolicy: DoNotTerminate

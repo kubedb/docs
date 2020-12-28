@@ -55,7 +55,7 @@ spec:
       requests:
         storage: 1Gi
   init:
-    scriptSource:
+    script:
       configMap:
         name: pg-init-script
   backupSchedule:
@@ -251,7 +251,7 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 #### Initialize via Script
 
-To initialize a PostgreSQL database using a script (shell script, db migrator, etc.), set the `spec.init.scriptSource` section when creating a Postgres object. `scriptSource` must have the following information:
+To initialize a PostgreSQL database using a script (shell script, db migrator, etc.), set the `spec.init.script` section when creating a Postgres object. `script` must have the following information:
 
 - [VolumeSource](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes): Where your script is loaded from.
 
@@ -265,7 +265,7 @@ metadata:
 spec:
   version: "10.2-v5"
   init:
-    scriptSource:
+    script:
       configMap:
         name: pg-init-script
 ```

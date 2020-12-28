@@ -154,7 +154,7 @@ To learn how to configure `.spec.storage`, please visit the links below:
 
 #### Initialize via Script
 
-To initialize a PerconaXtraDB database (with replica 1) using a script (shell script, sql script etc.), set the `.spec.init.scriptSource` section when creating a PerconaXtraDB object. It will execute files alphabetically with extensions `.sh` , `.sql`  and `.sql.gz` that are found in the repository. The scripts inside child folders will be skipped. ScriptSource must have following information:
+To initialize a PerconaXtraDB database (with replica 1) using a script (shell script, sql script etc.), set the `.spec.init.script` section when creating a PerconaXtraDB object. It will execute files alphabetically with extensions `.sh` , `.sql`  and `.sql.gz` that are found in the repository. The scripts inside child folders will be skipped. script must have following information:
 
 - [VolumeSource](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes): Where your script is loaded from.
 
@@ -168,7 +168,7 @@ metadata:
 spec:
   version: 5.7
   init:
-    scriptSource:
+    script:
       configMap:
         name: my-init-script
 ```

@@ -41,7 +41,7 @@ PostgreSQL supports initialization with `.sh`, `.sql` and `.sql.gz` files. In th
 
 We will use a ConfigMap as script source. You can use any Kubernetes supported [volume](https://kubernetes.io/docs/concepts/storage/volumes) as script source.
 
-At first, we will create a ConfigMap from `data.sql` file. Then, we will provide this ConfigMap as script source in `init.scriptSource` of Postgres crd spec.
+At first, we will create a ConfigMap from `data.sql` file. Then, we will provide this ConfigMap as script source in `init.script` of Postgres crd spec.
 
 Let's create a ConfigMap with initialization script,
 
@@ -53,7 +53,7 @@ configmap/pg-init-script created
 
 ## Create PostgreSQL with script source
 
-Following YAML describes the Postgres object with `init.scriptSource`,
+Following YAML describes the Postgres object with `init.script`,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -71,16 +71,16 @@ spec:
       requests:
         storage: 1Gi
   init:
-    scriptSource:
+    script:
       configMap:
         name: pg-init-script
 ```
 
 Here,
 
-- `init.scriptSource` specifies scripts used to initialize the database when it is being created.
+- `init.script` specifies scripts used to initialize the database when it is being created.
 
-VolumeSource provided in `init.scriptSource` will be mounted in Pod and will be executed while creating PostgreSQL.
+VolumeSource provided in `init.script` will be mounted in Pod and will be executed while creating PostgreSQL.
 
 Now, let's create the Postgres crd which YAML we have shown above,
 
@@ -109,7 +109,7 @@ Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersio
 Replicas:           1  total
 Status:             Running
 Init:
-  scriptSource:
+  script:
 Volume:
     Type:       ConfigMap (a volume populated by a ConfigMap)
     Name:       pg-init-script

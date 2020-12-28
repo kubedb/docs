@@ -45,7 +45,7 @@ spec:
       requests:
         storage: 1Gi
   init:
-    scriptSource:
+    script:
       configMap:
         name: es-init-script
   backupSchedule:
