@@ -38,7 +38,7 @@ PerconaXtraDB supports initialization with `.sh`, `.sql` and `.sql.gz` files. In
 
 We will use a ConfigMap as script source. You can use any Kubernetes supported [volume](https://kubernetes.io/docs/concepts/storage/volumes) as script source.
 
-At first, we will create a ConfigMap from `init.sql` file. Then, we will provide this ConfigMap as script source in `.spec.init.scriptSource` of PerconaXtraDB object spec.
+At first, we will create a ConfigMap from `init.sql` file. Then, we will provide this ConfigMap as script source in `.spec.init.script` of PerconaXtraDB object spec.
 
 Let's create a ConfigMap with initialization script,
 
@@ -70,7 +70,7 @@ spec:
       requests:
         storage: 50Mi
   init:
-    scriptSource:
+    script:
       configMap:
         name: px-init-script
   terminationPolicy: DoNotTerminate
@@ -83,7 +83,7 @@ perconaxtradb.kubedb.com/px-init-script created
 
 Here,
 
-- `.spec.init.scriptSource` specifies a script source used to initialize the database before database server starts. The scripts will be executed alphabetically. In this tutorial, a sample `.sql` script from the git repository `https://github.com/kubedb/percona-xtradb-init-scripts.git` is used to create a test database. You can use other [volume sources](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes) instead of `ConfigMap`. The \*.sql, \*sql.gz and/or \*.sh scripts that are stored inside the directory `/docker-entrypoint-initdb.d` will be executed alphabetically. The scripts inside child folders will be skipped.
+- `.spec.init.script` specifies a script source used to initialize the database before database server starts. The scripts will be executed alphabetically. In this tutorial, a sample `.sql` script from the git repository `https://github.com/kubedb/percona-xtradb-init-scripts.git` is used to create a test database. You can use other [volume sources](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes) instead of `ConfigMap`. The \*.sql, \*sql.gz and/or \*.sh scripts that are stored inside the directory `/docker-entrypoint-initdb.d` will be executed alphabetically. The scripts inside child folders will be skipped.
 
 KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a `PerconaXtraDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching PerconaXtraDB object name. KubeDB operator will also create a governing service for StatefulSets with the name ``<percona-xtradb-object-name>-gvr`, if one is not already present.
 
@@ -189,7 +189,7 @@ kind: PerconaXtraDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"PerconaXtraDB","metadata":{"annotations":{},"name":"px-init-script","namespace":"demo"},"spec":{"init":{"scriptSource":{"configMap":{"name":"px-init-script"}}},"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","updateStrategy":{"type":"RollingUpdate"},"version":"5.7"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"PerconaXtraDB","metadata":{"annotations":{},"name":"px-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"px-init-script"}}},"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"50Mi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","updateStrategy":{"type":"RollingUpdate"},"version":"5.7"}}
   creationTimestamp: "2020-01-09T13:45:43Z"
   finalizers:
   - kubedb.com
@@ -203,7 +203,7 @@ spec:
   authSecret:
     name: px-init-script-auth
   init:
-    scriptSource:
+    script:
       configMap:
         name: px-init-script
   podTemplate:

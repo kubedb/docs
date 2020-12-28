@@ -77,7 +77,7 @@ spec:
       requests:
         storage: 1Gi
   init:
-    scriptSource:
+    script:
       configMap:
         name: mg-init-script
   backupSchedule:
@@ -339,7 +339,7 @@ NB. If `spec.shardTopology` is set, then `spec.storage` needs to be empty. Inste
 
 #### Initialize via Script
 
-To initialize a MongoDB database using a script (shell script, js script), set the `spec.init.scriptSource` section when creating a MongoDB object. It will execute files alphabetically with extensions `.sh` and `.js` that are found in the repository. ScriptSource must have following information:
+To initialize a MongoDB database using a script (shell script, js script), set the `spec.init.script` section when creating a MongoDB object. It will execute files alphabetically with extensions `.sh` and `.js` that are found in the repository. script must have following information:
 
 - [VolumeSource](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes): Where your script is loaded from.
 
@@ -353,7 +353,7 @@ metadata:
 spec:
   version: 3.4-v2
   init:
-    scriptSource:
+    script:
       configMap:
         name: mongodb-init-script
 ```

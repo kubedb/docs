@@ -46,7 +46,7 @@ spec:
       requests:
         storage: 1Gi
   init:
-    scriptSource:
+    script:
       configMap:
         name: mg-init-script
   monitor:
@@ -185,7 +185,7 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 #### Initialize via Script
 
-To initialize a MySQL database using a script (shell script, sql script, etc.), set the `spec.init.scriptSource` section when creating a MySQL object. It will execute files alphabetically with extensions `.sh` , `.sql`  and `.sql.gz` that is found in the repository. The scripts inside child folders will be skipped. ScriptSource must have the following information:
+To initialize a MySQL database using a script (shell script, sql script, etc.), set the `spec.init.script` section when creating a MySQL object. It will execute files alphabetically with extensions `.sh` , `.sql`  and `.sql.gz` that is found in the repository. The scripts inside child folders will be skipped. script must have the following information:
 
 - [VolumeSource](https://kubernetes.io/docs/concepts/storage/volumes/#types-of-volumes): Where your script is loaded from.
 
@@ -199,7 +199,7 @@ metadata:
 spec:
   version: 8.0.21
   init:
-    scriptSource:
+    script:
       configMap:
         name: mysql-init-script
 ```

@@ -24,7 +24,7 @@ spec:
       requests:
         storage: 1Gi
   init:
-    scriptSource:
+    script:
       configMap:
         name: pg-init-script
   backupSchedule:
