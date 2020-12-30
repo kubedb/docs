@@ -26,6 +26,7 @@ import (
 	"gomodules.xyz/x/log/golog"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	externalInformers "k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
@@ -57,6 +58,9 @@ type Controller struct {
 	AppCatalogClient appcat_cs.Interface
 	// Cluster topology when the operator started
 	ClusterTopology *core_util.Topology
+	// RESTMapper allows clients to map resources to kind, and map kind and version
+	// to interfaces for manipulating those objects.
+	Mapper meta.RESTMapper
 	// Event Recorder
 	Recorder record.EventRecorder
 }

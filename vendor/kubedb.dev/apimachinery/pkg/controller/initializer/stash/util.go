@@ -67,13 +67,12 @@ func (c *Controller) extractRestoreInfo(inv interface{}) (*restoreInfo, error) {
 		ri.phase = inv.Status.Phase
 		// database information
 		ri.do.Namespace = inv.Namespace
-		ri.do.Kind = inv.Labels[api.LabelDatabaseKind]
 	case *v1beta1.RestoreBatch:
 		// invoker information
 		ri.invoker.Kind = inv.Kind
 		ri.invoker.Name = inv.Name
 		// target information
-		// RestoreBatch can have multiple targets. In this case, only the database related target'c phase does matter.
+		// RestoreBatch can have multiple targets. In this case, only the database related target's phase does matter.
 		ri.target, err = c.identifyTarget(inv.Spec.Members, ri.do.Namespace)
 		if err != nil {
 			return ri, err
@@ -83,7 +82,6 @@ func (c *Controller) extractRestoreInfo(inv interface{}) (*restoreInfo, error) {
 		ri.phase = getTargetPhase(inv.Status, ri.target)
 		// database information
 		ri.do.Namespace = inv.Namespace
-		ri.do.Kind = inv.Labels[api.LabelDatabaseKind]
 	default:
 		return ri, fmt.Errorf("unknown restore invoker type")
 	}
@@ -251,20 +249,16 @@ func (c *Controller) extractDatabaseInfo(ri *restoreInfo) error {
 		Group:   gv.Group,
 		Version: gv.Version,
 	}
-	switch owner.Kind {
-	case api.ResourceKindElasticsearch:
-		ri.do.GVR.Resource = api.ResourcePluralElasticsearch
-	case api.ResourceKindMongoDB:
-		ri.do.GVR.Resource = api.ResourcePluralMongoDB
-	case api.ResourceKindMySQL:
-		ri.do.GVR.Resource = api.ResourcePluralMySQL
-	case api.ResourceKindPerconaXtraDB:
-		ri.do.GVR.Resource = api.ResourcePluralPerconaXtraDB
-	case api.ResourceKindPostgres:
-		ri.do.GVR.Resource = api.ResourcePluralPostgres
-	case api.ResourceKindRedis:
-		ri.do.GVR.Resource = api.ResourcePluralRedis
+
+	mapping, err := c.Mapper.RESTMapping(schema.GroupKind{
+		Group: gv.Group,
+		Kind:  owner.Kind,
+	})
+	if err != nil {
+		return err
 	}
+	ri.do.GVR.Resource = mapping.Resource.Resource
+
 	return nil
 }
 
