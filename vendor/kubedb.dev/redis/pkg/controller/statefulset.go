@@ -40,6 +40,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
@@ -102,10 +103,7 @@ func (c *Controller) ensureRedisNodes(db *api.Redis) (kutil.VerbType, error) {
 		}
 
 		statefulSets, err := c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{
-			LabelSelector: labels.Set{
-				api.LabelDatabaseKind: api.ResourceKindRedis,
-				api.LabelDatabaseName: db.Name,
-			}.String(),
+			LabelSelector: labels.Set(db.OffshootSelectors()).String(),
 		})
 		if err != nil {
 			return vt, err
@@ -135,10 +133,7 @@ func (c *Controller) ensureRedisNodes(db *api.Redis) (kutil.VerbType, error) {
 		log.Infoln("Cluster configured")
 		log.Infoln("Checking for removing master(s)...")
 		statefulSets, err = c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{
-			LabelSelector: labels.Set{
-				api.LabelDatabaseKind: api.ResourceKindRedis,
-				api.LabelDatabaseName: db.Name,
-			}.String(),
+			LabelSelector: labels.Set(db.OffshootSelectors()).String(),
 		})
 		if err != nil {
 			return vt, err
@@ -164,10 +159,7 @@ func (c *Controller) ensureRedisNodes(db *api.Redis) (kutil.VerbType, error) {
 		// update the the statefulSets with reduced replicas as some of their slaves have been
 		// removed when redis.spec.cluster.replicas field is reduced
 		statefulSets, err = c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{
-			LabelSelector: labels.Set{
-				api.LabelDatabaseKind: api.ResourceKindRedis,
-				api.LabelDatabaseName: db.Name,
-			}.String(),
+			LabelSelector: labels.Set(db.OffshootSelectors()).String(),
 		})
 		if err != nil {
 			return vt, err
@@ -197,8 +189,8 @@ func (c *Controller) checkStatefulSet(db *api.Redis, statefulSetName string) err
 		return err
 	}
 
-	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindRedis ||
-		statefulSet.Labels[api.LabelDatabaseName] != db.Name {
+	if statefulSet.Labels[meta_util.NameLabelKey] != db.ResourceFQN() ||
+		statefulSet.Labels[meta_util.InstanceLabelKey] != db.Name {
 		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, db.Namespace, db.OffshootName())
 	}
 

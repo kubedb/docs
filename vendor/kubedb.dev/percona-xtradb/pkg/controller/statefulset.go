@@ -34,6 +34,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
@@ -207,8 +208,8 @@ func (c *Controller) checkStatefulSet(db *api.PerconaXtraDB, stsName string) err
 		return err
 	}
 
-	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindPerconaXtraDB ||
-		statefulSet.Labels[api.LabelDatabaseName] != db.Name {
+	if statefulSet.Labels[meta_util.NameLabelKey] != db.ResourceFQN() ||
+		statefulSet.Labels[meta_util.InstanceLabelKey] != db.Name {
 		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, db.Namespace, stsName)
 	}
 

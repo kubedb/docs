@@ -942,8 +942,8 @@ func (c *Controller) checkStatefulSet(db *api.MongoDB, stsName string) error {
 		return err
 	}
 
-	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindMongoDB ||
-		statefulSet.Labels[api.LabelDatabaseName] != db.Name {
+	if statefulSet.Labels[meta_util.NameLabelKey] != db.ResourceFQN() ||
+		statefulSet.Labels[meta_util.InstanceLabelKey] != db.Name {
 		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, db.Namespace, stsName)
 	}
 

@@ -36,14 +36,17 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat_util "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -92,12 +95,14 @@ func New(
 			DynamicClient:    dc,
 			AppCatalogClient: appCatalogClient,
 			ClusterTopology:  topology,
+			Mapper:           restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(client.Discovery())),
 		},
 		Config:     opt,
 		promClient: promClient,
 		recorder:   recorder,
 		selector: labels.SelectorFromSet(map[string]string{
-			api.LabelDatabaseKind: api.ResourceKindPgBouncer,
+			meta_util.NameLabelKey:      api.PgBouncer{}.ResourceFQN(),
+			meta_util.ManagedByLabelKey: kubedb.GroupName,
 		}),
 	}
 }

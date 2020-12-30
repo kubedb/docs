@@ -324,13 +324,8 @@ func getPreconditionFunc(db *api.Elasticsearch) []mergepatch.PreconditionFunc {
 
 var preconditionSpecFields = sets.NewString(
 	"spec.topology.*.prefix",
-	"spec.topology.*.storage",
-	"spec.enableSSL",
-	"spec.certificateSecret",
-	"spec.authPlugin",
 	"spec.authSecret",
 	"spec.storageType",
-	"spec.storage",
 	"spec.podTemplate.spec.nodeSelector",
 )
 

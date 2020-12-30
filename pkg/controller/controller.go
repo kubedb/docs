@@ -35,12 +35,15 @@ import (
 	"gomodules.xyz/x/log"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/record"
 	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 )
@@ -86,6 +89,7 @@ func New(
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
 			ClusterTopology:  topology,
+			Mapper:           restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(client.Discovery())),
 			Recorder:         recorder,
 		},
 		Config:     opt,
@@ -93,8 +97,20 @@ func New(
 		selector: metav1.LabelSelector{
 			MatchExpressions: []metav1.LabelSelectorRequirement{
 				{
-					Key:      dbapi.LabelDatabaseKind,
-					Operator: metav1.LabelSelectorOpExists,
+					Key:      meta_util.NameLabelKey,
+					Operator: metav1.LabelSelectorOpIn,
+					Values: []string{
+						dbapi.Elasticsearch{}.ResourceFQN(),
+						dbapi.Etcd{}.ResourceFQN(),
+						dbapi.Memcached{}.ResourceFQN(),
+						dbapi.MongoDB{}.ResourceFQN(),
+						dbapi.MySQL{}.ResourceFQN(),
+						dbapi.PerconaXtraDB{}.ResourceFQN(),
+						dbapi.PgBouncer{}.ResourceFQN(),
+						dbapi.Postgres{}.ResourceFQN(),
+						dbapi.ProxySQL{}.ResourceFQN(),
+						dbapi.Redis{}.ResourceFQN(),
+					},
 				},
 			},
 		},

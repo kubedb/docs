@@ -36,6 +36,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
@@ -527,8 +528,8 @@ func (es *Elasticsearch) checkStatefulSet(sName string) error {
 		return err
 	}
 
-	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindElasticsearch ||
-		statefulSet.Labels[api.LabelDatabaseName] != elasticsearchName {
+	if statefulSet.Labels[meta_util.NameLabelKey] != es.db.ResourceFQN() ||
+		statefulSet.Labels[meta_util.InstanceLabelKey] != elasticsearchName {
 		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, es.db.Namespace, sName)
 	}
 

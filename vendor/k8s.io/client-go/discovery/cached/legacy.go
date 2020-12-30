@@ -1,5 +1,5 @@
 /*
-Copyright AppsCode Inc. and Contributors
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,16 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package apis
+package memory
 
-const (
-	Finalizer = "kubedb.com"
+import (
+	"k8s.io/client-go/discovery"
+	"k8s.io/client-go/discovery/cached/memory"
 )
 
-type ResourceInfo interface {
-	ResourceFQN() string
-	ResourceShortCode() string
-	ResourceKind() string
-	ResourceSingular() string
-	ResourcePlural() string
+// NewMemCacheClient is DEPRECATED. Use memory.NewMemCacheClient directly.
+func NewMemCacheClient(delegate discovery.DiscoveryInterface) discovery.CachedDiscoveryInterface {
+	return memory.NewMemCacheClient(delegate)
 }
+
+// ErrCacheNotFound is DEPRECATED. Use memory.ErrCacheNotFound directly.
+var ErrCacheNotFound = memory.ErrCacheNotFound

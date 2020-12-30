@@ -30,6 +30,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
@@ -80,8 +81,8 @@ func (c *Controller) checkStatefulSet(db *api.Memcached) error {
 		}
 		return err
 	}
-	if sts.Labels[api.LabelDatabaseKind] != api.ResourceKindMemcached ||
-		sts.Labels[api.LabelDatabaseName] != db.Name {
+	if sts.Labels[meta_util.NameLabelKey] != db.ResourceFQN() ||
+		sts.Labels[meta_util.InstanceLabelKey] != db.Name {
 		return fmt.Errorf(`intended sts "%v/%v" already exists`, db.Namespace, db.OffshootName())
 	}
 	return nil

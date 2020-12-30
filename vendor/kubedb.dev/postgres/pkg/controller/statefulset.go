@@ -38,6 +38,7 @@ import (
 	kmapi "kmodules.xyz/client-go/api/v1"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/analytics"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
@@ -331,8 +332,8 @@ func (c *Controller) checkStatefulSet(db *api.Postgres) error {
 		}
 	}
 
-	if statefulSet.Labels[api.LabelDatabaseKind] != api.ResourceKindPostgres ||
-		statefulSet.Labels[api.LabelDatabaseName] != name {
+	if statefulSet.Labels[meta_util.NameLabelKey] != db.ResourceFQN() ||
+		statefulSet.Labels[meta_util.InstanceLabelKey] != name {
 		return fmt.Errorf(`intended statefulSet "%v/%v" already exists`, db.Namespace, name)
 	}
 

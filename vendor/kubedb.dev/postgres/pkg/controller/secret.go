@@ -28,6 +28,7 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 const (
@@ -66,8 +67,8 @@ func (c *Controller) findAuthSecret(db *api.Postgres) (*core.Secret, error) {
 		return nil, err
 	}
 
-	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindPostgres ||
-		secret.Labels[api.LabelDatabaseName] != db.Name {
+	if secret.Labels[meta_util.NameLabelKey] != db.ResourceFQN() ||
+		secret.Labels[meta_util.InstanceLabelKey] != db.Name {
 		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, db.Namespace, name)
 	}
 
@@ -91,7 +92,7 @@ func (c *Controller) createAuthSecret(db *api.Postgres) (*core.LocalObjectRefere
 			Name:   name,
 			Labels: db.OffshootLabels(),
 		},
-		Type: core.SecretTypeOpaque,
+		Type: core.SecretTypeBasicAuth,
 		Data: map[string][]byte{
 			core.BasicAuthUsernameKey: []byte("postgres"),
 			core.BasicAuthPasswordKey: []byte(passgen.Generate(api.DefaultPasswordLength)),
