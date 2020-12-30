@@ -28,6 +28,7 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 const (
@@ -77,7 +78,7 @@ func (c *Controller) createAuthSecret(db *api.ProxySQL) (*core.LocalObjectRefere
 				Namespace: db.Namespace,
 				Labels:    db.OffshootSelectors(),
 			},
-			Type: core.SecretTypeOpaque,
+			Type: core.SecretTypeBasicAuth,
 			StringData: map[string]string{
 				core.BasicAuthUsernameKey: proxysqlUser,
 				core.BasicAuthPasswordKey: passgen.Generate(api.DefaultPasswordLength),
@@ -104,8 +105,8 @@ func (c *Controller) checkSecret(secretName string, db *api.ProxySQL) (*core.Sec
 		return nil, err
 	}
 
-	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindProxySQL ||
-		secret.Labels[api.LabelProxySQLName] != db.Name {
+	if secret.Labels[meta_util.NameLabelKey] != db.ResourceFQN() ||
+		secret.Labels[meta_util.InstanceLabelKey] != db.Name {
 		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, db.Namespace, secretName)
 	}
 	return secret, nil

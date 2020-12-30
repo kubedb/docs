@@ -30,15 +30,8 @@ import (
 )
 
 func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
-	statefulSetName := es.db.OffshootName()
+	statefulSetName := es.db.MasterStatefulSetName()
 	masterNode := es.db.Spec.Topology.Master
-
-	if masterNode.Prefix != "" {
-		statefulSetName = fmt.Sprintf("%v-%v", masterNode.Prefix, statefulSetName)
-	} else {
-		statefulSetName = fmt.Sprintf("%v-%v", api.ElasticsearchMasterNodePrefix, statefulSetName)
-	}
-
 	labels := map[string]string{
 		api.ElasticsearchNodeRoleMaster: api.ElasticsearchNodeRoleSet,
 	}
@@ -118,15 +111,8 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 }
 
 func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
-	statefulSetName := es.db.OffshootName()
+	statefulSetName := es.db.DataStatefulSetName()
 	dataNode := es.db.Spec.Topology.Data
-
-	if dataNode.Prefix != "" {
-		statefulSetName = fmt.Sprintf("%v-%v", dataNode.Prefix, statefulSetName)
-	} else {
-		statefulSetName = fmt.Sprintf("%v-%v", api.ElasticsearchDataNodePrefix, statefulSetName)
-	}
-
 	labels := map[string]string{
 		api.ElasticsearchNodeRoleData: api.ElasticsearchNodeRoleSet,
 	}
@@ -190,15 +176,8 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 }
 
 func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
-	statefulSetName := es.db.OffshootName()
+	statefulSetName := es.db.IngestStatefulSetName()
 	ingestNode := es.db.Spec.Topology.Ingest
-
-	if ingestNode.Prefix != "" {
-		statefulSetName = fmt.Sprintf("%v-%v", ingestNode.Prefix, statefulSetName)
-	} else {
-		statefulSetName = fmt.Sprintf("%v-%v", api.ElasticsearchIngestNodePrefix, statefulSetName)
-	}
-
 	labels := map[string]string{
 		api.ElasticsearchNodeRoleIngest: api.ElasticsearchNodeRoleSet,
 	}
@@ -261,7 +240,7 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 }
 
 func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
-	statefulSetName := es.db.OffshootName()
+	statefulSetName := es.db.CombinedStatefulSetName()
 	combinedNode := es.getCombinedNode()
 
 	// Each node performs all three roles; master, data, and ingest.

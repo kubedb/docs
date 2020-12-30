@@ -30,6 +30,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 const (
@@ -95,8 +96,8 @@ func (c *Controller) checkSecret(db *api.Redis) error {
 		return err
 	}
 
-	if configmap.Labels[api.LabelDatabaseKind] != api.ResourceKindRedis ||
-		configmap.Labels[api.LabelDatabaseName] != db.Name {
+	if configmap.Labels[meta_util.NameLabelKey] != db.ResourceFQN() ||
+		configmap.Labels[meta_util.InstanceLabelKey] != db.Name {
 		return fmt.Errorf(`intended configmap "%v" already exists`, db.ConfigSecretName())
 	}
 

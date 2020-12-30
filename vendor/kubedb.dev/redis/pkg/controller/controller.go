@@ -20,6 +20,7 @@ import (
 	"context"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
+	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
@@ -35,14 +36,17 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -84,13 +88,15 @@ func New(
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
 			ClusterTopology:  topology,
+			Mapper:           restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(client.Discovery())),
 			Recorder:         recorder,
 		},
 		Config:     opt,
 		promClient: promClient,
 		selector: metav1.LabelSelector{
 			MatchLabels: map[string]string{
-				api.LabelDatabaseKind: api.ResourceKindMySQL,
+				meta_util.NameLabelKey:      api.Redis{}.ResourceFQN(),
+				meta_util.ManagedByLabelKey: kubedb.GroupName,
 			},
 		},
 	}

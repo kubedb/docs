@@ -31,6 +31,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
 	core_util "kmodules.xyz/client-go/core/v1"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 const (
@@ -72,7 +73,7 @@ func (c *Controller) createAuthSecret(db *api.MySQL) (string, error) {
 				Name:   authSecretName,
 				Labels: db.OffshootLabels(),
 			},
-			Type: core.SecretTypeOpaque,
+			Type: core.SecretTypeBasicAuth,
 			StringData: map[string]string{
 				core.BasicAuthUsernameKey: mysqlUser,
 				core.BasicAuthPasswordKey: passgen.Generate(api.DefaultPasswordLength),
@@ -120,8 +121,8 @@ func (c *Controller) checkSecret(secretName string, db *api.MySQL) (*core.Secret
 		return nil, err
 	}
 
-	if secret.Labels[api.LabelDatabaseKind] != api.ResourceKindMySQL ||
-		secret.Labels[api.LabelDatabaseName] != db.Name {
+	if secret.Labels[meta_util.NameLabelKey] != db.ResourceFQN() ||
+		secret.Labels[meta_util.InstanceLabelKey] != db.Name {
 		return nil, fmt.Errorf(`intended secret "%v/%v" already exists`, db.Namespace, secretName)
 	}
 	return secret, nil
