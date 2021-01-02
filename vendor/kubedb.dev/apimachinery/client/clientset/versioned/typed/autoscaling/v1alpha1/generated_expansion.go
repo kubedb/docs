@@ -39,7 +39,3 @@ type PostgresAutoscalerExpansion interface{}
 type ProxySQLAutoscalerExpansion interface{}
 
 type RedisAutoscalerExpansion interface{}
-
-type VerticalAutoscalerExpansion interface{}
-
-type VerticalAutoscalerCheckpointExpansion interface{}

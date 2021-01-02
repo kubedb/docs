@@ -79,10 +79,6 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1alpha1().ProxySQLAutoscalers().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("redisautoscalers"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1alpha1().RedisAutoscalers().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("verticalautoscalers"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1alpha1().VerticalAutoscalers().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("verticalautoscalercheckpoints"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1alpha1().VerticalAutoscalerCheckpoints().Informer()}, nil
 
 		// Group=catalog.kubedb.com, Version=v1alpha1
 	case catalogv1alpha1.SchemeGroupVersion.WithResource("elasticsearchversions"):
