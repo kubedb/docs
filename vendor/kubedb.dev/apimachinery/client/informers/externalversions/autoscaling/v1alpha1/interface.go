@@ -46,10 +46,6 @@ type Interface interface {
 	ProxySQLAutoscalers() ProxySQLAutoscalerInformer
 	// RedisAutoscalers returns a RedisAutoscalerInformer.
 	RedisAutoscalers() RedisAutoscalerInformer
-	// VerticalAutoscalers returns a VerticalAutoscalerInformer.
-	VerticalAutoscalers() VerticalAutoscalerInformer
-	// VerticalAutoscalerCheckpoints returns a VerticalAutoscalerCheckpointInformer.
-	VerticalAutoscalerCheckpoints() VerticalAutoscalerCheckpointInformer
 }
 
 type version struct {
@@ -116,14 +112,4 @@ func (v *version) ProxySQLAutoscalers() ProxySQLAutoscalerInformer {
 // RedisAutoscalers returns a RedisAutoscalerInformer.
 func (v *version) RedisAutoscalers() RedisAutoscalerInformer {
 	return &redisAutoscalerInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// VerticalAutoscalers returns a VerticalAutoscalerInformer.
-func (v *version) VerticalAutoscalers() VerticalAutoscalerInformer {
-	return &verticalAutoscalerInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// VerticalAutoscalerCheckpoints returns a VerticalAutoscalerCheckpointInformer.
-func (v *version) VerticalAutoscalerCheckpoints() VerticalAutoscalerCheckpointInformer {
-	return &verticalAutoscalerCheckpointInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

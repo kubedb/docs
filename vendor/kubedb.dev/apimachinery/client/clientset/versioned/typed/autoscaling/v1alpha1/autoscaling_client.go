@@ -38,8 +38,6 @@ type AutoscalingV1alpha1Interface interface {
 	PostgresAutoscalersGetter
 	ProxySQLAutoscalersGetter
 	RedisAutoscalersGetter
-	VerticalAutoscalersGetter
-	VerticalAutoscalerCheckpointsGetter
 }
 
 // AutoscalingV1alpha1Client is used to interact with features provided by the autoscaling.kubedb.com group.
@@ -89,14 +87,6 @@ func (c *AutoscalingV1alpha1Client) ProxySQLAutoscalers(namespace string) ProxyS
 
 func (c *AutoscalingV1alpha1Client) RedisAutoscalers(namespace string) RedisAutoscalerInterface {
 	return newRedisAutoscalers(c, namespace)
-}
-
-func (c *AutoscalingV1alpha1Client) VerticalAutoscalers(namespace string) VerticalAutoscalerInterface {
-	return newVerticalAutoscalers(c, namespace)
-}
-
-func (c *AutoscalingV1alpha1Client) VerticalAutoscalerCheckpoints(namespace string) VerticalAutoscalerCheckpointInterface {
-	return newVerticalAutoscalerCheckpoints(c, namespace)
 }
 
 // NewForConfig creates a new AutoscalingV1alpha1Client for the given config.
