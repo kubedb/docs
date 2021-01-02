@@ -829,7 +829,7 @@ metadata:
   - kubedb.com
   generation: 1
   labels:
-    kubedb.com/kind: MongoDB
+    app.kubernetes.io/name: mongodbs.kubedb.com
   name: mongo-sh
   namespace: demo
   resourceVersion: "35082"

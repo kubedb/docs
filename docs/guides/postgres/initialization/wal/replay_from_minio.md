@@ -42,7 +42,7 @@ Let's populate the database so that we can verify that the initialized database 
 At first, find out the primary replica using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="kubedb.com/name=wal-postgres-minio","kubedb.com/role=primary"
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=wal-postgres-minio","kubedb.com/role=primary"
 NAME             READY     STATUS    RESTARTS   AGE
 wal-postgres-minio-0   1/1       Running   0          8m
 ```

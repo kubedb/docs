@@ -12,8 +12,3 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  backupSchedule:
-    cronExpression: "@every 1m"
-    storageSecretName: mg-snap-secret
-    gcs:
-      bucket: kubedb-qa

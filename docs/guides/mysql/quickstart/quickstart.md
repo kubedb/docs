@@ -169,12 +169,9 @@ StatefulSet:
   Name:               mysql-quickstart
   CreationTimestamp:  Mon, 31 Aug 2020 16:39:47 +0600
   Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/instance=mysql-quickstart
                         app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=mysql
-                        app.kubernetes.io/version=8.0.21
-                        kubedb.com/kind=MySQL
-                        kubedb.com/name=mysql-quickstart
+                        app.kubernetes.io/name=mysqls.kubedb.com
+                        app.kubernetes.io/instance=mysql-quickstart
   Annotations:        <none>
   Replicas:           824634389080 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
@@ -182,12 +179,9 @@ StatefulSet:
 Service:        
   Name:         mysql-quickstart
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=mysql-quickstart
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=mysql-quickstart
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=mysql-quickstart
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.103.57.226
@@ -198,12 +192,9 @@ Service:
 Service:        
   Name:         mysql-quickstart-gvr
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=mysql-quickstart
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=mysql-quickstart
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=mysql-quickstart
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
   Type:         ClusterIP
   IP:           None
@@ -214,12 +205,9 @@ Service:
 Database Secret:
   Name:         mysql-quickstart-auth
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=mysql-quickstart
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=mysql-quickstart
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=mysql-quickstart
   Annotations:  <none>
   Type:         Opaque
   Data:
@@ -238,8 +226,8 @@ AppBinding:
       app.kubernetes.io/managed-by:  kubedb.com
       app.kubernetes.io/name:        mysql
       app.kubernetes.io/version:     8.0.21
-      kubedb.com/kind:               MySQL
-      kubedb.com/name:               mysql-quickstart
+      app.kubernetes.io/name:        mysqls.kubedb.com
+      app.kubernetes.io/instance:               mysql-quickstart
     Name:                            mysql-quickstart
     Namespace:                       demo
   Spec:

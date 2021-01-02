@@ -223,7 +223,7 @@ You can connect to any of these cluster nodes. In that case you just need to spe
 
 ```bash
 # first list the percona-xtradb pods list
-$ kubectl get pods -n demo -l kubedb.com/name=demo-cluster
+$ kubectl get pods -n demo -l app.kubernetes.io/instance=demo-cluster
 NAME             READY   STATUS    RESTARTS   AGE
 demo-cluster-0   1/1     Running   0          23m
 demo-cluster-1   1/1     Running   0          21m
@@ -235,7 +235,7 @@ NAME               TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
 demo-cluster-gvr   ClusterIP   None         <none>        3306/TCP   23m
 
 # list the pods with PodIP
-$ kubectl get pods -n demo -l kubedb.com/name=demo-cluster -o jsonpath='{range.items[*]}{.metadata.name} ........... {.status.podIP} ............ {.metadata.name}.demo-cluster-gvr.{.metadata.namespace}{"\\n"}{end}'
+$ kubectl get pods -n demo -l app.kubernetes.io/instance=demo-cluster -o jsonpath='{range.items[*]}{.metadata.name} ........... {.status.podIP} ............ {.metadata.name}.demo-cluster-gvr.{.metadata.namespace}{"\\n"}{end}'
 demo-cluster-0 ........... 10.244.2.7 ............ demo-cluster-0.demo-cluster-gvr.demo
 demo-cluster-1 ........... 10.244.1.5 ............ demo-cluster-1.demo-cluster-gvr.demo
 demo-cluster-2 ........... 10.244.2.9 ............ demo-cluster-2.demo-cluster-gvr.demo

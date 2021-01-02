@@ -162,16 +162,16 @@ StatefulSet:
   Name:               redis-demo
   CreationTimestamp:  Mon, 01 Oct 2018 14:14:31 +0600
   Labels:               kubedb=cli-demo
-                        kubedb.com/kind=Redis
-                        kubedb.com/name=redis-demo
+                        app.kubernetes.io/name=redises.kubedb.com
+                        app.kubernetes.io/instance=redis-demo
   Annotations:        <none>
   Replicas:           824640807604 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:
   Name:         redis-demo
-  Labels:         kubedb.com/kind=Redis
-                  kubedb.com/name=redis-demo
+  Labels:         app.kubernetes.io/name=redises.kubedb.com
+                  app.kubernetes.io/instance=redis-demo
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.102.148.196
@@ -281,10 +281,10 @@ redis.kubedb.com "redis-dev" deleted
 cat redis-demo.yaml | kubectl delete -f -
 ```
 
-To delete database with matching labels, use `--selector` flag. The following command will delete redis with label `redis.kubedb.com/name=redis-demo`.
+To delete database with matching labels, use `--selector` flag. The following command will delete redis with label `redis.app.kubernetes.io/instance=redis-demo`.
 
 ```bash
-kubectl delete redis -l redis.kubedb.com/name=redis-demo
+kubectl delete redis -l redis.app.kubernetes.io/instance=redis-demo
 ```
 
 ## Using Kubectl

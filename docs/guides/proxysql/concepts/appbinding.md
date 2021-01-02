@@ -40,8 +40,8 @@ metadata:
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: postgres
     app.kubernetes.io/version: 10.2-v2
-    kubedb.com/kind: Postgres
-    kubedb.com/name: quick-postgres
+    app.kubernetes.io/name: postgreses.kubedb.com
+    app.kubernetes.io/instance: quick-postgres
 spec:
   type: kubedb.com/postgres
   secret:

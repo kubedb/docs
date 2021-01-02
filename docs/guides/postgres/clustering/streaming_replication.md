@@ -105,11 +105,11 @@ postgres.kubedb.com/ha-postgres created
 KubeDB operator creates three Pod as PostgreSQL server.
 
 ```bash
-$ kubectl get pods -n demo --selector="kubedb.com/name=ha-postgres" --show-labels
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" --show-labels
 NAME            READY   STATUS    RESTARTS   AGE   LABELS
-ha-postgres-0   1/1     Running   0          20s   controller-revision-hash=ha-postgres-6b7998ccfd,kubedb.com/kind=Postgres,kubedb.com/name=ha-postgres,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=ha-postgres-0
-ha-postgres-1   1/1     Running   0          16s   controller-revision-hash=ha-postgres-6b7998ccfd,kubedb.com/kind=Postgres,kubedb.com/name=ha-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=ha-postgres-1
-ha-postgres-2   1/1     Running   0          10s   controller-revision-hash=ha-postgres-6b7998ccfd,kubedb.com/kind=Postgres,kubedb.com/name=ha-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=ha-postgres-2
+ha-postgres-0   1/1     Running   0          20s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=ha-postgres-0
+ha-postgres-1   1/1     Running   0          16s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=ha-postgres-1
+ha-postgres-2   1/1     Running   0          10s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=ha-postgres-2
 ```
 
 Here,
@@ -120,23 +120,23 @@ Here,
 And two services for Postgres `ha-postgres` are created.
 
 ```bash
-$ kubectl get svc -n demo --selector="kubedb.com/name=ha-postgres"
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=ha-postgres"
 NAME                   TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 ha-postgres            ClusterIP   10.102.19.49   <none>        5432/TCP   4m
 ha-postgres-replicas   ClusterIP   10.97.36.117   <none>        5432/TCP   4m
 ```
 
 ```bash
-$ kubectl get svc -n demo --selector="kubedb.com/name=ha-postgres" -o=custom-columns=NAME:.metadata.name,SELECTOR:.spec.selector
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=ha-postgres" -o=custom-columns=NAME:.metadata.name,SELECTOR:.spec.selector
 NAME                   SELECTOR
-ha-postgres            map[kubedb.com/kind:Postgres kubedb.com/name:ha-postgres kubedb.com/role:primary]
-ha-postgres-replicas   map[kubedb.com/kind:Postgres kubedb.com/name:ha-postgres]
+ha-postgres            map[app.kubernetes.io/name:postgreses.kubedb.com app.kubernetes.io/instance:ha-postgres kubedb.com/role:primary]
+ha-postgres-replicas   map[app.kubernetes.io/name:postgreses.kubedb.com app.kubernetes.io/instance:ha-postgres]
 ```
 
 Here,
 
-- Service `ha-postgres` targets Pod `ha-postgres-0`, which is *primary* server, by selector `kubedb.com/kind=Postgres,kubedb.com/name=ha-postgres,kubedb.com/role=primary`.
-- Service `ha-postgres-replicas` targets all Pods (*`ha-postgres-0`*, *`ha-postgres-1`* and *`ha-postgres-2`*) with label `kubedb.com/kind=Postgres,kubedb.com/name=ha-postgres`.
+- Service `ha-postgres` targets Pod `ha-postgres-0`, which is *primary* server, by selector `app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary`.
+- Service `ha-postgres-replicas` targets all Pods (*`ha-postgres-0`*, *`ha-postgres-1`* and *`ha-postgres-2`*) with label `app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres`.
 
 >These *standby* servers are asynchronous *warm standby* server. That means, you can only connect to *primary* sever.
 
@@ -245,11 +245,11 @@ kubectl delete pod -n demo ha-postgres-0
 ```
 
 ```bash
-$ kubectl get pods -n demo --selector="kubedb.com/name=ha-postgres" --show-labels
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" --show-labels
 NAME            READY     STATUS    RESTARTS   AGE       LABELS
-ha-postgres-0   1/1       Running   0          10s       controller-revision-hash=ha-postgres-b8b4b5fc4,kubedb.com/kind=Postgres,kubedb.com/name=ha-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=ha-postgres-0
-ha-postgres-1   1/1       Running   0          52m       controller-revision-hash=ha-postgres-b8b4b5fc4,kubedb.com/kind=Postgres,kubedb.com/name=ha-postgres,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=ha-postgres-1
-ha-postgres-2   1/1       Running   0          51m       controller-revision-hash=ha-postgres-b8b4b5fc4,kubedb.com/kind=Postgres,kubedb.com/name=ha-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=ha-postgres-2
+ha-postgres-0   1/1       Running   0          10s       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=ha-postgres-0
+ha-postgres-1   1/1       Running   0          52m       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=ha-postgres-1
+ha-postgres-2   1/1       Running   0          51m       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=ha-postgres-2
 ```
 
 Here,
@@ -329,11 +329,11 @@ postgres "hot-postgres" created
 KubeDB operator creates three Pod as PostgreSQL server.
 
 ```bash
-$ kubectl get pods -n demo --selector="kubedb.com/name=hot-postgres" --show-labels
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hot-postgres" --show-labels
 NAME             READY     STATUS    RESTARTS   AGE       LABELS
-hot-postgres-0   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,kubedb.com/kind=Postgres,kubedb.com/name=hot-postgres,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=hot-postgres-0
-hot-postgres-1   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,kubedb.com/kind=Postgres,kubedb.com/name=hot-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=hot-postgres-1
-hot-postgres-2   1/1       Running   0          48s       controller-revision-hash=hot-postgres-6c48cfb5bb,kubedb.com/kind=Postgres,kubedb.com/name=hot-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=hot-postgres-2
+hot-postgres-0   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=hot-postgres-0
+hot-postgres-1   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=hot-postgres-1
+hot-postgres-2   1/1       Running   0          48s       controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=replica,statefulset.kubernetes.io/pod-name=hot-postgres-2
 ```
 
 Here,

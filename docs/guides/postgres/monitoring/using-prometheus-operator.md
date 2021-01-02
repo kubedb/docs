@@ -140,7 +140,7 @@ coreos-prom-postgres   10.2-v5    Running   38s
 KubeDB will create a separate stats service with name `{PostgreSQL crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="kubedb.com/name=coreos-prom-postgres"
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-postgres"
 NAME                            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
 coreos-prom-postgres            ClusterIP   10.107.102.123   <none>        5432/TCP    58s
 coreos-prom-postgres-replicas   ClusterIP   10.109.11.171    <none>        5432/TCP    58s
@@ -155,10 +155,10 @@ Let's describe this stats service.
 $ kubectl describe svc -n demo coreos-prom-postgres-stats
 Name:              coreos-prom-postgres-stats
 Namespace:         demo
-Labels:            kubedb.com/kind=Postgres
-                   kubedb.com/name=coreos-prom-postgres
+Labels:            app.kubernetes.io/name=postgreses.kubedb.com
+                   app.kubernetes.io/instance=coreos-prom-postgres
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
-Selector:          kubedb.com/kind=Postgres,kubedb.com/name=coreos-prom-postgres
+Selector:          app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=coreos-prom-postgres
 Type:              ClusterIP
 IP:                10.110.218.172
 Port:              prom-http  56790/TCP
@@ -206,8 +206,8 @@ spec:
     - demo
   selector:
     matchLabels:
-      kubedb.com/kind: Postgres
-      kubedb.com/name: coreos-prom-postgres
+      app.kubernetes.io/name: postgreses.kubedb.com
+      app.kubernetes.io/instance: coreos-prom-postgres
 ```
 
 Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in PostgreSQL crd.

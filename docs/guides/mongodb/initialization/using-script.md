@@ -103,16 +103,16 @@ Volume:
 StatefulSet:
   Name:               mgo-init-script
   CreationTimestamp:  Wed, 06 Feb 2019 15:43:54 +0600
-  Labels:               kubedb.com/kind=MongoDB
-                        kubedb.com/name=mgo-init-script
+  Labels:               app.kubernetes.io/name=mongodbs.kubedb.com
+                        app.kubernetes.io/instance=mgo-init-script
   Annotations:        <none>
   Replicas:           824640503104 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:
   Name:         mgo-init-script
-  Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mgo-init-script
+  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+                  app.kubernetes.io/instance=mgo-init-script
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.107.34.91
@@ -122,8 +122,8 @@ Service:
 
 Service:
   Name:         mgo-init-script-gvr
-  Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mgo-init-script
+  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+                  app.kubernetes.io/instance=mgo-init-script
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
   Type:         ClusterIP
   IP:           None
@@ -133,8 +133,8 @@ Service:
 
 Database Secret:
   Name:         mgo-init-script-auth
-  Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mgo-init-script
+  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+                  app.kubernetes.io/instance=mgo-init-script
   Annotations:  <none>
   
 Type:  Opaque
@@ -256,8 +256,8 @@ kind: Secret
 metadata:
   creationTimestamp: "2019-02-06T09:43:54Z"
   labels:
-    kubedb.com/kind: MongoDB
-    kubedb.com/name: mgo-init-script
+    app.kubernetes.io/name: mongodbs.kubedb.com
+    app.kubernetes.io/instance: mgo-init-script
   name: mgo-init-script-auth
   namespace: demo
   resourceVersion: "89594"

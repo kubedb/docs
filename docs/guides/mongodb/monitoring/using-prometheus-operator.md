@@ -140,7 +140,7 @@ coreos-prom-mgo   3.4-v3    Running   24s
 KubeDB will create a separate stats service with name `{MongoDB crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="kubedb.com/name=coreos-prom-mgo"
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-mgo"
 NAME                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
 coreos-prom-mgo         ClusterIP   10.103.185.156   <none>        27017/TCP   41s
 coreos-prom-mgo-gvr     ClusterIP   None             <none>        27017/TCP   41s
@@ -155,10 +155,10 @@ Let's describe this stats service.
 $ kubectl describe svc -n demo coreos-prom-mgo-stats
 Name:              coreos-prom-mgo-stats
 Namespace:         demo
-Labels:            kubedb.com/kind=MongoDB
-                   kubedb.com/name=coreos-prom-mgo
+Labels:            app.kubernetes.io/name=mongodbs.kubedb.com
+                   app.kubernetes.io/instance=coreos-prom-mgo
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
-Selector:          kubedb.com/kind=MongoDB,kubedb.com/name=coreos-prom-mgo
+Selector:          app.kubernetes.io/name=mongodbs.kubedb.com,app.kubernetes.io/instance=coreos-prom-mgo
 Type:              ClusterIP
 IP:                10.109.110.8
 Port:              prom-http  56790/TCP
@@ -206,8 +206,8 @@ spec:
     - demo
   selector:
     matchLabels:
-      kubedb.com/kind: MongoDB
-      kubedb.com/name: coreos-prom-mgo
+      app.kubernetes.io/name: mongodbs.kubedb.com
+      app.kubernetes.io/instance: coreos-prom-mgo
 ```
 
 Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in MongoDB crd.

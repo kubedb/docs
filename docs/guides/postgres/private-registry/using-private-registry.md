@@ -169,7 +169,7 @@ postgres.kubedb.com/pvt-reg-postgres created
 To check if the images pulled successfully from the repository, see if the PostgreSQL is in Running state:
 
 ```bash
-$ kubectl get pods -n demo --selector="kubedb.com/name=pvt-reg-postgres"
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=pvt-reg-postgres"
 NAME                 READY     STATUS    RESTARTS   AGE
 pvt-reg-postgres-0   1/1       Running   0          3m
 ```

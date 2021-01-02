@@ -107,8 +107,8 @@ NAME                       READY     STATUS    RESTARTS   AGE       IP          
 pod/elasticsearch-demo-0   1/1       Running   0          2m        192.168.1.105   4gb-pool-crtbqq   <none>
 
 NAME                                TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE       SELECTOR
-service/elasticsearch-demo          ClusterIP   10.98.224.23    <none>        9200/TCP   2m        kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo,node.role.client=set
-service/elasticsearch-demo-master   ClusterIP   10.100.87.240   <none>        9300/TCP   2m        kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo,node.role.master=set
+service/elasticsearch-demo          ClusterIP   10.98.224.23    <none>        9200/TCP   2m        app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=elasticsearch-demo,node.role.client=set
+service/elasticsearch-demo-master   ClusterIP   10.100.87.240   <none>        9300/TCP   2m        app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=elasticsearch-demo,node.role.master=set
 service/kubedb                      ClusterIP   None            <none>        <none>     2m        <none>
 service/kubernetes                  ClusterIP   10.96.0.1       <none>        443/TCP    9h        <none>
 
@@ -151,17 +151,17 @@ You can print labels with objects. The following command will list all Snapshots
 ```bash
 $ kubectl get snap --show-labels
 NAME                                 DATABASE                     STATUS      AGE       LABELS
-elasticsearch-demo-20170605-073557   es/elasticsearch-demo        Succeeded   11m       kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo
-snapshot-20171212-114700             es/elasticsearch-demo        Succeeded   1h        kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo
+elasticsearch-demo-20170605-073557   es/elasticsearch-demo        Succeeded   11m       app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=elasticsearch-demo
+snapshot-20171212-114700             es/elasticsearch-demo        Succeeded   1h        app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=elasticsearch-demo
 ```
 
 You can also filter list using `--selector` flag.
 
 ```bash
-$ kubectl get snap --selector='kubedb.com/kind=Elasticsearch' --show-labels
+$ kubectl get snap --selector='app.kubernetes.io/name=elasticsearches.kubedb.com' --show-labels
 NAME                                 DATABASE                STATUS      AGE       LABELS
-elasticsearch-demo-20171212-073557   es/elasticsearch-demo   Succeeded   14m       kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo
-snapshot-20171212-114700             es/elasticsearch-demo   Succeeded   2h        kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo
+elasticsearch-demo-20171212-073557   es/elasticsearch-demo   Succeeded   14m       app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=elasticsearch-demo
+snapshot-20171212-114700             es/elasticsearch-demo   Succeeded   2h        app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=elasticsearch-demo
 ```
 
 To print only object name, run the following command:
@@ -213,8 +213,8 @@ Volume:
 StatefulSet:
   Name:               elasticsearch-demo
   CreationTimestamp:  Mon, 08 Oct 2018 20:22:22 +0600
-  Labels:               kubedb.com/kind=Elasticsearch
-                        kubedb.com/name=elasticsearch-demo
+  Labels:               app.kubernetes.io/name=elasticsearches.kubedb.com
+                        app.kubernetes.io/instance=elasticsearch-demo
                         node.role.client=set
                         node.role.data=set
                         node.role.master=set
@@ -224,8 +224,8 @@ StatefulSet:
 
 Service:
   Name:         elasticsearch-demo
-  Labels:         kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=elasticsearch-demo
+  Labels:         app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=elasticsearch-demo
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.98.224.23
@@ -235,8 +235,8 @@ Service:
 
 Service:
   Name:         elasticsearch-demo-master
-  Labels:         kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=elasticsearch-demo
+  Labels:         app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=elasticsearch-demo
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.100.87.240
@@ -246,8 +246,8 @@ Service:
 
 Certificate Secret:
   Name:         elasticsearch-demo-cert
-  Labels:         kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=elasticsearch-demo
+  Labels:         app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=elasticsearch-demo
   Annotations:  <none>
 
 Type:  Opaque
@@ -261,8 +261,8 @@ Data
 
 Database Secret:
   Name:         elasticsearch-demo-auth
-  Labels:         kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=elasticsearch-demo
+  Labels:         app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=elasticsearch-demo
   Annotations:  <none>
 
 Type:  Opaque
@@ -384,10 +384,10 @@ elasticsearch.kubedb.com "elasticsearch-demo" deleted
 cat elasticsearch.yaml | kubectl delete -f -
 ```
 
-To delete database with matching labels, use `--selector` flag. The following command will delete elasticsearch with label `elasticsearch.kubedb.com/name=elasticsearch-demo`.
+To delete database with matching labels, use `--selector` flag. The following command will delete elasticsearch with label `elasticsearch.app.kubernetes.io/instance=elasticsearch-demo`.
 
 ```bash
-$ kubectl delete elasticsearch -l elasticsearch.kubedb.com/name=elasticsearch-demo
+$ kubectl delete elasticsearch -l elasticsearch.app.kubernetes.io/instance=elasticsearch-demo
 ```
 
 ## Using Kubectl

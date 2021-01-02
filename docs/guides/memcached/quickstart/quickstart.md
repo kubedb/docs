@@ -108,16 +108,16 @@ Status:             Running
 Deployment:
   Name:               memcd-quickstart
   CreationTimestamp:  Wed, 03 Oct 2018 15:40:40 +0600
-  Labels:               kubedb.com/kind=Memcached
-                        kubedb.com/name=memcd-quickstart
+  Labels:               app.kubernetes.io/name=memcacheds.kubedb.com
+                        app.kubernetes.io/instance=memcd-quickstart
   Annotations:          deployment.kubernetes.io/revision=1
   Replicas:           3 desired | 3 updated | 3 total | 3 available | 0 unavailable
   Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:
   Name:         memcd-quickstart
-  Labels:         kubedb.com/kind=Memcached
-                  kubedb.com/name=memcd-quickstart
+  Labels:         app.kubernetes.io/name=memcacheds.kubedb.com
+                  app.kubernetes.io/instance=memcd-quickstart
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.111.81.177
@@ -258,7 +258,7 @@ metadata:
   - kubedb.com
   generation: 1
   labels:
-    kubedb.com/kind: Memcached
+    app.kubernetes.io/name: memcacheds.kubedb.com
   name: memcd-quickstart
   namespace: demo
   resourceVersion: "24242"

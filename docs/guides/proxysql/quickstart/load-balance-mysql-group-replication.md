@@ -93,7 +93,7 @@ my-group   5.7.25    Running   5m37s
 The database is `Running`. Verify that KubeDB has created necessary Secret for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo -l=kubedb.com/name=my-group
+$ kubectl get secret -n demo -l=app.kubernetes.io/instance=my-group
 NAME            TYPE     DATA   AGE
 my-group-auth   Opaque   2      10m
 ```
@@ -105,7 +105,7 @@ Here, we have to use the secret `my-group-auth` to connect with the database.
 Now, we are going to exec into the database pod and create some sample data. At first, find out the database Pod using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="kubedb.com/name=my-group"
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=my-group"
 NAME         READY   STATUS    RESTARTS   AGE
 my-group-0   1/1     Running   0          12m
 my-group-1   1/1     Running   0          12m
@@ -230,11 +230,11 @@ proxy-my-group   2.0.4     Running   129m
 The status is `Running`. Verify that KubeDB has created necessary Secret and Service for this object using the following commands,
 
 ```bash
-$ kubectl get secret -n demo -l=proxysql.kubedb.com/name=proxy-my-group
+$ kubectl get secret -n demo -l=proxysql.app.kubernetes.io/instance=proxy-my-group
 NAME                  TYPE     DATA   AGE
 proxy-my-group-auth   Opaque   2      132m
 
-$ kubectl get service -n demo -l=proxysql.kubedb.com/name=proxy-my-group
+$ kubectl get service -n demo -l=proxysql.app.kubernetes.io/instance=proxy-my-group
 NAME             TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
 proxy-my-group   ClusterIP   10.32.6.128   <none>        6033/TCP   133m
 ```
@@ -249,9 +249,9 @@ So, KubeDB creates two different users (`proxysql` and `admin`) in the MySQL dat
 kubectl describe secret -n demo proxy-my-group-auth
 Name:         proxy-my-group-auth
 Namespace:    demo
-Labels:       kubedb.com/kind=ProxySQL
+Labels:       app.kubernetes.io/name=proxysqls.kubedb.com
               proxysql.kubedb.com/load-balance=GroupReplication
-              proxysql.kubedb.com/name=proxy-my-group
+              proxysql.app.kubernetes.io/instance=proxy-my-group
 Annotations:  <none>
 
 Type:  Opaque
