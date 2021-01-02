@@ -169,10 +169,7 @@ StatefulSet:
   Name:               mysql-demo
   CreationTimestamp:  Tue, 25 Aug 2020 17:21:29 +0600
   Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/instance=mysql-demo
                         app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=mysql
-                        app.kubernetes.io/version=8.0.21
                         app.kubernetes.io/name=mysqls.kubedb.com
                         app.kubernetes.io/instance=mysql-demo
   Annotations:        <none>
@@ -182,10 +179,7 @@ StatefulSet:
 Service:        
   Name:         mysql-demo
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=mysql-demo
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
                   app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=mysql-demo
   Annotations:  <none>
@@ -198,10 +192,7 @@ Service:
 Service:        
   Name:         mysql-demo-gvr
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=mysql-demo
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
                   app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=mysql-demo
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
@@ -214,10 +205,7 @@ Service:
 Database Secret:
   Name:         mysql-demo-auth
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=mysql-demo
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
                   app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=mysql-demo
   Annotations:  <none>

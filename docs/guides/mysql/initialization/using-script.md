@@ -136,10 +136,7 @@ StatefulSet:
   Name:               mysql-init-script
   CreationTimestamp:  Thu, 27 Aug 2020 12:42:04 +0600
   Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/instance=mysql-init-script
                         app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=mysql
-                        app.kubernetes.io/version=8.0.21
                         app.kubernetes.io/name=mysqls.kubedb.com
                         app.kubernetes.io/instance=mysql-init-script
   Annotations:        <none>
@@ -149,10 +146,7 @@ StatefulSet:
 Service:        
   Name:         mysql-init-script
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=mysql-init-script
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
                   app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=mysql-init-script
   Annotations:  <none>
@@ -165,10 +159,7 @@ Service:
 Service:        
   Name:         mysql-init-script-gvr
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=mysql-init-script
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
                   app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=mysql-init-script
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
@@ -181,10 +172,7 @@ Service:
 Database Secret:
   Name:         mysql-init-script-auth
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=mysql-init-script
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
                   app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=mysql-init-script
   Annotations:  <none>

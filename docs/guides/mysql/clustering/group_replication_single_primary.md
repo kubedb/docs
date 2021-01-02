@@ -104,10 +104,7 @@ StatefulSet:
   Name:               my-group
   CreationTimestamp:  Tue, 25 Aug 2020 16:42:10 +0600
   Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/instance=my-group
                         app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=mysql
-                        app.kubernetes.io/version=8.0.21
                         app.kubernetes.io/name=mysqls.kubedb.com
                         app.kubernetes.io/instance=my-group
   Annotations:        <none>
@@ -117,10 +114,7 @@ StatefulSet:
 Service:        
   Name:         my-group
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
                   app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=my-group
   Annotations:  <none>
@@ -133,10 +127,7 @@ Service:
 Service:        
   Name:         my-group-gvr
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
                   app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=my-group
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
@@ -149,10 +140,7 @@ Service:
 Service:        
   Name:         my-group-primary
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
                   app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=my-group
   Annotations:  <none>
@@ -165,10 +153,7 @@ Service:
 Database Secret:
   Name:         my-group-auth
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
                   app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=my-group
   Annotations:  <none>

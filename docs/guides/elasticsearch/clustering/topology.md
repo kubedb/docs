@@ -100,10 +100,7 @@ StatefulSet:
   Name:               multi-node-es
   CreationTimestamp:  Wed, 02 Oct 2019 10:37:15 +0600
   Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/instance=multi-node-es
                         app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=elasticsearch
-                        app.kubernetes.io/version=7.3.2
                         app.kubernetes.io/name=elasticsearches.kubedb.com
                         app.kubernetes.io/instance=multi-node-es
                         node.role.client=set
@@ -116,10 +113,7 @@ StatefulSet:
 Service:        
   Name:         multi-node-es
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=multi-node-es
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=elasticsearch
-                  app.kubernetes.io/version=7.3.2
                   app.kubernetes.io/name=elasticsearches.kubedb.com
                   app.kubernetes.io/instance=multi-node-es
   Annotations:  <none>
@@ -132,10 +126,7 @@ Service:
 Service:        
   Name:         multi-node-es-master
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=multi-node-es
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=elasticsearch
-                  app.kubernetes.io/version=7.3.2
                   app.kubernetes.io/name=elasticsearches.kubedb.com
                   app.kubernetes.io/instance=multi-node-es
   Annotations:  <none>
@@ -148,10 +139,7 @@ Service:
 Database Secret:
   Name:         multi-node-es-auth
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=multi-node-es
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=elasticsearch
-                  app.kubernetes.io/version=7.3.2
                   app.kubernetes.io/name=elasticsearches.kubedb.com
                   app.kubernetes.io/instance=multi-node-es
   Annotations:  <none>
@@ -166,10 +154,7 @@ Data
 Certificate Secret:
   Name:         multi-node-es-cert
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=multi-node-es
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=elasticsearch
-                  app.kubernetes.io/version=7.3.2
                   app.kubernetes.io/name=elasticsearches.kubedb.com
                   app.kubernetes.io/instance=multi-node-es
   Annotations:  <none>
@@ -271,9 +256,9 @@ When this object is created, Elasticsearch database has started with 5 pods unde
 ```bash
 $ kubectl get statefulset -n demo --show-labels --selector="app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=topology-es"
 NAME                 READY   AGE     LABELS
-client-topology-es   2/2     2m44s   app.kubernetes.io/component=database,app.kubernetes.io/instance=topology-es,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearch,app.kubernetes.io/version=7.3.2,app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=topology-es,node.role.client=set
-data-topology-es     2/2     81s     app.kubernetes.io/component=database,app.kubernetes.io/instance=topology-es,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearch,app.kubernetes.io/version=7.3.2,app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=topology-es,node.role.data=set
-master-topology-es   1/1     109s    app.kubernetes.io/component=database,app.kubernetes.io/instance=topology-es,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearch,app.kubernetes.io/version=7.3.2,app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=topology-es,node.role.master=set
+client-topology-es   2/2     2m44s   app.kubernetes.io/component=database,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=topology-es,node.role.client=set
+data-topology-es     2/2     81s     app.kubernetes.io/component=database,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=topology-es,node.role.data=set
+master-topology-es   1/1     109s    app.kubernetes.io/component=database,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=topology-es,node.role.master=set
 ```
 
 Three StatefulSets are created for *client*, *data* and *master* node respectively.
@@ -366,10 +351,7 @@ StatefulSet:
   Name:               client-topology-es
   CreationTimestamp:  Wed, 02 Oct 2019 10:46:13 +0600
   Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/instance=topology-es
                         app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=elasticsearch
-                        app.kubernetes.io/version=7.3.2
                         app.kubernetes.io/name=elasticsearches.kubedb.com
                         app.kubernetes.io/instance=topology-es
                         node.role.client=set
@@ -381,10 +363,7 @@ StatefulSet:
   Name:               data-topology-es
   CreationTimestamp:  Wed, 02 Oct 2019 10:47:36 +0600
   Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/instance=topology-es
                         app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=elasticsearch
-                        app.kubernetes.io/version=7.3.2
                         app.kubernetes.io/name=elasticsearches.kubedb.com
                         app.kubernetes.io/instance=topology-es
                         node.role.data=set
@@ -396,10 +375,7 @@ StatefulSet:
   Name:               master-topology-es
   CreationTimestamp:  Wed, 02 Oct 2019 10:47:08 +0600
   Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/instance=topology-es
                         app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=elasticsearch
-                        app.kubernetes.io/version=7.3.2
                         app.kubernetes.io/name=elasticsearches.kubedb.com
                         app.kubernetes.io/instance=topology-es
                         node.role.master=set
@@ -410,10 +386,7 @@ StatefulSet:
 Service:        
   Name:         topology-es
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=topology-es
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=elasticsearch
-                  app.kubernetes.io/version=7.3.2
                   app.kubernetes.io/name=elasticsearches.kubedb.com
                   app.kubernetes.io/instance=topology-es
   Annotations:  <none>
@@ -426,10 +399,7 @@ Service:
 Service:        
   Name:         topology-es-master
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=topology-es
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=elasticsearch
-                  app.kubernetes.io/version=7.3.2
                   app.kubernetes.io/name=elasticsearches.kubedb.com
                   app.kubernetes.io/instance=topology-es
   Annotations:  <none>
@@ -442,10 +412,7 @@ Service:
 Database Secret:
   Name:         topology-es-auth
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=topology-es
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=elasticsearch
-                  app.kubernetes.io/version=7.3.2
                   app.kubernetes.io/name=elasticsearches.kubedb.com
                   app.kubernetes.io/instance=topology-es
   Annotations:  <none>
@@ -460,10 +427,7 @@ Data
 Certificate Secret:
   Name:         topology-es-cert
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=topology-es
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=elasticsearch
-                  app.kubernetes.io/version=7.3.2
                   app.kubernetes.io/name=elasticsearches.kubedb.com
                   app.kubernetes.io/instance=topology-es
   Annotations:  <none>
