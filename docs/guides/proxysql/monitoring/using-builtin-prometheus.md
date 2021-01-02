@@ -133,7 +133,7 @@ builtin-prom-proxysql   2.0.4     Running   3m
 KubeDB will create a separate stats service with the name `{ProxySQL object name}-stats` for monitoring purposes.
 
 ```bash
-$ kubectl get svc -n demo --selector="proxysql.kubedb.com/name=builtin-prom-proxysql"
+$ kubectl get svc -n demo --selector="proxysql.app.kubernetes.io/instance=builtin-prom-proxysql"
 NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 builtin-prom-proxysql         ClusterIP   10.101.12.24    <none>        6033/TCP    23m
 builtin-prom-proxysql-stats   ClusterIP   10.97.112.192   <none>        42004/TCP   23m
@@ -145,15 +145,15 @@ Here, `builtin-prom-proxysql-stats` service has been created for monitoring purp
 $ kubectl describe svc -n demo builtin-prom-proxysql-stats
 Name:              builtin-prom-proxysql-stats
 Namespace:         demo
-Labels:            kubedb.com/kind=ProxySQL
+Labels:            app.kubernetes.io/name=proxysqls.kubedb.com
                    kubedb.com/role=stats
                    proxysql.kubedb.com/load-balance=GroupReplication
-                   proxysql.kubedb.com/name=builtin-prom-proxysql
+                   proxysql.app.kubernetes.io/instance=builtin-prom-proxysql
 Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
                    prometheus.io/path: /metrics
                    prometheus.io/port: 42004
                    prometheus.io/scrape: true
-Selector:          kubedb.com/kind=ProxySQL,proxysql.kubedb.com/load-balance=GroupReplication,proxysql.kubedb.com/name=builtin-prom-proxysql
+Selector:          app.kubernetes.io/name=proxysqls.kubedb.com,proxysql.kubedb.com/load-balance=GroupReplication,proxysql.app.kubernetes.io/instance=builtin-prom-proxysql
 Type:              ClusterIP
 IP:                10.97.112.192
 Port:              prom-http  42004/TCP
@@ -202,7 +202,7 @@ Let's configure a Prometheus scraping job to collect metrics from this service.
     separator: ;
     regex: (.*-stats)
     action: keep
-  # service created by KubeDB will have "kubedb.com/kind" and "kubedb.com/name" annotations. keep only those services that have these annotations.
+  # service created by KubeDB will have "kubedb.com/kind" and "app.kubernetes.io/instance" annotations. keep only those services that have these annotations.
   - source_labels: [__meta_kubernetes_service_label_kubedb_com_kind]
     separator: ;
     regex: (.*)
@@ -287,7 +287,7 @@ data:
         separator: ;
         regex: (.*-stats)
         action: keep
-      # service created by KubeDB will have "kubedb.com/kind" and "kubedb.com/name" annotations. keep only those services that have these annotations.
+      # service created by KubeDB will have "kubedb.com/kind" and "app.kubernetes.io/instance" annotations. keep only those services that have these annotations.
       - source_labels: [__meta_kubernetes_service_label_kubedb_com_kind]
         separator: ;
         regex: (.*)

@@ -123,16 +123,16 @@ Volume:
 StatefulSet:
   Name:               script-postgres
   CreationTimestamp:  Fri, 21 Sep 2018 15:53:28 +0600
-  Labels:               kubedb.com/kind=Postgres
-                        kubedb.com/name=script-postgres
+  Labels:               app.kubernetes.io/name=postgreses.kubedb.com
+                        app.kubernetes.io/instance=script-postgres
   Annotations:        <none>
   Replicas:           824638467136 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:
   Name:         script-postgres
-  Labels:         kubedb.com/kind=Postgres
-                  kubedb.com/name=script-postgres
+  Labels:         app.kubernetes.io/name=postgreses.kubedb.com
+                  app.kubernetes.io/instance=script-postgres
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.108.14.12
@@ -142,8 +142,8 @@ Service:
 
 Service:
   Name:         script-postgres-replicas
-  Labels:         kubedb.com/kind=Postgres
-                  kubedb.com/name=script-postgres
+  Labels:         app.kubernetes.io/name=postgreses.kubedb.com
+                  app.kubernetes.io/instance=script-postgres
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.110.102.203
@@ -153,8 +153,8 @@ Service:
 
 Database Secret:
   Name:         script-postgres-auth
-  Labels:         kubedb.com/kind=Postgres
-                  kubedb.com/name=script-postgres
+  Labels:         app.kubernetes.io/name=postgreses.kubedb.com
+                  app.kubernetes.io/instance=script-postgres
   Annotations:  <none>
 
 Type:  Opaque

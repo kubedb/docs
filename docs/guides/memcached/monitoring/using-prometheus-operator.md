@@ -143,7 +143,7 @@ coreos-prom-memcd   1.5.4-v1   Running   19s
 KubeDB will create a separate stats service with name `{Memcached crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="kubedb.com/name=coreos-prom-memcd"
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-memcd"
 NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 coreos-prom-memcd         ClusterIP   10.100.207.76   <none>        11211/TCP   41s
 coreos-prom-memcd-stats   ClusterIP   10.97.230.149   <none>        56790/TCP   38s
@@ -157,10 +157,10 @@ Let's describe this stats service.
 $ kubectl describe svc -n demo coreos-prom-memcd-stats
 Name:              coreos-prom-memcd-stats
 Namespace:         demo
-Labels:            kubedb.com/kind=Memcached
-                   kubedb.com/name=coreos-prom-memcd
+Labels:            app.kubernetes.io/name=memcacheds.kubedb.com
+                   app.kubernetes.io/instance=coreos-prom-memcd
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
-Selector:          kubedb.com/kind=Memcached,kubedb.com/name=coreos-prom-memcd
+Selector:          app.kubernetes.io/name=memcacheds.kubedb.com,app.kubernetes.io/instance=coreos-prom-memcd
 Type:              ClusterIP
 IP:                10.97.230.149
 Port:              prom-http  56790/TCP
@@ -208,8 +208,8 @@ spec:
     - demo
   selector:
     matchLabels:
-      kubedb.com/kind: Memcached
-      kubedb.com/name: coreos-prom-memcd
+      app.kubernetes.io/name: memcacheds.kubedb.com
+      app.kubernetes.io/instance: coreos-prom-memcd
 ```
 
 Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in Memcached crd.

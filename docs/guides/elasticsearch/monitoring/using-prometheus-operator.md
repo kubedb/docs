@@ -140,7 +140,7 @@ coreos-prom-es   7.3.2     Running   85s
 KubeDB will create a separate stats service with name `{Elasticsearch crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="kubedb.com/name=coreos-prom-es"
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-es"
 NAME                    TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)     AGE
 coreos-prom-es          ClusterIP   10.0.1.56    <none>        9200/TCP    77s
 coreos-prom-es-master   ClusterIP   10.0.7.18    <none>        9300/TCP    77s
@@ -155,11 +155,11 @@ Let's describe this stats service.
 $ kubectl describe svc -n demo coreos-prom-es-stats
 Name:              coreos-prom-es-stats
 Namespace:         demo
-Labels:            kubedb.com/kind=Elasticsearch
-                   kubedb.com/name=coreos-prom-es
+Labels:            app.kubernetes.io/name=elasticsearches.kubedb.com
+                   app.kubernetes.io/instance=coreos-prom-es
                    kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
-Selector:          kubedb.com/kind=Elasticsearch,kubedb.com/name=coreos-prom-es
+Selector:          app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=coreos-prom-es
 Type:              ClusterIP
 IP:                10.0.5.58
 Port:              prom-http  56790/TCP
@@ -213,8 +213,8 @@ spec:
     - demo
   selector:
     matchLabels:
-      kubedb.com/kind: Elasticsearch
-      kubedb.com/name: coreos-prom-es
+      app.kubernetes.io/name: elasticsearches.kubedb.com
+      app.kubernetes.io/instance: coreos-prom-es
       kubedb.com/role: stats
 ```
 

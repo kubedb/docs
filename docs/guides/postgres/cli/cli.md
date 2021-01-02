@@ -110,18 +110,18 @@ You can print labels with objects. The following command will list all Snapshots
 ```bash
 $ kubectl get snap --show-labels
 NAME                            DATABASE                STATUS      AGE       LABELS
-postgres-demo-20170605-073557   pg/postgres-demo        Succeeded   11m       kubedb.com/kind=Postgres,kubedb.com/name=postgres-demo
-snapshot-20171212-114700        pg/postgres-demo        Succeeded   1h        kubedb.com/kind=Postgres,kubedb.com/name=postgres-demo
-snapshot-xyz                    es/elasticsearch-demo   Succeeded   6m        kubedb.com/kind=Elasticsearch,kubedb.com/name=elasticsearch-demo
+postgres-demo-20170605-073557   pg/postgres-demo        Succeeded   11m       app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=postgres-demo
+snapshot-20171212-114700        pg/postgres-demo        Succeeded   1h        app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=postgres-demo
+snapshot-xyz                    es/elasticsearch-demo   Succeeded   6m        app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=elasticsearch-demo
 ```
 
 You can also filter list using `--selector` flag.
 
 ```bash
-$ kubectl get snap --selector='kubedb.com/kind=Postgres' --show-labels
+$ kubectl get snap --selector='app.kubernetes.io/name=postgreses.kubedb.com' --show-labels
 NAME                            DATABASE           STATUS      AGE       LABELS
-postgres-demo-20171212-073557   pg/postgres-demo   Succeeded   14m       kubedb.com/kind=Postgres,kubedb.com/name=postgres-demo
-snapshot-20171212-114700        pg/postgres-demo   Succeeded   2h        kubedb.com/kind=Postgres,kubedb.com/name=postgres-demo
+postgres-demo-20171212-073557   pg/postgres-demo   Succeeded   14m       app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=postgres-demo
+snapshot-20171212-114700        pg/postgres-demo   Succeeded   2h        app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=postgres-demo
 ```
 
 To print only object name, run the following command:
@@ -275,10 +275,10 @@ postgres "postgres-dev" deleted
 cat postgres.yaml | kubectl delete -f -
 ```
 
-To delete database with matching labels, use `--selector` flag. The following command will delete postgres with label `postgres.kubedb.com/name=postgres-demo`.
+To delete database with matching labels, use `--selector` flag. The following command will delete postgres with label `postgres.app.kubernetes.io/instance=postgres-demo`.
 
 ```bash
-kubectl delete postgres -l postgres.kubedb.com/name=postgres-demo
+kubectl delete postgres -l postgres.app.kubernetes.io/instance=postgres-demo
 ```
 
 ## Using Kubectl

@@ -97,8 +97,8 @@ Volume:
 StatefulSet:
   Name:               redis-cluster-shard0
   CreationTimestamp:  Tue, 19 Feb 2019 19:28:59 +0600
-  Labels:               kubedb.com/kind=Redis
-                        kubedb.com/name=redis-cluster
+  Labels:               app.kubernetes.io/name=redises.kubedb.com
+                        app.kubernetes.io/instance=redis-cluster
   Annotations:        <none>
   Replicas:           824640878220 desired | 2 total
   Pods Status:        2 Running / 0 Waiting / 0 Succeeded / 0 Failed
@@ -106,8 +106,8 @@ StatefulSet:
 StatefulSet:
   Name:               redis-cluster-shard1
   CreationTimestamp:  Tue, 19 Feb 2019 19:29:07 +0600
-  Labels:               kubedb.com/kind=Redis
-                        kubedb.com/name=redis-cluster
+  Labels:               app.kubernetes.io/name=redises.kubedb.com
+                        app.kubernetes.io/instance=redis-cluster
   Annotations:        <none>
   Replicas:           824640879052 desired | 2 total
   Pods Status:        2 Running / 0 Waiting / 0 Succeeded / 0 Failed
@@ -115,16 +115,16 @@ StatefulSet:
 StatefulSet:
   Name:               redis-cluster-shard2
   CreationTimestamp:  Tue, 19 Feb 2019 19:29:13 +0600
-  Labels:               kubedb.com/kind=Redis
-                        kubedb.com/name=redis-cluster
+  Labels:               app.kubernetes.io/name=redises.kubedb.com
+                        app.kubernetes.io/instance=redis-cluster
   Annotations:        <none>
   Replicas:           824640879900 desired | 2 total
   Pods Status:        2 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:
   Name:         redis-cluster
-  Labels:         kubedb.com/kind=Redis
-                  kubedb.com/name=redis-cluster
+  Labels:         app.kubernetes.io/name=redises.kubedb.com
+                  app.kubernetes.io/instance=redis-cluster
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.100.246.86

@@ -114,8 +114,8 @@ pod/mysql-demo-0   1/1     Running   0          21m   10.244.1.10   kind-worker 
 
 NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE   SELECTOR
 service/kubernetes       ClusterIP   10.96.0.1       <none>        443/TCP    64m   <none>
-service/mysql-demo       ClusterIP   10.109.208.91   <none>        3306/TCP   21m   kubedb.com/kind=MySQL,kubedb.com/name=mysql-demo
-service/mysql-demo-gvr   ClusterIP   None            <none>        3306/TCP   21m   kubedb.com/kind=MySQL,kubedb.com/name=mysql-demo
+service/mysql-demo       ClusterIP   10.109.208.91   <none>        3306/TCP   21m   app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=mysql-demo
+service/mysql-demo-gvr   ClusterIP   None            <none>        3306/TCP   21m   app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=mysql-demo
 
 NAME                          READY   AGE   CONTAINERS   IMAGES
 statefulset.apps/mysql-demo   1/1     21m   mysql        kubedb/mysql:8.0.21
@@ -173,8 +173,8 @@ StatefulSet:
                         app.kubernetes.io/managed-by=kubedb.com
                         app.kubernetes.io/name=mysql
                         app.kubernetes.io/version=8.0.21
-                        kubedb.com/kind=MySQL
-                        kubedb.com/name=mysql-demo
+                        app.kubernetes.io/name=mysqls.kubedb.com
+                        app.kubernetes.io/instance=mysql-demo
   Annotations:        <none>
   Replicas:           824635270088 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
@@ -186,8 +186,8 @@ Service:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysql
                   app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=mysql-demo
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=mysql-demo
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.109.208.91
@@ -202,8 +202,8 @@ Service:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysql
                   app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=mysql-demo
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=mysql-demo
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
   Type:         ClusterIP
   IP:           None
@@ -218,8 +218,8 @@ Database Secret:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysql
                   app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=mysql-demo
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=mysql-demo
   Annotations:  <none>
   Type:         Opaque
   Data:
@@ -235,8 +235,8 @@ AppBinding:
       app.kubernetes.io/managed-by:  kubedb.com
       app.kubernetes.io/name:        mysql
       app.kubernetes.io/version:     8.0.21
-      kubedb.com/kind:               MySQL
-      kubedb.com/name:               mysql-demo
+      app.kubernetes.io/name:        mysqls.kubedb.com
+      app.kubernetes.io/instance:               mysql-demo
     Name:                            mysql-demo
     Namespace:                       default
   Spec:
@@ -358,10 +358,10 @@ mysql.kubedb.com "mysql-dev" deleted
 cat mysql-demo.yaml | kubectl delete -f -
 ```
 
-To delete database with matching labels, use `--selector` flag. The following command will delete mysql with label `mysql.kubedb.com/name=mysql-demo`.
+To delete database with matching labels, use `--selector` flag. The following command will delete mysql with label `mysql.app.kubernetes.io/instance=mysql-demo`.
 
 ```bash
-kubectl delete mysql -l mysql.kubedb.com/name=mysql-demo
+kubectl delete mysql -l mysql.app.kubernetes.io/instance=mysql-demo
 ```
 
 ## Using Kubectl

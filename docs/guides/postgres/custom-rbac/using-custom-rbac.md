@@ -174,7 +174,7 @@ metadata:
   namespace: demo
   labels:
     app.kubernetes.io/component: database
-    kubedb.com/name: quick-postgres
+    app.kubernetes.io/instance: quick-postgres
 spec:
   version: "10.2-v5"
   storageType: Durable
@@ -299,7 +299,7 @@ metadata:
   namespace: demo
   labels:
     app.kubernetes.io/component: database
-    kubedb.com/name: quick-postgres
+    app.kubernetes.io/instance: quick-postgres
 spec:
   version: "10.2-v5"
   storageType: Durable

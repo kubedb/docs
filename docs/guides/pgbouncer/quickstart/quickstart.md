@@ -93,8 +93,8 @@ metadata:
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: postgres
     app.kubernetes.io/version: 11.1-v1
-    kubedb.com/kind: Postgres
-    kubedb.com/name: quick-postgres
+    app.kubernetes.io/name: postgreses.kubedb.com
+    app.kubernetes.io/instance: quick-postgres
   name: quick-postgres-auth
   namespace: demo
   resourceVersion: "12567"
@@ -439,7 +439,7 @@ Events:                 <none>
 KubeDB has created a service for the PgBouncer object.
 
 ```bash
-$ kubectl get service -n demo --selector=kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-server
+$ kubectl get service -n demo --selector=app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-server
 NAME               TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 pgbouncer-server   ClusterIP   10.97.188.32   <none>        5432/TCP   2h
 ```

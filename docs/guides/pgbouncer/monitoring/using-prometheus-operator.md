@@ -162,7 +162,7 @@ pgbouncer-server   1.11.0    Running   10s
 KubeDB will create a separate stats service with name `{PgBouncer crd name}-stats` for monitoring purpose.
 
 ```bash
-$  kubectl get svc -n demo --selector="kubedb.com/name=pgbouncer-server"
+$  kubectl get svc -n demo --selector="app.kubernetes.io/instance=pgbouncer-server"
 NAME                     TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
 pgbouncer-server         ClusterIP   10.104.83.201    <none>        5432/TCP    52s
 pgbouncer-server-stats   ClusterIP   10.101.214.117   <none>        56790/TCP   50s
@@ -176,11 +176,11 @@ Let's describe this stats service.
 $ kubectl describe svc -n demo pgbouncer-server-stats
 Name:              pgbouncer-server-stats
 Namespace:         demo
-Labels:            kubedb.com/kind=PgBouncer
-                   kubedb.com/name=pgbouncer-server
+Labels:            app.kubernetes.io/name=pgbouncers.kubedb.com
+                   app.kubernetes.io/instance=pgbouncer-server
                    kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent:prometheus.io/operator
-Selector:          kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-server
+Selector:          app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-server
 Type:              ClusterIP
 IP:                10.101.214.117
 Port:              prom-http  56790/TCP
@@ -233,8 +233,8 @@ spec:
     - demo
   selector:
     matchLabels:
-      kubedb.com/kind: PgBouncer
-      kubedb.com/name: pgbouncer-server
+      app.kubernetes.io/name: pgbouncers.kubedb.com
+      app.kubernetes.io/instance: pgbouncer-server
       kubedb.com/role: stats
 ```
 

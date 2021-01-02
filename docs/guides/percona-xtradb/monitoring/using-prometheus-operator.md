@@ -141,7 +141,7 @@ px-coreos-prom   5.7-cluster   Running   5m4s
 KubeDB will create a separate stats service with name `{PerconaXtraDB_obj_name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="kubedb.com/name=px-coreos-prom"
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=px-coreos-prom"
 NAME                   TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
 px-coreos-prom         ClusterIP   10.107.58.214    <none>        3306/TCP    5m25s
 px-coreos-prom-gvr     ClusterIP   None             <none>        3306/TCP    5m25s
@@ -156,11 +156,11 @@ Let's describe this stats service.
 $ kubectl describe svc -n demo px-coreos-prom-stats
 Name:              px-coreos-prom-stats
 Namespace:         demo
-Labels:            kubedb.com/kind=PerconaXtraDB
-                   kubedb.com/name=px-coreos-prom
+Labels:            app.kubernetes.io/name=perconaxtradbs.kubedb.com
+                   app.kubernetes.io/instance=px-coreos-prom
                    kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
-Selector:          kubedb.com/kind=PerconaXtraDB,kubedb.com/name=px-coreos-prom
+Selector:          app.kubernetes.io/name=perconaxtradbs.kubedb.com,app.kubernetes.io/instance=px-coreos-prom
 Type:              ClusterIP
 IP:                10.106.130.209
 Port:              prom-http  56790/TCP
@@ -214,8 +214,8 @@ spec:
     - demo
   selector:
     matchLabels:
-      kubedb.com/kind: PerconaXtraDB
-      kubedb.com/name: px-coreos-prom
+      app.kubernetes.io/name: perconaxtradbs.kubedb.com
+      app.kubernetes.io/instance: px-coreos-prom
       kubedb.com/role: stats
 ```
 

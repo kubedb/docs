@@ -151,17 +151,17 @@ You can print labels with objects. The following command will list all Snapshots
 ```bash
 $ kubectl get snap --show-labels
 NAME                            DATABASE                STATUS      AGE       LABELS
-mongodb-demo-20170605-073557    mg/mongodb-demo         Succeeded   11m       kubedb.com/kind=MongoDB,kubedb.com/name=mongodb-demo
-snapshot-20171212-114700        mg/mongodb-demo         Succeeded   1h        kubedb.com/kind=MongoDB,kubedb.com/name=mongodb-demo
+mongodb-demo-20170605-073557    mg/mongodb-demo         Succeeded   11m       app.kubernetes.io/name=mongodbs.kubedb.com,app.kubernetes.io/instance=mongodb-demo
+snapshot-20171212-114700        mg/mongodb-demo         Succeeded   1h        app.kubernetes.io/name=mongodbs.kubedb.com,app.kubernetes.io/instance=mongodb-demo
 ```
 
 You can also filter list using `--selector` flag.
 
 ```bash
-$ kubectl get snap --selector='kubedb.com/kind=MongoDB' --show-labels
+$ kubectl get snap --selector='app.kubernetes.io/name=mongodbs.kubedb.com' --show-labels
 NAME                            DATABASE           STATUS      AGE       LABELS
-mongodb-demo-20171212-073557    mg/mongodb-demo    Succeeded   14m       kubedb.com/kind=MongoDB,kubedb.com/name=mongodb-demo
-snapshot-20171212-114700        mg/mongodb-demo    Succeeded   2h        kubedb.com/kind=MongoDB,kubedb.com/name=mongodb-demo
+mongodb-demo-20171212-073557    mg/mongodb-demo    Succeeded   14m       app.kubernetes.io/name=mongodbs.kubedb.com,app.kubernetes.io/instance=mongodb-demo
+snapshot-20171212-114700        mg/mongodb-demo    Succeeded   2h        app.kubernetes.io/name=mongodbs.kubedb.com,app.kubernetes.io/instance=mongodb-demo
 ```
 
 To print only object name, run the following command:
@@ -198,16 +198,16 @@ Volume:
 StatefulSet:
   Name:               mongodb-demo
   CreationTimestamp:  Wed, 06 Feb 2019 16:31:05 +0600
-  Labels:               kubedb.com/kind=MongoDB
-                        kubedb.com/name=mongodb-demo
+  Labels:               app.kubernetes.io/name=mongodbs.kubedb.com
+                        app.kubernetes.io/instance=mongodb-demo
   Annotations:        <none>
   Replicas:           824639727120 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:
   Name:         mongodb-demo
-  Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mongodb-demo
+  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+                  app.kubernetes.io/instance=mongodb-demo
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.96.245.200
@@ -217,8 +217,8 @@ Service:
 
 Service:
   Name:         mongodb-demo-gvr
-  Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mongodb-demo
+  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+                  app.kubernetes.io/instance=mongodb-demo
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
   Type:         ClusterIP
   IP:           None
@@ -228,8 +228,8 @@ Service:
 
 Database Secret:
   Name:         mongodb-demo-auth
-  Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mongodb-demo
+  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+                  app.kubernetes.io/instance=mongodb-demo
   Annotations:  <none>
 
 Type:  Opaque
@@ -331,10 +331,10 @@ mongodb.kubedb.com "mongodb-dev" deleted
 cat mongodb-demo.yaml | kubectl delete -f -
 ```
 
-To delete database with matching labels, use `--selector` flag. The following command will delete mongodb with label `mongodb.kubedb.com/name=mongodb-demo`.
+To delete database with matching labels, use `--selector` flag. The following command will delete mongodb with label `mongodb.app.kubernetes.io/instance=mongodb-demo`.
 
 ```bash
-kubectl delete mongodb -l mongodb.kubedb.com/name=mongodb-demo
+kubectl delete mongodb -l mongodb.app.kubernetes.io/instance=mongodb-demo
 ```
 
 ## Using Kubectl

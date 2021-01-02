@@ -154,8 +154,8 @@ Deployment:
   Name:               memcached-demo
   CreationTimestamp:  Thu, 04 Oct 2018 11:58:59 +0600
   Labels:               kubedb=cli-demo
-                        kubedb.com/kind=Memcached
-                        kubedb.com/name=memcached-demo
+                        app.kubernetes.io/name=memcacheds.kubedb.com
+                        app.kubernetes.io/instance=memcached-demo
   Annotations:          deployment.kubernetes.io/revision=1
   Replicas:           3 desired | 3 updated | 3 total | 3 available | 0 unavailable
   Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
@@ -163,8 +163,8 @@ Deployment:
 Service:
   Name:         memcached-demo
   Labels:         kubedb=cli-demo
-                  kubedb.com/kind=Memcached
-                  kubedb.com/name=memcached-demo
+                  app.kubernetes.io/name=memcacheds.kubedb.com
+                  app.kubernetes.io/instance=memcached-demo
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.102.208.191
@@ -274,10 +274,10 @@ memcached.kubedb.com "memcached-dev" deleted
 cat memcached-demo.yaml | kubectl delete -f -
 ```
 
-To delete database with matching labels, use `--selector` flag. The following command will delete memcached with label `memcached.kubedb.com/name=memcached-demo`.
+To delete database with matching labels, use `--selector` flag. The following command will delete memcached with label `memcached.app.kubernetes.io/instance=memcached-demo`.
 
 ```bash
-kubectl delete memcached -l memcached.kubedb.com/name=memcached-demo
+kubectl delete memcached -l memcached.app.kubernetes.io/instance=memcached-demo
 ```
 
 ## Using Kubectl

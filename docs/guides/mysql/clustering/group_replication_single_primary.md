@@ -108,8 +108,8 @@ StatefulSet:
                         app.kubernetes.io/managed-by=kubedb.com
                         app.kubernetes.io/name=mysql
                         app.kubernetes.io/version=8.0.21
-                        kubedb.com/kind=MySQL
-                        kubedb.com/name=my-group
+                        app.kubernetes.io/name=mysqls.kubedb.com
+                        app.kubernetes.io/instance=my-group
   Annotations:        <none>
   Replicas:           824638237768 desired | 3 total
   Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
@@ -121,8 +121,8 @@ Service:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysql
                   app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=my-group
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=my-group
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.109.225.127
@@ -137,8 +137,8 @@ Service:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysql
                   app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=my-group
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=my-group
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
   Type:         ClusterIP
   IP:           None
@@ -153,8 +153,8 @@ Service:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysql
                   app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=my-group
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=my-group
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.111.57.60
@@ -169,8 +169,8 @@ Database Secret:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysql
                   app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=my-group
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=my-group
   Annotations:  <none>
   Type:         Opaque
   Data:
@@ -189,8 +189,8 @@ AppBinding:
       app.kubernetes.io/managed-by:  kubedb.com
       app.kubernetes.io/name:        mysql
       app.kubernetes.io/version:     8.0.21
-      kubedb.com/kind:               MySQL
-      kubedb.com/name:               my-group
+      app.kubernetes.io/name:        mysqls.kubedb.com
+      app.kubernetes.io/instance:               my-group
     Name:                            my-group
     Namespace:                       demo
   Spec:
@@ -310,7 +310,7 @@ You can connect to any of these group members. In that case you just need to spe
 
 ```bash
 # first list the mysql pods list
-$ kubectl get pods -n demo -l kubedb.com/name=my-group
+$ kubectl get pods -n demo -l app.kubernetes.io/instance=my-group
 NAME         READY   STATUS    RESTARTS   AGE
 my-group-0   2/2     Running   1          19m
 my-group-1   2/2     Running   0          15m
@@ -323,7 +323,7 @@ NAME           TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
 my-group-gvr   ClusterIP   None         <none>        3306/TCP   137m
 
 # list the pods with PodIP
-$ kubectl get pods -n demo -l kubedb.com/name=my-group -o jsonpath='{range.items[*]}{.metadata.name} ........... {.status.podIP} ............ {.metadata.name}.my-group-gvr.{.metadata.namespace}{"\\n"}{end}'
+$ kubectl get pods -n demo -l app.kubernetes.io/instance=my-group -o jsonpath='{range.items[*]}{.metadata.name} ........... {.status.podIP} ............ {.metadata.name}.my-group-gvr.{.metadata.namespace}{"\\n"}{end}'
 my-group-0 ........... 172.17.0.5 ............ my-group-0.my-group-gvr.demo
 my-group-1 ........... 172.17.0.6 ............ my-group-1.my-group-gvr.demo
 my-group-2 ........... 172.17.0.7 ............ my-group-2.my-group-gvr.demo

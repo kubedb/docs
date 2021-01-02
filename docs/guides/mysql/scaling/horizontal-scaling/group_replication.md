@@ -134,8 +134,8 @@ Every 3.0s: kubectl get sts -n demo my-group                     Every 3.0s: kub
 NAME       READY   AGE
 my-group   3/3     16m
 
-$ watch -n 3 kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group
-Every 3.0s: kubectl get pod -n demo -l kubedb.com/kind=MySQ...  suaas-appscode: Tue Jun 30 22:45:33 2020
+$ watch -n 3 kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group
+Every 3.0s: kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com  suaas-appscode: Tue Jun 30 22:45:33 2020
 
 NAME         READY   STATUS    RESTARTS   AGE
 my-group-0   2/2     Running   0          17m

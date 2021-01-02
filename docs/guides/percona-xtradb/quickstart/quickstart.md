@@ -341,7 +341,7 @@ metadata:
   - kubedb.com
   generation: 1
   labels:
-    kubedb.com/kind: PerconaXtraDB
+    app.kubernetes.io/name: perconaxtradbs.kubedb.com
   name: demo-quickstart
   namespace: demo
   resourceVersion: "50190"

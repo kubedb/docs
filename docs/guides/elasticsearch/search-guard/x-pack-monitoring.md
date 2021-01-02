@@ -320,7 +320,7 @@ Now, wait for few minutes. KubeDB will create necessary secrets, services, and s
 Check resources created in demo namespace by KubeDB,
 
 ```bash
-$  kubectl get all -n demo -l=kubedb.com/name=es-mon-demo
+$  kubectl get all -n demo -l=app.kubernetes.io/instance=es-mon-demo
 NAME                READY     STATUS    RESTARTS   AGE
 pod/es-mon-demo-0   1/1       Running   0          37s
 

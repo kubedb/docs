@@ -192,16 +192,16 @@ Volume:
 StatefulSet:          
   Name:               quick-postgres
   CreationTimestamp:  Thu, 07 Feb 2019 17:03:11 +0600
-  Labels:               kubedb.com/kind=Postgres
-                        kubedb.com/name=quick-postgres
+  Labels:               app.kubernetes.io/name=postgreses.kubedb.com
+                        app.kubernetes.io/instance=quick-postgres
   Annotations:        <none>
   Replicas:           824641589664 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:        
   Name:         quick-postgres
-  Labels:         kubedb.com/kind=Postgres
-                  kubedb.com/name=quick-postgres
+  Labels:         app.kubernetes.io/name=postgreses.kubedb.com
+                  app.kubernetes.io/instance=quick-postgres
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.100.86.27
@@ -211,8 +211,8 @@ Service:
 
 Service:        
   Name:         quick-postgres-replicas
-  Labels:         kubedb.com/kind=Postgres
-                  kubedb.com/name=quick-postgres
+  Labels:         app.kubernetes.io/name=postgreses.kubedb.com
+                  app.kubernetes.io/instance=quick-postgres
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.103.133.93
@@ -222,8 +222,8 @@ Service:
 
 Database Secret:
   Name:         quick-postgres-auth
-  Labels:         kubedb.com/kind=Postgres
-                  kubedb.com/name=quick-postgres
+  Labels:         app.kubernetes.io/name=postgreses.kubedb.com
+                  app.kubernetes.io/instance=quick-postgres
   Annotations:  <none>
   
 Type:  Opaque
@@ -255,7 +255,7 @@ Events:
 KubeDB has created two services for the Postgres object.
 
 ```bash
-$ kubectl get service -n demo --selector=kubedb.com/kind=Postgres,kubedb.com/name=quick-postgres
+$ kubectl get service -n demo --selector=app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=quick-postgres
 NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 quick-postgres            ClusterIP   10.108.152.107   <none>        5432/TCP   3m
 quick-postgres-replicas   ClusterIP   10.105.175.166   <none>        5432/TCP   3m
@@ -284,8 +284,8 @@ kind: Secret
 metadata:
   creationTimestamp: 2018-09-03T11:25:39Z
   labels:
-    kubedb.com/kind: Postgres
-    kubedb.com/name: quick-postgres
+    app.kubernetes.io/name: postgreses.kubedb.com
+    app.kubernetes.io/instance: quick-postgres
   name: quick-postgres-auth
   namespace: demo
   resourceVersion: "1677"
@@ -383,7 +383,7 @@ metadata:
   - kubedb.com
   generation: 1
   labels:
-    kubedb.com/kind: Postgres
+    app.kubernetes.io/name: postgreses.kubedb.com
   name: quick-postgres
   namespace: demo
   resourceVersion: "39020"

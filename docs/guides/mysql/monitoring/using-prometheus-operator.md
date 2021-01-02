@@ -157,7 +157,7 @@ coreos-prom-mysql   8.0.21    Running   2m53s
 KubeDB will create a separate stats service with name `{MySQL crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="kubedb.com/name=coreos-prom-mysql"
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-mysql"
 NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
 coreos-prom-mysql         ClusterIP   10.103.228.135   <none>        3306/TCP    3m36s
 coreos-prom-mysql-gvr     ClusterIP   None             <none>        3306/TCP    3m36s
@@ -172,11 +172,11 @@ Let's describe this stats service.
 $ kubectl describe svc -n demo coreos-prom-mysql-stats
 Name:              coreos-prom-mysql-stats
 Namespace:         demo
-Labels:            kubedb.com/kind=MySQL
-                   kubedb.com/name=coreos-prom-mysql
+Labels:            app.kubernetes.io/name=mysqls.kubedb.com
+                   app.kubernetes.io/instance=coreos-prom-mysql
                    kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
-Selector:          kubedb.com/kind=MySQL,kubedb.com/name=coreos-prom-mysql
+Selector:          app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=coreos-prom-mysql
 Type:              ClusterIP
 IP:                10.106.236.14
 Port:              prom-http  56790/TCP
@@ -235,8 +235,8 @@ spec:
     - demo
   selector:
     matchLabels:
-      kubedb.com/kind: MySQL
-      kubedb.com/name: coreos-prom-mysql
+      app.kubernetes.io/name: mysqls.kubedb.com
+      app.kubernetes.io/instance: coreos-prom-mysql
       kubedb.com/role: stats
 ```
 

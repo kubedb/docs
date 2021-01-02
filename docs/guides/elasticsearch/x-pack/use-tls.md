@@ -96,8 +96,8 @@ kind: Secret
 metadata:
   creationTimestamp: 2018-02-19T09:51:45Z
   labels:
-    kubedb.com/kind: Elasticsearch
-    kubedb.com/name: ssl-elasticsearch
+    app.kubernetes.io/name: elasticsearches.kubedb.com
+    app.kubernetes.io/instance: ssl-elasticsearch
   name: ssl-elasticsearch-cert
   namespace: demo
   resourceVersion: "754"

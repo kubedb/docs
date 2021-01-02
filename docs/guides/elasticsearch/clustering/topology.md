@@ -104,8 +104,8 @@ StatefulSet:
                         app.kubernetes.io/managed-by=kubedb.com
                         app.kubernetes.io/name=elasticsearch
                         app.kubernetes.io/version=7.3.2
-                        kubedb.com/kind=Elasticsearch
-                        kubedb.com/name=multi-node-es
+                        app.kubernetes.io/name=elasticsearches.kubedb.com
+                        app.kubernetes.io/instance=multi-node-es
                         node.role.client=set
                         node.role.data=set
                         node.role.master=set
@@ -120,8 +120,8 @@ Service:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=elasticsearch
                   app.kubernetes.io/version=7.3.2
-                  kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=multi-node-es
+                  app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=multi-node-es
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.0.13.4
@@ -136,8 +136,8 @@ Service:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=elasticsearch
                   app.kubernetes.io/version=7.3.2
-                  kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=multi-node-es
+                  app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=multi-node-es
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.0.11.165
@@ -152,8 +152,8 @@ Database Secret:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=elasticsearch
                   app.kubernetes.io/version=7.3.2
-                  kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=multi-node-es
+                  app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=multi-node-es
   Annotations:  <none>
   
 Type:  Opaque
@@ -170,8 +170,8 @@ Certificate Secret:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=elasticsearch
                   app.kubernetes.io/version=7.3.2
-                  kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=multi-node-es
+                  app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=multi-node-es
   Annotations:  <none>
   
 Type:  Opaque
@@ -269,11 +269,11 @@ elasticsearch.kubedb.com/topology-es created
 When this object is created, Elasticsearch database has started with 5 pods under 3 different StatefulSets.
 
 ```bash
-$ kubectl get statefulset -n demo --show-labels --selector="kubedb.com/kind=Elasticsearch,kubedb.com/name=topology-es"
+$ kubectl get statefulset -n demo --show-labels --selector="app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=topology-es"
 NAME                 READY   AGE     LABELS
-client-topology-es   2/2     2m44s   app.kubernetes.io/component=database,app.kubernetes.io/instance=topology-es,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearch,app.kubernetes.io/version=7.3.2,kubedb.com/kind=Elasticsearch,kubedb.com/name=topology-es,node.role.client=set
-data-topology-es     2/2     81s     app.kubernetes.io/component=database,app.kubernetes.io/instance=topology-es,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearch,app.kubernetes.io/version=7.3.2,kubedb.com/kind=Elasticsearch,kubedb.com/name=topology-es,node.role.data=set
-master-topology-es   1/1     109s    app.kubernetes.io/component=database,app.kubernetes.io/instance=topology-es,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearch,app.kubernetes.io/version=7.3.2,kubedb.com/kind=Elasticsearch,kubedb.com/name=topology-es,node.role.master=set
+client-topology-es   2/2     2m44s   app.kubernetes.io/component=database,app.kubernetes.io/instance=topology-es,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearch,app.kubernetes.io/version=7.3.2,app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=topology-es,node.role.client=set
+data-topology-es     2/2     81s     app.kubernetes.io/component=database,app.kubernetes.io/instance=topology-es,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearch,app.kubernetes.io/version=7.3.2,app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=topology-es,node.role.data=set
+master-topology-es   1/1     109s    app.kubernetes.io/component=database,app.kubernetes.io/instance=topology-es,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=elasticsearch,app.kubernetes.io/version=7.3.2,app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=topology-es,node.role.master=set
 ```
 
 Three StatefulSets are created for *client*, *data* and *master* node respectively.
@@ -370,8 +370,8 @@ StatefulSet:
                         app.kubernetes.io/managed-by=kubedb.com
                         app.kubernetes.io/name=elasticsearch
                         app.kubernetes.io/version=7.3.2
-                        kubedb.com/kind=Elasticsearch
-                        kubedb.com/name=topology-es
+                        app.kubernetes.io/name=elasticsearches.kubedb.com
+                        app.kubernetes.io/instance=topology-es
                         node.role.client=set
   Annotations:        <none>
   Replicas:           824638512252 desired | 2 total
@@ -385,8 +385,8 @@ StatefulSet:
                         app.kubernetes.io/managed-by=kubedb.com
                         app.kubernetes.io/name=elasticsearch
                         app.kubernetes.io/version=7.3.2
-                        kubedb.com/kind=Elasticsearch
-                        kubedb.com/name=topology-es
+                        app.kubernetes.io/name=elasticsearches.kubedb.com
+                        app.kubernetes.io/instance=topology-es
                         node.role.data=set
   Annotations:        <none>
   Replicas:           824639227260 desired | 2 total
@@ -400,8 +400,8 @@ StatefulSet:
                         app.kubernetes.io/managed-by=kubedb.com
                         app.kubernetes.io/name=elasticsearch
                         app.kubernetes.io/version=7.3.2
-                        kubedb.com/kind=Elasticsearch
-                        kubedb.com/name=topology-es
+                        app.kubernetes.io/name=elasticsearches.kubedb.com
+                        app.kubernetes.io/instance=topology-es
                         node.role.master=set
   Annotations:        <none>
   Replicas:           824639229484 desired | 1 total
@@ -414,8 +414,8 @@ Service:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=elasticsearch
                   app.kubernetes.io/version=7.3.2
-                  kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=topology-es
+                  app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=topology-es
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.0.0.102
@@ -430,8 +430,8 @@ Service:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=elasticsearch
                   app.kubernetes.io/version=7.3.2
-                  kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=topology-es
+                  app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=topology-es
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.0.12.178
@@ -446,8 +446,8 @@ Database Secret:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=elasticsearch
                   app.kubernetes.io/version=7.3.2
-                  kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=topology-es
+                  app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=topology-es
   Annotations:  <none>
   
 Type:  Opaque
@@ -464,8 +464,8 @@ Certificate Secret:
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=elasticsearch
                   app.kubernetes.io/version=7.3.2
-                  kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=topology-es
+                  app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=topology-es
   Annotations:  <none>
   
 Type:  Opaque

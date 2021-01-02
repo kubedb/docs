@@ -95,16 +95,16 @@ Volume:
 StatefulSet:
   Name:               mgo-replicaset
   CreationTimestamp:  Wed, 06 Feb 2019 16:08:15 +0600
-  Labels:               kubedb.com/kind=MongoDB
-                        kubedb.com/name=mgo-replicaset
+  Labels:               app.kubernetes.io/name=mongodbs.kubedb.com
+                        app.kubernetes.io/instance=mgo-replicaset
   Annotations:        <none>
   Replicas:           824637261744 desired | 3 total
   Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:
   Name:         mgo-replicaset
-  Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mgo-replicaset
+  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+                  app.kubernetes.io/instance=mgo-replicaset
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.97.174.220
@@ -114,8 +114,8 @@ Service:
 
 Service:
   Name:         mgo-replicaset-gvr
-  Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mgo-replicaset
+  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+                  app.kubernetes.io/instance=mgo-replicaset
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
   Type:         ClusterIP
   IP:           None
@@ -125,8 +125,8 @@ Service:
 
 Database Secret:
   Name:         mgo-replicaset-auth
-  Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mgo-replicaset
+  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+                  app.kubernetes.io/instance=mgo-replicaset
   Annotations:  <none>
   
 Type:  Opaque
@@ -435,7 +435,7 @@ metadata:
   - kubedb.com
   generation: 1
   labels:
-    kubedb.com/kind: MongoDB
+    app.kubernetes.io/name: mongodbs.kubedb.com
   name: mgo-replicaset
   namespace: demo
   resourceVersion: "30679"
