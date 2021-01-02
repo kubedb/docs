@@ -84,7 +84,7 @@ builtin-prom-redis   4.0-v1    Running   41s
 KubeDB will create a separate stats service with name `{Redis crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="kubedb.com/name=builtin-prom-redis"
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-redis"
 NAME                       TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
 builtin-prom-redis         ClusterIP   10.109.162.108   <none>        6379/TCP    59s
 builtin-prom-redis-stats   ClusterIP   10.106.243.251   <none>        56790/TCP   41s
@@ -96,13 +96,13 @@ Here, `builtin-prom-redis-stats` service has been created for monitoring purpose
 $ kubectl describe svc -n demo builtin-prom-redis-stats
 Name:              builtin-prom-redis-stats
 Namespace:         demo
-Labels:            kubedb.com/kind=Redis
-                   kubedb.com/name=builtin-prom-redis
+Labels:            app.kubernetes.io/name=redises.kubedb.com
+                   app.kubernetes.io/instance=builtin-prom-redis
 Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
                    prometheus.io/path: /metrics
                    prometheus.io/port: 56790
                    prometheus.io/scrape: true
-Selector:          kubedb.com/kind=Redis,kubedb.com/name=builtin-prom-redis
+Selector:          app.kubernetes.io/name=redises.kubedb.com,app.kubernetes.io/instance=builtin-prom-redis
 Type:              ClusterIP
 IP:                10.106.243.251
 Port:              prom-http  56790/TCP
@@ -151,7 +151,7 @@ Let's configure a Prometheus scraping job to collect metrics from this service.
     separator: ;
     regex: (.*-stats)
     action: keep
-  # service created by KubeDB will have "kubedb.com/kind" and "kubedb.com/name" annotations. keep only those services that have these annotations.
+  # service created by KubeDB will have "kubedb.com/kind" and "app.kubernetes.io/instance" annotations. keep only those services that have these annotations.
   - source_labels: [__meta_kubernetes_service_label_kubedb_com_kind]
     separator: ;
     regex: (.*)
@@ -236,7 +236,7 @@ data:
         separator: ;
         regex: (.*-stats)
         action: keep
-      # service created by KubeDB will have "kubedb.com/kind" and "kubedb.com/name" annotations. keep only those services that have these annotations.
+      # service created by KubeDB will have "kubedb.com/kind" and "app.kubernetes.io/instance" annotations. keep only those services that have these annotations.
       - source_labels: [__meta_kubernetes_service_label_kubedb_com_kind]
         separator: ;
         regex: (.*)

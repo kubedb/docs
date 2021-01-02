@@ -141,7 +141,7 @@ Now, wait for few minutes. KubeDB will create necessary secrets, services, and s
 Check resources created in `demo` namespace by KubeDB,
 
 ```bash
-$ kubectl get all -n demo -l=kubedb.com/name=custom-elasticsearch
+$ kubectl get all -n demo -l=app.kubernetes.io/instance=custom-elasticsearch
 NAME                         READY   STATUS    RESTARTS   AGE
 pod/custom-elasticsearch-0   1/1     Running   0          74s
 pod/custom-elasticsearch-1   1/1     Running   0          55s
@@ -160,7 +160,7 @@ appbinding.appcatalog.appscode.com/custom-elasticsearch   5s
 Check secrets created by KubeDB,
 
 ```bash
-$ kubectl get secret -n demo -l=kubedb.com/name=custom-elasticsearch
+$ kubectl get secret -n demo -l=app.kubernetes.io/instance=custom-elasticsearch
 NAME                        TYPE     DATA   AGE
 custom-elasticsearch-auth   Opaque   2      99s
 custom-elasticsearch-cert   Opaque   5      99s

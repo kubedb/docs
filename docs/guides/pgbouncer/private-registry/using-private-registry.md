@@ -152,7 +152,7 @@ pgbouncer.kubedb.com/pvt-reg-pgbouncer created
 To check if the images pulled successfully from the repository, see if the PgBouncer is in Running state:
 
 ```bash
-$ kubectl get pods -n demo --selector="kubedb.com/name=pvt-reg-pgbouncer"
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=pvt-reg-pgbouncer"
 NAME                 READY     STATUS    RESTARTS   AGE
 pvt-reg-pgbouncer-0   1/1       Running   0          3m
 ```

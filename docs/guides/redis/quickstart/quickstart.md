@@ -129,16 +129,16 @@ Volume:
 StatefulSet:
   Name:               redis-quickstart
   CreationTimestamp:  Mon, 01 Oct 2018 12:01:25 +0600
-  Labels:               kubedb.com/kind=Redis
-                        kubedb.com/name=redis-quickstart
+  Labels:               app.kubernetes.io/name=redises.kubedb.com
+                        app.kubernetes.io/instance=redis-quickstart
   Annotations:        <none>
   Replicas:           824641951004 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:
   Name:         redis-quickstart
-  Labels:         kubedb.com/kind=Redis
-                  kubedb.com/name=redis-quickstart
+  Labels:         app.kubernetes.io/name=redises.kubedb.com
+                  app.kubernetes.io/instance=redis-quickstart
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.108.149.205
@@ -278,7 +278,7 @@ metadata:
   - kubedb.com
   generation: 1
   labels:
-    kubedb.com/kind: Redis
+    app.kubernetes.io/name: redises.kubedb.com
   name: redis-quickstart
   namespace: demo
   resourceVersion: "8445"

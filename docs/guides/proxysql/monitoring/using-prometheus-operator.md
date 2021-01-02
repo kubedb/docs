@@ -191,7 +191,7 @@ coreos-prom-proxysql   2.0.4     Running   14s
 KubeDB will create a separate stats service with the name `{ProxySQL object name}-stats` for monitoring purposes.
 
 ```bash
-$ kubectl get svc -n demo --selector="proxysql.kubedb.com/name=coreos-prom-proxysql"
+$ kubectl get svc -n demo --selector="proxysql.app.kubernetes.io/instance=coreos-prom-proxysql"
 NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 coreos-prom-proxysql         ClusterIP   10.101.10.235   <none>        6033/TCP    73s
 coreos-prom-proxysql-stats   ClusterIP   10.111.242.54   <none>        42004/TCP   68s
@@ -205,12 +205,12 @@ Let's describe this stats service.
 $ kubectl describe svc -n demo coreos-prom-proxysql-stats
 Name:              coreos-prom-proxysql-stats
 Namespace:         demo
-Labels:            kubedb.com/kind=ProxySQL
+Labels:            app.kubernetes.io/name=proxysqls.kubedb.com
                    kubedb.com/role=stats
                    proxysql.kubedb.com/load-balance=GroupReplication
-                   proxysql.kubedb.com/name=coreos-prom-proxysql
+                   proxysql.app.kubernetes.io/instance=coreos-prom-proxysql
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
-Selector:          kubedb.com/kind=ProxySQL,proxysql.kubedb.com/load-balance=GroupReplication,proxysql.kubedb.com/name=coreos-prom-proxysql
+Selector:          app.kubernetes.io/name=proxysqls.kubedb.com,proxysql.kubedb.com/load-balance=GroupReplication,proxysql.app.kubernetes.io/instance=coreos-prom-proxysql
 Type:              ClusterIP
 IP:                10.111.242.54
 Port:              prom-http  42004/TCP
@@ -264,10 +264,10 @@ spec:
     - demo
   selector:
     matchLabels:
-      kubedb.com/kind: ProxySQL
+      app.kubernetes.io/name: proxysqls.kubedb.com
       kubedb.com/role: stats
       proxysql.kubedb.com/load-balance: GroupReplication
-      proxysql.kubedb.com/name: coreos-prom-proxysql
+      proxysql.app.kubernetes.io/instance: coreos-prom-proxysql
 ```
 
 Notice that the `ServiceMonitor` has `k8s-app: prometheus` label that we had specified in ProxySQL object.

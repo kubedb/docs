@@ -182,8 +182,8 @@ Every 3.0s: kubectl get sts -n demo my-group                     suaas-appscode:
 NAME       READY   AGE
 my-group   3/3     7m12s
 
-$ watch -n 3 kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group
-Every 3.0s: kubectl get pod -n demo -l kubedb.com/kind=MySQL...  suaas-appscode: Thu Jun 18 14:35:35 2020
+$ watch -n 3 kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group
+Every 3.0s: kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com...  suaas-appscode: Thu Jun 18 14:35:35 2020
 
 NAME         READY   STATUS    RESTARTS   AGE
 my-group-0   2/2     Running   0          11m
@@ -197,10 +197,10 @@ Let's verify the `MySQL`, the `StatefulSet` and its `Pod` image version,
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
 5.7.29
 
-$ kubectl get sts -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+$ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
 "kubedb/my:5.7.29"
 
-$ kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o json | jq '.items[].spec.containers[1].image'
+$ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
 "kubedb/my:5.7.29"
 "kubedb/my:5.7.29"
 "kubedb/my:5.7.29"
@@ -372,10 +372,10 @@ Now, we are going to verify whether the `MySQL` and `StatefulSet` and it's `Pod`
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
 5.7.31
 
-$ kubectl get sts -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+$ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
 "kubedb/mysql:5.7.31"
 
-$ kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -o json | jq '.items[].spec.containers[1].image'
+$ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
 "kubedb/mysql:5.7.31"
 "kubedb/mysql:5.7.31"
 "kubedb/mysql:5.7.31"

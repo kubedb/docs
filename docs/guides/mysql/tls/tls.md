@@ -152,8 +152,8 @@ Every 3.0s: kubectl get sts -n demo my-standalone-tls            suaas-appscode:
 NAME                READY   AGE
 my-standalone-tls   1/1     7m15s
 
-$ watch -n 3 kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-standalone-tls
-Every 3.0s: kubectl get pod -n demo -l kubedb.com/kind=MySQL...  suaas-appscode: Thu Aug 13 18:13:19 2020
+$ watch -n 3 kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-standalone-tls
+Every 3.0s: kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com...  suaas-appscode: Thu Aug 13 18:13:19 2020
 
 NAME                  READY   STATUS    RESTARTS   AGE
 my-standalone-tls-0   1/1     Running   0          7m35s
@@ -382,8 +382,8 @@ Every 3.0s: kubectl get sts -n demo my-group-tls                suaas-appscode: 
 NAME           READY   AGE
 my-group-tls   3/3     9m51s
 
-$ watch -n 3 kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group-tls
-Every 3.0s: kubectl get pod -n demo -l kubedb.com/kind=MySQ...  suaas-appscode: Thu Aug 13 19:03:02 2020
+$ watch -n 3 kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group-tls
+Every 3.0s: kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com  suaas-appscode: Thu Aug 13 19:03:02 2020
 
 NAME             READY   STATUS    RESTARTS   AGE
 my-group-tls-0   2/2     Running   0          10m

@@ -124,12 +124,9 @@ StatefulSet:
   Name:               my-group
   CreationTimestamp:  Wed, 09 Sep 2020 10:37:54 +0600
   Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/instance=my-group
                         app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=mysql
-                        app.kubernetes.io/version=8.0.21
-                        kubedb.com/kind=MySQL
-                        kubedb.com/name=my-group
+                        app.kubernetes.io/name=mysqls.kubedb.com
+                        app.kubernetes.io/instance=my-group
   Annotations:        <none>
   Replicas:           824635746408 desired | 3 total
   Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
@@ -137,12 +134,9 @@ StatefulSet:
 Service:        
   Name:         my-group
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=my-group
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=my-group
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.99.93.81
@@ -153,12 +147,9 @@ Service:
 Service:        
   Name:         my-group-gvr
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=my-group
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=my-group
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
   Type:         ClusterIP
   IP:           None
@@ -169,12 +160,9 @@ Service:
 Service:        
   Name:         my-group-replicas
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=my-group
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=my-group
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.102.85.170
@@ -185,12 +173,9 @@ Service:
 Database Secret:
   Name:         my-group-auth
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=my-group
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=my-group
   Annotations:  <none>
   Type:         Opaque
   Data:
@@ -209,8 +194,8 @@ AppBinding:
       app.kubernetes.io/managed-by:  kubedb.com
       app.kubernetes.io/name:        mysql
       app.kubernetes.io/version:     8.0.21
-      kubedb.com/kind:               MySQL
-      kubedb.com/name:               my-group
+      app.kubernetes.io/name:        mysqls.kubedb.com
+      app.kubernetes.io/instance:               my-group
     Name:                            my-group
     Namespace:                       demo
   Spec:
@@ -248,11 +233,11 @@ Our database cluster is ready to connect.
 Let's verify that the `mysql.kubedb.com/role:<primary/secondary>` label are added into the StatefulSet's replicas,
 
 ```bash
-$ kubectl get pods -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -A -o=custom-columns='Name:.metadata.name,Labels:metadata.labels,PodIP:.status.podIP'
+$ kubectl get pods -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -A -o=custom-columns='Name:.metadata.name,Labels:metadata.labels,PodIP:.status.podIP'
 Name         Labels                                                                                                                                                                           PodIP
-my-group-0   map[controller-revision-hash:my-group-55b9f49f98 kubedb.com/kind:MySQL kubedb.com/name:my-group mysql.kubedb.com/role:primary statefulset.kubernetes.io/pod-name:my-group-0]     10.244.1.8
-my-group-1   map[controller-revision-hash:my-group-55b9f49f98 kubedb.com/kind:MySQL kubedb.com/name:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
-my-group-2   map[controller-revision-hash:my-group-55b9f49f98 kubedb.com/kind:MySQL kubedb.com/name:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-2]   10.244.2.13
+my-group-0   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:primary statefulset.kubernetes.io/pod-name:my-group-0]     10.244.1.8
+my-group-1   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
+my-group-2   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-2]   10.244.2.13
 ```
 
 You can see from the above output that the `my-group-0` pod is selected as a primary member in our existing database cluster. It has the `mysql.kubedb.com/role:primary` label and the podIP is `10.244.1.8`. Besides, the rest of the replicas are selected as a secondary member which has `mysql.kubedb.com/role:secondary` label.
@@ -265,7 +250,7 @@ You can find the service which selects for primary replica have the following se
 $ kubectl get svc -n demo my-group -o json | jq '.spec.selector'
 {
   "kubedb.com/kind": "MySQL",
-  "kubedb.com/name": "my-group",
+  "app.kubernetes.io/instance": "my-group",
   "mysql.kubedb.com/role": "primary"
 }
 ```
@@ -284,7 +269,7 @@ You can also find the service which selects for secondary replicas have the foll
 $ kubectl get svc -n demo my-group-replicas -o json | jq '.spec.selector'
 {
   "kubedb.com/kind": "MySQL",
-  "kubedb.com/name": "my-group",
+  "app.kubernetes.io/instance": "my-group",
   "mysql.kubedb.com/role": "secondary"
 }
 ```
@@ -415,11 +400,11 @@ pod "my-group-0" deleted
 Now wait for a few minute to automatically elect the primary replica and also wait for the services endpoint update for new primary and secondary replicas,
 
 ```bash
-$ kubectl get pods -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=my-group -A -o=custom-columns='Name:.metadata.name,Labels:metadata.labels,PodIP:.status.podIP'
+$ kubectl get pods -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -A -o=custom-columns='Name:.metadata.name,Labels:metadata.labels,PodIP:.status.podIP'
 Name         Labels                                                                                                                                                                           PodIP
-my-group-0   map[controller-revision-hash:my-group-55b9f49f98 kubedb.com/kind:MySQL kubedb.com/name:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-0]   10.244.2.18
-my-group-1   map[controller-revision-hash:my-group-55b9f49f98 kubedb.com/kind:MySQL kubedb.com/name:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
-my-group-2   map[controller-revision-hash:my-group-55b9f49f98 kubedb.com/kind:MySQL kubedb.com/name:my-group mysql.kubedb.com/role:primary statefulset.kubernetes.io/pod-name:my-group-2]     10.244.2.13
+my-group-0   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-0]   10.244.2.18
+my-group-1   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary statefulset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
+my-group-2   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:primary statefulset.kubernetes.io/pod-name:my-group-2]     10.244.2.13
 ```
 
 You can see from the above output that `my-group-2` pod is elected as a primary automatically and the others become secondary.

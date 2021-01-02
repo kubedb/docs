@@ -160,8 +160,8 @@ Volume:
 StatefulSet:
   Name:               quick-elasticsearch
   CreationTimestamp:  Fri, 28 Sep 2018 11:33:36 +0600
-  Labels:               kubedb.com/kind=Elasticsearch
-                        kubedb.com/name=quick-elasticsearch
+  Labels:               app.kubernetes.io/name=elasticsearches.kubedb.com
+                        app.kubernetes.io/instance=quick-elasticsearch
                         node.role.client=set
                         node.role.data=set
                         node.role.master=set
@@ -171,8 +171,8 @@ StatefulSet:
 
 Service:
   Name:         quick-elasticsearch
-  Labels:         kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=quick-elasticsearch
+  Labels:         app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=quick-elasticsearch
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.100.103.159
@@ -182,8 +182,8 @@ Service:
 
 Service:
   Name:         quick-elasticsearch-master
-  Labels:         kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=quick-elasticsearch
+  Labels:         app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=quick-elasticsearch
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.99.42.193
@@ -193,8 +193,8 @@ Service:
 
 Certificate Secret:
   Name:         quick-elasticsearch-cert
-  Labels:         kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=quick-elasticsearch
+  Labels:         app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=quick-elasticsearch
   Annotations:  <none>
 
 Type:  Opaque
@@ -208,8 +208,8 @@ Data
 
 Database Secret:
   Name:         quick-elasticsearch-auth
-  Labels:         kubedb.com/kind=Elasticsearch
-                  kubedb.com/name=quick-elasticsearch
+  Labels:         app.kubernetes.io/name=elasticsearches.kubedb.com
+                  app.kubernetes.io/instance=quick-elasticsearch
   Annotations:  <none>
 
 Type:  Opaque
@@ -247,7 +247,7 @@ Events:
 ```
 
 ```bash
-$ kubectl get service -n demo --selector=kubedb.com/kind=Elasticsearch,kubedb.com/name=quick-elasticsearch
+$ kubectl get service -n demo --selector=app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=quick-elasticsearch
 NAME                         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 quick-elasticsearch          ClusterIP   10.100.103.159   <none>        9200/TCP   5m
 quick-elasticsearch-master   ClusterIP   10.99.42.193     <none>        9300/TCP   5m
@@ -302,8 +302,8 @@ kind: Secret
 metadata:
   creationTimestamp: 2018-09-28T05:33:36Z
   labels:
-    kubedb.com/kind: Elasticsearch
-    kubedb.com/name: quick-elasticsearch
+    app.kubernetes.io/name: elasticsearches.kubedb.com
+    app.kubernetes.io/instance: quick-elasticsearch
   name: quick-elasticsearch-auth
   namespace: demo
   ...
@@ -346,8 +346,8 @@ kind: Secret
 metadata:
   creationTimestamp: 2018-09-28T05:33:35Z
   labels:
-    kubedb.com/kind: Elasticsearch
-    kubedb.com/name: quick-elasticsearch
+    app.kubernetes.io/name: elasticsearches.kubedb.com
+    app.kubernetes.io/instance: quick-elasticsearch
   name: quick-elasticsearch-cert
   namespace: demo
   ...
@@ -472,7 +472,7 @@ metadata:
   - kubedb.com
   generation: 1
   labels:
-    kubedb.com/kind: Elasticsearch
+    app.kubernetes.io/name: elasticsearches.kubedb.com
   name: quick-elasticsearch
   namespace: demo
   resourceVersion: "23969"

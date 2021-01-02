@@ -123,16 +123,16 @@ Volume:
 StatefulSet:
   Name:               mgo-quickstart
   CreationTimestamp:  Wed, 06 Feb 2019 11:25:27 +0600
-  Labels:               kubedb.com/kind=MongoDB
-                        kubedb.com/name=mgo-quickstart
+  Labels:               app.kubernetes.io/name=mongodbs.kubedb.com
+                        app.kubernetes.io/instance=mgo-quickstart
   Annotations:        <none>
   Replicas:           824637515568 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
 Service:
   Name:         mgo-quickstart
-  Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mgo-quickstart
+  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+                  app.kubernetes.io/instance=mgo-quickstart
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.111.237.184
@@ -142,8 +142,8 @@ Service:
 
 Service:
   Name:         mgo-quickstart-gvr
-  Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mgo-quickstart
+  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+                  app.kubernetes.io/instance=mgo-quickstart
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
   Type:         ClusterIP
   IP:           None
@@ -153,8 +153,8 @@ Service:
 
 Database Secret:
   Name:         mgo-quickstart-auth
-  Labels:         kubedb.com/kind=MongoDB
-                  kubedb.com/name=mgo-quickstart
+  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+                  app.kubernetes.io/instance=mgo-quickstart
   Annotations:  <none>
   
 Type:  Opaque
@@ -354,7 +354,7 @@ metadata:
   - kubedb.com
   generation: 1
   labels:
-    kubedb.com/kind: MongoDB
+    app.kubernetes.io/name: mongodbs.kubedb.com
   name: mgo-quickstart
   namespace: demo
   resourceVersion: "31482"

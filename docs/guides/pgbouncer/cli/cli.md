@@ -131,8 +131,8 @@ pod/pgbouncer-demo-0   2/2     Running   0          5m53s   10.244.1.3   kind-wo
 
 NAME                           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE          SELECTOR
 service/kubedb                 ClusterIP   None            <none>        <none>      5m54s        <none>
-service/pgbouncer-demo         ClusterIP   10.98.95.4      <none>        5432/TCP    5m54s        kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-demo
-service/pgbouncer-demo-stats   ClusterIP   10.107.214.97   <none>        56790/TCP   5m38s        kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-demo
+service/pgbouncer-demo         ClusterIP   10.98.95.4      <none>        5432/TCP    5m54s        app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-demo
+service/pgbouncer-demo-stats   ClusterIP   10.107.214.97   <none>        56790/TCP   5m38s        app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-demo
 
 NAME                              READY       AGE             CONTAINERS           IMAGES
 statefulset.apps/pgbouncer-demo   1/1         5m53s           pgbouncer,exporter   kubedb/pgbouncer:1.12.0,kubedb/pgbouncer_exporter:v0.1.1
@@ -156,17 +156,17 @@ You can print labels with objects. The following command will list all Snapshots
 ```bash
 $ kubectl get pb -n demo --show-labels
 NAME                            DATABASE                STATUS      AGE       LABELS
-pgbouncer-demo                  pb/pgbouncer-demo       Succeeded   11m       kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-demo
-pgbouncer-tmp                   pb/postgres-demo        Succeeded   1h        kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-tmp
+pgbouncer-demo                  pb/pgbouncer-demo       Succeeded   11m       app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-demo
+pgbouncer-tmp                   pb/postgres-demo        Succeeded   1h        app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-tmp
 ```
 
 You can also filter list using `--selector` flag.
 
 ```bash
-$ kubectl get pb --selector='kubedb.com/kind=PgBouncer' --show-labels
+$ kubectl get pb --selector='app.kubernetes.io/name=pgbouncers.kubedb.com' --show-labels
 NAME                            DATABASE           STATUS      AGE       LABELS
-pgbouncer-demo                  pb/pgbouncer-demo  Succeeded   11m       kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-demo
-pgbouncer-dev                   pb/postgres-demo   Succeeded   1h        kubedb.com/kind=PgBouncer,kubedb.com/name=pgbouncer-dev
+pgbouncer-demo                  pb/pgbouncer-demo  Succeeded   11m       app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-demo
+pgbouncer-dev                   pb/postgres-demo   Succeeded   1h        app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-dev
 ```
 
 To print only object name, run the following command:
@@ -324,10 +324,10 @@ PgBouncer "pgbouncer-dev" deleted
 cat pgbouncer.yaml | kubectl delete -f -
 ```
 
-To delete objects with matching labels, use `--selector` flag. The following command will delete PgBouncers with label `pgbouncer.kubedb.com/name=pgbouncer-demo`.
+To delete objects with matching labels, use `--selector` flag. The following command will delete PgBouncers with label `pgbouncer.app.kubernetes.io/instance=pgbouncer-demo`.
 
 ```bash
-kubectl delete pgbouncer -l pgbouncer.kubedb.com/name=pgbouncer-demo
+kubectl delete pgbouncer -l pgbouncer.app.kubernetes.io/instance=pgbouncer-demo
 ```
 
 ## Using Kubectl

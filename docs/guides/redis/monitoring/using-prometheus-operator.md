@@ -140,7 +140,7 @@ coreos-prom-redis   4.0-v1    Running   15s
 KubeDB will create a separate stats service with name `{Redis crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="kubedb.com/name=coreos-prom-redis"
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-redis"
 NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 coreos-prom-redis         ClusterIP   10.110.70.53   <none>        6379/TCP    35s
 coreos-prom-redis-stats   ClusterIP   10.99.161.76   <none>        56790/TCP   31s
@@ -154,10 +154,10 @@ Let's describe this stats service.
 $ kubectl describe svc -n demo coreos-prom-redis-stats
 Name:              coreos-prom-redis-stats
 Namespace:         demo
-Labels:            kubedb.com/kind=Redis
-                   kubedb.com/name=coreos-prom-redis
+Labels:            app.kubernetes.io/name=redises.kubedb.com
+                   app.kubernetes.io/instance=coreos-prom-redis
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
-Selector:          kubedb.com/kind=Redis,kubedb.com/name=coreos-prom-redis
+Selector:          app.kubernetes.io/name=redises.kubedb.com,app.kubernetes.io/instance=coreos-prom-redis
 Type:              ClusterIP
 IP:                10.99.161.76
 Port:              prom-http  56790/TCP
@@ -205,8 +205,8 @@ spec:
     - demo
   selector:
     matchLabels:
-      kubedb.com/kind: Redis
-      kubedb.com/name: coreos-prom-redis
+      app.kubernetes.io/name: redises.kubedb.com
+      app.kubernetes.io/instance: coreos-prom-redis
 ```
 
 Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in Redis crd.

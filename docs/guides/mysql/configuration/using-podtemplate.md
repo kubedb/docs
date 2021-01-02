@@ -102,7 +102,7 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset,
 Check that the statefulset's pod is running
 
 ```bash
-$ kubectl get pod -n demo -l kubedb.com/kind=MySQL,kubedb.com/name=mysql-misc-config
+$ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=mysql-misc-config
 NAME                  READY   STATUS    RESTARTS   AGE
 mysql-misc-config-0   1/1     Running   0          9m28s
 ```

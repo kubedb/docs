@@ -136,12 +136,9 @@ StatefulSet:
   Name:               mysql-init-script
   CreationTimestamp:  Thu, 27 Aug 2020 12:42:04 +0600
   Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/instance=mysql-init-script
                         app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=mysql
-                        app.kubernetes.io/version=8.0.21
-                        kubedb.com/kind=MySQL
-                        kubedb.com/name=mysql-init-script
+                        app.kubernetes.io/name=mysqls.kubedb.com
+                        app.kubernetes.io/instance=mysql-init-script
   Annotations:        <none>
   Replicas:           824637371096 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
@@ -149,12 +146,9 @@ StatefulSet:
 Service:        
   Name:         mysql-init-script
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=mysql-init-script
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=mysql-init-script
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=mysql-init-script
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.103.202.117
@@ -165,12 +159,9 @@ Service:
 Service:        
   Name:         mysql-init-script-gvr
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=mysql-init-script
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=mysql-init-script
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=mysql-init-script
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
   Type:         ClusterIP
   IP:           None
@@ -181,12 +172,9 @@ Service:
 Database Secret:
   Name:         mysql-init-script-auth
   Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/instance=mysql-init-script
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysql
-                  app.kubernetes.io/version=8.0.21
-                  kubedb.com/kind=MySQL
-                  kubedb.com/name=mysql-init-script
+                  app.kubernetes.io/name=mysqls.kubedb.com
+                  app.kubernetes.io/instance=mysql-init-script
   Annotations:  <none>
   Type:         Opaque
   Data:
@@ -212,8 +200,8 @@ AppBinding:
       app.kubernetes.io/managed-by:  kubedb.com
       app.kubernetes.io/name:        mysql
       app.kubernetes.io/version:     8.0.21
-      kubedb.com/kind:               MySQL
-      kubedb.com/name:               mysql-init-script
+      app.kubernetes.io/name:        mysqls.kubedb.com
+      app.kubernetes.io/instance:               mysql-init-script
     Name:                            mysql-init-script
     Namespace:                       demo
   Spec:
