@@ -58,12 +58,6 @@ spec:
     script:
       configMap:
         name: pg-init-script
-  backupSchedule:
-    cronExpression: "@every 2m"
-    storageSecretName: gcs-secret
-    gcs:
-      bucket: kubedb-qa
-      prefix: demo
   monitor:
     agent: prometheus.io/operator
     prometheus:

@@ -80,12 +80,6 @@ spec:
     script:
       configMap:
         name: mg-init-script
-  backupSchedule:
-    cronExpression: "@every 2m"
-    storageSecretName: mg-snap-secret
-    gcs:
-      bucket: kubedb-qa
-      prefix: demo
   monitor:
     agent: prometheus.io/operator
     prometheus:
