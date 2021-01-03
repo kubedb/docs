@@ -135,6 +135,13 @@ $ helm install kubedb-enterprise appscode/kubedb-enterprise  \
   --version {{< param "info.enterprise" >}}                  \
   --namespace kube-system                                    \
   --set-file license=/path/to/the/license.txt
+
+# Step 5 (Optional): Install KubeDB Autoscaler chart
+# Kubernetes [VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation) must be pre-installed separately.
+$ helm install kubedb-autoscaler appscode/kubedb-autoscaler  \
+  --version {{< param "info.autoscaler" >}}                  \
+  --namespace kube-system                                    \
+  --set-file license=/path/to/the/license.txt
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb-enterprise).
@@ -198,6 +205,13 @@ $ helm install appscode/kubedb-enterprise --name kubedb-enterprise   \
   --version {{< param "info.enterprise" >}}                          \
   --namespace kube-system                                            \
   --set-file license=/path/to/the/license.txt
+
+# Step 5 (Optional): Install KubeDB Autoscaler chart
+# Kubernetes [VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation) must be pre-installed separately.
+$ helm install appscode/kubedb-autoscaler --name kubedb-autoscaler   \
+  --version {{< param "info.autoscaler" >}}                          \
+  --namespace kube-system                                            \
+  --set-file license=/path/to/the/license.txt
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb-enterprise).
@@ -251,9 +265,17 @@ $ helm template kubedb-catalog appscode/kubedb-catalog   \
   --namespace kube-system                                \
   --no-hooks | kubectl apply -f -
 
-# Step 1: Install KubeDB Enterprise operator chart
+# Step 4: Install KubeDB Enterprise operator chart
 $ helm template kubedb-enterprise appscode/kubedb-enterprise   \
   --version {{< param "info.enterprise" >}}                    \
+  --namespace kube-system                                      \
+  --set-file license=/path/to/the/license.txt                  \
+  --no-hooks | kubectl apply -f -
+
+# Step 5 (Optional): Install KubeDB Autoscaler chart
+# Kubernetes [VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation) must be pre-installed separately.
+$ helm template kubedb-autoscaler appscode/kubedb-autoscaler   \
+  --version {{< param "info.autoscaler" >}}                    \
   --namespace kube-system                                      \
   --set-file license=/path/to/the/license.txt                  \
   --no-hooks | kubectl apply -f -
