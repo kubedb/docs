@@ -1238,7 +1238,7 @@ kubedb.dev/memcached/pkg/controller
 # kubedb.dev/mongodb v0.9.0-rc.0
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.9.0-rc.0
+# kubedb.dev/mysql v0.9.0-rc.0.0.20210103182738-c7a405744820
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
 # kubedb.dev/percona-xtradb v0.3.0-rc.0

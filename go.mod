@@ -22,7 +22,7 @@ require (
 	kubedb.dev/elasticsearch v0.16.0-rc.0
 	kubedb.dev/memcached v0.9.0-rc.0
 	kubedb.dev/mongodb v0.9.0-rc.0
-	kubedb.dev/mysql v0.9.0-rc.0
+	kubedb.dev/mysql v0.9.0-rc.0.0.20210103182738-c7a405744820
 	kubedb.dev/percona-xtradb v0.3.0-rc.0
 	kubedb.dev/pgbouncer v0.3.0-rc.0
 	kubedb.dev/postgres v0.16.0-rc.0

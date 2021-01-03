@@ -169,7 +169,11 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 					Name:            api.ReplicationModeDetectorContainerName,
 					Image:           mysqlVersion.Spec.ReplicationModeDetector.Image,
 					ImagePullPolicy: core.PullIfNotPresent,
-					Args:            append([]string{"run", fmt.Sprintf("--db-name=%s", db.Name)}, c.LoggerOptions.ToFlags()...),
+					Args: append([]string{
+						"run",
+						fmt.Sprintf("--db-name=%s", db.Name),
+						fmt.Sprintf("--db-kind=%s", api.ResourceKindMySQL),
+					}, c.LoggerOptions.ToFlags()...),
 				}
 
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, replicationModeDetector)
