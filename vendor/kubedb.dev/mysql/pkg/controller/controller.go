@@ -139,7 +139,7 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 	<-stopCh
 }
 
-// StartAndRunControllers starts InformetFactory and runs queue.worker
+// StartAndRunControllers starts InformerFactory and runs queue.worker
 func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	defer utilruntime.HandleCrash()
 

@@ -57,7 +57,7 @@ func (c *Controller) ensureAppBinding(db *api.Redis) (kutil.VerbType, error) {
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(context.TODO(), c.AppCatalogClient.AppcatalogV1alpha1(), meta, func(in *appcat.AppBinding) *appcat.AppBinding {
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 		in.Labels = db.OffshootLabels()
-		in.Annotations = meta_util.FilterKeys(kubedb.GroupName, in.Annotations, db.Annotations)
+		in.Annotations = meta_util.FilterKeys(kubedb.GroupName, nil, db.Annotations)
 
 		in.Spec.Type = appmeta.Type()
 		in.Spec.Version = redisVersion.Spec.Version

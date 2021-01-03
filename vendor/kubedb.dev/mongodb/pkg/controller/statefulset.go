@@ -54,7 +54,6 @@ const (
 	dataDirectoryPath = "/data/db"
 
 	configDirectoryName = "config"
-	configDirectoryPath = "/data/configdb"
 
 	InitScriptDirectoryName = "init-scripts"
 	InitScriptDirectoryPath = "/init-scripts"
@@ -64,8 +63,6 @@ const (
 
 	ServerCertDirectoryName = "server-cert"
 	ServerCertDirectoryPath = "/server-cert"
-
-	initialConfigDirectoryPath = "/configdb-readonly"
 
 	initialKeyDirectoryName = "keydir"
 	initialKeyDirectoryPath = "/keydir-readonly"
@@ -189,7 +186,7 @@ func (c *Controller) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kuti
 			"--shardsvr",
 			"--replSet=" + db.ShardRepSetName(nodeNum),
 			"--clusterAuthMode=" + string(clusterAuth),
-			"--keyFile=" + configDirectoryPath + "/" + KeyForKeyFile,
+			"--keyFile=" + api.ConfigDirectoryPath + "/" + KeyForKeyFile,
 		}
 
 		sslArgs, err := c.getTLSArgs(db, mongodbVersion)
@@ -280,7 +277,7 @@ func (c *Controller) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kuti
 			},
 			{
 				Name:      configDirectoryName,
-				MountPath: configDirectoryPath,
+				MountPath: api.ConfigDirectoryPath,
 			},
 			{
 				Name:      dataDirectoryName,
@@ -396,7 +393,7 @@ func (c *Controller) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 		"--configsvr",
 		"--replSet=" + db.ConfigSvrRepSetName(),
 		"--clusterAuthMode=" + string(clusterAuth),
-		"--keyFile=" + configDirectoryPath + "/" + KeyForKeyFile,
+		"--keyFile=" + api.ConfigDirectoryPath + "/" + KeyForKeyFile,
 	}
 
 	sslArgs, err := c.getTLSArgs(db, mongodbVersion)
@@ -487,7 +484,7 @@ func (c *Controller) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 		},
 		{
 			Name:      configDirectoryName,
-			MountPath: configDirectoryPath,
+			MountPath: api.ConfigDirectoryPath,
 		},
 		{
 			Name:      dataDirectoryName,
@@ -525,12 +522,6 @@ func (c *Controller) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 				MountPath: "/docker-entrypoint-initdb.d",
 			},
 		)
-	}
-
-	if db.Spec.StorageEngine == api.StorageEngineInMemory {
-		args = append(args, []string{
-			"--storageEngine=inMemory",
-		}...)
 	}
 
 	opts := workloadOptions{
@@ -622,7 +613,7 @@ func (c *Controller) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 		cmds = []string{"mongod"}
 		args = meta_util.UpsertArgumentList(args, []string{
 			"--replSet=" + db.RepSetName(),
-			"--keyFile=" + configDirectoryPath + "/" + KeyForKeyFile,
+			"--keyFile=" + api.ConfigDirectoryPath + "/" + KeyForKeyFile,
 			"--clusterAuthMode=" + string(clusterAuth),
 		})
 
@@ -697,7 +688,7 @@ func (c *Controller) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 			},
 			{
 				Name:      configDirectoryName,
-				MountPath: configDirectoryPath,
+				MountPath: api.ConfigDirectoryPath,
 			},
 			{
 				Name:      dataDirectoryName,
@@ -988,7 +979,7 @@ func installInitContainer(
 		VolumeMounts: []core.VolumeMount{
 			{
 				Name:      configDirectoryName,
-				MountPath: configDirectoryPath,
+				MountPath: api.ConfigDirectoryPath,
 			},
 			{
 				Name:      InitScriptDirectoryName,
@@ -1102,7 +1093,7 @@ func upsertDataVolume(
 				// Mount volume for config source
 				{
 					Name:      configDirectoryName,
-					MountPath: configDirectoryPath,
+					MountPath: api.ConfigDirectoryPath,
 				},
 				{
 					Name:      InitScriptDirectoryName,

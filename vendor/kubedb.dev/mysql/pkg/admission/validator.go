@@ -315,7 +315,6 @@ func getPreconditionFunc(db *api.MySQL) []mergepatch.PreconditionFunc {
 
 var preconditionSpecFields = sets.NewString(
 	"spec.storageType",
-	"spec.storage",
 	"spec.authSecret",
 	"spec.podTemplate.spec.nodeSelector",
 )
