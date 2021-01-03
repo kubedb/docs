@@ -117,12 +117,11 @@ func (c *Controller) create(db *api.MySQL) error {
 			}
 		}
 		//======================== Wait for initialize script =====================================
-		if db.Spec.Init.Script != nil {
-			if !kmapi.HasCondition(db.Status.Conditions, api.DatabaseProvisioned) &&
-				!kmapi.HasCondition(db.Status.Conditions, api.DatabaseDataRestored) &&
-				kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReplicaReady) &&
+		if db.Spec.Init.Script != nil && !db.UsesGroupReplication() {
+			if kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReplicaReady) &&
 				kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseAcceptingConnection) &&
-				kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReady) {
+				kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReady) &&
+				!kmapi.HasCondition(db.Status.Conditions, api.DatabaseDataRestored) {
 				_, err := util.UpdateMySQLStatus(
 					context.TODO(),
 					c.DBClient.KubedbV1alpha2(),

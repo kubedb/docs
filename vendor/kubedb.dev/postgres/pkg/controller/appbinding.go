@@ -58,7 +58,7 @@ func (c *Controller) ensureAppBinding(db *api.Postgres, postgresVersion *catalog
 		func(in *appcat.AppBinding) *appcat.AppBinding {
 			core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
 			in.Labels = db.OffshootLabels()
-			in.Annotations = meta_util.FilterKeys(kubedb.GroupName, in.Annotations, db.Annotations)
+			in.Annotations = meta_util.FilterKeys(kubedb.GroupName, nil, db.Annotations)
 
 			in.Spec.Type = appmeta.Type()
 			in.Spec.Version = postgresVersion.Spec.Version

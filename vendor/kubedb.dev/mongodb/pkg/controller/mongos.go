@@ -59,7 +59,7 @@ func (c *Controller) ensureMongosNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 		"--port=" + strconv.Itoa(api.MongoDBDatabasePort),
 		"--configdb=$(CONFIGDB_REPSET)",
 		"--clusterAuthMode=" + string(clusterAuth),
-		"--keyFile=" + configDirectoryPath + "/" + KeyForKeyFile,
+		"--keyFile=" + api.ConfigDirectoryPath + "/" + KeyForKeyFile,
 	}
 
 	sslArgs, err := c.getTLSArgs(db, mongodbVersion)
@@ -112,7 +112,7 @@ func (c *Controller) ensureMongosNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 	volumeMounts := []core.VolumeMount{
 		{
 			Name:      configDirectoryName,
-			MountPath: configDirectoryPath,
+			MountPath: api.ConfigDirectoryPath,
 		},
 	}
 
@@ -241,7 +241,7 @@ func mongosInitContainer(
 			},
 			{
 				Name:      configDirectoryName,
-				MountPath: configDirectoryPath,
+				MountPath: api.ConfigDirectoryPath,
 			},
 			{
 				Name:      InitScriptDirectoryName,
