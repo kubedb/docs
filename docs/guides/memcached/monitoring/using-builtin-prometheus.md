@@ -152,8 +152,8 @@ Let's configure a Prometheus scraping job to collect metrics from this service.
     separator: ;
     regex: (.*-stats)
     action: keep
-  # service created by KubeDB will have "kubedb.com/kind" and "app.kubernetes.io/instance" annotations. keep only those services that have these annotations.
-  - source_labels: [__meta_kubernetes_service_label_kubedb_com_kind]
+  # service created by KubeDB will have "app.kubernetes.io/name" and "app.kubernetes.io/instance" annotations. keep only those services that have these annotations.
+  - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_name]
     separator: ;
     regex: (.*)
     action: keep
@@ -230,8 +230,8 @@ data:
         separator: ;
         regex: (.*-stats)
         action: keep
-      # service created by KubeDB will have "kubedb.com/kind" and "app.kubernetes.io/instance" annotations. keep only those services that have these annotations.
-      - source_labels: [__meta_kubernetes_service_label_kubedb_com_kind]
+      # service created by KubeDB will have "app.kubernetes.io/name" and "app.kubernetes.io/instance" annotations. keep only those services that have these annotations.
+      - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_name]
         separator: ;
         regex: (.*)
         action: keep

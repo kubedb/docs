@@ -154,8 +154,8 @@ Let's configure a Prometheus scraping job to collect metrics from this service.
     separator: ;
     regex: (.*-stats)
     action: keep
-  # service created by KubeDB will have "kubedb.com/kind" and "app.kubernetes.io/instance" annotations. keep only those services that have these annotations.
-  - source_labels: [__meta_kubernetes_service_label_kubedb_com_kind]
+  # service created by KubeDB will have "app.kubernetes.io/name" and "app.kubernetes.io/instance" annotations. keep only those services that have these annotations.
+  - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_name]
     separator: ;
     regex: (.*)
     action: keep
@@ -239,8 +239,8 @@ data:
         separator: ;
         regex: (.*-stats)
         action: keep
-      # service created by KubeDB will have "kubedb.com/kind" and "app.kubernetes.io/instance" annotations. keep only those services that have these annotations.
-      - source_labels: [__meta_kubernetes_service_label_kubedb_com_kind]
+      # service created by KubeDB will have "app.kubernetes.io/name" and "app.kubernetes.io/instance" annotations. keep only those services that have these annotations.
+      - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_name]
         separator: ;
         regex: (.*)
         action: keep
@@ -334,7 +334,7 @@ Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:909
 Check the followings:
 
 - Endpoint URLs of backend servers marked by green rectangles
-- `kubedb_com_kind`, `kubedb_com_name`, and `service` labels marked by red rectangles
+- `app_kubernetes_io_name`, `app_kubernetes_io_instance`, and `service` labels marked by red rectangles
 
 They all indicate that the metrics are coming from `PerconaXtraDB` database `px-builtin-prom` through stats service `px-builtin-prom-stats`.
 

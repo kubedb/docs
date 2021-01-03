@@ -249,7 +249,7 @@ You can find the service which selects for primary replica have the following se
 ```bash
 $ kubectl get svc -n demo my-group -o json | jq '.spec.selector'
 {
-  "kubedb.com/kind": "MySQL",
+  "app.kubernetes.io/name": "mysqls.kubedb.com",
   "app.kubernetes.io/instance": "my-group",
   "mysql.kubedb.com/role": "primary"
 }
@@ -268,7 +268,7 @@ You can also find the service which selects for secondary replicas have the foll
 ```bash
 $ kubectl get svc -n demo my-group-replicas -o json | jq '.spec.selector'
 {
-  "kubedb.com/kind": "MySQL",
+  "app.kubernetes.io/name": "mysqls.kubedb.com",
   "app.kubernetes.io/instance": "my-group",
   "mysql.kubedb.com/role": "secondary"
 }
