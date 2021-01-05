@@ -18,7 +18,7 @@ require (
 	kmodules.xyz/client-go v0.0.0-20201230092550-8ca15cfcbefa
 	kmodules.xyz/custom-resources v0.0.0-20201124062543-bd8d35c21b0c
 	kmodules.xyz/webhook-runtime v0.0.0-20201105073856-2dc7382b88c6
-	kubedb.dev/apimachinery v0.16.0-rc.0
+	kubedb.dev/apimachinery v0.16.0-rc.0.0.20210105043123-31ec37c3e5e7
 	kubedb.dev/elasticsearch v0.16.0-rc.0
 	kubedb.dev/memcached v0.9.0-rc.0
 	kubedb.dev/mongodb v0.9.0-rc.0
