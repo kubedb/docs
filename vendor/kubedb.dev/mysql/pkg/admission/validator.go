@@ -37,11 +37,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
 type MySQLValidator struct {
+	ClusterTopology *core_util.Topology
+
 	client      kubernetes.Interface
 	extClient   cs.Interface
 	lock        sync.RWMutex
@@ -124,7 +127,7 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 
 			mysql := obj.(*api.MySQL).DeepCopy()
 			oldMySQL := oldObject.(*api.MySQL).DeepCopy()
-			oldMySQL.SetDefaults()
+			oldMySQL.SetDefaults(a.ClusterTopology)
 			// Allow changing Database Secret only if there was no secret have set up yet.
 			if oldMySQL.Spec.AuthSecret == nil {
 				oldMySQL.Spec.AuthSecret = mysql.Spec.AuthSecret

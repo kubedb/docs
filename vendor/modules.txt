@@ -1177,7 +1177,7 @@ kmodules.xyz/prober/api/v1
 # kmodules.xyz/webhook-runtime v0.0.0-20201105073856-2dc7382b88c6
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.16.0-rc.0.0.20210105043123-31ec37c3e5e7
+# kubedb.dev/apimachinery v0.16.0-rc.0.0.20210106185329-7a3dd5ee0094
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
 kubedb.dev/apimachinery/apis/autoscaling/v1alpha1
@@ -1238,7 +1238,7 @@ kubedb.dev/memcached/pkg/controller
 # kubedb.dev/mongodb v0.9.0-rc.0
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.9.0-rc.0.0.20210103182738-c7a405744820
+# kubedb.dev/mysql v0.9.0-rc.0.0.20210106190002-de8198cecd97
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
 # kubedb.dev/percona-xtradb v0.3.0-rc.0
@@ -1249,7 +1249,7 @@ kubedb.dev/pg-leader-election/pkg/leader_election
 # kubedb.dev/pgbouncer v0.3.0-rc.0
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.16.0-rc.0
+# kubedb.dev/postgres v0.16.0-rc.0.0.20210107125433-7787991e20cc
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
 # kubedb.dev/proxysql v0.3.0-rc.0
