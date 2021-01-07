@@ -152,10 +152,14 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 			&mgAdmsn.MongoDBMutator{
 				ClusterTopology: ctrl.ClusterTopology,
 			},
-			&myAdmsn.MySQLMutator{},
+			&myAdmsn.MySQLMutator{
+				ClusterTopology: ctrl.ClusterTopology,
+			},
 			&pxcAdmsn.PerconaXtraDBMutator{},
 			&pgbAdmsn.PgBouncerMutator{},
-			&pgAdmsn.PostgresMutator{},
+			&pgAdmsn.PostgresMutator{
+				ClusterTopology: ctrl.ClusterTopology,
+			},
 			&prAdmsn.ProxySQLMutator{},
 			&rdAdmsn.RedisMutator{
 				ClusterTopology: ctrl.ClusterTopology,
@@ -171,10 +175,14 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 			&mgAdmsn.MongoDBValidator{
 				ClusterTopology: ctrl.ClusterTopology,
 			},
-			&myAdmsn.MySQLValidator{},
+			&myAdmsn.MySQLValidator{
+				ClusterTopology: ctrl.ClusterTopology,
+			},
 			&pxcAdmsn.PerconaXtraDBValidator{},
 			&pgbAdmsn.PgBouncerValidator{},
-			&pgAdmsn.PostgresValidator{},
+			&pgAdmsn.PostgresValidator{
+				ClusterTopology: ctrl.ClusterTopology,
+			},
 			&prAdmsn.ProxySQLValidator{},
 			&rdAdmsn.RedisValidator{
 				ClusterTopology: ctrl.ClusterTopology,

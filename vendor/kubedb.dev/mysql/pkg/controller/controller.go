@@ -41,6 +41,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/apiextensions"
+	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -72,6 +73,7 @@ func New(
 	appCatalogClient appcat_cs.Interface,
 	promClient pcm.MonitoringV1Interface,
 	opt amc.Config,
+	topology *core_util.Topology,
 	recorder record.EventRecorder,
 ) *Controller {
 	return &Controller{
@@ -83,6 +85,7 @@ func New(
 			DynamicClient:    dc,
 			AppCatalogClient: appCatalogClient,
 			Mapper:           restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(client.Discovery())),
+			ClusterTopology:  topology,
 			Recorder:         recorder,
 		},
 		Config:     opt,
