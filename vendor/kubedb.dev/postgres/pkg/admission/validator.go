@@ -38,11 +38,14 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/leaderelection"
+	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
 type PostgresValidator struct {
+	ClusterTopology *core_util.Topology
+
 	client      kubernetes.Interface
 	extClient   cs.Interface
 	lock        sync.RWMutex
@@ -123,7 +126,7 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 
 			postgres := obj.(*api.Postgres).DeepCopy()
 			oldPostgres := oldObject.(*api.Postgres).DeepCopy()
-			oldPostgres.SetDefaults()
+			oldPostgres.SetDefaults(a.ClusterTopology)
 			// Allow changing Database Secret only if there was no secret have set up yet.
 			if oldPostgres.Spec.AuthSecret == nil {
 				oldPostgres.Spec.AuthSecret = postgres.Spec.AuthSecret

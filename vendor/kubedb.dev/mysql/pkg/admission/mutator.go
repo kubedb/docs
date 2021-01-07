@@ -31,11 +31,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
 type MySQLMutator struct {
+	ClusterTopology *core_util.Topology
+
 	client      kubernetes.Interface
 	extClient   cs.Interface
 	lock        sync.RWMutex
@@ -90,7 +93,7 @@ func (a *MySQLMutator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	mysqlMod, err := setDefaultValues(obj.(*api.MySQL).DeepCopy())
+	mysqlMod, err := setDefaultValues(obj.(*api.MySQL).DeepCopy(), a.ClusterTopology)
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if mysqlMod != nil {
@@ -108,7 +111,7 @@ func (a *MySQLMutator) Admit(req *admission.AdmissionRequest) *admission.Admissi
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a MySQL database
-func setDefaultValues(mysql *api.MySQL) (runtime.Object, error) {
+func setDefaultValues(mysql *api.MySQL, ClusterTopology *core_util.Topology) (runtime.Object, error) {
 	if mysql.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
 	}
@@ -139,7 +142,7 @@ func setDefaultValues(mysql *api.MySQL) (runtime.Object, error) {
 		}
 	}
 
-	mysql.SetDefaults()
+	mysql.SetDefaults(ClusterTopology)
 
 	return mysql, nil
 }

@@ -30,11 +30,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
 
 type PostgresMutator struct {
+	ClusterTopology *core_util.Topology
+
 	client      kubernetes.Interface
 	dbClient    cs.Interface
 	lock        sync.RWMutex
@@ -89,7 +92,7 @@ func (a *PostgresMutator) Admit(req *admission.AdmissionRequest) *admission.Admi
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	dbMod, err := setDefaultValues(obj.(*api.Postgres).DeepCopy())
+	dbMod, err := setDefaultValues(obj.(*api.Postgres).DeepCopy(), a.ClusterTopology)
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if dbMod != nil {
@@ -107,7 +110,7 @@ func (a *PostgresMutator) Admit(req *admission.AdmissionRequest) *admission.Admi
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a Postgres database
-func setDefaultValues(postgres *api.Postgres) (runtime.Object, error) {
+func setDefaultValues(postgres *api.Postgres, ClusterTopology *core_util.Topology) (runtime.Object, error) {
 	if postgres.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
 	}
@@ -122,7 +125,7 @@ func setDefaultValues(postgres *api.Postgres) (runtime.Object, error) {
 	if postgres.Spec.Replicas == nil {
 		postgres.Spec.Replicas = pointer.Int32P(1)
 	}
-	postgres.SetDefaults()
+	postgres.SetDefaults(ClusterTopology)
 
 	return postgres, nil
 }
