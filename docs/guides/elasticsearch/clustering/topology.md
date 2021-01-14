@@ -209,7 +209,7 @@ spec:
   storageType: Durable
   topology:
     master:
-      prefix: master
+      suffix: master
       replicas: 1
       storage:
         storageClassName: "standard"
@@ -219,7 +219,7 @@ spec:
           requests:
             storage: 1Gi
     data:
-      prefix: data
+      suffix: data
       replicas: 2
       storage:
         storageClassName: "standard"
@@ -228,8 +228,8 @@ spec:
         resources:
           requests:
             storage: 1Gi
-    client:
-      prefix: client
+    ingest:
+      suffix: ingest
       replicas: 2
       storage:
         storageClassName: "standard"
@@ -242,7 +242,7 @@ spec:
 
 Here,
 
-- `spec.topology` point to the number of pods we want as dedicated `master`, `client` and `data` nodes and also specify prefix, storage, resources for the pods.
+- `spec.topology` point to the number of pods we want as dedicated `master`, `ingest` and `data` nodes and also specify prefix, storage, resources for the pods.
 
 Let's create this Elasticsearch object
 
@@ -268,8 +268,8 @@ Three StatefulSets are created for *client*, *data* and *master* node respective
     ```yaml
     spec:
       topology:
-        client:
-          prefix: client
+        ingest:
+          suffix: ingest
           replicas: 2
           storage:
             storageClassName: "standard"
@@ -280,7 +280,7 @@ Three StatefulSets are created for *client*, *data* and *master* node respective
                 storage: 1Gi
     ```
 
-    This configuration creates a StatefulSet named `client-topology-es` for client node
+    This configuration creates a StatefulSet named `client-topology-es` for ingest node
 
   - `spec.replicas` is set to `2`. Two dedicated nodes is created as client.
   - Label `node.role.client: set` is added in Pods
@@ -292,7 +292,7 @@ Three StatefulSets are created for *client*, *data* and *master* node respective
     spec:
       topology:
         data:
-          prefix: data
+          suffix: data
           replicas: 2
           storage:
             storageClassName: "standard"
@@ -315,7 +315,7 @@ Three StatefulSets are created for *client*, *data* and *master* node respective
     spec:
       topology:
         master:
-          prefix: master
+          suffix: master
           replicas: 1
           storage:
             storageClassName: "standard"

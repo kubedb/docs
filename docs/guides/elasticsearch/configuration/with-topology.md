@@ -139,7 +139,7 @@ spec:
     name: es-configuration
   topology:
     master:
-      prefix: master
+      suffix: master
       replicas: 1
       storage:
         storageClassName: "standard"
@@ -149,7 +149,7 @@ spec:
           requests:
             storage: 1Gi
     data:
-      prefix: data
+      suffix: data
       replicas: 1
       storage:
         storageClassName: "standard"
@@ -158,8 +158,8 @@ spec:
         resources:
           requests:
             storage: 1Gi
-    client:
-      prefix: client
+    ingest:
+      suffix: ingest
       replicas: 2
       storage:
         storageClassName: "standard"
