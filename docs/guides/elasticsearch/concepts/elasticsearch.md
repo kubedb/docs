@@ -139,7 +139,7 @@ A sample configuration for `spec.topology` field is shown below,
 ```yaml
 topology:
   master:
-    prefix: master
+    suffix: master
     replicas: 1
     storage:
       storageClassName: "standard"
@@ -156,7 +156,7 @@ topology:
         memory: "128Mi"
         cpu: "500m"
   data:
-    prefix: data
+    suffix: data
     replicas: 3
     storage:
       storageClassName: "standard"
@@ -172,8 +172,8 @@ topology:
       limits:
         memory: "1Gi"
         cpu: "500m"
-  client:
-    prefix: client
+  ingest:
+    suffix: ingest
     replicas: 2
     storage:
       storageClassName: "standard"
