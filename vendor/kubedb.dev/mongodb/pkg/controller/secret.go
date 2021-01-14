@@ -35,14 +35,6 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 )
 
-const (
-	mongodbUser = "root"
-
-	KeyForKeyFile = "key.txt"
-
-	AuthSecretSuffix = "-auth"
-)
-
 func (c *Controller) ensureAuthSecret(db *api.MongoDB) error {
 	if db.Spec.AuthSecret == nil {
 		authSecret, err := c.createAuthSecret(db)
@@ -88,7 +80,7 @@ func (c *Controller) ensureKeyFileSecret(db *api.MongoDB) error {
 			},
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
-				KeyForKeyFile: base64Token,
+				api.MongoDBKeyForKeyFile: base64Token,
 			},
 		}
 		if _, err := c.Client.CoreV1().Secrets(db.Namespace).Create(context.TODO(), secret, metav1.CreateOptions{}); err != nil {
@@ -112,7 +104,7 @@ func (c *Controller) ensureKeyFileSecret(db *api.MongoDB) error {
 }
 
 func (c *Controller) createAuthSecret(db *api.MongoDB) (*core.LocalObjectReference, error) {
-	authSecretName := db.Name + AuthSecretSuffix
+	authSecretName := db.Name + api.MongoDBAuthSecretSuffix
 
 	sc, err := c.checkSecret(authSecretName, db)
 	if err != nil {
@@ -126,7 +118,7 @@ func (c *Controller) createAuthSecret(db *api.MongoDB) (*core.LocalObjectReferen
 			},
 			Type: core.SecretTypeOpaque,
 			StringData: map[string]string{
-				core.BasicAuthUsernameKey: mongodbUser,
+				core.BasicAuthUsernameKey: api.MongodbUser,
 				core.BasicAuthPasswordKey: passgen.Generate(api.DefaultPasswordLength),
 			},
 		}

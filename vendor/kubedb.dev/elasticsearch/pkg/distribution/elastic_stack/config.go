@@ -61,31 +61,14 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 	if err != nil {
 		return err
 	}
-
-	if secret != nil {
-		// If the secret already exists,
+	// If the secret already exists
+	// and not controlled by the ES object.
+	// i.e. user provided custom secret file.
+	if secret != nil && !metav1.IsControlledBy(secret, es.db) {
 		// check whether it contains "elasticsearch.yml" file or not.
 		if value, ok := secret.Data[ConfigFileName]; !ok || len(value) == 0 {
 			return errors.New("elasticsearch.yml is missing")
 		}
-
-		// If secret is owned by the elasticsearch object,
-		// update the labels.
-		// Labels hold information like elasticsearch version,
-		// should be synced.
-		ctrl := metav1.GetControllerOf(secret)
-		if ctrl != nil &&
-			ctrl.Kind == api.ResourceKindElasticsearch && ctrl.Name == es.db.Name {
-
-			// sync labels
-			if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secret.ObjectMeta, func(in *core.Secret) *core.Secret {
-				in.Labels = core_util.UpsertMap(in.Labels, es.db.OffshootLabels())
-				return in
-			}, metav1.PatchOptions{}); err != nil {
-				return err
-			}
-		}
-
 		return nil
 	}
 

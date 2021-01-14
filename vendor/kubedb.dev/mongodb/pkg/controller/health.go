@@ -249,7 +249,7 @@ func (c *Controller) GetURL(db *api.MongoDB, clientPodName string) string {
 
 func (c *Controller) GetMongoDBClientOpts(db *api.MongoDB, url string) (*mgoptions.ClientOptions, error) {
 	var clientOpts *mgoptions.ClientOptions
-	if db.Spec.SSLMode == api.SSLModeRequireSSL {
+	if db.Spec.TLS != nil {
 		secretName := db.MustCertSecretName(api.MongoDBClientCert, "")
 		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 		if err != nil {

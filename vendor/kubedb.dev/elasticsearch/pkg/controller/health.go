@@ -26,6 +26,7 @@ import (
 	go_es "kubedb.dev/elasticsearch/pkg/util/go-es"
 
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -63,6 +64,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 				// Create database client
 				dbClient, err := c.GetElasticsearchClient(db)
 				if err != nil {
+					glog.Warningf("The Elasticsearch: %s/%s client is not ready with %s", db.Namespace, db.Name, err.Error())
 					// Since the client was unable to connect the database,
 					// update "AcceptingConnection" to "false".
 					// update "Ready" to "false"
@@ -92,7 +94,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 						metav1.UpdateOptions{},
 					)
 					if err != nil {
-						glog.Errorf("Failed to update status for Elasticsearch: %s/%s", db.Namespace, db.Name)
+						glog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
 					}
 					// Since the client isn't created, skip rest operations.
 					return
@@ -120,7 +122,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 					metav1.UpdateOptions{},
 				)
 				if err != nil {
-					glog.Errorf("Failed to update status for Elasticsearch: %s/%s", db.Namespace, db.Name)
+					glog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
 					// Since condition update failed, skip remaining operations.
 					return
 				}
@@ -134,12 +136,13 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 				}
 
 				// Update to "Ready" condition to "true" only if the status is "green".
-				// For standalone cluster, consider status "yellow".
+				// For standalone data node cluster (could be combined/topology), consider status "yellow".
+				// check if:
+				//	( status == green ) || ( status == yellow && (standalone-data-topology || standalone-data-combined))
 				if status == api.ElasticsearchStatusGreen ||
 					(status == api.ElasticsearchStatusYellow &&
-						db.Spec.Topology == nil &&
-						(db.Spec.Replicas == nil || (db.Spec.Replicas != nil && *db.Spec.Replicas == int32(1)))) {
-
+						((db.Spec.Topology != nil && db.Spec.Topology.Data.Replicas != nil && *db.Spec.Topology.Data.Replicas == int32(1)) ||
+							(db.Spec.Topology == nil && db.Spec.Replicas != nil && *db.Spec.Replicas == int32(1)))) {
 					// Update "Ready" to "true".
 					_, err = util.UpdateElasticsearchStatus(
 						context.TODO(),
@@ -159,7 +162,29 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 						metav1.UpdateOptions{},
 					)
 					if err != nil {
-						glog.Errorf("Failed to update status for Elasticsearch: %s/%s", db.Namespace, db.Name)
+						glog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
+					}
+				} else {
+					// Update "Ready" to "false".
+					_, err = util.UpdateElasticsearchStatus(
+						context.TODO(),
+						c.DBClient.KubedbV1alpha2(),
+						db.ObjectMeta,
+						func(in *api.ElasticsearchStatus) (types.UID, *api.ElasticsearchStatus) {
+							in.Conditions = kmapi.SetCondition(in.Conditions,
+								kmapi.Condition{
+									Type:               api.DatabaseReady,
+									Status:             core.ConditionFalse,
+									Reason:             api.ReadinessCheckFailed,
+									ObservedGeneration: db.Generation,
+									Message:            fmt.Sprintf("The Elasticsearch: %s/%s is not ready with cluster status: %s", db.Namespace, db.Name, status),
+								})
+							return db.UID, in
+						},
+						metav1.UpdateOptions{},
+					)
+					if err != nil {
+						glog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
 					}
 				}
 			}()
@@ -174,7 +199,14 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 
 func (c *Controller) GetElasticsearchClient(db *api.Elasticsearch) (go_es.ESClient, error) {
 	url := fmt.Sprintf("%v://%s.%s.svc:%d", db.GetConnectionScheme(), db.ServiceName(), db.GetNamespace(), api.ElasticsearchRestPort)
-	dbClient, err := go_es.GetElasticClient(c.Client, db, url)
+
+	// Get original Elasticsearch version, since the client is version specific
+	esVersion, err := c.DBClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), db.Spec.Version, metav1.GetOptions{})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get elasticsearchVersion")
+	}
+
+	dbClient, err := go_es.GetElasticClient(c.Client, db, esVersion.Spec.Version, url)
 	if err != nil {
 		return nil, err
 	}

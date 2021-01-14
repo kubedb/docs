@@ -37,6 +37,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kmapi "kmodules.xyz/client-go/api/v1"
+	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 const (
@@ -72,8 +73,62 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 				defer func() {
 					wg.Done()
 				}()
-				// Create database client
-				engine, err := c.getMySQLClient(db)
+				// 1st insure all the pods are going to join the cluster(offline/online) to form a group replication
+				// then check if the db is going to accepting connection and in ready state.
+
+				// verifying all pods are going Online
+				podList, err := c.Client.CoreV1().Pods(db.Namespace).List(context.TODO(), metav1.ListOptions{
+					LabelSelector: labels.Set(db.OffshootSelectors()).String(),
+				})
+				if err != nil {
+					glog.Warning("Failed to list DB pod with ", err.Error())
+				}
+
+				for _, pod := range podList.Items {
+					if core_util.IsPodConditionTrue(pod.Status.Conditions, core_util.PodConditionTypeReady) {
+						continue
+					}
+
+					engine, err := c.getMySQLClient(db, HostDNS(db, pod.ObjectMeta), api.MySQLDatabasePort)
+					if err != nil {
+						glog.Warning("Failed to get db client for host ", pod.Namespace, "/", pod.Name)
+						return
+					}
+					defer func() {
+						if engine != nil {
+							err = engine.Close()
+							if err != nil {
+								glog.Errorf("Can't close the engine. error: %v", err)
+							}
+						}
+					}()
+					isHostOnline, err := c.isHostOnline(engine)
+					if err != nil {
+						glog.Warning("Host is not online ", err.Error())
+					}
+					// update pod status if specific host get online
+					if isHostOnline {
+						pod.Status.Conditions = core_util.SetPodCondition(pod.Status.Conditions, core.PodCondition{
+							Type:               core_util.PodConditionTypeReady,
+							Status:             core.ConditionTrue,
+							LastTransitionTime: metav1.Now(),
+							Reason:             "DBConditionTypeReadyAndServerOnline",
+							Message:            "DB is ready because of server getting Online and Running state",
+						})
+						_, err = c.Client.CoreV1().Pods(pod.Namespace).UpdateStatus(context.TODO(), &pod, metav1.UpdateOptions{})
+						if err != nil {
+							glog.Warning("Failed to update pod status with: ", err.Error())
+						}
+					}
+				}
+
+				// verify db is going to accepting connection and in ready state
+				port, err := c.GetPrimaryServicePort(db)
+				if err != nil {
+					glog.Warning("Failed to primary service port with: ", err.Error())
+					return
+				}
+				engine, err := c.getMySQLClient(db, db.PrimaryServiceDNS(), port)
 				if err != nil {
 					// Since the client was unable to connect the database,
 					// update "AcceptingConnection" to "false".
@@ -109,7 +164,6 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 					// Since the client isn't created, skip rest operations.
 					return
 				}
-
 				defer func() {
 					if engine != nil {
 						err = engine.Close()
@@ -118,7 +172,6 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 						}
 					}
 				}()
-
 				// While creating the client, we perform a health check along with it.
 				// If the client is created without any error,
 				// the database is accepting connection.
@@ -214,13 +267,13 @@ func (c *Controller) checkMySQLClusterHealth(db *api.MySQL, engine *xorm.Engine)
 	}
 
 	if len(result) != int(*db.Spec.Replicas) {
-		return false, fmt.Errorf("not all members have joined in the group yet")
+		return false, fmt.Errorf("Not all members have joined in the group yet")
 	}
 
 	for j := range result {
 		memberState, ok := result[j]["MEMBER_STATE"]
 		if !ok || strings.Compare(memberState, "ONLINE") != 0 {
-			return false, fmt.Errorf("all group member are not online yet")
+			return false, fmt.Errorf("All group member are not online yet")
 		}
 	}
 
@@ -240,17 +293,32 @@ func (c *Controller) checkMySQLStandaloneHealth(engine *xorm.Engine) (bool, erro
 	return true, nil
 }
 
-func (c *Controller) getMySQLClient(db *api.MySQL) (*xorm.Engine, error) {
-	port, err := c.GetPrimaryServicePort(db)
+func (c *Controller) isHostOnline(engine *xorm.Engine) (bool, error) {
+	// 1. ping database
+	_, err := engine.QueryString("SELECT 1;")
 	if err != nil {
-		return nil, err
+		return false, err
 	}
+	result, err := engine.QueryString("select member_state from performance_schema.replication_group_members where member_id=@@server_uuid;")
+	if err != nil {
+		return false, err
+	}
+	if result == nil {
+		return false, fmt.Errorf("Query result is nil for checking member host online")
+	}
+	memberState, ok := result[0]["member_state"]
+	if !ok || strings.Compare(memberState, "ONLINE") != 0 {
+		return false, fmt.Errorf("The member is not online yet")
+	}
+	return true, nil
+}
 
-	user, pass, err := c.getMySQLBasicAuth(db)
+func (c *Controller) getMySQLClient(db *api.MySQL, dns string, port int32) (*xorm.Engine, error) {
+	user, pass, err := c.getDBRootCredential(db)
 	if err != nil {
-		return nil, fmt.Errorf("password basic auth for MySQL %v/%v", db.Namespace, db.Name)
+		return nil, fmt.Errorf("DB basic auth is not found for MySQL %v/%v", db.Namespace, db.Name)
 	}
-	tlsConfig := ""
+	tlsParam := ""
 	if db.Spec.TLS != nil {
 		serverSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.MustCertSecretName(api.MySQLServerCert), metav1.GetOptions{})
 		if err != nil {
@@ -268,17 +336,17 @@ func (c *Controller) getMySQLClient(db *api.MySQL) (*xorm.Engine, error) {
 			if err != nil {
 				return nil, err
 			}
-			tlsConfig = fmt.Sprintf("tls=%s", TLSValueCustom)
+			tlsParam = fmt.Sprintf("tls=%s", TLSValueCustom)
 		} else {
-			tlsConfig = fmt.Sprintf("tls=%s", TLSValueSkipVerify)
+			tlsParam = fmt.Sprintf("tls=%s", TLSValueSkipVerify)
 		}
 	}
 
-	cnnstr := fmt.Sprintf("%v:%v@tcp(%s:%d)/%s?%s", user, pass, db.PrimaryServiceDNS(), port, api.ResourceSingularMySQL, tlsConfig)
+	cnnstr := fmt.Sprintf("%v:%v@tcp(%s:%d)/%s?%s", user, pass, dns, port, api.ResourceSingularMySQL, tlsParam)
 	return xorm.NewEngine(api.ResourceSingularMySQL, cnnstr)
 }
 
-func (c *Controller) getMySQLBasicAuth(db *api.MySQL) (string, string, error) {
+func (c *Controller) getDBRootCredential(db *api.MySQL) (string, string, error) {
 	var secretName string
 	if db.Spec.AuthSecret != nil {
 		secretName = db.GetAuthSecretName()
@@ -287,5 +355,17 @@ func (c *Controller) getMySQLBasicAuth(db *api.MySQL) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	return string(secret.Data[core.BasicAuthUsernameKey]), string(secret.Data[core.BasicAuthPasswordKey]), nil
+	user, ok := secret.Data[core.BasicAuthUsernameKey]
+	if !ok {
+		return "", "", fmt.Errorf("DB root user is not set")
+	}
+	pass, ok := secret.Data[core.BasicAuthPasswordKey]
+	if !ok {
+		return "", "", fmt.Errorf("DB root password is not set")
+	}
+	return string(user), string(pass), nil
+}
+
+func HostDNS(db *api.MySQL, podMeta metav1.ObjectMeta) string {
+	return fmt.Sprintf("%v.%v.%v.svc", podMeta.Name, db.GoverningServiceName(), podMeta.Namespace)
 }
