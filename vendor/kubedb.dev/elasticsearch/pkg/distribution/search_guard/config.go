@@ -92,30 +92,14 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 		return err
 	}
 
-	if secret != nil {
-		// If the secret already exists,
+	// If the secret already exists
+	// and not controlled by the ES object.
+	// i.e. user provided custom secret file.
+	if secret != nil && !metav1.IsControlledBy(secret, es.db) {
 		// check whether it contains "elasticsearch.yml" file or not.
 		if value, ok := secret.Data[ConfigFileName]; !ok || len(value) == 0 {
 			return errors.New("elasticsearch.yml is missing")
 		}
-
-		// If secret is owned by the elasticsearch object,
-		// update the labels.
-		// Labels hold information like elasticsearch version,
-		// should be synced.
-		ctrl := metav1.GetControllerOf(secret)
-		if ctrl != nil &&
-			ctrl.Kind == api.ResourceKindElasticsearch && ctrl.Name == es.db.Name {
-
-			// sync labels
-			if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secret.ObjectMeta, func(in *core.Secret) *core.Secret {
-				in.Labels = core_util.UpsertMap(in.Labels, es.db.OffshootLabels())
-				return in
-			}, metav1.PatchOptions{}); err != nil {
-				return err
-			}
-		}
-
 		return nil
 	}
 
@@ -127,7 +111,12 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 		Namespace: es.db.Namespace,
 	}
 
-	var config, inUserConfig, rolesMapping string
+	var config, inUserConfig, oldInUserConfig, rolesMapping string
+	if secret != nil {
+		if value, ok := secret.Data[InternalUserFileName]; ok {
+			oldInUserConfig = string(value)
+		}
+	}
 
 	if !es.db.Spec.DisableSecurity {
 		config = searchguard_security_enabled
@@ -200,16 +189,26 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 		config = searchguard_security_disabled
 	}
 
-	data := map[string][]byte{
-		ConfigFileName:       []byte(config),
-		InternalUserFileName: []byte(inUserConfig),
-		RolesMappingFileName: []byte(rolesMapping),
+	// Every time we create internalUser
+	// It varies, even if the userSpec is same.
+	// It is because of the bcrypt hash generator.
+	// Let's check, whether the userSpec is changed or not.
+	equalConfig, err := user.InUserConfigCompareEqual(inUserConfig, oldInUserConfig)
+	if err != nil {
+		return errors.Wrap(err, "failed to compare internal user config file")
 	}
 
 	if _, _, err := core_util.CreateOrPatchSecret(context.TODO(), es.kClient, secretMeta, func(in *core.Secret) *core.Secret {
 		in.Labels = core_util.UpsertMap(in.Labels, es.db.OffshootLabels())
 		core_util.EnsureOwnerReference(&in.ObjectMeta, owner)
-		in.Data = data
+		if in.Data == nil {
+			in.Data = make(map[string][]byte)
+		}
+		in.Data[ConfigFileName] = []byte(config)
+		in.Data[RolesMappingFileName] = []byte(rolesMapping)
+		if !equalConfig {
+			in.Data[InternalUserFileName] = []byte(inUserConfig)
+		}
 		return in
 	}, metav1.PatchOptions{}); err != nil {
 		return err

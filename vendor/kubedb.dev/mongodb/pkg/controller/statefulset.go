@@ -44,30 +44,6 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-const (
-	workDirectoryName = "workdir"
-	workDirectoryPath = "/work-dir"
-
-	certDirectoryName = "certdir"
-
-	dataDirectoryName = "datadir"
-	dataDirectoryPath = "/data/db"
-
-	configDirectoryName = "config"
-
-	InitScriptDirectoryName = "init-scripts"
-	InitScriptDirectoryPath = "/init-scripts"
-
-	ClientCertDirectoryName = "client-cert"
-	ClientCertDirectoryPath = "/client-cert"
-
-	ServerCertDirectoryName = "server-cert"
-	ServerCertDirectoryPath = "/server-cert"
-
-	initialKeyDirectoryName = "keydir"
-	initialKeyDirectoryPath = "/keydir-readonly"
-)
-
 var ErrStsNotReady = fmt.Errorf("statefulSet is not updated yet")
 
 type workloadOptions struct {
@@ -179,14 +155,14 @@ func (c *Controller) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kuti
 		}
 
 		args := []string{
-			"--dbpath=" + dataDirectoryPath,
+			"--dbpath=" + api.MongoDBDataDirectoryPath,
 			"--auth",
 			"--bind_ip=0.0.0.0",
 			"--port=" + strconv.Itoa(api.MongoDBDatabasePort),
 			"--shardsvr",
 			"--replSet=" + db.ShardRepSetName(nodeNum),
 			"--clusterAuthMode=" + string(clusterAuth),
-			"--keyFile=" + api.ConfigDirectoryPath + "/" + KeyForKeyFile,
+			"--keyFile=" + api.MongoDBConfigDirectoryPath + "/" + api.MongoDBKeyForKeyFile,
 		}
 
 		sslArgs, err := c.getTLSArgs(db, mongodbVersion)
@@ -256,8 +232,8 @@ func (c *Controller) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kuti
 		}, podTemplate.Spec.Env...)
 		volumes := initvolumes
 
-		peerFinderLocation := fmt.Sprintf("%v/peer-finder", InitScriptDirectoryPath)
-		shardScriptName := fmt.Sprintf("%v/sharding.sh", InitScriptDirectoryPath)
+		peerFinderLocation := fmt.Sprintf("%v/peer-finder", api.MongoDBInitScriptDirectoryPath)
+		shardScriptName := fmt.Sprintf("%v/sharding.sh", api.MongoDBInitScriptDirectoryPath)
 		podTemplate.Spec.Lifecycle = &core.Lifecycle{
 			PostStart: &core.Handler{
 				Exec: &core.ExecAction{
@@ -272,26 +248,26 @@ func (c *Controller) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kuti
 
 		volumeMounts := []core.VolumeMount{
 			{
-				Name:      workDirectoryName,
-				MountPath: workDirectoryPath,
+				Name:      api.MongoDBWorkDirectoryName,
+				MountPath: api.MongoDBWorkDirectoryPath,
 			},
 			{
-				Name:      configDirectoryName,
-				MountPath: api.ConfigDirectoryPath,
+				Name:      api.MongoDBConfigDirectoryName,
+				MountPath: api.MongoDBConfigDirectoryPath,
 			},
 			{
-				Name:      dataDirectoryName,
-				MountPath: dataDirectoryPath,
+				Name:      api.MongoDBDataDirectoryName,
+				MountPath: api.MongoDBDataDirectoryPath,
 			},
 			{
-				Name:      InitScriptDirectoryName,
-				MountPath: InitScriptDirectoryPath,
+				Name:      api.MongoDBInitScriptDirectoryName,
+				MountPath: api.MongoDBInitScriptDirectoryPath,
 			},
 		}
 
 		if db.Spec.KeyFileSecret != nil {
 			volumes = core_util.UpsertVolume(volumes, core.Volume{
-				Name: initialKeyDirectoryName, // FIXIT: mounted where?
+				Name: api.MongoDBInitialKeyDirectoryName, // FIXIT: mounted where?
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
 						DefaultMode: pointer.Int32P(0400),
@@ -386,14 +362,14 @@ func (c *Controller) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 	}
 
 	args := []string{
-		"--dbpath=" + dataDirectoryPath,
+		"--dbpath=" + api.MongoDBDataDirectoryPath,
 		"--auth",
 		"--bind_ip=0.0.0.0",
 		"--port=" + strconv.Itoa(api.MongoDBDatabasePort),
 		"--configsvr",
 		"--replSet=" + db.ConfigSvrRepSetName(),
 		"--clusterAuthMode=" + string(clusterAuth),
-		"--keyFile=" + api.ConfigDirectoryPath + "/" + KeyForKeyFile,
+		"--keyFile=" + api.MongoDBConfigDirectoryPath + "/" + api.MongoDBKeyForKeyFile,
 	}
 
 	sslArgs, err := c.getTLSArgs(db, mongodbVersion)
@@ -463,8 +439,8 @@ func (c *Controller) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 	}, podTemplate.Spec.Env...)
 	volumes := initvolumes
 
-	peerFinderLocation := fmt.Sprintf("%v/peer-finder", InitScriptDirectoryPath)
-	replicasetScriptName := fmt.Sprintf("%v/configdb.sh", InitScriptDirectoryPath)
+	peerFinderLocation := fmt.Sprintf("%v/peer-finder", api.MongoDBInitScriptDirectoryPath)
+	replicasetScriptName := fmt.Sprintf("%v/configdb.sh", api.MongoDBInitScriptDirectoryPath)
 	podTemplate.Spec.Lifecycle = &core.Lifecycle{
 		PostStart: &core.Handler{
 			Exec: &core.ExecAction{
@@ -479,26 +455,26 @@ func (c *Controller) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 
 	volumeMounts := []core.VolumeMount{
 		{
-			Name:      workDirectoryName,
-			MountPath: workDirectoryPath,
+			Name:      api.MongoDBWorkDirectoryName,
+			MountPath: api.MongoDBWorkDirectoryPath,
 		},
 		{
-			Name:      configDirectoryName,
-			MountPath: api.ConfigDirectoryPath,
+			Name:      api.MongoDBConfigDirectoryName,
+			MountPath: api.MongoDBConfigDirectoryPath,
 		},
 		{
-			Name:      dataDirectoryName,
-			MountPath: dataDirectoryPath,
+			Name:      api.MongoDBDataDirectoryName,
+			MountPath: api.MongoDBDataDirectoryPath,
 		},
 		{
-			Name:      InitScriptDirectoryName,
-			MountPath: InitScriptDirectoryPath,
+			Name:      api.MongoDBInitScriptDirectoryName,
+			MountPath: api.MongoDBInitScriptDirectoryPath,
 		},
 	}
 
 	if db.Spec.KeyFileSecret != nil {
 		volumes = core_util.UpsertVolume(volumes, core.Volume{
-			Name: initialKeyDirectoryName, // FIXIT: mounted where?
+			Name: api.MongoDBInitialKeyDirectoryName, // FIXIT: mounted where?
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
 					DefaultMode: pointer.Int32P(0400),
@@ -569,7 +545,7 @@ func (c *Controller) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 	}
 
 	args := []string{
-		"--dbpath=" + dataDirectoryPath,
+		"--dbpath=" + api.MongoDBDataDirectoryPath,
 		"--auth",
 		"--bind_ip=0.0.0.0",
 		"--port=" + strconv.Itoa(api.MongoDBDatabasePort),
@@ -613,7 +589,7 @@ func (c *Controller) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 		cmds = []string{"mongod"}
 		args = meta_util.UpsertArgumentList(args, []string{
 			"--replSet=" + db.RepSetName(),
-			"--keyFile=" + api.ConfigDirectoryPath + "/" + KeyForKeyFile,
+			"--keyFile=" + api.MongoDBConfigDirectoryPath + "/" + api.MongoDBKeyForKeyFile,
 			"--clusterAuthMode=" + string(clusterAuth),
 		})
 
@@ -667,8 +643,8 @@ func (c *Controller) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 			},
 		}, envList...)
 
-		peerFinderLocation := fmt.Sprintf("%v/peer-finder", InitScriptDirectoryPath)
-		replicasetScriptName := fmt.Sprintf("%v/replicaset.sh", InitScriptDirectoryPath)
+		peerFinderLocation := fmt.Sprintf("%v/peer-finder", api.MongoDBInitScriptDirectoryPath)
+		replicasetScriptName := fmt.Sprintf("%v/replicaset.sh", api.MongoDBInitScriptDirectoryPath)
 		podTemplate.Spec.Lifecycle = &core.Lifecycle{
 			PostStart: &core.Handler{
 				Exec: &core.ExecAction{
@@ -683,26 +659,26 @@ func (c *Controller) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 
 		volumeMounts = core_util.UpsertVolumeMount(volumeMounts, []core.VolumeMount{
 			{
-				Name:      workDirectoryName,
-				MountPath: workDirectoryPath,
+				Name:      api.MongoDBWorkDirectoryName,
+				MountPath: api.MongoDBWorkDirectoryPath,
 			},
 			{
-				Name:      configDirectoryName,
-				MountPath: api.ConfigDirectoryPath,
+				Name:      api.MongoDBConfigDirectoryName,
+				MountPath: api.MongoDBConfigDirectoryPath,
 			},
 			{
-				Name:      dataDirectoryName,
-				MountPath: dataDirectoryPath,
+				Name:      api.MongoDBDataDirectoryName,
+				MountPath: api.MongoDBDataDirectoryPath,
 			},
 			{
-				Name:      InitScriptDirectoryName,
-				MountPath: InitScriptDirectoryPath,
+				Name:      api.MongoDBInitScriptDirectoryName,
+				MountPath: api.MongoDBInitScriptDirectoryPath,
 			},
 		}...)
 
 		if db.Spec.KeyFileSecret != nil {
 			volumes = core_util.UpsertVolume(volumes, core.Volume{
-				Name: initialKeyDirectoryName, // FIXIT: mounted where?
+				Name: api.MongoDBInitialKeyDirectoryName, // FIXIT: mounted where?
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
 						DefaultMode: pointer.Int32P(0400),
@@ -805,7 +781,7 @@ func (c *Controller) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 
 	if db.Spec.SSLMode != api.SSLModeDisabled && db.Spec.TLS != nil {
 		opts.volumeMount = core_util.UpsertVolumeMount(opts.volumeMount, core.VolumeMount{
-			Name:      certDirectoryName,
+			Name:      api.MongoDBCertDirectoryName,
 			MountPath: api.MongoCertDirectory,
 		})
 	}
@@ -978,15 +954,15 @@ func installInitContainer(
 		},
 		VolumeMounts: []core.VolumeMount{
 			{
-				Name:      configDirectoryName,
-				MountPath: api.ConfigDirectoryPath,
+				Name:      api.MongoDBConfigDirectoryName,
+				MountPath: api.MongoDBConfigDirectoryPath,
 			},
 			{
-				Name:      InitScriptDirectoryName,
-				MountPath: InitScriptDirectoryPath,
+				Name:      api.MongoDBInitScriptDirectoryName,
+				MountPath: api.MongoDBInitScriptDirectoryPath,
 			},
 			{
-				Name:      certDirectoryName,
+				Name:      api.MongoDBCertDirectoryName,
 				MountPath: api.MongoCertDirectory,
 			},
 		},
@@ -995,19 +971,19 @@ func installInitContainer(
 
 	initVolumes := []core.Volume{
 		{
-			Name: workDirectoryName,
+			Name: api.MongoDBWorkDirectoryName,
 			VolumeSource: core.VolumeSource{
 				EmptyDir: &core.EmptyDirVolumeSource{},
 			},
 		},
 		{
-			Name: InitScriptDirectoryName,
+			Name: api.MongoDBInitScriptDirectoryName,
 			VolumeSource: core.VolumeSource{
 				EmptyDir: &core.EmptyDirVolumeSource{},
 			},
 		},
 		{
-			Name: certDirectoryName,
+			Name: api.MongoDBCertDirectoryName,
 			VolumeSource: core.VolumeSource{
 				EmptyDir: &core.EmptyDirVolumeSource{},
 			},
@@ -1019,18 +995,18 @@ func installInitContainer(
 			installContainer.VolumeMounts,
 			[]core.VolumeMount{
 				{
-					Name:      ClientCertDirectoryName,
-					MountPath: ClientCertDirectoryPath,
+					Name:      api.MongoDBClientCertDirectoryName,
+					MountPath: api.MongoDBClientCertDirectoryPath,
 				},
 				{
-					Name:      ServerCertDirectoryName,
-					MountPath: ServerCertDirectoryPath,
+					Name:      api.MongoDBServerCertDirectoryName,
+					MountPath: api.MongoDBServerCertDirectoryPath,
 				},
 			}...)
 
 		initVolumes = core_util.UpsertVolume(initVolumes, []core.Volume{
 			{
-				Name: ClientCertDirectoryName,
+				Name: api.MongoDBClientCertDirectoryName,
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
 						DefaultMode: pointer.Int32P(0400),
@@ -1039,7 +1015,7 @@ func installInitContainer(
 				},
 			},
 			{
-				Name: ServerCertDirectoryName,
+				Name: api.MongoDBServerCertDirectoryName,
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
 						DefaultMode: pointer.Int32P(0400),
@@ -1060,12 +1036,12 @@ func installInitContainer(
 		installContainer.VolumeMounts = core_util.UpsertVolumeMount(
 			installContainer.VolumeMounts,
 			core.VolumeMount{
-				Name:      initialKeyDirectoryName,
-				MountPath: initialKeyDirectoryPath,
+				Name:      api.MongoDBInitialKeyDirectoryName,
+				MountPath: api.MongoDBInitialKeyDirectoryPath,
 			})
 
 		initVolumes = core_util.UpsertVolume(initVolumes, core.Volume{
-			Name: initialKeyDirectoryName,
+			Name: api.MongoDBInitialKeyDirectoryName,
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
 					DefaultMode: pointer.Int32P(0400),
@@ -1087,17 +1063,17 @@ func upsertDataVolume(
 		if container.Name == api.MongoDBContainerName {
 			volumeMount := []core.VolumeMount{
 				{
-					Name:      dataDirectoryName,
-					MountPath: dataDirectoryPath,
+					Name:      api.MongoDBDataDirectoryName,
+					MountPath: api.MongoDBDataDirectoryPath,
 				},
 				// Mount volume for config source
 				{
-					Name:      configDirectoryName,
-					MountPath: api.ConfigDirectoryPath,
+					Name:      api.MongoDBConfigDirectoryName,
+					MountPath: api.MongoDBConfigDirectoryPath,
 				},
 				{
-					Name:      InitScriptDirectoryName,
-					MountPath: InitScriptDirectoryPath,
+					Name:      api.MongoDBInitScriptDirectoryName,
+					MountPath: api.MongoDBInitScriptDirectoryPath,
 				},
 			}
 			volumeMounts := container.VolumeMounts
@@ -1106,7 +1082,7 @@ func upsertDataVolume(
 
 			// Volume for config source
 			volumes := core.Volume{
-				Name: configDirectoryName,
+				Name: api.MongoDBConfigDirectoryName,
 				VolumeSource: core.VolumeSource{
 					EmptyDir: &core.EmptyDirVolumeSource{},
 				},
@@ -1126,7 +1102,7 @@ func upsertDataVolume(
 				statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
 					statefulSet.Spec.Template.Spec.Volumes,
 					core.Volume{
-						Name: dataDirectoryName,
+						Name: api.MongoDBDataDirectoryName,
 						VolumeSource: core.VolumeSource{
 							EmptyDir: &ed,
 						},
@@ -1141,7 +1117,7 @@ func upsertDataVolume(
 
 				claim := core.PersistentVolumeClaim{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: dataDirectoryName,
+						Name: api.MongoDBDefaultVolumeClaimTemplateName,
 					},
 					Spec: *pvcSpec,
 				}
@@ -1242,7 +1218,7 @@ func getExporterContainer(db *api.MongoDB, mongodbVersion *v1alpha1.MongoDBVersi
 		SecurityContext: db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 		VolumeMounts: []core.VolumeMount{
 			{
-				Name:      certDirectoryName,
+				Name:      api.MongoDBCertDirectoryName,
 				MountPath: api.MongoCertDirectory, //TODO: use exporter certs by adding a exporter volume and mounting that here
 			},
 		},

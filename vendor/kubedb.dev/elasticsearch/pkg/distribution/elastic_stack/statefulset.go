@@ -24,6 +24,7 @@ import (
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	certlib "kubedb.dev/elasticsearch/pkg/lib/cert"
+	"kubedb.dev/elasticsearch/pkg/lib/kernel"
 
 	"github.com/pkg/errors"
 	"gomodules.xyz/envsubst"
@@ -159,8 +160,11 @@ func (es *Elasticsearch) ensureStatefulSet(
 			in.Spec.VolumeClaimTemplates = core_util.UpsertVolumeClaim(in.Spec.VolumeClaimTemplates, *pvc)
 		}
 
-		// Upsert volumes
-		in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(in.Spec.Template.Spec.Volumes, volumes...)
+		// No need to upsert volumes
+		// Everytime the volume list is generated from the YAML file,
+		// so it will contain all required volumes. As there is no support for user provided volume for now,
+		// we don't need to use upsert here.
+		in.Spec.Template.Spec.Volumes = volumes
 
 		// Statefulset update strategy is set default to "OnDelete".
 		// Any kind of modification on Elasticsearch will be performed via ElasticsearchModificationRequest CRD.
@@ -447,16 +451,33 @@ func (es *Elasticsearch) getInitContainers(esNode *api.ElasticsearchNode, envLis
 		return nil, errors.New("ElasticsearchNode is empty")
 	}
 
-	initContainers := []core.Container{
-		{
-			Name:            api.ElasticsearchInitSysctlContainerName,
-			Image:           es.esVersion.Spec.InitContainer.Image,
-			ImagePullPolicy: core.PullIfNotPresent,
-			Command:         []string{"sysctl", "-w", "vm.max_map_count=262144"},
-			SecurityContext: &core.SecurityContext{
-				Privileged: pointer.BoolP(true),
+	var privileged bool
+	var command string
+	var initContainers []core.Container
+	if es.db.Spec.KernelSettings != nil {
+		if es.db.Spec.KernelSettings.Privileged {
+			privileged = true
+		}
+		if es.db.Spec.KernelSettings.Sysctls != nil {
+			// Use separator `;` for sh
+			command = kernel.GetSysctlCommandString(es.db.Spec.KernelSettings.Sysctls, ';')
+		}
+	}
+
+	// If commands exist, add sysctl init container.
+	// Otherwise skip it.
+	if command != "" {
+		initContainers = []core.Container{
+			{
+				Name:            api.ElasticsearchInitSysctlContainerName,
+				Image:           es.esVersion.Spec.InitContainer.Image,
+				ImagePullPolicy: core.PullIfNotPresent,
+				Command:         []string{"sh", "-c", command},
+				SecurityContext: &core.SecurityContext{
+					Privileged: pointer.BoolP(privileged),
+				},
 			},
-		},
+		}
 	}
 
 	initContainers = es.upsertConfigMergerInitContainer(initContainers, envList)
@@ -606,7 +627,7 @@ func parseAffinityTemplate(affinity *core.Affinity, nodeRole string) (*core.Affi
 // INITIAL_MASTER_NODES value for >= ES7
 func (es *Elasticsearch) getInitialMasterNodes() string {
 	var value string
-	stsName := es.db.OffshootName()
+	stsName := es.db.CombinedStatefulSetName()
 	replicas := pointer.Int32(es.db.Spec.Replicas)
 	if es.db.Spec.Topology != nil {
 		// If replicas is not provided, default to 1
@@ -616,13 +637,9 @@ func (es *Elasticsearch) getInitialMasterNodes() string {
 			replicas = 1
 		}
 
-		// If master.prefix is provided, name will be "GivenPrefix-ESName".
-		// The master.prefix is default to "master".
-		if es.db.Spec.Topology.Master.Prefix != "" {
-			stsName = fmt.Sprintf("%s-%s", es.db.Spec.Topology.Master.Prefix, stsName)
-		} else {
-			stsName = fmt.Sprintf("%s-%s", api.ElasticsearchMasterNodePrefix, stsName)
-		}
+		// If master.suffix is provided, name will be "ESName-suffix".
+		// The master.suffix is default to "master".
+		stsName = es.db.MasterStatefulSetName()
 	}
 
 	for i := int32(0); i < replicas; i++ {

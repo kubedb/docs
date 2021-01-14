@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	certlib "kubedb.dev/elasticsearch/pkg/lib/cert"
@@ -35,6 +36,7 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
 
@@ -59,10 +61,24 @@ func (es *Elasticsearch) EnsureCertSecrets() error {
 	if err := os.MkdirAll(certPath, os.ModePerm); err != nil {
 		return err
 	}
+	// Delete cert files after each cycle
+	defer func() {
+		err := os.RemoveAll(certPath)
+		if err != nil {
+			klog.Error(err)
+		}
+	}()
 
 	caKey, caCert, err := es.createCACertSecret(certPath)
 	if err != nil {
 		return errors.Wrap(err, "failed to create/sync root-cert secret")
+	}
+
+	if caCert.NotAfter.Before(time.Now()) {
+		return errors.New("CA cert expired")
+	}
+	if caCert.NotAfter.Before(time.Now().Add(7 * 24 * time.Hour)) {
+		klog.Warning("CA cert will be expired in ", caCert.NotAfter)
 	}
 
 	err = es.createTransportCertSecret(caKey, caCert, certPath)
@@ -184,11 +200,7 @@ func (es *Elasticsearch) createTransportCertSecret(caKey *rsa.PrivateKey, caCert
 			return err
 		}
 
-		caCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.CACert))
-		if err != nil {
-			return err
-		}
-
+		caByte := cert.EncodeCertPEM(caCert)
 		nodeCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.TLSCert))
 		if err != nil {
 			return err
@@ -200,7 +212,7 @@ func (es *Elasticsearch) createTransportCertSecret(caKey *rsa.PrivateKey, caCert
 		}
 
 		data := map[string][]byte{
-			certlib.CACert:  caCert,
+			certlib.CACert:  caByte,
 			certlib.TLSKey:  nodeKey,
 			certlib.TLSCert: nodeCert,
 		}
@@ -254,11 +266,7 @@ func (es *Elasticsearch) createHTTPCertSecret(caKey *rsa.PrivateKey, caCert *x50
 			return err
 		}
 
-		caCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.CACert))
-		if err != nil {
-			return err
-		}
-
+		caByte := cert.EncodeCertPEM(caCert)
 		clientCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.TLSCert))
 		if err != nil {
 			return err
@@ -270,7 +278,7 @@ func (es *Elasticsearch) createHTTPCertSecret(caKey *rsa.PrivateKey, caCert *x50
 		}
 
 		data := map[string][]byte{
-			certlib.CACert:  caCert,
+			certlib.CACert:  caByte,
 			certlib.TLSKey:  clientKey,
 			certlib.TLSCert: clientCert,
 		}
@@ -324,11 +332,7 @@ func (es *Elasticsearch) createExporterCertSecret(caKey *rsa.PrivateKey, caCert 
 			return err
 		}
 
-		caCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.CACert))
-		if err != nil {
-			return err
-		}
-
+		caByte := cert.EncodeCertPEM(caCert)
 		clientCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.TLSCert))
 		if err != nil {
 			return err
@@ -340,7 +344,7 @@ func (es *Elasticsearch) createExporterCertSecret(caKey *rsa.PrivateKey, caCert 
 		}
 
 		data := map[string][]byte{
-			certlib.CACert:  caCert,
+			certlib.CACert:  caByte,
 			certlib.TLSKey:  clientKey,
 			certlib.TLSCert: clientCert,
 		}
@@ -394,11 +398,7 @@ func (es *Elasticsearch) createArchiverCertSecret(caKey *rsa.PrivateKey, caCert 
 			return err
 		}
 
-		caCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.CACert))
-		if err != nil {
-			return err
-		}
-
+		caByte := cert.EncodeCertPEM(caCert)
 		clientCert, err := ioutil.ReadFile(filepath.Join(cPath, certlib.TLSCert))
 		if err != nil {
 			return err
@@ -410,7 +410,7 @@ func (es *Elasticsearch) createArchiverCertSecret(caKey *rsa.PrivateKey, caCert 
 		}
 
 		data := map[string][]byte{
-			certlib.CACert:  caCert,
+			certlib.CACert:  caByte,
 			certlib.TLSKey:  clientKey,
 			certlib.TLSCert: clientCert,
 		}

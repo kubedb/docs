@@ -59,7 +59,7 @@ func (c *Controller) ensureMongosNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 		"--port=" + strconv.Itoa(api.MongoDBDatabasePort),
 		"--configdb=$(CONFIGDB_REPSET)",
 		"--clusterAuthMode=" + string(clusterAuth),
-		"--keyFile=" + api.ConfigDirectoryPath + "/" + KeyForKeyFile,
+		"--keyFile=" + api.MongoDBConfigDirectoryPath + "/" + api.MongoDBKeyForKeyFile,
 	}
 
 	sslArgs, err := c.getTLSArgs(db, mongodbVersion)
@@ -103,7 +103,7 @@ func (c *Controller) ensureMongosNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 	var volumes []core.Volume
 
 	volumes = append(volumes, core.Volume{
-		Name: configDirectoryName,
+		Name: api.MongoDBConfigDirectoryName,
 		VolumeSource: core.VolumeSource{
 			EmptyDir: &core.EmptyDirVolumeSource{},
 		},
@@ -111,8 +111,8 @@ func (c *Controller) ensureMongosNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 
 	volumeMounts := []core.VolumeMount{
 		{
-			Name:      configDirectoryName,
-			MountPath: api.ConfigDirectoryPath,
+			Name:      api.MongoDBConfigDirectoryName,
+			MountPath: api.MongoDBConfigDirectoryPath,
 		},
 	}
 
@@ -196,7 +196,7 @@ func mongosInitContainer(
 		Command:         []string{"/bin/sh"},
 		Args: []string{
 			"-c",
-			fmt.Sprintf("%v/%v", InitScriptDirectoryPath, scriptName),
+			fmt.Sprintf("%v/%v", api.MongoDBInitScriptDirectoryPath, scriptName),
 		},
 		Env: core_util.UpsertEnvVars([]core.EnvVar{
 			{
@@ -236,19 +236,19 @@ func mongosInitContainer(
 		}, envList...),
 		VolumeMounts: []core.VolumeMount{
 			{
-				Name:      workDirectoryName,
-				MountPath: workDirectoryPath,
+				Name:      api.MongoDBWorkDirectoryName,
+				MountPath: api.MongoDBWorkDirectoryPath,
 			},
 			{
-				Name:      configDirectoryName,
-				MountPath: api.ConfigDirectoryPath,
+				Name:      api.MongoDBConfigDirectoryName,
+				MountPath: api.MongoDBConfigDirectoryPath,
 			},
 			{
-				Name:      InitScriptDirectoryName,
-				MountPath: InitScriptDirectoryPath,
+				Name:      api.MongoDBInitScriptDirectoryName,
+				MountPath: api.MongoDBInitScriptDirectoryPath,
 			},
 			{
-				Name:      certDirectoryName,
+				Name:      api.MongoDBCertDirectoryName,
 				MountPath: api.MongoCertDirectory,
 			},
 		},
@@ -258,7 +258,7 @@ func mongosInitContainer(
 
 	if db.Spec.KeyFileSecret != nil {
 		rsVolumes = core_util.UpsertVolume(rsVolumes, core.Volume{
-			Name: initialKeyDirectoryName, // FIXIT: mounted where?
+			Name: api.MongoDBInitialKeyDirectoryName, // FIXIT: mounted where?
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
 					DefaultMode: pointer.Int32P(0400),

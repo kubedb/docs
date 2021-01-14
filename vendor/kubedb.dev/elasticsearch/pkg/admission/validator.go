@@ -177,14 +177,14 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 			return errors.New("doesn't support spec.resources when spec.topology is set")
 		}
 
-		if topology.Ingest.Prefix == topology.Master.Prefix {
-			return errors.New("ingest & master node should not have same prefix")
+		if topology.Ingest.Suffix == topology.Master.Suffix {
+			return errors.New("ingest & master node should not have same suffix")
 		}
-		if topology.Ingest.Prefix == topology.Data.Prefix {
-			return errors.New("ingest & data node should not have same prefix")
+		if topology.Ingest.Suffix == topology.Data.Suffix {
+			return errors.New("ingest & data node should not have same suffix")
 		}
-		if topology.Master.Prefix == topology.Data.Prefix {
-			return errors.New("master & data node should not have same prefix")
+		if topology.Master.Suffix == topology.Data.Suffix {
+			return errors.New("master & data node should not have same suffix")
 		}
 
 		if topology.Ingest.Replicas == nil || *topology.Ingest.Replicas < 1 {

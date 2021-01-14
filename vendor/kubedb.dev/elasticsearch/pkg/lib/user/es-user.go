@@ -19,7 +19,10 @@ package user
 import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/yaml.v2"
 )
 
 // returns true if the user exists.
@@ -62,4 +65,35 @@ func generatePasswordHash(password string) (string, error) {
 		return "", err
 	}
 	return string(pHash), nil
+}
+
+// Compare two internalUserConfig file.
+// Returns true if the configurations are same.
+func InUserConfigCompareEqual(x string, y string) (bool, error) {
+	X := make(map[string]api.ElasticsearchUserSpec)
+	Y := make(map[string]api.ElasticsearchUserSpec)
+
+	err := yaml.Unmarshal([]byte(x), X)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to Unmarshal X")
+	}
+
+	err = yaml.Unmarshal([]byte(y), Y)
+	if err != nil {
+		return false, errors.Wrap(err, "failed to Unmarshal Y")
+	}
+
+	// Ignore hash values, cause it varies
+	for key, value := range X {
+		valueCopy := value
+		valueCopy.Hash = ""
+		X[key] = valueCopy
+	}
+	for key, value := range Y {
+		valueCopy := value
+		valueCopy.Hash = ""
+		Y[key] = valueCopy
+	}
+
+	return cmp.Equal(X, Y), nil
 }
