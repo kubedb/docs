@@ -44,7 +44,7 @@ func (c *Controller) upsertConfigSecretVolume(template core.PodTemplateSpec, con
 			template.Spec.InitContainers[i].VolumeMounts = core_util.UpsertVolumeMount(
 				template.Spec.InitContainers[i].VolumeMounts,
 				core.VolumeMount{
-					Name:      api.MongoDBConfigDirectoryName,
+					Name:      api.MongoDBInitialConfigDirectoryName,
 					MountPath: api.MongoDBInitialConfigDirectoryPath,
 				})
 		}
@@ -53,7 +53,7 @@ func (c *Controller) upsertConfigSecretVolume(template core.PodTemplateSpec, con
 	template.Spec.Volumes = core_util.UpsertVolume(
 		template.Spec.Volumes,
 		core.Volume{
-			Name: api.MongoDBConfigDirectoryName,
+			Name: api.MongoDBInitialConfigDirectoryName,
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
 					SecretName: configSecret.Name,
