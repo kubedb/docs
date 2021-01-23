@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MariaDBOpsRequest
+metadata:
+  name: my-upgrade-major-standalone
+  namespace: demo
+spec:
+  databaseRef:
+    name: my-standalone
+  type: Upgrade
+  upgrade:
+    targetVersion: "8.0.21"

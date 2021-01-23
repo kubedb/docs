@@ -13,7 +13,6 @@ aliases:
   - /docs/{{ .version }}/guides/mariadb/README/
 ---
 
-
 > New to KubeDB? Please start [here](/docs/README.md).
 
 ## Supported MariaDB Features
