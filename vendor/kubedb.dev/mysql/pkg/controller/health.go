@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
@@ -82,6 +83,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 				})
 				if err != nil {
 					glog.Warning("Failed to list DB pod with ", err.Error())
+					return
 				}
 
 				for _, pod := range podList.Items {
@@ -92,34 +94,40 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 					engine, err := c.getMySQLClient(db, HostDNS(db, pod.ObjectMeta), api.MySQLDatabasePort)
 					if err != nil {
 						glog.Warning("Failed to get db client for host ", pod.Namespace, "/", pod.Name)
-						return
+						continue
 					}
-					defer func() {
-						if engine != nil {
-							err = engine.Close()
+
+					func(engine *xorm.Engine) {
+						defer func() {
+							if engine != nil {
+								err = engine.Close()
+								if err != nil {
+									glog.Errorf("Can't close the engine. error: %v", err)
+								}
+							}
+						}()
+
+						isHostOnline, err := c.isHostOnline(db, engine)
+						if err != nil {
+							glog.Warning("Host is not online ", err.Error())
+							return
+						}
+
+						if isHostOnline {
+							pod.Status.Conditions = core_util.SetPodCondition(pod.Status.Conditions, core.PodCondition{
+								Type:               core_util.PodConditionTypeReady,
+								Status:             core.ConditionTrue,
+								LastTransitionTime: metav1.Now(),
+								Reason:             "DBConditionTypeReadyAndServerOnline",
+								Message:            "DB is ready because of server getting Online and Running state",
+							})
+							_, err = c.Client.CoreV1().Pods(pod.Namespace).UpdateStatus(context.TODO(), &pod, metav1.UpdateOptions{})
 							if err != nil {
-								glog.Errorf("Can't close the engine. error: %v", err)
+								glog.Warning("Failed to update pod status with: ", err.Error())
+								return
 							}
 						}
-					}()
-					isHostOnline, err := c.isHostOnline(engine)
-					if err != nil {
-						glog.Warning("Host is not online ", err.Error())
-					}
-					// update pod status if specific host get online
-					if isHostOnline {
-						pod.Status.Conditions = core_util.SetPodCondition(pod.Status.Conditions, core.PodCondition{
-							Type:               core_util.PodConditionTypeReady,
-							Status:             core.ConditionTrue,
-							LastTransitionTime: metav1.Now(),
-							Reason:             "DBConditionTypeReadyAndServerOnline",
-							Message:            "DB is ready because of server getting Online and Running state",
-						})
-						_, err = c.Client.CoreV1().Pods(pod.Namespace).UpdateStatus(context.TODO(), &pod, metav1.UpdateOptions{})
-						if err != nil {
-							glog.Warning("Failed to update pod status with: ", err.Error())
-						}
-					}
+					}(engine)
 				}
 
 				// verify db is going to accepting connection and in ready state
@@ -250,15 +258,20 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) checkMySQLClusterHealth(db *api.MySQL, engine *xorm.Engine) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	session := engine.NewSession()
+	session.Context(ctx)
+	defer cancel()
+	defer session.Close()
 	// sql queries for checking cluster healthiness
 	// 1. ping database
-	_, err := engine.QueryString("SELECT 1;")
+	_, err := session.QueryString("SELECT 1;")
 	if err != nil {
 		return false, err
 	}
 
 	// 2. check all nodes are in ONLINE
-	result, err := engine.QueryString("SELECT MEMBER_STATE FROM performance_schema.replication_group_members;")
+	result, err := session.QueryString("SELECT MEMBER_STATE FROM performance_schema.replication_group_members;")
 	if err != nil {
 		return false, err
 	}
@@ -284,32 +297,47 @@ func (c *Controller) checkMySQLClusterHealth(db *api.MySQL, engine *xorm.Engine)
 }
 
 func (c *Controller) checkMySQLStandaloneHealth(engine *xorm.Engine) (bool, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	session := engine.NewSession()
+	session.Context(ctx)
+	defer cancel()
+	defer session.Close()
 	// sql queries for checking standalone healthiness
 	// 1. ping database
-	_, err := engine.QueryString("SELECT 1;")
+	_, err := session.QueryString("SELECT 1;")
 	if err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
-func (c *Controller) isHostOnline(engine *xorm.Engine) (bool, error) {
-	// 1. ping database
-	_, err := engine.QueryString("SELECT 1;")
+func (c *Controller) isHostOnline(db *api.MySQL, engine *xorm.Engine) (bool, error) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	session := engine.NewSession()
+	session.Context(ctx)
+	defer cancel()
+	defer session.Close()
+	// 1. ping for both standalone and group replication member
+	_, err := session.QueryString("SELECT 1;")
 	if err != nil {
 		return false, err
 	}
-	result, err := engine.QueryString("select member_state from performance_schema.replication_group_members where member_id=@@server_uuid;")
-	if err != nil {
-		return false, err
+
+	if db.UsesGroupReplication() {
+		result, err := session.QueryString("select member_state from performance_schema.replication_group_members where member_id=@@server_uuid;")
+		if err != nil {
+			return false, err
+		}
+		if result == nil {
+			return false, fmt.Errorf("Checking member state, result: nil")
+		}
+		memberState, ok := result[0]["member_state"]
+		if !ok || strings.Compare(memberState, "ONLINE") != 0 {
+			return false, fmt.Errorf("The member is not online yet")
+		}
 	}
-	if result == nil {
-		return false, fmt.Errorf("Query result is nil for checking member host online")
-	}
-	memberState, ok := result[0]["member_state"]
-	if !ok || strings.Compare(memberState, "ONLINE") != 0 {
-		return false, fmt.Errorf("The member is not online yet")
-	}
+
 	return true, nil
 }
 
@@ -343,7 +371,12 @@ func (c *Controller) getMySQLClient(db *api.MySQL, dns string, port int32) (*xor
 	}
 
 	cnnstr := fmt.Sprintf("%v:%v@tcp(%s:%d)/%s?%s", user, pass, dns, port, api.ResourceSingularMySQL, tlsParam)
-	return xorm.NewEngine(api.ResourceSingularMySQL, cnnstr)
+	engine, err := xorm.NewEngine(api.ResourceSingularMySQL, cnnstr)
+	if err != nil {
+		return engine, err
+	}
+
+	return engine, nil
 }
 
 func (c *Controller) getDBRootCredential(db *api.MySQL) (string, string, error) {

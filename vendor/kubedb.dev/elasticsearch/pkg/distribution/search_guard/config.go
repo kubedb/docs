@@ -56,6 +56,9 @@ searchguard.ssl.transport.pemkey_filepath: certs/transport/tls.key
 searchguard.ssl.transport.pemcert_filepath: certs/transport/tls.crt
 searchguard.ssl.transport.pemtrustedcas_filepath: certs/transport/ca.crt
 
+# searchguard.nodes_dn:
+%s
+
 searchguard.allow_unsafe_democertificates: true
 searchguard.allow_default_init_sgindex: true
 searchguard.enable_snapshot_restore_privilege: true
@@ -76,9 +79,6 @@ searchguard.ssl.http.pemcert_filepath: certs/http/tls.crt
 searchguard.ssl.http.pemtrustedcas_filepath: certs/http/ca.crt
 
 # searchguard.authcz.admin_dn:
-%s
-
-# searchguard.nodes_dn:
 %s
 `
 
@@ -119,7 +119,10 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 	}
 
 	if !es.db.Spec.DisableSecurity {
-		config = searchguard_security_enabled
+		// If security is enable, the transport layer must be secured with tls
+		if es.db.Spec.TLS == nil {
+			return errors.New("spec.TLS configuration is empty")
+		}
 
 		// password for default users: admin, kibanaserver, etc.
 		inUserConfig, err = es.getInternalUserConfig()
@@ -132,34 +135,33 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 			return errors.Wrap(err, "failed to generate default roles_mapping.yml")
 		}
 
-		// If rest layer is secured with certs
-		if es.db.Spec.EnableSSL {
-			if es.db.Spec.TLS == nil {
-				return errors.New("spec.TLS configuration is empty")
-			}
+		// Get transport layer cert secret.
+		// Parse the tls.cert to extract the nodeDNs.
+		sName, exist := api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchTransportCert))
+		if !exist {
+			return errors.New("transport-cert secret is missing")
+		}
 
-			// Get transport layer cert secret.
-			// Parse the tls.cert to extract the nodeDNs.
-			sName, exist := api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchTransportCert))
-			if !exist {
-				return errors.New("transport-cert secret is missing")
-			}
+		cSecret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
+		if err != nil {
+			return errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.db.Namespace, sName))
+		}
 
-			cSecret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
+		nodesDN := ""
+		if value, ok := cSecret.Data[certlib.TLSCert]; ok {
+			subj, err := certlib.ExtractSubjectFromCertificate(value)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.db.Namespace, sName))
+				return err
 			}
+			nodesDN = fmt.Sprintf(nodesDNTemplate, subj.String())
+		}
 
-			nodesDN := ""
-			if value, ok := cSecret.Data[certlib.TLSCert]; ok {
-				subj, err := certlib.ExtractSubjectFromCertificate(value)
-				if err != nil {
-					return err
-				}
-				nodesDN = fmt.Sprintf(nodesDNTemplate, subj.String())
-			}
+		config = fmt.Sprintf(searchguard_security_enabled, nodesDN)
 
-			// Get searchguard admin cert secret.
+		// If rest layer is secured with certs
+		// Calculate adminDN
+		if es.db.Spec.EnableSSL {
+			// Get searchGuard admin cert secret.
 			// Parse the tls.cert to extract the adminDNs.
 			sName, exist = api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchAdminCert))
 			if !exist {
@@ -180,7 +182,7 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 				adminDN = fmt.Sprintf(adminDNTemplate, subj.String())
 			}
 
-			config += fmt.Sprintf(https_enabled, adminDN, nodesDN)
+			config += fmt.Sprintf(https_enabled, adminDN)
 		} else {
 			config += https_disabled
 		}
