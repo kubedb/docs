@@ -54,6 +54,9 @@ opendistro_security.ssl.transport.pemkey_filepath: certs/transport/tls.key
 opendistro_security.ssl.transport.pemtrustedcas_filepath: certs/transport/ca.crt
 opendistro_security.ssl.transport.enforce_hostname_verification: false
 
+# opendistro_security.nodes_dn:
+%s
+
 opendistro_security.allow_default_init_securityindex: true
 opendistro_security.audit.type: internal_elasticsearch
 opendistro_security.enable_snapshot_restore_privilege: true
@@ -77,9 +80,6 @@ opendistro_security.ssl.http.pemkey_filepath: certs/http/tls.key
 opendistro_security.ssl.http.pemtrustedcas_filepath: certs/http/ca.crt
 
 # opendistro_security.authcz.admin_dn:
-%s
-
-# opendistro_security.nodes_dn:
 %s
 `
 
@@ -120,7 +120,9 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 	}
 
 	if !es.db.Spec.DisableSecurity {
-		config = opendistro_security_enabled
+		if es.db.Spec.TLS == nil {
+			return errors.New("spec.TLS configuration is empty")
+		}
 
 		// password for default users: admin, kibanaserver, etc.
 		inUserConfig, err = es.getInternalUserConfig()
@@ -133,34 +135,32 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 			return errors.Wrap(err, "failed to generate default roles_mapping.yml")
 		}
 
-		// If rest layer is secured with certs
-		if es.db.Spec.EnableSSL {
-			if es.db.Spec.TLS == nil {
-				return errors.New("spec.TLS configuration is empty")
-			}
-
-			// Get transport layer cert secret.
-			// Parse the tls.cert to extract the nodeDNs.
-			sName, exist := api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchTransportCert))
-			if !exist {
-				return errors.New("transport-cert secret is missing")
-			}
-
-			cSecret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
+		// Get transport layer cert secret.
+		// Transport layer is always secured with certificate.
+		// Parse the tls.cert to extract the nodeDNs.
+		sName, exist := api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchTransportCert))
+		if !exist {
+			return errors.New("transport-cert secret is missing")
+		}
+		cSecret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), sName, metav1.GetOptions{})
+		if err != nil {
+			return errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.db.Namespace, sName))
+		}
+		nodesDN := ""
+		if value, ok := cSecret.Data[certlib.TLSCert]; ok {
+			subj, err := certlib.ExtractSubjectFromCertificate(value)
 			if err != nil {
-				return errors.Wrap(err, fmt.Sprintf("failed to get certificateSecret: %s/%s", es.db.Namespace, sName))
+				return err
 			}
+			nodesDN = fmt.Sprintf(nodesDNTemplate, subj.String())
+		}
 
-			nodesDN := ""
-			if value, ok := cSecret.Data[certlib.TLSCert]; ok {
-				subj, err := certlib.ExtractSubjectFromCertificate(value)
-				if err != nil {
-					return err
-				}
-				nodesDN = fmt.Sprintf(nodesDNTemplate, subj.String())
-			}
+		config = fmt.Sprintf(opendistro_security_enabled, nodesDN)
 
-			// Get opendistro admin cert secret.
+		// If rest layer is secured with certs
+		// Calculate the adminDN
+		if es.db.Spec.EnableSSL {
+			// Get openDistro admin cert secret.
 			// Parse the tls.cert to extract the adminDNs.
 			sName, exist = api_util.GetCertificateSecretName(es.db.Spec.TLS.Certificates, string(api.ElasticsearchAdminCert))
 			if !exist {
@@ -181,7 +181,7 @@ func (es *Elasticsearch) EnsureDefaultConfig() error {
 				adminDN = fmt.Sprintf(adminDNTemplate, subj.String())
 			}
 
-			config += fmt.Sprintf(https_enabled, adminDN, nodesDN)
+			config += fmt.Sprintf(https_enabled, adminDN)
 		} else {
 			config += https_disabled
 		}

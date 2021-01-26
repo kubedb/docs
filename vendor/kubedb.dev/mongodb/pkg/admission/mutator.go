@@ -27,7 +27,6 @@ import (
 
 	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -139,8 +138,8 @@ func (a *MongoDBMutator) setDefaultValues(extClient cs.Interface, db *api.MongoD
 // If MongoDBVersion doesn't exists return 0 valued MongoDBVersion (not nil)
 func getMongoDBVersion(extClient cs.Interface, ver string) (*v1alpha1.MongoDBVersion, error) {
 	mgVersion, err := extClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), ver, metav1.GetOptions{})
-	if err != nil && kerr.IsNotFound(err) {
-		return &v1alpha1.MongoDBVersion{}, nil
+	if err != nil {
+		return &v1alpha1.MongoDBVersion{}, err
 	}
 	return mgVersion, err
 }
