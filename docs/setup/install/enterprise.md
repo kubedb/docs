@@ -241,7 +241,7 @@ $ helm template kubedb-community appscode/kubedb \
   --version {{< param "info.community" >}}      \
   --namespace kube-system                       \
   --set-file license=/path/to/the/license.txt   \
-  --no-hooks | kubectl apply -f -
+  --set cleaner.skip=true | kubectl apply -f -
 
 # Step 2: wait until crds are registered
 $ kubectl get crds -l app.kubernetes.io/name=kubedb -w
@@ -262,15 +262,14 @@ redisversions.kubedb.com           6s
 # Step 3: Install/Upgrade KubeDB catalog of database versions
 $ helm template kubedb-catalog appscode/kubedb-catalog   \
   --version {{< param "info.community" >}}               \
-  --namespace kube-system                                \
-  --no-hooks | kubectl apply -f -
+  --namespace kube-system | kubectl apply -f -
 
 # Step 4: Install KubeDB Enterprise operator chart
 $ helm template kubedb-enterprise appscode/kubedb-enterprise   \
   --version {{< param "info.enterprise" >}}                    \
   --namespace kube-system                                      \
   --set-file license=/path/to/the/license.txt                  \
-  --no-hooks | kubectl apply -f -
+  --set cleaner.skip=true | kubectl apply -f -
 
 # Step 5 (Optional): Install KubeDB Autoscaler chart
 # Kubernetes [VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation) must be pre-installed separately.
@@ -278,7 +277,7 @@ $ helm template kubedb-autoscaler appscode/kubedb-autoscaler   \
   --version {{< param "info.autoscaler" >}}                    \
   --namespace kube-system                                      \
   --set-file license=/path/to/the/license.txt                  \
-  --no-hooks | kubectl apply -f -
+  --set cleaner.skip=true | kubectl apply -f -
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb-enterprise).

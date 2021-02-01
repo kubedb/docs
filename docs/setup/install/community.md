@@ -185,7 +185,7 @@ $ helm template kubedb-community appscode/kubedb \
   --version {{< param "info.community" >}}       \
   --namespace kube-system                        \
   --set-file license=/path/to/the/license.txt    \
-  --no-hooks | kubectl apply -f -
+  --set cleaner.skip=true | kubectl apply -f -
 
 # Step 2: wait until crds are registered
 $ kubectl get crds -l app.kubernetes.io/name=kubedb -w
@@ -206,8 +206,7 @@ redisversions.kubedb.com           6s
 # Step: Install/Upgrade KubeDB catalog of database versions
 $ helm template kubedb-catalog appscode/kubedb-catalog   \
   --version {{< param "info.community" >}}               \
-  --namespace kube-system                                \
-  --no-hooks | kubectl apply -f -
+  --namespace kube-system | kubectl apply -f -
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).
