@@ -17,27 +17,43 @@ aliases:
 
 ## Supported Elasticsearch Features
 
-| Features                                                                              | Availability |
-| ------------------------------------------------------------------------------------- | :----------: |
-| Clustering                                                                            |   &#10003;   |
-| Authentication (using [Search Guard](https://github.com/floragunncom/search-guard))   |   &#10003;   |
-| Authorization (using [Search Guard](https://github.com/floragunncom/search-guard))    |   &#10003;   |
-| TLS certificates (using [Search Guard](https://github.com/floragunncom/search-guard)) |   &#10003;   |
-| Persistent Volume                                                                     |   &#10003;   |
-| Instant Backup                                                                        |   &#10003;   |
-| Scheduled Backup                                                                      |   &#10003;   |
-| Initialization from Script                                                            |   &#10007;   |
-| Initialization from Snapshot                                                          |   &#10003;   |
-| Builtin Prometheus Discovery                                                          |   &#10003;   |
-| Using Prometheus operator                                                             |   &#10003;   |
-| Custom Configuration                                                                  |   &#10003;   |
-| Using Custom Docker Image                                                             |   &#10003;   |
+| Features                                                                                | Availability |
+| -------------------------------------------------------------------------------------   | :----------: |
+| Combined Cluster (n nodes with master: true & data: true & ingest: true; n >= 1 )       |   &#10003;   |
+| Topology Cluster (n master nodes, m data nodes, x ingest nodes; n,m,x >= 1 )            |   &#10003;   |
+| TLS: Add, Remove, Update, Rotate ( [Cert Manager](https://cert-manager.io/docs/) ) `Enterprise`         |   &#10003;   |
+| Automated Version Upgrade `Enterprise`                                                                  |   &#10003;   |
+| Automatic Vertical Scaling `Enterprise`                                                                 |   &#10003;   |
+| Automated Horizontal Scaling `Enterprise`                                                               |   &#10003;   |
+| Automated Volume Expansion `Enterprise`                                                                 |   &#10003;   |
+| Backup/Recovery: Instant, Scheduled ( [Stash](https://stash.run/) )                                     |   &#10003;   |
+| Initialization from Snapshot ( [Stash](https://stash.run/) )                                            |   &#10003;   |
+| Authentication ( [X-Pack](https://www.elastic.co/guide/en/elasticsearch/reference/7.9/setup-xpack.html) / [OpenDistro](https://opendistro.github.io/for-elasticsearch-docs/) / [Search Guard](https://docs.search-guard.com/latest/) )   |   &#10003;   |
+| Authorization ( [X-Pack](https://www.elastic.co/guide/en/elasticsearch/reference/7.9/setup-xpack.html) / [OpenDistro](https://opendistro.github.io/for-elasticsearch-docs/) / [Search Guard](https://docs.search-guard.com/latest/) )       |   &#10003;   |
+| Persistent Volume                                                                      |   &#10003;   |
+| Exports Prometheus Matrices                                                            |   &#10003;   |
+| Custom Configuration                                                                   |   &#10003;   |
+| Using Custom Docker Image                                                              |   &#10003;   |
+| Initialization From Script                                                             |   &#10007;   |
 
-## Life Cycle of an Elasticsearch Object
+## Available Elasticsearch Version
 
-<p align="center">
-  <img alt="lifecycle"  src="/docs/images/elasticsearch/lifecycle.png">
-</p>
+|   Version   |   X-Pack      | OpenDistro  |   SearchGuard |
+| :---------: |  :--------:   | :--------:  | :--------:    |
+|   7.10.x    |   &#10007;    |   &#10003;  |   &#10007;    |
+|   7.9.x     |   &#10003;    |   &#10003;  |   &#10003;    |
+|   7.8.x     |   &#10003;    |   &#10003;  |   &#10003;    |
+|   7.7.x     |   &#10003;    |   &#10003;  |   &#10007;    |
+|   7.6.x     |   &#10003;    |   &#10003;  |   &#10007;    |
+|   7.5.x     |   &#10003;    |   &#10007;  |   &#10003;    |
+|   7.4.x     |   &#10003;    |   &#10003;  |   &#10007;    |
+|   7.3.x     |   &#10003;    |   &#10003;  |   &#10003;    |
+|   7.2.x     |   &#10003;    |   &#10003;  |   &#10007;    |
+|   7.1.x     |   &#10003;    |   &#10003;  |   &#10003;    |
+|   7.0.x     |   &#10003;    |   &#10003;  |   &#10003;    |
+|   6.8.1     |   &#10003;    |   &#10007;  |   &#10003;    |
+
+> The listed ElasticsearchVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog.md) object with your custom Elasticsearch image.
 
 ## User Guide
 

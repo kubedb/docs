@@ -127,19 +127,19 @@ You can configure following fields in `spec.clientConfig` section:
 
   `spec.clientConfig.url` gives the location of the database, in standard URL form (i.e. `[scheme://]host:port/[path]`). This is particularly useful when the target database is running outside of the Kubernetes cluster. If your database is running inside the cluster, use `spec.clientConfig.service` section instead.
 
-  > Note that, attempting to use a user or basic auth (e.g. `user:password@host:port`) is not allowed. Stash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
+  > Note that attempting to use a user or basic auth (e.g. `user:password@host:port`) is not allowed. Stash will insert them automatically from the respective secret. Fragments ("#...") and query parameters ("?...") are not allowed either.
 
 - **spec.clientConfig.service**
 
   If you are running the database inside the Kubernetes cluster, you can use Kubernetes service to connect with the database. You have to specify the following fields in `spec.clientConfig.service` section if you manually create an `AppBinding` object.
 
-  - **name :** `name` indicates the name of the service that connects with the target database.
-  - **scheme :** `scheme` specifies the scheme (i.e. http, https) to use to connect with the database.
-  - **port :** `port` specifies the port where the target database is running.
+  - **name:** `name` indicates the name of the service that connects with the target database.
+  - **scheme:** `scheme` specifies the scheme (i.e. http, https) to use to connect with the database.
+  - **port:** `port` specifies the port where the target database is running.
 
 - **spec.clientConfig.insecureSkipTLSVerify**
 
-  `spec.clientConfig.insecureSkipTLSVerify` is used to disable TLS certificate verification while connecting with the database. We strongly discourage to disable TLS verification during backup. You should provide the respective CA bundle through `spec.clientConfig.caBundle` field instead.
+  `spec.clientConfig.insecureSkipTLSVerify` is used to disable TLS certificate verification while connecting with the database. We strongly discourage disabling TLS verification during backup. You should provide the respective CA bundle through `spec.clientConfig.caBundle` field instead.
 
 - **spec.clientConfig.caBundle**
 
