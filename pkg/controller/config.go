@@ -33,7 +33,7 @@ import (
 	rdc "kubedb.dev/redis/pkg/controller"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	"go.bytebuilders.dev/license-verifier/kubernetes/apis/licenses/v1alpha1"
+	"go.bytebuilders.dev/license-verifier/apis/licenses/v1alpha1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/dynamic"
