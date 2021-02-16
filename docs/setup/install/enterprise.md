@@ -25,11 +25,11 @@ KubeDB Enterprise edition is the open core version of [KubeDB](https://github.co
 
 A full features comparison between KubeDB Enterprise Edition and community version can be found [here](/docs/overview/README.md).
 
-If you are willing to try KubeDB Enterprise Edition, you can grab a **14 days trial** license from [here](https://license-issuer.appscode.com/).
+If you are willing to try KubeDB Enterprise Edition, you can grab a **30 days trial** license from [here](https://license-issuer.appscode.com/).
 
 ## Get a Trial License
 
-In this section, we are going to show you how you can get a **14 days trial** license for KubeDB Enterprise edition. You can get a license for your Kubernetes cluster by going through the following steps:
+In this section, we are going to show you how you can get a **30 days trial** license for KubeDB Enterprise edition. You can get a license for your Kubernetes cluster by going through the following steps:
 
 - At first, go to [AppsCode License Server](https://license-issuer.appscode.com/) and fill up the form. It will ask for your Name, Email, the product you want to install, and your cluster ID (UID of the `kube-system` namespace).
 - Provide your name and email address. **You must provide your work email address**.
