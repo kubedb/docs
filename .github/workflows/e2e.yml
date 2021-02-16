@@ -108,9 +108,9 @@ jobs:
           eval MAJOR=`echo ${{ matrix.k8s }} | sed -e "s#$RE#\1#"`
           eval MINOR=`echo ${{ matrix.k8s }} | sed -e "s#$RE#\2#"`
           if [ $MAJOR -eq 1 ] && [ $MINOR -lt 15 ]; then
-            kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.4/cert-manager-legacy.yaml
+            kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager-legacy.yaml
           else
-            kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.0.4/cert-manager.yaml
+            kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.2.0/cert-manager.yaml
           fi
 
       - name: Check out installer
