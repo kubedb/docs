@@ -51,7 +51,7 @@ aliases:
 |   7.2.x     |   &#10003;    |   &#10003;  |   &#10007;    |
 |   7.1.x     |   &#10003;    |   &#10003;  |   &#10003;    |
 |   7.0.x     |   &#10003;    |   &#10003;  |   &#10003;    |
-|   6.8.1     |   &#10003;    |   &#10007;  |   &#10003;    |
+|   6.8.x     |   &#10003;    |   &#10007;  |   &#10003;    |
 
 > The listed ElasticsearchVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog.md) object with your custom Elasticsearch image.
 
