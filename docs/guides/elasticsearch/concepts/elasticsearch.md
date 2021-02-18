@@ -181,19 +181,29 @@ spec:
 
 > Note: Make sure that `vm.max_map_count` is greater or equal to `262144`, otherwise the Elasticsearch may fail to bootstrap.
 
+
+### spec.disableSecurity
+
+`spec.disableSecurity` is an `optional` field that allows a user to run the Elasticsearch with the security plugin `disabled`. Default to `false`.
+
+```yaml
+spec:
+  disableSecurity: true
+```
+
 ### spec.internalUsers
 
-`spec.internalUsers` provides an alternative way to configure the existing internal users or create new users without using the `internal_users.yml` file. Only works with `SearchGurad` and `OpenDistro` security plugins. This field expects the input format in the `map[username]UserSpec` format. The KubeDB operator creates secure passwords for those users and store in k8s secrets. The k8s secret names are formed by the following format: `{Elasticsearch Instance Name}-{Username}-cred`.
+`spec.internalUsers` provides an alternative way to configure the existing internal users or create new users without using the `internal_users.yml` file. Only works with `SearchGurad` and `OpenDistro` security plugins. This field expects the input format to be in the `map[username]UserSpec` format. The KubeDB operator creates secure passwords for those users and stores in k8s secrets. The k8s secret names are formed by the following format: `{Elasticsearch Instance Name}-{Username}-cred`.
 
 The `UserSpec` contains the following fields:
 
-- `reserved` ( `: false` ) - specifies the reserved status. The resources that have this set to `true` cannot be changed using the REST API or Kibana.
--  `hidden` ( `: false` ) - specifies the hidden status. The resources that have this set to true are not returned by the REST API and not visible in Kibana.
--  `backendRoles` - specifies a list of backend roles assigned to this user. The backend roles can come from the internal user database, LDAP groups, JSON web token claims, or SAML assertions.
--  `searchGuardRoles` - specifies a list of SearchGuard security plugin roles assigned to this user.
--  `opendistroSecurityRoles` - specifies a list of opendistro security plugin roles assigned to this user.
--  `attributes` - specifies one or more custom attributes which can be used in index names and DLS queries.
--  `description` - specifies the description of the user.
+- `reserved` ( `bool` | `false` ) - specifies the reserved status. The resources that have this set to `true` cannot be changed using the REST API or Kibana.
+-  `hidden` ( `bool` | `false` ) - specifies the hidden status. The resources that have this set to true are not returned by the REST API and not visible in Kibana.
+-  `backendRoles` (`[]string` | `nil`) - specifies a list of backend roles assigned to this user. The backend roles can come from the internal user database, LDAP groups, JSON web token claims, or SAML assertions.
+-  `searchGuardRoles` ( `[]string` | `nil` ) - specifies a list of SearchGuard security plugin roles assigned to this user.
+-  `opendistroSecurityRoles` ( `[]string` | `nil` ) - specifies a list of opendistro security plugin roles assigned to this user.
+-  `attributes` ( `map[string]string` | `nil` )- specifies one or more custom attributes which can be used in index names and DLS queries.
+-  `description` ( `string` | `""` ) - specifies the description of the user.
 
 
 ```yaml
@@ -209,7 +219,7 @@ spec:
     snapshotrestore: 
       description: "This is the new description"
     # Create a new  readall user 
-    custom_realall_user:
+    custom_readall_user:
       backend_roles:
       - "readall"
       description: "Custom readall user"
@@ -238,9 +248,33 @@ Default Users: [Official Docs](https://opendistro.github.io/for-elasticsearch-do
 - `readall` - Grants permissions for cluster-wide searches like msearch and search permissions for all indices.
 - `snapshotrestore` - Grants permissions to manage snapshot repositories, take snapshots, and restore snapshots.
 
+### spec.rolesMapping
+
+`spec.rolesMapping` provides an alternative way to  map backend roles, hosts and users to roles without using the `roles_mapping.yml` file. Only works with `SearchGurad` and `OpenDistro` security plugins. This field expects the input format to be in the `map[rolename]RoleSpec` format.
+
+The `RoleSpec` contains the following fields:
+
+- `reserved` ( `bool` | `false` ) - specifies the reserved status. The resources that have this set to `true`, cannot be changed using the REST API or Kibana.
+- `hidden` ( `bool` | `false` ) - specifies the hidden status. The resources that have this field set to `true` are not returned by the REST API and not visible in Kibana.
+- `backendRoles` ( `[]string` | `nil` )- specifies a list of backend roles assigned to this role. The backend roles can come from the internal user database, LDAP groups, JSON web token-claims or SAML assertions.
+- `hosts` ( `[]string` | `nil` ) - specifies a list of hosts assigned to this role.
+- `users` ( `[]string` | `nil` ) - specifies a list of users assigned to this role.
+- `
+
+```yaml
+spec:
+  rolesMapping:
+    # create role mapping for the custom readall user
+    readall:
+      users:
+      - custom_readall_user
+```
+
+For the default roles visit the [SearchGurad docs](https://docs.search-guard.com/latest/roles-permissions), [OpenDistro docs](https://opendistro.github.io/for-elasticsearch-docs/docs/security/access-control/users-roles/#create-roles).
+
 ### spec.topology
 
-`spec.topology` is an `optional` field that provides a way to configure different types of nodes for the Elasticsearch cluster. This field enables you to specify how many nodes you want to act as `master`, `data` and `ingest`. You can also specify how much storage and resources to allocate for each type of the nodes independently.
+`spec.topology` is an `optional` field that provides a way to configure different types of nodes for the Elasticsearch cluster. This field enables you to specify how many nodes you want to act as `master`, `data` and `ingest`. You can also specify how much storage and resources to allocate for each type of node independently.
 
 ```yaml
   topology:
@@ -307,23 +341,23 @@ The `spec.topology` contains the following fields:
   - `suffix` (`: "master"`) - is an `optional` field that is added as the suffix of the master StatefulSet name. Defaults to `master`.
   - `storage` is a `required` field that specifies how much storage to claim for each of the `master` nodes.
   - `resources` (`: "cpu: 500m, memory: 1Gi" `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `master` nodes.
-  - `maxUnavailable` is an `optional` field that specifies the exact number of master nodes (ie. pods) that can be safely evicted before the pod disruption budget (PDB) kicks in. KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that no data loss is occurred.
+  - `maxUnavailable` is an `optional` field that specifies the exact number of master nodes (ie. pods) that can be safely evicted before the pod disruption budget (PDB) kicks in. KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that no data loss occurs.
 
 - `topology.data`:
   - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the `data` nodes. Defaults to `1`.
   - `suffix` (`: "data"`) - is an `optional` field that is added as the suffix of the data StatefulSet name. Defaults to `data`.
   - `storage` is a `required` field that specifies how much storage to claim for each of the `data` nodes.
-  - `resources` (` cpu: 500m, memory: 1Gi `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `data` nodes.
-  - `maxUnavailable` is an `optional` field that specifies the exact number of data nodes (ie. pods) that can be safely evicted before the pod disruption budget (PDB) kicks in. KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that no data loss is occurred.
+  - `resources` (` cpu: 500m, memory: 1Gi `) - is an `optional` field that specifies which amount of computational resources to request or to limit for each of the `data` nodes.
+  - `maxUnavailable` is an `optional` field that specifies the exact number of data nodes (ie. pods) that can be safely evicted before the pod disruption budget (PDB) kicks in. KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that no data loss occurs.
 
 - `topology.ingest`:
   - `replicas` (`: "1"`) - is an `optional` field to specify the number of nodes (ie. pods ) that act as the `ingest` nodes. Defaults to `1`.
   - `suffix` (`: "ingest"`) - is an `optional` field that is added as the suffix of the data StatefulSet name. Defaults to `ingest`.
   - `storage` is a `required` field that specifies how much storage to claim for each of the `ingest` nodes.
-  - `resources` (` cpu: 500m, memory: 1Gi `) - is an `optional` field that specifies how much computational resources to request or to limit for each of the `data` nodes.
-  - `maxUnavailable` is an `optional` field that specifies the exact number of ingest nodes (ie. pods) that can be safely evicted before the pod disruption budget (PDB) kicks in. KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that no data loss is occurred.
-
-> Note: Any two types of nodes can't have the same suffix.
+  - `resources` (` cpu: 500m, memory: 1Gi `) - is an `optional` field that specifies which amount of computational resources to request or to limit for each of the `data` nodes.
+  - `maxUnavailable` is an `optional` field that specifies the exact number of ingest nodes (ie. pods) that can be safely evicted before the pod disruption budget (PDB) kicks in. KubeDB uses Pod Disruption Budget to ensure that desired number of replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that no data loss is occurs.
+  
+> Note: Any two types of nodes can't have the same `suffix`.
 
 If you specify `spec.topology` field then you **do not need** to specify the following fields in Elasticsearch CRD.
 
@@ -361,6 +395,71 @@ spec:
 spec:
   enableSSL: true 
 ```
+
+> Note: The `transport` layer of an Elasticsearch cluster is always secured with certificates. If you want to disable it, you need to disable the security plugin by setting the `spec.disableSecurity` to `true`.
+
+### spec.tls
+
+`spec.tls` specifies the TLS/SSL configurations. The KubeDB operator supports TLS management by using the [cert-manager](https://cert-manager.io/). Currently, the operator only supports the `PKCS#8` encoded certificates.
+
+```yaml
+spec:
+  tls:
+    issuerRef:
+      apiGroup: "cert-manager.io"
+      kind: Issuer
+      name: es-issuer
+    certificates:
+    - alias: transport
+      privateKey:
+        encoding: PKCS8
+      secretName: es-transport-cert
+      subject:
+        organizations:
+        - kubedb
+    - alias: http
+      privateKey:
+        encoding: PKCS8
+      secretName: es-http-cert
+      subject:
+        organizations:
+        - kubedb
+```
+
+The `spec.tls` contains the following fields:
+
+- `tls.issuerRef` - is an `optional` field that references to the `Issuer` or `ClusterIssuer` custom resource object of [cert-manager](https://cert-manager.io/docs/concepts/issuer/). It is used to generate the necessary certificate secrets for Elasticsearch. If the `issuerRef` is not specified, the operator creates a self-signed CA and also creates necessary certificate (valid: 365 days) secrets using that CA. 
+  - `apiGroup` - is the group name of the resource that is being referenced. Currently, the only supported value is `cert-manager.io`.
+  - `kind` - is the type of resource that is being referenced. The supported values are `Issuer` and `ClusterIssuer`.
+  - `name` - is the name of the resource ( `Issuer` or `ClusterIssuer` ) that is being referenced.
+
+- `certificates` - is an `optional` field that specifies a list of certificate configurations used to configure the  certificates. It has the following fields:
+  - `alias` - represents the identifier of the certificate. It has the following possible value:
+    - `transport` - is used for the transport layer certificate configuration.
+    - `http` - is used for the HTTP layer certificate configuration.
+    - `admin` - is used for the admin certificate configuration. Available for the `SearchGuard` and the `OpenDistro` auth-plugins.
+    - `metrics-exporter` - is used for the metrics-exporter sidecar certificate configuration.
+  
+  - `secretName` - ( `string` | `"<database-name>-alias-cert"` ) - specifies the k8s secret name that holds the certificates.
+    
+  - `subject` - specifies an `X.509` distinguished name (DN). It has the following configurable fields:
+    - `organizations` ( `[]string` | `nil` ) - is a list of organization names.
+    - `organizationalUnits` ( `[]string` | `nil` ) - is a list of organization unit names.
+    - `countries` ( `[]string` | `nil` ) -  is a list of country names (ie. Country Codes).
+    - `localities` ( `[]string` | `nil` ) - is a list of locality names.
+    - `provinces` ( `[]string` | `nil` ) - is a list of province names.
+    - `streetAddresses` ( `[]string` | `nil` ) - is a list of street addresses.
+    - `postalCodes` ( `[]string` | `nil` ) - is a list of postal codes.
+    - `serialNumber` ( `string` | `""` ) is a serial number.
+  
+    For more details, visit [here](https://golang.org/pkg/crypto/x509/pkix/#Name).
+
+  - `duration` ( `string` | `""` ) - is the period during which the certificate is valid. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as `"300m"`, `"1.5h"` or `"20h45m"`. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+  - `renewBefore` ( `string` | `""` ) - is a specifiable time before expiration duration.
+  - `dnsNames` ( `[]string` | `nil` ) - is a list of subject alt names.
+  - `ipAddresses` ( `[]string` | `nil` ) - is a list of IP addresses.
+  - `uris` ( `[]string` | `nil` ) - is a list of URI Subject Alternative Names.
+  - `emailAddresses` ( `[]string` | `nil` ) - is a list of email Subject Alternative Names.
 
 ### spec.authSecret
 
@@ -421,7 +520,7 @@ spec:
     waitForInitialRestore: true
 ```
 
-When the `waitForInitialRestore` is set to true, the Elasticsearch instance will be stack in the `Provisioning` state until the initial backup is completed. On completion of the very first restore operation the Elasticsearch instance will go to the `Ready` state.
+When the `waitForInitialRestore` is set to true, the Elasticsearch instance will be stack in the `Provisioning` state until the initial backup is completed. On completion of the very first restore operation, the Elasticsearch instance will go to the `Ready` state.
 
 For detailed tutorial on how to initialize Elasticsearch from Stash backup, please visit [here](/docs/guides/elasticsearch/backup/stash.md).
 
@@ -459,8 +558,8 @@ The configuration file names are used as secret keys.
 
 - `sg_config.yml` - configure authenticators and authorization backends.
 - `sg_roles.yml` - define roles and the associated permissions.
-- `sg_roles_mapping.yml` - map backend roles, hosts and users to roles.
-- `sg_internal_users.yml` - stores users,and hashed passwords in the internal user database.
+- `sg_roles_mapping.yml` - map backend roles, hosts, and users to roles.
+- `sg_internal_users.yml` - stores users, and hashed passwords in the internal user database.
 - `sg_action_groups.yml` - define named permission groups.
 - `sg_tenants.yml` - defines tenants for configuring the Kibana access.
 - `sg_blocks.yml` -  defines blocked users and IP addresses.
@@ -517,7 +616,7 @@ stringData:
 
 KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for the Elasticsearch database.
 
-KubeDB accept the following fields to set in `spec.podTemplate:`
+KubeDB accepts the following fields to set in `spec.podTemplate:`
 
 - metadata
   - annotations (pod's annotation)
