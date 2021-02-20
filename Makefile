@@ -393,7 +393,7 @@ purge: uninstall
 dev: gen fmt push
 
 .PHONY: verify
-verify: verify-modules verify-gen
+verify: verify-gen verify-modules
 
 .PHONY: verify-modules
 verify-modules:
