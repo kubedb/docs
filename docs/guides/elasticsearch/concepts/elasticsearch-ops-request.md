@@ -1,5 +1,5 @@
 ---
-title: MongoDBOpsRequests CRD
+title: ElasticsearchOpsRequests CRD
 menu:
   docs_{{ .version }}:
     identifier: es-opsrequest-concepts
@@ -16,7 +16,7 @@ section_menu_id: guides
 
 # ElasticsearchOpsRequest
 
-## What is MongoDBOpsRequest
+## What is ElasticsearchOpsRequest
 
 `ElasticsearchOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for the [Elasticsearch](https://www.elastic.co/guide/index.html) administrative operations like database version upgrading, horizontal scaling, vertical scaling, etc. in a Kubernetes native way.
 
@@ -73,141 +73,278 @@ Here, we are going to describe the various sections of a `ElasticsearchOpsReques
 
 ### spec.upgrade
 
-`spec.upgrade` is an `optional` field, but it will act as a `required` field when the `spec.type` is set to `Upgrade`.
+`spec.upgrade` is an `optional` field, but it acts as a `required` field when the `spec.type` is set to `Upgrade`.
 It specifies the desired version information required for the Elasticsearch version upgrade. This field consists of the following sub-fields:
 
 - `upgrade.targetVersion` refers to an [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog.md) CR name that contains the Elasticsearch version information required to perform the upgrade.
 
 > KubeDB does not support downgrade for Elasticsearch.
 
-#### spec.horizontalScaling
-
-If you want to scale-up or scale-down your MongoDB cluster or different components of it, you have to specify `spec.horizontalScaling` section. This field consists of the following sub-field:
-
-- `spec.horizontalScaling.replicas` indicates the desired number of nodes for MongoDB replicaset cluster after scaling. For example, if your cluster currently has 4 replicaset nodes, and you want to add additional 2 nodes then you have to specify 6 in `spec.horizontalScaling.replicas` field. Similarly, if you want to remove one node from the cluster, you have to specify 3 in `spec.horizontalScaling.replicas` field.
-- `spec.horizontalScaling.configServer.replicas` indicates the desired number of ConfigServer nodes for Sharded MongoDB cluster after scaling.
-- `spec.horizontalScaling.mongos.replicas` indicates the desired number of Mongos nodes for Sharded MongoDB cluster after scaling.
-- `spec.horizontalScaling.shard` indicates the configuration of shard nodes for Sharded MongoDB cluster after scaling. This field consists of the following sub-field:
-  - `spec.horizontalScaling.shard.replicas` indicates the number of replicas each shard will have after scaling.
-  - `spec.horizontalScaling.shard.shards` indicates the number of shards after scaling
-
-#### spec.verticalScaling
-
-`spec.verticalScaling` is a required field specifying the information of `MongoDB` resources like `cpu`, `memory` etc that will be scaled. This field consists of the following sub-fields:
-
-- `spec.verticalScaling.standalone` indicates the desired resources for standalone MongoDB database after scaling.
-- `spec.verticalScaling.replicaSet` indicates the desired resources for replicaSet of MongoDB database after scaling.
-- `spec.verticalScaling.mongos` indicates the desired resources for Mongos nodes of Sharded MongoDB database after scaling.
-- `spec.verticalScaling.configServer` indicates the desired resources for ConfigServer nodes of Sharded MongoDB database after scaling.
-- `spec.verticalScaling.shard` indicates the desired resources for Shard nodes of Sharded MongoDB database after scaling.
-- `spec.verticalScaling.exporter` indicates the desired resources for the `exporter` container.
-
-All of them has the below structure:
+**Samples:**
 
 ```yaml
-requests:
-  memory: "200Mi"
-  cpu: "0.1"
-limits:
-  memory: "300Mi"
-  cpu: "0.2"
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: es-topology-upgrade
+  namespace: demo
+spec:
+  type: Upgrade
+  databaseRef:
+    name: es
+  upgrade:
+    targetVersion: 7.5.2-searchguard
 ```
 
-Here, when you specify the resource request, the scheduler uses this information to decide which node to place the container of the Pod on and when you specify a resource limit for the container, the `kubelet` enforces those limits so that the running container is not allowed to use more of that resource than the limit you set. You can found more details from [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).
+### spec.horizontalScaling
 
-#### spec.volumeExpansion
+`spec.horizontalScaling` is an `optional` field, but it acts as a `required` field when the `spec.type` is set to `HorizontalScaling`.
+It specifies the necessary information required to horizontally scale the Elasticsearch nodes (ie. pods). It consists of the following sub-field:
 
-> To use the volume expansion feature the storage class must support volume expansion
+- `horizontalScaling.node` - specifies the desired number of nodes for the Elasticsearch cluster running in combined mode (ie. `Elasticsearch.spec.topology` is `empty`).  The value should be greater than the maximum value of replication for the shard of any index. For example, if a shard has `x` replicas, `x+1` data nodes are required to allocate them.
 
-If you want to expand the volume of your MongoDB cluster or different components of it, you have to specify `spec.volumeExpansion` section. This field consists of the following sub-field:
+- `horizontalScaling.topology` - specifies the desired number of different type of nodes for the Elasticsearch cluster running in cluster topology mode (ie. `Elasticsearch.spec.topology` is `not empty`).
+  - `topology.master` - specifies the desired number of master nodes. The value should be greater than zero ( >= 1 ).
+  - `toplogy.ingest` - specifies the desired number of ingest nodes. The value should be greater than zero ( >= 1 ).
+  - `topology.data` - specifies the desired number of data nodes. The value should be greater than the maximum value of replication for the shard of any index. For example, if a shard has `x` replicas, `x+1` data nodes are required to allocate them.
 
-- `spec.volumeExpansion.standalone` indicates the desired size for the persistent volume of a standalone MongoDB database.
-- `spec.volumeExpansion.replicaSet` indicates the desired size for the persistent volume of replicaSets of a MongoDB database.
-- `spec.volumeExpansion.configServer` indicates the desired size for the persistent volume of the config server of a sharded MongoDB database.
-- `spec.volumeExpansion.shard` indicates the desired size for the persistent volume of shards of a sharded MongoDB database.
+**Samples:**
+
+- Horizontally scale combined nodes:
+
+  ```yaml
+  apiVersion: ops.kubedb.com/v1alpha1
+  kind: ElasticsearchOpsRequest
+  metadata:
+    name: hscale-combined
+    namespace: demo
+  spec:
+    type: HorizontalScaling
+    databaseRef:
+      name: es
+    horizontalScaling:
+      node: 4
+  ```
+
+- Horizontally scale cluster topology:
+
+  ```yaml
+  apiVersion: ops.kubedb.com/v1alpha1
+  kind: ElasticsearchOpsRequest
+  metadata:
+    name: hscale-topology
+    namespace: demo
+  spec:
+    type: HorizontalScaling
+    databaseRef:
+      name: es
+    horizontalScaling:
+      topology:
+        master: 2
+        ingest: 2
+        data: 3
+  ```
+
+- Horizontally scale only ingest nodes:
+
+  ```yaml
+  apiVersion: ops.kubedb.com/v1alpha1
+  kind: ElasticsearchOpsRequest
+  metadata:
+    name: hscale-ingest-nodes
+    namespace: demo
+  spec:
+    type: HorizontalScaling
+    databaseRef:
+      name: es
+    horizontalScaling:
+      topology:
+        ingest: 4
+  ```
+
+### spec.verticalScaling
+
+`spec.verticalScaling` is an `optional` field, but it acts as a `required` field when the `spec.type` is set to `VerticalScaling`. It specifies the necessary information required to vertically scale the Elasticsearch node resources (ie. `cpu`, `memory`). It consists of the following sub-field:
+
+- `verticalScaling.node` - specifies the desired node resources for the Elasticsearch cluster running in combined mode (ie. `Elasticsearch.spec.topology` is `empty`).
+- `verticalScaling.topology` - specifies the desired node resources for different type of node of the Elasticsearch running in cluster topology mode (ie. `Elasticsearch.spec.topology` is `not empty`).
+  - `topology.master` - specifies the desired resources for the master nodes. It takes input same as the k8s [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-types).
+  - `topology.data` - specifies the desired node resources for the data nodes. It takes input  same as the k8s [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-types).
+  - `topology.ingest` - specifies the desired node resources for the ingest nodes. It takes input  same as the k8s [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-types).
+
+> Note: It is recommended not to use resources below the default one; `cpu: 500m, memory: 1Gi`.
+
+**Samples:**
+
+- Vertically scale combined nodes:
+
+  ```yaml
+  apiVersion: ops.kubedb.com/v1alpha1
+  kind: ElasticsearchOpsRequest
+  metadata:
+    name: vscale-combined
+    namespace: demo
+  spec:
+    type: VerticalScaling
+    databaseRef:
+      name: es
+    verticalScaling:
+      node:
+        limits:
+          cpu: 1000m
+          memory: 2Gi
+        requests:
+          cpu: 500m
+          memory: 1Gi
+  ```
+
+- Vertically scale topology cluster:
+
+  ```yaml
+  apiVersion: ops.kubedb.com/v1alpha1
+  kind: ElasticsearchOpsRequest
+  metadata:
+    name: vscale-topology
+    namespace: demo
+  spec:
+    type: VerticalScaling
+    databaseRef:
+      name: es
+    verticalScaling:
+      topology:
+        master:
+          limits:
+            cpu: 750m
+            memory: 800Mi
+        data:
+          requests:
+            cpu: 760m
+            memory: 900Mi
+        ingest:
+          limits:
+            cpu: 900m
+            memory: 1.2Gi
+          requests:
+            cpu: 800m
+            memory: 1Gi  
+  ```
+
+- Vertically scale only data nodes:
+
+  ```yaml
+  apiVersion: ops.kubedb.com/v1alpha1
+  kind: ElasticsearchOpsRequest
+  metadata:
+    name: vscale-data-nodes
+    namespace: demo
+  spec:
+    type: VerticalScaling
+    databaseRef:
+      name: es
+    verticalScaling:
+      topology:
+        data:
+          limits:
+            cpu: 900m
+            memory: 1.2Gi
+          requests:
+            cpu: 800m
+            memory: 1Gi  
+  ```
+
+### spec.volumeExpansion
+
+> Note: To use the volume expansion feature the StorageClass must support volume expansion.
+
+`spec.volumeExpansion` is an `optional` field, but it acts as a `required` field when the `spec.type` is set to `VolumeExpansion`. It specifies the necessary information required to expand the storage of the Elasticsearch node. It consists of the following sub-field:
+
+- `volumeExpansion.node` - specifies the desired size of the persistent volume for the Elasticsearch node running in combined mode (ie. `Elasticsearch.spec.topology` is `empty`).
+- `volumeExpansion.topology` - specifies the desired size of the persistent volumes for the different types of nodes of the Elasticsearch cluster running in cluster topology mode (ie. `Elasticsearch.spec.topology` is `not empty`).
+  - `topology.master` - specifies the desired size of the persistent volume for the master nodes.
+  - `topology.data` - specifies the desired size of the persistent volume for the data nodes.
+  - `topology.ingest` - specifies the desired size of the persistent volume for the ingest nodes.
 
 All of them refer to [Quantity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.18/#quantity-resource-core) types of Kubernetes.
 
-Example usage of this field is given below:
+> Note: Make sure that the requested volume is greater than the current volume.
 
-```yaml
-spec:
-  volumeExpansion:
-    shard: "2Gi"
-```
+**Samples:**
 
-This will expand the volume size of all the shard nodes to 2 GB.
+- Expand volume for combined nodes:
 
-#### spec.customConfig
+  ```yaml
+  apiVersion: ops.kubedb.com/v1alpha1
+  kind: ElasticsearchOpsRequest
+  metadata:
+    name: volume-expansion-combined
+    namespace: demo
+  spec:
+    type: VolumeExpansion
+    databaseRef:
+      name: es
+    volumeExpansion:
+      node: 4Gi
+  ```
 
-If you want to reconfigure your Running MongoDB cluster or different components of it with new custom configuration, you have to specify `spec.customConfig` section. This field consists of the following sub-field:
+- Expand volume for cluster topology:
 
-- `spec.customConfig.standalone` indicates the desired new custom configuration for a standalone MongoDB database.
-- `spec.customConfig.replicaSet` indicates the desired new custom configuration for replicaSet of a MongoDB database.
-- `spec.customConfig.configServer` indicates the desired new custom configuration for config servers of a sharded MongoDB database.
-- `spec.customConfig.mongos` indicates the desired new custom configuration for the mongos nodes of a sharded MongoDB database.
-- `spec.customConfig.shard` indicates the desired new custom configuration for the shard nodes of a sharded MongoDB database.
+  ```yaml
+  apiVersion: ops.kubedb.com/v1alpha1
+  kind: ElasticsearchOpsRequest
+  metadata:
+    name: volume-expansion-topology
+    namespace: demo
+  spec:
+    type: VolumeExpansion
+    databaseRef:
+      name: es
+    volumeExpansion:
+      topology:
+        master: 2Gi
+        data: 3Gi
+        ingest: 4Gi
+  ```
 
-All of them has the following sub-fields:
+- Expand volume for only data nodes:
 
-- `configMap` points to a configMap in the same namespace of a MongoDB resource, which contains the new custom configurations. If there are any configmap sources before, this configmap will replace it.
-- `data` contains the new custom config which will be merged with the previous configuration.
+  ```yaml
+  apiVersion: ops.kubedb.com/v1alpha1
+  kind: ElasticsearchOpsRequest
+  metadata:
+    name: volume-expansion-data-nodes
+    namespace: demo
+  spec:
+    type: VolumeExpansion
+    databaseRef:
+      name: es
+    volumeExpansion:
+      topology:
+        data: 5Gi
+  ```
 
-### MongoDBOpsRequest `Status`
+## ElasticsearchOpsRequest `Status`
 
-`.status` describes the current state and progress of a `MongoDBOpsRequest` operation. It has the following fields:
+`.status` describes the current state and progress of a `ElasticsearchOpsRequest` operation. It has the following fields:
 
-#### status.phase
+### status.phase
 
-`status.phase` indicates the overall phase of the operation for this `MongoDBOpsRequest`. It can have the following three values:
+`status.phase` indicates the overall phase of the operation for this `ElasticsearchOpsRequest`. It can have the following three values:
 
-| Phase      | Meaning                                                                            |
-| ---------- | ---------------------------------------------------------------------------------- |
-| Successful | KubeDB has successfully performed the operation requested in the MongoDBOpsRequest |
-| Failed     | KubeDB has failed the operation requested in the MongoDBOpsRequest                 |
-| Denied     | KubeDB has denied the operation requested in the MongoDBOpsRequest                 |
+| Phase       | Meaning                                                                             |
+| :--------:  | ----------------------------------------------------------------------------------  |
+| Progressing | KubeDB has started to process the Ops request                                       |
+| Successful  | KubeDB has successfully performed all the operations needed for the Ops request     |
+| Failed      | KubeDB has failed while performing the operations needed for the Ops request        |
 
-#### status.observedGeneration
+### status.observedGeneration
 
-`status.observedGeneration` shows the most recent generation observed by the `MongoDBOpsRequest` controller.
+`status.observedGeneration` shows the most recent generation observed by the `ElasticsearchOpsRequest` controller.
 
-#### status.conditions
+### status.conditions
 
-`status.conditions` is an array that specifies the conditions of different steps of `MongoDBOpsRequest` processing. Each condition entry has the following fields:
+`status.conditions` is an array that specifies the conditions of different steps of `ElasticsearchOpsRequest` processing. Each condition entry has the following fields:
 
-- `types` specifies the type of the condition. MongoDBOpsRequest has the following types of conditions:
-
-| Type                          | Meaning                                                                   |
-| ----------------------------- | ------------------------------------------------------------------------- |
-| `Progressing`                 | Specifies that the operation is now in the progressing state              |
-| `Successful`                  | Specifies such a state that the operation on the database was successful. |
-| `HaltDatabase`               | Specifies such a state that the database is halted by the operator        |
-| `ResumeDatabase`              | Specifies such a state that the database is resumed by the operator       |
-| `Failed`                      | Specifies such a state that the operation on the database failed.         |
-| `StartingBalancer`            | Specifies such a state that the balancer has successfully started         |
-| `StoppingBalancer`            | Specifies such a state that the balancer has successfully stopped         |
-| `UpdateShardImage`            | Specifies such a state that the Shard Images has been updated             |
-| `UpdateReplicaSetImage`       | Specifies such a state that the Replicaset Image has been updated         |
-| `UpdateConfigServerImage`     | Specifies such a state that the ConfigServer Image has been updated       |
-| `UpdateMongosImage`           | Specifies such a state that the Mongos Image has been updated             |
-| `UpdateStatefulSetResources`  | Specifies such a state that the Statefulset resources has been updated    |
-| `UpdateShardResources`        | Specifies such a state that the Shard resources has been updated          |
-| `UpdateReplicaSetResources`   | Specifies such a state that the Replicaset resources has been updated     |
-| `UpdateConfigServerResources` | Specifies such a state that the ConfigServer resources has been updated   |
-| `UpdateMongosResources`       | Specifies such a state that the Mongos resources has been updated         |
-| `ScaleDownReplicaSet`         | Specifies such a state that the scale down operation of replicaset        |
-| `ScaleUpReplicaSet`           | Specifies such a state that the scale up operation of replicaset          |
-| `ScaleUpShardReplicas`        | Specifies such a state that the scale up operation of shard replicas      |
-| `ScaleDownShardReplicas`      | Specifies such a state that the scale down operation of shard replicas    |
-| `ScaleDownConfigServer`       | Specifies such a state that the scale down operation of config server     |
-| `ScaleUpConfigServer`         | Specifies such a state that the scale up operation of config server       |
-| `ScaleMongos`                 | Specifies such a state that the scale down operation of replicaset        |
-| `VolumeExpansion`             | Specifies such a state that the volume expansion operaton of the database |
-| `ReconfigureReplicaset`       | Specifies such a state that the reconfiguration of replicaset nodes       |
-| `ReconfigureMongos`           | Specifies such a state that the reconfiguration of mongos nodes           |
-| `ReconfigureShard`            | Specifies such a state that the reconfiguration of shard nodes            |
-| `ReconfigureConfigServer`     | Specifies such a state that the reconfiguration of config server nodes    |
-
+- `types` specifies the type of the condition.
 - The `status` field is a string, with possible values `True`, `False`, and `Unknown`.
   - `status` will be `True` if the current transition succeeded.
   - `status` will be `False` if the current transition failed.
@@ -217,424 +354,25 @@ All of them has the following sub-fields:
 - The `lastTransitionTime` field provides a timestamp for when the operation last transitioned from one state to another.
 - The `observedGeneration` shows the most recent condition transition generation observed by the controller.
 
+ElasticsearchOpsRequest has the following types of conditions:
 
-
-
-
-**Sample `MongoDBOpsRequest` Objects for Horizontal Scaling of different component of the database:**
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-hscale-down-configserver
-  namespace: demo
-spec:
-  type: HorizontalScaling
-  databaseRef:
-    name: mg-sharding
-  horizontalScaling:
-    shard:
-      shards: 3
-      replicas: 2
-    configServer:
-      replicas: 2
-    mongos:
-      replicas: 2
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-hscale-down-replicaset
-  namespace: demo
-spec:
-  type: HorizontalScaling
-  databaseRef:
-    name: mg-replicaset
-  horizontalScaling:
-    replicas: 3
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
-**Sample `MongoDBOpsRequest` Objects for Vertical Scaling of different component of the database:**
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-vscale-configserver
-  namespace: demo
-spec:
-  type: VerticalScaling
-  databaseRef:
-    name: mg-sharding
-  verticalScaling:
-    configServer:
-      requests:
-        memory: "150Mi"
-        cpu: "0.1"
-      limits:
-        memory: "250Mi"
-        cpu: "0.2"
-    mongos:
-      requests:
-        memory: "150Mi"
-        cpu: "0.1"
-      limits:
-        memory: "250Mi"
-        cpu: "0.2"
-    shard:
-      requests:
-        memory: "150Mi"
-        cpu: "0.1"
-      limits:
-        memory: "250Mi"
-        cpu: "0.2"
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-vscale-standalone
-  namespace: demo
-spec:
-  type: VerticalScaling
-  databaseRef:
-    name: mg-standalone
-  verticalScaling:
-    standalone:
-      requests:
-        memory: "150Mi"
-        cpu: "0.1"
-      limits:
-        memory: "250Mi"
-        cpu: "0.2"
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-vscale-replicaset
-  namespace: demo
-spec:
-  type: VerticalScaling
-  databaseRef:
-    name: mg-replicaset
-  verticalScaling:
-    replicaSet:
-      requests:
-        memory: "150Mi"
-        cpu: "0.1"
-      limits:
-        memory: "250Mi"
-        cpu: "0.2"
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
-**Sample `MongoDBOpsRequest` Objects for Reconfiguring different database components:**
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-reconfiugre-data-replicaset
-  namespace: demo
-spec:
-  type: Reconfigure
-  databaseRef:
-    name: mg-replicaset
-  customConfig:
-    replicaSet:
-      data:
-        mongod.conf: |
-          net:
-            maxIncomingConnections: 30000
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-reconfiugre-data-shard
-  namespace: demo
-spec:
-  type: Reconfigure
-  databaseRef:
-    name: mg-sharding
-  customConfig:
-    shard:
-      data:
-        mongod.conf: |
-          net:
-            maxIncomingConnections: 30000
-    configServer:
-      data:
-        mongod.conf: |
-          net:
-            maxIncomingConnections: 30000
-    mongos:
-      data:
-        mongod.conf: |
-          net:
-            maxIncomingConnections: 30000
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-reconfiugre-data-standalone
-  namespace: demo
-spec:
-  type: Reconfigure
-  databaseRef:
-    name: mg-standalone
-  customConfig:
-    standalone:
-      data:
-        mongod.conf: |
-          net:
-            maxIncomingConnections: 30000
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-reconfiugre-replicaset
-  namespace: demo
-spec:
-  type: Reconfigure
-  databaseRef:
-    name: mg-replicaset
-  customConfig:
-    replicaSet:
-      configMap:
-        name: new-custom-config
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-reconfiugre-shard
-  namespace: demo
-spec:
-  type: Reconfigure
-  databaseRef:
-    name: mg-sharding
-  customConfig:
-    shard:
-      configMap:
-        name: new-custom-config
-    confiServer:
-      configMap:
-        name: new-custom-config
-    mongos:
-      configMap:
-        name: new-custom-config
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-reconfiugre-standalone
-  namespace: demo
-spec:
-  type: Reconfigure
-  databaseRef:
-    name: mg-standalone
-  customConfig:
-    standalone:
-      configMap:
-        name: new-custom-config
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
-**Sample `MongoDBOpsRequest` Objects for Volume Expansion of different database components:**
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-volume-exp-replicaset
-  namespace: demo
-spec:
-  type: VolumeExpansion
-  databaseRef:
-    name: mg-replicaset
-  volumeExpansion:
-    replicaSet: 2Gi
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-volume-exp-shard
-  namespace: demo
-spec:
-  type: VolumeExpansion
-  databaseRef:
-    name: mg-sharding
-  volumeExpansion:
-    shard: 2Gi
-    configServer: 2Gi
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MongoDBOpsRequest
-metadata:
-  name: mops-volume-exp-standalone
-  namespace: demo
-spec:
-  type: VolumeExpansion
-  databaseRef:
-    name: mg-standalone
-  volumeExpansion:
-    standalone: 2Gi
-status:
-  conditions:
-    - lastTransitionTime: "2020-08-25T18:22:38Z"
-      message: Successfully completed the modification process
-      observedGeneration: 1
-      reason: Successful
-      status: "True"
-      type: Successful
-  observedGeneration: 1
-  phase: Successful
-```
-
+| Type                            | Meaning                                                                   |
+| -----------------------------   | ------------------------------------------------------------------------- |
+| `Progressing`                   | The operator has started to process the Ops request                       |
+| `Successful`                    | The Ops request has successfully executed                                 |
+| `Failed`                        | The operation on the database failed                                      |
+| `OrphanStatefulSetPods`         | The statefulSet has deleted leaving the pods orphaned                     |
+| `ReadyStatefulSets`             | The StatefulSet are ready                                                 |
+| `ScaleDownCombinedNode`         | Scaled down the combined nodes                                            |
+| `ScaleDownDataNode`             | Scaled down the data nodes                                                |
+| `ScaleDownIngestNode`           | Scaled down the ingest nodes                                              |
+| `ScaleDownMasterNode`           | Scaled down the master nodes                                              |
+| `ScaleUpCombinedNode`           | Scaled up the combined nodes                                              |
+| `ScaleUpDataNode`               | Scaled up the data nodes                                                  |
+| `ScaleUpIngestNode`             | Scaled up the ingest nodes                                                |
+| `ScaleUpMasterNode`             | Scaled up the master nodes                                                |
+| `UpdateCombinedNodePVCs`        | Updated combined node PVCs                                                |
+| `UpdateDataNodePVCs`            | Updated data node PVCs                                                    |
+| `UpdateIngestNodePVCs`          | Updated ingest node PVCs                                                  |
+| `UpdateMasterNodePVCs`          | Updated master node PVCs                                                  |
+| `UpdateNodeResources`           | Updated node resources                                                    |
