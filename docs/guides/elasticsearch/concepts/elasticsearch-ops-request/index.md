@@ -5,7 +5,7 @@ menu:
     identifier: es-opsrequest-concepts
     name: ElasticsearchOpsRequest
     parent: es-concepts-elasticsearch
-    weight: 25
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

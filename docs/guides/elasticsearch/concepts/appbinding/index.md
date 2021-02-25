@@ -5,7 +5,7 @@ menu:
     identifier: es-appbinding-catalog
     name: AppBinding
     parent: es-concepts-elasticsearch
-    weight: 20
+    weight: 25
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

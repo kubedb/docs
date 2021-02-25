@@ -5,7 +5,7 @@ menu:
     identifier: es-catalog-concepts
     name: ElasticsearchVersion
     parent: es-concepts-elasticsearch
-    weight: 15
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

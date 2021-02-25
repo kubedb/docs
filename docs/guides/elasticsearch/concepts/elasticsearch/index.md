@@ -433,7 +433,7 @@ The `spec.tls` contains the following fields:
   - `kind` - is the type of resource that is being referenced. The supported values are `Issuer` and `ClusterIssuer`.
   - `name` - is the name of the resource ( `Issuer` or `ClusterIssuer` ) that is being referenced.
 
-- `certificates` - is an `optional` field that specifies a list of certificate configurations used to configure the  certificates. It has the following fields:
+- `tls.certificates` - is an `optional` field that specifies a list of certificate configurations used to configure the  certificates. It has the following fields:
   - `alias` - represents the identifier of the certificate. It has the following possible value:
     - `transport` - is used for the transport layer certificate configuration.
     - `http` - is used for the HTTP layer certificate configuration.
@@ -441,7 +441,7 @@ The `spec.tls` contains the following fields:
     - `metrics-exporter` - is used for the metrics-exporter sidecar certificate configuration.
   
   - `secretName` - ( `string` | `"<database-name>-alias-cert"` ) - specifies the k8s secret name that holds the certificates.
-    
+
   - `subject` - specifies an `X.509` distinguished name (DN). It has the following configurable fields:
     - `organizations` ( `[]string` | `nil` ) - is a list of organization names.
     - `organizationalUnits` ( `[]string` | `nil` ) - is a list of organization unit names.
