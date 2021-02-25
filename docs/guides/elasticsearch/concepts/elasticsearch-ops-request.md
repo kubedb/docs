@@ -322,6 +322,129 @@ All of them refer to [Quantity](https://kubernetes.io/docs/reference/generated/k
         data: 5Gi
   ```
 
+### spec.tls
+
+> The ReconfigureTLS only works with the [Cert-Manager](https://cert-manager.io/docs/concepts/) managed certificates. [Installation guide](https://cert-manager.io/docs/installation/).
+
+`spec.tls` is an `optional` field, but it acts as a `required` field when the `spec.type` is set to `ReconfigureTLS`. It specifies the necessary information required to add or remove or update the TLS configuration of the Elasticsearch cluster. It consists of the following sub-fields:
+
+- `tls.remove` ( `bool` | `false` ) - tells the operator to remove the TLS configuration for the HTTP layer. The transport layer is always secured with certificates, so the removal process does not affect the transport layer.
+- `tls.rotateCertificates` ( `bool` | `false`) - tells the operator to renew all the certificates.
+- `tls.issuerRef` - is an `optional` field that references to the `Issuer` or `ClusterIssuer` custom resource object of [cert-manager](https://cert-manager.io/docs/concepts/issuer/). It is used to generate the necessary certificate secrets for Elasticsearch. If the `issuerRef` is not specified, the operator creates a self-signed CA and also creates necessary certificate (valid: 365 days) secrets using that CA. 
+  - `apiGroup` - is the group name of the resource that is being referenced. Currently, the only supported value is `cert-manager.io`.
+  - `kind` - is the type of resource that is being referenced. The supported values are `Issuer` and `ClusterIssuer`.
+  - `name` - is the name of the resource ( `Issuer` or `ClusterIssuer` ) that is being referenced.
+
+- `tls.certificates` - is an `optional` field that specifies a list of certificate configurations used to configure the  certificates. It has the following fields:
+  - `alias` - represents the identifier of the certificate. It has the following possible value:
+    - `transport` - is used for the transport layer certificate configuration.
+    - `http` - is used for the HTTP layer certificate configuration.
+    - `admin` - is used for the admin certificate configuration. Available for the `SearchGuard` and the `OpenDistro` auth-plugins.
+    - `metrics-exporter` - is used for the metrics-exporter sidecar certificate configuration.
+  
+  - `secretName` - ( `string` | `"<database-name>-alias-cert"` ) - specifies the k8s secret name that holds the certificates.
+
+  - `subject` - specifies an `X.509` distinguished name (DN). It has the following configurable fields:
+    - `organizations` ( `[]string` | `nil` ) - is a list of organization names.
+    - `organizationalUnits` ( `[]string` | `nil` ) - is a list of organization unit names.
+    - `countries` ( `[]string` | `nil` ) -  is a list of country names (ie. Country Codes).
+    - `localities` ( `[]string` | `nil` ) - is a list of locality names.
+    - `provinces` ( `[]string` | `nil` ) - is a list of province names.
+    - `streetAddresses` ( `[]string` | `nil` ) - is a list of street addresses.
+    - `postalCodes` ( `[]string` | `nil` ) - is a list of postal codes.
+    - `serialNumber` ( `string` | `""` ) is a serial number.
+  
+    For more details, visit [here](https://golang.org/pkg/crypto/x509/pkix/#Name).
+
+  - `duration` ( `string` | `""` ) - is the period during which the certificate is valid. A duration string is a possibly signed sequence of decimal numbers, each with optional fraction and a unit suffix, such as `"300m"`, `"1.5h"` or `"20h45m"`. Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+  - `renewBefore` ( `string` | `""` ) - is a specifiable time before expiration duration.
+  - `dnsNames` ( `[]string` | `nil` ) - is a list of subject alt names.
+  - `ipAddresses` ( `[]string` | `nil` ) - is a list of IP addresses.
+  - `uris` ( `[]string` | `nil` ) - is a list of URI Subject Alternative Names.
+  - `emailAddresses` ( `[]string` | `nil` ) - is a list of email Subject Alternative Names.
+
+To enable TLS on the HTTP layer, the configuration for the `http` layer certificate needs to be provided on `tls.certificates[]` list.
+
+**Samples:**
+
+- Add TLS:
+
+  ```yaml
+  apiVersion: ops.kubedb.com/v1alpha1
+  kind: ElasticsearchOpsRequest
+  metadata:
+    name: add-tls
+    namespace: demo
+  spec:
+    type: ReconfigureTLS
+    databaseRef:
+      name: es
+    tls:
+      issuerRef:
+        apiGroup: "cert-manager.io"
+        kind: Issuer
+        name: es-issuer
+      certificates:
+      - alias: http
+        subject:
+          organizations:
+          - kubedb.com
+        emailAddresses:
+        - abc@kubedb.com 
+  ```
+
+- Remove TLS:
+
+  ```yaml
+  apiVersion: ops.kubedb.com/v1alpha1
+  kind: ElasticsearchOpsRequest
+  metadata:
+    name: remove-tls
+    namespace: demo
+  spec:
+    type: ReconfigureTLS
+    databaseRef:
+      name: es
+    tls:
+      remove: true
+  ```
+
+- Rotate TLS:
+
+  ```yaml
+  apiVersion: ops.kubedb.com/v1alpha1
+  kind: ElasticsearchOpsRequest
+  metadata:
+    name: rotate-tls
+    namespace: demo
+  spec:
+    type: ReconfigureTLS
+    databaseRef:
+      name: es
+    tls:
+      rotateCertificates: true
+  ```
+
+- Update transport layer certificate:
+
+  ```yaml
+  apiVersion: ops.kubedb.com/v1alpha1
+  kind: ElasticsearchOpsRequest
+  metadata:
+    name: update-tls
+    namespace: demo
+  spec:
+    type: ReconfigureTLS
+    databaseRef:
+      name: es
+    tls:
+      certificates:
+        - alias: transport
+          subject:
+            organizations:
+              - mydb.com # say, previously it was "kubedb.com"
+  ```
+
 ## ElasticsearchOpsRequest `Status`
 
 `.status` describes the current state and progress of a `ElasticsearchOpsRequest` operation. It has the following fields:
