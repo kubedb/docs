@@ -17,24 +17,24 @@ aliases:
 
 ## Supported Elasticsearch Features
 
-| Features                                                                                | Availability |
-| -------------------------------------------------------------------------------------   | :----------: |
-| Combined Cluster (n nodes with master: true & data: true & ingest: true; n >= 1 )       |   &#10003;   |
-| Topology Cluster (n master nodes, m data nodes, x ingest nodes; n,m,x >= 1 )            |   &#10003;   |
-| TLS: Add, Remove, Update, Rotate ( [Cert Manager](https://cert-manager.io/docs/) ) `Enterprise`         |   &#10003;   |
-| Automated Version Upgrade `Enterprise`                                                                  |   &#10003;   |
-| Automatic Vertical Scaling `Enterprise`                                                                 |   &#10003;   |
-| Automated Horizontal Scaling `Enterprise`                                                               |   &#10003;   |
-| Automated Volume Expansion `Enterprise`                                                                 |   &#10003;   |
-| Backup/Recovery: Instant, Scheduled ( [Stash](https://stash.run/) )                                     |   &#10003;   |
-| Initialization from Snapshot ( [Stash](https://stash.run/) )                                            |   &#10003;   |
-| Authentication ( [X-Pack](https://www.elastic.co/guide/en/elasticsearch/reference/7.9/setup-xpack.html) / [OpenDistro](https://opendistro.github.io/for-elasticsearch-docs/) / [Search Guard](https://docs.search-guard.com/latest/) )   |   &#10003;   |
-| Authorization ( [X-Pack](https://www.elastic.co/guide/en/elasticsearch/reference/7.9/setup-xpack.html) / [OpenDistro](https://opendistro.github.io/for-elasticsearch-docs/) / [Search Guard](https://docs.search-guard.com/latest/) )       |   &#10003;   |
-| Persistent Volume                                                                      |   &#10003;   |
-| Exports Prometheus Matrices                                                            |   &#10003;   |
-| Custom Configuration                                                                   |   &#10003;   |
-| Using Custom Docker Image                                                              |   &#10003;   |
-| Initialization From Script                                                             |   &#10007;   |
+| Features                                                                                                          | Community     | Enterprise    |
+| -------------------------------------------------------------------------------------                             | :----------:  | :----------:  |
+| Combined Cluster (n nodes with master: true & data: true & ingest: true; n >= 1 )                                 |   &#10003;    |   &#10003;    |
+| Topology Cluster (n master nodes, m data nodes, x ingest nodes; n,m,x >= 1 )                                      |   &#10003;    |   &#10003;    |
+| TLS: Add, Remove, Update, Rotate ( [Cert Manager](https://cert-manager.io/docs/) )                                |   &#10007;    |   &#10003;    |
+| Automated Version Upgrade                                                                                         |   &#10007;    |   &#10003;    |
+| Automatic Vertical Scaling                                                                                        |   &#10007;    |   &#10003;    |
+| Automated Horizontal Scaling                                                                                      |   &#10007;    |   &#10003;    |
+| Automated Volume Expansion                                                                                        |   &#10007;    |   &#10003;    |
+| Backup/Recovery: Instant, Scheduled ( [Stash](https://stash.run/) )                                               |   &#10003;    |   &#10003;    |
+| Initialization from Snapshot ( [Stash](https://stash.run/) )                                                      |   &#10003;    |   &#10003;    |
+| Authentication ( [X-Pack](https://www.elastic.co/guide/en/elasticsearch/reference/7.9/setup-xpack.html) / [OpenDistro](https://opendistro.github.io/for-elasticsearch-docs/) / [Search Guard](https://docs.search-guard.com/latest/) )                                  |   &#10003;    |   &#10003;    |
+| Authorization ( [X-Pack](https://www.elastic.co/guide/en/elasticsearch/reference/7.9/setup-xpack.html) / [OpenDistro](https://opendistro.github.io/for-elasticsearch-docs/) / [Search Guard](https://docs.search-guard.com/latest/) )                                   |   &#10003;    |   &#10003;    |
+| Persistent Volume                                                                                                 |   &#10003;    |   &#10003;    |
+| Exports Prometheus Matrices                                                                                       |   &#10003;    |   &#10003;    |
+| Custom Configuration                                                                                              |   &#10003;    |   &#10003;    |
+| Using Custom Docker Image                                                                                         |   &#10003;    |   &#10003;    |
+| Initialization From Script                                                                                        |   &#10007;    |   &#10007;    |
 
 ## Available Elasticsearch Version
 
