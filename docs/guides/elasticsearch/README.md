@@ -15,12 +15,12 @@ aliases:
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-## Supported Elasticsearch Features
+## Elasticsearch Features
 
 | Features                                                                                                          | Community     | Enterprise    |
 | -------------------------------------------------------------------------------------                             | :----------:  | :----------:  |
-| Combined Cluster (n nodes with master: true & data: true & ingest: true; n >= 1 )                                 |   &#10003;    |   &#10003;    |
-| Topology Cluster (n master nodes, m data nodes, x ingest nodes; n,m,x >= 1 )                                      |   &#10003;    |   &#10003;    |
+| Combined Cluster (n nodes with master,data,ingest: ture; n >= 1 )                                                 |   &#10003;    |   &#10003;    |
+| Topology Cluster (n master, m data, x ingest nodes; n,m,x >= 1 )                                                  |   &#10003;    |   &#10003;    |
 | TLS: Add, Remove, Update, Rotate ( [Cert Manager](https://cert-manager.io/docs/) )                                |   &#10007;    |   &#10003;    |
 | Automated Version Upgrade                                                                                         |   &#10007;    |   &#10003;    |
 | Automatic Vertical Scaling                                                                                        |   &#10007;    |   &#10003;    |
@@ -53,13 +53,13 @@ aliases:
 |   7.0.x     |   &#10003;    |   &#10003;  |   &#10003;    |
 |   6.8.x     |   &#10003;    |   &#10007;  |   &#10003;    |
 
-> The listed ElasticsearchVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog.md) object with your custom Elasticsearch image.
+> The listed ElasticsearchVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog) object with your custom Elasticsearch image.
 
 ## User Guide
 
-- [Quickstart Elasticsearch](/docs/guides/elasticsearch/quickstart/quickstart.md) with KubeDB Operator.
+- [Quickstart Elasticsearch](/docs/guides/elasticsearch/quickstart/overview) with KubeDB Operator.
+- [Elasticsearch Clustering](/docs/guides/elasticsearch/clustering/combined-cluster) supported by KubeDB
 - [Backup & Restore Elasticsearch](/docs/guides/elasticsearch/backup/stash.md) database using Stash.
-- [Elasticsearch Topology](/docs/guides/elasticsearch/clustering/topology.md) supported by KubeDB
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
