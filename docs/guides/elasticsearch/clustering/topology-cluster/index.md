@@ -5,7 +5,7 @@ menu:
     identifier: es-topology-cluster
     name: Topology Cluster
     parent: es-clustering-elasticsearch
-    weight: 10
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Topology Cluster
 
-An Elasticsearch combined cluster is a group of one or more Elasticsearch nodes where each node can perform as master, data, and ingest nodes simultaneously.
+An Elasticsearch  topology cluster is a group of Elasticsearch nodes ( `>= 3` ) where each node is assigned with a dedicated role such as master, data, and ingest. In a topology cluster, there has to be at least one master node, one data node, and one ingest node.
 
 ## Before You Begin
 
@@ -33,238 +33,412 @@ NAME                 STATUS   AGE
 demo                 Active   9s
 ```
 
-> Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/clustering/combined-cluster/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/clustering/topology-cluster/yamls
+) in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-## Create Standalone Elasticsearch Cluster
+## Find Available StorageClass
 
-Here, we are going to create a standalone (ie. `replicas: 1`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`1.12.0-opendistro`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+We will have to provide `StorageClass` in Elasticsearch CR specification. Check available `StorageClass` in your cluster using the following command,
+
+```bash
+$ kubectl get storageclass
+NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  1h
+```
+
+Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
+
+## Create Dedicated Elasticsearch Cluster
+
+We are going to create a dedicated Elasticsearch cluster in topology mode. Our cluster will be consist of 2 master nodes, 3 data nodes, and 2 ingest nodes. We will the Elasticsearch image provided by the [SearchGurad](https://hub.docker.com/u/floragunncom) ( `7.9.3-searchguard` ) for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
 metadata:
-  name: es-standalone
+  name: es-topology
   namespace: demo
 spec:
-  version: 1.12.0-opendistro
-  enableSSL: true
-  replicas: 1
+  enableSSL: true 
+  version: 7.9.3-searchguard
   storageType: Durable
-  storage:
-    storageClassName: "standard"
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  topology:
+    master:
+      replicas: 2
+      storage:
+        storageClassName: "standard"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    data:
+      replicas: 3
+      storage:
+        storageClassName: "standard"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    ingest:
+      replicas: 2
+      storage:
+        storageClassName: "standard"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
 ```
+
+Here,
+
+- `spec.version` - is the name of the ElasticsearchVersion CR. Here, an Elasticsearch of version `7.9.3` will be created with `SearchGuard` security plugin.
+- `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
+- `spec.storageType` - specifies the type of storage that will be used for Elasticsearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Elasticsearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
+- `spec.topology` - specifies the node-specific properties for the Elasticsearch cluster.
+  - `topology.master` - specifies the properties of master nodes.
+    - `master.replicas` - specifies the number of master nodes.
+    - `master.storage` - specifies the master node storage information that passed to the StatefulSet.
+  - `topology.data` - specifies the properties of data nodes.
+    - `master.replicas` - specifies the number of data nodes.
+    - `master.storage` - specifies the data node storage information that passed to the StatefulSet.
+  - `topology.ingest` - specifies the properties of ingest nodes.
+    - `master.replicas` - specifies the number of ingest nodes.
+    - `master.storage` - specifies the ingest node storage information that passed to the StatefulSet.
 
 Let's deploy the above example by the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/clustering/combined-cluster/yamls/es-standalone.yaml
-elasticsearch.kubedb.com/es-standalone created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/clustering/topology-cluster/yamls/es-topology.yaml
+elasticsearch.kubedb.com/es-topology created
 ```
 
 Watch the bootstrap progress:
 
 ```bash
 $ kubectl get elasticsearch -n demo -w
-NAME            VERSION             STATUS         AGE
-es-standalone   1.12.0-opendistro   Provisioning   1m32s
-es-standalone   1.12.0-opendistro   Provisioning   2m17s
-es-standalone   1.12.0-opendistro   Provisioning   2m17s
-es-standalone   1.12.0-opendistro   Provisioning   2m20s
-es-standalone   1.12.0-opendistro   Ready          2m20s
+NAME          VERSION             STATUS         AGE
+es-topology   7.9.3-searchguard   Provisioning   15s
+es-topology   7.9.3-searchguard   Provisioning   25s
+es-topology   7.9.3-searchguard   Provisioning   33s
+es-topology   7.9.3-searchguard   Provisioning   2m9s 
+es-topology   7.9.3-searchguard   Ready          2m11s
 ```
 
-Hence the cluster is ready to use.
-Let's check the k8s resouces created by the operator on deployment of Elasticsearch CRO:
+Hence the cluster is **ready** to use.
+
+Describe the Elasticsearch object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-standalone'
-NAME                  READY   STATUS    RESTARTS   AGE
-pod/es-standalone-0   1/1     Running   0          33m
+$ kubectl describe elasticsearch -n demo es-topology 
+Name:         es-topology
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  kubedb.com/v1alpha2
+Kind:         Elasticsearch
+Metadata:
+  Creation Timestamp:  2021-03-02T09:26:51Z
+  Finalizers:
+    kubedb.com
+  Generation:  3
+  Resource Version:  153315
+  UID:               0b1aa286-ccf0-4ac8-bc4f-593eb9df4955
+Spec:
+  Auth Secret:
+    Name:      es-topology-admin-cred
+  Enable SSL:  true
+  Internal Users:
+    Admin:
+      Backend Roles:
+        admin
+      Reserved:  true
+    Kibanaro:
+    Kibanaserver:
+      Reserved:  true
+    Logstash:
+    Readall:
+    Snapshotrestore:
+  Kernel Settings:
+    Privileged:  true
+    Sysctls:
+      Name:   vm.max_map_count
+      Value:  262144
+  Pod Template:
+    Controller:
+    Metadata:
+    Spec:
+      Affinity:
+        Pod Anti Affinity:
+          Preferred During Scheduling Ignored During Execution:
+            Pod Affinity Term:
+              Label Selector:
+                Match Expressions:
+                  Key:       ${NODE_ROLE}
+                  Operator:  Exists
+                Match Labels:
+                  app.kubernetes.io/instance:    es-topology
+                  app.kubernetes.io/managed-by:  kubedb.com
+                  app.kubernetes.io/name:        elasticsearches.kubedb.com
+              Namespaces:
+                demo
+              Topology Key:  kubernetes.io/hostname
+            Weight:          100
+            Pod Affinity Term:
+              Label Selector:
+                Match Expressions:
+                  Key:       ${NODE_ROLE}
+                  Operator:  Exists
+                Match Labels:
+                  app.kubernetes.io/instance:    es-topology
+                  app.kubernetes.io/managed-by:  kubedb.com
+                  app.kubernetes.io/name:        elasticsearches.kubedb.com
+              Namespaces:
+                demo
+              Topology Key:  failure-domain.beta.kubernetes.io/zone
+            Weight:          50
+      Resources:
+      Service Account Name:  es-topology
+  Storage Type:              Durable
+  Termination Policy:        Delete
+  Tls:
+    Certificates:
+      Alias:  ca
+      Private Key:
+        Encoding:   PKCS8
+      Secret Name:  es-topology-ca-cert
+      Subject:
+        Organizations:
+          kubedb
+      Alias:  transport
+      Private Key:
+        Encoding:   PKCS8
+      Secret Name:  es-topology-transport-cert
+      Subject:
+        Organizations:
+          kubedb
+      Alias:  http
+      Private Key:
+        Encoding:   PKCS8
+      Secret Name:  es-topology-http-cert
+      Subject:
+        Organizations:
+          kubedb
+      Alias:  admin
+      Private Key:
+        Encoding:   PKCS8
+      Secret Name:  es-topology-admin-cert
+      Subject:
+        Organizations:
+          kubedb
+      Alias:  archiver
+      Private Key:
+        Encoding:   PKCS8
+      Secret Name:  es-topology-archiver-cert
+      Subject:
+        Organizations:
+          kubedb
+  Topology:
+    Data:
+      Replicas:  3
+      Resources:
+        Limits:
+          Cpu:     500m
+          Memory:  1Gi
+        Requests:
+          Cpu:     500m
+          Memory:  1Gi
+      Storage:
+        Access Modes:
+          ReadWriteOnce
+        Resources:
+          Requests:
+            Storage:         1Gi
+        Storage Class Name:  standard
+      Suffix:                data
+    Ingest:
+      Replicas:  2
+      Resources:
+        Limits:
+          Cpu:     500m
+          Memory:  1Gi
+        Requests:
+          Cpu:     500m
+          Memory:  1Gi
+      Storage:
+        Access Modes:
+          ReadWriteOnce
+        Resources:
+          Requests:
+            Storage:         1Gi
+        Storage Class Name:  standard
+      Suffix:                ingest
+    Master:
+      Replicas:  2
+      Resources:
+        Limits:
+          Cpu:     500m
+          Memory:  1Gi
+        Requests:
+          Cpu:     500m
+          Memory:  1Gi
+      Storage:
+        Access Modes:
+          ReadWriteOnce
+        Resources:
+          Requests:
+            Storage:         1Gi
+        Storage Class Name:  standard
+      Suffix:                master
+  Version:                   7.9.3-searchguard
+Status:
+  Conditions:
+    Last Transition Time:  2021-03-02T09:26:51Z
+    Message:               The KubeDB operator has started the provisioning of Elasticsearch: demo/es-topology
+    Reason:                DatabaseProvisioningStartedSuccessfully
+    Status:                True
+    Type:                  ProvisioningStarted
+    Last Transition Time:  2021-03-02T09:27:24Z
+    Message:               All desired replicas are ready.
+    Reason:                AllReplicasReady
+    Status:                True
+    Type:                  ReplicaReady
+    Last Transition Time:  2021-03-02T09:28:59Z
+    Message:               The Elasticsearch: demo/es-topology is accepting client requests.
+    Observed Generation:   3
+    Reason:                DatabaseAcceptingConnectionRequest
+    Status:                True
+    Type:                  AcceptingConnection
+    Last Transition Time:  2021-03-02T09:29:00Z
+    Message:               The Elasticsearch: demo/es-topology is ready.
+    Observed Generation:   3
+    Reason:                ReadinessCheckSucceeded
+    Status:                True
+    Type:                  Ready
+    Last Transition Time:  2021-03-02T09:29:02Z
+    Message:               The Elasticsearch: demo/es-topology is successfully provisioned.
+    Observed Generation:   3
+    Reason:                DatabaseSuccessfullyProvisioned
+    Status:                True
+    Type:                  Provisioned
+  Observed Generation:     3
+  Phase:                   Ready
+Events:
+  Type    Reason      Age   From                    Message
+  ----    ------      ----  ----                    -------
+  Normal  Successful   9m   Elasticsearch operator  Successfully  governing service
+  Normal  Successful   9m   Elasticsearch operator  Successfully patched Elasticsearch
 
-NAME                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
-service/es-standalone          ClusterIP   10.96.46.11   <none>        9200/TCP   33m
-service/es-standalone-master   ClusterIP   None          <none>        9300/TCP   33m
-service/es-standalone-pods     ClusterIP   None          <none>        9200/TCP   33m
-
-NAME                             READY   AGE
-statefulset.apps/es-standalone   1/1     33m
-
-NAME                                               TYPE                       VERSION   AGE
-appbinding.appcatalog.appscode.com/es-standalone   kubedb.com/elasticsearch   7.10.0    33m
-
-NAME                                        TYPE                       DATA   AGE
-secret/es-standalone-admin-cert             kubernetes.io/tls          3      33m
-secret/es-standalone-admin-cred             kubernetes.io/basic-auth   2      33m
-secret/es-standalone-archiver-cert          kubernetes.io/tls          3      33m
-secret/es-standalone-ca-cert                kubernetes.io/tls          2      33m
-secret/es-standalone-config                 Opaque                     3      33m
-secret/es-standalone-http-cert              kubernetes.io/tls          3      33m
-secret/es-standalone-kibanaro-cred          kubernetes.io/basic-auth   2      33m
-secret/es-standalone-kibanaserver-cred      kubernetes.io/basic-auth   2      33m
-secret/es-standalone-logstash-cred          kubernetes.io/basic-auth   2      33m
-secret/es-standalone-readall-cred           kubernetes.io/basic-auth   2      33m
-secret/es-standalone-snapshotrestore-cred   kubernetes.io/basic-auth   2      33m
-secret/es-standalone-transport-cert         kubernetes.io/tls          3      33m
-
-NAME                                         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-es-standalone-0   Bound    pvc-a2d3e491-1d66-4b29-bb18-d5f06905336c   1Gi        RWO            standard       33m
 ```
 
-Connect to the Cluster:
+### KubeDB Operator Generated Resources
+
+Let's check the k8s resources created by the operator on the deployment of Elasticsearch CRO:
 
 ```bash
-# Port-forward the service to local machine
-$ kubectl port-forward -n demo svc/es-standalone 9200
+$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-topology'
+NAME                       READY   STATUS    RESTARTS   AGE
+pod/es-topology-data-0     1/1     Running   0          5m55s
+pod/es-topology-data-1     1/1     Running   0          5m42s
+pod/es-topology-data-2     1/1     Running   0          5m31s
+pod/es-topology-ingest-0   1/1     Running   0          5m55s
+pod/es-topology-ingest-1   1/1     Running   0          5m45s
+pod/es-topology-master-0   1/1     Running   0          5m55s
+pod/es-topology-master-1   1/1     Running   0          5m42s
+
+NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/es-topology          ClusterIP   10.96.143.113   <none>        9200/TCP   5m57s
+service/es-topology-master   ClusterIP   None            <none>        9300/TCP   5m57s
+service/es-topology-pods     ClusterIP   None            <none>        9200/TCP   5m57s
+
+NAME                                  READY   AGE
+statefulset.apps/es-topology-data     3/3     5m55s
+statefulset.apps/es-topology-ingest   2/2     5m55s
+statefulset.apps/es-topology-master   2/2     5m55s
+
+NAME                                             TYPE                       VERSION   AGE
+appbinding.appcatalog.appscode.com/es-topology   kubedb.com/elasticsearch   7.9.3     5m55s
+
+NAME                                      TYPE                       DATA   AGE
+secret/es-topology-admin-cert             kubernetes.io/tls          3      5m57s
+secret/es-topology-admin-cred             kubernetes.io/basic-auth   2      5m56s
+secret/es-topology-archiver-cert          kubernetes.io/tls          3      5m56s
+secret/es-topology-ca-cert                kubernetes.io/tls          2      5m57s
+secret/es-topology-config                 Opaque                     3      5m55s
+secret/es-topology-http-cert              kubernetes.io/tls          3      5m57s
+secret/es-topology-kibanaro-cred          kubernetes.io/basic-auth   2      5m56s
+secret/es-topology-kibanaserver-cred      kubernetes.io/basic-auth   2      5m56s
+secret/es-topology-logstash-cred          kubernetes.io/basic-auth   2      5m56s
+secret/es-topology-readall-cred           kubernetes.io/basic-auth   2      5m56s
+secret/es-topology-snapshotrestore-cred   kubernetes.io/basic-auth   2      5m56s
+secret/es-topology-transport-cert         kubernetes.io/tls          3      5m57s
+
+NAME                                              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/data-es-topology-data-0     Bound    pvc-7cad281b-6b1d-4474-ba76-4347b49cd647   1Gi        RWO            standard       5m55s
+persistentvolumeclaim/data-es-topology-data-1     Bound    pvc-64637ae8-48b8-40c8-b0f6-16f52d375b8f   1Gi        RWO            standard       5m42s
+persistentvolumeclaim/data-es-topology-data-2     Bound    pvc-2b21c196-e029-4ef6-a515-8b8c2570d00b   1Gi        RWO            standard       5m31s
+persistentvolumeclaim/data-es-topology-ingest-0   Bound    pvc-ffc0a0f2-420d-44f2-a075-749f9abaa4d0   1Gi        RWO            standard       5m55s
+persistentvolumeclaim/data-es-topology-ingest-1   Bound    pvc-fd9b4f65-00b6-4add-aae9-0f792c1cd620   1Gi        RWO            standard       5m45s
+persistentvolumeclaim/data-es-topology-master-0   Bound    pvc-d6f2e28d-92d6-4ea0-b764-a8dc38c013f2   1Gi        RWO            standard       5m55s
+persistentvolumeclaim/data-es-topology-master-1   Bound    pvc-74178260-c1d9-47e8-977f-a31ddd97b31d   1Gi        RWO            standard       5m42s
+```
+
+- `StatefulSet` - 3 StatefulSets are created for 3 types Elasticsearch nodes. The StatefulSets are named after the Elasticsearch instance with given suffix: `{Elasticsearch-Name}-{Sufix}`.
+- `Services` -  3 services are generated for each Elasticsearch database.
+  - `{Elasticsearch-Name}` - the client service which is used to connect to the database. It points to the `ingest` nodes.
+  - `{Elasticsearch-Name}-master` - the master service which is used to connect to the master nodes. It is a headless service.
+  - `{Elasticsearch-Name}-pods` - the node discovery service which is used by the Elasticsearch nodes to communicate each other. It is a headless service.
+- `AppBinding` - an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) which hold the connect information for the database. It is also named after the Elastics
+- `Secrets` - 3 types of secrets are generated for each Elasticsearch database.
+  - `{Elasticsearch-Name}-{username}-cred` - the auth secrets which hold the `username` and `password` for the Elasticsearch users.
+  - `{Elasticsearch-Name}-{alias}-cert` - the certificate secrets which hold `tls.crt`, `tls.key`, and `ca.crt` for configuring the Elasticsearch database.
+  - `{Elasticsearch-Name}-config` - the default configuration secret created by the operator.
+
+## Connect with Elasticsearch Database
+
+We will use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to connect with our Elasticsearch database. Then we will use `curl` to send `HTTP` requests to check cluster health to verify that our Elasticsearch database is working well.
+
+Let's port-forward the port `9200` to local machine:
+
+```bash
+$ $ kubectl port-forward -n demo svc/es-topology 9200
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
 ```
 
-```bash
-# Get admin username & password from k8s secret
-$ kubectl get secret -n demo es-standalone-admin-cred -o jsonpath='{.data.username}' | base64 -d
-admin
-$ kubectl get secret -n demo es-standalone-admin-cred -o jsonpath='{.data.password}' | base64 -d
-V,YY1.qXxoAch9)B
+Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 
-# Check cluster health
-$ curl -XGET -k -u 'admin:V,YY1.qXxoAch9)B' "https://localhost:9200/_cluster/health?pretty"
+**Connection information:**
+
+- Address: `localhost:9200`
+- Username:
+
+  ```bash
+  $ kubectl get secret -n demo es-topology-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  admin
+  ```
+
+- Password:
+
+  ```bash
+  $ kubectl get secret -n demo es-topology-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  MaBoYQX*KAe4na(f
+  ```
+
+Now let's check the health of our Elasticsearch database.
+
+```bash
+$ curl -XGET -k -u 'admin:MaBoYQX*KAe4na(f' "https://localhost:9200/_cluster/health?pretty"
 {
-  "cluster_name" : "es-standalone",
+  "cluster_name" : "es-topology",
   "status" : "green",
   "timed_out" : false,
-  "number_of_nodes" : 1,
-  "number_of_data_nodes" : 1,
-  "active_primary_shards" : 1,
-  "active_shards" : 1,
-  "relocating_shards" : 0,
-  "initializing_shards" : 0,
-  "unassigned_shards" : 0,
-  "delayed_unassigned_shards" : 0,
-  "number_of_pending_tasks" : 0,
-  "number_of_in_flight_fetch" : 0,
-  "task_max_waiting_in_queue_millis" : 0,
-  "active_shards_percent_as_number" : 100.0
-}
-```
-
-## Create Multi-Node Combined Elasticsearch Cluster
-
-Here, we are going to create a multi-node (say `replicas: 3`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`1.12.0-opendistro`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
-
-```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: Elasticsearch
-metadata:
-  name: es-multinode
-  namespace: demo
-spec:
-  version: 1.12.0-opendistro
-  enableSSL: true
-  replicas: 3
-  storageType: Durable
-  storage:
-    storageClassName: "standard"
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  terminationPolicy: DoNotTerminate
-```
-
-Let's deploy the above example by the following command:
-
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/clustering/combined-cluster/yamls/es-multinode.yaml
-elasticsearch.kubedb.com/es-multinode created
-```
-
-Watch the bootstrap progress:
-
-```bash
-$ kubectl get elasticsearch -n demo -w
-NAME            VERSION             STATUS         AGE
-es-multinode    1.12.0-opendistro   Provisioning   18s
-es-multinode    1.12.0-opendistro   Provisioning   78s
-es-multinode    1.12.0-opendistro   Provisioning   78s
-es-multinode    1.12.0-opendistro   Provisioning   81s
-es-multinode    1.12.0-opendistro   Ready          81s
-```
-
-Hence the cluster is ready to use.
-Let's check the k8s resouces created by the operator on deployment of Elasticsearch CRO:
-
-```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-multinode'
-NAME                 READY   STATUS    RESTARTS   AGE
-pod/es-multinode-0   1/1     Running   0          6m12s
-pod/es-multinode-1   1/1     Running   0          6m7s
-pod/es-multinode-2   1/1     Running   0          6m2s
-
-NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-service/es-multinode          ClusterIP   10.96.237.120   <none>        9200/TCP   6m14s
-service/es-multinode-master   ClusterIP   None            <none>        9300/TCP   6m14s
-service/es-multinode-pods     ClusterIP   None            <none>        9200/TCP   6m15s
-
-NAME                            READY   AGE
-statefulset.apps/es-multinode   3/3     6m12s
-
-NAME                                              TYPE                       VERSION   AGE
-appbinding.appcatalog.appscode.com/es-multinode   kubedb.com/elasticsearch   7.10.0    6m12s
-
-NAME                                       TYPE                       DATA   AGE
-secret/es-multinode-admin-cert             kubernetes.io/tls          3      6m14s
-secret/es-multinode-admin-cred             kubernetes.io/basic-auth   2      6m13s
-secret/es-multinode-archiver-cert          kubernetes.io/tls          3      6m13s
-secret/es-multinode-ca-cert                kubernetes.io/tls          2      6m14s
-secret/es-multinode-config                 Opaque                     3      6m12s
-secret/es-multinode-http-cert              kubernetes.io/tls          3      6m14s
-secret/es-multinode-kibanaro-cred          kubernetes.io/basic-auth   2      6m13s
-secret/es-multinode-kibanaserver-cred      kubernetes.io/basic-auth   2      6m13s
-secret/es-multinode-logstash-cred          kubernetes.io/basic-auth   2      6m13s
-secret/es-multinode-readall-cred           kubernetes.io/basic-auth   2      6m13s
-secret/es-multinode-snapshotrestore-cred   kubernetes.io/basic-auth   2      6m13s
-secret/es-multinode-transport-cert         kubernetes.io/tls          3      6m14s
-
-NAME                                        STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-es-multinode-0   Bound    pvc-c031bd37-2266-4a0b-8d9f-313281379810   1Gi        RWO            standard       6m12s
-persistentvolumeclaim/data-es-multinode-1   Bound    pvc-e75bc8a8-15ed-4522-b0b3-252ff6c841a8   1Gi        RWO            standard       6m7s
-persistentvolumeclaim/data-es-multinode-2   Bound    pvc-6452fa80-91c6-4d71-9b93-5cff973a2625   1Gi        RWO            standard       6m2s
-
-```
-
-Connect to the Cluster:
-
-```bash
-# Port-forward the service to local machine
-$ kubectl port-forward -n demo svc/es-multinode 9200
-Forwarding from 127.0.0.1:9200 -> 9200
-Forwarding from [::1]:9200 -> 9200
-```
-
-```bash
-# Get admin username & password from k8s secret
-$ kubectl get secret -n demo es-multinode-admin-cred -o jsonpath='{.data.username}' | base64 -d
-admin
-$ kubectl get secret -n demo es-multinode-admin-cred -o jsonpath='{.data.password}' | base64 -d
-9f$A8o2pBpKL~1T8
-
-# Check cluster health
-$ curl -XGET -k -u 'admin:9f$A8o2pBpKL~1T8' "https://localhost:9200/_cluster/health?pretty"
-{
-  "cluster_name" : "es-multinode",
-  "status" : "green",
-  "timed_out" : false,
-  "number_of_nodes" : 3,
+  "number_of_nodes" : 7,
   "number_of_data_nodes" : 3,
-  "active_primary_shards" : 1,
-  "active_shards" : 3,
+  "active_primary_shards" : 6,
+  "active_shards" : 13,
   "relocating_shards" : 0,
   "initializing_shards" : 0,
   "unassigned_shards" : 0,
@@ -281,13 +455,9 @@ $ curl -XGET -k -u 'admin:9f$A8o2pBpKL~1T8' "https://localhost:9200/_cluster/hea
 TO cleanup the k8s resources created by this tutorial, run:
 
 ```bash
-# standalone cluster
-$ kubectl patch -n demo elasticsearch es-standalone -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete elasticsearch -n demo es-standalone
+$ kubectl patch -n demo elasticsearch es-topology -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 
-# multinode cluster
-$ kubectl patch -n demo elasticsearch es-multinode -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete elasticsearch -n demo es-multinode
+$ kubectl delete elasticsearch -n demo es-topology 
 
 # delete namespace
 $ kubectl delete namespace demo

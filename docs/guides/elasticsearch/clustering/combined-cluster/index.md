@@ -33,7 +33,7 @@ NAME                 STATUS   AGE
 demo                 Active   9s
 ```
 
-> Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/clustering/combined-cluster/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/clustering/combined-cluster/yamls) in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Create Standalone Elasticsearch Cluster
 
@@ -80,7 +80,7 @@ es-standalone   1.12.0-opendistro   Ready          2m20s
 ```
 
 Hence the cluster is ready to use.
-Let's check the k8s resouces created by the operator on deployment of Elasticsearch CRO:
+Let's check the k8s resources created by the operator on the deployment of Elasticsearch CRO:
 
 ```bash
 $ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-standalone'
@@ -198,7 +198,7 @@ es-multinode    1.12.0-opendistro   Ready          81s
 ```
 
 Hence the cluster is ready to use.
-Let's check the k8s resouces created by the operator on deployment of Elasticsearch CRO:
+Let's check the k8s resources created by the operator on the deployment of Elasticsearch CRO:
 
 ```bash
 $ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-multinode'

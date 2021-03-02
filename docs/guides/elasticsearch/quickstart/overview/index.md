@@ -55,7 +55,7 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 
 ## Find Available ElasticsearchVersion
 
-When you install the KubeDB operator, it registers a CRD named [ElasticsearchVersion](../../concepts/catalog/index.md). The installation process comes with a set of tested ElasticsearchVersion objects. Let's check available ElasticsearchVersions by,
+When you install the KubeDB operator, it registers a CRD named [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md). The installation process comes with a set of tested ElasticsearchVersion objects. Let's check available ElasticsearchVersions by,
 
 ```bash
 $ kubectl get elasticsearchversions
@@ -118,7 +118,7 @@ NAME                   VERSION   DB_IMAGE                                 AUTH_P
 
 Notice the `DEPRECATED` column. Here, `true` means that this ElasticsearchVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated ElasticsearchVersion.
 
-In this tutorial, we will use `7.9.1-xpack-v1` ElasticsearchVersion CR to create Elasticsearch database.
+In this tutorial, we will use `7.9.1-xpack-v1` ElasticsearchVersion CR to create an Elasticsearch cluster.
 
 > Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features. For example, we are using `7.9.1-xpack-v1` over `7.9.1-xpack`.
 
@@ -384,7 +384,7 @@ Now, our Elasticsearch cluster is accessible at `localhost:9200`.
   elastic
   ```
 
-- Password: Run following command to get *password*
+- Password:
 
   ```bash
   $ kubectl get secret -n demo es-quickstart-elastic-cred -o jsonpath='{.data.password}' | base64 -d
