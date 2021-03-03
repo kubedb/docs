@@ -53,12 +53,12 @@ aliases:
 |   7.0.x     |   &#10003;    |   &#10003;  |   &#10003;    |
 |   6.8.x     |   &#10003;    |   &#10007;  |   &#10003;    |
 
-> The listed ElasticsearchVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog) object with your custom Elasticsearch image.
+> The listed ElasticsearchVersions are tested and provided as a part of the installation process (ie. catalog chart), but you are open to create your own [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md) object with your custom Elasticsearch image.
 
 ## User Guide
 
-- [Quickstart Elasticsearch](/docs/guides/elasticsearch/quickstart/overview) with KubeDB Operator.
-- [Elasticsearch Clustering](/docs/guides/elasticsearch/clustering/combined-cluster) supported by KubeDB
+- [Quickstart Elasticsearch](/docs/guides/elasticsearch/quickstart/overview/index.md) with KubeDB Operator.
+- [Elasticsearch Clustering](/docs/guides/elasticsearch/clustering/combined-cluster/index.md) supported by KubeDB
 - [Backup & Restore Elasticsearch](/docs/guides/elasticsearch/backup/stash.md) database using Stash.
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).

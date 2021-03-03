@@ -20,7 +20,7 @@ An Elasticsearch combined cluster is a group of one or more Elasticsearch nodes 
 
 At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install the KubeDB operator in your cluster following the steps [here](/docs/setup/install/_index.md).
+Now, install the KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
