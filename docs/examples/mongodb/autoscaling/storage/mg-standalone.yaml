@@ -1,14 +1,14 @@
 apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
-  name: mgo-scheduled
+  name: mg-standalone
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: "4.2.3"
+  storageType: Durable
   storage:
-    storageClassName: "standard"
-    accessModes:
-    - ReadWriteOnce
+    storageClassName: topolvm-provisioner
     resources:
       requests:
         storage: 1Gi
+  terminationPolicy: WipeOut

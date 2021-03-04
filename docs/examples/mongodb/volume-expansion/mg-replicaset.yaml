@@ -4,8 +4,8 @@ metadata:
   name: mg-replicaset
   namespace: demo
 spec:
-  version: "3.6.8-v1"
-  replicaSet: 
+  version: "4.2.3"
+  replicaSet:
     name: "replicaset"
   replicas: 3
   storageType: Durable

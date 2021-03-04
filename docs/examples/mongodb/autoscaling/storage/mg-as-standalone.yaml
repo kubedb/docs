@@ -1,0 +1,13 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: MongoDBAutoscaler
+metadata:
+  name: mg-as
+  namespace: demo
+spec:
+  databaseRef:
+    name: mg-standalone
+  storage:
+    standalone:
+      trigger: "On"
+      usageThreshold: 60
+      scalingThreshold: 50

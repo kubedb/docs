@@ -45,7 +45,7 @@ Here, we are going to deploy a  `MongoDB` sharded database using a supported ver
 
 ### Prepare MongoDB Sharded Database
 
-Now, we are going to deploy a `MongoDB` sharded database with version `3.6.8`.
+Now, we are going to deploy a `MongoDB` sharded database with version `4.2.3`.
 
 ### Deploy MongoDB Sharded Database 
 
@@ -58,10 +58,10 @@ metadata:
   name: mg-sharding
   namespace: demo
 spec:
-  version: 3.6.8-v1
+  version: 4.2.3
   shardTopology:
     configServer:
-      replicas: 2
+      replicas: 3
       storage:
         resources:
           requests:
@@ -70,8 +70,8 @@ spec:
     mongos:
       replicas: 2
     shard:
-      replicas: 2
-      shards: 3
+      replicas: 3
+      shards: 2
       storage:
         resources:
           requests:
@@ -86,12 +86,12 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mg-sharding created
 ```
 
-Now, wait until `mg-sharding` has status `Running`. i.e,
+Now, wait until `mg-sharding` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get mg -n demo                                                            
 NAME          VERSION    STATUS    AGE
-mg-sharding   3.6.8-v1   Running   10m
+mg-sharding   4.2.3      Ready     10m
 ```
 
 ##### Verify Number of Shard and Shard Replicas
@@ -100,30 +100,29 @@ Let's check the number of shards this database from the MongoDB object and the n
 
 ```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.shard.shards'
-3
+2
 
 $ kubectl get sts -n demo                                                                 
 NAME                    READY   AGE
-mg-sharding-configsvr   2/2     23m
+mg-sharding-configsvr   3/3     23m
 mg-sharding-mongos      2/2     22m
-mg-sharding-shard0      2/2     23m
-mg-sharding-shard1      2/2     23m
-mg-sharding-shard2      2/2     23m
+mg-sharding-shard0      3/3     23m
+mg-sharding-shard1      3/3     23m
 ```
 
-So, We can see from the both output that the database has 3 shards.
+So, We can see from the both output that the database has 2 shards.
 
 Now, Let's check the number of replicas each shard has from the MongoDB object and the number of pod the statefulsets have,
 
 ```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.shard.replicas'
-2
+3
 
 $ kubectl get sts -n demo mg-sharding-shard0 -o json | jq '.spec.replicas'  
-2
+3
 ```
 
-We can see from both output that the database has 2 replicas in each shards. 
+We can see from both output that the database has 3 replicas in each shards. 
 
 Also, we can verify the number of shard from an internal mongodb command by execing into a mongos node.
 
@@ -141,38 +140,30 @@ Now let's connect to a mongos instance and run a mongodb internal command to che
 ```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "sh.status()" --quiet  
 --- Sharding Status --- 
- sharding version: {
-    "_id" : 1,
-    "minCompatibleVersion" : 5,
-    "currentVersion" : 6,
-    "clusterId" : ObjectId("5f45fadd48c42afd901e6265")
- }
- shards:
-       {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-       {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-gvr.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-       {  "_id" : "shard2",  "host" : "shard2/mg-sharding-shard2-0.mg-sharding-shard2-gvr.demo.svc.cluster.local:27017,mg-sharding-shard2-1.mg-sharding-shard2-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
- active mongoses:
-       "3.6.8" : 2
- autosplit:
-       Currently enabled: yes
- balancer:
-       Currently enabled:  yes
-       Currently running:  no
-       Failed balancer rounds in last 5 attempts:  0
-       Migration Results for the last 24 hours: 
-               No recent migrations
- databases:
-       {  "_id" : "config",  "primary" : "config",  "partitioned" : true }
-               config.system.sessions
-                       shard key: { "_id" : 1 }
-                       unique: false
-                       balancing: true
-                       chunks:
-                               shard0	1
-                       { "_id" : { "$minKey" : 1 } } -->> { "_id" : { "$maxKey" : 1 } } on : shard0 Timestamp(1, 0) 
+  sharding version: {
+  	"_id" : 1,
+  	"minCompatibleVersion" : 5,
+  	"currentVersion" : 6,
+  	"clusterId" : ObjectId("603e5a4bec470e6b4197e10b")
+  }
+  shards:
+        {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
+        {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-2.mg-sharding-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
+  active mongoses:
+        "4.2.3" : 2
+  autosplit:
+        Currently enabled: yes
+  balancer:
+        Currently enabled:  yes
+        Currently running:  no
+        Failed balancer rounds in last 5 attempts:  0
+        Migration Results for the last 24 hours: 
+                No recent migrations
+  databases:
+        {  "_id" : "config",  "primary" : "config",  "partitioned" : true }
 ```
 
-We can see from the above output that the number of shard is 3.
+We can see from the above output that the number of shard is 2.
 
 Also, we can verify the number of replicas each shard has from an internal mongodb command by execing into a shard node.
 
@@ -180,143 +171,196 @@ Now let's connect to a shard instance and run a mongodb internal command to chec
 
 ```bash
 $ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
-  [
-  	{
-  		"_id" : 0,
-  		"name" : "mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 1,
-  		"stateStr" : "PRIMARY",
-  		"uptime" : 2403,
-  		"optime" : {
-  			"ts" : Timestamp(1598424103, 1),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T06:41:43Z"),
-  		"syncingTo" : "",
-  		"syncSourceHost" : "",
-  		"syncSourceId" : -1,
-  		"infoMessage" : "",
-  		"electionTime" : Timestamp(1598421711, 1),
-  		"electionDate" : ISODate("2020-08-26T06:01:51Z"),
-  		"configVersion" : 2,
-  		"self" : true,
-  		"lastHeartbeatMessage" : ""
-  	},
-  	{
-  		"_id" : 1,
-  		"name" : "mg-sharding-shard0-1.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 2,
-  		"stateStr" : "SECONDARY",
-  		"uptime" : 2380,
-  		"optime" : {
-  			"ts" : Timestamp(1598424103, 1),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDurable" : {
-  			"ts" : Timestamp(1598424103, 1),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T06:41:43Z"),
-  		"optimeDurableDate" : ISODate("2020-08-26T06:41:43Z"),
-  		"lastHeartbeat" : ISODate("2020-08-26T06:41:52.541Z"),
-  		"lastHeartbeatRecv" : ISODate("2020-08-26T06:41:52.259Z"),
-  		"pingMs" : NumberLong(0),
-  		"lastHeartbeatMessage" : "",
-  		"syncingTo" : "mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceHost" : "mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceId" : 0,
-  		"infoMessage" : "",
-  		"configVersion" : 2
-  	}
-  ]
+[
+	{
+		"_id" : 0,
+		"name" : "mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 1,
+		"stateStr" : "PRIMARY",
+		"uptime" : 338,
+		"optime" : {
+			"ts" : Timestamp(1614699416, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDate" : ISODate("2021-03-02T15:36:56Z"),
+		"syncingTo" : "",
+		"syncSourceHost" : "",
+		"syncSourceId" : -1,
+		"infoMessage" : "",
+		"electionTime" : Timestamp(1614699092, 1),
+		"electionDate" : ISODate("2021-03-02T15:31:32Z"),
+		"configVersion" : 3,
+		"self" : true,
+		"lastHeartbeatMessage" : ""
+	},
+	{
+		"_id" : 1,
+		"name" : "mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 291,
+		"optime" : {
+			"ts" : Timestamp(1614699413, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614699413, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDate" : ISODate("2021-03-02T15:36:53Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T15:36:53Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T15:36:56.692Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T15:36:56.015Z"),
+		"pingMs" : NumberLong(0),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 0,
+		"infoMessage" : "",
+		"configVersion" : 3
+	},
+	{
+		"_id" : 2,
+		"name" : "mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 259,
+		"optime" : {
+			"ts" : Timestamp(1614699413, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614699413, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDate" : ISODate("2021-03-02T15:36:53Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T15:36:53Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T15:36:56.732Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T15:36:57.773Z"),
+		"pingMs" : NumberLong(0),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 0,
+		"infoMessage" : "",
+		"configVersion" : 3
+	}
+]
 ```
 
-We can see from the above output that the number of replica is 2.
+We can see from the above output that the number of replica is 3.
 
 ##### Verify Number of ConfigServer
 
 Let's check the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
 ```bash
-$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.configServer.replicas'                                                                                           11:02:09
-2
+$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.configServer.replicas'
+3
 
-$ kubectl get sts -n demo mg-sharding-configsvr -o json | jq '.spec.replicas'                                                                                                11:03:27
-2
+$ kubectl get sts -n demo mg-sharding-configsvr -o json | jq '.spec.replicas'
+3
 ```
 
-We can see from both command that the database has `2` replicas in the configServer. 
+We can see from both command that the database has `3` replicas in the configServer. 
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 
 ```bash
-$ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet     15:37:23
-  
-  [
-  	{
-  		"_id" : 0,
-  		"name" : "mg-sharding-configsvr-0.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 1,
-  		"stateStr" : "PRIMARY",
-  		"uptime" : 388,
-  		"optime" : {
-  			"ts" : Timestamp(1598434641, 2),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T09:37:21Z"),
-  		"syncingTo" : "",
-  		"syncSourceHost" : "",
-  		"syncSourceId" : -1,
-  		"infoMessage" : "",
-  		"electionTime" : Timestamp(1598434260, 1),
-  		"electionDate" : ISODate("2020-08-26T09:31:00Z"),
-  		"configVersion" : 2,
-  		"self" : true,
-  		"lastHeartbeatMessage" : ""
-  	},
-  	{
-  		"_id" : 1,
-  		"name" : "mg-sharding-configsvr-1.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 2,
-  		"stateStr" : "SECONDARY",
-  		"uptime" : 360,
-  		"optime" : {
-  			"ts" : Timestamp(1598434641, 2),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDurable" : {
-  			"ts" : Timestamp(1598434641, 2),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T09:37:21Z"),
-  		"optimeDurableDate" : ISODate("2020-08-26T09:37:21Z"),
-  		"lastHeartbeat" : ISODate("2020-08-26T09:37:24.731Z"),
-  		"lastHeartbeatRecv" : ISODate("2020-08-26T09:37:23.295Z"),
-  		"pingMs" : NumberLong(0),
-  		"lastHeartbeatMessage" : "",
-  		"syncingTo" : "mg-sharding-configsvr-0.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceHost" : "mg-sharding-configsvr-0.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceId" : 0,
-  		"infoMessage" : "",
-  		"configVersion" : 2
-  	}
-  ]
+$ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
+[
+	{
+		"_id" : 0,
+		"name" : "mg-sharding-configsvr-0.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 1,
+		"stateStr" : "PRIMARY",
+		"uptime" : 423,
+		"optime" : {
+			"ts" : Timestamp(1614699492, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDate" : ISODate("2021-03-02T15:38:12Z"),
+		"syncingTo" : "",
+		"syncSourceHost" : "",
+		"syncSourceId" : -1,
+		"infoMessage" : "",
+		"electionTime" : Timestamp(1614699081, 2),
+		"electionDate" : ISODate("2021-03-02T15:31:21Z"),
+		"configVersion" : 3,
+		"self" : true,
+		"lastHeartbeatMessage" : ""
+	},
+	{
+		"_id" : 1,
+		"name" : "mg-sharding-configsvr-1.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 385,
+		"optime" : {
+			"ts" : Timestamp(1614699492, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614699492, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDate" : ISODate("2021-03-02T15:38:12Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T15:38:12Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T15:38:13.573Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T15:38:12.725Z"),
+		"pingMs" : NumberLong(0),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-sharding-configsvr-0.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-configsvr-0.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 0,
+		"infoMessage" : "",
+		"configVersion" : 3
+	},
+	{
+		"_id" : 2,
+		"name" : "mg-sharding-configsvr-2.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 340,
+		"optime" : {
+			"ts" : Timestamp(1614699490, 8),
+			"t" : NumberLong(1)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614699490, 8),
+			"t" : NumberLong(1)
+		},
+		"optimeDate" : ISODate("2021-03-02T15:38:10Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T15:38:10Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T15:38:11.665Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T15:38:11.827Z"),
+		"pingMs" : NumberLong(0),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-sharding-configsvr-0.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-configsvr-0.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 0,
+		"infoMessage" : "",
+		"configVersion" : 3
+	}
+]
 ```
 
-We can see from the above output that the configServer has 2 nodes.
+We can see from the above output that the configServer has 3 nodes.
 
 ##### Verify Number of Mongos
 Let's check the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
 ```bash
-$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.mongos.replicas'                                                                                           11:02:09
+$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.mongos.replicas'
 2
 
-$ kubectl get sts -n demo mg-sharding-mongos -o json | jq '.spec.replicas'                                                                                                11:03:27
+$ kubectl get sts -n demo mg-sharding-mongos -o json | jq '.spec.replicas'
 2
 ```
 
@@ -326,29 +370,28 @@ Now let's connect to a mongodb instance and run a mongodb internal command to ch
 
 ```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "sh.status()" --quiet
- --- Sharding Status --- 
-    sharding version: {
-    	"_id" : 1,
-    	"minCompatibleVersion" : 5,
-    	"currentVersion" : 6,
-    	"clusterId" : ObjectId("5f463327bd21df369bb338bc")
-    }
-    shards:
-          {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-          {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-gvr.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-          {  "_id" : "shard2",  "host" : "shard2/mg-sharding-shard2-0.mg-sharding-shard2-gvr.demo.svc.cluster.local:27017,mg-sharding-shard2-1.mg-sharding-shard2-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-    active mongoses:
-          "3.6.8" : 2
-    autosplit:
-          Currently enabled: yes
-    balancer:
-          Currently enabled:  yes
-          Currently running:  no
-          Failed balancer rounds in last 5 attempts:  0
-          Migration Results for the last 24 hours: 
-                  No recent migrations
-    databases:
-          {  "_id" : "config",  "primary" : "config",  "partitioned" : true }
+--- Sharding Status --- 
+  sharding version: {
+  	"_id" : 1,
+  	"minCompatibleVersion" : 5,
+  	"currentVersion" : 6,
+  	"clusterId" : ObjectId("603e5a4bec470e6b4197e10b")
+  }
+  shards:
+        {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
+        {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-2.mg-sharding-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
+  active mongoses:
+        "4.2.3" : 2
+  autosplit:
+        Currently enabled: yes
+  balancer:
+        Currently enabled:  yes
+        Currently running:  no
+        Failed balancer rounds in last 5 attempts:  0
+        Migration Results for the last 24 hours: 
+                No recent migrations
+  databases:
+        {  "_id" : "config",  "primary" : "config",  "partitioned" : true }
 ```
 
 We can see from the above output that the mongos has 2 active nodes.
@@ -375,12 +418,12 @@ spec:
     name: mg-sharding
   horizontalScaling:
     shard: 
-      shards: 4
-      replicas: 3
+      shards: 3
+      replicas: 4
     mongos:
       replicas: 3
     configServer:
-      replicas: 3
+      replicas: 4
 ```
 
 Here,
@@ -425,7 +468,7 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MongoDBOpsRequest
 Metadata:
-  Creation Timestamp:  2020-09-30T05:36:41Z
+  Creation Timestamp:  2021-03-02T16:23:16Z
   Generation:          1
   Managed Fields:
     API Version:  ops.kubedb.com/v1alpha1
@@ -455,7 +498,7 @@ Metadata:
         f:type:
     Manager:      kubectl-client-side-apply
     Operation:    Update
-    Time:         2020-09-30T05:36:41Z
+    Time:         2021-03-02T16:23:16Z
     API Version:  ops.kubedb.com/v1alpha1
     Fields Type:  FieldsV1
     fieldsV1:
@@ -466,61 +509,55 @@ Metadata:
         f:phase:
     Manager:         kubedb-enterprise
     Operation:       Update
-    Time:            2020-09-30T05:45:58Z
-  Resource Version:  1889687
+    Time:            2021-03-02T16:23:16Z
+  Resource Version:  147313
   Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-hscale-up-shard
-  UID:               5dd83c5d-81e1-494d-92c3-5dcbd8ebcaf2
+  UID:               982014fc-1655-44e7-946c-859626ae0247
 Spec:
   Database Ref:
     Name:  mg-sharding
   Horizontal Scaling:
     Config Server:
-      Replicas:  3
+      Replicas:  4
     Mongos:
       Replicas:  3
     Shard:
-      Replicas:  3
-      Shards:    4
+      Replicas:  4
+      Shards:    3
   Type:          HorizontalScaling
 Status:
   Conditions:
-    Last Transition Time:  2020-09-30T05:36:41Z
+    Last Transition Time:  2021-03-02T16:23:16Z
     Message:               MongoDB ops request is horizontally scaling database
     Observed Generation:   1
     Reason:                HorizontalScaling
     Status:                True
     Type:                  HorizontalScaling
-    Last Transition Time:  2020-09-30T05:45:58Z
-    Message:               Successfully Resumed mongodb: mg-sharding
-    Observed Generation:   1
-    Reason:                HaltDatabase
-    Status:                False
-    Type:                  HaltDatabase
-    Last Transition Time:  2020-09-30T05:38:31Z
+    Last Transition Time:  2021-03-02T16:25:31Z
     Message:               Successfully Horizontally Scaled Up Shard Replicas
     Observed Generation:   1
     Reason:                ScaleUpShardReplicas
     Status:                True
     Type:                  ScaleUpShardReplicas
-    Last Transition Time:  2020-09-30T05:40:31Z
+    Last Transition Time:  2021-03-02T16:33:07Z
     Message:               Successfully Horizontally Scaled Up Shard
     Observed Generation:   1
     Reason:                ScaleUpShard
     Status:                True
     Type:                  ScaleUpShard
-    Last Transition Time:  2020-09-30T05:45:43Z
+    Last Transition Time:  2021-03-02T16:34:35Z
     Message:               Successfully Horizontally Scaled Up ConfigServer
     Observed Generation:   1
     Reason:                ScaleUpConfigServer 
     Status:                True
     Type:                  ScaleUpConfigServer 
-    Last Transition Time:  2020-09-30T05:45:58Z
+    Last Transition Time:  2021-03-02T16:36:30Z
     Message:               Successfully Horizontally Scaled Mongos
     Observed Generation:   1
     Reason:                ScaleMongos
     Status:                True
     Type:                  ScaleMongos
-    Last Transition Time:  2020-09-30T05:45:58Z
+    Last Transition Time:  2021-03-02T16:36:30Z
     Message:               Successfully Horizontally Scaled MongoDB
     Observed Generation:   1
     Reason:                Successful
@@ -529,21 +566,25 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason                Age   From                        Message
-  ----    ------                ----  ----                        -------
-  Normal  HaltDatabase         54m   KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
-  Normal  HaltDatabase         54m   KubeDB Enterprise Operator  Successfully Halted MongoDB mg-sharding in Namespace demo
-  Normal  ScaleUpShard          50m   KubeDB Enterprise Operator  Successfully Horizontally Scaled Up Shard
-  Normal  HaltDatabase         50m   KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
-  Normal  HaltDatabase         50m   KubeDB Enterprise Operator  Successfully Halted MongoDB mg-sharding in Namespace demo
-  Normal  Progressing           50m   KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-  Normal  Progressing           49m   KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-  Normal  ScaleUpShard          49m   KubeDB Enterprise Operator  Successfully Horizontally Scaled Up Shard
-  Normal  ScaleUpConfigServer   45m   KubeDB Enterprise Operator  Successfully Horizontally Scaled Up ConfigServer
-  Normal  ScaleMongos           44m   KubeDB Enterprise Operator  Successfully Horizontally Scaled Mongos
-  Normal  ResumeDatabase        44m   KubeDB Enterprise Operator  Resuming MongoDB
-  Normal  ResumeDatabase        44m   KubeDB Enterprise Operator  Successfully Resumed mongodb
-  Normal  Successful            44m   KubeDB Enterprise Operator  Successfully Horizontally Scaled Database
+  Type    Reason                Age    From                        Message
+  ----    ------                ----   ----                        -------
+  Normal  PauseDatabase         13m    KubeDB Enterprise Operator  Pausing MongoDB demo/mg-sharding
+  Normal  PauseDatabase         13m    KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-sharding
+  Normal  ScaleUpShardReplicas  11m    KubeDB Enterprise Operator  Successfully Horizontally Scaled Up Shard Replicas
+  Normal  ResumeDatabase        11m    KubeDB Enterprise Operator  Resuming MongoDB demo/mg-sharding
+  Normal  ResumeDatabase        11m    KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-sharding
+  Normal  ScaleUpShardReplicas  11m    KubeDB Enterprise Operator  Successfully Horizontally Scaled Up Shard Replicas
+  Normal  ScaleUpShardReplicas  11m    KubeDB Enterprise Operator  Successfully Horizontally Scaled Up Shard Replicas
+  Normal  Progressing           8m20s  KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
+  Normal  Progressing           4m5s   KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
+  Normal  ScaleUpShard          3m59s  KubeDB Enterprise Operator  Successfully Horizontally Scaled Up Shard
+  Normal  PauseDatabase         3m59s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-sharding
+  Normal  PauseDatabase         3m59s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-sharding
+  Normal  ScaleUpConfigServer   2m31s  KubeDB Enterprise Operator  Successfully Horizontally Scaled Up ConfigServer
+  Normal  ScaleMongos           36s    KubeDB Enterprise Operator  Successfully Horizontally Scaled Mongos
+  Normal  ResumeDatabase        36s    KubeDB Enterprise Operator  Resuming MongoDB demo/mg-sharding
+  Normal  ResumeDatabase        36s    KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-sharding
+  Normal  Successful            36s    KubeDB Enterprise Operator  Successfully Horizontally Scaled Database
 ```
 
 #### Verify Number of Shard and Shard Replicas
@@ -552,243 +593,297 @@ Now, we are going to verify the number of shards this database has from the Mong
 
 ```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.shard.shards'         
-4
+3
 
 $ kubectl get sts -n demo                                                                      
 NAME                    READY   AGE
-mg-sharding-configsvr   2/2     58m
-mg-sharding-mongos      2/2     57m
-mg-sharding-shard0      3/3     58m
-mg-sharding-shard1      3/3     58m
-mg-sharding-shard2      3/3     58m
-mg-sharding-shard3      3/3     15m
+mg-sharding-configsvr   4/4     66m
+mg-sharding-mongos      3/3     64m
+mg-sharding-shard0      4/4     66m
+mg-sharding-shard1      4/4     66m
+mg-sharding-shard2      4/4     12m
 ```
 
 Now let's connect to a mongos instance and run a mongodb internal command to check the number of shards,
 ```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "sh.status()" --quiet  
 --- Sharding Status --- 
- sharding version: {
-    "_id" : 1,
-    "minCompatibleVersion" : 5,
-    "currentVersion" : 6,
-    "clusterId" : ObjectId("5f45fadd48c42afd901e6265")
- }
- shards:
-       {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017,mg-sharding-shard0-2.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-       {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-gvr.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-gvr.demo.svc.cluster.local:27017,mg-sharding-shard1-2.mg-sharding-shard1-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-       {  "_id" : "shard2",  "host" : "shard2/mg-sharding-shard2-0.mg-sharding-shard2-gvr.demo.svc.cluster.local:27017,mg-sharding-shard2-1.mg-sharding-shard2-gvr.demo.svc.cluster.local:27017,mg-sharding-shard2-2.mg-sharding-shard2-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-       {  "_id" : "shard3",  "host" : "shard3/mg-sharding-shard3-0.mg-sharding-shard3-gvr.demo.svc.cluster.local:27017,mg-sharding-shard3-1.mg-sharding-shard3-gvr.demo.svc.cluster.local:27017,mg-sharding-shard3-2.mg-sharding-shard3-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
- active mongoses:
-       "3.6.8" : 2
- autosplit:
-       Currently enabled: yes
- balancer:
-       Currently enabled:  yes
-       Currently running:  no
-       Failed balancer rounds in last 5 attempts:  0
-       Migration Results for the last 24 hours: 
-               No recent migrations
- databases:
-       {  "_id" : "config",  "primary" : "config",  "partitioned" : true }
-               config.system.sessions
-                       shard key: { "_id" : 1 }
-                       unique: false
-                       balancing: true
-                       chunks:
-                               shard0	1
-                       { "_id" : { "$minKey" : 1 } } -->> { "_id" : { "$maxKey" : 1 } } on : shard0 Timestamp(1, 0)
+  sharding version: {
+  	"_id" : 1,
+  	"minCompatibleVersion" : 5,
+  	"currentVersion" : 6,
+  	"clusterId" : ObjectId("603e5a4bec470e6b4197e10b")
+  }
+  shards:
+        {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-3.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
+        {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-2.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-3.mg-sharding-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
+        {  "_id" : "shard2",  "host" : "shard2/mg-sharding-shard2-0.mg-sharding-shard2-pods.demo.svc.cluster.local:27017,mg-sharding-shard2-1.mg-sharding-shard2-pods.demo.svc.cluster.local:27017,mg-sharding-shard2-2.mg-sharding-shard2-pods.demo.svc.cluster.local:27017,mg-sharding-shard2-3.mg-sharding-shard2-pods.demo.svc.cluster.local:27017",  "state" : 1 }
+  active mongoses:
+        "4.2.3" : 3
+  autosplit:
+        Currently enabled: yes
+  balancer:
+        Currently enabled:  yes
+        Currently running:  no
+        Failed balancer rounds in last 5 attempts:  2
+        Last reported error:  Couldn't get a connection within the time limit
+        Time of Reported error:  Tue Mar 02 2021 16:17:53 GMT+0000 (UTC)
+        Migration Results for the last 24 hours: 
+                No recent migrations
+  databases:
+        {  "_id" : "config",  "primary" : "config",  "partitioned" : true }
+                config.system.sessions
+                        shard key: { "_id" : 1 }
+                        unique: false
+                        balancing: true
+                        chunks:
+                                shard0	1
+                        { "_id" : { "$minKey" : 1 } } -->> { "_id" : { "$maxKey" : 1 } } on : shard0 Timestamp(1, 0) 
 ```
 
-From all the above outputs we can see that the number of shards are `4`.
+From all the above outputs we can see that the number of shards are `3`.
 
 Now, we are going to verify the number of replicas each shard has from the MongoDB object, number of pods the statefulset have,
 
 ```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.shard.replicas'              
-3
+4
 
 $ kubectl get sts -n demo mg-sharding-shard0 -o json | jq '.spec.replicas'          
-3
+4
 ```
 
 Now let's connect to a shard instance and run a mongodb internal command to check the number of replicas,
 ```bash
 $ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
-  [
-  	{
-  		"_id" : 0,
-  		"name" : "mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 1,
-  		"stateStr" : "PRIMARY",
-  		"uptime" : 3907,
-  		"optime" : {
-  			"ts" : Timestamp(1598425614, 1),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T07:06:54Z"),
-  		"syncingTo" : "",
-  		"syncSourceHost" : "",
-  		"syncSourceId" : -1,
-  		"infoMessage" : "",
-  		"electionTime" : Timestamp(1598421711, 1),
-  		"electionDate" : ISODate("2020-08-26T06:01:51Z"),
-  		"configVersion" : 3,
-  		"self" : true,
-  		"lastHeartbeatMessage" : ""
-  	},
-  	{
-  		"_id" : 1,
-  		"name" : "mg-sharding-shard0-1.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 2,
-  		"stateStr" : "SECONDARY",
-  		"uptime" : 3884,
-  		"optime" : {
-  			"ts" : Timestamp(1598425614, 1),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDurable" : {
-  			"ts" : Timestamp(1598425614, 1),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T07:06:54Z"),
-  		"optimeDurableDate" : ISODate("2020-08-26T07:06:54Z"),
-  		"lastHeartbeat" : ISODate("2020-08-26T07:06:57.308Z"),
-  		"lastHeartbeatRecv" : ISODate("2020-08-26T07:06:57.383Z"),
-  		"pingMs" : NumberLong(0),
-  		"lastHeartbeatMessage" : "",
-  		"syncingTo" : "mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceHost" : "mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceId" : 0,
-  		"infoMessage" : "",
-  		"configVersion" : 3
-  	},
-  	{
-  		"_id" : 2,
-  		"name" : "mg-sharding-shard0-2.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 2,
-  		"stateStr" : "SECONDARY",
-  		"uptime" : 1173,
-  		"optime" : {
-  			"ts" : Timestamp(1598425614, 1),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDurable" : {
-  			"ts" : Timestamp(1598425614, 1),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T07:06:54Z"),
-  		"optimeDurableDate" : ISODate("2020-08-26T07:06:54Z"),
-  		"lastHeartbeat" : ISODate("2020-08-26T07:06:57.491Z"),
-  		"lastHeartbeatRecv" : ISODate("2020-08-26T07:06:56.659Z"),
-  		"pingMs" : NumberLong(0),
-  		"lastHeartbeatMessage" : "",
-  		"syncingTo" : "mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceHost" : "mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceId" : 0,
-  		"infoMessage" : "",
-  		"configVersion" : 3
-  	}
-  ]
+[
+	{
+		"_id" : 0,
+		"name" : "mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 1464,
+		"optime" : {
+			"ts" : Timestamp(1614703143, 10),
+			"t" : NumberLong(2)
+		},
+		"optimeDate" : ISODate("2021-03-02T16:39:03Z"),
+		"syncingTo" : "mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 1,
+		"infoMessage" : "",
+		"configVersion" : 4,
+		"self" : true,
+		"lastHeartbeatMessage" : ""
+	},
+	{
+		"_id" : 1,
+		"name" : "mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 1,
+		"stateStr" : "PRIMARY",
+		"uptime" : 1433,
+		"optime" : {
+			"ts" : Timestamp(1614703143, 10),
+			"t" : NumberLong(2)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614703143, 10),
+			"t" : NumberLong(2)
+		},
+		"optimeDate" : ISODate("2021-03-02T16:39:03Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T16:39:03Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T16:39:07.800Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T16:39:08.087Z"),
+		"pingMs" : NumberLong(6),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "",
+		"syncSourceHost" : "",
+		"syncSourceId" : -1,
+		"infoMessage" : "",
+		"electionTime" : Timestamp(1614701678, 2),
+		"electionDate" : ISODate("2021-03-02T16:14:38Z"),
+		"configVersion" : 4
+	},
+	{
+		"_id" : 2,
+		"name" : "mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 1433,
+		"optime" : {
+			"ts" : Timestamp(1614703143, 10),
+			"t" : NumberLong(2)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614703143, 10),
+			"t" : NumberLong(2)
+		},
+		"optimeDate" : ISODate("2021-03-02T16:39:03Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T16:39:03Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T16:39:08.575Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T16:39:08.580Z"),
+		"pingMs" : NumberLong(0),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 1,
+		"infoMessage" : "",
+		"configVersion" : 4
+	},
+	{
+		"_id" : 3,
+		"name" : "mg-sharding-shard0-3.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 905,
+		"optime" : {
+			"ts" : Timestamp(1614703143, 10),
+			"t" : NumberLong(2)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614703143, 10),
+			"t" : NumberLong(2)
+		},
+		"optimeDate" : ISODate("2021-03-02T16:39:03Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T16:39:03Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T16:39:06.683Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T16:39:07.980Z"),
+		"pingMs" : NumberLong(10),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 1,
+		"infoMessage" : "",
+		"configVersion" : 4
+	}
+]
 ```
 
-From all the above outputs we can see that the replicas of each shard has is `3`. 
+From all the above outputs we can see that the replicas of each shard has is `4`. 
 
 #### Verify Number of ConfigServer Replicas
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
 ```bash
-$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.configServer.replicas'                                                                                           11:02:09
-3
+$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.configServer.replicas'
+4
 
 $ kubectl get sts -n demo mg-sharding-configsvr -o json | jq '.spec.replicas'
-3
+4
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 ```bash
 $ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
-  [
-  	{
-  		"_id" : 0,
-  		"name" : "mg-sharding-configsvr-0.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 1,
-  		"stateStr" : "PRIMARY",
-  		"uptime" : 1058,
-  		"optime" : {
-  			"ts" : Timestamp(1598435313, 2),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T09:48:33Z"),
-  		"syncingTo" : "",
-  		"syncSourceHost" : "",
-  		"syncSourceId" : -1,
-  		"infoMessage" : "",
-  		"electionTime" : Timestamp(1598434260, 1),
-  		"electionDate" : ISODate("2020-08-26T09:31:00Z"),
-  		"configVersion" : 3,
-  		"self" : true,
-  		"lastHeartbeatMessage" : ""
-  	},
-  	{
-  		"_id" : 1,
-  		"name" : "mg-sharding-configsvr-1.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 2,
-  		"stateStr" : "SECONDARY",
-  		"uptime" : 1031,
-  		"optime" : {
-  			"ts" : Timestamp(1598435313, 2),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDurable" : {
-  			"ts" : Timestamp(1598435313, 2),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T09:48:33Z"),
-  		"optimeDurableDate" : ISODate("2020-08-26T09:48:33Z"),
-  		"lastHeartbeat" : ISODate("2020-08-26T09:48:35.250Z"),
-  		"lastHeartbeatRecv" : ISODate("2020-08-26T09:48:34.860Z"),
-  		"pingMs" : NumberLong(0),
-  		"lastHeartbeatMessage" : "",
-  		"syncingTo" : "mg-sharding-configsvr-0.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceHost" : "mg-sharding-configsvr-0.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceId" : 0,
-  		"infoMessage" : "",
-  		"configVersion" : 3
-  	},
-  	{
-  		"_id" : 2,
-  		"name" : "mg-sharding-configsvr-2.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 2,
-  		"stateStr" : "SECONDARY",
-  		"uptime" : 460,
-  		"optime" : {
-  			"ts" : Timestamp(1598435313, 2),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDurable" : {
-  			"ts" : Timestamp(1598435313, 2),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T09:48:33Z"),
-  		"optimeDurableDate" : ISODate("2020-08-26T09:48:33Z"),
-  		"lastHeartbeat" : ISODate("2020-08-26T09:48:35.304Z"),
-  		"lastHeartbeatRecv" : ISODate("2020-08-26T09:48:34.729Z"),
-  		"pingMs" : NumberLong(0),
-  		"lastHeartbeatMessage" : "",
-  		"syncingTo" : "mg-sharding-configsvr-1.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceHost" : "mg-sharding-configsvr-1.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceId" : 1,
-  		"infoMessage" : "",
-  		"configVersion" : 3
-  	}
-  ]
+[
+	{
+		"_id" : 0,
+		"name" : "mg-sharding-configsvr-0.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 1639,
+		"optime" : {
+			"ts" : Timestamp(1614703138, 2),
+			"t" : NumberLong(2)
+		},
+		"optimeDate" : ISODate("2021-03-02T16:38:58Z"),
+		"syncingTo" : "mg-sharding-configsvr-2.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-configsvr-2.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 2,
+		"infoMessage" : "",
+		"configVersion" : 4,
+		"self" : true,
+		"lastHeartbeatMessage" : ""
+	},
+	{
+		"_id" : 1,
+		"name" : "mg-sharding-configsvr-1.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 1,
+		"stateStr" : "PRIMARY",
+		"uptime" : 1623,
+		"optime" : {
+			"ts" : Timestamp(1614703138, 2),
+			"t" : NumberLong(2)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614703138, 2),
+			"t" : NumberLong(2)
+		},
+		"optimeDate" : ISODate("2021-03-02T16:38:58Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T16:38:58Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T16:38:58.979Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T16:38:59.291Z"),
+		"pingMs" : NumberLong(3),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "",
+		"syncSourceHost" : "",
+		"syncSourceId" : -1,
+		"infoMessage" : "",
+		"electionTime" : Timestamp(1614701497, 2),
+		"electionDate" : ISODate("2021-03-02T16:11:37Z"),
+		"configVersion" : 4
+	},
+	{
+		"_id" : 2,
+		"name" : "mg-sharding-configsvr-2.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 1623,
+		"optime" : {
+			"ts" : Timestamp(1614703138, 2),
+			"t" : NumberLong(2)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614703138, 2),
+			"t" : NumberLong(2)
+		},
+		"optimeDate" : ISODate("2021-03-02T16:38:58Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T16:38:58Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T16:38:58.885Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T16:39:00.188Z"),
+		"pingMs" : NumberLong(3),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-sharding-configsvr-1.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-configsvr-1.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 1,
+		"infoMessage" : "",
+		"configVersion" : 4
+	},
+	{
+		"_id" : 3,
+		"name" : "mg-sharding-configsvr-3.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 296,
+		"optime" : {
+			"ts" : Timestamp(1614703138, 2),
+			"t" : NumberLong(2)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614703138, 2),
+			"t" : NumberLong(2)
+		},
+		"optimeDate" : ISODate("2021-03-02T16:38:58Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T16:38:58Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T16:38:58.977Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T16:39:00.276Z"),
+		"pingMs" : NumberLong(1),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-sharding-configsvr-1.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-configsvr-1.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 1,
+		"infoMessage" : "",
+		"configVersion" : 4
+	}
+]
 ```
 
 From all the above outputs we can see that the replicas of the configServer is `3`. That means we have successfully scaled up the replicas of the MongoDB configServer replicas.
@@ -797,7 +892,7 @@ From all the above outputs we can see that the replicas of the configServer is `
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
 ```bash
-$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.mongos.replicas'                                                                                           11:02:09
+$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.mongos.replicas'
 3
 
 $ kubectl get sts -n demo mg-sharding-mongos -o json | jq '.spec.replicas'
@@ -807,36 +902,38 @@ $ kubectl get sts -n demo mg-sharding-mongos -o json | jq '.spec.replicas'
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 ```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "sh.status()" --quiet
-  --- Sharding Status --- 
-    sharding version: {
-    	"_id" : 1,
-    	"minCompatibleVersion" : 5,
-    	"currentVersion" : 6,
-    	"clusterId" : ObjectId("5f463327bd21df369bb338bc")
-    }
-    shards:
-          {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-          {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-gvr.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-          {  "_id" : "shard2",  "host" : "shard2/mg-sharding-shard2-0.mg-sharding-shard2-gvr.demo.svc.cluster.local:27017,mg-sharding-shard2-1.mg-sharding-shard2-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-    active mongoses:
-          "3.6.8" : 3
-    autosplit:
-          Currently enabled: yes
-    balancer:
-          Currently enabled:  yes
-          Currently running:  no
-          Failed balancer rounds in last 5 attempts:  0
-          Migration Results for the last 24 hours: 
-                  No recent migrations
-    databases:
-          {  "_id" : "config",  "primary" : "config",  "partitioned" : true }
-                  config.system.sessions
-                          shard key: { "_id" : 1 }
-                          unique: false
-                          balancing: true
-                          chunks:
-                                  shard0	1
-                          { "_id" : { "$minKey" : 1 } } -->> { "_id" : { "$maxKey" : 1 } } on : shard0 Timestamp(1, 0)
+--- Sharding Status --- 
+  sharding version: {
+  	"_id" : 1,
+  	"minCompatibleVersion" : 5,
+  	"currentVersion" : 6,
+  	"clusterId" : ObjectId("603e5a4bec470e6b4197e10b")
+  }
+  shards:
+        {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-3.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
+        {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-2.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-3.mg-sharding-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
+        {  "_id" : "shard2",  "host" : "shard2/mg-sharding-shard2-0.mg-sharding-shard2-pods.demo.svc.cluster.local:27017,mg-sharding-shard2-1.mg-sharding-shard2-pods.demo.svc.cluster.local:27017,mg-sharding-shard2-2.mg-sharding-shard2-pods.demo.svc.cluster.local:27017,mg-sharding-shard2-3.mg-sharding-shard2-pods.demo.svc.cluster.local:27017",  "state" : 1 }
+  active mongoses:
+        "4.2.3" : 3
+  autosplit:
+        Currently enabled: yes
+  balancer:
+        Currently enabled:  yes
+        Currently running:  no
+        Failed balancer rounds in last 5 attempts:  2
+        Last reported error:  Couldn't get a connection within the time limit
+        Time of Reported error:  Tue Mar 02 2021 16:17:53 GMT+0000 (UTC)
+        Migration Results for the last 24 hours: 
+                No recent migrations
+  databases:
+        {  "_id" : "config",  "primary" : "config",  "partitioned" : true }
+                config.system.sessions
+                        shard key: { "_id" : 1 }
+                        unique: false
+                        balancing: true
+                        chunks:
+                                shard0	1
+                        { "_id" : { "$minKey" : 1 } } -->> { "_id" : { "$maxKey" : 1 } } on : shard0 Timestamp(1, 0)
 ```
 
 From all the above outputs we can see that the replicas of the mongos is `3`. That means we have successfully scaled up the replicas of the MongoDB mongos replicas.
@@ -864,12 +961,12 @@ spec:
     name: mg-sharding
   horizontalScaling:
     shard: 
-      shards: 3
-      replicas: 2
+      shards: 2
+      replicas: 3
     mongos:
       replicas: 2
     configServer:
-      replicas: 2
+      replicas: 3
 ```
 
 Here,
@@ -907,138 +1004,130 @@ We can see from the above output that the `MongoDBOpsRequest` has succeeded. If 
 
 ```bash
 $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-shard                     
- Name:         mops-hscale-down-shard
- Namespace:    demo
- Labels:       <none>
- Annotations:  <none>
- API Version:  ops.kubedb.com/v1alpha1
- Kind:         MongoDBOpsRequest
- Metadata:
-   Creation Timestamp:  2020-09-30T07:03:52Z
-   Generation:          1
-   Managed Fields:
-     API Version:  ops.kubedb.com/v1alpha1
-     Fields Type:  FieldsV1
-     fieldsV1:
-       f:metadata:
-         f:annotations:
-           .:
-           f:kubectl.kubernetes.io/last-applied-configuration:
-       f:spec:
-         .:
-         f:databaseRef:
-           .:
-           f:name:
-         f:horizontalScaling:
-           .:
-           f:configServer:
-             .:
-             f:replicas:
-           f:mongos:
-             .:
-             f:replicas:
-           f:shard:
-             .:
-             f:replicas:
-             f:shards:
-         f:type:
-     Manager:      kubectl-client-side-apply
-     Operation:    Update
-     Time:         2020-09-30T07:03:52Z
-     API Version:  ops.kubedb.com/v1alpha1
-     Fields Type:  FieldsV1
-     fieldsV1:
-       f:status:
-         .:
-         f:conditions:
-         f:observedGeneration:
-         f:phase:
-     Manager:         kubedb-enterprise
-     Operation:       Update
-     Time:            2020-09-30T07:05:34Z
-   Resource Version:  1908351
-   Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-hscale-down-shard
-   UID:               8edc1db9-a537-4bae-ac93-d1f5e9fcb758
- Spec:
-   Database Ref:
-     Name:  mg-sharding
-   Horizontal Scaling:
-     Config Server:
-       Replicas:  2
-     Mongos:
-       Replicas:  2
-     Shard:
-       Replicas:  2
-       Shards:    3
-   Type:          HorizontalScaling
- Status:
-   Conditions:
-     Last Transition Time:  2020-09-30T07:03:52Z
-     Message:               MongoDB ops request is horizontally scaling database
-     Observed Generation:   1
-     Reason:                HorizontalScaling
-     Status:                True
-     Type:                  HorizontalScaling
-     Last Transition Time:  2020-09-30T07:05:34Z
-     Message:               Successfully halted mongodb: mg-sharding
-     Observed Generation:   1
-     Reason:                HaltDatabase
-     Status:                True
-     Type:                  HaltDatabase
-     Last Transition Time:  2020-09-30T07:04:42Z
-     Message:               Successfully Horizontally Scaled Down Shard Replicas
-     Observed Generation:   1
-     Reason:                ScaleDownShardReplicas
-     Status:                True
-     Type:                  ScaleDownShardReplicas
-     Last Transition Time:  2020-09-30T07:04:42Z
-     Message:               Successfully started mongodb load balancer
-     Observed Generation:   1
-     Reason:                StartingBalancer
-     Status:                True
-     Type:                  StartingBalancer
-     Last Transition Time:  2020-09-30T07:05:04Z
-     Message:               Successfully Horizontally Scaled Down Shard
-     Observed Generation:   1
-     Reason:                ScaleDownShard
-     Status:                True
-     Type:                  ScaleDownShard
-     Last Transition Time:  2020-09-30T07:05:14Z
-     Message:               Successfully Horizontally Scaled Down ConfigServer
-     Observed Generation:   1
-     Reason:                ScaleDownConfigServer 
-     Status:                True
-     Type:                  ScaleDownConfigServer 
-     Last Transition Time:  2020-09-30T07:05:34Z
-     Message:               Successfully Horizontally Scaled Mongos
-     Observed Generation:   1
-     Reason:                ScaleMongos
-     Status:                True
-     Type:                  ScaleMongos
-     Last Transition Time:  2020-09-30T07:05:34Z
-     Message:               Successfully Horizontally Scaled MongoDB
-     Observed Generation:   1
-     Reason:                Successful
-     Status:                True
-     Type:                  Successful
-   Observed Generation:     1
-   Phase:                   Successful
- Events:
-   Type    Reason                  Age    From                        Message
-   ----    ------                  ----   ----                        -------
-   Normal  HaltDatabase           2m17s  KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
-   Normal  HaltDatabase           2m17s  KubeDB Enterprise Operator  Successfully Halted MongoDB mg-sharding in Namespace demo
-   Normal  ScaleDownShardReplicas  87s    KubeDB Enterprise Operator  Successfully Horizontally Scaled Down Shard Replicas
-   Normal  StartingBalancer        87s    KubeDB Enterprise Operator  Starting Balancer
-   Normal  StartingBalancer        87s    KubeDB Enterprise Operator  Successfully Started Balancer
-   Normal  ScaleDownShard          65s    KubeDB Enterprise Operator  Successfully Horizontally Scaled Down Shard
-   Normal  ScaleDownConfigServer   55s    KubeDB Enterprise Operator  Successfully Horizontally Scaled Down ConfigServer
-   Normal  ScaleMongos             35s    KubeDB Enterprise Operator  Successfully Horizontally Scaled Mongos
-   Normal  ResumeDatabase          35s    KubeDB Enterprise Operator  Resuming MongoDB
-   Normal  ResumeDatabase          35s    KubeDB Enterprise Operator  Successfully Resumed mongodb
-   Normal  Successful              35s    KubeDB Enterprise Operator  Successfully Horizontally Scaled Database
-   Normal  HaltDatabase           35s    KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
-   Normal  HaltDatabase           35s    KubeDB Enterprise Operator  Successfully Halted MongoDB mg-sharding in Namespace demo
+Name:         mops-hscale-down-shard
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         MongoDBOpsRequest
+Metadata:
+  Creation Timestamp:  2021-03-02T16:41:11Z
+  Generation:          1
+  Managed Fields:
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:databaseRef:
+          .:
+          f:name:
+        f:horizontalScaling:
+          .:
+          f:configServer:
+            .:
+            f:replicas:
+          f:mongos:
+            .:
+            f:replicas:
+          f:shard:
+            .:
+            f:replicas:
+            f:shards:
+        f:type:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2021-03-02T16:41:11Z
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:observedGeneration:
+        f:phase:
+    Manager:         kubedb-enterprise
+    Operation:       Update
+    Time:            2021-03-02T16:41:11Z
+  Resource Version:  149077
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-hscale-down-shard
+  UID:               0f83c457-9498-4144-a397-226141851751
+Spec:
+  Database Ref:
+    Name:  mg-sharding
+  Horizontal Scaling:
+    Config Server:
+      Replicas:  3
+    Mongos:
+      Replicas:  2
+    Shard:
+      Replicas:  3
+      Shards:    2
+  Type:          HorizontalScaling
+Status:
+  Conditions:
+    Last Transition Time:  2021-03-02T16:41:11Z
+    Message:               MongoDB ops request is horizontally scaling database
+    Observed Generation:   1
+    Reason:                HorizontalScaling
+    Status:                True
+    Type:                  HorizontalScaling
+    Last Transition Time:  2021-03-02T16:42:11Z
+    Message:               Successfully Horizontally Scaled Down Shard Replicas
+    Observed Generation:   1
+    Reason:                ScaleDownShardReplicas
+    Status:                True
+    Type:                  ScaleDownShardReplicas
+    Last Transition Time:  2021-03-02T16:42:12Z
+    Message:               Successfully started mongodb load balancer
+    Observed Generation:   1
+    Reason:                StartingBalancer
+    Status:                True
+    Type:                  StartingBalancer
+    Last Transition Time:  2021-03-02T16:43:03Z
+    Message:               Successfully Horizontally Scaled Down Shard
+    Observed Generation:   1
+    Reason:                ScaleDownShard
+    Status:                True
+    Type:                  ScaleDownShard
+    Last Transition Time:  2021-03-02T16:43:24Z
+    Message:               Successfully Horizontally Scaled Down ConfigServer
+    Observed Generation:   1
+    Reason:                ScaleDownConfigServer 
+    Status:                True
+    Type:                  ScaleDownConfigServer 
+    Last Transition Time:  2021-03-02T16:43:34Z
+    Message:               Successfully Horizontally Scaled Mongos
+    Observed Generation:   1
+    Reason:                ScaleMongos
+    Status:                True
+    Type:                  ScaleMongos
+    Last Transition Time:  2021-03-02T16:43:34Z
+    Message:               Successfully Horizontally Scaled MongoDB
+    Observed Generation:   1
+    Reason:                Successful
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     1
+  Phase:                   Successful
+Events:
+  Type    Reason                  Age    From                        Message
+  ----    ------                  ----   ----                        -------
+  Normal  PauseDatabase           6m29s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-sharding
+  Normal  PauseDatabase           6m29s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-sharding
+  Normal  ScaleDownShardReplicas  5m29s  KubeDB Enterprise Operator  Successfully Horizontally Scaled Down Shard Replicas
+  Normal  StartingBalancer        5m29s  KubeDB Enterprise Operator  Starting Balancer
+  Normal  StartingBalancer        5m28s  KubeDB Enterprise Operator  Successfully Started Balancer
+  Normal  ScaleDownShard          4m37s  KubeDB Enterprise Operator  Successfully Horizontally Scaled Down Shard
+  Normal  ScaleDownConfigServer   4m16s  KubeDB Enterprise Operator  Successfully Horizontally Scaled Down ConfigServer
+  Normal  ScaleMongos             4m6s   KubeDB Enterprise Operator  Successfully Horizontally Scaled Mongos
+  Normal  ResumeDatabase          4m6s   KubeDB Enterprise Operator  Resuming MongoDB demo/mg-sharding
+  Normal  ResumeDatabase          4m6s   KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-sharding
+  Normal  Successful              4m6s   KubeDB Enterprise Operator  Successfully Horizontally Scaled Database
 ```
 
 ##### Verify Number of Shard and Shard Replicas
@@ -1047,15 +1136,14 @@ Now, we are going to verify the number of shards this database has from the Mong
 
 ```bash
 $ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.shard.shards'     
-3
+2
 
 $ kubectl get sts -n demo                                                                      
 NAME                    READY   AGE
-mg-sharding-configsvr   2/2     78m
-mg-sharding-mongos      2/2     77m
-mg-sharding-shard0      2/2     78m
-mg-sharding-shard1      2/2     78m
-mg-sharding-shard2      2/2     78m
+mg-sharding-configsvr   3/3     77m
+mg-sharding-mongos      2/2     75m
+mg-sharding-shard0      3/3     77m
+mg-sharding-shard1      3/3     77m
 ```
 
 Now let's connect to a mongos instance and run a mongodb internal command to check the number of shards,
@@ -1066,20 +1154,21 @@ $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMF
   	"_id" : 1,
   	"minCompatibleVersion" : 5,
   	"currentVersion" : 6,
-  	"clusterId" : ObjectId("5f45fadd48c42afd901e6265")
+  	"clusterId" : ObjectId("603e5a4bec470e6b4197e10b")
   }
   shards:
-        {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-        {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-gvr.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-        {  "_id" : "shard2",  "host" : "shard2/mg-sharding-shard2-0.mg-sharding-shard2-gvr.demo.svc.cluster.local:27017,mg-sharding-shard2-1.mg-sharding-shard2-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
+        {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
+        {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-2.mg-sharding-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "3.6.8" : 2
+        "4.2.3" : 2
   autosplit:
         Currently enabled: yes
   balancer:
         Currently enabled:  yes
         Currently running:  no
-        Failed balancer rounds in last 5 attempts:  0
+        Failed balancer rounds in last 5 attempts:  2
+        Last reported error:  Couldn't get a connection within the time limit
+        Time of Reported error:  Tue Mar 02 2021 16:17:53 GMT+0000 (UTC)
         Migration Results for the last 24 hours: 
                 No recent migrations
   databases:
@@ -1090,85 +1179,112 @@ $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMF
                         balancing: true
                         chunks:
                                 shard0	1
-                        { "_id" : { "$minKey" : 1 } } -->> { "_id" : { "$maxKey" : 1 } } on : shard0 Timestamp(1, 0)
+                        { "_id" : { "$minKey" : 1 } } -->> { "_id" : { "$maxKey" : 1 } } on : shard0 Timestamp(1, 0) 
 ```
 
-From all the above outputs we can see that the number of shards are `3`.
+From all the above outputs we can see that the number of shards are `2`.
 
 Now, we are going to verify the number of replicas each shard has from the MongoDB object, number of pods the statefulset have,
 
 ```bash
-$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.shard.replicas'                                                                            13:05:25
-2
+$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.shard.replicas'
+3
 
-$ kubectl get sts -n demo mg-sharding-shard0 -o json | jq '.spec.replicas'                                                                                           13:05:30
-2
+$ kubectl get sts -n demo mg-sharding-shard0 -o json | jq '.spec.replicas'
+3
 ```
 
 Now let's connect to a shard instance and run a mongodb internal command to check the number of replicas,
 ```bash
-$ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet        13:06:31
-  [
-  	{
-  		"_id" : 0,
-  		"name" : "mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 1,
-  		"stateStr" : "PRIMARY",
-  		"uptime" : 4784,
-  		"optime" : {
-  			"ts" : Timestamp(1598426494, 1),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T07:21:34Z"),
-  		"syncingTo" : "",
-  		"syncSourceHost" : "",
-  		"syncSourceId" : -1,
-  		"infoMessage" : "",
-  		"electionTime" : Timestamp(1598421711, 1),
-  		"electionDate" : ISODate("2020-08-26T06:01:51Z"),
-  		"configVersion" : 4,
-  		"self" : true,
-  		"lastHeartbeatMessage" : ""
-  	},
-  	{
-  		"_id" : 1,
-  		"name" : "mg-sharding-shard0-1.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 2,
-  		"stateStr" : "SECONDARY",
-  		"uptime" : 4761,
-  		"optime" : {
-  			"ts" : Timestamp(1598426494, 1),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDurable" : {
-  			"ts" : Timestamp(1598426494, 1),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T07:21:34Z"),
-  		"optimeDurableDate" : ISODate("2020-08-26T07:21:34Z"),
-  		"lastHeartbeat" : ISODate("2020-08-26T07:21:34.403Z"),
-  		"lastHeartbeatRecv" : ISODate("2020-08-26T07:21:34.383Z"),
-  		"pingMs" : NumberLong(0),
-  		"lastHeartbeatMessage" : "",
-  		"syncingTo" : "mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceHost" : "mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceId" : 0,
-  		"infoMessage" : "",
-  		"configVersion" : 4
-  	}
-  ]
+$ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p xBC-EwMFivFCgUlK --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
+[
+	{
+		"_id" : 0,
+		"name" : "mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 2096,
+		"optime" : {
+			"ts" : Timestamp(1614703771, 1),
+			"t" : NumberLong(2)
+		},
+		"optimeDate" : ISODate("2021-03-02T16:49:31Z"),
+		"syncingTo" : "mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 2,
+		"infoMessage" : "",
+		"configVersion" : 5,
+		"self" : true,
+		"lastHeartbeatMessage" : ""
+	},
+	{
+		"_id" : 1,
+		"name" : "mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 1,
+		"stateStr" : "PRIMARY",
+		"uptime" : 2065,
+		"optime" : {
+			"ts" : Timestamp(1614703771, 1),
+			"t" : NumberLong(2)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614703771, 1),
+			"t" : NumberLong(2)
+		},
+		"optimeDate" : ISODate("2021-03-02T16:49:31Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T16:49:31Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T16:49:39.092Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T16:49:40.074Z"),
+		"pingMs" : NumberLong(18),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "",
+		"syncSourceHost" : "",
+		"syncSourceId" : -1,
+		"infoMessage" : "",
+		"electionTime" : Timestamp(1614701678, 2),
+		"electionDate" : ISODate("2021-03-02T16:14:38Z"),
+		"configVersion" : 5
+	},
+	{
+		"_id" : 2,
+		"name" : "mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 2065,
+		"optime" : {
+			"ts" : Timestamp(1614703771, 1),
+			"t" : NumberLong(2)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614703771, 1),
+			"t" : NumberLong(2)
+		},
+		"optimeDate" : ISODate("2021-03-02T16:49:31Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T16:49:31Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T16:49:38.712Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T16:49:39.885Z"),
+		"pingMs" : NumberLong(4),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 1,
+		"infoMessage" : "",
+		"configVersion" : 5
+	}
+]
 ```
 
-From all the above outputs we can see that the replicas of each shard has is `2`. 
+From all the above outputs we can see that the replicas of each shard has is `3`. 
 
 ##### Verify Number of ConfigServer Replicas
 
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
 ```bash
-$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.configServer.replicas'                                                                                           11:02:09
+$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.configServer.replicas'
 3
 
 $ kubectl get sts -n demo mg-sharding-configsvr -o json | jq '.spec.replicas'
@@ -1181,64 +1297,91 @@ $ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p xBC-E
 [
 	{
 		"_id" : 0,
-		"name" : "mg-sharding-configsvr-0.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
+		"name" : "mg-sharding-configsvr-0.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
 		"health" : 1,
-		"state" : 1,
-		"stateStr" : "PRIMARY",
-		"uptime" : 1316,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 2345,
 		"optime" : {
-			"ts" : Timestamp(1598435569, 1),
+			"ts" : Timestamp(1614703841, 1),
 			"t" : NumberLong(2)
 		},
-		"optimeDate" : ISODate("2020-08-26T09:52:49Z"),
-		"syncingTo" : "",
-		"syncSourceHost" : "",
-		"syncSourceId" : -1,
+		"optimeDate" : ISODate("2021-03-02T16:50:41Z"),
+		"syncingTo" : "mg-sharding-configsvr-1.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-configsvr-1.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 1,
 		"infoMessage" : "",
-		"electionTime" : Timestamp(1598434260, 1),
-		"electionDate" : ISODate("2020-08-26T09:31:00Z"),
-		"configVersion" : 4,
+		"configVersion" : 5,
 		"self" : true,
 		"lastHeartbeatMessage" : ""
 	},
 	{
 		"_id" : 1,
-		"name" : "mg-sharding-configsvr-1.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
+		"name" : "mg-sharding-configsvr-1.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
 		"health" : 1,
-		"state" : 2,
-		"stateStr" : "SECONDARY",
-		"uptime" : 1288,
+		"state" : 1,
+		"stateStr" : "PRIMARY",
+		"uptime" : 2329,
 		"optime" : {
-			"ts" : Timestamp(1598435569, 1),
+			"ts" : Timestamp(1614703841, 1),
 			"t" : NumberLong(2)
 		},
 		"optimeDurable" : {
-			"ts" : Timestamp(1598435569, 1),
+			"ts" : Timestamp(1614703841, 1),
 			"t" : NumberLong(2)
 		},
-		"optimeDate" : ISODate("2020-08-26T09:52:49Z"),
-		"optimeDurableDate" : ISODate("2020-08-26T09:52:49Z"),
-		"lastHeartbeat" : ISODate("2020-08-26T09:52:52.348Z"),
-		"lastHeartbeatRecv" : ISODate("2020-08-26T09:52:52.347Z"),
+		"optimeDate" : ISODate("2021-03-02T16:50:41Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T16:50:41Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T16:50:45.874Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T16:50:44.194Z"),
 		"pingMs" : NumberLong(0),
 		"lastHeartbeatMessage" : "",
-		"syncingTo" : "mg-sharding-configsvr-0.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
-		"syncSourceHost" : "mg-sharding-configsvr-0.mg-sharding-configsvr-gvr.demo.svc.cluster.local:27017",
-		"syncSourceId" : 0,
+		"syncingTo" : "",
+		"syncSourceHost" : "",
+		"syncSourceId" : -1,
 		"infoMessage" : "",
-		"configVersion" : 4
+		"electionTime" : Timestamp(1614701497, 2),
+		"electionDate" : ISODate("2021-03-02T16:11:37Z"),
+		"configVersion" : 5
+	},
+	{
+		"_id" : 2,
+		"name" : "mg-sharding-configsvr-2.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 2329,
+		"optime" : {
+			"ts" : Timestamp(1614703841, 1),
+			"t" : NumberLong(2)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614703841, 1),
+			"t" : NumberLong(2)
+		},
+		"optimeDate" : ISODate("2021-03-02T16:50:41Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T16:50:41Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T16:50:45.778Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T16:50:46.091Z"),
+		"pingMs" : NumberLong(1),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-sharding-configsvr-1.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-sharding-configsvr-1.mg-sharding-configsvr-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 1,
+		"infoMessage" : "",
+		"configVersion" : 5
 	}
 ]
 ```
 
-From all the above outputs we can see that the replicas of the configServer is `2`. That means we have successfully scaled down the replicas of the MongoDB configServer replicas.
+From all the above outputs we can see that the replicas of the configServer is `3`. That means we have successfully scaled down the replicas of the MongoDB configServer replicas.
 
 ##### Verify Number of Mongos Replicas
 
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
 ```bash
-$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.mongos.replicas'                                                                                           11:02:09
+$ kubectl get mongodb -n demo mg-sharding -o json | jq '.spec.shardTopology.mongos.replicas'
 2
 
 $ kubectl get sts -n demo mg-sharding-mongos -o json | jq '.spec.replicas'
@@ -1253,20 +1396,21 @@ $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p xBC-EwMF
   	"_id" : 1,
   	"minCompatibleVersion" : 5,
   	"currentVersion" : 6,
-  	"clusterId" : ObjectId("5f463327bd21df369bb338bc")
+  	"clusterId" : ObjectId("603e5a4bec470e6b4197e10b")
   }
   shards:
-        {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-        {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-gvr.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
-        {  "_id" : "shard2",  "host" : "shard2/mg-sharding-shard2-0.mg-sharding-shard2-gvr.demo.svc.cluster.local:27017,mg-sharding-shard2-1.mg-sharding-shard2-gvr.demo.svc.cluster.local:27017",  "state" : 1 }
+        {  "_id" : "shard0",  "host" : "shard0/mg-sharding-shard0-0.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-1.mg-sharding-shard0-pods.demo.svc.cluster.local:27017,mg-sharding-shard0-2.mg-sharding-shard0-pods.demo.svc.cluster.local:27017",  "state" : 1 }
+        {  "_id" : "shard1",  "host" : "shard1/mg-sharding-shard1-0.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-1.mg-sharding-shard1-pods.demo.svc.cluster.local:27017,mg-sharding-shard1-2.mg-sharding-shard1-pods.demo.svc.cluster.local:27017",  "state" : 1 }
   active mongoses:
-        "3.6.8" : 2
+        "4.2.3" : 2
   autosplit:
         Currently enabled: yes
   balancer:
         Currently enabled:  yes
         Currently running:  no
-        Failed balancer rounds in last 5 attempts:  0
+        Failed balancer rounds in last 5 attempts:  2
+        Last reported error:  Couldn't get a connection within the time limit
+        Time of Reported error:  Tue Mar 02 2021 16:17:53 GMT+0000 (UTC)
         Migration Results for the last 24 hours: 
                 No recent migrations
   databases:

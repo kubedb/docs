@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MongoDB
+metadata:
+  name: mg-standalone
+  namespace: demo
+spec:
+  version: "4.2.3"
+  storageType: Durable
+  storage:
+    resources:
+      requests:
+        storage: 1Gi
+  podTemplate:
+    spec:
+      resources:
+        requests:
+          cpu: "200m"
+          memory: "300Mi"
+        limits:
+          cpu: "200m"
+          memory: "300Mi"
+  terminationPolicy: WipeOut

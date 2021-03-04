@@ -10,22 +10,22 @@ spec:
   verticalScaling:
     shard:
       requests:
-        memory: "150Mi"
-        cpu: "0.1"
+        memory: "1100Mi"
+        cpu: "0.55"
       limits:
-        memory: "250Mi"
-        cpu: "0.2"
+        memory: "1100Mi"
+        cpu: "0.55"
     configServer:
       requests:
-        memory: "150Mi"
-        cpu: "0.1"
+        memory: "1100Mi"
+        cpu: "0.55"
       limits:
-        memory: "250Mi"
-        cpu: "0.2"
+        memory: "1100Mi"
+        cpu: "0.55"
     mongos:
       requests:
-        memory: "150Mi"
-        cpu: "0.1"
+        memory: "1100Mi"
+        cpu: "0.55"
       limits:
-        memory: "250Mi"
-        cpu: "0.2"
+        memory: "1100Mi"
+        cpu: "0.55"

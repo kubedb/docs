@@ -124,7 +124,6 @@ subjects:
 - kind: ServiceAccount
   name: my-custom-serviceaccount
   namespace: demo
-
 ```
 
 Now, create a MongoDB crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
@@ -143,7 +142,7 @@ metadata:
   name: quick-mongodb
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: "4.2.3"
   storageType: Durable
   podTemplate:
       spec:
@@ -156,7 +155,6 @@ spec:
       requests:
         storage: 1Gi
   terminationPolicy: DoNotTerminate
-
 ```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, deployment, statefulsets, services, secret etc. If everything goes well, we should see that a pod with the name `quick-mongodb-0` has been created.
@@ -165,8 +163,8 @@ Check that the statefulset's pod is running
 
 ```bash
 $ kubectl get pod -n demo quick-mongodb-0
-NAME                READY     STATUS    RESTARTS   AGE
-quick-mongodb-0   1/1       Running   0          14m
+NAME              READY   STATUS    RESTARTS   AGE
+quick-mongodb-0   1/1     Running   0          28s
 ```
 
 Check the pod's log to see if the database is ready
@@ -208,7 +206,7 @@ metadata:
   name: minute-mongodb
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: "4.2.3"
   storageType: Durable
   podTemplate:
       spec:
@@ -221,7 +219,6 @@ spec:
       requests:
         storage: 1Gi
   terminationPolicy: DoNotTerminate
-
 ```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, deployment, services, secret etc. If everything goes well, we should see that a pod with the name `minute-mongodb-0` has been created.
@@ -230,8 +227,8 @@ Check that the statefulset's pod is running
 
 ```bash
 $ kubectl get pod -n demo minute-mongodb-0
-NAME                READY     STATUS    RESTARTS   AGE
-minute-mongodb-0   1/1       Running   0          14m
+NAME                READY   STATUS    RESTARTS   AGE
+minute-mongodb-0    1/1     Running   0          50s
 ```
 
 Check the pod's log to see if the database is ready

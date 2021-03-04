@@ -1,8 +1,18 @@
-apiVersion: v1
-kind: Secret
+apiVersion: kubedb.com/v1alpha2
+kind: MongoDB
 metadata:
- name: myregistrykey
- namespace: demo
-data:
- .dockerconfigjson: <base-64-encoded-json-here>
-type: kubernetes.io/dockerconfigjson
+  name: mgo-pvt-reg
+  namespace: demo
+spec:
+  version: 4.2.3
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  podTemplate:
+    spec:
+      imagePullSecrets:
+      - name: myregistrykey

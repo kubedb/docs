@@ -8,10 +8,10 @@ spec:
   databaseRef:
     name: mg-sharding
   horizontalScaling:
-    shard: 
-      shards: 3
-      replicas: 2
+    shard:
+      shards: 2
+      replicas: 3
     mongos:
       replicas: 2
     configServer:
-      replicas: 2
+      replicas: 3

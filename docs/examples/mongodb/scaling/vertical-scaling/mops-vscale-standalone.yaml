@@ -10,8 +10,8 @@ spec:
   verticalScaling:
     standalone:
       requests:
-        memory: "150Mi"
-        cpu: "0.1"
+        memory: "2Gi"
+        cpu: "1"
       limits:
-        memory: "250Mi"
-        cpu: "0.2"
+        memory: "2Gi"
+        cpu: "1"

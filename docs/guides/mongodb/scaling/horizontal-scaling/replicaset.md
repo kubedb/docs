@@ -45,7 +45,7 @@ Here, we are going to deploy a  `MongoDB` replicaset using a supported version b
 
 ### Prepare MongoDB Replicaset Database
 
-Now, we are going to deploy a `MongoDB` replicaset database with version `3.6.8`.
+Now, we are going to deploy a `MongoDB` replicaset database with version `4.2.3`.
 
 ### Deploy MongoDB replicaset 
 
@@ -58,7 +58,7 @@ metadata:
   name: mg-replicaset
   namespace: demo
 spec:
-  version: "3.6.8-v1"
+  version: "4.2.3"
   replicaSet: 
     name: "replicaset"
   replicas: 3
@@ -79,21 +79,21 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mg-replicaset created
 ```
 
-Now, wait until `mg-replicaset` has status `Running`. i.e,
+Now, wait until `mg-replicaset` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo                                                                                                                                             20:05:47
-  NAME            VERSION    STATUS    AGE
-  mg-replicaset   3.6.8-v1   Running   2m36s
+$ kubectl get mg -n demo
+NAME            VERSION   STATUS    AGE
+mg-replicaset   4.2.3     Ready     2m36s
 ```
 
 Let's check the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
 ```bash
-$ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'                                                                                            11:02:09
+$ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'
 3
 
-$ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.replicas'                                                                                                11:03:27
+$ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.replicas'
 3
 ```
 
@@ -103,10 +103,10 @@ Also, we can verify the replicas of the replicaset from an internal mongodb comm
 
 First we need to get the username and password to connect to a mongodb instance,
 ```bash
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\username}' | base64 -d                                                                         11:09:51
+$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\password}' | base64 -d                                                                         11:10:44
+$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\password}' | base64 -d
 nrKuxni0wDSMrgwy
 ```
 
@@ -115,82 +115,82 @@ Now let's connect to a mongodb instance and run a mongodb internal command to ch
 ```bash
 $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
 [
-    {
-        "_id" : 0,
-        "name" : "mg-replicaset-0.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-        "health" : 1,
-        "state" : 1,
-        "stateStr" : "PRIMARY",
-        "uptime" : 631,
-        "optime" : {
-            "ts" : Timestamp(1598418585, 1),
-            "t" : NumberLong(2)
-        },
-        "optimeDate" : ISODate("2020-08-26T05:09:45Z"),
-        "syncingTo" : "",
-        "syncSourceHost" : "",
-        "syncSourceId" : -1,
-        "infoMessage" : "",
-        "electionTime" : Timestamp(1598417963, 1),
-        "electionDate" : ISODate("2020-08-26T04:59:23Z"),
-        "configVersion" : 3,
-        "self" : true,
-        "lastHeartbeatMessage" : ""
-    },
-    {
-        "_id" : 1,
-        "name" : "mg-replicaset-1.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-        "health" : 1,
-        "state" : 2,
-        "stateStr" : "SECONDARY",
-        "uptime" : 606,
-        "optime" : {
-            "ts" : Timestamp(1598418585, 1),
-            "t" : NumberLong(2)
-        },
-        "optimeDurable" : {
-            "ts" : Timestamp(1598418585, 1),
-            "t" : NumberLong(2)
-        },
-        "optimeDate" : ISODate("2020-08-26T05:09:45Z"),
-        "optimeDurableDate" : ISODate("2020-08-26T05:09:45Z"),
-        "lastHeartbeat" : ISODate("2020-08-26T05:09:49.489Z"),
-        "lastHeartbeatRecv" : ISODate("2020-08-26T05:09:50.484Z"),
-        "pingMs" : NumberLong(0),
-        "lastHeartbeatMessage" : "",
-        "syncingTo" : "mg-replicaset-0.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-        "syncSourceHost" : "mg-replicaset-0.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-        "syncSourceId" : 0,
-        "infoMessage" : "",
-        "configVersion" : 3
-    },
-    {
-        "_id" : 2,
-        "name" : "mg-replicaset-2.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-        "health" : 1,
-        "state" : 2,
-        "stateStr" : "SECONDARY",
-        "uptime" : 590,
-        "optime" : {
-            "ts" : Timestamp(1598418585, 1),
-            "t" : NumberLong(2)
-        },
-        "optimeDurable" : {
-            "ts" : Timestamp(1598418585, 1),
-            "t" : NumberLong(2)
-        },
-        "optimeDate" : ISODate("2020-08-26T05:09:45Z"),
-        "optimeDurableDate" : ISODate("2020-08-26T05:09:45Z"),
-        "lastHeartbeat" : ISODate("2020-08-26T05:09:49.539Z"),
-        "lastHeartbeatRecv" : ISODate("2020-08-26T05:09:50.330Z"),
-        "pingMs" : NumberLong(0),
-        "lastHeartbeatMessage" : "",
-        "syncingTo" : "mg-replicaset-1.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-        "syncSourceHost" : "mg-replicaset-1.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-        "syncSourceId" : 1,
-        "infoMessage" : "",
-        "configVersion" : 3
-    }
+	{
+		"_id" : 0,
+		"name" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 1,
+		"stateStr" : "PRIMARY",
+		"uptime" : 171,
+		"optime" : {
+			"ts" : Timestamp(1614698544, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDate" : ISODate("2021-03-02T15:22:24Z"),
+		"syncingTo" : "",
+		"syncSourceHost" : "",
+		"syncSourceId" : -1,
+		"infoMessage" : "",
+		"electionTime" : Timestamp(1614698393, 2),
+		"electionDate" : ISODate("2021-03-02T15:19:53Z"),
+		"configVersion" : 3,
+		"self" : true,
+		"lastHeartbeatMessage" : ""
+	},
+	{
+		"_id" : 1,
+		"name" : "mg-replicaset-1.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 128,
+		"optime" : {
+			"ts" : Timestamp(1614698544, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614698544, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDate" : ISODate("2021-03-02T15:22:24Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T15:22:24Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T15:22:32.411Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T15:22:31.543Z"),
+		"pingMs" : NumberLong(0),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 0,
+		"infoMessage" : "",
+		"configVersion" : 3
+	},
+	{
+		"_id" : 2,
+		"name" : "mg-replicaset-2.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 83,
+		"optime" : {
+			"ts" : Timestamp(1614698544, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614698544, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDate" : ISODate("2021-03-02T15:22:24Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T15:22:24Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T15:22:30.615Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T15:22:31.543Z"),
+		"pingMs" : NumberLong(0),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 0,
+		"infoMessage" : "",
+		"configVersion" : 3
+	}
 ]
 ```
 
@@ -250,224 +250,206 @@ We can see from the above output that the `MongoDBOpsRequest` has succeeded. If 
 
 ```bash
 $ kubectl describe mongodbopsrequest -n demo mops-hscale-up-replicaset                     
-  Name:         mops-hscale-up-replicaset
-  Namespace:    demo
-  Labels:       <none>
-  Annotations:  API Version:  ops.kubedb.com/v1alpha1
-  Kind:         MongoDBOpsRequest
-  Metadata:
-    Creation Timestamp:  2020-08-26T05:22:33Z
-    Finalizers:
-      kubedb.com
-    Generation:  1
-    Managed Fields:
-      API Version:  ops.kubedb.com/v1alpha1
-      Fields Type:  FieldsV1
-      fieldsV1:
-        f:metadata:
-          f:annotations:
-            .:
-            f:kubectl.kubernetes.io/last-applied-configuration:
-        f:spec:
+Name:         mops-hscale-up-replicaset
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         MongoDBOpsRequest
+Metadata:
+  Creation Timestamp:  2021-03-02T15:23:14Z
+  Generation:          1
+  Managed Fields:
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
           .:
-          f:databaseRef:
-            .:
-            f:name:
-          f:horizontalScaling:
-            .:
-            f:replicas:
-          f:type:
-      Manager:      kubectl
-      Operation:    Update
-      Time:         2020-08-26T05:22:33Z
-      API Version:  ops.kubedb.com/v1alpha1
-      Fields Type:  FieldsV1
-      fieldsV1:
-        f:metadata:
-          f:finalizers:
-        f:status:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:databaseRef:
           .:
-          f:conditions:
-          f:observedGeneration:
-          f:phase:
-      Manager:         kubedb-enterprise
-      Operation:       Update
-      Time:            2020-08-26T05:23:18Z
-    Resource Version:  5681626
-    Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-hscale-up-replicaset
-    UID:               8b9b03c4-d95d-41af-b418-312ad81c49de
-  Spec:
-    Database Ref:
-      Name:  mg-replicaset
-    Horizontal Scaling:
-      Replicas:  4
-    Type:        HorizontalScaling
-  Status:
-    Conditions:
-      Last Transition Time:  2020-08-26T05:22:33Z
-      Message:               MongoDB ops request is being processed
-      Observed Generation:   1
-      Reason:                Scaling
-      Status:                True
-      Type:                  Scaling
-      Last Transition Time:  2020-08-26T05:22:33Z
-      Message:               Successfully halted mongodb: mg-replicaset
-      Observed Generation:   1
-      Reason:                HaltDatabase
-      Status:                True
-      Type:                  HaltDatabase
-      Last Transition Time:  2020-08-26T05:23:18Z
-      Message:               Successfully Scaled Up Replicas of StatefulSet
-      Observed Generation:   1
-      Reason:                ScaleUpReplicaSet
-      Status:                True
-      Type:                  ScaleUpReplicaSet
-      Last Transition Time:  2020-08-26T05:23:18Z
-      Message:               Successfully Resumed mongodb: mg-replicaset
-      Observed Generation:   1
-      Reason:                ResumeDatabase
-      Status:                True
-      Type:                  ResumeDatabase
-      Last Transition Time:  2020-08-26T05:23:18Z
-      Message:               Successfully completed the modification process
-      Observed Generation:   1
-      Reason:                Successful
-      Status:                True
-      Type:                  Successful
-    Observed Generation:     1
-    Phase:                   Successful
-  Events:
-    Type    Reason             Age    From                        Message
-    ----    ------             ----   ----                        -------
-    Normal  HaltDatabase      2m10s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-    Normal  HaltDatabase      2m10s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
-    Normal  HaltDatabase      2m10s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-    Normal  HaltDatabase      2m10s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
-    Normal  ScaleUpReplicaSet  85s    KubeDB Enterprise Operator  Successfully Scaled Up Replicas of StatefulSet
-    Normal  ResumeDatabase     85s    KubeDB Enterprise Operator  Resuming MongoDB
-    Normal  ResumeDatabase     85s    KubeDB Enterprise Operator  Successfully Resumed mongodb
-    Normal  Successful         85s    KubeDB Enterprise Operator  Successfully Scaled Database
+          f:name:
+        f:horizontalScaling:
+          .:
+          f:replicas:
+        f:type:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2021-03-02T15:23:14Z
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:observedGeneration:
+        f:phase:
+    Manager:         kubedb-enterprise
+    Operation:       Update
+    Time:            2021-03-02T15:23:14Z
+  Resource Version:  129882
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-hscale-up-replicaset
+  UID:               e97dac5c-5e3a-4153-9b31-8ba02af54bcb
+Spec:
+  Database Ref:
+    Name:  mg-replicaset
+  Horizontal Scaling:
+    Replicas:  4
+  Type:        HorizontalScaling
+Status:
+  Conditions:
+    Last Transition Time:  2021-03-02T15:23:14Z
+    Message:               MongoDB ops request is horizontally scaling database
+    Observed Generation:   1
+    Reason:                HorizontalScaling
+    Status:                True
+    Type:                  HorizontalScaling
+    Last Transition Time:  2021-03-02T15:24:00Z
+    Message:               Successfully Horizontally Scaled Up ReplicaSet
+    Observed Generation:   1
+    Reason:                ScaleUpReplicaSet
+    Status:                True
+    Type:                  ScaleUpReplicaSet
+    Last Transition Time:  2021-03-02T15:24:00Z
+    Message:               Successfully Horizontally Scaled MongoDB
+    Observed Generation:   1
+    Reason:                Successful
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     1
+  Phase:                   Successful
+Events:
+  Type    Reason             Age   From                        Message
+  ----    ------             ----  ----                        -------
+  Normal  PauseDatabase      91s   KubeDB Enterprise Operator  Pausing MongoDB demo/mg-replicaset
+  Normal  PauseDatabase      91s   KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-replicaset
+  Normal  ScaleUpReplicaSet  45s   KubeDB Enterprise Operator  Successfully Horizontally Scaled Up ReplicaSet
+  Normal  ResumeDatabase     45s   KubeDB Enterprise Operator  Resuming MongoDB demo/mg-replicaset
+  Normal  ResumeDatabase     45s   KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-replicaset
+  Normal  Successful         45s   KubeDB Enterprise Operator  Successfully Horizontally Scaled Database
 ```
 
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
 
 ```bash
-$ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'                                                                                            11:26:38
+$ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'
 4
 
-$ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.replicas'                                                                                                11:27:13
+$ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.replicas'
 4
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet             11:28:20
-  
-  [
-  	{
-  		"_id" : 0,
-  		"name" : "mg-replicaset-0.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 1,
-  		"stateStr" : "PRIMARY",
-  		"uptime" : 1749,
-  		"optime" : {
-  			"ts" : Timestamp(1598419697, 4),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T05:28:17Z"),
-  		"syncingTo" : "",
-  		"syncSourceHost" : "",
-  		"syncSourceId" : -1,
-  		"infoMessage" : "",
-  		"electionTime" : Timestamp(1598417963, 1),
-  		"electionDate" : ISODate("2020-08-26T04:59:23Z"),
-  		"configVersion" : 4,
-  		"self" : true,
-  		"lastHeartbeatMessage" : ""
-  	},
-  	{
-  		"_id" : 1,
-  		"name" : "mg-replicaset-1.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 2,
-  		"stateStr" : "SECONDARY",
-  		"uptime" : 1724,
-  		"optime" : {
-  			"ts" : Timestamp(1598419697, 4),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDurable" : {
-  			"ts" : Timestamp(1598419697, 4),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T05:28:17Z"),
-  		"optimeDurableDate" : ISODate("2020-08-26T05:28:17Z"),
-  		"lastHeartbeat" : ISODate("2020-08-26T05:28:28.990Z"),
-  		"lastHeartbeatRecv" : ISODate("2020-08-26T05:28:27.959Z"),
-  		"pingMs" : NumberLong(0),
-  		"lastHeartbeatMessage" : "",
-  		"syncingTo" : "mg-replicaset-0.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceHost" : "mg-replicaset-0.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceId" : 0,
-  		"infoMessage" : "",
-  		"configVersion" : 4
-  	},
-  	{
-  		"_id" : 2,
-  		"name" : "mg-replicaset-2.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 2,
-  		"stateStr" : "SECONDARY",
-  		"uptime" : 1708,
-  		"optime" : {
-  			"ts" : Timestamp(1598419697, 4),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDurable" : {
-  			"ts" : Timestamp(1598419697, 4),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T05:28:17Z"),
-  		"optimeDurableDate" : ISODate("2020-08-26T05:28:17Z"),
-  		"lastHeartbeat" : ISODate("2020-08-26T05:28:28.990Z"),
-  		"lastHeartbeatRecv" : ISODate("2020-08-26T05:28:27.959Z"),
-  		"pingMs" : NumberLong(0),
-  		"lastHeartbeatMessage" : "",
-  		"syncingTo" : "mg-replicaset-0.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceHost" : "mg-replicaset-0.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceId" : 0,
-  		"infoMessage" : "",
-  		"configVersion" : 4
-  	},
-  	{
-  		"_id" : 3,
-  		"name" : "mg-replicaset-3.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-  		"health" : 1,
-  		"state" : 2,
-  		"stateStr" : "SECONDARY",
-  		"uptime" : 310,
-  		"optime" : {
-  			"ts" : Timestamp(1598419697, 4),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDurable" : {
-  			"ts" : Timestamp(1598419697, 4),
-  			"t" : NumberLong(2)
-  		},
-  		"optimeDate" : ISODate("2020-08-26T05:28:17Z"),
-  		"optimeDurableDate" : ISODate("2020-08-26T05:28:17Z"),
-  		"lastHeartbeat" : ISODate("2020-08-26T05:28:29.153Z"),
-  		"lastHeartbeatRecv" : ISODate("2020-08-26T05:28:28.379Z"),
-  		"pingMs" : NumberLong(0),
-  		"lastHeartbeatMessage" : "",
-  		"syncingTo" : "mg-replicaset-2.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceHost" : "mg-replicaset-2.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-  		"syncSourceId" : 2,
-  		"infoMessage" : "",
-  		"configVersion" : 4
-  	}
-  ]
+$ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
+[
+	{
+		"_id" : 0,
+		"name" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 1,
+		"stateStr" : "PRIMARY",
+		"uptime" : 344,
+		"optime" : {
+			"ts" : Timestamp(1614698724, 1),
+			"t" : NumberLong(1)
+		},
+		"optimeDate" : ISODate("2021-03-02T15:25:24Z"),
+		"syncingTo" : "",
+		"syncSourceHost" : "",
+		"syncSourceId" : -1,
+		"infoMessage" : "",
+		"electionTime" : Timestamp(1614698393, 2),
+		"electionDate" : ISODate("2021-03-02T15:19:53Z"),
+		"configVersion" : 4,
+		"self" : true,
+		"lastHeartbeatMessage" : ""
+	},
+	{
+		"_id" : 1,
+		"name" : "mg-replicaset-1.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 301,
+		"optime" : {
+			"ts" : Timestamp(1614698712, 2),
+			"t" : NumberLong(1)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614698712, 2),
+			"t" : NumberLong(1)
+		},
+		"optimeDate" : ISODate("2021-03-02T15:25:12Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T15:25:12Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T15:25:23.889Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T15:25:25.179Z"),
+		"pingMs" : NumberLong(0),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 0,
+		"infoMessage" : "",
+		"configVersion" : 4
+	},
+	{
+		"_id" : 2,
+		"name" : "mg-replicaset-2.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 256,
+		"optime" : {
+			"ts" : Timestamp(1614698712, 2),
+			"t" : NumberLong(1)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614698712, 2),
+			"t" : NumberLong(1)
+		},
+		"optimeDate" : ISODate("2021-03-02T15:25:12Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T15:25:12Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T15:25:23.888Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T15:25:25.136Z"),
+		"pingMs" : NumberLong(0),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 0,
+		"infoMessage" : "",
+		"configVersion" : 4
+	},
+	{
+		"_id" : 3,
+		"name" : "mg-replicaset-3.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"health" : 1,
+		"state" : 2,
+		"stateStr" : "SECONDARY",
+		"uptime" : 93,
+		"optime" : {
+			"ts" : Timestamp(1614698712, 2),
+			"t" : NumberLong(1)
+		},
+		"optimeDurable" : {
+			"ts" : Timestamp(1614698712, 2),
+			"t" : NumberLong(1)
+		},
+		"optimeDate" : ISODate("2021-03-02T15:25:12Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T15:25:12Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T15:25:23.926Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T15:25:24.089Z"),
+		"pingMs" : NumberLong(0),
+		"lastHeartbeatMessage" : "",
+		"syncingTo" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"syncSourceId" : 0,
+		"infoMessage" : "",
+		"configVersion" : 4
+	}
+]
 ```
 
 From all the above outputs we can see that the replicas of the replicaset is `4`. That means we have successfully scaled up the replicas of the MongoDB replicaset.
@@ -525,103 +507,86 @@ We can see from the above output that the `MongoDBOpsRequest` has succeeded. If 
 
 ```bash
 $ kubectl describe mongodbopsrequest -n demo mops-hscale-down-replicaset                     
- Name:         mops-hscale-down-replicaset
- Namespace:    demo
- Labels:       <none>
- Annotations:  API Version:  ops.kubedb.com/v1alpha1
- Kind:         MongoDBOpsRequest
- Metadata:
-   Creation Timestamp:  2020-08-26T05:36:49Z
-   Finalizers:
-     kubedb.com
-   Generation:  1
-   Managed Fields:
-     API Version:  ops.kubedb.com/v1alpha1
-     Fields Type:  FieldsV1
-     fieldsV1:
-       f:metadata:
-         f:annotations:
-           .:
-           f:kubectl.kubernetes.io/last-applied-configuration:
-       f:spec:
-         .:
-         f:databaseRef:
-           .:
-           f:name:
-         f:horizontalScaling:
-           .:
-           f:replicas:
-         f:type:
-     Manager:      kubectl
-     Operation:    Update
-     Time:         2020-08-26T05:36:49Z
-     API Version:  ops.kubedb.com/v1alpha1
-     Fields Type:  FieldsV1
-     fieldsV1:
-       f:metadata:
-         f:finalizers:
-       f:status:
-         .:
-         f:conditions:
-         f:observedGeneration:
-         f:phase:
-     Manager:         kubedb-enterprise
-     Operation:       Update
-     Time:            2020-08-26T05:36:54Z
-   Resource Version:  5691961
-   Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-hscale-down-replicaset
-   UID:               9563b401-2d20-4624-8374-c008a83a58ad
- Spec:
-   Database Ref:
-     Name:  mg-replicaset
-   Horizontal Scaling:
-     Replicas:  3
-   Type:        HorizontalScaling
- Status:
-   Conditions:
-     Last Transition Time:  2020-08-26T05:36:49Z
-     Message:               MongoDB ops request is being processed
-     Observed Generation:   1
-     Reason:                Scaling
-     Status:                True
-     Type:                  Scaling
-     Last Transition Time:  2020-08-26T05:36:49Z
-     Message:               Successfully halted mongodb: mg-replicaset
-     Observed Generation:   1
-     Reason:                HaltDatabase
-     Status:                True
-     Type:                  HaltDatabase
-     Last Transition Time:  2020-08-26T05:36:54Z
-     Message:               Successfully Scale Down Replicas of Replicaset
-     Observed Generation:   1
-     Reason:                ScaleDownReplicaSet
-     Status:                True
-     Type:                  ScaleDownReplicaSet
-     Last Transition Time:  2020-08-26T05:36:54Z
-     Message:               Successfully Resumed mongodb: mg-replicaset
-     Observed Generation:   1
-     Reason:                ResumeDatabase
-     Status:                True
-     Type:                  ResumeDatabase
-     Last Transition Time:  2020-08-26T05:36:54Z
-     Message:               Successfully completed the modification process
-     Observed Generation:   1
-     Reason:                Successful
-     Status:                True
-     Type:                  Successful
-   Observed Generation:     1
-   Phase:                   Successful
- Events:
-   Type    Reason               Age    From                        Message
-   ----    ------               ----   ----                        -------
-   Normal  HaltDatabase        3m1s   KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-   Normal  HaltDatabase        3m1s   KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
-   Normal  ScalingDown          3m1s   KubeDB Enterprise Operator  Scaling Down Replicas of replicaSet
-   Normal  ScalingDown          3m1s   KubeDB Enterprise Operator  Scaling Down Replicas of replicaSet
-   Normal  ScaleDownReplicaSet  2m56s  KubeDB Enterprise Operator  Successfully Scale Down Replicas of Replicaset
-   Normal  ResumeDatabase       2m56s  KubeDB Enterprise Operator  Resuming MongoDB
-   Normal  ResumeDatabase       2m56s  KubeDB Enterprise Operator  Successfully Resumed mongodb
-   Normal  Successful           2m56s  KubeDB Enterprise Operator  Successfully Scaled Database
+Name:         mops-hscale-down-replicaset
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         MongoDBOpsRequest
+Metadata:
+  Creation Timestamp:  2021-03-02T15:25:57Z
+  Generation:          1
+  Managed Fields:
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:databaseRef:
+          .:
+          f:name:
+        f:horizontalScaling:
+          .:
+          f:replicas:
+        f:type:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2021-03-02T15:25:57Z
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:observedGeneration:
+        f:phase:
+    Manager:         kubedb-enterprise
+    Operation:       Update
+    Time:            2021-03-02T15:25:57Z
+  Resource Version:  130393
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-hscale-down-replicaset
+  UID:               fbfee7f8-1dd5-4f58-aad7-ad2e2d66b295
+Spec:
+  Database Ref:
+    Name:  mg-replicaset
+  Horizontal Scaling:
+    Replicas:  3
+  Type:        HorizontalScaling
+Status:
+  Conditions:
+    Last Transition Time:  2021-03-02T15:25:57Z
+    Message:               MongoDB ops request is horizontally scaling database
+    Observed Generation:   1
+    Reason:                HorizontalScaling
+    Status:                True
+    Type:                  HorizontalScaling
+    Last Transition Time:  2021-03-02T15:26:17Z
+    Message:               Successfully Horizontally Scaled Down ReplicaSet
+    Observed Generation:   1
+    Reason:                ScaleDownReplicaSet
+    Status:                True
+    Type:                  ScaleDownReplicaSet
+    Last Transition Time:  2021-03-02T15:26:17Z
+    Message:               Successfully Horizontally Scaled MongoDB
+    Observed Generation:   1
+    Reason:                Successful
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     1
+  Phase:                   Successful
+Events:
+  Type    Reason               Age   From                        Message
+  ----    ------               ----  ----                        -------
+  Normal  PauseDatabase        50s   KubeDB Enterprise Operator  Pausing MongoDB demo/mg-replicaset
+  Normal  PauseDatabase        50s   KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-replicaset
+  Normal  ScaleDownReplicaSet  30s   KubeDB Enterprise Operator  Successfully Horizontally Scaled Down ReplicaSet
+  Normal  ResumeDatabase       30s   KubeDB Enterprise Operator  Resuming MongoDB demo/mg-replicaset
+  Normal  ResumeDatabase       30s   KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-replicaset
+  Normal  Successful           30s   KubeDB Enterprise Operator  Successfully Horizontally Scaled Database
 ```
 
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the statefulset have,
@@ -637,80 +602,79 @@ $ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.replicas'
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 ```bash
 $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet 
-
 [
 	{
 		"_id" : 0,
-		"name" : "mg-replicaset-0.mg-replicaset-gvr.demo.svc.cluster.local:27017",
+		"name" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
 		"health" : 1,
 		"state" : 1,
 		"stateStr" : "PRIMARY",
-		"uptime" : 2475,
+		"uptime" : 410,
 		"optime" : {
-			"ts" : Timestamp(1598420435, 1),
-			"t" : NumberLong(2)
+			"ts" : Timestamp(1614698784, 1),
+			"t" : NumberLong(1)
 		},
-		"optimeDate" : ISODate("2020-08-26T05:40:35Z"),
+		"optimeDate" : ISODate("2021-03-02T15:26:24Z"),
 		"syncingTo" : "",
 		"syncSourceHost" : "",
 		"syncSourceId" : -1,
 		"infoMessage" : "",
-		"electionTime" : Timestamp(1598417963, 1),
-		"electionDate" : ISODate("2020-08-26T04:59:23Z"),
+		"electionTime" : Timestamp(1614698393, 2),
+		"electionDate" : ISODate("2021-03-02T15:19:53Z"),
 		"configVersion" : 5,
 		"self" : true,
 		"lastHeartbeatMessage" : ""
 	},
 	{
 		"_id" : 1,
-		"name" : "mg-replicaset-1.mg-replicaset-gvr.demo.svc.cluster.local:27017",
+		"name" : "mg-replicaset-1.mg-replicaset-pods.demo.svc.cluster.local:27017",
 		"health" : 1,
 		"state" : 2,
 		"stateStr" : "SECONDARY",
-		"uptime" : 2450,
+		"uptime" : 367,
 		"optime" : {
-			"ts" : Timestamp(1598420425, 1),
-			"t" : NumberLong(2)
+			"ts" : Timestamp(1614698784, 1),
+			"t" : NumberLong(1)
 		},
 		"optimeDurable" : {
-			"ts" : Timestamp(1598420425, 1),
-			"t" : NumberLong(2)
+			"ts" : Timestamp(1614698784, 1),
+			"t" : NumberLong(1)
 		},
-		"optimeDate" : ISODate("2020-08-26T05:40:25Z"),
-		"optimeDurableDate" : ISODate("2020-08-26T05:40:25Z"),
-		"lastHeartbeat" : ISODate("2020-08-26T05:40:34.917Z"),
-		"lastHeartbeatRecv" : ISODate("2020-08-26T05:40:33.976Z"),
+		"optimeDate" : ISODate("2021-03-02T15:26:24Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T15:26:24Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T15:26:29.423Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T15:26:29.330Z"),
 		"pingMs" : NumberLong(0),
 		"lastHeartbeatMessage" : "",
-		"syncingTo" : "mg-replicaset-0.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-		"syncSourceHost" : "mg-replicaset-0.mg-replicaset-gvr.demo.svc.cluster.local:27017",
+		"syncingTo" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
 		"syncSourceId" : 0,
 		"infoMessage" : "",
 		"configVersion" : 5
 	},
 	{
 		"_id" : 2,
-		"name" : "mg-replicaset-2.mg-replicaset-gvr.demo.svc.cluster.local:27017",
+		"name" : "mg-replicaset-2.mg-replicaset-pods.demo.svc.cluster.local:27017",
 		"health" : 1,
 		"state" : 2,
 		"stateStr" : "SECONDARY",
-		"uptime" : 2434,
+		"uptime" : 322,
 		"optime" : {
-			"ts" : Timestamp(1598420425, 1),
-			"t" : NumberLong(2)
+			"ts" : Timestamp(1614698784, 1),
+			"t" : NumberLong(1)
 		},
 		"optimeDurable" : {
-			"ts" : Timestamp(1598420425, 1),
-			"t" : NumberLong(2)
+			"ts" : Timestamp(1614698784, 1),
+			"t" : NumberLong(1)
 		},
-		"optimeDate" : ISODate("2020-08-26T05:40:25Z"),
-		"optimeDurableDate" : ISODate("2020-08-26T05:40:25Z"),
-		"lastHeartbeat" : ISODate("2020-08-26T05:40:34.917Z"),
-		"lastHeartbeatRecv" : ISODate("2020-08-26T05:40:33.976Z"),
+		"optimeDate" : ISODate("2021-03-02T15:26:24Z"),
+		"optimeDurableDate" : ISODate("2021-03-02T15:26:24Z"),
+		"lastHeartbeat" : ISODate("2021-03-02T15:26:31.022Z"),
+		"lastHeartbeatRecv" : ISODate("2021-03-02T15:26:31.224Z"),
 		"pingMs" : NumberLong(0),
 		"lastHeartbeatMessage" : "",
-		"syncingTo" : "mg-replicaset-0.mg-replicaset-gvr.demo.svc.cluster.local:27017",
-		"syncSourceHost" : "mg-replicaset-0.mg-replicaset-gvr.demo.svc.cluster.local:27017",
+		"syncingTo" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
+		"syncSourceHost" : "mg-replicaset-0.mg-replicaset-pods.demo.svc.cluster.local:27017",
 		"syncSourceId" : 0,
 		"infoMessage" : "",
 		"configVersion" : 5

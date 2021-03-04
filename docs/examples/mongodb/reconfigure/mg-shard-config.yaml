@@ -4,10 +4,10 @@ metadata:
   name: mg-sharding
   namespace: demo
 spec:
-  version: 3.6.8-v1
+  version: 4.2.3
   shardTopology:
     configServer:
-      replicas: 2
+      replicas: 3
       configSecret:
         name: mg-custom-config
       storage:
@@ -20,8 +20,8 @@ spec:
       configSecret:
         name: mg-custom-config
     shard:
-      replicas: 2
-      shards: 3
+      replicas: 3
+      shards: 2
       configSecret:
         name: mg-custom-config
       storage:

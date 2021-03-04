@@ -58,7 +58,7 @@ status:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MongoDBOpsRequest
 metadata:
-  name: mops-hscale-down-configserver
+  name: mops-hscale-configserver
   namespace: demo
 spec:
   type: HorizontalScaling
@@ -67,9 +67,9 @@ spec:
   horizontalScaling:
     shard:
       shards: 3
-      replicas: 2
+      replicas: 3
     configServer:
-      replicas: 2
+      replicas: 3
     mongos:
       replicas: 2
 status:
@@ -226,10 +226,9 @@ spec:
   type: Reconfigure
   databaseRef:
     name: mg-replicaset
-  customConfig:
+  configuration:
     replicaSet:
-      data:
-        mongod.conf: |
+      inlineConfig: |
           net:
             maxIncomingConnections: 30000
 status:
@@ -254,22 +253,19 @@ spec:
   type: Reconfigure
   databaseRef:
     name: mg-sharding
-  customConfig:
+  configuration:
     shard:
-      data:
-        mongod.conf: |
+      inlineConfig: |
           net:
             maxIncomingConnections: 30000
     configServer:
-      data:
-        mongod.conf: |
-          net:
-            maxIncomingConnections: 30000
+      inlineConfig: |
+        net:
+          maxIncomingConnections: 30000
     mongos:
-      data:
-        mongod.conf: |
-          net:
-            maxIncomingConnections: 30000
+      inlineConfig: |
+        net:
+          maxIncomingConnections: 30000
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -292,12 +288,11 @@ spec:
   type: Reconfigure
   databaseRef:
     name: mg-standalone
-  customConfig:
+  configuration:
     standalone:
-      data:
-        mongod.conf: |
-          net:
-            maxIncomingConnections: 30000
+      inlineConfig: |
+        net:
+          maxIncomingConnections: 30000
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -320,9 +315,9 @@ spec:
   type: Reconfigure
   databaseRef:
     name: mg-replicaset
-  customConfig:
+  configuration:
     replicaSet:
-      configMap:
+      configSecret:
         name: new-custom-config
 status:
   conditions:
@@ -346,15 +341,15 @@ spec:
   type: Reconfigure
   databaseRef:
     name: mg-sharding
-  customConfig:
+  configuration:
     shard:
-      configMap:
+      configSecret:
         name: new-custom-config
-    confiServer:
-      configMap:
+    configServer:
+      configSecret:
         name: new-custom-config
     mongos:
-      configMap:
+      configSecret:
         name: new-custom-config
 status:
   conditions:
@@ -378,9 +373,9 @@ spec:
   type: Reconfigure
   databaseRef:
     name: mg-standalone
-  customConfig:
+  configuration:
     standalone:
-      configMap:
+      configSecret:
         name: new-custom-config
 status:
   conditions:
@@ -471,17 +466,15 @@ status:
 
 Here, we are going to describe the various sections of a `MongoDBOpsRequest` crd.
 
-### MongoDBOpsRequest `Spec`
-
 A `MongoDBOpsRequest` object has the following fields in the `spec` section.
 
-#### spec.databaseRef
+### spec.databaseRef
 
 `spec.databaseRef` is a required field that point to the [MongoDB](/docs/guides/mongodb/concepts/mongodb.md) object for which the administrative operations will be performed. This field consists of the following sub-field:
 
 - **spec.databaseRef.name :** specifies the name of the [MongoDB](/docs/guides/mongodb/concepts/mongodb.md) object.
 
-#### spec.type
+### spec.type
 
 `spec.type` specifies the kind of operation that will be applied to the database. Currently, the following types of operations are allowed in `MongoDBOpsRequest`.
 
@@ -490,10 +483,12 @@ A `MongoDBOpsRequest` object has the following fields in the `spec` section.
 - `VerticalScaling`
 - `VolumeExpansion`
 - `Reconfigure`
+- `ReconfigureTLS`
+- `Restart`
 
 > You can perform only one type of operation on a single `MongoDBOpsRequest` CR. For example, if you want to upgrade your database and scale up its replica then you have to create two separate `MongoDBOpsRequest`. At first, you have to create a `MongoDBOpsRequest` for upgrading. Once it is completed, then you can create another `MongoDBOpsRequest` for scaling. You should not create two `MongoDBOpsRequest` simultaneously.
 
-#### spec.upgrade
+### spec.upgrade
 
 If you want to upgrade you MongoDB version, you have to specify the `spec.upgrade` section that specifies the desired version information. This field consists of the following sub-field:
 
@@ -501,7 +496,7 @@ If you want to upgrade you MongoDB version, you have to specify the `spec.upgrad
 
 > You can only upgrade between MongoDB versions. KubeDB does not support downgrade for MongoDB.
 
-#### spec.horizontalScaling
+### spec.horizontalScaling
 
 If you want to scale-up or scale-down your MongoDB cluster or different components of it, you have to specify `spec.horizontalScaling` section. This field consists of the following sub-field:
 
@@ -512,7 +507,7 @@ If you want to scale-up or scale-down your MongoDB cluster or different componen
   - `spec.horizontalScaling.shard.replicas` indicates the number of replicas each shard will have after scaling.
   - `spec.horizontalScaling.shard.shards` indicates the number of shards after scaling
 
-#### spec.verticalScaling
+### spec.verticalScaling
 
 `spec.verticalScaling` is a required field specifying the information of `MongoDB` resources like `cpu`, `memory` etc that will be scaled. This field consists of the following sub-fields:
 
@@ -536,7 +531,7 @@ limits:
 
 Here, when you specify the resource request, the scheduler uses this information to decide which node to place the container of the Pod on and when you specify a resource limit for the container, the `kubelet` enforces those limits so that the running container is not allowed to use more of that resource than the limit you set. You can found more details from [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).
 
-#### spec.volumeExpansion
+### spec.volumeExpansion
 
 > To use the volume expansion feature the storage class must support volume expansion
 
@@ -559,7 +554,7 @@ spec:
 
 This will expand the volume size of all the shard nodes to 2 GB.
 
-#### spec.customConfig
+### spec.customConfig
 
 If you want to reconfigure your Running MongoDB cluster or different components of it with new custom configuration, you have to specify `spec.customConfig` section. This field consists of the following sub-field:
 
@@ -578,7 +573,7 @@ All of them has the following sub-fields:
 
 `.status` describes the current state and progress of a `MongoDBOpsRequest` operation. It has the following fields:
 
-#### status.phase
+### status.phase
 
 `status.phase` indicates the overall phase of the operation for this `MongoDBOpsRequest`. It can have the following three values:
 
@@ -588,11 +583,11 @@ All of them has the following sub-fields:
 | Failed     | KubeDB has failed the operation requested in the MongoDBOpsRequest                 |
 | Denied     | KubeDB has denied the operation requested in the MongoDBOpsRequest                 |
 
-#### status.observedGeneration
+### status.observedGeneration
 
 `status.observedGeneration` shows the most recent generation observed by the `MongoDBOpsRequest` controller.
 
-#### status.conditions
+### status.conditions
 
 `status.conditions` is an array that specifies the conditions of different steps of `MongoDBOpsRequest` processing. Each condition entry has the following fields:
 

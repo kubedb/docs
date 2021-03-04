@@ -1,0 +1,19 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: MongoDBAutoscaler
+metadata:
+  name: mg-as-sh
+  namespace: demo
+spec:
+  databaseRef:
+    name: mg-sh
+  compute:
+    shard:
+      trigger: "On"
+      podLifeTimeThreshold: 5m
+      minAllowed:
+        cpu: 250m
+        memory: 350Mi
+      maxAllowed:
+        cpu: 1
+        memory: 1Gi
+      controlledResources: ["cpu", "memory"]

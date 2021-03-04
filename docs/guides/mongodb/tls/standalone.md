@@ -83,7 +83,7 @@ metadata:
   namespace: demo
 spec:
   ca:
-    name: mongo-ca
+    secretName: mongo-ca
 ```
 
 Apply the `YAML` file:
@@ -127,13 +127,13 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mgo-tls created
 ```
 
-Now, wait until `mgo-tls created` has status `Running`. i.e,
+Now, wait until `mgo-tls created` has status `Ready`. i.e,
 
 ```bash
 $ watch kubectl get mg -n demo
 Every 2.0s: kubectl get mongodb -n demo
 NAME      VERSION     STATUS     AGE
-mgo-tls   4.1.13-v1   Running    14s
+mgo-tls   4.1.13-v1   Ready      14s
 ```
 
 ### Verify TLS/SSL in MongoDB Standalone
@@ -170,13 +170,13 @@ $ kubectl exec -it mgo-tls-0 -n demo bash
 mongodb@mgo-tls-0:/$ ls /var/run/mongodb/tls
 ca.crt  client.pem  mongo.pem
 mongodb@mgo-tls-0:/$ openssl x509 -in /var/run/mongodb/tls/client.pem -inform PEM -subject -nameopt RFC2253 -noout
-subject=CN=root,OU=client,O=kubedb
+subject=CN=root,O=kubedb
 ```
 
-Now, we can connect using `CN=root,OU=client,O=kubedb` as root to connect to the mongo shell,
+Now, we can connect using `CN=root,O=kubedb` as root to connect to the mongo shell,
 
 ```bash
-mongodb@mgo-tls-0:/$ mongo --tls --tlsCAFile /var/run/mongodb/tls/ca.crt --tlsCertificateKeyFile /var/run/mongodb/tls/client.pem admin --host localhost --authenticationMechanism MONGODB-X509 --authenticationDatabase='$external' -u "CN=root,OU=client,O=kubedb" --quiet
+mongodb@mgo-tls-0:/$ mongo --tls --tlsCAFile /var/run/mongodb/tls/ca.crt --tlsCertificateKeyFile /var/run/mongodb/tls/client.pem admin --host localhost --authenticationMechanism MONGODB-X509 --authenticationDatabase='$external' -u "CN=root,O=kubedb" --quiet
 >
 ```
 
@@ -191,9 +191,9 @@ switched to db $external
 
 > show users
 {
- 	"_id" : "$external.CN=root,OU=client,O=kubedb",
+ 	"_id" : "$external.CN=root,O=kubedb",
  	"userId" : UUID("d2ddf121-9398-400b-b477-0e8bcdd47746"),
- 	"user" : "CN=root,OU=client,O=kubedb",
+ 	"user" : "CN=root,O=kubedb",
  	"db" : "$external",
  	"roles" : [
  		{
@@ -209,13 +209,13 @@ switched to db $external
 bye
 ```
 
-You can see here that, `sslMode` is set to `requireSSL` and a user is created in `$external` with name `"CN=root,OU=client,O=kubedb"`.
+You can see here that, `sslMode` is set to `requireSSL` and a user is created in `$external` with name `"CN=root,O=kubedb"`.
 
 ## Changing the SSLMode & ClusterAuthMode
 
 User can update `sslMode` & `ClusterAuthMode` if needed. Some changes may be invalid from mongodb end, like using `sslMode: disabled` with `clusterAuthMode: x509`.
 
-Good thing is, **KubeDB operator will throw error for invalid SSL specs while creating/updating the MongoDB object.** i.e.,
+The good thing is, **KubeDB operator will throw error for invalid SSL specs while creating/updating the MongoDB object.** i.e.,
 
 ```bash
 $ kubectl patch -n demo mg/mgo-tls -p '{"spec":{"sslMode": "disabled","clusterAuthMode": "x509"}}' --type="merge"

@@ -4,7 +4,7 @@ metadata:
   name: mongo-sh
   namespace: demo
 spec:
-  version: 3.6-v3
+  version: 4.2.3
   shardTopology:
     configServer:
       replicas: 3
@@ -17,7 +17,7 @@ spec:
       replicas: 2
     shard:
       replicas: 3
-      shards: 3
+      shards: 2
       storage:
         resources:
           requests:
