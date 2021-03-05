@@ -2,9 +2,9 @@
 title: MariaDB Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: my-quickstart-quickstart
+    identifier: guides-mariadb-quickstart-overview
     name: Overview
-    parent: my-quickstart-mariadb
+    parent: guides-mariadb-quickstart
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
