@@ -2,16 +2,14 @@
 title: MariaDB
 menu:
   docs_{{ .version }}:
-    identifier: my-readme-mariadb
+    identifier: guides-mariadb
     name: MariaDB
-    parent: my-mariadb-guides
+    parent: guides
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
-url: /docs/{{ .version }}/guides/mariadb/
-aliases:
-  - /docs/{{ .version }}/guides/mariadb/README/
 ---
+
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
