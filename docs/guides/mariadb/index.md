@@ -31,7 +31,7 @@ section_menu_id: guides
 ## Life Cycle of a MariaDB Object
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/mariadb/images/mariadb-lifecycle.png" >
+  <img alt="lifecycle"  src="/docs/guides/mariadb/images/mariadb-lifecycle.png" >
 </p>
 
 ## User Guide
