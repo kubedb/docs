@@ -5,6 +5,6 @@ menu:
     identifier: my-concepts-mariadb
     name: Concepts
     parent: my-mariadb-guides
-    weight: 20
+    weight: 19
 menu_name: docs_{{ .version }}
 ---
