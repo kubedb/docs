@@ -15,10 +15,10 @@ require (
 	k8s.io/apimachinery v0.18.9
 	k8s.io/apiserver v0.18.9
 	k8s.io/client-go v0.18.9
-	kmodules.xyz/client-go v0.0.0-20210213000708-f480974ce46d
-	kmodules.xyz/custom-resources v0.0.0-20210216191337-d890c51255a5
+	kmodules.xyz/client-go v0.0.0-20210218100652-8f345ddfe801
+	kmodules.xyz/custom-resources v0.0.0-20210222235834-b3f8dc56b6a3
 	kmodules.xyz/webhook-runtime v0.0.0-20201105073856-2dc7382b88c6
-	kubedb.dev/apimachinery v0.16.2
+	kubedb.dev/apimachinery v0.16.3-0.20210304211208-74561e0d5933
 	kubedb.dev/elasticsearch v0.16.2
 	kubedb.dev/memcached v0.9.2
 	kubedb.dev/mongodb v0.9.2
