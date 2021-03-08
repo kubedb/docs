@@ -118,7 +118,7 @@ func (c *Controller) createStatefulSet(db *api.Memcached) (*apps.StatefulSet, ku
 			Name:            api.ResourceSingularMemcached,
 			Image:           memcachedVersion.Spec.DB.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
-			Args:            db.Spec.PodTemplate.Spec.Container.Args,
+			Args:            db.Spec.PodTemplate.Spec.Args,
 			Ports: []core.ContainerPort{
 				{
 					Name:          api.MySQLDatabasePortName,
@@ -126,11 +126,11 @@ func (c *Controller) createStatefulSet(db *api.Memcached) (*apps.StatefulSet, ku
 					Protocol:      core.ProtocolTCP,
 				},
 			},
-			Resources:       db.Spec.PodTemplate.Spec.Container.Resources,
-			SecurityContext: db.Spec.PodTemplate.Spec.Container.SecurityContext,
-			LivenessProbe:   db.Spec.PodTemplate.Spec.Container.LivenessProbe,
-			ReadinessProbe:  db.Spec.PodTemplate.Spec.Container.ReadinessProbe,
-			Lifecycle:       db.Spec.PodTemplate.Spec.Container.Lifecycle,
+			Resources:       db.Spec.PodTemplate.Spec.Resources,
+			SecurityContext: db.Spec.PodTemplate.Spec.ContainerSecurityContext,
+			LivenessProbe:   db.Spec.PodTemplate.Spec.LivenessProbe,
+			ReadinessProbe:  db.Spec.PodTemplate.Spec.ReadinessProbe,
+			Lifecycle:       db.Spec.PodTemplate.Spec.Lifecycle,
 		})
 		if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, core.Container{
@@ -183,7 +183,7 @@ func (c *Controller) createStatefulSet(db *api.Memcached) (*apps.StatefulSet, ku
 func upsertUserEnv(sts *apps.StatefulSet, db *api.Memcached) *apps.StatefulSet {
 	for i, container := range sts.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMemcached {
-			sts.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Container.Env...)
+			sts.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Env...)
 			return sts
 		}
 	}

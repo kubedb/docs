@@ -89,7 +89,7 @@ func (es *Elasticsearch) EnsureMasterNodes() (kutil.VerbType, error) {
 	envList = es.upsertContainerEnv(envList)
 
 	// add/overwrite user provided env; these are provided via crd spec
-	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Container.Env...)
+	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
@@ -148,7 +148,7 @@ func (es *Elasticsearch) EnsureDataNodes() (kutil.VerbType, error) {
 	envList = es.upsertContainerEnv(envList)
 
 	// add/overwrite user provided env; these are provided via crd spec
-	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Container.Env...)
+	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
@@ -213,7 +213,7 @@ func (es *Elasticsearch) EnsureIngestNodes() (kutil.VerbType, error) {
 	envList = es.upsertContainerEnv(envList)
 
 	// add/overwrite user provided env; these are provided via crd spec
-	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Container.Env...)
+	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
@@ -303,7 +303,7 @@ func (es *Elasticsearch) EnsureCombinedNode() (kutil.VerbType, error) {
 	envList = es.upsertContainerEnv(envList)
 
 	// add/overwrite user provided env; these are provided via crd spec
-	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Container.Env...)
+	envList = core_util.UpsertEnvVars(envList, es.db.Spec.PodTemplate.Spec.Env...)
 
 	// Environment variables for init container (i.e. config-merger)
 	initEnvList := []core.EnvVar{
@@ -332,7 +332,7 @@ func (es *Elasticsearch) getCombinedNode() *api.ElasticsearchNode {
 	return &api.ElasticsearchNode{
 		Replicas:       es.db.Spec.Replicas,
 		Storage:        es.db.Spec.Storage,
-		Resources:      es.db.Spec.PodTemplate.Spec.Container.Resources,
+		Resources:      es.db.Spec.PodTemplate.Spec.Resources,
 		MaxUnavailable: es.db.Spec.MaxUnavailable,
 	}
 }

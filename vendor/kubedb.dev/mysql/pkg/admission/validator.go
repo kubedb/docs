@@ -212,7 +212,7 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 		}
 	}
 
-	if err := amv.ValidateEnvVar(mysql.Spec.PodTemplate.Spec.Container.Env, forbiddenEnvVars, api.ResourceKindMySQL); err != nil {
+	if err := amv.ValidateEnvVar(mysql.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMySQL); err != nil {
 		return err
 	}
 

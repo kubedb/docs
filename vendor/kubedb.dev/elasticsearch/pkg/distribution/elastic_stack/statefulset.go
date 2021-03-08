@@ -431,12 +431,12 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 			// communicate with each nodes specifically.
 			// The DBA controller uses the restPort to check health of a node.
 			Ports:           []core.ContainerPort{defaultRestPort, defaultTransportPort},
-			SecurityContext: es.db.Spec.PodTemplate.Spec.Container.SecurityContext,
+			SecurityContext: es.db.Spec.PodTemplate.Spec.ContainerSecurityContext,
 			Resources:       esNode.Resources,
 			VolumeMounts:    volumeMount,
-			LivenessProbe:   es.db.Spec.PodTemplate.Spec.Container.LivenessProbe,
-			ReadinessProbe:  es.db.Spec.PodTemplate.Spec.Container.ReadinessProbe,
-			Lifecycle:       es.db.Spec.PodTemplate.Spec.Container.Lifecycle,
+			LivenessProbe:   es.db.Spec.PodTemplate.Spec.LivenessProbe,
+			ReadinessProbe:  es.db.Spec.PodTemplate.Spec.ReadinessProbe,
+			Lifecycle:       es.db.Spec.PodTemplate.Spec.Lifecycle,
 		},
 	}
 

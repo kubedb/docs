@@ -257,11 +257,11 @@ func (c *Controller) ensureStatefulSet(db *api.ProxySQL, opts workloadOptions) (
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindProxySQL))
 
-	readinessProbe := pt.Spec.Container.ReadinessProbe
+	readinessProbe := pt.Spec.ReadinessProbe
 	if readinessProbe != nil && structs.IsZero(*readinessProbe) {
 		readinessProbe = nil
 	}
-	livenessProbe := pt.Spec.Container.LivenessProbe
+	livenessProbe := pt.Spec.LivenessProbe
 	if livenessProbe != nil && structs.IsZero(*livenessProbe) {
 		livenessProbe = nil
 	}
@@ -295,10 +295,10 @@ func (c *Controller) ensureStatefulSet(db *api.ProxySQL, opts workloadOptions) (
 					Command:         opts.cmd,
 					Args:            opts.args,
 					Ports:           opts.ports,
-					Env:             core_util.UpsertEnvVars(opts.envList, pt.Spec.Container.Env...),
-					Resources:       pt.Spec.Container.Resources,
-					SecurityContext: pt.Spec.Container.SecurityContext,
-					Lifecycle:       pt.Spec.Container.Lifecycle,
+					Env:             core_util.UpsertEnvVars(opts.envList, pt.Spec.Env...),
+					Resources:       pt.Spec.Resources,
+					SecurityContext: pt.Spec.ContainerSecurityContext,
+					Lifecycle:       pt.Spec.Lifecycle,
 					LivenessProbe:   livenessProbe,
 					ReadinessProbe:  readinessProbe,
 					VolumeMounts:    opts.volumeMount,

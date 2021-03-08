@@ -217,7 +217,7 @@ func ValidateProxySQL(client kubernetes.Interface, extClient cs.Interface, db *a
 		return err
 	}
 
-	if err = amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Container.Env, forbiddenEnvVars, api.ResourceKindProxySQL); err != nil {
+	if err = amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindProxySQL); err != nil {
 		return err
 	}
 

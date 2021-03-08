@@ -230,12 +230,12 @@ func (c *Controller) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kuti
 					},
 				},
 			},
-		}, podTemplate.Spec.Container.Env...)
+		}, podTemplate.Spec.Env...)
 		volumes := initvolumes
 
 		peerFinderLocation := fmt.Sprintf("%v/peer-finder", api.MongoDBInitScriptDirectoryPath)
 		shardScriptName := fmt.Sprintf("%v/sharding.sh", api.MongoDBInitScriptDirectoryPath)
-		podTemplate.Spec.Container.Lifecycle = &core.Lifecycle{
+		podTemplate.Spec.Lifecycle = &core.Lifecycle{
 			PostStart: &core.Handler{
 				Exec: &core.ExecAction{
 					Command: []string{
@@ -438,12 +438,12 @@ func (c *Controller) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 				},
 			},
 		},
-	}, podTemplate.Spec.Container.Env...)
+	}, podTemplate.Spec.Env...)
 	volumes := initvolumes
 
 	peerFinderLocation := fmt.Sprintf("%v/peer-finder", api.MongoDBInitScriptDirectoryPath)
 	replicasetScriptName := fmt.Sprintf("%v/configdb.sh", api.MongoDBInitScriptDirectoryPath)
-	podTemplate.Spec.Container.Lifecycle = &core.Lifecycle{
+	podTemplate.Spec.Lifecycle = &core.Lifecycle{
 		PostStart: &core.Handler{
 			Exec: &core.ExecAction{
 				Command: []string{
@@ -536,7 +536,7 @@ func (c *Controller) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 	}
 	podTemplate := db.Spec.PodTemplate
 
-	envList := core_util.UpsertEnvVars([]core.EnvVar{{Name: "SSL_MODE", Value: string(sslMode)}}, podTemplate.Spec.Container.Env...)
+	envList := core_util.UpsertEnvVars([]core.EnvVar{{Name: "SSL_MODE", Value: string(sslMode)}}, podTemplate.Spec.Env...)
 
 	clusterAuth := db.Spec.ClusterAuthMode
 	if clusterAuth == "" {
@@ -648,7 +648,7 @@ func (c *Controller) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 
 		peerFinderLocation := fmt.Sprintf("%v/peer-finder", api.MongoDBInitScriptDirectoryPath)
 		replicasetScriptName := fmt.Sprintf("%v/replicaset.sh", api.MongoDBInitScriptDirectoryPath)
-		podTemplate.Spec.Container.Lifecycle = &core.Lifecycle{
+		podTemplate.Spec.Lifecycle = &core.Lifecycle{
 			PostStart: &core.Handler{
 				Exec: &core.ExecAction{
 					Command: []string{
@@ -773,11 +773,11 @@ func (c *Controller) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
-	readinessProbe := pt.Spec.Container.ReadinessProbe
+	readinessProbe := pt.Spec.ReadinessProbe
 	if readinessProbe != nil && structs.IsZero(*readinessProbe) {
 		readinessProbe = nil
 	}
-	livenessProbe := pt.Spec.Container.LivenessProbe
+	livenessProbe := pt.Spec.LivenessProbe
 	if livenessProbe != nil && structs.IsZero(*livenessProbe) {
 		livenessProbe = nil
 	}
@@ -817,7 +817,7 @@ func (c *Controller) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 					ImagePullPolicy: core.PullIfNotPresent,
 					Command:         opts.cmd,
 					Args: meta_util.UpsertArgumentList(
-						opts.args, pt.Spec.Container.Args),
+						opts.args, pt.Spec.Args),
 					Ports: []core.ContainerPort{
 						{
 							Name:          api.MongoDBDatabasePortName,
@@ -825,10 +825,10 @@ func (c *Controller) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 							Protocol:      core.ProtocolTCP,
 						},
 					},
-					Env:             core_util.UpsertEnvVars(opts.envList, pt.Spec.Container.Env...),
-					Resources:       pt.Spec.Container.Resources,
-					SecurityContext: pt.Spec.Container.SecurityContext,
-					Lifecycle:       pt.Spec.Container.Lifecycle,
+					Env:             core_util.UpsertEnvVars(opts.envList, pt.Spec.Env...),
+					Resources:       pt.Spec.Resources,
+					SecurityContext: pt.Spec.ContainerSecurityContext,
+					Lifecycle:       pt.Spec.Lifecycle,
 					LivenessProbe:   livenessProbe,
 					ReadinessProbe:  readinessProbe,
 					VolumeMounts:    opts.volumeMount,
@@ -973,7 +973,7 @@ func installInitContainer(
 				MountPath: api.MongoCertDirectory,
 			},
 		},
-		Resources: pt.Spec.Container.Resources,
+		Resources: pt.Spec.Resources,
 	}
 
 	initVolumes := []core.Volume{

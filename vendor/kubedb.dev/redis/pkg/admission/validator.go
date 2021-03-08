@@ -210,7 +210,7 @@ func ValidateRedis(client kubernetes.Interface, extClient cs.Interface, redis *a
 		}
 	}
 
-	if err := amv.ValidateEnvVar(redis.Spec.PodTemplate.Spec.Container.Env, forbiddenEnvVars, api.ResourceKindRedis); err != nil {
+	if err := amv.ValidateEnvVar(redis.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindRedis); err != nil {
 		return err
 	}
 

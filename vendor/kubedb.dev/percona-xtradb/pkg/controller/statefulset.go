@@ -89,7 +89,7 @@ func (c *Controller) ensurePerconaXtraDB(db *api.PerconaXtraDB) (kutil.VerbType,
 					MountPath: api.PerconaXtraDBDataMountPath,
 				},
 			},
-			Resources: db.Spec.PodTemplate.Spec.Container.Resources,
+			Resources: db.Spec.PodTemplate.Spec.Resources,
 		},
 	}
 
@@ -105,7 +105,7 @@ func (c *Controller) ensurePerconaXtraDB(db *api.PerconaXtraDB) (kutil.VerbType,
 		cmds = []string{
 			"peer-finder",
 		}
-		userProvidedArgs := strings.Join(db.Spec.PodTemplate.Spec.Container.Args, " ")
+		userProvidedArgs := strings.Join(db.Spec.PodTemplate.Spec.Args, " ")
 		args = []string{
 			fmt.Sprintf("-service=%s", db.GoverningServiceName()),
 			fmt.Sprintf("-on-start=/on-start.sh %s", userProvidedArgs),
@@ -268,11 +268,11 @@ func (c *Controller) ensureStatefulSet(db *api.PerconaXtraDB, opts workloadOptio
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPerconaXtraDB))
 
-	readinessProbe := pt.Spec.Container.ReadinessProbe
+	readinessProbe := pt.Spec.ReadinessProbe
 	if readinessProbe != nil && structs.IsZero(*readinessProbe) {
 		readinessProbe = nil
 	}
-	livenessProbe := pt.Spec.Container.LivenessProbe
+	livenessProbe := pt.Spec.LivenessProbe
 	if livenessProbe != nil && structs.IsZero(*livenessProbe) {
 		livenessProbe = nil
 	}
@@ -321,10 +321,10 @@ func (c *Controller) ensureStatefulSet(db *api.PerconaXtraDB, opts workloadOptio
 					Command:         opts.cmd,
 					Args:            opts.args,
 					Ports:           opts.ports,
-					Env:             core_util.UpsertEnvVars(opts.envList, pt.Spec.Container.Env...),
-					Resources:       pt.Spec.Container.Resources,
-					SecurityContext: pt.Spec.Container.SecurityContext,
-					Lifecycle:       pt.Spec.Container.Lifecycle,
+					Env:             core_util.UpsertEnvVars(opts.envList, pt.Spec.Env...),
+					Resources:       pt.Spec.Resources,
+					SecurityContext: pt.Spec.ContainerSecurityContext,
+					Lifecycle:       pt.Spec.Lifecycle,
 					LivenessProbe:   livenessProbe,
 					ReadinessProbe:  readinessProbe,
 					VolumeMounts:    opts.volumeMount,

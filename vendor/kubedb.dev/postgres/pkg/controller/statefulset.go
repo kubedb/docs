@@ -363,7 +363,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, envs []core.EnvV
 func upsertUserEnv(statefulSet *apps.StatefulSet, postgress *api.Postgres) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularPostgres {
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, postgress.Spec.PodTemplate.Spec.Container.Env...)
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, postgress.Spec.PodTemplate.Spec.Env...)
 			return statefulSet
 		}
 	}
@@ -428,13 +428,11 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db
 
 		cmd := strings.Join(append([]string{
 			"/bin/postgres_exporter",
-			"--log.level=debug",
+			"--log.level=info",
 		}, db.Spec.Monitor.Prometheus.Exporter.Args...), " ")
 
 		commands := []string{
 			fmt.Sprintf(`export DATA_SOURCE_NAME="%s"`, cnnstr),
-			//TODO: remove this echo
-			`echo $DATA_SOURCE_NAME >/proc/1/fd/1`,
 			cmd,
 		}
 		command := strings.Join(commands, ";")
@@ -762,10 +760,10 @@ func getContainers(statefulSet *apps.StatefulSet, postgres *api.Postgres, postgr
 		core.Container{
 			Name:            api.ResourceSingularPostgres,
 			Image:           postgresVersion.Spec.DB.Image,
-			Resources:       postgres.Spec.PodTemplate.Spec.Container.Resources,
-			SecurityContext: postgres.Spec.PodTemplate.Spec.Container.SecurityContext,
-			LivenessProbe:   postgres.Spec.PodTemplate.Spec.Container.LivenessProbe,
-			ReadinessProbe:  postgres.Spec.PodTemplate.Spec.Container.ReadinessProbe,
+			Resources:       postgres.Spec.PodTemplate.Spec.Resources,
+			SecurityContext: postgres.Spec.PodTemplate.Spec.ContainerSecurityContext,
+			LivenessProbe:   postgres.Spec.PodTemplate.Spec.LivenessProbe,
+			ReadinessProbe:  postgres.Spec.PodTemplate.Spec.ReadinessProbe,
 			Lifecycle:       lifeCycle,
 		})
 	statefulSet.Spec.Template.Spec.Containers = core_util.UpsertContainer(
