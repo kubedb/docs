@@ -55,7 +55,8 @@ func (c *Controller) ensureMongosNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 
 	cmds := []string{"mongos"}
 	args := []string{
-		"--bind_ip=0.0.0.0",
+		"--ipv6",
+		"--bind_ip_all",
 		"--port=" + strconv.Itoa(api.MongoDBDatabasePort),
 		"--configdb=$(CONFIGDB_REPSET)",
 		"--clusterAuthMode=" + string(clusterAuth),
@@ -173,7 +174,7 @@ func mongosInitContainer(
 	scriptName string,
 ) (core.Container, []core.Volume) {
 
-	envList = core_util.UpsertEnvVars(envList, podTemplate.Spec.Env...)
+	envList = core_util.UpsertEnvVars(envList, podTemplate.Spec.Container.Env...)
 
 	// mongodb.Spec.SSLMode & mongodb.Spec.ClusterAuthMode can be empty if upgraded operator from
 	// previous version. But, eventually it will be defaulted. TODO: delete in future.

@@ -218,6 +218,14 @@ func (c *Controller) create(db *api.MongoDB) error {
 		}
 	}
 
+	// Create TLS user with Certificate subject name
+	if db.Spec.TLS != nil {
+		err = c.CreateTLSUsers(db)
+		if err != nil {
+			return err
+		}
+	}
+
 	// If the database is successfully provisioned,
 	// Set spec.Init.Initialized to true, if init!=nil.
 	// This will prevent the operator from re-initializing the database.

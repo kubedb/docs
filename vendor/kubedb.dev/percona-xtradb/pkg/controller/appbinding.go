@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -40,9 +39,16 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-func getGarbdConfig(db *api.PerconaXtraDB) ([]byte, error) {
+func getGarbdConfig(db *api.PerconaXtraDB) config_api.GaleraArbitratorConfiguration {
+	params := config_api.GaleraArbitratorConfiguration{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: config_api.SchemeGroupVersion.String(),
+			Kind:       config_api.ResourceKindGaleraArbitratorConfiguration,
+		},
+	}
+
 	if !db.IsCluster() {
-		return nil, nil
+		return params
 	}
 
 	var peers []string
@@ -50,15 +56,10 @@ func getGarbdConfig(db *api.PerconaXtraDB) ([]byte, error) {
 		peers = append(peers, db.PeerName(i))
 	}
 
-	return json.Marshal(config_api.GaleraArbitratorConfiguration{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: config_api.SchemeGroupVersion.String(),
-			Kind:       config_api.ResourceKindGaleraArbitratorConfiguration,
-		},
-		Address:   fmt.Sprintf("gcomm://%s", strings.Join(peers, ",")),
-		Group:     db.Name,
-		SSTMethod: config_api.GarbdXtrabackupSSTMethod,
-	})
+	params.Address = fmt.Sprintf("gcomm://%s", strings.Join(peers, ","))
+	params.Group = db.Name
+	params.SSTMethod = config_api.GarbdXtrabackupSSTMethod
+	return params
 }
 
 func (c *Controller) ensureAppBinding(db *api.PerconaXtraDB) (kutil.VerbType, error) {
@@ -76,15 +77,13 @@ func (c *Controller) ensureAppBinding(db *api.PerconaXtraDB) (kutil.VerbType, er
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPerconaXtraDB))
 
-	garbdCnfJson, err := getGarbdConfig(db)
-	if err != nil {
-		return kutil.VerbUnchanged, err
-	}
-
 	pxVersion, err := c.DBClient.CatalogV1alpha1().PerconaXtraDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, fmt.Errorf("failed to get PerconaXtraDBVersion %v for %v/%v. Reason: %v", db.Spec.Version, db.Namespace, db.Name, err)
 	}
+
+	params := getGarbdConfig(db)
+	params.Stash = pxVersion.Spec.Stash
 
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(
 		context.TODO(),
@@ -105,15 +104,12 @@ func (c *Controller) ensureAppBinding(db *api.PerconaXtraDB) (kutil.VerbType, er
 				Path:   "/",
 			}
 			in.Spec.ClientConfig.InsecureSkipTLSVerify = false
+			in.Spec.Parameters = &runtime.RawExtension{
+				Object: &params,
+			}
 
 			in.Spec.Secret = &core.LocalObjectReference{
 				Name: db.Spec.AuthSecret.Name,
-			}
-
-			if db.IsCluster() {
-				in.Spec.Parameters = &runtime.RawExtension{
-					Raw: garbdCnfJson,
-				}
 			}
 
 			return in

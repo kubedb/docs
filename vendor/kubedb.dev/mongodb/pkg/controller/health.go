@@ -18,26 +18,21 @@ package controller
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
 	"github.com/golang/glog"
 	"go.mongodb.org/mongo-driver/mongo"
-	mgoptions "go.mongodb.org/mongo-driver/mongo/options"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kmapi "kmodules.xyz/client-go/api/v1"
-	"kmodules.xyz/client-go/tools/certholder"
 )
 
 func (c *Controller) RunHealthChecker(stopCh <-chan struct{}) {
@@ -72,7 +67,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 				var shardPingErrors []error
 				// Create database client
 				if db.Spec.ShardTopology == nil {
-					dbClient, err = c.GetMongoClient(db, strings.Join(db.Hosts(), ","))
+					dbClient, err = c.GetMongoClient(db, strings.Join(db.Hosts(), ","), db.RepSetName())
 					if err != nil {
 						// Since the client was unable to connect the database,
 						// update "AcceptingConnection" to "false".
@@ -88,7 +83,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 						}
 					}()
 				} else {
-					configSvrClient, err = c.GetMongoClient(db, strings.Join(db.ConfigSvrHosts(), ","))
+					configSvrClient, err = c.GetMongoClient(db, strings.Join(db.ConfigSvrHosts(), ","), db.ConfigSvrRepSetName())
 					if err != nil {
 						// Since the client was unable to connect to the config server,
 						// update "AcceptingConnection" to "false".
@@ -106,7 +101,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 
 					shardPingErrors = make([]error, db.Spec.ShardTopology.Shard.Shards)
 					for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
-						shardClient, err := c.GetMongoClient(db, strings.Join(db.ShardHosts(i), ","))
+						shardClient, err := c.GetMongoClient(db, strings.Join(db.ShardHosts(i), ","), db.ShardRepSetName(i))
 						if err != nil {
 							// Since the client was unable to connect to the shard nodes,
 							// update "AcceptingConnection" to "false".
@@ -132,7 +127,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 						}(shardClient)
 					}
 
-					mongosClient, err = c.GetMongoClient(db, strings.Join(db.MongosHosts(), ","))
+					mongosClient, err = c.GetMongoClient(db, strings.Join(db.MongosHosts(), ","), "")
 					if err != nil {
 						// Since the client was unable to connect to the mongos,
 						// update "AcceptingConnection" to "false".
@@ -221,80 +216,6 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 	// will wait here until stopCh is closed.
 	<-stopCh
 	glog.Info("Shutting down MongoDB health checker...")
-}
-
-func (c *Controller) GetMongoClient(db *api.MongoDB, url string) (*mongo.Client, error) {
-	clientOpts, err := c.GetMongoDBClientOpts(db, url)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := mongo.Connect(context.Background(), clientOpts)
-	if err != nil {
-		return nil, err
-	}
-
-	err = client.Ping(context.TODO(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return client, nil
-}
-
-func (c *Controller) GetURL(db *api.MongoDB, clientPodName string) string {
-	nodeType := clientPodName[:strings.LastIndex(clientPodName, "-")]
-	return fmt.Sprintf("%s.%s.%s.svc", clientPodName, db.GoverningServiceName(nodeType), db.Namespace)
-}
-
-func (c *Controller) GetMongoDBClientOpts(db *api.MongoDB, url string) (*mgoptions.ClientOptions, error) {
-	var clientOpts *mgoptions.ClientOptions
-	if db.Spec.TLS != nil {
-		secretName := db.MustCertSecretName(api.MongoDBClientCert, "")
-		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
-		if err != nil {
-			log.Error(err, "failed to get certificate secret", "Secret", secretName)
-			return nil, err
-		}
-
-		certs, _ := certholder.DefaultHolder.
-			ForResource(api.SchemeGroupVersion.WithResource(api.ResourcePluralMongoDB), db.ObjectMeta)
-		_, err = certs.Save(certSecret)
-		if err != nil {
-			log.Error(err, "failed to save certificate")
-			return nil, err
-		}
-
-		paths, err := certs.Get(db.MustCertSecretName(api.MongoDBClientCert, ""))
-		if err != nil {
-			return nil, err
-		}
-
-		uri := fmt.Sprintf("mongodb://%s/admin?tls=true&authMechanism=MONGODB-X509&tlsCAFile=%v&tlsCertificateKeyFile=%v", url, paths.CACert, paths.Pem)
-		clientOpts = mgoptions.Client().ApplyURI(uri)
-	} else {
-		user, pass, err := c.GetMongoDBRootCredentials(db)
-		if err != nil {
-			return nil, err
-		}
-		clientOpts = mgoptions.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s", user, pass, url))
-	}
-
-	clientOpts.SetDirect(true)
-	clientOpts.SetConnectTimeout(5 * time.Second)
-
-	return clientOpts, nil
-}
-
-func (c *Controller) GetMongoDBRootCredentials(db *api.MongoDB) (string, string, error) {
-	if db.Spec.AuthSecret == nil {
-		return "", "", errors.New("no database secret")
-	}
-	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
-	if err != nil {
-		return "", "", err
-	}
-	return string(secret.Data[core.BasicAuthUsernameKey]), string(secret.Data[core.BasicAuthPasswordKey]), nil
 }
 
 func (c *Controller) updateErrorAcceptingConnections(db *api.MongoDB, connectionErr error) {

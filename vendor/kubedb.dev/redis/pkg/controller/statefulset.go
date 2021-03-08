@@ -48,6 +48,8 @@ const (
 	CONFIG_MOUNT_PATH = "/usr/local/etc/redis/"
 )
 
+var ErrStsNotReady = fmt.Errorf("statefulSet is not updated yet")
+
 func (c *Controller) ensureStatefulSet(db *api.Redis, statefulSetName string, removeSlave bool) (kutil.VerbType, error) {
 	err := c.checkStatefulSet(db, statefulSetName)
 	if err != nil {
@@ -67,8 +69,8 @@ func (c *Controller) ensureStatefulSet(db *api.Redis, statefulSetName string, re
 
 	// Check StatefulSet Pod status
 	if vt != kutil.VerbUnchanged {
-		if err := c.checkStatefulSetPodStatus(statefulSet); err != nil {
-			return kutil.VerbUnchanged, errors.Wrap(err, "Failed to CreateOrPatch StatefulSet")
+		if !app_util.IsStatefulSetReady(statefulSet) {
+			return "", ErrStsNotReady
 		}
 
 		c.Recorder.Eventf(
@@ -282,7 +284,7 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 			Name:            api.ResourceSingularRedis,
 			Image:           redisVersion.Spec.DB.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
-			Args:            db.Spec.PodTemplate.Spec.Args,
+			Args:            db.Spec.PodTemplate.Spec.Container.Args,
 			Ports:           ports,
 			Env: []core.EnvVar{
 				{
@@ -294,10 +296,11 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 					},
 				},
 			},
-			Resources:      db.Spec.PodTemplate.Spec.Resources,
-			LivenessProbe:  db.Spec.PodTemplate.Spec.LivenessProbe,
-			ReadinessProbe: db.Spec.PodTemplate.Spec.ReadinessProbe,
-			Lifecycle:      db.Spec.PodTemplate.Spec.Lifecycle,
+			Resources:       db.Spec.PodTemplate.Spec.Container.Resources,
+			SecurityContext: db.Spec.PodTemplate.Spec.Container.SecurityContext,
+			LivenessProbe:   db.Spec.PodTemplate.Spec.Container.LivenessProbe,
+			ReadinessProbe:  db.Spec.PodTemplate.Spec.Container.ReadinessProbe,
+			Lifecycle:       db.Spec.PodTemplate.Spec.Container.Lifecycle,
 		}
 
 		if db.Spec.Mode == api.RedisModeStandalone {
@@ -322,19 +325,26 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 			}
 			container.Args = args
 
-		} else if db.Spec.Mode == api.RedisModeCluster && db.Spec.TLS != nil {
+		} else if db.Spec.Mode == api.RedisModeCluster {
 			args := container.Args
-			// tls arguments for redis cluster
-			tlsArgs := []string{
-				"--tls-port 6379",
-				"--port 0",
-				"--tls-cert-file /certs/server.crt",
-				"--tls-key-file /certs/server.key",
-				"--tls-ca-cert-file /certs/ca.crt",
-				"--tls-replication yes",
-				"--tls-cluster yes",
+			// for enabling redis cluster
+			customArgs := []string{
+				"--cluster-enabled yes",
 			}
-			args = append(args, tlsArgs...)
+			args = append(args, customArgs...)
+			if db.Spec.TLS != nil {
+				// tls arguments for redis cluster
+				tlsArgs := []string{
+					"--tls-port 6379",
+					"--port 0",
+					"--tls-cert-file /certs/server.crt",
+					"--tls-key-file /certs/server.key",
+					"--tls-ca-cert-file /certs/ca.crt",
+					"--tls-replication yes",
+					"--tls-cluster yes",
+				}
+				args = append(args, tlsArgs...)
+			}
 
 			container.Args = args
 		}
@@ -343,7 +353,6 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 		in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, container)
 
 		if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
-
 			args := []string{
 				fmt.Sprintf("--web.listen-address=:%v", db.Spec.Monitor.Prometheus.Exporter.Port),
 				fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path()),
@@ -373,7 +382,6 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 				Resources:       db.Spec.Monitor.Prometheus.Exporter.Resources,
 				SecurityContext: db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
 			})
-
 		}
 
 		in = upsertDataVolume(in, db)
@@ -387,6 +395,9 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 		in.Spec.Template.Spec.ImagePullSecrets = db.Spec.PodTemplate.Spec.ImagePullSecrets
 		in.Spec.Template.Spec.PriorityClassName = db.Spec.PodTemplate.Spec.PriorityClassName
 		in.Spec.Template.Spec.Priority = db.Spec.PodTemplate.Spec.Priority
+		in.Spec.Template.Spec.HostNetwork = db.Spec.PodTemplate.Spec.HostNetwork
+		in.Spec.Template.Spec.HostPID = db.Spec.PodTemplate.Spec.HostPID
+		in.Spec.Template.Spec.HostIPC = db.Spec.PodTemplate.Spec.HostIPC
 		in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
 		in.Spec.Template.Spec.ServiceAccountName = db.Spec.PodTemplate.Spec.ServiceAccountName
 		in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
@@ -399,10 +410,7 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 		in = upsertCustomConfig(in, db)
 
 		// configure tls volume
-		if db.Spec.TLS != nil {
-			in = upsertTLSVolume(in, db)
-
-		}
+		in = upsertTLSVolume(in, db)
 
 		return in
 	}, metav1.PatchOptions{})
@@ -465,133 +473,136 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.Redis) *apps.Statef
 
 // adding tls key , cert and ca-cert
 func upsertTLSVolume(sts *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
-	for i, container := range sts.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularRedis {
-			volumeMount := core.VolumeMount{
-				Name:      "tls-volume",
-				MountPath: "/certs",
-			}
-			volumeMounts := container.VolumeMounts
-			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-			sts.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+	if db.Spec.TLS != nil {
+		for i, container := range sts.Spec.Template.Spec.Containers {
+			if container.Name == api.ResourceSingularRedis {
+				volumeMount := core.VolumeMount{
+					Name:      "tls-volume",
+					MountPath: "/certs",
+				}
+				volumeMounts := container.VolumeMounts
+				volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
+				sts.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
+			}
+
+			if container.Name == "exporter" {
+				volumeMount := core.VolumeMount{
+					Name:      "exporter-tls-volume",
+					MountPath: "/certs",
+				}
+				volumeMounts := container.VolumeMounts
+				volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
+				sts.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+			}
 		}
 
-		if container.Name == "exporter" {
-			volumeMount := core.VolumeMount{
-				Name:      "exporter-tls-volume",
-				MountPath: "/certs",
-			}
-			volumeMounts := container.VolumeMounts
-			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-			sts.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
-
-		}
-	}
-
-	volume := core.Volume{
-		Name: "tls-volume",
-		VolumeSource: core.VolumeSource{
-			Projected: &core.ProjectedVolumeSource{
-				Sources: []core.VolumeProjection{
-					{
-						Secret: &core.SecretProjection{
-							LocalObjectReference: core.LocalObjectReference{
-								Name: db.MustCertSecretName(api.RedisServerCert),
-							},
-							Items: []core.KeyToPath{
-								{
-									Key:  "ca.crt",
-									Path: "ca.crt",
+		volume := core.Volume{
+			Name: "tls-volume",
+			VolumeSource: core.VolumeSource{
+				Projected: &core.ProjectedVolumeSource{
+					Sources: []core.VolumeProjection{
+						{
+							Secret: &core.SecretProjection{
+								LocalObjectReference: core.LocalObjectReference{
+									Name: db.MustCertSecretName(api.RedisServerCert),
 								},
-								{
-									Key:  "tls.crt",
-									Path: "server.crt",
-								},
-								{
-									Key:  "tls.key",
-									Path: "server.key",
+								Items: []core.KeyToPath{
+									{
+										Key:  "ca.crt",
+										Path: "ca.crt",
+									},
+									{
+										Key:  "tls.crt",
+										Path: "server.crt",
+									},
+									{
+										Key:  "tls.key",
+										Path: "server.key",
+									},
 								},
 							},
 						},
-					},
-					{
-						Secret: &core.SecretProjection{
-							LocalObjectReference: core.LocalObjectReference{
-								Name: db.MustCertSecretName(api.RedisClientCert),
-							},
-							Items: []core.KeyToPath{
-								{
-									Key:  "tls.crt",
-									Path: "client.crt",
+						{
+							Secret: &core.SecretProjection{
+								LocalObjectReference: core.LocalObjectReference{
+									Name: db.MustCertSecretName(api.RedisClientCert),
 								},
-								{
-									Key:  "tls.key",
-									Path: "client.key",
+								Items: []core.KeyToPath{
+									{
+										Key:  "tls.crt",
+										Path: "client.crt",
+									},
+									{
+										Key:  "tls.key",
+										Path: "client.key",
+									},
 								},
 							},
 						},
 					},
 				},
 			},
-		},
-	}
+		}
 
-	exporterTLSVolume := core.Volume{
-		Name: "exporter-tls-volume",
-		VolumeSource: core.VolumeSource{
-			Projected: &core.ProjectedVolumeSource{
-				Sources: []core.VolumeProjection{
-					{
-						Secret: &core.SecretProjection{
-							LocalObjectReference: core.LocalObjectReference{
-								Name: db.MustCertSecretName(api.RedisMetricsExporterCert),
-							},
-							Items: []core.KeyToPath{
-								{
-									Key:  "ca.crt",
-									Path: "ca.crt",
+		exporterTLSVolume := core.Volume{
+			Name: "exporter-tls-volume",
+			VolumeSource: core.VolumeSource{
+				Projected: &core.ProjectedVolumeSource{
+					Sources: []core.VolumeProjection{
+						{
+							Secret: &core.SecretProjection{
+								LocalObjectReference: core.LocalObjectReference{
+									Name: db.MustCertSecretName(api.RedisMetricsExporterCert),
 								},
-								{
-									Key:  "tls.crt",
-									Path: "exporter.crt",
-								},
-								{
-									Key:  "tls.key",
-									Path: "exporter.key",
+								Items: []core.KeyToPath{
+									{
+										Key:  "ca.crt",
+										Path: "ca.crt",
+									},
+									{
+										Key:  "tls.crt",
+										Path: "exporter.crt",
+									},
+									{
+										Key:  "tls.key",
+										Path: "exporter.key",
+									},
 								},
 							},
 						},
 					},
 				},
 			},
-		},
-	}
+		}
 
-	sts.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
-		sts.Spec.Template.Spec.Volumes,
-		volume,
-		exporterTLSVolume,
-	)
+		sts.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+			sts.Spec.Template.Spec.Volumes,
+			volume,
+			exporterTLSVolume,
+		)
+	} else {
+		for i, container := range sts.Spec.Template.Spec.Containers {
+			if container.Name == api.ResourceSingularRedis {
+				sts.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.EnsureVolumeMountDeleted(sts.Spec.Template.Spec.Containers[i].VolumeMounts, "tls-volume")
+			}
+			if container.Name == api.ContainerExporterName {
+				sts.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.EnsureVolumeMountDeleted(sts.Spec.Template.Spec.Containers[i].VolumeMounts, "exporter-tls-volume")
+			}
+		}
+		sts.Spec.Template.Spec.Volumes = core_util.EnsureVolumeDeleted(sts.Spec.Template.Spec.Volumes, "tls-volume")
+		sts.Spec.Template.Spec.Volumes = core_util.EnsureVolumeDeleted(sts.Spec.Template.Spec.Volumes, "exporter-tls-volume")
+	}
 
 	return sts
-}
-
-func (c *Controller) checkStatefulSetPodStatus(statefulSet *apps.StatefulSet) error {
-	return core_util.WaitUntilPodRunningBySelector(
-		context.TODO(),
-		c.Client,
-		statefulSet.Namespace,
-		statefulSet.Spec.Selector,
-		int(pointer.Int32(statefulSet.Spec.Replicas)),
-	)
 }
 
 // upsertUserEnv add/overwrite env from user provided env in crd spec
 func upsertUserEnv(statefulset *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 	for i, container := range statefulset.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularRedis {
-			statefulset.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Env...)
+			statefulset.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Container.Env...)
 			return statefulset
 		}
 	}

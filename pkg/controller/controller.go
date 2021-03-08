@@ -22,6 +22,7 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	esc "kubedb.dev/elasticsearch/pkg/controller"
+	mrc "kubedb.dev/mariadb/pkg/controller"
 	mcc "kubedb.dev/memcached/pkg/controller"
 	mgc "kubedb.dev/mongodb/pkg/controller"
 	myc "kubedb.dev/mysql/pkg/controller"
@@ -60,9 +61,10 @@ type Controller struct {
 	esCtrl  *esc.Controller
 	mcCtrl  *mcc.Controller
 	mgCtrl  *mgc.Controller
+	mrCtrl  *mrc.Controller
 	myCtrl  *myc.Controller
-	pgbCtrl *pgb.Controller
 	pgCtrl  *pgc.Controller
+	pgbCtrl *pgb.Controller
 	prCtrl  *prc.Controller
 	pxCtrl  *pxc.Controller
 	rdCtrl  *rdc.Controller
@@ -102,6 +104,7 @@ func New(
 					Values: []string{
 						dbapi.Elasticsearch{}.ResourceFQN(),
 						dbapi.Etcd{}.ResourceFQN(),
+						dbapi.MariaDB{}.ResourceFQN(),
 						dbapi.Memcached{}.ResourceFQN(),
 						dbapi.MongoDB{}.ResourceFQN(),
 						dbapi.MySQL{}.ResourceFQN(),
@@ -123,6 +126,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 	crds := []*apiextensions.CustomResourceDefinition{
 		dbapi.Elasticsearch{}.CustomResourceDefinition(),
 		dbapi.Etcd{}.CustomResourceDefinition(),
+		dbapi.MariaDB{}.CustomResourceDefinition(),
 		dbapi.Memcached{}.CustomResourceDefinition(),
 		dbapi.MongoDB{}.CustomResourceDefinition(),
 		dbapi.MySQL{}.CustomResourceDefinition(),
@@ -134,6 +138,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 
 		catalogapi.ElasticsearchVersion{}.CustomResourceDefinition(),
 		catalogapi.EtcdVersion{}.CustomResourceDefinition(),
+		catalogapi.MariaDBVersion{}.CustomResourceDefinition(),
 		catalogapi.MemcachedVersion{}.CustomResourceDefinition(),
 		catalogapi.MongoDBVersion{}.CustomResourceDefinition(),
 		catalogapi.MySQLVersion{}.CustomResourceDefinition(),

@@ -23,6 +23,7 @@ import (
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	sts "kubedb.dev/apimachinery/pkg/controller/statefulset"
 	esc "kubedb.dev/elasticsearch/pkg/controller"
+	mrc "kubedb.dev/mariadb/pkg/controller"
 	mcc "kubedb.dev/memcached/pkg/controller"
 	mgc "kubedb.dev/mongodb/pkg/controller"
 	myc "kubedb.dev/mysql/pkg/controller"
@@ -99,6 +100,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 
 	ctrl.esCtrl = esc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder)
 	ctrl.mcCtrl = mcc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder)
+	ctrl.mrCtrl = mrc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder)
 	ctrl.mgCtrl = mgc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder)
 	ctrl.myCtrl = myc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder)
 	ctrl.pgCtrl = pgc.New(c.ClientConfig, c.KubeClient, c.CRDClient, c.DBClient, c.DynamicClient, c.AppCatalogClient, c.PromClient, ctrl.Config, topology, c.Recorder)
@@ -142,6 +144,10 @@ func (c *Controller) Init() error {
 	}
 
 	if err := c.mgCtrl.Init(); err != nil {
+		return err
+	}
+
+	if err := c.mrCtrl.Init(); err != nil {
 		return err
 	}
 

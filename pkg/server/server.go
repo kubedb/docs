@@ -26,6 +26,7 @@ import (
 	"kubedb.dev/apimachinery/pkg/admission/namespace"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	esAdmsn "kubedb.dev/elasticsearch/pkg/admission"
+	mrAdmsn "kubedb.dev/mariadb/pkg/admission"
 	mcAdmsn "kubedb.dev/memcached/pkg/admission"
 	mgAdmsn "kubedb.dev/mongodb/pkg/admission"
 	myAdmsn "kubedb.dev/mysql/pkg/admission"
@@ -152,6 +153,9 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 			&mgAdmsn.MongoDBMutator{
 				ClusterTopology: ctrl.ClusterTopology,
 			},
+			&mrAdmsn.MariaDBMutator{
+				ClusterTopology: ctrl.ClusterTopology,
+			},
 			&myAdmsn.MySQLMutator{
 				ClusterTopology: ctrl.ClusterTopology,
 			},
@@ -175,6 +179,9 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 			&mgAdmsn.MongoDBValidator{
 				ClusterTopology: ctrl.ClusterTopology,
 			},
+			&mrAdmsn.MariaDBValidator{
+				ClusterTopology: ctrl.ClusterTopology,
+			},
 			&myAdmsn.MySQLValidator{
 				ClusterTopology: ctrl.ClusterTopology,
 			},
@@ -191,6 +198,7 @@ func (c completedConfig) New() (*KubeDBServer, error) {
 				Resources: []string{
 					api.ResourcePluralElasticsearch,
 					api.ResourcePluralEtcd,
+					api.ResourcePluralMariaDB,
 					api.ResourcePluralMemcached,
 					api.ResourcePluralMongoDB,
 					api.ResourcePluralMySQL,

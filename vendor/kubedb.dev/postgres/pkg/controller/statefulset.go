@@ -19,29 +19,57 @@ package controller
 import (
 	"context"
 	"fmt"
-	"path"
 	"strconv"
 	"strings"
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
-	"kubedb.dev/pg-leader-election/pkg/leader_election"
 
+	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
+	"gomodules.xyz/version"
 	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
-	"kmodules.xyz/client-go/tools/analytics"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
+
+const (
+	PostgresInitContainerName = "postgres-init-container"
+
+	sharedTlsVolumeMountPath = "/tls/certs"
+	clientTlsVolumeMountPath = "/certs/client"
+	serverTlsVolumeMountPath = "/certs/server"
+	serverTlsVolumeName      = "tls-volume-server"
+	clientTlsVolumeName      = "tls-volume-client"
+	coordinatorTlsVolumeName = "coordinator-tls-volume"
+	sharedTlsVolumeName      = "certs"
+	exporterTlsVolumeName    = "exporter-tls-volume"
+	TLS_CERT                 = "tls.crt"
+	TLS_KEY                  = "tls.key"
+	TLS_CA_CERT              = "ca.crt"
+	CLIENT_CERT              = "client.crt"
+	CLIENT_KEY               = "client.key"
+	SERVER_CERT              = "server.crt"
+	SERVER_KEY               = "server.key"
+)
+
+func getMajorPgVersion(postgres *api.Postgres) (int64, error) {
+	ver, err := version.NewVersion(postgres.Spec.Version)
+	if err != nil {
+		return 0, errors.Wrap(err, "Failed to get postgres major.")
+	}
+	return ver.Major(), nil
+}
 
 func (c *Controller) ensureStatefulSet(
 	db *api.Postgres,
@@ -83,41 +111,13 @@ func (c *Controller) ensureStatefulSet(
 			in.Spec.Template.Labels = db.OffshootSelectors()
 			in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(in.Spec.Template.Spec.InitContainers, db.Spec.PodTemplate.Spec.InitContainers)
-			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
-				in.Spec.Template.Spec.Containers,
-				core.Container{
-					Name: api.ResourceSingularPostgres,
-					Args: append([]string{
-						"leader_election",
-						fmt.Sprintf(`--enable-analytics=%v`, c.EnableAnalytics),
-					}, c.LoggerOptions.ToFlags()...),
-					Env: []core.EnvVar{
-						{
-							Name:  analytics.Key,
-							Value: c.AnalyticsClientID,
-						},
-					},
-					Image: postgresVersion.Spec.DB.Image,
-					Ports: []core.ContainerPort{
-						{
-							Name:          api.PostgresDatabasePortName,
-							ContainerPort: api.PostgresDatabasePort,
-							Protocol:      core.ProtocolTCP,
-						},
-					},
-					Resources:      db.Spec.PodTemplate.Spec.Resources,
-					LivenessProbe:  db.Spec.PodTemplate.Spec.LivenessProbe,
-					ReadinessProbe: db.Spec.PodTemplate.Spec.ReadinessProbe,
-					Lifecycle:      db.Spec.PodTemplate.Spec.Lifecycle,
-					SecurityContext: &core.SecurityContext{
-						Privileged: pointer.BoolP(false),
-						Capabilities: &core.Capabilities{
-							Add: []core.Capability{"IPC_LOCK", "SYS_RESOURCE"},
-						},
-					},
-				})
+			in.Spec.Template.Spec.InitContainers = getInitContainers(in, postgresVersion)
+
+			in.Spec.Template.Spec.Containers = getContainers(in, db, postgresVersion)
+
 			in = upsertEnv(in, db, envList)
 			in = upsertUserEnv(in, db)
+			in = upsertPort(in)
 
 			in.Spec.Template.Spec.NodeSelector = db.Spec.PodTemplate.Spec.NodeSelector
 			in.Spec.Template.Spec.Affinity = db.Spec.PodTemplate.Spec.Affinity
@@ -128,25 +128,15 @@ func (c *Controller) ensureStatefulSet(
 			in.Spec.Template.Spec.ImagePullSecrets = db.Spec.PodTemplate.Spec.ImagePullSecrets
 			in.Spec.Template.Spec.PriorityClassName = db.Spec.PodTemplate.Spec.PriorityClassName
 			in.Spec.Template.Spec.Priority = db.Spec.PodTemplate.Spec.Priority
+			in.Spec.Template.Spec.HostNetwork = db.Spec.PodTemplate.Spec.HostNetwork
+			in.Spec.Template.Spec.HostPID = db.Spec.PodTemplate.Spec.HostPID
+			in.Spec.Template.Spec.HostIPC = db.Spec.PodTemplate.Spec.HostIPC
 			in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
 
 			in = c.upsertMonitoringContainer(in, db, postgresVersion)
-			if db.Spec.Archiver != nil {
-				if db.Spec.Archiver.Storage != nil {
-					//Creating secret for cloud providers
-					archiverStorage := db.Spec.Archiver.Storage
-					if archiverStorage.Local == nil {
-						in = upsertArchiveSecret(in, archiverStorage.StorageSecretName)
-					}
-				}
-			}
 
 			if !kmapi.HasCondition(db.Status.Conditions, api.DatabaseDataRestored) {
 				initSource := db.Spec.Init
-				if initSource != nil && initSource.PostgresWAL != nil && initSource.PostgresWAL.Local == nil {
-					//Getting secret for cloud providers
-					in = upsertInitWalSecret(in, db.Spec.Init.PostgresWAL.StorageSecretName)
-				}
 				if initSource != nil && initSource.Script != nil {
 					in = upsertInitScript(in, db.Spec.Init.Script.VolumeSource)
 				}
@@ -155,6 +145,12 @@ func (c *Controller) ensureStatefulSet(
 			in = upsertShm(in)
 			in = upsertDataVolume(in, db)
 			in = upsertCustomConfig(in, db)
+			in = upsertSharedScriptsVolume(in)
+			if db.Spec.TLS != nil {
+				in = upsertTLSVolume(in, db)
+				in = upsertCertificatesVolume(in)
+
+			}
 
 			in.Spec.Template.Spec.ServiceAccountName = db.Spec.PodTemplate.Spec.ServiceAccountName
 			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
@@ -228,95 +224,6 @@ func (c *Controller) ensureCombinedNode(db *api.Postgres, postgresVersion *catal
 		},
 	}
 
-	if db.Spec.LeaderElection != nil {
-		envList = append(envList, []core.EnvVar{
-			{
-				Name:  leader_election.LeaseDurationEnv,
-				Value: strconv.Itoa(int(db.Spec.LeaderElection.LeaseDurationSeconds)),
-			},
-			{
-				Name:  leader_election.RenewDeadlineEnv,
-				Value: strconv.Itoa(int(db.Spec.LeaderElection.RenewDeadlineSeconds)),
-			},
-			{
-				Name:  leader_election.RetryPeriodEnv,
-				Value: strconv.Itoa(int(db.Spec.LeaderElection.RetryPeriodSeconds)),
-			},
-		}...)
-	}
-
-	if db.Spec.Archiver != nil {
-		archiverStorage := db.Spec.Archiver.Storage
-		if archiverStorage != nil {
-			envList = append(envList,
-				core.EnvVar{
-					Name:  "ARCHIVE",
-					Value: "wal-g",
-				},
-			)
-			if archiverStorage.S3 != nil {
-				envList = append(envList,
-					core.EnvVar{
-						Name:  "ARCHIVE_S3_PREFIX",
-						Value: fmt.Sprintf("s3://%v/%v", archiverStorage.S3.Bucket, WalDataDir(db)),
-					},
-				)
-				if archiverStorage.S3.Endpoint != "" && !strings.HasSuffix(archiverStorage.S3.Endpoint, ".amazonaws.com") {
-					//means it is a  compatible storage
-					envList = append(envList,
-						core.EnvVar{
-							Name:  "ARCHIVE_S3_ENDPOINT",
-							Value: archiverStorage.S3.Endpoint,
-						},
-					)
-				}
-				if archiverStorage.S3.Region != "" {
-					envList = append(envList,
-						core.EnvVar{
-							Name:  "ARCHIVE_S3_REGION",
-							Value: archiverStorage.S3.Region,
-						},
-					)
-				}
-			} else if archiverStorage.GCS != nil {
-				envList = append(envList,
-					core.EnvVar{
-						Name:  "ARCHIVE_GS_PREFIX",
-						Value: fmt.Sprintf("gs://%v/%v", archiverStorage.GCS.Bucket, WalDataDir(db)),
-					},
-				)
-			} else if archiverStorage.Azure != nil {
-				envList = append(envList,
-					core.EnvVar{
-						Name:  "ARCHIVE_AZ_PREFIX",
-						Value: fmt.Sprintf("azure://%v/%v", archiverStorage.Azure.Container, WalDataDir(db)),
-					},
-				)
-			} else if archiverStorage.Swift != nil {
-				envList = append(envList,
-					core.EnvVar{
-						Name:  "ARCHIVE_SWIFT_PREFIX",
-						Value: fmt.Sprintf("swift://%v/%v", archiverStorage.Swift.Container, WalDataDir(db)),
-					},
-				)
-			} else if archiverStorage.Local != nil {
-				envList = append(envList,
-					core.EnvVar{
-						Name:  "ARCHIVE_FILE_PREFIX",
-						Value: archiverStorage.Local.MountPath,
-					},
-				)
-			}
-		}
-	}
-
-	if db.Spec.Init != nil {
-		wal := db.Spec.Init.PostgresWAL
-		if wal != nil {
-			envList = append(envList, walRecoveryConfig(wal)...)
-		}
-	}
-
 	return c.ensureStatefulSet(db, postgresVersion, envList)
 }
 
@@ -341,6 +248,22 @@ func (c *Controller) checkStatefulSet(db *api.Postgres) error {
 }
 
 func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, envs []core.EnvVar) *apps.StatefulSet {
+	majorPGVersion, err := getMajorPgVersion(db)
+	if err != nil {
+		log.Error("couldn't get version's major part")
+	}
+	sslMode := db.Spec.SSLMode
+	if sslMode == "" {
+		if db.Spec.TLS != nil {
+			sslMode = api.PostgresSSLModeVerifyFull
+		} else {
+			sslMode = api.PostgresSSLModeDisable
+		}
+	}
+	clientAuthMode := db.Spec.ClientAuthMode
+	if clientAuthMode == "" {
+		clientAuthMode = api.ClientAuthModeMD5
+	}
 	envList := []core.EnvVar{
 		{
 			Name: "NAMESPACE",
@@ -353,6 +276,22 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, envs []core.EnvV
 		{
 			Name:  "PRIMARY_HOST",
 			Value: db.ServiceName(),
+		},
+		{
+			Name:  "MAX_LAG_BEFORE_FAILOVER",
+			Value: strconv.FormatUint(db.Spec.LeaderElection.MaximumLagBeforeFailover, 10),
+		},
+		{
+			Name:  "PERIOD",
+			Value: db.Spec.LeaderElection.Period.Duration.String(),
+		},
+		{
+			Name:  "ELECTION_TICK",
+			Value: strconv.Itoa(int(db.Spec.LeaderElection.ElectionTick)),
+		},
+		{
+			Name:  "HEARTBEAT_TICK",
+			Value: strconv.Itoa(int(db.Spec.LeaderElection.HeartbeatTick)),
 		},
 		{
 			Name: EnvPostgresUser,
@@ -376,18 +315,47 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, envs []core.EnvV
 				},
 			},
 		},
+		{
+			Name:  "PG_VERSION",
+			Value: db.Spec.Version,
+		},
+		{
+			Name:  "MAJOR_PG_VERSION",
+			Value: strconv.Itoa(int(majorPGVersion)),
+		},
+		{
+			Name:  "CLIENT_AUTH_MODE",
+			Value: string(clientAuthMode),
+		},
+		{
+			Name:  "SSL_MODE",
+			Value: string(sslMode),
+		},
 	}
 
 	envList = append(envList, envs...)
 
-	// To do this, Upsert Container first
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPostgres {
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
-			return statefulSet
+	if db.Spec.TLS != nil {
+		tlEnv := []core.EnvVar{
+			{
+				Name:  "SSL",
+				Value: "ON",
+			},
 		}
+		envList = append(envList, tlEnv...)
 	}
 
+	// To do this, Upsert Container first
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularPostgres || container.Name == api.PostgresCoordinatorContainerName {
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envList...)
+		}
+	}
+	for i, initContainer := range statefulSet.Spec.Template.Spec.InitContainers {
+		if initContainer.Name == PostgresInitContainerName {
+			statefulSet.Spec.Template.Spec.InitContainers[i].Env = core_util.UpsertEnvVars(initContainer.Env, envList...)
+		}
+	}
 	return statefulSet
 }
 
@@ -395,20 +363,91 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, envs []core.EnvV
 func upsertUserEnv(statefulSet *apps.StatefulSet, postgress *api.Postgres) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularPostgres {
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, postgress.Spec.PodTemplate.Spec.Env...)
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, postgress.Spec.PodTemplate.Spec.Container.Env...)
 			return statefulSet
 		}
 	}
 	return statefulSet
 }
+func upsertPort(statefulSet *apps.StatefulSet) *apps.StatefulSet {
+	getPostgresPorts := func() []core.ContainerPort {
+		portList := []core.ContainerPort{
+			{
+				Name:          api.PostgresDatabasePortName,
+				ContainerPort: api.PostgresDatabasePort,
+				Protocol:      core.ProtocolTCP,
+			},
+		}
+		return portList
+	}
+	getCoordinatorPorts := func() []core.ContainerPort {
+		portList := []core.ContainerPort{
+			{
+				Name:          api.PostgresCoordinatorPortName,
+				ContainerPort: api.PostgresCoordinatorPort, // 2380
+				Protocol:      core.ProtocolTCP,
+			},
+			{
+				Name:          api.PostgresCoordinatorClientPortName,
+				ContainerPort: api.PostgresCoordinatorClientPort, // 2379
+				Protocol:      core.ProtocolTCP,
+			},
+		}
+		return portList
+	}
+
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularPostgres {
+			statefulSet.Spec.Template.Spec.Containers[i].Ports = getPostgresPorts()
+		} else if container.Name == api.PostgresCoordinatorContainerName {
+			statefulSet.Spec.Template.Spec.Containers[i].Ports = getCoordinatorPorts()
+		}
+	}
+
+	return statefulSet
+}
 
 func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion *catalog.PostgresVersion) *apps.StatefulSet {
+
 	if db.Spec.Monitor != nil && db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus {
+		sslMode := string(db.Spec.SSLMode)
+		if sslMode == string(api.PostgresSSLModePrefer) || sslMode == string(api.PostgresSSLModeAllow) {
+			sslMode = string(api.PostgresSSLModeRequire)
+		}
+		cnnstr := fmt.Sprintf("user=${POSTGRES_SOURCE_USER} password='${POSTGRES_SOURCE_PASS}' host=%s port=%d sslmode=%s", api.LocalHost, api.PostgresDatabasePort, sslMode)
+
+		if db.Spec.TLS != nil {
+			if db.Spec.SSLMode == api.PostgresSSLModeVerifyCA || db.Spec.SSLMode == api.PostgresSSLModeVerifyFull {
+				cnnstr = fmt.Sprintf("%s sslrootcert=%s/ca.crt", cnnstr, clientTlsVolumeMountPath)
+			}
+			if db.Spec.ClientAuthMode == api.ClientAuthModeCert {
+				cnnstr = fmt.Sprintf("%s sslcert=%s/tls.crt sslkey=%s/tls.key", cnnstr,
+					clientTlsVolumeMountPath, clientTlsVolumeMountPath)
+			}
+		}
+
+		cmd := strings.Join(append([]string{
+			"/bin/postgres_exporter",
+			"--log.level=debug",
+		}, db.Spec.Monitor.Prometheus.Exporter.Args...), " ")
+
+		commands := []string{
+			fmt.Sprintf(`export DATA_SOURCE_NAME="%s"`, cnnstr),
+			//TODO: remove this echo
+			`echo $DATA_SOURCE_NAME >/proc/1/fd/1`,
+			cmd,
+		}
+		command := strings.Join(commands, ";")
+
 		container := core.Container{
 			Name: "exporter",
-			Args: append([]string{
-				"--log.level=info",
-			}, db.Spec.Monitor.Prometheus.Exporter.Args...),
+			Command: []string{
+				"/bin/sh",
+			},
+			Args: []string{
+				"-c",
+				command,
+			},
 			Image:           postgresVersion.Spec.Exporter.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			Ports: []core.ContainerPort{
@@ -418,18 +457,19 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db
 					ContainerPort: int32(db.Spec.Monitor.Prometheus.Exporter.Port),
 				},
 			},
-			Env:             db.Spec.Monitor.Prometheus.Exporter.Env,
-			Resources:       db.Spec.Monitor.Prometheus.Exporter.Resources,
-			SecurityContext: db.Spec.Monitor.Prometheus.Exporter.SecurityContext,
+			Env:       db.Spec.Monitor.Prometheus.Exporter.Env,
+			Resources: db.Spec.Monitor.Prometheus.Exporter.Resources,
+			// Run the container with default User as root user. As when we mount secret it's default owner is root and
+			// it has default mode(0600) we can't change that mode to global or higher than 0600.
+			// As postgres server don't allow certs file have the global permission.
+			// So User must need to be root to have read permission for the certs files. For this reason, We have set UID = 0, 0 is for root user.
+			SecurityContext: &core.SecurityContext{
+				RunAsUser: pointer.Int64P(0),
+			},
 		}
-
 		envList := []core.EnvVar{
 			{
-				Name:  "DATA_SOURCE_URI",
-				Value: fmt.Sprintf("localhost:%d/?sslmode=disable", api.PostgresDatabasePort),
-			},
-			{
-				Name: "DATA_SOURCE_USER",
+				Name: "POSTGRES_SOURCE_USER",
 				ValueFrom: &core.EnvVarSource{
 					SecretKeyRef: &core.SecretKeySelector{
 						LocalObjectReference: core.LocalObjectReference{
@@ -440,7 +480,7 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db
 				},
 			},
 			{
-				Name: "DATA_SOURCE_PASS",
+				Name: "POSTGRES_SOURCE_PASS",
 				ValueFrom: &core.EnvVarSource{
 					SecretKeyRef: &core.SecretKeySelector{
 						LocalObjectReference: core.LocalObjectReference{
@@ -459,67 +499,10 @@ func (c *Controller) upsertMonitoringContainer(statefulSet *apps.StatefulSet, db
 				Value: db.StatsService().Path(),
 			},
 		}
-
 		container.Env = core_util.UpsertEnvVars(container.Env, envList...)
 		containers := statefulSet.Spec.Template.Spec.Containers
 		containers = core_util.UpsertContainer(containers, container)
 		statefulSet.Spec.Template.Spec.Containers = containers
-	}
-	return statefulSet
-}
-
-func upsertArchiveSecret(statefulSet *apps.StatefulSet, secretName string) *apps.StatefulSet {
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPostgres {
-			volumeMount := core.VolumeMount{
-				Name:      "wal-g-archive",
-				MountPath: "/srv/wal-g/archive/secrets",
-			}
-			volumeMounts := container.VolumeMounts
-			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
-
-			volume := core.Volume{
-				Name: "wal-g-archive",
-				VolumeSource: core.VolumeSource{
-					Secret: &core.SecretVolumeSource{
-						SecretName: secretName,
-					},
-				},
-			}
-			volumes := statefulSet.Spec.Template.Spec.Volumes
-			volumes = core_util.UpsertVolume(volumes, volume)
-			statefulSet.Spec.Template.Spec.Volumes = volumes
-			return statefulSet
-		}
-	}
-	return statefulSet
-}
-
-func upsertInitWalSecret(statefulSet *apps.StatefulSet, secretName string) *apps.StatefulSet {
-	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPostgres {
-			volumeMount := core.VolumeMount{
-				Name:      "wal-g-restore",
-				MountPath: "/srv/wal-g/restore/secrets",
-			}
-			volumeMounts := container.VolumeMounts
-			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
-			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
-
-			volume := core.Volume{
-				Name: "wal-g-restore",
-				VolumeSource: core.VolumeSource{
-					Secret: &core.SecretVolumeSource{
-						SecretName: secretName,
-					},
-				},
-			}
-			volumes := statefulSet.Spec.Template.Spec.Volumes
-			volumes = core_util.UpsertVolume(volumes, volume)
-			statefulSet.Spec.Template.Spec.Volumes = volumes
-			return statefulSet
-		}
 	}
 	return statefulSet
 }
@@ -577,56 +560,14 @@ func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *
 }
 
 func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.Postgres) *apps.StatefulSet {
-	if db.Spec.Archiver != nil || db.Spec.Init != nil {
-		// Add a PV
-		if db.Spec.Archiver != nil &&
-			db.Spec.Archiver.Storage != nil &&
-			db.Spec.Archiver.Storage.Local != nil {
-			pgLocalVol := db.Spec.Archiver.Storage.Local
-			podSpec := statefulSet.Spec.Template.Spec
-			if pgLocalVol != nil {
-				volume := core.Volume{
-					Name:         "local-archive",
-					VolumeSource: pgLocalVol.VolumeSource,
-				}
-				statefulSet.Spec.Template.Spec.Volumes = append(podSpec.Volumes, volume)
-
-				statefulSet.Spec.Template.Spec.Containers[0].VolumeMounts = append(podSpec.Containers[0].VolumeMounts, core.VolumeMount{
-					Name:      "local-archive",
-					MountPath: pgLocalVol.MountPath,
-					//SubPath:  use of SubPath is discouraged
-					// due to the contrasting natures of PV claim and wal-g directory
-				})
-			}
-		}
-		if db.Spec.Init != nil &&
-			db.Spec.Init.PostgresWAL != nil &&
-			db.Spec.Init.PostgresWAL.Local != nil {
-			pgLocalVol := db.Spec.Init.PostgresWAL.Local
-			podSpec := statefulSet.Spec.Template.Spec
-			if pgLocalVol != nil {
-				volume := core.Volume{
-					Name:         "local-init",
-					VolumeSource: pgLocalVol.VolumeSource,
-				}
-				statefulSet.Spec.Template.Spec.Volumes = append(podSpec.Volumes, volume)
-
-				statefulSet.Spec.Template.Spec.Containers[0].VolumeMounts = append(podSpec.Containers[0].VolumeMounts, core.VolumeMount{
-					Name:      "local-init",
-					MountPath: pgLocalVol.MountPath,
-					//SubPath: is used to locate existing archive
-					//from given mountPath, therefore isn't mounted.
-				})
-			}
-		}
-	}
 
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
-		if container.Name == api.ResourceSingularPostgres {
+		if container.Name == api.ResourceSingularPostgres || container.Name == api.PostgresCoordinatorContainerName {
 			volumeMount := core.VolumeMount{
 				Name:      "data",
 				MountPath: "/var/pv",
 			}
+
 			volumeMounts := container.VolumeMounts
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
@@ -668,7 +609,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.Postgres) *apps.Sta
 				}
 				statefulSet.Spec.VolumeClaimTemplates = core_util.UpsertVolumeClaim(statefulSet.Spec.VolumeClaimTemplates, claim)
 			}
-			break
+			//	break
 		}
 	}
 	return statefulSet
@@ -705,107 +646,289 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, db *api.Postgres) *apps.S
 	return statefulSet
 }
 
-func walRecoveryConfig(wal *api.PostgresWALSourceSpec) []core.EnvVar {
-	envList := []core.EnvVar{
-		{
-			Name:  "RESTORE",
-			Value: "true",
+func upsertSharedScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
+
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularPostgres || container.Name == api.PostgresCoordinatorContainerName {
+			configVolumeMount := core.VolumeMount{
+				Name:      "scripts",
+				MountPath: "/run_scripts",
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+		}
+	}
+	for i, initContainer := range statefulSet.Spec.Template.Spec.InitContainers {
+		if initContainer.Name == PostgresInitContainerName {
+			configVolumeMount := core.VolumeMount{
+				Name:      "scripts",
+				MountPath: "/run_scripts",
+			}
+			volumeMounts := initContainer.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.InitContainers[i].VolumeMounts = volumeMounts
+
+		}
+	}
+
+	configVolume := core.Volume{
+		Name: "scripts",
+		VolumeSource: core.VolumeSource{
+			EmptyDir: &core.EmptyDirVolumeSource{},
 		},
 	}
 
-	if wal.S3 != nil {
-		envList = append(envList,
-			core.EnvVar{
-				Name:  "RESTORE_S3_PREFIX",
-				Value: fmt.Sprintf("s3://%v/%v", wal.S3.Bucket, wal.S3.Prefix),
-			},
-		)
-		if wal.S3.Endpoint != "" && !strings.HasSuffix(wal.S3.Endpoint, ".amazonaws.com") {
-			envList = append(envList,
-				core.EnvVar{
-					Name:  "RESTORE_S3_ENDPOINT",
-					Value: wal.S3.Endpoint,
-				},
-			)
+	volumes := statefulSet.Spec.Template.Spec.Volumes
+	volumes = core_util.UpsertVolume(volumes, configVolume)
+	statefulSet.Spec.Template.Spec.Volumes = volumes
+
+	return statefulSet
+}
+
+func upsertCertificatesVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
+
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularPostgres {
+			configVolumeMount := core.VolumeMount{
+				Name:      sharedTlsVolumeName,
+				MountPath: sharedTlsVolumeMountPath,
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
 		}
-		if wal.S3.Region != "" {
-			envList = append(envList,
-				core.EnvVar{
-					Name:  "RESTORE_S3_REGION",
-					Value: wal.S3.Region,
-				},
-			)
+	}
+	for i, initContainer := range statefulSet.Spec.Template.Spec.InitContainers {
+		if initContainer.Name == PostgresInitContainerName {
+			configVolumeMount := core.VolumeMount{
+				Name:      sharedTlsVolumeName,
+				MountPath: sharedTlsVolumeMountPath,
+			}
+			volumeMounts := initContainer.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.InitContainers[i].VolumeMounts = volumeMounts
+
 		}
-	} else if wal.GCS != nil {
-		envList = append(envList,
-			core.EnvVar{
-				Name:  "RESTORE_GS_PREFIX",
-				Value: fmt.Sprintf("gs://%v/%v", wal.GCS.Bucket, wal.GCS.Prefix),
-			},
-		)
-	} else if wal.Azure != nil {
-		envList = append(envList,
-			core.EnvVar{
-				Name:  "RESTORE_AZ_PREFIX",
-				Value: fmt.Sprintf("azure://%v/%v", wal.Azure.Container, wal.Azure.Prefix),
-			},
-		)
-	} else if wal.Swift != nil {
-		envList = append(envList,
-			core.EnvVar{
-				Name:  "RESTORE_SWIFT_PREFIX",
-				Value: fmt.Sprintf("swift://%v/%v", wal.Swift.Container, wal.Swift.Prefix),
-			},
-		)
-	} else if wal.Local != nil {
-		archiveSource := path.Join("/", wal.Local.MountPath, wal.Local.SubPath)
-		envList = append(envList,
-			core.EnvVar{
-				Name:  "RESTORE_FILE_PREFIX",
-				Value: archiveSource,
-			},
-		)
 	}
 
-	if wal.PITR != nil {
-		envList = append(envList,
-			[]core.EnvVar{
-				{
-					Name:  "PITR",
-					Value: "true",
+	configVolume := core.Volume{
+		Name: sharedTlsVolumeName,
+		VolumeSource: core.VolumeSource{
+			EmptyDir: &core.EmptyDirVolumeSource{},
+		},
+	}
+
+	volumes := statefulSet.Spec.Template.Spec.Volumes
+	volumes = core_util.UpsertVolume(volumes, configVolume)
+	statefulSet.Spec.Template.Spec.Volumes = volumes
+
+	return statefulSet
+}
+
+func getInitContainers(statefulSet *apps.StatefulSet, postgresVersion *catalog.PostgresVersion) []core.Container {
+	statefulSet.Spec.Template.Spec.InitContainers = core_util.UpsertContainer(
+		statefulSet.Spec.Template.Spec.InitContainers,
+		core.Container{
+			Name:  PostgresInitContainerName,
+			Image: postgresVersion.Spec.InitContainer.Image,
+			Resources: core.ResourceRequirements{
+				Limits: core.ResourceList{
+					core.ResourceCPU:    resource.MustParse(".200"),
+					core.ResourceMemory: resource.MustParse("128Mi"),
 				},
-				{
-					Name:  "TARGET_INCLUSIVE",
-					Value: fmt.Sprintf("%t", *wal.PITR.TargetInclusive),
+				Requests: core.ResourceList{
+					core.ResourceCPU:    resource.MustParse(".200"),
+					core.ResourceMemory: resource.MustParse("128Mi"),
 				},
-			}...)
-		if wal.PITR.TargetTime != "" {
-			envList = append(envList,
-				[]core.EnvVar{
-					{
-						Name:  "TARGET_TIME",
-						Value: wal.PITR.TargetTime,
-					},
-				}...)
-		}
-		if wal.PITR.TargetTimeline != "" {
-			envList = append(envList,
-				[]core.EnvVar{
-					{
-						Name:  "TARGET_TIMELINE",
-						Value: wal.PITR.TargetTimeline,
-					},
-				}...)
-		}
-		if wal.PITR.TargetXID != "" {
-			envList = append(envList,
-				[]core.EnvVar{
-					{
-						Name:  "TARGET_XID",
-						Value: wal.PITR.TargetXID,
-					},
-				}...)
+			},
+		})
+	return statefulSet.Spec.Template.Spec.InitContainers
+}
+
+func getContainers(statefulSet *apps.StatefulSet, postgres *api.Postgres, postgresVersion *catalog.PostgresVersion) []core.Container {
+	lifeCycle := &core.Lifecycle{
+		PreStop: &core.Handler{
+			Exec: &core.ExecAction{
+				Command: []string{"pg_ctl", "-m", "immediate", "-w", "stop"},
+			},
+		},
+	}
+
+	statefulSet.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+		statefulSet.Spec.Template.Spec.Containers,
+		core.Container{
+			Name:            api.ResourceSingularPostgres,
+			Image:           postgresVersion.Spec.DB.Image,
+			Resources:       postgres.Spec.PodTemplate.Spec.Container.Resources,
+			SecurityContext: postgres.Spec.PodTemplate.Spec.Container.SecurityContext,
+			LivenessProbe:   postgres.Spec.PodTemplate.Spec.Container.LivenessProbe,
+			ReadinessProbe:  postgres.Spec.PodTemplate.Spec.Container.ReadinessProbe,
+			Lifecycle:       lifeCycle,
+		})
+	statefulSet.Spec.Template.Spec.Containers = core_util.UpsertContainer(
+		statefulSet.Spec.Template.Spec.Containers,
+		core.Container{
+			Name:  api.PostgresCoordinatorContainerName,
+			Image: postgresVersion.Spec.Coordinator.Image,
+			Resources: core.ResourceRequirements{
+				Limits: core.ResourceList{
+					core.ResourceCPU:    resource.MustParse(".500"),
+					core.ResourceMemory: resource.MustParse("256Mi"),
+				},
+				Requests: core.ResourceList{
+					core.ResourceCPU:    resource.MustParse(".500"),
+					core.ResourceMemory: resource.MustParse("256Mi"),
+				},
+			},
+		})
+	return statefulSet.Spec.Template.Spec.Containers
+}
+
+// adding tls key , cert and ca-cert
+func upsertTLSVolume(sts *apps.StatefulSet, db *api.Postgres) *apps.StatefulSet {
+	for i, container := range sts.Spec.Template.Spec.Containers {
+		if container.Name == "exporter" {
+			volumeMount := core.VolumeMount{
+				Name:      exporterTlsVolumeName,
+				MountPath: clientTlsVolumeMountPath,
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
+			sts.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+		} else if container.Name == api.PostgresCoordinatorContainerName {
+			volumeMount := core.VolumeMount{
+				Name:      coordinatorTlsVolumeName,
+				MountPath: clientTlsVolumeMountPath,
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
+			sts.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
 		}
 	}
-	return envList
+	for i, initContainer := range sts.Spec.Template.Spec.InitContainers {
+		if initContainer.Name == PostgresInitContainerName {
+			volumeMount := core.VolumeMount{
+				Name:      serverTlsVolumeName,
+				MountPath: serverTlsVolumeMountPath,
+				ReadOnly:  false,
+			}
+			volumeMounts := initContainer.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
+
+			clientVolumeMount := core.VolumeMount{
+				Name:      clientTlsVolumeName,
+				MountPath: clientTlsVolumeMountPath,
+				ReadOnly:  false,
+			}
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, clientVolumeMount)
+			sts.Spec.Template.Spec.InitContainers[i].VolumeMounts = volumeMounts
+
+		}
+	}
+	serverVolume := core.Volume{
+		Name: serverTlsVolumeName,
+		VolumeSource: core.VolumeSource{
+			Secret: &core.SecretVolumeSource{
+				SecretName: db.MustCertSecretName(api.PostgresServerCert),
+				Items: []core.KeyToPath{
+					{
+						Key:  TLS_CA_CERT,
+						Path: TLS_CA_CERT,
+					},
+					{
+						Key:  TLS_CERT,
+						Path: SERVER_CERT,
+					},
+					{
+						Key:  TLS_KEY,
+						Path: SERVER_KEY,
+					},
+				},
+			},
+		},
+	}
+	clientVolume := core.Volume{
+		Name: clientTlsVolumeName,
+		VolumeSource: core.VolumeSource{
+			Secret: &core.SecretVolumeSource{
+				SecretName: db.MustCertSecretName(api.PostgresClientCert),
+				Items: []core.KeyToPath{
+					{
+						Key:  TLS_CA_CERT,
+						Path: TLS_CA_CERT,
+					},
+					{
+						Key:  TLS_CERT,
+						Path: CLIENT_CERT,
+					},
+					{
+						Key:  TLS_KEY,
+						Path: CLIENT_KEY,
+					},
+				},
+			},
+		},
+	}
+
+	exporterTLSVolume := core.Volume{
+		Name: exporterTlsVolumeName,
+		VolumeSource: core.VolumeSource{
+			Secret: &core.SecretVolumeSource{
+				DefaultMode: pointer.Int32P(0600),
+				SecretName:  db.MustCertSecretName(api.PostgresMetricsExporterCert),
+				Items: []core.KeyToPath{
+					{
+						Key:  TLS_CA_CERT,
+						Path: TLS_CA_CERT,
+					},
+					{
+						Key:  TLS_CERT,
+						Path: TLS_CERT,
+					},
+					{
+						Key:  TLS_KEY,
+						Path: TLS_KEY,
+					},
+				},
+			},
+		},
+	}
+	coordinatorTLSVolume := core.Volume{
+		Name: coordinatorTlsVolumeName,
+		VolumeSource: core.VolumeSource{
+			Secret: &core.SecretVolumeSource{
+				DefaultMode: pointer.Int32P(0600),
+				SecretName:  db.MustCertSecretName(api.PostgresClientCert),
+				Items: []core.KeyToPath{
+					{
+						Key:  TLS_CA_CERT,
+						Path: TLS_CA_CERT,
+					},
+					{
+						Key:  TLS_CERT,
+						Path: CLIENT_CERT,
+					},
+					{
+						Key:  TLS_KEY,
+						Path: CLIENT_KEY,
+					},
+				},
+			},
+		},
+	}
+
+	sts.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+		sts.Spec.Template.Spec.Volumes,
+		serverVolume,
+		clientVolume,
+		exporterTLSVolume,
+		coordinatorTLSVolume,
+	)
+
+	return sts
 }

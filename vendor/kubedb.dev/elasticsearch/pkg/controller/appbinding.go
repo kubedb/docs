@@ -28,6 +28,7 @@ import (
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
 	api_util "kmodules.xyz/client-go/api/v1"
@@ -99,6 +100,15 @@ func (c *Controller) ensureAppBinding(db *api.Elasticsearch) (kutil.VerbType, er
 			}
 			in.Spec.ClientConfig.CABundle = caBundle
 			in.Spec.ClientConfig.InsecureSkipTLSVerify = false
+			in.Spec.Parameters = &runtime.RawExtension{
+				Object: &appcat.StashAddon{
+					TypeMeta: metav1.TypeMeta{
+						APIVersion: appcat.SchemeGroupVersion.String(),
+						Kind:       "StashAddon",
+					},
+					Stash: elasticsearchVersion.Spec.Stash,
+				},
+			}
 
 			in.Spec.Secret = &core.LocalObjectReference{
 				Name: db.Spec.AuthSecret.Name,

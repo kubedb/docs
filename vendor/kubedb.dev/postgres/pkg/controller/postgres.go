@@ -51,16 +51,16 @@ func (c *Controller) create(db *api.Postgres) error {
 		return nil // user error so just record error and don't retry.
 	}
 
-	if db.Status.Phase == "" {
-		pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) (types.UID, *api.PostgresStatus) {
-			in.Phase = api.DatabasePhaseProvisioning
-			return db.UID, in
-		}, metav1.UpdateOptions{})
-		if err != nil {
-			return err
-		}
-		db.Status = pg.Status
-	}
+	//if db.Status.Phase == "" {
+	//	pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) (types.UID, *api.PostgresStatus) {
+	//		in.Phase = api.DatabasePhaseProvisioning
+	//		return db.UID, in
+	//	}, metav1.UpdateOptions{})
+	//	if err != nil {
+	//		return err
+	//	}
+	//	db.Status = pg.Status
+	//}
 
 	// ensure Governing Service
 	if err := c.ensureGoverningService(db); err != nil {
@@ -72,7 +72,24 @@ func (c *Controller) create(db *api.Postgres) error {
 	if err != nil {
 		return err
 	}
-
+	// wait for  Certificates secrets
+	if db.Spec.TLS != nil {
+		ok, err := dynamic_util.ResourcesExists(
+			c.DynamicClient,
+			core.SchemeGroupVersion.WithResource("secrets"),
+			db.Namespace,
+			db.MustCertSecretName(api.PostgresServerCert),
+			db.MustCertSecretName(api.PostgresClientCert),
+			db.MustCertSecretName(api.PostgresMetricsExporterCert),
+		)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			log.Infof("wait for all certificate secrets for Postgres %s/%s", db.Namespace, db.Name)
+			return nil
+		}
+	}
 	// ensure database StatefulSet
 	postgresVersion, err := c.DBClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
@@ -158,6 +175,52 @@ func (c *Controller) create(db *api.Postgres) error {
 		return nil
 	}
 
+	// Check: ReplicaReady --> AcceptingConnection --> Ready --> Provisioned
+	// If spec.Init.WaitForInitialRestore is true, but data wasn't restored successfully,
+	// process won't reach here (returned nil at the beginning). As it is here, that means data was restored successfully.
+	// No need to check for IsConditionTrue(DataRestored).
+	if kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReplicaReady) &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseAcceptingConnection) &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReady) &&
+		!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
+		_, err := util.UpdatePostgresStatus(
+			context.TODO(),
+			c.DBClient.KubedbV1alpha2(),
+			db.ObjectMeta,
+			func(in *api.PostgresStatus) (types.UID, *api.PostgresStatus) {
+				in.Conditions = kmapi.SetCondition(in.Conditions,
+					kmapi.Condition{
+						Type:               api.DatabaseProvisioned,
+						Status:             core.ConditionTrue,
+						Reason:             api.DatabaseSuccessfullyProvisioned,
+						ObservedGeneration: db.Generation,
+						Message:            fmt.Sprintf("The PostgreSQL: %s/%s is successfully provisioned.", db.Namespace, db.Name),
+					})
+				return db.UID, in
+			},
+			metav1.UpdateOptions{},
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	// If the database is successfully provisioned,
+	// Set spec.Init.Initialized to true, if init!=nil.
+	// This will prevent the operator from re-initializing the database.
+	if db.Spec.Init != nil &&
+		!db.Spec.Init.Initialized &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
+		_, _, err := util.CreateOrPatchPostgres(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.Postgres) *api.Postgres {
+			in.Spec.Init.Initialized = true
+			return in
+		}, metav1.PatchOptions{})
+
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -194,8 +257,35 @@ func (c *Controller) halt(db *api.Postgres) error {
 	}
 	log.Infof("update status of Postgres %v/%v to Halted.", db.Namespace, db.Name)
 	if _, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) (types.UID, *api.PostgresStatus) {
-		in.Phase = api.DatabasePhaseHalted
-		in.ObservedGeneration = db.Generation
+		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
+			Type:               api.DatabaseHalted,
+			Status:             core.ConditionTrue,
+			Reason:             api.DatabaseHaltedSuccessfully,
+			ObservedGeneration: db.Generation,
+			Message:            fmt.Sprintf("PostgreSQL %s/%s successfully halted.", db.Namespace, db.Name),
+		})
+
+		// make "AcceptingConnection" and "Ready" conditions false.
+		// Because these are handled from health checker at a certain interval,
+		// if consecutive halt and un-halt occurs in the meantime,
+		// phase might still be on the "Ready" state.
+		in.Conditions = kmapi.SetCondition(in.Conditions,
+			kmapi.Condition{
+				Type:               api.DatabaseAcceptingConnection,
+				Status:             core.ConditionFalse,
+				Reason:             api.DatabaseHaltedSuccessfully,
+				ObservedGeneration: db.Generation,
+				Message:            fmt.Sprintf("The PostgreSQL: %s/%s is not accepting client requests.", db.Namespace, db.Name),
+			})
+		in.Conditions = kmapi.SetCondition(in.Conditions,
+			kmapi.Condition{
+				Type:               api.DatabaseReady,
+				Status:             core.ConditionFalse,
+				Reason:             api.DatabaseHaltedSuccessfully,
+				ObservedGeneration: db.Generation,
+				Message:            fmt.Sprintf("The PostgreSQL: %s/%s is not ready.", db.Namespace, db.Name),
+			})
+
 		return db.UID, in
 	}, metav1.UpdateOptions{}); err != nil {
 		return err
@@ -261,20 +351,17 @@ func (c *Controller) setOwnerReferenceToOffshoots(db *api.Postgres, owner *metav
 		if err := c.wipeOutDatabase(db.ObjectMeta, db.Spec.GetPersistentSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}
-		// if wal archiver was configured, remove wal data from backend
-		if db.Spec.Archiver != nil {
-			if err := c.wipeOutWalData(db.ObjectMeta, &db.Spec); err != nil {
-				return err
-			}
-		}
+
 	} else {
+		secrets := db.Spec.GetPersistentSecrets()
+		secrets = append(secrets, c.GetPostgresSecrets(db)...)
 		// Make sure secret's ownerreference is removed.
 		if err := dynamic_util.RemoveOwnerReferenceForItems(
 			context.TODO(),
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			db.Namespace,
-			db.Spec.GetPersistentSecrets(),
+			secrets,
 			db); err != nil {
 			return err
 		}
@@ -290,6 +377,10 @@ func (c *Controller) setOwnerReferenceToOffshoots(db *api.Postgres, owner *metav
 }
 
 func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.Postgres) error {
+
+	secrets := db.Spec.GetPersistentSecrets()
+	secrets = append(secrets, c.GetPostgresSecrets(db)...)
+
 	// First, Get LabelSelector for Other Components
 	labelSelector := labels.SelectorFromSet(db.OffshootSelectors())
 
@@ -307,7 +398,7 @@ func (c *Controller) removeOwnerReferenceFromOffshoots(db *api.Postgres) error {
 		c.DynamicClient,
 		core.SchemeGroupVersion.WithResource("secrets"),
 		db.Namespace,
-		db.Spec.GetPersistentSecrets(),
+		secrets,
 		db); err != nil {
 		return err
 	}

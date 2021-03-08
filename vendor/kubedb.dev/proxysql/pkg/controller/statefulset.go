@@ -257,11 +257,11 @@ func (c *Controller) ensureStatefulSet(db *api.ProxySQL, opts workloadOptions) (
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindProxySQL))
 
-	readinessProbe := pt.Spec.ReadinessProbe
+	readinessProbe := pt.Spec.Container.ReadinessProbe
 	if readinessProbe != nil && structs.IsZero(*readinessProbe) {
 		readinessProbe = nil
 	}
-	livenessProbe := pt.Spec.LivenessProbe
+	livenessProbe := pt.Spec.Container.LivenessProbe
 	if livenessProbe != nil && structs.IsZero(*livenessProbe) {
 		livenessProbe = nil
 	}
@@ -295,9 +295,10 @@ func (c *Controller) ensureStatefulSet(db *api.ProxySQL, opts workloadOptions) (
 					Command:         opts.cmd,
 					Args:            opts.args,
 					Ports:           opts.ports,
-					Env:             core_util.UpsertEnvVars(opts.envList, pt.Spec.Env...),
-					Resources:       pt.Spec.Resources,
-					Lifecycle:       pt.Spec.Lifecycle,
+					Env:             core_util.UpsertEnvVars(opts.envList, pt.Spec.Container.Env...),
+					Resources:       pt.Spec.Container.Resources,
+					SecurityContext: pt.Spec.Container.SecurityContext,
+					Lifecycle:       pt.Spec.Container.Lifecycle,
 					LivenessProbe:   livenessProbe,
 					ReadinessProbe:  readinessProbe,
 					VolumeMounts:    opts.volumeMount,
@@ -331,6 +332,9 @@ func (c *Controller) ensureStatefulSet(db *api.ProxySQL, opts workloadOptions) (
 			in.Spec.Template.Spec.ImagePullSecrets = pt.Spec.ImagePullSecrets
 			in.Spec.Template.Spec.PriorityClassName = pt.Spec.PriorityClassName
 			in.Spec.Template.Spec.Priority = pt.Spec.Priority
+			in.Spec.Template.Spec.HostNetwork = pt.Spec.HostNetwork
+			in.Spec.Template.Spec.HostPID = pt.Spec.HostPID
+			in.Spec.Template.Spec.HostIPC = pt.Spec.HostIPC
 			in.Spec.Template.Spec.SecurityContext = pt.Spec.SecurityContext
 			in.Spec.Template.Spec.ServiceAccountName = pt.Spec.ServiceAccountName
 			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{

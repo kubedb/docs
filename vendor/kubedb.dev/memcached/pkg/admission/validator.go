@@ -161,7 +161,7 @@ func ValidateMemcached(client kubernetes.Interface, extClient cs.Interface, memc
 		}
 	}
 
-	if err := amv.ValidateEnvVar(memcached.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMemcached); err != nil {
+	if err := amv.ValidateEnvVar(memcached.Spec.PodTemplate.Spec.Container.Env, forbiddenEnvVars, api.ResourceKindMemcached); err != nil {
 		return err
 	}
 

@@ -21,7 +21,6 @@ import (
 
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
-	le "kubedb.dev/pg-leader-election/pkg/leader_election"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -58,18 +57,22 @@ func (c *Controller) ensureRole(db *api.Postgres, pspName string) error {
 				{
 					APIGroups: []string{core.GroupName},
 					Resources: []string{"pods"},
-					Verbs:     []string{"list", "patch"},
+					Verbs:     []string{"get", "list", "patch", "delete"},
+				},
+				{
+					APIGroups: []string{core.GroupName},
+					Resources: []string{"pods/exec"},
+					Verbs:     []string{"create"},
+				},
+				{
+					APIGroups: []string{core.GroupName},
+					Resources: []string{"secrets"},
+					Verbs:     []string{"get", "list"},
 				},
 				{
 					APIGroups: []string{core.GroupName},
 					Resources: []string{"configmaps"},
-					Verbs:     []string{"create"},
-				},
-				{
-					APIGroups:     []string{core.GroupName},
-					Resources:     []string{"configmaps"},
-					Verbs:         []string{"get", "update"},
-					ResourceNames: []string{le.GetLeaderLockName(db.OffshootName())},
+					Verbs:     []string{"create", "get", "update"},
 				},
 			}
 			if pspName != "" {

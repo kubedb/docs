@@ -85,7 +85,7 @@ func (c *Controller) ensureRole(db *api.Redis, name string, pspName string) erro
 func (c *Controller) createRoleBinding(db *api.Redis, roleName string, saName string) error {
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindRedis))
 
-	// Ensure new RoleBindings for ElasticSearch and it's Snapshot
+	// Ensure new RoleBindings for Redis and it's Snapshot
 	_, _, err := rbac_util.CreateOrPatchRoleBinding(
 		context.TODO(),
 		c.Client,

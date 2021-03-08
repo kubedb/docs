@@ -15,19 +15,20 @@ require (
 	k8s.io/apimachinery v0.18.9
 	k8s.io/apiserver v0.18.9
 	k8s.io/client-go v0.18.9
-	kmodules.xyz/client-go v0.0.0-20210213000708-f480974ce46d
-	kmodules.xyz/custom-resources v0.0.0-20210216191337-d890c51255a5
-	kmodules.xyz/webhook-runtime v0.0.0-20201105073856-2dc7382b88c6
-	kubedb.dev/apimachinery v0.16.2
-	kubedb.dev/elasticsearch v0.16.2
-	kubedb.dev/memcached v0.9.2
-	kubedb.dev/mongodb v0.9.2
-	kubedb.dev/mysql v0.9.2
-	kubedb.dev/percona-xtradb v0.3.2
-	kubedb.dev/pgbouncer v0.3.2
-	kubedb.dev/postgres v0.16.2
-	kubedb.dev/proxysql v0.3.2
-	kubedb.dev/redis v0.9.2
+	kmodules.xyz/client-go v0.0.0-20210220080427-fd7308e30bb4
+	kmodules.xyz/custom-resources v0.0.0-20210222235834-b3f8dc56b6a3
+	kmodules.xyz/webhook-runtime v0.0.0-20210220081624-75da115ae653
+	kubedb.dev/apimachinery v0.16.3-0.20210308010418-753a7ad857ea
+	kubedb.dev/elasticsearch v0.16.3-0.20210307075055-d31d03648e63
+	kubedb.dev/mariadb v0.0.0-20210308011801-3c80762de245
+	kubedb.dev/memcached v0.9.3-0.20210307075111-390739ad0627
+	kubedb.dev/mongodb v0.9.3-0.20210307075102-bda470f85873
+	kubedb.dev/mysql v0.9.3-0.20210307075131-6fad227cfb5f
+	kubedb.dev/percona-xtradb v0.3.3-0.20210307075143-86cd32aeef18
+	kubedb.dev/pgbouncer v0.3.3-0.20210307075119-c649bc9b3b89
+	kubedb.dev/postgres v0.16.3-0.20210307193357-590867ca54b3
+	kubedb.dev/proxysql v0.3.3-0.20210307075200-7fa81242a24b
+	kubedb.dev/redis v0.9.3-0.20210307075150-232d206e7c41
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d

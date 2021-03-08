@@ -168,10 +168,11 @@ func (c *Controller) ensureStatefulSet(
 						},
 					},
 
-					Resources:      db.Spec.PodTemplate.Spec.Resources,
-					LivenessProbe:  db.Spec.PodTemplate.Spec.LivenessProbe,
-					ReadinessProbe: db.Spec.PodTemplate.Spec.ReadinessProbe,
-					Lifecycle:      db.Spec.PodTemplate.Spec.Lifecycle,
+					Resources:       db.Spec.PodTemplate.Spec.Container.Resources,
+					SecurityContext: db.Spec.PodTemplate.Spec.Container.SecurityContext,
+					LivenessProbe:   db.Spec.PodTemplate.Spec.Container.LivenessProbe,
+					ReadinessProbe:  db.Spec.PodTemplate.Spec.Container.ReadinessProbe,
+					Lifecycle:       db.Spec.PodTemplate.Spec.Container.Lifecycle,
 				})
 			in = upsertEnv(in, db, envList)
 			in.Spec.Template.Spec.Volumes = volumes
@@ -183,9 +184,10 @@ func (c *Controller) ensureStatefulSet(
 			in.Spec.Template.Spec.ImagePullSecrets = db.Spec.PodTemplate.Spec.ImagePullSecrets
 			in.Spec.Template.Spec.PriorityClassName = db.Spec.PodTemplate.Spec.PriorityClassName
 			in.Spec.Template.Spec.Priority = db.Spec.PodTemplate.Spec.Priority
-			if in.Spec.Template.Spec.SecurityContext != nil {
-				in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
-			}
+			in.Spec.Template.Spec.HostNetwork = db.Spec.PodTemplate.Spec.HostNetwork
+			in.Spec.Template.Spec.HostPID = db.Spec.PodTemplate.Spec.HostPID
+			in.Spec.Template.Spec.HostIPC = db.Spec.PodTemplate.Spec.HostIPC
+			in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
 			in = c.upsertMonitoringContainer(in, db, pgbouncerVersion)
 
 			return in
@@ -283,7 +285,7 @@ func (c *Controller) checkSecret(db *api.PgBouncer) error {
 func upsertUserEnv(statefulSet *apps.StatefulSet, db *api.PgBouncer) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularPgBouncer {
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Env...)
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Container.Env...)
 			return statefulSet
 		}
 	}

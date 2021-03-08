@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 
 	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
@@ -39,6 +38,12 @@ import (
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
+)
+
+const (
+	caFile   = "/etc/mysql/certs/ca.crt"
+	certFile = "/etc/mysql/certs/server.crt"
+	keyFile  = "/etc/mysql/certs/server.key"
 )
 
 func (c *Controller) ensureStatefulSet(db *api.MySQL) error {
@@ -118,7 +123,7 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 									MountPath: "/var/lib/mysql",
 								},
 							},
-							Resources: db.Spec.PodTemplate.Spec.Resources,
+							Resources: db.Spec.PodTemplate.Spec.Container.Resources,
 						},
 					},
 					db.Spec.PodTemplate.Spec.InitContainers...,
@@ -129,11 +134,12 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 				Name:            api.ResourceSingularMySQL,
 				Image:           mysqlVersion.Spec.DB.Image,
 				ImagePullPolicy: core.PullIfNotPresent,
-				Args:            db.Spec.PodTemplate.Spec.Args,
-				Resources:       db.Spec.PodTemplate.Spec.Resources,
-				LivenessProbe:   db.Spec.PodTemplate.Spec.LivenessProbe,
-				ReadinessProbe:  db.Spec.PodTemplate.Spec.ReadinessProbe,
-				Lifecycle:       db.Spec.PodTemplate.Spec.Lifecycle,
+				Args:            db.Spec.PodTemplate.Spec.Container.Args,
+				Resources:       db.Spec.PodTemplate.Spec.Container.Resources,
+				SecurityContext: db.Spec.PodTemplate.Spec.Container.SecurityContext,
+				LivenessProbe:   db.Spec.PodTemplate.Spec.Container.LivenessProbe,
+				ReadinessProbe:  db.Spec.PodTemplate.Spec.Container.ReadinessProbe,
+				Lifecycle:       db.Spec.PodTemplate.Spec.Container.Lifecycle,
 				Ports: []core.ContainerPort{
 					{
 						Name:          api.MySQLDatabasePortName,
@@ -154,9 +160,9 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 				args := container.Args
 				tlsArgs := []string{
 					"--ssl-capath=/etc/mysql/certs",
-					"--ssl-ca=/etc/mysql/certs/ca.crt",
-					"--ssl-cert=/etc/mysql/certs/server.crt",
-					"--ssl-key=/etc/mysql/certs/server.key",
+					"--ssl-ca=" + caFile,
+					"--ssl-cert=" + certFile,
+					"--ssl-key=" + keyFile,
 				}
 				args = append(args, tlsArgs...)
 				if db.Spec.RequireSSL {
@@ -185,15 +191,37 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 					"peer-finder",
 				}
 
-				userArgs := meta_util.ParseArgumentListToMap(db.Spec.PodTemplate.Spec.Args)
+				userArgs := meta_util.ParseArgumentListToMap(db.Spec.PodTemplate.Spec.Container.Args)
 
 				specArgs := map[string]string{}
 				// add ssl certs flag into args in peer-finder to configure TLS for group replication
 				if db.Spec.TLS != nil {
+					// https://dev.mysql.com/doc/refman/8.0/en/group-replication-secure-socket-layer-support-ssl.html
+					// Host name identity verification with VERIFY_IDENTITY does not work with self-signed certificate
+					//specArgs["loose-group_replication_ssl_mode"] = "VERIFY_IDENTITY"
+					specArgs["loose-group_replication_ssl_mode"] = "VERIFY_CA"
+					// the configuration for Group Replication's group communication connections is taken from the server's SSL configuration
+					// https://dev.mysql.com/doc/refman/8.0/en/group-replication-secure-socket-layer-support-ssl.html
 					specArgs["ssl-capath"] = "/etc/mysql/certs"
-					specArgs["ssl-ca"] = "/etc/mysql/certs/ca.crt"
-					specArgs["ssl-cert"] = "/etc/mysql/certs/server.crt"
-					specArgs["ssl-key"] = "/etc/mysql/certs/server.key"
+					specArgs["ssl-ca"] = caFile
+					specArgs["ssl-cert"] = certFile
+					specArgs["ssl-key"] = keyFile
+					// By default, distributed recovery connections do not use SSL, even if we activated SSL for group communication connections,
+					// and the server SSL options are not applied for distributed recovery connections. we must configure these connections separately
+					// https://dev.mysql.com/doc/refman/8.0/en/group-replication-configuring-ssl-for-recovery.html
+					specArgs["loose-group_replication_recovery_ssl_ca"] = caFile
+					specArgs["loose-group_replication_recovery_ssl_cert"] = certFile
+					specArgs["loose-group_replication_recovery_ssl_key"] = keyFile
+
+					refVersion := semver.New("8.0.17")
+					curVersion := semver.New(mysqlVersion.Spec.Version)
+					if curVersion.Compare(*refVersion) != -1 {
+						// https://dev.mysql.com/doc/refman/8.0/en/clone-plugin-remote.html
+						specArgs["loose-clone_ssl_ca"] = caFile
+						specArgs["loose-clone_ssl_cert"] = certFile
+						specArgs["loose-clone_ssl_key"] = keyFile
+					}
+
 					if db.Spec.RequireSSL {
 						specArgs["require-secure-transport"] = "ON"
 					}
@@ -285,9 +313,10 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 			in.Spec.Template.Spec.ImagePullSecrets = db.Spec.PodTemplate.Spec.ImagePullSecrets
 			in.Spec.Template.Spec.PriorityClassName = db.Spec.PodTemplate.Spec.PriorityClassName
 			in.Spec.Template.Spec.Priority = db.Spec.PodTemplate.Spec.Priority
-			if in.Spec.Template.Spec.SecurityContext == nil {
-				in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
-			}
+			in.Spec.Template.Spec.HostNetwork = db.Spec.PodTemplate.Spec.HostNetwork
+			in.Spec.Template.Spec.HostPID = db.Spec.PodTemplate.Spec.HostPID
+			in.Spec.Template.Spec.HostIPC = db.Spec.PodTemplate.Spec.HostIPC
+			in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
 			in.Spec.Template.Spec.ServiceAccountName = db.Spec.PodTemplate.Spec.ServiceAccountName
 			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
 				Type: apps.OnDeleteStatefulSetStrategyType,
@@ -408,8 +437,8 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.MySQL, stsName string) *ap
 						Value: db.Spec.Topology.Group.Name,
 					},
 					{
-						Name:  "BASE_SERVER_ID",
-						Value: strconv.Itoa(int(*db.Spec.Topology.Group.BaseServerID)),
+						Name:  "DB_NAME",
+						Value: db.GetName(),
 					},
 				}...)
 			}
@@ -436,7 +465,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.MySQL, stsName string) *ap
 func upsertUserEnv(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMySQL {
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Env...)
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Container.Env...)
 			return statefulSet
 		}
 	}
@@ -667,7 +696,7 @@ func recommendedArgs(db *api.MySQL, myVersion *v1alpha1.MySQLVersion) map[string
 	// recommended innodb_buffer_pool_size value is 50 to 75 percent of system memory
 	// Buffer pool size must always be equal to or a multiple of innodb_buffer_pool_chunk_size * innodb_buffer_pool_instances
 
-	available := db.Spec.PodTemplate.Spec.Resources.Limits.Memory()
+	available := db.Spec.PodTemplate.Spec.Container.Resources.Limits.Memory()
 
 	// reserved memory for performance schema and other processes
 	reserved := resource.MustParse("256Mi")
@@ -675,7 +704,7 @@ func recommendedArgs(db *api.MySQL, myVersion *v1alpha1.MySQLVersion) map[string
 	allocableBytes := available.Value()
 
 	// allocate 75% of the available memory for innodb buffer pool size
-	innoDBChunkSize := float64(134217728) // 128Mi
+	innoDBChunkSize := float64(128 * 1024 * 1024) // 128Mi
 	maxNumberOfChunk := int64((float64(allocableBytes) * 0.75) / innoDBChunkSize)
 	innoDBPoolSize := maxNumberOfChunk * int64(innoDBChunkSize)
 	recommendedArgs["innodb-buffer-pool-size"] = fmt.Sprintf("%d", innoDBPoolSize)
@@ -688,6 +717,12 @@ func recommendedArgs(db *api.MySQL, myVersion *v1alpha1.MySQLVersion) map[string
 	if curVersion.Compare(*refVersion) != -1 {
 		recommendedArgs["loose-group-replication-message-cache-size"] = fmt.Sprintf("%d", allocableBytes-innoDBPoolSize)
 	}
+
+	// Sets the binary log expiration period in seconds. After their expiration period ends, binary log files can be automatically removed.
+	// Possible removals happen at startup and when the binary log is flushed
+	// https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_expire_logs_seconds
+	expireLogsSeconds := 259200 // 3 days
+	recommendedArgs["binlog-expire-logs-seconds"] = fmt.Sprintf("%d", expireLogsSeconds)
 
 	return recommendedArgs
 }

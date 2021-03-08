@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
@@ -30,6 +29,7 @@ import (
 
 	"github.com/pkg/errors"
 	"gomodules.xyz/sets"
+	"gomodules.xyz/version"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,7 +37,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/leaderelection"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
@@ -159,7 +158,7 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 		return fmt.Errorf(`spec.replicas "%v" invalid. Value must be greater than zero`, postgres.Spec.Replicas)
 	}
 
-	if err := amv.ValidateEnvVar(postgres.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindPostgres); err != nil {
+	if err := amv.ValidateEnvVar(postgres.Spec.PodTemplate.Spec.Container.Env, forbiddenEnvVars, api.ResourceKindPostgres); err != nil {
 		return err
 	}
 
@@ -190,13 +189,29 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 		}
 	}
 
-	if postgres.Spec.Archiver != nil {
-		archiverStorage := postgres.Spec.Archiver.Storage
-		if archiverStorage != nil {
-			if archiverStorage.S3 == nil && archiverStorage.GCS == nil && archiverStorage.Azure == nil && archiverStorage.Swift == nil && archiverStorage.Local == nil {
-				return errors.New("no storage provider is configured")
-			}
+	pgVersion, err := extClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), string(postgres.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+	if postgres.Spec.ClientAuthMode == api.ClientAuthModeScram {
+		if _, err := checkScramAuthMethodSupport(pgVersion.Spec.Version); err != nil {
+			return err
 		}
+	}
+
+	if (postgres.Spec.ClientAuthMode == api.ClientAuthModeCert) &&
+		(postgres.Spec.SSLMode == api.PostgresSSLModeDisable) {
+		return fmt.Errorf("can't have %v set to postgres.spec.sslMode when postgres.spec.ClientAuthMode is set to %v",
+			postgres.Spec.SSLMode, postgres.Spec.ClientAuthMode)
+	}
+	if (postgres.Spec.TLS != nil) &&
+		(postgres.Spec.SSLMode == api.PostgresSSLModeDisable) {
+		return fmt.Errorf("can't have %v set to postgres.spec.sslMode when postgres.spec.TLS is set ",
+			postgres.Spec.SSLMode)
+	}
+	if (postgres.Spec.SSLMode != "" && postgres.Spec.SSLMode != api.PostgresSSLModeDisable) && postgres.Spec.TLS == nil {
+		return fmt.Errorf("can't have %v set to postgres.Spec.SSLMode when postgres.Spec.TLS is null",
+			postgres.Spec.SSLMode)
 	}
 
 	databaseSecret := postgres.Spec.AuthSecret
@@ -224,34 +239,21 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 		}
 	}
 
-	// validate leader election configs. ref: https://github.com/kubernetes/client-go/blob/6134db91200ea474868bc6775e62cc294a74c6c6/tools/leaderelection/leaderelection.go#L73-L87
+	// validate leader election configs
 	// ==============> start
 	lec := postgres.Spec.LeaderElection
 	if lec != nil {
-		if lec.LeaseDurationSeconds <= lec.RenewDeadlineSeconds {
-			return fmt.Errorf("leaseDuration must be greater than renewDeadline")
+		if lec.ElectionTick <= lec.HeartbeatTick {
+			return fmt.Errorf("ElectionTick must be greater than HeartbeatTick")
 		}
-		if time.Duration(lec.RenewDeadlineSeconds) <= time.Duration(leaderelection.JitterFactor*float64(lec.RetryPeriodSeconds)) {
-			return fmt.Errorf("renewDeadline must be greater than retryPeriod*JitterFactor")
+		if lec.ElectionTick < 1 {
+			return fmt.Errorf("ElectionTick must be greater than zero")
 		}
-		if lec.LeaseDurationSeconds < 1 {
-			return fmt.Errorf("leaseDuration must be greater than zero")
-		}
-		if lec.RenewDeadlineSeconds < 1 {
-			return fmt.Errorf("renewDeadline must be greater than zero")
-		}
-		if lec.RetryPeriodSeconds < 1 {
-			return fmt.Errorf("retryPeriod must be greater than zero")
+		if lec.HeartbeatTick < 1 {
+			return fmt.Errorf("HeartbeatTick must be greater than zero")
 		}
 	}
 	// end <==============
-
-	if postgres.Spec.Init != nil && postgres.Spec.Init.PostgresWAL != nil {
-		wal := postgres.Spec.Init.PostgresWAL
-		if wal.S3 == nil && wal.GCS == nil && wal.Azure == nil && wal.Swift == nil && wal.Local == nil {
-			return errors.New("no storage provider is configured")
-		}
-	}
 
 	if postgres.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
@@ -307,7 +309,6 @@ func getPreconditionFunc(pg *api.Postgres) []mergepatch.PreconditionFunc {
 var preconditionSpecFields = sets.NewString(
 	"spec.standby",
 	"spec.streaming",
-	"spec.archiver",
 	"spec.databaseSecret",
 	"spec.storageType",
 	"spec.storage",
@@ -321,4 +322,15 @@ func preconditionFailedError() error {
 	kind
 	name
 	namespace`, strList}, "\n\t"))
+}
+
+func checkScramAuthMethodSupport(v string) (bool, error) {
+	pgVersion, err := version.NewVersion(v)
+	if err != nil {
+		return false, err
+	}
+	if pgVersion.Major() < 11 {
+		return false, fmt.Errorf("scram auth method is available only for 11 or higher Versions")
+	}
+	return true, nil
 }

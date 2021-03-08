@@ -56,7 +56,7 @@ func (c Config) addNode(useTLS bool, pod *core.Pod, newAddr, existingAddr, maste
 
 func (c Config) deleteNode(useTLS bool, pod *core.Pod, existingAddr, deletingNodeID string) error {
 	_, err := exec.ExecIntoPod(c.RestConfig, pod, exec.Command(c.DeleteNodeCmd(useTLS, existingAddr, deletingNodeID)...))
-	if err != nil {
+	if err != nil && !strings.Contains(err.Error(), "command terminated with exit code 1") {
 		return errors.Wrapf(err, "Failed to delete node with ID %q", deletingNodeID)
 	}
 

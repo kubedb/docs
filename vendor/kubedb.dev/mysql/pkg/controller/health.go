@@ -110,7 +110,6 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 						isHostOnline, err := c.isHostOnline(db, engine)
 						if err != nil {
 							glog.Warning("Host is not online ", err.Error())
-							return
 						}
 
 						if isHostOnline {
@@ -124,7 +123,6 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 							_, err = c.Client.CoreV1().Pods(pod.Namespace).UpdateStatus(context.TODO(), &pod, metav1.UpdateOptions{})
 							if err != nil {
 								glog.Warning("Failed to update pod status with: ", err.Error())
-								return
 							}
 						}
 					}(engine)
@@ -210,7 +208,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 				// check MySQL database health
 				var isHealthy bool
 				if *db.Spec.Replicas > int32(1) && db.Spec.Topology != nil && db.Spec.Topology.Group != nil {
-					isHealthy, err = c.checkMySQLClusterHealth(db, engine)
+					isHealthy, err = c.checkMySQLClusterHealth(len(podList.Items), engine)
 					if err != nil {
 						glog.Errorf("MySQL Cluster %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
 					}
@@ -221,32 +219,51 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 					}
 				}
 
-				if !isHealthy {
-					// Since the get status failed, skip remaining operations.
-					return
+				if isHealthy {
+					// database is healthy. So update to "Ready" condition to "true"
+					_, err = util.UpdateMySQLStatus(
+						context.TODO(),
+						c.DBClient.KubedbV1alpha2(),
+						db.ObjectMeta,
+						func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
+							in.Conditions = kmapi.SetCondition(in.Conditions,
+								kmapi.Condition{
+									Type:               api.DatabaseReady,
+									Status:             core.ConditionTrue,
+									Reason:             api.ReadinessCheckSucceeded,
+									ObservedGeneration: db.Generation,
+									Message:            fmt.Sprintf("The MySQL: %s/%s is ready.", db.Namespace, db.Name),
+								})
+							return db.UID, in
+						},
+						metav1.UpdateOptions{},
+					)
+					if err != nil {
+						glog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
+					}
+				} else {
+					// database is not healthy. So update to "Ready" condition to "false"
+					_, err = util.UpdateMySQLStatus(
+						context.TODO(),
+						c.DBClient.KubedbV1alpha2(),
+						db.ObjectMeta,
+						func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
+							in.Conditions = kmapi.SetCondition(in.Conditions,
+								kmapi.Condition{
+									Type:               api.DatabaseReady,
+									Status:             core.ConditionFalse,
+									Reason:             api.ReadinessCheckFailed,
+									ObservedGeneration: db.Generation,
+									Message:            fmt.Sprintf("The MySQL: %s/%s is not ready.", db.Namespace, db.Name),
+								})
+							return db.UID, in
+						},
+						metav1.UpdateOptions{},
+					)
+					if err != nil {
+						glog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
+					}
 				}
-				// database is healthy. So update to "Ready" condition to "true"
-				_, err = util.UpdateMySQLStatus(
-					context.TODO(),
-					c.DBClient.KubedbV1alpha2(),
-					db.ObjectMeta,
-					func(in *api.MySQLStatus) (types.UID, *api.MySQLStatus) {
-						in.Conditions = kmapi.SetCondition(in.Conditions,
-							kmapi.Condition{
-								Type:               api.DatabaseReady,
-								Status:             core.ConditionTrue,
-								Reason:             api.ReadinessCheckSucceeded,
-								ObservedGeneration: db.Generation,
-								Message:            fmt.Sprintf("The MySQL: %s/%s is ready.", db.Namespace, db.Name),
-							})
-						return db.UID, in
-					},
-					metav1.UpdateOptions{},
-				)
-				if err != nil {
-					glog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
-				}
-
 			}()
 		}
 		wg.Wait()
@@ -257,7 +274,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 	glog.Info("Shutting down MySQL health checker...")
 }
 
-func (c *Controller) checkMySQLClusterHealth(db *api.MySQL, engine *xorm.Engine) (bool, error) {
+func (c *Controller) checkMySQLClusterHealth(members int, engine *xorm.Engine) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	session := engine.NewSession()
 	session.Context(ctx)
@@ -279,8 +296,8 @@ func (c *Controller) checkMySQLClusterHealth(db *api.MySQL, engine *xorm.Engine)
 		return false, fmt.Errorf("query result is nil")
 	}
 
-	if len(result) != int(*db.Spec.Replicas) {
-		return false, fmt.Errorf("Not all members have joined in the group yet")
+	if len(result) != members {
+		return false, fmt.Errorf("Not all members have joined into the group yet")
 	}
 
 	for j := range result {
@@ -330,7 +347,7 @@ func (c *Controller) isHostOnline(db *api.MySQL, engine *xorm.Engine) (bool, err
 			return false, err
 		}
 		if result == nil {
-			return false, fmt.Errorf("Checking member state, result: nil")
+			return false, fmt.Errorf("Checking member state, query result is nil")
 		}
 		memberState, ok := result[0]["member_state"]
 		if !ok || strings.Compare(memberState, "ONLINE") != 0 {

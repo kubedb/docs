@@ -26,7 +26,6 @@ import (
 	"github.com/pkg/errors"
 	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/rest"
 )
 
@@ -70,20 +69,13 @@ func ConfigureRedisCluster(
 // the timeOut, this function returns an error.
 // ref: https://redis.io/commands/ping
 func (c Config) waitUntilRedisServersToBeReady(useTLS bool, pods [][]*core.Pod) error {
-	var err error
-
 	// i is for shards and j is for replicas. So (i, j) pair points to the j'th node (Pod) of i'th shard
 	for i := 0; i < c.Cluster.MasterCnt; i++ {
 		for j := 0; j <= c.Cluster.Replicas; j++ {
 			execPod := pods[i][j]
 			pingIP := execPod.Status.PodIP
-			if err = wait.PollImmediate(time.Second, time.Minute*5, func() (bool, error) {
-				if pong, _ := c.ping(useTLS, execPod, pingIP); pong == "PONG" {
-					return true, nil
-				}
-				return false, nil
-			}); err != nil {
-				return errors.Wrapf(err, "%q is not ready yet", pingIP)
+			if pong, err := c.ping(useTLS, execPod, pingIP); pong != "PONG" {
+				return errors.Wrapf(err, "%v is not ready yet", pingIP)
 			}
 		}
 	}
