@@ -48,27 +48,14 @@ func (c *Controller) create(db *api.Redis) error {
 		return nil // user error so just record error and don't retry.
 	}
 
-	if db.Status.Phase == "" {
-		rd, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisStatus) (types.UID, *api.RedisStatus) {
-			in.Phase = api.DatabasePhaseProvisioning
-			return db.UID, in
-		}, metav1.UpdateOptions{})
-		if err != nil {
-			return err
-		}
-		db.Status = rd.Status
-	}
-
 	// ensure Governing Service
 	if err := c.ensureGoverningService(db); err != nil {
 		return fmt.Errorf(`failed to create governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 
 	// ensure ConfigMap for redis configuration file (i.e. redis.conf)
-	if db.Spec.Mode == api.RedisModeCluster {
-		if err := c.ensureRedisConfig(db); err != nil {
-			return err
-		}
+	if err := c.ensureRedisConfig(db); err != nil {
+		return err
 	}
 
 	// Ensure ClusterRoles for statefulsets
@@ -103,8 +90,11 @@ func (c *Controller) create(db *api.Redis) error {
 
 	// ensure database StatefulSet
 	vt2, err := c.ensureRedisNodes(db)
-	if err != nil {
+	if err != nil && err != ErrStsNotReady {
 		return err
+	}
+	if err == ErrStsNotReady {
+		return nil
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
@@ -146,22 +136,6 @@ func (c *Controller) create(db *api.Redis) error {
 		}
 	}
 
-	rd, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisStatus) (types.UID, *api.RedisStatus) {
-		in.Phase = api.DatabasePhaseReady
-		in.ObservedGeneration = db.Generation
-		return db.UID, in
-	}, metav1.UpdateOptions{})
-	if err != nil {
-		c.Recorder.Eventf(
-			db,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			err.Error(),
-		)
-		return err
-	}
-	db.Status = rd.Status
-
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(db); err != nil {
 		c.Recorder.Eventf(
@@ -187,6 +161,52 @@ func (c *Controller) create(db *api.Redis) error {
 		return nil
 	}
 
+	// Check: ReplicaReady --> AcceptingConnection --> Ready --> Provisioned
+	// If spec.Init.WaitForInitialRestore is true, but data wasn't restored successfully,
+	// process won't reach here (returned nil at the beginning). As it is here, that means data was restored successfully.
+	// No need to check for IsConditionTrue(DataRestored).
+	if kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReplicaReady) &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseAcceptingConnection) &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseReady) &&
+		!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
+		_, err := util.UpdateRedisStatus(
+			context.TODO(),
+			c.DBClient.KubedbV1alpha2(),
+			db.ObjectMeta,
+			func(in *api.RedisStatus) (types.UID, *api.RedisStatus) {
+				in.Conditions = kmapi.SetCondition(in.Conditions,
+					kmapi.Condition{
+						Type:               api.DatabaseProvisioned,
+						Status:             core.ConditionTrue,
+						Reason:             api.DatabaseSuccessfullyProvisioned,
+						ObservedGeneration: db.Generation,
+						Message:            fmt.Sprintf("The Redis: %s/%s is successfully provisioned.", db.Namespace, db.Name),
+					})
+				return db.UID, in
+			},
+			metav1.UpdateOptions{},
+		)
+		if err != nil {
+			return err
+		}
+	}
+
+	// If the database is successfully provisioned,
+	// Set spec.Init.Initialized to true, if init!=nil.
+	// This will prevent the operator from re-initializing the database.
+	if db.Spec.Init != nil &&
+		!db.Spec.Init.Initialized &&
+		kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseProvisioned) {
+		_, _, err := util.CreateOrPatchRedis(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.Redis) *api.Redis {
+			in.Spec.Init.Initialized = true
+			return in
+		}, metav1.PatchOptions{})
+
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -198,13 +218,18 @@ func (c *Controller) halt(db *api.Redis) error {
 	if err := c.haltDatabase(db); err != nil {
 		return err
 	}
-	if err := c.waitUntilPaused(db); err != nil {
+	if err := c.waitUntilHalted(db); err != nil {
 		return err
 	}
 	log.Infof("update status of Redis %v/%v to Halted.", db.Namespace, db.Name)
 	if _, err := util.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisStatus) (types.UID, *api.RedisStatus) {
-		in.Phase = api.DatabasePhaseHalted
-		in.ObservedGeneration = db.Generation
+		in.Conditions = kmapi.SetCondition(in.Conditions, kmapi.Condition{
+			Type:               api.DatabaseHalted,
+			Status:             core.ConditionTrue,
+			Reason:             api.DatabaseHaltedSuccessfully,
+			ObservedGeneration: db.Generation,
+			Message:            fmt.Sprintf("Redis %s/%s successfully halted.", db.Namespace, db.Name),
+		})
 		return db.UID, in
 	}, metav1.UpdateOptions{}); err != nil {
 		return err

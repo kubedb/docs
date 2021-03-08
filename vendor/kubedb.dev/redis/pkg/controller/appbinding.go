@@ -26,6 +26,7 @@ import (
 
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -72,6 +73,15 @@ func (c *Controller) ensureAppBinding(db *api.Redis) (kutil.VerbType, error) {
 			Port:   port,
 		}
 		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
+		in.Spec.Parameters = &runtime.RawExtension{
+			Object: &appcat.StashAddon{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: appcat.SchemeGroupVersion.String(),
+					Kind:       "StashAddon",
+				},
+				Stash: redisVersion.Spec.Stash,
+			},
+		}
 
 		return in
 	}, metav1.PatchOptions{})

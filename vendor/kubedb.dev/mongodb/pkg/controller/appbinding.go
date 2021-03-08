@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"kubedb.dev/apimachinery/apis/config/v1alpha1"
@@ -55,8 +54,19 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
-	// jsonBytes contains parameters in json format for appbinding.spec.parameters.raw
-	var jsonBytes []byte
+	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return kutil.VerbUnchanged, fmt.Errorf("failed to get MongoDBVersion %v for %v/%v. Reason: %v", db.Spec.Version, db.Namespace, db.Name, err)
+	}
+
+	params := v1alpha1.MongoDBConfiguration{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: v1alpha1.SchemeGroupVersion.String(),
+			Kind:       v1alpha1.ResourceKindMongoConfiguration,
+		},
+		Stash: mongodbVersion.Spec.Stash,
+	}
+
 	if db.Spec.ShardTopology != nil || db.Spec.ReplicaSet != nil {
 		replicaHosts := make(map[string]string)
 		if db.Spec.ShardTopology != nil {
@@ -67,17 +77,8 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 			replicaHosts[restic.DefaultHost] = db.HostAddress()
 		}
 
-		parameter := v1alpha1.MongoDBConfiguration{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: v1alpha1.SchemeGroupVersion.String(),
-				Kind:       v1alpha1.ResourceKindMongoConfiguration,
-			},
-			ConfigServer: db.ConfigSvrDSN(),
-			ReplicaSets:  replicaHosts,
-		}
-		if jsonBytes, err = json.Marshal(parameter); err != nil {
-			return kutil.VerbUnchanged, fmt.Errorf("fail to serialize appbinding spec.Parameters. reason: %v", err)
-		}
+		params.ConfigServer = db.ConfigSvrDSN()
+		params.ReplicaSets = replicaHosts
 	}
 
 	var caBundle []byte
@@ -100,11 +101,6 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 		clientPEMSecretName = db.MustCertSecretName(api.MongoDBClientCert, "")
 	}
 
-	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
-	if err != nil {
-		return kutil.VerbUnchanged, fmt.Errorf("failed to get MongoDBVersion %v for %v/%v. Reason: %v", db.Spec.Version, db.Namespace, db.Name, err)
-	}
-
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(
 		context.TODO(),
 		c.AppCatalogClient.AppcatalogV1alpha1(),
@@ -123,16 +119,14 @@ func (c *Controller) ensureAppBinding(db *api.MongoDB) (kutil.VerbType, error) {
 			}
 			in.Spec.ClientConfig.CABundle = caBundle
 			in.Spec.ClientConfig.InsecureSkipTLSVerify = false
+			in.Spec.Parameters = &runtime.RawExtension{
+				Object: &params,
+			}
 
 			in.Spec.Secret = &core.LocalObjectReference{
 				Name: clientPEMSecretName,
 			}
 
-			if jsonBytes != nil {
-				in.Spec.Parameters = &runtime.RawExtension{
-					Raw: jsonBytes,
-				}
-			}
 			return in
 		},
 		metav1.PatchOptions{},

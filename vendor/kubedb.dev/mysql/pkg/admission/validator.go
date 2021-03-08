@@ -146,22 +146,6 @@ func (a *MySQLValidator) Admit(req *admission.AdmissionRequest) *admission.Admis
 	return status
 }
 
-// On a replication master and each replication slave, the --server-id
-// option must be specified to establish a unique replication ID in the
-// range from 1 to 2^32 − 1. “Unique”, means that each ID must be different
-// from every other ID in use by any other replication master or slave.
-// ref: https://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_server_id
-//
-// We calculate a unique server-id for each server using baseServerID field in MySQL CRD.
-// Moreover we can use maximum of 9 servers in a group. So the baseServerID should be in
-// range [0, (2^32 - 1) - 9]
-func validateGroupBaseServerID(baseServerID int64) error {
-	if 0 < baseServerID && baseServerID <= api.MySQLMaxBaseServerID {
-		return nil
-	}
-	return fmt.Errorf("invalid baseServerId specified, should be in range [1, %d]", api.MySQLMaxBaseServerID)
-}
-
 func validateGroupReplicas(replicas int32) error {
 	if replicas == 1 {
 		return fmt.Errorf("group shouldn't start with 1 member, accepted value of 'spec.replicas' for group replication is in range [2, %d], default is %d if not specified",
@@ -184,10 +168,6 @@ func validateMySQLGroup(replicas int32, group api.MySQLGroupSpec) error {
 	// validate group name whether it is a valid uuid
 	if _, err := uuid.Parse(group.Name); err != nil {
 		return errors.Wrapf(err, "invalid group name is set")
-	}
-
-	if err := validateGroupBaseServerID(*group.BaseServerID); err != nil {
-		return err
 	}
 
 	return nil
@@ -232,7 +212,7 @@ func ValidateMySQL(client kubernetes.Interface, extClient cs.Interface, mysql *a
 		}
 	}
 
-	if err := amv.ValidateEnvVar(mysql.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMySQL); err != nil {
+	if err := amv.ValidateEnvVar(mysql.Spec.PodTemplate.Spec.Container.Env, forbiddenEnvVars, api.ResourceKindMySQL); err != nil {
 		return err
 	}
 

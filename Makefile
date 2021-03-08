@@ -353,7 +353,7 @@ endif
 .PHONY: install
 install:
 	cd ../installer; \
-	helm install kubedb-community charts/kubedb --wait  \
+	helm install kubedb-community charts/kubedb-community --wait  \
 		--namespace=$(KUBE_NAMESPACE)        \
 		--set-file license=$(LICENSE_FILE)   \
 		--set operator.registry=$(REGISTRY)  \
@@ -370,8 +370,9 @@ install:
 		--namespace=$(KUBE_NAMESPACE)        \
 		--set catalog.elasticsearch=true     \
 		--set catalog.etcd=true              \
+		--set catalog.mariadb=true           \
 		--set catalog.memcached=true         \
-		--set catalog.mongo=true             \
+		--set catalog.mongodb=true           \
 		--set catalog.mysql=true             \
 		--set catalog.perconaxtradb=true     \
 		--set catalog.pgbouncer=true         \

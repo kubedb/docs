@@ -116,6 +116,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 // InitInformer initializes Postgres, DormantDB amd Snapshot watcher
 func (c *Controller) Init() error {
 	c.initWatcher()
+	c.initSecretWatcher()
 	return nil
 }
 
@@ -123,6 +124,8 @@ func (c *Controller) Init() error {
 func (c *Controller) RunControllers(stopCh <-chan struct{}) {
 	// Watch x  CRD objects
 	c.pgQueue.Run(stopCh)
+	// Start MongoDB health checker
+	c.RunHealthChecker(stopCh)
 }
 
 // Blocks caller. Intended to be called as a Go routine.

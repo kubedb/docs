@@ -17,13 +17,10 @@ limitations under the License.
 package controller
 
 import (
-	"context"
-
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha2"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
@@ -34,7 +31,6 @@ import (
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
@@ -65,6 +61,9 @@ type Controller struct {
 	rdQueue    *queue.Worker
 	rdInformer cache.SharedIndexInformer
 	rdLister   api_listers.RedisLister
+
+	//StatefulSet Informer
+	rdStsInformer cache.SharedIndexInformer
 }
 
 func New(
@@ -117,6 +116,7 @@ func (c *Controller) EnsureCustomResourceDefinitions() error {
 func (c *Controller) Init() error {
 	c.initWatcher()
 	c.initSecretWatcher()
+	c.stsWatcher()
 	return nil
 }
 
@@ -124,6 +124,9 @@ func (c *Controller) Init() error {
 func (c *Controller) RunControllers(stopCh <-chan struct{}) {
 	// Start Redis controller
 	c.rdQueue.Run(stopCh)
+
+	// Start Redis health checker
+	c.RunHealthChecker(stopCh)
 }
 
 // Blocks caller. Intended to be called as a Go routine.
@@ -184,19 +187,4 @@ func (c *Controller) pushFailureEvent(db *api.Redis, reason string) {
 		db.Name,
 		reason,
 	)
-
-	rd, err := kutildb.UpdateRedisStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.RedisStatus) (types.UID, *api.RedisStatus) {
-		in.Phase = api.DatabasePhaseNotReady
-		in.ObservedGeneration = db.Generation
-		return db.UID, in
-	}, metav1.UpdateOptions{})
-	if err != nil {
-		c.Recorder.Eventf(
-			db,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			err.Error(),
-		)
-	}
-	db.Status = rd.Status
 }

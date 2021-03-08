@@ -36,7 +36,7 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 )
 
-func (c *Controller) waitUntilPaused(db *api.Redis) error {
+func (c *Controller) waitUntilHalted(db *api.Redis) error {
 	log.Infof("waiting for pods for Redis %v/%v to be deleted\n", db.Namespace, db.Name)
 	if err := core_util.WaitUntilPodDeletedBySelector(context.TODO(), c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootSelectors())); err != nil {
 		return err

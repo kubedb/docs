@@ -25,6 +25,7 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
+	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -51,6 +52,24 @@ func (c *Controller) ensureAppBinding(db *api.Postgres, postgresVersion *catalog
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres))
 
+	var caBundle []byte
+	if db.Spec.TLS != nil {
+		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.MustCertSecretName(api.PostgresClientCert), metav1.GetOptions{})
+		if err != nil {
+			return kutil.VerbUnchanged, errors.Wrapf(err, "failed to read certificate secret for Postgresql %s/%s", db.Namespace, db.Name)
+		}
+		v, ok := certSecret.Data[api.TLSCACertFileName]
+		if !ok {
+			return kutil.VerbUnchanged, errors.Errorf("ca.cert is missing in certificate secret for Postgresql %s/%s", db.Namespace, db.Name)
+		}
+		caBundle = v
+	}
+
+	clientPEMSecretName := db.Spec.AuthSecret.Name
+	if db.Spec.ClientAuthMode == api.ClientAuthModeCert {
+		clientPEMSecretName = db.MustCertSecretName(api.PostgresClientCert)
+	}
+
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(
 		context.TODO(),
 		c.AppCatalogClient.AppcatalogV1alpha1(),
@@ -62,17 +81,21 @@ func (c *Controller) ensureAppBinding(db *api.Postgres, postgresVersion *catalog
 
 			in.Spec.Type = appmeta.Type()
 			in.Spec.Version = postgresVersion.Spec.Version
+
 			in.Spec.ClientConfig.Service = &appcat.ServiceReference{
 				Scheme: "postgresql",
 				Name:   db.ServiceName(),
 				Port:   port,
 				Path:   "/",
-				Query:  "sslmode=disable", // TODO: Fix when sslmode is supported
+				// this Query field need to have the exact template of sslmode=<your_desire_ssl_mode>
+				Query: fmt.Sprintf("sslmode=%s", db.Spec.SSLMode),
 			}
 			in.Spec.ClientConfig.InsecureSkipTLSVerify = false
-
+			if caBundle != nil {
+				in.Spec.ClientConfig.CABundle = caBundle
+			}
 			in.Spec.Secret = &core.LocalObjectReference{
-				Name: db.Spec.AuthSecret.Name,
+				Name: clientPEMSecretName,
 			}
 
 			return in

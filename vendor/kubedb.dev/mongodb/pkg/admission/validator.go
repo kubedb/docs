@@ -184,13 +184,13 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, db *ap
 		}
 
 		// Validate Envs
-		if err := amv.ValidateEnvVar(top.Shard.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
+		if err := amv.ValidateEnvVar(top.Shard.PodTemplate.Spec.Container.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
 			return err
 		}
-		if err := amv.ValidateEnvVar(top.ConfigServer.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
+		if err := amv.ValidateEnvVar(top.ConfigServer.PodTemplate.Spec.Container.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
 			return err
 		}
-		if err := amv.ValidateEnvVar(top.Mongos.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
+		if err := amv.ValidateEnvVar(top.Mongos.PodTemplate.Spec.Container.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
 			return err
 		}
 
@@ -212,7 +212,7 @@ func ValidateMongoDB(client kubernetes.Interface, extClient cs.Interface, db *ap
 		}
 
 		if db.Spec.PodTemplate != nil {
-			if err := amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
+			if err := amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Container.Env, forbiddenEnvVars, api.ResourceKindMongoDB); err != nil {
 				return err
 			}
 		}

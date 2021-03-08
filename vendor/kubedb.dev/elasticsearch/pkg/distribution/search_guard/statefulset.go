@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"path"
 	"strings"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
@@ -144,6 +145,9 @@ func (es *Elasticsearch) ensureStatefulSet(
 		in.Spec.Template.Spec.ImagePullSecrets = es.db.Spec.PodTemplate.Spec.ImagePullSecrets
 		in.Spec.Template.Spec.PriorityClassName = es.db.Spec.PodTemplate.Spec.PriorityClassName
 		in.Spec.Template.Spec.Priority = es.db.Spec.PodTemplate.Spec.Priority
+		in.Spec.Template.Spec.HostNetwork = es.db.Spec.PodTemplate.Spec.HostNetwork
+		in.Spec.Template.Spec.HostPID = es.db.Spec.PodTemplate.Spec.HostPID
+		in.Spec.Template.Spec.HostIPC = es.db.Spec.PodTemplate.Spec.HostIPC
 		in.Spec.Template.Spec.SecurityContext = es.db.Spec.PodTemplate.Spec.SecurityContext
 
 		if in.Spec.Template.Spec.SecurityContext == nil {
@@ -390,6 +394,14 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 		},
 	}
 
+	// Mount user provided custom configuration to "elasticsearch_config_directory/custom_config"
+	if es.db.Spec.ConfigSecret != nil {
+		volumeMount = core_util.UpsertVolumeMount(volumeMount, core.VolumeMount{
+			Name:      "custom-config",
+			MountPath: path.Join(api.ElasticsearchConfigDir, api.DBCustomConfigName),
+		})
+	}
+
 	// Add volumeMounts for elasticsearch container
 	// 		- security config directory
 	//		- certificates directory
@@ -424,18 +436,13 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 			// But it is set for all type of nodes, so that our controller can
 			// communicate with each nodes specifically.
 			// The DBA controller uses the restPort to check health of a node.
-			Ports: []core.ContainerPort{defaultRestPort, defaultTransportPort},
-			SecurityContext: &core.SecurityContext{
-				Privileged: pointer.BoolP(false),
-				Capabilities: &core.Capabilities{
-					Add: []core.Capability{"IPC_LOCK", "SYS_RESOURCE"},
-				},
-			},
-			Resources:      esNode.Resources,
-			VolumeMounts:   volumeMount,
-			LivenessProbe:  es.db.Spec.PodTemplate.Spec.LivenessProbe,
-			ReadinessProbe: es.db.Spec.PodTemplate.Spec.ReadinessProbe,
-			Lifecycle:      es.db.Spec.PodTemplate.Spec.Lifecycle,
+			Ports:           []core.ContainerPort{defaultRestPort, defaultTransportPort},
+			SecurityContext: es.db.Spec.PodTemplate.Spec.Container.SecurityContext,
+			Resources:       esNode.Resources,
+			VolumeMounts:    volumeMount,
+			LivenessProbe:   es.db.Spec.PodTemplate.Spec.Container.LivenessProbe,
+			ReadinessProbe:  es.db.Spec.PodTemplate.Spec.Container.ReadinessProbe,
+			Lifecycle:       es.db.Spec.PodTemplate.Spec.Container.Lifecycle,
 		},
 	}
 
@@ -613,32 +620,4 @@ func parseAffinityTemplate(affinity *core.Affinity, nodeRole string) (*core.Affi
 	}
 
 	return affinity, nil
-}
-
-// INITIAL_MASTER_NODES value for >= ES7
-func (es *Elasticsearch) getInitialMasterNodes() string {
-	var value string
-	stsName := es.db.CombinedStatefulSetName()
-	replicas := pointer.Int32(es.db.Spec.Replicas)
-	if es.db.Spec.Topology != nil {
-		// If replicas is not provided, default to 1
-		if es.db.Spec.Topology.Master.Replicas != nil {
-			replicas = pointer.Int32(es.db.Spec.Topology.Master.Replicas)
-		} else {
-			replicas = 1
-		}
-
-		// If master.suffix is provided, name will be "ESName-Suffix".
-		// The master.suffix is default to "master".
-		stsName = es.db.MasterStatefulSetName()
-	}
-
-	for i := int32(0); i < replicas; i++ {
-		if i != 0 {
-			value += ","
-		}
-		value += fmt.Sprintf("%v-%v", stsName, i)
-	}
-
-	return value
 }

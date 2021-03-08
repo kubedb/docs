@@ -25,7 +25,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"gomodules.xyz/pointer"
 	admission "k8s.io/api/admission/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -137,9 +136,6 @@ func setDefaultValues(mysql *api.MySQL, ClusterTopology *core_util.Topology) (ru
 			mysql.Spec.Topology.Group.Name = grName.String()
 		}
 
-		if mysql.Spec.Topology.Group.BaseServerID == nil {
-			mysql.Spec.Topology.Group.BaseServerID = pointer.Int64P(api.MySQLDefaultBaseServerID)
-		}
 	}
 
 	mysql.SetDefaults(ClusterTopology)
