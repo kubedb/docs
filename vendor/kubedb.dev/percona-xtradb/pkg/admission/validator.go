@@ -190,7 +190,7 @@ func ValidatePerconaXtraDB(client kubernetes.Interface, extClient cs.Interface, 
 		return err
 	}
 
-	if err := amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Container.Env, forbiddenEnvVars, api.ResourceKindPerconaXtraDB); err != nil {
+	if err := amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindPerconaXtraDB); err != nil {
 		return err
 	}
 

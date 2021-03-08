@@ -178,7 +178,7 @@ func lostAndFoundCleaner(db *api.MariaDB, dbVersion *v1alpha1.MariaDBVersion) []
 					MountPath: api.MariaDBDataMountPath,
 				},
 			},
-			Resources: db.Spec.PodTemplate.Spec.Container.Resources,
+			Resources: db.Spec.PodTemplate.Spec.Resources,
 		},
 	}
 
@@ -198,10 +198,12 @@ func mariaDBContainer(db *api.MariaDB, dbVersion *v1alpha1.MariaDBVersion) core.
 				Protocol:      core.ProtocolTCP,
 			},
 		},
-		Env:             core_util.UpsertEnvVars(db.Spec.PodTemplate.Spec.Container.Env, getEnvsForMariaDBContainer(db)...),
-		Resources:       db.Spec.PodTemplate.Spec.Container.Resources,
-		SecurityContext: db.Spec.PodTemplate.Spec.Container.SecurityContext,
-		Lifecycle:       db.Spec.PodTemplate.Spec.Container.Lifecycle,
+		Env:             core_util.UpsertEnvVars(db.Spec.PodTemplate.Spec.Env, getEnvsForMariaDBContainer(db)...),
+		Resources:       db.Spec.PodTemplate.Spec.Resources,
+		SecurityContext: db.Spec.PodTemplate.Spec.ContainerSecurityContext,
+		LivenessProbe:   db.Spec.PodTemplate.Spec.LivenessProbe,
+		ReadinessProbe:  db.Spec.PodTemplate.Spec.ReadinessProbe,
+		Lifecycle:       db.Spec.PodTemplate.Spec.Lifecycle,
 		VolumeMounts:    initScriptVolumeMount(db),
 	}
 }
@@ -282,7 +284,7 @@ func getArgsForMariaDBContainer(db *api.MariaDB) []string {
 		tempArgs = append(tempArgs, "/on-start.sh")
 	}
 	// adding user provided arguments
-	tempArgs = append(tempArgs, db.Spec.PodTemplate.Spec.Container.Args...)
+	tempArgs = append(tempArgs, db.Spec.PodTemplate.Spec.Args...)
 
 	// Adding arguments for TLS setup
 	if db.Spec.TLS != nil {

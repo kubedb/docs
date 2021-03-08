@@ -284,7 +284,7 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 			Name:            api.ResourceSingularRedis,
 			Image:           redisVersion.Spec.DB.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
-			Args:            db.Spec.PodTemplate.Spec.Container.Args,
+			Args:            db.Spec.PodTemplate.Spec.Args,
 			Ports:           ports,
 			Env: []core.EnvVar{
 				{
@@ -296,11 +296,11 @@ func (c *Controller) createStatefulSet(db *api.Redis, statefulSetName string, re
 					},
 				},
 			},
-			Resources:       db.Spec.PodTemplate.Spec.Container.Resources,
-			SecurityContext: db.Spec.PodTemplate.Spec.Container.SecurityContext,
-			LivenessProbe:   db.Spec.PodTemplate.Spec.Container.LivenessProbe,
-			ReadinessProbe:  db.Spec.PodTemplate.Spec.Container.ReadinessProbe,
-			Lifecycle:       db.Spec.PodTemplate.Spec.Container.Lifecycle,
+			Resources:       db.Spec.PodTemplate.Spec.Resources,
+			SecurityContext: db.Spec.PodTemplate.Spec.ContainerSecurityContext,
+			LivenessProbe:   db.Spec.PodTemplate.Spec.LivenessProbe,
+			ReadinessProbe:  db.Spec.PodTemplate.Spec.ReadinessProbe,
+			Lifecycle:       db.Spec.PodTemplate.Spec.Lifecycle,
 		}
 
 		if db.Spec.Mode == api.RedisModeStandalone {
@@ -602,7 +602,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 func upsertUserEnv(statefulset *apps.StatefulSet, db *api.Redis) *apps.StatefulSet {
 	for i, container := range statefulset.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularRedis {
-			statefulset.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Container.Env...)
+			statefulset.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Env...)
 			return statefulset
 		}
 	}

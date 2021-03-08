@@ -65,7 +65,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 
-	ClusterTopology, err := core_util.DetectTopology(context.TODO(), metadata.NewForConfigOrDie(c.ClientConfig))
+	topology, err := core_util.DetectTopology(context.TODO(), metadata.NewForConfigOrDie(c.ClientConfig))
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.AppCatalogClient,
 		c.PromClient,
 		c.Config,
-		ClusterTopology,
+		topology,
 		c.Recorder,
 	)
 

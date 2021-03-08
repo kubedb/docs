@@ -123,7 +123,7 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 									MountPath: "/var/lib/mysql",
 								},
 							},
-							Resources: db.Spec.PodTemplate.Spec.Container.Resources,
+							Resources: db.Spec.PodTemplate.Spec.Resources,
 						},
 					},
 					db.Spec.PodTemplate.Spec.InitContainers...,
@@ -134,12 +134,12 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 				Name:            api.ResourceSingularMySQL,
 				Image:           mysqlVersion.Spec.DB.Image,
 				ImagePullPolicy: core.PullIfNotPresent,
-				Args:            db.Spec.PodTemplate.Spec.Container.Args,
-				Resources:       db.Spec.PodTemplate.Spec.Container.Resources,
-				SecurityContext: db.Spec.PodTemplate.Spec.Container.SecurityContext,
-				LivenessProbe:   db.Spec.PodTemplate.Spec.Container.LivenessProbe,
-				ReadinessProbe:  db.Spec.PodTemplate.Spec.Container.ReadinessProbe,
-				Lifecycle:       db.Spec.PodTemplate.Spec.Container.Lifecycle,
+				Args:            db.Spec.PodTemplate.Spec.Args,
+				Resources:       db.Spec.PodTemplate.Spec.Resources,
+				SecurityContext: db.Spec.PodTemplate.Spec.ContainerSecurityContext,
+				LivenessProbe:   db.Spec.PodTemplate.Spec.LivenessProbe,
+				ReadinessProbe:  db.Spec.PodTemplate.Spec.ReadinessProbe,
+				Lifecycle:       db.Spec.PodTemplate.Spec.Lifecycle,
 				Ports: []core.ContainerPort{
 					{
 						Name:          api.MySQLDatabasePortName,
@@ -191,7 +191,7 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 					"peer-finder",
 				}
 
-				userArgs := meta_util.ParseArgumentListToMap(db.Spec.PodTemplate.Spec.Container.Args)
+				userArgs := meta_util.ParseArgumentListToMap(db.Spec.PodTemplate.Spec.Args)
 
 				specArgs := map[string]string{}
 				// add ssl certs flag into args in peer-finder to configure TLS for group replication
@@ -465,7 +465,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.MySQL, stsName string) *ap
 func upsertUserEnv(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMySQL {
-			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Container.Env...)
+			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, db.Spec.PodTemplate.Spec.Env...)
 			return statefulSet
 		}
 	}
@@ -696,7 +696,7 @@ func recommendedArgs(db *api.MySQL, myVersion *v1alpha1.MySQLVersion) map[string
 	// recommended innodb_buffer_pool_size value is 50 to 75 percent of system memory
 	// Buffer pool size must always be equal to or a multiple of innodb_buffer_pool_chunk_size * innodb_buffer_pool_instances
 
-	available := db.Spec.PodTemplate.Spec.Container.Resources.Limits.Memory()
+	available := db.Spec.PodTemplate.Spec.Resources.Limits.Memory()
 
 	// reserved memory for performance schema and other processes
 	reserved := resource.MustParse("256Mi")
@@ -721,8 +721,14 @@ func recommendedArgs(db *api.MySQL, myVersion *v1alpha1.MySQLVersion) map[string
 	// Sets the binary log expiration period in seconds. After their expiration period ends, binary log files can be automatically removed.
 	// Possible removals happen at startup and when the binary log is flushed
 	// https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_expire_logs_seconds
-	expireLogsSeconds := 259200 // 3 days
-	recommendedArgs["binlog-expire-logs-seconds"] = fmt.Sprintf("%d", expireLogsSeconds)
+	// https://mydbops.wordpress.com/2017/04/13/binlog-expiry-now-in-seconds-mysql-8-0/
+	refVersion = semver.New("8.0.1")
+	curVersion = semver.New(myVersion.Spec.Version)
+	if curVersion.Compare(*refVersion) != -1 {
+		recommendedArgs["binlog-expire-logs-seconds"] = fmt.Sprintf("%d", 3*24*60*60) // 3 days
+	} else {
+		recommendedArgs["expire-logs-days"] = fmt.Sprintf("%d", 3) // 3 days
+	}
 
 	return recommendedArgs
 }

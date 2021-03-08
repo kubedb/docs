@@ -173,7 +173,7 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		if db.Spec.Storage != nil {
 			return errors.New("doesn't support spec.storage when spec.topology is set")
 		}
-		if db.Spec.PodTemplate.Spec.Container.Resources.Size() != 0 {
+		if db.Spec.PodTemplate.Spec.Resources.Size() != 0 {
 			return errors.New("doesn't support spec.resources when spec.topology is set")
 		}
 
@@ -232,12 +232,12 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		// Resources validation
 		// Heap size is the 50% of memory & it cannot be less than 128Mi(some say 97Mi)
 		// So, minimum memory request should be twice of 128Mi, i.e. 256Mi.
-		if value, ok := db.Spec.PodTemplate.Spec.Container.Resources.Requests[core.ResourceMemory]; ok && value.Value() < 2*api.ElasticsearchMinHeapSize {
-			return fmt.Errorf("PodTemplate.Spec.Container.Resources.Requests.memory cannot be less than %dMi, given %dMi", (2*api.ElasticsearchMinHeapSize)/(1024*1024), value.Value()/(1024*1024))
+		if value, ok := db.Spec.PodTemplate.Spec.Resources.Requests[core.ResourceMemory]; ok && value.Value() < 2*api.ElasticsearchMinHeapSize {
+			return fmt.Errorf("PodTemplate.Spec.Resources.Requests.memory cannot be less than %dMi, given %dMi", (2*api.ElasticsearchMinHeapSize)/(1024*1024), value.Value()/(1024*1024))
 		}
 	}
 
-	if err := amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Container.Env, forbiddenEnvVars, api.ResourceKindElasticsearch); err != nil {
+	if err := amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindElasticsearch); err != nil {
 		return err
 	}
 

@@ -193,7 +193,7 @@ func ValidateMariaDB(client kubernetes.Interface, extClient cs.Interface, db *ap
 		return err
 	}
 
-	if err := amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Container.Env, forbiddenEnvVars, api.ResourceKindMariaDB); err != nil {
+	if err := amv.ValidateEnvVar(db.Spec.PodTemplate.Spec.Env, forbiddenEnvVars, api.ResourceKindMariaDB); err != nil {
 		return err
 	}
 

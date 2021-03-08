@@ -174,7 +174,7 @@ func mongosInitContainer(
 	scriptName string,
 ) (core.Container, []core.Volume) {
 
-	envList = core_util.UpsertEnvVars(envList, podTemplate.Spec.Container.Env...)
+	envList = core_util.UpsertEnvVars(envList, podTemplate.Spec.Env...)
 
 	// mongodb.Spec.SSLMode & mongodb.Spec.ClusterAuthMode can be empty if upgraded operator from
 	// previous version. But, eventually it will be defaulted. TODO: delete in future.
