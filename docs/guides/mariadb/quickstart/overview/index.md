@@ -17,10 +17,10 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to run a MariaDB database.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/mariadb/quickstart/overview/images/mariadb-lifecycle.png">
+  <img alt="lifecycle"  src="/docs/quides/mariadb/quickstart/overview/images/mariadb-lifecycle.png">
 </p>
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mariadb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/mariadb/quickstart/overview/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/quides/mariadb/quickstart/overview/examples).
 
 ## Before You Begin
 
@@ -36,45 +36,12 @@ This tutorial will show you how to use KubeDB to run a MariaDB database.
   standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
   ```
 
-- To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. This tutorial will also use a [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin/) deployment to connect and test MariaDB database, once it is running. Run the following command to prepare your cluster for this tutorial:
+- To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-  ```bash
-  $ kubectl create ns demo
-  namespace/demo created
-
-  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/quickstart/demo-1.yaml
-  deployment.extensions/myadmin created
-  service/myadmin created
-
-  $ kubectl get pods -n demo --watch
-  NAME                      READY     STATUS              RESTARTS   AGE
-  myadmin-c4db4df95-8lk74   0/1       ContainerCreating   0          27s
-  myadmin-c4db4df95-8lk74   1/1       Running             0          1m
-
-  $ kubectl get svc -n demo
-  NAME      TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
-  myadmin   LoadBalancer   10.105.73.16   <pending>     80:30158/TCP   23m
-  ```
-
-  Then, open your browser and go to the following URL: _http://{node-ip}:{myadmin-svc-nodeport}_. For kind cluster, you can get this URL by running the following command:
-
-  ```bash
-  $ kubectl get svc -n demo myadmin -o json | jq '.spec.ports[].nodePort'
-  30158
-  
-  $ kubectl get node -o json | jq '.items[].status.addresses[].address'
-  "172.18.0.3"
-  "kind-control-plane"
-  "172.18.0.4"
-  "kind-worker"
-  "172.18.0.2"
-  "kind-worker2"
-  
-  # expected url will be:
-  url: http://172.18.0.4:30158
-  ```
-
-According to the above example, this URL will be [ http://172.18.0.4:30158]( http://172.18.0.4:30158). The login informations to phpMyAdmin _(host, username and password)_ will be retrieved later in this tutorial.
+```
+$ kubectl create ns demo
+namespace/demo created
+```
 
 ## Find Available MariaDBVersion
 
@@ -82,30 +49,9 @@ When you have installed KubeDB, it has created `MariaDBVersion` crd for all supp
 
 ```bash
 $ kubectl get mariadbversions
-NAME        VERSION   DB_IMAGE                 DEPRECATED   AGE
-5           5         kubedb/mariadb:5           true         5h36m
-5-v1        5         kubedb/mariadb:5-v1        true         5h36m
-5.7         5.7       kubedb/mariadb:5.7         true         5h36m
-5.7-v1      5.7       kubedb/mariadb:5.7-v1      true         5h36m
-5.7-v2      5.7.25    kubedb/mariadb:5.7-v2      true         5h36m
-5.7-v3      5.7.25    kubedb/mariadb:5.7.25      true         5h36m
-5.7-v4      5.7.29    kubedb/mariadb:5.7.29      true         5h36m
-5.7.25      5.7.25    kubedb/mariadb:5.7.25      true         5h36m
-5.7.25-v1   5.7.25    kubedb/mariadb:5.7.25-v1                5h36m
-5.7.29      5.7.29    kubedb/mariadb:5.7.29                   5h36m
-5.7.31      5.7.31    kubedb/mariadb:5.7.31                   5h36m
-8           8         kubedb/mariadb:8           true         5h36m
-8-v1        8         kubedb/mariadb:8-v1        true         5h36m
-8.0         8.0       kubedb/mariadb:8.0         true         5h36m
-8.0-v1      8.0.3     kubedb/mariadb:8.0-v1      true         5h36m
-8.0-v2      8.0.14    kubedb/mariadb:8.0-v2      true         5h36m
-8.0-v3      8.0.20    kubedb/mariadb:8.0.20      true         5h36m
-8.0.14      8.0.14    kubedb/mariadb:8.0.14      true         5h36m
-8.0.14-v1   8.0.14    kubedb/mariadb:8.0.14-v1                5h36m
-8.0.20      8.0.20    kubedb/mariadb:8.0.20                   5h36m
-8.0.21      8.0.21    kubedb/mariadb:8.0.21                   5h36m
-8.0.3       8.0.3     kubedb/mariadb:8.0.3       true         5h36m
-8.0.3-v1    8.0.3     kubedb/mariadb:8.0.3-v1
+NAME      VERSION   DB_IMAGE                 DEPRECATED   AGE
+10.4.17   10.4.17   kubedb/mariadb:10.4.17                6d21h
+10.5      10.5      kubedb/mariadb:10.5                6d21h
 ```
 
 ## Create a MariaDB database
@@ -116,10 +62,10 @@ KubeDB implements a `MariaDB` CRD to define the specification of a MariaDB datab
 apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
 metadata:
-  name: mariadb-quickstart
+  name: sample-mariadb
   namespace: demo
 spec:
-  version: "8.0.21"
+  version: "10.5"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -128,11 +74,11 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  terminationPolicy: WipeOut
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/quickstart/demo-2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples/sample-mariadb.yaml
 mariadb.kubedb.com/mariadb-quickstart created
 ```
 

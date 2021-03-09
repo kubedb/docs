@@ -1,10 +1,10 @@
 apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
 metadata:
-  name: mariadb-quickstart
+  name: sample-mariadb
   namespace: demo
 spec:
-  version: "8.0.21"
+  version: "10.5"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -13,4 +13,4 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
+  terminationPolicy: WipeOut
