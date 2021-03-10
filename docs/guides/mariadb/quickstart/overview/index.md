@@ -363,7 +363,7 @@ Run the following command to get MariaDB resources,
 ```bash
 $ kubectl get my,sts,secret,svc,pvc -n demo
 NAME                                VERSION   STATUS   AGE
-mariadb.kubedb.com/mariadb-quickstart   8.0.21    Halted   22m
+mariadb.kubedb.com/mariadb-quickstart   10.5.8    Halted   22m
 
 NAME                           TYPE                                  DATA   AGE
 secret/default-token-lgbjm     kubernetes.io/service-account-token   3      27h
