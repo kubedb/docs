@@ -148,7 +148,7 @@ spec:
 
 ### spec.version
 
-`spec.version` is a `required` field that specifies the name of the [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog.md) CRD where the docker images are specified.
+`spec.version` is a `required` field that specifies the name of the [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md) CRD where the docker images are specified.
 
 - Name format: `{Application Version}-{Auth Plugin Name}-{Modification Tag}`
 

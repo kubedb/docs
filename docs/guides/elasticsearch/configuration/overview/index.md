@@ -105,5 +105,5 @@ All these files provided via `configSecret` is stored in each Elasticsearch node
 
 ## Next Steps
 
-- Learn how to use custom configuration specifying topology from [here](/docs/guides/elasticsearch/configuration/with-topology.md).
-- Learn how to use custom configuration without specifying topology from [here](/docs/guides/elasticsearch/configuration/without-topology.md).
+- Learn how to use custom configuration in combined cluster from [here](/docs/guides/elasticsearch/configuration/combined-cluster/index.md).
+- Learn how to use custom configuration in topology cluster from [here](/docs/guides/elasticsearch/configuration/topology-cluster/index.md).

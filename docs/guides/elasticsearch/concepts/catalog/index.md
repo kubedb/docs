@@ -18,7 +18,7 @@ section_menu_id: guides
 
 `ElasticsearchVersion` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration to specify the docker images to be used for [Elasticsearch](https://www.elastic.co/products/elasticsearch) database deployed with KubeDB in a Kubernetes native way.
 
-When you install KubeDB, an `ElasticsearchVersion` custom resource will be created automatically for every supported Elasticsearch version. You have to specify the name of `ElasticsearchVersion` CRD in `spec.version` field of [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch.md) CRD. Then, KubeDB will use the docker images specified in the `ElasticsearchVersion` CRD to create your expected database.
+When you install KubeDB, an `ElasticsearchVersion` custom resource will be created automatically for every supported Elasticsearch version. You have to specify the name of `ElasticsearchVersion` CRD in `spec.version` field of [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md) CRD. Then, KubeDB will use the docker images specified in the `ElasticsearchVersion` CRD to create your expected database.
 
 Using a separate CRD for specifying respective docker images, and pod security policy names allow us to modify the images, and policies independent of the KubeDB operator. This will also allow the users to use a custom image for the database.
 
@@ -53,7 +53,7 @@ spec:
 
 ### metadata.name
 
-`metadata.name` is a required field that specifies the name of the `ElasticsearchVersion` CRD. You have to specify this name in `spec.version` field of [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch.md) CRD.
+`metadata.name` is a required field that specifies the name of the `ElasticsearchVersion` CRD. You have to specify this name in `spec.version` field of [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md) CRD.
 
 We follow this convention for naming ElasticsearchVersion CRD:
 
@@ -87,5 +87,5 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 ## Next Steps
 
-- Learn about Elasticsearch CRD [here](/docs/guides/elasticsearch/concepts/elasticsearch.md).
-- Deploy your first Elasticsearch database with KubeDB by following the guide [here](/docs/guides/elasticsearch/quickstart/quickstart.md).
+- Learn about Elasticsearch CRD [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+- Deploy your first Elasticsearch database with KubeDB by following the guide [here](/docs/guides/elasticsearch/quickstart/overview/index.md).

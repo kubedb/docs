@@ -65,9 +65,9 @@ Here, we are going to describe the various sections of a `ElasticsearchOpsReques
 
 ### spec.databaseRef
 
-`spec.databaseRef` is a `required` field that points to the [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch.md) object for which the administrative operations will be performed. This field consists of the following sub-field:
+`spec.databaseRef` is a `required` field that points to the [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md) object for which the administrative operations will be performed. This field consists of the following sub-field:
 
-- `databaseRef.name` - specifies the name of the [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch.md) object.
+- `databaseRef.name` - specifies the name of the [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md) object.
 
 > Note: The `ElasticsearchOpsRequest` should be on the same namespace as the referring `Elasticsearch` object.
 
@@ -76,7 +76,7 @@ Here, we are going to describe the various sections of a `ElasticsearchOpsReques
 `spec.upgrade` is an `optional` field, but it acts as a `required` field when the `spec.type` is set to `Upgrade`.
 It specifies the desired version information required for the Elasticsearch version upgrade. This field consists of the following sub-fields:
 
-- `upgrade.targetVersion` refers to an [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog.md) CR name that contains the Elasticsearch version information required to perform the upgrade.
+- `upgrade.targetVersion` refers to an [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md) CR name that contains the Elasticsearch version information required to perform the upgrade.
 
 > KubeDB does not support downgrade for Elasticsearch.
 

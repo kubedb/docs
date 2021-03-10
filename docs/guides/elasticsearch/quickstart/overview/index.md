@@ -39,7 +39,7 @@ demo                 Active   9s
 
 > Note: YAML files used in this tutorial are stored in [guides/elasticsearch/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> We have designed this tutorial to demonstrate a production setup of KubeDB managed Elasticsearch. If you just want to try out KubeDB, you can bypass some of the safety features following the tips [here](/docs/guides/elasticsearch/quickstart/quickstart.md#tips-for-testing).
+> We have designed this tutorial to demonstrate a production setup of KubeDB managed Elasticsearch. If you just want to try out KubeDB, you can bypass some of the safety features following the tips [here](/docs/guides/elasticsearch/quickstart/overview/index.md#tips-for-testing).
 
 ## Find Available StorageClass
 
@@ -496,6 +496,6 @@ If you are just testing some basic functionalities, you might want to avoid addi
 - Learn how to configure [Elasticsearch Topology](/docs/guides/elasticsearch/clustering/topology.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
-- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch.md).
+- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 - Use [private Docker registry](/docs/guides/elasticsearch/private-registry/using-private-registry.md) to deploy Elasticsearch with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
