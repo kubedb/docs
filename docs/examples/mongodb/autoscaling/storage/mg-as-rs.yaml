@@ -1,0 +1,13 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: MongoDBAutoscaler
+metadata:
+  name: mg-as-rs
+  namespace: demo
+spec:
+  databaseRef:
+    name: mg-rs
+  storage:
+    replicaSet:
+      trigger: "On"
+      usageThreshold: 60
+      scalingThreshold: 50

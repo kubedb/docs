@@ -4,7 +4,7 @@ metadata:
   name: mg-sharding
   namespace: demo
 spec:
-  version: 3.6.8-v1
+  version: 4.2.3
   shardTopology:
     configServer:
       replicas: 2

@@ -4,7 +4,7 @@ metadata:
   name: minute-mongodb
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: "4.2.3"
   storageType: Durable
   podTemplate:
     spec:

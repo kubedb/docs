@@ -70,7 +70,7 @@ metadata:
   name: mgo-misc-config
   namespace: demo
 spec:
-  version: "3.6-v3"
+  version: "4.2.3"
   storageType: "Durable"
   storage:
     storageClassName: "standard"
@@ -129,15 +129,22 @@ $ kubectl exec -it mgo-misc-config-0 -n demo sh
 		"mongod",
 		"--dbpath=/data/db",
 		"--auth",
-		"--bind_ip=0.0.0.0",
+		"--ipv6",
+		"--bind_ip_all",
 		"--port=27017",
-		"--maxConns=100"
+		"--tlsMode=disabled",
+		"--config=/data/configdb/mongod.conf"
 	],
 	"parsed" : {
+		"config" : "/data/configdb/mongod.conf",
 		"net" : {
-			"bindIp" : "0.0.0.0",
+			"bindIp" : "*",
+			"ipv6" : true,
 			"maxIncomingConnections" : 100,
-			"port" : 27017
+			"port" : 27017,
+			"tls" : {
+				"mode" : "disabled"
+			}
 		},
 		"security" : {
 			"authorization" : "enabled"
@@ -162,9 +169,6 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 ```bash
 kubectl patch -n demo mg/mgo-misc-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-misc-config
-
-kubectl patch -n demo drmn/mgo-misc-config -p '{"spec":{"wipeOut":true}}' --type="merge"
-kubectl delete -n demo drmn/mgo-misc-config
 
 kubectl delete ns demo
 ```

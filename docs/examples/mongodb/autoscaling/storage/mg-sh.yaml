@@ -1,0 +1,27 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MongoDB
+metadata:
+  name: mg-sh
+  namespace: demo       
+spec:
+  version: "4.2.3"
+  storageType: Durable
+  shardTopology:
+    configServer:
+      storage:
+        storageClassName: topolvm-provisioner
+        resources:
+          requests:
+            storage: 1Gi
+      replicas: 3
+    mongos:
+      replicas: 2
+    shard:
+      storage:
+        storageClassName: topolvm-provisioner
+        resources:
+          requests:
+            storage: 1Gi
+      replicas: 3
+      shards: 2
+  terminationPolicy: WipeOut

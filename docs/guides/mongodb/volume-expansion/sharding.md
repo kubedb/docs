@@ -50,14 +50,14 @@ Here, we are going to deploy a `MongoDB` Sharded Database using a supported vers
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass                                                                                                                                           20:22:33
+$ kubectl get storageclass
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
 ```
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `MongoDB` standalone database with version `3.6.8`.
+Now, we are going to deploy a `MongoDB` standalone database with version `4.2.3`.
 
 ### Deploy MongoDB
 
@@ -70,7 +70,7 @@ metadata:
   name: mg-sharding
   namespace: demo
 spec:
-  version: 3.6.8-v1
+  version: 4.2.3
   shardTopology:
     configServer:
       replicas: 2
@@ -98,12 +98,12 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mg-sharding created
 ```
 
-Now, wait until `mg-sharding` has status `Running`. i.e,
+Now, wait until `mg-sharding` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get mg -n demo
 NAME          VERSION    STATUS    AGE
-mg-sharding   3.6.8-v1   Running   2m45s
+mg-sharding   4.2.3      Ready     2m45s
 ```
 
 Let's check volume size from statefulset, and from the persistent volume of shards and config servers,
@@ -255,7 +255,7 @@ Now, we are going to verify from the `Statefulset`, and the `Persistent Volumes`
 $ kubectl get sts -n demo mg-sharding-configsvr -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "2Gi"
 
-$ kubectl get sts -n demo mg-sharding-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'                                             10:15:51
+$ kubectl get sts -n demo mg-sharding-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "2Gi"
 
 $ kubectl get pv -n demo

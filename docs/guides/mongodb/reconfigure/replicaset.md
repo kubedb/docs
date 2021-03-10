@@ -43,7 +43,7 @@ Now, we are going to deploy a  `MongoDB` Replicaset using a supported version by
 
 ### Prepare MongoDB Replicaset
 
-Now, we are going to deploy a `MongoDB` Replicaset database with version `3.6.8`.
+Now, we are going to deploy a `MongoDB` Replicaset database with version `4.2.3`.
 
 ### Deploy MongoDB 
 
@@ -56,17 +56,36 @@ net:
 ```
 Here, `maxIncomingConnections` is set to `10000`, whereas the default value is `65536`.
 
-Now, we will create a configMap with this configuration file.
+Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create configmap -n demo mg-custom-config --from-file=./mongod.conf
-configmap/mg-custom-config created
+$ kubectl create secret generic -n demo mg-custom-config --from-file=./mongod.conf
+secret/mg-custom-config created
 ```
 
 In this section, we are going to create a MongoDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
-
+apiVersion: kubedb.com/v1alpha2
+kind: MongoDB
+metadata:
+  name: mg-replicaset
+  namespace: demo
+spec:
+  version: "4.2.3"
+  replicas: 3
+  replicaSet:
+    name: rs0
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  configSecret:
+    name: mg-custom-config
 ```
 
 Let's create the `MongoDB` CR we have shown above,
@@ -76,34 +95,81 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mg-replicaset created
 ```
 
-Now, wait until `mg-replicaset` has status `Running`. i.e,
+Now, wait until `mg-replicaset` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo                                                                                                                                             20:05:47
-
+$ kubectl get mg -n demo                                                                                                                                            
+NAME            VERSION   STATUS   AGE
+mg-replicaset   4.2.3     Ready    19m
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 First we need to get the username and password to connect to a mongodb instance,
 ```bash
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\username}' | base64 -d                                                                         11:09:51
+$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\username}' | base64 -d                                                                       
 root
 
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\password}' | base64 -d                                                                         11:10:44
+$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\password}' | base64 -d                                                                         
 nrKuxni0wDSMrgwy
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet                          18:35:59
-
+$ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet                        
+{
+	"argv" : [
+		"mongod",
+		"--dbpath=/data/db",
+		"--auth",
+		"--ipv6",
+		"--bind_ip_all",
+		"--port=27017",
+		"--tlsMode=disabled",
+		"--replSet=rs0",
+		"--keyFile=/data/configdb/key.txt",
+		"--clusterAuthMode=keyFile",
+		"--config=/data/configdb/mongod.conf"
+	],
+	"parsed" : {
+		"config" : "/data/configdb/mongod.conf",
+		"net" : {
+			"bindIp" : "*",
+			"ipv6" : true,
+			"maxIncomingConnections" : 10000,
+			"port" : 27017,
+			"tls" : {
+				"mode" : "disabled"
+			}
+		},
+		"replication" : {
+			"replSet" : "rs0"
+		},
+		"security" : {
+			"authorization" : "enabled",
+			"clusterAuthMode" : "keyFile",
+			"keyFile" : "/data/configdb/key.txt"
+		},
+		"storage" : {
+			"dbPath" : "/data/db"
+		}
+	},
+	"ok" : 1,
+	"$clusterTime" : {
+		"clusterTime" : Timestamp(1614668500, 1),
+		"signature" : {
+			"hash" : BinData(0,"7sh886HhsNYajGxYGp5Jxi52IzA="),
+			"keyId" : NumberLong("6934943333319966722")
+		}
+	},
+	"operationTime" : Timestamp(1614668500, 1)
+}
 ```
 
-As we can see from the configuration of running mongodb, the value of `maxIncomingConnections` has been set to `10000`.
+As we can see from the configuration of ready mongodb, the value of `maxIncomingConnections` has been set to `10000`.
 
-### Reconfigure using new ConfigMap
+### Reconfigure using new config secret
 
 Now we will reconfigure this database to set `maxIncomingConnections` to `20000`. 
 
@@ -115,16 +181,16 @@ net:
    maxIncomingConnections: 20000
 ```
 
-Then, we will create a new configMap with this configuration file.
+Then, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create configmap -n demo new-custom-config --from-file=./mongod.conf
-configmap/mg-custom-config created
+$ kubectl create secret generic -n demo new-custom-config --from-file=./mongod.conf
+secret/new-custom-config created
 ```
 
 #### Create MongoDBOpsRequest
 
-Now, we will use this configMap to replace the previous configMap using a `MongoDBOpsRequest` CR. The `MongoDBOpsRequest` yaml is given below,
+Now, we will use this secret to replace the previous secret using a `MongoDBOpsRequest` CR. The `MongoDBOpsRequest` yaml is given below,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -136,9 +202,9 @@ spec:
   type: Reconfigure
   databaseRef:
     name: mg-replicaset
-  customConfig:
+  configuration:
     replicaSet:
-      configMap:
+      configSecret:
         name: new-custom-config
 ```
 
@@ -146,7 +212,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-replicaset` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.customConfig.replicaSet.configMap.name` specifies the name of the new configmap.
+- `spec.customConfig.replicaSet.configSecret.name` specifies the name of the new secret.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
@@ -157,7 +223,7 @@ mongodbopsrequest.ops.kubedb.com/mops-reconfigure-replicaset created
 
 #### Verify the new configuration is working 
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSource` of `MongoDB` object.
+If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MongoDB` object.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -172,107 +238,102 @@ We can see from the above output that the `MongoDBOpsRequest` has succeeded. If 
 
 ```bash
 $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-replicaset 
- Name:         mops-reconfigure-replicaset
- Namespace:    demo
- Labels:       <none>
- Annotations:  API Version:  ops.kubedb.com/v1alpha1
- Kind:         MongoDBOpsRequest
- Metadata:
-   Creation Timestamp:  2020-08-26T18:40:06Z
-   Finalizers:
-     kubedb.com
-   Generation:  1
-   Managed Fields:
-     API Version:  ops.kubedb.com/v1alpha1
-     Fields Type:  FieldsV1
-     fieldsV1:
-       f:metadata:
-         f:annotations:
-           .:
-           f:kubectl.kubernetes.io/last-applied-configuration:
-       f:spec:
-         .:
-         f:customConfig:
-           .:
-           f:replicaSet:
-             .:
-             f:configMap:
-               .:
-               f:name:
-         f:databaseRef:
-           .:
-           f:name:
-         f:type:
-     Manager:      kubectl
-     Operation:    Update
-     Time:         2020-08-26T18:40:06Z
-     API Version:  ops.kubedb.com/v1alpha1
-     Fields Type:  FieldsV1
-     fieldsV1:
-       f:metadata:
-         f:finalizers:
-       f:status:
-         .:
-         f:conditions:
-         f:observedGeneration:
-         f:phase:
-     Manager:         kubedb-enterprise
-     Operation:       Update
-     Time:            2020-08-26T18:41:26Z
-   Resource Version:  6294401
-   Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-replicaset
-   UID:               bd17e9ed-35ed-4ab9-a844-659800ef4f39
- Spec:
-   Custom Config:
-     ReplicaSet:
-       Config Map:
-         Name:  new-custom-config
-   Database Ref:
-     Name:  mg-replicaset
-   Type:    Reconfigure
- Status:
-   Conditions:
-     Last Transition Time:  2020-08-26T18:40:06Z
-     Message:               MongoDB ops request is being processed
-     Observed Generation:   1
-     Reason:                Scaling
-     Status:                True
-     Type:                  Scaling
-     Last Transition Time:  2020-08-26T18:40:06Z
-     Message:               Successfully halted mongodb: mg-replicaset
-     Observed Generation:   1
-     Reason:                HaltDatabase
-     Status:                True
-     Type:                  HaltDatabase
-     Last Transition Time:  2020-08-26T18:41:26Z
-     Message:               Successfully Reconfigured mongodb
-     Observed Generation:   1
-     Reason:                ReconfigureReplicaset
-     Status:                True
-     Type:                  ReconfigureReplicaset
-     Last Transition Time:  2020-08-26T18:41:26Z
-     Message:               Succefully Resumed mongodb: mg-replicaset
-     Observed Generation:   1
-     Reason:                ResumeDatabase
-     Status:                True
-     Type:                  ResumeDatabase
-     Last Transition Time:  2020-08-26T18:41:26Z
-     Message:               Successfully completed the modification process.
-     Observed Generation:   1
-     Reason:                Successful
-     Status:                True
-     Type:                  Successful
-   Observed Generation:     1
-   Phase:                   Successful
- Events:
-   Type    Reason                 Age    From                        Message
-   ----    ------                 ----   ----                        -------
-   Normal  HaltDatabase          2m23s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-   Normal  HaltDatabase          2m23s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
-   Normal  ReconfigureReplicaset  63s    KubeDB Enterprise Operator  Successfully Reconfigured mongodb
-   Normal  ResumeDatabase         63s    KubeDB Enterprise Operator  Resuming MongoDB
-   Normal  ResumeDatabase         63s    KubeDB Enterprise Operator  Successfully Started Balancer
-   Normal  Successful             63s    KubeDB Enterprise Operator  Successfully Reconfigured Database
+Name:         mops-reconfigure-replicaset
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         MongoDBOpsRequest
+Metadata:
+  Creation Timestamp:  2021-03-02T07:04:31Z
+  Generation:          1
+  Managed Fields:
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:configuration:
+          .:
+          f:replicaSet:
+            .:
+            f:configSecret:
+              .:
+              f:name:
+        f:databaseRef:
+          .:
+          f:name:
+        f:type:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2021-03-02T07:04:31Z
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:spec:
+        f:configuration:
+          f:replicaSet:
+            f:podTemplate:
+              .:
+              f:controller:
+              f:metadata:
+              f:spec:
+                .:
+                f:resources:
+      f:status:
+        .:
+        f:conditions:
+        f:observedGeneration:
+        f:phase:
+    Manager:         kubedb-enterprise
+    Operation:       Update
+    Time:            2021-03-02T07:04:31Z
+  Resource Version:  29869
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-replicaset
+  UID:               064733d6-19db-4153-82f7-bc0580116ee6
+Spec:
+  Configuration:
+    Replica Set:
+      Config Secret:
+        Name:  new-custom-config
+  Database Ref:
+    Name:  mg-replicaset
+  Type:    Reconfigure
+Status:
+  Conditions:
+    Last Transition Time:  2021-03-02T07:04:31Z
+    Message:               MongoDB ops request is reconfiguring database
+    Observed Generation:   1
+    Reason:                Reconfigure
+    Status:                True
+    Type:                  Reconfigure
+    Last Transition Time:  2021-03-02T07:06:21Z
+    Message:               Successfully Reconfigured MongoDB
+    Observed Generation:   1
+    Reason:                ReconfigureReplicaset
+    Status:                True
+    Type:                  ReconfigureReplicaset
+    Last Transition Time:  2021-03-02T07:06:21Z
+    Message:               Successfully completed the modification process.
+    Observed Generation:   1
+    Reason:                Successful
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     1
+  Phase:                   Successful
+Events:
+  Type    Reason                 Age    From                        Message
+  ----    ------                 ----   ----                        -------
+  Normal  PauseDatabase          2m55s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-replicaset
+  Normal  PauseDatabase          2m55s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-replicaset
+  Normal  ReconfigureReplicaset  65s    KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
+  Normal  ResumeDatabase         65s    KubeDB Enterprise Operator  Resuming MongoDB demo/mg-replicaset
+  Normal  ResumeDatabase         65s    KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-replicaset
+  Normal  Successful             65s    KubeDB Enterprise Operator  Successfully Reconfigured Database
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.
@@ -284,10 +345,11 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMr
 		"mongod",
 		"--dbpath=/data/db",
 		"--auth",
-		"--bind_ip=0.0.0.0",
+		"--ipv6",
+		"--bind_ip_all",
 		"--port=27017",
-		"--sslMode=disabled",
-		"--replSet=replicaset",
+		"--tlsMode=disabled",
+		"--replSet=rs0",
 		"--keyFile=/data/configdb/key.txt",
 		"--clusterAuthMode=keyFile",
 		"--config=/data/configdb/mongod.conf"
@@ -295,15 +357,16 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMr
 	"parsed" : {
 		"config" : "/data/configdb/mongod.conf",
 		"net" : {
-			"bindIp" : "0.0.0.0",
+			"bindIp" : "*",
+			"ipv6" : true,
 			"maxIncomingConnections" : 20000,
 			"port" : 27017,
-			"ssl" : {
+			"tls" : {
 				"mode" : "disabled"
 			}
 		},
 		"replication" : {
-			"replSet" : "replicaset"
+			"replSet" : "rs0"
 		},
 		"security" : {
 			"authorization" : "enabled",
@@ -315,57 +378,56 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMr
 		}
 	},
 	"ok" : 1,
-	"operationTime" : Timestamp(1598467358, 1),
 	"$clusterTime" : {
-		"clusterTime" : Timestamp(1598467358, 1),
+		"clusterTime" : Timestamp(1614668887, 1),
 		"signature" : {
-			"hash" : BinData(0,"ZumeKUzV3YmFMlmHy9twU1tJxlw="),
-			"keyId" : NumberLong("6865318254139670530")
+			"hash" : BinData(0,"5q35Y51+YpbVHFKoaU7lUWi38oY="),
+			"keyId" : NumberLong("6934943333319966722")
 		}
-	}
-}  
+	},
+	"operationTime" : Timestamp(1614668887, 1)
+}
 ```
 
-As we can see from the configuration of running mongodb, the value of `maxIncomingConnections` has been changed from `10000` to `20000`. So the reconfiguration of the database is successful.
+As we can see from the configuration of ready mongodb, the value of `maxIncomingConnections` has been changed from `10000` to `20000`. So the reconfiguration of the database is successful.
 
 
-### Reconfigure using new Data
+### Reconfigure using inline config
 
-Now we will reconfigure this database again to set `maxIncomingConnections` to `30000`. This time we won't use a new configMap. We will use the data field of the `MongoDBOpsRequest`. This will merge the new config in the existing configMap.
+Now we will reconfigure this database again to set `maxIncomingConnections` to `30000`. This time we won't use a new secret. We will use the `inlineConfig` field of the `MongoDBOpsRequest`. This will merge the new config in the existing secret.
 
 #### Create MongoDBOpsRequest
 
-Now, we will use the new configuration in the `data` field in the `MongoDBOpsRequest` CR. The `MongoDBOpsRequest` yaml is given below,
+Now, we will use the new configuration in the `inlineConfig` field in the `MongoDBOpsRequest` CR. The `MongoDBOpsRequest` yaml is given below,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MongoDBOpsRequest
 metadata:
-  name: mops-reconfigure-data-replicaset
+  name: mops-reconfigure-inline-replicaset
   namespace: demo
 spec:
   type: Reconfigure
   databaseRef:
     name: mg-replicaset
-  customConfig:
+  configuration:
     replicaSet:
-      data:
-        mongod.conf: |
+      inlineConfig: |
           net:
             maxIncomingConnections: 30000
 ```
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-data-replicaset` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-inline-replicaset` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.customConfig.replicaSet.data` specifies the new configuration that will be merged in the existing configMap.
+- `spec.configuration.replicaSet.inlineConfig` specifies the new configuration that will be merged in the existing secret.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-data-replicaset.yaml
-mongodbopsrequest.ops.kubedb.com/mops-reconfigure-data-replicaset created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-inline-replicaset.yaml
+mongodbopsrequest.ops.kubedb.com/mops-reconfigure-inline-replicaset created
 ```
 
 #### Verify the new configuration is working 
@@ -378,23 +440,22 @@ Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following comman
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                               TYPE          STATUS       AGE
-mops-reconfigure-data-replicaset   Reconfigure   Successful   109s
+mops-reconfigure-inline-replicaset   Reconfigure   Successful   109s
 ```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-reconfigure-data-replicaset
-Name:         mops-reconfigure-data-replicaset
+$ kubectl describe mongodbopsrequest -n demo mops-reconfigure-inline-replicaset
+Name:         mops-reconfigure-inline-replicaset
 Namespace:    demo
 Labels:       <none>
-Annotations:  API Version:  ops.kubedb.com/v1alpha1
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
 Kind:         MongoDBOpsRequest
 Metadata:
-  Creation Timestamp:  2020-08-26T18:36:14Z
-  Finalizers:
-    kubedb.com
-  Generation:  1
+  Creation Timestamp:  2021-03-02T07:09:39Z
+  Generation:          1
   Managed Fields:
     API Version:  ops.kubedb.com/v1alpha1
     Fields Type:  FieldsV1
@@ -405,25 +466,31 @@ Metadata:
           f:kubectl.kubernetes.io/last-applied-configuration:
       f:spec:
         .:
-        f:customConfig:
+        f:configuration:
           .:
           f:replicaSet:
             .:
-            f:data:
-              .:
-              f:mongod.conf:
+            f:inlineConfig:
         f:databaseRef:
           .:
           f:name:
         f:type:
-    Manager:      kubectl
+    Manager:      kubectl-client-side-apply
     Operation:    Update
-    Time:         2020-08-26T18:36:14Z
+    Time:         2021-03-02T07:09:39Z
     API Version:  ops.kubedb.com/v1alpha1
     Fields Type:  FieldsV1
     fieldsV1:
-      f:metadata:
-        f:finalizers:
+      f:spec:
+        f:configuration:
+          f:replicaSet:
+            f:podTemplate:
+              .:
+              f:controller:
+              f:metadata:
+              f:spec:
+                .:
+                f:resources:
       f:status:
         .:
         f:conditions:
@@ -431,15 +498,14 @@ Metadata:
         f:phase:
     Manager:         kubedb-enterprise
     Operation:       Update
-    Time:            2020-08-26T18:37:55Z
-  Resource Version:  6291551
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-data-replicaset
-  UID:               0e3a72d8-c906-48cb-bc0c-e87671367454
+    Time:            2021-03-02T07:09:39Z
+  Resource Version:  31005
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-inline-replicaset
+  UID:               0137442b-1b04-43ed-8de7-ecd913b44065
 Spec:
-  Custom Config:
-    ReplicaSet:
-      Data:
-        mongod.conf:  net:
+  Configuration:
+    Replica Set:
+      Inline Config:  net:
   maxIncomingConnections: 30000
 
   Database Ref:
@@ -447,25 +513,19 @@ Spec:
   Type:    Reconfigure
 Status:
   Conditions:
-    Last Transition Time:  2020-08-26T18:36:14Z
-    Message:               MongoDB ops request is being processed
+    Last Transition Time:  2021-03-02T07:09:39Z
+    Message:               MongoDB ops request is reconfiguring database
     Observed Generation:   1
-    Reason:                Scaling
+    Reason:                Reconfigure
     Status:                True
-    Type:                  Scaling
-    Last Transition Time:  2020-08-26T18:37:55Z
-    Message:               Successfully Reconfigured mongodb
+    Type:                  Reconfigure
+    Last Transition Time:  2021-03-02T07:11:14Z
+    Message:               Successfully Reconfigured MongoDB
     Observed Generation:   1
     Reason:                ReconfigureReplicaset
     Status:                True
     Type:                  ReconfigureReplicaset
-    Last Transition Time:  2020-08-26T18:37:55Z
-    Message:               Succefully Resumed mongodb: mg-replicaset
-    Observed Generation:   1
-    Reason:                ResumeDatabase
-    Status:                True
-    Type:                  ResumeDatabase
-    Last Transition Time:  2020-08-26T18:37:55Z
+    Last Transition Time:  2021-03-02T07:11:14Z
     Message:               Successfully completed the modification process.
     Observed Generation:   1
     Reason:                Successful
@@ -474,12 +534,14 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason                 Age   From                        Message
-  ----    ------                 ----  ----                        -------
-  Normal  ReconfigureReplicaset  25s   KubeDB Enterprise Operator  Successfully Reconfigured mongodb
-  Normal  ResumeDatabase         25s   KubeDB Enterprise Operator  Resuming MongoDB
-  Normal  ResumeDatabase         25s   KubeDB Enterprise Operator  Successfully Started Balancer
-  Normal  Successful             25s   KubeDB Enterprise Operator  Successfully Reconfigured Database
+  Type    Reason                 Age    From                        Message
+  ----    ------                 ----   ----                        -------
+  Normal  PauseDatabase          9m20s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-replicaset
+  Normal  PauseDatabase          9m20s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-replicaset
+  Normal  ReconfigureReplicaset  7m45s  KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
+  Normal  ResumeDatabase         7m45s  KubeDB Enterprise Operator  Resuming MongoDB demo/mg-replicaset
+  Normal  ResumeDatabase         7m45s  KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-replicaset
+  Normal  Successful             7m45s  KubeDB Enterprise Operator  Successfully Reconfigured Database
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.
@@ -491,10 +553,11 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMr
 		"mongod",
 		"--dbpath=/data/db",
 		"--auth",
-		"--bind_ip=0.0.0.0",
+		"--ipv6",
+		"--bind_ip_all",
 		"--port=27017",
-		"--sslMode=disabled",
-		"--replSet=replicaset",
+		"--tlsMode=disabled",
+		"--replSet=rs0",
 		"--keyFile=/data/configdb/key.txt",
 		"--clusterAuthMode=keyFile",
 		"--config=/data/configdb/mongod.conf"
@@ -502,15 +565,16 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMr
 	"parsed" : {
 		"config" : "/data/configdb/mongod.conf",
 		"net" : {
-			"bindIp" : "0.0.0.0",
+			"bindIp" : "*",
+			"ipv6" : true,
 			"maxIncomingConnections" : 30000,
 			"port" : 27017,
-			"ssl" : {
+			"tls" : {
 				"mode" : "disabled"
 			}
 		},
 		"replication" : {
-			"replSet" : "replicaset"
+			"replSet" : "rs0"
 		},
 		"security" : {
 			"authorization" : "enabled",
@@ -522,18 +586,18 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMr
 		}
 	},
 	"ok" : 1,
-	"operationTime" : Timestamp(1598467113, 1),
 	"$clusterTime" : {
-		"clusterTime" : Timestamp(1598467113, 1),
+		"clusterTime" : Timestamp(1614669580, 1),
 		"signature" : {
-			"hash" : BinData(0,"jDOBwlqD1dG9mIKgTwX7K5NnJfs="),
-			"keyId" : NumberLong("6865318254139670530")
+			"hash" : BinData(0,"u/xTAa4aW/8bsRvBYPffwQCeTF0="),
+			"keyId" : NumberLong("6934943333319966722")
 		}
-	}
+	},
+	"operationTime" : Timestamp(1614669580, 1)
 }
 ```
 
-As we can see from the configuration of running mongodb, the value of `maxIncomingConnections` has been changed from `20000` to `30000`. So the reconfiguration of the database using the data field is successful.
+As we can see from the configuration of ready mongodb, the value of `maxIncomingConnections` has been changed from `20000` to `30000`. So the reconfiguration of the database using the `inlineConfig` field is successful.
 
 
 ## Cleaning Up
@@ -542,5 +606,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete mg -n demo mg-replicaset
-kubectl delete mongodbopsrequest -n demo mops-reconfigure-replicaset mops-reconfigure-data-replicaset
+kubectl delete mongodbopsrequest -n demo mops-reconfigure-replicaset mops-reconfigure-inline-replicaset
 ```

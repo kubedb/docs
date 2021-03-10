@@ -4,7 +4,7 @@ metadata:
   name: coreos-prom-mgo
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: "4.2.3"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -18,5 +18,5 @@ spec:
     prometheus:
       serviceMonitor:
         labels:
-          k8s-app: prometheus
+          release: prometheus
         interval: 10s

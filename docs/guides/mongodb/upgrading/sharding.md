@@ -82,12 +82,12 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mg-sharding created
 ```
 
-Now, wait until `mg-sharding` created has status `Running`. i.e,
+Now, wait until `mg-sharding` created has status `Ready`. i.e,
 
 ```bash
 $ k get mongodb -n demo                                                                                                                                             
 NAME          VERSION    STATUS    AGE
-mg-sharding   3.6.8-v1   Running   2m9s
+mg-sharding   3.6.8-v1   Ready     2m9s
 ```
 
 We are now ready to apply the `MongoDBOpsRequest` CR to upgrade this database.
@@ -296,26 +296,26 @@ Events:
 Now, we are going to verify whether the `MongoDB` and the related `StatefulSets` of `Mongos`, `Shard` and `ConfigeServer` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get mg -n demo mg-sharding -o=jsonpath='{.spec.version}{"\n"}'                                                                                           20:59:43
-  4.0.5-v3
+$ kubectl get mg -n demo mg-sharding -o=jsonpath='{.spec.version}{"\n"}'
+4.0.5-v3
 
-$ kubectl get sts -n demo mg-sharding-configsvr -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                                21:01:32
-  kubedb/mongo:4.0.5-v3
+$ kubectl get sts -n demo mg-sharding-configsvr -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+kubedb/mongo:4.0.5-v3
 
-$ kubectl get sts -n demo mg-sharding-shard0 -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                                21:01:32
-  kubedb/mongo:4.0.5-v3
+$ kubectl get sts -n demo mg-sharding-shard0 -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+kubedb/mongo:4.0.5-v3
 
-$ kubectl get sts -n demo mg-sharding-mongos -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                                21:01:32
-  kubedb/mongo:4.0.5-v3
+$ kubectl get sts -n demo mg-sharding-mongos -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+kubedb/mongo:4.0.5-v3
 
-$ kubectl get pods -n demo mg-sharding-configsvr-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           21:01:57
-  kubedb/mongo:4.0.5-v3
+$ kubectl get pods -n demo mg-sharding-configsvr-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+kubedb/mongo:4.0.5-v3
 
-$ kubectl get pods -n demo mg-sharding-shard0-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           21:01:57
-  kubedb/mongo:4.0.5-v3
+$ kubectl get pods -n demo mg-sharding-shard0-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+kubedb/mongo:4.0.5-v3
 
-$ kubectl get pods -n demo mg-sharding-mongos-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           21:01:57
-  kubedb/mongo:4.0.5-v3
+$ kubectl get pods -n demo mg-sharding-mongos-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+kubedb/mongo:4.0.5-v3
 ```
 
 You can see from above, our `MongoDB` sharded database has been updated with the new version. So, the upgrade process is successfully completed.

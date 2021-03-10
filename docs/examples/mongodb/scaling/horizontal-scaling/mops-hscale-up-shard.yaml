@@ -9,9 +9,9 @@ spec:
     name: mg-sharding
   horizontalScaling:
     shard:
-      shards: 4
-      replicas: 3
+      shards: 3
+      replicas: 4
     mongos:
       replicas: 3
     configServer:
-      replicas: 3
+      replicas: 4

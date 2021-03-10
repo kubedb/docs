@@ -89,8 +89,7 @@ To detect if the MongoDB instance that your client is connected to is mongos, us
    "ismaster" : true,
    "msg" : "isdbgrid",
    "maxBsonObjectSize" : 16777216,
-   "ok" : 1,
-   ...
+   "ok" : 1
 }
 ```
 

@@ -4,7 +4,7 @@ metadata:
   name: mgo-misc-config
   namespace: demo
 spec:
-  version: "3.6-v3"
+  version: "4.2.3"
   storageType: "Durable"
   storage:
     storageClassName: "standard"
@@ -15,9 +15,6 @@ spec:
         storage: 1Gi
   podTemplate:
     spec:
-      env:
-      - name: MONGO_INITDB_DATABASE
-        value: myDB
       args:
       - --maxConns=100
       resources:

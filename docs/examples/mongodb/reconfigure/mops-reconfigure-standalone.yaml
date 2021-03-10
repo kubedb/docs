@@ -7,7 +7,7 @@ spec:
   type: Reconfigure
   databaseRef:
     name: mg-standalone
-  customConfig:
+  configuration:
     standalone:
-      configMap:
+      configSecret:
         name: new-custom-config

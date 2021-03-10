@@ -43,7 +43,7 @@ Now, we are going to deploy a  `MongoDB` sharded database using a supported vers
 
 ### Prepare MongoDB Shard
 
-Now, we are going to deploy a `MongoDB` sharded database with version `3.6.8`.
+Now, we are going to deploy a `MongoDB` sharded database with version `4.2.3`.
 
 ### Deploy MongoDB database 
 
@@ -56,11 +56,11 @@ net:
 ```
 Here, `maxIncomingConnections` is set to `10000`, whereas the default value is `65536`.
 
-Now, we will create a configMap with this configuration file.
+Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create configmap -n demo mg-custom-config --from-file=./mongod.conf
-configmap/mg-custom-config created
+$ kubectl create secret generic -n demo mg-custom-config --from-file=./mongod.conf
+secret/mg-custom-config created
 ```
 
 In this section, we are going to create a MongoDB object specifying `spec.configSecret` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
@@ -72,10 +72,10 @@ metadata:
   name: mg-sharding
   namespace: demo
 spec:
-  version: 3.6.8-v1
+  version: 4.2.3
   shardTopology:
     configServer:
-      replicas: 2
+      replicas: 3
       configSecret:
         name: mg-custom-config
       storage:
@@ -88,8 +88,8 @@ spec:
       configSecret:
         name: mg-custom-config
     shard:
-      replicas: 2
-      shards: 3
+      replicas: 3
+      shards: 2
       configSecret:
         name: mg-custom-config
       storage:
@@ -106,22 +106,22 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mg-sharding created
 ```
 
-Now, wait until `mg-sharding` has status `Running`. i.e,
+Now, wait until `mg-sharding` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo                                                                                                                                             20:05:47
+$ kubectl get mg -n demo
 NAME          VERSION    STATUS    AGE
-mg-sharding   3.6.8-v1   Running   3m23s
+mg-sharding   4.2.3      Ready     3m23s
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 First we need to get the username and password to connect to a mongodb instance,
 ```bash
-$ kubectl get secrets -n demo mg-sharding-auth -o jsonpath='{.data.\username}' | base64 -d                                                                         11:09:51
+$ kubectl get secrets -n demo mg-sharding-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mg-sharding-auth -o jsonpath='{.data.\password}' | base64 -d                                                                         11:10:44
+$ kubectl get secrets -n demo mg-sharding-auth -o jsonpath='{.data.\password}' | base64 -d
 Dv8F55zVNiEkhHM6
 ```
 
@@ -129,39 +129,42 @@ Now let's connect to a mongodb instance from each type of nodes and run a mongod
 
 ```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
-  {
-  	"bindIp" : "0.0.0.0",
-  	"maxIncomingConnections" : 10000,
-  	"port" : 27017,
-  	"ssl" : {
-  		"mode" : "disabled"
-  	}
-  }
+{
+	"bindIp" : "*",
+	"ipv6" : true,
+	"maxIncomingConnections" : 10000,
+	"port" : 27017,
+	"tls" : {
+		"mode" : "disabled"
+	}
+}
 
 $ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
-  {
-  	"bindIp" : "0.0.0.0",
-  	"maxIncomingConnections" : 10000,
-  	"port" : 27017,
-  	"ssl" : {
-  		"mode" : "disabled"
-  	}
-  }
+{
+	"bindIp" : "*",
+	"ipv6" : true,
+	"maxIncomingConnections" : 10000,
+	"port" : 27017,
+	"tls" : {
+		"mode" : "disabled"
+	}
+}
 
 $ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
-  {
-  	"bindIp" : "0.0.0.0",
-  	"maxIncomingConnections" : 10000,
-  	"port" : 27017,
-  	"ssl" : {
-  		"mode" : "disabled"
-  	}
-  }
+{
+	"bindIp" : "*",
+	"ipv6" : true,
+	"maxIncomingConnections" : 10000,
+	"port" : 27017,
+	"tls" : {
+		"mode" : "disabled"
+	}
+}
 ```
 
-As we can see from the configuration of running mongodb, the value of `maxIncomingConnections` has been set to `10000` in all nodes.
+As we can see from the configuration of ready mongodb, the value of `maxIncomingConnections` has been set to `10000` in all nodes.
 
-### Reconfigure using new ConfigMap
+### Reconfigure using new secret
 
 Now we will reconfigure this database to set `maxIncomingConnections` to `20000`. 
 
@@ -173,16 +176,16 @@ net:
    maxIncomingConnections: 20000
 ```
 
-Then, we will create a new configMap with this configuration file.
+Then, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create configmap -n demo new-custom-config --from-file=./mongod.conf
-configmap/mg-custom-config created
+$ kubectl create secret generic -n demo new-custom-config --from-file=./mongod.conf
+secret/new-custom-config created
 ```
 
 #### Create MongoDBOpsRequest
 
-Now, we will use this configMap to replace the previous configMap using a `MongoDBOpsRequest` CR. The `MongoDBOpsRequest` yaml is given below,
+Now, we will use this secret to replace the previous secret using a `MongoDBOpsRequest` CR. The `MongoDBOpsRequest` yaml is given below,
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -194,15 +197,15 @@ spec:
   type: Reconfigure
   databaseRef:
     name: mg-sharding
-  customConfig:
+  configuration:
     shard:
-      configMap:
+      configSecret:
         name: new-custom-config
     configServer:
-      configMap:
+      configSecret:
         name: new-custom-config 
     mongos:
-      configMap:
+      configSecret:
         name: new-custom-config   
 ```
 
@@ -210,9 +213,9 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-shard` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.customConfig.shard.configMap.name` specifies the name of the new configmap for shard nodes.
-- `spec.customConfig.configServer.configMap.name` specifies the name of the new configmap for configServer nodes.
-- `spec.customConfig.mongos.configMap.name` specifies the name of the new configmap for mongos nodes.
+- `spec.configuration.shard.configSecret.name` specifies the name of the new secret for shard nodes.
+- `spec.configuration.configServer.configSecret.name` specifies the name of the new secret for configServer nodes.
+- `spec.configuration.mongos.configSecret.name` specifies the name of the new secret for mongos nodes.
 
 > **Note:** If you don't want to reconfigure all the components together, you can only specify the components (shard, configServer and mongos) that you want to reconfigure.
 
@@ -225,7 +228,7 @@ mongodbopsrequest.ops.kubedb.com/mops-reconfigure-shard created
 
 #### Verify the new configuration is working 
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSource` of `MongoDB` object.
+If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MongoDB` object.
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
@@ -240,135 +243,7 @@ We can see from the above output that the `MongoDBOpsRequest` has succeeded. If 
 
 ```bash
 $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-shard  
-Name:         mops-reconfigure-shard
-Namespace:    demo
-Labels:       <none>
-Annotations:  <none>
-API Version:  ops.kubedb.com/v1alpha1
-Kind:         MongoDBOpsRequest
-Metadata:
-  Creation Timestamp:  2020-09-29T17:16:47Z
-  Generation:          1
-  Managed Fields:
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:metadata:
-        f:annotations:
-          .:
-          f:kubectl.kubernetes.io/last-applied-configuration:
-      f:spec:
-        .:
-        f:customConfig:
-          .:
-          f:configServer:
-            .:
-            f:configMap:
-              .:
-              f:name:
-          f:mongos:
-            .:
-            f:configMap:
-              .:
-              f:name:
-          f:shard:
-            .:
-            f:configMap:
-              .:
-              f:name:
-        f:databaseRef:
-          .:
-          f:name:
-        f:type:
-    Manager:      kubectl-client-side-apply
-    Operation:    Update
-    Time:         2020-09-29T17:16:47Z
-    API Version:  ops.kubedb.com/v1alpha1
-    Fields Type:  FieldsV1
-    fieldsV1:
-      f:status:
-        .:
-        f:conditions:
-        f:observedGeneration:
-        f:phase:
-    Manager:         kubedb-enterprise
-    Operation:       Update
-    Time:            2020-09-29T17:20:43Z
-  Resource Version:  1857484
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-shard
-  UID:               fa02b9c6-83bd-4835-b72f-a027a0c8cf51
-Spec:
-  Custom Config:
-    Config Server:
-      Config Map:
-        Name:  new-custom-config
-    Mongos:
-      Config Map:
-        Name:  new-custom-config
-    Shard:
-      Config Map:
-        Name:  new-custom-config
-  Database Ref:
-    Name:  mg-sharding
-  Type:    Reconfigure
-Status:
-  Conditions:
-    Last Transition Time:  2020-09-29T17:16:47Z
-    Message:               MongoDB ops request is reconfiguring database
-    Observed Generation:   1
-    Reason:                Reconfigure
-    Status:                True
-    Type:                  Reconfigure
-    Last Transition Time:  2020-09-29T17:16:47Z
-    Message:               Successfully halted mongodb: mg-sharding
-    Observed Generation:   1
-    Reason:                HaltDatabase
-    Status:                True
-    Type:                  HaltDatabase
-    Last Transition Time:  2020-09-29T17:17:32Z
-    Message:               Successfully Reconfigured MongoDB
-    Observed Generation:   1
-    Reason:                ReconfigureMongos
-    Status:                True
-    Type:                  ReconfigureMongos
-    Last Transition Time:  2020-09-29T17:18:22Z
-    Message:               Successfully Reconfigured MongoDB
-    Observed Generation:   1
-    Reason:                ReconfigureConfigServer
-    Status:                True
-    Type:                  ReconfigureConfigServer
-    Last Transition Time:  2020-09-29T17:20:42Z
-    Message:               Successfully Reconfigured MongoDB
-    Observed Generation:   1
-    Reason:                ReconfigureShard
-    Status:                True
-    Type:                  ReconfigureShard
-    Last Transition Time:  2020-09-29T17:20:42Z
-    Message:               Successfully Resumed mongodb: mg-sharding
-    Observed Generation:   1
-    Reason:                ResumeDatabase
-    Status:                True
-    Type:                  ResumeDatabase
-    Last Transition Time:  2020-09-29T17:20:43Z
-    Message:               Successfully completed the modification process.
-    Observed Generation:   1
-    Reason:                Successful
-    Status:                True
-    Type:                  Successful
-  Observed Generation:     1
-  Phase:                   Successful
-Events:
-  Type    Reason                   Age    From                        Message
-  ----    ------                   ----   ----                        -------
-  Normal  HaltDatabase            5m     KubeDB Enterprise Operator  Pausing MongoDB mg-sharding in Namespace demo
-  Normal  HaltDatabase            5m     KubeDB Enterprise Operator  Successfully Halted MongoDB mg-sharding in Namespace demo
-  Normal  ReconfigureMongos        4m15s  KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
-  Normal  ReconfigureConfigServer  3m25s  KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
-  Normal  ReconfigureShard         65s    KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
-  Normal  ResumeDatabase           65s    KubeDB Enterprise Operator  Resuming MongoDB
-  Normal  ResumeDatabase           65s    KubeDB Enterprise Operator  Successfully Started Balancer
-  Normal  Successful               65s    KubeDB Enterprise Operator  Successfully Reconfigured Database
-  Normal  Successful               64s    KubeDB Enterprise Operator  Successfully Reconfigured Database
+
 ```
 
 Now let's connect to a mongodb instance from each type of nodes and run a mongodb internal command to check the new configuration we have provided.
@@ -405,11 +280,11 @@ $ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p Dv8F55zV
   }
 ```
 
-As we can see from the configuration of running mongodb, the value of `maxIncomingConnections` has been changed from `10000` to `20000` in all type of nodes. So the reconfiguration of the database is successful.
+As we can see from the configuration of ready mongodb, the value of `maxIncomingConnections` has been changed from `10000` to `20000` in all type of nodes. So the reconfiguration of the database is successful.
 
-### Reconfigure using new Data
+### Reconfigure using inline config
 
-Now we will reconfigure this database again to set `maxIncomingConnections` to `30000`. This time we won't use a new configMap. We will use the data field of the `MongoDBOpsRequest`. This will merge the new config in the existing configMap.
+Now we will reconfigure this database again to set `maxIncomingConnections` to `30000`. This time we won't use a new secret. We will use the `inlineConfig` field of the `MongoDBOpsRequest`. This will merge the new config in the existing secret.
 
 #### Create MongoDBOpsRequest
 
@@ -419,45 +294,42 @@ Now, we will use the new configuration in the `data` field in the `MongoDBOpsReq
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MongoDBOpsRequest
 metadata:
-  name: mops-reconfigure-data-shard
+  name: mops-reconfigure-inline-shard
   namespace: demo
 spec:
   type: Reconfigure
   databaseRef:
     name: mg-sharding
-  customConfig:
+  configuration:
     shard:
-      data:
-        mongod.conf: |
+      inlineConfig: |
           net:
             maxIncomingConnections: 30000
     configServer:
-      data:
-        mongod.conf: |
+      inlineConfig: |
           net:
             maxIncomingConnections: 30000
     mongos:
-      data:
-        mongod.conf: |
+      inlineConfig: |
           net:
             maxIncomingConnections: 30000
 ```
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-data-shard` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `mops-reconfigure-inline-shard` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.customConfig.shard.data` specifies the new configuration that will be merged in the existing configMap for shard nodes.
-- `spec.customConfig.configServer.data` specifies the new configuration that will be merged in the existing configMap for configServer nodes.
-- `spec.customConfig.mongos.data` specifies the new configuration that will be merged in the existing configMap for mongos nodes.
+- `spec.configuration.shard.inlineConfig` specifies the new configuration that will be merged in the existing secret for shard nodes.
+- `spec.configuration.configServer.inlineConfig` specifies the new configuration that will be merged in the existing secret for configServer nodes.
+- `spec.configuration.mongos.inlineConfig` specifies the new configuration that will be merged in the existing secret for mongos nodes.
 
 > **Note:** If you don't want to reconfigure all the components together, you can only specify the components (shard, configServer and mongos) that you want to reconfigure.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-data-shard.yaml
-mongodbopsrequest.ops.kubedb.com/mops-reconfigure-data-shard created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-inline-shard.yaml
+mongodbopsrequest.ops.kubedb.com/mops-reconfigure-inline-shard created
 ```
 
 #### Verify the new configuration is working 
@@ -470,21 +342,21 @@ Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following comman
 $ watch kubectl get mongodbopsrequest -n demo
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                          TYPE          STATUS       AGE
-mops-reconfigure-data-shard   Reconfigure   Successful   3m24s
+mops-reconfigure-inline-shard Reconfigure   Successful   3m24s
 ```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-reconfigure-data-shard
-Name:         mops-reconfigure-data-shard
+$ kubectl describe mongodbopsrequest -n demo mops-reconfigure-inline-shard
+Name:         mops-reconfigure-inline-shard
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         MongoDBOpsRequest
 Metadata:
-  Creation Timestamp:  2020-09-29T17:23:23Z
+  Creation Timestamp:  2021-03-02T13:08:25Z
   Generation:          1
   Managed Fields:
     API Version:  ops.kubedb.com/v1alpha1
@@ -496,33 +368,59 @@ Metadata:
           f:kubectl.kubernetes.io/last-applied-configuration:
       f:spec:
         .:
-        f:customConfig:
+        f:configuration:
           .:
           f:configServer:
             .:
-            f:data:
+            f:configSecret:
               .:
-              f:mongod.conf:
+              f:name:
           f:mongos:
             .:
-            f:data:
+            f:configSecret:
               .:
-              f:mongod.conf:
+              f:name:
           f:shard:
             .:
-            f:data:
+            f:configSecret:
               .:
-              f:mongod.conf:
+              f:name:
         f:databaseRef:
           .:
           f:name:
         f:type:
     Manager:      kubectl-client-side-apply
     Operation:    Update
-    Time:         2020-09-29T17:23:23Z
+    Time:         2021-03-02T13:08:25Z
     API Version:  ops.kubedb.com/v1alpha1
     Fields Type:  FieldsV1
     fieldsV1:
+      f:spec:
+        f:configuration:
+          f:configServer:
+            f:podTemplate:
+              .:
+              f:controller:
+              f:metadata:
+              f:spec:
+                .:
+                f:resources:
+          f:mongos:
+            f:podTemplate:
+              .:
+              f:controller:
+              f:metadata:
+              f:spec:
+                .:
+                f:resources:
+          f:shard:
+            f:podTemplate:
+              .:
+              f:controller:
+              f:metadata:
+              f:spec:
+                .:
+                f:resources:
       f:status:
         .:
         f:conditions:
@@ -530,63 +428,54 @@ Metadata:
         f:phase:
     Manager:         kubedb-enterprise
     Operation:       Update
-    Time:            2020-09-29T17:27:08Z
-  Resource Version:  1858942
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-data-shard
-  UID:               05849063-3e57-4441-a6da-7a1c5393989a
+    Time:            2021-03-02T13:08:25Z
+  Resource Version:  103635
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-reconfigure-inline-shard
+  UID:               ab454bcb-164c-4fa2-9eaa-dd47c60fe874
 Spec:
-  Custom Config:
+  Configuration:
     Config Server:
-      Data:
-        mongod.conf:  net:
+      Inline Config:  net:
   maxIncomingConnections: 30000
-
+    
     Mongos:
-      Data:
-        mongod.conf:  net:
+      Inline Config:  net:
   maxIncomingConnections: 30000
-
+    
     Shard:
-      Data:
-        mongod.conf:  net:
+      Inline Config:  net:
   maxIncomingConnections: 30000
-
+  
   Database Ref:
     Name:  mg-sharding
   Type:    Reconfigure
 Status:
   Conditions:
-    Last Transition Time:  2020-09-29T17:23:23Z
+    Last Transition Time:  2021-03-02T13:08:25Z
     Message:               MongoDB ops request is reconfiguring database
     Observed Generation:   1
     Reason:                Reconfigure
     Status:                True
     Type:                  Reconfigure
-    Last Transition Time:  2020-09-29T17:24:08Z
-    Message:               Successfully Reconfigured MongoDB
-    Observed Generation:   1
-    Reason:                ReconfigureMongos
-    Status:                True
-    Type:                  ReconfigureMongos
-    Last Transition Time:  2020-09-29T17:24:58Z
+    Last Transition Time:  2021-03-02T13:10:10Z
     Message:               Successfully Reconfigured MongoDB
     Observed Generation:   1
     Reason:                ReconfigureConfigServer
     Status:                True
     Type:                  ReconfigureConfigServer
-    Last Transition Time:  2020-09-29T17:27:08Z
+    Last Transition Time:  2021-03-02T13:13:15Z
     Message:               Successfully Reconfigured MongoDB
     Observed Generation:   1
     Reason:                ReconfigureShard
     Status:                True
     Type:                  ReconfigureShard
-    Last Transition Time:  2020-09-29T17:27:08Z
-    Message:               Successfully Resumed mongodb: mg-sharding
+    Last Transition Time:  2021-03-02T13:14:10Z
+    Message:               Successfully Reconfigured MongoDB
     Observed Generation:   1
-    Reason:                ResumeDatabase
+    Reason:                ReconfigureMongos
     Status:                True
-    Type:                  ResumeDatabase
-    Last Transition Time:  2020-09-29T17:27:08Z
+    Type:                  ReconfigureMongos
+    Last Transition Time:  2021-03-02T13:14:10Z
     Message:               Successfully completed the modification process.
     Observed Generation:   1
     Reason:                Successful
@@ -595,52 +484,56 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type    Reason                   Age   From                        Message
-  ----    ------                   ----  ----                        -------
-  Normal  ReconfigureMongos        16m   KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
-  Normal  ReconfigureConfigServer  15m   KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
-  Normal  ReconfigureShard         13m   KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
-  Normal  ResumeDatabase           13m   KubeDB Enterprise Operator  Resuming MongoDB
-  Normal  ResumeDatabase           13m   KubeDB Enterprise Operator  Successfully Started Balancer
-  Normal  Successful               13m   KubeDB Enterprise Operator  Successfully Reconfigured Database
-  Normal  Successful               13m   KubeDB Enterprise Operator  Successfully Reconfigured Database
+  Type    Reason                   Age    From                        Message
+  ----    ------                   ----   ----                        -------
+  Normal  PauseDatabase            13m    KubeDB Enterprise Operator  Pausing MongoDB demo/mg-sharding
+  Normal  PauseDatabase            13m    KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-sharding
+  Normal  ReconfigureConfigServer  12m    KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
+  Normal  ReconfigureShard         9m7s   KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
+  Normal  ReconfigureMongos        8m12s  KubeDB Enterprise Operator  Successfully Reconfigured MongoDB
+  Normal  ResumeDatabase           8m12s  KubeDB Enterprise Operator  Resuming MongoDB demo/mg-sharding
+  Normal  ResumeDatabase           8m12s  KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-sharding
+  Normal  Successful               8m12s  KubeDB Enterprise Operator  Successfully Reconfigured Database
 ```
 
 Now let's connect to a mongodb instance from each type of nodes and run a mongodb internal command to check the new configuration we have provided.
 
 ```bash
 $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
-  {
-  	"bindIp" : "0.0.0.0",
-  	"maxIncomingConnections" : 30000,
-  	"port" : 27017,
-  	"ssl" : {
-  		"mode" : "disabled"
-  	}
-  }
+{
+	"bindIp" : "*",
+	"ipv6" : true,
+	"maxIncomingConnections" : 20000,
+	"port" : 27017,
+	"tls" : {
+		"mode" : "disabled"
+	}
+}
 
 $ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
-  {
-  	"bindIp" : "0.0.0.0",
-  	"maxIncomingConnections" : 30000,
-  	"port" : 27017,
-  	"ssl" : {
-  		"mode" : "disabled"
-  	}
-  }
+{
+	"bindIp" : "*",
+	"ipv6" : true,
+	"maxIncomingConnections" : 20000,
+	"port" : 27017,
+	"tls" : {
+		"mode" : "disabled"
+	}
+}
 
 $ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
-  {
-  	"bindIp" : "0.0.0.0",
-  	"maxIncomingConnections" : 30000,
-  	"port" : 27017,
-  	"ssl" : {
-  		"mode" : "disabled"
-  	}
-  }
+{
+	"bindIp" : "*",
+	"ipv6" : true,
+	"maxIncomingConnections" : 20000,
+	"port" : 27017,
+	"tls" : {
+		"mode" : "disabled"
+	}
+}
 ```
 
-As we can see from the configuration of running mongodb, the value of `maxIncomingConnections` has been changed from `20000` to `30000` in all nodes. So the reconfiguration of the database using the data field is successful.
+As we can see from the configuration of ready mongodb, the value of `maxIncomingConnections` has been changed from `20000` to `30000` in all nodes. So the reconfiguration of the database using the data field is successful.
 
 ## Cleaning Up
 
@@ -648,5 +541,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete mg -n demo mg-sharding
-kubectl delete mongodbopsrequest -n demo mops-reconfigure-shard mops-reconfigure-data-shard
+kubectl delete mongodbopsrequest -n demo mops-reconfigure-shard mops-reconfigure-inline-shard
 ```

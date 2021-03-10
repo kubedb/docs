@@ -4,7 +4,7 @@ metadata:
   name: mgo-init-script
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: "4.2.3"
   storage:
     storageClassName: "standard"
     accessModes:

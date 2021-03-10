@@ -29,7 +29,7 @@ metadata:
   name: mgo1
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: "4.2.3"
   replicas: 3
   authSecret:
     name: mgo1-auth
@@ -40,7 +40,6 @@ spec:
       podTemplate: {}
       replicas: 3
       storage:
-        dataSource: null
         resources:
           requests:
             storage: 1Gi
@@ -53,20 +52,29 @@ spec:
       replicas: 3
       shards: 3
       storage:
-        dataSource: null
         resources:
           requests:
             storage: 1Gi
         storageClassName: standard
-  sslMode: preferSSL
+  sslMode: requireSSL
   tls:
     issuerRef:
       name: mongo-ca-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
-    certificate:
-      organization:
-        - kubedb
+    certificates:
+      - alias: client
+        subject:
+          organizations:
+            - kubedb
+        emailAddresses:
+          - abc@appscode.com
+      - alias: server
+        subject:
+          organizations:
+            - kubedb
+        emailAddresses:
+          - abc@appscode.com
   clusterAuthMode: x509
   storageType: "Durable"
   storage:
@@ -90,8 +98,9 @@ spec:
   configSecret:
     name: mg-custom-config
   podTemplate:
-    annotations:
-      passMe: ToDatabasePod
+    metadata:      
+      annotations:
+        passMe: ToDatabasePod
     controller:
       annotations:
         passMe: ToStatefulSet
@@ -114,15 +123,14 @@ spec:
         limits:
           memory: "128Mi"
           cpu: "500m"
-  serviceTemplate:
-    annotations:
-      passMe: ToService
+  serviceTemplates:
+  - alias: primary
     spec:
       type: NodePort
       ports:
-        - name: http
-          port: 9200
-          targetPort: http
+        - name: primary
+          port: 27017
+          nodePort: 300006
   terminationPolicy: Halt
 ```
 
@@ -130,21 +138,21 @@ spec:
 
 `spec.version` is a required field specifying the name of the [MongoDBVersion](/docs/guides/mongodb/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MongoDBVersion` resources,
 
-- `3.4-v5`, `3.4-v4`, `3.4-v3`, `3.4-v2`, `3.4-v1`, `3.4`
-- `3.6-v5`, `3.6-v4`, `3.6-v3`, `3.6-v2`, `3.6-v1`, `3.6`
-- `4.0.5-v3`, `4.0.5-v2`, `4.0.5-v1`, `4.0-v1`, `4.0.5`, `4.0`
-- `4.1.4-v1`, `4.1.4`
-- `4.1.7-v3`, `4.1.7-v2`, `4.1.7-v1`, `4.1.7`
-- `4.1.13-v1`, `4.1.13`
-- `4.2`,
-- `4.2.3`,
+- `3.4.17-v1`, `3.4.22-v1`
+- `3.6.13-v1`, `3.6.8-v1`, 
+- `4.0.3-v1`,
+- `4.0.5-v3`,
+- `4.1.4-v1`
+- `4.1.7-v3`
+- `4.1.13-v1`
+- `4.2.3`
 - `3.6.18-percona`, `4.0.10-percona`, `4.2.7-percona`
 
 ### spec.replicas
 
 `spec.replicas` the number of members in `rs0` mongodb replicaset.
 
-If `spec.shardTopology` is set, then `spec.replicas` needs to be empty. Instead use `spec.shardTopology.<shard/configServer>.replicas`
+If `spec.shardTopology` is set, then `spec.replicas` needs to be empty. Instead use `spec.shardTopology.<shard/configServer/mongos>.replicas`
 
 If both `spec.replicaset` and `spec.shardTopology` is not set, then `spec.replicas` can be value `1`.
 
@@ -172,10 +180,8 @@ data:
   username: amhvbi1kb2U=
 kind: Secret
 metadata:
-  ...
   name: mgo1-auth
   namespace: demo
-  ...
 type: Opaque
 ```
 
@@ -187,7 +193,7 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 
 - `name` denotes the name of mongodb replicaset.
 
-- `keyFileSecret` is deprecated now. Use `spec.certificateSecret` instead. For existing MongoDB instances, KubeDB operator will handle the migration by itself. `keyFileSecret` field will be removed in future.
+- `keyFileSecret.name` denotes the name of the secret that contains the `key.txt`, which provides the security between replicaset members using internal authentication. See [Keyfile Authentication](https://docs.mongodb.com/manual/tutorial/enforce-keyfile-access-control-in-existing-replica-set/) for more information.
 
 NB. If `spec.shardTopology` is set, then `spec.replicaset` needs to be empty.
 
@@ -219,7 +225,7 @@ Available configurable fields:
 - `shards` represents number of shards for a mongodb deployment. Each shard is deployed as a [replicaset](/docs/guides/mongodb/clustering/replication_concept.md).
 - `replicas` represents number of replicas of each shard replicaset.
 - `prefix` represents the prefix of each shard node.
-- `configSource` is an optional field to provide custom configuration file for shards (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsource) in details.
+- `configSecret` is an optional field to provide custom configuration file for shards (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsecret) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
 - `storage` to specify pvc spec for each node of sharding. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/guides/mongodb/concepts/mongodb.md#specstorage) in details.
 
@@ -231,7 +237,7 @@ Available configurable fields:
 
 - `replicas` represents number of replicas for configServer replicaset. Here, configServer is deployed as a replicaset of mongodb.
 - `prefix` represents the prefix of configServer nodes.
-- `configSource` is an optional field to provide custom configuration file for configSource (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsource) in details.
+- `configSecret` is an optional field to provide custom configuration file for config server (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsecret) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
 - `storage` to specify pvc spec for each node of configServer. You can specify any StorageClass available in your cluster with appropriate resource requests. See below to know about [spec.storage](/docs/guides/mongodb/concepts/mongodb.md#specstorage) in details.
 
@@ -243,7 +249,7 @@ Available configurable fields:
 
 - `replicas` represents number of replicas of `Mongos` instance. Here, Mongos is deployed as stateless (deployment) instance.
 - `prefix` represents the prefix of mongos nodes.
-- `configSource` is an optional field to provide custom configuration file for mongos (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsource) in details.
+- `configSecret` is an optional field to provide custom configuration file for mongos (i.e mongod.cnf). If specified, this file will be used as configuration file otherwise a default configuration file will be used. See below to know about [spec.configSecret](/docs/guides/mongodb/concepts/mongodb.md#specconfigsecret) in details.
 - `podTemplate` is an optional configuration for pods. See below to know about [spec.podTemplate](/docs/guides/mongodb/concepts/mongodb.md#specpodtemplate) in details.
 
 ### spec.sslMode
@@ -310,6 +316,10 @@ The authentication mode used for cluster authentication. This option can have on
 
 `spec.storageType` is an optional field that specifies the type of storage to use for database. It can be either `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MongoDB database using [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) volume. In this case, you don't have to specify `spec.storage` field.
 
+### spec.storageEngine
+
+`spec.storageEngine` is an optional field that specifies the type of storage engine is going to be used by mongodb. There are two types of storage engine, `wiredTiger` and `inMemory`. Default value of storage engine is `wiredTiger`. `inMemory` storage engine is only supported by the percona variant of mongodb, i.e. the version that has the `-percona` suffix in the mongodbversion name.
+
 ### spec.storage
 
 Since 0.9.0-rc.0, If you set `spec.storageType:` to `Durable`, then `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
@@ -344,8 +354,9 @@ apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
   name: mgo1
+  namespace: demo
 spec:
-  version: 3.4-v2
+  version: 4.2.3
   init:
     script:
       configMap:
@@ -363,13 +374,13 @@ MongoDB managed by KubeDB can be monitored with builtin-Prometheus and Prometheu
 
 ### spec.configSecret
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for MongoDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). You can use any kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc.
+`spec.configSecret` is an optional field that allows users to provide custom configuration for MongoDB. You can provide the custom configuration in a secret, then you can specify the secret name `spec.configSecret.name`.
 
-> Please note that, the configfile name needs to be `mongod.conf` for mongodb.
+> Please note that, the secret key needs to be `mongod.conf`.
 
 To learn more about how to use a custom configuration file see [here](/docs/guides/mongodb/configuration/using-config-file.md).
 
-NB. If `spec.shardTopology` is set, then `spec.configsource` needs to be empty. Instead use `spec.shardTopology.<shard/configServer/mongos>.configSource`
+NB. If `spec.shardTopology` is set, then `spec.configSecret` needs to be empty. Instead use `spec.shardTopology.<shard/configServer/mongos>.configSecret`
 
 ### spec.podTemplate
 
@@ -413,7 +424,7 @@ NB. If `spec.shardTopology` is set, then `spec.podTemplate` needs to be empty. I
 
 Note that, KubeDB does not allow `MONGO_INITDB_ROOT_USERNAME` and `MONGO_INITDB_ROOT_PASSWORD` environment variables to set in `spec.podTemplate.spec.env`. If you want to use custom superuser and password, please use `spec.authSecret` instead described earlier.
 
-If you try to set `MONGO_INITDB_ROOT_USERNAME` or `MONGO_INITDB_ROOT_PASSWORD` environment variable in MongoDB crd, Kubed operator will reject the request with following error,
+If you try to set `MONGO_INITDB_ROOT_USERNAME` or `MONGO_INITDB_ROOT_PASSWORD` environment variable in MongoDB crd, Kubedb operator will reject the request with following error,
 
 ```ini
 Error from server (Forbidden): error when creating "./mongodb.yaml": admission webhook "mongodb.validators.kubedb.com" denied the request: environment variable MONGO_INITDB_ROOT_USERNAME is forbidden to use in MongoDB spec
@@ -461,12 +472,14 @@ If a service account name is given, and there's an existing service account by t
 
 `spec.podTemplate.spec.resources` is an optional field. This can be used to request compute resources required by the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
 
-### spec.serviceTemplate
+### spec.serviceTemplates
 
-You can also provide a template for the services created by KubeDB operator for MongoDB database through `spec.serviceTemplate`. This will allow you to set the type and other properties of the services.
+You can also provide template for the services created by KubeDB operator for MongoDB database through `spec.serviceTemplates`. This will allow you to set the type and other properties of the services.
 
-KubeDB allows following fields to set in `spec.serviceTemplate`:
-
+KubeDB allows following fields to set in `spec.serviceTemplates`:
+- `alias` represents the identifier of the service. It has the following possible value:
+  - `primary` is used for the primary service identification.
+  - `stats` is used for the exporter service identification.
 - metadata:
   - annotations
 - spec:
@@ -498,13 +511,12 @@ Following table show what KubeDB does when you delete MongoDB crd for different 
 | Behavior                            | DoNotTerminate |  Halt   |  Delete  | WipeOut  |
 | ----------------------------------- | :------------: | :------: | :------: | :------: |
 | 1. Block Delete operation           |    &#10003;    | &#10007; | &#10007; | &#10007; |
-| 2. Create Dormant Database          |    &#10007;    | &#10003; | &#10007; | &#10007; |
-| 3. Delete StatefulSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 4. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
-| 5. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
-| 6. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |
-| 7. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
-| 8. Delete Snapshot data from bucket |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| 2. Delete StatefulSet               |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 3. Delete Services                  |    &#10007;    | &#10003; | &#10003; | &#10003; |
+| 4. Delete PVCs                      |    &#10007;    | &#10007; | &#10003; | &#10003; |
+| 5. Delete Secrets                   |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| 6. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
+| 7. Delete Snapshot data from bucket |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
 If you don't specify `spec.terminationPolicy` KubeDB uses `Halt` termination policy by default.
 

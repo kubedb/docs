@@ -44,7 +44,7 @@ Here, we are going to deploy a  `MongoDB` standalone using a supported version b
 
 ### Prepare MongoDB Standalone Database
 
-Now, we are going to deploy a `MongoDB` standalone database with version `3.6.8`.
+Now, we are going to deploy a `MongoDB` standalone database with version `4.2.3`.
 
 ### Deploy MongoDB standalone 
 
@@ -57,7 +57,7 @@ metadata:
   name: mg-standalone
   namespace: demo
 spec:
-  version: "3.6.8-v1"
+  version: "4.2.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -75,22 +75,31 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mg-standalone created
 ```
 
-Now, wait until `mg-standalone` has status `Running`. i.e,
+Now, wait until `mg-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo                                                                                                                                             20:05:47
-  NAME            VERSION    STATUS    AGE
-  mg-standalone   3.6.8-v1   Running   5m56s
+$ kubectl get mg -n demo
+NAME            VERSION    STATUS    AGE
+mg-standalone   4.2.3      Ready     5m56s
 ```
 
 Let's check the Pod containers resources,
 
 ```bash
 $ kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resources'
-{}
+{
+  "limits": {
+    "cpu": "500m",
+    "memory": "1Gi"
+  },
+  "requests": {
+    "cpu": "500m",
+    "memory": "1Gi"
+  }
+}
 ```
 
-You can see the Pod has empty resources that means the scheduler will choose a random node to place the container of the Pod on by default.
+You can see the Pod has default resources which is assigned by the Kubedb operator.
 
 We are now ready to apply the `MongoDBOpsRequest` CR to update the resources of this database.
 
@@ -115,11 +124,11 @@ spec:
   verticalScaling:
     standalone:
       requests:
-        memory: "150Mi"
-        cpu: "0.1"
+        memory: "2Gi"
+        cpu: "1"
       limits:
-        memory: "250Mi"
-        cpu: "0.2"
+        memory: "2Gi"
+        cpu: "1"
 ```
 
 Here,
@@ -152,147 +161,125 @@ We can see from the above output that the `MongoDBOpsRequest` has succeeded. If 
 
 ```bash
 $ kubectl describe mongodbopsrequest -n demo mops-vscale-standalone
-  Name:         mops-vscale-standalone
-  Namespace:    demo
-  Labels:       <none>
-  Annotations:  API Version:  ops.kubedb.com/v1alpha1
-  Kind:         MongoDBOpsRequest
-  Metadata:
-    Creation Timestamp:  2020-08-25T05:12:17Z
-    Finalizers:
-      kubedb.com
-    Generation:  1
-    Managed Fields:
-      API Version:  ops.kubedb.com/v1alpha1
-      Fields Type:  FieldsV1
-      fieldsV1:
-        f:metadata:
-          f:annotations:
-            .:
-            f:kubectl.kubernetes.io/last-applied-configuration:
-        f:spec:
+Name:         mops-vscale-standalone
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         MongoDBOpsRequest
+Metadata:
+  Creation Timestamp:  2021-03-02T17:19:38Z
+  Generation:          1
+  Managed Fields:
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
           .:
-          f:databaseRef:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:databaseRef:
+          .:
+          f:name:
+        f:type:
+        f:verticalScaling:
+          .:
+          f:standalone:
             .:
-            f:name:
-          f:type:
-          f:verticalScaling:
-            .:
-            f:standalone:
+            f:limits:
               .:
-              f:limits:
-                .:
-                f:memory:
-              f:requests:
-                .:
-                f:memory:
-      Manager:      kubectl
-      Operation:    Update
-      Time:         2020-08-25T05:12:17Z
-      API Version:  ops.kubedb.com/v1alpha1
-      Fields Type:  FieldsV1
-      fieldsV1:
-        f:metadata:
-          f:finalizers:
-        f:spec:
-          f:verticalScaling:
-            f:standalone:
-              f:limits:
-                f:cpu:
-              f:requests:
-                f:cpu:
-        f:status:
-          .:
-          f:conditions:
-          f:observedGeneration:
-          f:phase:
-      Manager:         kubedb-enterprise
-      Operation:       Update
-      Time:            2020-08-25T05:12:57Z
-    Resource Version:  4991494
-    Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-vscale-standalone
-    UID:               99935637-43f4-45a2-8538-9b3a63fb3ca1
-  Spec:
-    Database Ref:
-      Name:  mg-standalone
-    Type:    VerticalScaling
-    Vertical Scaling:
-      Standalone:
-        Limits:
-          Cpu:     0.2
-          Memory:  250Mi
-        Requests:
-          Cpu:     0.1
-          Memory:  150Mi
-  Status:
-    Conditions:
-      Last Transition Time:  2020-08-25T05:12:17Z
-      Message:               MongoDB ops request is being processed
-      Observed Generation:   1
-      Reason:                Scaling
-      Status:                True
-      Type:                  Scaling
-      Last Transition Time:  2020-08-25T05:12:17Z
-      Message:               Successfully halted mongodb: mg-standalone
-      Observed Generation:   1
-      Reason:                HaltDatabase
-      Status:                True
-      Type:                  HaltDatabase
-      Last Transition Time:  2020-08-25T05:12:17Z
-      Message:               Successfully updated StatefulSets Resources
-      Observed Generation:   1
-      Reason:                UpdateStatefulSetResources
-      Status:                True
-      Type:                  UpdateStatefulSetResources
-      Last Transition Time:  2020-08-25T05:12:57Z
-      Message:               Successfully updated Standalone resources
-      Observed Generation:   1
-      Reason:                UpdateStandaloneResources
-      Status:                True
-      Type:                  UpdateStandaloneResources
-      Last Transition Time:  2020-08-25T05:12:57Z
-      Message:               Successfully Resumed mongodb: mg-standalone
-      Observed Generation:   1
-      Reason:                ResumeDatabase
-      Status:                True
-      Type:                  ResumeDatabase
-      Last Transition Time:  2020-08-25T05:12:57Z
-      Message:               Successfully completed the modification process
-      Observed Generation:   1
-      Reason:                Successful
-      Status:                True
-      Type:                  Successful
-    Observed Generation:     1
-    Phase:                   Successful
-  Events:
-    Type    Reason                      Age    From                        Message
-    ----    ------                      ----   ----                        -------
-    Normal  HaltDatabase               6m12s  KubeDB Enterprise Operator  Pausing Mongodb mg-standalone in Namespace demo
-    Normal  HaltDatabase               6m12s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-standalone in Namespace demo
-    Normal  Starting                    6m12s  KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-standalone
-    Normal  UpdateStatefulSetResources  6m12s  KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-    Normal  UpdateStandaloneResources   6m12s  KubeDB Enterprise Operator  Updating Standalone Resources
-    Normal  UpdateStandaloneResources   5m32s  KubeDB Enterprise Operator  Successfully Updated Resources of Pod (master): mg-standalone-0
-    Normal  UpdateStandaloneResources   5m32s  KubeDB Enterprise Operator  Successfully Updated Standalone Resources
-    Normal  ResumeDatabase              5m32s  KubeDB Enterprise Operator  Resuming MongoDB
-    Normal  ResumeDatabase              5m32s  KubeDB Enterprise Operator  Successfully Resumed mongodb
-    Normal  Successful                  5m32s  KubeDB Enterprise Operator  Successfully Scaled Database
+              f:cpu:
+              f:memory:
+            f:requests:
+              .:
+              f:cpu:
+              f:memory:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2021-03-02T17:19:38Z
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:observedGeneration:
+        f:phase:
+    Manager:         kubedb-enterprise
+    Operation:       Update
+    Time:            2021-03-02T17:19:38Z
+  Resource Version:  158587
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-vscale-standalone
+  UID:               364672b6-31b7-4fbe-878d-3de6c05161c9
+Spec:
+  Database Ref:
+    Name:  mg-standalone
+  Type:    VerticalScaling
+  Vertical Scaling:
+    Standalone:
+      Limits:
+        Cpu:     1
+        Memory:  2Gi
+      Requests:
+        Cpu:     1
+        Memory:  2Gi
+Status:
+  Conditions:
+    Last Transition Time:  2021-03-02T17:19:38Z
+    Message:               MongoDB ops request is vertically scaling database
+    Observed Generation:   1
+    Reason:                VerticalScaling
+    Status:                True
+    Type:                  VerticalScaling
+    Last Transition Time:  2021-03-02T17:19:39Z
+    Message:               Successfully updated StatefulSets Resources
+    Observed Generation:   1
+    Reason:                UpdateStatefulSetResources
+    Status:                True
+    Type:                  UpdateStatefulSetResources
+    Last Transition Time:  2021-03-02T17:20:15Z
+    Message:               Successfully Vertically Scaled Standalone Resources
+    Observed Generation:   1
+    Reason:                UpdateStandaloneResources
+    Status:                True
+    Type:                  UpdateStandaloneResources
+    Last Transition Time:  2021-03-02T17:20:15Z
+    Message:               Successfully Vertically Scaled Database
+    Observed Generation:   1
+    Reason:                Successful
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     1
+  Phase:                   Successful
+Events:
+  Type    Reason                      Age   From                        Message
+  ----    ------                      ----  ----                        -------
+  Normal  PauseDatabase               43s   KubeDB Enterprise Operator  Pausing MongoDB demo/mg-standalone
+  Normal  PauseDatabase               42s   KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-standalone
+  Normal  Starting                    42s   KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-standalone
+  Normal  UpdateStatefulSetResources  42s   KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
+  Normal  UpdateStandaloneResources   6s    KubeDB Enterprise Operator  Successfully Vertically Scaled Standalone Resources
+  Normal  ResumeDatabase              6s    KubeDB Enterprise Operator  Resuming MongoDB demo/mg-standalone
+  Normal  ResumeDatabase              6s    KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-standalone
+  Normal  Successful                  6s    KubeDB Enterprise Operator  Successfully Vertically Scaled Database
 ```
 
 Now, we are going to verify from the Pod yaml whether the resources of the standalone database has updated to meet up the desired state, Let's check,
 
 ```bash
 $ kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resources'
-  {
-    "limits": {
-      "cpu": "200m",
-      "memory": "250Mi"
-    },
-    "requests": {
-      "cpu": "100m",
-      "memory": "150Mi"
-    }
+{
+  "limits": {
+    "cpu": "1",
+    "memory": "2Gi"
+  },
+  "requests": {
+    "cpu": "1",
+    "memory": "2Gi"
   }
+}
 ```
 
 The above output verifies that we have successfully scaled up the resources of the MongoDB standalone database.

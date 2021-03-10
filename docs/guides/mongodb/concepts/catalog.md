@@ -30,21 +30,22 @@ As with all other Kubernetes objects, a MongoDBVersion needs `apiVersion`, `kind
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MongoDBVersion
 metadata:
-  name: "3.6-v2"
+  name: "4.2.3"
   labels:
     app: kubedb
 spec:
-  version: "3.6"
+  version: "4.2.3"
   deprecated: false
   db:
-    image: "${KUBEDB_DOCKER_REGISTRY}/mongo:3.6-v1"
+    image: "${KUBEDB_DOCKER_REGISTRY}/mongo:4.2.3"
   exporter:
-    image: "${KUBEDB_DOCKER_REGISTRY}/mongodb_exporter:v1.0.0"
-  tools:
-    image: "${KUBEDB_DOCKER_REGISTRY}/mongo-tools:3.6-v1"
+    image: "${KUBEDB_DOCKER_REGISTRY}/percona-mongodb-exporter:v0.8.0"
+  initContainer:
+    image: "${KUBEDB_DOCKER_REGISTRY}/mongodb-init:4.2-v1"
   podSecurityPolicies:
-    databasePolicyName: "mongodb-db"
-    snapshotterPolicyName: "mongodb-snapshot"
+    databasePolicyName: mongodb-db
+  replicationModeDetector:
+    image: "${KUBEDB_DOCKER_REGISTRY}/replication-mode-detector:v0.3.2"
 ```
 
 ### metadata.name
