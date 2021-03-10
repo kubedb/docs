@@ -280,7 +280,7 @@ Now, run `kubectl edit mariadb sample-mariadb -n demo` to set `spec.terminationP
 
 Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `MariaDB` object `terminationPolicy` to `Halt`.
 
-When the [TerminationPolicy](/docs/guides/mariadb/concepts/mariadb.md#specterminationpolicy) is set to `Halt` and the MariaDB object is deleted, the KubeDB operator will delete the StatefulSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `Halt` in existing database using `edit` command for testing.
+When the `TerminationPolicy` is set to `Halt` and the MariaDB object is deleted, the KubeDB operator will delete the StatefulSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `Halt` in existing database using `edit` command for testing.
 
 At first, run `kubectl edit mariadb sample-mariadb -n demo` to set `spec.terminationPolicy` to `Halt`. Then delete the mariadb object,
 
