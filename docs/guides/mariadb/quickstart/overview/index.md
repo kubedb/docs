@@ -17,7 +17,7 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to run a MariaDB database.
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/quides/mariadb/quickstart/overview/images/mariadb-lifecycle.png">
+  <img alt="lifecycle"  src="/docs/guides/mariadb/quickstart/overview/images/mariadb-lifecycle.png">
 </p>
 
 > Note: The yaml files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/quides/mariadb/quickstart/overview/examples).
@@ -30,11 +30,11 @@ This tutorial will show you how to use KubeDB to run a MariaDB database.
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
-  ```bash
-  $ kubectl get storageclasses
-  NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-  standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
-  ```
+```bash
+$ kubectl get storageclasses
+NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
+```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -50,8 +50,8 @@ When you have installed KubeDB, it has created `MariaDBVersion` crd for all supp
 ```bash
 $ kubectl get mariadbversions
 NAME      VERSION   DB_IMAGE                 DEPRECATED   AGE
-10.4.17   10.4.17   kubedb/mariadb:10.4.17                6d21h
-10.5      10.5      kubedb/mariadb:10.5                6d21h
+10.4.17   10.4.17   kubedb/mariadb:10.4.17                15h
+10.5.8    10.5.8    kubedb/mariadb:10.5.8                 15h
 ```
 
 ## Create a MariaDB database
@@ -65,7 +65,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5"
+  version: "10.5.8"
   storageType: Durable
   storage:
     storageClassName: "standard"
