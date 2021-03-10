@@ -78,7 +78,7 @@ If you wish to follow other ways to pull private images see [official docs](http
 
 ## Create ElasticsearchVersion CRD
 
-KubeDB uses images specified in ElasticsearchVersion crd for database, backup and exporting prometheus metrics. You have to create an ElasticsearchVersion crd specifying images from your private registry. Then, you have to point this ElasticsearchVersion crd in `spec.version` field of Elasticsearch object. For more details about ElasticsearchVersion crd, please visit [here](/docs/guides/elasticsearch/concepts/catalog.md).
+KubeDB uses images specified in ElasticsearchVersion crd for database, backup and exporting prometheus metrics. You have to create an ElasticsearchVersion crd specifying images from your private registry. Then, you have to point this ElasticsearchVersion crd in `spec.version` field of Elasticsearch object. For more details about ElasticsearchVersion crd, please visit [here](/docs/guides/elasticsearch/concepts/catalog/index.md).
 
 Here, is an example of ElasticsearchVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` with your private registry.
 
@@ -177,8 +177,8 @@ kubectl delete ns demo
 ## Next Steps
 
 - Learn about [backup & restore](/docs/guides/elasticsearch/backup/stash.md) of Elasticsearch database using Stash.
-- Learn how to configure [Elasticsearch Topology](/docs/guides/elasticsearch/clustering/topology.md).
+- Learn how to configure [Elasticsearch Topology](/docs/guides/elasticsearch/clustering/topology-cluster/index.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md).
 - Monitor your Elasticsearch database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
-- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch.md).
+- Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
