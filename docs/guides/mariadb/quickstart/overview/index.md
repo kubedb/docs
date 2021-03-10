@@ -361,7 +361,7 @@ Suppose we have a database running `mariadb-quickstart` in our cluster. Now, we 
 Run the following command to get MariaDB resources,
 
 ```bash
-$ kubectl get my,sts,secret,svc,pvc -n demo
+$ kubectl get mariadb,sts,secret,svc,pvc -n demo
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/mariadb-quickstart   10.5.8    Halted   22m
 
@@ -396,10 +396,4 @@ If you are just testing some basic functionalities, you might want to avoid addi
 
 ## Next Steps
 
-- Initialize [MariaDB with Script](/docs/guides/mariadb/initialization/using-script.md).
-- Monitor your MariaDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mariadb/monitoring/using-prometheus-operator.md).
-- Monitor your MariaDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mariadb/monitoring/using-builtin-prometheus.md).
-- Use [private Docker registry](/docs/guides/mariadb/private-registry/using-private-registry.md) to deploy MariaDB with KubeDB.
-- Detail concepts of [MariaDB object](/docs/guides/mariadb/concepts/mariadb.md).
-- Detail concepts of [MariaDBVersion object](/docs/guides/mariadb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

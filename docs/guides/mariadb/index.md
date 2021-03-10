@@ -36,13 +36,5 @@ section_menu_id: guides
 
 ## User Guide
 
-- [Quickstart MariaDB](/docs/guides/mariadb/quickstart/quickstart.md) with KubeDB Operator.
-- [Backup & Restore](/docs/guides/mariadb/backup/stash.md) MariaDB databases using Stash.
-- Initialize [MariaDB with Script](/docs/guides/mariadb/initialization/using-script.md).
-- Monitor your MariaDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mariadb/monitoring/using-prometheus-operator.md).
-- Monitor your MariaDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mariadb/monitoring/using-builtin-prometheus.md).
-- Use [private Docker registry](/docs/guides/mariadb/private-registry/using-private-registry.md) to deploy MariaDB with KubeDB.
-- Use [kubedb cli](/docs/guides/mariadb/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MariaDB object](/docs/guides/mariadb/concepts/mariadb.md).
-- Detail concepts of [MariaDBVersion object](/docs/guides/mariadb/concepts/catalog.md).
+- [Quickstart MariaDB](/docs/guides/mariadb/quickstart/overview/index.md) with KubeDB Operator.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
