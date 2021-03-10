@@ -87,7 +87,7 @@ Here,
 - `spec.version` is the name of the MariaDBVersion CRD where the docker images are specified. In this tutorial, a MariaDB `10.5.8` database is going to create.
 - `spec.storageType` specifies the type of storage that will be used for MariaDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MariaDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MariaDB` crd or which resources KubeDB should keep or delete when you delete `MariaDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mariadb/concepts/mariadb.md#specterminationpolicy)
+- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MariaDB` crd or which resources KubeDB should keep or delete when you delete `MariaDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
 
 > Note: spec.storage section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
@@ -224,7 +224,7 @@ status:
 
 KubeDB operator has created a new Secret called `mariadb-quickstart-auth` *(format: {mariadb-object-name}-auth)* for storing the password for `mariadb` superuser. This secret contains a `username` key which contains the *username* for MariaDB superuser and a `password` key which contains the *password* for MariaDB superuser.
 
-If you want to use an existing secret please specify that when creating the MariaDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mariadb/concepts/mariadb.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the MariaDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`.
 
 Now, we need `username` and `password` to connect to this database from `kubeclt exec` command. In this example, `sample-mariadb-auth`  secret holds username and password.
 
@@ -275,7 +275,6 @@ Error from server (BadRequest): admission webhook "mariadb.validators.kubedb.com
 
 Now, run `kubectl edit mariadb sample-mariadb -n demo` to set `spec.terminationPolicy` to `Halt` (which deletes the mariadb object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
-Learn details of all `TerminationPolicy` [here](/docs/guides/mariadb/concepts/mariadb.md#specterminationpolicy).
 
 **Halt:**
 
@@ -392,7 +391,7 @@ kubectl delete ns demo
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
 1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular MariaDB crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/mariadb/concepts/mariadb.md#specterminationpolicy).
+2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to delete everything created by KubeDB for a particular MariaDB crd when you delete the crd.
 
 ## Next Steps
 
