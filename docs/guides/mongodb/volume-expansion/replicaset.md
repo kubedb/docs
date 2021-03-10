@@ -50,7 +50,7 @@ Here, we are going to deploy a  `MongoDB` replicaset using a supported version b
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass                                                                                                                                           20:22:33
+$ kubectl get storageclass
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
 ```
@@ -70,7 +70,7 @@ metadata:
   name: mg-replicaset
   namespace: demo
 spec:
-  version: "3.6.8-v1"
+  version: "4.2.3"
   replicaSet: 
     name: "replicaset"
   replicas: 3
@@ -91,12 +91,12 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mg-replicaset created
 ```
 
-Now, wait until `mg-replicaset` has status `Running`. i.e,
+Now, wait until `mg-replicaset` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo                                                                                                                                             20:05:47
+$ kubectl get mg -n demo
 NAME            VERSION    STATUS    AGE
-mg-replicaset   3.6.8-v1   Running   10m
+mg-replicaset   4.2.3      Ready     10m
 ```
 
 Let's check volume size from statefulset, and from the persistent volume,

@@ -45,7 +45,7 @@ Here, we are going to deploy a  `MongoDB` replicaset using a supported version b
 
 ### Prepare MongoDB Replicaset Database
 
-Now, we are going to deploy a `MongoDB` replicaset database with version `3.6.8`.
+Now, we are going to deploy a `MongoDB` replicaset database with version `4.2.3`.
 
 ### Deploy MongoDB replicaset 
 
@@ -58,7 +58,7 @@ metadata:
   name: mg-replicaset
   namespace: demo
 spec:
-  version: "3.6.8-v1"
+  version: "4.2.3"
   replicaSet: 
     name: "replicaset"
   replicas: 3
@@ -79,22 +79,31 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mg-replicaset created
 ```
 
-Now, wait until `mg-replicaset` has status `Running`. i.e,
+Now, wait until `mg-replicaset` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo                                                                                                                                             20:05:47
-  NAME            VERSION    STATUS    AGE
-  mg-replicaset   3.6.8-v1   Running   3m46s
+$ kubectl get mg -n demo
+NAME            VERSION    STATUS    AGE
+mg-replicaset   4.2.3      Ready     3m46s
 ```
 
 Let's check the Pod containers resources,
 
 ```bash
 $ kubectl get pod -n demo mg-replicaset-0 -o json | jq '.spec.containers[].resources'
-{}
+{
+  "limits": {
+    "cpu": "500m",
+    "memory": "1Gi"
+  },
+  "requests": {
+    "cpu": "500m",
+    "memory": "1Gi"
+  }
+}
 ```
 
-You can see the Pod has empty resources that means the scheduler will choose a random node to place the container of the Pod on by default.
+You can see the Pod has the default resources which is assigned by Kubedb operator.
 
 We are now ready to apply the `MongoDBOpsRequest` CR to update the resources of this database.
 
@@ -119,11 +128,11 @@ spec:
   verticalScaling:
     replicaSet:
       requests:
-        memory: "150Mi"
-        cpu: "0.1"
+        memory: "1.2Gi"
+        cpu: "0.6"
       limits:
-        memory: "250Mi"
-        cpu: "0.2"
+        memory: "1.2Gi"
+        cpu: "0.6"
 ```
 
 Here,
@@ -156,149 +165,130 @@ We can see from the above output that the `MongoDBOpsRequest` has succeeded. If 
 
 ```bash
 $ kubectl describe mongodbopsrequest -n demo mops-vscale-replicaset
- Name:         mops-vscale-replicaset
- Namespace:    demo
- Labels:       <none>
- Annotations:  API Version:  ops.kubedb.com/v1alpha1
- Kind:         MongoDBOpsRequest
- Metadata:
-   Creation Timestamp:  2020-08-25T06:05:39Z
-   Finalizers:
-     kubedb.com
-   Generation:  1
-   Managed Fields:
-     API Version:  ops.kubedb.com/v1alpha1
-     Fields Type:  FieldsV1
-     fieldsV1:
-       f:metadata:
-         f:annotations:
-           .:
-           f:kubectl.kubernetes.io/last-applied-configuration:
-       f:spec:
-         .:
-         f:databaseRef:
-           .:
-           f:name:
-         f:type:
-         f:verticalScaling:
-           .:
-           f:replicaSet:
-             .:
-             f:limits:
-               .:
-               f:memory:
-             f:requests:
-               .:
-               f:memory:
-     Manager:      kubectl
-     Operation:    Update
-     Time:         2020-08-25T06:05:39Z
-     API Version:  ops.kubedb.com/v1alpha1
-     Fields Type:  FieldsV1
-     fieldsV1:
-       f:metadata:
-         f:finalizers:
-       f:spec:
-         f:verticalScaling:
-           f:replicaSet:
-             f:limits:
-               f:cpu:
-             f:requests:
-               f:cpu:
-       f:status:
-         .:
-         f:conditions:
-         f:observedGeneration:
-         f:phase:
-     Manager:         kubedb-enterprise
-     Operation:       Update
-     Time:            2020-08-25T06:09:19Z
-   Resource Version:  5034763
-   Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-vscale-replicaset
-   UID:               65c44484-9216-4767-a42a-20eb04391a9e
- Spec:
-   Database Ref:
-     Name:  mg-replicaset
-   Type:    VerticalScaling
-   Vertical Scaling:
-     ReplicaSet:
-       Limits:
-         Cpu:     0.2
-         Memory:  250Mi
-       Requests:
-         Cpu:     0.1
-         Memory:  150Mi
- Status:
-   Conditions:
-     Last Transition Time:  2020-08-25T06:05:39Z
-     Message:               MongoDB ops request is being processed
-     Observed Generation:   1
-     Reason:                Scaling
-     Status:                True
-     Type:                  Scaling
-     Last Transition Time:  2020-08-25T06:05:39Z
-     Message:               Successfully halted mongodb: mg-replicaset
-     Observed Generation:   1
-     Reason:                HaltDatabase
-     Status:                True
-     Type:                  HaltDatabase
-     Last Transition Time:  2020-08-25T06:05:39Z
-     Message:               Successfully updated StatefulSets Resources
-     Observed Generation:   1
-     Reason:                UpdateStatefulSetResources
-     Status:                True
-     Type:                  UpdateStatefulSetResources
-     Last Transition Time:  2020-08-25T06:09:19Z
-     Message:               Successfully updated ReplicaSet resources
-     Observed Generation:   1
-     Reason:                UpdateReplicaSetResources
-     Status:                True
-     Type:                  UpdateReplicaSetResources
-     Last Transition Time:  2020-08-25T06:09:19Z
-     Message:               Successfully Resumed mongodb: mg-replicaset
-     Observed Generation:   1
-     Reason:                ResumeDatabase
-     Status:                True
-     Type:                  ResumeDatabase
-     Last Transition Time:  2020-08-25T06:09:19Z
-     Message:               Successfully completed the modification process
-     Observed Generation:   1
-     Reason:                Successful
-     Status:                True
-     Type:                  Successful
-   Observed Generation:     1
-   Phase:                   Successful
- Events:
-   Type    Reason                      Age    From                        Message
-   ----    ------                      ----   ----                        -------
-   Normal  HaltDatabase               4m38s  KubeDB Enterprise Operator  Pausing Mongodb mg-replicaset in Namespace demo
-   Normal  HaltDatabase               4m38s  KubeDB Enterprise Operator  Successfully Halted Mongodb mg-replicaset in Namespace demo
-   Normal  Starting                    4m38s  KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-replicaset
-   Normal  UpdateStatefulSetResources  4m38s  KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
-   Normal  UpdateReplicaSetResources   4m38s  KubeDB Enterprise Operator  Updating ReplicaSet Resources
-   Normal  UpdateReplicaSetResources   3m38s  KubeDB Enterprise Operator  Successfully Updated Resources of Pod mg-replicaset-1
-   Normal  UpdateReplicaSetResources   2m18s  KubeDB Enterprise Operator  Successfully Updated Resources of Pod mg-replicaset-2
-   Normal  UpdateReplicaSetResources   58s    KubeDB Enterprise Operator  Successfully Updated Resources of Pod (master): mg-replicaset-0
-   Normal  UpdateReplicaSetResources   58s    KubeDB Enterprise Operator  Successfully Updated ReplicaSet Resources
-   Normal  ResumeDatabase              58s    KubeDB Enterprise Operator  Resuming MongoDB
-   Normal  ResumeDatabase              58s    KubeDB Enterprise Operator  Successfully Resumed mongodb
-   Normal  Successful                  58s    KubeDB Enterprise Operator  Successfully Scaled Database
+Name:         mops-vscale-replicaset
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  ops.kubedb.com/v1alpha1
+Kind:         MongoDBOpsRequest
+Metadata:
+  Creation Timestamp:  2021-03-02T17:03:37Z
+  Generation:          1
+  Managed Fields:
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .:
+          f:kubectl.kubernetes.io/last-applied-configuration:
+      f:spec:
+        .:
+        f:databaseRef:
+          .:
+          f:name:
+        f:type:
+        f:verticalScaling:
+          .:
+          f:replicaSet:
+            .:
+            f:limits:
+            f:requests:
+    Manager:      kubectl-client-side-apply
+    Operation:    Update
+    Time:         2021-03-02T17:03:37Z
+    API Version:  ops.kubedb.com/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:spec:
+        f:verticalScaling:
+          f:replicaSet:
+            f:limits:
+              f:cpu:
+              f:memory:
+            f:requests:
+              f:cpu:
+              f:memory:
+      f:status:
+        .:
+        f:conditions:
+        f:observedGeneration:
+        f:phase:
+    Manager:         kubedb-enterprise
+    Operation:       Update
+    Time:            2021-03-02T17:03:37Z
+  Resource Version:  154015
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/mongodbopsrequests/mops-vscale-replicaset
+  UID:               5149dd51-7538-421d-b3ca-23dfa2b77b95
+Spec:
+  Database Ref:
+    Name:  mg-replicaset
+  Type:    VerticalScaling
+  Vertical Scaling:
+    Replica Set:
+      Limits:
+        Cpu:     0.6
+        Memory:  1.2Gi
+      Requests:
+        Cpu:     0.6
+        Memory:  1.2Gi
+Status:
+  Conditions:
+    Last Transition Time:  2021-03-02T17:03:37Z
+    Message:               MongoDB ops request is vertically scaling database
+    Observed Generation:   1
+    Reason:                VerticalScaling
+    Status:                True
+    Type:                  VerticalScaling
+    Last Transition Time:  2021-03-02T17:03:37Z
+    Message:               Successfully updated StatefulSets Resources
+    Observed Generation:   1
+    Reason:                UpdateStatefulSetResources
+    Status:                True
+    Type:                  UpdateStatefulSetResources
+    Last Transition Time:  2021-03-02T17:05:33Z
+    Message:               Successfully Vertically Scaled Replicaset Resources
+    Observed Generation:   1
+    Reason:                UpdateReplicaSetResources
+    Status:                True
+    Type:                  UpdateReplicaSetResources
+    Last Transition Time:  2021-03-02T17:05:33Z
+    Message:               Successfully Vertically Scaled Database
+    Observed Generation:   1
+    Reason:                Successful
+    Status:                True
+    Type:                  Successful
+  Observed Generation:     1
+  Phase:                   Successful
+Events:
+  Type    Reason                      Age    From                        Message
+  ----    ------                      ----   ----                        -------
+  Normal  PauseDatabase               2m13s  KubeDB Enterprise Operator  Pausing MongoDB demo/mg-replicaset
+  Normal  PauseDatabase               2m13s  KubeDB Enterprise Operator  Successfully paused MongoDB demo/mg-replicaset
+  Normal  Starting                    2m13s  KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-replicaset
+  Normal  UpdateStatefulSetResources  2m13s  KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
+  Normal  Starting                    2m13s  KubeDB Enterprise Operator  Updating Resources of StatefulSet: mg-replicaset
+  Normal  UpdateStatefulSetResources  2m13s  KubeDB Enterprise Operator  Successfully updated StatefulSets Resources
+  Normal  UpdateReplicaSetResources   17s    KubeDB Enterprise Operator  Successfully Vertically Scaled Replicaset Resources
+  Normal  ResumeDatabase              17s    KubeDB Enterprise Operator  Resuming MongoDB demo/mg-replicaset
+  Normal  ResumeDatabase              17s    KubeDB Enterprise Operator  Successfully resumed MongoDB demo/mg-replicaset
+  Normal  Successful                  17s    KubeDB Enterprise Operator  Successfully Vertically Scaled Database
 ```
 
 Now, we are going to verify from one of the Pod yaml whether the resources of the replicaset database has updated to meet up the desired state, Let's check,
 
 ```bash
 $ kubectl get pod -n demo mg-replicaset-0 -o json | jq '.spec.containers[].resources'
-  {
-    "limits": {
-      "cpu": "200m",
-      "memory": "250Mi"
-    },
-    "requests": {
-      "cpu": "100m",
-      "memory": "150Mi"
-    }
+{
+  "limits": {
+    "cpu": "600m",
+    "memory": "1288490188800m"
+  },
+  "requests": {
+    "cpu": "600m",
+    "memory": "1288490188800m"
   }
+}
 ```
 
 The above output verifies that we have successfully scaled up the resources of the MongoDB replicaset database.

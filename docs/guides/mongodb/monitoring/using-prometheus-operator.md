@@ -22,7 +22,9 @@ section_menu_id: guides
 
 - To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/mongodb/monitoring/overview.md).
 
-- To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
+- We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, you can deploy one using this helm chart [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack).
+  
+- To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy the prometheus operator helm chart. We are going to deploy database in `demo` namespace.
 
   ```bash
   $ kubectl create ns monitoring
@@ -32,9 +34,7 @@ section_menu_id: guides
   namespace/demo created
   ```
 
-- We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
 
-- If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md#deploy-prometheus-server).
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,8 +46,8 @@ At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
 $ kubectl get prometheus --all-namespaces
-NAMESPACE    NAME         AGE
-monitoring   prometheus   18m
+NAMESPACE    NAME                                    VERSION   REPLICAS   AGE
+monitoring   prometheus-kube-prometheus-prometheus   v2.24.0   1          6h48m
 ```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
@@ -55,34 +55,142 @@ monitoring   prometheus   18m
 Now, let's view the YAML of the available Prometheus server `prometheus` in `monitoring` namespace.
 
 ```yaml
-$ kubectl get prometheus -n monitoring prometheus -o yaml
+$ kubectl get prometheus -n monitoring prometheus-kube-prometheus-prometheus -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
 metadata:
   annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"monitoring.coreos.com/v1","kind":"Prometheus","metadata":{"annotations":{},"labels":{"prometheus":"prometheus"},"name":"prometheus","namespace":"monitoring"},"spec":{"replicas":1,"resources":{"requests":{"memory":"400Mi"}},"serviceAccountName":"prometheus","serviceMonitorSelector":{"matchLabels":{"k8s-app":"prometheus"}}}}
-  creationTimestamp: 2019-01-03T13:41:51Z
+    meta.helm.sh/release-name: prometheus
+    meta.helm.sh/release-namespace: monitoring
+  creationTimestamp: "2021-03-09T10:47:17Z"
   generation: 1
   labels:
-    prometheus: prometheus
-  name: prometheus
+    app: kube-prometheus-stack-prometheus
+    app.kubernetes.io/managed-by: Helm
+    chart: kube-prometheus-stack-13.13.0
+    heritage: Helm
+    release: prometheus
+  managedFields:
+    - apiVersion: monitoring.coreos.com/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:meta.helm.sh/release-name: {}
+            f:meta.helm.sh/release-namespace: {}
+          f:labels:
+            .: {}
+            f:app: {}
+            f:app.kubernetes.io/managed-by: {}
+            f:chart: {}
+            f:heritage: {}
+            f:release: {}
+        f:spec:
+          .: {}
+          f:alerting:
+            .: {}
+            f:alertmanagers: {}
+          f:enableAdminAPI: {}
+          f:externalUrl: {}
+          f:image: {}
+          f:listenLocal: {}
+          f:logFormat: {}
+          f:logLevel: {}
+          f:paused: {}
+          f:podMonitorNamespaceSelector: {}
+          f:podMonitorSelector:
+            .: {}
+            f:matchLabels:
+              .: {}
+              f:release: {}
+          f:portName: {}
+          f:probeNamespaceSelector: {}
+          f:probeSelector:
+            .: {}
+            f:matchLabels:
+              .: {}
+              f:release: {}
+          f:replicas: {}
+          f:retention: {}
+          f:routePrefix: {}
+          f:ruleNamespaceSelector: {}
+          f:ruleSelector:
+            .: {}
+            f:matchLabels:
+              .: {}
+              f:app: {}
+              f:release: {}
+          f:securityContext:
+            .: {}
+            f:fsGroup: {}
+            f:runAsGroup: {}
+            f:runAsNonRoot: {}
+            f:runAsUser: {}
+          f:serviceAccountName: {}
+          f:serviceMonitorNamespaceSelector: {}
+          f:serviceMonitorSelector:
+            .: {}
+            f:matchLabels:
+              .: {}
+              f:release: {}
+          f:shards: {}
+          f:version: {}
+      manager: Go-http-client
+      operation: Update
+      time: "2021-03-09T10:47:17Z"
+  name: prometheus-kube-prometheus-prometheus
   namespace: monitoring
-  resourceVersion: "44402"
-  selfLink: /apis/monitoring.coreos.com/v1/namespaces/monitoring/prometheuses/prometheus
-  uid: 5324ad98-0f5d-11e9-b230-080027f306f3
+  resourceVersion: "100084"
+  selfLink: /apis/monitoring.coreos.com/v1/namespaces/monitoring/prometheuses/prometheus-kube-prometheus-prometheus
+  uid: 4b7a8c5b-09c4-4858-8232-13cbb71c766b
 spec:
+  alerting:
+    alertmanagers:
+      - apiVersion: v2
+        name: prometheus-kube-prometheus-alertmanager
+        namespace: monitoring
+        pathPrefix: /
+        port: web
+  enableAdminAPI: false
+  externalUrl: http://prometheus-kube-prometheus-prometheus.monitoring:9090
+  image: quay.io/prometheus/prometheus:v2.24.0
+  listenLocal: false
+  logFormat: logfmt
+  logLevel: info
+  paused: false
+  podMonitorNamespaceSelector: {}
+  podMonitorSelector:
+    matchLabels:
+      release: prometheus
+  portName: web
+  probeNamespaceSelector: {}
+  probeSelector:
+    matchLabels:
+      release: prometheus
   replicas: 1
-  resources:
-    requests:
-      memory: 400Mi
-  serviceAccountName: prometheus
+  retention: "10d"
+  routePrefix: /
+  ruleNamespaceSelector: {}
+  ruleSelector:
+    matchLabels:
+      app: kube-prometheus-stack
+      release: prometheus
+  securityContext:
+    fsGroup: 2000
+    runAsGroup: 2000
+    runAsNonRoot: true
+    runAsUser: 1000
+  serviceAccountName: prometheus-kube-prometheus-prometheus
+  serviceMonitorNamespaceSelector: {}
   serviceMonitorSelector:
     matchLabels:
-      k8s-app: prometheus
+      release: prometheus
+  shards: 1
+  version: v2.24.0
 ```
 
-Notice the `spec.serviceMonitorSelector` section. Here, `k8s-app: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.labels` field of MongoDB crd.
+Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.labels` field of MongoDB crd.
 
 ## Deploy MongoDB with Monitoring Enabled
 
@@ -95,7 +203,7 @@ metadata:
   name: coreos-prom-mgo
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: "4.2.3"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -109,7 +217,7 @@ spec:
     prometheus:
       serviceMonitor:
         labels:
-          k8s-app: prometheus
+          release: prometheus
         interval: 10s
 ```
 
@@ -117,9 +225,7 @@ Here,
 
 - `monitor.agent:  prometheus.io/operator` indicates that we are going to monitor this server using Prometheus operator.
 - `monitor.prometheus.namespace: monitoring` specifies that KubeDB should create `ServiceMonitor` in `monitoring` namespace.
-
 - `monitor.prometheus.labels` specifies that KubeDB should create `ServiceMonitor` with these labels.
-
 - `monitor.prometheus.interval` indicates that the Prometheus server should scrape metrics from this database with 10 seconds interval.
 
 Let's create the MongoDB object that we have shown above,
@@ -134,17 +240,17 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get mg -n demo coreos-prom-mgo
 NAME              VERSION   STATUS    AGE
-coreos-prom-mgo   3.4-v3    Running   24s
+coreos-prom-mgo   4.2.3     Ready     34s
 ```
 
 KubeDB will create a separate stats service with name `{MongoDB crd name}-stats` for monitoring purpose.
 
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-mgo"
-NAME                    TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
-coreos-prom-mgo         ClusterIP   10.103.185.156   <none>        27017/TCP   41s
-coreos-prom-mgo-gvr     ClusterIP   None             <none>        27017/TCP   41s
-coreos-prom-mgo-stats   ClusterIP   10.109.110.8     <none>        56790/TCP   34s
+NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+coreos-prom-mgo         ClusterIP   10.96.150.171   <none>        27017/TCP   84s
+coreos-prom-mgo-pods    ClusterIP   None            <none>        27017/TCP   84s
+coreos-prom-mgo-stats   ClusterIP   10.96.218.41    <none>        56790/TCP   64s
 ```
 
 Here, `coreos-prom-mgo-stats` service has been created for monitoring purpose.
@@ -155,64 +261,112 @@ Let's describe this stats service.
 $ kubectl describe svc -n demo coreos-prom-mgo-stats
 Name:              coreos-prom-mgo-stats
 Namespace:         demo
-Labels:            app.kubernetes.io/name=mongodbs.kubedb.com
-                   app.kubernetes.io/instance=coreos-prom-mgo
+Labels:            app.kubernetes.io/instance=coreos-prom-mgo
+  app.kubernetes.io/managed-by=kubedb.com
+  app.kubernetes.io/name=mongodbs.kubedb.com
+  kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
-Selector:          app.kubernetes.io/name=mongodbs.kubedb.com,app.kubernetes.io/instance=coreos-prom-mgo
+Selector:          app.kubernetes.io/instance=coreos-prom-mgo,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mongodbs.kubedb.com
 Type:              ClusterIP
-IP:                10.109.110.8
-Port:              prom-http  56790/TCP
-TargetPort:        prom-http/TCP
-Endpoints:         172.17.0.7:56790
+IP Families:       <none>
+IP:                10.96.218.41
+IPs:               <none>
+Port:              metrics  56790/TCP
+TargetPort:        metrics/TCP
+Endpoints:         10.244.0.110:56790
 Session Affinity:  None
 Events:            <none>
 ```
 
-Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these information to target its endpoints.
+Notice the `Labels` and `Port` fields. `ServiceMonitor` will use this information to target its endpoints.
 
-KubeDB will also create a `ServiceMonitor` crd in `monitoring` namespace that select the endpoints of `coreos-prom-mgo-stats` service. Verify that the `ServiceMonitor` crd has been created.
+KubeDB will also create a `ServiceMonitor` crd in `demo` namespace that select the endpoints of `coreos-prom-mgo-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
 ```bash
-$ kubectl get servicemonitor -n monitoring
-NAME                          AGE
-kubedb-demo-coreos-prom-mgo   1m
+$ kubectl get servicemonitor -n demo
+NAME                    AGE
+coreos-prom-mgo-stats   2m40s
 ```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of MongoDB crd.
 
 ```yaml
-$ kubectl get servicemonitor -n monitoring kubedb-demo-coreos-prom-mgo -o yaml
+$ kubectl get servicemonitor -n demo coreos-prom-mgo-stats -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  creationTimestamp: 2019-01-03T15:26:28Z
+  creationTimestamp: "2021-03-09T17:40:16Z"
   generation: 1
   labels:
-    k8s-app: prometheus
-    monitoring.appscode.com/service: coreos-prom-mgo-stats.demo
-  name: kubedb-demo-coreos-prom-mgo
-  namespace: monitoring
-  resourceVersion: "52264"
-  selfLink: /apis/monitoring.coreos.com/v1/namespaces/monitoring/servicemonitors/kubedb-demo-coreos-prom-mgo
-  uid: f065a05f-0f6b-11e9-b230-080027f306f3
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: coreos-prom-mgo
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: mongodbs.kubedb.com
+    release: prometheus
+  managedFields:
+    - apiVersion: monitoring.coreos.com/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:labels:
+            .: {}
+            f:app.kubernetes.io/component: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/managed-by: {}
+            f:app.kubernetes.io/name: {}
+            f:release: {}
+          f:ownerReferences: {}
+        f:spec:
+          .: {}
+          f:endpoints: {}
+          f:namespaceSelector:
+            .: {}
+            f:matchNames: {}
+          f:selector:
+            .: {}
+            f:matchLabels:
+              .: {}
+              f:app.kubernetes.io/instance: {}
+              f:app.kubernetes.io/managed-by: {}
+              f:app.kubernetes.io/name: {}
+              f:kubedb.com/role: {}
+      manager: mg-operator
+      operation: Update
+      time: "2021-03-09T17:40:16Z"
+  name: coreos-prom-mgo-stats
+  namespace: demo
+  ownerReferences:
+    - apiVersion: v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Service
+      name: coreos-prom-mgo-stats
+      uid: 906358eb-90dc-4a06-b9d3-89f557ad6ef4
+  resourceVersion: "184540"
+  selfLink: /apis/monitoring.coreos.com/v1/namespaces/demo/servicemonitors/coreos-prom-mgo-stats
+  uid: b0df2b5e-b6dd-4e8b-bf48-9da14f099d83
 spec:
   endpoints:
-  - honorLabels: true
-    interval: 10s
-    path: /metrics
-    port: prom-http
+    - bearerTokenSecret:
+        key: ""
+      honorLabels: true
+      interval: 10s
+      path: /metrics
+      port: metrics
   namespaceSelector:
     matchNames:
-    - demo
+      - demo
   selector:
     matchLabels:
-      app.kubernetes.io/name: mongodbs.kubedb.com
       app.kubernetes.io/instance: coreos-prom-mgo
+      app.kubernetes.io/managed-by: kubedb.com
+      app.kubernetes.io/name: mongodbs.kubedb.com
+      kubedb.com/role: stats
 ```
 
-Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in MongoDB crd.
+Notice that the `ServiceMonitor` has label `release: prometheus` that we had specified in MongoDB crd.
 
-Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `coreos-prom-mgo-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
+Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `coreos-prom-mgo-stats` service. It also, target the `metrics` port that we have seen in the stats service.
 
 ## Verify Monitoring Metrics
 
@@ -220,51 +374,34 @@ At first, let's find out the respective Prometheus pod for `prometheus` Promethe
 
 ```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
-NAME                      READY   STATUS    RESTARTS   AGE
-prometheus-prometheus-0   3/3     Running   1          63m
+NAME                                                 READY   STATUS    RESTARTS   AGE
+prometheus-prometheus-kube-prometheus-prometheus-0   2/2     Running   1          6h58m
 ```
 
-Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
+Prometheus server is listening to port `9090` of `prometheus-prometheus-kube-prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
 
-Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
+Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-kube-prometheus-prometheus-0` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-prometheus-0 9090
+$ kubectl port-forward -n monitoring prometheus-prometheus-kube-prometheus-prometheus-0 9090
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `coreos-prom-mgo-stats` service as one of the targets.
+Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `metrics` endpoint of `coreos-prom-mgo-stats` service as one of the targets.
 
 <p align="center">
   <img alt="Prometheus Target" src="/docs/images/mongodb/monitoring/mg-coreos-prom-target.png" style="padding:10px">
 </p>
 
-Check the `endpoint` and `service` labels marked by red rectangle. It verifies that the target is our expected database. Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create beautiful dashboard with collected metrics.
+Check the `endpoint` and `service` labels marked by the red rectangles. It verifies that the target is our expected database. Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create a beautiful dashboard with collected metrics.
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
 ```bash
-# cleanup database
 kubectl delete -n demo mg/coreos-prom-mgo
-
-# cleanup prometheus resources
-kubectl delete -n monitoring prometheus prometheus
-kubectl delete -n monitoring clusterrolebinding prometheus
-kubectl delete -n monitoring clusterrole prometheus
-kubectl delete -n monitoring serviceaccount prometheus
-kubectl delete -n monitoring service prometheus-operated
-
-# cleanup prometheus operator resources
-kubectl delete -n monitoring deployment prometheus-operator
-kubectl delete -n dmeo serviceaccount prometheus-operator
-kubectl delete clusterrolebinding prometheus-operator
-kubectl delete clusterrole prometheus-operator
-
-# delete namespace
-kubectl delete ns monitoring
 kubectl delete ns demo
 ```
 

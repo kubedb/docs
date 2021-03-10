@@ -1,15 +1,14 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MongoDBOpsRequest
 metadata:
-  name: mops-reconfigure-data-standalone
+  name: mops-reconfigure-inline-standalone
   namespace: demo
 spec:
   type: Reconfigure
   databaseRef:
     name: mg-standalone
-  customConfig:
+  configuration:
     standalone:
-      data:
-        mongod.conf: |
-          net:
-            maxIncomingConnections: 30000
+      inlineConfig: |
+        net:
+          maxIncomingConnections: 30000

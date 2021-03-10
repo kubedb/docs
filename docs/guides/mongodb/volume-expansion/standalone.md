@@ -49,14 +49,14 @@ Here, we are going to deploy a `MongoDB` standalone using a supported version by
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass                                                                                                                                           20:22:33
+$ kubectl get storageclass
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
 ```
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `MongoDB` standalone database with version `3.6.8`.
+Now, we are going to deploy a `MongoDB` standalone database with version `4.2.3`.
 
 #### Deploy MongoDB standalone
 
@@ -69,7 +69,7 @@ metadata:
   name: mg-standalone
   namespace: demo
 spec:
-  version: "3.6.8-v1"
+  version: "4.2.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -87,12 +87,12 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mg-standalone created
 ```
 
-Now, wait until `mg-standalone` has status `Running`. i.e,
+Now, wait until `mg-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo                                                                                                                                             20:05:47
-  NAME            VERSION    STATUS    AGE
-  mg-standalone   3.6.8-v1   Running   2m53s
+$ kubectl get mg -n demo
+NAME            VERSION    STATUS    AGE
+mg-standalone   4.2.3      Ready     2m53s
 ```
 
 Let's check volume size from statefulset, and from the persistent volume,
@@ -159,7 +159,7 @@ Every 2.0s: kubectl get mongodbopsrequest -n demo
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-volume-exp-standalone                                                                                              23:50:28
+$ kubectl describe mongodbopsrequest -n demo mops-volume-exp-standalone
   Name:         mops-volume-exp-standalone
   Namespace:    demo
   Labels:       <none>

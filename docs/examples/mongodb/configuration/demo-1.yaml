@@ -4,7 +4,7 @@ metadata:
   name: mgo-custom-config
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: "4.2.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -14,4 +14,4 @@ spec:
       requests:
         storage: 1Gi
   configSecret:
-    name: mg-custom-config
+    name: mg-configuration

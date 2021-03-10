@@ -1,0 +1,43 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MongoDB
+metadata:
+  name: mg-sh
+  namespace: demo       
+spec:
+  version: "4.2.3"
+  storageType: Durable
+  shardTopology:
+    configServer:
+      storage:
+        resources:
+          requests:
+            storage: 1Gi
+      replicas: 3
+      podTemplate:
+        spec:
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "300Mi"
+    mongos:
+      replicas: 2
+      podTemplate:
+        spec:
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "300Mi"
+    shard:
+      storage:
+        resources:
+          requests:
+            storage: 1Gi
+      replicas: 3
+      shards: 2
+      podTemplate:
+        spec:
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "300Mi"
+  terminationPolicy: WipeOut

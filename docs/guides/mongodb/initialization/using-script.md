@@ -60,7 +60,7 @@ metadata:
   name: mgo-init-script
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: "4.2.3"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -89,73 +89,110 @@ KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `Mong
 $ kubectl dba describe mg -n demo mgo-init-script
 Name:               mgo-init-script
 Namespace:          demo
-CreationTimestamp:  Wed, 06 Feb 2019 15:43:54 +0600
+CreationTimestamp:  Thu, 11 Feb 2021 10:58:22 +0600
 Labels:             <none>
-Annotations:        <none>
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script"...
 Replicas:           1  total
-Status:             Running
-  StorageType:      Durable
+Status:             Ready
+StorageType:        Durable
 Volume:
-  StorageClass:  standard
-  Capacity:      1Gi
-  Access Modes:  RWO
+  StorageClass:      standard
+  Capacity:          1Gi
+  Access Modes:      RWO
+Paused:              false
+Halted:              false
+Termination Policy:  Delete
 
-StatefulSet:
+StatefulSet:          
   Name:               mgo-init-script
-  CreationTimestamp:  Wed, 06 Feb 2019 15:43:54 +0600
-  Labels:               app.kubernetes.io/name=mongodbs.kubedb.com
+  CreationTimestamp:  Thu, 11 Feb 2021 10:58:23 +0600
+  Labels:               app.kubernetes.io/component=database
                         app.kubernetes.io/instance=mgo-init-script
+                        app.kubernetes.io/managed-by=kubedb.com
+                        app.kubernetes.io/name=mongodbs.kubedb.com
   Annotations:        <none>
-  Replicas:           824640503104 desired | 1 total
+  Replicas:           824638316568 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
-Service:
+Service:        
   Name:         mgo-init-script
-  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+  Labels:         app.kubernetes.io/component=database
                   app.kubernetes.io/instance=mgo-init-script
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=mongodbs.kubedb.com
   Annotations:  <none>
   Type:         ClusterIP
   IP:           10.107.34.91
-  Port:         db  27017/TCP
+  Port:         primary  27017/TCP
   TargetPort:   db/TCP
-  Endpoints:    172.17.0.7:27017
+  Endpoints:    [10.107.34.91]:27017
 
-Service:
-  Name:         mgo-init-script-gvr
-  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+Service:        
+  Name:         mgo-init-script-pods
+  Labels:         app.kubernetes.io/component=database
                   app.kubernetes.io/instance=mgo-init-script
-  Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=mongodbs.kubedb.com
+  Annotations:  <none>
   Type:         ClusterIP
   IP:           None
   Port:         db  27017/TCP
-  TargetPort:   27017/TCP
-  Endpoints:    172.17.0.7:27017
+  TargetPort:   db/TCP
+  Endpoints:    [10.107.34.91]:27017
 
-Database Secret:
+Auth Secret:
   Name:         mgo-init-script-auth
-  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+  Labels:         app.kubernetes.io/component=database
                   app.kubernetes.io/instance=mgo-init-script
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=mongodbs.kubedb.com
   Annotations:  <none>
-  
-Type:  Opaque
-  
-Data
-====
-  password:  16 bytes
-  username:  4 bytes
+  Type:         Opaque
+  Data:
+    password:  16 bytes
+    username:  4 bytes
 
-No Snapshots.
+Init:
+  Script Source:
+    Volume:
+    Type:      ConfigMap (a volume populated by a ConfigMap)
+    Name:      mg-init-script
+    Optional:  false
+
+AppBinding:
+  Metadata:
+    Annotations:
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.2.3"}}
+
+    Creation Timestamp:  2021-02-11T04:58:42Z
+    Labels:
+      app.kubernetes.io/component:   database
+      app.kubernetes.io/instance:    mgo-init-script
+      app.kubernetes.io/managed-by:  kubedb.com
+      app.kubernetes.io/name:        mongodbs.kubedb.com
+    Name:                            mgo-init-script
+    Namespace:                       demo
+  Spec:
+    Client Config:
+      Service:
+        Name:    mgo-init-script
+        Port:    27017
+        Scheme:  mongodb
+    Secret:
+      Name:   mgo-init-script-auth
+    Type:     kubedb.com/mongodb
+    Version:  4.2.3
 
 Events:
-  Type    Reason      Age   From             Message
-  ----    ------      ----  ----             -------
-  Normal  Successful  15s   KubeDB operator  Successfully created Service
-  Normal  Successful  5s    KubeDB operator  Successfully created StatefulSet
-  Normal  Successful  5s    KubeDB operator  Successfully created MongoDB
-  Normal  Successful  5s    KubeDB operator  Successfully created appbinding
-  Normal  Successful  5s    KubeDB operator  Successfully patched StatefulSet
-  Normal  Successful  5s    KubeDB operator  Successfully patched MongoDB
-
+  Type    Reason      Age   From              Message
+  ----    ------      ----  ----              -------
+  Normal  Successful  47s   MongoDB operator  Successfully created stats service
+  Normal  Successful  47s   MongoDB operator  Successfully created Service
+  Normal  Successful  46s   MongoDB operator  Successfully  stats service
+  Normal  Successful  46s   MongoDB operator  Successfully  stats service
+  Normal  Successful  27s   MongoDB operator  Successfully created appbinding
+  Normal  Successful  27s   MongoDB operator  Successfully patched StatefulSet demo/mgo-init-script
+  Normal  Successful  27s   MongoDB operator  Successfully patched MongoDB
 
 $ kubectl get statefulset -n demo
 NAME              READY   AGE
@@ -163,7 +200,7 @@ mgo-init-script   1/1     30s
 
 $ kubectl get pvc -n demo
 NAME                        STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-datadir-mgo-init-script-0   Bound     pvc-a10d636b-c08c-11e8-b4a9-0800272618ed   1Gi       RWO            standard       11m
+datadir-mgo-init-script-0   Bound     pvc-a10d636b-c08c-11e8-b4a9-0800272618ed   1Gi        RWO            standard       11m
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS    CLAIM                            STORAGECLASS   REASON    AGE
@@ -172,29 +209,81 @@ pvc-a10d636b-c08c-11e8-b4a9-0800272618ed   1Gi        RWO            Delete     
 $ kubectl get service -n demo
 NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 mgo-init-script       ClusterIP   10.107.34.91   <none>        27017/TCP   52s
-mgo-init-script-gvr   ClusterIP   None           <none>        27017/TCP   52s
+mgo-init-script-pods  ClusterIP   None           <none>        27017/TCP   52s
 ```
 
-KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MongoDB object:
+KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified MongoDB object:
 
 ```yaml
 $ kubectl get mg -n demo mgo-init-script -o yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
-  creationTimestamp: "2019-02-06T09:43:54Z"
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-init-script","namespace":"demo"},"spec":{"init":{"script":{"configMap":{"name":"mg-init-script"}}},"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"4.2.3"}}
+  creationTimestamp: "2021-02-10T04:38:52Z"
   finalizers:
-  - kubedb.com
-  generation: 2
+    - kubedb.com
+  generation: 3
+  managedFields:
+    - apiVersion: kubedb.com/v1alpha2
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+        f:spec:
+          .: {}
+          f:init:
+            .: {}
+            f:script:
+              .: {}
+              f:configMap:
+                .: {}
+                f:name: {}
+          f:storage:
+            .: {}
+            f:accessModes: {}
+            f:resources:
+              .: {}
+              f:requests:
+                .: {}
+                f:storage: {}
+            f:storageClassName: {}
+          f:version: {}
+      manager: kubectl-client-side-apply
+      operation: Update
+      time: "2021-02-10T04:38:52Z"
+    - apiVersion: kubedb.com/v1alpha2
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:finalizers: {}
+        f:spec:
+          f:authSecret:
+            .: {}
+            f:name: {}
+          f:init:
+            f:initialized: {}
+        f:status:
+          .: {}
+          f:conditions: {}
+          f:observedGeneration: {}
+          f:phase: {}
+      manager: mg-operator
+      operation: Update
+      time: "2021-02-10T04:39:16Z"
   name: mgo-init-script
   namespace: demo
-  resourceVersion: "89660"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mgo-init-script
-  uid: b7bde230-29f3-11e9-aebf-080027875192
+  resourceVersion: "98944"
+  uid: 5f13be2a-9a47-4b7e-9b83-a00b9bc89438
 spec:
   authSecret:
     name: mgo-init-script-auth
   init:
+    initialized: true
     script:
       configMap:
         name: mg-init-script
@@ -202,12 +291,38 @@ spec:
     controller: {}
     metadata: {}
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: mgo-init-script
+                    app.kubernetes.io/managed-by: kubedb.com
+                    app.kubernetes.io/name: mongodbs.kubedb.com
+                namespaces:
+                  - demo
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: mgo-init-script
+                    app.kubernetes.io/managed-by: kubedb.com
+                    app.kubernetes.io/name: mongodbs.kubedb.com
+                namespaces:
+                  - demo
+                topologyKey: failure-domain.beta.kubernetes.io/zone
+              weight: 50
       livenessProbe:
         exec:
           command:
-          - mongo
-          - --eval
-          - db.adminCommand('ping')
+            - bash
+            - -c
+            - "set -x; if [[ $(mongo admin --host=localhost  --username=$MONGO_INITDB_ROOT_USERNAME
+            --password=$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase=admin
+            --quiet --eval \"db.adminCommand('ping').ok\" ) -eq \"1\" ]]; then \n
+            \         exit 0\n        fi\n        exit 1"
         failureThreshold: 3
         periodSeconds: 10
         successThreshold: 1
@@ -215,32 +330,69 @@ spec:
       readinessProbe:
         exec:
           command:
-          - mongo
-          - --eval
-          - db.adminCommand('ping')
+            - bash
+            - -c
+            - "set -x; if [[ $(mongo admin --host=localhost  --username=$MONGO_INITDB_ROOT_USERNAME
+            --password=$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase=admin
+            --quiet --eval \"db.adminCommand('ping').ok\" ) -eq \"1\" ]]; then \n
+            \         exit 0\n        fi\n        exit 1"
         failureThreshold: 3
         periodSeconds: 10
         successThreshold: 1
         timeoutSeconds: 1
-      resources: {}
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 500m
+          memory: 1Gi
+      serviceAccountName: mgo-init-script
   replicas: 1
-  serviceTemplate:
-    metadata: {}
-    spec: {}
+  sslMode: disabled
   storage:
     accessModes:
-    - ReadWriteOnce
-    dataSource: null
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
     storageClassName: standard
+  storageEngine: wiredTiger
   storageType: Durable
-  terminationPolicy: Halt
-  version: 3.4-v3
+  terminationPolicy: Delete
+  version: 4.2.3
 status:
-  observedGeneration: 2$4213139756412538772
-  phase: Running
+  conditions:
+    - lastTransitionTime: "2021-02-10T04:38:53Z"
+      message: 'The KubeDB operator has started the provisioning of MongoDB: demo/mgo-init-script'
+      reason: DatabaseProvisioningStartedSuccessfully
+      status: "True"
+      type: ProvisioningStarted
+    - lastTransitionTime: "2021-02-10T04:39:16Z"
+      message: All desired replicas are ready.
+      reason: AllReplicasReady
+      status: "True"
+      type: ReplicaReady
+    - lastTransitionTime: "2021-02-10T04:39:33Z"
+      message: 'The MongoDB: demo/mgo-init-script is accepting client requests.'
+      observedGeneration: 3
+      reason: DatabaseAcceptingConnectionRequest
+      status: "True"
+      type: AcceptingConnection
+    - lastTransitionTime: "2021-02-10T04:39:33Z"
+      message: 'The MongoDB: demo/mgo-init-script is ready.'
+      observedGeneration: 3
+      reason: ReadinessCheckSucceeded
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2021-02-10T04:39:16Z"
+      message: 'The MongoDB: demo/mgo-init-script is successfully provisioned.'
+      observedGeneration: 2
+      reason: DatabaseSuccessfullyProvisioned
+      status: "True"
+      type: Provisioned
+  observedGeneration: 3
+  phase: Ready
 ```
 
 Please note that KubeDB operator has created a new Secret called `mgo-init-script-auth` *(format: {mongodb-object-name}-auth)* for storing the password for MongoDB superuser. This secret contains a `username` key which contains the *username* for MongoDB superuser and a `password` key which contains the *password* for MongoDB superuser.
@@ -293,6 +445,7 @@ Questions? Try the support group
 
 > show dbs
 admin   0.000GB
+config  0.000GB
 kubedb  0.000GB
 local   0.000GB
 
@@ -306,7 +459,7 @@ switched to db kubedb
 bye
 ```
 
-As you can see here, the initial script has successfully created a database named `mydb` and inserted data into that database successfully.
+As you can see here, the initial script has successfully created a database named `kubedb` and inserted data into that database successfully.
 
 ## Cleaning up
 
@@ -315,9 +468,6 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 ```bash
 kubectl patch -n demo mg/mgo-init-script -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-init-script
-
-kubectl patch -n demo drmn/mgo-init-script -p '{"spec":{"wipeOut":true}}' --type="merge"
-kubectl delete -n demo drmn/mgo-init-script
 
 kubectl delete ns demo
 ```

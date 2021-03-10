@@ -7,7 +7,7 @@ spec:
   type: Reconfigure
   databaseRef:
     name: mg-replicaset
-  customConfig:
+  configuration:
     replicaSet:
-      configMap:
+      configSecret:
         name: new-custom-config

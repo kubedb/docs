@@ -75,12 +75,12 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mg-replicaset created
 ```
 
-Now, wait until `mg-replicaset` created has status `Running`. i.e,
+Now, wait until `mg-replicaset` created has status `Ready`. i.e,
 
 ```bash
 $ k get mongodb -n demo                                                                                                                                             
-  NAME            VERSION    STATUS    AGE
-  mg-replicaset   3.6.8-v1   Running   109s
+NAME            VERSION    STATUS    AGE
+mg-replicaset   3.6.8-v1   Ready     109s
 ```
 
 We are now ready to apply the `MongoDBOpsRequest` CR to upgrade this database.
@@ -249,14 +249,14 @@ $ kubectl describe mongodbopsrequest -n demo mops-replicaset-upgrade
 Now, we are going to verify whether the `MongoDB` and the related `StatefulSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get mg -n demo mg-replicaset -o=jsonpath='{.spec.version}{"\n"}'                                                                                           20:59:43
-  4.0.5-v3
+$ kubectl get mg -n demo mg-replicaset -o=jsonpath='{.spec.version}{"\n"}'
+4.0.5-v3
 
-$ kubectl get sts -n demo mg-replicaset -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                                21:01:32
-  kubedb/mongo:4.0.5-v3
+$ kubectl get sts -n demo mg-replicaset -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+kubedb/mongo:4.0.5-v3
 
-$ kubectl get pods -n demo mg-replicaset-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           21:01:57
-  kubedb/mongo:4.0.5-v3
+$ kubectl get pods -n demo mg-replicaset-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+kubedb/mongo:4.0.5-v3
 ```
 
 You can see from above, our `MongoDB` replicaset database has been updated with the new version. So, the upgrade process is successfully completed.

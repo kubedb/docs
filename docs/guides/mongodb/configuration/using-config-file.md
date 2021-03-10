@@ -33,13 +33,13 @@ KubeDB supports providing custom configuration for MongoDB. This tutorial will s
 
 ## Overview
 
-MongoDB allows to configure database via configuration file. The default configuration file for MongoDB deployed by `KubeDB` can be found in `/data/configdb/mongod.conf`. When MongoDB starts, it will look for custom configuration file in `/configdb-readonly/mongod.conf`. If configuration file exist, this custom configuration will overwrite the existing default one.
+MongoDB allows configuring database via configuration file. The default configuration file for MongoDB deployed by `KubeDB` can be found in `/data/configdb/mongod.conf`. When MongoDB starts, it will look for custom configuration file in `/configdb-readonly/mongod.conf`. If configuration file exist, this custom configuration will overwrite the existing default one.
 
 > To learn available configuration option of MongoDB see [Configuration File Options](https://docs.mongodb.com/manual/reference/configuration-options/).
 
-At first, you have to create a config file named `mongod.conf`. Then you have to put this file into a [volume](https://kubernetes.io/docs/concepts/storage/volumes/). You have to specify this volume  in `spec.configSecret` section while creating MongoDB crd. KubeDB will mount this volume into `/configdb-readonly/` directory of the database pod.
+At first, you have to create a secret with your configuration file contents as the value of this key `mongod.conf`. Then, you have to specify the name of this secret in `spec.configSecret.name` section while creating MongoDB crd. KubeDB will mount this secret into `/configdb-readonly/` directory of the database pod.
 
-In this tutorial, we will configure [net.maxIncomingConnections](https://docs.mongodb.com/manual/reference/configuration-options/#net.maxIncomingConnections) (default value: 65536) via a custom config file. We will use configMap as volume source.
+In this tutorial, we will configure [net.maxIncomingConnections](https://docs.mongodb.com/manual/reference/configuration-options/#net.maxIncomingConnections) (default value: 65536) via a custom config file.
 
 ## Custom Configuration
 
@@ -53,30 +53,43 @@ net:
 
 Here, `maxIncomingConnections` is set to `10000`, whereas the default value is 65536.
 
-Now, create a configMap with this configuration file.
+Now, create the secret with this configuration file.
 
 ```bash
-$ kubectl create configmap -n demo mg-configuration --from-file=./mongod.conf
-configmap/mg-configuration created
+$ kubectl create secret generic -n demo mg-configuration --from-file=./mongod.conf
+secret/mg-configuration created
 ```
 
-Verify the config map has the configuration file.
+Verify the secret has the configuration file.
 
 ```yaml
-$  kubectl get configmap -n demo mg-configuration -o yaml
+$  kubectl get secret -n demo mg-configuration -o yaml
 apiVersion: v1
 data:
-  mongod.conf: |+
-    net:
-       maxIncomingConnections: 10000
-kind: ConfigMap
+  mongod.conf: bmV0OgogIG1heEluY29taW5nQ29ubmVjdGlvbnM6IDEwMDAwMA==
+kind: Secret
 metadata:
-  creationTimestamp: "2019-02-06T10:03:45Z"
+  creationTimestamp: "2021-02-09T12:59:50Z"
+  managedFields:
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:data:
+          .: {}
+          f:mongod.conf: {}
+        f:type: {}
+      manager: kubectl-create
+      operation: Update
+      time: "2021-02-09T12:59:50Z"
   name: mg-configuration
   namespace: demo
-  resourceVersion: "91905"
-  selfLink: /api/v1/namespaces/demo/configmaps/mg-configuration
-  uid: 7da0467c-29f6-11e9-aebf-080027875192
+  resourceVersion: "52495"
+  uid: 92ca4191-eb97-4274-980c-9430ab7cc5d1
+type: Opaque
+
+$ echo bmV0OgogIG1heEluY29taW5nQ29ubmVjdGlvbnM6IDEwMDAwMA== | base64 -d
+net:
+  maxIncomingConnections: 100000
 ```
 
 Now, create MongoDB crd specifying `spec.configSecret` field.
@@ -88,7 +101,7 @@ metadata:
   name: mgo-custom-config
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: "4.2.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -118,7 +131,7 @@ mgo-custom-config-0   1/1       Running   0          1m
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
-Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
+Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v4.2/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
 ```bash
 $ kubectl get secrets -n demo mgo-custom-config-auth -o jsonpath='{.data.\username}' | base64 -d
@@ -140,16 +153,22 @@ $ kubectl exec -it mgo-custom-config-0 -n demo sh
 		"mongod",
 		"--dbpath=/data/db",
 		"--auth",
-		"--bind_ip=0.0.0.0",
+		"--ipv6",
+		"--bind_ip_all",
 		"--port=27017",
+		"--tlsMode=disabled",
 		"--config=/data/configdb/mongod.conf"
 	],
 	"parsed" : {
 		"config" : "/data/configdb/mongod.conf",
 		"net" : {
-			"bindIp" : "0.0.0.0",
+			"bindIp" : "*",
+			"ipv6" : true,
 			"maxIncomingConnections" : 10000,
-			"port" : 27017
+			"port" : 27017,
+			"tls" : {
+				"mode" : "disabled"
+			}
 		},
 		"security" : {
 			"authorization" : "enabled"
@@ -175,10 +194,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 kubectl patch -n demo mg/mgo-custom-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-custom-config
 
-kubectl patch -n demo drmn/mgo-custom-config -p '{"spec":{"wipeOut":true}}' --type="merge"
-kubectl delete -n demo drmn/mgo-custom-config
-
-kubectl delete -n demo configmap mg-configuration
+kubectl delete -n demo secret mg-configuration
 
 kubectl delete ns demo
 ```

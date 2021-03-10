@@ -49,7 +49,7 @@ metadata:
   name: builtin-prom-mgo
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: "4.2.3"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -78,7 +78,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get mg -n demo builtin-prom-mgo
 NAME               VERSION   STATUS    AGE
-builtin-prom-mgo   3.4-v3    Running   1m
+builtin-prom-mgo   4.2.3     Ready     2m34s
 ```
 
 KubeDB will create a separate stats service with name `{MongoDB crd name}-stats` for monitoring purpose.
@@ -87,7 +87,7 @@ KubeDB will create a separate stats service with name `{MongoDB crd name}-stats`
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-mgo"
 NAME                     TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 builtin-prom-mgo         ClusterIP   10.99.28.40    <none>        27017/TCP   55s
-builtin-prom-mgo-gvr     ClusterIP   None           <none>        27017/TCP   55s
+builtin-prom-mgo-pods    ClusterIP   None           <none>        27017/TCP   55s
 builtin-prom-mgo-stats   ClusterIP   10.98.202.26   <none>        56790/TCP   36s
 ```
 

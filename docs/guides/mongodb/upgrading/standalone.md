@@ -71,12 +71,12 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 mongodb.kubedb.com/mg-standalone created
 ```
 
-Now, wait until `mg-standalone` created has status `Running`. i.e,
+Now, wait until `mg-standalone` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo                                                                                                                                             20:05:47
+$ kubectl get mg -n demo
   NAME            VERSION    STATUS    AGE
-  mg-standalone   3.6.8-v1   Running   8m58s
+  mg-standalone   3.6.8-v1   Ready     8m58s
 ```
 
 We are now ready to apply the `MongoDBOpsRequest` CR to upgrade this database.
@@ -244,13 +244,13 @@ Now, we are going to verify whether the `MongoDB` and the related `StatefulSets`
 
 ```bash
 $ kubectl get mg -n demo mg-standalone -o=jsonpath='{.spec.version}{"\n"}'                                                                                          
-  4.0.5-v3
+4.0.5-v3
 
 $ kubectl get sts -n demo mg-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                               
-  kubedb/mongo:4.0.5-v3
+kubedb/mongo:4.0.5-v3
 
 $ kubectl get pods -n demo mg-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           
-  kubedb/mongo:4.0.5-v3
+kubedb/mongo:4.0.5-v3
 ```
 
 You can see from above, our `MongoDB` standalone database has been updated with the new version. So, the upgrade process is successfully completed.

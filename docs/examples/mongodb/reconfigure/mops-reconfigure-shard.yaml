@@ -7,13 +7,13 @@ spec:
   type: Reconfigure
   databaseRef:
     name: mg-sharding
-  customConfig:
+  configuration:
     shard:
-      configMap:
+      configSecret:
         name: new-custom-config
     configServer:
-      configMap:
+      configSecret:
         name: new-custom-config
     mongos:
-      configMap:
+      configSecret:
         name: new-custom-config

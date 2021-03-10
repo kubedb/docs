@@ -30,8 +30,8 @@ This tutorial will show you how to use KubeDB to run a MongoDB database.
 
   ```bash
   $ kubectl get storageclasses
-  NAME                 PROVISIONER                AGE
-  standard (default)   k8s.io/minikube-hostpath   4h
+  NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+  standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  9h
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -49,21 +49,21 @@ When you have installed KubeDB, it has created `MongoDBVersion` crd for all supp
 
 ```bash
 $ kubectl get mongodbversions
-NAME       VERSION   DB_IMAGE                    DEPRECATED   AGE
-3.4        3.4       maruftuhin/mongo:3.4        true         5h41m
-3.4-v1     3.4       maruftuhin/mongo:3.4-v1     true         5h41m
-3.4-v2     3.4       maruftuhin/mongo:3.4-v2     true         5h41m
-3.4-v3     3.4       maruftuhin/mongo:3.4-v3                  5h41m
-3.6        3.6       maruftuhin/mongo:3.6        true         5h41m
-3.6-v1     3.6       maruftuhin/mongo:3.6-v1     true         5h41m
-3.6-v2     3.6       maruftuhin/mongo:3.6-v2     true         5h41m
-3.6-v3     3.6       maruftuhin/mongo:3.6-v3                  5h41m
-4.0        4.0.5     maruftuhin/mongo:4.0        true         5h41m
-4.0-v1     4.0.5     maruftuhin/mongo:4.0-v1                  5h41m
-4.0.5      4.0.5     maruftuhin/mongo:4.0.5      true         5h41m
-4.0.5-v1   4.0.5     maruftuhin/mongo:4.0.5-v1                5h41m
-4.1.7      4.1.7     maruftuhin/mongo:4.1.7      true         5h41m
-4.1.7-v1   4.1.7     maruftuhin/mongo:4.1.7-v1                5h41m
+NAME             VERSION   DB_IMAGE                                 DEPRECATED   AGE
+3.4.17-v1        3.4.17    kubedb/mongo:3.4.17-v1                                8h
+3.4.22-v1        3.4.22    kubedb/mongo:3.4.22-v1                                8h
+3.6.13-v1        3.6.13    kubedb/mongo:3.6.13-v1                                8h
+3.6.18-percona   3.6.18    percona/percona-server-mongodb:3.6.18                 8h
+3.6.8-v1         3.6.8     kubedb/mongo:3.6.8-v1                                 8h
+4.0.10-percona   4.0.10    percona/percona-server-mongodb:4.0.10                 8h
+4.0.11-v1        4.0.11    kubedb/mongo:4.0.11-v1                                8h
+4.0.3-v1         4.0.3     kubedb/mongo:4.0.3-v1                                 8h
+4.0.5-v3         4.0.5     kubedb/mongo:4.0.5-v3                                 8h
+4.1.13-v1        4.1.13    kubedb/mongo:4.1.13-v1                                8h
+4.1.4-v1         4.1.4     kubedb/mongo:4.1.4-v1                                 8h
+4.1.7-v3         4.1.7     kubedb/mongo:4.1.7-v3                                 8h
+4.2.3            4.2.3     kubedb/mongo:4.2.3                                    8h
+4.2.7-percona    4.2.7     percona/percona-server-mongodb:4.2.7-7                8h
 ```
 
 ## Create a MongoDB database
@@ -77,7 +77,7 @@ metadata:
   name: mgo-quickstart
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: "4.2.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -96,90 +96,134 @@ mongodb.kubedb.com/mgo-quickstart created
 
 Here,
 
-- `spec.version` is name of the MongoDBVersion crd where the docker images are specified. In this tutorial, a MongoDB 3.4-v3 database is created.
+- `spec.version` is name of the MongoDBVersion crd where the docker images are specified. In this tutorial, a MongoDB 4.2.3 database is created.
 - `spec.storageType` specifies the type of storage that will be used for MongoDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MongoDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
-- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MongoDB` crd or which resources KubeDB should keep or delete when you delete `MongoDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here]
+- `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MongoDB` crd or which resources KubeDB should keep or delete when you delete `MongoDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy)
 
-> Note: spec.storage section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
+> Note: `spec.storage` section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
 
-KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-name>-gvr`.
+KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `<mongodb-name>-pods`.
 
 ```bash
 $ kubectl dba describe mg -n demo mgo-quickstart
 Name:               mgo-quickstart
 Namespace:          demo
-CreationTimestamp:  Wed, 06 Feb 2019 11:25:26 +0600
+CreationTimestamp:  Thu, 11 Feb 2021 10:54:22 +0600
 Labels:             <none>
-Annotations:        <none>
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"storage":{"acces...
 Replicas:           1  total
-Status:             Running
-  StorageType:      Durable
+Status:             Ready
+StorageType:        Durable
 Volume:
-  StorageClass:  standard
-  Capacity:      1Gi
-  Access Modes:  RWO
+  StorageClass:      standard
+  Capacity:          1Gi
+  Access Modes:      RWO
+Paused:              false
+Halted:              false
+Termination Policy:  DoNotTerminate
 
-StatefulSet:
+StatefulSet:          
   Name:               mgo-quickstart
-  CreationTimestamp:  Wed, 06 Feb 2019 11:25:27 +0600
-  Labels:               app.kubernetes.io/name=mongodbs.kubedb.com
+  CreationTimestamp:  Thu, 11 Feb 2021 10:54:22 +0600
+  Labels:               app.kubernetes.io/component=database
                         app.kubernetes.io/instance=mgo-quickstart
+                        app.kubernetes.io/managed-by=kubedb.com
+                        app.kubernetes.io/name=mongodbs.kubedb.com
   Annotations:        <none>
-  Replicas:           824637515568 desired | 1 total
+  Replicas:           824639033752 desired | 1 total
   Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
 
-Service:
+Service:        
   Name:         mgo-quickstart
-  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+  Labels:         app.kubernetes.io/component=database
                   app.kubernetes.io/instance=mgo-quickstart
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=mongodbs.kubedb.com
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.111.237.184
-  Port:         db  27017/TCP
+  IP:           fd00:10:96::cc87
+  Port:         primary  27017/TCP
   TargetPort:   db/TCP
-  Endpoints:    172.17.0.8:27017
+  Endpoints:    [fd00:10:244::27]:27017
 
-Service:
-  Name:         mgo-quickstart-gvr
-  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+Service:        
+  Name:         mgo-quickstart-pods
+  Labels:         app.kubernetes.io/component=database
                   app.kubernetes.io/instance=mgo-quickstart
-  Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=mongodbs.kubedb.com
+  Annotations:  <none>
   Type:         ClusterIP
   IP:           None
   Port:         db  27017/TCP
-  TargetPort:   27017/TCP
-  Endpoints:    172.17.0.8:27017
+  TargetPort:   db/TCP
+  Endpoints:    [fd00:10:244::27]:27017
 
-Database Secret:
+Auth Secret:
   Name:         mgo-quickstart-auth
-  Labels:         app.kubernetes.io/name=mongodbs.kubedb.com
+  Labels:         app.kubernetes.io/component=database
                   app.kubernetes.io/instance=mgo-quickstart
+                  app.kubernetes.io/managed-by=kubedb.com
+                  app.kubernetes.io/name=mongodbs.kubedb.com
   Annotations:  <none>
-  
-Type:  Opaque
-  
-Data
-====
-  password:  16 bytes
-  username:  4 bytes
+  Type:         Opaque
+  Data:
+    username:  4 bytes
+    password:  16 bytes
 
-No Snapshots.
+AppBinding:
+  Metadata:
+    Annotations:
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"4.2.3"}}
+
+    Creation Timestamp:  2021-02-11T04:54:40Z
+    Labels:
+      app.kubernetes.io/component:   database
+      app.kubernetes.io/instance:    mgo-quickstart
+      app.kubernetes.io/managed-by:  kubedb.com
+      app.kubernetes.io/name:        mongodbs.kubedb.com
+    Name:                            mgo-quickstart
+    Namespace:                       demo
+  Spec:
+    Client Config:
+      Service:
+        Name:    mgo-quickstart
+        Port:    27017
+        Scheme:  mongodb
+    Secret:
+      Name:   mgo-quickstart-auth
+    Type:     kubedb.com/mongodb
+    Version:  4.2.3
 
 Events:
   Type    Reason      Age   From              Message
   ----    ------      ----  ----              -------
-  Normal  Successful  8m    MongoDB operator  Successfully created Service
-  Normal  Successful  8m    MongoDB operator  Successfully created StatefulSet
-  Normal  Successful  8m    MongoDB operator  Successfully created MongoDB
-  Normal  Successful  8m    MongoDB operator  Successfully created appbinding
-  Normal  Successful  8m    MongoDB operator  Successfully patched StatefulSet
-  Normal  Successful  8m    MongoDB operator  Successfully patched MongoDB
-
+  Normal  Successful  46s   MongoDB operator  Successfully created Service
+  Normal  Successful  46s   MongoDB operator  Successfully  stats service
+  Normal  Successful  46s   MongoDB operator  Successfully  stats service
+  Normal  Successful  46s   MongoDB operator  Successfully created stats service
+  Normal  Successful  28s   MongoDB operator  Successfully patched MongoDB
+  Normal  Successful  28s   MongoDB operator  Successfully  stats service
+  Normal  Successful  28s   MongoDB operator  Successfully patched StatefulSet demo/mgo-quickstart
+  Normal  Successful  28s   MongoDB operator  Successfully patched MongoDB
+  Normal  Successful  28s   MongoDB operator  Successfully created appbinding
+  Normal  Successful  28s   MongoDB operator  Successfully  stats service
+  Normal  Successful  28s   MongoDB operator  Successfully  stats service
+  Normal  Successful  28s   MongoDB operator  Successfully patched StatefulSet demo/mgo-quickstart
+  Normal  Successful  4s    MongoDB operator  Successfully  stats service
+  Normal  Successful  4s    MongoDB operator  Successfully patched StatefulSet demo/mgo-quickstart
+  Normal  Successful  4s    MongoDB operator  Successfully patched MongoDB
+  Normal  Successful  4s    MongoDB operator  Successfully  stats service
+  Normal  Successful  4s    MongoDB operator  Successfully patched StatefulSet demo/mgo-quickstart
+  Normal  Successful  4s    MongoDB operator  Successfully patched MongoDB
+  Normal  Successful  4s    MongoDB operator  Successfully  stats service
+  Normal  Successful  4s    MongoDB operator  Successfully patched StatefulSet demo/mgo-quickstart
+  Normal  Successful  4s    MongoDB operator  Successfully patched MongoDB
 
 $ kubectl get statefulset -n demo
-NAME             DESIRED   CURRENT   AGE
-mgo-quickstart   1         1         20m
+NAME             READY   AGE
+mgo-quickstart   1/1     105s
 
 $ kubectl get pvc -n demo
 NAME                       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
@@ -192,25 +236,69 @@ pvc-9c738632-29cf-11e9-aebf-080027875192   1Gi        RWO            Delete     
 $ kubectl get service -n demo
 NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
 mgo-quickstart       ClusterIP   10.111.237.184   <none>        27017/TCP   18m
-mgo-quickstart-gvr   ClusterIP   None             <none>        27017/TCP   18m
+mgo-quickstart-pods  ClusterIP   None             <none>        27017/TCP   18m
 ```
 
-KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MongoDB object:
+KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified MongoDB object:
 
 ```yaml
 $ kubectl get mg -n demo mgo-quickstart -o yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MongoDB
 metadata:
-  creationTimestamp: "2019-04-30T09:55:13Z"
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MongoDB","metadata":{"annotations":{},"name":"mgo-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"4.2.3"}}
+  creationTimestamp: "2021-02-09T14:06:57Z"
   finalizers:
-  - kubedb.com
+    - kubedb.com
   generation: 2
+  managedFields:
+    - apiVersion: kubedb.com/v1alpha2
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+        f:spec:
+          .: {}
+          f:storage:
+            .: {}
+            f:accessModes: {}
+            f:resources:
+              .: {}
+              f:requests:
+                .: {}
+                f:storage: {}
+            f:storageClassName: {}
+          f:storageType: {}
+          f:terminationPolicy: {}
+          f:version: {}
+      manager: kubectl-client-side-apply
+      operation: Update
+      time: "2021-02-09T14:06:57Z"
+    - apiVersion: kubedb.com/v1alpha2
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:finalizers: {}
+        f:spec:
+          f:authSecret:
+            .: {}
+            f:name: {}
+        f:status:
+          .: {}
+          f:conditions: {}
+          f:observedGeneration: {}
+          f:phase: {}
+      manager: mg-operator
+      operation: Update
+      time: "2021-02-09T14:06:57Z"
   name: mgo-quickstart
   namespace: demo
-  resourceVersion: "31337"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mongodbs/mgo-quickstart
-  uid: 0c5c22d6-6b2e-11e9-97a6-0800278b6754
+  resourceVersion: "59940"
+  uid: b0bcf12e-7a3a-4f15-9493-461e6087964b
 spec:
   authSecret:
     name: mgo-quickstart-auth
@@ -218,12 +306,38 @@ spec:
     controller: {}
     metadata: {}
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: mgo-quickstart
+                    app.kubernetes.io/managed-by: kubedb.com
+                    app.kubernetes.io/name: mongodbs.kubedb.com
+                namespaces:
+                  - demo
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: mgo-quickstart
+                    app.kubernetes.io/managed-by: kubedb.com
+                    app.kubernetes.io/name: mongodbs.kubedb.com
+                namespaces:
+                  - demo
+                topologyKey: failure-domain.beta.kubernetes.io/zone
+              weight: 50
       livenessProbe:
         exec:
           command:
-          - mongo
-          - --eval
-          - db.adminCommand('ping')
+            - bash
+            - -c
+            - "set -x; if [[ $(mongo admin --host=localhost  --username=$MONGO_INITDB_ROOT_USERNAME
+            --password=$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase=admin
+            --quiet --eval \"db.adminCommand('ping').ok\" ) -eq \"1\" ]]; then \n
+            \         exit 0\n        fi\n        exit 1"
         failureThreshold: 3
         periodSeconds: 10
         successThreshold: 1
@@ -231,41 +345,74 @@ spec:
       readinessProbe:
         exec:
           command:
-          - mongo
-          - --eval
-          - db.adminCommand('ping')
+            - bash
+            - -c
+            - "set -x; if [[ $(mongo admin --host=localhost  --username=$MONGO_INITDB_ROOT_USERNAME
+            --password=$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase=admin
+            --quiet --eval \"db.adminCommand('ping').ok\" ) -eq \"1\" ]]; then \n
+            \         exit 0\n        fi\n        exit 1"
         failureThreshold: 3
         periodSeconds: 10
         successThreshold: 1
         timeoutSeconds: 1
-      resources: {}
-      securityContext:
-        fsGroup: 999
-        runAsNonRoot: true
-        runAsUser: 999
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 500m
+          memory: 1Gi
+      serviceAccountName: mgo-quickstart
   replicas: 1
-  serviceTemplate:
-    metadata: {}
-    spec: {}
+  sslMode: disabled
   storage:
     accessModes:
-    - ReadWriteOnce
-    dataSource: null
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
     storageClassName: standard
+  storageEngine: wiredTiger
   storageType: Durable
   terminationPolicy: DoNotTerminate
-  version: 3.4-v3
+  version: 4.2.3
 status:
-  observedGeneration: 2$4213139756412538772
-  phase: Running
+  conditions:
+    - lastTransitionTime: "2021-02-09T14:06:57Z"
+      message: 'The KubeDB operator has started the provisioning of MongoDB: demo/mgo-quickstart'
+      reason: DatabaseProvisioningStartedSuccessfully
+      status: "True"
+      type: ProvisioningStarted
+    - lastTransitionTime: "2021-02-09T14:07:16Z"
+      message: All desired replicas are ready.
+      reason: AllReplicasReady
+      status: "True"
+      type: ReplicaReady
+    - lastTransitionTime: "2021-02-09T14:07:42Z"
+      message: 'The MongoDB: demo/mgo-quickstart is accepting client requests.'
+      observedGeneration: 2
+      reason: DatabaseAcceptingConnectionRequest
+      status: "True"
+      type: AcceptingConnection
+    - lastTransitionTime: "2021-02-09T14:07:42Z"
+      message: 'The MongoDB: demo/mgo-quickstart is ready.'
+      observedGeneration: 2
+      reason: ReadinessCheckSucceeded
+      status: "True"
+      type: Ready
+    - lastTransitionTime: "2021-02-09T14:07:42Z"
+      message: 'The MongoDB: demo/mgo-quickstart is successfully provisioned.'
+      observedGeneration: 2
+      reason: DatabaseSuccessfullyProvisioned
+      status: "True"
+      type: Provisioned
+  observedGeneration: 2
+  phase: Ready
 ```
 
 Please note that KubeDB operator has created a new Secret called `mgo-quickstart-auth` *(format: {mongodb-object-name}-auth)* for storing the password for `mongodb` superuser. This secret contains a `username` key which contains the *username* for MongoDB superuser and a `password` key which contains the *password* for MongoDB superuser.
 
-If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `user` and `password`. For more details, please see [here](/docs/guides/mongodb/concepts/mongodb.md#specdatabasesecret).
+If you want to use custom or existing secret please specify that when creating the MongoDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`. For more details, please see [here](/docs/guides/mongodb/concepts/mongodb.md#specauthsecret).
 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
@@ -290,15 +437,20 @@ mydb   0.000GB
 
 > show users
 {
-    "_id" : "admin.root",
-    "user" : "root",
-    "db" : "admin",
-    "roles" : [
-        {
-            "role" : "root",
-            "db" : "admin"
-        }
-    ]
+	"_id" : "admin.root",
+	"userId" : UUID("7e7f3e5d-4ebd-438a-9c40-91ed59bf242f"),
+	"user" : "root",
+	"db" : "admin",
+	"roles" : [
+		{
+			"role" : "root",
+			"db" : "admin"
+		}
+	],
+	"mechanisms" : [
+		"SCRAM-SHA-1",
+		"SCRAM-SHA-256"
+	]
 }
 
 > use newdb
@@ -323,153 +475,75 @@ $ kubectl delete mg mgo-quickstart -n demo
 Error from server (BadRequest): admission webhook "mongodb.validators.kubedb.com" denied the request: mongodb "mgo-quickstart" can't be halted. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubectl edit mg mgo-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` (which creates `dormantdatabase` when mongodb is deleted and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Halt`). Then you will be able to delete/halt the database.
-
-Learn details of all `TerminationPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
-
 ## Halt Database
 
-When [TerminationPolicy](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy) is set to `Halt`, it will halt the MongoDB database instead of deleting it. Here, If you delete the MongoDB object, KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs unchanged. In KubeDB parlance, we say that `mgo-quickstart` MongoDB database has entered into the dormant state. This is represented by KubeDB operator by creating a matching DormantDatabase object.
+When [TerminationPolicy](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the StatefulSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `TerminationPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
+
+You can also keep the mongodb object and halt the database to resume it again later. If you halt the database, the kubedb operator will delete the statefulsets and services but will keep the mongodb object, pvcs, secrets and backup (snapshots).
+
+To halt the database, first you have to set the terminationPolicy to `Halt` in existing database. You can use the below command to set the terminationPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl delete mg mgo-quickstart -n demo
-mongodb.kubedb.com "mgo-quickstart" deleted
-
-$ kubectl get drmn -n demo mgo-quickstart
-NAME             STATUS    AGE
-mgo-quickstart   Pausing   39s
-
-$ kubectl get drmn -n demo mgo-quickstart
-NAME             STATUS    AGE
-mgo-quickstart   Halted    21s
+$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"terminationPolicy":"Halt"}}' --type="merge"
+mongodb.kubedb.com/mgo-quickstart patched
 ```
 
-```yaml
-$ kubectl get drmn -n demo mgo-quickstart -o yaml
-apiVersion: kubedb.com/v1alpha2
-kind: DormantDatabase
-metadata:
-  creationTimestamp: "2019-04-30T09:57:34Z"
-  finalizers:
-  - kubedb.com
-  generation: 1
-  labels:
-    app.kubernetes.io/name: mongodbs.kubedb.com
-  name: mgo-quickstart
-  namespace: demo
-  resourceVersion: "31482"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/dormantdatabases/mgo-quickstart
-  uid: 60d472f1-6b2e-11e9-97a6-0800278b6754
-spec:
-  origin:
-    metadata:
-      creationTimestamp: "2019-04-30T09:55:13Z"
-      name: mgo-quickstart
-      namespace: demo
-    spec:
-      mongodb:
-        authSecret:
-          name: mgo-quickstart-auth
-        podTemplate:
-          controller: {}
-          metadata: {}
-          spec:
-            livenessProbe:
-              exec:
-                command:
-                - mongo
-                - --eval
-                - db.adminCommand('ping')
-              failureThreshold: 3
-              periodSeconds: 10
-              successThreshold: 1
-              timeoutSeconds: 5
-            readinessProbe:
-              exec:
-                command:
-                - mongo
-                - --eval
-                - db.adminCommand('ping')
-              failureThreshold: 3
-              periodSeconds: 10
-              successThreshold: 1
-              timeoutSeconds: 1
-            resources: {}
-            securityContext:
-              fsGroup: 999
-              runAsNonRoot: true
-              runAsUser: 999
-        replicas: 1
-        serviceTemplate:
-          metadata: {}
-          spec: {}
-        storage:
-          accessModes:
-          - ReadWriteOnce
-          dataSource: null
-          resources:
-            requests:
-              storage: 1Gi
-          storageClassName: standard
-        storageType: Durable
-        terminationPolicy: Halt
-        version: 3.4-v3
-status:
-  observedGeneration: 1$16440556888999634490
-  pausingTime: "2019-04-30T09:57:44Z"
-  phase: Halted
-```
-
-Here,
-
-- `spec.origin` is the spec of the original spec of the original MongoDB object.
-- `status.phase` points to the current database state `Halted`.
-
-## Resume Dormant Database
-
-To resume the database from the dormant state, create same `MongoDB` object with same Spec.
-
-In this tutorial, the dormant database can be resumed by creating original MongoDB object.
-
-The below command will resume the DormantDatabase `mgo-quickstart`.
+Then, you have to set the `spec.halted` as true to set the database in a `Halted` state. You can use the below command.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/quickstart/demo-1.yaml
-mongodb.kubedb.com/mgo-quickstart created
+$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"halted":true}}' --type="merge"
+mongodb.kubedb.com/mgo-quickstart patched
 ```
 
-Now, if you exec into the database, you can see that the datas are intact.
+After that, kubedb will delete the statefulsets and services and you can see the database Phase as `Halted`.
 
-## WipeOut DormantDatabase
-
-You can wipe out a DormantDatabase while deleting the object by setting `spec.wipeOut` to true. KubeDB operator will delete any relevant resources of this `MongoDB` database (i.e, PVCs, Secrets, Snapshots). It will also delete snapshot data stored in the Cloud Storage buckets.
-
-```yaml
-$ kubectl edit drmn -n demo mgo-quickstart
-apiVersion: kubedb.com/v1alpha2
-kind: DormantDatabase
-metadata:
-  name: mgo-quickstart
-  namespace: demo
-  ...
-spec:
-  wipeOut: true
-  ...
-status:
-  phase: Halted
-  ...
-```
-
-If `spec.wipeOut` is not set to true while deleting the `dormantdatabase` object, then only this object will be deleted and `kubedb-operator` won't delete related Secrets, PVCs, and Snapshots. So, users still can access the stored data in the cloud storage buckets as well as PVCs.
-
-## Delete DormantDatabase
-
-As it is already discussed above, `DormantDatabase` can be deleted with or without wiping out the resources. To delete the `dormantdatabase`,
+Now, you can run the following command to get all mongodb resources in demo namespaces,
 
 ```bash
-$ kubectl delete drmn mgo-quickstart -n demo
-dormantdatabase "mgo-quickstart" deleted
+$ kubectl get mg,sts,svc,secret,pvc -n demo
+NAME                                VERSION   STATUS   AGE
+mongodb.kubedb.com/mgo-quickstart   4.2.3     Halted   9m43s
+
+NAME                            TYPE                                  DATA   AGE
+secret/default-token-x2zcl      kubernetes.io/service-account-token   3      47h
+secret/mgo-quickstart-auth      Opaque                                2      23h
+
+NAME                                             STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/datadir-mgo-quickstart-0   Bound    pvc-816daa52-ee40-496f-a148-c75344a1b433   1Gi        RWO            standard       9m43s
 ```
+
+
+## Resume Halted Database
+
+Now, to resume the database, i.e. to get the same database setup back again, you have to set the the `spec.halted` as false. You can use the below command.
+
+```bash
+$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"halted":false}}' --type="merge"
+mongodb.kubedb.com/mgo-quickstart patched
+```
+
+When the database is resumed successfully, you can see the database Status is set to `Ready`.
+
+```bash
+$ kubectl get mg -n demo
+NAME             VERSION   STATUS    AGE
+mgo-quickstart   4.2.3     Ready     6m27s
+```
+
+Now, If you again exec into the `pod` and look for previous data, you will see that, all the data persists.
+
+```bash
+$ kubectl exec -it mgo-quickstart-0 -n demo bash
+
+mongodb@mgo-quickstart-0:/$ mongo admin -u root -p 7QiqLcuSCmZ8PU5a
+
+rs0:PRIMARY> use newdb
+switched to db newdb
+
+rs0:PRIMARY> db.movie.find()
+{ "_id" : ObjectId("6024b3e47c614cd582c9bb44"), "name" : "batman" }
+```
+
 
 ## Cleaning up
 
@@ -479,9 +553,6 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-quickstart
 
-kubectl patch -n demo drmn/mgo-quickstart -p '{"spec":{"wipeOut":true}}' --type="merge"
-kubectl delete -n demo drmn/mgo-quickstart
-
 kubectl delete ns demo
 ```
 
@@ -489,8 +560,8 @@ kubectl delete ns demo
 
 If you are just testing some basic functionalities, you might want to avoid additional hassles due to some safety features that are great for production environment. You can follow these tips to avoid them.
 
-1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend to use `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
-2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database from previous one. So, we create `DormantDatabase` and preserve all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will not create `DormantDatabase` and it will delete everything created by KubeDB for a particular MongoDB crd when you delete the crd. For more details about termination policy, please visit [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
+1. **Use `storageType: Ephemeral`**. Databases are precious. You might not want to lose your data in your production environment if database pod fail. So, we recommend using `spec.storageType: Durable` and provide storage spec in `spec.storage` section. For testing purpose, you can just use `spec.storageType: Ephemeral`. KubeDB will use [emptyDir](https://kubernetes.io/docs/concepts/storage/volumes/#emptydir) for storage. You will not require to provide `spec.storage` section.
+2. **Use `terminationPolicy: WipeOut`**. It is nice to be able to resume database. So, we have `Halt` option which preserves all your `PVCs`, `Secrets`, `Snapshots` etc. If you don't want to resume database, you can just use `spec.terminationPolicy: WipeOut`. It will delete everything created by KubeDB for a particular MongoDB crd when you delete the mongodb object. For more details about termination policy, please visit [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy).
 
 ## Next Steps
 

@@ -44,19 +44,19 @@ In order to enable monitoring for a database, you have to configure `spec.monito
 
 ## Sample Configuration
 
-A sample YAML for Redis crd with `spec.monitor` section configured to enable monitoring with [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) is shown below.
+A sample YAML for MongoDB crd with `spec.monitor` section configured to enable monitoring with [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) is shown below.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: Redis
+kind: MongoDB
 metadata:
-  name: sample-redis
+  name: sample-mongo
   namespace: databases
 spec:
-  version: "4.0-v1"
+  version: "4.2.3"
   terminationPolicy: WipeOut
-  configSecret: # configure Redis to use password for authentication
-    name: redis-config
+  configSecret:
+    name: config
   storageType: Durable
   storage:
     storageClassName: default
@@ -73,13 +73,13 @@ spec:
           k8s-app: prometheus
       exporter:
         args:
-        - --redis.password=$(REDIS_PASSWORD)
+        - --collect.database
         env:
-        - name: REDIS_PASSWORD
+        - name: ENV_VARIABLE
           valueFrom:
             secretKeyRef:
-              name: _name_of_secret_with_redis_password
-              key: password # key with the password
+              name: env_name
+              key: env_value
         resources:
           requests:
             memory: 512Mi
@@ -92,15 +92,10 @@ spec:
           allowPrivilegeEscalation: false
 ```
 
-Assume that above Redis is configured to use basic authentication. So, exporter image also need to provide password to collect metrics. We have provided it through `spec.monitor.args` field.
-
 Here, we have specified that we are going to monitor this server using Prometheus operator through `spec.monitor.agent: prometheus.io/operator`. KubeDB will create a `ServiceMonitor` crd in `monitoring` namespace and this `ServiceMonitor` will have `k8s-app: prometheus` label.
 
 ## Next Steps
 
-- Learn how to monitor Elasticsearch database with KubeDB using [builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
-- Learn how to monitor PostgreSQL database with KubeDB using [builtin-Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
-- Learn how to monitor MySQL database with KubeDB using [builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
-- Learn how to monitor MongoDB database with KubeDB using [builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
-- Learn how to monitor Redis server with KubeDB using [builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
-- Learn how to monitor Memcached server with KubeDB using [builtin-Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md).
+- Learn how to monitor MongoDB database with KubeDB using [builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md)
+- Learn how to monitor MongoDB database with KubeDB using [Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
+

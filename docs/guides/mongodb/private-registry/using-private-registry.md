@@ -27,23 +27,22 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For mongodb, push `DB_IMAGE`, `TOOLS_IMAGE`, `EXPORTER_IMAGE` of following MongoDBVersions, where `deprecated` is not true, to your private registry.
 
   ```bash
-  $ kubectl get mongodbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,TOOLS_IMAGE:.spec.tools.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
-  NAME       VERSION   DB_IMAGE                TOOLS_IMAGE                   EXPORTER_IMAGE                   DEPRECATED
-  3.4        3.4       kubedb/mongo:3.4        kubedb/mongo-tools:3.4        kubedb/operator:0.8.0            true
-  3.4-v1     3.4       kubedb/mongo:3.4-v1     kubedb/mongo-tools:3.4-v2     kubedb/mongodb_exporter:v1.0.0   true
-  3.4-v2     3.4       kubedb/mongo:3.4-v2     kubedb/mongo-tools:3.4-v2     kubedb/mongodb_exporter:v1.0.0   true
-  3.4-v3     3.4       kubedb/mongo:3.4-v3     kubedb/mongo-tools:3.4-v3     kubedb/mongodb_exporter:v1.0.0   <none>
-  3.6        3.6       kubedb/mongo:3.6        kubedb/mongo-tools:3.6        kubedb/operator:0.8.0            true
-  3.6-v1     3.6       kubedb/mongo:3.6-v1     kubedb/mongo-tools:3.6-v2     kubedb/mongodb_exporter:v1.0.0   true
-  3.6-v2     3.6       kubedb/mongo:3.6-v2     kubedb/mongo-tools:3.6-v2     kubedb/mongodb_exporter:v1.0.0   true
-  3.6-v3     3.6       kubedb/mongo:3.6-v3     kubedb/mongo-tools:3.6-v3     kubedb/mongodb_exporter:v1.0.0   <none>
-  4.0        4.0.5     kubedb/mongo:4.0        kubedb/mongo-tools:4.0        kubedb/mongodb_exporter:v1.0.0   true
-  4.0-v1     4.0.5     kubedb/mongo:4.0-v1     kubedb/mongo-tools:4.0-v1     kubedb/mongodb_exporter:v1.0.0   <none>
-  4.0.5      4.0.5     kubedb/mongo:4.0.5      kubedb/mongo-tools:4.0.5      kubedb/mongodb_exporter:v1.0.0   true
-  4.0.5-v1   4.0.5     kubedb/mongo:4.0.5-v1   kubedb/mongo-tools:4.0.5-v1   kubedb/mongodb_exporter:v1.0.0   <none>
-  4.1.7      4.1.7     kubedb/mongo:4.1.7      kubedb/mongo-tools:4.1.7      kubedb/mongodb_exporter:v1.0.0   true
-  4.1.7-v1   4.1.7     kubedb/mongo:4.1.7-v1   kubedb/mongo-tools:4.1.7-v1   kubedb/mongodb_exporter:v1.0.0   <none>
-
+  $ kubectl get mongodbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,INITCONTAINER_IMAGE:.spec.initContainer.image,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image
+  NAME             VERSION   INITCONTAINER_IMAGE         DB_IMAGE                                 EXPORTER_IMAGE
+  3.4.17-v1        3.4.17    kubedb/mongodb-init:4.1     kubedb/mongo:3.4.17-v1                   kubedb/percona-mongodb-exporter:v0.8.0
+  3.4.22-v1        3.4.22    kubedb/mongodb-init:4.1     kubedb/mongo:3.4.22-v1                   kubedb/percona-mongodb-exporter:v0.8.0
+  3.6.13-v1        3.6.13    kubedb/mongodb-init:4.1     kubedb/mongo:3.6.13-v1                   kubedb/percona-mongodb-exporter:v0.8.0
+  3.6.18-percona   3.6.18    kubedb/mongodb-init:4.1     percona/percona-server-mongodb:3.6.18    kubedb/percona-mongodb-exporter:v0.8.0
+  3.6.8-v1         3.6.8     kubedb/mongodb-init:4.1     kubedb/mongo:3.6.8-v1                    kubedb/percona-mongodb-exporter:v0.8.0
+  4.0.10-percona   4.0.10    kubedb/mongodb-init:4.1     percona/percona-server-mongodb:4.0.10    kubedb/percona-mongodb-exporter:v0.8.0
+  4.0.11-v1        4.0.11    kubedb/mongodb-init:4.1     kubedb/mongo:4.0.11-v1                   kubedb/percona-mongodb-exporter:v0.8.0
+  4.0.3-v1         4.0.3     kubedb/mongodb-init:4.1     kubedb/mongo:4.0.3-v1                    kubedb/percona-mongodb-exporter:v0.8.0
+  4.0.5-v3         4.0.5     kubedb/mongodb-init:4.1     kubedb/mongo:4.0.5-v3                    kubedb/percona-mongodb-exporter:v0.8.0
+  4.1.13-v1        4.1.13    kubedb/mongodb-init:4.2     kubedb/mongo:4.1.13-v1                   kubedb/percona-mongodb-exporter:v0.8.0
+  4.1.4-v1         4.1.4     kubedb/mongodb-init:4.1.4   kubedb/mongo:4.1.4-v1                    kubedb/percona-mongodb-exporter:v0.8.0
+  4.1.7-v3         4.1.7     kubedb/mongodb-init:4.2     kubedb/mongo:4.1.7-v3                    kubedb/percona-mongodb-exporter:v0.8.0
+  4.2.3            4.2.3     kubedb/mongodb-init:4.2     kubedb/mongo:4.2.3                       kubedb/percona-mongodb-exporter:v0.8.0
+  4.2.7-percona    4.2.7     kubedb/mongodb-init:4.2     percona/percona-server-mongodb:4.2.7-7   kubedb/percona-mongodb-exporter:v0.8.0
   ```
 
   Docker hub repositories:
@@ -55,23 +54,26 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 - Update KubeDB catalog for private Docker registry. Ex:
 
-  ```yaml
-  apiVersion: catalog.kubedb.com/v1alpha1
-  kind: MongoDBVersion
-  metadata:
-    name: "3.4-v3"
-    labels:
-      app: kubedb
-  spec:
-    version: "3.4"
-    db:
-      image: "PRIVATE_DOCKER_REGISTRY/mongo:3.4-v3"
-    exporter:
-      image: "PRIVATE_DOCKER_REGISTRY/mongodb_exporter:v1.0.0"
-    tools:
-      image: "PRIVATE_DOCKER_REGISTRY/mongo-tools:3.4-v3"
-  
-  ```
+```yaml
+apiVersion: catalog.kubedb.com/v1alpha1
+kind: MongoDBVersion
+metadata:
+  name: "4.2.3"
+  labels:
+    app: kubedb
+spec:
+  version: "4.2.3"
+  db:
+    image: "PRIVATE_DOCKER_REGISTRY/mongo:4.2.3"
+  exporter:
+    image: "PRIVATE_DOCKER_REGISTRY/percona-mongodb-exporter:v0.8.0"
+  initContainer:
+    image: "PRIVATE_DOCKER_REGISTRY/mongodb-init:4.2"
+  podSecurityPolicies:
+    databasePolicyName: mongodb-db
+  replicationModeDetector:
+    image: "PRIVATE_DOCKER_REGISTRY/replication-mode-detector:v0.3.2"
+```
 
 ## Create ImagePullSecret
 
@@ -117,7 +119,7 @@ metadata:
   name: mgo-pvt-reg
   namespace: demo
 spec:
-  version: "3.4-v3"
+  version: 4.2.3
   storage:
     storageClassName: "standard"
     accessModes:
@@ -134,7 +136,7 @@ spec:
 Now run the command to deploy this `MongoDB` object:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/private-registry/demo-2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/private-registry/demo-1.yaml
 mongodb.kubedb.com/mgo-pvt-reg created
 ```
 
@@ -151,7 +153,7 @@ mgo-pvt-reg-0   1/1       Running             0          5m
 
 $ kubectl get mg -n demo
 NAME          VERSION   STATUS    AGE
-mgo-pvt-reg   3.4-v3    Running   38s
+mgo-pvt-reg   4.2.3     Ready     38s
 ```
 
 ## Snapshot
@@ -165,9 +167,6 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 ```bash
 kubectl patch -n demo mg/mgo-pvt-reg -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo mg/mgo-pvt-reg
-
-kubectl patch -n demo drmn/mgo-pvt-reg -p '{"spec":{"wipeOut":true}}' --type="merge"
-kubectl delete -n demo drmn/mgo-pvt-reg
 
 kubectl delete ns demo
 ```
