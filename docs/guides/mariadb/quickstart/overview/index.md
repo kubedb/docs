@@ -20,7 +20,7 @@ This tutorial will show you how to use KubeDB to run a MariaDB database.
   <img alt="lifecycle"  src="/docs/guides/mariadb/quickstart/overview/images/mariadb-lifecycle.png">
 </p>
 
-> Note: The yaml files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/quides/mariadb/quickstart/overview/examples).
+> Note: The yaml files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples).
 
 ## Before You Begin
 
