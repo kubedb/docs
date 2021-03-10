@@ -1,0 +1,20 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Elasticsearch
+metadata:
+  name: es-multinode
+  namespace: demo
+spec:
+  version: 7.9.1-xpack-v1
+  enableSSL: true
+  replicas: 3
+  configSecret:
+    name: es-custom-config
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 100Gi
+  terminationPolicy: WipeOut
