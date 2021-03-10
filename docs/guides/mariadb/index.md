@@ -36,5 +36,5 @@ section_menu_id: guides
 
 ## User Guide
 
-- [Quickstart MariaDB](/docs/guides/mariadb/quickstart/overview/index.md) with KubeDB Operator.
+- [Quickstart MariaDB](/docs/guides/mariadb/quickstart/overview) with KubeDB Operator.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
