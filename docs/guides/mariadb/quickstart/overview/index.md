@@ -78,13 +78,13 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples/sample-mariadb.yaml
-mariadb.kubedb.com/mariadb-quickstart created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples/sample-mariadb.yaml
+mariadb.kubedb.com/sample-mariadb created
 ```
 
 Here,
 
-- `spec.version` is the name of the MariaDBVersion CRD where the docker images are specified. In this tutorial, a MariaDB `8.0.21` database is going to create.
+- `spec.version` is the name of the MariaDBVersion CRD where the docker images are specified. In this tutorial, a MariaDB `10.5.8` database is going to create.
 - `spec.storageType` specifies the type of storage that will be used for MariaDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MariaDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MariaDB` crd or which resources KubeDB should keep or delete when you delete `MariaDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mariadb/concepts/mariadb.md#specterminationpolicy)
@@ -94,162 +94,117 @@ Here,
 KubeDB operator watches for `MariaDB` objects using Kubernetes api. When a `MariaDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MariaDB object name. KubeDB operator will also create a governing service for StatefulSets with the name `kubedb`, if one is not already present.
 
 ```bash
-$ kubectl dba describe my -n demo mariadb-quickstart
-Name:               mariadb-quickstart
-Namespace:          demo
-CreationTimestamp:  Mon, 31 Aug 2020 16:39:47 +0600
-Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"mariadb-quickstart","namespace":"demo"},"spec":{"storage":{"acces...
-Replicas:           1  total
-Status:             Running
-StorageType:        Durable
-Volume:
-  StorageClass:      standard
-  Capacity:          1Gi
-  Access Modes:      RWO
-Halted:              false
-Halted:              false
-Termination Policy:  DoNotTerminate
-
-StatefulSet:          
-  Name:               mariadb-quickstart
-  CreationTimestamp:  Mon, 31 Aug 2020 16:39:47 +0600
-  Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=mariadbs.kubedb.com
-                        app.kubernetes.io/instance=mariadb-quickstart
-  Annotations:        <none>
-  Replicas:           824634389080 desired | 1 total
-  Pods Status:        1 Running / 0 Waiting / 0 Succeeded / 0 Failed
-
-Service:        
-  Name:         mariadb-quickstart
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mariadbs.kubedb.com
-                  app.kubernetes.io/instance=mariadb-quickstart
-  Annotations:  <none>
-  Type:         ClusterIP
-  IP:           10.103.57.226
-  Port:         db  3306/TCP
-  TargetPort:   db/TCP
-  Endpoints:    10.244.2.13:3306
-
-Service:        
-  Name:         mariadb-quickstart-gvr
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mariadbs.kubedb.com
-                  app.kubernetes.io/instance=mariadb-quickstart
-  Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
-  Type:         ClusterIP
-  IP:           None
-  Port:         db  3306/TCP
-  TargetPort:   3306/TCP
-  Endpoints:    10.244.2.13:3306
-
-Database Secret:
-  Name:         mariadb-quickstart-auth
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mariadbs.kubedb.com
-                  app.kubernetes.io/instance=mariadb-quickstart
-  Annotations:  <none>
-  Type:         Opaque
-  Data:
-    password:  16 bytes
-    username:  4 bytes
-
-AppBinding:
-  Metadata:
-    Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"mariadb-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"8.0.21"}}
-
-    Creation Timestamp:  2020-08-31T10:40:53Z
-    Labels:
-      app.kubernetes.io/component:   database
-      app.kubernetes.io/instance:    mariadb-quickstart
-      app.kubernetes.io/managed-by:  kubedb.com
-      app.kubernetes.io/name:        mariadb
-      app.kubernetes.io/version:     8.0.21
-      app.kubernetes.io/name:        mariadbs.kubedb.com
-      app.kubernetes.io/instance:               mariadb-quickstart
-    Name:                            mariadb-quickstart
-    Namespace:                       demo
-  Spec:
-    Client Config:
-      Service:
-        Name:    mariadb-quickstart
-        Path:    /
-        Port:    3306
-        Scheme:  mariadb
-      URL:       tcp(mariadb-quickstart:3306)/
-    Secret:
-      Name:   mariadb-quickstart-auth
-    Type:     kubedb.com/mariadb
-    Version:  8.0.21
-
+$ kubectl describe -n demo mariadb sample-mariadb
+Name:         sample-mariadb
+Namespace:    demo
+Labels:       <none>
+Annotations:  API Version:  kubedb.com/v1alpha2
+Kind:         MariaDB
+Metadata:
+  Creation Timestamp:  2021-03-10T04:31:09Z
+  Finalizers:
+    kubedb.com
+  ...  
+Spec:
+  Auth Secret:
+    Name:  sample-mariadb-auth
+  ...
+  Storage:
+    Access Modes:
+      ReadWriteOnce
+    Resources:
+      Requests:
+        Storage:         1Gi
+    Storage Class Name:  standard
+  Storage Type:          Durable
+  Termination Policy:    WipeOut
+  Version:               10.5.8
+Status:
+  Conditions:
+    Last Transition Time:  2021-03-10T04:31:09Z
+    Message:               The KubeDB operator has started the provisioning of MariaDB: demo/sample-mariadb
+    Reason:                DatabaseProvisioningStartedSuccessfully
+    Status:                True
+    Type:                  ProvisioningStarted
+    Last Transition Time:  2021-03-10T04:31:19Z
+    Message:               The MariaDB: demo/sample-mariadb is accepting client requests.
+    Observed Generation:   2
+    Reason:                DatabaseAcceptingConnectionRequest
+    Status:                True
+    Type:                  AcceptingConnection
+    Last Transition Time:  2021-03-10T04:32:49Z
+    Message:               The MySQL: demo/sample-mariadb is ready.
+    Observed Generation:   2
+    Reason:                ReadinessCheckSucceeded
+    Status:                True
+    Type:                  Ready
+    Last Transition Time:  2021-03-10T04:32:39Z
+    Message:               All desired replicas are ready.
+    Reason:                AllReplicasReady
+    Status:                True
+    Type:                  ReplicaReady
+    Last Transition Time:  2021-03-10T04:32:49Z
+    Message:               The MariaDB: demo/sample-mariadb is successfully provisioned.
+    Observed Generation:   2
+    Reason:                DatabaseSuccessfullyProvisioned
+    Status:                True
+    Type:                  Provisioned
+  Observed Generation:     2
+  Phase:                   Ready
 Events:
-  Type    Reason      Age   From            Message
-  ----    ------      ----  ----            -------
-  Normal  Successful  3m    MariaDB operator  Successfully created Service
-  Normal  Successful  2m    MariaDB operator  Successfully created StatefulSet
-  Normal  Successful  2m    MariaDB operator  Successfully created MariaDB
-  Normal  Successful  2m    MariaDB operator  Successfully created appbinding
-
-
+  Type    Reason      Age   From              Message
+  ----    ------      ----  ----              -------
+  Normal  Successful  21m   MariaDB operator  Successfully created governing service
+  Normal  Successful  21m   MariaDB operator  Successfully created Service
+  Normal  Successful  21m   MariaDB operator  Successfully created StatefulSet demo/sample-mariadb
+  Normal  Successful  21m   MariaDB operator  Successfully created appbinding
+  Normal  Successful  21m   MariaDB operator  Successfully patched governing service
+  Normal  Successful  21m   MariaDB operator  Successfully patched StatefulSet demo/sample-mariadb
+  
+  
 $ kubectl get statefulset -n demo
-NAME               READY   AGE
-mariadb-quickstart   1/1     2m22s
+NAME             READY   AGE
+sample-mariadb   1/1     27m
 
 $ kubectl get pvc -n demo
-NAME                      STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-data-mariadb-quickstart-0   Bound     pvc-652e02c7-0d7f-11e8-9091-08002751ae8c   1Gi        RWO            standard       10m
+NAME                    STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+data-sample-mariadb-0   Bound    pvc-10651900-d975-467f-80ff-9c4755bdf917   1Gi        RWO            standard       27m
 
 $ kubectl get pv -n demo
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS    CLAIM                          STORAGECLASS   REASON    AGE
-pvc-652e02c7-0d7f-11e8-9091-08002751ae8c   1Gi        RWO            Delete           Bound     demo/data-mariadb-quickstart-0   standard                 11m
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS   REASON   AGE
+pvc-10651900-d975-467f-80ff-9c4755bdf917   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-0   standard                27m
 
 $ kubectl get service -n demo
-NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
-myadmin                 LoadBalancer   10.104.142.213   <pending>     80:31529/TCP   6h2m
-mariadb-quickstart        ClusterIP      10.109.217.165   <none>        3306/TCP       5m56s
-mariadb-quickstart-gvr    ClusterIP      None             <none>        3306/TCP       5m56s
+NAME                  TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
+sample-mariadb        ClusterIP   10.105.207.172   <none>        3306/TCP   28m
+sample-mariadb-pods   ClusterIP   None             <none>        3306/TCP   28m
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MariaDB object:
 
 ```yaml
-$ kubectl get my -n demo mariadb-quickstart -o yaml
- $ kubectl get my -n demo mariadb-quickstart -o yaml
+$ kubectl get mariadb -n demo sample-mariadb -o yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"mariadb-quickstart","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"DoNotTerminate","version":"8.0.21"}}
-  creationTimestamp: "2020-08-27T12:19:42Z"
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"10.5.8"}}
+  creationTimestamp: "2021-03-10T04:31:09Z"
   finalizers:
   - kubedb.com
+  generation: 2
   ...
-  name: mariadb-quickstart
+  name: sample-mariadb
   namespace: demo
-  resourceVersion: "70812"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mariadbs/mariadb-quickstart
-  uid: 837ac85a-134a-457e-b126-f4681d92f117
+  resourceVersion: "7952"
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mariadbs/sample-mariadb
+  uid: 412a4739-ac65-4b5a-a943-5e148f3222b1
 spec:
   authSecret:
-    name: mariadb-quickstart-auth
-  podTemplate:
-    controller: {}
-    metadata: {}
-    spec:
-      resources: {}
-      serviceAccountName: mariadb-quickstart
+    name: sample-mariadb-auth
+  ...
   replicas: 1
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   storage:
     accessModes:
     - ReadWriteOnce
@@ -258,11 +213,11 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  terminationPolicy: DoNotTerminate
-  version: 8.0.21
+  terminationPolicy: WipeOut
+  version: 10.5.8
 status:
   observedGeneration: 2
-  phase: Running
+  phase: Ready
 ```
 
 ## Connect with MariaDB database
@@ -271,28 +226,39 @@ KubeDB operator has created a new Secret called `mariadb-quickstart-auth` *(form
 
 If you want to use an existing secret please specify that when creating the MariaDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mariadb/concepts/mariadb.md#specdatabasesecret).
 
-Now, you can connect to this database from the phpMyAdmin dashboard using the database pod IP and and `mariadb` user password.
+Now, we need `username` and `password` to connect to this database from `kubeclt exec` command. In this example, `sample-mariadb-auth`  secret holds username and password.
 
 ```bash
-$ kubectl get pods mariadb-quickstart-0 -n demo -o yaml | grep podIP
-  podIP: 10.244.2.13
-
-$ kubectl get secrets -n demo mariadb-quickstart-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo sample-mariadb-auth -o jsonpath='{.data.\username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mariadb-quickstart-auth -o jsonpath='{.data.\password}' | base64 -d
-l0yKjI1E7IMohsGR
+$ kubectl get secrets -n demo sample-mariadb-auth -o jsonpath='{.data.\password}' | base64 -d
+w*yOU$b53dTbjsjJ
 ```
 
----
->Note: In MariaDB: `8.0.14` connection to phpMyAdmin may give error as it is using `caching_sha2_password` and `sha256_password` authentication plugins over `mariadb_native_password`. If the error happens do the following for work around. But, It's not recommended to change authentication plugins. See [here](https://stackoverflow.com/questions/49948350/phpmyadmin-on-mariadb-8-0) for alternative solutions.
+We will exec into the pod `sample-mariadb-0` and conncet to the database using `username` and `password`.
 
 ```bash
-kubectl exec -it -n demo mariadb-quickstart-0 -- mariadb -u root --password=l0yKjI1E7IMohsGR -e "ALTER USER root IDENTIFIED WITH mariadb_native_password BY 'l0yKjI1E7IMohsGR';"
-```
----
+$ kubectl exec -it -n demo sample-mariadb-0 -- mariadb -u root --password='w*yOU$b53dTbjsjJ'
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 335
+Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
 
-Now, open your browser and go to the following URL: _http://{node-ip}:{myadmin-svc-nodeport}_. To log into the phpMyAdmin, use host __`mariadb-quickstart.demo`__ or __`10.244.2.13`__ , username __`root`__ and password __`l0yKjI1E7IMohsGR`__.
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
++--------------------+
+3 rows in set (0.001 sec)
+
+```
 
 ## Database TerminationPolicy
 
@@ -300,14 +266,14 @@ This field is used to regulate the deletion process of the related resources whe
 
 **DoNotTerminate:**
 
-When `terminationPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. You can see this below:
+When `terminationPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. If you create a database with `terminationPolicy`  `DoNotTerminate` and try to delete it, you will see this:
 
 ```bash
-$ kubectl delete my mariadb-quickstart -n demo
+$ kubectl delete mariadb sample-mariadb -n demo
 Error from server (BadRequest): admission webhook "mariadb.validators.kubedb.com" denied the request: mariadb "mariadb-quickstart" can't be halted. To delete, change spec.terminationPolicy
 ```
 
-Now, run `kubectl edit my mariadb-quickstart -n demo` to set `spec.terminationPolicy` to `Halt` (which deletes the mariadb object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
+Now, run `kubectl edit mariadb sample-mariadb -n demo` to set `spec.terminationPolicy` to `Halt` (which deletes the mariadb object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
 Learn details of all `TerminationPolicy` [here](/docs/guides/mariadb/concepts/mariadb.md#specterminationpolicy).
 
@@ -315,30 +281,28 @@ Learn details of all `TerminationPolicy` [here](/docs/guides/mariadb/concepts/ma
 
 Suppose you want to reuse your database volume and credential to deploy your database in future using the same configurations. But, right now you just want to delete the database except the database volumes and credentials. In this scenario, you must set the `MariaDB` object `terminationPolicy` to `Halt`.
 
-When the [TerminationPolicy](/docs/guides/mariadb/concepts/mariadb.md#specterminationpolicy) is set to `halt` and the MariaDB object is deleted, the KubeDB operator will delete the StatefulSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `halt` in existing database using `edit` command for testing.
+When the [TerminationPolicy](/docs/guides/mariadb/concepts/mariadb.md#specterminationpolicy) is set to `Halt` and the MariaDB object is deleted, the KubeDB operator will delete the StatefulSet and its pods but leaves the `PVCs`, `secrets` and database backup data(`snapshots`) intact. You can set the `terminationPolicy` to `Halt` in existing database using `edit` command for testing.
 
-At first, run `kubectl edit my mariadb-quickstart -n demo` to set `spec.terminationPolicy` to `Halt`. Then delete the mariadb object,
+At first, run `kubectl edit mariadb sample-mariadb -n demo` to set `spec.terminationPolicy` to `Halt`. Then delete the mariadb object,
 
 ```bash
-$ kubectl delete my mariadb-quickstart -n demo
-mariadb.kubedb.com "mariadb-quickstart" deleted
+$ kubectl delete mariadb sample-mariadb -n demo
+mariadb.kubedb.com "sample-mariadb" deleted
 ```
 
 Now, run the following command to get all mariadb resources in `demo` namespaces,
 
 ```bash
 $ kubectl get sts,svc,secret,pvc -n demo
-NAME                           TYPE                                  DATA   AGE
-secret/default-token-lgbjm     kubernetes.io/service-account-token   3      23h
-secret/mariadb-quickstart-auth   Opaque                                2      20h
+NAME                         TYPE                                  DATA   AGE
+secret/default-token-w2pgw   kubernetes.io/service-account-token   3      31m
+secret/sample-mariadb-auth   kubernetes.io/basic-auth              2      39s
 
-NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-mariadb-quickstart-0   Bound    pvc-716f627c-9aa2-47b6-aa64-a547aab6f55c   1Gi        RWO            standard       20h
+NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/data-sample-mariadb-0   Bound    pvc-7502c222-2b02-4363-9027-91ab0e7b76dc   1Gi        RWO            standard       39s
 ```
 
 From the above output, you can see that all mariadb resources(`StatefulSet`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your mariadb again using this resources.
-
->You can also set the `terminationPolicy` to `Halt`(deprecated). It's behavior same as `halt` and right now `Halt` is replaced by `Halt`.
 
 **Delete:**
 
@@ -349,17 +313,17 @@ When the [TerminationPolicy](/docs/guides/mariadb/concepts/mariadb.md#spectermin
 Suppose, we have a database with `terminationPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
-$ kubectl delete my mariadb-quickstart -n demo
-mariadb.kubedb.com "mariadb-quickstart" deleted
+$ kubectl delete mariadb sample-mariadb -n demo
+mariadb.kubedb.com "sample-mariadb" deleted
 ```
 
 Now, run the following command to get all mariadb resources in `demo` namespaces,
 
 ```bash
 $ kubectl get sts,svc,secret,pvc -n demo
-NAME                           TYPE                                  DATA   AGE
-secret/default-token-lgbjm     kubernetes.io/service-account-token   3      24h
-secret/mariadb-quickstart-auth   Opaque
+NAME                         TYPE                                  DATA   AGE
+secret/default-token-w2pgw   kubernetes.io/service-account-token   3      31m
+secret/sample-mariadb-auth   kubernetes.io/basic-auth              2      39s
 ```
 
 From the above output, you can see that all mariadb resources(`StatefulSet`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mariadb using `snapshots`(if previously taken) and `secret`.
@@ -373,8 +337,8 @@ You can totally delete the `MariaDB` database and relevant resources without any
 Suppose, we have a database with `terminationPolicy` set to `WipeOut`. Now, are going to delete the database using the following command:
 
 ```yaml
-$ kubectl delete my mariadb-quickstart -n demo
-mariadb.kubedb.com "mariadb-quickstart" deleted
+$ kubectl delete mariadb sample-mariadb -n demo
+mariadb.kubedb.com "sample-mariadb" deleted
 ```
 
 Now, run the following command to get all mariadb resources in `demo` namespaces,
@@ -418,8 +382,7 @@ From the above output , you can see that `MariaDB` object, `PVCs`, `Secret` are 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo mariadb/mariadb-quickstart -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo mariadb/mariadb-quickstart
+kubectl delete -n demo mariadb/sample-mariadb
 
 kubectl delete ns demo
 ```
