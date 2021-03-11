@@ -50,7 +50,7 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 
 ## Create Dedicated Elasticsearch Cluster
 
-We are going to create a dedicated Elasticsearch cluster in topology mode. Our cluster will be consist of 2 master nodes, 3 data nodes, and 2 ingest nodes. We will the Elasticsearch image provided by the [SearchGurad](https://hub.docker.com/u/floragunncom) ( `7.9.3-searchguard` ) for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+We are going to create a dedicated Elasticsearch cluster in topology mode. Our cluster will be consist of 2 master nodes, 3 data nodes, and 2 ingest nodes. We will the Elasticsearch image provided by the [SearchGurad](https://hub.docker.com/u/floragunncom) ( `searchguard-7.9.3` ) for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -60,7 +60,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: 7.9.3-searchguard
+  version: searchguard-7.9.3
   storageType: Durable
   topology:
     master:
@@ -120,11 +120,11 @@ Watch the bootstrap progress:
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION             STATUS         AGE
-es-topology   7.9.3-searchguard   Provisioning   15s
-es-topology   7.9.3-searchguard   Provisioning   25s
-es-topology   7.9.3-searchguard   Provisioning   33s
-es-topology   7.9.3-searchguard   Provisioning   2m9s 
-es-topology   7.9.3-searchguard   Ready          2m11s
+es-topology   searchguard-7.9.3   Provisioning   15s
+es-topology   searchguard-7.9.3   Provisioning   25s
+es-topology   searchguard-7.9.3   Provisioning   33s
+es-topology   searchguard-7.9.3   Provisioning   2m9s 
+es-topology   searchguard-7.9.3   Ready          2m11s
 ```
 
 Hence the cluster is **ready** to use.
@@ -292,7 +292,7 @@ Spec:
             Storage:         1Gi
         Storage Class Name:  standard
       Suffix:                master
-  Version:                   7.9.3-searchguard
+  Version:                   searchguard-7.9.3
 Status:
   Conditions:
     Last Transition Time:  2021-03-02T09:26:51Z

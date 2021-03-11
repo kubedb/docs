@@ -4,7 +4,7 @@ metadata:
   name: es-multinode
   namespace: demo
 spec:
-  version: 1.12.0-opendistro
+  version: opendistro-1.12.0
   enableSSL: true
   replicas: 3
   storageType: Durable

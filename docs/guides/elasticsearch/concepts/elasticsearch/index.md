@@ -143,20 +143,20 @@ spec:
       subject:
         organizations:
         - kubedb
-  version: 7.9.3-searchguard
+  version: searchguard-7.9.3
 ```
 
 ### spec.version
 
 `spec.version` is a `required` field that specifies the name of the [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md) CRD where the docker images are specified.
 
-- Name format: `{Application Version}-{Auth Plugin Name}-{Modification Tag}`
+- Name format: `{Security Plugin Name}-{Application Version}-{Modification Tag}`
 
-- Samples: `7.9.3-searchguard`, `7.9.1-xpack-v1`, `1.12.0-opendistro`, etc.
+- Samples: `searchguard-7.9.3`, `xpack-7.9.1-v1`, `opendistro-1.12.0`, etc.
 
 ```yaml
 spec:
-  version: 7.9.3-searchguard
+  version: searchguard-7.9.3
 ```
 
 ### spec.kernelSettings

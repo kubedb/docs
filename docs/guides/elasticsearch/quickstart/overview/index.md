@@ -60,67 +60,67 @@ When you install the KubeDB operator, it registers a CRD named [ElasticsearchVer
 ```bash
 $ kubectl get elasticsearchversions
 NAME                   VERSION   DB_IMAGE                                 AUTH_PLUGIN   DEPRECATED   AGE
-1.0.2-opendistro       7.0.1     kubedb/elasticsearch:1.0.2-opendistro    OpenDistro                 40m
-1.0.2-opendistro-v1    7.0.1     kubedb/elasticsearch:1.0.2-opendistro    OpenDistro                 40m
-1.1.0-opendistro       7.1.1     kubedb/elasticsearch:1.1.0-opendistro    OpenDistro                 40m
-1.1.0-opendistro-v1    7.1.1     kubedb/elasticsearch:1.1.0-opendistro    OpenDistro                 40m
-1.10.1-opendistro      7.9.1     kubedb/elasticsearch:1.10.1-opendistro   OpenDistro                 40m
-1.11.0-opendistro      7.9.1     kubedb/elasticsearch:1.11.0-opendistro   OpenDistro                 40m
-1.12.0-opendistro      7.10.0    kubedb/elasticsearch:1.12.0-opendistro   OpenDistro                 40m
-1.2.1-opendistro       7.2.1     kubedb/elasticsearch:1.2.1-opendistro    OpenDistro                 40m
-1.2.1-opendistro-v1    7.2.1     kubedb/elasticsearch:1.2.1-opendistro    OpenDistro                 40m
-1.3.0-opendistro       7.3.2     kubedb/elasticsearch:1.3.0-opendistro    OpenDistro                 40m
-1.3.0-opendistro-v1    7.3.2     kubedb/elasticsearch:1.3.0-opendistro    OpenDistro                 40m
-1.4.0-opendistro       7.4.2     kubedb/elasticsearch:1.4.0-opendistro    OpenDistro                 40m
-1.4.0-opendistro-v1    7.4.2     kubedb/elasticsearch:1.4.0-opendistro    OpenDistro                 40m
-1.6.0-opendistro       7.6.1     kubedb/elasticsearch:1.6.0-opendistro    OpenDistro                 40m
-1.6.0-opendistro-v1    7.6.1     kubedb/elasticsearch:1.6.0-opendistro    OpenDistro                 40m
-1.7.0-opendistro       7.6.1     kubedb/elasticsearch:1.7.0-opendistro    OpenDistro                 40m
-1.7.0-opendistro-v1    7.6.1     kubedb/elasticsearch:1.7.0-opendistro    OpenDistro                 40m
-1.8.0-opendistro       7.7.0     kubedb/elasticsearch:1.8.0-opendistro    OpenDistro                 40m
-1.8.0-opendistro-v1    7.7.0     kubedb/elasticsearch:1.8.0-opendistro    OpenDistro                 40m
-1.9.0-opendistro       7.8.0     kubedb/elasticsearch:1.9.0-opendistro    OpenDistro                 40m
-1.9.0-opendistro-v1    7.8.0     kubedb/elasticsearch:1.9.0-opendistro    OpenDistro                 40m
-6.8.1-searchguard      6.8.1     kubedb/elasticsearch:6.8.1-searchguard   SearchGuard                40m
-6.8.1-searchguard-v1   6.8.1     kubedb/elasticsearch:6.8.1-searchguard   SearchGuard                40m
-6.8.10-xpack           6.8.10    kubedb/elasticsearch:6.8.10-xpack        X-Pack                     40m
-6.8.10-xpack-v1        6.8.10    kubedb/elasticsearch:6.8.10-xpack        X-Pack                     40m
-7.0.1-searchguard      7.0.1     kubedb/elasticsearch:7.0.1-searchguard   SearchGuard                40m
-7.0.1-searchguard-v1   7.0.1     kubedb/elasticsearch:7.0.1-searchguard   SearchGuard                40m
-7.0.1-xpack            7.0.1     kubedb/elasticsearch:7.0.1-xpack         X-Pack                     40m
-7.0.1-xpack-v1         7.0.1     kubedb/elasticsearch:7.0.1-xpack         X-Pack                     40m
-7.1.1-searchguard      7.1.1     kubedb/elasticsearch:7.1.1-searchguard   SearchGuard                40m
-7.1.1-searchguard-v1   7.1.1     kubedb/elasticsearch:7.1.1-searchguard   SearchGuard                40m
-7.1.1-xpack            7.1.1     kubedb/elasticsearch:7.1.1-xpack         X-Pack                     40m
-7.1.1-xpack-v1         7.1.1     kubedb/elasticsearch:7.1.1-xpack         X-Pack                     40m
-7.2.1-xpack            7.2.1     kubedb/elasticsearch:7.2.1-xpack         X-Pack                     40m
-7.2.1-xpack-v1         7.2.1     kubedb/elasticsearch:7.2.1-xpack         X-Pack                     40m
-7.3.2-searchguard      7.3.2     kubedb/elasticsearch:7.3.2-searchguard   SearchGuard                40m
-7.3.2-xpack            7.3.2     kubedb/elasticsearch:7.3.2-xpack         X-Pack                     40m
-7.3.2-xpack-v1         7.3.2     kubedb/elasticsearch:7.3.2-xpack         X-Pack                     40m
-7.4.2-xpack            7.4.2     kubedb/elasticsearch:7.4.2-xpack         X-Pack                     40m
-7.4.2-xpack-v1         7.4.2     kubedb/elasticsearch:7.4.2-xpack         X-Pack                     40m
-7.5.2-searchguard      7.5.2     kubedb/elasticsearch:7.5.2-searchguard   SearchGuard                40m
-7.5.2-searchguard-v1   7.5.2     kubedb/elasticsearch:7.5.2-searchguard   SearchGuard                40m
-7.5.2-xpack            7.5.2     kubedb/elasticsearch:7.5.2-xpack         X-Pack                     40m
-7.5.2-xpack-v1         7.5.2     kubedb/elasticsearch:7.5.2-xpack         X-Pack                     40m
-7.6.2-xpack            7.6.2     kubedb/elasticsearch:7.6.2-xpack         X-Pack                     40m
-7.6.2-xpack-v1         7.6.2     kubedb/elasticsearch:7.6.2-xpack         X-Pack                     40m
-7.7.1-xpack            7.7.1     kubedb/elasticsearch:7.7.1-xpack         X-Pack                     40m
-7.7.1-xpack-v1         7.7.1     kubedb/elasticsearch:7.7.1-xpack         X-Pack                     40m
-7.8.0-xpack            7.8.0     kubedb/elasticsearch:7.8.0-xpack         X-Pack                     40m
-7.8.0-xpack-v1         7.8.0     kubedb/elasticsearch:7.8.0-xpack         X-Pack                     40m
-7.8.1-searchguard      7.8.1     kubedb/elasticsearch:7.8.1-searchguard   SearchGuard                40m
-7.9.1-xpack            7.9.1     kubedb/elasticsearch:7.9.1-xpack         X-Pack                     40m
-7.9.1-xpack-v1         7.9.1     kubedb/elasticsearch:7.9.1-xpack         X-Pack                     40m
-7.9.3-searchguard      7.9.3     kubedb/elasticsearch:7.9.3-searchguard   SearchGuard                40m
+opendistro-1.0.2       7.0.1     kubedb/elasticsearch:1.0.2-opendistro    OpenDistro                 5m17s
+opendistro-1.0.2-v1    7.0.1     kubedb/elasticsearch:1.0.2-opendistro    OpenDistro                 5m17s
+opendistro-1.1.0       7.1.1     kubedb/elasticsearch:1.1.0-opendistro    OpenDistro                 5m17s
+opendistro-1.1.0-v1    7.1.1     kubedb/elasticsearch:1.1.0-opendistro    OpenDistro                 5m17s
+opendistro-1.10.1      7.9.1     kubedb/elasticsearch:1.10.1-opendistro   OpenDistro                 5m17s
+opendistro-1.11.0      7.9.1     kubedb/elasticsearch:1.11.0-opendistro   OpenDistro                 5m17s
+opendistro-1.12.0      7.10.0    kubedb/elasticsearch:1.12.0-opendistro   OpenDistro                 5m17s
+opendistro-1.2.1       7.2.1     kubedb/elasticsearch:1.2.1-opendistro    OpenDistro                 5m17s
+opendistro-1.2.1-v1    7.2.1     kubedb/elasticsearch:1.2.1-opendistro    OpenDistro                 5m17s
+opendistro-1.3.0       7.3.2     kubedb/elasticsearch:1.3.0-opendistro    OpenDistro                 5m17s
+opendistro-1.3.0-v1    7.3.2     kubedb/elasticsearch:1.3.0-opendistro    OpenDistro                 5m17s
+opendistro-1.4.0       7.4.2     kubedb/elasticsearch:1.4.0-opendistro    OpenDistro                 5m17s
+opendistro-1.4.0-v1    7.4.2     kubedb/elasticsearch:1.4.0-opendistro    OpenDistro                 5m17s
+opendistro-1.6.0       7.6.1     kubedb/elasticsearch:1.6.0-opendistro    OpenDistro                 5m17s
+opendistro-1.6.0-v1    7.6.1     kubedb/elasticsearch:1.6.0-opendistro    OpenDistro                 5m17s
+opendistro-1.7.0       7.6.1     kubedb/elasticsearch:1.7.0-opendistro    OpenDistro                 5m17s
+opendistro-1.7.0-v1    7.6.1     kubedb/elasticsearch:1.7.0-opendistro    OpenDistro                 5m17s
+opendistro-1.8.0       7.7.0     kubedb/elasticsearch:1.8.0-opendistro    OpenDistro                 5m17s
+opendistro-1.8.0-v1    7.7.0     kubedb/elasticsearch:1.8.0-opendistro    OpenDistro                 5m17s
+opendistro-1.9.0       7.8.0     kubedb/elasticsearch:1.9.0-opendistro    OpenDistro                 5m17s
+opendistro-1.9.0-v1    7.8.0     kubedb/elasticsearch:1.9.0-opendistro    OpenDistro                 5m17s
+searchguard-6.8.1      6.8.1     kubedb/elasticsearch:6.8.1-searchguard   SearchGuard                5m17s
+searchguard-6.8.1-v1   6.8.1     kubedb/elasticsearch:6.8.1-searchguard   SearchGuard                5m17s
+searchguard-7.0.1      7.0.1     kubedb/elasticsearch:7.0.1-searchguard   SearchGuard                5m17s
+searchguard-7.0.1-v1   7.0.1     kubedb/elasticsearch:7.0.1-searchguard   SearchGuard                5m17s
+searchguard-7.1.1      7.1.1     kubedb/elasticsearch:7.1.1-searchguard   SearchGuard                5m17s
+searchguard-7.1.1-v1   7.1.1     kubedb/elasticsearch:7.1.1-searchguard   SearchGuard                5m17s
+searchguard-7.3.2      7.3.2     kubedb/elasticsearch:7.3.2-searchguard   SearchGuard                5m17s
+searchguard-7.5.2      7.5.2     kubedb/elasticsearch:7.5.2-searchguard   SearchGuard                5m17s
+searchguard-7.5.2-v1   7.5.2     kubedb/elasticsearch:7.5.2-searchguard   SearchGuard                5m17s
+searchguard-7.8.1      7.8.1     kubedb/elasticsearch:7.8.1-searchguard   SearchGuard                5m17s
+searchguard-7.9.3      7.9.3     kubedb/elasticsearch:7.9.3-searchguard   SearchGuard                5m17s
+xpack-6.8.10           6.8.10    kubedb/elasticsearch:6.8.10-xpack        X-Pack                     5m17s
+xpack-6.8.10-v1        6.8.10    kubedb/elasticsearch:6.8.10-xpack        X-Pack                     5m17s
+xpack-7.0.1            7.0.1     kubedb/elasticsearch:7.0.1-xpack         X-Pack                     5m17s
+xpack-7.0.1-v1         7.0.1     kubedb/elasticsearch:7.0.1-xpack         X-Pack                     5m17s
+xpack-7.1.1            7.1.1     kubedb/elasticsearch:7.1.1-xpack         X-Pack                     5m17s
+xpack-7.1.1-v1         7.1.1     kubedb/elasticsearch:7.1.1-xpack         X-Pack                     5m17s
+xpack-7.2.1            7.2.1     kubedb/elasticsearch:7.2.1-xpack         X-Pack                     5m17s
+xpack-7.2.1-v1         7.2.1     kubedb/elasticsearch:7.2.1-xpack         X-Pack                     5m17s
+xpack-7.3.2            7.3.2     kubedb/elasticsearch:7.3.2-xpack         X-Pack                     5m17s
+xpack-7.3.2-v1         7.3.2     kubedb/elasticsearch:7.3.2-xpack         X-Pack                     5m17s
+xpack-7.4.2            7.4.2     kubedb/elasticsearch:7.4.2-xpack         X-Pack                     5m17s
+xpack-7.4.2-v1         7.4.2     kubedb/elasticsearch:7.4.2-xpack         X-Pack                     5m17s
+xpack-7.5.2            7.5.2     kubedb/elasticsearch:7.5.2-xpack         X-Pack                     5m17s
+xpack-7.5.2-v1         7.5.2     kubedb/elasticsearch:7.5.2-xpack         X-Pack                     5m17s
+xpack-7.6.2            7.6.2     kubedb/elasticsearch:7.6.2-xpack         X-Pack                     5m17s
+xpack-7.6.2-v1         7.6.2     kubedb/elasticsearch:7.6.2-xpack         X-Pack                     5m17s
+xpack-7.7.1            7.7.1     kubedb/elasticsearch:7.7.1-xpack         X-Pack                     5m17s
+xpack-7.7.1-v1         7.7.1     kubedb/elasticsearch:7.7.1-xpack         X-Pack                     5m17s
+xpack-7.8.0            7.8.0     kubedb/elasticsearch:7.8.0-xpack         X-Pack                     5m17s
+xpack-7.8.0-v1         7.8.0     kubedb/elasticsearch:7.8.0-xpack         X-Pack                     5m17s
+xpack-7.9.1            7.9.1     kubedb/elasticsearch:7.9.1-xpack         X-Pack                     5m17s
+xpack-7.9.1-v1         7.9.1     kubedb/elasticsearch:7.9.1-xpack         X-Pack                     5m17s
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this ElasticsearchVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated ElasticsearchVersion.
 
-In this tutorial, we will use `7.9.1-xpack-v1` ElasticsearchVersion CR to create an Elasticsearch cluster.
+In this tutorial, we will use `xpack-7.9.1-v1` ElasticsearchVersion CR to create an Elasticsearch cluster.
 
-> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features. For example, we are using `7.9.1-xpack-v1` over `7.9.1-xpack`.
+> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features. For example, we are using `xpack-7.9.1-v1` over `7.9.1-xpack`.
 
 ## Create an Elasticsearch Cluster
 
@@ -135,7 +135,7 @@ metadata:
   name: es-quickstart
   namespace: demo
 spec:
-  version: 7.9.1-xpack-v1
+  version: xpack-7.9.1-v1
   enableSSL: true
   replicas: 3
   storageType: Durable
@@ -172,9 +172,9 @@ The Elasticsearch's `STATUS` will go from `Provisioning` to `Ready` state within
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME            VERSION          STATUS         AGE
-es-quickstart   7.9.1-xpack-v1   Provisioning   1m34s
+es-quickstart   xpack-7.9.1-v1   Provisioning   1m34s
 ... ...
-es-quickstart   7.9.1-xpack-v1   Ready          2m6s
+es-quickstart   xpack-7.9.1-v1   Ready          2m6s
 ```
 
 Describe the Elasticsearch object to observe the progress if something goes wrong or the status is not changing for a long period of time:
@@ -278,7 +278,7 @@ Spec:
       Subject:
         Organizations:
           kubedb
-  Version:  7.9.1-xpack-v1
+  Version:  xpack-7.9.1-v1
 Status:
   Conditions:
     Last Transition Time:  2021-02-26T05:29:30Z

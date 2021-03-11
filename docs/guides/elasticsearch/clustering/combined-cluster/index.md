@@ -37,7 +37,7 @@ demo                 Active   9s
 
 ## Create Standalone Elasticsearch Cluster
 
-Here, we are going to create a standalone (ie. `replicas: 1`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`1.12.0-opendistro`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+Here, we are going to create a standalone (ie. `replicas: 1`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`opendistro-1.12.0`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -46,7 +46,7 @@ metadata:
   name: es-standalone
   namespace: demo
 spec:
-  version: 1.12.0-opendistro
+  version: opendistro-1.12.0
   enableSSL: true
   replicas: 1
   storageType: Durable
@@ -72,11 +72,11 @@ Watch the bootstrap progress:
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME            VERSION             STATUS         AGE
-es-standalone   1.12.0-opendistro   Provisioning   1m32s
-es-standalone   1.12.0-opendistro   Provisioning   2m17s
-es-standalone   1.12.0-opendistro   Provisioning   2m17s
-es-standalone   1.12.0-opendistro   Provisioning   2m20s
-es-standalone   1.12.0-opendistro   Ready          2m20s
+es-standalone   opendistro-1.12.0   Provisioning   1m32s
+es-standalone   opendistro-1.12.0   Provisioning   2m17s
+es-standalone   opendistro-1.12.0   Provisioning   2m17s
+es-standalone   opendistro-1.12.0   Provisioning   2m20s
+es-standalone   opendistro-1.12.0   Ready          2m20s
 ```
 
 Hence the cluster is ready to use.
@@ -155,7 +155,7 @@ $ curl -XGET -k -u 'admin:V,YY1.qXxoAch9)B' "https://localhost:9200/_cluster/hea
 
 ## Create Multi-Node Combined Elasticsearch Cluster
 
-Here, we are going to create a multi-node (say `replicas: 3`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`1.12.0-opendistro`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+Here, we are going to create a multi-node (say `replicas: 3`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`opendistro-1.12.0`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -164,7 +164,7 @@ metadata:
   name: es-multinode
   namespace: demo
 spec:
-  version: 1.12.0-opendistro
+  version: opendistro-1.12.0
   enableSSL: true
   replicas: 3
   storageType: Durable
@@ -190,11 +190,11 @@ Watch the bootstrap progress:
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME            VERSION             STATUS         AGE
-es-multinode    1.12.0-opendistro   Provisioning   18s
-es-multinode    1.12.0-opendistro   Provisioning   78s
-es-multinode    1.12.0-opendistro   Provisioning   78s
-es-multinode    1.12.0-opendistro   Provisioning   81s
-es-multinode    1.12.0-opendistro   Ready          81s
+es-multinode    opendistro-1.12.0   Provisioning   18s
+es-multinode    opendistro-1.12.0   Provisioning   78s
+es-multinode    opendistro-1.12.0   Provisioning   78s
+es-multinode    opendistro-1.12.0   Provisioning   81s
+es-multinode    opendistro-1.12.0   Ready          81s
 ```
 
 Hence the cluster is ready to use.
