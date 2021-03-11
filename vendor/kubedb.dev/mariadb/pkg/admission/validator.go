@@ -177,11 +177,8 @@ func ValidateMariaDB(client kubernetes.Interface, extClient cs.Interface, db *ap
 			*db.Spec.Replicas)
 	}
 
-	if dbVersion, err := extClient.CatalogV1alpha1().MariaDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{}); err != nil {
+	if _, err := extClient.CatalogV1alpha1().MariaDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{}); err != nil {
 		return err
-	} else if db.IsCluster() && dbVersion.Spec.Version != api.MariaDBClusterRecommendedVersion {
-		return errors.Errorf("unsupported version for mariadb cluster, recommended version is %s",
-			api.MariaDBClusterRecommendedVersion)
 	}
 
 	if db.IsCluster() && *db.Spec.Replicas < api.MariaDBDefaultClusterSize {
