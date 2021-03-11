@@ -49,7 +49,7 @@ metadata:
   name: builtin-prom-redis
   namespace: demo
 spec:
-  version: "4.0-v1"
+  version: 6.0.6
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"

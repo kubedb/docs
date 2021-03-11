@@ -142,12 +142,9 @@ metadata:
   name: quick-redis
   namespace: demo
 spec:
-  version: "4.0-v2"
+  version: 6.0.6
   storageType: Durable
   storage:
-    podTemplate:
-      spec:
-        serviceAccountName: my-custom-serviceaccount
     storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
@@ -203,12 +200,12 @@ metadata:
   name: minute-redis
   namespace: demo
 spec:
-  version: "4.0-v2"
+  version: 6.0.6
+  podTemplate:
+    spec:
+      serviceAccountName: my-custom-serviceaccount
   storageType: Durable
   storage:
-    podTemplate:
-      spec:
-        serviceAccountName: my-custom-serviceaccount
     storageClassName: "standard"
     accessModes:
     - ReadWriteOnce

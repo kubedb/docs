@@ -4,7 +4,7 @@ metadata:
   name: recovered-es
   namespace: demo
 spec:
-  version: 7.3.2
+  version: searchguard-7.9.3
   authSecret:
     name: instant-elasticsearch-auth
   storageType: Durable
@@ -16,6 +16,4 @@ spec:
       requests:
         storage: 1Gi
   init:
-    snapshotSource:
-      name: instant-snapshot
-      namespace: demo
+    waitForInitialRestore: true

@@ -111,7 +111,7 @@ metadata:
   name: coreos-prom-mysql
   namespace: demo
 spec:
-  version: "8.0.21"
+  version: "8.0.23"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"

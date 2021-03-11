@@ -63,15 +63,15 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: RedisVersion
   metadata:
-    name: "4.0-v1"
-    labels:
-      app: kubedb
+    name: 6.0.6
   spec:
-    version: "4.0"
     db:
-      image: "PRIVATE_DOCKER_REGISTRY/redis:4.0-v1"
+      image: PRIVATE_DOCKER_REGISTRY:6.0.6
     exporter:
-      image: "PRIVATE_DOCKER_REGISTRY/redis_exporter:v0.21.1"
+      image: PRIVATE_DOCKER_REGISTRY:1.9.0
+    podSecurityPolicies:
+      databasePolicyName: redis-db
+    version: 6.0.6
   ```
 
 ## Create ImagePullSecret
@@ -109,7 +109,7 @@ metadata:
   name: redis-pvt-reg
   namespace: demo
 spec:
-  version: "4.0-v1"
+  version: 6.0.6
   storage:
     storageClassName: "standard"
     accessModes:

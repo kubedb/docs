@@ -207,10 +207,10 @@ metadata:
   namespace: demo
 spec:
   version: "4.2.3"
-  storageType: Durable
   podTemplate:
       spec:
         serviceAccountName: my-custom-serviceaccount
+  storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:

@@ -40,7 +40,7 @@ spec:
       kind: MySQL
       name: my-group
     replicas: 3
-  proxysqlSecret:
+  authSecret:
     name: demo-proxysql-for-mysql-auth
   monitor:
     agent: prometheus.io/operator
@@ -52,8 +52,9 @@ spec:
   configSecret:
     name: my-custom-config
   podTemplate:
-    annotations:
-      passMe: ToProxySQLPod
+    metadata:
+      annotations:
+        passMe: ToProxySQLPod
     controller:
       annotations:
         passMe: ToStatefulSet
@@ -76,15 +77,16 @@ spec:
         limits:
           memory: "128Mi"
           cpu: "500m"
-  serviceTemplate:
-    annotations:
-      passMe: ToService
+  serviceTemplates:
+  - alias: primary
+    metadata:
+      annotations:
+        passMe: ToService
     spec:
       type: NodePort
       ports:
       - name:  http
         port:  6033
-        targetPort: http
 ```
 
 ### .spec.version
@@ -105,9 +107,9 @@ You can specify the following fields in `.spec.backend` field,
   - `kind` is the type of resource being referenced. Here it is `"MySQL"`.
   - `name` specifies the name of the resource being referenced. Here it is `"my-group"`.
 
-### .spec.proxysqlSecret
+### .spec.authSecret
 
-`.spec.proxysqlSecret` is an optional field that points to a Secret used to hold credentials for `proxysql` user. If not set, the KubeDB operator creates a new Secret `{proxysql-object-name}-auth` for storing the password for `proxysql` user for each ProxySQL object. If you want to use an existing secret please specify that when creating the ProxySQL object using `.spec.proxysqlSecret.secretName`.
+`.spec.authSecret` is an optional field that points to a Secret used to hold credentials for `proxysql` user. If not set, the KubeDB operator creates a new Secret `{proxysql-object-name}-auth` for storing the password for `proxysql` user for each ProxySQL object. If you want to use an existing secret please specify that when creating the ProxySQL object using `.spec.proxysqlSecret.secretName`.
 
 This secret contains a `proxysqluser` key and a `proxysqlpass` key which contains the username and password respectively for `proxysql` user. If no Secret is found, KubeDB sets the value of `proxysqluser` key to be `proxysql`.
 
@@ -214,7 +216,7 @@ for: "./proxysql.yaml": admission webhook "proxysql.validators.kubedb.com" denie
     kind
     name
     namespace
-    spec.proxysqlSecret
+    spec.authSecret
     spec.podTemplate.spec.nodeSelector
     spec.podTemplate.spec.env
 ```

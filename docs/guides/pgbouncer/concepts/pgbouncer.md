@@ -40,12 +40,14 @@ spec:
     databaseName: "postgres"
     databaseRef:
       name: "quick-postgres"
-    databaseSecretRef:
-      - "one-specific-user"
+      namespace: demo
+    authSecretRef:
+      name: "one-specific-user"
   - alias: "tmpdb"
     databaseName: "mydb"
     databaseRef:
       name: "quick-postgres"
+      namespace: demo
   connectionPool:
     maxClientConnections: 20
     reservePoolSize: 5

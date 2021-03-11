@@ -89,7 +89,7 @@ metadata:
   name: mysql-init-script
   namespace: demo
 spec:
-  version: "8.0.21"
+  version: "8.0.23"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -279,9 +279,6 @@ spec:
       resources: {}
       serviceAccountName: mysql-init-script
   replicas: 1
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   storage:
     accessModes:
     - ReadWriteOnce

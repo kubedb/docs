@@ -48,13 +48,12 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.0.21"
+  version: "8.0.23"
   replicas: 3
   topology:
     mode: GroupReplication
     group:
       name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
-      baseServerID: 100
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -77,7 +76,6 @@ Here,
 - `spec.topology.mode` specifies the mode for MySQL cluster. Here we have used `GroupReplication` to tell the operator that we want to deploy a MySQL replication group.
 - `spec.topology.group` contains group replication info.
 - `spec.topology.group.name` the name for the group. It is a valid version 4 UUID.
-- `spec.topology.group.baseServerID` the id of primary member.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
 KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mysql-object-name>-gvr`.
@@ -249,9 +247,6 @@ spec:
     spec:
       resources: {}
   replicas: 3
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   storage:
     accessModes:
     - ReadWriteOnce
@@ -264,10 +259,9 @@ spec:
   terminationPolicy: WipeOut
   topology:
     group:
-      baseServerID: 100
       name: dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b
     mode: GroupReplication
-  version: 5.7.25
+  version: "5.7.33"
 status:
   observedGeneration: 2$4213139756412538772
   phase: Running

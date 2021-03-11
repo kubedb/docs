@@ -30,18 +30,23 @@ As with all other Kubernetes objects, a PerconaXtraDBVersion needs `apiVersion`,
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PerconaXtraDBVersion
 metadata:
-  name: "5.7"
-  labels:
-    app: kubedb
+  name: 5.7-cluster
 spec:
-  version: "5.7"
-  deprecated: false
   db:
-    image: "${KUBEDB_CATALOG_REGISTRY}/percona-xtradb-cluster:5.7"
+    image: kubedb/percona-xtradb-cluster:5.7
   exporter:
-    image: "${KUBEDB_CATALOG_REGISTRY}/mysqld-exporter:v0.11.0"
+    image: kubedb/mysqld-exporter:v0.11.0
+  initContainer:
+    image: kubedb/busybox
   podSecurityPolicies:
-    databasePolicyName: "percona-xtradb-db"
+    databasePolicyName: percona-xtradb-db
+  stash:
+    addon:
+      backupTask:
+        name: percona-xtradb-backup-5.7.0-v2
+      restoreTask:
+        name: percona-xtradb-restore-5.7.0-v2
+  version: "5.7"
 ```
 
 ### .metadata.name

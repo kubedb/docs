@@ -44,15 +44,23 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: PerconaXtraDBVersion
   metadata:
-    name: "5.7-private"
-    labels:
-      app: kubedb
+    name: 5.7-cluster
   spec:
-    version: "5.7"
     db:
-      image: "<private-docker-registry>/percona-xtradb-cluster:5.7"
+      image: PRIVATE_REGISTRY/percona-xtradb-cluster:5.7
     exporter:
-      image: "<private-docker-registry>/mysqld-exporter:v0.11.0"
+      image: PRIVATE_REGISTRY/mysqld-exporter:v0.11.0
+    initContainer:
+      image: PRIVATE_REGISTRY/busybox
+    podSecurityPolicies:
+      databasePolicyName: percona-xtradb-db
+    stash:
+      addon:
+        backupTask:
+          name: percona-xtradb-backup-5.7.0-v2
+        restoreTask:
+          name: percona-xtradb-restore-5.7.0-v2
+    version: "5.7"
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -97,7 +105,7 @@ metadata:
   name: px-pvt-reg
   namespace: demo
 spec:
-  version: "5.7-private"
+  version: "5.7-cluster"
   replicas: 3
   storageType: Durable
   storage:

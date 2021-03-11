@@ -29,7 +29,7 @@ metadata:
   name: r1
   namespace: demo
 spec:
-  version: 4
+  version: 6.0.6
   mode: Cluster
   cluster:
     master: 3
@@ -51,8 +51,9 @@ spec:
   configSecret:
     name: rd-custom-config
   podTemplate:
-    annotations:
-      passMe: ToDatabasePod
+    metadata:
+      annotations:
+        passMe: ToDatabasePod
     controller:
       annotations:
         passMe: ToStatefulSet
@@ -75,15 +76,16 @@ spec:
         limits:
           memory: "128Mi"
           cpu: "500m"
-  serviceTemplate:
-    annotations:
-      passMe: ToService
+  serviceTemplates:
+  - alias: primary
+    metadata:
+      annotations:
+        passMe: ToService
     spec:
       type: NodePort
       ports:
       - name:  http
         port:  9200
-        targetPort: http
   terminationPolicy: Halt
 ```
 

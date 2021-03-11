@@ -69,7 +69,7 @@ metadata:
   name: mysql-misc-config
   namespace: demo
 spec:
-  version: "5.7.31"
+  version: "5.7.33"
   storageType: "Durable"
   storage:
     storageClassName: "standard"

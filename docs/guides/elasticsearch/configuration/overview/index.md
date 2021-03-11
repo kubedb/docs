@@ -57,10 +57,13 @@ The custom configuration files are passed via a Kubernetes secret. The **file na
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
+metadata:
+  name: es-custom-config
+  namespace: demo
 spec:
+  version: searchguard-7.9.3
   configSecret:
     name: es-custom-config
-... ...
 ```
 
 ```yaml

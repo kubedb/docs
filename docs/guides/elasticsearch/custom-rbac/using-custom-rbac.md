@@ -142,11 +142,11 @@ metadata:
   name: quick-elasticsearch
   namespace: demo
 spec:
-  version: 7.3.2
-  storageType: Durable
+  version: searchguard-7.9.3
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
+  storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
@@ -193,7 +193,7 @@ metadata:
   name: minute-elasticsearch
   namespace: demo
 spec:
-  version: 7.3.2
+  version: searchguard-7.9.3
   storageType: Durable
   podTemplate:
     spec:

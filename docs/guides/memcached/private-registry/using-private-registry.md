@@ -48,17 +48,15 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: MemcachedVersion
   metadata:
-    name: "1.5.4-v1"
-    labels:
-      app: kubedb
+    name: 1.5.22
   spec:
-    version: "1.5.4"
     db:
-      image: "PRIVATE_DOCKER_REGISTRY/memcached:1.5.4"
+      image: PRIVATE_REGISTRY/memcached:1.5.22
     exporter:
-      image: "PRIVATE_DOCKER_REGISTRY/memcachedd-exporter:v0.4.1"
-    tools:
-      image: "PRIVATE_DOCKER_REGISTRY/memcached-tools:1.5.4"
+      image: PRIVATE_REGISTRY/memcached-exporter:v0.4.1
+    podSecurityPolicies:
+      databasePolicyName: memcached-db
+    version: 1.5.22
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:

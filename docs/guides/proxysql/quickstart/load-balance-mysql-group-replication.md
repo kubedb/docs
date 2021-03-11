@@ -55,13 +55,12 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "5.7.25"
+  version: "5.7.33"
   replicas: 3
   topology:
     mode: GroupReplication
     group:
       name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
-      baseServerID: 100
   storageType: Durable
   storage:
     storageClassName: standard
@@ -129,7 +128,7 @@ $ kubectl exec -it -n demo my-group-0 -- mysql --user=root --password=tiIKEbjwnK
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 25395
-Server version: 5.7.25-log MySQL Community Server (GPL)
+Server version: "5.7.33"-log MySQL Community Server (GPL)
 
 Copyright (c) 2000, 2019, Oracle and/or its affiliates. All rights reserved.
 

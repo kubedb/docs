@@ -361,8 +361,7 @@ metadata:
   name: config-elasticsearch
   namespace: demo
 spec:
-  version: "6.3-v1"
-  authPlugin: "SearchGuard"
+  version: searchguard-7.9.3
   authSecret:
     name: config-elasticsearch-auth
   storage:

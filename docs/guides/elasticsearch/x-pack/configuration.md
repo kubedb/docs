@@ -51,32 +51,26 @@ kubectl get elasticsearchversions 7.3.2 -o yaml
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: ElasticsearchVersion
 metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"catalog.kubedb.com/v1alpha1","kind":"ElasticsearchVersion","metadata":{"annotations":{},"labels":{"app":"kubedb"},"name":"7.3.2"},"spec":{"authPlugin":"X-Pack","db":{"image":"kubedb/elasticsearch:7.3.2"},"exporter":{"image":"kubedb/elasticsearch_exporter:1.0.2"},"initContainer":{"image":"kubedb/busybox","yqImage":"kubedb/yq:2.4.0"},"podSecurityPolicies":{"databasePolicyName":"elasticsearch-db","snapshotterPolicyName":"elasticsearch-snapshot"},"tools":{"image":"kubedb/elasticsearch-tools:7.3.2"},"version":"7.3.2"}}
-  creationTimestamp: "2019-09-26T05:46:47Z"
-  generation: 1
-  labels:
-    app: kubedb
-  name: 7.3.2
-  resourceVersion: "2781140"
-  selfLink: /apis/catalog.kubedb.com/v1alpha1/elasticsearchversions/7.3.2
-  uid: 07309b1a-e021-11e9-acff-42010a8001f4
+  name: xpack-7.9.1-v1
 spec:
   authPlugin: X-Pack
   db:
-    image: kubedb/elasticsearch:7.3.2
+    image: kubedb/elasticsearch:7.9.1-xpack
+  distribution: ElasticStack
   exporter:
-    image: kubedb/elasticsearch_exporter:1.0.2
+    image: kubedb/elasticsearch_exporter:1.1.0
   initContainer:
-    image: kubedb/busybox
-    yqImage: kubedb/yq:2.4.0
+    image: kubedb/toybox:0.8.4
+    yqImage: kubedb/elasticsearch-init:7.9.1-xpack-v1
   podSecurityPolicies:
     databasePolicyName: elasticsearch-db
-    snapshotterPolicyName: elasticsearch-snapshot
-  tools:
-    image: kubedb/elasticsearch-tools:7.3.2
-  version: 7.3.2
+  stash:
+    addon:
+      backupTask:
+        name: elasticsearch-backup-7.3.2-v7
+      restoreTask:
+        name: elasticsearch-restore-7.3.2-v7
+  version: 7.9.1
 ```
 
 ## Changing authPlugin
@@ -98,7 +92,7 @@ metadata:
   name: config-elasticsearch
   namespace: demo
 spec:
-  version: "7.3.2"
+  version: searchguard-7.9.3
   storage:
     storageClassName: "standard"
     accessModes:
@@ -140,9 +134,6 @@ spec:
       resources: {}
       serviceAccountName: config-elasticsearch
   replicas: 1
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   storage:
     accessModes:
     - ReadWriteOnce
@@ -152,7 +143,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: Halt
-  version: 7.3.2
+  version: searchguard-7.9.3
 status:
   observedGeneration: 1$4210395375389091791
   phase: Running
