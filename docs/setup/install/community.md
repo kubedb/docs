@@ -71,13 +71,13 @@ KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://g
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm search repo appscode/kubedb --version {{< param "info.community" >}}
+$ helm search repo appscode/kubedb --version {{< param "info.version" >}}
 NAME                        CHART VERSION APP VERSION   DESCRIPTION
-appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
+appscode/kubedb             {{< param "info.version" >}}  {{< param "info.version" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
 
 # Install KubeDB Community operator chart
-$ helm install kubedb-community appscode/kubedb \
-  --version {{< param "info.community" >}}      \
+$ helm install kubedb appscode/kubedb \
+  --version {{< param "info.version" >}}      \
   --namespace kube-system                       \
   --set-file global.license=/path/to/the/license.txt
 ```
@@ -94,14 +94,14 @@ KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://g
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm search appscode/kubedb --version {{< param "info.community" >}}
+$ helm search appscode/kubedb --version {{< param "info.version" >}}
 NAME                        CHART VERSION APP VERSION   DESCRIPTION
-appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
+appscode/kubedb             {{< param "info.version" >}}  {{< param "info.version" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
 
 
 # Install KubeDB Community operator chart
 $ helm install appscode/kubedb --name kubedb-community  \
-  --version {{< param "info.community" >}}              \
+  --version {{< param "info.version" >}}              \
   --namespace kube-system                               \
   --set-file global.license=/path/to/the/license.txt
 ```
@@ -118,13 +118,13 @@ If you prefer to not use Helm, you can generate YAMLs from KubeDB chart and depl
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
-$ helm search repo appscode/kubedb --version {{< param "info.community" >}}
+$ helm search repo appscode/kubedb --version {{< param "info.version" >}}
 NAME                        CHART VERSION APP VERSION   DESCRIPTION
-appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
+appscode/kubedb             {{< param "info.version" >}}  {{< param "info.version" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
 
 #  Install KubeDB Community operator chart
 $ helm template kubedb-community appscode/kubedb \
-  --version {{< param "info.community" >}}       \
+  --version {{< param "info.version" >}}       \
   --namespace kube-system                        \
   --set-file global.license=/path/to/the/license.txt    \
   --set global.skipCleaner=true | kubectl apply -f -
