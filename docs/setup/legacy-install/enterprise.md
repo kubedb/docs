@@ -92,11 +92,11 @@ NAME                     	CHART VERSION	APP VERSION	DESCRIPTION
 appscode/kubedb-catalog  	{{< param "info.community" >}}    {{< param "info.community" >}}    	KubeDB Catalog by AppsCode - Catalog for databa...
 appscode/kubedb-community	{{< param "info.community" >}}    {{< param "info.community" >}}    	KubeDB Community by AppsCode - Community featur...
 
-$ helm search repo appscode/kubedb --version {{< param "info.enterprise" >}}
+$ helm search repo appscode/kubedb-enterprise --version {{< param "info.enterprise" >}}
 NAME                        CHART VERSION APP VERSION DESCRIPTION
 appscode/kubedb-enterprise  {{< param "info.enterprise" >}}   {{< param "info.enterprise" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
 
-$ helm search repo appscode/kubedb --version {{< param "info.autoscaler" >}}
+$ helm search repo appscode/kubedb-autoscaler --version {{< param "info.autoscaler" >}}
 NAME                     	CHART VERSION	APP VERSION	DESCRIPTION  
 appscode/kubedb-autoscaler	{{< param "info.autoscaler" >}}  {{< param "info.autoscaler" >}}     	KubeDB Autoscaler by AppsCode - Autoscale KubeD...
 
@@ -166,11 +166,11 @@ NAME                     	CHART VERSION	APP VERSION	DESCRIPTION
 appscode/kubedb-catalog  	{{< param "info.community" >}}    {{< param "info.community" >}}    	KubeDB Catalog by AppsCode - Catalog for databa...
 appscode/kubedb-community	{{< param "info.community" >}}    {{< param "info.community" >}}    	KubeDB Community by AppsCode - Community featur...
 
-$ helm search repo appscode/kubedb --version {{< param "info.enterprise" >}}
+$ helm search repo appscode/kubedb-enterprise --version {{< param "info.enterprise" >}}
 NAME                        CHART VERSION APP VERSION DESCRIPTION
 appscode/kubedb-enterprise  {{< param "info.enterprise" >}}   {{< param "info.enterprise" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
 
-$ helm search repo appscode/kubedb --version {{< param "info.autoscaler" >}}
+$ helm search repo appscode/kubedb-autoscaler --version {{< param "info.autoscaler" >}}
 NAME                     	CHART VERSION	APP VERSION	DESCRIPTION  
 appscode/kubedb-autoscaler	{{< param "info.autoscaler" >}}  {{< param "info.autoscaler" >}}     	KubeDB Autoscaler by AppsCode - Autoscale KubeD...
 
@@ -237,7 +237,7 @@ $ helm repo update
 
 $ helm search repo appscode/kubedb --version {{< param "info.community" >}}
 NAME                        CHART VERSION APP VERSION   DESCRIPTION
-appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
+appscode/kubedb-community   {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Community by AppsCode - Community features
 appscode/kubedb-catalog     {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Catalog by AppsCode - Catalog for database versions
 
 $ helm search repo appscode/kubedb-enterprise --version {{< param "info.enterprise" >}}
@@ -249,7 +249,7 @@ $ helm template kubedb-community appscode/kubedb-community \
   --version {{< param "info.community" >}}      \
   --namespace kube-system                       \
   --set-file license=/path/to/the/license.txt   \
-  --set global.skipCleaner=true | kubectl apply -f -
+  --set cleaner.skip=true | kubectl apply -f -
 
 # Step 2: wait until crds are registered
 $ kubectl get crds -l app.kubernetes.io/name=kubedb -w
@@ -277,7 +277,7 @@ $ helm template kubedb-enterprise appscode/kubedb-enterprise   \
   --version {{< param "info.enterprise" >}}                    \
   --namespace kube-system                                      \
   --set-file license=/path/to/the/license.txt                  \
-  --set global.skipCleaner=true | kubectl apply -f -
+  --set cleaner.skip=true | kubectl apply -f -
 
 # Step 5 (Optional): Install KubeDB Autoscaler chart
 # Kubernetes [VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation) must be pre-installed separately.
@@ -285,7 +285,7 @@ $ helm template kubedb-autoscaler appscode/kubedb-autoscaler   \
   --version {{< param "info.autoscaler" >}}                    \
   --namespace kube-system                                      \
   --set-file license=/path/to/the/license.txt                  \
-  --set global.skipCleaner=true | kubectl apply -f -
+  --set cleaner.skip=true | kubectl apply -f -
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb-enterprise).

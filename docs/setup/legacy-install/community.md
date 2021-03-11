@@ -125,11 +125,11 @@ $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
 $ helm search appscode/kubedb --version {{< param "info.community" >}}
 NAME                        CHART VERSION APP VERSION   DESCRIPTION
-appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
-appscode/kubedb-catalog     {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Catalog by AppsCode - Catalog for database versions
+appscode/kubedb-catalog   	{{< param "info.community" >}}  {{< param "info.community" >}}    	KubeDB Catalog by AppsCode - Catalog for databa...
+appscode/kubedb-community 	{{< param "info.community" >}}  {{< param "info.community" >}}    	KubeDB Community by AppsCode - Community featur...               
 
 # Step 1: Install KubeDB Community operator chart
-$ helm install appscode/kubedb --name kubedb-community \
+$ helm install appscode/kubedb-community --name kubedb-community \
   --version {{< param "info.community" >}}     \
   --namespace kube-system                      \
   --set-file license=/path/to/the/license.txt
@@ -177,15 +177,16 @@ $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
 $ helm search repo appscode/kubedb --version {{< param "info.community" >}}
 NAME                        CHART VERSION APP VERSION   DESCRIPTION
-appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
-appscode/kubedb-catalog     {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Catalog by AppsCode - Catalog for database versions
+appscode/kubedb-catalog   	{{< param "info.community" >}}  {{< param "info.community" >}}    	KubeDB Catalog by AppsCode - Catalog for databa...
+appscode/kubedb-community 	{{< param "info.community" >}}  {{< param "info.community" >}}    	KubeDB Community by AppsCode - Community featur...               
+
 
 # Step 1: Install KubeDB Community operator chart
-$ helm template kubedb-community appscode/kubedb \
+$ helm template kubedb-community appscode/kubedb-community \
   --version {{< param "info.community" >}}       \
   --namespace kube-system                        \
   --set-file license=/path/to/the/license.txt    \
-  --set global.skipCleaner=true | kubectl apply -f -
+  --set cleaner.skip=true | kubectl apply -f -
 
 # Step 2: wait until crds are registered
 $ kubectl get crds -l app.kubernetes.io/name=kubedb -w
@@ -219,10 +220,9 @@ To see the detailed configuration options, visit [here](https://github.com/kubed
 To check if KubeDB operator pods have started, run the following command:
 
 ```bash
-$ kubectl get pods --all-namespaces -l app.kubernetes.io/name=kubedb --watch
-
-NAMESPACE     NAME                     READY     STATUS    RESTARTS   AGE
-kube-system   kubedb-859d6bdb56-m9br5  1/1       Running   2          5s
+$ kubectl get pods --all-namespaces -l "app.kubernetes.io/instance=kubedb-community" --watch
+NAMESPACE     NAME                               READY     STATUS    RESTARTS   AGE
+kube-system   kubedb-community-859d6bdb56-m9br5  1/1       Running   2          5s
 ```
 
 Once the operator pod is running, you can cancel the above command by typing `Ctrl+C`.

@@ -37,6 +37,7 @@ In Helm 3, release names are [scoped to a namespace](https://v3.helm.sh/docs/faq
 ```bash
 $ helm uninstall kubedb-enterprise --namespace kube-system
 $ helm uninstall kubedb-autoscaler --namespace kube-system
+$ helm uninstall kubedb-community  --namespace kube-system
 ```
 
 </div>
@@ -45,8 +46,9 @@ $ helm uninstall kubedb-autoscaler --namespace kube-system
 ## Using Helm 2
 
 ```bash
-$ helm delete kubedb-enterprise
-$ helm delete kubedb-autoscaler
+$ helm delete kubedb-enterprise --namespace kube-system
+$ helm delete kubedb-autoscaler --namespace kube-system
+$ helm delete kubedb-community  --namespace kube-system
 ```
 
 </div>
@@ -59,6 +61,7 @@ If you prefer to not use Helm, you can generate YAMLs from KubeDB chart and unin
 ```bash
 $ helm template kubedb-enterprise appscode/kubedb-enterprise --namespace kube-system | kubectl delete -f -
 $ helm template kubedb-autoscaler appscode/kubedb-autoscaler --namespace kube-system | kubectl delete -f -
+$ helm template kubedb-community  appscode/kubedb-community  --namespace kube-system | kubectl delete -f -
 ```
 
 </div>
