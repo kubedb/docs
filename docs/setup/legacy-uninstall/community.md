@@ -44,7 +44,7 @@ $ helm uninstall kubedb-community --namespace kube-system
 ## Using Helm 2
 
 ```bash
-$ helm delete kubedb-community --namespace kube-system
+$ helm delete kubedb-community
 ```
 
 </div>
@@ -52,7 +52,7 @@ $ helm delete kubedb-community --namespace kube-system
 
 ## Using YAML (with helm 3)
 
-If you prefer to not use Helm, you can generate YAMLs from the KubeDB chart and uninstall using `kubectl`.
+If you prefer to not use Helm, you can generate YAMLs from KubeDB chart and uninstall using `kubectl`.
 
 ```bash
 $ helm template kubedb-community appscode/kubedb --namespace kube-system | kubectl delete -f -
