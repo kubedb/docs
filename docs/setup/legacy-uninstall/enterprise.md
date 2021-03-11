@@ -3,7 +3,7 @@ title: Uninstall KubeDB Enterprise Edition
 description: Uninstallation guide for KubeDB Enterprise edition
 menu:
   docs_{{ .version }}:
-    identifier: uninstall-kubedb-enterprise
+    identifier: legacy-uninstall-kubedb-enterprise
     name: Enterprise Edition
     parent: legacy-uninstallation-guide
     weight: 20

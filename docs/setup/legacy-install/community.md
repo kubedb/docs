@@ -3,7 +3,7 @@ title: Install KubeDB Community Edition
 description: Installation guide for KubeDB Community edition
 menu:
   docs_{{ .version }}:
-    identifier: install-kubedb-community
+    identifier: legacy-install-kubedb-community
     name: Community Edition
     parent: legacy-installation-guide
     weight: 10

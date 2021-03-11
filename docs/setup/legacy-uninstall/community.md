@@ -3,7 +3,7 @@ title: Uninstall KubeDB Community Edition
 description: Uninstallation guide for KubeDB Community edition
 menu:
   docs_{{ .version }}:
-    identifier: uninstall-kubedb-community
+    identifier: legacy-uninstall-kubedb-community
     name: Community Edition
     parent: legacy-uninstallation-guide
     weight: 10

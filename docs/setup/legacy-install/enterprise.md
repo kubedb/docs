@@ -3,7 +3,7 @@ title: Install KubeDB Enterprise Edition
 description: Installation guide for KubeDB Enterprise edition
 menu:
   docs_{{ .version }}:
-    identifier: install-kubedb-enterprise
+    identifier: legacy-install-kubedb-enterprise
     name: Enterprise Edition
     parent: legacy-installation-guide
     weight: 20

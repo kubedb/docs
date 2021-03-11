@@ -3,7 +3,7 @@ title: Troubleshooting KubeDB Installation
 description: Troubleshooting guide for KubeDB installation
 menu:
   docs_{{ .version }}:
-    identifier: install-kubedb-troubleshoot
+    identifier: legacy-install-kubedb-troubleshoot
     name: Troubleshooting
     parent: legacy-installation-guide
     weight: 40

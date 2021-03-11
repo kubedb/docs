@@ -3,7 +3,7 @@ title: Install KubeDB kubectl Plugin
 description: Installation guide for KubeDB kubectl Plugin
 menu:
   docs_{{ .version }}:
-    identifier: install-kubedb-kubectl-plugin
+    identifier: legacy-install-kubedb-kubectl-plugin
     name: KubeDB kubectl Plugin
     parent: legacy-installation-guide
     weight: 30
