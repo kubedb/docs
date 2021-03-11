@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: install-kubedb-enterprise
     name: Enterprise Edition
-    parent: installation-guide
+    parent: legacy-installation-guide
     weight: 20
 product_name: kubedb
 menu_name: docs_{{ .version }}

@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: uninstall-kubedb-kubectl-plugin
     name: KubeDB kubectl Plugin
-    parent: uninstallation-guide
+    parent: legacy-uninstallation-guide
     weight: 30
 product_name: kubedb
 menu_name: docs_{{ .version }}

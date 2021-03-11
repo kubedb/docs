@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: install-kubedb-community
     name: Community Edition
-    parent: installation-guide
+    parent: legacy-installation-guide
     weight: 10
 product_name: kubedb
 menu_name: docs_{{ .version }}

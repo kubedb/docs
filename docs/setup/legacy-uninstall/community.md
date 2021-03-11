@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: uninstall-kubedb-community
     name: Community Edition
-    parent: uninstallation-guide
+    parent: legacy-uninstallation-guide
     weight: 10
 product_name: kubedb
 menu_name: docs_{{ .version }}

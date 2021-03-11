@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: install-kubedb-troubleshoot
     name: Troubleshooting
-    parent: installation-guide
+    parent: legacy-installation-guide
     weight: 40
 product_name: kubedb
 menu_name: docs_{{ .version }}
