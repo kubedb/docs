@@ -154,7 +154,7 @@ $ helm template kubedb-enterprise appscode/kubedb       \
     --set-file global.license=/path/to/the/license.txt  \
     --set kubedb-enterprise.enabled=true                \
     --set kubedb-autoscaler.enabled=true                \
-    --set cleaner.skip=true | kubectl apply -f -
+    --set global.skipCleaner=true | kubectl apply -f -
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb-enterprise).

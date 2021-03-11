@@ -127,7 +127,7 @@ $ helm template kubedb-community appscode/kubedb \
   --version {{< param "info.community" >}}       \
   --namespace kube-system                        \
   --set-file global.license=/path/to/the/license.txt    \
-  --set cleaner.skip=true | kubectl apply -f -
+  --set global.skipCleaner=true | kubectl apply -f -
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).

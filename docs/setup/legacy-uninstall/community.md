@@ -44,7 +44,7 @@ $ helm uninstall kubedb-community --namespace kube-system
 ## Using Helm 2
 
 ```bash
-$ helm delete kubedb-community
+$ helm delete kubedb-community --namespace kube-system
 ```
 
 </div>

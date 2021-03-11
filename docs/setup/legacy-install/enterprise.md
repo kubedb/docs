@@ -88,16 +88,20 @@ $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
 
 $ helm search repo appscode/kubedb --version {{< param "info.community" >}}
-NAME                        CHART VERSION APP VERSION   DESCRIPTION
-appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
-appscode/kubedb-catalog     {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Catalog by AppsCode - Catalog for database versions
+NAME                     	CHART VERSION	APP VERSION	DESCRIPTION                                       
+appscode/kubedb-catalog  	{{< param "info.community" >}}    {{< param "info.community" >}}    	KubeDB Catalog by AppsCode - Catalog for databa...
+appscode/kubedb-community	{{< param "info.community" >}}    {{< param "info.community" >}}    	KubeDB Community by AppsCode - Community featur...
 
-$ helm search repo appscode/kubedb-enterprise --version {{< param "info.enterprise" >}}
+$ helm search repo appscode/kubedb --version {{< param "info.enterprise" >}}
 NAME                        CHART VERSION APP VERSION DESCRIPTION
-appscode/kubedb-enterprise  {{< param "info.enterprise" >}}  {{< param "info.enterprise" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
+appscode/kubedb-enterprise  {{< param "info.enterprise" >}}   {{< param "info.enterprise" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
+
+$ helm search repo appscode/kubedb --version {{< param "info.autoscaler" >}}
+NAME                     	CHART VERSION	APP VERSION	DESCRIPTION  
+appscode/kubedb-autoscaler	{{< param "info.autoscaler" >}}  {{< param "info.autoscaler" >}}     	KubeDB Autoscaler by AppsCode - Autoscale KubeD...
 
 # Step 1: Install KubeDB Community operator chart
-$ helm install kubedb-community appscode/kubedb \
+$ helm install kubedb-community appscode/kubedb-community \
   --version {{< param "info.community" >}}      \
   --namespace kube-system                       \
   --set-file license=/path/to/the/license.txt
@@ -158,16 +162,20 @@ $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update
 
 $ helm search repo appscode/kubedb --version {{< param "info.community" >}}
-NAME                        CHART VERSION APP VERSION   DESCRIPTION
-appscode/kubedb             {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB by AppsCode - Production ready databases on Kubernetes
-appscode/kubedb-catalog     {{< param "info.community" >}}  {{< param "info.community" >}}  KubeDB Catalog by AppsCode - Catalog for database versions
+NAME                     	CHART VERSION	APP VERSION	DESCRIPTION                                       
+appscode/kubedb-catalog  	{{< param "info.community" >}}    {{< param "info.community" >}}    	KubeDB Catalog by AppsCode - Catalog for databa...
+appscode/kubedb-community	{{< param "info.community" >}}    {{< param "info.community" >}}    	KubeDB Community by AppsCode - Community featur...
 
-$ helm search repo appscode/kubedb-enterprise --version {{< param "info.enterprise" >}}
+$ helm search repo appscode/kubedb --version {{< param "info.enterprise" >}}
 NAME                        CHART VERSION APP VERSION DESCRIPTION
-appscode/kubedb-enterprise  {{< param "info.enterprise" >}}  {{< param "info.enterprise" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
+appscode/kubedb-enterprise  {{< param "info.enterprise" >}}   {{< param "info.enterprise" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
+
+$ helm search repo appscode/kubedb --version {{< param "info.autoscaler" >}}
+NAME                     	CHART VERSION	APP VERSION	DESCRIPTION  
+appscode/kubedb-autoscaler	{{< param "info.autoscaler" >}}  {{< param "info.autoscaler" >}}     	KubeDB Autoscaler by AppsCode - Autoscale KubeD...
 
 # Step 1: Install KubeDB Community operator chart
-$ helm install appscode/kubedb --name kubedb-community \
+$ helm install appscode/kubedb-community --name kubedb-community \
   --version {{< param "info.community" >}}     \
   --namespace kube-system                      \
   --set-file license=/path/to/the/license.txt
@@ -237,11 +245,11 @@ NAME                        CHART VERSION APP VERSION DESCRIPTION
 appscode/kubedb-enterprise  {{< param "info.enterprise" >}}  {{< param "info.enterprise" >}}  KubeDB Enterprise by AppsCode - Enterprise features for KubeDB
 
 # Step 1: Install KubeDB Community operator chart
-$ helm template kubedb-community appscode/kubedb \
+$ helm template kubedb-community appscode/kubedb-community \
   --version {{< param "info.community" >}}      \
   --namespace kube-system                       \
   --set-file license=/path/to/the/license.txt   \
-  --set cleaner.skip=true | kubectl apply -f -
+  --set global.skipCleaner=true | kubectl apply -f -
 
 # Step 2: wait until crds are registered
 $ kubectl get crds -l app.kubernetes.io/name=kubedb -w
@@ -269,7 +277,7 @@ $ helm template kubedb-enterprise appscode/kubedb-enterprise   \
   --version {{< param "info.enterprise" >}}                    \
   --namespace kube-system                                      \
   --set-file license=/path/to/the/license.txt                  \
-  --set cleaner.skip=true | kubectl apply -f -
+  --set global.skipCleaner=true | kubectl apply -f -
 
 # Step 5 (Optional): Install KubeDB Autoscaler chart
 # Kubernetes [VPA](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler#installation) must be pre-installed separately.
@@ -277,7 +285,7 @@ $ helm template kubedb-autoscaler appscode/kubedb-autoscaler   \
   --version {{< param "info.autoscaler" >}}                    \
   --namespace kube-system                                      \
   --set-file license=/path/to/the/license.txt                  \
-  --set cleaner.skip=true | kubectl apply -f -
+  --set global.skipCleaner=true | kubectl apply -f -
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb-enterprise).
@@ -290,10 +298,10 @@ To see the detailed configuration options, visit [here](https://github.com/kubed
 To check if KubeDB operator pods have started, run the following command:
 
 ```bash
-$ kubectl get pods --all-namespaces -l app.kubernetes.io/name=kubedb --watch
+$ kubectl get pods --all-namespaces -l app.kubernetes.io/name=kubedb-community --watch
 
-NAMESPACE     NAME                     READY     STATUS    RESTARTS   AGE
-kube-system   kubedb-859d6bdb56-m9br5  1/1       Running   2          5s
+NAMESPACE     NAME                               READY     STATUS    RESTARTS   AGE
+kube-system   kubedb-community-859d6bdb56-m9br5  1/1       Running   0          5s
 
 $ kubectl get pods --all-namespaces -l app.kubernetes.io/name=kubedb-enterprise --watch
 
