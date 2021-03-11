@@ -28,6 +28,7 @@ import (
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -51,6 +52,11 @@ func (c *Controller) ensureAppBinding(db *api.Postgres, postgresVersion *catalog
 	}
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindPostgres))
+
+	pgVersion, err := c.DBClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 
 	var caBundle []byte
 	if db.Spec.TLS != nil {
@@ -97,7 +103,15 @@ func (c *Controller) ensureAppBinding(db *api.Postgres, postgresVersion *catalog
 			in.Spec.Secret = &core.LocalObjectReference{
 				Name: clientPEMSecretName,
 			}
-
+			in.Spec.Parameters = &runtime.RawExtension{
+				Object: &appcat.StashAddon{
+					TypeMeta: metav1.TypeMeta{
+						APIVersion: appcat.SchemeGroupVersion.String(),
+						Kind:       "StashAddon",
+					},
+					Stash: pgVersion.Spec.Stash,
+				},
+			}
 			return in
 		}, metav1.PatchOptions{},
 	)

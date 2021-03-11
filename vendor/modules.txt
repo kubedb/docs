@@ -1175,7 +1175,7 @@ kmodules.xyz/prober/api/v1
 # kmodules.xyz/webhook-runtime v0.0.0-20210220081624-75da115ae653
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.16.3-0.20210308083722-3cdca5092e26
+# kubedb.dev/apimachinery v0.17.0
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
 kubedb.dev/apimachinery/apis/autoscaling/v1alpha1
@@ -1217,7 +1217,7 @@ kubedb.dev/apimachinery/pkg/controller/statefulset
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/phase
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.16.3-0.20210308113656-115045525d6e
+# kubedb.dev/elasticsearch v0.17.0
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
 kubedb.dev/elasticsearch/pkg/distribution
@@ -1234,28 +1234,28 @@ kubedb.dev/elasticsearch/pkg/util/go-es
 # kubedb.dev/mariadb v0.0.0-20210308113619-fabdbce056dd
 kubedb.dev/mariadb/pkg/admission
 kubedb.dev/mariadb/pkg/controller
-# kubedb.dev/memcached v0.9.3-0.20210308112449-13e5a1fb08b2
+# kubedb.dev/memcached v0.10.0
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.9.3-0.20210308113046-03c8ccb4b87a
+# kubedb.dev/mongodb v0.10.0
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.9.3-0.20210308141251-36d53c97a703
+# kubedb.dev/mysql v0.10.0
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.3.3-0.20210308113218-43546c4a2f06
+# kubedb.dev/percona-xtradb v0.4.0
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
-# kubedb.dev/pgbouncer v0.3.3-0.20210308111915-efd337fe86ac
+# kubedb.dev/pgbouncer v0.4.0
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.16.3-0.20210308113744-5d004ff46cc5
+# kubedb.dev/postgres v0.17.0
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.3.3-0.20210308111158-7bff702ad2c3
+# kubedb.dev/proxysql v0.4.0
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.9.3-0.20210308111018-7ed160b4c52b
+# kubedb.dev/redis v0.10.0
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster
 kubedb.dev/redis/pkg/controller
@@ -1293,7 +1293,7 @@ sigs.k8s.io/structured-merge-diff/v3/typed
 sigs.k8s.io/structured-merge-diff/v3/value
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
-# stash.appscode.dev/apimachinery v0.11.9
+# stash.appscode.dev/apimachinery v0.11.10
 stash.appscode.dev/apimachinery/apis
 stash.appscode.dev/apimachinery/apis/repositories
 stash.appscode.dev/apimachinery/apis/repositories/v1alpha1

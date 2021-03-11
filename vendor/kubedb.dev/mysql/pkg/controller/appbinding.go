@@ -86,6 +86,16 @@ func (c *Controller) ensureAppBinding(db *api.MySQL) (kutil.VerbType, error) {
 			Path:   "/",
 		}
 		in.Spec.ClientConfig.InsecureSkipTLSVerify = false
+
+		// If group replication is used, then we have to pass "--set-gtid-purged=OFF" in the backup task parameter.
+		if db.UsesGroupReplication() {
+			mysqlVersion.Spec.Stash.Addon.BackupTask.Params = []appcat.Param{
+				{
+					Name:  "args",
+					Value: "--all-databases --set-gtid-purged=OFF",
+				},
+			}
+		}
 		in.Spec.Parameters = &runtime.RawExtension{
 			Object: &appcat.StashAddon{
 				TypeMeta: metav1.TypeMeta{
