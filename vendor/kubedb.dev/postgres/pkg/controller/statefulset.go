@@ -63,8 +63,8 @@ const (
 	SERVER_KEY               = "server.key"
 )
 
-func getMajorPgVersion(postgres *api.Postgres) (int64, error) {
-	ver, err := version.NewVersion(postgres.Spec.Version)
+func getMajorPgVersion(postgresVersion *catalog.PostgresVersion) (int64, error) {
+	ver, err := version.NewVersion(postgresVersion.Spec.Version)
 	if err != nil {
 		return 0, errors.Wrap(err, "Failed to get postgres major.")
 	}
@@ -115,7 +115,7 @@ func (c *Controller) ensureStatefulSet(
 
 			in.Spec.Template.Spec.Containers = getContainers(in, db, postgresVersion)
 
-			in = upsertEnv(in, db, envList)
+			in = upsertEnv(in, db, postgresVersion, envList)
 			in = upsertUserEnv(in, db)
 			in = upsertPort(in)
 
@@ -145,6 +145,7 @@ func (c *Controller) ensureStatefulSet(
 			in = upsertShm(in)
 			in = upsertDataVolume(in, db)
 			in = upsertCustomConfig(in, db)
+			in = upsertSharedRunScriptsVolume(in)
 			in = upsertSharedScriptsVolume(in)
 			if db.Spec.TLS != nil {
 				in = upsertTLSVolume(in, db)
@@ -247,8 +248,8 @@ func (c *Controller) checkStatefulSet(db *api.Postgres) error {
 	return nil
 }
 
-func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, envs []core.EnvVar) *apps.StatefulSet {
-	majorPGVersion, err := getMajorPgVersion(db)
+func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion *catalog.PostgresVersion, envs []core.EnvVar) *apps.StatefulSet {
+	majorPGVersion, err := getMajorPgVersion(postgresVersion)
 	if err != nil {
 		log.Error("couldn't get version's major part")
 	}
@@ -326,6 +327,18 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, envs []core.EnvV
 		{
 			Name:  "CLIENT_AUTH_MODE",
 			Value: string(clientAuthMode),
+		},
+		{
+			Name:  "PV",
+			Value: "/var/pv",
+		},
+		{
+			Name:  "PGDATA",
+			Value: "/var/pv/data",
+		},
+		{
+			Name:  "INITDB",
+			Value: "/var/initdb",
 		},
 		{
 			Name:  "SSL_MODE",
@@ -558,7 +571,19 @@ func upsertInitScript(statefulSet *apps.StatefulSet, script core.VolumeSource) *
 }
 
 func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.Postgres) *apps.StatefulSet {
+	for i, initContainer := range statefulSet.Spec.Template.Spec.InitContainers {
+		if initContainer.Name == PostgresInitContainerName {
+			volumeMount := core.VolumeMount{
+				Name:      "data",
+				MountPath: "/var/pv",
+			}
 
+			volumeMounts := initContainer.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
+			statefulSet.Spec.Template.Spec.InitContainers[i].VolumeMounts = volumeMounts
+
+		}
+	}
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularPostgres || container.Name == api.PostgresCoordinatorContainerName {
 			volumeMount := core.VolumeMount{
@@ -570,46 +595,46 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.Postgres) *apps.Sta
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, volumeMount)
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
 
-			pvcSpec := db.Spec.Storage
-			if db.Spec.StorageType == api.StorageTypeEphemeral {
-				ed := core.EmptyDirVolumeSource{}
-				if pvcSpec != nil {
-					if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
-						ed.SizeLimit = &sz
-					}
-				}
-				statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
-					statefulSet.Spec.Template.Spec.Volumes,
-					core.Volume{
-						Name: "data",
-						VolumeSource: core.VolumeSource{
-							EmptyDir: &ed,
-						},
-					})
-			} else {
-				if len(pvcSpec.AccessModes) == 0 {
-					pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
-						core.ReadWriteOnce,
-					}
-					log.Infof(`Using "%v" as AccessModes in postgres.Spec.Storage`, core.ReadWriteOnce)
-				}
-
-				claim := core.PersistentVolumeClaim{
-					ObjectMeta: metav1.ObjectMeta{
-						Name: "data",
-					},
-					Spec: *pvcSpec,
-				}
-				if pvcSpec.StorageClassName != nil {
-					claim.Annotations = map[string]string{
-						"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
-					}
-				}
-				statefulSet.Spec.VolumeClaimTemplates = core_util.UpsertVolumeClaim(statefulSet.Spec.VolumeClaimTemplates, claim)
-			}
-			//	break
 		}
 	}
+	pvcSpec := db.Spec.Storage
+	if db.Spec.StorageType == api.StorageTypeEphemeral {
+		ed := core.EmptyDirVolumeSource{}
+		if pvcSpec != nil {
+			if sz, found := pvcSpec.Resources.Requests[core.ResourceStorage]; found {
+				ed.SizeLimit = &sz
+			}
+		}
+		statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(
+			statefulSet.Spec.Template.Spec.Volumes,
+			core.Volume{
+				Name: "data",
+				VolumeSource: core.VolumeSource{
+					EmptyDir: &ed,
+				},
+			})
+	} else {
+		if len(pvcSpec.AccessModes) == 0 {
+			pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
+				core.ReadWriteOnce,
+			}
+			log.Infof(`Using "%v" as AccessModes in postgres.Spec.Storage`, core.ReadWriteOnce)
+		}
+
+		claim := core.PersistentVolumeClaim{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "data",
+			},
+			Spec: *pvcSpec,
+		}
+		if pvcSpec.StorageClassName != nil {
+			claim.Annotations = map[string]string{
+				"volume.beta.kubernetes.io/storage-class": *pvcSpec.StorageClassName,
+			}
+		}
+		statefulSet.Spec.VolumeClaimTemplates = core_util.UpsertVolumeClaim(statefulSet.Spec.VolumeClaimTemplates, claim)
+	}
+
 	return statefulSet
 }
 
@@ -644,12 +669,12 @@ func upsertCustomConfig(statefulSet *apps.StatefulSet, db *api.Postgres) *apps.S
 	return statefulSet
 }
 
-func upsertSharedScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
+func upsertSharedRunScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularPostgres || container.Name == api.PostgresCoordinatorContainerName {
 			configVolumeMount := core.VolumeMount{
-				Name:      "scripts",
+				Name:      "run-scripts",
 				MountPath: "/run_scripts",
 			}
 			volumeMounts := container.VolumeMounts
@@ -661,8 +686,48 @@ func upsertSharedScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet 
 	for i, initContainer := range statefulSet.Spec.Template.Spec.InitContainers {
 		if initContainer.Name == PostgresInitContainerName {
 			configVolumeMount := core.VolumeMount{
-				Name:      "scripts",
+				Name:      "run-scripts",
 				MountPath: "/run_scripts",
+			}
+			volumeMounts := initContainer.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.InitContainers[i].VolumeMounts = volumeMounts
+
+		}
+	}
+
+	configVolume := core.Volume{
+		Name: "run-scripts",
+		VolumeSource: core.VolumeSource{
+			EmptyDir: &core.EmptyDirVolumeSource{},
+		},
+	}
+
+	volumes := statefulSet.Spec.Template.Spec.Volumes
+	volumes = core_util.UpsertVolume(volumes, configVolume)
+	statefulSet.Spec.Template.Spec.Volumes = volumes
+
+	return statefulSet
+}
+func upsertSharedScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
+
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularPostgres {
+			configVolumeMount := core.VolumeMount{
+				Name:      "scripts",
+				MountPath: "/scripts",
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+		}
+	}
+	for i, initContainer := range statefulSet.Spec.Template.Spec.InitContainers {
+		if initContainer.Name == PostgresInitContainerName {
+			configVolumeMount := core.VolumeMount{
+				Name:      "scripts",
+				MountPath: "/scripts",
 			}
 			volumeMounts := initContainer.VolumeMounts
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
@@ -684,7 +749,6 @@ func upsertSharedScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet 
 
 	return statefulSet
 }
-
 func upsertCertificatesVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
 
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
@@ -758,7 +822,14 @@ func getContainers(statefulSet *apps.StatefulSet, postgres *api.Postgres, postgr
 	statefulSet.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 		statefulSet.Spec.Template.Spec.Containers,
 		core.Container{
-			Name:            api.ResourceSingularPostgres,
+			Name: api.ResourceSingularPostgres,
+			Command: []string{
+				"/scripts/tini",
+				"--",
+			},
+			Args: []string{
+				"/scripts/run.sh",
+			},
 			Image:           postgresVersion.Spec.DB.Image,
 			Resources:       postgres.Spec.PodTemplate.Spec.Resources,
 			SecurityContext: postgres.Spec.PodTemplate.Spec.ContainerSecurityContext,

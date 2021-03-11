@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -40,27 +39,6 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-func getGarbdConfig(db *api.MariaDB) ([]byte, error) {
-	if !db.IsCluster() {
-		return nil, nil
-	}
-
-	var peers []string
-	for i := 0; i < int(*db.Spec.Replicas); i += 1 {
-		peers = append(peers, db.PeerName(i))
-	}
-
-	return json.Marshal(config_api.GaleraArbitratorConfiguration{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: config_api.SchemeGroupVersion.String(),
-			Kind:       config_api.ResourceKindGaleraArbitratorConfiguration,
-		},
-		Address:   fmt.Sprintf("gcomm://%s", strings.Join(peers, ",")),
-		Group:     db.Name,
-		SSTMethod: config_api.GarbdXtrabackupSSTMethod,
-	})
-}
-
 func (c *Controller) ensureAppBinding(db *api.MariaDB) (kutil.VerbType, error) {
 	port, err := c.GetPrimaryServicePort(db)
 	if err != nil {
@@ -75,11 +53,6 @@ func (c *Controller) ensureAppBinding(db *api.MariaDB) (kutil.VerbType, error) {
 	}
 
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMariaDB))
-
-	garbdCnfJson, err := getGarbdConfig(db)
-	if err != nil {
-		return kutil.VerbUnchanged, err
-	}
 
 	var caBundle []byte
 	if db.Spec.TLS != nil {
@@ -98,6 +71,23 @@ func (c *Controller) ensureAppBinding(db *api.MariaDB) (kutil.VerbType, error) {
 	dbVersion, err := c.DBClient.CatalogV1alpha1().MariaDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, fmt.Errorf("failed to get MariaDBVersion %v for %v/%v. Reason: %v", db.Spec.Version, db.Namespace, db.Name, err)
+	}
+
+	garbdConf := &config_api.GaleraArbitratorConfiguration{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: config_api.SchemeGroupVersion.String(),
+			Kind:       config_api.ResourceKindGaleraArbitratorConfiguration,
+		},
+		Stash: dbVersion.Spec.Stash,
+	}
+	if db.IsCluster() {
+		var peers []string
+		for i := 0; i < int(*db.Spec.Replicas); i += 1 {
+			peers = append(peers, db.PeerName(i))
+		}
+		garbdConf.Address = fmt.Sprintf("gcomm://%s", strings.Join(peers, ","))
+		garbdConf.Group = db.Name
+		garbdConf.SSTMethod = config_api.GarbdXtrabackupSSTMethod
 	}
 
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(
@@ -122,10 +112,8 @@ func (c *Controller) ensureAppBinding(db *api.MariaDB) (kutil.VerbType, error) {
 				Name: clientPEMSecretName,
 			}
 
-			if db.IsCluster() {
-				in.Spec.Parameters = &runtime.RawExtension{
-					Raw: garbdCnfJson,
-				}
+			in.Spec.Parameters = &runtime.RawExtension{
+				Object: garbdConf,
 			}
 			return in
 		},
