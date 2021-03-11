@@ -61,15 +61,26 @@ From there, we would define a PostgresVersion that contains this new image. Let'
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PostgresVersion
 metadata:
-  name: timescale-0.9.1
+  name: timescaledb-2.1.0-pg13
 spec:
-  version: 10.2
+  coordinator:
+    image: kubedb/pg-coordinator:v0.1.0
   db:
-    image: "myco/postgres:timescale-0.9.1"
+    image: timescale/timescaledb:2.1.0-pg13-oss
+  distribution: TimescaleDB
   exporter:
-    image: "kubedb/postgres_exporter:v0.4.6"
-  tools:
-    image: "kubedb/postgres-tools:10.2-v3"
+    image: prometheuscommunity/postgres-exporter:v0.9.0
+  initContainer:
+    image: kubedb/postgres-init:0.1.0
+  podSecurityPolicies:
+    databasePolicyName: postgres-db
+  stash:
+    addon:
+      backupTask:
+        name: postgres-backup-13.1.0-v2
+      restoreTask:
+        name: postgres-restore-13.1.0-v2
+  version: "13.2"
 ```
 
 Once we add this PostgresVersion we can use it in a new Postgres like:
@@ -81,7 +92,7 @@ metadata:
   name: timescale-postgres
   namespace: demo
 spec:
-  version: "timescale-0.9.1" # points to the name of our custom PostgresVersion
+  version: "timescaledb-2.1.0-pg13" # points to the name of our custom PostgresVersion
   storage:
     storageClassName: "standard"
     accessModes:

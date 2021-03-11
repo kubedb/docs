@@ -39,7 +39,7 @@ spec:
       - name: kubedb-operator-apiserver-cert
         secret:
           defaultMode: 420
-          name: kubedb-operator-apiserver-cert
+          secretName: kubedb-operator-apiserver-cert
           items: # avoid mounting private key
           - key: tls.crt
             path: tls.crt

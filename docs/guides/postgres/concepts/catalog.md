@@ -30,21 +30,26 @@ As with all other Kubernetes objects, a PostgresVersion needs `apiVersion`, `kin
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PostgresVersion
 metadata:
-  name: "10.2-v5"
-  labels:
-    app: kubedb
+  name: "13.2"
 spec:
-  version: "10.2"
-  deprecated: false
+  coordinator:
+    image: kubedb/pg-coordinator:v0.1.0
   db:
-    image: "kubedb/postgres:10.2-v6"
+    image: postgres:13.2-alpine
+  distribution: PostgreSQL
   exporter:
-    image: "kubedb/postgres_exporter:v0.4.7"
-  tools:
-    image: "kubedb/postgres-tools:10.2-v3"
+    image: prometheuscommunity/postgres-exporter:v0.9.0
+  initContainer:
+    image: kubedb/postgres-init:0.1.0
   podSecurityPolicies:
-    databasePolicyName: "postgres-db"
-    snapshotterPolicyName: "postgres-snapshot"
+    databasePolicyName: postgres-db
+  stash:
+    addon:
+      backupTask:
+        name: postgres-backup-13.1.0-v2
+      restoreTask:
+        name: postgres-restore-13.1.0-v2
+  version: "13.2"
 ```
 
 ### metadata.name
@@ -81,10 +86,6 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 ### spec.podSecurityPolicies.databasePolicyName
 
 `spec.podSecurityPolicies.databasePolicyName` is a required field that specifies the name of the pod security policy required to get the database server pod(s) running.
-
-### spec.podSecurityPolicies.snapshotterPolicyName
-
-`spec.podSecurityPolicies.snapshotterPolicyName` is a required field that specifies the name of the pod security policy required to get the snapshotter pod(s) running. To use user-defined policies, names of the policies have to be set in `spec.podSecurityPolicies` and in the list of allowed policy names in KubeDB operator like below:
 
 ```bash
 helm upgrade kubedb-operator appscode/kubedb --namespace kube-system \

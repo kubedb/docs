@@ -132,7 +132,7 @@ metadata:
   name: quick-postgres
   namespace: demo
 spec:
-  version: "10.2-v5"
+  version: "13.2"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -409,9 +409,6 @@ spec:
           spec:
             resources: {}
         replicas: 1
-        serviceTemplate:
-          metadata: {}
-          spec: {}
         storage:
           accessModes:
           - ReadWriteOnce
@@ -422,7 +419,7 @@ spec:
           storageClassName: standard
         storageType: Durable
         terminationPolicy: Halt
-        version: 10.2-v5
+        version: "10.2"-v5
 status:
   observedGeneration: 1$8378748355133368567
   pausingTime: "2019-02-07T11:05:56Z"

@@ -49,8 +49,9 @@ spec:
           app: kubedb
         interval: 10s
   podTemplate:
-    annotations:
-      passMe: ToDatabasePod
+    metadata:
+      annotations:
+        passMe: ToDatabasePod
     controller:
       annotations:
         passMe: ToStatefulSet
@@ -73,15 +74,16 @@ spec:
         limits:
           memory: "128Mi"
           cpu: "500m"
-  serviceTemplate:
-    annotations:
-      passMe: ToService
+  serviceTemplates:
+  - alias: primary
+    metadata:
+      annotations:
+        passMe: ToService
     spec:
       type: NodePort
       ports:
       - name:  http
         port:  9200
-        targetPort: http
   terminationPolicy: Halt
 ```
 
@@ -165,8 +167,9 @@ apiVersion: kubedb.com/v1alpha2
 kind: PerconaXtraDB
 metadata:
   name: init-demo-px
+  namespace: demo
 spec:
-  version: 5.7
+  version: "5.7"
   init:
     script:
       configMap:

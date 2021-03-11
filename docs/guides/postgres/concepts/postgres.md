@@ -31,19 +31,14 @@ metadata:
   name: p1
   namespace: demo
 spec:
-  version: "10.2-v5"
+  version: "13.2"
   replicas: 2
   standbyMode: Hot
-  streamingMode: asynchronous
+  streamingMode: Asynchronous
   leaderElection:
     leaseDurationSeconds: 15
     renewDeadlineSeconds: 10
     retryPeriodSeconds: 2
-  archiver:
-    storage:
-      storageSecretName: s3-secret
-      s3:
-        bucket: kubedb
   authSecret:
     name: p1-auth
   storageType: "Durable"
@@ -91,7 +86,8 @@ spec:
         limits:
           memory: "128Mi"
           cpu: "500m"
-  serviceTemplate:
+  serviceTemplates:
+  - alias: primary
     metadata:
       annotations:
         passMe: ToService
@@ -100,16 +96,15 @@ spec:
       ports:
       - name:  http
         port:  5432
-        targetPort: http
-  replicaServiceTemplate:
-    annotations:
-      passMe: ToReplicaService
+  - alias: standby
+    metadata:
+      annotations:
+        passMe: ToReplicaService
     spec:
       type: NodePort
       ports:
       - name:  http
         port:  5432
-        targetPort: http
   terminationPolicy: "Halt"
 ```
 
@@ -161,7 +156,7 @@ To learn more about how to setup a HA PostgreSQL cluster in KubeDB, please visit
 
 ### spec.streamingMode
 
-`spec.streamingMode` is an optional field that specifies the streaming mode (_synchronous / asynchronous_) of the standby replicas. KubeDB currently supports only **asynchronous** streaming mode.
+`spec.streamingMode` is an optional field that specifies the streaming mode (_Synchronous / Asynchronous_) of the standby replicas. KubeDB currently supports only **Asynchronous** streaming mode.
 
 ### spec.leaderElection
 
@@ -172,20 +167,6 @@ There are three fields under Postgres CRD's `spec.leaderElection`. These values 
 - `retryPeriodSeconds`: This is the duration in seconds the LeaderElector clients should wait between tries of actions. Normally, LeaseDuration / 3. Default 2 sec.
 
 If the Cluster machine is powerful, user can reduce the times. But, Do not make it so little, in that case Postgres will restarts very often.
-
-### spec.archiver
-
-`spec.archiver` is an optional field which specifies storage information that will be used by `wal-g`. User can use either s3 or gcs.
-
-- `storage.storageSecretName` points to the Secret containing the credentials for cloud storage destination.
-- `storage.s3` points to s3 storage configuration.
-- `storage.s3.bucket` points to the bucket name used to store continuous archiving data.
-- `storage.gcs` points to GCS storage configuration.
-- `storage.gcs.bucket` points to the bucket name used to store continuous archiving data.
-
-Continuous archiving data will be stored in a folder called `{bucket}/{prefix}/kubedb/{namespace}/{postgres-name}/archive/`.
-
-To learn more about how to configure Postgres to archive WAL data continuously in AWS S3 bucket, please visit [here](/docs/guides/postgres/backup/wal/continuous_archiving.md).
 
 ### spec.authSecret
 
@@ -241,7 +222,6 @@ To learn how to configure `spec.storage`, please visit the links below:
 
 1. Initialize from Script
 2. Initialize from Snapshot
-3. Initialize from WAL archive
 
 #### Initialize via Script
 
@@ -256,8 +236,9 @@ apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: postgres-db
+  namespace: demo
 spec:
-  version: "10.2-v5"
+  version: "13.2"
   init:
     script:
       configMap:
@@ -265,36 +246,6 @@ spec:
 ```
 
 In the above example, Postgres will execute provided script once the database is running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/postgres/initialization/script_source.md).
-
-#### Initialize from WAL archive
-
-To initialize from WAL archive, set the `spec.init.postgresWAL` section when creating a Postgres object.
-
-Below is an example showing how to initialize a PostgreSQL database from WAL archive.
-
-```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: Postgres
-metadata:
-  name: postgres-db
-spec:
-  version: "10.2-v5"
-  authSecret:
-    name: postgres-old
-  init:
-    postgresWAL:
-      storageSecretName: s3-secret
-      s3:
-        endpoint: "s3.amazonaws.com"
-        bucket: kubedb
-        prefix: "kubedb/demo/old-pg/archive"
-```
-
-In the above example, PostgreSQL database will be initialized from WAL archive.
-
-When initializing from WAL archive, superuser credentials must have to match with the previous one. For example, let's say, we want to initialize this database from `postgres-old` WAL archive. In this case, superuser credentials of new Postgres should be the same as `postgres-old`. Otherwise, the restoration process will be failed.
-
-For more details tutorial on how to initialize from wal archive, please visit [here](/docs/guides/postgres/initialization/wal/wal_source.md).
 
 ### spec.monitor
 
@@ -372,7 +323,6 @@ At least one of the following was changed:
     namespace
     spec.standby
     spec.streaming
-    spec.archiver
     spec.authSecret
     spec.storageType
     spec.storage
@@ -460,7 +410,6 @@ Following table show what KubeDB does when you delete Postgres crd for different
 | 6. Delete Secrets                        |    &#10007;    | &#10007; | &#10007; | &#10003; |
 | 7. Delete Snapshots                      |    &#10007;    | &#10007; | &#10007; | &#10003; |
 | 8. Delete Snapshot data from bucket      |    &#10007;    | &#10007; | &#10007; | &#10003; |
-| 9. Delete archieved WAL data from bucket |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
 If you don't specify `spec.terminationPolicy` KubeDB uses `Halt` termination policy by default.
 

@@ -49,7 +49,7 @@ metadata:
   name: builtin-prom-es
   namespace: demo
 spec:
-  version: 7.3.2
+  version: searchguard-7.9.3
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"

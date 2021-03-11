@@ -86,24 +86,29 @@ Here, is an example of ElasticsearchVersion crd. Replace `<YOUR_PRIVATE_REGISTRY
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: ElasticsearchVersion
 metadata:
-  name: "pvt-7.3.2"
-  labels:
-    app: kubedb
+  name: searchguard-7.9.3
 spec:
-  version: 7.3.2
-  authPlugin: X-Pack
+  authPlugin: SearchGuard
   db:
-    image: <private-docker-registry>/elasticsearch:7.3.2
+    image: PRIVATE_REGISTRY/elasticsearch:7.9.3-searchguard
+  distribution: SearchGuard
   exporter:
-    image: <private-docker-registry>/elasticsearch_exporter:1.0.2
+    image: PRIVATE_REGISTRY/elasticsearch_exporter:1.1.0
   initContainer:
-    image: <private-docker-registry>/busybox
-    yqImage: <private-docker-registry>/yq:2.4.0
-  tools:
-    image: <private-docker-registry>/elasticsearch-tools:7.3.2
+    image: PRIVATE_REGISTRY/toybox:0.8.4
+    yqImage: PRIVATE_REGISTRY/elasticsearch-init:7.9.3-searchguard
   podSecurityPolicies:
     databasePolicyName: elasticsearch-db
-    snapshotterPolicyName: elasticsearch-snapshot
+  stash:
+    addon:
+      backupTask:
+        name: elasticsearch-backup-7.3.2-v7
+        params:
+        - name: args
+          value: --match=^(?![.])(?!searchguard).+
+      restoreTask:
+        name: elasticsearch-restore-7.3.2-v7
+  version: 7.9.3
 ```
 
 Now, create the ElasticsearchVersion crd,
@@ -130,7 +135,7 @@ metadata:
   name: pvt-reg-elasticsearch
   namespace: demo
 spec:
-  version: "pvt-7.3.2"
+  version: "searchguard-7.9.3"
   storage:
     storageClassName: "standard"
     accessModes:

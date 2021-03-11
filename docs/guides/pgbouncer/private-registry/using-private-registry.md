@@ -91,16 +91,13 @@ Here, is an example of PgBouncerVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` w
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PgBouncerVersion
 metadata:
-  name: "pvt-1.11.0"
-  labels:
-    app: kubedb
+  name: "1.12.0"
 spec:
-  deprecated: false
-  version: "1.11.0"
-  server:
-    image: "<YOUR_PRIVATE_REGISTRY>/pgbouncer:custom-1.11.0"
   exporter:
-    image: "<YOUR_PRIVATE_REGISTRY>/pgbouncer_exporter:v0.1.1"
+    image: PRIVATE_REGISTRY/pgbouncer_exporter:v0.1.1
+  server:
+    image: PRIVATE_REGISTRY/pgbouncer:1.12.0
+  version: 1.12.0
 ```
 
 Now, create the PgBouncerVersion crd,
@@ -123,12 +120,13 @@ metadata:
   name: pvt-reg-pgbouncer
   namespace: demo
 spec:
-  version: "pvt-1.11.0"
+  version: "1.12.0"
   databases:
   - alias: "postgres"
     databaseName: "postgres"
     databaseRef:
       name: "quick-postgres"
+      namespace: demo
   connectionPool:
     maxClientConnections: 20
     reservePoolSize: 5

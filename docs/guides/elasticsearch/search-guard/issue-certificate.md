@@ -352,8 +352,7 @@ metadata:
   name: sg-elasticsearch
   namespace: demo
 spec:
-  version: "6.3-v1"
-  authPlugin: "SearchGuard"
+  version: searchguard-7.9.3
   enableSSL: true
   storage:
     storageClassName: "standard"

@@ -29,12 +29,11 @@ metadata:
   name: m1
   namespace: demo
 spec:
-  version: "8.0.21"
+  version: "8.0.23"
   topology:
     mode: GroupReplication
     group:
       name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
-      baseServerID: 100
   authSecret:
     name: m1-auth
   storageType: "Durable"
@@ -74,8 +73,9 @@ spec:
   configSecret:
     name: my-custom-config
   podTemplate:
-    annotations:
-      passMe: ToDatabasePod
+    metadata:
+      annotations:
+        passMe: ToDatabasePod
     controller:
       annotations:
         passMe: ToStatefulSet
@@ -98,15 +98,16 @@ spec:
         limits:
           memory: "128Mi"
           cpu: "500m"
-  serviceTemplate:
-    annotations:
-      passMe: ToService
+  serviceTemplates:
+  - alias: primary
+    metadata:
+      annotations:
+        passMe: ToService
     spec:
       type: NodePort
       ports:
       - name:  http
         port:  9200
-        targetPort: http
   terminationPolicy: Halt
 ```
 
@@ -127,8 +128,6 @@ You can specify the following fields in `spec.topology` field,
 
 - `group` is an optional field to configure a group replication. It contains the following fields:
   - `name` is an optional field to specify the name for the group. It must be a version 4 UUID if specified.
-
-  - `baseServerID` is also an optional field. On a replication master and each replication slave, the `--server-id` option must be specified to establish a unique replication ID in the range from `1` to `2^32 − 1`. Here, “Unique” means that each ID must be different from every other ID in use by any other replication master or slave. So, `baseServerID` is needed to calculate a unique server_id for each member.
 
 ### spec.authSecret
 
@@ -154,10 +153,8 @@ data:
   user: cm9vdA==
 kind: Secret
 metadata:
-  ...
   name: m1-auth
   namespace: demo
-  ...
 type: Opaque
 ```
 
@@ -196,8 +193,9 @@ apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: m1
+  namespace: demo
 spec:
-  version: 8.0.21
+  version: 8.0.23
   init:
     script:
       configMap:

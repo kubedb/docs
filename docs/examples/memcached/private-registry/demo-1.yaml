@@ -4,5 +4,5 @@ metadata:
  name: myregistrykey
  namespace: demo
 data:
- .dockerconfigjson: <base-64-encoded-json-here>
+ .dockerconfigjson: PGJhc2UtNjQtZW5jb2RlZC1qc29uLWhlcmU+
 type: kubernetes.io/dockerconfigjson

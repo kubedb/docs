@@ -11,10 +11,12 @@ spec:
       databaseName: "postgres"
       databaseRef:
         name: "quick-postgres"
+        namespace: demo
     - alias: "mydb"
       databaseName: "tmpdb"
       databaseRef:
         name: "quick-postgres"
+        namespace: demo
   connectionPool:
     maxClientConnections: 20
     reservePoolSize: 5

@@ -66,19 +66,32 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: MySQLVersion
   metadata:
-    name: "8.0.21"
-    labels:
-      app: kubedb
+    name: 8.0.23
   spec:
-    version: "8.0.21"
     db:
-      image: "PRIVATE_DOCKER_REGISTRY/mysql:8.0.21"
+      image: PRIVATE_REGISTRY/mysql:8.0.23
+    distribution: Oracle
     exporter:
-      image: "PRIVATE_DOCKER_REGISTRY/mysqld-exporter:v0.11.0"
+      image: PRIVATE_REGISTRY/mysqld-exporter:v0.11.0
     initContainer:
-      image: "PRIVATE_DOCKER_REGISTRY/busybox"
+      image: PRIVATE_REGISTRY/toybox:0.8.4
+    podSecurityPolicies:
+      databasePolicyName: mysql-db
     replicationModeDetector:
-      image: "PRIVATE_DOCKER_REGISTRY/mysql-replication-mode-detector:v0.1.0-beta.1"
+      image: PRIVATE_REGISTRY/replication-mode-detector:v0.4.0
+    stash:
+      addon:
+        backupTask:
+          name: mysql-backup-8.0.21-v1
+        restoreTask:
+          name: mysql-restore-8.0.21-v1
+    upgradeConstraints:
+      denylist:
+        groupReplication:
+        - < 8.0.23
+        standalone:
+        - < 8.0.23
+    version: 8.0.23
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -123,7 +136,7 @@ metadata:
   name: mysql-pvt-reg
   namespace: demo
 spec:
-  version: "8.0.21"
+  version: "8.0.23"
   storage:
     storageClassName: "standard"
     accessModes:

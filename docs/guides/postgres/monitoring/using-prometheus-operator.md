@@ -95,7 +95,7 @@ metadata:
   name: coreos-prom-postgres
   namespace: demo
 spec:
-  version: "10.2-v5"
+  version: "13.2"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"

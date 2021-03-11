@@ -4,7 +4,7 @@ metadata:
   name: timescale-postgres
   namespace: demo
 spec:
-  version: "timescale-0.9.1" # points to the name of our custom PostgresVersion
+  version: "timescaledb-2.1.0-pg13" # points to the name of our custom PostgresVersion
   storage:
     storageClassName: "standard"
     accessModes:

@@ -48,9 +48,8 @@ metadata:
   name: ssl-elasticsearch
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: searchguard-7.9.3
   replicas: 2
-  authPlugin: "SearchGuard"
   enableSSL: true
   storage:
     storageClassName: "standard"
@@ -87,12 +86,12 @@ $ kubectl get secret -n demo ssl-elasticsearch-cert -o yaml
 ```yaml
 apiVersion: v1
 data:
-  client.jks: /u3+7QAAAAIAAAABAAAA...mVv0I52GubpXTAahXDo=
-  node.jks: /u3+7QAAAAIAAAABAAAA...pn6opk0qoxabtPTP30c=
-  root.jks: /u3+7QAAAAIAAAABAAAA...rjIEWtBA1IMnDcB2JJm5
-  root.pem: LS0tLS1CRUdJTiBDRVJU...VElGSUNBVEUtLS0tLQo=
-  sgadmin.jks: /u3+7QAAAAIAAAABAAAA...12OXut1U7gYnEyJsBg==
-  key_pass: NnRhN3h2
+  client.jks: TFMwdExTMUNSVWRKVGlCLi4uLi49PQ==
+  node.jks: TFMwdExTMUNSVWRKVGlCLi4uLi49PQ==
+  root.jks: TFMwdExTMUNSVWRKVGlCLi4uLi49PQ==
+  root.pem: TFMwdExTMUNSVWRKVGlCLi4uLi49PQ==
+  sgadmin.jks: TFMwdExTMUNSVWRKVGlCLi4uLi49PQ==
+  key_pass: TFMwdExTMUNSVWRKVGlCLi4uLi49PQ==
 kind: Secret
 metadata:
   creationTimestamp: 2018-02-19T09:51:45Z

@@ -84,10 +84,6 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 
 `spec.podSecurityPolicies.databasePolicyName` is a required field that specifies the name of the pod security policy required to get the database server pod(s) running.
 
-### spec.podSecurityPolicies.snapshotterPolicyName
-
-`spec.podSecurityPolicies.snapshotterPolicyName` is a required field that specifies the name of the pod security policy required to get the snapshotter pod(s) running. To use user-defined policies, names of the policies have to be set in `spec.podSecurityPolicies` and in the list of allowed policy names in KubeDB operator like below:
-
 ```bash
 helm upgrade kubedb-operator appscode/kubedb --namespace kube-system \
   --set additionalPodSecurityPolicies[0]=custom-db-policy \

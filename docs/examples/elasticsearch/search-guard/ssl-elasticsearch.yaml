@@ -4,7 +4,7 @@ metadata:
   name: ssl-elasticsearch
   namespace: demo
 spec:
-  version: "6.3-v1"
+  version: searchguard-7.9.3
   replicas: 2
   enableSSL: true
   storage:

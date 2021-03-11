@@ -75,9 +75,6 @@ spec:
     spec:
       resources: {}
   replicas: 1
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   storage:
     accessModes:
     - ReadWriteOnce
@@ -87,7 +84,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: Halt
-  version: 7.3.2
+  version: searchguard-7.9.3
 status:
   observedGeneration: 3$4212299729528774793
   phase: Running

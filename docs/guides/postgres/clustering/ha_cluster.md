@@ -34,7 +34,7 @@ metadata:
   name: warm-postgres
   namespace: demo
 spec:
-  version: "10.2-v5"
+  version: "13.2"
   replicas: 3
   standbyMode: Warm
   storageType: Ephemeral
@@ -58,7 +58,7 @@ metadata:
   name: hot-postgres
   namespace: demo
 spec:
-  version: "10.2-v5"
+  version: "13.2"
   replicas: 3
   standbyMode: Hot
   storageType: Ephemeral

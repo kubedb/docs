@@ -98,7 +98,7 @@ metadata:
   name: custom-redis
   namespace: demo
 spec:
-  version: "4.0-v1"
+  version: 6.0.6
   configSecret:
     name: rd-configuration
   storage:

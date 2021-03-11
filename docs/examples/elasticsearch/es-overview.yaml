@@ -4,7 +4,7 @@ metadata:
   name: e1
   namespace: demo
 spec:
-  version: 7.3.2
+  version: searchguard-7.9.3
   replicas: 2
   enableSSL: true
   authSecret:
@@ -31,8 +31,9 @@ spec:
   configSecret:
     name: es-custom-config
   podTemplate:
-    annotations:
-      passMe: ToDatabasePod
+    metadata:
+      annotations:
+        passMe: ToDatabasePod
     controller:
       annotations:
         passMe: ToStatefulSet
@@ -52,13 +53,14 @@ spec:
         limits:
           memory: "128Mi"
           cpu: "500m"
-  serviceTemplate:
-    annotations:
-      passMe: ToService
-    spec:
-      type: NodePort
-      ports:
-      - name:  http
-        port:  9200
-        targetPort: http
+  serviceTemplates:
+    - alias: primary
+      metadata:
+        annotations:
+          passMe: ToService
+      spec:
+        type: NodePort
+        ports:
+        - name:  http
+          port:  9200
   terminationPolicy: "DoNotTerminate"

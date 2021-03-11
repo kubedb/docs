@@ -183,9 +183,6 @@ spec:
         periodSeconds: 10
       resources: {}
   replicas: 3
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   storage:
     accessModes:
     - ReadWriteOnce

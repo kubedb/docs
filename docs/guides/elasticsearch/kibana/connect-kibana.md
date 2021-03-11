@@ -271,7 +271,7 @@ metadata:
   name: es-kibana-demo
   namespace: demo
 spec:
-  version: "6.3.0-v1"
+  version: "searchguard-7.9.3"
   replicas: 1
   authSecret:
     name: es-auth

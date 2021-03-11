@@ -34,7 +34,7 @@ metadata:
   labels:
     app: kubedb
 spec:
-  version: "4.0"
+  version: 6.0.6
   db:
     image: "${KUBEDB_DOCKER_REGISTRY}/redis:4.0-v1"
   exporter:

@@ -51,7 +51,7 @@ metadata:
   name: quick-postgres
   namespace: demo
 spec:
-  version: "10.2-v5"
+  version: "13.2"
   storageType: Durable
   storage:
     storageClassName: "standard"

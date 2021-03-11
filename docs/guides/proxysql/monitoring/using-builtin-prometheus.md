@@ -53,13 +53,12 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "5.7.25"
+  version: "5.7.33"
   replicas: 3
   topology:
     mode: GroupReplication
     group:
       name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
-      baseServerID: 100
   storageType: Durable
   storage:
     storageClassName: "standard"

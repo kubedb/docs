@@ -30,7 +30,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: 1.5.3-v1
+  version: 1.5.22
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -41,8 +41,9 @@ spec:
   configSecret:
     name: mc-custom-config
   podTemplate:
-    annotations:
-      passMe: ToDatabasePod
+    metadata:
+      annotations:
+        passMe: ToDatabasePod
     controller:
       annotations:
         passMe: ToDeployment
@@ -65,15 +66,16 @@ spec:
         limits:
           memory: "128Mi"
           cpu: "500m"
-  serviceTemplate:
-    annotations:
-      passMe: ToService
+  serviceTemplates:
+  - alias: primary
+    metadata:
+      annotations:
+        passMe: ToService
     spec:
       type: NodePort
       ports:
       - name:  http
         port:  9200
-        targetPort: http
   terminationPolicy: Halt
 ```
 

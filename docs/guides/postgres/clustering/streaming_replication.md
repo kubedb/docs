@@ -43,7 +43,7 @@ metadata:
   name: ha-postgres
   namespace: demo
 spec:
-  version: "10.2-v5"
+  version: "13.2"
   replicas: 3
   storageType: Durable
   storage:
@@ -207,9 +207,6 @@ spec:
     spec:
       resources: {}
   replicas: 3
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   storage:
     accessModes:
     - ReadWriteOnce
@@ -220,7 +217,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: Halt
-  version: 10.2-v5
+  version: "10.2"-v5
 status:
   observedGeneration: 2$4213139756412538772
   phase: Running
@@ -289,7 +286,7 @@ metadata:
   name: hot-postgres
   namespace: demo
 spec:
-  version: "10.2-v5"
+  version: "13.2"
   replicas: 3
   standbyMode: Hot
   storageType: Durable

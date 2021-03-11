@@ -69,7 +69,7 @@ metadata:
   namespace: demo
 spec:
   ca:
-    name: my-ca
+    secretName: my-ca
 ```
 
 Let’s create the `Issuer` cr we have shown above,
@@ -90,7 +90,7 @@ metadata:
   name: my-standalone-tls
   namespace: demo
 spec:
-  version: "8.0.21"
+  version: "8.0.23"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -325,13 +325,12 @@ metadata:
   name: my-group-tls
   namespace: demo
 spec:
-  version: "8.0.21"
+  version: "8.0.23"
   replicas: 3
   topology:
     mode: GroupReplication
     group:
       name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
-      baseServerID: 100
   storageType: Durable
   storage:
     storageClassName: "standard"

@@ -48,7 +48,7 @@ metadata:
   name: redis-cluster
   namespace: demo
 spec:
-  version: 4.0-v2
+  version: 6.0.6
   mode: Cluster
   cluster:
     master: 3
@@ -208,9 +208,6 @@ spec:
     spec:
       resources: {}
   replicas: 1
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   storage:
     accessModes:
     - ReadWriteOnce
@@ -221,7 +218,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: Halt
-  version: 4.0-v2
+  version: 6.0.6
 status:
   observedGeneration: 2$4213139756412538772
   phase: Running

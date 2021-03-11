@@ -53,7 +53,7 @@ metadata:
   name: sample-redis
   namespace: databases
 spec:
-  version: "4.0-v1"
+  version: 6.0.6
   terminationPolicy: WipeOut
   configSecret: # configure Redis to use password for authentication
     name: redis-config
