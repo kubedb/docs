@@ -6,6 +6,6 @@ menu:
     identifier: legacy-uninstallation-guide
     name: Legacy Uninstall
     parent: setup
-    weight: 50
+    weight: 60
 menu_name: docs_{{ .version }}
 ---

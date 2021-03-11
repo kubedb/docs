@@ -6,6 +6,6 @@ menu:
     identifier: legacy-installation-guide
     name: Legacy Install
     parent: setup
-    weight: 40
+    weight: 50
 menu_name: docs_{{ .version }}
 ---
