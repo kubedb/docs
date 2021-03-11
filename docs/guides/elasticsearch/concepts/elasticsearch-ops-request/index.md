@@ -35,7 +35,7 @@ spec:
   databaseRef:
     name: es
   upgrade:
-    targetVersion: 7.5.2-searchguard
+    targetVersion: searchguard-7.5.2-v1
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -93,7 +93,7 @@ spec:
   databaseRef:
     name: es
   upgrade:
-    targetVersion: 7.5.2-searchguard
+    targetVersion: searchguard-7.5.2-v1
 ```
 
 ### spec.horizontalScaling
