@@ -42,9 +42,9 @@ Follow the below instructions to update the license:
 ## Using Helm 3
 
 ```bash
-$ helm upgrade kubedb-enterprise -n kube-system appscode/kubedb-enterprise  \
-    --reuse-values                                                        \
-    --set-file license=/path/to/new/license.txt
+$ helm upgrade kubedb-enterprise --namespace kube-system appscode/kubedb \
+    --reuse-values                                                       \
+    --set-file global.license=/path/to/new/license.txt
 ```
 
 </div>
@@ -53,9 +53,9 @@ $ helm upgrade kubedb-enterprise -n kube-system appscode/kubedb-enterprise  \
 ## Using Helm 2
 
 ```bash
-$ helm upgrade kubedb-enterprise appscode/kubedb-enterprise  \
-    --reuse-values                                         \
-    --set-file license=/path/to/new/license.txt
+$ helm upgrade kubedb-enterprise appscode/kubedb  --namespace kube-system \
+    --reuse-values                                        \
+    --set-file global.license=/path/to/new/license.txt
 ```
 
 </div>
@@ -64,8 +64,9 @@ $ helm upgrade kubedb-enterprise appscode/kubedb-enterprise  \
 ## Using YAML (with helm 3)
 
 ```bash
-$ helm template kubedb-enterprise appscode/kubedb-enterprise  \
-    --set-file license=/path/to/new/license.txt             \
+$ helm template kubedb-enterprise appscode/kubedb           \
+    --namespace kube-system                                 \
+    --set-file global.license=/path/to/new/license.txt      \
     --show-only templates/license.yaml                      \
     --no-hooks | kubectl apply -f -
 ```

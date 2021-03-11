@@ -3,9 +3,9 @@ title: Uninstall KubeDB Community Edition
 description: Uninstallation guide for KubeDB Community edition
 menu:
   docs_{{ .version }}:
-    identifier: uninstall-kubedb-community
+    identifier: legacy-uninstall-kubedb-community
     name: Community Edition
-    parent: uninstallation-guide
+    parent: legacy-uninstallation-guide
     weight: 10
 product_name: kubedb
 menu_name: docs_{{ .version }}
@@ -52,10 +52,10 @@ $ helm delete kubedb-community --namespace kube-system
 
 ## Using YAML (with helm 3)
 
-If you prefer to not use Helm, you can generate YAMLs from the KubeDB chart and uninstall using `kubectl`.
+If you prefer to not use Helm, you can generate YAMLs from KubeDB chart and uninstall using `kubectl`.
 
 ```bash
-$ helm template kubedb-community appscode/kubedb --namespace kube-system | kubectl delete -f -
+$ helm template kubedb-community appscode/kubedb-community --namespace kube-system | kubectl delete -f -
 ```
 
 </div>

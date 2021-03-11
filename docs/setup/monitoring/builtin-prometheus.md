@@ -40,7 +40,6 @@ Let's install KubeDB with operator monitoring enabled.
 ```bash
 $ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
-  --no-hooks \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/builtin \
   --set monitoring.prometheus.namespace=monitoring \
@@ -63,7 +62,6 @@ $ helm install appscode/kubedb --name kubedb --version {{< param "info.version" 
 ```bash
 $ helm template kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
-  --no-hooks \
   --set monitoring.enabled=true \
   --set monitoring.agent=prometheus.io/builtin \
   --set monitoring.prometheus.namespace=monitoring \
