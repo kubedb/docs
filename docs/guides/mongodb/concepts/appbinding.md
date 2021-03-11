@@ -39,7 +39,7 @@ metadata:
     app.kubernetes.io/instance: quick-postgres
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: postgres
-    app.kubernetes.io/version: 10.2-v2
+    app.kubernetes.io/version: "10.2"-v2
 spec:
   type: kubedb.com/postgres
   secret:
@@ -58,7 +58,7 @@ spec:
     - renameKey:
         from: POSTGRES_PASSWORD
         to: password
-  version: "10.2"
+  version: "13.2"
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.

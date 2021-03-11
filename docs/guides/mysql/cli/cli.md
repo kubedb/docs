@@ -81,9 +81,6 @@ spec:
       resources: {}
       serviceAccountName: mysql-demo
   replicas: 1
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   storage:
     accessModes:
     - ReadWriteOnce

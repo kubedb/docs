@@ -41,7 +41,7 @@ metadata:
     app.kubernetes.io/name: elasticsearches.kubedb.com
 spec:
   clientConfig:
-    caBundle: LS0tLS1CRUdJTiB.....==
+    caBundle: TFMwdExTMUNSVWRKVGlCLi4uLi49PQ==
     service:
       name: es
       port: 9200

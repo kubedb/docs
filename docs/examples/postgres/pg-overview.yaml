@@ -4,15 +4,10 @@ metadata:
   name: p1
   namespace: demo
 spec:
-  version: "10.2-v5"
+  version: "13.2"
   replicas: 2
   standbyMode: Hot
-  streamingMode: asynchronous
-  archiver:
-    storage:
-      storageSecretName: s3-secret
-      s3:
-        bucket: kubedb
+  streamingMode: Asynchronous
   authSecret:
     name: p1-auth
   storageType: "Durable"
@@ -37,8 +32,9 @@ spec:
   configSecret:
     name: pg-custom-config
   podTemplate:
-    annotations:
-      passMe: ToDatabasePod
+    metadata:
+      annotations:
+        passMe: ToDatabasePod
     controller:
       annotations:
         passMe: ToStatefulSet
@@ -58,13 +54,14 @@ spec:
         limits:
           memory: "128Mi"
           cpu: "500m"
-  serviceTemplate:
-    annotations:
-      passMe: ToService
+  serviceTemplates:
+  - alias: primary
+    metadata:
+      annotations:
+        passMe: ToService
     spec:
       type: NodePort
       ports:
       - name:  http
         port:  5432
-        targetPort: http
   terminationPolicy: "DoNotTerminate"

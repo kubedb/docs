@@ -119,7 +119,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "8.0.21"
+  version: "8.0.23"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -301,9 +301,6 @@ spec:
       resources: {}
       serviceAccountName: mysql-quickstart
   replicas: 1
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   storage:
     accessModes:
     - ReadWriteOnce

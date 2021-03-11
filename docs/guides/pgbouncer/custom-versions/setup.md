@@ -73,7 +73,7 @@ spec:
     databaseName: postgres
     databaseRef:
       name: quick-postgres
-      namespace: ""
+      namespace: demo
   userListSecretRef:
     name: db-user-pass
 ```

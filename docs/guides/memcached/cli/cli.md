@@ -84,9 +84,6 @@ spec:
           cpu: 250m
           memory: 64Mi
   replicas: 3
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   terminationPolicy: Halt
   version: 1.5.4-v1
 status:

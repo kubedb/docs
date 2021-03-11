@@ -79,9 +79,6 @@ spec:
     spec:
       resources: {}
   replicas: 1
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   storage:
     accessModes:
     - ReadWriteOnce

@@ -27,36 +27,35 @@ Using a separate crd for specifying respective docker images, and pod security p
 As with all other Kubernetes objects, a MySQLVersion needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section.
 
 ```yaml
-	apiVersion: catalog.kubedb.com/v1alpha1
+apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
 metadata:
-  labels:
-    app.kubernetes.io/instance: kubedb-catalog
-    app.kubernetes.io/managed-by: Helm
-    app.kubernetes.io/name: kubedb-catalog
-    app.kubernetes.io/version: v0.14.0-beta.1
-    helm.sh/chart: kubedb-catalog-v0.14.0-beta.1
-  name: 8.0.21
+  name: 8.0.23
 spec:
   db:
-    image: kubedb/mysql:8.0.21
+    image: kubedb/mysql:8.0.23
+  distribution: Oracle
   exporter:
     image: kubedb/mysqld-exporter:v0.11.0
   initContainer:
-    image: kubedb/busybox
+    image: kubedb/toybox:0.8.4
   podSecurityPolicies:
     databasePolicyName: mysql-db
   replicationModeDetector:
-    image: kubedb/mysql-replication-mode-detector:v0.1.0-beta.1
-  tools:
-    image: kubedb/mysql-tools:5.7.25
+    image: kubedb/replication-mode-detector:v0.4.0
+  stash:
+    addon:
+      backupTask:
+        name: mysql-backup-8.0.21-v1
+      restoreTask:
+        name: mysql-restore-8.0.21-v1
   upgradeConstraints:
     denylist:
       groupReplication:
-      - < 8.0.21
+      - < 8.0.23
       standalone:
-      - < 8.0.21
-  version: 8.0.21
+      - < 8.0.23
+  version: 8.0.23
 ```
 
 ### metadata.name

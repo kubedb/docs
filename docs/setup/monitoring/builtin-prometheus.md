@@ -40,10 +40,10 @@ Let's install KubeDB with operator monitoring enabled.
 ```bash
 $ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
-  --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/builtin \
-  --set monitoring.prometheus.namespace=monitoring \
-  --set monitoring.serviceMonitor.labels.k8s-app=prometheus
+  --set kubedb-community.monitoring.enabled=true \
+  --set kubedb-community.monitoring.agent=prometheus.io/builtin \
+  --set kubedb-community.monitoring.prometheus.namespace=monitoring \
+  --set kubedb-community.monitoring.serviceMonitor.labels.k8s-app=prometheus
 ```
 
 **Helm 2:**
@@ -51,10 +51,10 @@ $ helm install kubedb appscode/kubedb --version {{< param "info.version" >}} \
 ```bash
 $ helm install appscode/kubedb --name kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
-  --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/builtin \
-  --set monitoring.prometheus.namespace=monitoring \
-  --set monitoring.serviceMonitor.labels.k8s-app=prometheus
+  --set kubedb-community.monitoring.enabled=true \
+  --set kubedb-community.monitoring.agent=prometheus.io/builtin \
+  --set kubedb-community.monitoring.prometheus.namespace=monitoring \
+  --set kubedb-community.monitoring.serviceMonitor.labels.k8s-app=prometheus
 ```
 
 **YAML (with Helm 3):**
@@ -62,10 +62,10 @@ $ helm install appscode/kubedb --name kubedb --version {{< param "info.version" 
 ```bash
 $ helm template kubedb appscode/kubedb --version {{< param "info.version" >}} \
   --namespace kube-system \
-  --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/builtin \
-  --set monitoring.prometheus.namespace=monitoring \
-  --set monitoring.serviceMonitor.labels.k8s-app=prometheus | kubectl apply -f -
+  --set kubedb-community.monitoring.enabled=true \
+  --set kubedb-community.monitoring.agent=prometheus.io/builtin \
+  --set kubedb-community.monitoring.prometheus.namespace=monitoring \
+  --set kubedb-community.monitoring.serviceMonitor.labels.k8s-app=prometheus | kubectl apply -f -
 ```
 
 This will add necessary annotations to `kubedb` service created in `kube-system` namespace. Prometheus server will scrape metrics using those annotations. Let's check which annotations are added to the service,
@@ -372,7 +372,7 @@ spec:
       - name: kubedb-apiserver-cert
         secret:
           defaultMode: 420
-          name: kubedb-apiserver-cert
+          secretName: kubedb-apiserver-cert
           items: # avoid mounting private key
           - key: tls.crt
             path: tls.crt

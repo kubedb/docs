@@ -87,12 +87,12 @@ spec:
     databaseName: postgres
     databaseRef:
       name: quick-postgres
-      namespace: ""
+      nnamespace: demo
   - alias: tmpdb
     databaseName: mydb
     databaseRef:
       name: quick-postgres
-      namespace: ""
+      namespace: demo
   monitor:
     agent: prometheus.io/builtin
     prometheus:
@@ -105,9 +105,6 @@ spec:
     spec:
       resources: {}
   replicas: 1
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   userListSecretRef:
     name: db-user-pass
   version: 1.12.0

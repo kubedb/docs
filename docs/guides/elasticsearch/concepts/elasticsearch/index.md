@@ -25,6 +25,9 @@ As with all other Kubernetes objects, an Elasticsearch needs `apiVersion`, `kind
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Elasticsearch
+metadata:
+  name: myes
+  namespace: demo
 spec:
   authSecret:
     name: es-admin-cred

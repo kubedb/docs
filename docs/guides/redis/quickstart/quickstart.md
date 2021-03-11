@@ -80,7 +80,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
 spec:
-  version: "4.0-v1"
+  version: 6.0.6
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -199,9 +199,6 @@ spec:
     spec:
       resources: {}
   replicas: 1
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   storage:
     accessModes:
     - ReadWriteOnce
@@ -299,9 +296,6 @@ spec:
           spec:
             resources: {}
         replicas: 1
-        serviceTemplate:
-          metadata: {}
-          spec: {}
         storage:
           accessModes:
           - ReadWriteOnce

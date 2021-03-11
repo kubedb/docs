@@ -93,7 +93,7 @@ metadata:
   name: custom-postgres
   namespace: demo
 spec:
-  version: "10.2-v5"
+  version: "13.2"
   configSecret:
     name: pg-configuration
   storage:

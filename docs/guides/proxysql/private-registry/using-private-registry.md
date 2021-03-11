@@ -46,16 +46,15 @@ KubeDB operator supports using a private Docker registry. This tutorial will sho
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: ProxySQLVersion
   metadata:
-    name: "2.0.4"
-    labels:
-      app: kubedb
+    name: 2.0.4
   spec:
-    version: "2.0.4"
-    db:
-      image: "PRIVATE_DOCKER_REGISTRY/proxysql:v2.0.4"
     exporter:
-      image: "PRIVATE_DOCKER_REGISTRY/proxysql-exporter:v1.1.0"
-  ...
+      image: PRIVATE_DOCKER_REGISTRY:v1.1.0
+    podSecurityPolicies:
+      databasePolicyName: proxysql-db
+    proxysql:
+      image: PRIVATE_DOCKER_REGISTRY:v2.0.4
+    version: 2.0.4
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
