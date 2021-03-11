@@ -5,7 +5,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: 7.9.1-xpack-v1
+  version: xpack-7.9.1-v1
   configSecret:
     name: es-custom-config
   storageType: Durable

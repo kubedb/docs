@@ -4,7 +4,7 @@ metadata:
   name: es-quickstart
   namespace: demo
 spec:
-  version: 7.9.1-xpack-v1
+  version: xpack-7.9.1-v1
   enableSSL: true
   replicas: 3
   storageType: Durable

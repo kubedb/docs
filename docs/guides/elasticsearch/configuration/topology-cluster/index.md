@@ -140,7 +140,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: 7.9.1-xpack-v1
+  version: xpack-7.9.1-v1
   configSecret:
     name: es-custom-config # mentioned here!
   storageType: Durable
@@ -187,9 +187,9 @@ Now, wait for the Elasticsearch to become ready:
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION          STATUS         AGE
-es-topology   7.9.1-xpack-v1   Provisioning   12s
-es-topology   7.9.1-xpack-v1   Provisioning   2m2s
-es-topology   7.9.1-xpack-v1   Ready          2m2s
+es-topology   xpack-7.9.1-v1   Provisioning   12s
+es-topology   xpack-7.9.1-v1   Provisioning   2m2s
+es-topology   xpack-7.9.1-v1   Ready          2m2s
 ```
 
 ## Verify Configuration
