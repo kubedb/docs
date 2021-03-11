@@ -35,7 +35,7 @@ To uninstall KubeDB Community edition, run the following command:
 In Helm 3, release names are [scoped to a namespace](https://v3.helm.sh/docs/faq/#release-names-are-now-scoped-to-the-namespace). So, provide the namespace you used to install the operator when installing.
 
 ```bash
-$ helm uninstall kubedb-community --namespace kube-system
+$ helm uninstall kubedb --namespace kube-system
 ```
 
 </div>
@@ -44,7 +44,7 @@ $ helm uninstall kubedb-community --namespace kube-system
 ## Using Helm 2
 
 ```bash
-$ helm delete kubedb-community --namespace kube-system
+$ helm delete kubedb --namespace kube-system
 ```
 
 </div>
@@ -55,7 +55,7 @@ $ helm delete kubedb-community --namespace kube-system
 If you prefer to not use Helm, you can generate YAMLs from the KubeDB chart and uninstall using `kubectl`.
 
 ```bash
-$ helm template kubedb-community appscode/kubedb --namespace kube-system | kubectl delete -f -
+$ helm template kubedb appscode/kubedb --namespace kube-system | kubectl delete -f -
 ```
 
 </div>
