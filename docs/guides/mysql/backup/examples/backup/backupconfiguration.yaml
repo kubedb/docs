@@ -1,0 +1,20 @@
+apiVersion: stash.appscode.com/v1beta1
+kind: BackupConfiguration
+metadata:
+  name: sample-mysql-backup
+  namespace: demo
+spec:
+  schedule: "*/5 * * * *"
+  # task: # Uncomment if you are not using KubeDB. Use appropriate addon version for your database.
+  #   name: mysql-backup-v2021.03.08
+  repository:
+    name: gcs-repo
+  target:
+    ref:
+      apiVersion: appcatalog.appscode.com/v1alpha1
+      kind: AppBinding
+      name: sample-mysql
+  retentionPolicy:
+    name: keep-last-5
+    keepLast: 5
+    prune: true
