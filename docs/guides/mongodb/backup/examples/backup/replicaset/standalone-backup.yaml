@@ -1,0 +1,47 @@
+apiVersion: appcatalog.appscode.com/v1alpha1
+kind: AppBinding
+metadata:
+  name: sample-mgo-rs-custom
+  namespace: demo
+spec:
+  clientConfig:
+    service:
+      name: sample-mgo-rs
+      port: 27017
+      scheme: mongodb
+  secret:
+    name: sample-mgo-rs-auth
+  type: kubedb.com/mongodb
+---
+apiVersion: stash.appscode.com/v1alpha1
+kind: Repository
+metadata:
+  name: gcs-repo-custom
+  namespace: demo
+spec:
+  backend:
+    gcs:
+      bucket: appscode-qa
+      prefix: demo/mongodb/sample-mgo-rs/standalone
+    storageSecretName: gcs-secret
+---
+apiVersion: stash.appscode.com/v1beta1
+kind: BackupConfiguration
+metadata:
+  name: sample-mgo-rs-backup2
+  namespace: demo
+spec:
+  schedule: "*/5 * * * *"
+  task:
+    name: mongodb-backup-v2021.03.08
+  repository:
+    name: gcs-repo-custom
+  target:
+    ref:
+      apiVersion: appcatalog.appscode.com/v1alpha1
+      kind: AppBinding
+      name: sample-mgo-rs-custom
+  retentionPolicy:
+    name: keep-last-5
+    keepLast: 5
+    prune: true
