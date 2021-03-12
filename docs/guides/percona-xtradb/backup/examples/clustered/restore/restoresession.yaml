@@ -1,0 +1,30 @@
+apiVersion: stash.appscode.com/v1beta1
+kind: RestoreSession
+metadata:
+  name: restored-xtradb-cluster-restore
+  namespace: demo
+spec:
+  repository:
+    name: gcs-repo-xtradb-cluster
+  target:
+    replicas: 3
+    ref:
+      apiVersion: appcatalog.appscode.com/v1alpha1
+      kind: AppBinding
+      name: restored-xtradb-cluster
+    volumeMounts:
+    - name: data-restored-xtradb-cluster
+      mountPath: /var/lib/mysql
+    volumeClaimTemplates:
+    - metadata:
+        name: data-restored-xtradb-cluster-${POD_ORDINAL}
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: "standard"
+        resources:
+          requests:
+            storage: 1Gi
+  rules:
+  - targetHosts: [] # empty host match all hosts
+    sourceHost: "host-0" # restore same data on all pvc
+    snapshots: ["latest"]

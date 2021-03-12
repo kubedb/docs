@@ -1,0 +1,15 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Elasticsearch
+metadata:
+  name: sample-elasticsearch
+  namespace: demo
+spec:
+  version: searchguard-7.9.3
+  replicas: 1
+  storageType: Durable
+  storage:
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: standard
+  terminationPolicy: Delete

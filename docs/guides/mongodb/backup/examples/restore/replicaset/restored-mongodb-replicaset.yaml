@@ -1,0 +1,20 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MongoDB
+metadata:
+  name: restored-mgo-rs
+  namespace: demo
+spec:
+  version: "4.2.3"
+  replicas: 3
+  replicaSet:
+    name: rs0
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut
+  init:
+    waitForInitialRestore: true

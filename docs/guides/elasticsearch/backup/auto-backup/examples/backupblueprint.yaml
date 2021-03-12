@@ -1,0 +1,26 @@
+apiVersion: stash.appscode.com/v1beta1
+kind: BackupBlueprint
+metadata:
+  name: elasticsearch-backup-template
+spec:
+  # ============== Blueprint for Repository ==========================
+  backend:
+    gcs:
+      bucket: stash-testing
+      prefix: stash-backup/${TARGET_NAMESPACE}/${TARGET_APP_RESOURCE}/${TARGET_NAME}
+    storageSecretName: gcs-secret
+  # ============== Blueprint for BackupConfiguration =================
+  schedule: "*/5 * * * *"
+  interimVolumeTemplate:
+    metadata:
+      name: ${TARGET_APP_RESOURCE}-${TARGET_NAME} # To ensure that the PVC names are unique for different database
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: "standard"
+      resources:
+        requests:
+          storage: 1Gi
+  retentionPolicy:
+    name: 'keep-last-5'
+    keepLast: 5
+    prune: true

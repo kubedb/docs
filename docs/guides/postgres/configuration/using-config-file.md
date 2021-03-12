@@ -203,7 +203,7 @@ If you would like to uninstall KubeDB operator, please follow the steps [here](/
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/postgres/backup/stash.md) PostgreSQL database using Stash.
+- Learn about [backup and restore](/docs/guides/postgres/backup/overview/index.md) PostgreSQL database using Stash.
 - Learn about initializing [PostgreSQL with Script](/docs/guides/postgres/initialization/script_source.md).
 - Want to setup PostgreSQL cluster? Check how to [configure Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md)
 - Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).

@@ -2,7 +2,7 @@
 title: Backup & Restore MySQL
 menu:
   docs_{{ .version }}:
-    identifier: my-backup
+    identifier: guides-mysql-backup
     name: Backup & Restore
     parent: my-mysql-guides
     weight: 40

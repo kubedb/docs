@@ -46,7 +46,7 @@ aliases:
 ## User Guide
 
 - [Quickstart PostgreSQL](/docs/guides/postgres/quickstart/quickstart.md) with KubeDB Operator.
-- How to [Backup & Restore](/docs/guides/postgres/backup/stash.md) PostgreSQL database using Stash.
+- How to [Backup & Restore](/docs/guides/postgres/backup/overview/index.md) PostgreSQL database using Stash.
 - Initialize [PostgreSQL with Script](/docs/guides/postgres/initialization/script_source.md).
 - [PostgreSQL Clustering](/docs/guides/postgres/clustering/ha_cluster.md) supported by KubeDB Postgres.
 - [Streaming Replication](/docs/guides/postgres/clustering/streaming_replication.md) for PostgreSQL clustering.
