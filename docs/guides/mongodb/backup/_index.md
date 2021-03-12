@@ -2,7 +2,7 @@
 title: Backup & Restore MongoDB
 menu:
   docs_{{ .version }}:
-    identifier: mg-backup
+    identifier: guides-mongodb-backup
     name: Backup & Restore
     parent: mg-mongodb-guides
     weight: 40

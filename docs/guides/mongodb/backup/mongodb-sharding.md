@@ -3,13 +3,12 @@ title: Backup & Restore Sharded MongoDB Cluster| Stash
 description: Backup and restore sharded MongoDB cluster using Stash
 menu:
   docs_{{ .version }}:
-    identifier: sharded-mongodb-{{ .subproject_version }}
+    identifier: guides-mongodb-backup-sharded-cluster
     name: MongoDB Sharded Cluster
-    parent: stash-mongodb-guides-{{ .subproject_version }}
-    weight: 30
-product_name: stash
+    parent: guides-mongodb-backup
+    weight: 40
 menu_name: docs_{{ .version }}
-section_menu_id: stash-addons
+section_menu_id: guides
 ---
 
 # Backup and Restore MongoDB Sharded Clusters using Stash
@@ -38,8 +37,6 @@ To keep things isolated, we are going to use a separate namespace called `demo` 
 $ kubectl create ns demo
 namespace/demo created
 ```
-
-> Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/mongodb/tree/{{< param "info.subproject_version" >}}/docs/examples).
 
 ## Backup Sharded MongoDB Cluster
 
@@ -267,10 +264,6 @@ spec:
 ```
 
 Here, `sample-mgo-sh-cert` contains few required certificates, and one of them is `client.pem` which is required to backup/restore ssl enabled mongodb server using stash-mongodb.
-
-**Creating AppBinding Manually:**
-
-If you deploy MongoDB database without KubeDB, you have to create the AppBinding crd manually in the same namespace as the service and secret of the database.
 
 **Insert Sample Data:**
 

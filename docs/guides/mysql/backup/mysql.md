@@ -1,18 +1,17 @@
 ---
 title: Backup & Restore MySQL | Stash
-description: Backup MySQL database using Stash
+description: Backup standalone MySQL database using Stash
 menu:
   docs_{{ .version }}:
-    identifier: mysql-guide-{{ .subproject_version }}
-    name: Backup & Restore MySQL
-    parent: stash-mysql-guides-{{ .subproject_version }}
-    weight: 10
-product_name: stash
+    identifier: guides-mysql-backup-standalone
+    name: Standalone MySQL
+    parent: guides-mysql-backup
+    weight: 20
 menu_name: docs_{{ .version }}
-section_menu_id: stash-addons
+section_menu_id: guides
 ---
 
-# Backup and Restore MySQL database using Stash
+# Backup and Restore standalone MySQL database using Stash
 
 Stash 0.9.0+ supports backup and restoration of MySQL databases. This guide will show you how you can backup and restore your MySQL database with Stash.
 
@@ -160,34 +159,6 @@ Stash uses the AppBinding CRD to connect with the target database. It requires t
 - `.spec.secret` specifies the name of the Secret that holds necessary credentials to access the database.
 - `spec.parameters.stash` specifies the Stash Addon info that will be used to backup and restore this database.
 - `spec.type` specifies the types of the app that this AppBinding is pointing to. KubeDB generated AppBinding follows the following format: `<app group>/<app resource type>`.
-
-**Creating AppBinding Manually:**
-
-If you deploy MySQL database without KubeDB, you have to create the AppBinding CRD manually in the same namespace as the service and secret of the database.
-
-The following YAML shows a minimal AppBinding specification that you have to create if you deploy MySQL database without KubeDB.
-
-```yaml
-apiVersion: appcatalog.appscode.com/v1alpha1
-kind: AppBinding
-metadata:
-  name: my-custom-appbinding-name
-  namespace: my-database-namespace
-spec:
-  clientConfig:
-    service:
-      name: my-database-service-name
-      port: 3306 # my_database_port_number
-      scheme: mysql
-  secret:
-    name: my-database-credentials-secret-name
-  # type field is optional. you can keep it empty.
-  # if you keep it empty then the value of TARGET_APP_RESOURCE variable
-  # will be set to "appbinding" during auto-backup.
-  type: mysql
-```
-
-You have to replace the `<...>` quoted part with proper values in the above YAML.
 
 **Insert Sample Data:**
 

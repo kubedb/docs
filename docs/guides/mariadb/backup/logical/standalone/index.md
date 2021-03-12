@@ -3,13 +3,12 @@ title: Backup KubeDB managed stanadlone MariaDB using Stash | Stash
 description: Backup KubeDB managed stanadlone MariaDB using Stash
 menu:
   docs_{{ .version }}:
-    identifier: mariadb-guide-{{ .subproject_version }}-kubedb-standalone
+    identifier: guides-mariadb-backup-logical-standalone
     name: Standalone MariaDB
-    parent: stash-mariadb-guides-{{ .subproject_version }}-kubedb
+    parent: guides-mariadb-backup-logical
     weight: 10
-product_name: stash
 menu_name: docs_{{ .version }}
-section_menu_id: stash-addons
+section_menu_id: guides
 ---
 
 # Backup KubeDB managed stanadlone MariaDB using Stash
@@ -69,7 +68,7 @@ spec:
 ```
 
 ``` bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubedb/standalone/examples/sample-mariadb.yaml
+$ kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/logical/standalone/examples/sample-mariadb.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 
@@ -254,7 +253,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubedb/standalone/examples/repository.yaml
+$ kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/logical/standalone/examples/repository.yaml
 repository.stash.appscode.com/gcs-repo created
 ```
 
@@ -297,7 +296,7 @@ Here,
 Let's create the `BackupConfiguration` object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubedb/standalone/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/logical/standalone/examples/backupconfiguration.yaml
 backupconfiguration.stash.appscode.com/sample-mariadb-backup created
 ```
 
@@ -342,7 +341,7 @@ gcs-repo   true        1.327 MiB   1                60s                      8m
 Now, if we navigate to the GCS bucket, we will see the backed up data has been stored in `demo/mariadb/sample-mariadb` directory as specified by `.spec.backend.gcs.prefix` field of the `Repository` object.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/kubedb/standalone/images/sample-mariadb-backup.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/logical/standalone/images/sample-mariadb-backup.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -467,7 +466,7 @@ Here,
 Let's create the `RestoreSession` object object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubedb/standalone/examples/restoresession.yaml
+$ kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/logical/standalone/examples/restoresession.yaml
 restoresession.stash.appscode.com/sample-mariadb-restore created
 ```
 

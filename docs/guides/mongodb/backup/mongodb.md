@@ -3,13 +3,12 @@ title: Backup & Restore Standalone MongoDB | Stash
 description: Backup and restore standalone MongoDB database using Stash
 menu:
   docs_{{ .version }}:
-    identifier: standalone-mongodb-{{ .subproject_version }}
+    identifier: guides-mongodb-backup-standalone
     name: Standalone MongoDB
-    parent: stash-mongodb-guides-{{ .subproject_version }}
-    weight: 10
-product_name: stash
+    parent: guides-mongodb-backup
+    weight: 20
 menu_name: docs_{{ .version }}
-section_menu_id: stash-addons
+section_menu_id: guides
 ---
 
 # Backup and Restore MongoDB database using Stash
@@ -230,32 +229,6 @@ spec:
 ```
 
 Here, `sample-mongodb-cert` contains few required certificates, and one of them is `client.pem` which is required to backup/restore ssl enabled mongodb server using stash-mongodb.
-
-**Creating AppBinding Manually:**
-
-If you deploy MongoDB database without KubeDB, you have to create the AppBinding crd manually in the same namespace as the service and secret of the database.
-
-The following YAML shows a minimal AppBinding specification that you have to create if you deploy MongoDB database without KubeDB.
-
-```yaml
-apiVersion: appcatalog.appscode.com/v1alpha1
-kind: AppBinding
-metadata:
-  name: my-custom-appbinding
-  namespace: my-database-namespace
-spec:
-  clientConfig:
-    service:
-      name: my-database-service
-      port: 27017
-      scheme: mongodb
-  secret:
-    name: my-database-credentials-secret
-  # type field is optional. you can keep it empty.
-  # if you keep it empty then the value of TARGET_APP_RESOURCE variable
-  # will be set to "appbinding" during auto-backup.
-  type: mongodb
-```
 
 **Insert Sample Data:**
 

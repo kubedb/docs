@@ -1,18 +1,17 @@
 ---
 title: Backup & Restore Percona XtraDB Database | Stash
-description: Backup & Restore Percona XtraDB Database database using Stash
+description: Backup & Restore standalone Percona XtraDB Database database using Stash
 menu:
   docs_{{ .version }}:
-    identifier: percona-xtradb-guide-{{ .subproject_version }}
-    name: Backup & Restore Percona XtraDB
-    parent: stash-percona-xtradb-guides-{{ .subproject_version }}
-    weight: 10
-product_name: stash
+    identifier: guides-px-backup-standalone
+    name: Standalone Percona XtraDB
+    parent: guides-px-backup
+    weight: 20
 menu_name: docs_{{ .version }}
-section_menu_id: stash-addons
+section_menu_id: guides
 ---
 
-# Backup and Restore Percona XtraDB database using Stash
+# Backup and Restore standalone Percona XtraDB database using Stash
 
 Stash 0.9.0+ supports backup and restoration of Percona XtraDB databases. This guide will show you how you can backup and restore your Percona XtraDB database with Stash.
 

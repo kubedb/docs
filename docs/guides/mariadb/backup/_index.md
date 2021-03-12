@@ -1,10 +1,10 @@
 ---
-title: MariaDB {{ .subproject_version }} Backup Guides | Stash
+title: Backup & Restore MariaDB
 menu:
   docs_{{ .version }}:
-    identifier: mariadb-guides-backup
+    identifier: guides-mariadb-backup
     name: Backup & Restore
     parent: mariadb-guides
-    weight: 10
+    weight: 40
 menu_name: docs_{{ .version }}
 ---

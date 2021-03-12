@@ -3,13 +3,12 @@ title: Backup & Restore MongoDB ReplicaSet Cluster | Stash
 description: Backup and restore MongoDB ReplicaSet cluster using Stash
 menu:
   docs_{{ .version }}:
-    identifier: mongodb-replicaset-{{ .subproject_version }}
+    identifier: guides-mongodb-backup-replicaset
     name: MongoDB ReplicaSet Cluster
-    parent: stash-mongodb-guides-{{ .subproject_version }}
-    weight: 20
-product_name: stash
+    parent: guides-mongodb-backup
+    weight: 30
 menu_name: docs_{{ .version }}
-section_menu_id: stash-addons
+section_menu_id: guides
 ---
 
 # Backup and Restore MongoDB ReplicaSet Clusters using Stash
@@ -239,10 +238,6 @@ spec:
 ```
 
 Here, `mongo-sh-rs-cert` contains few required certificates, and one of them is `client.pem` which is required to backup/restore ssl enabled mongodb server using stash-mongodb.
-
-**Creating AppBinding Manually:**
-
-If you deploy MongoDB database without KubeDB, you have to create the AppBinding crd manually in the same namespace as the service and secret of the database.
 
 **Insert Sample Data:**
 

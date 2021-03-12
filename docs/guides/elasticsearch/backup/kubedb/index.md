@@ -3,13 +3,12 @@ title: Elasticsearch | Stash
 description: Backup and restore Elasticsearch deployed with KubeDB
 menu:
   docs_{{ .version }}:
-    identifier: stash-elasticsearch-guides-{{ .subproject_version }}-kubedb
-    name: Deployed with KubeDB
-    parent: stash-elasticsearch-guides-{{ .subproject_version }}
-    weight: 10
-product_name: stash
+    identifier: guides-es-backup-kubedb
+    name: Scheduled Backup
+    parent: guides-es-backup
+    weight: 20
 menu_name: docs_{{ .version }}
-section_menu_id: stash-addons
+section_menu_id: guides
 ---
 
 # Backup and restore Elasticsearch database deployed with KubeDB
