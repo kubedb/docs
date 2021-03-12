@@ -12,8 +12,6 @@ menu_name: docs_{{ .version }}
 section_menu_id: stash-addons
 ---
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [Stash Enterprise Edition](https://stash.run/docs/latest/setup/install/enterprise/) to try this feature." >}}
-
 # Backup and restore Elasticsearch database deployed with KubeDB
 
 Stash 0.9.0+ supports backup and restoration of Elasticsearch clusters. This guide will show you how you can backup and restore your KubeDB deployed Elasticsearch database using Stash.

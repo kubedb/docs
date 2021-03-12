@@ -6,8 +6,6 @@ metadata:
   labels:
     app.kubernetes.io/name: mariadb.kubedb.com
 spec:
-  # task: # Uncomment if you are not using KubeDB
-  #   name: mariadb-restore-10.5.8
   repository:
     name: gcs-repo
   target:

@@ -6,7 +6,6 @@ metadata:
 spec:
   schedule: "*/2 * * * *"
   task:
-    # name: mariadb-backup-10.5.8 # Uncomment if you are not using KubeDB
     params:
     - name: args
       value: --databases testdb

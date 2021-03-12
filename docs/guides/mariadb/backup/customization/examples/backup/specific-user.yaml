@@ -5,8 +5,6 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/2 * * * *"
-  # task: # Uncomment if you are not using KubeDB
-  #   name: mariadb-backup-10.5.8
   repository:
     name: gcs-repo
   target:

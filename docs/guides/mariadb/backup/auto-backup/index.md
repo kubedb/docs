@@ -22,10 +22,10 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
-- Install [KubeDB](https://kubedb.com) in your cluster following the steps [here](https://kubedb.com/docs/latest/setup/). This step is optional. You can deploy your database using any method you want.
-- If you are not familiar with how Stash backup and restore MariaDB databases, please check the following guide [here](/docs/addons/mariadb/overview.md).
-- If you are not familiar with how auto-backup works in Stash, please check the following guide [here](/docs/guides/latest/auto-backup/overview.md).
-- If you are not familiar with the available auto-backup options for databases in Stash, please check the following guide [here](/docs/guides/latest/auto-backup/database.md).
+- Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
+- If you are not familiar with how Stash backup and restore MariaDB databases, please check the following guide [here](/docs/guides/mariadb/backup/overview/index.md).
+- If you are not familiar with how auto-backup works in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/latest/auto-backup/overview/).
+- If you are not familiar with the available auto-backup options for databases in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/latest/auto-backup/database/).
 
 You should be familiar with the following `Stash` concepts:
 
@@ -49,12 +49,12 @@ namespace/demo-2 created
 namespace/demo-3 created
 ```
 
-Make sure you have installed the MariaDB addon for Stash. If you haven't installed it already, please install the addon following the steps [here](/docs/addons/mariadb/setup/install.md).
+Make sure you have installed the MariaDB addon for Stash. If you haven't installed it already, please install the addon following the steps [here](https://stash.run/docs/latest/addons/mariadb/setup/install/).
 
 ```bash
 ❯ kubectl get tasks.stash.appscode.com | grep mariadb
-mariadb-backup-{{< param "info.subproject_version" >}}    62m
-mariadb-restore-{{< param "info.subproject_version" >}}   62m
+mariadb-backup-10.5.8-v1    62m
+mariadb-restore-10.5.8-v1   62m
 ```
 
 ## Prepare Backup Blueprint
@@ -78,8 +78,6 @@ spec:
       prefix: mariadb-backup/${TARGET_NAMESPACE}/${TARGET_APP_RESOURCE}/${TARGET_NAME}
     storageSecretName: gcs-secret
   # ============== Blueprint for BackupConfiguration =================
-  # task: # Uncomment if you are not using KubeDB
-  #   name: mariadb-backup-{{< param "info.subproject_version" >}}
   schedule: "*/5 * * * *"
   retentionPolicy:
     name: 'keep-last-5'
@@ -94,11 +92,11 @@ Notice the `prefix` field of `backend` section. We have used some variables in f
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-❯ kubectl apply -f https://github.com/stashed/mariadb/raw/{{< param "info.subproject_version" >}}/docs/auto-backup/examples/backupblueprint.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/auto-backup/examples/backupblueprint.yaml
 backupblueprint.stash.appscode.com/mariadb-backup-template created
 ```
 
-Now, we are ready to backup our MariaDB databases using few annotations. You can check available auto-backup annotations for a databases from [here](/docs/guides/latest/auto-backup/database/#available-auto-backup-annotations-for-database).
+Now, we are ready to backup our MariaDB databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://stash.run/docs/latest/guides/latest/auto-backup/database/#available-auto-backup-annotations-for-database).
 
 ## Auto-backup with default configurations
 
@@ -150,7 +148,7 @@ Notice the `annotations` section. We are pointing to the `BackupBlueprint` that 
 Let's create the above MariaDB CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/stashed/mariadb/raw/{{< param "info.subproject_version" >}}/docs/auto-backup/examples/sample-mariadb.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/auto-backup/examples/sample-mariadb.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 
@@ -195,7 +193,7 @@ Now, let's verify whether Stash has created a `BackupConfiguration` for our Mari
 ```bash
 ❯ kubectl get backupconfiguration -n demo
 NAME                 TASK                    SCHEDULE      PAUSED   AGE
-app-sample-mariadb   mariadb-backup-{{< param "info.subproject_version" >}}   */5 * * * *            7m28s
+app-sample-mariadb   mariadb-backup-10.5.8-v1   */5 * * * *            7m28s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -267,7 +265,7 @@ app-sample-mariadb-1614230701   BackupConfiguration   app-sample-mariadb   Runni
 Once the backup has been completed successfully, you should see the backed up data has been stored in the bucket at the directory pointed by the `prefix` field of the `Repository`.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/addons/mariadb/guides/{{< param "info.subproject_version" >}}/auto-backup/images/sample-mariadb.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/auto-backup/images/sample-mariadb.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -319,7 +317,7 @@ Notice the `annotations` section. This time, we have passed a schedule via `stas
 Let's create the above MariaDB CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/stashed/mariadb/raw/{{< param "info.subproject_version" >}}/docs/auto-backup/examples/sample-mariadb-2.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/auto-backup/examples/sample-mariadb-2.yaml
 mariadb.kubedb.com/sample-mariadb-2 created
 ```
 
@@ -364,7 +362,7 @@ Now, let's verify whether Stash has created a `BackupConfiguration` for our Mari
 ```bash
 ❯ kubectl get backupconfiguration -n demo-2
 NAME                   TASK                    SCHEDULE      PAUSED   AGE
-app-sample-mariadb-2   mariadb-backup-{{< param "info.subproject_version" >}}   */3 * * * *            3m24s
+app-sample-mariadb-2   mariadb-backup-10.5.8-v1   */3 * * * *            3m24s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -448,7 +446,7 @@ app-sample-mariadb-2-1614233880   BackupConfiguration   app-sample-mariadb-2   R
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/addons/mariadb/guides/{{< param "info.subproject_version" >}}/auto-backup/images/sample-mariadb-2.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/auto-backup/images/sample-mariadb-2.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -501,7 +499,7 @@ Notice the `annotations` section. This time, we have passed an argument via `par
 Let's create the above MariaDB CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/stashed/mariadb/raw/{{< param "info.subproject_version" >}}/docs/auto-backup/examples/sample-mariadb-3.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/auto-backup/examples/sample-mariadb-3.yaml
 mariadb.kubedb.com/sample-mariadb-3 created
 ```
 
@@ -546,7 +544,7 @@ Now, let's verify whether Stash has created a `BackupConfiguration` for our Mari
 ```bash
 ❯ kubectl get backupconfiguration -n demo-3
 NAME                   TASK                    SCHEDULE      PAUSED   AGE
-app-sample-mariadb-3   mariadb-backup-{{< param "info.subproject_version" >}}   */5 * * * *            106s
+app-sample-mariadb-3   mariadb-backup-10.5.8-v1   */5 * * * *            106s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -623,7 +621,7 @@ app-sample-mariadb-3-1614254708   BackupConfiguration   app-sample-mariadb-3   R
 Once the backup has been completed successfully, you should see that Stash has created a new directory as pointed by the `prefix` field of the new `Repository` and stored the backed up data there.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/addons/mariadb/guides/{{< param "info.subproject_version" >}}/auto-backup/images/sample-mariadb-3.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/auto-backup/images/sample-mariadb-3.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -632,7 +630,7 @@ Once the backup has been completed successfully, you should see that Stash has c
 To cleanup the resources crated by this tutorial, run the following commands,
 
 ```bash
-❯ kubectl delete -f https://github.com/stashed/mariadb/raw/{{< param "info.subproject_version" >}}/docs/auto-backup/examples/
+❯ kubectl delete -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/auto-backup/examples/
 backupblueprint.stash.appscode.com "mariadb-backup-template" deleted
 mariadb.kubedb.com "sample-mariadb-2" deleted
 mariadb.kubedb.com "sample-mariadb-3" deleted

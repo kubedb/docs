@@ -20,9 +20,9 @@ Stash `v0.11.8+` supports backup and restoration of MariaDB databases. This guid
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
-- Install MariaDB addon for Stash following the steps [here](/docs/addons/mariadb/setup/install.md).
+- Install MariaDB addon for Stash following the steps [here](https://stash.run/docs/latest/addons/mariadb/setup/install/).
 - Install KubeDB operator in your cluster from [here](https://kubedb.com/docs/latest/setup).
-- If you are not familiar with how Stash backup and restore MariaDB databases, please check the following guide [here](/docs/addons/mariadb/overview.md).
+- If you are not familiar with how Stash backup and restore MariaDB databases, please check the following guide [here](/docs/guides/mariadb/backup/overview/index.md).
 
 You have to be familiar with following custom resources:
 
@@ -39,8 +39,6 @@ To keep things isolated, we are going to use a separate namespace called `demo` 
 $ kubectl create ns demo
 namespace/demo created
 ```
-
-> Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/mariadb/tree/{{< param "info.subproject_version" >}}/docs/kubedb/standalone/examples).
 
 ## Prepare MariaDB
 
@@ -71,7 +69,7 @@ spec:
 ```
 
 ``` bash
-$ kubectl apply -f https://github.com/stashed/mariadb/raw/{{< param "info.subproject_version" >}}/docs/kubedb/standalone/examples/sample-mariadb.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubedb/standalone/examples/sample-mariadb.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 
@@ -192,15 +190,13 @@ In this section, we are going to prepare the necessary resources (i.e. database 
 
 ### Ensure MariaDB Addon
 
-At first, make sure that you have installed Stash MariaDB addon version {{< param "info.subproject_version" >}}. If haven't install the addon yet, install it by following the setup guide from [here](/docs/addons/mariadb/setup/install.md).
+At first, make sure that you have installed Stash MariaDB addon version {{< param "info.subproject_version" >}}. If haven't install the addon yet, install it by following the setup guide from [here](https://stash.run/docs/latest/addons/mariadb/setup/install/).
 
 ```bash
 $ kubectl get tasks.stash.appscode.com | grep mariadb
-mariadb-backup-{{< param "info.subproject_version" >}}    35s
-mariadb-restore-{{< param "info.subproject_version" >}}   35s
+mariadb-backup-10.5.8-v1    35s
+mariadb-restore-10.5.8-v1   35s
 ```
-
-This addon should be able to take backup of the databases with matching major versions as discussed in [Addon Version Compatibility](/docs/addons/mariadb/README.md#addon-version-compatibility).
 
 ### Ensure AppBinding
 
@@ -220,7 +216,7 @@ We have a appbinding named same as database name `sample-mariadb`. We will use t
 
 ### Prepare Backend
 
-We are going to store our backed up data into a GCS bucket. So, we need to create a Secret with GCS credentials and a `Repository` object with the bucket information. If you want to use a different backend, please read the respective backend configuration doc from [here](/docs/guides/latest/backends/overview.md).
+We are going to store our backed up data into a GCS bucket. So, we need to create a Secret with GCS credentials and a `Repository` object with the bucket information. If you want to use a different backend, please read the respective backend configuration doc from [here](https://stash.run/docs/latest/guides/latest/backends/overview/).
 
 **Create Storage Secret:**
 
@@ -258,7 +254,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/stashed/mariadb/raw/{{< param "info.subproject_version" >}}/docs/kubedb/standalone/examples/repository.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubedb/standalone/examples/repository.yaml
 repository.stash.appscode.com/gcs-repo created
 ```
 
@@ -280,8 +276,6 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/5 * * * *"
-  task:
-    name: mariadb-backup-{{< param "info.subproject_version" >}}
   repository:
     name: gcs-repo
   target:
@@ -298,13 +292,12 @@ spec:
 Here,
 
 - `.spec.schedule` specifies that we want to backup the database at 5 minutes intervals.
-- `.spec.task.name` specifies the name of the Task object that specifies the necessary Functions and their execution order to backup a MariaDB database.
 - `.spec.target.ref` refers to the AppBinding object that holds the connection information of our targeted database.
 
 Let's create the `BackupConfiguration` object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/stashed/mariadb/raw/{{< param "info.subproject_version" >}}/docs/kubedb/standalone/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubedb/standalone/examples/backupconfiguration.yaml
 backupconfiguration.stash.appscode.com/sample-mariadb-backup created
 ```
 
@@ -349,7 +342,7 @@ gcs-repo   true        1.327 MiB   1                60s                      8m
 Now, if we navigate to the GCS bucket, we will see the backed up data has been stored in `demo/mariadb/sample-mariadb` directory as specified by `.spec.backend.gcs.prefix` field of the `Repository` object.
 
 <figure align="center">
-  <img alt="Backup data in GCS Bucket" src="/docs/addons/mariadb/guides/{{< param "info.subproject_version" >}}/kubedb/standalone/images/sample-mariadb-backup.png">
+  <img alt="Backup data in GCS Bucket" src="/docs/guides/mariadb/backup/kubedb/standalone/images/sample-mariadb-backup.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -379,7 +372,7 @@ Verify that the `BackupConfiguration` has been paused,
 ```bash
 $ kubectl get backupconfiguration -n demo sample-mariadb-backup
 NAME                 TASK                  SCHEDULE      PAUSED   AGE
-sample-mariadb-backup  mariadb-backup-{{< param "info.subproject_version" >}}   */5 * * * *   true     26m
+sample-mariadb-backup  mariadb-backup-10.5.8-v1   */5 * * * *   true     26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the `BackupConfiguration` has been paused.
@@ -452,7 +445,7 @@ metadata:
   namespace: demo
 spec:
   task:
-    name: mariadb-restore-{{< param "info.subproject_version" >}}
+    name: mariadb-restore-10.5.8-v1
   repository:
     name: gcs-repo
   target:
@@ -474,7 +467,7 @@ Here,
 Let's create the `RestoreSession` object object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/stashed/mariadb/raw/{{< param "info.subproject_version" >}}/docs/kubedb/standalone/examples/restoresession.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubedb/standalone/examples/restoresession.yaml
 restoresession.stash.appscode.com/sample-mariadb-restore created
 ```
 
@@ -554,7 +547,7 @@ Verify that the `BackupConfiguration` has been resumed,
 ```bash
 $ kubectl get backupconfiguration -n demo sample-mariadb-backup
 NAME                    TASK                         SCHEDULE      PAUSED   AGE
-sample-mariadb-backup   mariadb-backup-{{< param "info.subproject_version" >}}   */5 * * * *   false    29m
+sample-mariadb-backup   mariadb-backup-10.5.8-v1   */5 * * * *   false    29m
 ```
 
 Here,  `false` in the `PAUSED` column means the backup has been resume successfully. The CronJob also should be resumed now.

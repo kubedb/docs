@@ -5,7 +5,6 @@ metadata:
   namespace: demo
 spec:
   task:
-    # name: mariadb-restore-10.5.8 # Uncomment if you are not using KubeDB
     params:
     - name: args
       value: --one-database testdb

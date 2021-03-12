@@ -16,8 +16,6 @@ section_menu_id: stash-addons
 
 Stash provides rich customization supports for the backup and restore process to meet the requirements of various cluster configurations. This guide will show you some examples of these customizations.
 
-> Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/mariadb/tree/{{< param "info.subproject_version" >}}/docs/customization/examples).
-
 ## Customizing Backup Process
 
 In this section, we are going to show you how to customize the backup process. Here, we are going to show some examples of providing arguments to the backup process, running the backup process as a specific user, ignoring some indexes during the backup process, etc.
@@ -37,7 +35,6 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    # name: mariadb-backup-10.5.8 # Uncomment if you are not using KubeDB
     params:
     - name: args
       value: --databases testdb
@@ -68,8 +65,6 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/2 * * * *"
-  # task: # Uncomment if you are not using KubeDB
-  #   name: mariadb-backup-10.5.8
   repository:
     name: gcs-repo
   target:
@@ -100,8 +95,6 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/2 * * * *"
-  # task: # Uncomment if you are not using KubeDB
-  #   name: mariadb-backup-10.5.8
   repository:
     name: gcs-repo
   target:
@@ -136,8 +129,6 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/5 * * * *"
-  # task: # Uncomment if you are not using KubeDB
-  #   name: mariadb-backup-10.5.8
   repository:
     name: gcs-repo
   target:
@@ -155,7 +146,7 @@ spec:
     prune: true
 ```
 
-To know more about the available options for retention policies, please visit [here](/docs/concepts/crds/backupconfiguration/#specretentionpolicy).
+To know more about the available options for retention policies, please visit [here](https://stash.run/docs/latest/concepts/crds/backupconfiguration/#specretentionpolicy).
 
 ## Customizing Restore Process
 
@@ -173,7 +164,6 @@ metadata:
   namespace: demo
 spec:
   task:
-    # name: mariadb-restore-10.5.8 # Uncomment if you are not using KubeDB
     params:
     - name: args
       value: --one-database testdb
@@ -201,7 +191,7 @@ gcs-repo-9210ebb6   gcs-repo     host-0     2021-02-12T14:58:27Z
 gcs-repo-0aff8890   gcs-repo     host-0     2021-02-12T15:00:28Z
 ```
 
->You can also filter the snapshots as shown in the guide [here](https://stash.run/docs/v2021.01.21/concepts/crds/snapshot/#working-with-snapshot).
+>You can also filter the snapshots as shown in the guide [here](https://stash.run/docs/latest/concepts/crds/snapshot/#working-with-snapshot).
 
 Stash adds the Repository name as a prefix of the Snapshot. You have to remove the repository prefix and use only the last 8 characters as the snapshot name during restore.
 
@@ -214,8 +204,6 @@ metadata:
   name: sample-mariadb-restore
   namespace: demo
 spec:
-  # task: # Uncomment if you are not using KubeDB
-  #   name: mariadb-restore-10.5.8
   repository:
     name: gcs-repo
   target:
@@ -240,8 +228,6 @@ metadata:
   name: sample-mariadb-restore
   namespace: demo
 spec:
-  # task: # Uncomment if you are not using KubeDB
-  #   name: mariadb-restore-10.5.8
   repository:
     name: gcs-repo
   target:
@@ -269,8 +255,6 @@ metadata:
   name: sample-mariadb-restore
   namespace: demo
 spec:
-  # task: # Uncomment if you are not using KubeDB
-  #   name: mariadb-restore-10.5.8
   repository:
     name: gcs-repo
   target:
