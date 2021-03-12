@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MariaDB
+metadata:
+  name: sample-mariadb
+  namespace: demo
+  annotations:
+    stash.appscode.com/backup-blueprint: mariadb-backup-template
+spec:
+  version: "10.5.8"
+  replicas: 1
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut

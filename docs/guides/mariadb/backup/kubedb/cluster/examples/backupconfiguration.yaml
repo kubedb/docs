@@ -1,0 +1,18 @@
+apiVersion: stash.appscode.com/v1beta1
+kind: BackupConfiguration
+metadata:
+  name: sample-mariadb-backup
+  namespace: demo
+spec:
+  schedule: "*/5 * * * *"
+  repository:
+    name: gcs-repo
+  target:
+    ref:
+      apiVersion: appcatalog.appscode.com/v1alpha1
+      kind: AppBinding
+      name: sample-mariadb
+  retentionPolicy:
+    name: keep-last-5
+    keepLast: 5
+    prune: true

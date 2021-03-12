@@ -1,0 +1,15 @@
+apiVersion: stash.appscode.com/v1beta1
+kind: RestoreSession
+metadata:
+  name: sample-mariadb-restore
+  namespace: demo
+spec:
+  repository:
+    name: gcs-repo
+  target:
+    ref:
+      apiVersion: appcatalog.appscode.com/v1alpha1
+      kind: AppBinding
+      name: sample-mariadb
+  rules:
+  - snapshots: [latest]

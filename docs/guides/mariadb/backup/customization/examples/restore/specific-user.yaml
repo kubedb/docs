@@ -1,0 +1,22 @@
+apiVersion: stash.appscode.com/v1beta1
+kind: RestoreSession
+metadata:
+  name: sample-mariadb-restore
+  namespace: demo
+spec:
+  # task: # Uncomment if you are not using KubeDB
+  #   name: mariadb-restore-10.5.8
+  repository:
+    name: gcs-repo
+  target:
+    ref:
+      apiVersion: appcatalog.appscode.com/v1alpha1
+      kind: AppBinding
+      name: sample-mariadb
+  runtimeSettings:
+    pod:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+  rules:
+  - snapshots: [latest]
