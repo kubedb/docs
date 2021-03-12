@@ -1,0 +1,11 @@
+apiVersion: stash.appscode.com/v1alpha1
+kind: Repository
+metadata:
+  name: gcs-repo-sharding
+  namespace: demo
+spec:
+  backend:
+    gcs:
+      bucket: appscode-qa
+      prefix: demo/mongodb/sample-mgo-sh
+    storageSecretName: gcs-secret

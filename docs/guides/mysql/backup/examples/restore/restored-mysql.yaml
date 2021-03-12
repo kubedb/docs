@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MySQL
+metadata:
+  name: restored-mysql
+  namespace: demo
+spec:
+  version: "8.0.21-v1"
+  replicas: 1
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50Mi
+  init:
+    waitForInitialRestore: true
+  terminationPolicy: WipeOut

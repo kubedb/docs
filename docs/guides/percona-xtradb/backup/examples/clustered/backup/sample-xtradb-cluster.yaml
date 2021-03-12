@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1alpha2
+kind: PerconaXtraDB
+metadata:
+  name: sample-xtradb-cluster
+  namespace: demo
+spec:
+  version: "5.7-cluster"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut

@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Postgres
+metadata:
+  name: sample-postgres-2
+  namespace: demo-2
+  annotations:
+    stash.appscode.com/backup-blueprint: postgres-backup-template
+    stash.appscode.com/schedule: "*/3 * * * *"
+spec:
+  version: "11.11"
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: Delete

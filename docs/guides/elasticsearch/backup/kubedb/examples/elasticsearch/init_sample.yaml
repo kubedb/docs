@@ -1,0 +1,41 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Elasticsearch
+metadata:
+  name: init-sample
+  namespace: restored
+spec:
+  version: opendistro-1.11.0
+  storageType: Durable
+  init:
+    waitForInitialRestore: true
+  topology:
+    master:
+      suffix: master
+      replicas: 1
+      storage:
+        storageClassName: "standard"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    data:
+      suffix: data
+      replicas: 2
+      storage:
+        storageClassName: "standard"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    ingest:
+      suffix: client
+      replicas: 2
+      storage:
+        storageClassName: "standard"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi

@@ -1,0 +1,36 @@
+apiVersion: stash.appscode.com/v1beta1
+kind: BackupConfiguration
+metadata:
+  name: sample-elasticsearch-backup
+  namespace: demo
+spec:
+  schedule: "*/2 * * * *"
+  repository:
+    name: gcs-repo
+  target:
+    ref:
+      apiVersion: appcatalog.appscode.com/v1alpha1
+      kind: AppBinding
+      name: sample-elasticsearch
+  interimVolumeTemplate:
+    metadata:
+      name: stash-tmp-backup-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: "standard"
+      resources:
+        requests:
+          storage: 1Gi
+  runtimeSettings:
+    container:
+      resources:
+        requests:
+          cpu: "200m"
+          memory: "1Gi"
+        limits:
+          cpu: "200m"
+          memory: "1Gi"
+  retentionPolicy:
+    name: keep-last-5
+    keepLast: 5
+    prune: true

@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Elasticsearch
+metadata:
+  name: es-demo-3
+  namespace: demo-3
+  annotations:
+    stash.appscode.com/backup-blueprint: elasticsearch-backup-template
+    params.stash.appscode.com/args: --ignoreType=settings,template
+spec:
+  version: xpack-7.9.1-v1
+  replicas: 1
+  storageType: Durable
+  storage:
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: standard
+  terminationPolicy: WipeOut

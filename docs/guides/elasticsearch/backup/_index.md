@@ -2,7 +2,7 @@
 title: Backup & Restore Elasticsearch
 menu:
   docs_{{ .version }}:
-    identifier: es-backup
+    identifier: guides-es-backup
     name: Backup & Restore
     parent: es-elasticsearch-guides
     weight: 40

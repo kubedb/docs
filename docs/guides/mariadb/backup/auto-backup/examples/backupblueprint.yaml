@@ -1,0 +1,17 @@
+apiVersion: stash.appscode.com/v1beta1
+kind: BackupBlueprint
+metadata:
+  name: mariadb-backup-template
+spec:
+  # ============== Blueprint for Repository ==========================
+  backend:
+    gcs:
+      bucket: stash-testing
+      prefix: mariadb-backup/${TARGET_NAMESPACE}/${TARGET_APP_RESOURCE}/${TARGET_NAME}
+    storageSecretName: gcs-secret
+  # ============== Blueprint for BackupConfiguration =================
+  schedule: "*/5 * * * *"
+  retentionPolicy:
+    name: 'keep-last-5'
+    keepLast: 5
+    prune: true

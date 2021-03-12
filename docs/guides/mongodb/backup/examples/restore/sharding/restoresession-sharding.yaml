@@ -1,0 +1,15 @@
+apiVersion: stash.appscode.com/v1beta1
+kind: RestoreSession
+metadata:
+  name: sample-mgo-sh-restore
+  namespace: demo
+spec:
+  repository:
+    name: gcs-repo-sharding
+  target:
+    ref:
+      apiVersion: appcatalog.appscode.com/v1alpha1
+      kind: AppBinding
+      name: restored-mgo-sh
+  rules:
+  - snapshots: [latest]

@@ -1,0 +1,17 @@
+apiVersion: stash.appscode.com/v1beta1
+kind: RestoreSession
+metadata:
+  name: sample-mongodb-restore
+  namespace: demo
+spec:
+  task:
+    name: mongodb-restore-4.2.3-v6
+  repository:
+    name: gcs-repo-custom
+  target:
+    ref:
+      apiVersion: appcatalog.appscode.com/v1alpha1
+      kind: AppBinding
+      name: restored-mongodb
+  rules:
+  - snapshots: [latest]

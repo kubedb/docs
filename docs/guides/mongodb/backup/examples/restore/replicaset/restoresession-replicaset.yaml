@@ -1,0 +1,15 @@
+apiVersion: stash.appscode.com/v1beta1
+kind: RestoreSession
+metadata:
+  name: sample-mgo-rs-restore
+  namespace: demo
+spec:
+  repository:
+    name: gcs-repo-replicaset
+  target:
+    ref:
+      apiVersion: appcatalog.appscode.com/v1alpha1
+      kind: AppBinding
+      name: restored-mgo-rs
+  rules:
+  - snapshots: [latest]
