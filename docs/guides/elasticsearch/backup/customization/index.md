@@ -35,7 +35,7 @@ metadata:
 spec:
   schedule: "*/2 * * * *"
   task:
-#    name: elasticsearch-backup-{{< param "info.subproject_version" >}} # Uncomment if you are not using KubeDB to deploy your database
+#    name: elasticsearch-backup-7.3.2-v7 # Uncomment if you are not using KubeDB to deploy your database
     params:
     - name: args
       value: --ignoreType=template,settings
@@ -74,7 +74,7 @@ metadata:
 spec:
   schedule: "*/2 * * * *"
   task:
-#    name: elasticsearch-backup-{{< param "info.subproject_version" >}} # Uncomment if you are not using KubeDB to deploy your database
+#    name: elasticsearch-backup-7.3.2-v7 # Uncomment if you are not using KubeDB to deploy your database
     params:
     - name: args
       value: --match=^(?![.])(?!searchguard).+ --ignoreType=template
@@ -113,7 +113,7 @@ metadata:
 spec:
   schedule: "*/2 * * * *"
 #  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: elasticsearch-backup-{{< param "info.subproject_version" >}}
+#    name: elasticsearch-backup-7.3.2-v7
   repository:
     name: gcs-repo
   target:
@@ -154,7 +154,7 @@ metadata:
 spec:
   schedule: "*/2 * * * *"
 #  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: elasticsearch-backup-{{< param "info.subproject_version" >}}
+#    name: elasticsearch-backup-7.3.2-v7
   repository:
     name: gcs-repo
   target:
@@ -199,7 +199,7 @@ metadata:
 spec:
   schedule: "*/2 * * * *"
 #  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: elasticsearch-backup-{{< param "info.subproject_version" >}}
+#    name: elasticsearch-backup-7.3.2-v7
   repository:
     name: gcs-repo
   target:
@@ -226,7 +226,7 @@ spec:
     prune: true
 ```
 
-To know more about the available options for retention policies, please visit [here](/docs/concepts/crds/backupconfiguration/#specretentionpolicy).
+To know more about the available options for retention policies, please visit [here](https://stash.run/docs/latest/concepts/crds/backupconfiguration/#specretentionpolicy).
 
 ## Customizing Restore Process
 
@@ -244,7 +244,7 @@ metadata:
   namespace: demo
 spec:
   task:
-#    name: elasticsearch-restore-{{< param "info.subproject_version" >}} # Uncomment if you are not using KubeDB to deploy your database
+#    name: elasticsearch-restore-7.3.2-v7 # Uncomment if you are not using KubeDB to deploy your database
     params:
     - name: args
       value: --ignoreType=template,settings
@@ -281,7 +281,7 @@ gcs-repo-9210ebb6   gcs-repo     host-0     2021-02-12T14:58:27Z
 gcs-repo-0aff8890   gcs-repo     host-0     2021-02-12T15:00:28Z
 ```
 
->You can also filter the snapshots as shown in the guide [here](https://stash.run/docs/v2021.01.21/concepts/crds/snapshot/#working-with-snapshot).
+>You can also filter the snapshots as shown in the guide [here](https://stash.run/docs/latest/concepts/crds/snapshot/#working-with-snapshot).
 
 Stash adds the Repository name as a prefix of the Snapshot. You have to remove the repository prefix and use only the last 8 characters as the snapshot name during restore.
 
@@ -295,7 +295,7 @@ metadata:
   namespace: demo
 spec:
 #  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: elasticsearch-restore-{{< param "info.subproject_version" >}}
+#    name: elasticsearch-restore-7.3.2-v7
   repository:
     name: gcs-repo
   target:
@@ -330,7 +330,7 @@ metadata:
   namespace: demo
 spec:
 #  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: elasticsearch-restore-{{< param "info.subproject_version" >}}
+#    name: elasticsearch-restore-7.3.2-v7
   repository:
     name: gcs-repo
   target:
@@ -368,7 +368,7 @@ metadata:
   namespace: demo
 spec:
 #  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: elasticsearch-restore-{{< param "info.subproject_version" >}}
+#    name: elasticsearch-restore-7.3.2-v7
   repository:
     name: gcs-repo
   target:

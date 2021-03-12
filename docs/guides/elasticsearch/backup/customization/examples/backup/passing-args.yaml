@@ -6,7 +6,6 @@ metadata:
 spec:
   schedule: "*/2 * * * *"
   task:
-#    name: elasticsearch-backup-7.3.2-v6 # Uncomment if you are not using KubeDB to deploy your database
     params:
     - name: args
       value: --ignoreType=template,settings

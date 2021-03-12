@@ -5,7 +5,6 @@ metadata:
   namespace: demo
 spec:
   task:
-#    name: elasticsearch-restore-7.3.2-v6 # Uncomment if you are not using KubeDB to deploy your database
     params:
     - name: args
       value: --ignoreType=template,settings
