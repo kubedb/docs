@@ -1,0 +1,17 @@
+apiVersion: stash.appscode.com/v1beta1
+kind: RestoreSession
+metadata:
+  name: restored-xtradb-restore
+  namespace: demo
+spec:
+  # task: # Uncomment if you are not using KubeDB to deploy your database. Use appropriate Task version.
+  #   name: percona-xtradb-restore-v2021.03.08
+  repository:
+    name: gcs-repo-sample-xtradb
+  target:
+    ref:
+      apiVersion: appcatalog.appscode.com/v1alpha1
+      kind: AppBinding
+      name: restored-xtradb
+  rules:
+  - snapshots: ["latest"]
