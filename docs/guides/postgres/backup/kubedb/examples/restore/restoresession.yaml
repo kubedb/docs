@@ -4,8 +4,6 @@ metadata:
   name: sample-postgres-restore
   namespace: demo
 spec:
-  # task: # Uncomment if you are not using KubeDB
-  #   name: postgres-restore-11.9.0-v4
   repository:
     name: gcs-repo
   target:

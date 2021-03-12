@@ -12,7 +12,6 @@ menu_name: docs_{{ .version }}
 section_menu_id: stash-addons
 ---
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [Stash Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
 
 # Backup and Restore PostgreSQL database using Stash
 
@@ -22,9 +21,9 @@ Stash 0.9.0+ supports backup and restoration of PostgreSQL databases. This guide
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
-- Install PostgreSQL addon for Stash following the steps [here](/docs/addons/postgres/setup/install.md)
-- Install KubeDB in your cluster following the steps [here](/docs/setup/README.md). This step is optional. You can deploy your database using any method you want. We are using KubeDB because KubeDB simplifies many of the difficult or tedious management tasks of running production-grade databases on private and public clouds.
-- If you are not familiar with how Stash backup and restore PostgreSQL databases, please check the following guide [here](/docs/addons/postgres/overview.md):
+- Install PostgreSQL addon for Stash following the steps [here](https://stash.run/docs/latest/addons/postgres/setup/install/)
+- Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
+- If you are not familiar with how Stash backup and restore PostgreSQL databases, please check the following guide [here](/docs/guides/postgres/backup/overview/index.md):
 
 You have to be familiar with following custom resources:
 
@@ -40,8 +39,6 @@ To keep things isolated, we are going to use a separate namespace called `demo` 
 $ kubectl create ns demo
 namespace/demo created
 ```
-
-> Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/postgres/tree/{{< param "info.subproject_version" >}}/docs/examples).
 
 ## Backup PostgreSQL
 
@@ -77,7 +74,7 @@ spec:
 Create the above `Postgres` crd,
 
 ```bash
-$ kubectl apply -f https://github.com/stashed/postgres/raw/{{< param "info.subproject_version" >}}/docs/kubedb/examples/backup/postgres.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubedb/examples/backup/postgres.yaml
 postgres.kubedb.com/sample-postgres created
 ```
 
@@ -151,9 +148,9 @@ spec:
     stash:
       addon:
         backupTask:
-          name: postgres-backup-{{< param "info.subproject_version" >}}
+          name: postgres-backup-11.9.0-v5
         restoreTask:
-          name: postgres-restore-{{< param "info.subproject_version" >}}
+          name: postgres-restore-11.9.0-v5
   type: kubedb.com/postgres
   version: "11.2"
 ```
@@ -164,60 +161,6 @@ Stash uses the `AppBinding` crd to connect with the target database. It requires
 - `spec.secret` specifies the name of the secret that holds necessary credentials to access the database.
 - `spec.parameters.stash` specifies the Stash Addons that will be used to backup and restore this database.
 - `spec.type` specifies the types of the app that this AppBinding is pointing to. KubeDB generated AppBinding follows the following format: `<app group>/<app resource type>`.
-
-**Creating AppBinding Manually:**
-
-If you deploy the PostgreSQL database without KubeDB, you have to create the AppBinding crd manually in the same namespace as the service and secret of the database.
-
-The following YAML shows a minimal AppBinding specification that you have to create if you deploy the PostgreSQL database without KubeDB.
-
-```yaml
-apiVersion: appcatalog.appscode.com/v1alpha1
-kind: AppBinding
-metadata:
-  name: my-custom-appbinding
-  namespace: my-database-namespace
-spec:
-  clientConfig:
-    service:
-      name: my-database-service
-      port: 5432
-      scheme: postgresql
-  secret:
-    name: my-database-credentials-secret
-  # type field is optional. you can keep it empty.
-  # if you keep it empty then the value of TARGET_APP_RESOURCE variable
-  # will be set to "appbinding" during auto-backup.
-  type: postgres
-```
-
-Stash expects your database secret to have `username` and `password` keys. If your database secret has different keys, you can map them to the Stash recommended keys using `secretTransformation` section of the AppBinding. An example of such transformation is shown below,
-
-```yaml
-apiVersion: appcatalog.appscode.com/v1alpha1
-kind: AppBinding
-metadata:
-  name: my-custom-appbinding
-  namespace: my-database-namespace
-spec:
-  clientConfig:
-    service:
-      name: my-database-service
-      port: 5432
-      scheme: postgresql
-  secret:
-    name: my-database-credentials-secret
-  secretTransforms:
-  - renameKey:
-      from: POSTGRES_USER
-      to: username
-  - renameKey:
-      from: POSTGRES_PASSWORD
-      to: password
-  type: postgres
-```
-
->The `secretTransforms` does not modify your original database Secret. Stash just uses those transformations to obtain the desired keys from the original Secret.
 
 **Insert Sample Data:**
 
@@ -295,7 +238,7 @@ Now, we are ready to backup this sample database.
 
 ### Prepare Backend
 
-We are going to store our backed-up data into a GCS bucket. At first, we need to create a secret with GCS credentials then we need to create a `Repository` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](/docs/guides/latest/backends/overview.md).
+We are going to store our backed-up data into a GCS bucket. At first, we need to create a secret with GCS credentials then we need to create a `Repository` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](https://stash.run/docs/latest/guides/latest/backends/overview/).
 
 **Create Storage Secret:**
 
@@ -333,7 +276,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/stashed/postgres/raw/{{< param "info.subproject_version" >}}/docs/kubedb/examples/backup/repository.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubedb/examples/backup/repository.yaml
 repository.stash.appscode.com/gcs-repo created
 ```
 
@@ -355,8 +298,6 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/5 * * * *"
-  # task: # Uncomment if you are not using KubeDB
-  #   name: postgres-backup-{{< param "info.subproject_version" >}}
   repository:
     name: gcs-repo
   target:
@@ -373,7 +314,6 @@ spec:
 Here,
 
 - `spec.schedule` specifies that we want to backup the database at 5 minutes interval.
-- `spec.task.name` specifies the name of the task crd that specifies the necessary Function and their execution order to backup a PostgreSQL database.
 - `spec.repository.name` specifies the name of the `Repository` crd the holds the backend information where the backed up data will be stored.
 - `spec.target.ref` refers to the `AppBinding` crd that was created for `sample-postgres` database.
 - `spec.retentionPolicy`  specifies the policy to follow for cleaning old snapshots.
@@ -381,7 +321,7 @@ Here,
 Let's create the `BackupConfiguration` object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/stashed/postgres/raw/{{< param "info.subproject_version" >}}/docs/kubedb/examples/backup/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubedb/examples/backup/backupconfiguration.yaml
 backupconfiguration.stash.appscode.com/sample-postgres-backup created
 ```
 
@@ -425,7 +365,7 @@ gcs-repo   true        1.770 KiB   1                2m                       4m1
 Now, if we navigate to the GCS bucket, we are going to see backed up data has been stored in `demo/postgres/sample-postgres` directory as specified by `spec.backend.gcs.prefix` field of Repository crd.
 
 <figure align="center">
- <img alt="Backup data in GCS Bucket" src="/docs/kubedb/images/sample-postgres-backup.png">
+ <img alt="Backup data in GCS Bucket" src="/docs/guides/postgres/backup/kubedb/images/sample-postgres-backup.png">
   <figcaption align="center">Fig: Backup data in GCS Bucket</figcaption>
 </figure>
 
@@ -451,7 +391,7 @@ Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that th
 ```bash
 ❯ kubectl get backupconfiguration -n demo sample-postgres-backup
 NAME                    TASK                        SCHEDULE      PAUSED   AGE
-sample-postgres-backup  postgres-backup-{{< param "info.subproject_version" >}}      */5 * * * *   true     5m55s
+sample-postgres-backup  postgres-backup-11.9.0-v5      */5 * * * *   true     5m55s
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
@@ -489,7 +429,7 @@ Notice the `init` section. Here, we have specified `waitForInitialRestore: true`
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/stashed/postgres/raw/{{< param "info.subproject_version" >}}/docs/kubedb/examples/restore/restored-postgres.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubedb/examples/restore/restored-postgres.yaml
 postgres.kubedb.com/restored-postgres created
 ```
 
@@ -538,8 +478,6 @@ metadata:
   name: sample-postgres-restore
   namespace: demo
 spec:
-  # task: # Uncomment if you are not using KubeDB
-  #   name: postgres-restore-{{< param "info.subproject_version" >}}
   repository:
     name: gcs-repo
   target:
@@ -553,7 +491,6 @@ spec:
 
 Here,
 
-- `spec.task.name` specifies the name of the `Task` crd that specifies the Functions and their execution order to restore a PostgreSQL database.
 - `spec.repository.name` specifies the `Repository` crd that holds the backend information where our backed up data has been stored.
 - `spec.target.ref` refers to the AppBinding crd for the `restored-postgres` database where the backed up data will be restored.
 - `spec.rules` specifies that we are restoring from the latest backup snapshot of the original database.
@@ -561,7 +498,7 @@ Here,
 Let's create the `RestoreSession` crd we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/stashed/postgres/raw/{{< param "info.subproject_version" >}}/docs/kubedb/examples/restore/restoresession.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubedb/examples/restore/restoresession.yaml
 restoresession.stash.appscode.com/sample-postgres-restore created
 ```
 
