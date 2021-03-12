@@ -21,7 +21,7 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
-- Install Stash in your cluster following the steps [here](/docs/setup/README.md).
+- Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
 - Install [KubeDB](https://kubedb.com) in your cluster following the steps [here](https://kubedb.com/docs/latest/setup/). This step is optional. You can deploy your database using any method you want.
 - If you are not familiar with how Stash backup and restore MariaDB databases, please check the following guide [here](/docs/addons/mariadb/overview.md).
 - If you are not familiar with how auto-backup works in Stash, please check the following guide [here](/docs/guides/latest/auto-backup/overview.md).
@@ -29,12 +29,12 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 
 You should be familiar with the following `Stash` concepts:
 
-- [BackupBlueprint](/docs/concepts/crds/backupblueprint.md)
-- [BackupConfiguration](/docs/concepts/crds/backupconfiguration.md)
-- [BackupSession](/docs/concepts/crds/backupsession.md)
-- [Repository](/docs/concepts/crds/repository.md)
-- [Function](/docs/concepts/crds/function.md)
-- [Task](/docs/concepts/crds/task.md)
+- [BackupBlueprint](https://stash.run/docs/latest/concepts/crds/backupblueprint/)
+- [BackupConfiguration](https://stash.run/docs/latest/concepts/crds/backupconfiguration/)
+- [BackupSession](https://stash.run/docs/latest/concepts/crds/backupsession/)
+- [Repository](https://stash.run/docs/latest/concepts/crds/repository/)
+- [Function](https://stash.run/docs/latest/concepts/crds/function/)
+- [Task](https://stash.run/docs/latest/concepts/crds/task/)
 
 In this tutorial, we are going to show backup of three different MariaDB databases on three different namespaces named `demo`, `demo-2`, and `demo-3`. Create the namespaces as below if you haven't done it already.
 

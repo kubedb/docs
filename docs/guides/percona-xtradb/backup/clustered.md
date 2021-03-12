@@ -21,18 +21,18 @@ Stash 0.9.0+ supports backup and restoration of Percona XtraDB cluster databases
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
-- Install Stash in your cluster following the steps [here](/docs/setup/README.md).
+- Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
 - Install Percona XtraDB addon for Stash following the steps [here](/docs/addons/percona-xtradb/setup/install.md)
-- Install [KubeDB](https://kubedb.com) in your cluster following the steps [here](https://kubedb.com/docs/latest/setup/install/). This step is optional. You can deploy your database using any method you want. We are using KubeDB because KubeDB simplifies many of the difficult or tedious management tasks to run a production-grade database on private and public clouds.
+- Install KubeDB in your cluster following the steps [here](/docs/setup/README.md). This step is optional. You can deploy your database using any method you want. We are using KubeDB because KubeDB simplifies many of the difficult or tedious management tasks to run a production-grade database on private and public clouds.
 - If you are not familiar with how Stash takes backup and restores Percona XtraDB, please check the following guide [here](/docs/addons/percona-xtradb/overview.md).
 
 You have to be familiar with the following custom resources:
 
-- [AppBinding](/docs/concepts/crds/appbinding.md)
-- [Function](/docs/concepts/crds/function.md)
-- [Task](/docs/concepts/crds/task.md)
-- [BackupConfiguration](/docs/concepts/crds/backupconfiguration.md)
-- [RestoreSession](/docs/concepts/crds/restoresession.md)
+- [AppBinding](/docs/guides/percona-xtradb/concepts/appbinding.md)
+- [Function](https://stash.run/docs/latest/concepts/crds/function/)
+- [Task](https://stash.run/docs/latest/concepts/crds/task/)
+- [BackupConfiguration](https://stash.run/docs/latest/concepts/crds/backupconfiguration/)
+- [RestoreSession](https://stash.run/docs/latest/concepts/crds/restoresession/)
 
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial. Create `demo` namespace if you haven't created yet.
 
@@ -105,7 +105,7 @@ sample-xtradb-cluster       ClusterIP   10.103.37.141   <none>        3306/TCP  
 sample-xtradb-cluster-gvr   ClusterIP   None            <none>        3306/TCP   11m
 ```
 
-Here, we have to use service `sample-xtradb-cluster` and secret `sample-xtradb-cluster-auth` to connect with the database. KubeDB creates an [AppBinding](/docs/concepts/crds/appbinding.md) CRD that holds the necessary information to connect with the database.
+Here, we have to use service `sample-xtradb-cluster` and secret `sample-xtradb-cluster-auth` to connect with the database. KubeDB creates an [AppBinding](/docs/guides/percona-xtradb/concepts/appbinding.md) CRD that holds the necessary information to connect with the database.
 
 #### Verify AppBinding
 

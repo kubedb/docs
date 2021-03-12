@@ -21,19 +21,19 @@ Stash 0.9.0+ supports backup and restoration of Elasticsearch clusters. This gui
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
-- Install Stash in your cluster following the steps [here](/docs/setup/README.md).
+- Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
 - Install Elasticsearch addon for Stash following the steps [here](/docs/addons/elasticsearch/setup/install.md).
-- Install [KubeDB](https://kubedb.com) in your cluster following the steps [here](https://kubedb.com/docs/latest/setup/install/).
+- Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - If you are not familiar with how Stash backup and restore Elasticsearch databases, please check the following guide [here](/docs/addons/elasticsearch/overview.md).
 
 You have to be familiar with following custom resources:
 
-- [AppBinding](/docs/concepts/crds/appbinding.md)
-- [Function](/docs/concepts/crds/function.md)
-- [Task](/docs/concepts/crds/task.md)
-- [BackupConfiguration](/docs/concepts/crds/backupconfiguration.md)
-- [BackupSession](/docs/concepts/crds/backupsession.md)
-- [RestoreSession](/docs/concepts/crds/restoresession.md)
+- [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md)
+- [Function](https://stash.run/docs/latest/concepts/crds/function/)
+- [Task](https://stash.run/docs/latest/concepts/crds/task/)
+- [BackupConfiguration](https://stash.run/docs/latest/concepts/crds/backupconfiguration/)
+- [BackupSession](https://stash.run/docs/latest/concepts/crds/backupsession/)
+- [RestoreSession](https://stash.run/docs/latest/concepts/crds/restoresession/)
 
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial. Create `demo` namespace if you haven't created it yet.
 
