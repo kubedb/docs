@@ -46,7 +46,7 @@ The backup process consists of the following steps:
 
 2. Then, she creates a `Repository` crd that specifies the backend information along with the secret that holds the credentials to access the backend.
 
-3. Then, she creates a `BackupConfiguration` crd targeting the [AppBinding](/docs/concepts/crds/appbinding.md) crd of the desired database. The `BackupConfiguration` object also specifies the `Task` to use to backup the database.
+3. Then, she creates a `BackupConfiguration` crd targeting the [AppBinding](/docs/guides/mariadb/concepts/appbinding/index.md) crd of the desired database. The `BackupConfiguration` object also specifies the `Task` to use to backup the database.
 
 4. Stash operator watches for `BackupConfiguration` crd.
 

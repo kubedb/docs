@@ -12,8 +12,6 @@ menu_name: docs_{{ .version }}
 section_menu_id: stash-addons
 ---
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [Stash Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Backup and Restore MongoDB ReplicaSet Clusters using Stash
 
 Stash supports taking [backup and restores MongoDB ReplicaSet clusters in "idiomatic" way](https://docs.mongodb.com/manual/tutorial/restore-replica-set-from-backup/). This guide will show you how you can backup and restore your MongoDB ReplicaSet clusters with Stash.
@@ -22,9 +20,9 @@ Stash supports taking [backup and restores MongoDB ReplicaSet clusters in "idiom
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
-- Install MongoDB addon for Stash following the steps [here](/docs/addons/mongodb/setup/install.md).
-- Install KubeDB in your cluster following the steps [here](/docs/setup/README.md). This step is optional. You can deploy your database using any method you want. We are using KubeDB because KubeDB simplifies many of the difficult or tedious management tasks of running a production grade databases on private and public clouds.
-- If you are not familiar with how Stash backup and restore MongoDB databases, please check the following guide [here](/docs/addons/mongodb/overview.md).
+- Install MongoDB addon for Stash following the steps [here](https://stash.run/docs/latest/addons/mongodb/setup/install/).
+- Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
+- If you are not familiar with how Stash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/overview/index.md).
 
 You have to be familiar with following custom resources:
 
@@ -40,8 +38,6 @@ To keep things isolated, we are going to use a separate namespace called `demo` 
 $ kubectl create ns demo
 namespace/demo created
 ```
-
-> Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/mongodb/tree/{{< param "info.subproject_version" >}}/docs/examples).
 
 ## Backup MongoDB ReplicaSet using Stash
 
@@ -79,7 +75,7 @@ spec:
 Create the above `MongoDB` crd,
 
 ```console
-$ kubectl apply -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/backup/replicaset/mongodb-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/examples/backup/replicaset/mongodb-replicaset.yaml
 mongodb.kubedb.com/sample-mgo-rs created
 ```
 
@@ -151,9 +147,9 @@ spec:
     stash:
       addon:
         backupTask:
-          name: mongodb-backup-{{< param "info.subproject_version" >}}
+          name: mongodb-restore-4.3.2-v6
         restoreTask:
-          name: mongodb-restore-{{< param "info.subproject_version" >}}
+          name: mongodb-restore-4.3.2-v6
   secret:
     name: sample-mgo-rs-auth
   type: kubedb.com/mongodb
@@ -233,9 +229,9 @@ spec:
     stash:
       addon:
         backupTask:
-          name: mongodb-backup-{{< param "info.subproject_version" >}}
+          name: mongodb-restore-4.3.2-v6
         restoreTask:
-          name: mongodb-restore-{{< param "info.subproject_version" >}}
+          name: mongodb-restore-4.3.2-v6
   secret:
     name: sample-mgo-rs-ssl-cert
   type: kubedb.com/mongodb
@@ -312,7 +308,7 @@ Now, we are ready to backup this sample database.
 
 ### Prepare Backend
 
-We are going to store our backed up data into a GCS bucket. At first, we need to create a secret with GCS credentials then we need to create a `Repository` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](/docs/guides/latest/backends/overview.md).
+We are going to store our backed up data into a GCS bucket. At first, we need to create a secret with GCS credentials then we need to create a `Repository` crd. If you want to use a different backend, please read the respective backend configuration doc from [here](https://stash.run/docs/latest/guides/latest/backends/overview/).
 
 **Create Storage Secret:**
 
@@ -350,7 +346,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/backup/replicaset/repository-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/examples/backup/replicaset/repository-replicaset.yaml
 repository.stash.appscode.com/gcs-repo-replicaset created
 ```
 
@@ -373,7 +369,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
 #  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: mongodb-backup-{{< param "info.subproject_version" >}}
+#    name: mongodb-restore-4.3.2-v6
   repository:
     name: gcs-repo-replicaset
   target:
@@ -396,7 +392,7 @@ Here,
 Let's create the `BackupConfiguration` crd we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/backup/replicaset/backupconfiguration-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/examples/backup/replicaset/backupconfiguration-replicaset.yaml
 backupconfiguration.stash.appscode.com/sample-mgo-rs-backup created
 ```
 
@@ -461,7 +457,7 @@ Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that th
 ```console
 $ kubectl get backupconfiguration -n demo sample-mgo-rs-backup
 NAME                  TASK                       SCHEDULE      PAUSED   AGE
-sample-mgo-rs-backup  mongodb-backup-{{< param "info.subproject_version" >}}      */5 * * * *   true     26m
+sample-mgo-rs-backup  mongodb-restore-4.3.2-v6      */5 * * * *   true     26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
@@ -500,7 +496,7 @@ spec:
 Let's create the above database,
 
 ```console
-$ kubectl apply -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/restore/replicaset/restored-mongodb-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/restore/replicaset/restored-mongodb-replicaset.yaml
 mongodb.kubedb.com/restored-mgo-rs created
 ```
 
@@ -538,7 +534,7 @@ metadata:
   namespace: demo
 spec:
 #  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: mongodb-restore-{{< param "info.subproject_version" >}}
+#    name: mongodb-restore-4.3.2-v6
   repository:
     name: gcs-repo-replicaset
   target:
@@ -560,7 +556,7 @@ Here,
 Let's create the `RestoreSession` crd we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/restore/replicaset/restoresession-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/restore/replicaset/restoresession-replicaset.yaml
 restoresession.stash.appscode.com/sample-mgo-rs-restore created
 ```
 
@@ -683,7 +679,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    name: mongodb-backup-{{< param "info.subproject_version" >}}
+    name: mongodb-restore-4.3.2-v6
   repository:
     name: gcs-repo-custom
   target:
@@ -700,7 +696,7 @@ spec:
 This time, we have to provide the Stash Addon information in `spec.task` section of `BackupConfiguration` object as it does not present in the `AppBinding` object that we are creating manually.
 
 ```console
-$ kubectl create -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/backup/replicaset/standalone-backup.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/examples/backup/replicaset/standalone-backup.yaml
 appbinding.appcatalog.appscode.com/sample-mgo-rs-custom created
 repository.stash.appscode.com/gcs-repo-custom created
 backupconfiguration.stash.appscode.com/sample-mgo-rs-backup2 created
@@ -753,7 +749,7 @@ metadata:
   namespace: demo
 spec:
   task:
-    name: mongodb-restore-{{< param "info.subproject_version" >}}
+    name: mongodb-restore-4.3.2-v6
   repository:
     name: gcs-repo-custom
   target:
@@ -766,14 +762,14 @@ spec:
 ```
 
 ```console
-$ kubectl create -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/restore/replicaset/restored-standalone.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/restore/replicaset/restored-standalone.yaml
 mongodb.kubedb.com/restored-mongodb created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION        STATUS         AGE
 restored-mongodb   4.2.3         Provisioning   56s
 
-$ kubectl create -f https://github.com/stashed/mongodb/raw/{{< param "info.subproject_version" >}}/docs/examples/restore/replicaset/restoresession-standalone.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/restore/replicaset/restoresession-standalone.yaml
 restoresession.stash.appscode.com/sample-mongodb-restore created
 
 $ kubectl get mg -n demo restored-mongodb

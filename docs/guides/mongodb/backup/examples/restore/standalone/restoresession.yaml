@@ -4,8 +4,6 @@ metadata:
   name: sample-mongodb-restore
   namespace: demo
 spec:
-#  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: mongodb-restore-v2021.03.08
   repository:
     name: gcs-repo
   target:

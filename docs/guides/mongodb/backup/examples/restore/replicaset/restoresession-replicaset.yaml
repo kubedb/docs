@@ -4,8 +4,6 @@ metadata:
   name: sample-mgo-rs-restore
   namespace: demo
 spec:
-  task:
-    name: mongodb-restore-v2021.03.08
   repository:
     name: gcs-repo-replicaset
   target:
