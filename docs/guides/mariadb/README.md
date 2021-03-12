@@ -8,6 +8,9 @@ menu:
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
+url: /docs/{{ .version }}/guides/elasticsearch/
+aliases:
+  - /docs/{{ .version }}/guides/elasticsearch/README/
 ---
 
 
