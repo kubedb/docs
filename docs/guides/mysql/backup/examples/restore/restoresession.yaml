@@ -4,8 +4,6 @@ metadata:
   name: restore-sample-mysql
   namespace: demo
 spec:
-  # task: # Uncomment if you are not using KubeDB. Use appropriate addon version for your database.
-  #   name: mysql-restore-v2021.03.08
   repository:
     name: gcs-repo
   target:
