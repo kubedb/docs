@@ -189,7 +189,7 @@ In this section, we are going to prepare the necessary resources (i.e. database 
 
 ### Ensure MariaDB Addon
 
-At first, make sure that you have installed Stash MariaDB addon version {{< param "info.subproject_version" >}}. If haven't install the addon yet, install it by following the setup guide from [here](https://stash.run/docs/latest/addons/mariadb/setup/install/).
+At first, make sure that you have installed Stash MariaDB addon version `10.5.8-v1` . If haven't install the addon yet, install it by following the setup guide from [here](https://stash.run/docs/latest/addons/mariadb/setup/install/).
 
 ```bash
 $ kubectl get tasks.stash.appscode.com | grep mariadb
