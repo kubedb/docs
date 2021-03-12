@@ -12,8 +12,6 @@ menu_name: docs_{{ .version }}
 section_menu_id: stash-addons
 ---
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [Stash Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
-
 # Backup and Restore Percona XtraDB database using Stash
 
 Stash 0.9.0+ supports backup and restoration of Percona XtraDB databases. This guide will show you how you can backup and restore your Percona XtraDB database with Stash.
@@ -22,9 +20,9 @@ Stash 0.9.0+ supports backup and restoration of Percona XtraDB databases. This g
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
 - Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
-- Install Percona XtraDB addon for Stash following the steps [here](/docs/addons/percona-xtradb/setup/install.md)
-- Install KubeDB in your cluster following the steps [here](/docs/setup/README.md). This step is optional. You can deploy your database using any method you want. We are using KubeDB because KubeDB simplifies many of the difficult or tedious management tasks to run a production-grade database on private and public clouds.
-- If you are not familiar with how Stash takes backup and restores Percona XtraDB databases, please check the following guide [here](/docs/addons/percona-xtradb/overview.md).
+- Install Percona XtraDB addon for Stash following the steps [here](https://stash.run/docs/latest/addons/percona-xtradb/setup/install/)
+- Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
+- If you are not familiar with how Stash takes backup and restores Percona XtraDB databases, please check the following guide [here](/docs/guides/percona-xtradb/backup/overview/index.md).
 
 You have to be familiar with the following custom resources:
 
@@ -40,8 +38,6 @@ To keep things isolated, we are going to use a separate namespace called `demo` 
 $ kubectl create ns demo
 namespace/demo created
 ```
-
-> Note: YAML files used in this tutorial are stored [here](https://github.com/stashed/percona-xtradb/tree/{{< param "info.subproject_version" >}}/docs/examples).
 
 ## Backup Percona XtraDB
 
@@ -78,7 +74,7 @@ spec:
 Create the above `PerconaXtraDB` CRD,
 
 ```bash
-$ kubectl apply -f https://github.com/stashed/percona-xtradb/raw/{{< param "info.subproject_version" >}}/docs/examples/standalone/backup/sample-xtradb.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/standalone/backup/sample-xtradb.yaml
 perconaxtradb.kubedb.com/sample-xtradb created
 ```
 
@@ -165,9 +161,9 @@ spec:
     stash:
       addon:
         backupTask:
-          name: percona-xtradb-backup-{{< param "info.subproject_version" >}}
+          name: percona-xtradb-backup-5.7.0-v2
         restoreTask:
-          name: percona-xtradb-restore-{{< param "info.subproject_version" >}}
+          name: percona-xtradb-restore-5.7.0-v2
   type: kubedb.com/perconaxtradb
   version: "5.7"
 ```
@@ -282,7 +278,7 @@ Now, we are ready to back up the database.
 
 ### Prepare Backend
 
-We are going to store our backed up data into a GCS bucket. At first, we need to create a secret with GCS credentials then we need to create a `Repository` CRD. If you want to use a different backend, please read the respective backend configuration doc from [here](/docs/guides/latest/backends/overview.md).
+We are going to store our backed up data into a GCS bucket. At first, we need to create a secret with GCS credentials then we need to create a `Repository` CRD. If you want to use a different backend, please read the respective backend configuration doc from [here](https://stash.run/docs/latest/guides/latest/backends/overview/).
 
 #### Create Storage Secret
 
@@ -320,7 +316,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/stashed/percona-xtradb/raw/{{< param "info.subproject_version" >}}/docs/examples/standalone/backup/repository.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/standalone/backup/repository.yaml
 repository.stash.appscode.com/gcs-repo-sample-xtradb created
 ```
 
@@ -342,8 +338,6 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/5 * * * *"
-  # task: # Uncomment if you are not using KubeDB to deploy your database
-  #   name: percona-xtradb-backup-{{< param "info.subproject_version" >}}
   repository:
     name: gcs-repo-sample-xtradb
   target:
@@ -360,13 +354,12 @@ spec:
 Here,
 
 - `.spec.schedule` specifies that we want to back up the database at 5 minutes interval.
-- `.spec.task.name` specifies the name of the Task CRD that specifies the necessary Functions and their execution order to backup a Percona XtraDB database.
 - `.spec.target.ref` refers to the AppBinding CRD that was created for the `sample-xtradb` database.
 
 Let's create the `BackupConfiguration` CRD we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/stashed/percona-xtradb/raw/{{< param "info.subproject_version" >}}/docs/examples/standalone/backup/backupconfiguration.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/standalone/backup/backupconfiguration.yaml
 backupconfiguration.stash.appscode.com/sample-xtradb-backup created
 ```
 
@@ -415,7 +408,7 @@ gcs-repo-sample-xtradb   true               3                82s                
 Now, if we navigate to the GCS bucket, we will see the backed up data has been stored in `demo/xtradb/sample-xtradb` directory as specified by `.spec.backend.gcs.prefix` field of Repository CRD.
 
 <figure align="center">
-  <img alt="Backed up data in GCS Bucket" src="../images/sample-xtradb-backup.png">
+  <img alt="Backed up data in GCS Bucket" src="/docs/guides/percona-xtradb/backup/images/sample-xtradb-backup.png">
   <figcaption align="center">Fig: Backed up data in GCS Bucket</figcaption>
 </figure>
 
@@ -441,7 +434,7 @@ Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that th
 ```console
 $ kkubectl get backupconfiguration -n demo sample-xtradb-backup
 NAME                   TASK                        SCHEDULE      PAUSED   AGE
-sample-xtradb-backup   percona-xtradb-backup-{{< param "info.subproject_version" >}}   */5 * * * *   true     13m
+sample-xtradb-backup   percona-xtradb-backup-5.7.0-v2   */5 * * * *   true     13m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
@@ -482,7 +475,7 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/stashed/percona-xtradb/raw/{{< param "info.subproject_version" >}}/docs/examples/standalone/restore/restored-xtradb.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/standalone/restore/restored-xtradb.yaml
 perconaxtradb.kubedb.com/restored-xtradb created
 ```
 
@@ -518,8 +511,6 @@ metadata:
   name: restored-xtradb-restore
   namespace: demo
 spec:
-  task:
-    name: percona-xtradb-restore-{{< param "info.subproject_version" >}}
   repository:
     name: gcs-repo-sample-xtradb
   target:
@@ -541,7 +532,7 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/stashed/percona-xtradb/raw/{{< param "info.subproject_version" >}}/docs/examples/standalone/restore/restoresession.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/standalone/restore/restoresession.yaml
 restoresession.stash.appscode.com/restored-xtradb-restore created
 ```
 

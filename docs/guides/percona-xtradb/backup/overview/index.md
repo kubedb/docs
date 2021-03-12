@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
+{{< notice type="warning" message="This is an Enterprise-only feature. Please install [Stash Enterprise Edition](https://stash.run/docs/latest/setup/install/enterprise/) to try this feature. You can use KubeDB Enterprise license to install Stash Enterprise edition. Database backup with Stash is already included in the KubeDB Enterprise license. So, you don't need a separate license for Stash." >}}
 
 # Backup & Restore Percona XtraDB Using Stash
 
@@ -38,7 +38,7 @@ The backup process consists of the following steps:
 
 2. Then, she creates a `Repository` crd that specifies the backend information along with the secret that holds the credentials to access the backend.
 
-3. Then, she creates a `BackupConfiguration` crd targeting the [AppBinding](/docs/concepts/crds/appbinding.md) crd of the desired database. The `BackupConfiguration` object also specifies the `Task` to use to backup the database.
+3. Then, she creates a `BackupConfiguration` crd targeting the [AppBinding](/docs/guides/percona-xtradb/concepts/appbinding.md) crd of the desired database. The `BackupConfiguration` object also specifies the `Task` to use to backup the database.
 
 4. Stash operator watches for `BackupConfiguration` crd.
 
@@ -129,4 +129,4 @@ For a Percona XtraDB Cluster, the Stash operator creates a number (equal to the 
 
 ## Next Steps
 
-- Install Percona XtraDB addon for Stash following the guide from [here](/docs/addons/percona-xtradb/setup/install.md).
+- Install Percona XtraDB addon for Stash following the guide from [here](https://stash.run/docs/latest/addons/percona-xtradb/setup/install/).
