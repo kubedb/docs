@@ -2,9 +2,9 @@
 title: MongoDB Backup & Restore Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mongodb-backup-overview
+    identifier: mg-backup-stash
     name: Overview
-    parent: guides-mongodb-backup
+    parent: mg-backup
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
