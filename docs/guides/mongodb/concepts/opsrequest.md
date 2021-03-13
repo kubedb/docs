@@ -464,6 +464,74 @@ status:
   phase: Successful
 ```
 
+**Sample `MongoDBOpsRequest` Objects for Reconfiguring TLS of the database:**
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mops-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: mg-rs
+  tls:
+    issuerRef:
+      name: mg-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    certificates:
+      - alias: client
+        emailAddresses:
+          - abc@appscode.com
+```
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mops-rotate
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: mg-rs
+  tls:
+    rotateCertificates: true
+```
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mops-change-issuer
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: mg-rs
+  tls:
+    issuerRef:
+      name: mg-new-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+```
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mops-remove
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: mg-rs
+  tls:
+    remove: true
+```
+
 Here, we are going to describe the various sections of a `MongoDBOpsRequest` crd.
 
 A `MongoDBOpsRequest` object has the following fields in the `spec` section.
@@ -554,20 +622,30 @@ spec:
 
 This will expand the volume size of all the shard nodes to 2 GB.
 
-### spec.customConfig
+### spec.configuration
 
-If you want to reconfigure your Running MongoDB cluster or different components of it with new custom configuration, you have to specify `spec.customConfig` section. This field consists of the following sub-field:
+If you want to reconfigure your Running MongoDB cluster or different components of it with new custom configuration, you have to specify `spec.configuration` section. This field consists of the following sub-field:
 
-- `spec.customConfig.standalone` indicates the desired new custom configuration for a standalone MongoDB database.
-- `spec.customConfig.replicaSet` indicates the desired new custom configuration for replicaSet of a MongoDB database.
-- `spec.customConfig.configServer` indicates the desired new custom configuration for config servers of a sharded MongoDB database.
-- `spec.customConfig.mongos` indicates the desired new custom configuration for the mongos nodes of a sharded MongoDB database.
-- `spec.customConfig.shard` indicates the desired new custom configuration for the shard nodes of a sharded MongoDB database.
+- `spec.configuration.standalone` indicates the desired new custom configuration for a standalone MongoDB database.
+- `spec.configuration.replicaSet` indicates the desired new custom configuration for replicaSet of a MongoDB database.
+- `spec.configuration.configServer` indicates the desired new custom configuration for config servers of a sharded MongoDB database.
+- `spec.configuration.mongos` indicates the desired new custom configuration for the mongos nodes of a sharded MongoDB database.
+- `spec.configuration.shard` indicates the desired new custom configuration for the shard nodes of a sharded MongoDB database.
 
 All of them has the following sub-fields:
 
-- `configMap` points to a configMap in the same namespace of a MongoDB resource, which contains the new custom configurations. If there are any configmap sources before, this configmap will replace it.
-- `data` contains the new custom config which will be merged with the previous configuration.
+- `configSecret` points to a secret in the same namespace of a MongoDB resource, which contains the new custom configurations. If there are any configSecret set before in the database, this secret will replace it.
+- `inlineConfig` contains the new custom config as a string which will be merged with the previous configuration.
+
+### spec.tls
+
+If you want to reconfigure the TLS configuration of your database i.e. add TLS, remove TLS, update issuer/cluster issuer or Certificates and rotate the certificates, you have to specify `spec.tls` section. This field consists of the following sub-field:
+
+- `spec.tls.issuerRef` specifies the issuer name, kind and api group.
+- `spec.tls.certificates` specifies the certificates. You can learn more about this field from [here](/docs/guides/mongodb/concepts/mongodb.md#spectls).
+- `spec.tls.rotateCertificates` specifies that we want to rotate the certificate of this database.
+- `spec.tls.remove` specifies that we want to remove tls from this database.
+
 
 ### MongoDBOpsRequest `Status`
 
