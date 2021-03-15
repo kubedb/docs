@@ -5,6 +5,6 @@ menu:
     identifier: guides-mariadb-customrbac
     name: Custom RBAC
     parent: guides-mariadb
-    weight: 31
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

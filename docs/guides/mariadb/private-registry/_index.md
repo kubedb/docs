@@ -5,6 +5,6 @@ menu:
     identifier: guides-mariadb-privateregistry
     name: Private Registry
     parent: guides-mariadb
-    weight: 50
+    weight: 60
 menu_name: docs_{{ .version }}
 ---
