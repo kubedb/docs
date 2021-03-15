@@ -5,6 +5,6 @@ menu:
     identifier: guides-mariadb-backup
     name: Backup & Restore
     parent: guides-mariadb
-    weight: 40
+    weight: 70
 menu_name: docs_{{ .version }}
 ---
