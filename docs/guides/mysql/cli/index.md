@@ -2,7 +2,7 @@
 title: CLI | KubeDB
 menu:
   docs_{{ .version }}:
-    identifier:guides-mysql-cli
+    identifier: guides-mysql-cli
     name: Quickstart
     parent: guides-mysql
     weight: 100
