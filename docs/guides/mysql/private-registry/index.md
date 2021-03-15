@@ -2,10 +2,10 @@
 title: Run MySQL using Private Registry
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-private-registry-overview
+    identifier: guides-mysql-private-registry
     name: Private Registry
-    parent: guides-mysql-private-registry
-    weight: 10
+    parent: guides-mysql
+    weight: 35
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

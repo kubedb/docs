@@ -2,10 +2,10 @@
 title: Run MySQL with Custom RBAC resources
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-custom-rbac-overview
+    identifier: guides-mysql-custom-rbac
     name: Custom RBAC
-    parent: guides-mysql-custom-rbac
-    weight: 10
+    parent: guides-mysql
+    weight: 31
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

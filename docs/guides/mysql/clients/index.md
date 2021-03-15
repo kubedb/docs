@@ -2,10 +2,10 @@
 title: Connecting to a MySQL Cluster
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-clients-cluster
+    identifier: guides-mysql-clients
     name: Connecting to a MySQL Cluster
-    parent: guides-mysql-clients
-    weight: 10
+    parent: guides-mysql
+    weight: 105
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

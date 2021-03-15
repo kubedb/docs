@@ -2,10 +2,10 @@
 title: MySQL Quickstart
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-quickstart-overview
+    identifier: guides-mysql-quickstart
     name: Overview
-    parent: guides-mysql-quickstart
-    weight: 10
+    parent: guides-mysql
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
