@@ -2,9 +2,9 @@
 title: MariaDB CRD
 menu:
   docs_{{ .version }}:
-    identifier: my-mariadb-concepts
+    identifier: guides-mariadb-concepts-mariadb
     name: MariaDB
-    parent: my-concepts-mariadb
+    parent: guides-mariadb-concepts
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -26,17 +26,12 @@ As with all other Kubernetes objects, a MariaDB needs `apiVersion`, `kind`, and 
 apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
 metadata:
-  name: m1
+  name: sample-mariadb
   namespace: demo
 spec:
-  version: "8.0.21"
-  topology:
-    mode: GroupReplication
-    group:
-      name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
-      baseServerID: 100
+  version: "10.5.8"
   authSecret:
-    name: m1-auth
+    name: sample-mariadb-auth
   storageType: "Durable"
   storage:
     storageClassName: "standard"
@@ -48,7 +43,7 @@ spec:
   init:
     script:
       configMap:
-        name: mg-init-script
+        name: md-init-script
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -61,7 +56,7 @@ spec:
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
-      name: mariadb-issuer
+      name: md-issuer
     certificates:
     - alias: server
       subject:
@@ -72,7 +67,7 @@ spec:
       ipAddresses:
       - "127.0.0.1"
   configSecret:
-    name: my-custom-config
+    name: md-custom-config
   podTemplate:
     annotations:
       passMe: ToDatabasePod
@@ -80,8 +75,8 @@ spec:
       annotations:
         passMe: ToStatefulSet
     spec:
-      serviceAccountName: my-service-account
-      schedulerName: my-scheduler
+      serviceAccountName: md-service-account
+      schedulerName: md-scheduler
       nodeSelector:
         disktype: ssd
       imagePullSecrets:
@@ -90,7 +85,7 @@ spec:
       - --character-set-server=utf8mb4
       env:
       - name: MYSQL_DATABASE
-        value: myDB
+        value: mdDB
       resources:
         requests:
           memory: "64Mi"
@@ -112,23 +107,9 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [MariaDBVersion](/docs/guides/mariadb/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MariaDBVersion` resources,
+`spec.version` is a required field specifying the name of the [MariaDBVersion](/docs/guides/mariadb/concepts/mariadb-version) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MariaDBVersion` resources,
 
-- `8.0.21`, `8.0.20`, `8.0.14`, `8.0.3`, `8.0-v2`, `8.0-v1`, `8.0`, `8-v1`, `8`
-- `5.7.31`, `5.7.29`, `5.7.25`, `5.7-v2`, `5.7-v1`, `5.7`, `5-v1`, `5`
-
-### spec.topology
-
-`spec.topology` is an optional field that provides a way to configure HA, fault-tolerant MariaDB cluster. This field enables you to specify the clustering mode. Currently, we support only MariaDB Group Replication. KubeDB uses `PodDisruptionBudget` to ensure that majority of the group replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions) so that quorum is maintained and no data loss has occurred.
-
-You can specify the following fields in `spec.topology` field,
-
-- `mode` specifies the clustering mode for MariaDB. For now, the supported value is `"GroupReplication"` for MariaDB Group Replication. This field is required if you want to deploy MariaDB cluster.
-
-- `group` is an optional field to configure a group replication. It contains the following fields:
-  - `name` is an optional field to specify the name for the group. It must be a version 4 UUID if specified.
-
-  - `baseServerID` is also an optional field. On a replication master and each replication slave, the `--server-id` option must be specified to establish a unique replication ID in the range from `1` to `2^32 − 1`. Here, “Unique” means that each ID must be different from every other ID in use by any other replication master or slave. So, `baseServerID` is needed to calculate a unique server_id for each member.
+- `10.5.8`, `10.4.17`
 
 ### spec.authSecret
 
@@ -141,10 +122,10 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 Example:
 
 ```bash
-$ kubectl create secret generic m1-auth -n demo \
---from-literal=user=root \
---from-literal=password=6q8u_2jMOW-OOZXk
-secret "m1-auth" created
+kubectl create secret generic mariadb-auth -n demo \
+    --from-literal=user=root \
+    --from-literal=password=6q8u_2jMOW-OOZXk
+secret/mariadb-auth created
 ```
 
 ```yaml
@@ -155,7 +136,7 @@ data:
 kind: Secret
 metadata:
   ...
-  name: m1-auth
+  name: mariadb-auth
   namespace: demo
   ...
 type: Opaque
@@ -167,7 +148,7 @@ type: Opaque
 
 ### spec.storage
 
-Since 0.9.0-rc.0, If you set `spec.storageType:` to `Durable`, then  `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+If you set `spec.storageType:` to `Durable`, then  `spec.storage` is a required field that specifies the StorageClass of PVCs dynamically allocated to store data for the database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
 - `spec.storage.storageClassName` is the name of the StorageClass used to provision PVCs. PVCs don’t necessarily have to request a class. A PVC with its storageClassName set equal to "" is always interpreted to be requesting a PV with no class, so it can only be bound to PVs with no class (no annotation or one set equal to ""). A PVC with no storageClassName is not quite the same and is treated differently by the cluster depending on whether the DefaultStorageClass admission plugin is turned on.
 - `spec.storage.accessModes` uses the same conventions as Kubernetes PVCs when requesting storage with specific access modes.
@@ -182,6 +163,7 @@ To learn how to configure `spec.storage`, please visit the links below:
 `spec.init` is an optional section that can be used to initialize a newly created MariaDB database. MariaDB databases can be initialized in one of two ways:
 
 - Initialize from Script
+- Initialize from Stash Restore
 
 #### Initialize via Script
 
@@ -195,27 +177,24 @@ Below is an example showing how a script from a configMap can be used to initial
 apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
 metadata:
-  name: m1
+  name: sample-mariadb
 spec:
-  version: 8.0.21
+  version: 10.5.8
   init:
     script:
       configMap:
-        name: mariadb-init-script
+        name: md-init-script
 ```
 
-In the above example, KubeDB operator will launch a Job to execute all js script of `mariadb-init-script` in alphabetical order once StatefulSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mariadb/initialization/using-script.md).
+In the above example, KubeDB operator will launch a Job to execute all js script of `md-init-script` in alphabetical order once StatefulSet pods are running.
 
 ### spec.monitor
 
-MariaDB managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
-
-- [Monitor MariaDB with builtin Prometheus](/docs/guides/mariadb/monitoring/using-builtin-prometheus.md)
-- [Monitor MariaDB with Prometheus operator](/docs/guides/mariadb/monitoring/using-prometheus-operator.md)
+MariaDB managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box.
 
 ### spec.requireSSL
 
-`spec.requireSSL` specifies whether the client connections require SSL. If `spec.requireSSL` is `true` then the server permits only TCP/IP connections that use SSL, or connections that use a socket file (on Unix) or shared memory (on Windows). The server rejects any non-secure connection attempt. For more details, please visit [here](https://dev.mariadb.com/doc/refman/5.7/en/using-encrypted-connections.html)
+`spec.requireSSL` specifies whether the client connections require SSL. If `spec.requireSSL` is `true` then the server permits only TCP/IP connections that use SSL, or connections that use a socket file (on Unix) or shared memory (on Windows). The server rejects any non-secure connection attempt. For more details, please visit [here](https://mariadb.com/kb/en/securing-connections-for-client-and-server/#requiring-tls-for-specific-user-accounts)
 
 ### spec.tls
 
@@ -236,7 +215,7 @@ The following fields are configurable in the `spec.tls` section:
     - `client` is used for client certificate identification.
     - `metrics-exporter` is used for metrics exporter certificate identification.
   - `secretName` (optional) specifies the k8s secret name that holds the certificates.
-    >This field is optional. If the user does not specify this field, the default secret name will be created in the following format: `<database-name>-<cert-alias>-cert`.
+    This field is optional. If the user does not specify this field, the default secret name will be created in the following format: `<database-name>-<cert-alias>-cert`.
   - `subject` (optional) specifies an `X.509` distinguished name. It has the following possible field,
     - `organizations` (optional) are the list of different organization names to be used on the Certificate.
     - `organizationalUnits` (optional) are the list of different organization unit name to be used on the Certificate.
@@ -257,7 +236,7 @@ The following fields are configurable in the `spec.tls` section:
 
 ### spec.configSecret
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for MariaDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mariadb/configuration/using-config-file.md).
+`spec.configSecret` is an optional field that allows users to provide custom configuration for MariaDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/using-config-file.md).
 
 ### spec.podTemplate
 
@@ -291,7 +270,7 @@ Uses of some field of `spec.podTemplate` is described below,
 
 #### spec.podTemplate.spec.args
 
-`spec.podTemplate.spec.args` is an optional field. This can be used to provide additional arguments for database installation. To learn about available args of `mariadbd`, visit [here](https://dev.mariadb.com/doc/refman/8.0/en/server-options.html).
+`spec.podTemplate.spec.args` is an optional field. This can be used to provide additional arguments for database installation. To learn about available args of `mysqld`, visit [here](https://mariadb.com/kb/en/mysqld-options/).
 
 #### spec.podTemplate.spec.env
 
@@ -326,7 +305,7 @@ for: "./mariadb.yaml": admission webhook "mariadb.validators.kubedb.com" denied 
 
 #### spec.podTemplate.spec.imagePullSecrets
 
-`KubeDB` provides the flexibility of deploying MariaDB database from a private Docker registry. `spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker image if you are using a private docker registry. To learn how to deploy MariaDB from a private registry, please visit [here](/docs/guides/mariadb/private-registry/using-private-registry.md).
+`KubeDB` provides the flexibility of deploying MariaDB database from a private Docker registry. `spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker image if you are using a private docker registry.
 
 #### spec.podTemplate.spec.nodeSelector
 
@@ -340,7 +319,7 @@ for: "./mariadb.yaml": admission webhook "mariadb.validators.kubedb.com" denied 
 
  If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
 
- If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/mariadb/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
+ If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
 
 #### spec.podTemplate.spec.resources
 
@@ -366,10 +345,6 @@ KubeDB allows following fields to set in `spec.serviceTemplate`:
   - sessionAffinityConfig
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
-
-### spec.halted
-
-`spec.halted` is an optional field. This field will be used to halt the kubeDB operator. When you set `spec.halted` to `true`, the KubeDB operator doesn't perform any operation on `MariaDB` object.
 
 ### spec.halted
 
@@ -401,5 +376,5 @@ If you don't specify `spec.terminationPolicy` KubeDB uses `Delete` termination p
 
 ## Next Steps
 
-- Learn how to use KubeDB to run a MariaDB database [here](/docs/guides/mariadb/README.md).
+- Learn how to use KubeDB to run a MariaDB database [here](/docs/guides/mariadb).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

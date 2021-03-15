@@ -1,10 +1,10 @@
 ---
-title: MariaDB Group Replication Overview
+title: MySQL Group Replication Overview
 menu:
   docs_{{ .version }}:
-    identifier: my-group-replication-overview-mariadb
-    name: MariaDB Group Replication Overview
-    parent: my-clustering-mariadb
+    identifier: my-group-replication-overview-mysql
+    name: MySQL Group Replication Overview
+    parent: my-clustering-mysql
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,21 +12,21 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# MariaDB Group Replication
+# MySQL Group Replication
 
-Here we'll discuss some concepts about MariaDB group replication.
+Here we'll discuss some concepts about MySQL group replication.
 
 ## So What is Replication
 
-Replication means data being copied from the primary (the master) MariaDB server to one or more secondary (the slaves) MariaDB servers, instead of only stored in one server. One can use secondary servers for reads or administrative tasks. The following figure shows an example use case:
+Replication means data being copied from the primary (the master) MySQL server to one or more secondary (the slaves) MySQL servers, instead of only stored in one server. One can use secondary servers for reads or administrative tasks. The following figure shows an example use case:
 
-![MariaDB Replication](/docs/images/mariadb/clustering/replicationarchitecturexample.png)
+![MySQL Replication](/docs/images/mysql/clustering/replicationarchitecturexample.png)
 
 Image ref: <https://www.percona.com/blog/wp-content/uploads/2017/01/replicationarchitecturexample.png>
 
 ## Primary-Secondary Replication
 
-It is a traditional asynchronous replication of MariaDB servers in which there is a primary server and one or more secondary servers.
+It is a traditional asynchronous replication of MySQL servers in which there is a primary server and one or more secondary servers.
 
 After receiving a transaction, the primary -
 
@@ -46,11 +46,11 @@ Here, the commit on the primary and the commits on the secondaries are all indep
 
 See the following figure:
 
-![Primary-Secondary Replication](/docs/images/mariadb/clustering/async-replication-diagram.png)
+![Primary-Secondary Replication](/docs/images/mysql/clustering/async-replication-diagram.png)
 
-Ref: [group-replication-primary-secondary-replication](https://dev.mariadb.com/doc/refman/5.7/en/group-replication-primary-secondary-replication.html)
+Ref: [group-replication-primary-secondary-replication](https://dev.mysql.com/doc/refman/5.7/en/group-replication-primary-secondary-replication.html)
 
-## MariaDB Semisynchronous Replication
+## MySQL Semisynchronous Replication
 
 There is a semi-synchronous variant of the above asynchronous replication. It adds one additional synchronous step to the protocol.
 
@@ -73,9 +73,9 @@ Here, the commit on the primary depends on the acknowledgment from the secondari
 
 The following figure tells about this.
 
-![MariaDB Semisynchronous Replication](/docs/images/mariadb/clustering/semisync-replication-diagram.png)
+![MySQL Semisynchronous Replication](/docs/images/mysql/clustering/semisync-replication-diagram.png)
 
-Ref: [group-replication-primary-secondary-replication](https://dev.mariadb.com/doc/refman/5.7/en/group-replication-primary-secondary-replication.html)
+Ref: [group-replication-primary-secondary-replication](https://dev.mysql.com/doc/refman/5.7/en/group-replication-primary-secondary-replication.html)
 
 ## Group Replication
 
@@ -104,19 +104,19 @@ And the other servers -
 
 > The steps from 3 to 5 in the originating server and all the steps in the other servers are followed if all servers have reached consensus and they certify the transaction.
 
-![MariaDB Group Replication Protocol](/docs/images/mariadb/clustering/gr-replication-diagram.png)
+![MySQL Group Replication Protocol](/docs/images/mysql/clustering/gr-replication-diagram.png)
 
-Ref: [group-replication](https://dev.mariadb.com/doc/refman/5.7/en/group-replication-summary.html)
+Ref: [group-replication](https://dev.mysql.com/doc/refman/5.7/en/group-replication-summary.html)
 
-According to Ramesh Sivaraman, QA Engineer and Kenny Gryp, MariaDB Practice Manager, Oracle MariaDB developed Group Replication as MariaDB server plugin that provides distributed state machine replication with strong coordination among servers. Servers coordinate themselves automatically as long as they are part of the same replication group. Any server in the group can process updates. Conflicts are detected and handled automatically. There is a built-in membership service that keeps the view of the group consistent and available for all servers at any given point in time. Servers can leave and join the group and the view will be updated accordingly.
+According to Ramesh Sivaraman, QA Engineer and Kenny Gryp, MySQL Practice Manager, Oracle MySQL developed Group Replication as MySQL server plugin that provides distributed state machine replication with strong coordination among servers. Servers coordinate themselves automatically as long as they are part of the same replication group. Any server in the group can process updates. Conflicts are detected and handled automatically. There is a built-in membership service that keeps the view of the group consistent and available for all servers at any given point in time. Servers can leave and join the group and the view will be updated accordingly.
 
-Groups can operate in a single-primary mode, where only one server accepts updates at a time. Groups can be deployed in multi-primary mode, where all servers can accept updates. Currently, we only provide the single-primary mode support for MariaDB Group Replication.
+Groups can operate in a single-primary mode, where only one server accepts updates at a time. Groups can be deployed in multi-primary mode, where all servers can accept updates. Currently, we only provide the single-primary mode support for MySQL Group Replication.
 
 A simple group architecture where three servers s1, s2, and s3 are deployed as an interconnected group and clients communicate with each of the servers has been shown below:
 
-![3 Server Group](/docs/images/mariadb/clustering/gr-3-server-group.png)
+![3 Server Group](/docs/images/mysql/clustering/gr-3-server-group.png)
 
-Image ref: https://dev.mariadb.com/doc/refman/5.7/en/images/gr-3-server-group.png
+Image ref: https://dev.mysql.com/doc/refman/5.7/en/images/gr-3-server-group.png
 
 ### Services
 
@@ -126,17 +126,17 @@ Group Replication builds on some services.
 
 Basically, when server A does not receive any message from server B for a given period, then a timeout occurs and a suspicion is raised telling that server B is dead. The failure detection mechanism which is responsible for this whole process.
 
-More on this [here](https://dev.mariadb.com/doc/refman/5.7/en/group-replication-failure-detection.html).
+More on this [here](https://dev.mysql.com/doc/refman/5.7/en/group-replication-failure-detection.html).
 
 #### Group Membership
 
 It is a built-in membership service that monitors the group. It defines the list of online servers (_view_) and thus the group has a consistent view of the actively participating members at a time. When servers leave and join the group and the group view will be reconfigured accordingly.
 
-See [here](https://dev.mariadb.com/doc/refman/5.7/en/group-replication-group-membership.html) for more.
+See [here](https://dev.mysql.com/doc/refman/5.7/en/group-replication-group-membership.html) for more.
 
 #### Fault-tolerance
 
-MariaDB Group Replication requires a majority of active servers to reach quorum and make a decision. Thus there is an impact on the failure number that a group can tolerate. So, if the majority for `n` is `floor(n/2) + 1`, then we have a relation between the group size (n) and the number of failures (f):
+MySQL Group Replication requires a majority of active servers to reach quorum and make a decision. Thus there is an impact on the failure number that a group can tolerate. So, if the majority for `n` is `floor(n/2) + 1`, then we have a relation between the group size (n) and the number of failures (f):
 
 ​ `n = 2 x f + 1`
 
@@ -154,13 +154,13 @@ The following is a small table illustrating the formula above.
 |     6      |    4     |             2              |
 |     7      |    4     |             3              |
 
-Ref: [group-replication-fault-tolerance](https://dev.mariadb.com/doc/refman/5.7/en/group-replication-fault-tolerance.html)
+Ref: [group-replication-fault-tolerance](https://dev.mysql.com/doc/refman/5.7/en/group-replication-fault-tolerance.html)
 
 ### Limitations
 
-There are some limitations in MariaDB Group Replication that are listed [here](https://dev.mariadb.com/doc/refman/5.7/en/group-replication-limitations.html). On top of that, though MariaDB group can operate in both single-primary and multi-primary modes, we have implemented only single-primary mode. The multi-primary mode will be added in the future. See the issue [MariaDB Cluster](https://github.com/kubedb/project/issues/18).
+There are some limitations in MySQL Group Replication that are listed [here](https://dev.mysql.com/doc/refman/5.7/en/group-replication-limitations.html). On top of that, though MySQL group can operate in both single-primary and multi-primary modes, we have implemented only single-primary mode. The multi-primary mode will be added in the future. See the issue [MySQL Cluster](https://github.com/kubedb/project/issues/18).
 
 ## Next Steps
 
-- [Deploy MariaDB Group Replication](/docs/guides/mariadb/clustering/group_replication_single_primary.md) using KubeDB.
+- [Deploy MySQL Group Replication](/docs/guides/mysql/clustering/group_replication_single_primary.md) using KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md)

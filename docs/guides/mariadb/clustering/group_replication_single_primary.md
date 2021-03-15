@@ -1,10 +1,10 @@
 ---
-title: MariaDB Group Replcation Guide
+title: MySQL Group Replcation Guide
 menu:
   docs_{{ .version }}:
-    identifier: my-group-replication-guide-mariadb
-    name: MariaDB Group Replication Guide
-    parent: my-clustering-mariadb
+    identifier: my-group-replication-guide-mysql
+    name: MySQL Group Replication Guide
+    parent: my-clustering-mysql
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,15 +12,15 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# KubeDB - MariaDB Group Replication
+# KubeDB - MySQL Group Replication
 
-This tutorial will show you how to use KubeDB to provision a MariaDB replication group in single-primary mode.
+This tutorial will show you how to use KubeDB to provision a MySQL replication group in single-primary mode.
 
 ## Before You Begin
 
 Before proceeding:
 
-- Read [mariadb group replication concept](/docs/guides/mariadb/clustering/overview.md) to learn about MariaDB Group Replication.
+- Read [mysql group replication concept](/docs/guides/mysql/clustering/overview.md) to learn about MySQL Group Replication.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
@@ -33,28 +33,27 @@ Before proceeding:
   namespace/demo created
   ```
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mariadb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mariadb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-## Deploy MariaDB Cluster
+## Deploy MySQL Cluster
 
-To deploy a single primary MariaDB replication group , specify `spec.topology` field in `MariaDB` CRD.
+To deploy a single primary MySQL replication group , specify `spec.topology` field in `MySQL` CRD.
 
-The following is an example `MariaDB` object which creates a MariaDB group with three members (one is primary member and the two others are secondary members).
+The following is an example `MySQL` object which creates a MySQL group with three members (one is primary member and the two others are secondary members).
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: MariaDB
+kind: MySQL
 metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.0.21"
+  version: "8.0.23"
   replicas: 3
   topology:
     mode: GroupReplication
     group:
       name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
-      baseServerID: 100
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -67,20 +66,19 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/clustering/demo-1.yaml
-mariadb.kubedb.com/my-group created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/clustering/demo-1.yaml
+mysql.kubedb.com/my-group created
 ```
 
 Here,
 
-- `spec.topology` tells about the clustering configuration for MariaDB.
-- `spec.topology.mode` specifies the mode for MariaDB cluster. Here we have used `GroupReplication` to tell the operator that we want to deploy a MariaDB replication group.
+- `spec.topology` tells about the clustering configuration for MySQL.
+- `spec.topology.mode` specifies the mode for MySQL cluster. Here we have used `GroupReplication` to tell the operator that we want to deploy a MySQL replication group.
 - `spec.topology.group` contains group replication info.
 - `spec.topology.group.name` the name for the group. It is a valid version 4 UUID.
-- `spec.topology.group.baseServerID` the id of primary member.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `MariaDB` objects using Kubernetes API. When a `MariaDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MariaDB object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mariadb-object-name>-gvr`.
+KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mysql-object-name>-gvr`.
 
 ```bash
 $ kubectl dba describe my -n demo my-group
@@ -88,7 +86,7 @@ Name:               my-group
 Namespace:          demo
 CreationTimestamp:  Tue, 25 Aug 2020 16:42:10 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
 Replicas:           3  total
 Status:             Running
 StorageType:        Durable
@@ -105,7 +103,7 @@ StatefulSet:
   CreationTimestamp:  Tue, 25 Aug 2020 16:42:10 +0600
   Labels:               app.kubernetes.io/component=database
                         app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=mariadbs.kubedb.com
+                        app.kubernetes.io/name=mysqls.kubedb.com
                         app.kubernetes.io/instance=my-group
   Annotations:        <none>
   Replicas:           824638237768 desired | 3 total
@@ -115,7 +113,7 @@ Service:
   Name:         my-group
   Labels:         app.kubernetes.io/component=database
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mariadbs.kubedb.com
+                  app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=my-group
   Annotations:  <none>
   Type:         ClusterIP
@@ -128,7 +126,7 @@ Service:
   Name:         my-group-gvr
   Labels:         app.kubernetes.io/component=database
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mariadbs.kubedb.com
+                  app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=my-group
   Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
   Type:         ClusterIP
@@ -141,7 +139,7 @@ Service:
   Name:         my-group-primary
   Labels:         app.kubernetes.io/component=database
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mariadbs.kubedb.com
+                  app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=my-group
   Annotations:  <none>
   Type:         ClusterIP
@@ -154,7 +152,7 @@ Database Secret:
   Name:         my-group-auth
   Labels:         app.kubernetes.io/component=database
                   app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mariadbs.kubedb.com
+                  app.kubernetes.io/name=mysqls.kubedb.com
                   app.kubernetes.io/instance=my-group
   Annotations:  <none>
   Type:         Opaque
@@ -165,16 +163,16 @@ Database Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"baseServerID":100,"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.21"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"baseServerID":100,"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.21"}}
 
     Creation Timestamp:  2020-08-25T10:50:59Z
     Labels:
       app.kubernetes.io/component:   database
       app.kubernetes.io/instance:    my-group
       app.kubernetes.io/managed-by:  kubedb.com
-      app.kubernetes.io/name:        mariadb
+      app.kubernetes.io/name:        mysql
       app.kubernetes.io/version:     8.0.21
-      app.kubernetes.io/name:        mariadbs.kubedb.com
+      app.kubernetes.io/name:        mysqls.kubedb.com
       app.kubernetes.io/instance:               my-group
     Name:                            my-group
     Namespace:                       demo
@@ -184,21 +182,21 @@ AppBinding:
         Name:    my-group
         Path:    /
         Port:    3306
-        Scheme:  mariadb
+        Scheme:  mysql
       URL:       tcp(my-group:3306)/
     Secret:
       Name:   my-group-auth
-    Type:     kubedb.com/mariadb
+    Type:     kubedb.com/mysql
     Version:  8.0.21
 
 Events:
   Type    Reason      Age   From            Message
   ----    ------      ----  ----            -------
-  Normal  Successful  12m   MariaDB operator  Successfully created Service
-  Normal  Successful  12m   MariaDB operator  Successfully created primary service
-  Normal  Successful  4m    MariaDB operator  Successfully created StatefulSet
-  Normal  Successful  4m    MariaDB operator  Successfully created MariaDB
-  Normal  Successful  4m    MariaDB operator  Successfully created appbinding
+  Normal  Successful  12m   MySQL operator  Successfully created Service
+  Normal  Successful  12m   MySQL operator  Successfully created primary service
+  Normal  Successful  4m    MySQL operator  Successfully created StatefulSet
+  Normal  Successful  4m    MySQL operator  Successfully created MySQL
+  Normal  Successful  4m    MySQL operator  Successfully created appbinding
 
 
 $ kubectl get statefulset -n demo
@@ -224,12 +222,12 @@ my-group-gvr       ClusterIP   None             <none>        3306/TCP   17m
 my-group-primary   ClusterIP   10.111.57.60     <none>        3306/TCP   17m
 ```
 
-KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `MariaDB` object:
+KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `MySQL` object:
 
 ```yaml
 $ kubectl get  my -n demo my-group -o yaml
 apiVersion: kubedb.com/v1alpha2
-kind: MariaDB
+kind: MySQL
 metadata:
   creationTimestamp: "2019-04-26T09:59:00Z"
   finalizers:
@@ -238,7 +236,7 @@ metadata:
   name: my-group
   namespace: demo
   resourceVersion: "1311"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mariadbs/my-group
+  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mysqls/my-group
   uid: e9f3e216-6809-11e9-89c6-080027fc7fb2
 spec:
   authSecret:
@@ -249,9 +247,6 @@ spec:
     spec:
       resources: {}
   replicas: 3
-  serviceTemplate:
-    metadata: {}
-    spec: {}
   storage:
     accessModes:
     - ReadWriteOnce
@@ -264,22 +259,21 @@ spec:
   terminationPolicy: WipeOut
   topology:
     group:
-      baseServerID: 100
       name: dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b
     mode: GroupReplication
-  version: 5.7.25
+  version: "5.7.33"
 status:
   observedGeneration: 2$4213139756412538772
   phase: Running
 ```
 
-## Connect with MariaDB database
+## Connect with MySQL database
 
-KubeDB operator has created a new Secret called `my-group-auth` **(format: {mariadb-object-name}-auth)** for storing the password for `mariadb` superuser. This secret contains a `username` key which contains the **username** for MariaDB superuser and a `password` key which contains the **password** for MariaDB superuser.
+KubeDB operator has created a new Secret called `my-group-auth` **(format: {mysql-object-name}-auth)** for storing the password for `mysql` superuser. This secret contains a `username` key which contains the **username** for MySQL superuser and a `password` key which contains the **password** for MySQL superuser.
 
-If you want to use an existing secret please specify that when creating the MariaDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mariadb/concepts/mariadb.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the MySQL object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/mysql.md#specdatabasesecret).
 
-Now, you can connect to this database from your terminal using the `mariadb` user and password.
+Now, you can connect to this database from your terminal using the `mysql` user and password.
 
 ```bash
 $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
@@ -289,12 +283,12 @@ $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | ba
 dlNiQpjULZvEqo3B
 ```
 
-The operator creates a group according to the newly created `MariaDB` object. This group has 3 members (one primary and two secondary).
+The operator creates a group according to the newly created `MySQL` object. This group has 3 members (one primary and two secondary).
 
-You can connect to any of these group members. In that case you just need to specify the host name of that member Pod (either PodIP or the fully-qualified-domain-name for that Pod using the governing service named `<mariadb-object-name>-gvr`) by `--host` flag.
+You can connect to any of these group members. In that case you just need to specify the host name of that member Pod (either PodIP or the fully-qualified-domain-name for that Pod using the governing service named `<mysql-object-name>-gvr`) by `--host` flag.
 
 ```bash
-# first list the mariadb pods list
+# first list the mysql pods list
 $ kubectl get pods -n demo -l app.kubernetes.io/instance=my-group
 NAME         READY   STATUS    RESTARTS   AGE
 my-group-0   2/2     Running   1          19m
@@ -318,8 +312,8 @@ Now you can connect to these database using the above info. Ignore the warning m
 
 ```bash
 # connect to the 1st server
-$ kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "select 1;"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "select 1;"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 +---+
 | 1 |
 +---+
@@ -327,8 +321,8 @@ mariadb: [Warning] Using a password on the command line interface can be insecur
 +---+
 
 # connect to the 2nd server
-$ kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-gvr.demo -e "select 1;"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-gvr.demo -e "select 1;"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 +---+
 | 1 |
 +---+
@@ -336,8 +330,8 @@ mariadb: [Warning] Using a password on the command line interface can be insecur
 +---+
 
 # connect to the 3rd server
-$ kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-2.my-group-gvr.demo -e "select 1;"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-2.my-group-gvr.demo -e "select 1;"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 +---+
 | 1 |
 +---+
@@ -350,8 +344,8 @@ mariadb: [Warning] Using a password on the command line interface can be insecur
 Now, you are ready to check newly created group status. Connect and run the following commands from any of the hosts and you will get the same results.
 
 ```bash
-$ kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "show status like '%primary%'"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "show status like '%primary%'"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------------------------+--------------------------------------+
 | Variable_name                    | Value                                |
 +----------------------------------+--------------------------------------+
@@ -362,8 +356,8 @@ mariadb: [Warning] Using a password on the command line interface can be insecur
 The value **37ed2c72-680a-11e9-8ac3-0242ac110005** in the above table means the ID of the primary member of the group.
 
 ```bash
-$ kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=MpPhZ9xbVlxvoC4d --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=MpPhZ9xbVlxvoC4d --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
@@ -375,27 +369,27 @@ mariadb: [Warning] Using a password on the command line interface can be insecur
 
 ## Data Availability
 
-In a MariaDB group, only the primary member can write not the secondary. But you can read data from any member. In this tutorial, we will insert data from primary, and we will see whether we can get the data from any other members.
+In a MySQL group, only the primary member can write not the secondary. But you can read data from any member. In this tutorial, we will insert data from primary, and we will see whether we can get the data from any other members.
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
 ```bash
 # create a database on primary
-$ kubectl exec -it -n demo my-group-0 -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "CREATE DATABASE playground;"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo my-group-0 -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "CREATE DATABASE playground;"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 
 # create a table
-$ kubectl exec -it -n demo my-group-0 -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), PRIMARY KEY(id));"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo my-group-0 -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), PRIMARY KEY(id));"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 
 
 # insert a row
-$  kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 2, 'blue');"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$  kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 2, 'blue');"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 
 # read from primary
-$ kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "SELECT * FROM playground.equipment;"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "SELECT * FROM playground.equipment;"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
@@ -403,8 +397,8 @@ mariadb: [Warning] Using a password on the command line interface can be insecur
 +----+-------+-------+-------+
 
 # read from secondary-1
-$ kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-gvr.demo -e "SELECT * FROM playground.equipment;"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-gvr.demo -e "SELECT * FROM playground.equipment;"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
@@ -412,8 +406,8 @@ mariadb: [Warning] Using a password on the command line interface can be insecur
 +----+-------+-------+-------+
 
 # read from secondary-2
-$ kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-2.my-group-gvr.demo -e "SELECT * FROM playground.equipment;"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-2.my-group-gvr.demo -e "SELECT * FROM playground.equipment;"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
@@ -427,15 +421,15 @@ Only, primary member preserves the write permission. No secondary can write data
 
 ```bash
 # try to write on secondary-1
-$ kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-gvr.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
-ERROR 1290 (HY000) at line 1: The MariaDB server is running with the --super-read-only option so it cannot execute this statement
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-gvr.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
+mysql: [Warning] Using a password on the command line interface can be insecure.
+ERROR 1290 (HY000) at line 1: The MySQL server is running with the --super-read-only option so it cannot execute this statement
 command terminated with exit code 1
 
 # try to write on secondary-2
-$ kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-2.my-group-gvr.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
-ERROR 1290 (HY000) at line 1: The MariaDB server is running with the --super-read-only option so it cannot execute this statement
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-2.my-group-gvr.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
+mysql: [Warning] Using a password on the command line interface can be insecure.
+ERROR 1290 (HY000) at line 1: The MySQL server is running with the --super-read-only option so it cannot execute this statement
 command terminated with exit code 1
 ```
 
@@ -451,8 +445,8 @@ $ kubectl delete pod my-group-0 -n demo
 pod "my-group-0" deleted
 
 # check the new primary ID
-kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "show status like '%primary%'"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "show status like '%primary%'"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------------------------+--------------------------------------+
 | Variable_name                    | Value                                |
 +----------------------------------+--------------------------------------+
@@ -460,8 +454,8 @@ mariadb: [Warning] Using a password on the command line interface can be insecur
 +----------------------------------+--------------------------------------+
 
 # now check the gruop status
-kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "select * from performance_schema.replication_group_members"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                  | MEMBER_PORT | MEMBER_STATE |
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+
@@ -471,8 +465,8 @@ mariadb: [Warning] Using a password on the command line interface can be insecur
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+
 
 # read data from new primary my-group-1.my-group-gvr.demo
-$ kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-gvr.demo -e "SELECT * FROM playground.equipment;"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-gvr.demo -e "SELECT * FROM playground.equipment;"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
@@ -480,8 +474,8 @@ mariadb: [Warning] Using a password on the command line interface can be insecur
 +----+-------+-------+-------+
 
 # read data from secondary-1 my-group-0.my-group-gvr.demo
-$ kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "SELECT * FROM playground.equipment;"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-gvr.demo -e "SELECT * FROM playground.equipment;"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
@@ -489,8 +483,8 @@ mariadb: [Warning] Using a password on the command line interface can be insecur
 +----+-------+-------+-------+
 
 # read data from secondary-2 my-group-2.my-group-gvr.demo
-$ kubectl exec -it -n demo my-group-0 -c mariadb -- mariadb -u root --password=dlNiQpjULZvEqo3B --host=my-group-2.my-group-gvr.demo -e "SELECT * FROM playground.equipment;"
-mariadb: [Warning] Using a password on the command line interface can be insecure.
+$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-2.my-group-gvr.demo -e "SELECT * FROM playground.equipment;"
+mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
@@ -509,6 +503,6 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Detail concepts of [MariaDB object](/docs/guides/mariadb/concepts/mariadb.md).
-- Detail concepts of [MariaDBDBVersion object](/docs/guides/mariadb/concepts/catalog.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
+- Detail concepts of [MySQLDBVersion object](/docs/guides/mysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
