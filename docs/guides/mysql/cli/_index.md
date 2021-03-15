@@ -2,9 +2,9 @@
 title: CLI | KubeDB
 menu:
   docs_{{ .version }}:
-    identifier: my-cli-mysql
+    identifier: guides-mysql-cli
     name: Cli
-    parent: my-mysql-guides
+    parent: guides-mysql
     weight: 100
 menu_name: docs_{{ .version }}
 ---

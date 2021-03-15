@@ -2,9 +2,9 @@
 title: Vertical Scaling
 menu:
   docs_{{ .version }}:
-    identifier: my-vertical-scaling
+    identifier: guides-mysql-scaling-vertical
     name: Vertical Scaling
-    parent: my-scaling-mysql
+    parent: guides-mysql-scaling
     weight: 20
 menu_name: docs_{{ .version }}
 ---

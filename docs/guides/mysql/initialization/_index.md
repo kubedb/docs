@@ -1,10 +1,10 @@
 ---
-title: MySQL Initialization
+title: Initialize MySQL using Script
 menu:
   docs_{{ .version }}:
-    identifier: my-initialization-mysql
-    name: Initialization
-    parent: my-mysql-guides
+    identifier: guides-mysql-initialization
+    name: Initialize MySQL using Script
+    parent: guides-mysql
     weight: 41
 menu_name: docs_{{ .version }}
 ---

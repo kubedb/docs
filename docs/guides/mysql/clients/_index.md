@@ -2,9 +2,9 @@
 title: MySQL Clients
 menu:
   docs_{{ .version }}:
-    identifier: my-clients-mysql
+    identifier: guides-mysql-clients
     name: MySQL Clients
-    parent: my-mysql-guides
+    parent: guides-mysql
     weight: 105
 menu_name: docs_{{ .version }}
 ---

@@ -2,9 +2,9 @@
 title: MySQL Concepts
 menu:
   docs_{{ .version }}:
-    identifier: my-concepts-mysql
+    identifier: guides-mysql-concepts
     name: Concepts
-    parent: my-mysql-guides
+    parent: guides-mysql
     weight: 20
 menu_name: docs_{{ .version }}
 ---

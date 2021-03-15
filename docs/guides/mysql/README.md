@@ -2,9 +2,9 @@
 title: MySQL
 menu:
   docs_{{ .version }}:
-    identifier: my-readme-mysql
+    identifier: guides-mysql-readme
     name: MySQL
-    parent: my-mysql-guides
+    parent: guides-mysql
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
