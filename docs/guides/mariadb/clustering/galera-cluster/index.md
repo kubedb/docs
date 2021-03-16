@@ -60,8 +60,8 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/clustering/galera-cluster/demo-1.yaml
-mariadb.kubedb.com/my-group created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/clustering/galera-cluster/examples/demo-1.yaml
+mariadb.kubedb.com/sample-mariadb created
 ```
 
 Here,
@@ -69,194 +69,131 @@ Here,
 - `spec.replicas` is the number of nodes in the cluster.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `MariaDB` objects using Kubernetes API. When a `MariaDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MariaDB object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mysql-object-name>-gvr`.
+KubeDB operator watches for `MariaDB` objects using Kubernetes API. When a `MariaDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MariaDB object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mariadb-object-name>-pods`.
 
 ```bash
-$ kubectl dba describe my -n demo my-group
-Name:               my-group
-Namespace:          demo
-CreationTimestamp:  Tue, 25 Aug 2020 16:42:10 +0600
-Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
-Replicas:           3  total
-Status:             Running
-StorageType:        Durable
-Volume:
-  StorageClass:      standard
-  Capacity:          1Gi
-  Access Modes:      RWO
-Halted:              false
-Halted:              false
-Termination Policy:  WipeOut
-
-StatefulSet:          
-  Name:               my-group
-  CreationTimestamp:  Tue, 25 Aug 2020 16:42:10 +0600
-  Labels:               app.kubernetes.io/component=database
-                        app.kubernetes.io/managed-by=kubedb.com
-                        app.kubernetes.io/name=mysqls.kubedb.com
-                        app.kubernetes.io/instance=my-group
-  Annotations:        <none>
-  Replicas:           824638237768 desired | 3 total
-  Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
-
-Service:        
-  Name:         my-group
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=my-group
-  Annotations:  <none>
-  Type:         ClusterIP
-  IP:           10.109.225.127
-  Port:         db  3306/TCP
-  TargetPort:   db/TCP
-  Endpoints:    10.244.1.4:3306,10.244.1.6:3306,10.244.2.4:3306
-
-Service:        
-  Name:         my-group-gvr
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=my-group
-  Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
-  Type:         ClusterIP
-  IP:           None
-  Port:         db  3306/TCP
-  TargetPort:   3306/TCP
-  Endpoints:    10.244.1.4:3306,10.244.1.6:3306,10.244.2.4:3306
-
-Service:        
-  Name:         my-group-primary
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=my-group
-  Annotations:  <none>
-  Type:         ClusterIP
-  IP:           10.111.57.60
-  Port:         db  3306/TCP
-  TargetPort:   db/TCP
-  Endpoints:    10.244.2.4:3306
-
-Database Secret:
-  Name:         my-group-auth
-  Labels:         app.kubernetes.io/component=database
-                  app.kubernetes.io/managed-by=kubedb.com
-                  app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=my-group
-  Annotations:  <none>
-  Type:         Opaque
-  Data:
-    password:  16 bytes
-    username:  4 bytes
-
-AppBinding:
-  Metadata:
-    Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"baseServerID":100,"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.21"}}
-
-    Creation Timestamp:  2020-08-25T10:50:59Z
-    Labels:
-      app.kubernetes.io/component:   database
-      app.kubernetes.io/instance:    my-group
-      app.kubernetes.io/managed-by:  kubedb.com
-      app.kubernetes.io/name:        mysql
-      app.kubernetes.io/version:     8.0.21
-      app.kubernetes.io/name:        mysqls.kubedb.com
-      app.kubernetes.io/instance:               my-group
-    Name:                            my-group
-    Namespace:                       demo
-  Spec:
-    Client Config:
-      Service:
-        Name:    my-group
-        Path:    /
-        Port:    3306
-        Scheme:  mysql
-      URL:       tcp(my-group:3306)/
-    Secret:
-      Name:   my-group-auth
-    Type:     kubedb.com/mysql
-    Version:  8.0.21
-
-Events:
-  Type    Reason      Age   From            Message
-  ----    ------      ----  ----            -------
-  Normal  Successful  12m   MariaDB operator  Successfully created Service
-  Normal  Successful  12m   MariaDB operator  Successfully created primary service
-  Normal  Successful  4m    MariaDB operator  Successfully created StatefulSet
-  Normal  Successful  4m    MariaDB operator  Successfully created MariaDB
-  Normal  Successful  4m    MariaDB operator  Successfully created appbinding
-
-
-$ kubectl get statefulset -n demo
-NAME       READY   AGE
-my-group   3/3     49m
-
-$ kubectl get pvc -n demo
-NAME              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-data-my-group-0   Bound    pvc-ea20656d-6809-11e9-89c6-080027fc7fb2   1Gi        RWO            standard       49m
-data-my-group-1   Bound    pvc-4a2d43b0-680a-11e9-89c6-080027fc7fb2   1Gi        RWO            standard       47m
-data-my-group-2   Bound    pvc-60558ef0-680a-11e9-89c6-080027fc7fb2   1Gi        RWO            standard       46m
-
-$ kubectl get pv -n demo
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
-pvc-4a2d43b0-680a-11e9-89c6-080027fc7fb2   1Gi        RWO            Delete           Bound    demo/data-my-group-1   standard                56m
-pvc-60558ef0-680a-11e9-89c6-080027fc7fb2   1Gi        RWO            Delete           Bound    demo/data-my-group-2   standard                55m
-pvc-ea20656d-6809-11e9-89c6-080027fc7fb2   1Gi        RWO            Delete           Bound    demo/data-my-group-0   standard                59m
-
-$ kubectl get service -n demo
-NAME               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
-my-group           ClusterIP   10.109.225.127   <none>        3306/TCP   17m
-my-group-gvr       ClusterIP   None             <none>        3306/TCP   17m
-my-group-primary   ClusterIP   10.111.57.60     <none>        3306/TCP   17m
-```
-
-KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `MariaDB` object:
-
-```yaml
-$ kubectl get  my -n demo my-group -o yaml
+$ kubectl get mariadb -n demo sample-mariadb -o yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
 metadata:
-  creationTimestamp: "2019-04-26T09:59:00Z"
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","version":"10.5.8"}}
+  creationTimestamp: "2021-03-16T09:39:01Z"
   finalizers:
   - kubedb.com
   generation: 2
-  name: my-group
+  managedFields:
+    ...
+  name: sample-mariadb
   namespace: demo
-  resourceVersion: "1311"
-  selfLink: /apis/kubedb.com/v1alpha2/namespaces/demo/mysqls/my-group
-  uid: e9f3e216-6809-11e9-89c6-080027fc7fb2
 spec:
   authSecret:
-    name: my-group-auth
+    name: sample-mariadb-auth
   podTemplate:
-    controller: {}
-    metadata: {}
-    spec:
-      resources: {}
+    ...
   replicas: 3
   storage:
     accessModes:
     - ReadWriteOnce
-    dataSource: null
     resources:
       requests:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
   terminationPolicy: WipeOut
-  topology:
-    group:
-      name: dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b
-    mode: GroupReplication
-  version: "5.7.33"
+  version: 10.5.8
 status:
-  observedGeneration: 2$4213139756412538772
-  phase: Running
+  conditions:
+  - lastTransitionTime: "2021-03-16T09:39:01Z"
+    message: 'The KubeDB operator has started the provisioning of MariaDB: demo/sample-mariadb'
+    reason: DatabaseProvisioningStartedSuccessfully
+    status: "True"
+    type: ProvisioningStarted
+  - lastTransitionTime: "2021-03-16T09:40:00Z"
+    message: All desired replicas are ready.
+    reason: AllReplicasReady
+    status: "True"
+    type: ReplicaReady
+  - lastTransitionTime: "2021-03-16T09:39:09Z"
+    message: 'The MariaDB: demo/sample-mariadb is accepting client requests.'
+    observedGeneration: 2
+    reason: DatabaseAcceptingConnectionRequest
+    status: "True"
+    type: AcceptingConnection
+  - lastTransitionTime: "2021-03-16T09:39:50Z"
+    message: 'The MySQL: demo/sample-mariadb is ready.'
+    observedGeneration: 2
+    reason: ReadinessCheckSucceeded
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2021-03-16T09:40:00Z"
+    message: 'The MariaDB: demo/sample-mariadb is successfully provisioned.'
+    observedGeneration: 2
+    reason: DatabaseSuccessfullyProvisioned
+    status: "True"
+    type: Provisioned
+  observedGeneration: 2
+  phase: Ready
+
+
+$ kubectl get sts,svc,secret,pvc,pv,pod -n demo
+NAME                              READY   AGE
+statefulset.apps/sample-mariadb   3/3     116m
+
+NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/sample-mariadb        ClusterIP   10.97.162.171   <none>        3306/TCP   116m
+service/sample-mariadb-pods   ClusterIP   None            <none>        3306/TCP   116m
+
+NAME                                TYPE                                  DATA   AGE
+secret/default-token-696cj          kubernetes.io/service-account-token   3      121m
+secret/sample-mariadb-auth          kubernetes.io/basic-auth              2      116m
+secret/sample-mariadb-token-dk4dx   kubernetes.io/service-account-token   3      116m
+
+NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+persistentvolumeclaim/data-sample-mariadb-0   Bound    pvc-1e259abc-5937-421a-990c-b903a83d2d8a   1Gi        RWO            standard       116m
+persistentvolumeclaim/data-sample-mariadb-1   Bound    pvc-1d0b5bcd-2699-4b87-b57b-3072ddc1027f   1Gi        RWO            standard       116m
+persistentvolumeclaim/data-sample-mariadb-2   Bound    pvc-5b85a06e-17f5-487a-9150-e928f5cf4590   1Gi        RWO            standard       116m
+
+NAME                                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS   REASON   AGE
+persistentvolume/pvc-1d0b5bcd-2699-4b87-b57b-3072ddc1027f   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-1   standard                116m
+persistentvolume/pvc-1e259abc-5937-421a-990c-b903a83d2d8a   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-0   standard                116m
+persistentvolume/pvc-5b85a06e-17f5-487a-9150-e928f5cf4590   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-2   standard                116m
+
+NAME                   READY   STATUS    RESTARTS   AGE
+pod/sample-mariadb-0   1/1     Running   0          116m
+pod/sample-mariadb-1   1/1     Running   0          116m
+pod/sample-mariadb-2   1/1     Running   0          116m
 ```
+
+## Connect with MariaDB database
+
+Once the database pod is in `Running` state, verify that all 3 nodes joined the cluster. We will conncet into the first database using the creadentials `MYSQL_ROOT_USERNAME` and `MYSQL_ROOT_PASSWORD` saved as container's enoviroment variables.
+
+```bash
+$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 26
+Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> show status like 'wsrep_cluster_size';
++--------------------+-------+
+| Variable_name      | Value |
++--------------------+-------+
+| wsrep_cluster_size | 3     |
++--------------------+-------+
+1 row in set (0.001 sec)
+
+MariaDB [(none)]> quit;
+Bye
+```
+
+From the above log, we can see that 3 nodes cluster is created and ready to accept connections.
 
 ## Connect with MariaDB database
 
