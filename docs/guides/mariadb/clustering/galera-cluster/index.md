@@ -1,9 +1,9 @@
 ---
-title: MySQL Group Replcation Guide
+title: MariaDB Galera Cluster Guide
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-clustering-galeracluster
-    name: MySQL Group Replication Guide
+    name: MariaDB Galera Cluster Guide
     parent: guides-mariadb-clustering
     weight: 20
 menu_name: docs_{{ .version }}
@@ -12,15 +12,15 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# KubeDB - MySQL Group Replication
+# KubeDB - MariaDB Group Replication
 
-This tutorial will show you how to use KubeDB to provision a MySQL replication group in single-primary mode.
+This tutorial will show you how to use KubeDB to provision a MariaDB replication group in single-primary mode.
 
 ## Before You Begin
 
 Before proceeding:
 
-- Read [mysql group replication concept](/docs/guides/mysql/clustering/overview.md) to learn about MySQL Group Replication.
+- Read [mariadb galera cluster concept](/docs/guides/mariadb/clustering/overview) to learn about MariaDB Group Replication.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
@@ -35,30 +35,24 @@ Before proceeding:
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-## Deploy MySQL Cluster
+## Deploy MariaDB Cluster
 
-To deploy a single primary MySQL replication group , specify `spec.topology` field in `MySQL` CRD.
-
-The following is an example `MySQL` object which creates a MySQL group with three members (one is primary member and the two others are secondary members).
+The following is an example `MariaDB` object which creates a multi-master MariaDB group with three members.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: MySQL
+kind: MariaDB
 metadata:
-  name: my-group
+  name: sample-mariadb
   namespace: demo
 spec:
-  version: "8.0.23"
+  version: "10.5.8"
   replicas: 3
-  topology:
-    mode: GroupReplication
-    group:
-      name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
   storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
@@ -66,19 +60,16 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/clustering/demo-1.yaml
-mysql.kubedb.com/my-group created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/clustering/galera-cluster/demo-1/yaml
+mariadb.kubedb.com/my-group created
 ```
 
 Here,
 
-- `spec.topology` tells about the clustering configuration for MySQL.
-- `spec.topology.mode` specifies the mode for MySQL cluster. Here we have used `GroupReplication` to tell the operator that we want to deploy a MySQL replication group.
-- `spec.topology.group` contains group replication info.
-- `spec.topology.group.name` the name for the group. It is a valid version 4 UUID.
+- `spec.replicas` is the number of nodes in the cluster.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
-KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mysql-object-name>-gvr`.
+KubeDB operator watches for `MariaDB` objects using Kubernetes API. When a `MariaDB` object is created, KubeDB operator will create a new StatefulSet and a Service with the matching MariaDB object name. KubeDB operator will also create a governing service for the StatefulSet with the name `<mysql-object-name>-gvr`.
 
 ```bash
 $ kubectl dba describe my -n demo my-group
@@ -86,7 +77,7 @@ Name:               my-group
 Namespace:          demo
 CreationTimestamp:  Tue, 25 Aug 2020 16:42:10 +0600
 Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
+Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
 Replicas:           3  total
 Status:             Running
 StorageType:        Durable
@@ -163,7 +154,7 @@ Database Secret:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"baseServerID":100,"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.21"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MariaDB","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"baseServerID":100,"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.21"}}
 
     Creation Timestamp:  2020-08-25T10:50:59Z
     Labels:
@@ -192,11 +183,11 @@ AppBinding:
 Events:
   Type    Reason      Age   From            Message
   ----    ------      ----  ----            -------
-  Normal  Successful  12m   MySQL operator  Successfully created Service
-  Normal  Successful  12m   MySQL operator  Successfully created primary service
-  Normal  Successful  4m    MySQL operator  Successfully created StatefulSet
-  Normal  Successful  4m    MySQL operator  Successfully created MySQL
-  Normal  Successful  4m    MySQL operator  Successfully created appbinding
+  Normal  Successful  12m   MariaDB operator  Successfully created Service
+  Normal  Successful  12m   MariaDB operator  Successfully created primary service
+  Normal  Successful  4m    MariaDB operator  Successfully created StatefulSet
+  Normal  Successful  4m    MariaDB operator  Successfully created MariaDB
+  Normal  Successful  4m    MariaDB operator  Successfully created appbinding
 
 
 $ kubectl get statefulset -n demo
@@ -222,12 +213,12 @@ my-group-gvr       ClusterIP   None             <none>        3306/TCP   17m
 my-group-primary   ClusterIP   10.111.57.60     <none>        3306/TCP   17m
 ```
 
-KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `MySQL` object:
+KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `MariaDB` object:
 
 ```yaml
 $ kubectl get  my -n demo my-group -o yaml
 apiVersion: kubedb.com/v1alpha2
-kind: MySQL
+kind: MariaDB
 metadata:
   creationTimestamp: "2019-04-26T09:59:00Z"
   finalizers:
@@ -267,11 +258,11 @@ status:
   phase: Running
 ```
 
-## Connect with MySQL database
+## Connect with MariaDB database
 
-KubeDB operator has created a new Secret called `my-group-auth` **(format: {mysql-object-name}-auth)** for storing the password for `mysql` superuser. This secret contains a `username` key which contains the **username** for MySQL superuser and a `password` key which contains the **password** for MySQL superuser.
+KubeDB operator has created a new Secret called `my-group-auth` **(format: {mysql-object-name}-auth)** for storing the password for `mysql` superuser. This secret contains a `username` key which contains the **username** for MariaDB superuser and a `password` key which contains the **password** for MariaDB superuser.
 
-If you want to use an existing secret please specify that when creating the MySQL object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/mysql.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the MariaDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/mysql.md#specdatabasesecret).
 
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 
@@ -283,7 +274,7 @@ $ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | ba
 dlNiQpjULZvEqo3B
 ```
 
-The operator creates a group according to the newly created `MySQL` object. This group has 3 members (one primary and two secondary).
+The operator creates a group according to the newly created `MariaDB` object. This group has 3 members (one primary and two secondary).
 
 You can connect to any of these group members. In that case you just need to specify the host name of that member Pod (either PodIP or the fully-qualified-domain-name for that Pod using the governing service named `<mysql-object-name>-gvr`) by `--host` flag.
 
@@ -369,7 +360,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 ## Data Availability
 
-In a MySQL group, only the primary member can write not the secondary. But you can read data from any member. In this tutorial, we will insert data from primary, and we will see whether we can get the data from any other members.
+In a MariaDB group, only the primary member can write not the secondary. But you can read data from any member. In this tutorial, we will insert data from primary, and we will see whether we can get the data from any other members.
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
@@ -423,13 +414,13 @@ Only, primary member preserves the write permission. No secondary can write data
 # try to write on secondary-1
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-gvr.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
 mysql: [Warning] Using a password on the command line interface can be insecure.
-ERROR 1290 (HY000) at line 1: The MySQL server is running with the --super-read-only option so it cannot execute this statement
+ERROR 1290 (HY000) at line 1: The MariaDB server is running with the --super-read-only option so it cannot execute this statement
 command terminated with exit code 1
 
 # try to write on secondary-2
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-2.my-group-gvr.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
 mysql: [Warning] Using a password on the command line interface can be insecure.
-ERROR 1290 (HY000) at line 1: The MySQL server is running with the --super-read-only option so it cannot execute this statement
+ERROR 1290 (HY000) at line 1: The MariaDB server is running with the --super-read-only option so it cannot execute this statement
 command terminated with exit code 1
 ```
 
@@ -503,6 +494,6 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
-- Detail concepts of [MySQLDBVersion object](/docs/guides/mysql/concepts/catalog.md).
+- Detail concepts of [MariaDB object](/docs/guides/mysql/concepts/mysql.md).
+- Detail concepts of [MariaDBDBVersion object](/docs/guides/mysql/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
