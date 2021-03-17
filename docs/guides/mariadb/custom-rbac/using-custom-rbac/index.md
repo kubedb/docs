@@ -1,5 +1,5 @@
 ---
-title: Run MySQL with Custom RBAC resources
+title: Run MariaDB with Custom RBAC resources
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-customrbac-usingcustomrbac
@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Using Custom RBAC resources
 
-KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to a MySQL instance. This tutorial will show you how to use KubeDB to run MySQL instance with custom RBAC resources.
+KubeDB (version 0.13.0 and higher) supports finer user control over role based access permissions provided to a MariaDB instance. This tutorial will show you how to use KubeDB to run MariaDB instance with custom RBAC resources.
 
 ## Before You Begin
 
@@ -29,19 +29,19 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/custom-rbac/using-custom-rbac/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
-KubeDB allows users to provide custom RBAC resources, namely, `ServiceAccount`, `Role`, and `RoleBinding` for MySQL. This is provided via the `spec.podTemplate.spec.serviceAccountName` field in MySQL crd.   If this field is left empty, the KubeDB operator will create a service account name matching MySQL crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
+KubeDB allows users to provide custom RBAC resources, namely, `ServiceAccount`, `Role`, and `RoleBinding` for MariaDB. This is provided via the `spec.podTemplate.spec.serviceAccountName` field in MariaDB crd.   If this field is left empty, the KubeDB operator will create a service account name matching MariaDB crd name. Role and RoleBinding that provide necessary access permissions will also be generated automatically for this service account.
 
 If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
 
 If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
 
-This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a MySQL instance named `quick-postges` to provide the bare minimum access permissions.
+This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a MariaDB instance named `quick-postges` to provide the bare minimum access permissions.
 
-## Custom RBAC for MySQL
+## Custom RBAC for MariaDB
 
 At first, let's create a `Service Acoount` in `demo` namespace.
 
@@ -67,7 +67,7 @@ secrets:
 - name: myserviceaccount-token-t8zxd
 ```
 
-Now, we need to create a role that has necessary access permissions for the MySQL instance named `quick-mysql`.
+Now, we need to create a role that has necessary access permissions for the MariaDB instance named `quick-mysql`.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/custom-rbac/my-custom-role.yaml
@@ -93,7 +93,7 @@ rules:
   - use
 ```
 
-This permission is required for MySQL pods running on PSP enabled clusters.
+This permission is required for MariaDB pods running on PSP enabled clusters.
 
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
@@ -127,18 +127,18 @@ subjects:
 
 ```
 
-Now, create a MySQL crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
+Now, create a MariaDB crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/custom-rbac/my-custom-db.yaml
 mysql.kubedb.com/quick-mysql created
 ```
 
-Below is the YAML for the MySQL crd we just created.
+Below is the YAML for the MariaDB crd we just created.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: MySQL
+kind: MariaDB
 metadata:
   name: quick-mysql
   namespace: demo
@@ -173,7 +173,7 @@ Check the pod's log to see if the database is ready
 ```bash
 $ kubectl logs -f -n demo quick-mysql-0
 ...
-2020-08-27 06:01:50+00:00 [Note] [Entrypoint]: MySQL init process done. Ready for start up.
+2020-08-27 06:01:50+00:00 [Note] [Entrypoint]: MariaDB init process done. Ready for start up.
 
 2020-08-27T06:01:51.142462Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.21) starting as process 1
 2020-08-27T06:01:51.142509Z 0 [ERROR] [MY-010338] [Server] Can't find error-message file '/usr/share/mysql-8.0/errmsg.sys'. Check error-message file location and 'lc-messages-dir' configuration directive.
@@ -184,27 +184,27 @@ $ kubectl logs -f -n demo quick-mysql-0
 2020-08-27T06:01:51.924095Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
 2020-08-27T06:01:51.924256Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
 2020-08-27T06:01:51.931573Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
-2020-08-27T06:01:51.955689Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.21'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+2020-08-27T06:01:51.955689Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.21'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MariaDB Community Server - GPL.
 ```
 
-Once we see `MySQL init process done. Ready for start up.` in the log, the database is ready.
+Once we see `MariaDB init process done. Ready for start up.` in the log, the database is ready.
 
 ## Reusing Service Account
 
-An existing service account can be reused in another MySQL instance. No new access permission is required to run the new MySQL instance.
+An existing service account can be reused in another MariaDB instance. No new access permission is required to run the new MariaDB instance.
 
-Now, create MySQL crd `minute-mysql` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
+Now, create MariaDB crd `minute-mysql` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/custom-rbac/my-custom-db-two.yaml
 mysql.kubedb.com/quick-mysql created
 ```
 
-Below is the YAML for the MySQL crd we just created.
+Below is the YAML for the MariaDB crd we just created.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: MySQL
+kind: MariaDB
 metadata:
   name: minute-mysql
   namespace: demo
@@ -239,7 +239,7 @@ Check the pod's log to see if the database is ready
 
 ```bash
 ...
-2020-08-27 06:01:50+00:00 [Note] [Entrypoint]: MySQL init process done. Ready for start up.
+2020-08-27 06:01:50+00:00 [Note] [Entrypoint]: MariaDB init process done. Ready for start up.
 
 2020-08-27T06:01:51.142462Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.21) starting as process 1
 2020-08-27T06:01:51.142509Z 0 [ERROR] [MY-010338] [Server] Can't find error-message file '/usr/share/mysql-8.0/errmsg.sys'. Check error-message file location and 'lc-messages-dir' configuration directive.
@@ -250,10 +250,10 @@ Check the pod's log to see if the database is ready
 2020-08-27T06:01:51.924095Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
 2020-08-27T06:01:51.924256Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
 2020-08-27T06:01:51.931573Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
-2020-08-27T06:01:51.955689Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.21'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
+2020-08-27T06:01:51.955689Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.21'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MariaDB Community Server - GPL.
 ```
 
-`MySQL init process done. Ready for start up.` in the log signifies that the database is running successfully.
+`MariaDB init process done. Ready for start up.` in the log signifies that the database is running successfully.
 
 ## Cleaning up
 
@@ -278,11 +278,11 @@ If you would like to uninstall the KubeDB operator, please follow the steps [her
 
 ## Next Steps
 
-- [Quickstart MySQL](/docs/guides/mysql/quickstart/quickstart.md) with KubeDB Operator.
-- Initialize [MySQL with Script](/docs/guides/mysql/initialization/using-script.md).
-- Monitor your MySQL instance with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
-- Monitor your MySQL instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
-- Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MySQL with KubeDB.
+- [Quickstart MariaDB](/docs/guides/mysql/quickstart/quickstart.md) with KubeDB Operator.
+- Initialize [MariaDB with Script](/docs/guides/mysql/initialization/using-script.md).
+- Monitor your MariaDB instance with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
+- Monitor your MariaDB instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
+- Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MariaDB with KubeDB.
 - Use [kubedb cli](/docs/guides/mysql/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
+- Detail concepts of [MariaDB object](/docs/guides/mysql/concepts/mysql.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
