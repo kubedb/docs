@@ -1,5 +1,5 @@
 ---
-title: Run MySQL with Custom PodTemplate
+title: Run MariaDB with Custom PodTemplate
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-configuration-usingpodtemplate
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Run MySQL with Custom PodTemplate
+# Run MariaDB with Custom PodTemplate
 
-KubeDB supports providing custom configuration for MySQL via [PodTemplate](/docs/guides/mysql/concepts/mysql.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a MySQL database with custom configuration using PodTemplate.
+KubeDB supports providing custom configuration for MariaDB via [PodTemplate](/docs/guides/mysql/concepts/mysql.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a MariaDB database with custom configuration using PodTemplate.
 
 ## Before You Begin
 
@@ -33,7 +33,7 @@ KubeDB supports providing custom configuration for MySQL via [PodTemplate](/docs
 
 ## Overview
 
-KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for MySQL database.
+KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for MariaDB database.
 
 KubeDB accept following fields to set in `spec.podTemplate:`
 
@@ -58,13 +58,13 @@ Read about the fields in details in [PodTemplate concept](/docs/guides/mysql/con
 
 ## CRD Configuration
 
-Below is the YAML for the MySQL created in this example. Here, [`spec.podTemplate.spec.env`](/docs/guides/mysql/concepts/mysql.md#specpodtemplatespecenv) specifies environment variables and [`spec.podTemplate.spec.args`](/docs/guides/mysql/concepts/mysql.md#specpodtemplatespecargs) provides extra arguments for [MySQL Docker Image](https://hub.docker.com/_/mysql/).
+Below is the YAML for the MariaDB created in this example. Here, [`spec.podTemplate.spec.env`](/docs/guides/mysql/concepts/mysql.md#specpodtemplatespecenv) specifies environment variables and [`spec.podTemplate.spec.args`](/docs/guides/mysql/concepts/mysql.md#specpodtemplatespecargs) provides extra arguments for [MariaDB Docker Image](https://hub.docker.com/_/mysql/).
 
-In this tutorial, an initial database `myDB` will be created by providing `env` `MYSQL_DATABASE` while the server character set will be set to `utf8mb4` by adding extra `args`. Note that, `character-set-server` in `MySQL 5.7.31` is `latin1`.
+In this tutorial, an initial database `myDB` will be created by providing `env` `MYSQL_DATABASE` while the server character set will be set to `utf8mb4` by adding extra `args`. Note that, `character-set-server` in `MariaDB 5.7.31` is `latin1`.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: MySQL
+kind: MariaDB
 metadata:
   name: mysql-misc-config
   namespace: demo
@@ -117,12 +117,12 @@ Database initialized
 Initializing certificates
 ...
 Certificates initialized
-MySQL init process in progress...
+MariaDB init process in progress...
 ....
-MySQL init process done. Ready for start up.
+MariaDB init process done. Ready for start up.
 ....
 2018-10-02T09:34:33.694994Z 0 [Note] mysqld: ready for connections.
-Version: '5.7.31'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server (GPL)
+Version: '5.7.31'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MariaDB Community Server (GPL)
 ....
 ```
 
@@ -130,7 +130,7 @@ Once we see `[Note] /usr/sbin/mysqld: ready for connections.` in the log, the da
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
-First, deploy [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin/) to connect with the MySQL database we have just created.
+First, deploy [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin/) to connect with the MariaDB database we have just created.
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/quickstart/demo-1.yaml
@@ -156,7 +156,7 @@ $ kubectl get node -o json | jq '.items[].status.addresses[].address'
 url: http://172.18.0.4:30942
 ```
 
-Now, let's connect to the database from the phpMyAdmin dashboard using the database pod IP and MySQL user password.
+Now, let's connect to the database from the phpMyAdmin dashboard using the database pod IP and MariaDB user password.
 
 ```bash
 $ kubectl get pods mysql-misc-config-0 -n demo -o yaml | grep IP
@@ -195,11 +195,11 @@ If you would like to uninstall KubeDB operator, please follow the steps [here](/
 
 ## Next Steps
 
-- [Quickstart MySQL](/docs/guides/mysql/quickstart/quickstart.md) with KubeDB Operator.
-- Initialize [MySQL with Script](/docs/guides/mysql/initialization/using-script.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
-- Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MySQL with KubeDB.
+- [Quickstart MariaDB](/docs/guides/mysql/quickstart/quickstart.md) with KubeDB Operator.
+- Initialize [MariaDB with Script](/docs/guides/mysql/initialization/using-script.md).
+- Monitor your MariaDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
+- Monitor your MariaDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
+- Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MariaDB with KubeDB.
 - Use [kubedb cli](/docs/guides/mysql/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
+- Detail concepts of [MariaDB object](/docs/guides/mysql/concepts/mysql.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
