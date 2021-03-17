@@ -21,8 +21,8 @@ This guide will give you an overview of how KubeDB enterprise operator upgrades 
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [MySQL](/docs/guides/mysql/concepts/mysql.md)
-    - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest.md)
+  - [MySQL](/docs/guides/mysql/concepts/database/index.md)
+  - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest/index.md)
 
 ## How Upgrade Process Works
 

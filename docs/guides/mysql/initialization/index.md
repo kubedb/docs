@@ -17,7 +17,7 @@ section_menu_id: guides
 This tutorial will show you how to use KubeDB to initialize a MySQL database with \*.sql, \*.sh and/or \*.sql.gz script.
 In this tutorial we will use .sql script stored in GitHub repository [kubedb/mysql-init-scripts](https://github.com/kubedb/mysql-init-scripts).
 
-> Note: The yaml files that are used in this tutorial are stored in [docs/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files that are used in this tutorial are stored in [docs/guides/mysql/initialization/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Before You Begin
 
@@ -337,10 +337,10 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Initialize [MySQL with Script](/docs/guides/mysql/initialization/using-script.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
-- Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MySQL with KubeDB.
-- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
-- Detail concepts of [MySQLVersion object](/docs/guides/mysql/concepts/catalog.md).
+- Initialize [MySQL with Script](/docs/guides/mysql/initialization/index.md).
+- Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
+- Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md).
+- Use [private Docker registry](/docs/guides/mysql/private-registry/index.md) to deploy MySQL with KubeDB.
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).
+- Detail concepts of [MySQLVersion object](/docs/guides/mysql/concepts/catalog/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

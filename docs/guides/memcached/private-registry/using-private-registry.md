@@ -39,8 +39,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
   - [kubedb/operator](https://hub.docker.com/r/kubedb/operator)
   - [kubedb/memcached](https://hub.docker.com/r/kubedb/memcached)
-  - [kubedb/memcached-tools](https://hub.docker.com/r/kubedb/memcached-tools)
-  - [kubedb/memcached-exporter](https://hub.docker.com/r/kubedb/memcachedd-exporter)
+  - [kubedb/memcached-exporter](https://hub.docker.com/r/kubedb/memcached-exporter)
 
 - Update KubeDB catalog for private Docker registry. Ex:
 

@@ -18,7 +18,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 ## Before You Begin
 
-- Read [concept of MySQL Version Catalog](/docs/guides/mysql/concepts/catalog.md) to learn detail concepts of `MySQLVersion` object.
+- Read [concept of MySQL Version Catalog](/docs/guides/mysql/concepts/catalog/index.md) to learn detail concepts of `MySQLVersion` object.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
@@ -139,7 +139,7 @@ spec:
 Now run the command to deploy this `MySQL` object:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/private-registry/demo-2.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/private-registry/yamls/standalone.yaml
 mysql.kubedb.com/mysql-pvt-reg created
 ```
 
@@ -167,9 +167,9 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Initialize [MySQL with Script](/docs/guides/mysql/initialization/using-script.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
-- Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
-- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
-- Detail concepts of [MySQLVersion object](/docs/guides/mysql/concepts/catalog.md).
+- Initialize [MySQL with Script](/docs/guides/mysql/initialization/index.md).
+- Monitor your MySQL database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
+- Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).
+- Detail concepts of [MySQLVersion object](/docs/guides/mysql/concepts/catalog/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

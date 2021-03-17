@@ -33,7 +33,7 @@ section_menu_id: guides
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/guides/mysql/tls/configure/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/tls/configure/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ### Deploy MySQL database with TLS/SSL configuration
 
@@ -124,7 +124,7 @@ Here,
 - `spec.tls.issuerRef` refers to the `mysql-issuer` issuer.
 
 - `spec.tls.certificates` gives you a lot of options to configure so that the certificate will be renewed and kept up to date. 
-You can found more details from [here](/docs/guides/mysql/concepts/mysql.md#tls)
+You can found more details from [here](/docs/guides/mysql/concepts/database/index.md#tls)
 
 **Deploy MySQL Standalone:**
 
@@ -568,4 +568,4 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).

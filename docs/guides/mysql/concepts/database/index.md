@@ -113,7 +113,7 @@ spec:
 
 ### spec.version
 
-`spec.version` is a required field specifying the name of the [MySQLVersion](/docs/guides/mysql/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MySQLVersion` resources,
+`spec.version` is a required field specifying the name of the [MySQLVersion](/docs/guides/mysql/concepts/catalog/index.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MySQLVersion` resources,
 
 - `8.0.23`, `8.0.21-v1`, `8.0.20-v1`, `8.0.14-v2`, `8.0.3-v2`
 - `5.7.33`, `5.7.31-v1`, `5.7.29-v1`, `5.7.25-v2`
@@ -202,14 +202,14 @@ spec:
         name: mysql-init-script
 ```
 
-In the above example, KubeDB operator will launch a Job to execute all js script of `mysql-init-script` in alphabetical order once StatefulSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mysql/initialization/using-script.md).
+In the above example, KubeDB operator will launch a Job to execute all js script of `mysql-init-script` in alphabetical order once StatefulSet pods are running. For more details tutorial on how to initialize from script, please visit [here](/docs/guides/mysql/initialization/index.md).
 
 ### spec.monitor
 
 MySQL managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box. To learn more,
 
-- [Monitor MySQL with builtin Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md)
-- [Monitor MySQL with Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md)
+- [Monitor MySQL with builtin Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md)
+- [Monitor MySQL with Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md)
 
 ### spec.requireSSL
 
@@ -255,7 +255,7 @@ The following fields are configurable in the `spec.tls` section:
 
 ### spec.configSecret
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for MySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/using-config-file.md).
+`spec.configSecret` is an optional field that allows users to provide custom configuration for MySQL. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/config-file/index.md).
 
 ### spec.podTemplate
 
@@ -324,7 +324,7 @@ for: "./mysql.yaml": admission webhook "mysql.validators.kubedb.com" denied the 
 
 #### spec.podTemplate.spec.imagePullSecrets
 
-`KubeDB` provides the flexibility of deploying MySQL database from a private Docker registry. `spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker image if you are using a private docker registry. To learn how to deploy MySQL from a private registry, please visit [here](/docs/guides/mysql/private-registry/using-private-registry.md).
+`KubeDB` provides the flexibility of deploying MySQL database from a private Docker registry. `spec.podTemplate.spec.imagePullSecrets` is an optional field that points to secrets to be used for pulling docker image if you are using a private docker registry. To learn how to deploy MySQL from a private registry, please visit [here](/docs/guides/mysql/private-registry/index.md).
 
 #### spec.podTemplate.spec.nodeSelector
 
@@ -338,7 +338,7 @@ for: "./mysql.yaml": admission webhook "mysql.validators.kubedb.com" denied the 
 
  If a service account name is given, but there's no existing service account by that name, the KubeDB operator will create one, and Role and RoleBinding that provide necessary access permissions will also be generated for this service account.
 
- If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/mysql/custom-rbac/using-custom-rbac.md) to grant necessary permissions in this scenario.
+ If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually. Follow the guide [here](/docs/guides/mysql/custom-rbac/index.md) to grant necessary permissions in this scenario.
 
 #### spec.podTemplate.spec.resources
 

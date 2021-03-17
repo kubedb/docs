@@ -20,7 +20,7 @@ This tutorial will show you how to use KubeDB to provision a MySQL replication g
 
 Before proceeding:
 
-- Read [mysql group replication concept](/docs/guides/mysql/clustering/overview.md) to learn about MySQL Group Replication.
+- Read [mysql group replication concept](/docs/guides/mysql/clustering/overview/index.md) to learn about MySQL Group Replication.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
@@ -33,7 +33,7 @@ Before proceeding:
   namespace/demo created
   ```
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/guides/mysql/clustering/group-replication/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/clustering/group-replication/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy MySQL Cluster
 
@@ -291,7 +291,7 @@ status:
 
 KubeDB operator has created a new Secret called `my-group-auth` **(format: {mysql-object-name}-auth)** for storing the password for `mysql` superuser. This secret contains a `username` key which contains the **username** for MySQL superuser and a `password` key which contains the **password** for MySQL superuser.
 
-If you want to use an existing secret please specify that when creating the MySQL object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/mysql.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the MySQL object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/database/index.md#specdatabasesecret).
 
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 
@@ -523,6 +523,6 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
-- Detail concepts of [MySQLDBVersion object](/docs/guides/mysql/concepts/catalog.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).
+- Detail concepts of [MySQLDBVersion object](/docs/guides/mysql/concepts/catalog/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

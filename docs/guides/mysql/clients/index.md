@@ -18,7 +18,7 @@ KubeDB creates separate services for primary and secondary replicas. In this tut
 
 ## Before You Begin
 
-- Read [mysql group replication concept](/docs/guides/mysql/clustering/overview.md) to learn about MySQL Group Replication.
+- Read [mysql group replication concept](/docs/guides/mysql/clustering/overview/index.md) to learn about MySQL Group Replication.
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
@@ -33,7 +33,7 @@ KubeDB creates separate services for primary and secondary replicas. In this tut
 
 - You need to have a mysql client. If you don't have a mysql client install in your local machine, you can install from [here](https://dev.mysql.com/doc/mysql-installation-excerpt/8.0/en/)
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [guides/mysql/clients/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/clients/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy MySQL Cluster
 
@@ -68,14 +68,14 @@ spec:
 Let's create the MySQL CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/clustering/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clients/yamls/group-replication.yaml
 mysql.kubedb.com/my-group created
 ```
 
 KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new StatefulSet and two separate Services for client connection with the cluster. The services have the following format:
 
 - `<mysql-object-name>` has both read and write operation.
-- `<mysql-object-name>-replicas` has only read operation.
+- `<mysql-object-name>-standby` has only read operation.
 
 Now, wait for the `MySQL` is going to `Running` state and also wait for `SatefulSet` and `services` going to the `Ready` state.
 
@@ -84,7 +84,7 @@ $ watch -n 3 kubectl get my -n demo my-group
 Every 3.0s: kubectl get my -n demo my-group                      suaas-appscode: Wed Sep  9 10:54:34 2020
 
 NAME       VERSION   STATUS    AGE
-my-group   8.0.21    Running   16m
+my-group   8.0.23    Running   16m
 
 $ watch -n 3 kubectl get sts -n demo my-group
 ery 3.0s: kubectl get sts -n demo my-group                     suaas-appscode: Wed Sep  9 10:53:52 2020
@@ -93,10 +93,9 @@ NAME       READY   AGE
 my-group   3/3     15m
 
 $ kubectl get service -n demo
-NAME                TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-my-group            ClusterIP   10.99.93.81     <none>        3306/TCP   17m
-my-group-gvr        ClusterIP   None            <none>        3306/TCP   17m
-my-group-replicas   ClusterIP   10.102.85.170   <none>        3306/TCP   17m
+my-group           ClusterIP   10.109.133.141   <none>        3306/TCP   31s
+my-group-pods      ClusterIP   None             <none>        3306/TCP   31s
+my-group-standby   ClusterIP   10.110.47.184    <none>        3306/TCP   31s
 ```
 
 If you describe the object, you can find more details here,
@@ -105,96 +104,93 @@ If you describe the object, you can find more details here,
 $ kubectl dba describe my -n demo my-group
 Name:               my-group
 Namespace:          demo
-CreationTimestamp:  Wed, 09 Sep 2020 10:37:53 +0600
+CreationTimestamp:  Mon, 15 Mar 2021 18:18:35 +0600
 Labels:             <none>
 Annotations:        kubectl.kubernetes.io/last-applied-configuration={"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"...
 Replicas:           3  total
-Status:             Running
+Status:             Provisioning
 StorageType:        Durable
 Volume:
   StorageClass:      standard
   Capacity:          1Gi
   Access Modes:      RWO
-Halted:              false
+Paused:              false
 Halted:              false
 Termination Policy:  WipeOut
 
 StatefulSet:          
   Name:               my-group
-  CreationTimestamp:  Wed, 09 Sep 2020 10:37:54 +0600
+  CreationTimestamp:  Mon, 15 Mar 2021 18:18:35 +0600
   Labels:               app.kubernetes.io/component=database
+                        app.kubernetes.io/instance=my-group
                         app.kubernetes.io/managed-by=kubedb.com
                         app.kubernetes.io/name=mysqls.kubedb.com
-                        app.kubernetes.io/instance=my-group
   Annotations:        <none>
-  Replicas:           824635746408 desired | 3 total
-  Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
+  Replicas:           824635568200 desired | 3 total
+  Pods Status:        2 Running / 1 Waiting / 0 Succeeded / 0 Failed
 
 Service:        
   Name:         my-group
   Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=my-group
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.99.93.81
-  Port:         db  3306/TCP
+  IP:           10.109.133.141
+  Port:         primary  3306/TCP
   TargetPort:   db/TCP
-  Endpoints:    10.244.1.8:3306
+  Endpoints:    10.244.0.15:3306
 
 Service:        
-  Name:         my-group-gvr
+  Name:         my-group-pods
   Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=my-group
-  Annotations:    service.alpha.kubernetes.io/tolerate-unready-endpoints=true
+  Annotations:  <none>
   Type:         ClusterIP
   IP:           None
   Port:         db  3306/TCP
-  TargetPort:   3306/TCP
-  Endpoints:    10.244.1.8:3306,10.244.2.11:3306,10.244.2.13:3306
+  TargetPort:   db/TCP
+  Endpoints:    10.244.0.15:3306,10.244.0.17:3306,10.244.0.19:3306
 
 Service:        
-  Name:         my-group-replicas
+  Name:         my-group-standby
   Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=my-group
   Annotations:  <none>
   Type:         ClusterIP
-  IP:           10.102.85.170
-  Port:         db  3306/TCP
+  IP:           10.110.47.184
+  Port:         standby  3306/TCP
   TargetPort:   db/TCP
-  Endpoints:    10.244.2.11:3306,10.244.2.13:3306
+  Endpoints:    10.244.0.17:3306
 
-Database Secret:
+Auth Secret:
   Name:         my-group-auth
   Labels:         app.kubernetes.io/component=database
+                  app.kubernetes.io/instance=my-group
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=mysqls.kubedb.com
-                  app.kubernetes.io/instance=my-group
   Annotations:  <none>
-  Type:         Opaque
+  Type:         kubernetes.io/basic-auth
   Data:
-    password:  16 bytes
     username:  4 bytes
+    password:  16 bytes
 
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"baseServerID":100,"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.21"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1alpha2","kind":"MySQL","metadata":{"annotations":{},"name":"my-group","namespace":"demo"},"spec":{"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","terminationPolicy":"WipeOut","topology":{"group":{"name":"dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"},"mode":"GroupReplication"},"version":"8.0.23"}}
 
-    Creation Timestamp:  2020-09-09T04:43:00Z
+    Creation Timestamp:  2021-03-15T12:18:35Z
     Labels:
       app.kubernetes.io/component:   database
       app.kubernetes.io/instance:    my-group
       app.kubernetes.io/managed-by:  kubedb.com
-      app.kubernetes.io/name:        mysql
-      app.kubernetes.io/version:     8.0.21
       app.kubernetes.io/name:        mysqls.kubedb.com
-      app.kubernetes.io/instance:               my-group
     Name:                            my-group
     Namespace:                       demo
   Spec:
@@ -205,19 +201,33 @@ AppBinding:
         Port:    3306
         Scheme:  mysql
       URL:       tcp(my-group:3306)/
+    Parameters:
+      API Version:  appcatalog.appscode.com/v1alpha1
+      Kind:         StashAddon
+      Stash:
+        Addon:
+          Backup Task:
+            Name:  mysql-backup-8.0.21-v1
+            Params:
+              Name:   args
+              Value:  --all-databases --set-gtid-purged=OFF
+          Restore Task:
+            Name:  mysql-restore-8.0.21-v1
     Secret:
       Name:   my-group-auth
     Type:     kubedb.com/mysql
-    Version:  8.0.21
+    Version:  8.0.23
 
 Events:
-  Type    Reason      Age   From            Message
-  ----    ------      ----  ----            -------
-  Normal  Successful  8m    MySQL operator  Successfully created Service
-  Normal  Successful  8m    MySQL operator  Successfully created service for secondary replicas
-  Normal  Successful  3m    MySQL operator  Successfully created StatefulSet
-  Normal  Successful  3m    MySQL operator  Successfully created MySQL
-  Normal  Successful  3m    MySQL operator  Successfully created appbinding
+  Type    Reason      Age   From             Message
+  ----    ------      ----  ----             -------
+  Normal  Successful  2m    KubeDB Operator  Successfully created governing service
+  Normal  Successful  2m    KubeDB Operator  Successfully created service for primary/standalone
+  Normal  Successful  2m    KubeDB Operator  Successfully created service for secondary replicas
+  Normal  Successful  2m    KubeDB Operator  Successfully created database auth secret
+  Normal  Successful  2m    KubeDB Operator  Successfully created StatefulSet
+  Normal  Successful  2m    KubeDB Operator  Successfully created appbinding
+  Normal  Successful  2m    KubeDB Operator  Successfully patched StatefulSet
 ```
 
 Our database cluster is ready to connect.
@@ -248,9 +258,10 @@ You can find the service which selects for primary replica have the following se
 ```bash
 $ kubectl get svc -n demo my-group -o json | jq '.spec.selector'
 {
-  "app.kubernetes.io/name": "mysqls.kubedb.com",
   "app.kubernetes.io/instance": "my-group",
-  "mysql.kubedb.com/role": "primary"
+  "app.kubernetes.io/managed-by": "kubedb.com",
+  "app.kubernetes.io/name": "mysqls.kubedb.com",
+  "kubedb.com/role": "primary"
 }
 ```
 
@@ -437,6 +448,6 @@ $ kubectl delete ns demo
 
 ## Next Steps
 
-- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
-- Detail concepts of [MySQLDBVersion object](/docs/guides/mysql/concepts/catalog.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).
+- Detail concepts of [MySQLDBVersion object](/docs/guides/mysql/concepts/catalog/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

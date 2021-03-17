@@ -20,7 +20,7 @@ section_menu_id: guides
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/mysql/monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/mysql/monitoring/overview/index.md).
 
 - To keep database resources isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster:
 
@@ -33,7 +33,7 @@ section_menu_id: guides
 
 - If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md#deploy-prometheus-server).
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/guides/mysql/monitoring/prometheus-operator/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/monitoring/prometheus-operator/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Find out required labels for ServiceMonitor
 
@@ -293,9 +293,9 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
-- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/mysql.md).
-- Detail concepts of [MySQLVersion object](/docs/guides/mysql/concepts/catalog.md).
-- Initialize [MySQL with Script](/docs/guides/mysql/initialization/using-script.md).
-- Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MySQL with KubeDB.
+- Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).
+- Detail concepts of [MySQLVersion object](/docs/guides/mysql/concepts/catalog/index.md).
+- Initialize [MySQL with Script](/docs/guides/mysql/initialization/index.md).
+- Use [private Docker registry](/docs/guides/mysql/private-registry/index.md) to deploy MySQL with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

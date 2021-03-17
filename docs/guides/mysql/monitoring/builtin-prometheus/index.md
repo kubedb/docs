@@ -24,7 +24,7 @@ This tutorial will show you how to monitor MySQL database using builtin [Prometh
 
 - If you are not familiar with how to configure Prometheus to scrape metrics from various Kubernetes resources, please read the tutorial from [here](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/mysql/monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/mysql/monitoring/overview/index.md).
 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
@@ -36,7 +36,7 @@ This tutorial will show you how to monitor MySQL database using builtin [Prometh
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/guides/mysql/monitoring/builtin-prometheus/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/monitoring/builtin-prometheus/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy MySQL with Monitoring Enabled
 
@@ -278,7 +278,7 @@ data:
 Let's create above `ConfigMap`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/monitoring/builtin-prometheus/yamls/prom-config.yaml
 configmap/prometheus-config created
 ```
 
@@ -355,6 +355,6 @@ kubectl delete ns monitoring
 
 ## Next Steps
 
-- Monitor your MySQL database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
-- Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MySQL with KubeDB.
+- Monitor your MySQL database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
+- Use [private Docker registry](/docs/guides/mysql/private-registry/index.md) to deploy MySQL with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

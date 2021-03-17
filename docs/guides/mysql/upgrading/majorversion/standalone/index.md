@@ -25,9 +25,9 @@ This guide will show you how to use `KubeDB` enterprise operator to upgrade the 
 - Install `KubeDB` community and enterprise operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [MySQL](/docs/guides/mysql/concepts/mysql.md)
-    - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest.md)
-    - [Upgrading Overview](/docs/guides/mysql/upgrading/overview/index.md)
+  - [MySQL](/docs/guides/mysql/concepts/database/index.md)
+  - [MySQLOpsRequest](/docs/guides/mysql/concepts/opsrequest/index.md)
+  - [Upgrading Overview](/docs/guides/mysql/upgrading/overview/index.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
@@ -36,7 +36,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/mysql](/docs/examples/mysql) directory of [kubedb/docs](https://github.com/kube/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/upgrading/majorversion/standalone/yamls](/docs/guides/mysql/upgrading/majorversion/standalone/yamls) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
 ### Apply Version Upgrading on Standalone
 

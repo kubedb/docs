@@ -20,7 +20,7 @@ Here we'll discuss some concepts about MySQL group replication.
 
 Replication means data being copied from the primary (the master) MySQL server to one or more secondary (the slaves) MySQL servers, instead of only stored in one server. One can use secondary servers for reads or administrative tasks. The following figure shows an example use case:
 
-![MySQL Replication](/docs/images/mysql/clustering/replicationarchitecturexample.png)
+![MySQL Replication](/docs/guides/mysql/clustering/overview/images/replicationarchitecturexample.png)
 
 Image ref: <https://www.percona.com/blog/wp-content/uploads/2017/01/replicationarchitecturexample.png>
 
@@ -46,7 +46,7 @@ Here, the commit on the primary and the commits on the secondaries are all indep
 
 See the following figure:
 
-![Primary-Secondary Replication](/docs/images/mysql/clustering/async-replication-diagram.png)
+![Primary-Secondary Replication](/docs/guides/mysql/clustering/overview/images/async-replication-diagram.png)
 
 Ref: [group-replication-primary-secondary-replication](https://dev.mysql.com/doc/refman/5.7/en/group-replication-primary-secondary-replication.html)
 
@@ -73,7 +73,7 @@ Here, the commit on the primary depends on the acknowledgment from the secondari
 
 The following figure tells about this.
 
-![MySQL Semisynchronous Replication](/docs/images/mysql/clustering/semisync-replication-diagram.png)
+![MySQL Semisynchronous Replication](/docs/guides/mysql/clustering/overview/images/semisync-replication-diagram.png)
 
 Ref: [group-replication-primary-secondary-replication](https://dev.mysql.com/doc/refman/5.7/en/group-replication-primary-secondary-replication.html)
 
@@ -104,7 +104,7 @@ And the other servers -
 
 > The steps from 3 to 5 in the originating server and all the steps in the other servers are followed if all servers have reached consensus and they certify the transaction.
 
-![MySQL Group Replication Protocol](/docs/images/mysql/clustering/gr-replication-diagram.png)
+![MySQL Group Replication Protocol](/docs/guides/mysql/clustering/overview/images/gr-replication-diagram.png)
 
 Ref: [group-replication](https://dev.mysql.com/doc/refman/5.7/en/group-replication-summary.html)
 
@@ -114,7 +114,7 @@ Groups can operate in a single-primary mode, where only one server accepts updat
 
 A simple group architecture where three servers s1, s2, and s3 are deployed as an interconnected group and clients communicate with each of the servers has been shown below:
 
-![3 Server Group](/docs/images/mysql/clustering/gr-3-server-group.png)
+![3 Server Group](/docs/guides/mysql/clustering/overview/images/gr-3-server-group.png)
 
 Image ref: https://dev.mysql.com/doc/refman/5.7/en/images/gr-3-server-group.png
 
@@ -162,5 +162,5 @@ There are some limitations in MySQL Group Replication that are listed [here](htt
 
 ## Next Steps
 
-- [Deploy MySQL Group Replication](/docs/guides/mysql/clustering/group_replication_single_primary.md) using KubeDB.
+- [Deploy MySQL Group Replication](/docs/guides/mysql/clustering/group-replication/index.md) using KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md)
