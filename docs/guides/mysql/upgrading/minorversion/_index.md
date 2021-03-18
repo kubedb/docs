@@ -2,9 +2,9 @@
 title: Upgrading MySQL minor version
 menu:
   docs_{{ .version }}:
-    identifier: my-upgrading-mysql-minor
+    identifier: guides-mysql-upgrading-minor
     name: Minor version
-    parent: my-upgrading-mysql
+    parent: guides-mysql-upgrading
     weight: 30
 menu_name: docs_{{ .version }}
 ---
