@@ -18,7 +18,7 @@ Stash supports taking [backup and restores MongoDB ReplicaSet clusters in "idiom
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
-- Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
+- Install Stash Enterise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - Install MongoDB addon for Stash following the steps [here](https://stash.run/docs/latest/addons/mongodb/setup/install/).
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - If you are not familiar with how Stash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/overview/index.md).

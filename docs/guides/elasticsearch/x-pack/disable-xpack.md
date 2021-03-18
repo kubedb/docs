@@ -69,12 +69,12 @@ spec:
   stash:
     addon:
       backupTask:
-        name: elasticsearch-backup-7.3.2-v7
+        name: elasticsearch-backup-7.3.2
         params:
         - name: args
           value: --match=^(?![.])(?!searchguard).+
       restoreTask:
-        name: elasticsearch-restore-7.3.2-v7
+        name: elasticsearch-restore-7.3.2
   version: 7.9.3
 ```
 
