@@ -19,9 +19,8 @@ Stash 0.9.0+ supports backup and restoration of PostgreSQL databases. This guide
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
-- Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
-- Install PostgreSQL addon for Stash following the steps [here](https://stash.run/docs/latest/addons/postgres/setup/install/)
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
+- Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - If you are not familiar with how Stash backup and restore PostgreSQL databases, please check the following guide [here](/docs/guides/postgres/backup/overview/index.md):
 
 You have to be familiar with following custom resources:
@@ -73,7 +72,7 @@ spec:
 Create the above `Postgres` crd,
 
 ```bash
-$ kubectl apply -f https://github.com/standalone/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/backup/postgres.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/postgres.yaml
 postgres.kubedb.com/sample-postgres created
 ```
 
@@ -84,7 +83,7 @@ Let's check if the database is ready to use,
 ```bash
 ❯ kubectl get pg -n demo sample-postgres
 NAME              VERSION   STATUS   AGE
-sample-postgres   11.11   Ready    50s
+sample-postgres   11.11     Ready    50s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
@@ -110,7 +109,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 ```bash
 ❯ kubectl get appbindings -n demo
 NAME              TYPE                  VERSION   AGE
-sample-postgres   kubedb.com/postgres   11.2      3m54s
+sample-postgres   kubedb.com/postgres   11.11      3m54s
 ```
 
 Let's check the YAML of the above `AppBinding`,
@@ -147,11 +146,11 @@ spec:
     stash:
       addon:
         backupTask:
-          name: postgres-backup-11.9.0-v5
+          name: postgres-backup-11.9
         restoreTask:
-          name: postgres-restore-11.9.0-v5
+          name: postgres-restore-11.9
   type: kubedb.com/postgres
-  version: "11.2"
+  version: "11.11"
 ```
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
@@ -178,7 +177,7 @@ Now, let's exec into the pod and create a table,
 
 # login as "postgres" superuser.
 / # psql -U postgres
-psql (11.2)
+psql (11.11)
 Type "help" for help.
 
 # list available databases
@@ -275,7 +274,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/standalone/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/backup/repository.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/repository.yaml
 repository.stash.appscode.com/gcs-repo created
 ```
 
@@ -320,7 +319,7 @@ Here,
 Let's create the `BackupConfiguration` object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/standalone/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/backup/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/backupconfiguration.yaml
 backupconfiguration.stash.appscode.com/sample-postgres-backup created
 ```
 
@@ -389,8 +388,8 @@ Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that th
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo sample-postgres-backup
-NAME                    TASK                        SCHEDULE      PAUSED   AGE
-sample-postgres-backup  postgres-backup-11.9.0-v5      */5 * * * *   true     5m55s
+NAME                    TASK                      SCHEDULE      PAUSED   AGE
+sample-postgres-backup  postgres-backup-11.9      */5 * * * *   true     5m55s
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
@@ -428,7 +427,7 @@ Notice the `init` section. Here, we have specified `waitForInitialRestore: true`
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/standalone/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/restore/restored-postgres.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/restored-postgres.yaml
 postgres.kubedb.com/restored-postgres created
 ```
 
@@ -437,7 +436,7 @@ This time, the database will get stuck in the `Provisioning` state because we ha
 ```bash
 ❯ kubectl get postgres -n demo restored-postgres
 NAME                VERSION   STATUS         AGE
-restored-postgres   11.11   Provisioning   6m7s
+restored-postgres   11.11     Provisioning   6m7s
 ```
 
 You can check the log from the database pod to be sure whether the database is ready to accept connections or not.
@@ -497,7 +496,7 @@ Here,
 Let's create the `RestoreSession` crd we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/standalone/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/restore/restoresession.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/restoresession.yaml
 restoresession.stash.appscode.com/sample-postgres-restore created
 ```
 
@@ -525,7 +524,7 @@ At first, check if the database has gone into `Ready` state using the following 
 ```bash
 ❯ kubectl get pg -n demo restored-postgres
 NAME                VERSION   STATUS   AGE
-restored-postgres   11.11   Ready    11m
+restored-postgres   11.11     Ready    11m
 ```
 
 Now, exec into the database pod and verify restored data.
@@ -534,7 +533,7 @@ Now, exec into the database pod and verify restored data.
 ❯ kubectl exec -it -n demo restored-postgres-0 -- /bin/sh
 # login as "postgres" superuser.
 / # psql -U postgres
-psql (11.2)
+psql (11.11)
 Type "help" for help.
 
 # verify that the "demo" database has been restored

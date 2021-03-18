@@ -18,9 +18,8 @@ Stash 0.9.0+ supports backup and restoration of MongoDB databases. This guide wi
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
-- Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
-- Install MongoDB addon for Stash following the steps [here](https://stash.run/docs/latest/addons/mongodb/setup/install/).
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
+- Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - If you are not familiar with how Stash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/overview/index.md).
 
 You have to be familiar with following custom resources:
@@ -72,7 +71,7 @@ spec:
 Create the above `MongoDB` crd,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/examples/backup/standalone/mongodb.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/standalone/examples/mongodb.yaml
 mongodb.kubedb.com/sample-mongodb created
 ```
 
@@ -82,18 +81,18 @@ Let's check if the database is ready to use,
 
 ```console
 $ kubectl get mg -n demo sample-mongodb
-NAME             VERSION        STATUS    AGE
-sample-mongodb   4.2.3         Running   2m9s
+NAME             VERSION       STATUS    AGE
+sample-mongodb   4.2.3         Ready   2m9s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
 
 ```console
-$ kubectl get secret -n demo -l=kubedb.com/name=sample-mongodb
+$ kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-mongodb
 NAME                  TYPE     DATA   AGE
 sample-mongodb-auth   Opaque   2      2m28s
 
-$ kubectl get service -n demo -l=kubedb.com/name=sample-mongodb
+$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mongodb
 NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 sample-mongodb       ClusterIP   10.107.58.222   <none>        27017/TCP   2m48s
 sample-mongodb-gvr   ClusterIP   None            <none>        27017/TCP   2m48s
@@ -123,10 +122,9 @@ kind: AppBinding
 metadata:
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: sample-mongodb
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodbs.kubedb.com
-    kubedb.com/name: sample-mongodb
+    app.kubernetes.io/instance: sample-mongodb
   name: sample-mongodb
   namespace: demo
 spec:
@@ -143,9 +141,9 @@ spec:
     stash:
       addon:
         backupTask:
-          name: mongodb-restore-4.3.2-v6
+          name: mongodb-backup-4.2.3
         restoreTask:
-          name: mongodb-restore-4.3.2-v6
+          name: mongodb-restore-4.2.3
   type: kubedb.com/mongodb
   version: "4.2.3"
 ```
@@ -157,85 +155,12 @@ Stash uses the `AppBinding` crd to connect with the target database. It requires
 - `spec.parameters.stash` contains the Stash Addon information that will be used to backup/restore this MongoDB database.
 - `spec.type` specifies the types of the app that this AppBinding is pointing to. KubeDB generated AppBinding follows the following format: `<app group>/<app resource type>`.
 
-### AppBinding for SSL
-
-If `SSLMode` of the MongoDB server is either of `requireSSL` or `preferSSL`, you can provide ssl connection information through AppBinding Specs.
-
-User need to provide the following fields in case of SSL is enabled,
-
-- `spec.clientConfig.caBundle` specifies the CA certificate that is used in [`--sslCAFile`](https://docs.mongodb.com/manual/reference/program/mongod/index.html#cmdoption-mongod-sslcafile) flag of `mongod`.
-- `spec.secret` specifies the name of the secret that holds `client.pem` file. Follow the [mongodb official doc](https://docs.mongodb.com/manual/tutorial/configure-x509-client-authentication/) to learn how to create `client.pem` and add the subject of `client.pem` as user (with appropriate roles) to mongodb server.
-
-**KubeDB does these automatically**. It has added the subject of `client.pem` in the mongodb server with `root` role. So, user can just use the appbinding that is created by KubeDB without doing any hurdle! See the [MongoDB with TLS/SSL (Transport Encryption)](https://github.com/kubedb/docs/blob/master/docs/guides/mongodb/tls-ssl-encryption/tls-ssl-encryption.md) guide to learn about the ssl options in mongodb in details.
-
-So, in KubeDB, the following `CRD` deploys a mongodb replicaset where ssl is enabled (`requireSSL` sslmode),
-
-```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: MongoDB
-metadata:
-  name: sample-mongodb-ssl
-  namespace: demo
-spec:
-  version: "4.2.3"
-  storageType: Durable
-  storage:
-    storageClassName: "standard"
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  terminationPolicy: WipeOut
-  sslMode: requireSSL
-```
-
-After the deploy is done, kubedb will create a appbinding that will look like:
-
-```yaml
-apiVersion: appcatalog.appscode.com/v1alpha1
-kind: AppBinding
-metadata:
-  labels:
-    app.kubernetes.io/component: database
-    app.kubernetes.io/instance: sample-mongodb-ssl
-    app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: mongodb
-    app.kubernetes.io/version: 4.2.3
-    app.kubernetes.io/name: mongodbs.kubedb.com
-    kubedb.com/name: sample-mongodb-ssl
-  name: sample-mongodb-ssl
-  namespace: demo
-spec:
-  clientConfig:
-    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM0RENDQWNpZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFoTVJJd0VBWURWUVFLRXdscmRXSmwKWkdJNlkyRXhDekFKQmdOVkJBTVRBbU5oTUI0WERURTVNRGt6TURFek1EYzFPRm9YRFRJNU1Ea3lOekV6TURjMQpPRm93SVRFU01CQUdBMVVFQ2hNSmEzVmlaV1JpT21OaE1Rc3dDUVlEVlFRREV3SmpZVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTXRRYmNiaitiL2JES3UvcERDMGI4SlYvREFjTTY4TDFTbDIKVzJMSHh4YzZZMDNnNEZKV290ZjJaRk5IczhMUmNQVmt5Qms1ZkRnVnJWS0FNY1N2Q2UrTHI2ek9LTXFXVEtwZgpqWGZ5dXpsUnpna3FsZEdLRXowNndtQTJHZE5od1VKL2RWVEFrbVU5dlp5ekZoaHhUcFRoZFBLRGlVRlNxdGlKCk5rWHUzZmJYK0Y4RkRVYVQ5Y3FKR3c5N0xRQW9NaGF5ZVJabDkrM2NTZ1NvdFhBVFlnTTZIU200UnFyaGdqMEEKU2MxSkV3TERkMDFBK25TeGtlVmkzV3M3SGo2Wlp6TUtlNVN1b2Z0NFlUMmlzcjBpRXpHQXhCRllwVFRUN1VuQgp3SlNCcEFRZTNFNWpuMGpqR21qVFV1TUJiR3VtcUhZck80akJ5TXRrUXZxVlFqdndWU0VDQXdFQUFhTWpNQ0V3CkRnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3RFFZSktvWklodmNOQVFFTEJRQUQKZ2dFQkFMTjVwSElGd0lBUFpaaWU0THRwY1ltanZ5eHBWS3MwdlY5TXZPZnVRVGtydktNQnZxbkFlU0NJUDEycQp3OThNQnhYV29BNFNtUDVPZHA5SklSYWdCQmJOV2tVUFJsY3dkWUdpZGtnMWhjZ3ZMTTZUaXlCVnNEMDB2c1N5CjgwTzlpQnVJaGdqdW9QYzdCdUFMOSsraDdzR0ZXWXpVVXBrdHRRMkgrSGtlOGpHUEQvTytzT3Q1OUFvaCtPOFUKTDBZSno4YkZ0UnFEdUZYcUlRMXpzaEFpMFkzSmloUTBZWGFPQU8yeUttZENkY2ZNdXlUSUhNWnpTOUMzZEEwRwpLb3dNYjh4d0hjRld6WW5WdnR5K2g1Qmd6SEx4UU9pd2Foc280RW9vR01xbTlzVVBOSWJZTGRNUndVZWRMZDcwCnRlMWw2ak5DVys0ZVVJb2czc3BvcW9kL3ZZMD0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
-    service:
-      name: sample-mongodb-ssl
-      port: 27017
-      scheme: mongodb
-  secret:
-    name: sample-mongodb-ssl-cert
-  parameters:
-    apiVersion: config.kubedb.com/v1alpha1
-    kind: MongoConfiguration
-    stash:
-      addon:
-        backupTask:
-          name: mongodb-restore-4.3.2-v6
-        restoreTask:
-          name: mongodb-restore-4.3.2-v6
-  type: kubedb.com/mongodb
-  version: "4.2.3"
-```
-
-Here, `sample-mongodb-cert` contains few required certificates, and one of them is `client.pem` which is required to backup/restore ssl enabled mongodb server using stash-mongodb.
-
 **Insert Sample Data:**
 
 Now, we are going to exec into the database pod and create some sample data. At first, find out the database pod using the following command,
 
 ```console
-$ kubectl get pods -n demo --selector="kubedb.com/name=sample-mongodb"
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-mongodb"
 NAME               READY   STATUS    RESTARTS   AGE
 sample-mongodb-0   1/1     Running   0          12m
 ```
@@ -326,7 +251,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/examples/backup/standalone/repository.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/standalone/examples/repository.yaml
 repository.stash.appscode.com/gcs-repo created
 ```
 
@@ -369,7 +294,7 @@ Here,
 Let's create the `BackupConfiguration` crd we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/examples/backup/standalone/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/standalone/examples/backupconfiguration.yaml
 backupconfiguration.stash.appscode.com/sample-mongodb-backup created
 ```
 
@@ -433,8 +358,8 @@ Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that th
 
 ```console
 $ kubectl get backupconfiguration -n demo sample-mongodb-backup
-NAME                   TASK                         SCHEDULE      PAUSED   AGE
-sample-mongodb-backup  mongodb-restore-4.3.2-v6        */5 * * * *   true     26m
+NAME                   TASK                        SCHEDULE      PAUSED   AGE
+sample-mongodb-backup  mongodb-backup-4.2.3        */5 * * * *   true     26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
@@ -471,7 +396,7 @@ spec:
 Let's create the above database,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/restore/standalone/restored-mongodb.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/standalone/examples/restored-mongodb.yaml
 mongodb.kubedb.com/restored-mongodb created
 ```
 
@@ -479,7 +404,7 @@ If you check the database status, you will see it is stuck in `Provisioning` sta
 
 ```console
 $ kubectl get mg -n demo restored-mongodb
-NAME               VERSION        STATUS         AGE
+NAME               VERSION       STATUS         AGE
 restored-mongodb   4.2.3         Provisioning   17s
 ```
 
@@ -526,7 +451,7 @@ Here,
 Let's create the `RestoreSession` crd we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/restore/standalone/restoresession.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/standalone/examples/restoresession.yaml
 restoresession.stash.appscode.com/sample-mongodb-restore created
 ```
 
@@ -547,18 +472,18 @@ So, we can see from the output of the above command that the restore process suc
 
 In this section, we are going to verify that the desired data has been restored successfully. We are going to connect to the database and check whether the table we had created in the original database is restored or not.
 
-At first, check if the database has gone into `Running` state by the following command,
+At first, check if the database has gone into `Ready` state by the following command,
 
 ```console
 $ kubectl get mg -n demo restored-mongodb
-NAME               VERSION        STATUS    AGE
-restored-mongodb   4.2.3         Running   105m
+NAME               VERSION       STATUS  AGE
+restored-mongodb   4.2.3         Ready   105m
 ```
 
 Now, find out the database pod by the following command,
 
 ```console
-$ kubectl get pods -n demo --selector="kubedb.com/name=restored-mongodb"
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-mongodb"
 NAME                 READY   STATUS    RESTARTS   AGE
 restored-mongodb-0   1/1     Running   0          106m
 ```

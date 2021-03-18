@@ -20,8 +20,8 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
-- Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
+- Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - If you are not familiar with how Stash backup and restore PostgreSQL databases, please check the following guide [here](/docs/guides/postgres/backup/overview/index.md).
 - If you are not familiar with how auto-backup works in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/latest/auto-backup/overview/).
 - If you are not familiar with the available auto-backup options for databases in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/latest/auto-backup/database/).
@@ -48,20 +48,20 @@ namespace/demo-2 created
 namespace/demo-3 created
 ```
 
-Make sure you have installed the PostgreSQL addon for Stash. If you haven't installed it already, please install the addon following the steps [here](https://stash.run/docs/latest/addons/postgres/setup/install/).
+When you install the Stash Enterprise edition, it automatically installs all the official database addons. Verify that it has installed the PostgreSQL addons using the following command.
 
 ```bash
 ❯ kubectl get tasks.stash.appscode.com | grep postgres
-postgres-backup-10.14.0-v5    8d
-postgres-backup-11.9.0-v5     8d
-postgres-backup-12.4.0-v5     8d
-postgres-backup-13.1.0-v2    8d
-postgres-backup-9.6.19-v5     8d
-postgres-restore-10.14.0-v5   8d
-postgres-restore-11.9.0-v5    8d
-postgres-restore-12.4.0-v5    8d
-postgres-restore-13.1.0-v2    8d
-postgres-restore-9.6.19-v5    8d
+postgres-backup-10.14    8d
+postgres-backup-11.9     8d
+postgres-backup-12.4     8d
+postgres-backup-13.1     8d
+postgres-backup-9.6.19   8d
+postgres-restore-10.14   8d
+postgres-restore-11.9    8d
+postgres-restore-12.4    8d
+postgres-restore-13.1    8d
+postgres-restore-9.6.19  8d
 ```
 
 ## Prepare Backup Blueprint
@@ -198,8 +198,8 @@ Now, let's verify whether Stash has created a `BackupConfiguration` for our Post
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo
-NAME                    TASK                        SCHEDULE      PAUSED   AGE
-app-sample-postgres-1   postgres-backup-11.9.0-v5   */5 * * * *            97s
+NAME                    TASK                   SCHEDULE      PAUSED   AGE
+app-sample-postgres-1   postgres-backup-11.9   */5 * * * *            97s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -367,8 +367,8 @@ Now, let's verify whether Stash has created a `BackupConfiguration` for our Post
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo-2
-NAME                    TASK                        SCHEDULE      PAUSED   AGE
-app-sample-postgres-2   postgres-backup-11.9.0-v5   */3 * * * *            61s
+NAME                    TASK                   SCHEDULE      PAUSED   AGE
+app-sample-postgres-2   postgres-backup-11.9   */3 * * * *            61s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -537,8 +537,8 @@ Now, let's verify whether Stash has created a `BackupConfiguration` for our Post
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo-3
-NAME                    TASK                        SCHEDULE      PAUSED   AGE
-app-sample-postgres-3   postgres-backup-11.9.0-v5   */5 * * * *            51s
+NAME                    TASK                   SCHEDULE      PAUSED   AGE
+app-sample-postgres-3   postgres-backup-11.9   */5 * * * *            51s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.

@@ -34,7 +34,6 @@ metadata:
 spec:
   schedule: "*/2 * * * *"
   task:
-#    name: elasticsearch-backup-7.3.2-v7 # Uncomment if you are not using KubeDB to deploy your database
     params:
     - name: args
       value: --ignoreType=template,settings
@@ -73,7 +72,6 @@ metadata:
 spec:
   schedule: "*/2 * * * *"
   task:
-#    name: elasticsearch-backup-7.3.2-v7 # Uncomment if you are not using KubeDB to deploy your database
     params:
     - name: args
       value: --match=^(?![.])(?!searchguard).+ --ignoreType=template
@@ -111,8 +109,6 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/2 * * * *"
-#  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: elasticsearch-backup-7.3.2-v7
   repository:
     name: gcs-repo
   target:
@@ -152,8 +148,6 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/2 * * * *"
-#  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: elasticsearch-backup-7.3.2-v7
   repository:
     name: gcs-repo
   target:
@@ -197,8 +191,6 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/2 * * * *"
-#  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: elasticsearch-backup-7.3.2-v7
   repository:
     name: gcs-repo
   target:
@@ -243,7 +235,6 @@ metadata:
   namespace: demo
 spec:
   task:
-#    name: elasticsearch-restore-7.3.2-v7 # Uncomment if you are not using KubeDB to deploy your database
     params:
     - name: args
       value: --ignoreType=template,settings
@@ -293,8 +284,6 @@ metadata:
   name: sample-elasticsearch-restore
   namespace: demo
 spec:
-#  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: elasticsearch-restore-7.3.2-v7
   repository:
     name: gcs-repo
   target:
@@ -328,8 +317,6 @@ metadata:
   name: sample-elasticsearch-restore
   namespace: demo
 spec:
-#  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: elasticsearch-restore-7.3.2-v7
   repository:
     name: gcs-repo
   target:
@@ -366,8 +353,6 @@ metadata:
   name: sample-elasticsearch-restore
   namespace: demo
 spec:
-#  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: elasticsearch-restore-7.3.2-v7
   repository:
     name: gcs-repo
   target:

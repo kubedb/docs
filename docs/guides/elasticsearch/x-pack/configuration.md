@@ -67,9 +67,9 @@ spec:
   stash:
     addon:
       backupTask:
-        name: elasticsearch-backup-7.3.2-v7
+        name: elasticsearch-backup-7.3.2
       restoreTask:
-        name: elasticsearch-restore-7.3.2-v7
+        name: elasticsearch-restore-7.3.2
   version: 7.9.1
 ```
 

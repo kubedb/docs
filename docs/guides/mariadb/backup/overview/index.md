@@ -93,4 +93,7 @@ The restore process consists of the following steps:
 
 ## Next Steps
 
-- Install MariaDB addon for Stash following the guide from [here](https://stash.run/docs/latest/addons/mariadb/setup/install/).
+- Backup a standalone MariaDB databases using Stash following the guide from [here](/docs/guides/mariadb/backup/logical/standalone/index.md).
+- Backup a MariaDB cluster using Stash following the guide from [here](/docs/guides/mariadb/backup/logical/cluster/index.md).
+- Configure a generic backup template for all the MariaDB databases of your cluster using Stash Auto-backup by following the guide from [here](/docs/guides/mariadb/backup/auto-backup/index.md).
+- Customize the backup & restore process for your cluster by following the guides from [here](/docs/guides/mariadb/backup/customization/index.md).

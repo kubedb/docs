@@ -18,9 +18,8 @@ Stash 0.9.0+ supports backup and restoration of Percona XtraDB cluster databases
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
-- Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
-- Install Percona XtraDB addon for Stash following the steps [here](https://stash.run/docs/latest/addons/percona-xtradb/setup/install/)
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
+- Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - If you are not familiar with how Stash takes backup and restores Percona XtraDB, please check the following guide [here](/docs/guides/percona-xtradb/backup/overview/index.md).
 
 You have to be familiar with the following custom resources:
@@ -73,7 +72,7 @@ spec:
 Create the above `PerconaXtraDB` CRD,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/backup/examples/clustered/backup/sample-xtradb-cluster.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/backup/cluster/examples/sample-xtradb-cluster.yaml
 perconaxtradb.kubedb.com/sample-xtradb-cluster created
 ```
 
@@ -83,18 +82,18 @@ Let's check if the database is ready to use,
 
 ```bash
 $  kubectl get px -n demo sample-xtradb-cluster
-NAME                    VERSION       STATUS    AGE
-sample-xtradb-cluster   5.7-cluster   Running   7m46s
+NAME                    VERSION       STATUS  AGE
+sample-xtradb-cluster   5.7-cluster   Ready   7m46s
 ```
 
-The database is `Running`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
+The database is `Ready`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo -l=kubedb.com/name=sample-xtradb-cluster
+$ kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-xtradb-cluster
 NAME                         TYPE     DATA   AGE
 sample-xtradb-cluster-auth   Opaque   2      9m2s
 
-$ kubectl get service -n demo -l=kubedb.com/name=sample-xtradb-cluster
+$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-xtradb-cluster
 NAME                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 sample-xtradb-cluster       ClusterIP   10.103.37.141   <none>        3306/TCP   11m
 sample-xtradb-cluster-gvr   ClusterIP   None            <none>        3306/TCP   11m
@@ -126,10 +125,9 @@ metadata:
   generation: 1
   labels:
     app.kubernetes.io/component: database
-    app.kubernetes.io/instance: sample-xtradb-cluster
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: perconaxtradbs.kubedb.com
-    kubedb.com/name: sample-xtradb-cluster
+    app.kubernetes.io/instance: sample-xtradb-cluster
   name: sample-xtradb-cluster
   namespace: demo
   ownerReferences:
@@ -158,9 +156,9 @@ spec:
     stash:
       addon:
         backupTask:
-          name: percona-xtradb-backup-5.7.0-v2
+          name: perconaxtradb-backup-5.7.0
         restoreTask:
-          name: percona-xtradb-restore-5.7.0-v2
+          name: perconaxtradb-restore-5.7.0
   secret:
     name: sample-xtradb-cluster-auth
   type: kubedb.com/perconaxtradb
@@ -174,40 +172,12 @@ Stash uses the AppBinding CRD to connect with the target database. It requires t
 - `spec.parameters.stash` contains the Stash Addon info which will be used to backup and restore this database.
 - `.spec.type` specifies the type of the app that this AppBinding is pointing to. The format KubeDB generated AppBinding follows to set the value of `.spec.type` is `<app_group>/<app_resource_type>`.
 
-#### Creating AppBinding Manually
-
-If you deploy the Percona XtraDB cluster without KubeDB, you have to create the AppBinding CRD manually in the same namespace as the service and secret of the database.
-
-The following YAML shows a minimal AppBinding specification that you have to create if you deploy the Percona XtraDB cluster without KubeDB.
-
-```yaml
-apiVersion: appcatalog.appscode.com/v1alpha1
-kind: AppBinding
-metadata:
-  name: your-custom-appbinding-name
-  namespace: your-database-namespace
-spec:
-  clientConfig:
-    service:
-      name: your-database-service-name
-      port: 3306
-      scheme: mysql
-  secret:
-    name: your-database-auth-secret-name
-  # type field is optional. you can keep it empty.
-  # if you keep it empty then the value of TARGET_APP_RESOURCE variable
-  # will be set to "appbinding" during auto-backup.
-  type: kubedb.com/perconaxtradb
-```
-
-You have to replace the `<...>` quoted part with proper values in the above YAML.
-
 #### Insert Sample Data
 
 Now, we are going to exec into the database pod and create some sample data. At first, find out the database pods using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="kubedb.com/name=sample-xtradb-cluster"
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-xtradb-cluster"
 NAME                      READY   STATUS    RESTARTS   AGE
 sample-xtradb-cluster-0   1/1     Running   0          39m
 sample-xtradb-cluster-1   1/1     Running   0          38m
@@ -325,7 +295,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clustered/backup/repository.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/backup/cluster/examples/repository.yaml
 repository.stash.appscode.com/gcs-repo-xtradb-cluster created
 ```
 
@@ -368,7 +338,7 @@ Here,
 Let's create the `BackupConfiguration` CRD we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clustered/backup/backupconfiguration.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/backup/cluster/examples/backupconfiguration.yaml
 backupconfiguration.stash.appscode.com/sample-xtradb-cluster-backup created
 ```
 
@@ -413,7 +383,7 @@ gcs-repo-xtradb-cluster   true        304.165 MiB   3                97s        
 Now, if we navigate to the GCS bucket, we will see the backed up data has been stored in `demo/xtradb/sample-xtradb-cluster` directory as specified by `.spec.backend.gcs.prefix` field of Repository CRD.
 
 <figure align="center">
-  <img alt="Backed up data in GCS Bucket" src="/docs/guides/percona-xtradb/backup/images/sample-xtradb-cluster-backup.png">
+  <img alt="Backed up data in GCS Bucket" src="/docs/guides/percona-xtradb/backup/cluster/images/sample-xtradb-cluster-backup.png">
   <figcaption align="center">Fig: Backed up data in GCS Bucket</figcaption>
 </figure>
 
@@ -438,8 +408,8 @@ Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that th
 
 ```console
 $ kubectl get backupconfiguration -n demo sample-xtradb-cluster-backup
-NAME                           TASK                        SCHEDULE      PAUSED   AGE
-sample-xtradb-cluster-backup   percona-xtradb-backup-5.7.0-v2   */5 * * * *   true     50m
+NAME                           TASK                         SCHEDULE      PAUSED   AGE
+sample-xtradb-cluster-backup   perconaxtradb-backup-5.7.0   */5 * * * *   true     50m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
@@ -480,7 +450,7 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clustered/restore/restored-xtradb-cluster.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/backup/cluster/examples/restored-xtradb-cluster.yaml
 perconaxtradb.kubedb.com/restored-xtradb-cluster created
 ```
 
@@ -545,7 +515,7 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clustered/restore/restoresession.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/backup/cluster/examples/restoresession.yaml
 restoresession.stash.appscode.com/restored-xtradb-cluster-restore created
 ```
 
@@ -568,20 +538,20 @@ Here, we can see from the output of the above command that the restore process s
 
 In this section, we are going to verify whether the desired data has restored successfully. We are going to connect to the database server and check whether the database and the table we created earlier in the original database have restored.
 
-At first, check if the database has gone into **`Running`** state,
+At first, check if the database has gone into **`Ready`** state,
 
 ```bash
 $ kubectl get px -n demo restored-xtradb-cluster --watch
 NAME                      VERSION       STATUS         AGE
 restored-xtradb-cluster   5.7-cluster   Provisioning   3m36s
 restored-xtradb-cluster   5.7-cluster   Provisioning   4m4s
-restored-xtradb-cluster   5.7-cluster   Running        4m4s
+restored-xtradb-cluster   5.7-cluster   Ready        4m4s
 ```
 
 Now, find out the database Pod,
 
 ```bash
-$ kubectl get pods -n demo --selector="kubedb.com/name=restored-xtradb-cluster" --watch
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-xtradb-cluster" --watch
 NAME                        READY   STATUS    RESTARTS   AGE
 restored-xtradb-cluster-0   1/1     Running   0          115s
 restored-xtradb-cluster-1   1/1     Running   0          77s

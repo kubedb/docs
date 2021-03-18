@@ -83,4 +83,5 @@ The restore process consists of the following steps:
 
 ## Next Steps
 
-- Install PostgreSQL addon for Stash following the guide from [here](https://stash.run/docs/latest/addons/postgres/setup/install/).
+- Backup a standalone PostgreSQL database using Stash following the guide from [here](/docs/guides/postgres/backup/standalone/index.md).
+- Configure a generic backup template for all the PostgreSQL databases of your cluster using Stash Auto-backup by following the guide from [here](/docs/guides/postgres/backup/auto-backup/index.md).

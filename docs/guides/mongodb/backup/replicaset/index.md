@@ -18,9 +18,8 @@ Stash supports taking [backup and restores MongoDB ReplicaSet clusters in "idiom
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
-- Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
-- Install MongoDB addon for Stash following the steps [here](https://stash.run/docs/latest/addons/mongodb/setup/install/).
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
+- Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - If you are not familiar with how Stash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/overview/index.md).
 
 You have to be familiar with following custom resources:
@@ -74,7 +73,7 @@ spec:
 Create the above `MongoDB` crd,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/examples/backup/replicaset/mongodb-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/replicaset/examples/mongodb-replicaset.yaml
 mongodb.kubedb.com/sample-mgo-rs created
 ```
 
@@ -84,19 +83,19 @@ Let's check if the database is ready to use,
 
 ```console
 $ kubectl get mg -n demo sample-mgo-rs
-NAME            VERSION      STATUS    AGE
-sample-mgo-rs   4.2.3       Running   1m
+NAME            VERSION     STATUS  AGE
+sample-mgo-rs   4.2.3       Ready   1m
 ```
 
 The database is `Running`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
 
 ```console
-$ kubectl get secret -n demo -l=kubedb.com/name=sample-mgo-rs
+$ kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-mgo-rs
 NAME                 TYPE     DATA   AGE
 sample-mgo-rs-auth   Opaque   2      117s
 sample-mgo-rs-cert   Opaque   4      116s
 
-$ kubectl get service -n demo -l=kubedb.com/name=sample-mgo-rs
+$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mgo-rs
 NAME                TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 sample-mgo-rs       ClusterIP   10.107.13.16   <none>        27017/TCP   2m14s
 sample-mgo-rs-gvr   ClusterIP   None           <none>        27017/TCP   2m14s
@@ -129,7 +128,7 @@ metadata:
     app.kubernetes.io/instance: sample-mgo-rs
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: mongodbs.kubedb.com
-    kubedb.com/name: sample-mgo-rs
+    app.kubernetes.io/instance: sample-mgo-rs
   name: sample-mgo-rs
   namespace: demo
 spec:
@@ -146,9 +145,9 @@ spec:
     stash:
       addon:
         backupTask:
-          name: mongodb-restore-4.3.2-v6
+          name: mongodb-backup-4.2.3
         restoreTask:
-          name: mongodb-restore-4.3.2-v6
+          name: mongodb-restore-4.2.3
   secret:
     name: sample-mgo-rs-auth
   type: kubedb.com/mongodb
@@ -163,88 +162,12 @@ Stash uses the `AppBinding` crd to connect with the target database. It requires
 - `spec.parameters.stash` section specifies the Stash Addons that will be used to backup and restore this MongoDB.
 - `spec.type` specifies the types of the app that this AppBinding is pointing to. KubeDB generated AppBinding follows the following format: `<app group>/<app resource type>`.
 
-### AppBinding for SSL
-
-If `SSLMode` of the MongoDB server is either of `requireSSL` or `preferSSL`, you can provide ssl connection information through AppBinding Specs.
-
-User need to provide the following fields in case of SSL is enabled,
-
-- `spec.clientConfig.caBundle` specifies the CA certificate that is used in [`--sslCAFile`](https://docs.mongodb.com/manual/reference/program/mongod/index.html#cmdoption-mongod-sslcafile) flag of `mongod`.
-- `spec.secret` specifies the name of the secret that holds `client.pem` file. Follow the [mongodb official doc](https://docs.mongodb.com/manual/tutorial/configure-x509-client-authentication/) to learn how to create `client.pem` and add the subject of `client.pem` as user (with appropriate roles) to mongodb server.
-
-**KubeDB does these automatically**. It has added the subject of `client.pem` in the mongodb server with `root` role. So, user can just use the appbinding that is created by KubeDB without doing any hurdle! See the [MongoDB with TLS/SSL (Transport Encryption)](https://github.com/kubedb/docs/blob/master/docs/guides/mongodb/tls-ssl-encryption/tls-ssl-encryption.md) guide to learn about the ssl options in mongodb in details.
-
-So, in KubeDB, the following `CRD` deploys a mongodb replicaset where ssl is enabled (`requireSSL` sslmode),
-
-```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: MongoDB
-metadata:
-  name: sample-mgo-rs-ssl
-  namespace: demo
-spec:
-  version: "4.2.3"
-  replicas: 3
-  replicaSet:
-    name: rs0
-  storage:
-    storageClassName: "standard"
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  terminationPolicy: WipeOut
-  clusterAuthMode: x509
-  sslMode: requireSSL
-```
-
-After the deploy is done, kubedb will create a appbinding that will look like:
-
-```yaml
-apiVersion: appcatalog.appscode.com/v1alpha1
-kind: AppBinding
-metadata:
-  labels:
-    app.kubernetes.io/component: database
-    app.kubernetes.io/instance: sample-mgo-rs-ssl
-    app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/name: mongodbs.kubedb.com
-    kubedb.com/name: sample-mgo-rs-ssl
-  name: sample-mgo-rs-ssl
-  namespace: demo
-spec:
-  clientConfig:
-    caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUM0RENDQWNpZ0F3SUJBZ0lCQURBTkJna3Foa2lHOXcwQkFRc0ZBREFoTVJJd0VBWURWUVFLRXdscmRXSmwKWkdJNlkyRXhDekFKQmdOVkJBTVRBbU5oTUI0WERURTVNRGt6TURFME1UYzBORm9YRFRJNU1Ea3lOekUwTVRjMApORm93SVRFU01CQUdBMVVFQ2hNSmEzVmlaV1JpT21OaE1Rc3dDUVlEVlFRREV3SmpZVENDQVNJd0RRWUpLb1pJCmh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBS2tMMmh6Q3ZzTXdUdUJ2cjJyTnlCcGZzcHduNGlLQS9ncloKZVM4RHFkTmJicVFZUy91WEhJbUFwaitnQ3lPTmJ2QU01b1c1VEgyMUtXWm1SSmxZUkxpWXhrVVdJS3kxa2lxMApvRTVCR0c4TWZaZEl6RXROWEpJUnpaSFoyVW5hMTZzWG5CNUFxWGQvSkJiY0tzWVM0TzczSFZLbUg1VWVTdVBjCnhRVk0xRVNlZHBmOVJLcVlBbnVxN0ZrTWE2RXJUaFk5VDM5ZjJDdWR1SVFzcFFUb2VmdjZPeEcrVWtBZkJNN2sKeThweEFKUk5hSjhXRmN2Z2s2NlZBK1V4SHUwRW1uK09SYWZlWG1VVFBOT09uaE9tam9PV2ZtbitWZmxNeWk3RgpkK2dYZWYwdHRSc0JROVFjb25ZR1N4TzBGR0dMR3pLdTlaelROSkFCcFhwcXd5cTVYeUVDQXdFQUFhTWpNQ0V3CkRnWURWUjBQQVFIL0JBUURBZ0trTUE4R0ExVWRFd0VCL3dRRk1BTUJBZjh3RFFZSktvWklodmNOQVFFTEJRQUQKZ2dFQkFGSXh1T1VKU0xWakVZTVQ1R2xWZ0o3QU1Remczd2dpV1lHR0J6SEo3UzBaMnJSb3FXUFpvNlVwZVlrWApTRDFUM1ZuTDJBQVhCYWpuVUtpb1ZZNlNFSlBMU3Urelg1VEx4TGs2SzRWMTZjOFJDT3lBYUFqM0NXTjk4bVNCCmhtTEliNjZYR1R1M3JBNlVpMFYxVU9JeW1GZS9jd09FMFExT3lzamwyZHQ2c3pITWtjNENFVG1nOFZsei9SVngKeVBDdGhmaGpCSm9oc25VcTkvU3FiamMyZC9yOW1lK1hNZjd3ZGUyMEZFU2g1cW1scUNybnp2UENHMEpkRlFVUgpDLzJQODJZcjJiUUgzckg2RkxiN0l4cFRLTWdDbjZVbUcxL3VacnpRTEpBTTAxUkxSQVZVRy9OTzBoYjJoWE1tCnZkaFNqTFM2N05Kakl5RVRRczc5QzFhZkt4RT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=
-    service:
-      name: sample-mgo-rs-ssl
-      port: 27017
-      scheme: mongodb
-  parameters:
-    apiVersion: config.kubedb.com/v1alpha1
-    kind: MongoConfiguration
-    replicaSets:
-      host-0: rs0/sample-mgo-rs-ssl-0.sample-mgo-rs-ssl-gvr.demo.svc,sample-mgo-rs-ssl-1.sample-mgo-rs-ssl-gvr.demo.svc,sample-mgo-rs-ssl-2.sample-mgo-rs-ssl-gvr.demo.svc
-    stash:
-      addon:
-        backupTask:
-          name: mongodb-restore-4.3.2-v6
-        restoreTask:
-          name: mongodb-restore-4.3.2-v6
-  secret:
-    name: sample-mgo-rs-ssl-cert
-  type: kubedb.com/mongodb
-  version: 4.2.3
-```
-
-Here, `mongo-sh-rs-cert` contains few required certificates, and one of them is `client.pem` which is required to backup/restore ssl enabled mongodb server using stash-mongodb.
-
 **Insert Sample Data:**
 
 Now, we are going to exec into the database pod and create some sample data. At first, find out the database pod using the following command,
 
 ```console
-$ kubectl get pods -n demo --selector="kubedb.com/name=sample-mgo-rs"
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-mgo-rs"
 NAME              READY   STATUS    RESTARTS   AGE
 sample-mgo-rs-0   1/1     Running   0          16m
 sample-mgo-rs-1   1/1     Running   0          15m
@@ -341,7 +264,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/examples/backup/replicaset/repository-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/replicaset/examples/repository-replicaset.yaml
 repository.stash.appscode.com/gcs-repo-replicaset created
 ```
 
@@ -363,8 +286,6 @@ metadata:
   namespace: demo
 spec:
   schedule: "*/5 * * * *"
-#  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: mongodb-restore-4.3.2-v6
   repository:
     name: gcs-repo-replicaset
   target:
@@ -381,13 +302,12 @@ spec:
 Here,
 
 - `spec.schedule` specifies that we want to backup the database at 5 minutes interval.
-- `spec.task.name` specifies the name of the task crd that specifies the necessary Function and their execution order to backup a MongoDB database.
 - `spec.target.ref` refers to the `AppBinding` crd that was created for `sample-mgo-rs` database.
 
 Let's create the `BackupConfiguration` crd we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/examples/backup/replicaset/backupconfiguration-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/replicaset/examples/backupconfiguration-replicaset.yaml
 backupconfiguration.stash.appscode.com/sample-mgo-rs-backup created
 ```
 
@@ -451,8 +371,8 @@ Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that th
 
 ```console
 $ kubectl get backupconfiguration -n demo sample-mgo-rs-backup
-NAME                  TASK                       SCHEDULE      PAUSED   AGE
-sample-mgo-rs-backup  mongodb-restore-4.3.2-v6      */5 * * * *   true     26m
+NAME                  TASK                      SCHEDULE      PAUSED   AGE
+sample-mgo-rs-backup  mongodb-backup-4.2.3      */5 * * * *   true     26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
@@ -491,7 +411,7 @@ spec:
 Let's create the above database,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/restore/replicaset/restored-mongodb-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/replicaset/examples/restored-mongodb-replicaset.yaml
 mongodb.kubedb.com/restored-mgo-rs created
 ```
 
@@ -499,7 +419,7 @@ If you check the database status, you will see it is stuck in `Provisioning` sta
 
 ```console
 $ kubectl get mg -n demo restored-mgo-rs
-NAME              VERSION        STATUS         AGE
+NAME              VERSION       STATUS         AGE
 restored-mgo-rs   4.2.3         Provisioning   2m
 ```
 
@@ -528,8 +448,6 @@ metadata:
   name: sample-mgo-rs-restore
   namespace: demo
 spec:
-#  task: # Uncomment if you are not using KubeDB to deploy your database
-#    name: mongodb-restore-4.3.2-v6
   repository:
     name: gcs-repo-replicaset
   target:
@@ -543,7 +461,6 @@ spec:
 
 Here,
 
-- `spec.task.name` specifies the name of the `Task` crd that specifies the Functions and their execution order to restore a MongoDB database.
 - `spec.repository.name` specifies the `Repository` crd that holds the backend information where our backed up data has been stored.
 - `spec.target.ref` refers to the AppBinding crd for the `restored-mgo-rs` database.
 - `spec.rules` specifies that we are restoring from the latest backup snapshot of the database.
@@ -551,7 +468,7 @@ Here,
 Let's create the `RestoreSession` crd we have shown above,
 
 ```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/restore/replicaset/restoresession-replicaset.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/replicaset/rexamples/estoresession-replicaset.yaml
 restoresession.stash.appscode.com/sample-mgo-rs-restore created
 ```
 
@@ -576,7 +493,7 @@ At first, check if the database has gone into `Running` state by the following c
 
 ```console
 $ kubectl get mg -n demo restored-mgo-rs
-NAME              VERSION        STATUS    AGE
+NAME              VERSION       STATUS    AGE
 restored-mgo-rs   4.2.3         Running   3m
 ```
 
@@ -674,7 +591,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    name: mongodb-restore-4.3.2-v6
+    name: mongodb-backup-4.2.3
   repository:
     name: gcs-repo-custom
   target:
@@ -691,7 +608,7 @@ spec:
 This time, we have to provide the Stash Addon information in `spec.task` section of `BackupConfiguration` object as it does not present in the `AppBinding` object that we are creating manually.
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/examples/backup/replicaset/standalone-backup.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/replicaset/examples/standalone-backup.yaml
 appbinding.appcatalog.appscode.com/sample-mgo-rs-custom created
 repository.stash.appscode.com/gcs-repo-custom created
 backupconfiguration.stash.appscode.com/sample-mgo-rs-backup2 created
@@ -744,7 +661,7 @@ metadata:
   namespace: demo
 spec:
   task:
-    name: mongodb-restore-4.3.2-v6
+    name: mongodb-restore-4.2.3
   repository:
     name: gcs-repo-custom
   target:
@@ -757,14 +674,14 @@ spec:
 ```
 
 ```console
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/restore/replicaset/restored-standalone.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/eplicaset/rexamples/estored-standalone.yaml
 mongodb.kubedb.com/restored-mongodb created
 
 $ kubectl get mg -n demo restored-mongodb
 NAME               VERSION        STATUS         AGE
 restored-mongodb   4.2.3         Provisioning   56s
 
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/restore/replicaset/restoresession-standalone.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/eplicaset/rexamples/estoresession-standalone.yaml
 restoresession.stash.appscode.com/sample-mongodb-restore created
 
 $ kubectl get mg -n demo restored-mongodb

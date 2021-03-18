@@ -18,9 +18,8 @@ Stash 0.9.0+ supports backup and restoration of Elasticsearch clusters. This gui
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
-- Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
-- Install Elasticsearch addon for Stash following the steps [here](https://stash.run/docs/latest/addons/elasticsearch/setup/install/).
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
+- Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - If you are not familiar with how Stash backup and restore Elasticsearch databases, please check the following guide [here](/docs/guides/elasticsearch/backup/overview/index.md).
 
 You have to be familiar with following custom resources:
@@ -100,7 +99,7 @@ KubeDB will create the necessary resources to deploy the Elasticsearch database 
 
 ```console
 ❯ kubectl get elasticsearch -n demo -w
-NAME        VERSION       STATUS         AGE
+NAME        VERSION          STATUS         AGE
 sample-es   xpack-7.9.1-v1   Provisioning   89s
 sample-es   xpack-7.9.1-v1   Ready          5m26s
 ```
@@ -325,9 +324,9 @@ spec:
     stash:
       addon:
         backupTask:
-          name: elasticsearch-backup-7.3.2-v7
+          name: elasticsearch-backup-7.3.2
         restoreTask:
-          name: elasticsearch-restore-7.3.2-v7
+          name: elasticsearch-restore-7.3.2
   type: kubedb.com/elasticsearch
   version: 7.9.1
 ```
@@ -336,28 +335,28 @@ Here,
 
 - `spec.parameters.stash` section specifies the Stash Addon that will be used to backup and restore this Elasticsearch.
 
-### Ensure Elasticsearch Addons
+### Verify Stash Elasticsearch Addons Installed
 
-Now, make sure that you have installed the Stash Elasticsearch addon. If you haven’t installed the addon yet, please install it by following the setup guide from [here](https://stash.run/docs/latest/addons/elasticsearch/setup/install/). Make sure you have the `Task` with matching name as specified in `spec.parameters.stash.addons` of `AppBinding` object.
+When you install the Stash Enterprise edition, it automatically installs all the official database addons. Verify that it has installed the Elasticsearch addons using the following command.
 
 ```bash
 ❯ kubectl get tasks.stash.appscode.com | grep elasticsearch
-elasticsearch-backup-5.6.4-v7    3d2h
-elasticsearch-backup-6.2.4-v7    3d2h
-elasticsearch-backup-6.3.0-v7    3d2h
-elasticsearch-backup-6.4.0-v7    3d2h
-elasticsearch-backup-6.5.3-v7    3d2h
-elasticsearch-backup-6.8.0-v7    3d2h
-elasticsearch-backup-7.2.0-v7    3d2h
-elasticsearch-backup-7.3.2-v7    3d2h
-elasticsearch-restore-5.6.4-v7   3d2h
-elasticsearch-restore-6.2.4-v7   3d2h
-elasticsearch-restore-6.3.0-v7   3d2h
-elasticsearch-restore-6.4.0-v7   3d2h
-elasticsearch-restore-6.5.3-v7   3d2h
-elasticsearch-restore-6.8.0-v7   3d2h
-elasticsearch-restore-7.2.0-v7   3d2h
-elasticsearch-restore-7.3.2-v7   3d2h
+elasticsearch-backup-5.6.4    3d2h
+elasticsearch-backup-6.2.4    3d2h
+elasticsearch-backup-6.3.0    3d2h
+elasticsearch-backup-6.4.0    3d2h
+elasticsearch-backup-6.5.3    3d2h
+elasticsearch-backup-6.8.0    3d2h
+elasticsearch-backup-7.2.0    3d2h
+elasticsearch-backup-7.3.2    3d2h
+elasticsearch-restore-5.6.4   3d2h
+elasticsearch-restore-6.2.4   3d2h
+elasticsearch-restore-6.3.0   3d2h
+elasticsearch-restore-6.4.0   3d2h
+elasticsearch-restore-6.5.3   3d2h
+elasticsearch-restore-6.8.0   3d2h
+elasticsearch-restore-7.2.0   3d2h
+elasticsearch-restore-7.3.2   3d2h
 ```
 
 ### Prepare Backend
@@ -527,8 +526,8 @@ Verify that the `BackupConfiguration` has been paused,
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo sample-es-backup
-NAME               TASK                            SCHEDULE      PAUSED   AGE
-sample-es-backup   elasticsearch-backup-7.3.2-v7   */5 * * * *   true     12m
+NAME               TASK                         SCHEDULE      PAUSED   AGE
+sample-es-backup   elasticsearch-backup-7.3.2   */5 * * * *   true     12m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the `BackupConfiguration` has been paused.
@@ -741,8 +740,8 @@ Verify that the `BackupConfiguration` has been resumed,
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo sample-es-backup
-NAME               TASK                            SCHEDULE      PAUSED   AGE
-sample-es-backup   elasticsearch-backup-7.3.2-v7   */5 * * * *   false    30m
+NAME               TASK                         SCHEDULE      PAUSED   AGE
+sample-es-backup   elasticsearch-backup-7.3.2   */5 * * * *   false    30m
 ```
 
 Here,  `false` in the `PAUSED` column means the backup has been resume successfully. The CronJob also should be resumed now.
@@ -942,8 +941,6 @@ metadata:
   name: init-sample-restore
   namespace: restored
 spec:
-#  task: # Uncomment if you are not using KubeDB to deploy your database.
-#    name: elasticsearch-restore-7.3.2-v7
   repository:
     name: gcs-repo
   target:

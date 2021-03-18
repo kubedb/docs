@@ -20,8 +20,8 @@ In this tutorial, we are going to show how you can configure a backup blueprint 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
-- Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
+- Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - If you are not familiar with how Stash backup and restore Elasticsearch databases, please check the following guide [here](/docs/guides/elasticsearch/backup/overview/index.md).
 - If you are not familiar with how auto-backup works in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/latest/auto-backup/overview/).
 - If you are not familiar with the available auto-backup options for databases in Stash, please check the following guide [here](https://stash.run/docs/latest/guides/latest/auto-backup/database/).
@@ -48,26 +48,26 @@ namespace/demo-2 created
 namespace/demo-3 created
 ```
 
-Make sure you have installed the Elasticsearch addon for Stash. If you haven't installed it already, please install the addon following the steps [here](https://stash.run/docs/latest/addons/elasticsearch/setup/install/).
+When you install the Stash Enterprise edition, it automatically installs all the official database addons. Verify that it has installed the Elasticsearch addons using the following command.
 
 ```bash
 ❯ kubectl get tasks.stash.appscode.com | grep elasticsearch
-elasticsearch-backup-5.6.4-v6    4d4h
-elasticsearch-backup-6.2.4-v6    4d4h
-elasticsearch-backup-6.3.0-v6    4d4h
-elasticsearch-backup-6.4.0-v6    4d4h
-elasticsearch-backup-6.5.3-v6    4d4h
-elasticsearch-backup-6.8.0-v6    4d4h
-elasticsearch-backup-7.2.0-v6    4d4h
-elasticsearch-backup-7.3.2-v6    4d4h
-elasticsearch-restore-5.6.4-v6   4d4h
-elasticsearch-restore-6.2.4-v6   4d4h
-elasticsearch-restore-6.3.0-v6   4d4h
-elasticsearch-restore-6.4.0-v6   4d4h
-elasticsearch-restore-6.5.3-v6   4d4h
-elasticsearch-restore-6.8.0-v6   4d4h
-elasticsearch-restore-7.2.0-v6   4d4h
-elasticsearch-restore-7.3.2-v6   4d4h
+elasticsearch-backup-5.6.4    4d4h
+elasticsearch-backup-6.2.4    4d4h
+elasticsearch-backup-6.3.0    4d4h
+elasticsearch-backup-6.4.0    4d4h
+elasticsearch-backup-6.5.3    4d4h
+elasticsearch-backup-6.8.0    4d4h
+elasticsearch-backup-7.2.0    4d4h
+elasticsearch-backup-7.3.2    4d4h
+elasticsearch-restore-5.6.4   4d4h
+elasticsearch-restore-6.2.4   4d4h
+elasticsearch-restore-6.3.0   4d4h
+elasticsearch-restore-6.4.0   4d4h
+elasticsearch-restore-6.5.3   4d4h
+elasticsearch-restore-6.8.0   4d4h
+elasticsearch-restore-7.2.0   4d4h
+elasticsearch-restore-7.3.2   4d4h
 ```
 
 ## Prepare Backup Blueprint
@@ -92,7 +92,7 @@ spec:
     storageSecretName: gcs-secret
   # ============== Blueprint for BackupConfiguration =================
 #  task: # Uncomment if you are not using KubeDB to deploy your database.
-#    name: elasticsearch-backup-7.3.2-v7
+#    name: elasticsearch-backup-7.3.2
   schedule: "*/5 * * * *"
   interimVolumeTemplate:
     metadata:
@@ -216,8 +216,8 @@ Now, let's verify whether Stash has created a `BackupConfiguration` for our Elas
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo
-NAME          TASK                            SCHEDULE      PAUSED   AGE
-app-es-demo   elasticsearch-backup-7.3.2-v7   */5 * * * *            12s
+NAME          TASK                         SCHEDULE      PAUSED   AGE
+app-es-demo   elasticsearch-backup-7.3.2   */5 * * * *            12s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -395,8 +395,8 @@ Now, let's verify whether Stash has created a `BackupConfiguration` for our Elas
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo-2
-NAME            TASK                            SCHEDULE      PAUSED   AGE
-app-es-demo-2   elasticsearch-backup-7.3.2-v7   */3 * * * *            77s
+NAME            TASK                         SCHEDULE      PAUSED   AGE
+app-es-demo-2   elasticsearch-backup-7.3.2   */3 * * * *            77s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -574,8 +574,8 @@ Now, let's verify whether Stash has created a `BackupConfiguration` for our Elas
 
 ```bash
 ❯ kubectl get backupconfiguration -n demo-3
-NAME            TASK                            SCHEDULE      PAUSED   AGE
-app-es-demo-3   elasticsearch-backup-7.3.2-v7   */5 * * * *            84s
+NAME            TASK                         SCHEDULE      PAUSED   AGE
+app-es-demo-3   elasticsearch-backup-7.3.2   */5 * * * *            84s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
