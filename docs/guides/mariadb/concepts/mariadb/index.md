@@ -236,7 +236,7 @@ The following fields are configurable in the `spec.tls` section:
 
 ### spec.configSecret
 
-`spec.configSecret` is an optional field that allows users to provide custom configuration for MariaDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47). So you can use any Kubernetes supported volume source such as `configMap`, `secret`, `azureDisk` etc. To learn more about how to use a custom configuration file see [here](/docs/guides/mysql/configuration/using-config-file.md).
+`spec.configSecret` is an optional field that allows users to provide custom configuration for MariaDB. This field accepts a [`VolumeSource`](https://github.com/kubernetes/api/blob/release-1.11/core/v1/types.go#L47).
 
 ### spec.podTemplate
 
