@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Run MariaDB with Custom PodTemplate
 
-KubeDB supports providing custom configuration for MariaDB via [PodTemplate](/docs/guides/mysql/concepts/mysql.md#specpodtemplate). This tutorial will show you how to use KubeDB to run a MariaDB database with custom configuration using PodTemplate.
+KubeDB supports providing custom configuration for MariaDB via [PodTemplate](/docs/guides/mariadb/concepts/mariadb/#specpodtemplate). This tutorial will show you how to use KubeDB to run a MariaDB database with custom configuration using PodTemplate.
 
 ## Before You Begin
 
@@ -29,7 +29,7 @@ KubeDB supports providing custom configuration for MariaDB via [PodTemplate](/do
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/configuration/using-pod-template/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -54,23 +54,23 @@ KubeDB accept following fields to set in `spec.podTemplate:`
   - priority
   - securityContext
 
-Read about the fields in details in [PodTemplate concept](/docs/guides/mysql/concepts/mysql.md#specpodtemplate),
+Read about the fields in details in [PodTemplate concept](/docs/guides/mariadb/concepts/mariadb/#specpodtemplate),
 
 ## CRD Configuration
 
-Below is the YAML for the MariaDB created in this example. Here, [`spec.podTemplate.spec.env`](/docs/guides/mysql/concepts/mysql.md#specpodtemplatespecenv) specifies environment variables and [`spec.podTemplate.spec.args`](/docs/guides/mysql/concepts/mysql.md#specpodtemplatespecargs) provides extra arguments for [MariaDB Docker Image](https://hub.docker.com/_/mysql/).
+Below is the YAML for the MariaDB created in this example. Here, [`spec.podTemplate.spec.env`](/docs/guides/mariadb/concepts/mariadb/#specpodtemplatespecenv) specifies environment variables and [`spec.podTemplate.spec.args`](/docs/guides/mariadb/concepts/mariadb/#specpodtemplatespecargs) provides extra arguments for [MariaDB Docker Image](https://hub.docker.com/_/mariadb/).
 
-In this tutorial, an initial database `myDB` will be created by providing `env` `MYSQL_DATABASE` while the server character set will be set to `utf8mb4` by adding extra `args`. Note that, `character-set-server` in `MariaDB 5.7.31` is `latin1`.
+In this tutorial, an initial database `mdDB` will be created by providing `env` `MYSQL_DATABASE` while the server character set will be set to `utf8mb4` by adding extra `args`. 
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
 metadata:
-  name: mysql-misc-config
+  name: sample-mariadb
   namespace: demo
 spec:
-  version: "5.7.33"
-  storageType: "Durable"
+  version: "10.5.8"
+  storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
@@ -82,7 +82,7 @@ spec:
     spec:
       env:
       - name: MYSQL_DATABASE
-        value: myDB
+        value: mdDB
       args:
       - --character-set-server=utf8mb4
       resources:
@@ -92,103 +92,91 @@ spec:
   terminationPolicy: WipeOut
 ```
 
+
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/configuration/mysql-misc-config.yaml
-mysql.kubedb.com/mysql-misc-config created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/configuration/using-pod-template/examples/md-misc-config.yaml
+mariadb.kubedb.com/sample-mariadb created
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we will see that a pod with the name `mysql-misc-config-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we will see that a pod with the name `sample-mariadb` has been created.
 
 Check that the statefulset's pod is running
 
 ```bash
-$ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=mysql-misc-config
-NAME                  READY   STATUS    RESTARTS   AGE
-mysql-misc-config-0   1/1     Running   0          9m28s
+$ $ kubectl get pod -n demo
+NAME               READY   STATUS    RESTARTS   AGE
+sample-mariadb-0   1/1     Running   0          96s
 ```
 
 Check the pod's log to see if the database is ready
 
 ```bash
-$ kubectl logs -f -n demo mysql-misc-config-0
-Initializing database
-.....
-Database initialized
-Initializing certificates
+$ kubectl logs -f -n demo sample-mariadb-0
+2021-03-18 06:06:17+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.8+maria~focal started.
+2021-03-18 06:06:18+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
+2021-03-18 06:06:18+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.8+maria~focal started.
+2021-03-18 06:06:19+00:00 [Note] [Entrypoint]: Initializing database files
 ...
-Certificates initialized
-MariaDB init process in progress...
-....
-MariaDB init process done. Ready for start up.
-....
-2018-10-02T09:34:33.694994Z 0 [Note] mysqld: ready for connections.
-Version: '5.7.31'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MariaDB Community Server (GPL)
-....
+2021-03-18  6:06:33 0 [Note] mysqld: ready for connections.
+Version: '10.5.8-MariaDB-1:10.5.8+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution
 ```
 
-Once we see `[Note] /usr/sbin/mysqld: ready for connections.` in the log, the database is ready.
+Once we see `Note] mysqld: ready for connections.` in the log, the database is ready.
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
-First, deploy [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin/) to connect with the MariaDB database we have just created.
-
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/quickstart/demo-1.yaml
-deployment.extensions/myadmin created
-service/myadmin created
+$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 22
+Server version: 10.5.8-MariaDB-1:10.5.8+maria~focal mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+# Check mdDB
+MariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mdDB               |
+| mysql              |
+| performance_schema |
++--------------------+
+4 rows in set (0.001 sec)
+
+# Check character_set_server
+MariaDB [(none)]> show variables like 'char%';
++--------------------------+----------------------------+
+| Variable_name            | Value                      |
++--------------------------+----------------------------+
+| character_set_client     | latin1                     |
+| character_set_connection | latin1                     |
+| character_set_database   | utf8mb4                    |
+| character_set_filesystem | binary                     |
+| character_set_results    | latin1                     |
+| character_set_server     | utf8mb4                    |
+| character_set_system     | utf8                       |
+| character_sets_dir       | /usr/share/mysql/charsets/ |
++--------------------------+----------------------------+
+8 rows in set (0.001 sec)
+
+MariaDB [(none)]> quit;
+Bye
 ```
-
-Then, open your browser and go to the following URL: _http://{node-ip}:{myadmin-svc-nodeport}_. For kind cluster, you can get this URL by running the following command:
-
-```bash
-$ kubectl get svc -n demo myadmin -o json | jq '.spec.ports[].nodePort'
-30942
-
-$ kubectl get node -o json | jq '.items[].status.addresses[].address'
-"172.18.0.3"
-"kind-control-plane"
-"172.18.0.4"
-"kind-worker"
-"172.18.0.2"
-"kind-worker2"
-
-# expected url will be:
-url: http://172.18.0.4:30942
-```
-
-Now, let's connect to the database from the phpMyAdmin dashboard using the database pod IP and MariaDB user password.
-
-```bash
-$ kubectl get pods mysql-misc-config-0 -n demo -o yaml | grep IP
-  ...
-  hostIP: 10.0.2.15
-  podIP: 172.17.0.6
-
-$ kubectl get secrets -n demo mysql-misc-config-auth -o jsonpath='{.data.\user}' | base64 -d
-root
-
-$ kubectl get secrets -n demo mysql-misc-config-auth -o jsonpath='{.data.\password}' | base64 -d
-MLO5_fPVKcqPiEu9
-```
-
-Once, you have connected to the database with phpMyAdmin go to **SQL** tab and run sql to see all databases `SHOW DATABASES;` and to see charcter-set configuration `SHOW VARIABLES LIKE 'char%';`. You will see a database called `myDB` is created and also all the character-set is set to `utf8mb4`.
-
-![mysql_all_databases](/docs/images/mysql/mysql-all-databases.png)
-
-![mysql_charset](/docs/images/mysql/mysql-charset.png)
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo my/mysql-misc-config -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo my/mysql-misc-config
-
-kubectl delete deployment -n demo myadmin
-kubectl delete service -n demo myadmin
-
-kubectl delete ns demo
+$ kubectl delete mariadb -n demo sample-mariadb
+mariadb.kubedb.com "sample-mariadb" deleted
+$ kubectl delete ns demo
+namespace "demo" deleted
 ```
 
 If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/README.md).
