@@ -139,10 +139,8 @@ data:
   user: cm9vdA==
 kind: Secret
 metadata:
-  ...
   name: mariadb-auth
   namespace: demo
-  ...
 type: Opaque
 ```
 
