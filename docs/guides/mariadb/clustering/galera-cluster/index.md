@@ -456,9 +456,3 @@ mariadb.kubedb.com "sample-mariadb" deleted
 $ kubectl delete ns demo
 namespace "demo" deleted
 ```
-
-## Next Steps
-
-- Detail concepts of [MariaDB object](/docs/guides/mysql/concepts/mysql.md).
-- Detail concepts of [MariaDBDBVersion object](/docs/guides/mysql/concepts/catalog.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

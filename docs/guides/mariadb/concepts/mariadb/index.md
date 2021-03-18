@@ -373,8 +373,3 @@ Following table show what KubeDB does when you delete MariaDB crd for different 
 | 6. Delete Snapshots                 |    &#10007;    | &#10007; | &#10007; | &#10003; |
 
 If you don't specify `spec.terminationPolicy` KubeDB uses `Delete` termination policy by default.
-
-## Next Steps
-
-- Learn how to use KubeDB to run a MariaDB database [here](/docs/guides/mariadb).
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

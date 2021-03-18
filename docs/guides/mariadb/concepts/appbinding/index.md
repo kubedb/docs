@@ -142,8 +142,3 @@ You can configure following fields in `spec.clientConfig` section:
 - **spec.clientConfig.caBundle**
 
   `spec.clientConfig.caBundle` is a PEM encoded CA bundle which will be used to validate the serving certificate of the database.
-
-## Next Steps
-
-- Learn how to use KubeDB to manage various databases [here](/docs/guides/README.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

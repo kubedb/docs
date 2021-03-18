@@ -178,16 +178,3 @@ mariadb.kubedb.com "sample-mariadb" deleted
 $ kubectl delete ns demo
 namespace "demo" deleted
 ```
-
-If you would like to uninstall KubeDB operator, please follow the steps [here](/docs/setup/README.md).
-
-## Next Steps
-
-- [Quickstart MariaDB](/docs/guides/mysql/quickstart/quickstart.md) with KubeDB Operator.
-- Initialize [MariaDB with Script](/docs/guides/mysql/initialization/using-script.md).
-- Monitor your MariaDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
-- Monitor your MariaDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
-- Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MariaDB with KubeDB.
-- Use [kubedb cli](/docs/guides/mysql/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MariaDB object](/docs/guides/mysql/concepts/mysql.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

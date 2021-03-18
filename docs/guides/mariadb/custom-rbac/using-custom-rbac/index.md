@@ -29,7 +29,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/custom-rbac/using-custom-rbac/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/custom-rbac/using-custom-rbac/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -104,28 +104,7 @@ rolebinding.rbac.authorization.k8s.io/md-custom-rolebinding created
 
 It should bind `md-custom-role` and `md-custom-serviceaccount` successfully.
 
-```yaml
-$ kubectl get rolebinding -n demo my-custom-rolebinding -o yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  creationTimestamp: "kubectl get rolebinding -n demo my-custom-rolebinding -o yaml"
-  name: my-custom-rolebinding
-  namespace: demo
-  resourceVersion: "1405"
-  selfLink: /apis/rbac.authorization.k8s.io/v1/namespaces/demo/rolebindings/my-custom-rolebinding
-  uid: 123afc02-8297-11e9-8d10-080027a8b217
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: my-custom-role
-subjects:
-- kind: ServiceAccount
-  name: my-custom-serviceaccount
-  namespace: demo
-```
-
-All resources created for RBAC -
+SO, All required resources for RBAC are created.
 
 ```bash
 $ kubectl get serviceaccount,role,rolebindings -n demo
@@ -278,15 +257,4 @@ $ kubectl delete ns demo
 namespace "demo" deleted
 ```
 
-If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 
-## Next Steps
-
-- [Quickstart MariaDB](/docs/guides/mysql/quickstart/quickstart.md) with KubeDB Operator.
-- Initialize [MariaDB with Script](/docs/guides/mysql/initialization/using-script.md).
-- Monitor your MariaDB instance with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
-- Monitor your MariaDB instance with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
-- Use [private Docker registry](/docs/guides/mysql/private-registry/using-private-registry.md) to deploy MariaDB with KubeDB.
-- Use [kubedb cli](/docs/guides/mysql/cli/cli.md) to manage databases like kubectl for Kubernetes.
-- Detail concepts of [MariaDB object](/docs/guides/mysql/concepts/mysql.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -140,12 +140,3 @@ mariadb.kubedb.com "md-pvt-reg" deleted
 $ kubectl delete ns demo
 namespace "demo" deleted
 ```
-
-## Next Steps
-
-- Initialize [MariaDB with Script](/docs/guides/mysql/initialization/using-script.md).
-- Monitor your MariaDB database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/mysql/monitoring/using-prometheus-operator.md).
-- Monitor your MariaDB database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
-- Detail concepts of [MariaDB object](/docs/guides/mysql/concepts/mysql.md).
-- Detail concepts of [MariaDBVersion object](/docs/guides/mysql/concepts/catalog.md).
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

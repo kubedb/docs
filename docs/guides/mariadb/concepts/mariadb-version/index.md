@@ -101,7 +101,3 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 `spec.stash` is an optional field that specifies the name of the task for stash backup and restore. Learn more about [Stash MariaDB addon](https://stash.run/docs/v2021.03.08/addons/mariadb/)
 
-## Next Steps
-
-- Learn about MariaDB crd [here](/docs/guides/mariadb/concepts/mariadb).
-- Deploy your first MariaDB database with KubeDB by following the guide [here](/docs/guides/mariadb/quickstart/overview).

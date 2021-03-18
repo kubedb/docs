@@ -49,4 +49,3 @@ There are some limitations in MariaDB Galera Cluster that are listed [here](http
 ## Next Steps
 
 - [Deploy MariaDB Galera Cluster](/docs/guides/mariadb/clustering/galera-cluster) using KubeDB.
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md)
