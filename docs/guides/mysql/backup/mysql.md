@@ -18,7 +18,7 @@ Stash 0.9.0+ supports backup and restoration of MySQL databases. This guide will
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
-- Install Stash Enterise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
+- Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - Install MySQL addon for Stash following the steps [here](https://stash.run/docs/latest/addons/mysql/setup/install/)
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - If you are not familiar with how Stash backup and restore MySQL databases, please check the following guide [here](/docs/guides/mysql/backup/overview/index.md).
@@ -89,11 +89,11 @@ sample-mysql   8.0.14    Running   4m22s
 The database is `Running`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo -l=kubedb.com/name=sample-mysql
+$ kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-mysql
 NAME                TYPE     DATA   AGE
 sample-mysql-auth   Opaque   2      4m58s
 
-$ kubectl get service -n demo -l=kubedb.com/name=sample-mysql
+$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mysql
 NAME               TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 sample-mysql       ClusterIP   10.101.2.138   <none>        3306/TCP   5m33s
 sample-mysql-gvr   ClusterIP   None           <none>        3306/TCP   5m33s
@@ -165,7 +165,7 @@ Stash uses the AppBinding CRD to connect with the target database. It requires t
 Now, we are going to exec into the database pod and create some sample data. At first, find out the database Pod using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="kubedb.com/name=sample-mysql"
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-mysql"
 NAME             READY   STATUS    RESTARTS   AGE
 sample-mysql-0   1/1     Running   0          33m
 ```
@@ -522,7 +522,7 @@ restored-mysql   8.0.14    Running   34m
 Now, find out the database Pod by the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="kubedb.com/name=restored-mysql"
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-mysql"
 NAME               READY   STATUS    RESTARTS   AGE
 restored-mysql-0   1/1     Running   0          39m
 ```

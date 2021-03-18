@@ -18,7 +18,7 @@ Stash 0.9.0+ supports backup and restoration of Percona XtraDB cluster databases
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
-- Install Stash Enterise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
+- Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - Install Percona XtraDB addon for Stash following the steps [here](https://stash.run/docs/latest/addons/percona-xtradb/setup/install/)
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
 - If you are not familiar with how Stash takes backup and restores Percona XtraDB, please check the following guide [here](/docs/guides/percona-xtradb/backup/overview/index.md).
@@ -90,11 +90,11 @@ sample-xtradb-cluster   5.7-cluster   Running   7m46s
 The database is `Running`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo -l=kubedb.com/name=sample-xtradb-cluster
+$ kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-xtradb-cluster
 NAME                         TYPE     DATA   AGE
 sample-xtradb-cluster-auth   Opaque   2      9m2s
 
-$ kubectl get service -n demo -l=kubedb.com/name=sample-xtradb-cluster
+$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-xtradb-cluster
 NAME                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 sample-xtradb-cluster       ClusterIP   10.103.37.141   <none>        3306/TCP   11m
 sample-xtradb-cluster-gvr   ClusterIP   None            <none>        3306/TCP   11m
@@ -129,7 +129,7 @@ metadata:
     app.kubernetes.io/instance: sample-xtradb-cluster
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/name: perconaxtradbs.kubedb.com
-    kubedb.com/name: sample-xtradb-cluster
+    app.kubernetes.io/instance: sample-xtradb-cluster
   name: sample-xtradb-cluster
   namespace: demo
   ownerReferences:
@@ -207,7 +207,7 @@ You have to replace the `<...>` quoted part with proper values in the above YAML
 Now, we are going to exec into the database pod and create some sample data. At first, find out the database pods using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="kubedb.com/name=sample-xtradb-cluster"
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-xtradb-cluster"
 NAME                      READY   STATUS    RESTARTS   AGE
 sample-xtradb-cluster-0   1/1     Running   0          39m
 sample-xtradb-cluster-1   1/1     Running   0          38m
@@ -581,7 +581,7 @@ restored-xtradb-cluster   5.7-cluster   Running        4m4s
 Now, find out the database Pod,
 
 ```bash
-$ kubectl get pods -n demo --selector="kubedb.com/name=restored-xtradb-cluster" --watch
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-xtradb-cluster" --watch
 NAME                        READY   STATUS    RESTARTS   AGE
 restored-xtradb-cluster-0   1/1     Running   0          115s
 restored-xtradb-cluster-1   1/1     Running   0          77s
