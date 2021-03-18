@@ -46,31 +46,31 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 At first, let's create a `Service Acoount` in `demo` namespace.
 
 ```bash
-$ kubectl create serviceaccount -n demo my-custom-serviceaccount
-serviceaccount/my-custom-serviceaccount created
+$ kubectl create serviceaccount -n demo md-custom-serviceaccount
+serviceaccount/md-custom-serviceaccount created
 ```
 
 It should create a service account.
 
 ```yaml
-$ kubectl get serviceaccount -n demo my-custom-serviceaccount -o yaml
+$ kubectl get serviceaccount -n demo md-custom-serviceaccount -o yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  creationTimestamp: "2019-05-30T04:23:39Z"
-  name: my-custom-serviceaccount
+  creationTimestamp: "2021-03-18T04:38:59Z"
+  name: md-custom-serviceaccount
   namespace: demo
-  resourceVersion: "21657"
-  selfLink: /api/v1/namespaces/demo/serviceaccounts/myserviceaccount
-  uid: b2ec2b05-8292-11e9-8d10-080027a8b217
+  resourceVersion: "84669"
+  selfLink: /api/v1/namespaces/demo/serviceaccounts/md-custom-serviceaccount
+  uid: 788bd6c6-3eae-4797-b6ca-5722ef64c9dc
 secrets:
-- name: myserviceaccount-token-t8zxd
+- name: md-custom-serviceaccount-token-jnhvd
 ```
 
-Now, we need to create a role that has necessary access permissions for the MariaDB instance named `quick-mysql`.
+Now, we need to create a role that has necessary access permissions for the MariaDB instance named `sample-mariadb`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/custom-rbac/my-custom-role.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}docs/guides/mariadb/custom-rbac/using-custom-rbac/examples/md-custom-role.yaml
 role.rbac.authorization.k8s.io/my-custom-role created
 ```
 
@@ -80,13 +80,13 @@ Below is the YAML for the Role we just created.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: my-custom-role
+  name: md-custom-role
   namespace: demo
 rules:
 - apiGroups:
   - policy
   resourceNames:
-  - mysql-db
+  - maria-db
   resources:
   - podsecuritypolicies
   verbs:
@@ -131,7 +131,7 @@ Now, create a MariaDB crd specifying `spec.podTemplate.spec.serviceAccountName` 
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/custom-rbac/my-custom-db.yaml
-mysql.kubedb.com/quick-mysql created
+mysql.kubedb.com/sample-mariadb created
 ```
 
 Below is the YAML for the MariaDB crd we just created.
@@ -140,7 +140,7 @@ Below is the YAML for the MariaDB crd we just created.
 apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
 metadata:
-  name: quick-mysql
+  name: sample-mariadb
   namespace: demo
 spec:
   version: "8.0.23"
@@ -158,20 +158,20 @@ spec:
   terminationPolicy: DoNotTerminate
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, StatefulSet, services, secret etc. If everything goes well, we should see that a pod with the name `quick-mysql-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, StatefulSet, services, secret etc. If everything goes well, we should see that a pod with the name `sample-mariadb-0` has been created.
 
 Check that the statefulset's pod is running
 
 ```bash
-$ kubectl get pod -n demo quick-mysql-0
+$ kubectl get pod -n demo sample-mariadb-0
 NAME            READY   STATUS    RESTARTS   AGE
-quick-mysql-0   1/1     Running   0          2m44s
+sample-mariadb-0   1/1     Running   0          2m44s
 ```
 
 Check the pod's log to see if the database is ready
 
 ```bash
-$ kubectl logs -f -n demo quick-mysql-0
+$ kubectl logs -f -n demo sample-mariadb-0
 ...
 2020-08-27 06:01:50+00:00 [Note] [Entrypoint]: MariaDB init process done. Ready for start up.
 
@@ -197,7 +197,7 @@ Now, create MariaDB crd `minute-mysql` using the existing service account name `
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/custom-rbac/my-custom-db-two.yaml
-mysql.kubedb.com/quick-mysql created
+mysql.kubedb.com/sample-mariadb created
 ```
 
 Below is the YAML for the MariaDB crd we just created.
@@ -260,8 +260,8 @@ Check the pod's log to see if the database is ready
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo my/quick-mysql -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo my/quick-mysql
+kubectl patch -n demo my/sample-mariadb -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo my/sample-mariadb
 
 kubectl patch -n demo my/minute-mysql -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo my/minute-mysql
