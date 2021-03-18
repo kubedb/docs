@@ -18,9 +18,8 @@ Stash `v0.11.8+` supports backup and restoration of MariaDB databases. This guid
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
-- Install Stash in your cluster following the steps [here](https://stash.run/docs/latest/setup/).
-- Install MariaDB addon for Stash following the steps [here](https://stash.run/docs/latest/addons/mariadb/setup/install/).
 - Install KubeDB operator in your cluster from [here](https://kubedb.com/docs/latest/setup).
+- Install Stash Enterprise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - If you are not familiar with how Stash backup and restore MariaDB databases, please check the following guide [here](/docs/guides/mariadb/backup/overview/index.md).
 
 You have to be familiar with following custom resources:
@@ -187,14 +186,14 @@ We have successfully deployed a MariaDB database and inserted some sample data i
 
 In this section, we are going to prepare the necessary resources (i.e. database connection information, backend information, etc.) before backup.
 
-### Ensure MariaDB Addon
+### Verify Stash MariaDB Addon Installed
 
-At first, make sure that you have installed Stash MariaDB addon version `10.5.8-v1` . If haven't install the addon yet, install it by following the setup guide from [here](https://stash.run/docs/latest/addons/mariadb/setup/install/).
+When you install the Stash Enterprise edition, it automatically installs all the official database addons. Verify that it has installed the MariaDB addons using the following command.
 
 ```bash
 $ kubectl get tasks.stash.appscode.com | grep mariadb
-mariadb-backup-10.5.8-v1    35s
-mariadb-restore-10.5.8-v1   35s
+mariadb-backup-10.5.8    35s
+mariadb-restore-10.5.8   35s
 ```
 
 ### Ensure AppBinding
@@ -370,8 +369,8 @@ Verify that the `BackupConfiguration` has been paused,
 
 ```bash
 $ kubectl get backupconfiguration -n demo sample-mariadb-backup
-NAME                 TASK                  SCHEDULE      PAUSED   AGE
-sample-mariadb-backup  mariadb-backup-10.5.8-v1   */5 * * * *   true     26m
+NAME                   TASK                    SCHEDULE      PAUSED   AGE
+sample-mariadb-backup  mariadb-backup-10.5.8   */5 * * * *   true     26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the `BackupConfiguration` has been paused.
@@ -444,7 +443,7 @@ metadata:
   namespace: demo
 spec:
   task:
-    name: mariadb-restore-10.5.8-v1
+    name: mariadb-restore-10.5.8
   repository:
     name: gcs-repo
   target:
@@ -545,8 +544,8 @@ backupconfiguration.stash.appscode.com/sample-mariadb-backup patched
 Verify that the `BackupConfiguration` has been resumed,
 ```bash
 $ kubectl get backupconfiguration -n demo sample-mariadb-backup
-NAME                    TASK                         SCHEDULE      PAUSED   AGE
-sample-mariadb-backup   mariadb-backup-10.5.8-v1   */5 * * * *   false    29m
+NAME                    TASK                    SCHEDULE      PAUSED   AGE
+sample-mariadb-backup   mariadb-backup-10.5.8   */5 * * * *   false    29m
 ```
 
 Here,  `false` in the `PAUSED` column means the backup has been resume successfully. The CronJob also should be resumed now.

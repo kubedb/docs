@@ -82,9 +82,9 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
     stash:
       addon:
         backupTask:
-          name: mysql-backup-8.0.21-v1
+          name: mysql-backup-8.0.21
         restoreTask:
-          name: mysql-restore-8.0.21-v1
+          name: mysql-restore-8.0.21
     upgradeConstraints:
       denylist:
         groupReplication:

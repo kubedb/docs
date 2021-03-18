@@ -161,4 +161,6 @@ For MongoDB sharded cluster, Stash identifies the primary replica of each shard 
 
 ## Next Steps
 
-- Install MongoDB addon for Stash following the guide from [here](https://stash.run/docs/latest/addons/mongodb/setup/install/).
+- Backup a standalone MongoDB databases using Stash following the guide from [here](/docs/guides/mongodb/backup/standalone/index.md).
+- Backup a MongoDB Replicaset cluster using Stash following the guide from [here](/docs/guides/mongodb/backup/replicaset/index.md).
+- Backup a sharded MongoDB cluster using Stash following the guide from [here](/docs/guides/mongodb/backup/sharding/index.md).

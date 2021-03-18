@@ -128,9 +128,9 @@ spec:
   stash:
     addon:
       backupTask:
-        name: postgres-backup-13.1.0-v2
+        name: postgres-backup-13.1
       restoreTask:
-        name: postgres-restore-13.1.0-v2
+        name: postgres-restore-13.1
   version: "13.2"
 ```
 

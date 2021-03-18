@@ -5,7 +5,7 @@ metadata:
   namespace: demo
 spec:
   task:
-    name: mongodb-restore-4.2.3-v6
+    name: mongodb-restore-4.2.3
   repository:
     name: gcs-repo-custom
   target:
