@@ -22,7 +22,7 @@ section_menu_id: guides
 
 As with all other Kubernetes objects, a MariaDB needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example MariaDB object.
 
-```bash
+```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
 metadata:
@@ -132,7 +132,7 @@ kubectl create secret generic mariadb-auth -n demo \
 secret/mariadb-auth created
 ```
 
-```bash
+```yaml
 apiVersion: v1
 data:
   password: NnE4dV8yak1PVy1PT1pYaw==
