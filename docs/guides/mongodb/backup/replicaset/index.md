@@ -145,9 +145,9 @@ spec:
     stash:
       addon:
         backupTask:
-          name: mongodb-backup-4.3.2
+          name: mongodb-backup-4.2.3
         restoreTask:
-          name: mongodb-restore-4.3.2
+          name: mongodb-restore-4.2.3
   secret:
     name: sample-mgo-rs-auth
   type: kubedb.com/mongodb
@@ -372,7 +372,7 @@ Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that th
 ```console
 $ kubectl get backupconfiguration -n demo sample-mgo-rs-backup
 NAME                  TASK                      SCHEDULE      PAUSED   AGE
-sample-mgo-rs-backup  mongodb-backup-4.3.2      */5 * * * *   true     26m
+sample-mgo-rs-backup  mongodb-backup-4.2.3      */5 * * * *   true     26m
 ```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
@@ -591,7 +591,7 @@ metadata:
 spec:
   schedule: "*/5 * * * *"
   task:
-    name: mongodb-restore-4.3.2
+    name: mongodb-backup-4.2.3
   repository:
     name: gcs-repo-custom
   target:
@@ -661,7 +661,7 @@ metadata:
   namespace: demo
 spec:
   task:
-    name: mongodb-restore-4.3.2
+    name: mongodb-restore-4.2.3
   repository:
     name: gcs-repo-custom
   target:
