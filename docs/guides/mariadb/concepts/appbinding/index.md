@@ -28,7 +28,7 @@ Like any official Kubernetes resource, an `AppBinding` has `TypeMeta`, `ObjectMe
 
 An `AppBinding` object created by `KubeDB` for MariaDB database is shown below,
 
-```yaml
+```bash
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:

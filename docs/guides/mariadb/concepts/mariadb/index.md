@@ -22,7 +22,7 @@ section_menu_id: guides
 
 As with all other Kubernetes objects, a MariaDB needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Below is an example MariaDB object.
 
-```yaml
+```bash
 apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
 metadata:
@@ -128,7 +128,7 @@ kubectl create secret generic mariadb-auth -n demo \
 secret/mariadb-auth created
 ```
 
-```yaml
+```bash
 apiVersion: v1
 data:
   password: NnE4dV8yak1PVy1PT1pYaw==
@@ -280,13 +280,13 @@ Note that, KubeDB does not allow `MYSQL_ROOT_PASSWORD`, `MYSQL_ALLOW_EMPTY_PASSW
 
 If you try to set any of the forbidden environment variables i.e. `MYSQL_ROOT_PASSWORD` in MariaDB crd, Kubed operator will reject the request with the following error,
 
-```ini
+```bash
 Error from server (Forbidden): error when creating "./mariadb.yaml": admission webhook "mariadb.validators.kubedb.com" denied the request: environment variable MYSQL_ROOT_PASSWORD is forbidden to use in MariaDB spec
 ```
 
 Also, note that KubeDB does not allow to update the environment variables as updating them does not have any effect once the database is created.  If you try to update environment variables, KubeDB operator will reject the request with the following error,
 
-```ini
+```bash
 Error from server (BadRequest): error when applying patch:
 ...
 for: "./mariadb.yaml": admission webhook "mariadb.validators.kubedb.com" denied the request: precondition failed for:
