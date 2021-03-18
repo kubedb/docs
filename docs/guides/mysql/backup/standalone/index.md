@@ -24,7 +24,7 @@ Stash 0.9.0+ supports backup and restoration of MySQL databases. This guide will
 
 You have to be familiar with following custom resources:
 
-- [AppBinding](/docs/guides/mysql/concepts/appbinding.md)
+- [AppBinding](/docs/guides/mysql/concepts/appbinding/index.md)
 - [Function](https://stash.run/docs/latest/concepts/crds/function/)
 - [Task](https://stash.run/docs/latest/concepts/crds/task/)
 - [BackupConfiguration](https://stash.run/docs/latest/concepts/crds/backupconfiguration/)
@@ -98,7 +98,7 @@ sample-mysql       ClusterIP   10.101.2.138   <none>        3306/TCP   5m33s
 sample-mysql-gvr   ClusterIP   None           <none>        3306/TCP   5m33s
 ```
 
-Here, we have to use service `sample-mysql` and secret `sample-mysql-auth` to connect with the database. KubeDB creates an [AppBinding](/docs/guides/mysql/concepts/appbinding.md) CRD that holds the necessary information to connect with the database.
+Here, we have to use service `sample-mysql` and secret `sample-mysql-auth` to connect with the database. KubeDB creates an [AppBinding](/docs/guides/mysql/concepts/appbinding/index.md) CRD that holds the necessary information to connect with the database.
 
 **Verify AppBinding:**
 

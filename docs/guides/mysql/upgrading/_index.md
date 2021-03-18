@@ -2,9 +2,9 @@
 title: Upgrading MySQL
 menu:
   docs_{{ .version }}:
-    identifier: my-upgrading-mysql
+    identifier: guides-mysql-upgrading
     name: Upgrading MySQL
-    parent: my-mysql-guides
+    parent: guides-mysql
     weight: 42
 menu_name: docs_{{ .version }}
 ---

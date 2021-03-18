@@ -2,7 +2,7 @@
 title: MySQL
 menu:
   docs_{{ .version }}:
-    identifier: my-mysql-guides
+    identifier: guides-mysql
     name: MySQL
     parent: guides
     weight: 10

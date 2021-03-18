@@ -2,9 +2,9 @@
 title: Horizontal Scaling
 menu:
   docs_{{ .version }}:
-    identifier: my-horizontal-scaling
+    identifier: guides-mysql-scaling-horizontal
     name: Horizontal Scaling
-    parent: my-scaling-mysql
+    parent: guides-mysql-scaling
     weight: 10
 menu_name: docs_{{ .version }}
 ---
