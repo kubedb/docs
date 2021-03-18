@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha2
+kind: MariaDB
+metadata:
+  name: another-mariadb
+  namespace: demo
+spec:
+  version: "10.5.8"
+  storageType: Durable
+  podTemplate:
+    spec:
+      serviceAccountName: md-custom-serviceaccount
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  terminationPolicy: WipeOut

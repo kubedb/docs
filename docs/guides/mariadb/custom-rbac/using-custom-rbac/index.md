@@ -144,7 +144,7 @@ Now, create a MariaDB crd specifying `spec.podTemplate.spec.serviceAccountName` 
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/custom-rbac/using-custom-rbac/examples/md-custom-db.yaml
-mysql.kubedb.com/sample-mariadb created
+mariadb.kubedb.com/sample-mariadb created
 ```
 
 Below is the YAML for the MariaDB crd we just created.
@@ -185,32 +185,28 @@ Check the pod's log to see if the database is ready
 
 ```bash
 $ kubectl logs -f -n demo sample-mariadb-0
+2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.8+maria~focal started.
+2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
+2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.8+maria~focal started.
+2021-03-18 05:35:14+00:00 [Note] [Entrypoint]: Initializing database files
 ...
-2020-08-27 06:01:50+00:00 [Note] [Entrypoint]: MariaDB init process done. Ready for start up.
-
-2020-08-27T06:01:51.142462Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.21) starting as process 1
-2020-08-27T06:01:51.142509Z 0 [ERROR] [MY-010338] [Server] Can't find error-message file '/usr/share/mysql-8.0/errmsg.sys'. Check error-message file location and 'lc-messages-dir' configuration directive.
-2020-08-27T06:01:51.151516Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
-2020-08-27T06:01:51.681653Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
-...
-2020-08-27T06:01:51.802033Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060
-2020-08-27T06:01:51.924095Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
-2020-08-27T06:01:51.924256Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
-2020-08-27T06:01:51.931573Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
-2020-08-27T06:01:51.955689Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.21'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MariaDB Community Server - GPL.
+2021-03-18  5:35:22 0 [Note] Reading of all Master_info entries succeeded
+2021-03-18  5:35:22 0 [Note] Added new Master_info '' to hash table
+2021-03-18  5:35:22 0 [Note] mysqld: ready for connections.
+Version: '10.5.8-MariaDB-1:10.5.8+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution
 ```
 
-Once we see `MariaDB init process done. Ready for start up.` in the log, the database is ready.
+Once we see `mysqld: ready for connections.` in the log, the database is ready.
 
 ## Reusing Service Account
 
 An existing service account can be reused in another MariaDB instance. No new access permission is required to run the new MariaDB instance.
 
-Now, create MariaDB crd `minute-mysql` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
+Now, create MariaDB crd `another-mariadb` using the existing service account name `md-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/custom-rbac/my-custom-db-two.yaml
-mysql.kubedb.com/sample-mariadb created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/custom-rbac/using-custom-rbac/examples/md-custom-db-2.yaml
+mariadb.kubedb.com/another-mariadb created
 ```
 
 Below is the YAML for the MariaDB crd we just created.
@@ -219,14 +215,14 @@ Below is the YAML for the MariaDB crd we just created.
 apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
 metadata:
-  name: minute-mysql
+  name: another-mariadb
   namespace: demo
 spec:
-  version: "8.0.23"
+  version: "10.5.8"
   storageType: Durable
   podTemplate:
     spec:
-      serviceAccountName: my-custom-serviceaccount
+      serviceAccountName: md-custom-serviceaccount
   storage:
     storageClassName: "standard"
     accessModes:
@@ -234,57 +230,52 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  terminationPolicy: DoNotTerminate
-
+  terminationPolicy: WipeOut
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `minute-mysql-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary PVC, statefulset, services, secret etc. If everything goes well, we should see that a pod with the name `another-mariadb` has been created.
 
 Check that the statefulset's pod is running
 
 ```bash
-$ kubectl get pod -n demo minute-mysql-0
-NAME             READY     STATUS    RESTARTS   AGE
-minute-mysql-0   1/1       Running   0          14m
+$ kubectl get pod -n demo another-mariadb-0
+NAME                READY   STATUS    RESTARTS   AGE
+another-mariadb-0   1/1     Running   0          37s
 ```
 
 Check the pod's log to see if the database is ready
 
 ```bash
 ...
-2020-08-27 06:01:50+00:00 [Note] [Entrypoint]: MariaDB init process done. Ready for start up.
-
-2020-08-27T06:01:51.142462Z 0 [System] [MY-010116] [Server] /usr/sbin/mysqld (mysqld 8.0.21) starting as process 1
-2020-08-27T06:01:51.142509Z 0 [ERROR] [MY-010338] [Server] Can't find error-message file '/usr/share/mysql-8.0/errmsg.sys'. Check error-message file location and 'lc-messages-dir' configuration directive.
-2020-08-27T06:01:51.151516Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
-2020-08-27T06:01:51.681653Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+$ kubectl logs -f -n demo another-mariadb-0
+2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.8+maria~focal started.
+2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
+2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.8+maria~focal started.
+2021-03-18 05:39:50+00:00 [Note] [Entrypoint]: Initializing database files
 ...
-2020-08-27T06:01:51.802033Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060
-2020-08-27T06:01:51.924095Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
-2020-08-27T06:01:51.924256Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
-2020-08-27T06:01:51.931573Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/var/run/mysqld' in the path is accessible to all OS users. Consider choosing a different directory.
-2020-08-27T06:01:51.955689Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.0.21'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MariaDB Community Server - GPL.
+2021-03-18  5:39:59 0 [Note] mysqld: ready for connections.
+Version: '10.5.8-MariaDB-1:10.5.8+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution
 ```
 
-`MariaDB init process done. Ready for start up.` in the log signifies that the database is running successfully.
+`mysqld: ready for connections.` in the log signifies that the database is running successfully.
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl patch -n demo my/sample-mariadb -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo my/sample-mariadb
-
-kubectl patch -n demo my/minute-mysql -p '{"spec":{"terminationPolicy":"WipeOut"}}' --type="merge"
-kubectl delete -n demo my/minute-mysql
-
-kubectl delete -n demo role my-custom-role
-kubectl delete -n demo rolebinding my-custom-rolebinding
-
-kubectl delete sa -n demo my-custom-serviceaccount
-
-kubectl delete ns demo
+$ kubectl delete mariadb -n demo sample-mariadb
+mariadb.kubedb.com "sample-mariadb" deleted
+$ kubectl delete mariadb -n demo another-mariadb
+mariadb.kubedb.com "another-mariadb" deleted
+$ kubectl delete -n demo role md-custom-role
+role.rbac.authorization.k8s.io "md-custom-role" deleted
+$ kubectl delete -n demo rolebinding md-custom-rolebinding
+rolebinding.rbac.authorization.k8s.io "md-custom-rolebinding" deleted
+$ kubectl delete sa -n demo md-custom-serviceaccount
+serviceaccount "md-custom-serviceaccount" deleted
+$ kubectl delete ns demo
+namespace "demo" deleted
 ```
 
 If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
