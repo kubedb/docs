@@ -180,6 +180,7 @@ apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
 metadata:
   name: sample-mariadb
+  namespace: demo
 spec:
   version: 10.5.8
   init:
