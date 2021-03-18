@@ -3,8 +3,6 @@ kind: RestoreSession
 metadata:
   name: sample-mariadb-restore
   namespace: demo
-  labels:
-    app.kubernetes.io/name: mariadb.kubedb.com
 spec:
   repository:
     name: gcs-repo

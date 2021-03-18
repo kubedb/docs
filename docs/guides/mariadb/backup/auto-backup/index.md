@@ -48,12 +48,12 @@ namespace/demo-2 created
 namespace/demo-3 created
 ```
 
-Make sure you have installed the MariaDB addon for Stash. If you haven't installed it already, please install the addon following the steps [here](https://stash.run/docs/latest/addons/mariadb/setup/install/).
+When you install the Stash Enterprise edition, it automatically installs all the official database addons. Verify that it has installed the MariaDB addons using the following command.
 
 ```bash
 ❯ kubectl get tasks.stash.appscode.com | grep mariadb
-mariadb-backup-10.5.8-v1    62m
-mariadb-restore-10.5.8-v1   62m
+mariadb-backup-10.5.8    62m
+mariadb-restore-10.5.8   62m
 ```
 
 ## Prepare Backup Blueprint
@@ -192,7 +192,7 @@ Now, let's verify whether Stash has created a `BackupConfiguration` for our Mari
 ```bash
 ❯ kubectl get backupconfiguration -n demo
 NAME                 TASK                    SCHEDULE      PAUSED   AGE
-app-sample-mariadb   mariadb-backup-10.5.8-v1   */5 * * * *            7m28s
+app-sample-mariadb   mariadb-backup-10.5.8   */5 * * * *            7m28s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -361,7 +361,7 @@ Now, let's verify whether Stash has created a `BackupConfiguration` for our Mari
 ```bash
 ❯ kubectl get backupconfiguration -n demo-2
 NAME                   TASK                    SCHEDULE      PAUSED   AGE
-app-sample-mariadb-2   mariadb-backup-10.5.8-v1   */3 * * * *            3m24s
+app-sample-mariadb-2   mariadb-backup-10.5.8   */3 * * * *            3m24s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.
@@ -543,7 +543,7 @@ Now, let's verify whether Stash has created a `BackupConfiguration` for our Mari
 ```bash
 ❯ kubectl get backupconfiguration -n demo-3
 NAME                   TASK                    SCHEDULE      PAUSED   AGE
-app-sample-mariadb-3   mariadb-backup-10.5.8-v1   */5 * * * *            106s
+app-sample-mariadb-3   mariadb-backup-10.5.8   */5 * * * *            106s
 ```
 
 Now, let's check the YAML of the `BackupConfiguration`.

@@ -18,8 +18,8 @@ Stash 0.9.0+ supports backup and restoration of Elasticsearch clusters. This gui
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
-- Install Stash Enterise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
+- Install Stash Enterise in your cluster following the steps [here](https://stash.run/docs/latest/setup/install/enterprise/).
 - If you are not familiar with how Stash backup and restore Elasticsearch databases, please check the following guide [here](/docs/guides/elasticsearch/backup/overview/index.md).
 
 You have to be familiar with following custom resources:
@@ -335,9 +335,9 @@ Here,
 
 - `spec.parameters.stash` section specifies the Stash Addon that will be used to backup and restore this Elasticsearch.
 
-### Ensure Elasticsearch Addons
+### Verify Stash Elasticsearch Addons Installed
 
-Now, make sure that you have installed the Stash Elasticsearch addon. If you haven’t installed the addon yet, please install it by following the setup guide from [here](https://stash.run/docs/latest/addons/elasticsearch/setup/install/). Make sure you have the `Task` with matching name as specified in `spec.parameters.stash.addons` of `AppBinding` object.
+When you install the Stash Enterprise edition, it automatically installs all the official database addons. Verify that it has installed the Elasticsearch addons using the following command.
 
 ```bash
 ❯ kubectl get tasks.stash.appscode.com | grep elasticsearch
