@@ -40,4 +40,12 @@ aliases:
 ## User Guide
 
 - [Quickstart MariaDB](/docs/guides/mariadb/quickstart/overview) with KubeDB Operator.
+- Detail concepts of [MariaDB object](/docs/guides/mariadb/concepts/mariadb).
+- Detail concepts of [MariaDBVersion object](/docs/guides/mariadb/concepts/mariadb-version).
+- Create [MariaDB Cluster](/docs/guides/mariadb/clustering/galera-cluster).
+- Create [MariaDB with Custom Configuration](/docs/guides/mariadb/configuration/using-config-file).
+- Use [Custom RBAC](/docs/guides/mariadb/custom-rbac/using-custom-rbac).
+- Use [private Docker registry](/docs/guides/mariadb/private-registry/quickstart) to deploy MySQL with KubeDB.
+- Initialize [MariaDB with Script](/docs/guides/mariadb/initialization/using-script).
+- Backup and Restore [MariaDB](/docs/guides/mariadb/backup/overview).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
