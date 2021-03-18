@@ -72,7 +72,7 @@ spec:
 Create the above `Postgres` crd,
 
 ```bash
-$ kubectl apply -f https://github.com/standalone/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/postgres.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/postgres.yaml
 postgres.kubedb.com/sample-postgres created
 ```
 
@@ -274,7 +274,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/standalone/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/repository.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/repository.yaml
 repository.stash.appscode.com/gcs-repo created
 ```
 
@@ -319,7 +319,7 @@ Here,
 Let's create the `BackupConfiguration` object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/standalone/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/backupconfiguration.yaml
 backupconfiguration.stash.appscode.com/sample-postgres-backup created
 ```
 
@@ -427,7 +427,7 @@ Notice the `init` section. Here, we have specified `waitForInitialRestore: true`
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/standalone/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/restored-postgres.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/restored-postgres.yaml
 postgres.kubedb.com/restored-postgres created
 ```
 
@@ -496,7 +496,7 @@ Here,
 Let's create the `RestoreSession` crd we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/standalone/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/restoresession.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/standalone/examples/restoresession.yaml
 restoresession.stash.appscode.com/sample-postgres-restore created
 ```
 
