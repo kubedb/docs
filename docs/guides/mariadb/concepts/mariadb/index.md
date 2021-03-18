@@ -29,80 +29,84 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.8"
   authSecret:
     name: sample-mariadb-auth
-  storageType: "Durable"
+  monitor:
+    agent: prometheus.io
+    prometheus:
+      exporter:
+        port: 56790
+        resources: {}
+      serviceMonitor:
+        interval: 10s
+        labels:
+          k8s-app: prometheus
+  podTemplate:
+    controller: {}
+    metadata: {}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/instance: sample-mariadb
+                  app.kubernetes.io/managed-by: kubedb.com
+                  app.kubernetes.io/name: mariadbs.kubedb.com
+              namespaces:
+              - demo
+              topologyKey: kubernetes.io/hostname
+            weight: 100
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app.kubernetes.io/instance: sample-mariadb
+                  app.kubernetes.io/managed-by: kubedb.com
+                  app.kubernetes.io/name: mariadbs.kubedb.com
+              namespaces:
+              - demo
+              topologyKey: failure-domain.beta.kubernetes.io/zone
+            weight: 50
+      resources:
+        limits:
+          cpu: 500m
+          memory: 1Gi
+        requests:
+          cpu: 500m
+          memory: 1Gi
+      serviceAccountName: sample-mariadb
+  replicas: 3
+  requireSSL: true
   storage:
-    storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  init:
-    script:
-      configMap:
-        name: md-init-script
-  monitor:
-    agent: prometheus.io/operator
-    prometheus:
-      serviceMonitor:
-        labels:
-          app: kubedb
-        interval: 10s
-  requireSSL: true
+    storageClassName: standard
+  storageType: Durable
+  terminationPolicy: WipeOut
   tls:
+    certificates:
+    - alias: server
+      dnsNames:
+      - localhost
+      ipAddresses:
+      - 127.0.0.1
+      secretName: sample-mariadb-server-cert
+      subject:
+        organizations:
+        - kubedb:server
+    - alias: archiver
+      secretName: sample-mariadb-archiver-cert
+    - alias: metrics-exporter
+      secretName: sample-mariadb-metrics-exporter-cert
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
       name: md-issuer
-    certificates:
-    - alias: server
-      subject:
-        organizations:
-        - kubedb:server
-      dnsNames:
-      - localhost
-      ipAddresses:
-      - "127.0.0.1"
-  configSecret:
-    name: md-custom-config
-  podTemplate:
-    annotations:
-      passMe: ToDatabasePod
-    controller:
-      annotations:
-        passMe: ToStatefulSet
-    spec:
-      serviceAccountName: md-service-account
-      schedulerName: md-scheduler
-      nodeSelector:
-        disktype: ssd
-      imagePullSecrets:
-      - name: myregistrykey
-      args:
-      - --character-set-server=utf8mb4
-      env:
-      - name: MYSQL_DATABASE
-        value: mdDB
-      resources:
-        requests:
-          memory: "64Mi"
-          cpu: "250m"
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
-  serviceTemplate:
-    annotations:
-      passMe: ToService
-    spec:
-      type: NodePort
-      ports:
-      - name:  http
-        port:  9200
-        targetPort: http
-  terminationPolicy: Halt
+  version: 10.5.8
 ```
 
 ### spec.version
