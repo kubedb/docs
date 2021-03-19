@@ -228,16 +228,13 @@ func (es *Elasticsearch) getInternalUserConfig() (string, error) {
 		var pass string
 		var err error
 
-		if username == string(api.ElasticsearchInternalUserAdmin) {
-			pass, err = es.getPasswordFromSecret(es.db.Spec.AuthSecret.Name)
-			if err != nil {
-				return "", err
-			}
-		} else {
-			pass, err = es.getPasswordFromSecret(es.db.UserCredSecretName(username))
-			if err != nil {
-				return "", err
-			}
+		secretName, err := es.db.GetUserCredSecretName(username)
+		if err != nil {
+			return "", err
+		}
+		pass, err = es.getPasswordFromSecret(secretName)
+		if err != nil {
+			return "", errors.Wrap(err, fmt.Sprintf("failed to get password from secret: %s/%s", es.db.Namespace, secretName))
 		}
 
 		err = user.SetPasswordHashForUser(userList, username, pass)

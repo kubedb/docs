@@ -71,10 +71,13 @@ func (es *Elasticsearch) upsertMonitoringContainer(containers []core.Container) 
 		}
 
 		if !es.db.Spec.DisableSecurity {
-			sName := es.db.UserCredSecretName(string(api.ElasticsearchInternalUserMetricsExporter))
-			_, err := es.getSecret(sName, es.db.Namespace)
+			sName, err := es.db.GetUserCredSecretName(string(api.ElasticsearchInternalUserMetricsExporter))
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to get metrics-exporter-cred secret")
+				return nil, err
+			}
+			_, err = es.getSecret(sName, es.db.Namespace)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to get metrics-exporter secret")
 			}
 
 			envList := []core.EnvVar{
