@@ -1,10 +1,10 @@
 ---
-title: MySQL TLS/SSL Encryption Overview
+title: MariaDB TLS/SSL Encryption Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-tls-overview
+    identifier: guides-mariadb-tls-overview
     name: Overview
-    parent: guides-mysql-tls
+    parent: guides-mariadb-tls
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -14,9 +14,9 @@ section_menu_id: guides
 
 {{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
 
-# MySQL TLS/SSL Encryption
+# MariaDB TLS/SSL Encryption
 
-**Prerequisite :** To configure TLS/SSL in `MySQL`, `KubeDB` uses `cert-manager` to issue certificates. So first you have to make sure that the cluster has `cert-manager` installed. To install `cert-manager` in your cluster following steps [here](https://cert-manager.io/docs/installation/kubernetes/).
+**Prerequisite :** To configure TLS/SSL in `MariaDB`, `KubeDB` uses `cert-manager` to issue certificates. So first you have to make sure that the cluster has `cert-manager` installed. To install `cert-manager` in your cluster following steps [here](https://cert-manager.io/docs/installation/kubernetes/).
 
 To issue a certificate, the following cr of `cert-manager` is used:
 
@@ -24,9 +24,9 @@ To issue a certificate, the following cr of `cert-manager` is used:
 
 - `Certificate`: `cert-manager` has the concept of Certificates that define the desired x509 certificate which will be renewed and kept up to date. You can learn more details [here](https://cert-manager.io/docs/concepts/certificate/).
 
-**MySQL CRD Specification:**
+**MariaDB CRD Specification:**
 
-KubeDB uses the following cr fields to enable SSL/TLS encryption in `MySQL`.
+KubeDB uses the following cr fields to enable SSL/TLS encryption in `MariaDB`.
 
 - `spec:`
   - `requireSSL`
@@ -34,32 +34,32 @@ KubeDB uses the following cr fields to enable SSL/TLS encryption in `MySQL`.
     - `issuerRef`
     - `certificates`
 
-Read about the fields in details from [mysql concept](/docs/guides/mysql/concepts/database/index.md#),
+Read about the fields in details from [mariadb concept](/docs/guides/mariadb/concepts/mariadb/#spectls),
 
-When, `requireSSL` is set, the users must specify the `tls.issuerRef` field. `KubeDB` uses the `issuer` or `clusterIssuer` referenced in the `tls.issuerRef` field, and the certificate specs provided in `tls.certificate` to generate certificate secrets using `Issuer/ClusterIssuers` specification. These certificates secrets including `ca.crt`, `tls.crt` and `tls.key` etc. are used to configure `MySQL` server, exporter etc. respectively.
+When, `requireSSL` is set, the users must specify the `tls.issuerRef` field. `KubeDB` uses the `issuer` or `clusterIssuer` referenced in the `tls.issuerRef` field, and the certificate specs provided in `tls.certificate` to generate certificate secrets using `Issuer/ClusterIssuers` specification. These certificates secrets including `ca.crt`, `tls.crt` and `tls.key` etc. are used to configure `MariaDB` server, exporter etc. respectively.
 
-## How TLS/SSL configures in MySQL
+## How TLS/SSL configures in MariaDB
 
-The following figure shows how `KubeDB` enterprise is used to configure TLS/SSL in MySQL. Open the image in a new tab to see the enlarged version.
+The following figure shows how `KubeDB` enterprise is used to configure TLS/SSL in MariaDB. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Stash Backup Flow" src="/docs/guides/mysql/tls/overview/images/my-tls-ssl.png">
-<figcaption align="center">Fig: Deploy MySQL with TLS/SSL</figcaption>
+  <img alt="Stash Backup Flow" src="/docs/guides/mariadb/tls/overview/images/md-tls-ssl.png">
+<figcaption align="center">Fig: Deploy MariaDB with TLS/SSL</figcaption>
 </figure>
 
-Deploying MySQL with TLS/SSL configuration process consists of the following steps:
+Deploying MariaDB with TLS/SSL configuration process consists of the following steps:
 
 1. At first, a user creates an `Issuer/ClusterIssuer` cr.
 
-2. Then the user creates a `MySQL` cr.
+2. Then the user creates a `MariaDB` cr.
 
-3. `KubeDB` community operator watches for the `MySQL` cr.
+3. `KubeDB` community operator watches for the `MariaDB` cr.
 
-4. When it finds one, it creates `Secret`, `Service`, etc. for the `MySQL` database.
+4. When it finds one, it creates `Secret`, `Service`, etc. for the `MariaDB` database.
 
-5. `KubeDB` enterprise operator watches for `MySQL`(5c), `Issuer/ClusterIssuer`(5b), `Secret` and `Service`(5a).
+5. `KubeDB` enterprise operator watches for `MariaDB`(5c), `Issuer/ClusterIssuer`(5b), `Secret` and `Service`(5a).
 
-6. When it finds all the resources(`MySQL`, `Issuer/ClusterIssuer`, `Secret`, `Service`), it creates `Certificates` by using `tls.issuerRef` and `tls.certificates` field specification from `MySQL` cr.
+6. When it finds all the resources(`MariaDB`, `Issuer/ClusterIssuer`, `Secret`, `Service`), it creates `Certificates` by using `tls.issuerRef` and `tls.certificates` field specification from `MariaDB` cr.
 
 7. `cert-manager` watches for certificates.
 
@@ -67,6 +67,6 @@ Deploying MySQL with TLS/SSL configuration process consists of the following ste
 
 9. `KubeDB` community operator watches for the Certificate secrets `tls-secrets`.
 
-10. When it finds all the tls-secret, it creates a `StatefulSet` so that MySQL server is configured with TLS/SSL.
+10. When it finds all the tls-secret, it creates a `StatefulSet` so that MariaDB server is configured with TLS/SSL.
 
-In the next doc, we are going to show a step by step guide on how to configure a `MySQL` database with TLS/SSL.
+In the next doc, we are going to show a step by step guide on how to configure a `MariaDB` database with TLS/SSL.
