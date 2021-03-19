@@ -61,7 +61,7 @@ func (es *Elasticsearch) EnsureAuthSecret() error {
 }
 
 func (es *Elasticsearch) createAdminCredSecret() (*core.LocalObjectReference, error) {
-	dbSecret, err := es.findSecret(es.db.UserCredSecretName(string(api.ElasticsearchInternalUserElastic)))
+	dbSecret, err := es.findSecret(es.db.DefaultUserCredSecretName(string(api.ElasticsearchInternalUserElastic)))
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (es *Elasticsearch) createAdminCredSecret() (*core.LocalObjectReference, er
 
 	secret := &core.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:   es.db.UserCredSecretName(string(api.ElasticsearchInternalUserElastic)),
+			Name:   es.db.DefaultUserCredSecretName(string(api.ElasticsearchInternalUserElastic)),
 			Labels: es.db.OffshootLabels(),
 		},
 		Type: core.SecretTypeBasicAuth,
