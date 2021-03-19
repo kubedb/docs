@@ -1,11 +1,11 @@
 ---
-title: MySQL Monitoring Overview
-description: MySQL Monitoring Overview
+title: MariaDB Monitoring Overview
+description: MariaDB Monitoring Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-monitoring-overview
+    identifier: guides-mariadb-monitoring-overview
     name: Overview
-    parent: guides-mysql-monitoring
+    parent: guides-mariadb-monitoring
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -13,7 +13,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Monitoring MySQL with KubeDB
+# Monitoring MariaDB with KubeDB
 
 KubeDB has native support for monitoring via [Prometheus](https://prometheus.io/). You can use builtin [Prometheus](https://github.com/prometheus/prometheus) scraper or [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) to monitor KubeDB managed databases. This tutorial will show you how database monitoring works with KubeDB and how to configure Database crd to enable monitoring.
 
@@ -22,7 +22,7 @@ KubeDB has native support for monitoring via [Prometheus](https://prometheus.io/
 KubeDB uses Prometheus [exporter](https://prometheus.io/docs/instrumenting/exporters/#databases) images to export Prometheus metrics for respective databases. Following diagram shows the logical flow of database monitoring with KubeDB.
 
 <p align="center">
-  <img alt="Database Monitoring Flow"  src="/docs/guides/mysql/monitoring/overview/images/database-monitoring-overview.svg">
+  <img alt="Database Monitoring Flow"  src="/docs/guides/mariadb/monitoring/overview/images/database-monitoring-overview.svg">
 </p>
 
 When a user creates a database crd with `spec.monitor` section configured, KubeDB operator provisions the respective database and injects an exporter image as sidecar to the database pod. It also creates a dedicated stats service with name `{database-crd-name}-stats` for monitoring. Prometheus server can scrape metrics using this stats service.
@@ -98,9 +98,10 @@ Here, we have specified that we are going to monitor this server using Prometheu
 
 ## Next Steps
 
-- Learn how to monitor Elasticsearch database with KubeDB using [builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
-- Learn how to monitor PostgreSQL database with KubeDB using [builtin-Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
-- Learn how to monitor MySQL database with KubeDB using [builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md) and using [Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
-- Learn how to monitor MongoDB database with KubeDB using [builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
-- Learn how to monitor Redis server with KubeDB using [builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
-- Learn how to monitor Memcached server with KubeDB using [builtin-Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md).
+- Learn how to monitor `MariaDB` database with KubeDB using [builtin-Prometheus](/docs/guides/mariadb/monitoring/builtin-prometheus) and using [Prometheus operator](/docs/guides/mariadb/monitoring/prometheus-operator).
+- Learn how to monitor `Elasticsearch` database with KubeDB using [builtin-Prometheus](/docs/guides/elasticsearch/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
+- Learn how to monitor `PostgreSQL` database with KubeDB using [builtin-Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
+- Learn how to monitor `MySQL` database with KubeDB using [builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md) and using [Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
+- Learn how to monitor `MongoDB` database with KubeDB using [builtin-Prometheus](/docs/guides/mongodb/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/mongodb/monitoring/using-prometheus-operator.md).
+- Learn how to monitor `Redis` server with KubeDB using [builtin-Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
+- Learn how to monitor `Memcached` server with KubeDB using [builtin-Prometheus](/docs/guides/memcached/monitoring/using-builtin-prometheus.md) and using [Prometheus operator](/docs/guides/memcached/monitoring/using-prometheus-operator.md).

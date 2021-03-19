@@ -5,7 +5,7 @@ menu:
     identifier: guides-mysql-monitoring-builtin-prometheus
     name: Builtin Prometheus
     parent: guides-mysql-monitoring
-    weight: 20
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

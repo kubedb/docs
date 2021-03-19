@@ -1,26 +1,26 @@
 ---
-title: Monitor MySQL using Prometheus Operator
+title: Monitor MariaDB using Prometheus Operator
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-monitoring-prometheus-operator
+    identifier: guides-mariadb-monitoring-prometheusoperator
     name: Prometheus Operator
-    parent: guides-mysql-monitoring
-    weight: 15
+    parent: guides-mariadb-monitoring
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Monitoring MySQL Using Prometheus operator
+# Monitoring MariaDB Using Prometheus operator
 
-[Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use Prometheus operator to monitor MySQL database deployed with KubeDB.
+[Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) provides simple and Kubernetes native way to deploy and configure Prometheus server. This tutorial will show you how to use Prometheus operator to monitor MariaDB database deployed with KubeDB.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/mysql/monitoring/overview/index.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/mariadb/monitoring/overview).
 
 - To keep database resources isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster:
 
@@ -33,11 +33,11 @@ section_menu_id: guides
 
 - If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md#deploy-prometheus-server).
 
-> Note: YAML files used in this tutorial are stored in [docs/guides/mysql/monitoring/prometheus-operator/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/monitoring/prometheus-operator/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [/docs/guides/mariadb/monitoring/prometheus-operator/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/monitoring/prometheus-operator/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Find out required labels for ServiceMonitor
 
-We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd. We are going to provide these labels in `spec.monitor.prometheus.labels` field of MySQL crd so that KubeDB creates `ServiceMonitor` object accordingly.
+We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd. We are going to provide these labels in `spec.monitor.prometheus.labels` field of MariaDB crd so that KubeDB creates `ServiceMonitor` object accordingly.
 
 At first, let's find out the available Prometheus server in our cluster.
 
@@ -86,7 +86,7 @@ spec:
       k8s-app: prometheus
 ```
 
-- `spec.serviceMonitorSelector` field specifies which ServiceMonitors should be included. The Above label `k8s-app: prometheus` is used to select `ServiceMonitors` by its selector. So, we are going to use this label in `spec.monitor.prometheus.labels` field of MySQL crd.
+- `spec.serviceMonitorSelector` field specifies which ServiceMonitors should be included. The Above label `k8s-app: prometheus` is used to select `ServiceMonitors` by its selector. So, we are going to use this label in `spec.monitor.prometheus.labels` field of MariaDB crd.
 - `spec.serviceMonitorNamespaceSelector` field specifies that the `ServiceMonitors` can be selected outside the Prometheus namespace by Prometheus using namespace selector. The Above label `prometheus: prometheus` is used to select the namespace where the `ServiceMonitor` is created.
 
 ### Add Label to database namespace
@@ -100,18 +100,18 @@ $ kubectl patch namespace demo -p '{"metadata":{"labels": {"prometheus":"prometh
 namespace/demo patched
 ```
 
-## Deploy MySQL with Monitoring Enabled
+## Deploy MariaDB with Monitoring Enabled
 
-At first, let's deploy an MySQL database with monitoring enabled. Below is the MySQL object that we are going to create.
+At first, let's deploy an MariaDB database with monitoring enabled. Below is the MariaDB object that we are going to create.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: MySQL
+kind: MariaDB
 metadata:
-  name: coreos-prom-mysql
+  name: coreos-prom-md
   namespace: demo
 spec:
-  version: "8.0.23"
+  version: "10.5.8"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -137,91 +137,121 @@ Here,
 
 - `monitor.prometheus.interval` indicates that the Prometheus server should scrape metrics from this database with 10 seconds interval.
 
-Let's create the MySQL object that we have shown above,
+Let's create the MariaDB object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/monitoring/prometheus-operator/yamls/prom-operator-mysql.yaml
-mysql.kubedb.com/prom-operator-mysql created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/monitoring/prometheus-operator/examples/prom-operator-md.yaml
+mariadb.kubedb.com/coreos-prom-md created
 ```
 
-Now, wait for the database to go into `Running` state.
+Now, wait for the database to go into `Ready` state.
 
 ```bash
-$ watch -n 3 kubectl get mysql -n demo coreos-prom-mysql
-Every 3.0s: kubectl get mysql -n demo coreos-prom-mysql         suaas-appscode: Tue Aug 25 11:53:34 2020
-
-NAME                VERSION      STATUS    AGE
-coreos-prom-mysql   8.0.21-v1    Running   2m53s
+$ kubectl get mariadb -n demo coreos-prom-md
+NAME             VERSION   STATUS   AGE
+coreos-prom-md   10.5.8    Ready    59s
 ```
 
-KubeDB will create a separate stats service with name `{MySQL crd name}-stats` for monitoring purpose.
+KubeDB will create a separate stats service with name `{MariaDB crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-mysql"
-NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
-coreos-prom-mysql         ClusterIP   10.103.228.135   <none>        3306/TCP    3m36s
-coreos-prom-mysql-gvr     ClusterIP   None             <none>        3306/TCP    3m36s
-coreos-prom-mysql-stats   ClusterIP   10.106.236.14    <none>        56790/TCP   50s
+$ $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-md"
+NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+coreos-prom-md         ClusterIP   10.99.96.226    <none>        3306/TCP    107s
+coreos-prom-md-pods    ClusterIP   None            <none>        3306/TCP    107s
+coreos-prom-md-stats   ClusterIP   10.101.190.67   <none>        56790/TCP   107s
 ```
 
-Here, `coreos-prom-mysql-stats` service has been created for monitoring purpose.
+Here, `coreos-prom-md-stats` service has been created for monitoring purpose.
 
 Let's describe this stats service.
 
 ```yaml
-$ kubectl describe svc -n demo coreos-prom-mysql-stats
-Name:              coreos-prom-mysql-stats
+$ kubectl describe svc -n demo coreos-prom-md-stats
+Name:              coreos-prom-md-stats
 Namespace:         demo
-Labels:            app.kubernetes.io/name=mysqls.kubedb.com
-                   app.kubernetes.io/instance=coreos-prom-mysql
+Labels:            app.kubernetes.io/instance=coreos-prom-md
+                   app.kubernetes.io/managed-by=kubedb.com
+                   app.kubernetes.io/name=mariadbs.kubedb.com
                    kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
-Selector:          app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=coreos-prom-mysql
+Selector:          app.kubernetes.io/instance=coreos-prom-md,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mariadbs.kubedb.com
 Type:              ClusterIP
-IP:                10.106.236.14
-Port:              prom-http  56790/TCP
-TargetPort:        prom-http/TCP
-Endpoints:         10.244.2.6:56790
+IP:                10.101.190.67
+Port:              metrics  56790/TCP
+TargetPort:        metrics/TCP
+Endpoints:         10.244.0.31:56790
 Session Affinity:  None
 Events:            <none>
 ```
 
 Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these information to target its endpoints.
 
-KubeDB will also create a `ServiceMonitor` crd in `demo` namespace that select the endpoints of `coreos-prom-mysql-stats` service. Verify that the `ServiceMonitor` crd has been created.
+KubeDB will also create a `ServiceMonitor` crd in `demo` namespace that select the endpoints of `coreos-prom-md-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
 ```bash
 $ kubectl get servicemonitor -n demo
-NAME                            AGE
-kubedb-demo-coreos-prom-mysql   3m16s
+NAME                   AGE
+coreos-prom-md-stats   4m8s
 ```
 
-Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of MySQL crd.
+Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of MariaDB crd.
 
 ```yaml
-$ kubectl get servicemonitor -n demo kubedb-demo-coreos-prom-mysql -o yaml
+$ kubectl get servicemonitor -n demo coreos-prom-md-stats -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  creationTimestamp: "2020-08-25T05:53:27Z"
+  creationTimestamp: "2021-03-19T10:09:03Z"
   generation: 1
   labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: coreos-prom-md
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: mariadbs.kubedb.com
     k8s-app: prometheus
+  managedFields:
+  - apiVersion: monitoring.coreos.com/v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:labels:
+          .: {}
+          f:app.kubernetes.io/component: {}
+          f:app.kubernetes.io/instance: {}
+          f:app.kubernetes.io/managed-by: {}
+          f:app.kubernetes.io/name: {}
+          f:k8s-app: {}
+        f:ownerReferences: {}
+      f:spec:
+        .: {}
+        f:endpoints: {}
+        f:namespaceSelector:
+          .: {}
+          f:matchNames: {}
+        f:selector:
+          .: {}
+          f:matchLabels:
+            .: {}
+            f:app.kubernetes.io/instance: {}
+            f:app.kubernetes.io/managed-by: {}
+            f:app.kubernetes.io/name: {}
+            f:kubedb.com/role: {}
+    manager: mariadb-operator
     operation: Update
-    time: "2020-08-25T05:53:27Z"
-  ...
-  name: kubedb-demo-coreos-prom-mysql
+    time: "2021-03-19T10:09:03Z"
+  name: coreos-prom-md-stats
   namespace: demo
   ownerReferences:
   - apiVersion: v1
     blockOwnerDeletion: true
     controller: true
     kind: Service
-    name: coreos-prom-mysql-stats
-    uid: cf4ce3ec-a78e-4828-9fee-941c77eb965e
-  resourceVersion: "28659"
-  selfLink: /apis/monitoring.coreos.com/v1/namespaces/demo/servicemonitors/kubedb-demo-coreos-prom-mysql
-  uid: 9cec794a-dfee-49dc-a809-6c9d6faac1df
+    name: coreos-prom-md-stats
+    uid: 08260a99-0984-4d90-bf68-34080ad0ee5b
+  resourceVersion: "241637"
+  selfLink: /apis/monitoring.coreos.com/v1/namespaces/demo/servicemonitors/coreos-prom-md-stats
+  uid: 4f022d98-d2d8-490f-9548-f6367d03ae1f
 spec:
   endpoints:
   - bearerTokenSecret:
@@ -229,20 +259,21 @@ spec:
     honorLabels: true
     interval: 10s
     path: /metrics
-    port: prom-http
+    port: metrics
   namespaceSelector:
     matchNames:
     - demo
   selector:
     matchLabels:
-      app.kubernetes.io/name: mysqls.kubedb.com
-      app.kubernetes.io/instance: coreos-prom-mysql
+      app.kubernetes.io/instance: coreos-prom-md
+      app.kubernetes.io/managed-by: kubedb.com
+      app.kubernetes.io/name: mariadbs.kubedb.com
       kubedb.com/role: stats
 ```
 
-Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in MySQL crd.
+Notice that the `ServiceMonitor` has label `k8s-app: prometheus` that we had specified in MariaDB crd.
 
-Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `coreos-prom-mysql-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
+Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `coreos-prom-md-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
 
 ## Verify Monitoring Metrics
 
@@ -251,7 +282,7 @@ At first, let's find out the respective Prometheus pod for `prometheus` Promethe
 ```bash
 $ kubectl get pod -n default -l=app=prometheus
 NAME                      READY   STATUS    RESTARTS   AGE
-prometheus-prometheus-0   3/3     Running   1          121m
+prometheus-prometheus-0   3/3     Running   1          16m
 ```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
@@ -264,13 +295,13 @@ Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `coreos-prom-mysql-stats` service as one of the targets.
+Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `coreos-prom-md-stats` service as one of the targets.
 
 <p align="center">
-  <img alt="Prometheus Target" src="/docs/images/mysql/monitoring/mysql-coreos-prom-target.png" style="padding:10px">
+  <img alt="Prometheus Target" src="/docs/guides/mariadb/monitoring/prometheus-operator/images/prom-end.png" style="padding:10px">
 </p>
 
-Check the `endpoint` and `service` labels marked by red rectangle. It verifies that the target is our expected database. Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create beautiful dashboard with collected metrics.
+Check the `endpoint` and `service` labels. It verifies that the target is our expected database. Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create beautiful dashboard with collected metrics.
 
 ## Cleaning up
 
@@ -278,24 +309,16 @@ To cleanup the Kubernetes resources created by this tutorial, run following comm
 
 ```bash
 # cleanup database
-kubectl delete -n demo my/coreos-prom-mysql
+kubectl delete mariadb -n demo coreos-prom-md
 
-# cleanup Prometheus resources if exist
-kubectl delete -f https://raw.githubusercontent.com/appscode/third-party-tools/master/monitoring/prometheus/coreos-operator/artifacts/prometheus.yaml
-kubectl delete -f https://raw.githubusercontent.com/appscode/third-party-tools/master/monitoring/prometheus/coreos-operator/artifacts/prometheus-rbac.yaml
+# cleanup Prometheus resources
+kubectl delete -f https://raw.githubusercontent.com/appscode/third-party-tools/master/monitoring/prometheus/operator/artifacts/prometheus.yaml
 
-# cleanup Prometheus operator resources if exist
+kubectl delete -f https://raw.githubusercontent.com/appscode/third-party-tools/master/monitoring/prometheus/operator/artifacts/prometheus-rbac.yaml
+
+# cleanup Prometheus operator resources
 kubectl delete -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/release-0.41/bundle.yaml
 
 # delete namespace
 kubectl delete ns demo
 ```
-
-## Next Steps
-
-- Monitor your MySQL database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md).
-- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).
-- Detail concepts of [MySQLVersion object](/docs/guides/mysql/concepts/catalog/index.md).
-- Initialize [MySQL with Script](/docs/guides/mysql/initialization/index.md).
-- Use [private Docker registry](/docs/guides/mysql/private-registry/index.md) to deploy MySQL with KubeDB.
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
