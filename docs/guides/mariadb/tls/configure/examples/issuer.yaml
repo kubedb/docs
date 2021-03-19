@@ -1,8 +1,8 @@
 apiVersion: cert-manager.io/v1beta1
 kind: Issuer
 metadata:
-  name: mysql-issuer
+  name: md-issuer
   namespace: demo
 spec:
   ca:
-    secretName: my-ca
+    secretName: md-ca
