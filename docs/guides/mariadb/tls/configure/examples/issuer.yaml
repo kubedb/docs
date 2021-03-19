@@ -1,0 +1,8 @@
+apiVersion: cert-manager.io/v1beta1
+kind: Issuer
+metadata:
+  name: md-issuer
+  namespace: demo
+spec:
+  ca:
+    secretName: md-ca
