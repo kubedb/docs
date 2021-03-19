@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: MariaDB
 metadata:
-  name: sample-mariadb
+  name: md-standalone-tls
   namespace: demo
 spec:
   version: "10.5.8"

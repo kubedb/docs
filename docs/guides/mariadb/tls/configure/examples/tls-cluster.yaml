@@ -1,15 +1,11 @@
 apiVersion: kubedb.com/v1alpha2
-kind: MySQL
+kind: MariaDB
 metadata:
-  name: my-group-tls
+  name: md-cluster-tls
   namespace: demo
 spec:
-  version: "8.0.23"
+  version: "10.5.8"
   replicas: 3
-  topology:
-    mode: GroupReplication
-    group:
-      name: "dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -17,13 +13,13 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 1Gi   
   requireSSL: true
   tls:
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
-      name: mysql-issuer
+      name: md-issuer
     certificates:
     - alias: server
       subject:
