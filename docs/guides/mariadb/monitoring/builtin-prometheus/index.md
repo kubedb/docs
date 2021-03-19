@@ -1,10 +1,10 @@
 ---
-title: Monitor MySQL using Builtin Prometheus Discovery
+title: Monitor MariaDB using Builtin Prometheus Discovery
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-monitoring-builtin-prometheus
+    identifier: guides-mariadb-monitoring-builtinprometheus
     name: Builtin Prometheus
-    parent: guides-mysql-monitoring
+    parent: guides-mariadb-monitoring
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Monitoring MySQL with builtin Prometheus
+# Monitoring MariaDB with builtin Prometheus
 
-This tutorial will show you how to monitor MySQL database using builtin [Prometheus](https://github.com/prometheus/prometheus) scraper.
+This tutorial will show you how to monitor MariaDB database using builtin [Prometheus](https://github.com/prometheus/prometheus) scraper.
 
 ## Before You Begin
 
@@ -24,7 +24,7 @@ This tutorial will show you how to monitor MySQL database using builtin [Prometh
 
 - If you are not familiar with how to configure Prometheus to scrape metrics from various Kubernetes resources, please read the tutorial from [here](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/mysql/monitoring/overview/index.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/mariadb/monitoring/overview).
 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
@@ -36,20 +36,20 @@ This tutorial will show you how to monitor MySQL database using builtin [Prometh
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/guides/mysql/monitoring/builtin-prometheus/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/monitoring/builtin-prometheus/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/guides/mariadb/monitoring/builtin-prometheus/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/monitoring/builtin-prometheus/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-## Deploy MySQL with Monitoring Enabled
+## Deploy MariaDB with Monitoring Enabled
 
-At first, let's deploy an MySQL database with monitoring enabled. Below is the MySQL object that we are going to create.
+At first, let's deploy an MariaDB database with monitoring enabled. Below is the MariaDB object that we are going to create.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
-kind: MySQL
+kind: MariaDB
 metadata:
-  name: builtin-prom-mysql
+  name: builtin-prom-md
   namespace: demo
 spec:
-  version: "8.0.23"
+  version: "10.5.8"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -66,52 +66,51 @@ Here,
 
 - `spec.monitor.agent: prometheus.io/builtin` specifies that we are going to monitor this server using builtin Prometheus scraper.
 
-Let's create the MySQL crd we have shown above.
+Let's create the MariaDB crd we have shown above.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/monitoring/builtin-prometheus/yamls/builtin-prom-mysql.yaml
-mysql.kubedb.com/builtin-prom-mysql created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/monitoring/builtin-prometheus/examples/builtin-prom-md.yaml
+mariadb.kubedb.com/builtin-prom-md created
 ```
 
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ watch -n 3 kubectl get mysql -n demo builtin-prom-mysql
-Every 3.0s: kubectl get mysql -n demo builtin-prom-mysql        suaas-appscode: Tue Aug 25 16:07:29 2020
-
-NAME                 VERSION      STATUS    AGE
-builtin-prom-mysql   8.0.21-v1    Running   3m33s
+$ kubectl get mariadb -n demo builtin-prom-md
+NAME              VERSION   STATUS   AGE
+builtin-prom-md   10.5.8    Ready    76s
 ```
 
-KubeDB will create a separate stats service with name `{MySQL crd name}-stats` for monitoring purpose.
+KubeDB will create a separate stats service with name `{MariaDB crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-mysql"
-NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-builtin-prom-mysql         ClusterIP   10.104.141.73   <none>        3306/TCP    4m45s
-builtin-prom-mysql-gvr     ClusterIP   None            <none>        3306/TCP    4m45s
-builtin-prom-mysql-stats   ClusterIP   10.103.209.43   <none>        56790/TCP   2m9s
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-md"
+NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+builtin-prom-md         ClusterIP   10.106.32.194   <none>        3306/TCP    2m3s
+builtin-prom-md-pods    ClusterIP   None            <none>        3306/TCP    2m3s
+builtin-prom-md-stats   ClusterIP   10.109.106.92   <none>        56790/TCP   2m2s
 ```
 
-Here, `builtin-prom-mysql-stats` service has been created for monitoring purpose. Let's describe the service.
+Here, `builtin-prom-md-stats ` service has been created for monitoring purpose. Let's describe the service.
 
 ```bash
-$ kubectl describe svc -n demo builtin-prom-mysql-stats
-Name:              builtin-prom-mysql-stats
+$ kubectl describe svc -n demo builtin-prom-md-stats
+Name:              builtin-prom-md-stats
 Namespace:         demo
-Labels:            app.kubernetes.io/name=mysqls.kubedb.com
-                   app.kubernetes.io/instance=builtin-prom-mysql
+Labels:            app.kubernetes.io/instance=builtin-prom-md
+                   app.kubernetes.io/managed-by=kubedb.com
+                   app.kubernetes.io/name=mariadbs.kubedb.com
                    kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
                    prometheus.io/path: /metrics
                    prometheus.io/port: 56790
                    prometheus.io/scrape: true
-Selector:          app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=builtin-prom-mysql
+Selector:          app.kubernetes.io/instance=builtin-prom-md,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mariadbs.kubedb.com
 Type:              ClusterIP
-IP:                10.103.209.43
-Port:              prom-http  56790/TCP
-TargetPort:        prom-http/TCP
-Endpoints:         10.244.1.5:56790
+IP:                10.109.106.92
+Port:              metrics  56790/TCP
+TargetPort:        metrics/TCP
+Endpoints:         10.244.0.34:56790
 Session Affinity:  None
 Events:            <none>
 ```
@@ -278,7 +277,7 @@ data:
 Let's create above `ConfigMap`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/monitoring/builtin-prometheus/yamls/prom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/monitoring/builtin-prometheus/examples/prom-config.yaml
 configmap/prometheus-config created
 ```
 
@@ -315,7 +314,7 @@ At first, let's check if the Prometheus pod is in `Running` state.
 ```bash
 $ kubectl get pod -n monitoring -l=app=prometheus
 NAME                          READY   STATUS    RESTARTS   AGE
-prometheus-8568c86d86-95zhn   1/1     Running   0          77s
+prometheus-5dff66b455-cz9td   1/1     Running   0          42s
 ```
 
 Now, run following command on a separate terminal to forward 9090 port of `prometheus-8568c86d86-95zhn` pod,
@@ -326,13 +325,13 @@ Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see the endpoint of `builtin-prom-mysql-stats` service as one of the targets.
+Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see the endpoint of `builtin-prom-md-stats` service as one of the targets.
 
 <p align="center">
-  <img alt="Prometheus Target" height="100%" src="/docs/images/mysql/monitoring/mysql-builtin-prom-target.png" style="padding:10px">
+  <img alt="Prometheus Target" height="100%" src="/docs/guides/mariadb/monitoring/builtin-prometheus/images/built-prom.png" style="padding:10px">
 </p>
 
-Check the labels marked with red rectangle. These labels confirm that the metrics are coming from `MySQL` database `builtin-prom-mysql` through stats service `builtin-prom-mysql-stats`.
+Check the labels marked with red rectangle. These labels confirm that the metrics are coming from `MariaDB` database `builtin-prom-md` through stats service `builtin-prom-md-stats`.
 
 Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create beautiful dashboard with collected metrics.
 
@@ -341,7 +340,7 @@ Now, you can view the collected metrics and create a graph from homepage of this
 To cleanup the Kubernetes resources created by this tutorial, run following commands
 
 ```bash
-kubectl delete -n demo my/builtin-prom-mysql
+kubectl delete mariadb -n demo builtin-prom-md
 
 kubectl delete -n monitoring deployment.apps/prometheus
 
@@ -352,9 +351,3 @@ kubectl delete -n monitoring clusterrolebinding.rbac.authorization.k8s.io/promet
 kubectl delete ns demo
 kubectl delete ns monitoring
 ```
-
-## Next Steps
-
-- Monitor your MySQL database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
-- Use [private Docker registry](/docs/guides/mysql/private-registry/index.md) to deploy MySQL with KubeDB.
-- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

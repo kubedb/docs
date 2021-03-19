@@ -1,10 +1,10 @@
 apiVersion: kubedb.com/v1alpha2
-kind: MySQL
+kind: MariaDB
 metadata:
-  name: builtin-prom-mysql
+  name: builtin-prom-md
   namespace: demo
 spec:
-  version: "8.0.21-v1"
+  version: "10.5.8"
   terminationPolicy: WipeOut
   storage:
     storageClassName: "standard"
