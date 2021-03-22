@@ -12,7 +12,7 @@ spec:
         trigger: "On"
         podLifeTimeThreshold: 5m
         minAllowed:
-          cpu: .4
+          cpu: ".4"
           memory: 500Mi
         maxAllowed:
           cpu: 2
