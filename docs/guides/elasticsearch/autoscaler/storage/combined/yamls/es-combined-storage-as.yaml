@@ -1,0 +1,13 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: ElasticsearchAutoscaler
+metadata:
+  name: es-combined-storage-as
+  namespace: demo
+spec:
+  databaseRef:
+    name: es-combined
+  storage:
+    node:
+      trigger: "On"
+      usageThreshold: 60
+      scalingThreshold: 50

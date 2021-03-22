@@ -14,9 +14,9 @@ section_menu_id: guides
 
 {{< notice type="warning" message="This is an Enterprise-only feature. Please install [KubeDB Enterprise Edition](/docs/setup/install/enterprise.md) to try this feature." >}}
 
-# Elasticsearch Vertical Autoscaling
+# Elasticsearch Storange Autoscaling
 
-This guide will give an overview on how KubeDB Autoscaler operator autoscales the database storage using `elasticsearchautoscaler` crd.
+This guide will give an overview on how KubeDB Autoscaler operator autoscales the Elasticsearch storage using `elasticsearchautoscaler` crd.
 
 ## Before You Begin
 
@@ -37,7 +37,7 @@ The Auto Scaling process consists of the following steps:
 
 4. Each StatefulSet creates a Persistent Volume according to the Volume Claim Template provided in the statefulset configuration. This Persistent Volume will be expanded by the `KubeDB` Enterprise operator.
 
-5. Then, in order to set up storage autoscaling of the various nodes (ie. master, data, ingest, etc.) of the `Elasticsearch` cluster the user creates a `ElasticsearchAutoscaler` CRO with the desired configuration.
+5. Then, to set up storage autoscaling of the various nodes (ie. master, data, ingest, etc.) of the `Elasticsearch` cluster the user creates a `ElasticsearchAutoscaler` CRO with the desired configuration.
 
 6. `KubeDB` Autoscaler operator watches the `ElasticsearchAutoscaler` CRO.
 
