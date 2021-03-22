@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: es-auto-scaling
     name: Autoscaling
-    parent: es-mongodb-guides
-    weight: 35
+    parent: es-elasticsearch-guides
+    weight: 44
 menu_name: docs_{{ .version }}
 ---
