@@ -23,6 +23,12 @@ jobs:
         with:
           node-version: 14.x
 
+      - name: Install yq
+        run: |
+          curl -fsSL -o yq https://github.com/mikefarah/yq/releases/download/3.3.0/yq_linux_amd64
+          chmod +x yq
+          sudo mv yq /usr/local/bin/yq
+
       - name: Install Hugo
         run: |
           curl -fsSL -o hugo_extended.deb https://github.com/gohugoio/hugo/releases/download/v0.71.1/hugo_extended_0.71.1_Linux-64bit.deb
