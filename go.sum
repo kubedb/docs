@@ -1050,10 +1050,12 @@ github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9de
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/ziutek/mymysql v1.5.4 h1:GB0qdRGsTwQSBVYuVShFBKaXSnSnYYC2d9knnE1LHFs=
 github.com/ziutek/mymysql v1.5.4/go.mod h1:LMSpPZ6DbqWFxNCHW77HeMg9I646SAhApZ/wKdgO/C0=
-go.bytebuilders.dev/license-verifier v0.7.0 h1:4yECFKjyji+40zNUA9jiW4pC2C0k8YOHy2cHCZVb22Y=
 go.bytebuilders.dev/license-verifier v0.7.0/go.mod h1:N7fJxdaBJQ9seOGFg+trJQ3eWwy/ga6YZi0wlvdDQi0=
-go.bytebuilders.dev/license-verifier/kubernetes v0.7.0 h1:58gla1SvxreTnburXGlbKl13Is3IN62eQM4JPmXqDoo=
+go.bytebuilders.dev/license-verifier v0.7.1 h1:ea2HO0Qfu/Li6lR5ZFs0E0uPDwFW4NZGszX5NSRhLio=
+go.bytebuilders.dev/license-verifier v0.7.1/go.mod h1:N7fJxdaBJQ9seOGFg+trJQ3eWwy/ga6YZi0wlvdDQi0=
 go.bytebuilders.dev/license-verifier/kubernetes v0.7.0/go.mod h1:tirEPJlf+upKc6jTEx0486K0Wm0gWuI3aiV+xXmnmSM=
+go.bytebuilders.dev/license-verifier/kubernetes v0.7.1 h1:JogI0Y+MQRIdQd0fH9uFtJuimrOgwThAbl9mfxyF0DM=
+go.bytebuilders.dev/license-verifier/kubernetes v0.7.1/go.mod h1:92LIvidYIGntnkUJJKjRH3s6qdgyiHRZFeBd14Efl3c=
 go.elastic.co/apm v1.5.0/go.mod h1:OdB9sPtM6Vt7oz3VXt7+KR96i9li74qrxBGHTQygFvk=
 go.elastic.co/apm/module/apmhttp v1.5.0/go.mod h1:1FbmNuyD3ddauwzgVwFB0fqY6KbZt3JkV187tGCYYhY=
 go.elastic.co/apm/module/apmot v1.5.0/go.mod h1:d2KYwhJParTpyw2WnTNy8geNlHKKFX+4oK3YLlsesWE=
