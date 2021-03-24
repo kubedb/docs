@@ -14,25 +14,23 @@
 
 SHELL=/bin/bash -o pipefail
 
-CHART_REGISTRY        ?=
-CHART_REGISTRY_URL    ?=
-STASH_VERSION         ?=
-STASH_CATALOG_VERSION ?=
+CHART_REGISTRY     ?=
+CHART_REGISTRY_URL ?=
+STASH_VERSION      ?=
 
 # To test stash integration
 .PHONY: stash-install
 stash-install:
 	helm repo add $(CHART_REGISTRY) $(CHART_REGISTRY_URL); \
 	helm repo update; \
-	helm install stash-operator $(CHART_REGISTRY)/stash --wait \
+	helm install stash $(CHART_REGISTRY)/stash --wait \
 		--version $(STASH_VERSION) \
-		--namespace $(KUBE_NAMESPACE); \
-	kubectl wait --for=condition=Available apiservice -l 'app.kubernetes.io/name=stash,app.kubernetes.io/instance=stash-operator' --timeout=5m
-	curl -fsSL https://github.com/stashed/catalog/raw/$(STASH_CATALOG_VERSION)/deploy/script.sh | bash -s -- --docker-registry=stashed
+		--namespace $(KUBE_NAMESPACE) \
+		--set features.enterprise=true \
+		--set-file license=$(LICENSE_FILE)
 
 .PHONY: stash-uninstall
 stash-uninstall:
-	curl -fsSL https://github.com/stashed/catalog/raw/$(STASH_CATALOG_VERSION)/deploy/script.sh | bash -s -- --uninstall || true
 	helm uninstall stash --namespace=$(KUBE_NAMESPACE) || true
 
 .PHONY: stash-purge
