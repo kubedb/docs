@@ -72,6 +72,7 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.esCtrl.RunControllers(stopCh)
 	c.mcCtrl.RunControllers(stopCh)
 	c.mgCtrl.RunControllers(stopCh)
+	c.mrCtrl.RunControllers(stopCh)
 	c.myCtrl.RunControllers(stopCh)
 	if c.pgbCtrl != nil {
 		c.pgbCtrl.RunControllers(stopCh)
