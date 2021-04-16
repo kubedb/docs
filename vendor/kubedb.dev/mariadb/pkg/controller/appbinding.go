@@ -56,7 +56,7 @@ func (c *Controller) ensureAppBinding(db *api.MariaDB) (kutil.VerbType, error) {
 
 	var caBundle []byte
 	if db.Spec.TLS != nil {
-		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.MustCertSecretName(api.MariaDBArchiverCert), metav1.GetOptions{})
+		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.GetCertSecretName(api.MariaDBArchiverCert), metav1.GetOptions{})
 		if err != nil {
 			return kutil.VerbUnchanged, errors.Wrapf(err, "failed to read certificate secret for MariaDB %s/%s", db.Namespace, db.Name)
 		}

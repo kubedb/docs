@@ -24,9 +24,11 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"gomodules.xyz/version"
+	core "k8s.io/api/core/v1"
+	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
 
-func (c *Controller) getTLSArgs(db *api.MongoDB, mgVersion *v1alpha1.MongoDBVersion) ([]string, error) {
+func (c *Reconciler) getTLSArgs(db *api.MongoDB, mgVersion *v1alpha1.MongoDBVersion) ([]string, error) {
 	var sslArgs []string
 	sslMode := string(db.Spec.SSLMode)
 	breakingVer, err := version.NewVersion("4.2")
@@ -69,4 +71,37 @@ func (c *Controller) getTLSArgs(db *api.MongoDB, mgVersion *v1alpha1.MongoDBVers
 	}
 
 	return sslArgs, nil
+}
+
+func (c *Reconciler) IsCertificateSecretsCreated(db *api.MongoDB) (bool, error) {
+	// wait for certificates
+	if db.Spec.TLS != nil {
+		var secrets []string
+		if db.Spec.ShardTopology != nil {
+			// for config server
+			secrets = append(secrets, db.GetCertSecretName(api.MongoDBServerCert, db.ConfigSvrNodeName()))
+			// for shards
+			for i := 0; i < int(db.Spec.ShardTopology.Shard.Shards); i++ {
+				secrets = append(secrets, db.GetCertSecretName(api.MongoDBServerCert, db.ShardNodeName(int32(i))))
+			}
+			// for mongos
+			secrets = append(secrets, db.GetCertSecretName(api.MongoDBServerCert, db.MongosNodeName()))
+		} else {
+			// ReplicaSet or Standalone
+			secrets = append(secrets, db.GetCertSecretName(api.MongoDBServerCert, ""))
+		}
+		// for stash/user
+		secrets = append(secrets, db.GetCertSecretName(api.MongoDBClientCert, ""))
+		// for prometheus exporter
+		secrets = append(secrets, db.GetCertSecretName(api.MongoDBMetricsExporterCert, ""))
+
+		return dynamic_util.ResourcesExists(
+			c.DynamicClient,
+			core.SchemeGroupVersion.WithResource("secrets"),
+			db.Namespace,
+			secrets...,
+		)
+	}
+
+	return true, nil
 }

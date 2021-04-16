@@ -29,11 +29,9 @@ import (
 	"github.com/pkg/errors"
 	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/wait"
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
@@ -78,9 +76,9 @@ func (c *Controller) create(db *api.Postgres) error {
 			c.DynamicClient,
 			core.SchemeGroupVersion.WithResource("secrets"),
 			db.Namespace,
-			db.MustCertSecretName(api.PostgresServerCert),
-			db.MustCertSecretName(api.PostgresClientCert),
-			db.MustCertSecretName(api.PostgresMetricsExporterCert),
+			db.GetCertSecretName(api.PostgresServerCert),
+			db.GetCertSecretName(api.PostgresClientCert),
+			db.GetCertSecretName(api.PostgresMetricsExporterCert),
 		)
 		if err != nil {
 			return err
@@ -235,7 +233,9 @@ func (c *Controller) ensurePostgresNode(db *api.Postgres, postgresVersion *catal
 	if err := c.ensureDatabaseRBAC(db); err != nil {
 		return kutil.VerbUnchanged, err
 	}
-
+	if err = c.ensureValidUserForPostgreSQL(db); err != nil {
+		return kutil.VerbUnchanged, err
+	}
 	vt, err := c.ensureCombinedNode(db, postgresVersion)
 	if err != nil {
 		return kutil.VerbUnchanged, err
@@ -326,28 +326,6 @@ func (c *Controller) setOwnerReferenceToOffshoots(db *api.Postgres, owner *metav
 	// If TerminationPolicy is "wipeOut", delete snapshots and secrets,
 	// else, keep it intact.
 	if db.Spec.TerminationPolicy == api.TerminationPolicyWipeOut {
-		// at first, pause the database transactions by deleting the statefulsets. otherwise wiping out may not be accurate.
-		// because, while operator is trying to delete the wal data, the database pod may still trying to push new data.
-		policy := metav1.DeletePropagationForeground
-		if err := c.Client.
-			AppsV1().
-			StatefulSets(db.Namespace).
-			DeleteCollection(
-				context.TODO(),
-				metav1.DeleteOptions{PropagationPolicy: &policy},
-				metav1.ListOptions{LabelSelector: selector.String()},
-			); err != nil && !kerr.IsNotFound(err) {
-			return errors.Wrap(err, "error in deletion of statefulsets")
-		}
-		// Let's give statefulsets some time to breath and then be deleted.
-		if err := wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
-			podList, err := c.Client.CoreV1().Pods(db.Namespace).List(context.TODO(), metav1.ListOptions{
-				LabelSelector: selector.String(),
-			})
-			return len(podList.Items) == 0, err
-		}); err != nil {
-			fmt.Printf("got error while waiting for db pods to be deleted: %v. coninuing with further deletion steps.\n", err.Error())
-		}
 		if err := c.wipeOutDatabase(db.ObjectMeta, db.Spec.GetPersistentSecrets(), owner); err != nil {
 			return errors.Wrap(err, "error in wiping out database.")
 		}

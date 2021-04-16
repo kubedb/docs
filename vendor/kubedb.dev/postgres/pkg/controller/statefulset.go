@@ -24,7 +24,6 @@ import (
 
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
-	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
@@ -167,21 +166,6 @@ func (c *Controller) ensureStatefulSet(
 		return kutil.VerbUnchanged, err
 	}
 
-	if vt == kutil.VerbCreated || vt == kutil.VerbPatched {
-		// Check StatefulSet Pod status
-		if err := c.CheckStatefulSetPodStatus(statefulSet); err != nil {
-			return kutil.VerbUnchanged, err
-		}
-
-		c.Recorder.Eventf(
-			db,
-			core.EventTypeNormal,
-			eventer.EventReasonSuccessful,
-			"Successfully %v StatefulSet",
-			vt,
-		)
-	}
-
 	// ensure pdb
 	if err := c.CreateStatefulSetPodDisruptionBudget(statefulSet); err != nil {
 		return vt, err
@@ -189,18 +173,18 @@ func (c *Controller) ensureStatefulSet(
 	return vt, nil
 }
 
-func (c *Controller) CheckStatefulSetPodStatus(statefulSet *apps.StatefulSet) error {
-	err := core_util.WaitUntilPodRunningBySelector(
-		context.TODO(),
-		c.Client,
-		statefulSet.Namespace,
-		statefulSet.Spec.Selector,
-		int(pointer.Int32(statefulSet.Spec.Replicas)),
-	)
-	if err != nil {
-		return err
+func (c *Controller) ensureValidUserForPostgreSQL(db *api.Postgres) error {
+	if db.Spec.PodTemplate.Spec.ContainerSecurityContext != nil &&
+		db.Spec.PodTemplate.Spec.ContainerSecurityContext.RunAsUser != nil &&
+		db.Spec.PodTemplate.Spec.ContainerSecurityContext.RunAsGroup != nil {
+		if pointer.Int64(db.Spec.PodTemplate.Spec.ContainerSecurityContext.RunAsUser) == 0 || pointer.Int64(db.Spec.PodTemplate.Spec.ContainerSecurityContext.RunAsGroup) == 0 {
+			return fmt.Errorf("container's securityContext RunAsUser or RunAsGroup can't be 0")
+		} else {
+			return nil
+		}
+	} else {
+		return fmt.Errorf("container's securityContext RunAsUser or RunAsGroup can't be null")
 	}
-	return nil
 }
 
 func (c *Controller) ensureCombinedNode(db *api.Postgres, postgresVersion *catalog.PostgresVersion) (kutil.VerbType, error) {
@@ -318,7 +302,7 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion 
 		},
 		{
 			Name:  "PG_VERSION",
-			Value: db.Spec.Version,
+			Value: postgresVersion.Spec.Version,
 		},
 		{
 			Name:  "MAJOR_PG_VERSION",
@@ -331,6 +315,14 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion 
 		{
 			Name:  "PV",
 			Value: "/var/pv",
+		},
+		{
+			Name:  "DB_UID",
+			Value: strconv.FormatInt(pointer.Int64(db.Spec.PodTemplate.Spec.ContainerSecurityContext.RunAsUser), 10),
+		},
+		{
+			Name:  "DB_GID",
+			Value: strconv.FormatInt(pointer.Int64(db.Spec.PodTemplate.Spec.ContainerSecurityContext.RunAsGroup), 10),
 		},
 		{
 			Name:  "PGDATA",
@@ -903,7 +895,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, db *api.Postgres) *apps.StatefulSet 
 		Name: serverTlsVolumeName,
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
-				SecretName: db.MustCertSecretName(api.PostgresServerCert),
+				SecretName: db.GetCertSecretName(api.PostgresServerCert),
 				Items: []core.KeyToPath{
 					{
 						Key:  TLS_CA_CERT,
@@ -925,7 +917,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, db *api.Postgres) *apps.StatefulSet 
 		Name: clientTlsVolumeName,
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
-				SecretName: db.MustCertSecretName(api.PostgresClientCert),
+				SecretName: db.GetCertSecretName(api.PostgresClientCert),
 				Items: []core.KeyToPath{
 					{
 						Key:  TLS_CA_CERT,
@@ -949,7 +941,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, db *api.Postgres) *apps.StatefulSet 
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
 				DefaultMode: pointer.Int32P(0600),
-				SecretName:  db.MustCertSecretName(api.PostgresMetricsExporterCert),
+				SecretName:  db.GetCertSecretName(api.PostgresMetricsExporterCert),
 				Items: []core.KeyToPath{
 					{
 						Key:  TLS_CA_CERT,
@@ -972,7 +964,7 @@ func upsertTLSVolume(sts *apps.StatefulSet, db *api.Postgres) *apps.StatefulSet 
 		VolumeSource: core.VolumeSource{
 			Secret: &core.SecretVolumeSource{
 				DefaultMode: pointer.Int32P(0600),
-				SecretName:  db.MustCertSecretName(api.PostgresClientCert),
+				SecretName:  db.GetCertSecretName(api.PostgresClientCert),
 				Items: []core.KeyToPath{
 					{
 						Key:  TLS_CA_CERT,

@@ -55,19 +55,19 @@ func (es *Elasticsearch) RequiredCertSecretNames() []string {
 	if !es.db.Spec.DisableSecurity {
 		var sNames []string
 		// transport layer is always secured with certificate
-		sNames = append(sNames, es.db.MustCertSecretName(api.ElasticsearchTransportCert))
+		sNames = append(sNames, es.db.GetCertSecretName(api.ElasticsearchTransportCert))
 
 		// If SSL is enabled for REST layer
 		if es.db.Spec.EnableSSL {
 			// http server certificate
-			sNames = append(sNames, es.db.MustCertSecretName(api.ElasticsearchHTTPCert))
+			sNames = append(sNames, es.db.GetCertSecretName(api.ElasticsearchHTTPCert))
 			// admin certificate
-			sNames = append(sNames, es.db.MustCertSecretName(api.ElasticsearchAdminCert))
+			sNames = append(sNames, es.db.GetCertSecretName(api.ElasticsearchAdminCert))
 			// archiver certificate
-			sNames = append(sNames, es.db.MustCertSecretName(api.ElasticsearchArchiverCert))
+			sNames = append(sNames, es.db.GetCertSecretName(api.ElasticsearchArchiverCert))
 			// metrics exporter certificate, if monitoring is enabled
 			if es.db.Spec.Monitor != nil {
-				sNames = append(sNames, es.db.MustCertSecretName(api.ElasticsearchMetricsExporterCert))
+				sNames = append(sNames, es.db.GetCertSecretName(api.ElasticsearchMetricsExporterCert))
 			}
 		}
 		return sNames

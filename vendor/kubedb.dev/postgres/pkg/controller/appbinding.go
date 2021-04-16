@@ -60,7 +60,7 @@ func (c *Controller) ensureAppBinding(db *api.Postgres, postgresVersion *catalog
 
 	var caBundle []byte
 	if db.Spec.TLS != nil {
-		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.MustCertSecretName(api.PostgresClientCert), metav1.GetOptions{})
+		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.GetCertSecretName(api.PostgresClientCert), metav1.GetOptions{})
 		if err != nil {
 			return kutil.VerbUnchanged, errors.Wrapf(err, "failed to read certificate secret for Postgresql %s/%s", db.Namespace, db.Name)
 		}
@@ -73,7 +73,7 @@ func (c *Controller) ensureAppBinding(db *api.Postgres, postgresVersion *catalog
 
 	clientPEMSecretName := db.Spec.AuthSecret.Name
 	if db.Spec.ClientAuthMode == api.ClientAuthModeCert {
-		clientPEMSecretName = db.MustCertSecretName(api.PostgresClientCert)
+		clientPEMSecretName = db.GetCertSecretName(api.PostgresClientCert)
 	}
 
 	_, vt, err := appcat_util.CreateOrPatchAppBinding(

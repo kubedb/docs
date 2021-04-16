@@ -48,8 +48,13 @@ func (c *Controller) create(db *api.MongoDB) error {
 		return nil
 	}
 
+	nc := Reconciler{
+		Config:     c.Config,
+		Controller: c.Controller,
+	}
+
 	// create Governing Service
-	if err := c.ensureGoverningService(db); err != nil {
+	if err := nc.EnsureGoverningService(db); err != nil {
 		return fmt.Errorf(`failed to create governing Service for "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
 	}
 
@@ -64,57 +69,26 @@ func (c *Controller) create(db *api.MongoDB) error {
 		return err
 	}
 
-	if err := c.ensureAuthSecret(db); err != nil {
+	if err := nc.ensureAuthSecret(db); err != nil {
 		return err
 	}
 
-	// ensure certificate or keyfile for cluster
-	sslMode := db.Spec.SSLMode
-	if (sslMode != api.SSLModeDisabled && sslMode != "") ||
-		db.Spec.ReplicaSet != nil || db.Spec.ShardTopology != nil {
-		if err := c.ensureKeyFileSecret(db); err != nil {
-			return err
-		}
+	if err := nc.EnsureKeyFileSecret(db); err != nil {
+		return err
 	}
 
-	// wait for certificates
-	if db.Spec.TLS != nil {
-		var secrets []string
-		if db.Spec.ShardTopology != nil {
-			// for config server
-			secrets = append(secrets, db.MustCertSecretName(api.MongoDBServerCert, db.ConfigSvrNodeName()))
-			// for shards
-			for i := 0; i < int(db.Spec.ShardTopology.Shard.Shards); i++ {
-				secrets = append(secrets, db.MustCertSecretName(api.MongoDBServerCert, db.ShardNodeName(int32(i))))
-			}
-			// for mongos
-			secrets = append(secrets, db.MustCertSecretName(api.MongoDBServerCert, db.MongosNodeName()))
-		} else {
-			// ReplicaSet or Standalone
-			secrets = append(secrets, db.MustCertSecretName(api.MongoDBServerCert, ""))
-		}
-		// for stash/user
-		secrets = append(secrets, db.MustCertSecretName(api.MongoDBClientCert, ""))
-		// for prometheus exporter
-		secrets = append(secrets, db.MustCertSecretName(api.MongoDBMetricsExporterCert, ""))
-
-		ok, err := dynamic_util.ResourcesExists(
-			c.DynamicClient,
-			core.SchemeGroupVersion.WithResource("secrets"),
-			db.Namespace,
-			secrets...,
-		)
-		if err != nil {
-			return err
-		}
-		if !ok {
-			log.Infof("wait for all certificate secrets for MongoDB %s/%s", db.Namespace, db.Name)
-			return nil
-		}
+	ok, err := nc.IsCertificateSecretsCreated(db)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		log.Infof("wait for all certificate secrets for MongoDB %s/%s", db.Namespace, db.Name)
+		return nil
 	}
 
 	// ensure database StatefulSet
-	vt2, err := c.ensureMongoDBNode(db)
+
+	vt2, err := nc.Reconcile(db)
 	if err != nil && err != ErrStsNotReady {
 		return err
 	}

@@ -106,28 +106,7 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 			in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
 				in.Spec.Template.Spec.InitContainers,
-				append(
-					[]core.Container{
-						{
-							Name:            "remove-lost-found",
-							Image:           mysqlVersion.Spec.InitContainer.Image,
-							ImagePullPolicy: core.PullIfNotPresent,
-							Command: []string{
-								"rm",
-								"-rf",
-								"/var/lib/mysql/lost+found",
-							},
-							VolumeMounts: []core.VolumeMount{
-								{
-									Name:      "data",
-									MountPath: "/var/lib/mysql",
-								},
-							},
-							Resources: db.Spec.PodTemplate.Spec.Resources,
-						},
-					},
-					db.Spec.PodTemplate.Spec.InitContainers...,
-				),
+				append(getInitContainers(in, mysqlVersion), db.Spec.PodTemplate.Spec.InitContainers...),
 			)
 
 			container := core.Container{
@@ -188,7 +167,7 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, replicationModeDetector)
 
 				container.Command = []string{
-					"peer-finder",
+					"/scripts/peer-finder",
 				}
 
 				userArgs := meta_util.ParseArgumentListToMap(db.Spec.PodTemplate.Spec.Args)
@@ -230,11 +209,22 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 				args := meta_util.BuildArgumentListFromMap(meta_util.OverwriteKeys(recommendedArgs(db, mysqlVersion), userArgs), specArgs)
 				sort.Strings(args)
 
-				container.Args = []string{
-					fmt.Sprintf("-service=%s", db.GoverningServiceName()),
-					"-on-start",
-					strings.Join(append([]string{"/on-start.sh"}, args...), " "),
+				// in peer-finder, we have to form peers either using pod IP or DNS. if podIdentity is set to `IP` then we have to use pod IP from pod status
+				// otherwise, we have to use pod `DNS` using govern service.
+				// That's why we have to pass either `selector` to select IP's of the pod or `service` to find the DNS of the pod.
+				peerFinderArgs := []string{
+					fmt.Sprintf("-address-type=%s", db.Spec.UseAddressType),
 				}
+				if db.Spec.UseAddressType.IsIP() {
+					peerFinderArgs = append(peerFinderArgs, fmt.Sprintf("-selector=%s", labels.Set(db.OffshootSelectors()).String()))
+				} else {
+					peerFinderArgs = append(peerFinderArgs, fmt.Sprintf("-service=%s", db.GoverningServiceName()))
+				}
+
+				container.Args = append(peerFinderArgs,
+					"-on-start",
+					strings.Join(append([]string{"scripts/on-start.sh"}, args...), " "),
+				)
 			}
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, container)
 			in.Spec.Template.Spec.Volumes = []core.Volume{
@@ -297,6 +287,7 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 			}
 			// Set Admin Secret as MYSQL_ROOT_PASSWORD env variable
 			in = upsertEnv(in, db, stsName)
+			in = upsertSharedScriptsVolume(in)
 			in = upsertDataVolume(in, db)
 			in = upsertCustomConfig(in, db)
 
@@ -314,6 +305,7 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 			in.Spec.Template.Spec.PriorityClassName = db.Spec.PodTemplate.Spec.PriorityClassName
 			in.Spec.Template.Spec.Priority = db.Spec.PodTemplate.Spec.Priority
 			in.Spec.Template.Spec.HostNetwork = db.Spec.PodTemplate.Spec.HostNetwork
+			in.Spec.Template.Spec.DNSPolicy = db.Spec.PodTemplate.Spec.DNSPolicy
 			in.Spec.Template.Spec.HostPID = db.Spec.PodTemplate.Spec.HostPID
 			in.Spec.Template.Spec.HostIPC = db.Spec.PodTemplate.Spec.HostIPC
 			in.Spec.Template.Spec.SecurityContext = db.Spec.PodTemplate.Spec.SecurityContext
@@ -321,6 +313,15 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 			in.Spec.UpdateStrategy = apps.StatefulSetUpdateStrategy{
 				Type: apps.OnDeleteStatefulSetStrategyType,
 			}
+
+			// if we use `IP` as podIdentity, we have to set hostNetwork to `True` and
+			// dnsPolicy to `ClusterFirstWithHostNet` for using host IP
+			// https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy
+			if db.Spec.UseAddressType.IsIP() {
+				in.Spec.Template.Spec.HostNetwork = true
+				in.Spec.Template.Spec.DNSPolicy = core.DNSClusterFirstWithHostNet
+			}
+
 			in = upsertUserEnv(in, db)
 
 			// configure tls if configured in DB
@@ -330,6 +331,61 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 
 			return in
 		}, metav1.PatchOptions{})
+}
+
+func getInitContainers(statefulSet *apps.StatefulSet, mysqlVersion *v1alpha1.MySQLVersion) []core.Container {
+	statefulSet.Spec.Template.Spec.InitContainers = core_util.UpsertContainer(
+		statefulSet.Spec.Template.Spec.InitContainers,
+		core.Container{
+			Name:  "mysql-init",
+			Image: mysqlVersion.Spec.InitContainer.Image,
+			VolumeMounts: []core.VolumeMount{
+				{
+					Name:      "data",
+					MountPath: "/var/lib/mysql",
+				},
+			},
+		})
+	return statefulSet.Spec.Template.Spec.InitContainers
+}
+
+func upsertSharedScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularMySQL {
+			configVolumeMount := core.VolumeMount{
+				Name:      "init-scripts",
+				MountPath: "/scripts",
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+		}
+	}
+	for i, initContainer := range statefulSet.Spec.Template.Spec.InitContainers {
+		if initContainer.Name == "mysql-init" {
+			configVolumeMount := core.VolumeMount{
+				Name:      "init-scripts",
+				MountPath: "/scripts",
+			}
+			volumeMounts := initContainer.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.InitContainers[i].VolumeMounts = volumeMounts
+
+		}
+	}
+
+	configVolume := core.Volume{
+		Name: "init-scripts",
+		VolumeSource: core.VolumeSource{
+			EmptyDir: &core.EmptyDirVolumeSource{},
+		},
+	}
+
+	volumes := statefulSet.Spec.Template.Spec.Volumes
+	volumes = core_util.UpsertVolume(volumes, configVolume)
+	statefulSet.Spec.Template.Spec.Volumes = volumes
+	return statefulSet
 }
 
 func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.StatefulSet {
@@ -439,6 +495,14 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.MySQL, stsName string) *ap
 					{
 						Name:  "DB_NAME",
 						Value: db.GetName(),
+					},
+					{
+						Name: "POD_IP",
+						ValueFrom: &core.EnvVarSource{
+							FieldRef: &core.ObjectFieldSelector{
+								FieldPath: "status.podIP",
+							},
+						},
 					},
 				}...)
 			}

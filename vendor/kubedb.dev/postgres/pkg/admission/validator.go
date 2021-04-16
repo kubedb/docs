@@ -22,12 +22,14 @@ import (
 	"strings"
 	"sync"
 
+	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
 	"github.com/pkg/errors"
+	"gomodules.xyz/pointer"
 	"gomodules.xyz/sets"
 	"gomodules.xyz/version"
 	admission "k8s.io/api/admission/v1beta1"
@@ -125,7 +127,11 @@ func (a *PostgresValidator) Admit(req *admission.AdmissionRequest) *admission.Ad
 
 			postgres := obj.(*api.Postgres).DeepCopy()
 			oldPostgres := oldObject.(*api.Postgres).DeepCopy()
-			oldPostgres.SetDefaults(a.ClusterTopology)
+			postgresVersion, err := a.extClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), oldPostgres.Spec.Version, metav1.GetOptions{})
+			if err != nil {
+				return hookapi.StatusBadRequest(errors.Wrapf(err, "failed to get PostgresVersion: %s", oldPostgres.Spec.Version))
+			}
+			oldPostgres.SetDefaults(postgresVersion, a.ClusterTopology)
 			// Allow changing Database Secret only if there was no secret have set up yet.
 			if oldPostgres.Spec.AuthSecret == nil {
 				oldPostgres.Spec.AuthSecret = postgres.Spec.AuthSecret
@@ -198,20 +204,9 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 			return err
 		}
 	}
-
-	if (postgres.Spec.ClientAuthMode == api.ClientAuthModeCert) &&
-		(postgres.Spec.SSLMode == api.PostgresSSLModeDisable) {
-		return fmt.Errorf("can't have %v set to postgres.spec.sslMode when postgres.spec.ClientAuthMode is set to %v",
-			postgres.Spec.SSLMode, postgres.Spec.ClientAuthMode)
-	}
-	if (postgres.Spec.TLS != nil) &&
-		(postgres.Spec.SSLMode == api.PostgresSSLModeDisable) {
-		return fmt.Errorf("can't have %v set to postgres.spec.sslMode when postgres.spec.TLS is set ",
-			postgres.Spec.SSLMode)
-	}
-	if (postgres.Spec.SSLMode != "" && postgres.Spec.SSLMode != api.PostgresSSLModeDisable) && postgres.Spec.TLS == nil {
-		return fmt.Errorf("can't have %v set to postgres.Spec.SSLMode when postgres.Spec.TLS is null",
-			postgres.Spec.SSLMode)
+	err = validateSpecForDB(postgres, pgVersion)
+	if err != nil {
+		return err
 	}
 
 	databaseSecret := postgres.Spec.AuthSecret
@@ -238,22 +233,6 @@ func ValidatePostgres(client kubernetes.Interface, extClient cs.Interface, postg
 				postgres.Name, postgresVersion.Name, err)
 		}
 	}
-
-	// validate leader election configs
-	// ==============> start
-	lec := postgres.Spec.LeaderElection
-	if lec != nil {
-		if lec.ElectionTick <= lec.HeartbeatTick {
-			return fmt.Errorf("ElectionTick must be greater than HeartbeatTick")
-		}
-		if lec.ElectionTick < 1 {
-			return fmt.Errorf("ElectionTick must be greater than zero")
-		}
-		if lec.HeartbeatTick < 1 {
-			return fmt.Errorf("HeartbeatTick must be greater than zero")
-		}
-	}
-	// end <==============
 
 	if postgres.Spec.TerminationPolicy == "" {
 		return fmt.Errorf(`'spec.terminationPolicy' is missing`)
@@ -333,4 +312,49 @@ func checkScramAuthMethodSupport(v string) (bool, error) {
 		return false, fmt.Errorf("scram auth method is available only for 11 or higher Versions")
 	}
 	return true, nil
+}
+
+func validateSpecForDB(postgres *api.Postgres, pgVersion *v1alpha1.PostgresVersion) error {
+	// need to set the UserID and GroupID
+	if pgVersion.Spec.SecurityContext.RunAsUser != nil &&
+		pointer.Int64(postgres.Spec.PodTemplate.Spec.ContainerSecurityContext.RunAsUser) != pointer.Int64(pgVersion.Spec.SecurityContext.RunAsUser) &&
+		!pgVersion.Spec.SecurityContext.RunAsAnyNonRoot {
+		return fmt.Errorf("can't change ContainerSecurityContext's RunAsUser for this Postgres Version. It has to be the defualt UserID. The default UserID for this Postgres Version is %v but Container's security context UserID is %v", pointer.Int64(pgVersion.Spec.SecurityContext.RunAsUser), pointer.Int64(postgres.Spec.PodTemplate.Spec.ContainerSecurityContext.RunAsUser))
+	}
+	if pgVersion.Spec.SecurityContext.RunAsUser != nil &&
+		pointer.Int64(postgres.Spec.PodTemplate.Spec.ContainerSecurityContext.RunAsGroup) != pointer.Int64(pgVersion.Spec.SecurityContext.RunAsUser) &&
+		!pgVersion.Spec.SecurityContext.RunAsAnyNonRoot {
+		return fmt.Errorf("can't change ContainerSecurityContext's RunAsGroup for this Postgres Version. It has to be the defualt GroupID. The default GroupID for this Postgres Version is %v but Container's security context GroupID is %v", pointer.Int64(pgVersion.Spec.SecurityContext.RunAsUser), pointer.Int64(postgres.Spec.PodTemplate.Spec.ContainerSecurityContext.RunAsGroup))
+	}
+	if (postgres.Spec.ClientAuthMode == api.ClientAuthModeCert) &&
+		(postgres.Spec.SSLMode == api.PostgresSSLModeDisable) {
+		return fmt.Errorf("can't have %v set to postgres.spec.sslMode when postgres.spec.ClientAuthMode is set to %v",
+			postgres.Spec.SSLMode, postgres.Spec.ClientAuthMode)
+	}
+	if (postgres.Spec.TLS != nil) &&
+		(postgres.Spec.SSLMode == api.PostgresSSLModeDisable) {
+		return fmt.Errorf("can't have %v set to postgres.spec.sslMode when postgres.spec.TLS is set ",
+			postgres.Spec.SSLMode)
+	}
+	if (postgres.Spec.SSLMode != "" && postgres.Spec.SSLMode != api.PostgresSSLModeDisable) && postgres.Spec.TLS == nil {
+		return fmt.Errorf("can't have %v set to postgres.Spec.SSLMode when postgres.Spec.TLS is null",
+			postgres.Spec.SSLMode)
+	}
+
+	// validate leader election configs
+	// ==============> start
+	lec := postgres.Spec.LeaderElection
+	if lec != nil {
+		if lec.ElectionTick <= lec.HeartbeatTick {
+			return fmt.Errorf("ElectionTick must be greater than HeartbeatTick")
+		}
+		if lec.ElectionTick < 1 {
+			return fmt.Errorf("ElectionTick must be greater than zero")
+		}
+		if lec.HeartbeatTick < 1 {
+			return fmt.Errorf("HeartbeatTick must be greater than zero")
+		}
+	}
+	// end <==============
+	return nil
 }

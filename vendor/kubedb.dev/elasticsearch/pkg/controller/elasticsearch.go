@@ -24,7 +24,6 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/elasticsearch/pkg/admission"
-	"kubedb.dev/elasticsearch/pkg/distribution"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -61,8 +60,14 @@ func (c *Controller) create(db *api.Elasticsearch) error {
 		return err
 	}
 
+	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
+	if err := c.ensureDatabaseRBAC(db); err != nil {
+		return errors.Wrap(err, "failed to create RBAC role or roleBinding")
+	}
+
 	// ensure database StatefulSet
-	db, vt2, err := c.ensureElasticsearchNode(db)
+	reconciler := NewReconciler(c.Config, c.Controller)
+	db, vt2, err := reconciler.ReconcileNodes(db)
 	if err != nil {
 		return err
 	}
@@ -186,91 +191,6 @@ func (c *Controller) create(db *api.Elasticsearch) error {
 	}
 
 	return nil
-}
-
-func (c *Controller) ensureElasticsearchNode(db *api.Elasticsearch) (*api.Elasticsearch, kutil.VerbType, error) {
-	if db == nil {
-		return nil, kutil.VerbUnchanged, errors.New("Elasticsearch object is empty")
-	}
-
-	elastic, err := distribution.NewElasticsearch(c.Client, c.DBClient, db)
-	if err != nil {
-		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to get elasticsearch distribution")
-	}
-
-	// Create/sync certificate secrets
-	// But if  the tls.issuerRef is set, do nothing (i.e. should be handled from enterprise operator).
-	if err = elastic.EnsureCertSecrets(); err != nil {
-		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to ensure certificates secret")
-	}
-
-	// Create/sync user credential (ie. username, password) secrets
-	if err = elastic.EnsureAuthSecret(); err != nil {
-		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to ensure database credential secret")
-	}
-
-	// Get the cert secret names
-	// List varies depending on the elasticsearch distribution & configuration.
-	sNames := elastic.RequiredCertSecretNames()
-	// Check whether the secrets are available or not.
-	ok, err := dynamic_util.ResourcesExists(
-		c.DynamicClient,
-		core.SchemeGroupVersion.WithResource("secrets"),
-		db.Namespace,
-		sNames...,
-	)
-	if err != nil {
-		return nil, kutil.VerbUnchanged, err
-	}
-	if !ok {
-		// If the certificates are managed by the enterprise operator,
-		// It takes some time for the secrets to get ready.
-		// If any required secret is yet to get ready,
-		// drop the elasticsearch object from work queue (i.e. return nil with no error).
-		// When any secret owned by this elasticsearch object is created/updated,
-		// this elasticsearch object will be enqueued again for processing.
-		log.Infoln(fmt.Sprintf("Required secrets for Elasticsearch: %s/%s are not ready yet", db.Namespace, db.Name))
-		return nil, kutil.VerbUnchanged, nil
-	}
-
-	if err = elastic.EnsureDefaultConfig(); err != nil {
-		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to ensure default configuration for elasticsearch")
-	}
-
-	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
-	if err := c.ensureDatabaseRBAC(elastic.UpdatedElasticsearch()); err != nil {
-		return nil, kutil.VerbUnchanged, errors.Wrap(err, "failed to create RBAC role or roleBinding")
-	}
-
-	vt := kutil.VerbUnchanged
-	topology := elastic.UpdatedElasticsearch().Spec.Topology
-	if topology != nil {
-		vt1, err := elastic.EnsureIngestNodes()
-		if err != nil {
-			return nil, kutil.VerbUnchanged, err
-		}
-		vt2, err := elastic.EnsureMasterNodes()
-		if err != nil {
-			return nil, kutil.VerbUnchanged, err
-		}
-		vt3, err := elastic.EnsureDataNodes()
-		if err != nil {
-			return nil, kutil.VerbUnchanged, err
-		}
-
-		if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated && vt3 == kutil.VerbCreated {
-			vt = kutil.VerbCreated
-		} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched || vt3 == kutil.VerbPatched {
-			vt = kutil.VerbPatched
-		}
-	} else {
-		vt, err = elastic.EnsureCombinedNode()
-		if err != nil {
-			return nil, kutil.VerbUnchanged, err
-		}
-	}
-
-	return elastic.UpdatedElasticsearch(), vt, nil
 }
 
 func (c *Controller) halt(db *api.Elasticsearch) error {

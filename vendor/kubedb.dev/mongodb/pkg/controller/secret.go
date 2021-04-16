@@ -35,7 +35,7 @@ import (
 	meta_util "kmodules.xyz/client-go/meta"
 )
 
-func (c *Controller) ensureAuthSecret(db *api.MongoDB) error {
+func (c *Reconciler) ensureAuthSecret(db *api.MongoDB) error {
 	if db.Spec.AuthSecret == nil {
 		authSecret, err := c.createAuthSecret(db)
 		if err != nil {
@@ -55,7 +55,7 @@ func (c *Controller) ensureAuthSecret(db *api.MongoDB) error {
 	return nil
 }
 
-func (c *Controller) ensureKeyFileSecret(db *api.MongoDB) error {
+func (c *Reconciler) ensureKeyFileSecret(db *api.MongoDB) error {
 	if !db.KeyFileRequired() {
 		return nil
 	}
@@ -103,7 +103,7 @@ func (c *Controller) ensureKeyFileSecret(db *api.MongoDB) error {
 	return nil
 }
 
-func (c *Controller) createAuthSecret(db *api.MongoDB) (*core.LocalObjectReference, error) {
+func (c *Reconciler) createAuthSecret(db *api.MongoDB) (*core.LocalObjectReference, error) {
 	authSecretName := db.Name + api.MongoDBAuthSecretSuffix
 
 	sc, err := c.checkSecret(authSecretName, db)
@@ -131,7 +131,7 @@ func (c *Controller) createAuthSecret(db *api.MongoDB) (*core.LocalObjectReferen
 	}, nil
 }
 
-func (c *Controller) checkSecret(secretName string, db *api.MongoDB) (*core.Secret, error) {
+func (c *Reconciler) checkSecret(secretName string, db *api.MongoDB) (*core.Secret, error) {
 	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
@@ -154,4 +154,17 @@ func (c *Controller) MongoDBForSecret(s *core.Secret) cache.ExplicitKey {
 	}
 	// Owner ref is set by the enterprise operator
 	return cache.ExplicitKey(s.Namespace + "/" + ctrl.Name)
+}
+
+// Ensure keyfile for cluster
+func (c *Reconciler) EnsureKeyFileSecret(db *api.MongoDB) error {
+	sslMode := db.Spec.SSLMode
+	if (sslMode != api.SSLModeDisabled && sslMode != "") ||
+		db.Spec.ReplicaSet != nil || db.Spec.ShardTopology != nil {
+		if err := c.ensureKeyFileSecret(db); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -285,7 +285,7 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 			Name: es.db.CertSecretVolumeName(api.ElasticsearchTransportCert),
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					SecretName: es.db.MustCertSecretName(api.ElasticsearchTransportCert),
+					SecretName: es.db.GetCertSecretName(api.ElasticsearchTransportCert),
 					Items: []core.KeyToPath{
 						{
 							Key:  certlib.CACert,
@@ -310,7 +310,7 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 				Name: es.db.CertSecretVolumeName(api.ElasticsearchHTTPCert),
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
-						SecretName: es.db.MustCertSecretName(api.ElasticsearchHTTPCert),
+						SecretName: es.db.GetCertSecretName(api.ElasticsearchHTTPCert),
 						Items: []core.KeyToPath{
 							{
 								Key:  certlib.CACert,
@@ -341,7 +341,7 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 			Name: es.db.CertSecretVolumeName(api.ElasticsearchMetricsExporterCert),
 			VolumeSource: core.VolumeSource{
 				Secret: &core.SecretVolumeSource{
-					SecretName: es.db.MustCertSecretName(api.ElasticsearchMetricsExporterCert),
+					SecretName: es.db.GetCertSecretName(api.ElasticsearchMetricsExporterCert),
 					Items: []core.KeyToPath{
 						{
 							Key:  certlib.CACert,
