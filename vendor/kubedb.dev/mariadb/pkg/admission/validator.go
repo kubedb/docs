@@ -29,6 +29,7 @@ import (
 
 	"github.com/pkg/errors"
 	"gomodules.xyz/sets"
+	"gomodules.xyz/version"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -206,6 +207,11 @@ func ValidateMariaDB(client kubernetes.Interface, extClient cs.Interface, db *ap
 
 	authSecret := db.Spec.AuthSecret
 
+	dbVersion, err := extClient.CatalogV1alpha1().MariaDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
 	if strictValidation {
 		if authSecret != nil {
 			if _, err := client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{}); err != nil {
@@ -215,11 +221,6 @@ func ValidateMariaDB(client kubernetes.Interface, extClient cs.Interface, db *ap
 
 		// Check if mariadb Version is deprecated.
 		// If deprecated, return error
-		dbVersion, err := extClient.CatalogV1alpha1().MariaDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
-
 		if dbVersion.Spec.Deprecated {
 			return fmt.Errorf("mariadb %s/%s is using deprecated version %v. Skipped processing", db.Namespace, db.Name, dbVersion.Name)
 		}
@@ -243,6 +244,20 @@ func ValidateMariaDB(client kubernetes.Interface, extClient cs.Interface, db *ap
 		if err := amv.ValidateMonitorSpec(monitorSpec); err != nil {
 			return err
 		}
+	}
+
+	curVersion, err := version.NewVersion(dbVersion.Spec.Version)
+	if err != nil {
+		return fmt.Errorf(`unable to parse spec.version`)
+	}
+
+	supportedVersion, err := version.NewVersion("10.5.2")
+	if err != nil {
+		return fmt.Errorf(`unable to parse spec.version`)
+	}
+
+	if db.Spec.RequireSSL && curVersion.LessThan(supportedVersion) {
+		return fmt.Errorf(`requireSSL is not supported for the MariaDDB Versions lower than 10.5.2`)
 	}
 
 	return nil

@@ -50,13 +50,13 @@ func NewElasticsearch(kc kubernetes.Interface, extClient cs.Interface, db *api.E
 		return nil, errors.Wrap(err, fmt.Sprintf("failed to get elasticsearchVersion: %s", v))
 	}
 
-	if esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginXpack {
+	if esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginXpack || esVersion.Spec.Distribution == catalog.ElasticsearchDistroElasticStack {
 		return elastic_stack.New(kc, extClient, db, esVersion), nil
-	} else if esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginOpenDistro {
+	} else if esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginOpenDistro || esVersion.Spec.Distribution == catalog.ElasticsearchDistroOpenDistro {
 		return open_distro.New(kc, extClient, db, esVersion), nil
-	} else if esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginSearchGuard {
+	} else if esVersion.Spec.AuthPlugin == catalog.ElasticsearchAuthPluginSearchGuard || esVersion.Spec.Distribution == catalog.ElasticsearchDistroSearchGuard {
 		return search_guard.New(kc, extClient, db, esVersion), nil
 	} else {
-		return nil, errors.New("Unknown elasticsearch auth plugin")
+		return nil, errors.New("Unknown elasticsearch auth plugin or distribution")
 	}
 }

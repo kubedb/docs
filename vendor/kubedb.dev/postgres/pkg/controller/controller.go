@@ -124,7 +124,7 @@ func (c *Controller) Init() error {
 func (c *Controller) RunControllers(stopCh <-chan struct{}) {
 	// Watch x  CRD objects
 	c.pgQueue.Run(stopCh)
-	// Start MongoDB health checker
+	// Start Postgres health checker
 	c.RunHealthChecker(stopCh)
 }
 

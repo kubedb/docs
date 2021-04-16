@@ -25,6 +25,7 @@ import (
 
 	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/fatih/structs"
@@ -69,7 +70,20 @@ type workloadOptions struct {
 	isMongos       bool
 }
 
-func (c *Controller) ensureMongoDBNode(db *api.MongoDB) (kutil.VerbType, error) {
+type Reconciler struct {
+	amc.Config
+	*amc.Controller
+
+	enableIPv6 bool
+}
+
+func (c *Reconciler) Reconcile(db *api.MongoDB) (kutil.VerbType, error) {
+	var err error
+	c.enableIPv6, err = meta_util.IPv6EnabledInKernel()
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
+
 	// Standalone, replicaset, shard
 	if db.Spec.ShardTopology != nil {
 		return c.ensureTopologyCluster(db)
@@ -78,7 +92,7 @@ func (c *Controller) ensureMongoDBNode(db *api.MongoDB) (kutil.VerbType, error) 
 	return c.ensureNonTopology(db)
 }
 
-func (c *Controller) ensureTopologyCluster(db *api.MongoDB) (kutil.VerbType, error) {
+func (c *Reconciler) ensureTopologyCluster(db *api.MongoDB) (kutil.VerbType, error) {
 	st, vt1, err := c.ensureConfigNode(db)
 	if err != nil {
 		return vt1, err
@@ -133,7 +147,7 @@ func (c *Controller) ensureTopologyCluster(db *api.MongoDB) (kutil.VerbType, err
 	return kutil.VerbUnchanged, nil
 }
 
-func (c *Controller) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kutil.VerbType, error) {
+func (c *Reconciler) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kutil.VerbType, error) {
 	shardSts := func(nodeNum int32) (*apps.StatefulSet, kutil.VerbType, error) {
 		mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 		if err != nil {
@@ -157,13 +171,15 @@ func (c *Controller) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kuti
 		args := []string{
 			"--dbpath=" + api.MongoDBDataDirectoryPath,
 			"--auth",
-			"--ipv6",
 			"--bind_ip_all",
 			"--port=" + strconv.Itoa(api.MongoDBDatabasePort),
 			"--shardsvr",
 			"--replSet=" + db.ShardRepSetName(nodeNum),
 			"--clusterAuthMode=" + string(clusterAuth),
 			"--keyFile=" + api.MongoDBConfigDirectoryPath + "/" + api.MongoDBKeyForKeyFile,
+		}
+		if c.enableIPv6 {
+			args = append(args, "--ipv6")
 		}
 
 		sslArgs, err := c.getTLSArgs(db, mongodbVersion)
@@ -342,7 +358,7 @@ func (c *Controller) ensureShardNode(db *api.MongoDB) ([]*apps.StatefulSet, kuti
 	return sts, vt, nil
 }
 
-func (c *Controller) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil.VerbType, error) {
+func (c *Reconciler) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil.VerbType, error) {
 	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -365,13 +381,15 @@ func (c *Controller) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 	args := []string{
 		"--dbpath=" + api.MongoDBDataDirectoryPath,
 		"--auth",
-		"--ipv6",
 		"--bind_ip_all",
 		"--port=" + strconv.Itoa(api.MongoDBDatabasePort),
 		"--configsvr",
 		"--replSet=" + db.ConfigSvrRepSetName(),
 		"--clusterAuthMode=" + string(clusterAuth),
 		"--keyFile=" + api.MongoDBConfigDirectoryPath + "/" + api.MongoDBKeyForKeyFile,
+	}
+	if c.enableIPv6 {
+		args = append(args, "--ipv6")
 	}
 
 	sslArgs, err := c.getTLSArgs(db, mongodbVersion)
@@ -522,7 +540,7 @@ func (c *Controller) ensureConfigNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 	return c.ensureStatefulSet(db, opts)
 }
 
-func (c *Controller) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) {
+func (c *Reconciler) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) {
 	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
@@ -549,9 +567,11 @@ func (c *Controller) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 	args := []string{
 		"--dbpath=" + api.MongoDBDataDirectoryPath,
 		"--auth",
-		"--ipv6",
 		"--bind_ip_all",
 		"--port=" + strconv.Itoa(api.MongoDBDatabasePort),
+	}
+	if c.enableIPv6 {
+		args = append(args, "--ipv6")
 	}
 
 	sslArgs, err := c.getTLSArgs(db, mongodbVersion)
@@ -750,7 +770,7 @@ func (c *Controller) ensureNonTopology(db *api.MongoDB) (kutil.VerbType, error) 
 	return vt, err
 }
 
-func (c *Controller) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*apps.StatefulSet, kutil.VerbType, error) {
+func (c *Reconciler) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*apps.StatefulSet, kutil.VerbType, error) {
 	// Take value of podTemplate
 	var pt ofst.PodTemplateSpec
 	if opts.podTemplate != nil {
@@ -906,7 +926,7 @@ func (c *Controller) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 	return statefulSet, vt, nil
 }
 
-func (c *Controller) checkStatefulSet(db *api.MongoDB, stsName string) error {
+func (c *Reconciler) checkStatefulSet(db *api.MongoDB, stsName string) error {
 	// StatefulSet for MongoDB database
 	statefulSet, err := c.Client.AppsV1().StatefulSets(db.Namespace).Get(context.TODO(), stsName, metav1.GetOptions{})
 	if err != nil {
@@ -1017,7 +1037,7 @@ func installInitContainer(
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
 						DefaultMode: pointer.Int32P(0400),
-						SecretName:  db.MustCertSecretName(api.MongoDBClientCert, ""),
+						SecretName:  db.GetCertSecretName(api.MongoDBClientCert, ""),
 					},
 				},
 			},
@@ -1026,7 +1046,7 @@ func installInitContainer(
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
 						DefaultMode: pointer.Int32P(0400),
-						SecretName:  db.MustCertSecretName(api.MongoDBServerCert, stsName),
+						SecretName:  db.GetCertSecretName(api.MongoDBServerCert, stsName),
 					},
 				},
 			},

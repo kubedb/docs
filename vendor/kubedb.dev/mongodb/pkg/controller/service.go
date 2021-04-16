@@ -170,7 +170,7 @@ func (c *Controller) ensureStatsService(db *api.MongoDB) (kutil.VerbType, error)
 	return vt, nil
 }
 
-func (c *Controller) ensureGoverningService(db *api.MongoDB) error {
+func (c *Reconciler) EnsureGoverningService(db *api.MongoDB) error {
 	owner := metav1.NewControllerRef(db, api.SchemeGroupVersion.WithKind(api.ResourceKindMongoDB))
 
 	svcFunc := func(svcName string, labels, selectors map[string]string) error {

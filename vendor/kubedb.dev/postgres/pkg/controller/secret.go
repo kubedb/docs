@@ -154,9 +154,9 @@ func (c *Controller) PostgresForSecret(s *core.Secret) cache.ExplicitKey {
 func (c *Controller) GetPostgresSecrets(db *api.Postgres) []string {
 	if db.Spec.TLS != nil {
 		return []string{
-			db.MustCertSecretName(api.PostgresServerCert),
-			db.MustCertSecretName(api.PostgresClientCert),
-			db.MustCertSecretName(api.PostgresMetricsExporterCert),
+			db.GetCertSecretName(api.PostgresServerCert),
+			db.GetCertSecretName(api.PostgresClientCert),
+			db.GetCertSecretName(api.PostgresMetricsExporterCert),
 		}
 	}
 	return nil

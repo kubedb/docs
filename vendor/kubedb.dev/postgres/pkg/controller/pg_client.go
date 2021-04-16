@@ -44,7 +44,7 @@ func (c *Controller) GetPostgresClient(db *api.Postgres, dnsName string, port in
 		sslMode = "require"
 	}
 	if db.Spec.TLS != nil {
-		secretName := db.MustCertSecretName(api.PostgresClientCert)
+		secretName := db.GetCertSecretName(api.PostgresClientCert)
 
 		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 

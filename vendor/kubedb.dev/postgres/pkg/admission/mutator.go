@@ -17,6 +17,7 @@ limitations under the License.
 package admission
 
 import (
+	"context"
 	"sync"
 
 	"kubedb.dev/apimachinery/apis/kubedb"
@@ -26,6 +27,7 @@ import (
 	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
 	admission "k8s.io/api/admission/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
@@ -92,7 +94,7 @@ func (a *PostgresMutator) Admit(req *admission.AdmissionRequest) *admission.Admi
 	if err != nil {
 		return hookapi.StatusBadRequest(err)
 	}
-	dbMod, err := setDefaultValues(obj.(*api.Postgres).DeepCopy(), a.ClusterTopology)
+	dbMod, err := setDefaultValues(a.dbClient, obj.(*api.Postgres).DeepCopy(), a.ClusterTopology)
 	if err != nil {
 		return hookapi.StatusForbidden(err)
 	} else if dbMod != nil {
@@ -110,22 +112,26 @@ func (a *PostgresMutator) Admit(req *admission.AdmissionRequest) *admission.Admi
 }
 
 // setDefaultValues provides the defaulting that is performed in mutating stage of creating/updating a Postgres database
-func setDefaultValues(postgres *api.Postgres, ClusterTopology *core_util.Topology) (runtime.Object, error) {
-	if postgres.Spec.Version == "" {
+func setDefaultValues(dbClient cs.Interface, db *api.Postgres, ClusterTopology *core_util.Topology) (runtime.Object, error) {
+	if db.Spec.Version == "" {
 		return nil, errors.New(`'spec.version' is missing`)
 	}
 
-	if postgres.Spec.Halted {
-		if postgres.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
+	if db.Spec.Halted {
+		if db.Spec.TerminationPolicy == api.TerminationPolicyDoNotTerminate {
 			return nil, errors.New(`Can't halt, since termination policy is 'DoNotTerminate'`)
 		}
-		postgres.Spec.TerminationPolicy = api.TerminationPolicyHalt
+		db.Spec.TerminationPolicy = api.TerminationPolicyHalt
 	}
 
-	if postgres.Spec.Replicas == nil {
-		postgres.Spec.Replicas = pointer.Int32P(1)
+	if db.Spec.Replicas == nil {
+		db.Spec.Replicas = pointer.Int32P(1)
 	}
-	postgres.SetDefaults(ClusterTopology)
+	postgresVersion, err := dbClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), db.Spec.Version, metav1.GetOptions{})
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to get PostgresVersion: %s", db.Spec.Version)
+	}
+	db.SetDefaults(postgresVersion, ClusterTopology)
 
-	return postgres, nil
+	return db, nil
 }

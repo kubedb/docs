@@ -42,6 +42,7 @@ import (
 	ab "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	sapis "stash.appscode.dev/apimachinery/apis"
 	"stash.appscode.dev/apimachinery/apis/stash"
+	"stash.appscode.dev/apimachinery/apis/stash/v1alpha1"
 	"stash.appscode.dev/apimachinery/apis/stash/v1beta1"
 	"stash.appscode.dev/apimachinery/pkg/invoker"
 )
@@ -206,13 +207,21 @@ func getTargetPhase(status v1beta1.RestoreBatchStatus, target *v1beta1.RestoreTa
 	return status.Phase
 }
 
-// waitUntilStashInstalled waits for Controller to be installed. It check whether Controller has been installed or not by querying RestoreSession crd.
-// It either waits until RestoreSession crd exists or throws error otherwise
+// waitUntilStashInstalled waits for Stash operator to be installed. It check whether all the CRDs that are necessary for backup KubeDB database,
+// is present in the cluster or not. It wait until all the CRDs are found.
 func (c *Controller) waitUntilStashInstalled(stopCh <-chan struct{}) error {
 	log.Infoln("Looking for the Stash operator.......")
 	return wait.PollImmediateUntil(time.Second*10, func() (bool, error) {
-		return discovery.ExistsGroupKind(c.Client.Discovery(), stash.GroupName, v1beta1.ResourceKindRestoreSession) ||
-			discovery.ExistsGroupKind(c.Client.Discovery(), stash.GroupName, v1beta1.ResourceKindRestoreBatch), nil
+		return discovery.ExistsGroupKinds(c.Client.Discovery(),
+			schema.GroupKind{Group: stash.GroupName, Kind: v1alpha1.ResourceKindRepository},
+			schema.GroupKind{Group: stash.GroupName, Kind: v1beta1.ResourceKindBackupConfiguration},
+			schema.GroupKind{Group: stash.GroupName, Kind: v1beta1.ResourceKindBackupSession},
+			schema.GroupKind{Group: stash.GroupName, Kind: v1beta1.ResourceKindBackupBlueprint},
+			schema.GroupKind{Group: stash.GroupName, Kind: v1beta1.ResourceKindRestoreSession},
+			schema.GroupKind{Group: stash.GroupName, Kind: v1beta1.ResourceKindRestoreBatch},
+			schema.GroupKind{Group: stash.GroupName, Kind: v1beta1.ResourceKindTask},
+			schema.GroupKind{Group: stash.GroupName, Kind: v1beta1.ResourceKindFunction},
+		), nil
 	}, stopCh)
 }
 

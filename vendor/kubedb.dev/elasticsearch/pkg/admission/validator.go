@@ -22,6 +22,7 @@ import (
 	"strings"
 	"sync"
 
+	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
@@ -154,7 +155,8 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 	if db.Spec.Version == "" {
 		return errors.New(`'spec.version' is missing`)
 	}
-	if _, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{}); err != nil {
+	esVersion, err := extClient.CatalogV1alpha1().ElasticsearchVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	if err != nil {
 		return err
 	}
 
@@ -286,6 +288,10 @@ func ValidateElasticsearch(client kubernetes.Interface, extClient cs.Interface, 
 		}
 	}
 
+	if err = validateContainerSecurityContext(db.Spec.PodTemplate.Spec.ContainerSecurityContext, esVersion); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -337,4 +343,32 @@ func preconditionFailedError() error {
 	kind
 	name
 	namespace`, strList}, "\n\t"))
+}
+
+func validateContainerSecurityContext(sc *core.SecurityContext, esVersion *catalog.ElasticsearchVersion) error {
+	if sc == nil {
+		return nil
+	}
+
+	// if RunAsAnyNonRoot == false
+	//		only allow default UID (runAsUser)
+	// else
+	//		allow any UID but root (0)
+	if !esVersion.Spec.SecurityContext.RunAsAnyNonRoot {
+		// if default RunAsUser is missing, user isn't allowed to user RunAsUser.
+		if esVersion.Spec.SecurityContext.RunAsUser == nil && sc.RunAsUser != nil {
+			return fmt.Errorf("not allowed to set containerSecurityContext.runAsUser for ElasticsearchVersion: %s", esVersion.Name)
+		}
+		// if default RunAsUser is set, validate it.
+		if sc.RunAsUser != nil && esVersion.Spec.SecurityContext.RunAsUser != nil &&
+			*sc.RunAsUser != *esVersion.Spec.SecurityContext.RunAsUser {
+			return fmt.Errorf("containerSecurityContext.runAsUser must be %d for ElasticsearchVersion: %s", *esVersion.Spec.SecurityContext.RunAsUser, esVersion.Name)
+		}
+	} else {
+		if sc.RunAsUser != nil && *sc.RunAsUser == 0 {
+			return fmt.Errorf("not allowed to set containerSecurityContext.runAsUser to root (0) for ElasticsearchVersion: %s", esVersion.Name)
+		}
+	}
+
+	return nil
 }

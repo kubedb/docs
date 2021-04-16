@@ -461,7 +461,7 @@ func (c *Controller) getMariaDBClient(db *api.MariaDB, dns string, port int32) (
 
 	tlsConfig := ""
 	if db.Spec.TLS != nil {
-		serverSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.MustCertSecretName(api.MariaDBServerCert), metav1.GetOptions{})
+		serverSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.GetCertSecretName(api.MariaDBServerCert), metav1.GetOptions{})
 		if err != nil {
 			return nil, err
 		}

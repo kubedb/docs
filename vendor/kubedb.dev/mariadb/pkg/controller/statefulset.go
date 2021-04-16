@@ -65,7 +65,8 @@ func (c *Controller) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 			in.Spec.Template.Annotations = db.Spec.PodTemplate.Annotations
 			in.Spec.Template.Spec.InitContainers = core_util.UpsertContainers(
 				in.Spec.Template.Spec.InitContainers,
-				append(lostAndFoundCleaner(db, dbVersion), db.Spec.PodTemplate.Spec.InitContainers...),
+				append(getInitContainers(in, dbVersion), db.Spec.PodTemplate.Spec.InitContainers...),
+				//append(lostAndFoundCleaner(db, dbVersion), db.Spec.PodTemplate.Spec.InitContainers...),
 			)
 			in.Spec.Template.Spec.Containers = core_util.UpsertContainer(
 				in.Spec.Template.Spec.Containers,
@@ -81,6 +82,7 @@ func (c *Controller) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 			in.Spec.Template.Spec.Volumes = core_util.UpsertVolume(in.Spec.Template.Spec.Volumes, initScriptVolume(db)...)
 			in = upsertEnv(in, db)
 			in = upsertVolumes(in, db)
+			in = upsertSharedScriptsVolume(in)
 
 			if db.Spec.ConfigSecret != nil {
 				in.Spec.Template = upsertCustomConfig(in.Spec.Template, db.Spec.ConfigSecret)
@@ -161,28 +163,45 @@ func upsertCustomConfig(
 	return template
 }
 
-func lostAndFoundCleaner(db *api.MariaDB, dbVersion *v1alpha1.MariaDBVersion) []core.Container {
-	return []core.Container{
-		{
-			Name:            "remove-lost-found",
+func getInitContainers(statefulSet *apps.StatefulSet, dbVersion *v1alpha1.MariaDBVersion) []core.Container {
+	statefulSet.Spec.Template.Spec.InitContainers = core_util.UpsertContainer(
+		statefulSet.Spec.Template.Spec.InitContainers,
+		core.Container{
+			Name:            "mariadb-init",
 			Image:           dbVersion.Spec.InitContainer.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
-			Command: []string{
-				"rm",
-				"-rf",
-				"/var/lib/mysql/lost+found",
-			},
 			VolumeMounts: []core.VolumeMount{
 				{
 					Name:      "data",
-					MountPath: api.MariaDBDataMountPath,
+					MountPath: "/var/lib/mysql",
 				},
 			},
-			Resources: db.Spec.PodTemplate.Spec.Resources,
-		},
-	}
-
+		})
+	return statefulSet.Spec.Template.Spec.InitContainers
 }
+
+//func lostAndFoundCleaner(db *api.MariaDB, dbVersion *v1alpha1.MariaDBVersion) []core.Container {
+//	return []core.Container{
+//		{
+//			Name:            "remove-lost-found",
+//			Image:           dbVersion.Spec.InitContainer.Image,
+//			ImagePullPolicy: core.PullIfNotPresent,
+//			Command: []string{
+//				"rm",
+//				"-rf",
+//				"/var/lib/mysql/lost+found",
+//			},
+//			VolumeMounts: []core.VolumeMount{
+//				{
+//					Name:      "data",
+//					MountPath: api.MariaDBDataMountPath,
+//				},
+//			},
+//			Resources: db.Spec.PodTemplate.Spec.Resources,
+//		},
+//	}
+//
+//}
 
 func mariaDBContainer(db *api.MariaDB, dbVersion *v1alpha1.MariaDBVersion) core.Container {
 	return core.Container{
@@ -281,7 +300,7 @@ func getArgsForMariaDBContainer(db *api.MariaDB) []string {
 			fmt.Sprintf("-service=%s", db.GoverningServiceName()),
 			"-on-start",
 		}
-		tempArgs = append(tempArgs, "/on-start.sh")
+		tempArgs = append(tempArgs, "scripts/on-start.sh")
 	}
 	// adding user provided arguments
 	tempArgs = append(tempArgs, db.Spec.PodTemplate.Spec.Args...)
@@ -304,7 +323,7 @@ func getCmdsForMariaDBContainer(db *api.MariaDB) []string {
 	var cmds []string
 	if db.IsCluster() {
 		cmds = []string{
-			"peer-finder",
+			"/scripts/peer-finder",
 		}
 	}
 	return cmds
@@ -399,7 +418,7 @@ func upsertVolumes(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.Statefu
 					Name: "tls-server-config",
 					VolumeSource: core.VolumeSource{
 						Secret: &core.SecretVolumeSource{
-							SecretName: db.MustCertSecretName(api.MariaDBServerCert),
+							SecretName: db.GetCertSecretName(api.MariaDBServerCert),
 							Items: []core.KeyToPath{
 								{
 									Key:  "ca.crt",
@@ -421,7 +440,7 @@ func upsertVolumes(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.Statefu
 					Name: "tls-client-config",
 					VolumeSource: core.VolumeSource{
 						Secret: &core.SecretVolumeSource{
-							SecretName: db.MustCertSecretName(api.MariaDBArchiverCert),
+							SecretName: db.GetCertSecretName(api.MariaDBArchiverCert),
 							Items: []core.KeyToPath{
 								{
 									Key:  "ca.crt",
@@ -443,7 +462,7 @@ func upsertVolumes(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.Statefu
 					Name: "tls-exporter-config",
 					VolumeSource: core.VolumeSource{
 						Secret: &core.SecretVolumeSource{
-							SecretName: db.MustCertSecretName(api.MariaDBMetricsExporterCert),
+							SecretName: db.GetCertSecretName(api.MariaDBMetricsExporterCert),
 							Items: []core.KeyToPath{
 								{
 									Key:  "ca.crt",
@@ -510,6 +529,45 @@ func upsertVolumes(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.Statefu
 	return statefulSet
 }
 
+func upsertSharedScriptsVolume(statefulSet *apps.StatefulSet) *apps.StatefulSet {
+	for i, container := range statefulSet.Spec.Template.Spec.Containers {
+		if container.Name == api.ResourceSingularMariaDB {
+			configVolumeMount := core.VolumeMount{
+				Name:      "init-scripts",
+				MountPath: "/scripts",
+			}
+			volumeMounts := container.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = volumeMounts
+
+		}
+	}
+	for i, initContainer := range statefulSet.Spec.Template.Spec.InitContainers {
+		if initContainer.Name == "mariadb-init" {
+			configVolumeMount := core.VolumeMount{
+				Name:      "init-scripts",
+				MountPath: "/scripts",
+			}
+			volumeMounts := initContainer.VolumeMounts
+			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
+			statefulSet.Spec.Template.Spec.InitContainers[i].VolumeMounts = volumeMounts
+
+		}
+	}
+
+	configVolume := core.Volume{
+		Name: "init-scripts",
+		VolumeSource: core.VolumeSource{
+			EmptyDir: &core.EmptyDirVolumeSource{},
+		},
+	}
+
+	volumes := statefulSet.Spec.Template.Spec.Volumes
+	volumes = core_util.UpsertVolume(volumes, configVolume)
+	statefulSet.Spec.Template.Spec.Volumes = volumes
+	return statefulSet
+}
+
 // upsertUserEnv add/overwrite env from user provided env in crd spec
 func upsertEnv(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.StatefulSet {
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
@@ -537,6 +595,19 @@ func upsertEnv(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.StatefulSet
 						},
 					},
 				},
+			}
+
+			if container.Name == api.ResourceSingularMariaDB {
+				envs = append(envs, []core.EnvVar{
+					{
+						Name: "POD_IP",
+						ValueFrom: &core.EnvVarSource{
+							FieldRef: &core.ObjectFieldSelector{
+								FieldPath: "status.podIP",
+							},
+						},
+					},
+				}...)
 			}
 
 			statefulSet.Spec.Template.Spec.Containers[i].Env = core_util.UpsertEnvVars(container.Env, envs...)

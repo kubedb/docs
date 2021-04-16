@@ -73,7 +73,7 @@ func (c *Controller) GetMongoDBClientOpts(db *api.MongoDB, url, repSetName strin
 	}
 	var clientOpts *mgoptions.ClientOptions
 	if db.Spec.TLS != nil {
-		secretName := db.MustCertSecretName(api.MongoDBClientCert, "")
+		secretName := db.GetCertSecretName(api.MongoDBClientCert, "")
 		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 		if err != nil {
 			log.Error(err, "failed to get certificate secret. ", secretName)
@@ -117,7 +117,7 @@ func (c *Controller) GetMongoDBRootCredentials(db *api.MongoDB) (string, string,
 }
 
 func (c *Controller) CreateTLSUsers(db *api.MongoDB) error {
-	secretName := db.MustCertSecretName(api.MongoDBClientCert, "")
+	secretName := db.GetCertSecretName(api.MongoDBClientCert, "")
 	certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
 		log.Error(err, "failed to get certificate secret", "Secret", secretName)

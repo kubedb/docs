@@ -44,7 +44,12 @@ func (es *Elasticsearch) EnsureAuthSecret() error {
 		if err != nil {
 			return err
 		}
-		es.db = newES
+		// Note: Instead of updating the whole DB object,
+		// we've just updated the spec.AuthSecret part.
+		// We are making this package independent of current state of DB object,
+		// it will only depend on the given (input) DB object, and make decision based on that.
+		// Necessary for, KubeDB enterprise, will reconcile based on the given DB object instead of the current DB object.
+		es.db.Spec.AuthSecret = newES.Spec.AuthSecret
 	} else {
 		// Get the secret and validate it.
 		dbSecret, err := es.kClient.CoreV1().Secrets(es.db.Namespace).Get(context.TODO(), authSecret.Name, metav1.GetOptions{})

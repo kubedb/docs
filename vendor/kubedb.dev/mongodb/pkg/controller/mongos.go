@@ -33,7 +33,7 @@ import (
 	ofst "kmodules.xyz/offshoot-api/api/v1"
 )
 
-func (c *Controller) ensureMongosNode(db *api.MongoDB) (*apps.StatefulSet, kutil.VerbType, error) {
+func (c *Reconciler) ensureMongosNode(db *api.MongoDB) (*apps.StatefulSet, kutil.VerbType, error) {
 	mongodbVersion, err := c.DBClient.CatalogV1alpha1().MongoDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -55,12 +55,14 @@ func (c *Controller) ensureMongosNode(db *api.MongoDB) (*apps.StatefulSet, kutil
 
 	cmds := []string{"mongos"}
 	args := []string{
-		"--ipv6",
 		"--bind_ip_all",
 		"--port=" + strconv.Itoa(api.MongoDBDatabasePort),
 		"--configdb=$(CONFIGDB_REPSET)",
 		"--clusterAuthMode=" + string(clusterAuth),
 		"--keyFile=" + api.MongoDBConfigDirectoryPath + "/" + api.MongoDBKeyForKeyFile,
+	}
+	if c.enableIPv6 {
+		args = append(args, "--ipv6")
 	}
 
 	sslArgs, err := c.getTLSArgs(db, mongodbVersion)

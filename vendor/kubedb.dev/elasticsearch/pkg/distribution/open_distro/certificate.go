@@ -118,7 +118,7 @@ func (es *Elasticsearch) EnsureCertSecrets() error {
 }
 
 func (es *Elasticsearch) createCACertSecret(cPath string) (*rsa.PrivateKey, *x509.Certificate, error) {
-	rSecret, err := es.findSecret(es.db.MustCertSecretName(api.ElasticsearchCACert))
+	rSecret, err := es.findSecret(es.db.GetCertSecretName(api.ElasticsearchCACert))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -147,7 +147,7 @@ func (es *Elasticsearch) createCACertSecret(cPath string) (*rsa.PrivateKey, *x50
 
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   es.db.MustCertSecretName(api.ElasticsearchCACert),
+				Name:   es.db.GetCertSecretName(api.ElasticsearchCACert),
 				Labels: es.db.OffshootLabels(),
 			},
 			Type: core.SecretTypeTLS,
@@ -195,7 +195,7 @@ func (es *Elasticsearch) createCACertSecret(cPath string) (*rsa.PrivateKey, *x50
 }
 
 func (es *Elasticsearch) createTransportCertSecret(caKey *rsa.PrivateKey, caCert *x509.Certificate, cPath string) error {
-	nSecret, err := es.findSecret(es.db.MustCertSecretName(api.ElasticsearchTransportCert))
+	nSecret, err := es.findSecret(es.db.GetCertSecretName(api.ElasticsearchTransportCert))
 	if err != nil {
 		return err
 	}
@@ -228,7 +228,7 @@ func (es *Elasticsearch) createTransportCertSecret(caKey *rsa.PrivateKey, caCert
 
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   es.db.MustCertSecretName(api.ElasticsearchTransportCert),
+				Name:   es.db.GetCertSecretName(api.ElasticsearchTransportCert),
 				Labels: es.db.OffshootLabels(),
 			},
 			Type: core.SecretTypeTLS,
@@ -262,7 +262,7 @@ func (es *Elasticsearch) createTransportCertSecret(caKey *rsa.PrivateKey, caCert
 }
 
 func (es *Elasticsearch) createHTTPCertSecret(caKey *rsa.PrivateKey, caCert *x509.Certificate, cPath string) error {
-	cSecret, err := es.findSecret(es.db.MustCertSecretName(api.ElasticsearchHTTPCert))
+	cSecret, err := es.findSecret(es.db.GetCertSecretName(api.ElasticsearchHTTPCert))
 	if err != nil {
 		return err
 	}
@@ -294,7 +294,7 @@ func (es *Elasticsearch) createHTTPCertSecret(caKey *rsa.PrivateKey, caCert *x50
 
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   es.db.MustCertSecretName(api.ElasticsearchHTTPCert),
+				Name:   es.db.GetCertSecretName(api.ElasticsearchHTTPCert),
 				Labels: es.db.OffshootLabels(),
 			},
 			Type: core.SecretTypeTLS,
@@ -328,7 +328,7 @@ func (es *Elasticsearch) createHTTPCertSecret(caKey *rsa.PrivateKey, caCert *x50
 }
 
 func (es *Elasticsearch) createAdminCertSecret(caKey *rsa.PrivateKey, caCert *x509.Certificate, cPath string) error {
-	cSecret, err := es.findSecret(es.db.MustCertSecretName(api.ElasticsearchAdminCert))
+	cSecret, err := es.findSecret(es.db.GetCertSecretName(api.ElasticsearchAdminCert))
 	if err != nil {
 		return err
 	}
@@ -360,7 +360,7 @@ func (es *Elasticsearch) createAdminCertSecret(caKey *rsa.PrivateKey, caCert *x5
 
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   es.db.MustCertSecretName(api.ElasticsearchAdminCert),
+				Name:   es.db.GetCertSecretName(api.ElasticsearchAdminCert),
 				Labels: es.db.OffshootLabels(),
 			},
 			Type: core.SecretTypeTLS,
@@ -394,7 +394,7 @@ func (es *Elasticsearch) createAdminCertSecret(caKey *rsa.PrivateKey, caCert *x5
 }
 
 func (es *Elasticsearch) createExporterCertSecret(caKey *rsa.PrivateKey, caCert *x509.Certificate, cPath string) error {
-	cSecret, err := es.findSecret(es.db.MustCertSecretName(api.ElasticsearchMetricsExporterCert))
+	cSecret, err := es.findSecret(es.db.GetCertSecretName(api.ElasticsearchMetricsExporterCert))
 	if err != nil {
 		return err
 	}
@@ -426,7 +426,7 @@ func (es *Elasticsearch) createExporterCertSecret(caKey *rsa.PrivateKey, caCert 
 
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   es.db.MustCertSecretName(api.ElasticsearchMetricsExporterCert),
+				Name:   es.db.GetCertSecretName(api.ElasticsearchMetricsExporterCert),
 				Labels: es.db.OffshootLabels(),
 			},
 			Type: core.SecretTypeTLS,
@@ -460,7 +460,7 @@ func (es *Elasticsearch) createExporterCertSecret(caKey *rsa.PrivateKey, caCert 
 }
 
 func (es *Elasticsearch) createArchiverCertSecret(caKey *rsa.PrivateKey, caCert *x509.Certificate, cPath string) error {
-	cSecret, err := es.findSecret(es.db.MustCertSecretName(api.ElasticsearchArchiverCert))
+	cSecret, err := es.findSecret(es.db.GetCertSecretName(api.ElasticsearchArchiverCert))
 	if err != nil {
 		return err
 	}
@@ -492,7 +492,7 @@ func (es *Elasticsearch) createArchiverCertSecret(caKey *rsa.PrivateKey, caCert 
 
 		secret := &core.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:   es.db.MustCertSecretName(api.ElasticsearchArchiverCert),
+				Name:   es.db.GetCertSecretName(api.ElasticsearchArchiverCert),
 				Labels: es.db.OffshootLabels(),
 			},
 			Type: core.SecretTypeTLS,
