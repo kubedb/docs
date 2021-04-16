@@ -373,7 +373,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +----------------------------------+--------------------------------------+
 ```
 
-The value **37ed2c72-680a-11e9-8ac3-0242ac110005** in the above table means the ID of the primary member of the group.
+The value **fc4a4935-e6bf-11ea-bf42-9a7560d22b8f** in the above table is the ID of the primary member of the group.
 
 ```bash
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=MpPhZ9xbVlxvoC4d --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
@@ -389,7 +389,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 ## Data Availability
 
-In a MySQL group, only the primary member can write not the secondary. But you can read data from any member. In this tutorial, we will insert data from primary, and we will see whether we can get the data from any other members.
+In a MySQL group, only the primary member can write not the secondary. But you can read data from any member. In this tutorial, we will insert data from primary, and we will see whether we can get the data from any other member.
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
@@ -415,7 +415,9 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 |  7 | slide |     2 | blue  |
 +----+-------+-------+-------+
-
+```
+In the previous step we have inserted into the primary pod. In the next step we will read from secondary pods to determine whether the data has been successfully copied to the secondary pods.
+```bash
 # read from secondary-1
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-1.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -473,7 +475,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 | group_replication_primary_member | 4c97e5a4-680a-11e9-9f6b-0242ac110006 |
 +----------------------------------+--------------------------------------+
 
-# now check the gruop status
+# now check the group status
 kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+-------------------------------+-------------+--------------+
@@ -492,7 +494,9 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 |  7 | slide |     2 | blue  |
 +----+-------+-------+-------+
-
+```
+Now Let's read the data from secondary pods to see if the data is consistant.
+```bash
 # read data from secondary-1 my-group-0.my-group-pods.demo
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=dlNiQpjULZvEqo3B --host=my-group-0.my-group-pods.demo -e "SELECT * FROM playground.equipment;"
 mysql: [Warning] Using a password on the command line interface can be insecure.
