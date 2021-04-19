@@ -74,6 +74,7 @@ helm upgrade kubedb -n kube-system appscode/kubedb \
   --reuse-values \
   --set kubedb-enterprise.enabled=true \
   --set kubedb-autoscaler.enabled=true \
+  --set kubedb-catalog.skipDeprecated=false \
   --set-file global.license=/path/to/kubedb-enterprise-license.txt
 ```
 
@@ -86,6 +87,7 @@ helm upgrade kubedb -n kube-system appscode/kubedb \
   --reuse-values \
   --set kubedb-enterprise.enabled=false \
   --set kubedb-autoscaler.enabled=false \
+  --set kubedb-catalog.skipDeprecated=false \
   --set-file global.license=/path/to/kubedb-community-license.txt
 ```
 
@@ -103,6 +105,7 @@ helm upgrade kubedb appscode/kubedb \
   --reuse-values \
   --set kubedb-enterprise.enabled=true \
   --set kubedb-autoscaler.enabled=true \
+  --set kubedb-catalog.skipDeprecated=false \
   --set-file global.license=/path/to/kubedb-enterprise-license.txt
 ```
 
@@ -115,6 +118,7 @@ helm upgrade kubedb appscode/kubedb \
   --reuse-values \
   --set kubedb-enterprise.enabled=false \
   --set kubedb-autoscaler.enabled=false \
+  --set kubedb-catalog.skipDeprecated=false \
   --set-file global.license=/path/to/kubedb-community-license.txt
 ```
 
@@ -133,6 +137,7 @@ helm template kubedb -n kube-system appscode/kubedb \
   --version {{< param "info.version" >}} \
   --set kubedb-enterprise.enabled=true \
   --set kubedb-autoscaler.enabled=true \
+  --set kubedb-catalog.skipDeprecated=false \
   --set global.skipCleaner=true \
   --set-file global.license=/path/to/kubedb-enterprise-license.txt | kubectl apply -f -
 ```
@@ -147,6 +152,7 @@ helm template kubedb -n kube-system appscode/kubedb \
   --version {{< param "info.version" >}} \
   --set kubedb-enterprise.enabled=false \
   --set kubedb-autoscaler.enabled=false \
+  --set kubedb-catalog.skipDeprecated=false \
   --set global.skipCleaner=true \
   --set-file global.license=/path/to/kubedb-community-license.txt | kubectl apply -f -
 ```
