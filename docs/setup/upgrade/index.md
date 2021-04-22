@@ -16,6 +16,27 @@ section_menu_id: setup
 
 This guide will show you how to upgrade various KubeDB components. Here, we are going to show how to upgrade from an old KubeDB version to the new version, how to migrate between the enterprise edition and community edition, and how to update the license, etc.
 
+## Upgrading KubeDB from `v2021.03.17` to `v2021.04.16`
+
+In order to upgrade from KubeDB `v2021.03.17` to `v2021.04.6`, please follow the following steps.
+
+#### 1. Update KubeDB Catalog CRDs
+
+KubeDB `v2021.04.16` has added some new fields in the `***Version` CRDs. Unfortunatley, Helm [does not upgrade the CRDs](https://github.com/helm/helm/issues/6581) bundled in a Helm chart if the CRDs already exist. So, to upgrde the KubeDB catalog CRD, please run the command below:
+
+```bash
+kubectl apply -f https://github.com/kubedb/installer/raw/v2021.04.16/kubedb-catalog-crds.yaml
+```
+
+#### 2. Reinstall new KubeDB Operator
+
+Now, follow the latest installation guide to install the new version of the KubeDB operator. You can find the latest installation guide [here](/docs/setup/README.md). We recommend that you do **not** follow the legacy installation guide, as the new process is much more simpler.
+
+#### 3. Install/Upgrade Stash Operator
+
+Now, upgrade Stash if had previously installed Stash following the instructions [here](https://stash.run/docs/v2021.04.12/setup/upgrade/). If you had not installed Stash before, please install Stash Enterprise Edition following the instructions [here](https://stash.run/docs/v2021.04.12/setup/).
+
+
 ## Upgrading KubeDB from `v2021.01.26`(`v0.16.x`) and older to `v2021.03.17`(`v0.17.x`)
 
 In KubeDB `v2021.01.26`(`v0.16.x`) and prior versions, KubeDB used separate charts for KubeDB community edition, KubeDB enterprise edition, and KubeDB catalogs. In KubeDB `v2021.03.17`(`v0.17.x`), we have moved to a single combined chart for all the components for a better user experience. This enables seamless migration between the KubeDB community edition and KubeDB enterprise edition. It also removes the burden of installing individual helm charts manually. KubeDB still depends on [Stash](https://stash.run) as the backup/recovery operator and Stash must be [installed](https://stash.run/docs/latest/setup/) separately. 
