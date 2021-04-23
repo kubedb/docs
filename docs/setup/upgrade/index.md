@@ -28,9 +28,15 @@ KubeDB `v2021.04.16` has added some new fields in the `***Version` CRDs. Unfortu
 kubectl apply -f https://github.com/kubedb/installer/raw/v2021.04.16/kubedb-catalog-crds.yaml
 ```
 
-#### 2. Reinstall new KubeDB Operator
+#### 2. Upgrade KubeDB Operator
 
-Now, follow the latest installation guide to install the new version of the KubeDB operator. You can find the latest installation guide [here](/docs/setup/README.md). We recommend that you do **not** follow the legacy installation guide, as the new process is much more simpler.
+Now, upgrade the KubeDB helm chart using the following command. You can find the latest installation guide [here](/docs/setup/README.md). We recommend that you do **not** follow the legacy installation guide, as the new process is much more simpler.
+
+```bash
+helm upgrade kubedb -n kube-system appscode/kubedb \
+  --reuse-values \
+  --version {{< param "info.version" >}}
+```
 
 #### 3. Install/Upgrade Stash Operator
 
