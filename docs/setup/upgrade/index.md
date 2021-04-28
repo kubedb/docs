@@ -33,9 +33,19 @@ kubectl apply -f https://github.com/kubedb/installer/raw/v2021.04.16/kubedb-cata
 Now, upgrade the KubeDB helm chart using the following command. You can find the latest installation guide [here](/docs/setup/README.md). We recommend that you do **not** follow the legacy installation guide, as the new process is much more simpler.
 
 ```bash
-helm upgrade kubedb -n kube-system appscode/kubedb \
-  --reuse-values \
-  --version {{< param "info.version" >}}
+# Upgrade KubeDB Community operator chart
+$ helm upgrade kubedb appscode/kubedb \
+  --version {{< param "info.version" >}} \
+  --namespace kube-system \
+  --set-file global.license=/path/to/the/license.txt
+
+# Upgrade KubeDB Enterprise operator chart
+$ helm upgrade kubedb appscode/kubedb \
+    --version {{< param "info.version" >}} \
+    --namespace kube-system \
+    --set-file global.license=/path/to/the/license.txt \
+    --set kubedb-enterprise.enabled=true \
+    --set kubedb-autoscaler.enabled=true
 ```
 
 #### 3. Install/Upgrade Stash Operator
