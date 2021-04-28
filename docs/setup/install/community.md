@@ -83,8 +83,8 @@ appscode/kubedb-enterprise  {{< param "info.enterprise" >}}        {{< param "in
 
 # Install KubeDB Community operator chart
 $ helm install kubedb appscode/kubedb \
-  --version {{< param "info.version" >}}      \
-  --namespace kube-system                       \
+  --version {{< param "info.version" >}} \
+  --namespace kube-system \
   --set-file global.license=/path/to/the/license.txt
 ```
 
