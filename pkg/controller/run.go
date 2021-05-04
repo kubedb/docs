@@ -19,8 +19,8 @@ package controller
 import (
 	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
 
-	"gomodules.xyz/x/log"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/klog/v2"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 )
 
@@ -44,20 +44,20 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	defer utilruntime.HandleCrash()
 
-	log.Infoln("Starting KubeDB controller")
+	klog.Infoln("Starting KubeDB controller")
 	c.KubeInformerFactory.Start(stopCh)
 	c.KubedbInformerFactory.Start(stopCh)
 
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range c.KubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for caches to sync\n", t)
+			klog.Fatalf("%v timed out waiting for caches to sync\n", t)
 			return
 		}
 	}
 	for t, v := range c.KubedbInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for caches to sync\n", t)
+			klog.Fatalf("%v timed out waiting for caches to sync\n", t)
 			return
 		}
 	}
@@ -85,5 +85,5 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.rdCtrl.RunControllers(stopCh)
 
 	<-stopCh
-	log.Infoln("Stopping KubeDB controller")
+	klog.Infoln("Stopping KubeDB controller")
 }

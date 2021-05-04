@@ -23,8 +23,8 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
-	"gomodules.xyz/x/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
 )
@@ -37,15 +37,15 @@ func (c *Controller) initWatcher() {
 }
 
 func (c *Controller) runProxySQL(key string) error {
-	log.Debugln("started processing, key:", key)
+	klog.V(5).Infoln("started processing, key:", key)
 	obj, exists, err := c.proxysqlInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		log.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 
 	if !exists {
-		log.Debugf("ProxySQL %s does not exist anymore", key)
+		klog.V(5).Infof("ProxySQL %s does not exist anymore", key)
 	} else {
 		// Note that you also have to check the uid if you have a local controlled resource, which
 		// is dependent on the actual instance, to detect that a ProxySQL was recreated with the same name
@@ -53,7 +53,7 @@ func (c *Controller) runProxySQL(key string) error {
 		if proxysql.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(proxysql.ObjectMeta, kubedb.GroupName) {
 				if err := c.terminate(proxysql); err != nil {
-					log.Errorln(err)
+					klog.Errorln(err)
 					return err
 				}
 				_, _, err = util.PatchProxySQL(context.TODO(), c.DBClient.KubedbV1alpha2(), proxysql, func(in *api.ProxySQL) *api.ProxySQL {
@@ -71,7 +71,7 @@ func (c *Controller) runProxySQL(key string) error {
 				return err
 			}
 			if err := c.create(proxysql); err != nil {
-				log.Errorln(err)
+				klog.Errorln(err)
 				c.pushFailureEvent(proxysql, err.Error())
 				return err
 			}

@@ -28,12 +28,12 @@ import (
 	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
 	"gomodules.xyz/version"
-	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	app_util "kmodules.xyz/client-go/apps/v1"
@@ -235,7 +235,7 @@ func (c *Controller) checkStatefulSet(db *api.Postgres) error {
 func upsertEnv(statefulSet *apps.StatefulSet, db *api.Postgres, postgresVersion *catalog.PostgresVersion, envs []core.EnvVar) *apps.StatefulSet {
 	majorPGVersion, err := getMajorPgVersion(postgresVersion)
 	if err != nil {
-		log.Error("couldn't get version's major part")
+		klog.Error("couldn't get version's major part")
 	}
 	sslMode := db.Spec.SSLMode
 	if sslMode == "" {
@@ -610,7 +610,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.Postgres) *apps.Sta
 			pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
 				core.ReadWriteOnce,
 			}
-			log.Infof(`Using "%v" as AccessModes in postgres.Spec.Storage`, core.ReadWriteOnce)
+			klog.Infof(`Using "%v" as AccessModes in postgres.Spec.Storage`, core.ReadWriteOnce)
 		}
 
 		claim := core.PersistentVolumeClaim{

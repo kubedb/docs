@@ -27,8 +27,10 @@ import (
 )
 
 // PerconaXtraDBOpsRequestLister helps list PerconaXtraDBOpsRequests.
+// All objects returned here must be treated as read-only.
 type PerconaXtraDBOpsRequestLister interface {
 	// List lists all PerconaXtraDBOpsRequests in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.PerconaXtraDBOpsRequest, err error)
 	// PerconaXtraDBOpsRequests returns an object that can list and get PerconaXtraDBOpsRequests.
 	PerconaXtraDBOpsRequests(namespace string) PerconaXtraDBOpsRequestNamespaceLister
@@ -59,10 +61,13 @@ func (s *perconaXtraDBOpsRequestLister) PerconaXtraDBOpsRequests(namespace strin
 }
 
 // PerconaXtraDBOpsRequestNamespaceLister helps list and get PerconaXtraDBOpsRequests.
+// All objects returned here must be treated as read-only.
 type PerconaXtraDBOpsRequestNamespaceLister interface {
 	// List lists all PerconaXtraDBOpsRequests in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.PerconaXtraDBOpsRequest, err error)
 	// Get retrieves the PerconaXtraDBOpsRequest from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.PerconaXtraDBOpsRequest, error)
 	PerconaXtraDBOpsRequestNamespaceListerExpansion
 }

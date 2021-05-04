@@ -24,18 +24,18 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2"
 
 	jsonpatch "github.com/evanphx/json-patch"
-	"github.com/golang/glog"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 )
 
 func CreateOrPatchMySQL(ctx context.Context, c cs.KubedbV1alpha2Interface, meta metav1.ObjectMeta, transform func(*api.MySQL) *api.MySQL, opts metav1.PatchOptions) (*api.MySQL, kutil.VerbType, error) {
 	cur, err := c.MySQLs(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating MySQL %s/%s.", meta.Namespace, meta.Name)
+		klog.V(3).Infof("Creating MySQL %s/%s.", meta.Namespace, meta.Name)
 		out, err := c.MySQLs(meta.Namespace).Create(ctx, transform(&api.MySQL{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "MySQL",
@@ -75,7 +75,7 @@ func PatchMySQLObject(ctx context.Context, c cs.KubedbV1alpha2Interface, cur, mo
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching MySQL %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
+	klog.V(3).Infof("Patching MySQL %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
 	out, err := c.MySQLs(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
@@ -92,7 +92,7 @@ func TryUpdateMySQL(ctx context.Context, c cs.KubedbV1alpha2Interface, meta meta
 			result, e2 = c.MySQLs(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update MySQL %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update MySQL %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 

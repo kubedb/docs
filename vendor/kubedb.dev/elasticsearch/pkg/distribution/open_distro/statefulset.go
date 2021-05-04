@@ -30,11 +30,11 @@ import (
 	"github.com/pkg/errors"
 	"gomodules.xyz/envsubst"
 	"gomodules.xyz/pointer"
-	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -275,7 +275,7 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 			esNode.Storage.AccessModes = []core.PersistentVolumeAccessMode{
 				core.ReadWriteOnce,
 			}
-			log.Infof(`Using "%v" as AccessModes in "%v"`, core.ReadWriteOnce, esNode.Storage)
+			klog.Infof(`Using "%v" as AccessModes in "%v"`, core.ReadWriteOnce, esNode.Storage)
 		}
 
 		pvc = &core.PersistentVolumeClaim{

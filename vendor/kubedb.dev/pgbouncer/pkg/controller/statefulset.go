@@ -26,13 +26,13 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"gomodules.xyz/pointer"
-	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -56,18 +56,18 @@ func (c *Controller) ensureStatefulSet(
 		if kerr.IsNotFound(err) {
 			_, err := c.ensureConfigSecret(db)
 			if err != nil {
-				log.Infoln(err)
+				klog.Infoln(err)
 				return kutil.VerbUnchanged, err
 			}
 
 		} else {
-			log.Infoln(err)
+			klog.Infoln(err)
 			return kutil.VerbUnchanged, err
 		}
 	}
 
 	if err := c.checkStatefulSet(db); err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return kutil.VerbUnchanged, err
 	}
 
@@ -196,7 +196,7 @@ func (c *Controller) ensureStatefulSet(
 	)
 
 	if err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return kutil.VerbUnchanged, err
 	}
 
@@ -217,7 +217,7 @@ func (c *Controller) ensureStatefulSet(
 
 	// ensure pdb
 	if err := c.CreateStatefulSetPodDisruptionBudget(statefulSet); err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return vt, err
 	}
 

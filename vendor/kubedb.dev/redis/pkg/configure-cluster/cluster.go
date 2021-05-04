@@ -24,9 +24,9 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/pkg/errors"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/klog/v2"
 )
 
 // ConfigureRedisCluster() configures a cluster.
@@ -79,7 +79,7 @@ func (c Config) waitUntilRedisServersToBeReady(useTLS bool, pods [][]*core.Pod) 
 			}
 		}
 	}
-	log.Infoln("All redis servers are ready")
+	klog.Infoln("All redis servers are ready")
 
 	return nil
 }
@@ -166,7 +166,7 @@ func (c Config) ensureAllNodesKnowEachOther(useTLS bool, pods [][]*core.Pod) err
 // Before configuring the cluster, the operator ensures 1st Pod (node) of each StatefulSet as master.
 // ensureFirstPodAsMaster() ensures this.
 func (c Config) ensureFirstPodAsMaster(useTLS bool, pods [][]*core.Pod) error {
-	log.Infoln("Ensuring 1st pod as master in each statefulSet...")
+	klog.Infoln("Ensuring 1st pod as master in each statefulSet...")
 
 	var (
 		err              error
@@ -305,7 +305,7 @@ func (c Config) resetNode(useTLS bool, execPod *core.Pod, resetNodeIP string) er
 // 	   if c.Cluster.Replicas is smaller than the number of slaves in i'th shard;
 //		   then delete and reset the extra slaves from back
 func (c Config) ensureExtraSlavesBeRemoved(useTLS bool, pods [][]*core.Pod) error {
-	log.Infoln("Ensuring extra slaves be removed...")
+	klog.Infoln("Ensuring extra slaves be removed...")
 
 	var (
 		err   error
@@ -350,7 +350,7 @@ func (c Config) ensureExtraSlavesBeRemoved(useTLS bool, pods [][]*core.Pod) erro
 //		   delete and reset the slaves of this master
 //		   delete and reset the master
 func (c Config) ensureExtraMastersBeRemoved(useTLS bool, pods [][]*core.Pod) error {
-	log.Infoln("Ensuring extra masters be removed...")
+	klog.Infoln("Ensuring extra masters be removed...")
 
 	var (
 		err               error
@@ -471,7 +471,7 @@ func (c Config) ensureExtraMastersBeRemoved(useTLS bool, pods [][]*core.Pod) err
 // Then the operator creates new StatefulSet (one for each master / shard). And, the pods[] array contains
 // those new Pods. Basically pods[i][j] is j'th Pod of i'th shard (i'th StatefulSet)
 func (c Config) ensureNewMastersBeAdded(useTLS bool, pods [][]*core.Pod) error {
-	log.Infoln("Ensuring new masters be added...")
+	klog.Infoln("Ensuring new masters be added...")
 
 	var (
 		err               error
@@ -522,7 +522,7 @@ func (c Config) ensureNewMastersBeAdded(useTLS bool, pods [][]*core.Pod) error {
 // 16384/5=3276(approximately) slots (the 5th master will keep remaining slots). If any master has less slots
 // rebalanceSlots() moves some slots to that master from the master those have extra slots.
 func (c Config) rebalanceSlots(useTLS bool, pods [][]*core.Pod) error {
-	log.Infoln("Ensuring slots are rebalanced...")
+	klog.Infoln("Ensuring slots are rebalanced...")
 
 	var (
 		err                           error
@@ -605,7 +605,7 @@ func (c Config) rebalanceSlots(useTLS bool, pods [][]*core.Pod) error {
 // should have exactly 2 slaves. If in the cluster, i'th master has 1 slave, then nodes[i][2] needs to be added
 // to the i'th master. ensureNewSlavesBeAdded() ensures this.
 func (c Config) ensureNewSlavesBeAdded(useTLS bool, pods [][]*core.Pod) error {
-	log.Infoln("Ensuring new slaves be added...")
+	klog.Infoln("Ensuring new slaves be added...")
 
 	var (
 		err               error
@@ -655,7 +655,7 @@ func (c Config) ensureNewSlavesBeAdded(useTLS bool, pods [][]*core.Pod) error {
 
 // ensureCluster() ensures that a running cluster exists. If there is no cluster then create one.
 func (c Config) ensureCluster(pods [][]*core.Pod, useTLS bool) error {
-	log.Infoln("Ensuring new cluster...")
+	klog.Infoln("Ensuring new cluster...")
 
 	var (
 		masterAddrs   []string

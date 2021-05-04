@@ -2,7 +2,7 @@
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 //
-// Code generated from specification version 7.9.0: DO NOT EDIT
+// Code generated from specification version 7.12.0: DO NOT EDIT
 
 package esapi
 
@@ -37,6 +37,7 @@ type MLGetDatafeedStatsRequest struct {
 	DatafeedID string
 
 	AllowNoDatafeeds *bool
+	AllowNoMatch     *bool
 
 	Pretty     bool
 	Human      bool
@@ -75,6 +76,10 @@ func (r MLGetDatafeedStatsRequest) Do(ctx context.Context, transport Transport) 
 
 	if r.AllowNoDatafeeds != nil {
 		params["allow_no_datafeeds"] = strconv.FormatBool(*r.AllowNoDatafeeds)
+	}
+
+	if r.AllowNoMatch != nil {
+		params["allow_no_match"] = strconv.FormatBool(*r.AllowNoMatch)
 	}
 
 	if r.Pretty {
@@ -157,6 +162,14 @@ func (f MLGetDatafeedStats) WithDatafeedID(v string) func(*MLGetDatafeedStatsReq
 func (f MLGetDatafeedStats) WithAllowNoDatafeeds(v bool) func(*MLGetDatafeedStatsRequest) {
 	return func(r *MLGetDatafeedStatsRequest) {
 		r.AllowNoDatafeeds = &v
+	}
+}
+
+// WithAllowNoMatch - whether to ignore if a wildcard expression matches no datafeeds. (this includes `_all` string or when no datafeeds have been specified).
+//
+func (f MLGetDatafeedStats) WithAllowNoMatch(v bool) func(*MLGetDatafeedStatsRequest) {
+	return func(r *MLGetDatafeedStatsRequest) {
+		r.AllowNoMatch = &v
 	}
 }
 

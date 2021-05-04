@@ -27,8 +27,10 @@ import (
 )
 
 // RedisLister helps list Redises.
+// All objects returned here must be treated as read-only.
 type RedisLister interface {
 	// List lists all Redises in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.Redis, err error)
 	// Redises returns an object that can list and get Redises.
 	Redises(namespace string) RedisNamespaceLister
@@ -59,10 +61,13 @@ func (s *redisLister) Redises(namespace string) RedisNamespaceLister {
 }
 
 // RedisNamespaceLister helps list and get Redises.
+// All objects returned here must be treated as read-only.
 type RedisNamespaceLister interface {
 	// List lists all Redises in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.Redis, err error)
 	// Get retrieves the Redis from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha2.Redis, error)
 	RedisNamespaceListerExpansion
 }

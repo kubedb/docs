@@ -27,8 +27,10 @@ import (
 )
 
 // MongoDBOpsRequestLister helps list MongoDBOpsRequests.
+// All objects returned here must be treated as read-only.
 type MongoDBOpsRequestLister interface {
 	// List lists all MongoDBOpsRequests in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MongoDBOpsRequest, err error)
 	// MongoDBOpsRequests returns an object that can list and get MongoDBOpsRequests.
 	MongoDBOpsRequests(namespace string) MongoDBOpsRequestNamespaceLister
@@ -59,10 +61,13 @@ func (s *mongoDBOpsRequestLister) MongoDBOpsRequests(namespace string) MongoDBOp
 }
 
 // MongoDBOpsRequestNamespaceLister helps list and get MongoDBOpsRequests.
+// All objects returned here must be treated as read-only.
 type MongoDBOpsRequestNamespaceLister interface {
 	// List lists all MongoDBOpsRequests in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MongoDBOpsRequest, err error)
 	// Get retrieves the MongoDBOpsRequest from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.MongoDBOpsRequest, error)
 	MongoDBOpsRequestNamespaceListerExpansion
 }

@@ -26,10 +26,10 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/memcached/pkg/admission"
 
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 )
 
@@ -41,7 +41,7 @@ func (c *Controller) create(db *api.Memcached) error {
 			eventer.EventReasonInvalid,
 			err.Error(),
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		return nil // user error so just record error and don't retry.
 	}
 
@@ -113,7 +113,7 @@ func (c *Controller) create(db *api.Memcached) error {
 			"Failed to manage monitoring system. Reason: %v",
 			err,
 		)
-		log.Errorf("failed to manage monitoring system. Reason: %v", err)
+		klog.Errorf("failed to manage monitoring system. Reason: %v", err)
 		return nil
 	}
 
@@ -125,13 +125,13 @@ func (c *Controller) create(db *api.Memcached) error {
 			"Failed to manage monitoring system. Reason: %v",
 			err,
 		)
-		log.Errorf("failed to manage monitoring system. Reason: %v", err)
+		klog.Errorf("failed to manage monitoring system. Reason: %v", err)
 		return nil
 	}
 
 	_, err = c.ensureAppBinding(db)
 	if err != nil {
-		log.Errorln(err)
+		klog.Errorln(err)
 		return err
 	}
 	return nil
@@ -141,14 +141,14 @@ func (c *Controller) halt(db *api.Memcached) error {
 	if db.Spec.Halted && db.Spec.TerminationPolicy != api.TerminationPolicyHalt {
 		return errors.New("can't halt db. 'spec.terminationPolicy' is not 'Halt'")
 	}
-	log.Infof("Halting Memcached %v/%v", db.Namespace, db.Name)
+	klog.Infof("Halting Memcached %v/%v", db.Namespace, db.Name)
 	if err := c.haltDatabase(db); err != nil {
 		return err
 	}
 	if err := c.waitUntilPaused(db); err != nil {
 		return err
 	}
-	log.Infof("update status of Memcached %v/%v to Halted.", db.Namespace, db.Name)
+	klog.Infof("update status of Memcached %v/%v to Halted.", db.Namespace, db.Name)
 	if _, err := util.UpdateMemcachedStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.MemcachedStatus) (types.UID, *api.MemcachedStatus) {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
@@ -171,7 +171,7 @@ func (c *Controller) terminate(db *api.Memcached) error {
 
 	if db.Spec.Monitor != nil {
 		if err := c.deleteMonitor(db); err != nil {
-			log.Errorln(err)
+			klog.Errorln(err)
 			return nil
 		}
 	}

@@ -23,18 +23,18 @@ import (
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 )
 
 func (c *Controller) manageAppBindingEvent(key string) error {
 	//wait for pgboncer to ber ready
-	log.Debugln("started processing appBindings, key:", key)
+	klog.V(5).Infoln("started processing appBindings, key:", key)
 	_, _, err := c.appBindingInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		log.Errorf("Fetching appBinding with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching appBinding with key %s from store failed with %v", key, err)
 		return err
 	}
 	splitKey := strings.Split(key, "/")
@@ -58,7 +58,7 @@ func (c *Controller) manageAppBindingEvent(key string) error {
 		if pgBouncer.GetNamespace() == appBindingInfo[namespaceKey] {
 			err := c.checkAppBindingsInPgBouncerSpec(appBindingInfo, &pgBouncer)
 			if err != nil {
-				log.Warning(err)
+				klog.Warning(err)
 			}
 		}
 	}
@@ -91,7 +91,7 @@ func (c *Controller) getCABundlesFromAppBindingsInPgBouncerSpec(db *api.PgBounce
 			appBinding, err := c.AppCatalogClient.AppcatalogV1alpha1().AppBindings(db.DatabaseRef.Namespace).Get(context.TODO(), db.DatabaseRef.Name, metav1.GetOptions{})
 			if err != nil {
 				if kerr.IsNotFound(err) {
-					log.Infoln(err)
+					klog.Infoln(err)
 					continue //because non blocking err
 				}
 				return "", err

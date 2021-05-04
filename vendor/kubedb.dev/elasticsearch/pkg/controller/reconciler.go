@@ -24,8 +24,8 @@ import (
 	"kubedb.dev/elasticsearch/pkg/distribution"
 
 	"github.com/pkg/errors"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
@@ -83,7 +83,7 @@ func (r *Reconciler) ReconcileNodes(db *api.Elasticsearch) (*api.Elasticsearch, 
 		// drop the elasticsearch object from work queue (i.e. return nil with no error).
 		// When any secret owned by this elasticsearch object is created/updated,
 		// this elasticsearch object will be enqueued again for processing.
-		log.Infoln(fmt.Sprintf("Required secrets for Elasticsearch: %s/%s are not ready yet", db.Namespace, db.Name))
+		klog.Infoln(fmt.Sprintf("Required secrets for Elasticsearch: %s/%s are not ready yet", db.Namespace, db.Name))
 		return nil, kutil.VerbUnchanged, nil
 	}
 

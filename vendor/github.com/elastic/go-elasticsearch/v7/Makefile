@@ -45,22 +45,24 @@ endif
 	$(eval testapiargs += "-cover" "-coverpkg=github.com/elastic/go-elasticsearch/v7/esapi" "-coverprofile=$(PWD)/tmp/integration-api.cov" "-tags='integration'" "-timeout=1h")
 ifdef flavor
 else
-	$(eval flavor='core')
+	$(eval flavor='free')
 endif
 	@printf "\033[2m→ Running API integration tests for [$(flavor)]...\033[0m\n"
-ifeq ($(flavor), xpack)
+ifeq ($(flavor), platinum)
 	@{ \
 		set -e ; \
 		trap "test -d .git && git checkout --quiet $(PWD)/esapi/test/go.mod" INT TERM EXIT; \
 		export ELASTICSEARCH_URL='https://elastic:elastic@localhost:9200' && \
 		if which gotestsum > /dev/null 2>&1 ; then \
 			cd esapi/test && \
+			go mod download && \
 				gotestsum --format=short-verbose --junitfile=$(PWD)/tmp/integration-api-report.xml -- $(testapiargs) $(PWD)/esapi/test/xpack/*_test.go && \
 				gotestsum --format=short-verbose --junitfile=$(PWD)/tmp/integration-api-report.xml -- $(testapiargs) $(PWD)/esapi/test/xpack/ml/*_test.go && \
 				gotestsum --format=short-verbose --junitfile=$(PWD)/tmp/integration-api-report.xml -- $(testapiargs) $(PWD)/esapi/test/xpack/ml-crud/*_test.go; \
 		else \
 			echo "go test -v" $(testapiargs); \
 			cd esapi/test && \
+			go mod download && \
 				go test -v $(testapiargs) $(PWD)/esapi/test/xpack/*_test.go && \
 				go test -v $(testapiargs) $(PWD)/esapi/test/xpack/ml/*_test.go && \
 				go test -v $(testapiargs) $(PWD)/esapi/test/xpack/ml-crud/*_test.go;  \
@@ -72,10 +74,14 @@ else
 		set -e ; \
 		trap "test -d .git && git checkout --quiet $(PWD)/esapi/test/go.mod" INT TERM EXIT; \
 		if which gotestsum > /dev/null 2>&1 ; then \
-			cd esapi/test && gotestsum --format=short-verbose --junitfile=$(PWD)/tmp/integration-api-report.xml -- $(testapiargs); \
+			cd esapi/test && \
+			go mod download && \
+			gotestsum --format=short-verbose --junitfile=$(PWD)/tmp/integration-api-report.xml -- $(testapiargs); \
 		else \
 			echo "go test -v" $(testapiargs); \
-			cd esapi/test && go test -v $(testapiargs); \
+			cd esapi/test && \
+			go mod download && \
+			go test -v $(testapiargs); \
 		fi; \
 	}
 endif
@@ -89,6 +95,18 @@ test-examples: ## Execute the _examples
 	@{ \
 		set -e ; \
 		trap "test -d .git && git checkout --quiet _examples/**/go.mod" INT TERM EXIT; \
+		for d in _examples/*/; do \
+			printf "\033[2m────────────────────────────────────────────────────────────────────────────────\n"; \
+			printf "\033[1mUpdating dependencies for $$d\033[0m\n"; \
+			printf "\033[2m────────────────────────────────────────────────────────────────────────────────\033[0m\n"; \
+			(cd $$d && go mod download) || \
+			( \
+				printf "\033[31m────────────────────────────────────────────────────────────────────────────────\033[0m\n"; \
+				printf "\033[31;1m⨯ ERROR\033[0m\n"; \
+				false; \
+			); \
+	    done; \
+	    \
 		for f in _examples/*.go; do \
 			printf "\033[2m────────────────────────────────────────────────────────────────────────────────\n"; \
 			printf "\033[1m$$f\033[0m\n"; \
@@ -132,7 +150,7 @@ lint:  ## Run lint on the package
 		set -e ; \
 		trap "test -d ../../../.git && git checkout --quiet go.mod" INT TERM EXIT; \
 		echo "cd internal/cmd/generate/ && go vet ./..."; \
-		cd "internal/cmd/generate/" && go vet ./...; \
+		cd "internal/cmd/generate/" && go mod download && go vet ./...; \
 	}
 
 
@@ -247,7 +265,10 @@ godoc: ## Display documentation for the package
 	godoc --http=localhost:6060 --play
 
 cluster: ## Launch an Elasticsearch cluster with Docker
-	$(eval version ?= "elasticsearch-oss:7.x-SNAPSHOT")
+	$(eval version ?= "elasticsearch:7.12.0-SNAPSHOT")
+	$(eval flavor ?= "core")
+	$(eval elasticsearch_url = "http://es1:9200")
+
 ifeq ($(origin nodes), undefined)
 	$(eval nodes = 1)
 endif
@@ -257,29 +278,26 @@ ifeq ($(shell test $(nodes) && test $(nodes) -gt 1; echo $$?),0)
 else
 	$(eval detach ?= "false")
 endif
-ifdef version
-ifneq (,$(findstring oss,$(version)))
-	$(eval elasticsearch_url = "http://es1:9200")
-else
+
+ifeq ($(flavor), platinum)
 	$(eval elasticsearch_url = "https://elastic:elastic@es1:9200")
 	$(eval xpack_env += --env "ELASTIC_PASSWORD=elastic")
 	$(eval xpack_env += --env "xpack.license.self_generated.type=trial")
 	$(eval xpack_env += --env "xpack.security.enabled=true")
 	$(eval xpack_env += --env "xpack.security.http.ssl.enabled=true")
 	$(eval xpack_env += --env "xpack.security.http.ssl.verification_mode=certificate")
-	$(eval xpack_env += --env "xpack.security.http.ssl.key=certs/elasticsearch.key")
-	$(eval xpack_env += --env "xpack.security.http.ssl.certificate=certs/elasticsearch.crt")
+	$(eval xpack_env += --env "xpack.security.http.ssl.key=certs/testnode.key")
+	$(eval xpack_env += --env "xpack.security.http.ssl.certificate=certs/testnode.crt")
 	$(eval xpack_env += --env "xpack.security.http.ssl.certificate_authorities=certs/ca.crt")
 	$(eval xpack_env += --env "xpack.security.http.ssl.verification_mode=none")
 	$(eval xpack_env += --env "xpack.security.transport.ssl.enabled=true")
-	$(eval xpack_env += --env "xpack.security.transport.ssl.key=certs/elasticsearch.key")
-	$(eval xpack_env += --env "xpack.security.transport.ssl.certificate=certs/elasticsearch.crt")
+	$(eval xpack_env += --env "xpack.security.transport.ssl.key=certs/testnode.key")
+	$(eval xpack_env += --env "xpack.security.transport.ssl.certificate=certs/testnode.crt")
 	$(eval xpack_env += --env "xpack.security.transport.ssl.certificate_authorities=certs/ca.crt")
 	$(eval xpack_env += --env "xpack.security.transport.ssl.verification_mode=none")
-	$(eval xpack_volumes += --volume "$(PWD)/.jenkins/certs/elasticsearch.crt:/usr/share/elasticsearch/config/certs/elasticsearch.crt")
-	$(eval xpack_volumes += --volume "$(PWD)/.jenkins/certs/elasticsearch.key:/usr/share/elasticsearch/config/certs/elasticsearch.key")
-	$(eval xpack_volumes += --volume "$(PWD)/.jenkins/certs/ca.crt:/usr/share/elasticsearch/config/certs/ca.crt")
-endif
+	$(eval xpack_volumes += --volume "$(PWD)/.ci/certs/testnode.crt:/usr/share/elasticsearch/config/certs/testnode.crt")
+	$(eval xpack_volumes += --volume "$(PWD)/.ci/certs/testnode.key:/usr/share/elasticsearch/config/certs/testnode.key")
+	$(eval xpack_volumes += --volume "$(PWD)/.ci/certs/ca.crt:/usr/share/elasticsearch/config/certs/ca.crt")
 endif
 	@docker network inspect elasticsearch > /dev/null 2>&1 || docker network create elasticsearch;
 	@{ \
@@ -327,7 +345,7 @@ ifdef detach
 endif
 
 cluster-update: ## Update the Docker image
-	$(eval version ?= "elasticsearch-oss:7.x-SNAPSHOT")
+	$(eval version ?= "elasticsearch:7.12.0-SNAPSHOT")
 	@printf "\033[2m→ Updating the Docker image...\033[0m\n"
 	@docker pull docker.elastic.co/elasticsearch/$(version);
 
@@ -337,7 +355,7 @@ cluster-clean: ## Remove unused Docker volumes and networks
 	docker network prune --force
 
 docker: ## Build the Docker image and run it
-	docker build --file Dockerfile --tag elastic/go-elasticsearch .
+	docker build --file .ci/Dockerfile --tag elastic/go-elasticsearch .
 	docker run -it --network elasticsearch --volume $(PWD)/tmp:/tmp:rw,delegated --rm elastic/go-elasticsearch
 
 ##@ Generator
@@ -403,6 +421,33 @@ endif
 		mkdir -p '$(PWD)/esapi/test/xpack/ml-crud' && \
 		mv $(PWD)/esapi/test/xpack/xpack_ml* $(PWD)/esapi/test/xpack/ml/ && \
 		mv $(PWD)/esapi/test/xpack/ml/xpack_ml__jobs_crud_test.go $(PWD)/esapi/test/xpack/ml-crud/; \
+	}
+
+gen-docs:  ## Generate the skeleton of documentation examples
+	$(eval input  ?= tmp/alternatives_report.json)
+	$(eval update ?= no)
+	@{ \
+		set -e; \
+		trap "test -d .git && git checkout --quiet $(PWD)/internal/cmd/generate/go.mod" INT TERM EXIT; \
+		if [[ $(update) == 'yes' ]]; then \
+			printf "\033[2m→ Updating the alternatives_report.json file\033[0m\n" && \
+			curl -s https://raw.githubusercontent.com/elastic/built-docs/master/raw/en/elasticsearch/reference/master/alternatives_report.json > tmp/alternatives_report.json; \
+		fi; \
+		printf "\033[2m→ Generating Go source files from Console input in [$(input)]\033[0m\n" && \
+		( cd '$(PWD)/internal/cmd/generate' && \
+			go run main.go examples src --debug --input='$(PWD)/$(input)' --output='$(PWD)/.doc/examples/' \
+		) && \
+		( cd '$(PWD)/.doc/examples/src' && \
+			if which gotestsum > /dev/null 2>&1 ; then \
+				gotestsum --format=short-verbose; \
+			else \
+				go test -v $(testunitargs); \
+			fi; \
+		) && \
+		printf "\n\033[2m→ Generating ASCIIDoc files from Go source\033[0m\n" && \
+		( cd '$(PWD)/internal/cmd/generate' && \
+			go run main.go examples doc --debug --input='$(PWD)/.doc/examples/src/' --output='$(PWD)/.doc/examples/' \
+		) \
 	}
 
 ##@ Other

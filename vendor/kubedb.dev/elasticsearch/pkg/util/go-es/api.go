@@ -27,11 +27,11 @@ import (
 
 	esv6 "github.com/elastic/go-elasticsearch/v6"
 	esv7 "github.com/elastic/go-elasticsearch/v7"
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
 )
 
 type ESClient interface {
@@ -45,21 +45,21 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, esVersion,
 	if !db.Spec.DisableSecurity && db.Spec.AuthSecret != nil {
 		secret, err := kc.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.Spec.AuthSecret.Name, metav1.GetOptions{})
 		if err != nil {
-			glog.Errorf("Failed to get secret: %s for Elasticsearch: %s/%s with: %s", db.Spec.AuthSecret.Name, db.Namespace, db.Name, err.Error())
+			klog.Errorf("Failed to get secret: %s for Elasticsearch: %s/%s with: %s", db.Spec.AuthSecret.Name, db.Namespace, db.Name, err.Error())
 			return nil, errors.Wrap(err, "failed to get the secret")
 		}
 
 		if value, ok := secret.Data[core.BasicAuthUsernameKey]; ok {
 			username = string(value)
 		} else {
-			glog.Errorf("Failed for secret: %s/%s, username is missing", secret.Namespace, secret.Name)
+			klog.Errorf("Failed for secret: %s/%s, username is missing", secret.Namespace, secret.Name)
 			return nil, errors.New("username is missing")
 		}
 
 		if value, ok := secret.Data[core.BasicAuthPasswordKey]; ok {
 			password = string(value)
 		} else {
-			glog.Errorf("Failed for secret: %s/%s, password is missing", secret.Namespace, secret.Name)
+			klog.Errorf("Failed for secret: %s/%s, password is missing", secret.Namespace, secret.Name)
 			return nil, errors.New("password is missing")
 		}
 	}
@@ -80,7 +80,7 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, esVersion,
 			},
 		})
 		if err != nil {
-			glog.Errorf("Failed to create HTTP client for Elasticsearch: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+			klog.Errorf("Failed to create HTTP client for Elasticsearch: %s/%s with: %s", db.Namespace, db.Name, err.Error())
 			return nil, err
 		}
 		// do a manual health check to test client
@@ -110,7 +110,7 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, esVersion,
 			},
 		})
 		if err != nil {
-			glog.Errorf("Failed to create HTTP client for Elasticsearch: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+			klog.Errorf("Failed to create HTTP client for Elasticsearch: %s/%s with: %s", db.Namespace, db.Name, err.Error())
 			return nil, err
 		}
 		// do a manual health check to test client

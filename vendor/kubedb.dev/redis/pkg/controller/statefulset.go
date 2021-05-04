@@ -31,12 +31,12 @@ import (
 	"github.com/pkg/errors"
 	"gomodules.xyz/envsubst"
 	"gomodules.xyz/pointer"
-	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -132,8 +132,8 @@ func (c *Controller) ensureRedisNodes(db *api.Redis) (kutil.VerbType, error) {
 			return vt, errors.Wrap(err, "failed to configure required cluster")
 		}
 
-		log.Infoln("Cluster configured")
-		log.Infoln("Checking for removing master(s)...")
+		klog.Infoln("Cluster configured")
+		klog.Infoln("Checking for removing master(s)...")
 		statefulSets, err = c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{
 			LabelSelector: labels.Set(db.OffshootSelectors()).String(),
 		})
@@ -141,7 +141,7 @@ func (c *Controller) ensureRedisNodes(db *api.Redis) (kutil.VerbType, error) {
 			return vt, err
 		}
 		if len(statefulSets.Items) > int(*db.Spec.Cluster.Master) {
-			log.Infoln("Removing masters...")
+			klog.Infoln("Removing masters...")
 
 			foregroundPolicy := metav1.DeletePropagationForeground
 			for i := int(*db.Spec.Cluster.Master); i < len(statefulSets.Items); i++ {
@@ -156,7 +156,7 @@ func (c *Controller) ensureRedisNodes(db *api.Redis) (kutil.VerbType, error) {
 			}
 		}
 
-		log.Infoln("Checking for removing slave(s)...")
+		klog.Infoln("Checking for removing slave(s)...")
 
 		// update the the statefulSets with reduced replicas as some of their slaves have been
 		// removed when redis.spec.cluster.replicas field is reduced
@@ -168,7 +168,7 @@ func (c *Controller) ensureRedisNodes(db *api.Redis) (kutil.VerbType, error) {
 		}
 		for i := 0; i < int(*db.Spec.Cluster.Master); i++ {
 			if int(*statefulSets.Items[i].Spec.Replicas) > int(*db.Spec.Cluster.Replicas)+1 {
-				log.Infoln("Removing slaves...")
+				klog.Infoln("Removing slaves...")
 
 				vt, err = c.ensureStatefulSet(db, db.StatefulSetNameWithShard(i), true)
 				if err != nil {
@@ -448,7 +448,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.Redis) *apps.Statef
 					pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
 						core.ReadWriteOnce,
 					}
-					log.Infof(`Using "%v" as AccessModes in redis.spec.storage`, core.ReadWriteOnce)
+					klog.Infof(`Using "%v" as AccessModes in redis.spec.storage`, core.ReadWriteOnce)
 				}
 
 				claim := core.PersistentVolumeClaim{

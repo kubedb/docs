@@ -33,7 +33,6 @@ import (
 	rdc "kubedb.dev/redis/pkg/controller"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	"gomodules.xyz/x/log"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/discovery/cached/memory"
@@ -42,6 +41,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -122,7 +122,7 @@ func New(
 
 // EnsureCustomResourceDefinitions ensures CRD for MySQl, DormantDatabase and Snapshot
 func (c *Controller) EnsureCustomResourceDefinitions() error {
-	log.Infoln("Ensuring CustomResourceDefinition...")
+	klog.Infoln("Ensuring CustomResourceDefinition...")
 	crds := []*apiextensions.CustomResourceDefinition{
 		dbapi.Elasticsearch{}.CustomResourceDefinition(),
 		dbapi.Etcd{}.CustomResourceDefinition(),

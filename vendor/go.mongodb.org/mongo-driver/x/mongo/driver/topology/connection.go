@@ -18,14 +18,22 @@ import (
 	"sync/atomic"
 	"time"
 
+	"go.mongodb.org/mongo-driver/event"
+	"go.mongodb.org/mongo-driver/internal"
+	"go.mongodb.org/mongo-driver/mongo/address"
+	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
-	"go.mongodb.org/mongo-driver/x/mongo/driver/address"
-	"go.mongodb.org/mongo-driver/x/mongo/driver/description"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/ocsp"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/wiremessage"
 )
 
 var globalConnectionID uint64 = 1
+
+var (
+	defaultMaxMessageSize uint32 = 48000000
+	errResponseTooLarge   error  = errors.New("length of read message too large")
+)
 
 func nextConnectionID() uint64 { return atomic.AddUint64(&globalConnectionID, 1) }
 
@@ -35,10 +43,10 @@ type connection struct {
 	addr                 address.Address
 	idleTimeout          time.Duration
 	idleDeadline         atomic.Value // Stores a time.Time
-	lifetimeDeadline     time.Time
 	readTimeout          time.Duration
 	writeTimeout         time.Duration
 	desc                 description.Server
+	isMasterRTT          time.Duration
 	compressor           wiremessage.CompressorID
 	zliblevel            int
 	zstdLevel            int
@@ -48,41 +56,55 @@ type connection struct {
 	config               *connectionConfig
 	cancelConnectContext context.CancelFunc
 	connectContextMade   chan struct{}
+	canStream            bool
+	currentlyStreaming   bool
+	connectContextMutex  sync.Mutex
+	cancellationListener cancellationListener
 
 	// pool related fields
-	pool       *pool
-	poolID     uint64
-	generation uint64
+	pool         *pool
+	poolID       uint64
+	generation   uint64
+	expireReason string
+	poolMonitor  *event.PoolMonitor
 }
 
 // newConnection handles the creation of a connection. It does not connect the connection.
-func newConnection(ctx context.Context, addr address.Address, opts ...ConnectionOption) (*connection, error) {
+func newConnection(addr address.Address, opts ...ConnectionOption) (*connection, error) {
 	cfg, err := newConnectionConfig(opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	var lifetimeDeadline time.Time
-	if cfg.lifeTimeout > 0 {
-		lifetimeDeadline = time.Now().Add(cfg.lifeTimeout)
-	}
-
 	id := fmt.Sprintf("%s[-%d]", addr, nextConnectionID())
 
 	c := &connection{
-		id:                 id,
-		addr:               addr,
-		idleTimeout:        cfg.idleTimeout,
-		lifetimeDeadline:   lifetimeDeadline,
-		readTimeout:        cfg.readTimeout,
-		writeTimeout:       cfg.writeTimeout,
-		connectDone:        make(chan struct{}),
-		config:             cfg,
-		connectContextMade: make(chan struct{}),
+		id:                   id,
+		addr:                 addr,
+		idleTimeout:          cfg.idleTimeout,
+		readTimeout:          cfg.readTimeout,
+		writeTimeout:         cfg.writeTimeout,
+		connectDone:          make(chan struct{}),
+		config:               cfg,
+		connectContextMade:   make(chan struct{}),
+		cancellationListener: internal.NewCancellationListener(),
+		poolMonitor:          cfg.poolMonitor,
 	}
 	atomic.StoreInt32(&c.connected, initialized)
 
 	return c, nil
+}
+
+func (c *connection) processInitializationError(err error) {
+	atomic.StoreInt32(&c.connected, disconnected)
+	if c.nc != nil {
+		_ = c.nc.Close()
+	}
+
+	c.connectErr = ConnectionError{Wrapped: err, init: true}
+	if c.config.errorHandlingCallback != nil {
+		c.config.errorHandlingCallback(c.connectErr, c.generation)
+	}
 }
 
 // connect handles the I/O for a connection. It will dial, configure TLS, and perform
@@ -93,29 +115,47 @@ func (c *connection) connect(ctx context.Context) {
 	}
 	defer close(c.connectDone)
 
+	c.connectContextMutex.Lock()
 	ctx, c.cancelConnectContext = context.WithCancel(ctx)
+	c.connectContextMutex.Unlock()
+
+	defer func() {
+		var cancelFn context.CancelFunc
+
+		c.connectContextMutex.Lock()
+		cancelFn = c.cancelConnectContext
+		c.cancelConnectContext = nil
+		c.connectContextMutex.Unlock()
+
+		if cancelFn != nil {
+			cancelFn()
+		}
+	}()
+
 	close(c.connectContextMade)
 
+	// Assign the result of DialContext to a temporary net.Conn to ensure that c.nc is not set in an error case.
 	var err error
-	c.nc, err = c.config.dialer.DialContext(ctx, c.addr.Network(), c.addr.String())
+	var tempNc net.Conn
+	tempNc, err = c.config.dialer.DialContext(ctx, c.addr.Network(), c.addr.String())
 	if err != nil {
-		atomic.StoreInt32(&c.connected, disconnected)
-		c.connectErr = ConnectionError{Wrapped: err, init: true}
+		c.processInitializationError(err)
 		return
 	}
+	c.nc = tempNc
 
 	if c.config.tlsConfig != nil {
 		tlsConfig := c.config.tlsConfig.Clone()
 
 		// store the result of configureTLS in a separate variable than c.nc to avoid overwriting c.nc with nil in
 		// error cases.
-		tlsNc, err := configureTLS(ctx, c.nc, c.addr, tlsConfig)
+		ocspOpts := &ocsp.VerifyOptions{
+			Cache:                   c.config.ocspCache,
+			DisableEndpointChecking: c.config.disableOCSPEndpointCheck,
+		}
+		tlsNc, err := configureTLS(ctx, c.config.tlsConnectionSource, c.nc, c.addr, tlsConfig, ocspOpts)
 		if err != nil {
-			if c.nc != nil {
-				_ = c.nc.Close()
-			}
-			atomic.StoreInt32(&c.connected, disconnected)
-			c.connectErr = ConnectionError{Wrapped: err, init: true}
+			c.processInitializationError(err)
 			return
 		}
 		c.nc = tlsNc
@@ -126,26 +166,34 @@ func (c *connection) connect(ctx context.Context) {
 	// running isMaster and authentication is handled by a handshaker on the configuration instance.
 	handshaker := c.config.handshaker
 	if handshaker == nil {
+		if c.poolMonitor != nil {
+			c.poolMonitor.Event(&event.PoolEvent{
+				Type:         event.ConnectionReady,
+				Address:      c.addr.String(),
+				ConnectionID: c.poolID,
+			})
+		}
 		return
 	}
 
+	var handshakeInfo driver.HandshakeInformation
+	handshakeStartTime := time.Now()
 	handshakeConn := initConnection{c}
-	c.desc, err = handshaker.GetDescription(ctx, c.addr, handshakeConn)
+	handshakeInfo, err = handshaker.GetHandshakeInformation(ctx, c.addr, handshakeConn)
 	if err == nil {
+		// We only need to retain the Description field as the connection's description. The authentication-related
+		// fields in handshakeInfo are tracked by the handshaker if necessary.
+		c.desc = handshakeInfo.Description
+		c.isMasterRTT = time.Since(handshakeStartTime)
 		err = handshaker.FinishHandshake(ctx, handshakeConn)
 	}
+
+	// We have a failed handshake here
 	if err != nil {
-		if c.nc != nil {
-			_ = c.nc.Close()
-		}
-		atomic.StoreInt32(&c.connected, disconnected)
-		c.connectErr = ConnectionError{Wrapped: err, init: true}
+		c.processInitializationError(err)
 		return
 	}
 
-	if c.config.descCallback != nil {
-		c.config.descCallback(c.desc)
-	}
 	if len(c.desc.Compression) > 0 {
 	clientMethodLoop:
 		for _, method := range c.config.compressors {
@@ -174,6 +222,13 @@ func (c *connection) connect(ctx context.Context) {
 			}
 		}
 	}
+	if c.poolMonitor != nil {
+		c.poolMonitor.Event(&event.PoolEvent{
+			Type:         event.ConnectionReady,
+			Address:      c.addr.String(),
+			ConnectionID: c.poolID,
+		})
+	}
 }
 
 func (c *connection) wait() error {
@@ -185,7 +240,42 @@ func (c *connection) wait() error {
 
 func (c *connection) closeConnectContext() {
 	<-c.connectContextMade
-	c.cancelConnectContext()
+	var cancelFn context.CancelFunc
+
+	c.connectContextMutex.Lock()
+	cancelFn = c.cancelConnectContext
+	c.cancelConnectContext = nil
+	c.connectContextMutex.Unlock()
+
+	if cancelFn != nil {
+		cancelFn()
+	}
+}
+
+func transformNetworkError(ctx context.Context, originalError error, contextDeadlineUsed bool) error {
+	if originalError == nil {
+		return nil
+	}
+
+	// If there was an error and the context was cancelled, we assume it happened due to the cancellation.
+	if ctx.Err() == context.Canceled {
+		return context.Canceled
+	}
+
+	// If there was a timeout error and the context deadline was used, we convert the error into
+	// context.DeadlineExceeded.
+	if !contextDeadlineUsed {
+		return originalError
+	}
+	if netErr, ok := originalError.(net.Error); ok && netErr.Timeout() {
+		return context.DeadlineExceeded
+	}
+
+	return originalError
+}
+
+func (c *connection) cancellationListenerCallback() {
+	_ = c.close()
 }
 
 func (c *connection) writeWireMessage(ctx context.Context, wm []byte) error {
@@ -204,7 +294,9 @@ func (c *connection) writeWireMessage(ctx context.Context, wm []byte) error {
 		deadline = time.Now().Add(c.writeTimeout)
 	}
 
+	var contextDeadlineUsed bool
 	if dl, ok := ctx.Deadline(); ok && (deadline.IsZero() || dl.Before(deadline)) {
+		contextDeadlineUsed = true
 		deadline = dl
 	}
 
@@ -212,14 +304,35 @@ func (c *connection) writeWireMessage(ctx context.Context, wm []byte) error {
 		return ConnectionError{ConnectionID: c.id, Wrapped: err, message: "failed to set write deadline"}
 	}
 
-	_, err = c.nc.Write(wm)
+	err = c.write(ctx, wm)
 	if err != nil {
 		c.close()
-		return ConnectionError{ConnectionID: c.id, Wrapped: err, message: "unable to write wire message to network"}
+		return ConnectionError{
+			ConnectionID: c.id,
+			Wrapped:      transformNetworkError(ctx, err, contextDeadlineUsed),
+			message:      "unable to write wire message to network",
+		}
 	}
 
 	c.bumpIdleDeadline()
 	return nil
+}
+
+func (c *connection) write(ctx context.Context, wm []byte) (err error) {
+	go c.cancellationListener.Listen(ctx, c.cancellationListenerCallback)
+	defer func() {
+		// There is a race condition between Write and StopListening. If the context is cancelled after c.nc.Write
+		// succeeds, the cancellation listener could fire and close the connection. In this case, the connection has
+		// been invalidated but the error is nil. To account for this, overwrite the error to context.Cancelled if
+		// the abortedForCancellation flag was set.
+
+		if aborted := c.cancellationListener.StopListening(); aborted && err == nil {
+			err = context.Canceled
+		}
+	}()
+
+	_, err = c.nc.Write(wm)
+	return err
 }
 
 // readWireMessage reads a wiremessage from the connection. The dst parameter will be overwritten.
@@ -241,13 +354,47 @@ func (c *connection) readWireMessage(ctx context.Context, dst []byte) ([]byte, e
 		deadline = time.Now().Add(c.readTimeout)
 	}
 
+	var contextDeadlineUsed bool
 	if dl, ok := ctx.Deadline(); ok && (deadline.IsZero() || dl.Before(deadline)) {
+		contextDeadlineUsed = true
 		deadline = dl
 	}
 
 	if err := c.nc.SetReadDeadline(deadline); err != nil {
 		return nil, ConnectionError{ConnectionID: c.id, Wrapped: err, message: "failed to set read deadline"}
 	}
+
+	dst, errMsg, err := c.read(ctx, dst)
+	if err != nil {
+		// We closeConnection the connection because we don't know if there are other bytes left to read.
+		c.close()
+		message := errMsg
+		if err == io.EOF {
+			message = "socket was unexpectedly closed"
+		}
+		return nil, ConnectionError{
+			ConnectionID: c.id,
+			Wrapped:      transformNetworkError(ctx, err, contextDeadlineUsed),
+			message:      message,
+		}
+	}
+
+	c.bumpIdleDeadline()
+	return dst, nil
+}
+
+func (c *connection) read(ctx context.Context, dst []byte) (bytesRead []byte, errMsg string, err error) {
+	go c.cancellationListener.Listen(ctx, c.cancellationListenerCallback)
+	defer func() {
+		// If the context is cancelled after we finish reading the server response, the cancellation listener could fire
+		// even though the socket reads succeed. To account for this, we overwrite err to be context.Canceled if the
+		// abortedForCancellation flag is set.
+
+		if aborted := c.cancellationListener.StopListening(); aborted && err == nil {
+			errMsg = "unable to read server response"
+			err = context.Canceled
+		}
+	}()
 
 	// We use an array here because it only costs 4 bytes on the stack and means we'll only need to
 	// reslice dst once instead of twice.
@@ -256,15 +403,23 @@ func (c *connection) readWireMessage(ctx context.Context, dst []byte) ([]byte, e
 	// We do a ReadFull into an array here instead of doing an opportunistic ReadAtLeast into dst
 	// because there might be more than one wire message waiting to be read, for example when
 	// reading messages from an exhaust cursor.
-	_, err := io.ReadFull(c.nc, sizeBuf[:])
+	_, err = io.ReadFull(c.nc, sizeBuf[:])
 	if err != nil {
-		// We closeConnection the connection because we don't know if there are other bytes left to read.
-		c.close()
-		return nil, ConnectionError{ConnectionID: c.id, Wrapped: err, message: "incomplete read of message header"}
+		return nil, "incomplete read of message header", err
 	}
 
 	// read the length as an int32
 	size := (int32(sizeBuf[0])) | (int32(sizeBuf[1]) << 8) | (int32(sizeBuf[2]) << 16) | (int32(sizeBuf[3]) << 24)
+
+	// In the case of an isMaster response where MaxMessageSize has not yet been set, use the hard-coded
+	// defaultMaxMessageSize instead.
+	maxMessageSize := c.desc.MaxMessageSize
+	if maxMessageSize == 0 {
+		maxMessageSize = defaultMaxMessageSize
+	}
+	if uint32(size) > maxMessageSize {
+		return nil, errResponseTooLarge.Error(), errResponseTooLarge
+	}
 
 	if int(size) > cap(dst) {
 		// Since we can't grow this slice without allocating, just allocate an entirely new slice.
@@ -277,17 +432,15 @@ func (c *connection) readWireMessage(ctx context.Context, dst []byte) ([]byte, e
 
 	_, err = io.ReadFull(c.nc, dst[4:])
 	if err != nil {
-		// We closeConnection the connection because we don't know if there are other bytes left to read.
-		c.close()
-		return nil, ConnectionError{ConnectionID: c.id, Wrapped: err, message: "incomplete read of full message"}
+		return nil, "incomplete read of full message", err
 	}
 
-	c.bumpIdleDeadline()
-	return dst, nil
+	return dst, "", nil
 }
 
 func (c *connection) close() error {
-	if atomic.LoadInt32(&c.connected) != connected {
+	// Overwrite the connection state as the first step so only the first close call will execute.
+	if !atomic.CompareAndSwapInt32(&c.connected, connected, disconnected) {
 		return nil
 	}
 
@@ -295,26 +448,24 @@ func (c *connection) close() error {
 	if c.nc != nil {
 		err = c.nc.Close()
 	}
-	atomic.StoreInt32(&c.connected, disconnected)
 
-	if c.pool != nil {
-		_ = c.pool.removeConnection(c)
-	}
 	return err
 }
 
-func (c *connection) expired() bool {
-	now := time.Now()
-	idleDeadline, ok := c.idleDeadline.Load().(time.Time)
-	if ok && now.After(idleDeadline) {
-		return true
-	}
-
-	if !c.lifetimeDeadline.IsZero() && now.After(c.lifetimeDeadline) {
-		return true
-	}
-
+func (c *connection) closed() bool {
 	return atomic.LoadInt32(&c.connected) == disconnected
+}
+
+func (c *connection) idleTimeoutExpired() bool {
+	now := time.Now()
+	if c.idleTimeout > 0 {
+		idleDeadline, ok := c.idleDeadline.Load().(time.Time)
+		if ok && now.After(idleDeadline) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (c *connection) bumpIdleDeadline() {
@@ -323,12 +474,38 @@ func (c *connection) bumpIdleDeadline() {
 	}
 }
 
+func (c *connection) setCanStream(canStream bool) {
+	c.canStream = canStream
+}
+
+func (c initConnection) supportsStreaming() bool {
+	return c.canStream
+}
+
+func (c *connection) setStreaming(streaming bool) {
+	c.currentlyStreaming = streaming
+}
+
+func (c *connection) getCurrentlyStreaming() bool {
+	return c.currentlyStreaming
+}
+
+func (c *connection) setSocketTimeout(timeout time.Duration) {
+	c.readTimeout = timeout
+	c.writeTimeout = timeout
+}
+
+func (c *connection) ID() string {
+	return c.id
+}
+
 // initConnection is an adapter used during connection initialization. It has the minimum
 // functionality necessary to implement the driver.Connection interface, which is required to pass a
 // *connection to a Handshaker.
 type initConnection struct{ *connection }
 
 var _ driver.Connection = initConnection{}
+var _ driver.StreamerConnection = initConnection{}
 
 func (c initConnection) Description() description.Server {
 	if c.connection == nil {
@@ -339,6 +516,7 @@ func (c initConnection) Description() description.Server {
 func (c initConnection) Close() error             { return nil }
 func (c initConnection) ID() string               { return c.id }
 func (c initConnection) Address() address.Address { return c.addr }
+func (c initConnection) Stale() bool              { return false }
 func (c initConnection) LocalAddress() address.Address {
 	if c.connection == nil || c.nc == nil {
 		return address.Address("0.0.0.0")
@@ -351,12 +529,20 @@ func (c initConnection) WriteWireMessage(ctx context.Context, wm []byte) error {
 func (c initConnection) ReadWireMessage(ctx context.Context, dst []byte) ([]byte, error) {
 	return c.readWireMessage(ctx, dst)
 }
+func (c initConnection) SetStreaming(streaming bool) {
+	c.setStreaming(streaming)
+}
+func (c initConnection) CurrentlyStreaming() bool {
+	return c.getCurrentlyStreaming()
+}
+func (c initConnection) SupportsStreaming() bool {
+	return c.supportsStreaming()
+}
 
 // Connection implements the driver.Connection interface to allow reading and writing wire
 // messages and the driver.Expirable interface to allow expiring.
 type Connection struct {
 	*connection
-	s *Server
 
 	mu sync.RWMutex
 }
@@ -436,9 +622,7 @@ func (c *Connection) Close() error {
 	if c.connection == nil {
 		return nil
 	}
-	if c.s != nil {
-		defer c.s.sem.Release(1)
-	}
+
 	err := c.pool.put(c.connection)
 	c.connection = nil
 	return err
@@ -451,10 +635,9 @@ func (c *Connection) Expire() error {
 	if c.connection == nil {
 		return nil
 	}
-	if c.s != nil {
-		c.s.sem.Release(1)
-	}
-	err := c.close()
+
+	_ = c.close()
+	err := c.pool.put(c.connection)
 	c.connection = nil
 	return err
 }
@@ -472,6 +655,13 @@ func (c *Connection) ID() string {
 		return "<closed>"
 	}
 	return c.id
+}
+
+// Stale returns if the connection is stale.
+func (c *Connection) Stale() bool {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.pool.stale(c.connection)
 }
 
 // Address returns the address of this connection.
@@ -497,8 +687,16 @@ func (c *Connection) LocalAddress() address.Address {
 var notMasterCodes = []int32{10107, 13435}
 var recoveringCodes = []int32{11600, 11602, 13436, 189, 91}
 
-func configureTLS(ctx context.Context, nc net.Conn, addr address.Address, config *tls.Config) (net.Conn, error) {
-	if !config.InsecureSkipVerify {
+func configureTLS(ctx context.Context,
+	tlsConnSource tlsConnectionSource,
+	nc net.Conn,
+	addr address.Address,
+	config *tls.Config,
+	ocspOpts *ocsp.VerifyOptions,
+) (net.Conn, error) {
+
+	// Ensure config.ServerName is always set for SNI.
+	if config.ServerName == "" {
 		hostname := addr.String()
 		colonPos := strings.LastIndex(hostname, ":")
 		if colonPos == -1 {
@@ -509,8 +707,7 @@ func configureTLS(ctx context.Context, nc net.Conn, addr address.Address, config
 		config.ServerName = hostname
 	}
 
-	client := tls.Client(nc, config)
-
+	client := tlsConnSource.Client(nc, config)
 	errChan := make(chan error, 1)
 	go func() {
 		errChan <- client.Handshake()
@@ -521,8 +718,17 @@ func configureTLS(ctx context.Context, nc net.Conn, addr address.Address, config
 		if err != nil {
 			return nil, err
 		}
+
+		// Only do OCSP verification if TLS verification is requested.
+		if config.InsecureSkipVerify {
+			break
+		}
+
+		if ocspErr := ocsp.Verify(ctx, client.ConnectionState(), ocspOpts); ocspErr != nil {
+			return nil, ocspErr
+		}
 	case <-ctx.Done():
-		return nil, errors.New("server connection cancelled/timeout during TLS handshake")
+		return nil, ctx.Err()
 	}
 	return client, nil
 }

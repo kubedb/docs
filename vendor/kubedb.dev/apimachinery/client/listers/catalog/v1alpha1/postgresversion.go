@@ -27,10 +27,13 @@ import (
 )
 
 // PostgresVersionLister helps list PostgresVersions.
+// All objects returned here must be treated as read-only.
 type PostgresVersionLister interface {
 	// List lists all PostgresVersions in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.PostgresVersion, err error)
 	// Get retrieves the PostgresVersion from the index for a given name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.PostgresVersion, error)
 	PostgresVersionListerExpansion
 }

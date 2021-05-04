@@ -27,10 +27,13 @@ import (
 )
 
 // PerconaXtraDBVersionLister helps list PerconaXtraDBVersions.
+// All objects returned here must be treated as read-only.
 type PerconaXtraDBVersionLister interface {
 	// List lists all PerconaXtraDBVersions in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.PerconaXtraDBVersion, err error)
 	// Get retrieves the PerconaXtraDBVersion from the index for a given name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.PerconaXtraDBVersion, error)
 	PerconaXtraDBVersionListerExpansion
 }

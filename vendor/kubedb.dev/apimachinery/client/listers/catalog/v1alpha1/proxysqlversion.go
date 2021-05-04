@@ -27,10 +27,13 @@ import (
 )
 
 // ProxySQLVersionLister helps list ProxySQLVersions.
+// All objects returned here must be treated as read-only.
 type ProxySQLVersionLister interface {
 	// List lists all ProxySQLVersions in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.ProxySQLVersion, err error)
 	// Get retrieves the ProxySQLVersion from the index for a given name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.ProxySQLVersion, error)
 	ProxySQLVersionListerExpansion
 }

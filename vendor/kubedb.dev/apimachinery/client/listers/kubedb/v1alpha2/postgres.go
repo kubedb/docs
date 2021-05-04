@@ -27,8 +27,10 @@ import (
 )
 
 // PostgresLister helps list Postgreses.
+// All objects returned here must be treated as read-only.
 type PostgresLister interface {
 	// List lists all Postgreses in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.Postgres, err error)
 	// Postgreses returns an object that can list and get Postgreses.
 	Postgreses(namespace string) PostgresNamespaceLister
@@ -59,10 +61,13 @@ func (s *postgresLister) Postgreses(namespace string) PostgresNamespaceLister {
 }
 
 // PostgresNamespaceLister helps list and get Postgreses.
+// All objects returned here must be treated as read-only.
 type PostgresNamespaceLister interface {
 	// List lists all Postgreses in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.Postgres, err error)
 	// Get retrieves the Postgres from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha2.Postgres, error)
 	PostgresNamespaceListerExpansion
 }

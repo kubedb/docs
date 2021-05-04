@@ -27,8 +27,10 @@ import (
 )
 
 // MemcachedOpsRequestLister helps list MemcachedOpsRequests.
+// All objects returned here must be treated as read-only.
 type MemcachedOpsRequestLister interface {
 	// List lists all MemcachedOpsRequests in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MemcachedOpsRequest, err error)
 	// MemcachedOpsRequests returns an object that can list and get MemcachedOpsRequests.
 	MemcachedOpsRequests(namespace string) MemcachedOpsRequestNamespaceLister
@@ -59,10 +61,13 @@ func (s *memcachedOpsRequestLister) MemcachedOpsRequests(namespace string) Memca
 }
 
 // MemcachedOpsRequestNamespaceLister helps list and get MemcachedOpsRequests.
+// All objects returned here must be treated as read-only.
 type MemcachedOpsRequestNamespaceLister interface {
 	// List lists all MemcachedOpsRequests in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MemcachedOpsRequest, err error)
 	// Get retrieves the MemcachedOpsRequest from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.MemcachedOpsRequest, error)
 	MemcachedOpsRequestNamespaceListerExpansion
 }

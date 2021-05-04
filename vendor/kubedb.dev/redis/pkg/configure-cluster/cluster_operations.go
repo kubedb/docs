@@ -20,8 +20,8 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/tools/exec"
 )
 
@@ -119,7 +119,7 @@ func (c Config) clusterReplicate(useTLS bool, pod *core.Pod, receivingNodeIP, ma
 }
 
 func (c Config) reshard(useTLS bool, pod *core.Pod, nodes [][]RedisNode, src, dst, requstedSlotsCount int) error {
-	log.Infof("Resharding %d slots from %q to %q...", requstedSlotsCount, nodes[src][0].IP, nodes[dst][0].IP)
+	klog.Infof("Resharding %d slots from %q to %q...", requstedSlotsCount, nodes[src][0].IP, nodes[dst][0].IP)
 
 	var (
 		need int

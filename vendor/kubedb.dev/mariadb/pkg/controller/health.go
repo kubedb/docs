@@ -31,12 +31,12 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	sql_driver "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
-	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
@@ -57,7 +57,7 @@ func (c *Controller) CheckMariaDBHealth(stopCh <-chan struct{}) {
 	go wait.Until(func() {
 		dbList, err := c.mdLister.MariaDBs(core.NamespaceAll).List(labels.Everything())
 		if err != nil {
-			glog.Errorf("Failed to list MariaDB objects with: %s", err.Error())
+			klog.Errorf("Failed to list MariaDB objects with: %s", err.Error())
 			return
 		}
 
@@ -84,7 +84,7 @@ func (c *Controller) CheckMariaDBHealth(stopCh <-chan struct{}) {
 				})
 
 				if err != nil {
-					glog.Warning("failed to list DB pod with ", err.Error())
+					klog.Warning("failed to list DB pod with ", err.Error())
 				}
 
 				for _, pod := range podList.Items {
@@ -94,7 +94,7 @@ func (c *Controller) CheckMariaDBHealth(stopCh <-chan struct{}) {
 					engine, err := c.getMariaDBClient(db, getMariaDBHostDNS(db, pod.ObjectMeta), api.MySQLDatabasePort)
 					//engine, err := c.getMariaDBClient(db)
 					if err != nil {
-						glog.Warning("failed to get db client for host ", pod.Namespace, "/", pod.Name)
+						klog.Warning("failed to get db client for host ", pod.Namespace, "/", pod.Name)
 						return
 					}
 					func(engine *xorm.Engine) {
@@ -102,13 +102,13 @@ func (c *Controller) CheckMariaDBHealth(stopCh <-chan struct{}) {
 							if engine != nil {
 								err = engine.Close()
 								if err != nil {
-									glog.Errorf("can't close the engine. error: %v,", err)
+									klog.Errorf("can't close the engine. error: %v,", err)
 								}
 							}
 						}()
 						isHostOnline, err := c.isHostOnline(db, engine)
 						if err != nil {
-							glog.Warning("host is not online ", err.Error())
+							klog.Warning("host is not online ", err.Error())
 						}
 						// update pod status if specific host get online
 						if isHostOnline {
@@ -121,7 +121,7 @@ func (c *Controller) CheckMariaDBHealth(stopCh <-chan struct{}) {
 							})
 							_, err = c.Client.CoreV1().Pods(pod.Namespace).UpdateStatus(context.TODO(), &pod, metav1.UpdateOptions{})
 							if err != nil {
-								glog.Warning("failed to update pod status with: ", err.Error())
+								klog.Warning("failed to update pod status with: ", err.Error())
 							}
 						}
 					}(engine)
@@ -129,7 +129,7 @@ func (c *Controller) CheckMariaDBHealth(stopCh <-chan struct{}) {
 				// Create database client
 				port, err := c.GetPrimaryServicePort(db)
 				if err != nil {
-					glog.Warning("Failed to primary service port with: ", err.Error())
+					klog.Warning("Failed to primary service port with: ", err.Error())
 					return
 				}
 
@@ -164,7 +164,7 @@ func (c *Controller) CheckMariaDBHealth(stopCh <-chan struct{}) {
 						metav1.UpdateOptions{},
 					)
 					if err != nil {
-						glog.Errorf("failed to update status for MariaDB: %s/%s", db.Namespace, db.Name)
+						klog.Errorf("failed to update status for MariaDB: %s/%s", db.Namespace, db.Name)
 					}
 					// Since the client isn't created, skip rest operations.
 					return
@@ -174,7 +174,7 @@ func (c *Controller) CheckMariaDBHealth(stopCh <-chan struct{}) {
 					if engine != nil {
 						err = engine.Close()
 						if err != nil {
-							glog.Errorf("Can't close the engine. error: %v", err)
+							klog.Errorf("Can't close the engine. error: %v", err)
 						}
 					}
 				}()
@@ -201,7 +201,7 @@ func (c *Controller) CheckMariaDBHealth(stopCh <-chan struct{}) {
 					metav1.UpdateOptions{},
 				)
 				if err != nil {
-					glog.Errorf("Failed to update status for MariaDB: %s/%s", db.Namespace, db.Name)
+					klog.Errorf("Failed to update status for MariaDB: %s/%s", db.Namespace, db.Name)
 					// Since condition update failed, skip remaining operations.
 					return
 				}
@@ -210,12 +210,12 @@ func (c *Controller) CheckMariaDBHealth(stopCh <-chan struct{}) {
 				if db.IsCluster() {
 					isHealthy, err = c.checkMariaDBClusterHealth(db, engine)
 					if err != nil {
-						glog.Errorf("MariaDB Cluster %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
+						klog.Errorf("MariaDB Cluster %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
 					}
 				} else {
 					isHealthy, err = c.checkMariaDBStandaloneHealth(engine)
 					if err != nil {
-						glog.Errorf("MariaDB standalone %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
+						klog.Errorf("MariaDB standalone %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
 					}
 				}
 
@@ -242,7 +242,7 @@ func (c *Controller) CheckMariaDBHealth(stopCh <-chan struct{}) {
 					metav1.UpdateOptions{},
 				)
 				if err != nil {
-					glog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
+					klog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
 				}
 
 			}()
@@ -252,7 +252,7 @@ func (c *Controller) CheckMariaDBHealth(stopCh <-chan struct{}) {
 
 	// will wait here until stopCh is closed.
 	<-stopCh
-	glog.Info("Shutting down MariaDB health checker...")
+	klog.Info("Shutting down MariaDB health checker...")
 }
 
 func (c *Controller) checkMariaDBClusterHealth(db *api.MariaDB, engine *xorm.Engine) (bool, error) {

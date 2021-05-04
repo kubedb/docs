@@ -21,10 +21,10 @@ import (
 
 	amc "kubedb.dev/apimachinery/pkg/controller"
 
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/klog/v2"
 	dmcond "kmodules.xyz/client-go/dynamic/conditions"
 	"kmodules.xyz/client-go/tools/queue"
 	"stash.appscode.dev/apimachinery/apis/stash/v1beta1"
@@ -70,14 +70,14 @@ func Configure(cfg *rest.Config, s *amc.StashInitializer, resyncPeriod time.Dura
 func (c *Controller) StartAfterStashInstalled(maxNumRequeues, numThreads int, selector metav1.LabelSelector, stopCh <-chan struct{}) {
 	// Wait until Stash operator installed
 	if err := c.waitUntilStashInstalled(stopCh); err != nil {
-		log.Errorln("error during waiting for RestoreSession crd. Reason: ", err)
+		klog.Errorln("error during waiting for RestoreSession crd. Reason: ", err)
 		return
 	}
 
 	// Initialize the watchers
 	err := c.initWatcher(maxNumRequeues, numThreads, selector)
 	if err != nil {
-		log.Errorln("Failed to initialize Stash controllers. Reason: ", err)
+		klog.Errorln("Failed to initialize Stash controllers. Reason: ", err)
 		return
 	}
 
@@ -86,7 +86,7 @@ func (c *Controller) StartAfterStashInstalled(maxNumRequeues, numThreads int, se
 }
 
 func (c *Controller) initWatcher(maxNumRequeues, numThreads int, selector metav1.LabelSelector) error {
-	log.Infoln("Initializing stash watchers.....")
+	klog.Infoln("Initializing stash watchers.....")
 	// only watch  the restore invokers that matches the selector
 	ls, err := metav1.LabelSelectorAsSelector(&selector)
 	if err != nil {
@@ -110,13 +110,13 @@ func (c *Controller) initWatcher(maxNumRequeues, numThreads int, selector metav1
 }
 
 func (c *Controller) startController(stopCh <-chan struct{}) {
-	log.Infoln("Starting Stash controllers...")
+	klog.Infoln("Starting Stash controllers...")
 	// start informer factory
 	c.StashInformerFactory.Start(stopCh)
 	// wait for cache to sync
 	for t, v := range c.StashInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Errorf("%v timed out waiting for caches to sync", t)
+			klog.Errorf("%v timed out waiting for caches to sync", t)
 			return
 		}
 	}

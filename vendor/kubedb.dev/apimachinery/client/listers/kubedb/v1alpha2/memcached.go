@@ -27,8 +27,10 @@ import (
 )
 
 // MemcachedLister helps list Memcacheds.
+// All objects returned here must be treated as read-only.
 type MemcachedLister interface {
 	// List lists all Memcacheds in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.Memcached, err error)
 	// Memcacheds returns an object that can list and get Memcacheds.
 	Memcacheds(namespace string) MemcachedNamespaceLister
@@ -59,10 +61,13 @@ func (s *memcachedLister) Memcacheds(namespace string) MemcachedNamespaceLister 
 }
 
 // MemcachedNamespaceLister helps list and get Memcacheds.
+// All objects returned here must be treated as read-only.
 type MemcachedNamespaceLister interface {
 	// List lists all Memcacheds in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.Memcached, err error)
 	// Get retrieves the Memcached from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha2.Memcached, error)
 	MemcachedNamespaceListerExpansion
 }

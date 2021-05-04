@@ -27,8 +27,10 @@ import (
 )
 
 // ProxySQLOpsRequestLister helps list ProxySQLOpsRequests.
+// All objects returned here must be treated as read-only.
 type ProxySQLOpsRequestLister interface {
 	// List lists all ProxySQLOpsRequests in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.ProxySQLOpsRequest, err error)
 	// ProxySQLOpsRequests returns an object that can list and get ProxySQLOpsRequests.
 	ProxySQLOpsRequests(namespace string) ProxySQLOpsRequestNamespaceLister
@@ -59,10 +61,13 @@ func (s *proxySQLOpsRequestLister) ProxySQLOpsRequests(namespace string) ProxySQ
 }
 
 // ProxySQLOpsRequestNamespaceLister helps list and get ProxySQLOpsRequests.
+// All objects returned here must be treated as read-only.
 type ProxySQLOpsRequestNamespaceLister interface {
 	// List lists all ProxySQLOpsRequests in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.ProxySQLOpsRequest, err error)
 	// Get retrieves the ProxySQLOpsRequest from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.ProxySQLOpsRequest, error)
 	ProxySQLOpsRequestNamespaceListerExpansion
 }

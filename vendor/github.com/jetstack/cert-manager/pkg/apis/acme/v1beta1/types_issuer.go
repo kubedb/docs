@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Jetstack cert-manager contributors.
+Copyright 2020 The cert-manager Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -42,6 +42,17 @@ type ACMEIssuer struct {
 	// Only ACME v2 endpoints (i.e. RFC 8555) are supported.
 	Server string `json:"server"`
 
+	// PreferredChain is the chain to use if the ACME server outputs multiple.
+	// PreferredChain is no guarantee that this one gets delivered by the ACME
+	// endpoint.
+	// For example, for Let's Encrypt's DST crosssign you would use:
+	// "DST Root CA X3" or "ISRG Root X1" for the newer Let's Encrypt root CA.
+	// This value picks the first certificate bundle in the ACME alternative
+	// chains that has a certificate with this value as its issuer's CN
+	// +optional
+	// +kubebuilder:validation:MaxLength=64
+	PreferredChain string `json:"preferredChain"`
+
 	// Enables or disables validation of the ACME server TLS certificate.
 	// If true, requests to the ACME server will not have their TLS certificate
 	// validated (i.e. insecure connections will be allowed).
@@ -73,6 +84,23 @@ type ACMEIssuer struct {
 	// For more information, see: https://cert-manager.io/docs/configuration/acme/
 	// +optional
 	Solvers []ACMEChallengeSolver `json:"solvers,omitempty"`
+
+	// Enables or disables generating a new ACME account key.
+	// If true, the Issuer resource will *not* request a new account but will expect
+	// the account key to be supplied via an existing secret.
+	// If false, the cert-manager system will generate a new ACME account key
+	// for the Issuer.
+	// Defaults to false.
+	// +optional
+	DisableAccountKeyGeneration bool `json:"disableAccountKeyGeneration,omitempty"`
+
+	// Enables requesting a Not After date on certificates that matches the
+	// duration of the certificate. This is not supported by all ACME servers
+	// like Let's Encrypt. If set to true when the ACME server does not support
+	// it it will create an error on the Order.
+	// Defaults to false.
+	// +optional
+	EnableDurationFeature bool `json:"enableDurationFeature,omitempty"`
 }
 
 // ACMEExternalAccountBinding is a reference to a CA external account of the ACME
@@ -90,9 +118,11 @@ type ACMEExternalAccountBinding struct {
 	// encoded data.
 	Key cmmeta.SecretKeySelector `json:"keySecretRef"`
 
-	// keyAlgorithm is the MAC key algorithm that the key is used for.
-	// Valid values are "HS256", "HS384" and "HS512".
-	KeyAlgorithm HMACKeyAlgorithm `json:"keyAlgorithm"`
+	// Deprecated: keyAlgorithm field exists for historical compatibility
+	// reasons and should not be used. The algorithm is now hardcoded to HS256
+	// in golang/x/crypto/acme.
+	// +optional
+	KeyAlgorithm HMACKeyAlgorithm `json:"keyAlgorithm,omitempty"`
 }
 
 // HMACKeyAlgorithm is the name of a key algorithm used for HMAC encryption
@@ -174,6 +204,14 @@ type ACMEChallengeSolverHTTP01 struct {
 	// provisioned by cert-manager for each Challenge to be completed.
 	// +optional
 	Ingress *ACMEChallengeSolverHTTP01Ingress `json:"ingress,omitempty"`
+
+	// The Istio virtualservice based HTTP01 challenge solver will solve
+	// challenges by creating an Istio virtualservice resource that is connected
+	// to the specified Istio gateway in order to route requests for
+	// '/.well-known/acme-challenge/XYZ' to 'challenge solver' pods that are
+	// provisioned by cert-manager for each Challenge to be completed.
+	// +optional
+	Istio *ACMEChallengeSolverHTTP01Istio `json:"istio,omitempty"`
 }
 
 type ACMEChallengeSolverHTTP01Ingress struct {
@@ -215,8 +253,9 @@ type ACMEChallengeSolverHTTP01IngressPodTemplate struct {
 	ACMEChallengeSolverHTTP01IngressPodObjectMeta `json:"metadata"`
 
 	// PodSpec defines overrides for the HTTP01 challenge solver pod.
-	// Only the 'nodeSelector', 'affinity' and 'tolerations' fields are
-	// supported currently. All other fields will be ignored.
+	// Only the 'priorityClassName', 'nodeSelector', 'affinity',
+	// 'serviceAccountName' and 'tolerations' fields are supported currently.
+	// All other fields will be ignored.
 	// +optional
 	Spec ACMEChallengeSolverHTTP01IngressPodSpec `json:"spec"`
 }
@@ -245,6 +284,14 @@ type ACMEChallengeSolverHTTP01IngressPodSpec struct {
 	// If specified, the pod's tolerations.
 	// +optional
 	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+
+	// If specified, the pod's priorityClassName.
+	// +optional
+	PriorityClassName string `json:"priorityClassName,omitempty"`
+
+	// If specified, the pod's service account
+	// +optional
+	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 }
 
 type ACMEChallengeSolverHTTP01IngressTemplate struct {
@@ -264,6 +311,25 @@ type ACMEChallengeSolverHTTP01IngressObjectMeta struct {
 	// Labels that should be added to the created ACME HTTP01 solver ingress.
 	// +optional
 	Labels map[string]string `json:"labels,omitempty"`
+}
+
+type ACMEChallengeSolverHTTP01Istio struct {
+	// Optional service type for Kubernetes solver service
+	// +optional
+	ServiceType corev1.ServiceType `json:"serviceType,omitempty"`
+
+	// The names of the gateways that are used to generate the virtualservice
+	// that configures the HTTP01 challenge routes.
+	// `<gateway namespace>/<gateway name>`; specifying a gateway with no
+	// namespace qualifier is the same as specifying the VirtualService's
+	// namespace.
+	// ref: https://github.com/istio/api/blob/24c65c0415b63a6ebca18059c60fc8fccf041e9a/networking/v1beta1/virtual_service.pb.go#L233-L246
+	Gateways []string `json:"gateways,omitempty"`
+
+	// Optional pod template used to configure the ACME challenge solver pods
+	// used for HTTP01 challenges
+	// +optional
+	PodTemplate *ACMEChallengeSolverHTTP01IngressPodTemplate `json:"podTemplate,omitempty"`
 }
 
 // Used to configure a DNS01 challenge provider to be used when solving DNS01

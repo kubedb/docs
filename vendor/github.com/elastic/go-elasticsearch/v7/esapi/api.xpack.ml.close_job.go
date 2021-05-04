@@ -2,7 +2,7 @@
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 //
-// Code generated from specification version 7.9.0: DO NOT EDIT
+// Code generated from specification version 7.12.0: DO NOT EDIT
 
 package esapi
 
@@ -40,9 +40,10 @@ type MLCloseJobRequest struct {
 
 	JobID string
 
-	AllowNoJobs *bool
-	Force       *bool
-	Timeout     time.Duration
+	AllowNoJobs  *bool
+	AllowNoMatch *bool
+	Force        *bool
+	Timeout      time.Duration
 
 	Pretty     bool
 	Human      bool
@@ -79,6 +80,10 @@ func (r MLCloseJobRequest) Do(ctx context.Context, transport Transport) (*Respon
 
 	if r.AllowNoJobs != nil {
 		params["allow_no_jobs"] = strconv.FormatBool(*r.AllowNoJobs)
+	}
+
+	if r.AllowNoMatch != nil {
+		params["allow_no_match"] = strconv.FormatBool(*r.AllowNoMatch)
 	}
 
 	if r.Force != nil {
@@ -173,6 +178,14 @@ func (f MLCloseJob) WithBody(v io.Reader) func(*MLCloseJobRequest) {
 func (f MLCloseJob) WithAllowNoJobs(v bool) func(*MLCloseJobRequest) {
 	return func(r *MLCloseJobRequest) {
 		r.AllowNoJobs = &v
+	}
+}
+
+// WithAllowNoMatch - whether to ignore if a wildcard expression matches no jobs. (this includes `_all` string or when no jobs have been specified).
+//
+func (f MLCloseJob) WithAllowNoMatch(v bool) func(*MLCloseJobRequest) {
+	return func(r *MLCloseJobRequest) {
+		r.AllowNoMatch = &v
 	}
 }
 

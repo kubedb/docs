@@ -27,8 +27,10 @@ import (
 )
 
 // RedisOpsRequestLister helps list RedisOpsRequests.
+// All objects returned here must be treated as read-only.
 type RedisOpsRequestLister interface {
 	// List lists all RedisOpsRequests in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.RedisOpsRequest, err error)
 	// RedisOpsRequests returns an object that can list and get RedisOpsRequests.
 	RedisOpsRequests(namespace string) RedisOpsRequestNamespaceLister
@@ -59,10 +61,13 @@ func (s *redisOpsRequestLister) RedisOpsRequests(namespace string) RedisOpsReque
 }
 
 // RedisOpsRequestNamespaceLister helps list and get RedisOpsRequests.
+// All objects returned here must be treated as read-only.
 type RedisOpsRequestNamespaceLister interface {
 	// List lists all RedisOpsRequests in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.RedisOpsRequest, err error)
 	// Get retrieves the RedisOpsRequest from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.RedisOpsRequest, error)
 	RedisOpsRequestNamespaceListerExpansion
 }

@@ -27,8 +27,10 @@ import (
 )
 
 // MariaDBLister helps list MariaDBs.
+// All objects returned here must be treated as read-only.
 type MariaDBLister interface {
 	// List lists all MariaDBs in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.MariaDB, err error)
 	// MariaDBs returns an object that can list and get MariaDBs.
 	MariaDBs(namespace string) MariaDBNamespaceLister
@@ -59,10 +61,13 @@ func (s *mariaDBLister) MariaDBs(namespace string) MariaDBNamespaceLister {
 }
 
 // MariaDBNamespaceLister helps list and get MariaDBs.
+// All objects returned here must be treated as read-only.
 type MariaDBNamespaceLister interface {
 	// List lists all MariaDBs in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.MariaDB, err error)
 	// Get retrieves the MariaDB from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha2.MariaDB, error)
 	MariaDBNamespaceListerExpansion
 }

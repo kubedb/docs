@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Jetstack cert-manager contributors.
+Copyright The cert-manager Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,8 +26,10 @@ import (
 )
 
 // CertificateLister helps list Certificates.
+// All objects returned here must be treated as read-only.
 type CertificateLister interface {
 	// List lists all Certificates in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1beta1.Certificate, err error)
 	// Certificates returns an object that can list and get Certificates.
 	Certificates(namespace string) CertificateNamespaceLister
@@ -58,10 +60,13 @@ func (s *certificateLister) Certificates(namespace string) CertificateNamespaceL
 }
 
 // CertificateNamespaceLister helps list and get Certificates.
+// All objects returned here must be treated as read-only.
 type CertificateNamespaceLister interface {
 	// List lists all Certificates in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1beta1.Certificate, err error)
 	// Get retrieves the Certificate from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1beta1.Certificate, error)
 	CertificateNamespaceListerExpansion
 }

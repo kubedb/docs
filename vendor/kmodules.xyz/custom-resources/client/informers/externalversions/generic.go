@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	v1alpha1 "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
+	metricsv1alpha1 "kmodules.xyz/custom-resources/apis/metrics/v1alpha1"
 
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
@@ -56,6 +57,10 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=appcatalog.appscode.com, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithResource("appbindings"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Appcatalog().V1alpha1().AppBindings().Informer()}, nil
+
+		// Group=metrics.appscode.com, Version=v1alpha1
+	case metricsv1alpha1.SchemeGroupVersion.WithResource("metricsconfigurations"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Metrics().V1alpha1().MetricsConfigurations().Informer()}, nil
 
 	}
 

@@ -28,12 +28,12 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
 	rd "github.com/go-redis/redis"
-	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 )
 
@@ -47,7 +47,7 @@ func (c *Controller) CheckRedisHealth(stopCh <-chan struct{}) {
 	go wait.Until(func() {
 		dbList, err := c.rdLister.Redises(core.NamespaceAll).List(labels.Everything())
 		if err != nil {
-			glog.Errorf("Failed to list Redis objects with: %s", err.Error())
+			klog.Errorf("Failed to list Redis objects with: %s", err.Error())
 			return
 		}
 
@@ -66,7 +66,7 @@ func (c *Controller) CheckRedisHealth(stopCh <-chan struct{}) {
 
 				client, err := c.getRedisClient(db)
 				if err != nil {
-					glog.Errorf("Failed to get redis client for Redis: %s/%s error: %s", db.Namespace, db.Name, err.Error())
+					klog.Errorf("Failed to get redis client for Redis: %s/%s error: %s", db.Namespace, db.Name, err.Error())
 					// Since the client was unable to connect the database,
 					// update "AcceptingConnection" to "false".
 					// update "Ready" to "false"
@@ -95,7 +95,7 @@ func (c *Controller) CheckRedisHealth(stopCh <-chan struct{}) {
 					metav1.UpdateOptions{},
 				)
 				if err != nil {
-					glog.Errorf("Failed to update status for Redis: %s/%s", db.Namespace, db.Name)
+					klog.Errorf("Failed to update status for Redis: %s/%s", db.Namespace, db.Name)
 					// Since condition update failed, skip remaining operations.
 					return
 				}
@@ -103,11 +103,11 @@ func (c *Controller) CheckRedisHealth(stopCh <-chan struct{}) {
 				pingResult, err := client.Ping().Result()
 				if err != nil {
 					c.updateDatabaseNotReady(db)
-					glog.Errorf("Failed to ping the database: %s/%s error: %s", db.Namespace, db.Name, err.Error())
+					klog.Errorf("Failed to ping the database: %s/%s error: %s", db.Namespace, db.Name, err.Error())
 					return
 				} else if !strings.Contains(pingResult, "PONG") {
 					c.updateDatabaseNotReady(db)
-					glog.Errorf("Ping returned unexpected reply for the database: %s/%s reply: %s", db.Namespace, db.Name, pingResult)
+					klog.Errorf("Ping returned unexpected reply for the database: %s/%s reply: %s", db.Namespace, db.Name, pingResult)
 					return
 				}
 
@@ -118,7 +118,7 @@ func (c *Controller) CheckRedisHealth(stopCh <-chan struct{}) {
 
 	// will wait here until stopCh is closed.
 	<-stopCh
-	glog.Info("Shutting down Redis health checker...")
+	klog.Info("Shutting down Redis health checker...")
 }
 
 func (c *Controller) getRedisClient(db *api.Redis) (*rd.Client, error) {
@@ -128,14 +128,14 @@ func (c *Controller) getRedisClient(db *api.Redis) (*rd.Client, error) {
 	if db.Spec.TLS != nil {
 		sec, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.CertificateName(api.RedisClientCert), metav1.GetOptions{})
 		if err != nil {
-			glog.Error(err, "error in getting the secret")
+			klog.Error(err, "error in getting the secret")
 			return nil, err
 		}
 		pool := x509.NewCertPool()
 		pool.AppendCertsFromPEM(sec.Data["ca.crt"])
 		cert, err := tls.X509KeyPair(sec.Data["tls.crt"], sec.Data["tls.key"])
 		if err != nil {
-			glog.Error(err, "error in making certificate")
+			klog.Error(err, "error in making certificate")
 			return nil, err
 		}
 		rdOpts.TLSConfig = &tls.Config{
@@ -177,7 +177,7 @@ func (c *Controller) updateErrorAcceptingConnections(db *api.Redis, connectionEr
 		metav1.UpdateOptions{},
 	)
 	if err != nil {
-		glog.Errorf("Failed to update status for Redis: %s/%s", db.Namespace, db.Name)
+		klog.Errorf("Failed to update status for Redis: %s/%s", db.Namespace, db.Name)
 	}
 }
 
@@ -200,7 +200,7 @@ func (c *Controller) updateDatabaseReady(db *api.Redis) {
 		metav1.UpdateOptions{},
 	)
 	if err != nil {
-		glog.Errorf("Failed to update status for Redis: %s/%s", db.Namespace, db.Name)
+		klog.Errorf("Failed to update status for Redis: %s/%s", db.Namespace, db.Name)
 	}
 }
 
@@ -223,6 +223,6 @@ func (c *Controller) updateDatabaseNotReady(db *api.Redis) {
 		metav1.UpdateOptions{},
 	)
 	if err != nil {
-		glog.Errorf("Failed to update status for Redis: %s/%s", db.Namespace, db.Name)
+		klog.Errorf("Failed to update status for Redis: %s/%s", db.Namespace, db.Name)
 	}
 }

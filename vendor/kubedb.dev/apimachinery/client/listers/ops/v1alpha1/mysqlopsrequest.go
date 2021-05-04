@@ -27,8 +27,10 @@ import (
 )
 
 // MySQLOpsRequestLister helps list MySQLOpsRequests.
+// All objects returned here must be treated as read-only.
 type MySQLOpsRequestLister interface {
 	// List lists all MySQLOpsRequests in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MySQLOpsRequest, err error)
 	// MySQLOpsRequests returns an object that can list and get MySQLOpsRequests.
 	MySQLOpsRequests(namespace string) MySQLOpsRequestNamespaceLister
@@ -59,10 +61,13 @@ func (s *mySQLOpsRequestLister) MySQLOpsRequests(namespace string) MySQLOpsReque
 }
 
 // MySQLOpsRequestNamespaceLister helps list and get MySQLOpsRequests.
+// All objects returned here must be treated as read-only.
 type MySQLOpsRequestNamespaceLister interface {
 	// List lists all MySQLOpsRequests in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MySQLOpsRequest, err error)
 	// Get retrieves the MySQLOpsRequest from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.MySQLOpsRequest, error)
 	MySQLOpsRequestNamespaceListerExpansion
 }

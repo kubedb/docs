@@ -24,8 +24,8 @@ import (
 
 	"github.com/go-xorm/xorm"
 	_ "github.com/lib/pq"
-	"gomodules.xyz/x/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/tools/certholder"
 )
 
@@ -49,14 +49,14 @@ func (c *Controller) GetPostgresClient(db *api.Postgres, dnsName string, port in
 		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 
 		if err != nil {
-			log.Error(err, "failed to get certificate secret.", secretName)
+			klog.Error(err, "failed to get certificate secret.", secretName)
 			return nil, err
 		}
 
 		certs, _ := certholder.DefaultHolder.ForResource(api.SchemeGroupVersion.WithResource(api.ResourcePluralPostgres), db.ObjectMeta)
 		paths, err := certs.Save(certSecret)
 		if err != nil {
-			log.Error(err, "failed to save certificate")
+			klog.Error(err, "failed to save certificate")
 			return nil, err
 		}
 		if db.Spec.ClientAuthMode == api.ClientAuthModeCert {

@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Jetstack cert-manager contributors.
+Copyright The cert-manager Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,8 +26,10 @@ import (
 )
 
 // IssuerLister helps list Issuers.
+// All objects returned here must be treated as read-only.
 type IssuerLister interface {
 	// List lists all Issuers in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.Issuer, err error)
 	// Issuers returns an object that can list and get Issuers.
 	Issuers(namespace string) IssuerNamespaceLister
@@ -58,10 +60,13 @@ func (s *issuerLister) Issuers(namespace string) IssuerNamespaceLister {
 }
 
 // IssuerNamespaceLister helps list and get Issuers.
+// All objects returned here must be treated as read-only.
 type IssuerNamespaceLister interface {
 	// List lists all Issuers in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.Issuer, err error)
 	// Get retrieves the Issuer from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha2.Issuer, error)
 	IssuerNamespaceListerExpansion
 }

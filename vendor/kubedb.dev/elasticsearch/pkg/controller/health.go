@@ -25,13 +25,13 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	go_es "kubedb.dev/elasticsearch/pkg/util/go-es"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 )
 
@@ -42,12 +42,12 @@ func (c *Controller) RunHealthChecker(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
-	glog.Info("Starting Elasticsearch health checker...")
+	klog.Info("Starting Elasticsearch health checker...")
 
 	go wait.Until(func() {
 		dbList, err := c.esLister.Elasticsearches(core.NamespaceAll).List(labels.Everything())
 		if err != nil {
-			glog.Errorf("Failed to list Elasticsearch objects with: %s", err.Error())
+			klog.Errorf("Failed to list Elasticsearch objects with: %s", err.Error())
 			return
 		}
 
@@ -64,7 +64,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 				// Create database client
 				dbClient, err := c.GetElasticsearchClient(db)
 				if err != nil {
-					glog.Warningf("The Elasticsearch: %s/%s client is not ready with %s", db.Namespace, db.Name, err.Error())
+					klog.Warningf("The Elasticsearch: %s/%s client is not ready with %s", db.Namespace, db.Name, err.Error())
 					// Since the client was unable to connect the database,
 					// update "AcceptingConnection" to "false".
 					// update "Ready" to "false"
@@ -94,7 +94,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 						metav1.UpdateOptions{},
 					)
 					if err != nil {
-						glog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
+						klog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
 					}
 					// Since the client isn't created, skip rest operations.
 					return
@@ -122,7 +122,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 					metav1.UpdateOptions{},
 				)
 				if err != nil {
-					glog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
+					klog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
 					// Since condition update failed, skip remaining operations.
 					return
 				}
@@ -130,7 +130,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 				// Get database status, could be red, green or yellow.
 				status, err := dbClient.ClusterStatus()
 				if err != nil {
-					glog.Errorf("Failed to get cluster status for Elasticsearch: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+					klog.Errorf("Failed to get cluster status for Elasticsearch: %s/%s with: %s", db.Namespace, db.Name, err.Error())
 					// Since the get status failed, skip remaining operations.
 					return
 				}
@@ -162,7 +162,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 						metav1.UpdateOptions{},
 					)
 					if err != nil {
-						glog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
+						klog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
 					}
 				} else {
 					// Update "Ready" to "false".
@@ -184,7 +184,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 						metav1.UpdateOptions{},
 					)
 					if err != nil {
-						glog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
+						klog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
 					}
 				}
 			}()
@@ -194,7 +194,7 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 
 	// will wait here until stopCh is closed.
 	<-stopCh
-	glog.Info("Shutting down Elasticsearch health checker...")
+	klog.Info("Shutting down Elasticsearch health checker...")
 }
 
 func (c *Controller) GetElasticsearchClient(db *api.Elasticsearch) (go_es.ESClient, error) {

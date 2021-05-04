@@ -26,6 +26,7 @@ import (
 	versioned "kmodules.xyz/custom-resources/client/clientset/versioned"
 	appcatalog "kmodules.xyz/custom-resources/client/informers/externalversions/appcatalog"
 	internalinterfaces "kmodules.xyz/custom-resources/client/informers/externalversions/internalinterfaces"
+	metrics "kmodules.xyz/custom-resources/client/informers/externalversions/metrics"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -174,8 +175,13 @@ type SharedInformerFactory interface {
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
 	Appcatalog() appcatalog.Interface
+	Metrics() metrics.Interface
 }
 
 func (f *sharedInformerFactory) Appcatalog() appcatalog.Interface {
 	return appcatalog.New(f, f.namespace, f.tweakListOptions)
+}
+
+func (f *sharedInformerFactory) Metrics() metrics.Interface {
+	return metrics.New(f, f.namespace, f.tweakListOptions)
 }

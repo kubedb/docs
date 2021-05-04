@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Jetstack cert-manager contributors.
+Copyright The cert-manager Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,8 +26,10 @@ import (
 )
 
 // ChallengeLister helps list Challenges.
+// All objects returned here must be treated as read-only.
 type ChallengeLister interface {
 	// List lists all Challenges in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha3.Challenge, err error)
 	// Challenges returns an object that can list and get Challenges.
 	Challenges(namespace string) ChallengeNamespaceLister
@@ -58,10 +60,13 @@ func (s *challengeLister) Challenges(namespace string) ChallengeNamespaceLister 
 }
 
 // ChallengeNamespaceLister helps list and get Challenges.
+// All objects returned here must be treated as read-only.
 type ChallengeNamespaceLister interface {
 	// List lists all Challenges in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha3.Challenge, err error)
 	// Get retrieves the Challenge from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha3.Challenge, error)
 	ChallengeNamespaceListerExpansion
 }

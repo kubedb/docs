@@ -27,8 +27,10 @@ import (
 )
 
 // ElasticsearchLister helps list Elasticsearches.
+// All objects returned here must be treated as read-only.
 type ElasticsearchLister interface {
 	// List lists all Elasticsearches in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.Elasticsearch, err error)
 	// Elasticsearches returns an object that can list and get Elasticsearches.
 	Elasticsearches(namespace string) ElasticsearchNamespaceLister
@@ -59,10 +61,13 @@ func (s *elasticsearchLister) Elasticsearches(namespace string) ElasticsearchNam
 }
 
 // ElasticsearchNamespaceLister helps list and get Elasticsearches.
+// All objects returned here must be treated as read-only.
 type ElasticsearchNamespaceLister interface {
 	// List lists all Elasticsearches in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.Elasticsearch, err error)
 	// Get retrieves the Elasticsearch from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha2.Elasticsearch, error)
 	ElasticsearchNamespaceListerExpansion
 }

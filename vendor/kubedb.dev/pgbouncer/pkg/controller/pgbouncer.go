@@ -25,32 +25,32 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/pgbouncer/pkg/admission"
 
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
 
 func (c *Controller) runPgBouncer(key string) error {
-	log.Debugln("started processing, key:", key)
+	klog.V(5).Infoln("started processing, key:", key)
 	obj, exists, err := c.pbInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		log.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 
 	if !exists {
-		log.Infof("PgBouncer %s does not exist anymore\n", key)
-		log.Debugf("PgBouncer %s does not exist anymore", key)
+		klog.Infof("PgBouncer %s does not exist anymore\n", key)
+		klog.V(5).Infof("PgBouncer %s does not exist anymore", key)
 	} else {
 		// Note that you also have to check the uid if you have a local controlled resource, which
 		// is dependent on the actual instance, to detect that a PgBouncer was recreated with the same name
 		pgbouncer := obj.(*api.PgBouncer).DeepCopy()
 
 		if err := c.syncPgBouncer(pgbouncer); err != nil {
-			log.Errorln(err)
+			klog.Errorln(err)
 			c.pushFailureEvent(pgbouncer, err.Error())
 			return err
 		}
@@ -60,11 +60,11 @@ func (c *Controller) runPgBouncer(key string) error {
 
 func (c *Controller) syncPgBouncer(db *api.PgBouncer) error {
 	if err := c.manageValidation(db); err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return nil // user err, dont' retry.
 	}
 	if err := c.manageInitialPhase(db); err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return err
 	}
 	// ensure Governing Service
@@ -73,17 +73,17 @@ func (c *Controller) syncPgBouncer(db *api.PgBouncer) error {
 	}
 	// create or patch Service
 	if err := c.ensureService(db); err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return err
 	}
 	// create or patch default Secret
 	if err := c.syncAuthSecret(db); err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return err
 	}
 	// create or patch Secret
 	if err := c.manageSecret(db); err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return err
 	}
 	// wait for certificates
@@ -100,18 +100,18 @@ func (c *Controller) syncPgBouncer(db *api.PgBouncer) error {
 			return err
 		}
 		if !ok {
-			log.Infof("wait for all certificate secrets for pgbouncer %s/%s", db.Namespace, db.Name)
+			klog.Infof("wait for all certificate secrets for pgbouncer %s/%s", db.Namespace, db.Name)
 			return nil
 		}
 	}
 	// create or patch StatefulSet
 	if err := c.manageStatefulSet(db); err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return err
 	}
 	// create or patch Stat service
 	if err := c.syncStatService(db); err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return err
 	}
 
@@ -123,13 +123,13 @@ func (c *Controller) syncPgBouncer(db *api.PgBouncer) error {
 			"Failed to manage monitoring system. Reason: %v",
 			err,
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		return nil
 	}
 
 	// Add initialized or running phase
 	if err := c.manageFinalPhase(db); err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return err
 	}
 	return nil
@@ -143,7 +143,7 @@ func (c *Controller) manageValidation(db *api.PgBouncer) error {
 			eventer.EventReasonInvalid,
 			err.Error(),
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		return err // user error so just record error and don't retry.
 	}
 
@@ -188,7 +188,7 @@ func (c *Controller) manageFinalPhase(db *api.PgBouncer) error {
 		return db.UID, in
 	}, metav1.UpdateOptions{})
 	if err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return err
 	}
 	db.Status = pg.Status
@@ -217,7 +217,7 @@ func (c *Controller) syncAuthSecret(db *api.PgBouncer) error {
 		)
 	}
 	if sVerb != kutil.VerbUnchanged {
-		log.Infoln("Default secret ", sVerb)
+		klog.Infoln("Default secret ", sVerb)
 	}
 	return nil
 }
@@ -225,7 +225,7 @@ func (c *Controller) syncAuthSecret(db *api.PgBouncer) error {
 func (c *Controller) manageSecret(db *api.PgBouncer) error {
 	secretVerb, err := c.ensureConfigSecret(db)
 	if err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return err
 	}
 
@@ -245,7 +245,7 @@ func (c *Controller) manageSecret(db *api.PgBouncer) error {
 		)
 	}
 	if secretVerb != kutil.VerbUnchanged {
-		log.Infoln("Secret ", secretVerb)
+		klog.Infoln("Secret ", secretVerb)
 	}
 
 	return nil
@@ -254,13 +254,13 @@ func (c *Controller) manageSecret(db *api.PgBouncer) error {
 func (c *Controller) manageStatefulSet(db *api.PgBouncer) error {
 	pgBouncerVersion, err := c.DBClient.CatalogV1alpha1().PgBouncerVersions().Get(context.TODO(), db.Spec.Version, metav1.GetOptions{})
 	if err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return err
 	}
 
 	statefulSetVerb, err := c.ensureStatefulSet(db, pgBouncerVersion, []core.EnvVar{})
 	if err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return err
 	}
 	if statefulSetVerb == kutil.VerbCreated {
@@ -279,7 +279,7 @@ func (c *Controller) manageStatefulSet(db *api.PgBouncer) error {
 		)
 	}
 	if statefulSetVerb != kutil.VerbUnchanged {
-		log.Infoln("Statefulset ", statefulSetVerb)
+		klog.Infoln("Statefulset ", statefulSetVerb)
 	}
 	return nil
 }
@@ -299,7 +299,7 @@ func (c *Controller) ensureService(db *api.PgBouncer) error {
 		)
 	}
 	if vt != kutil.VerbUnchanged {
-		log.Infoln("Service ", vt)
+		klog.Infoln("Service ", vt)
 	}
 	return nil
 }
@@ -325,7 +325,7 @@ func (c *Controller) syncStatService(db *api.PgBouncer) error {
 		)
 	}
 	if statServiceVerb != kutil.VerbUnchanged {
-		log.Infoln("Stat Service ", statServiceVerb)
+		klog.Infoln("Stat Service ", statServiceVerb)
 	}
 	return nil
 }

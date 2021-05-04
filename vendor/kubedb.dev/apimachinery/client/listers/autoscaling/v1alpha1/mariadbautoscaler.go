@@ -27,8 +27,10 @@ import (
 )
 
 // MariaDBAutoscalerLister helps list MariaDBAutoscalers.
+// All objects returned here must be treated as read-only.
 type MariaDBAutoscalerLister interface {
 	// List lists all MariaDBAutoscalers in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MariaDBAutoscaler, err error)
 	// MariaDBAutoscalers returns an object that can list and get MariaDBAutoscalers.
 	MariaDBAutoscalers(namespace string) MariaDBAutoscalerNamespaceLister
@@ -59,10 +61,13 @@ func (s *mariaDBAutoscalerLister) MariaDBAutoscalers(namespace string) MariaDBAu
 }
 
 // MariaDBAutoscalerNamespaceLister helps list and get MariaDBAutoscalers.
+// All objects returned here must be treated as read-only.
 type MariaDBAutoscalerNamespaceLister interface {
 	// List lists all MariaDBAutoscalers in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MariaDBAutoscaler, err error)
 	// Get retrieves the MariaDBAutoscaler from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.MariaDBAutoscaler, error)
 	MariaDBAutoscalerNamespaceListerExpansion
 }
