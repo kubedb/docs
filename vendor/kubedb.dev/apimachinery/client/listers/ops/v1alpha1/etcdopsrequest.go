@@ -27,8 +27,10 @@ import (
 )
 
 // EtcdOpsRequestLister helps list EtcdOpsRequests.
+// All objects returned here must be treated as read-only.
 type EtcdOpsRequestLister interface {
 	// List lists all EtcdOpsRequests in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.EtcdOpsRequest, err error)
 	// EtcdOpsRequests returns an object that can list and get EtcdOpsRequests.
 	EtcdOpsRequests(namespace string) EtcdOpsRequestNamespaceLister
@@ -59,10 +61,13 @@ func (s *etcdOpsRequestLister) EtcdOpsRequests(namespace string) EtcdOpsRequestN
 }
 
 // EtcdOpsRequestNamespaceLister helps list and get EtcdOpsRequests.
+// All objects returned here must be treated as read-only.
 type EtcdOpsRequestNamespaceLister interface {
 	// List lists all EtcdOpsRequests in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.EtcdOpsRequest, err error)
 	// Get retrieves the EtcdOpsRequest from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.EtcdOpsRequest, error)
 	EtcdOpsRequestNamespaceListerExpansion
 }

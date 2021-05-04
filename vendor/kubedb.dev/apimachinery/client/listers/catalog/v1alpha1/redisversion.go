@@ -27,10 +27,13 @@ import (
 )
 
 // RedisVersionLister helps list RedisVersions.
+// All objects returned here must be treated as read-only.
 type RedisVersionLister interface {
 	// List lists all RedisVersions in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.RedisVersion, err error)
 	// Get retrieves the RedisVersion from the index for a given name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.RedisVersion, error)
 	RedisVersionListerExpansion
 }

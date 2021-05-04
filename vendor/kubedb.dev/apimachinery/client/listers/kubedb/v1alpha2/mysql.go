@@ -27,8 +27,10 @@ import (
 )
 
 // MySQLLister helps list MySQLs.
+// All objects returned here must be treated as read-only.
 type MySQLLister interface {
 	// List lists all MySQLs in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.MySQL, err error)
 	// MySQLs returns an object that can list and get MySQLs.
 	MySQLs(namespace string) MySQLNamespaceLister
@@ -59,10 +61,13 @@ func (s *mySQLLister) MySQLs(namespace string) MySQLNamespaceLister {
 }
 
 // MySQLNamespaceLister helps list and get MySQLs.
+// All objects returned here must be treated as read-only.
 type MySQLNamespaceLister interface {
 	// List lists all MySQLs in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.MySQL, err error)
 	// Get retrieves the MySQL from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha2.MySQL, error)
 	MySQLNamespaceListerExpansion
 }

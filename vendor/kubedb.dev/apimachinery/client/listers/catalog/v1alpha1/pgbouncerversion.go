@@ -27,10 +27,13 @@ import (
 )
 
 // PgBouncerVersionLister helps list PgBouncerVersions.
+// All objects returned here must be treated as read-only.
 type PgBouncerVersionLister interface {
 	// List lists all PgBouncerVersions in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.PgBouncerVersion, err error)
 	// Get retrieves the PgBouncerVersion from the index for a given name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.PgBouncerVersion, error)
 	PgBouncerVersionListerExpansion
 }

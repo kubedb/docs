@@ -23,13 +23,13 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
 	"github.com/pkg/errors"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
@@ -37,12 +37,12 @@ import (
 )
 
 func (c *Controller) waitUntilHalted(db *api.Redis) error {
-	log.Infof("waiting for pods for Redis %v/%v to be deleted\n", db.Namespace, db.Name)
+	klog.Infof("waiting for pods for Redis %v/%v to be deleted\n", db.Namespace, db.Name)
 	if err := core_util.WaitUntilPodDeletedBySelector(context.TODO(), c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootSelectors())); err != nil {
 		return err
 	}
 
-	log.Infof("waiting for services for Redis %v/%v to be deleted\n", db.Namespace, db.Name)
+	klog.Infof("waiting for services for Redis %v/%v to be deleted\n", db.Namespace, db.Name)
 	if err := core_util.WaitUntilServiceDeletedBySelector(context.TODO(), c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootSelectors())); err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (c *Controller) waitUntilRBACStuffDeleted(meta metav1.ObjectMeta) error {
 }
 
 func (c *Controller) waitUntilStatefulSetsDeleted(db *api.Redis) error {
-	log.Infof("waiting for statefulsets for Redis %v/%v to be deleted\n", db.Namespace, db.Name)
+	klog.Infof("waiting for statefulsets for Redis %v/%v to be deleted\n", db.Namespace, db.Name)
 	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
 		if sts, err := c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String()}); err != nil && kerr.IsNotFound(err) || len(sts.Items) == 0 {
 			return true, nil
@@ -135,7 +135,7 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 	policy := metav1.DeletePropagationBackground
 
 	// delete appbinding
-	log.Infof("deleting AppBindings of Redis %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting AppBindings of Redis %v/%v.", db.Namespace, db.Name)
 	if err := c.AppCatalogClient.
 		AppcatalogV1alpha1().
 		AppBindings(db.Namespace).
@@ -148,7 +148,7 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 	}
 
 	// delete PDB
-	log.Infof("deleting PodDisruptionBudget of Redis %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting PodDisruptionBudget of Redis %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		PolicyV1beta1().
 		PodDisruptionBudgets(db.Namespace).
@@ -161,7 +161,7 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 	}
 
 	// delete sts collection offshoot labels
-	log.Infof("deleting StatefulSets of Redis %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting StatefulSets of Redis %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		AppsV1().
 		StatefulSets(db.Namespace).
@@ -174,7 +174,7 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 	}
 
 	// delete deployment collection offshoot labels
-	log.Infof("deleting Deployments of Redis %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting Deployments of Redis %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		AppsV1().
 		Deployments(db.Namespace).
@@ -187,7 +187,7 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 	}
 
 	// delete rbacs: rolebinding, roles, serviceaccounts
-	log.Infof("deleting RoleBindings of Redis %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting RoleBindings of Redis %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		RbacV1().
 		RoleBindings(db.Namespace).
@@ -198,7 +198,7 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 		); err != nil {
 		return err
 	}
-	log.Infof("deleting Roles of Redis %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting Roles of Redis %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		RbacV1().
 		Roles(db.Namespace).
@@ -209,7 +209,7 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 		); err != nil {
 		return err
 	}
-	log.Infof("deleting ServiceAccounts of Redis %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting ServiceAccounts of Redis %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		CoreV1().
 		ServiceAccounts(db.Namespace).
@@ -223,7 +223,7 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 	// delete services
 
 	// service, stats service, gvr service
-	log.Infof("deleting Services of Redis %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting Services of Redis %v/%v.", db.Namespace, db.Name)
 	svcs, err := c.Client.
 		CoreV1().
 		Services(db.Namespace).
@@ -241,10 +241,10 @@ func (c *Controller) haltDatabase(db *api.Redis) error {
 	}
 
 	// Delete monitoring resources
-	log.Infof("deleting Monitoring resources of Redis %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting Monitoring resources of Redis %v/%v.", db.Namespace, db.Name)
 	if db.Spec.Monitor != nil {
 		if err := c.deleteMonitor(db); err != nil {
-			log.Errorln(err)
+			klog.Errorln(err)
 			return nil
 		}
 	}

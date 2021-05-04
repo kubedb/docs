@@ -26,11 +26,11 @@ import (
 
 	"github.com/fatih/structs"
 	"gomodules.xyz/pointer"
-	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -425,7 +425,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.PerconaXtraDB) *app
 					pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
 						core.ReadWriteOnce,
 					}
-					log.Infof(`Using "%v" as AccessModes in .spec.storage`, core.ReadWriteOnce)
+					klog.Infof(`Using "%v" as AccessModes in .spec.storage`, core.ReadWriteOnce)
 				}
 
 				claim := core.PersistentVolumeClaim{

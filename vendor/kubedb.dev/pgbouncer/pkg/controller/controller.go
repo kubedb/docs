@@ -29,7 +29,6 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,6 +42,7 @@ import (
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/klog/v2"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -161,25 +161,25 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range c.KubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for core caches to sync", t)
+			klog.Fatalf("%v timed out waiting for core caches to sync", t)
 			return
 		}
 	}
 	for t, v := range c.KubedbInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for kubedb caches to sync", t)
+			klog.Fatalf("%v timed out waiting for kubedb caches to sync", t)
 			return
 		}
 	}
 	for t, v := range c.AppCatInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for appCatalog caches to sync", t)
+			klog.Fatalf("%v timed out waiting for appCatalog caches to sync", t)
 			return
 		}
 	}
 	for t, v := range c.ExternalInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for external caches to sync", t)
+			klog.Fatalf("%v timed out waiting for external caches to sync", t)
 			return
 		}
 	}

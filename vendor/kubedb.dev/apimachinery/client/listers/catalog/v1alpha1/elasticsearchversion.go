@@ -27,10 +27,13 @@ import (
 )
 
 // ElasticsearchVersionLister helps list ElasticsearchVersions.
+// All objects returned here must be treated as read-only.
 type ElasticsearchVersionLister interface {
 	// List lists all ElasticsearchVersions in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.ElasticsearchVersion, err error)
 	// Get retrieves the ElasticsearchVersion from the index for a given name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.ElasticsearchVersion, error)
 	ElasticsearchVersionListerExpansion
 }

@@ -25,10 +25,10 @@ import (
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
@@ -83,9 +83,9 @@ func (c *Controller) generateConfig(db *api.PgBouncer) (string, error) {
 			appBinding, err := c.AppCatalogClient.AppcatalogV1alpha1().AppBindings(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 			if err != nil {
 				if kerr.IsNotFound(err) {
-					log.Warning(err)
+					klog.Warning(err)
 				} else {
-					log.Error(err)
+					klog.Error(err)
 				}
 				continue //Dont add pgbouncer database base for this non existent appBinding
 			}
@@ -127,7 +127,7 @@ func (c *Controller) generateConfig(db *api.PgBouncer) (string, error) {
 	}
 	upstreamServerCAExists, err := c.isUpStreamServerCAExist(db)
 	if err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return "", err
 	}
 	if upstreamServerCAExists {
@@ -137,7 +137,7 @@ func (c *Controller) generateConfig(db *api.PgBouncer) (string, error) {
 
 	secretFileName, err := c.getUserListFileName(db)
 	if err != nil {
-		log.Infoln(err)
+		klog.Infoln(err)
 		return "", err
 	}
 

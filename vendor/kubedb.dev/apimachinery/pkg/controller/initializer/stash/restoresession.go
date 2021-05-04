@@ -19,9 +19,9 @@ package stash
 import (
 	"time"
 
-	"gomodules.xyz/x/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 	"stash.appscode.dev/apimachinery/apis/stash/v1beta1"
 	scs "stash.appscode.dev/apimachinery/client/clientset/versioned"
 	stashinformers "stash.appscode.dev/apimachinery/client/informers/externalversions/stash/v1beta1"
@@ -40,15 +40,15 @@ func (c *Controller) restoreSessionInformer(tweakListOptions func(options *metav
 }
 
 func (c *Controller) processRestoreSession(key string) error {
-	log.Infof("started processing, key: %v", key)
+	klog.Infof("started processing, key: %v", key)
 	obj, exists, err := c.RSInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		log.Errorf("fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 
 	if !exists {
-		log.Debugf("RestoreSession %s does not exist anymore", key)
+		klog.V(5).Infof("RestoreSession %s does not exist anymore", key)
 	} else {
 		// Note that you also have to check the uid if you have a local controlled resource, which
 		// is dependent on the actual instance, to detect that a Job was recreated with the same name
@@ -56,7 +56,7 @@ func (c *Controller) processRestoreSession(key string) error {
 		rs.GetObjectKind().SetGroupVersionKind(v1beta1.SchemeGroupVersion.WithKind(v1beta1.ResourceKindRestoreSession))
 		ri, err := c.extractRestoreInfo(rs)
 		if err != nil {
-			log.Errorln("failed to extract restore invoker info. Reason: ", err)
+			klog.Errorln("failed to extract restore invoker info. Reason: ", err)
 			return err
 		}
 		return c.handleRestoreInvokerEvent(ri)

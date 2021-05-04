@@ -27,13 +27,13 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/scheme"
 
 	"gomodules.xyz/pointer"
-	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/reference"
+	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
@@ -112,7 +112,7 @@ func (c *Controller) handleRestoreInvokerEvent(ri *restoreInfo) error {
 
 	// Just log and return if the restore process hasn't completed yet.
 	if ri.phase != v1beta1.RestoreSucceeded && ri.phase != v1beta1.RestoreFailed && ri.phase != v1beta1.RestorePhaseUnknown {
-		log.Infof("restore process hasn't completed yet. Current restore phase: %s", ri.phase)
+		klog.Infof("restore process hasn't completed yet. Current restore phase: %s", ri.phase)
 		return nil
 	}
 
@@ -210,7 +210,7 @@ func getTargetPhase(status v1beta1.RestoreBatchStatus, target *v1beta1.RestoreTa
 // waitUntilStashInstalled waits for Stash operator to be installed. It check whether all the CRDs that are necessary for backup KubeDB database,
 // is present in the cluster or not. It wait until all the CRDs are found.
 func (c *Controller) waitUntilStashInstalled(stopCh <-chan struct{}) error {
-	log.Infoln("Looking for the Stash operator.......")
+	klog.Infoln("Looking for the Stash operator.......")
 	return wait.PollImmediateUntil(time.Second*10, func() (bool, error) {
 		return discovery.ExistsGroupKinds(c.Client.Discovery(),
 			schema.GroupKind{Group: stash.GroupName, Kind: v1alpha1.ResourceKindRepository},

@@ -25,10 +25,10 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
-	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -127,7 +127,7 @@ func (c *Controller) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 		if err := c.CreateStatefulSetPodDisruptionBudget(stsNew); err != nil {
 			return kutil.VerbUnchanged, err
 		}
-		log.Info("successfully created/patched PodDisruptonBudget")
+		klog.Info("successfully created/patched PodDisruptonBudget")
 	}
 
 	return vt, nil
@@ -390,7 +390,7 @@ func upsertVolumes(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.Statefu
 					pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
 						core.ReadWriteOnce,
 					}
-					log.Infof(`Using "%v" as AccessModes in .spec.storage`, core.ReadWriteOnce)
+					klog.Infof(`Using "%v" as AccessModes in .spec.storage`, core.ReadWriteOnce)
 				}
 
 				claim := core.PersistentVolumeClaim{

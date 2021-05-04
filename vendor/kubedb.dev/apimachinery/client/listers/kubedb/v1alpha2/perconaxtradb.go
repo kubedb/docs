@@ -27,8 +27,10 @@ import (
 )
 
 // PerconaXtraDBLister helps list PerconaXtraDBs.
+// All objects returned here must be treated as read-only.
 type PerconaXtraDBLister interface {
 	// List lists all PerconaXtraDBs in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.PerconaXtraDB, err error)
 	// PerconaXtraDBs returns an object that can list and get PerconaXtraDBs.
 	PerconaXtraDBs(namespace string) PerconaXtraDBNamespaceLister
@@ -59,10 +61,13 @@ func (s *perconaXtraDBLister) PerconaXtraDBs(namespace string) PerconaXtraDBName
 }
 
 // PerconaXtraDBNamespaceLister helps list and get PerconaXtraDBs.
+// All objects returned here must be treated as read-only.
 type PerconaXtraDBNamespaceLister interface {
 	// List lists all PerconaXtraDBs in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.PerconaXtraDB, err error)
 	// Get retrieves the PerconaXtraDB from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha2.PerconaXtraDB, error)
 	PerconaXtraDBNamespaceListerExpansion
 }

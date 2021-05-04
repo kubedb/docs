@@ -27,8 +27,10 @@ import (
 )
 
 // MemcachedAutoscalerLister helps list MemcachedAutoscalers.
+// All objects returned here must be treated as read-only.
 type MemcachedAutoscalerLister interface {
 	// List lists all MemcachedAutoscalers in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MemcachedAutoscaler, err error)
 	// MemcachedAutoscalers returns an object that can list and get MemcachedAutoscalers.
 	MemcachedAutoscalers(namespace string) MemcachedAutoscalerNamespaceLister
@@ -59,10 +61,13 @@ func (s *memcachedAutoscalerLister) MemcachedAutoscalers(namespace string) Memca
 }
 
 // MemcachedAutoscalerNamespaceLister helps list and get MemcachedAutoscalers.
+// All objects returned here must be treated as read-only.
 type MemcachedAutoscalerNamespaceLister interface {
 	// List lists all MemcachedAutoscalers in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MemcachedAutoscaler, err error)
 	// Get retrieves the MemcachedAutoscaler from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.MemcachedAutoscaler, error)
 	MemcachedAutoscalerNamespaceListerExpansion
 }

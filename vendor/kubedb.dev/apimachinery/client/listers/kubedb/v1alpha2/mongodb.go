@@ -27,8 +27,10 @@ import (
 )
 
 // MongoDBLister helps list MongoDBs.
+// All objects returned here must be treated as read-only.
 type MongoDBLister interface {
 	// List lists all MongoDBs in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.MongoDB, err error)
 	// MongoDBs returns an object that can list and get MongoDBs.
 	MongoDBs(namespace string) MongoDBNamespaceLister
@@ -59,10 +61,13 @@ func (s *mongoDBLister) MongoDBs(namespace string) MongoDBNamespaceLister {
 }
 
 // MongoDBNamespaceLister helps list and get MongoDBs.
+// All objects returned here must be treated as read-only.
 type MongoDBNamespaceLister interface {
 	// List lists all MongoDBs in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.MongoDB, err error)
 	// Get retrieves the MongoDB from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha2.MongoDB, error)
 	MongoDBNamespaceListerExpansion
 }

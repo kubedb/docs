@@ -27,10 +27,13 @@ import (
 )
 
 // MySQLVersionLister helps list MySQLVersions.
+// All objects returned here must be treated as read-only.
 type MySQLVersionLister interface {
 	// List lists all MySQLVersions in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MySQLVersion, err error)
 	// Get retrieves the MySQLVersion from the index for a given name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.MySQLVersion, error)
 	MySQLVersionListerExpansion
 }

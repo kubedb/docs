@@ -21,22 +21,22 @@ import (
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
-	"gomodules.xyz/x/log"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 func (c *Controller) waitUntilHalted(db *api.MongoDB) error {
-	log.Infof("waiting for pods for Mongodb %v/%v to be deleted\n", db.Namespace, db.Name)
+	klog.Infof("waiting for pods for Mongodb %v/%v to be deleted\n", db.Namespace, db.Name)
 	if err := core_util.WaitUntilPodDeletedBySelector(context.TODO(), c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootSelectors())); err != nil {
 		return err
 	}
 
-	log.Infof("waiting for services for Mongodb %v/%v to be deleted\n", db.Namespace, db.Name)
+	klog.Infof("waiting for services for Mongodb %v/%v to be deleted\n", db.Namespace, db.Name)
 	if err := core_util.WaitUntilServiceDeletedBySelector(context.TODO(), c.Client, db.Namespace, metav1.SetAsLabelSelector(db.OffshootSelectors())); err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func (c *Controller) waitUntilHalted(db *api.MongoDB) error {
 }
 
 func (c *Controller) waitUntilRBACStuffDeleted(db *api.MongoDB) error {
-	log.Infof("waiting for RBACs for Mongodb %v/%v to be deleted\n", db.Namespace, db.Name)
+	klog.Infof("waiting for RBACs for Mongodb %v/%v to be deleted\n", db.Namespace, db.Name)
 	// Delete ServiceAccount
 	if err := core_util.WaitUntillServiceAccountDeleted(context.TODO(), c.Client, db.ObjectMeta); err != nil {
 		return err
@@ -62,7 +62,7 @@ func (c *Controller) waitUntilRBACStuffDeleted(db *api.MongoDB) error {
 }
 
 func (c *Controller) waitUntilStatefulSetsDeleted(db *api.MongoDB) error {
-	log.Infof("waiting for statefulsets for Mongodb %v/%v to be deleted\n", db.Namespace, db.Name)
+	klog.Infof("waiting for statefulsets for Mongodb %v/%v to be deleted\n", db.Namespace, db.Name)
 	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
 		if sts, err := c.Client.AppsV1().StatefulSets(db.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: labels.SelectorFromSet(db.OffshootSelectors()).String()}); err != nil && kerr.IsNotFound(err) || len(sts.Items) == 0 {
 			return true, nil
@@ -77,7 +77,7 @@ func (c *Controller) haltDatabase(db *api.MongoDB) error {
 	policy := metav1.DeletePropagationBackground
 
 	// delete appbinding
-	log.Infof("deleting AppBindings of MongoDB %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting AppBindings of MongoDB %v/%v.", db.Namespace, db.Name)
 	if err := c.AppCatalogClient.
 		AppcatalogV1alpha1().
 		AppBindings(db.Namespace).
@@ -90,7 +90,7 @@ func (c *Controller) haltDatabase(db *api.MongoDB) error {
 	}
 
 	// delete PDB
-	log.Infof("deleting PodDisruptionBudget of MongoDB %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting PodDisruptionBudget of MongoDB %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		PolicyV1beta1().
 		PodDisruptionBudgets(db.Namespace).
@@ -103,7 +103,7 @@ func (c *Controller) haltDatabase(db *api.MongoDB) error {
 	}
 
 	// delete sts collection offshoot labels
-	log.Infof("deleting StatefulSets of MongoDB %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting StatefulSets of MongoDB %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		AppsV1().
 		StatefulSets(db.Namespace).
@@ -116,7 +116,7 @@ func (c *Controller) haltDatabase(db *api.MongoDB) error {
 	}
 
 	// delete deployment collection offshoot labels
-	log.Infof("deleting Deployments of MongoDB %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting Deployments of MongoDB %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		AppsV1().
 		Deployments(db.Namespace).
@@ -129,7 +129,7 @@ func (c *Controller) haltDatabase(db *api.MongoDB) error {
 	}
 
 	// delete rbacs: rolebinding, roles, serviceaccounts
-	log.Infof("deleting RoleBindings of MongoDB %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting RoleBindings of MongoDB %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		RbacV1().
 		RoleBindings(db.Namespace).
@@ -140,7 +140,7 @@ func (c *Controller) haltDatabase(db *api.MongoDB) error {
 		); err != nil {
 		return err
 	}
-	log.Infof("deleting Roles of MongoDB %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting Roles of MongoDB %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		RbacV1().
 		Roles(db.Namespace).
@@ -151,7 +151,7 @@ func (c *Controller) haltDatabase(db *api.MongoDB) error {
 		); err != nil {
 		return err
 	}
-	log.Infof("deleting ServiceAccounts of MongoDB %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting ServiceAccounts of MongoDB %v/%v.", db.Namespace, db.Name)
 	if err := c.Client.
 		CoreV1().
 		ServiceAccounts(db.Namespace).
@@ -165,7 +165,7 @@ func (c *Controller) haltDatabase(db *api.MongoDB) error {
 	// delete services
 
 	// service, stats service, gvr service
-	log.Infof("deleting Services of MongoDB %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting Services of MongoDB %v/%v.", db.Namespace, db.Name)
 	svcs, err := c.Client.
 		CoreV1().
 		Services(db.Namespace).
@@ -183,10 +183,10 @@ func (c *Controller) haltDatabase(db *api.MongoDB) error {
 	}
 
 	// Delete monitoring resources
-	log.Infof("deleting Monitoring resources of MongoDB %v/%v.", db.Namespace, db.Name)
+	klog.Infof("deleting Monitoring resources of MongoDB %v/%v.", db.Namespace, db.Name)
 	if db.Spec.Monitor != nil {
 		if err := c.deleteMonitor(db); err != nil {
-			log.Errorln(err)
+			klog.Errorln(err)
 			return nil
 		}
 	}

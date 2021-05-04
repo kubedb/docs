@@ -27,8 +27,10 @@ import (
 )
 
 // PgBouncerOpsRequestLister helps list PgBouncerOpsRequests.
+// All objects returned here must be treated as read-only.
 type PgBouncerOpsRequestLister interface {
 	// List lists all PgBouncerOpsRequests in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.PgBouncerOpsRequest, err error)
 	// PgBouncerOpsRequests returns an object that can list and get PgBouncerOpsRequests.
 	PgBouncerOpsRequests(namespace string) PgBouncerOpsRequestNamespaceLister
@@ -59,10 +61,13 @@ func (s *pgBouncerOpsRequestLister) PgBouncerOpsRequests(namespace string) PgBou
 }
 
 // PgBouncerOpsRequestNamespaceLister helps list and get PgBouncerOpsRequests.
+// All objects returned here must be treated as read-only.
 type PgBouncerOpsRequestNamespaceLister interface {
 	// List lists all PgBouncerOpsRequests in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.PgBouncerOpsRequest, err error)
 	// Get retrieves the PgBouncerOpsRequest from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.PgBouncerOpsRequest, error)
 	PgBouncerOpsRequestNamespaceListerExpansion
 }

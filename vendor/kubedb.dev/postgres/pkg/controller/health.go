@@ -25,13 +25,13 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
-	"github.com/golang/glog"
 	_ "github.com/lib/pq"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
@@ -46,7 +46,7 @@ func (c *Controller) CheckPostgresDBHealth(stopCh <-chan struct{}) {
 	go wait.Until(func() {
 		dbList, err := c.pgLister.Postgreses(core.NamespaceAll).List(labels.Everything())
 		if err != nil {
-			glog.Errorf("Failed to list PostgreSQL objects with: %s", err.Error())
+			klog.Errorf("Failed to list PostgreSQL objects with: %s", err.Error())
 			return
 		}
 
@@ -67,7 +67,7 @@ func (c *Controller) CheckPostgresDBHealth(stopCh <-chan struct{}) {
 					LabelSelector: labels.Set(db.OffshootSelectors()).String(),
 				})
 				if err != nil {
-					glog.Warning("Failed to list DB pod with ", err.Error())
+					klog.Warning("Failed to list DB pod with ", err.Error())
 					return
 				}
 
@@ -78,7 +78,7 @@ func (c *Controller) CheckPostgresDBHealth(stopCh <-chan struct{}) {
 
 					err := c.IsPostgreSQLServerOnline(db, HostDNS(db, pod.ObjectMeta), api.PostgresDatabasePort)
 					if err != nil {
-						glog.Warning("Failed on db query for host ", pod.Namespace, "/", pod.Name)
+						klog.Warning("Failed on db query for host ", pod.Namespace, "/", pod.Name)
 						continue
 					}
 					pod.Status.Conditions = core_util.SetPodCondition(pod.Status.Conditions, core.PodCondition{
@@ -90,7 +90,7 @@ func (c *Controller) CheckPostgresDBHealth(stopCh <-chan struct{}) {
 					})
 					_, err = c.Client.CoreV1().Pods(pod.Namespace).UpdateStatus(context.TODO(), &pod, metav1.UpdateOptions{})
 					if err != nil {
-						glog.Warning("Failed to update pod status with: ", err.Error())
+						klog.Warning("Failed to update pod status with: ", err.Error())
 						continue
 					}
 				}
@@ -98,7 +98,7 @@ func (c *Controller) CheckPostgresDBHealth(stopCh <-chan struct{}) {
 				// verify db is going to accepting connection and in ready state
 				port, err := c.GetPrimaryServicePort(db)
 				if err != nil {
-					glog.Warning("Failed to get primary service port with: ", err.Error())
+					klog.Warning("Failed to get primary service port with: ", err.Error())
 					return
 				}
 				err = c.IsPostgreSQLServerOnline(db, PrimaryServiceDNS(db), port)
@@ -133,7 +133,7 @@ func (c *Controller) CheckPostgresDBHealth(stopCh <-chan struct{}) {
 					metav1.UpdateOptions{},
 				)
 				if err != nil {
-					glog.Errorf("Failed to update status for PostgreSQL: %s/%s", db.Namespace, db.Name)
+					klog.Errorf("Failed to update status for PostgreSQL: %s/%s", db.Namespace, db.Name)
 					// Since condition update failed, skip remaining operations.
 					return
 				}
@@ -143,12 +143,12 @@ func (c *Controller) CheckPostgresDBHealth(stopCh <-chan struct{}) {
 				if *db.Spec.Replicas > int32(1) {
 					isHealthy, err = c.checkPostgreSQLClusterHealth(db)
 					if err != nil {
-						glog.Errorf("PostgreSQL Cluster %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
+						klog.Errorf("PostgreSQL Cluster %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
 					}
 				} else {
 					isHealthy, err = c.checkPostgreSQLStandaloneHealth(db)
 					if err != nil {
-						glog.Errorf("PostgreSQL standalone %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
+						klog.Errorf("PostgreSQL standalone %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
 					}
 				}
 
@@ -175,7 +175,7 @@ func (c *Controller) CheckPostgresDBHealth(stopCh <-chan struct{}) {
 					metav1.UpdateOptions{},
 				)
 				if err != nil {
-					glog.Errorf("Failed to update status for PostgreSQL: %s/%s", db.Namespace, db.Name)
+					klog.Errorf("Failed to update status for PostgreSQL: %s/%s", db.Namespace, db.Name)
 				}
 
 			}()
@@ -185,7 +185,7 @@ func (c *Controller) CheckPostgresDBHealth(stopCh <-chan struct{}) {
 
 	// will wait here until stopCh is closed.
 	<-stopCh
-	glog.Info("Shutting down PostgreSQL health checker...")
+	klog.Info("Shutting down PostgreSQL health checker...")
 
 }
 
@@ -265,7 +265,7 @@ func (c *Controller) updateErrorAcceptingConnections(db *api.Postgres, connectio
 		metav1.UpdateOptions{},
 	)
 	if err != nil {
-		glog.Errorf("Failed to update status for PostgreSQL: %s/%s", db.Namespace, db.Name)
+		klog.Errorf("Failed to update status for PostgreSQL: %s/%s", db.Namespace, db.Name)
 	}
 }
 

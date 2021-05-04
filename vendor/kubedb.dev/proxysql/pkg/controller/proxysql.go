@@ -25,11 +25,11 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/proxysql/pkg/admission"
 
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
@@ -42,7 +42,7 @@ func (c *Controller) create(db *api.ProxySQL) error {
 			eventer.EventReasonInvalid,
 			err.Error(),
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		return nil
 	}
 
@@ -130,7 +130,7 @@ func (c *Controller) create(db *api.ProxySQL) error {
 			"Failed to manage monitoring system. Reason: %v",
 			err,
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		return nil
 	}
 
@@ -142,7 +142,7 @@ func (c *Controller) create(db *api.ProxySQL) error {
 			"Failed to manage monitoring system. Reason: %v",
 			err,
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		return nil
 	}
 
@@ -166,7 +166,7 @@ func (c *Controller) terminate(db *api.ProxySQL) error {
 
 	if db.Spec.Monitor != nil {
 		if _, err := c.deleteMonitor(db); err != nil {
-			log.Errorln(err)
+			klog.Errorln(err)
 			return nil
 		}
 	}

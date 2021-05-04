@@ -25,13 +25,12 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 	validator "kubedb.dev/elasticsearch/pkg/admission"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
@@ -45,7 +44,7 @@ func (c *Controller) create(db *api.Elasticsearch) error {
 			eventer.EventReasonInvalid,
 			err.Error(),
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		return nil
 	}
 
@@ -98,7 +97,7 @@ func (c *Controller) create(db *api.Elasticsearch) error {
 	// ensure appbinding before ensuring Restic scheduler and restore
 	_, err = c.ensureAppBinding(db)
 	if err != nil {
-		log.Errorln(err)
+		klog.Errorln(err)
 		return err
 	}
 
@@ -109,7 +108,7 @@ func (c *Controller) create(db *api.Elasticsearch) error {
 		if !db.Spec.Init.Initialized &&
 			!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseDataRestored) {
 			// write log indicating that the database is waiting for the data to be restored by external initializer
-			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
+			klog.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
 				db.Kind,
 				db.Namespace,
 				db.Name,
@@ -128,7 +127,7 @@ func (c *Controller) create(db *api.Elasticsearch) error {
 			"Failed to manage monitoring system. Reason: %v",
 			err,
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		return nil
 	}
 
@@ -140,7 +139,7 @@ func (c *Controller) create(db *api.Elasticsearch) error {
 			"Failed to manage monitoring system. Reason: %v",
 			err,
 		)
-		log.Errorf("failed to manage monitoring system. Reason: %v", err)
+		klog.Errorf("failed to manage monitoring system. Reason: %v", err)
 		return nil
 	}
 
@@ -197,14 +196,14 @@ func (c *Controller) halt(db *api.Elasticsearch) error {
 	if db.Spec.Halted && db.Spec.TerminationPolicy != api.TerminationPolicyHalt {
 		return errors.New("can't halt db. 'spec.terminationPolicy' is not 'Halt'")
 	}
-	glog.Infof("Elasticsearch %v/%v is halting...", db.Namespace, db.Name)
+	klog.Infof("Elasticsearch %v/%v is halting...", db.Namespace, db.Name)
 	if err := c.haltDatabase(db); err != nil {
 		return err
 	}
 	if err := c.waitUntilHalted(db); err != nil {
 		return err
 	}
-	glog.Infof("Elasticsearch %v/%v is Halted.", db.Namespace, db.Name)
+	klog.Infof("Elasticsearch %v/%v is Halted.", db.Namespace, db.Name)
 	if _, err := util.UpdateElasticsearchStatus(
 		context.TODO(),
 		c.DBClient.KubedbV1alpha2(),
@@ -266,7 +265,7 @@ func (c *Controller) terminate(db *api.Elasticsearch) error {
 
 	if db.Spec.Monitor != nil {
 		if err := c.deleteMonitor(db); err != nil {
-			log.Errorln(err)
+			klog.Errorln(err)
 			return nil
 		}
 	}

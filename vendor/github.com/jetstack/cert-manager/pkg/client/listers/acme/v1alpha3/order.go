@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Jetstack cert-manager contributors.
+Copyright The cert-manager Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,8 +26,10 @@ import (
 )
 
 // OrderLister helps list Orders.
+// All objects returned here must be treated as read-only.
 type OrderLister interface {
 	// List lists all Orders in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha3.Order, err error)
 	// Orders returns an object that can list and get Orders.
 	Orders(namespace string) OrderNamespaceLister
@@ -58,10 +60,13 @@ func (s *orderLister) Orders(namespace string) OrderNamespaceLister {
 }
 
 // OrderNamespaceLister helps list and get Orders.
+// All objects returned here must be treated as read-only.
 type OrderNamespaceLister interface {
 	// List lists all Orders in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha3.Order, err error)
 	// Get retrieves the Order from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha3.Order, error)
 	OrderNamespaceListerExpansion
 }

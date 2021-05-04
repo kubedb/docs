@@ -27,8 +27,10 @@ import (
 )
 
 // EtcdAutoscalerLister helps list EtcdAutoscalers.
+// All objects returned here must be treated as read-only.
 type EtcdAutoscalerLister interface {
 	// List lists all EtcdAutoscalers in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.EtcdAutoscaler, err error)
 	// EtcdAutoscalers returns an object that can list and get EtcdAutoscalers.
 	EtcdAutoscalers(namespace string) EtcdAutoscalerNamespaceLister
@@ -59,10 +61,13 @@ func (s *etcdAutoscalerLister) EtcdAutoscalers(namespace string) EtcdAutoscalerN
 }
 
 // EtcdAutoscalerNamespaceLister helps list and get EtcdAutoscalers.
+// All objects returned here must be treated as read-only.
 type EtcdAutoscalerNamespaceLister interface {
 	// List lists all EtcdAutoscalers in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.EtcdAutoscaler, err error)
 	// Get retrieves the EtcdAutoscaler from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.EtcdAutoscaler, error)
 	EtcdAutoscalerNamespaceListerExpansion
 }

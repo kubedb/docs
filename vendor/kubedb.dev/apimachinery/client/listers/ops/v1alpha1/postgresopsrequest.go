@@ -27,8 +27,10 @@ import (
 )
 
 // PostgresOpsRequestLister helps list PostgresOpsRequests.
+// All objects returned here must be treated as read-only.
 type PostgresOpsRequestLister interface {
 	// List lists all PostgresOpsRequests in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.PostgresOpsRequest, err error)
 	// PostgresOpsRequests returns an object that can list and get PostgresOpsRequests.
 	PostgresOpsRequests(namespace string) PostgresOpsRequestNamespaceLister
@@ -59,10 +61,13 @@ func (s *postgresOpsRequestLister) PostgresOpsRequests(namespace string) Postgre
 }
 
 // PostgresOpsRequestNamespaceLister helps list and get PostgresOpsRequests.
+// All objects returned here must be treated as read-only.
 type PostgresOpsRequestNamespaceLister interface {
 	// List lists all PostgresOpsRequests in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.PostgresOpsRequest, err error)
 	// Get retrieves the PostgresOpsRequest from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.PostgresOpsRequest, error)
 	PostgresOpsRequestNamespaceListerExpansion
 }

@@ -23,8 +23,8 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
-	"gomodules.xyz/x/log"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
@@ -38,15 +38,15 @@ func (c *Controller) initWatcher() {
 }
 
 func (c *Controller) runPerconaXtraDB(key string) error {
-	log.Debugln("started processing, key:", key)
+	klog.V(5).Infoln("started processing, key:", key)
 	obj, exists, err := c.pxInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		log.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 
 	if !exists {
-		log.Debugf("PerconaXtraDB %s does not exist anymore", key)
+		klog.V(5).Infof("PerconaXtraDB %s does not exist anymore", key)
 	} else {
 		// Note that you also have to check the uid if you have a local controlled resource, which
 		// is dependent on the actual instance, to detect that a PerconaXtraDB was recreated with the same name
@@ -54,7 +54,7 @@ func (c *Controller) runPerconaXtraDB(key string) error {
 		if px.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(px.ObjectMeta, kubedb.GroupName) {
 				if err := c.terminate(px); err != nil {
-					log.Errorln(err)
+					klog.Errorln(err)
 					return err
 				}
 				_, _, err = util.PatchPerconaXtraDB(context.TODO(), c.DBClient.KubedbV1alpha2(), px, func(in *api.PerconaXtraDB) *api.PerconaXtraDB {
@@ -78,13 +78,13 @@ func (c *Controller) runPerconaXtraDB(key string) error {
 
 			if px.Spec.Halted {
 				if err := c.halt(px); err != nil {
-					log.Errorln(err)
+					klog.Errorln(err)
 					c.pushFailureEvent(px, err.Error())
 					return err
 				}
 			} else {
 				if err := c.create(px); err != nil {
-					log.Errorln(err)
+					klog.Errorln(err)
 					c.pushFailureEvent(px, err.Error())
 					return err
 				}

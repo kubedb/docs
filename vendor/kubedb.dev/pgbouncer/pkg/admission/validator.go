@@ -27,7 +27,6 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 
 	cm_api "github.com/jetstack/cert-manager/pkg/apis/certmanager/v1beta1"
-	"gomodules.xyz/x/log"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,6 +35,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/mergepatch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/klog/v2"
 	meta_util "kmodules.xyz/client-go/meta"
 	hookapi "kmodules.xyz/webhook-runtime/admission/v1beta1"
 )
@@ -97,7 +97,7 @@ func (pbValidator *PgBouncerValidator) Admit(req *admission.AdmissionRequest) *a
 			// req.Object.Raw = nil, so read from kubernetes
 			obj, err := pbValidator.extClient.KubedbV1alpha2().PgBouncers(req.Namespace).Get(context.TODO(), req.Name, metav1.GetOptions{})
 			if kerr.IsNotFound(err) {
-				log.Infoln("obj ", obj.Name, " already deleted")
+				klog.Infoln("obj ", obj.Name, " already deleted")
 			}
 			if err != nil && !kerr.IsNotFound(err) {
 				return hookapi.StatusInternalServerError(err)

@@ -2,7 +2,7 @@
 // Elasticsearch B.V. licenses this file to you under the Apache 2.0 License.
 // See the LICENSE file in the project root for more information.
 //
-// Code generated from specification version 7.9.0: DO NOT EDIT
+// Code generated from specification version 7.12.0: DO NOT EDIT
 
 package esapi
 
@@ -36,7 +36,8 @@ type MLGetJobStats func(o ...func(*MLGetJobStatsRequest)) (*Response, error)
 type MLGetJobStatsRequest struct {
 	JobID string
 
-	AllowNoJobs *bool
+	AllowNoJobs  *bool
+	AllowNoMatch *bool
 
 	Pretty     bool
 	Human      bool
@@ -75,6 +76,10 @@ func (r MLGetJobStatsRequest) Do(ctx context.Context, transport Transport) (*Res
 
 	if r.AllowNoJobs != nil {
 		params["allow_no_jobs"] = strconv.FormatBool(*r.AllowNoJobs)
+	}
+
+	if r.AllowNoMatch != nil {
+		params["allow_no_match"] = strconv.FormatBool(*r.AllowNoMatch)
 	}
 
 	if r.Pretty {
@@ -157,6 +162,14 @@ func (f MLGetJobStats) WithJobID(v string) func(*MLGetJobStatsRequest) {
 func (f MLGetJobStats) WithAllowNoJobs(v bool) func(*MLGetJobStatsRequest) {
 	return func(r *MLGetJobStatsRequest) {
 		r.AllowNoJobs = &v
+	}
+}
+
+// WithAllowNoMatch - whether to ignore if a wildcard expression matches no jobs. (this includes `_all` string or when no jobs have been specified).
+//
+func (f MLGetJobStats) WithAllowNoMatch(v bool) func(*MLGetJobStatsRequest) {
+	return func(r *MLGetJobStatsRequest) {
+		r.AllowNoMatch = &v
 	}
 }
 

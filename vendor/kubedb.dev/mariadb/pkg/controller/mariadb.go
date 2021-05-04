@@ -26,11 +26,11 @@ import (
 	validator "kubedb.dev/mariadb/pkg/admission"
 
 	"github.com/pkg/errors"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
@@ -43,7 +43,7 @@ func (c *Controller) create(db *api.MariaDB) error {
 			eventer.EventReasonInvalid,
 			err.Error(),
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		return nil
 	}
 
@@ -78,7 +78,7 @@ func (c *Controller) create(db *api.MariaDB) error {
 			return err
 		}
 		if !ok {
-			log.Infoln(fmt.Sprintf("wait for all necessary secrets for db %s/%s", db.Namespace, db.Name))
+			klog.Infoln(fmt.Sprintf("wait for all necessary secrets for db %s/%s", db.Namespace, db.Name))
 			return nil
 		}
 	}
@@ -90,7 +90,7 @@ func (c *Controller) create(db *api.MariaDB) error {
 
 	_, err = c.ensureAppBinding(db)
 	if err != nil {
-		log.Errorln(err)
+		klog.Errorln(err)
 		return err
 	}
 
@@ -105,7 +105,7 @@ func (c *Controller) create(db *api.MariaDB) error {
 			if !kmapi.HasCondition(db.Status.Conditions, api.DatabaseProvisioned) &&
 				!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseDataRestored) {
 				// write log indicating that the database is waiting for the data to be restored by external initializer
-				log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
+				klog.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
 					db.Kind,
 					db.Namespace,
 					db.Name,
@@ -153,7 +153,7 @@ func (c *Controller) create(db *api.MariaDB) error {
 			"Failed to manage monitoring system. Reason: %v",
 			err,
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		return nil
 	}
 
@@ -165,7 +165,7 @@ func (c *Controller) create(db *api.MariaDB) error {
 			"Failed to manage monitoring system. Reason: %v",
 			err,
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		return nil
 	}
 	// Check: ReplicaReady --> AcceptingConnection --> Ready --> Provisioned
@@ -221,14 +221,14 @@ func (c *Controller) halt(db *api.MariaDB) error {
 	if db.Spec.TerminationPolicy != api.TerminationPolicyHalt {
 		return errors.New("can't halt db. 'spec.terminationPolicy' is not 'Halt'")
 	}
-	log.Infof("Halting MariaDB %v/%v", db.Namespace, db.Name)
+	klog.Infof("Halting MariaDB %v/%v", db.Namespace, db.Name)
 	if err := c.haltDatabase(db); err != nil {
 		return err
 	}
 	if err := c.waitUntilPaused(db); err != nil {
 		return err
 	}
-	log.Infof("update status of MariaDB %v/%v to Halted.", db.Namespace, db.Name)
+	klog.Infof("update status of MariaDB %v/%v to Halted.", db.Namespace, db.Name)
 	if _, err := util.UpdateMariaDBStatus(
 		context.TODO(),
 		c.DBClient.KubedbV1alpha2(),
@@ -287,7 +287,7 @@ func (c *Controller) terminate(db *api.MariaDB) error {
 
 	if db.Spec.Monitor != nil {
 		if err := c.deleteMonitor(db); err != nil {
-			log.Errorln(err)
+			klog.Errorln(err)
 			return nil
 		}
 	}

@@ -27,8 +27,10 @@ import (
 )
 
 // MySQLAutoscalerLister helps list MySQLAutoscalers.
+// All objects returned here must be treated as read-only.
 type MySQLAutoscalerLister interface {
 	// List lists all MySQLAutoscalers in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MySQLAutoscaler, err error)
 	// MySQLAutoscalers returns an object that can list and get MySQLAutoscalers.
 	MySQLAutoscalers(namespace string) MySQLAutoscalerNamespaceLister
@@ -59,10 +61,13 @@ func (s *mySQLAutoscalerLister) MySQLAutoscalers(namespace string) MySQLAutoscal
 }
 
 // MySQLAutoscalerNamespaceLister helps list and get MySQLAutoscalers.
+// All objects returned here must be treated as read-only.
 type MySQLAutoscalerNamespaceLister interface {
 	// List lists all MySQLAutoscalers in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MySQLAutoscaler, err error)
 	// Get retrieves the MySQLAutoscaler from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.MySQLAutoscaler, error)
 	MySQLAutoscalerNamespaceListerExpansion
 }

@@ -27,8 +27,10 @@ import (
 )
 
 // PostgresAutoscalerLister helps list PostgresAutoscalers.
+// All objects returned here must be treated as read-only.
 type PostgresAutoscalerLister interface {
 	// List lists all PostgresAutoscalers in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.PostgresAutoscaler, err error)
 	// PostgresAutoscalers returns an object that can list and get PostgresAutoscalers.
 	PostgresAutoscalers(namespace string) PostgresAutoscalerNamespaceLister
@@ -59,10 +61,13 @@ func (s *postgresAutoscalerLister) PostgresAutoscalers(namespace string) Postgre
 }
 
 // PostgresAutoscalerNamespaceLister helps list and get PostgresAutoscalers.
+// All objects returned here must be treated as read-only.
 type PostgresAutoscalerNamespaceLister interface {
 	// List lists all PostgresAutoscalers in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.PostgresAutoscaler, err error)
 	// Get retrieves the PostgresAutoscaler from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.PostgresAutoscaler, error)
 	PostgresAutoscalerNamespaceListerExpansion
 }

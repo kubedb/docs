@@ -22,7 +22,7 @@ import (
 	"kubedb.dev/operator/pkg/cmds/server"
 
 	"github.com/spf13/cobra"
-	"gomodules.xyz/x/log"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/cli"
 )
@@ -38,7 +38,7 @@ func NewCmdRun(version string, out, errOut io.Writer, stopCh <-chan struct{}) *c
 			cli.SendPeriodicAnalytics(c, version)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			log.Infoln("Starting kubedb-server...")
+			klog.Infoln("Starting kubedb-server...")
 
 			if err := o.Complete(); err != nil {
 				return err

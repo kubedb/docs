@@ -27,8 +27,10 @@ import (
 )
 
 // MongoDBAutoscalerLister helps list MongoDBAutoscalers.
+// All objects returned here must be treated as read-only.
 type MongoDBAutoscalerLister interface {
 	// List lists all MongoDBAutoscalers in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MongoDBAutoscaler, err error)
 	// MongoDBAutoscalers returns an object that can list and get MongoDBAutoscalers.
 	MongoDBAutoscalers(namespace string) MongoDBAutoscalerNamespaceLister
@@ -59,10 +61,13 @@ func (s *mongoDBAutoscalerLister) MongoDBAutoscalers(namespace string) MongoDBAu
 }
 
 // MongoDBAutoscalerNamespaceLister helps list and get MongoDBAutoscalers.
+// All objects returned here must be treated as read-only.
 type MongoDBAutoscalerNamespaceLister interface {
 	// List lists all MongoDBAutoscalers in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MongoDBAutoscaler, err error)
 	// Get retrieves the MongoDBAutoscaler from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.MongoDBAutoscaler, error)
 	MongoDBAutoscalerNamespaceListerExpansion
 }

@@ -22,9 +22,9 @@ import (
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	core_util "kmodules.xyz/client-go/core/v1"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -92,7 +92,7 @@ func (c *Controller) manageMonitor(db *api.MySQL) error {
 		if oldAgent != nil &&
 			oldAgent.GetType() != db.Spec.Monitor.Agent {
 			if _, err := oldAgent.Delete(db.StatsService()); err != nil {
-				log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
+				klog.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 			}
 		}
 		if _, err := c.addOrUpdateMonitor(db); err != nil {
@@ -101,7 +101,7 @@ func (c *Controller) manageMonitor(db *api.MySQL) error {
 		return c.setNewAgent(db)
 	} else if oldAgent != nil {
 		if _, err := oldAgent.Delete(db.StatsService()); err != nil {
-			log.Errorf("error in deleting Prometheus agent. Reason: %s", err)
+			klog.Errorf("error in deleting Prometheus agent. Reason: %s", err)
 		}
 	}
 	return nil

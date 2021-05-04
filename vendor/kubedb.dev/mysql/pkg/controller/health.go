@@ -31,12 +31,12 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	sql_driver "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
-	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 )
@@ -53,12 +53,12 @@ func (c *Controller) RunHealthChecker(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
-	glog.Info("Starting MySQL health checker...")
+	klog.Info("Starting MySQL health checker...")
 
 	go wait.Until(func() {
 		dbList, err := c.myLister.MySQLs(core.NamespaceAll).List(labels.Everything())
 		if err != nil {
-			glog.Errorf("Failed to list MySQL objects with: %s", err.Error())
+			klog.Errorf("Failed to list MySQL objects with: %s", err.Error())
 			return
 		}
 
@@ -82,7 +82,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 					LabelSelector: labels.Set(db.OffshootSelectors()).String(),
 				})
 				if err != nil {
-					glog.Warning("Failed to list DB pod with ", err.Error())
+					klog.Warning("Failed to list DB pod with ", err.Error())
 					return
 				}
 
@@ -93,7 +93,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 
 					engine, err := c.getMySQLClient(db, HostDNS(db, pod.ObjectMeta), api.MySQLDatabasePort)
 					if err != nil {
-						glog.Warning("Failed to get db client for host ", pod.Namespace, "/", pod.Name)
+						klog.Warning("Failed to get db client for host ", pod.Namespace, "/", pod.Name)
 						continue
 					}
 
@@ -102,14 +102,14 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 							if engine != nil {
 								err = engine.Close()
 								if err != nil {
-									glog.Errorf("Can't close the engine. error: %v", err)
+									klog.Errorf("Can't close the engine. error: %v", err)
 								}
 							}
 						}()
 
 						isHostOnline, err := c.isHostOnline(db, engine)
 						if err != nil {
-							glog.Warning("Host is not online ", err.Error())
+							klog.Warning("Host is not online ", err.Error())
 						}
 
 						if isHostOnline {
@@ -122,7 +122,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 							})
 							_, err = c.Client.CoreV1().Pods(pod.Namespace).UpdateStatus(context.TODO(), &pod, metav1.UpdateOptions{})
 							if err != nil {
-								glog.Warning("Failed to update pod status with: ", err.Error())
+								klog.Warning("Failed to update pod status with: ", err.Error())
 							}
 						}
 					}(engine)
@@ -131,7 +131,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 				// verify db is going to accepting connection and in ready state
 				port, err := c.GetPrimaryServicePort(db)
 				if err != nil {
-					glog.Warning("Failed to primary service port with: ", err.Error())
+					klog.Warning("Failed to primary service port with: ", err.Error())
 					return
 				}
 				engine, err := c.getMySQLClient(db, db.PrimaryServiceDNS(), port)
@@ -165,7 +165,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 						metav1.UpdateOptions{},
 					)
 					if err != nil {
-						glog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
+						klog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
 					}
 					// Since the client isn't created, skip rest operations.
 					return
@@ -174,7 +174,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 					if engine != nil {
 						err = engine.Close()
 						if err != nil {
-							glog.Errorf("Can't close the engine. error: %v", err)
+							klog.Errorf("Can't close the engine. error: %v", err)
 						}
 					}
 				}()
@@ -200,7 +200,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 					metav1.UpdateOptions{},
 				)
 				if err != nil {
-					glog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
+					klog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
 					// Since condition update failed, skip remaining operations.
 					return
 				}
@@ -210,12 +210,12 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 				if *db.Spec.Replicas > int32(1) && db.Spec.Topology != nil && db.Spec.Topology.Group != nil {
 					isHealthy, err = c.checkMySQLClusterHealth(len(podList.Items), engine)
 					if err != nil {
-						glog.Errorf("MySQL Cluster %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
+						klog.Errorf("MySQL Cluster %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
 					}
 				} else {
 					isHealthy, err = c.checkMySQLStandaloneHealth(engine)
 					if err != nil {
-						glog.Errorf("MySQL standalone %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
+						klog.Errorf("MySQL standalone %s/%s is not healthy, reason: %s", db.Namespace, db.Name, err.Error())
 					}
 				}
 
@@ -239,7 +239,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 						metav1.UpdateOptions{},
 					)
 					if err != nil {
-						glog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
+						klog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
 					}
 				} else {
 					// database is not healthy. So update to "Ready" condition to "false"
@@ -261,7 +261,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 						metav1.UpdateOptions{},
 					)
 					if err != nil {
-						glog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
+						klog.Errorf("Failed to update status for MySQL: %s/%s", db.Namespace, db.Name)
 					}
 				}
 			}()
@@ -271,7 +271,7 @@ func (c *Controller) CheckMySQLHealth(stopCh <-chan struct{}) {
 
 	// will wait here until stopCh is closed.
 	<-stopCh
-	glog.Info("Shutting down MySQL health checker...")
+	klog.Info("Shutting down MySQL health checker...")
 }
 
 func (c *Controller) checkMySQLClusterHealth(members int, engine *xorm.Engine) (bool, error) {

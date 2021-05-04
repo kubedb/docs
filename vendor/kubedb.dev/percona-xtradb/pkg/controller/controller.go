@@ -30,7 +30,6 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,6 +40,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/klog/v2"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/apiextensions"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -98,7 +98,7 @@ func New(
 
 // Ensuring Custom Resource Definitions
 func (c *Controller) EnsureCustomResourceDefinitions() error {
-	log.Infoln("Ensuring CustomResourceDefinition...")
+	klog.Infoln("Ensuring CustomResourceDefinition...")
 	crds := []*apiextensions.CustomResourceDefinition{
 		api.PerconaXtraDB{}.CustomResourceDefinition(),
 		catalog.PerconaXtraDBVersion{}.CustomResourceDefinition(),
@@ -139,20 +139,20 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	defer utilruntime.HandleCrash()
 
-	log.Infoln("Starting KubeDB controller")
+	klog.Infoln("Starting KubeDB controller")
 	c.KubeInformerFactory.Start(stopCh)
 	c.KubedbInformerFactory.Start(stopCh)
 
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	for t, v := range c.KubeInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for caches to sync", t)
+			klog.Fatalf("%v timed out waiting for caches to sync", t)
 			return
 		}
 	}
 	for t, v := range c.KubedbInformerFactory.WaitForCacheSync(stopCh) {
 		if !v {
-			log.Fatalf("%v timed out waiting for caches to sync", t)
+			klog.Fatalf("%v timed out waiting for caches to sync", t)
 			return
 		}
 	}
@@ -167,7 +167,7 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 	c.RunControllers(stopCh)
 
 	<-stopCh
-	log.Infoln("Stopping KubeDB controller")
+	klog.Infoln("Stopping KubeDB controller")
 }
 
 func (c *Controller) pushFailureEvent(db *api.PerconaXtraDB, reason string) {

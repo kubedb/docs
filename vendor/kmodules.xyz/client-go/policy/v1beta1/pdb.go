@@ -22,7 +22,6 @@ import (
 
 	"kmodules.xyz/client-go/discovery"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	policy "k8s.io/api/policy/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -31,13 +30,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 )
 
 func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodDisruptionBudget) *policy.PodDisruptionBudget, opts metav1.PatchOptions) (*policy.PodDisruptionBudget, kutil.VerbType, error) {
 	cur, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating PodDisruptionBudget %s/%s.", meta.Namespace, meta.Name)
+		klog.V(3).Infof("Creating PodDisruptionBudget %s/%s.", meta.Namespace, meta.Name)
 		out, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Create(ctx, transform(&policy.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
@@ -60,12 +60,12 @@ func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interfac
 			return PatchPodDisruptionBudget(ctx, c, cur, transform, opts)
 		}
 		// PDBs dont have the specs, Specs can't be modified once created, so we have to delete first, then recreate with correct  spec
-		glog.Warningf("Spec of PodDisruptionBudget %s/%s is modified, deleting existing one first.", meta.Namespace, meta.Name)
+		klog.Warningf("Spec of PodDisruptionBudget %s/%s is modified, deleting existing one first.", meta.Namespace, meta.Name)
 		err = c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Delete(ctx, meta.Name, metav1.DeleteOptions{})
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
-		glog.V(3).Infof("Creating PodDisruptionBudget %s/%s.", mod.Namespace, mod.Name)
+		klog.V(3).Infof("Creating PodDisruptionBudget %s/%s.", mod.Namespace, mod.Name)
 		out, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Create(ctx, transform(&policy.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
@@ -106,7 +106,7 @@ func PatchPodDisruptionBudgetObject(ctx context.Context, c kubernetes.Interface,
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching PodDisruptionBudget %s with %s.", cur.Name, string(patch))
+	klog.V(3).Infof("Patching PodDisruptionBudget %s with %s.", cur.Name, string(patch))
 	out, err := c.PolicyV1beta1().PodDisruptionBudgets(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
@@ -122,7 +122,7 @@ func TryUpdatePodDisruptionBudget(ctx context.Context, c kubernetes.Interface, m
 			result, e2 = c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update PodDisruptionBudget %s due to %v.", attempt, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update PodDisruptionBudget %s due to %v.", attempt, cur.Name, e2)
 		return false, nil
 	})
 

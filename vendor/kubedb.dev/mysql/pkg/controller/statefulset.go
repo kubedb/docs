@@ -27,12 +27,12 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	"github.com/coreos/go-semver/semver"
-	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	app_util "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -70,7 +70,7 @@ func (c *Controller) ensureStatefulSet(db *api.MySQL) error {
 		if err := c.CreateStatefulSetPodDisruptionBudget(stsNew); err != nil {
 			return err
 		}
-		log.Info("Successfully created/patched PodDisruptionBudget")
+		klog.Info("Successfully created/patched PodDisruptionBudget")
 	}
 
 	return nil
@@ -420,7 +420,7 @@ func upsertDataVolume(statefulSet *apps.StatefulSet, db *api.MySQL) *apps.Statef
 					pvcSpec.AccessModes = []core.PersistentVolumeAccessMode{
 						core.ReadWriteOnce,
 					}
-					log.Infof(`Using "%v" as AccessModes in mysql.Spec.Storage`, core.ReadWriteOnce)
+					klog.Infof(`Using "%v" as AccessModes in mysql.Spec.Storage`, core.ReadWriteOnce)
 				}
 
 				claim := core.PersistentVolumeClaim{

@@ -25,12 +25,12 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	"kubedb.dev/apimachinery/pkg/phase"
 
-	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	v1 "kmodules.xyz/client-go/apps/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
@@ -47,15 +47,15 @@ func (c *Controller) initWatcher() {
 }
 
 func (c *Controller) runMongoDB(key string) error {
-	log.Debugln("started processing, key:", key)
+	klog.V(5).Infoln("started processing, key:", key)
 	obj, exists, err := c.mgInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		log.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 
 	if !exists {
-		log.Debugf("MongoDB %s does not exist anymore", key)
+		klog.V(5).Infof("MongoDB %s does not exist anymore", key)
 	} else {
 		// Note that you also have to check the uid if you have a local controlled resource, which
 		// is dependent on the actual instance, to detect that a MongoDB was recreated with the same name
@@ -64,7 +64,7 @@ func (c *Controller) runMongoDB(key string) error {
 		if db.DeletionTimestamp != nil {
 			if core_util.HasFinalizer(db.ObjectMeta, kubedb.GroupName) {
 				if err := c.terminate(db); err != nil {
-					log.Errorln(err)
+					klog.Errorln(err)
 					return err
 				}
 				_, _, err = util.PatchMongoDB(context.TODO(), c.DBClient.KubedbV1alpha2(), db, func(in *api.MongoDB) *api.MongoDB {
@@ -141,7 +141,7 @@ func (c *Controller) runMongoDB(key string) error {
 
 			if db.Spec.Halted {
 				if err := c.halt(db); err != nil {
-					log.Errorln(err)
+					klog.Errorln(err)
 					c.pushFailureEvent(db, err.Error())
 					return err
 				}
@@ -166,7 +166,7 @@ func (c *Controller) runMongoDB(key string) error {
 
 				// process db object
 				if err := c.create(db); err != nil {
-					log.Errorln(err)
+					klog.Errorln(err)
 					c.pushFailureEvent(db, err.Error())
 					return err
 				}
@@ -204,7 +204,7 @@ func (c *Controller) stsWatcher() {
 				owner := metav1.GetControllerOf(sts)
 				ok, kind, err := core_util.IsOwnerOfGroup(owner, kubedb.GroupName)
 				if err != nil {
-					log.Warningf("failed to enqueue StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
+					klog.Warningf("failed to enqueue StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
 					return
 				}
 				if !ok && kind != api.ResourceKindMongoDB {
@@ -221,7 +221,7 @@ func (c *Controller) stsWatcher() {
 				owner := metav1.GetControllerOf(sts)
 				ok, kind, err := core_util.IsOwnerOfGroup(owner, kubedb.GroupName)
 				if err != nil {
-					log.Warningf("failed to enqueue StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
+					klog.Warningf("failed to enqueue StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
 					return
 				}
 				if !ok && kind != api.ResourceKindMongoDB {

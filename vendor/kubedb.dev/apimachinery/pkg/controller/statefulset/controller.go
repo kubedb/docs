@@ -24,13 +24,13 @@ import (
 	db_cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 
-	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog/v2"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/tools/queue"
 )
@@ -57,7 +57,7 @@ func NewController(
 }
 
 func (c *Controller) InitStsWatcher() {
-	log.Infoln("Initializing StatefulSet watcher.....")
+	klog.Infoln("Initializing StatefulSet watcher.....")
 	// Initialize RestoreSession Watcher
 	c.StsInformer = c.KubeInformerFactory.Apps().V1().StatefulSets().Informer()
 	c.StsQueue = queue.New(api.ResourceKindStatefulSet, c.MaxNumRequeues, c.NumThreads, c.processStatefulSet)
@@ -77,19 +77,19 @@ func (c *Controller) InitStsWatcher() {
 			if sts, ok := obj.(*apps.StatefulSet); ok {
 				ok, _, err := core_util.IsOwnerOfGroup(metav1.GetControllerOf(sts), kubedb.GroupName)
 				if err != nil || !ok {
-					log.Warningln(err)
+					klog.Warningln(err)
 					return
 				}
 				dbInfo, err := c.extractDatabaseInfo(sts)
 				if err != nil {
 					if !kerr.IsNotFound(err) {
-						log.Warningf("failed to extract database info from StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
+						klog.Warningf("failed to extract database info from StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
 					}
 					return
 				}
 				err = c.ensureReadyReplicasCond(dbInfo)
 				if err != nil {
-					log.Warningf("failed to update ReadyReplicas condition. Reason: %v", err)
+					klog.Warningf("failed to update ReadyReplicas condition. Reason: %v", err)
 					return
 				}
 			}
@@ -101,7 +101,7 @@ func (c *Controller) enqueueOnlyKubeDBSts(sts *apps.StatefulSet) {
 	// only enqueue if the controlling owner is a KubeDB resource
 	ok, _, err := core_util.IsOwnerOfGroup(metav1.GetControllerOf(sts), kubedb.GroupName)
 	if err != nil {
-		log.Warningf("failed to enqueue StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
+		klog.Warningf("failed to enqueue StatefulSet: %s/%s. Reason: %v", sts.Namespace, sts.Name, err)
 		return
 	}
 	if ok {
@@ -110,15 +110,15 @@ func (c *Controller) enqueueOnlyKubeDBSts(sts *apps.StatefulSet) {
 }
 
 func (c *Controller) processStatefulSet(key string) error {
-	log.Infof("Started processing, key: %v", key)
+	klog.Infof("Started processing, key: %v", key)
 	obj, exists, err := c.StsInformer.GetIndexer().GetByKey(key)
 	if err != nil {
-		log.Errorf("Fetching object with key %s from store failed with %v", key, err)
+		klog.Errorf("Fetching object with key %s from store failed with %v", key, err)
 		return err
 	}
 
 	if !exists {
-		log.Debugf("StatefulSet %s does not exist anymore", key)
+		klog.V(5).Infof("StatefulSet %s does not exist anymore", key)
 	} else {
 		sts := obj.(*apps.StatefulSet).DeepCopy()
 		dbInfo, err := c.extractDatabaseInfo(sts)

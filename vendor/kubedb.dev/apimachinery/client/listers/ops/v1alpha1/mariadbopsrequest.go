@@ -27,8 +27,10 @@ import (
 )
 
 // MariaDBOpsRequestLister helps list MariaDBOpsRequests.
+// All objects returned here must be treated as read-only.
 type MariaDBOpsRequestLister interface {
 	// List lists all MariaDBOpsRequests in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MariaDBOpsRequest, err error)
 	// MariaDBOpsRequests returns an object that can list and get MariaDBOpsRequests.
 	MariaDBOpsRequests(namespace string) MariaDBOpsRequestNamespaceLister
@@ -59,10 +61,13 @@ func (s *mariaDBOpsRequestLister) MariaDBOpsRequests(namespace string) MariaDBOp
 }
 
 // MariaDBOpsRequestNamespaceLister helps list and get MariaDBOpsRequests.
+// All objects returned here must be treated as read-only.
 type MariaDBOpsRequestNamespaceLister interface {
 	// List lists all MariaDBOpsRequests in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.MariaDBOpsRequest, err error)
 	// Get retrieves the MariaDBOpsRequest from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.MariaDBOpsRequest, error)
 	MariaDBOpsRequestNamespaceListerExpansion
 }

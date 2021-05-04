@@ -27,8 +27,10 @@ import (
 )
 
 // PerconaXtraDBAutoscalerLister helps list PerconaXtraDBAutoscalers.
+// All objects returned here must be treated as read-only.
 type PerconaXtraDBAutoscalerLister interface {
 	// List lists all PerconaXtraDBAutoscalers in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.PerconaXtraDBAutoscaler, err error)
 	// PerconaXtraDBAutoscalers returns an object that can list and get PerconaXtraDBAutoscalers.
 	PerconaXtraDBAutoscalers(namespace string) PerconaXtraDBAutoscalerNamespaceLister
@@ -59,10 +61,13 @@ func (s *perconaXtraDBAutoscalerLister) PerconaXtraDBAutoscalers(namespace strin
 }
 
 // PerconaXtraDBAutoscalerNamespaceLister helps list and get PerconaXtraDBAutoscalers.
+// All objects returned here must be treated as read-only.
 type PerconaXtraDBAutoscalerNamespaceLister interface {
 	// List lists all PerconaXtraDBAutoscalers in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha1.PerconaXtraDBAutoscaler, err error)
 	// Get retrieves the PerconaXtraDBAutoscaler from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha1.PerconaXtraDBAutoscaler, error)
 	PerconaXtraDBAutoscalerNamespaceListerExpansion
 }

@@ -31,9 +31,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	mgoptions "go.mongodb.org/mongo-driver/mongo/options"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/tools/certholder"
 )
 
@@ -76,7 +76,7 @@ func (c *Controller) GetMongoDBClientOpts(db *api.MongoDB, url, repSetName strin
 		secretName := db.GetCertSecretName(api.MongoDBClientCert, "")
 		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 		if err != nil {
-			log.Error(err, "failed to get certificate secret. ", secretName)
+			klog.Error(err, "failed to get certificate secret. ", secretName)
 			return nil, err
 		}
 
@@ -84,7 +84,7 @@ func (c *Controller) GetMongoDBClientOpts(db *api.MongoDB, url, repSetName strin
 			ForResource(api.SchemeGroupVersion.WithResource(api.ResourcePluralMongoDB), db.ObjectMeta)
 		_, err = certs.Save(certSecret)
 		if err != nil {
-			log.Error(err, "failed to save certificate")
+			klog.Error(err, "failed to save certificate")
 			return nil, err
 		}
 
@@ -120,7 +120,7 @@ func (c *Controller) CreateTLSUsers(db *api.MongoDB) error {
 	secretName := db.GetCertSecretName(api.MongoDBClientCert, "")
 	certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil {
-		log.Error(err, "failed to get certificate secret", "Secret", secretName)
+		klog.Error(err, "failed to get certificate secret", "Secret", secretName)
 		return err
 	}
 
@@ -128,7 +128,7 @@ func (c *Controller) CreateTLSUsers(db *api.MongoDB) error {
 
 	clientCert, err := x509.ParseCertificate(blk.Bytes)
 	if err != nil {
-		log.Error(err, "failed to get certificate secret", "Secret", secretName)
+		klog.Error(err, "failed to get certificate secret", "Secret", secretName)
 		return err
 	}
 	tlsUserName := clientCert.Subject.String()
@@ -163,19 +163,19 @@ func (c *Controller) CreateTLSUser(db *api.MongoDB, url, repSetName, tlsUserName
 	defer func() {
 		err = dbClient.Disconnect(context.TODO())
 		if err != nil {
-			log.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
+			klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
 		}
 	}()
 
 	res := make(map[string]interface{})
 	err = dbClient.Database("$external").RunCommand(context.Background(), bson.D{{Key: "usersInfo", Value: tlsUserName}}).Decode(&res)
 	if err != nil {
-		log.Error("Failed to get user info. error: ", err)
+		klog.Error("Failed to get user info. error: ", err)
 		return err
 	}
 	users, ok := res["users"].(primitive.A)
 	if ok && len(users) == 0 {
-		log.Info("Creating TLS user with name ", tlsUserName)
+		klog.Info("Creating TLS user with name ", tlsUserName)
 		err = dbClient.Database("$external").RunCommand(context.Background(),
 			bson.D{
 				{
@@ -193,7 +193,7 @@ func (c *Controller) CreateTLSUser(db *api.MongoDB, url, repSetName, tlsUserName
 				},
 			}).Decode(&res)
 		if err != nil {
-			log.Error("Failed to create tls user. error: ", err)
+			klog.Error("Failed to create tls user. error: ", err)
 			return err
 		}
 	}

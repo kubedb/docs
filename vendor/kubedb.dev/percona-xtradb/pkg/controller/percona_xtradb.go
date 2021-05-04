@@ -26,11 +26,11 @@ import (
 	validator "kubedb.dev/percona-xtradb/pkg/admission"
 
 	"github.com/pkg/errors"
-	"gomodules.xyz/x/log"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	kmapi "kmodules.xyz/client-go/api/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
@@ -44,7 +44,7 @@ func (c *Controller) create(db *api.PerconaXtraDB) error {
 			eventer.EventReasonInvalid,
 			err.Error(),
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		// stop Scheduler in case there is any.
 		return nil
 	}
@@ -70,7 +70,7 @@ func (c *Controller) create(db *api.PerconaXtraDB) error {
 		if !kmapi.HasCondition(db.Status.Conditions, api.DatabaseProvisioned) &&
 			!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseDataRestored) {
 			// write log indicating that the database is waiting for the data to be restored by external initializer
-			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
+			klog.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
 				db.Kind,
 				db.Namespace,
 				db.Name,
@@ -124,7 +124,7 @@ func (c *Controller) create(db *api.PerconaXtraDB) error {
 
 	_, err = c.ensureAppBinding(db)
 	if err != nil {
-		log.Errorln(err)
+		klog.Errorln(err)
 		return err
 	}
 
@@ -137,7 +137,7 @@ func (c *Controller) create(db *api.PerconaXtraDB) error {
 		if !kmapi.HasCondition(db.Status.Conditions, api.DatabaseProvisioned) &&
 			!kmapi.IsConditionTrue(db.Status.Conditions, api.DatabaseDataRestored) {
 			// write log indicating that the database is waiting for the data to be restored by external initializer
-			log.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
+			klog.Infof("Database %s %s/%s is waiting for data to be restored by external initializer",
 				db.Kind,
 				db.Namespace,
 				db.Name,
@@ -166,7 +166,7 @@ func (c *Controller) create(db *api.PerconaXtraDB) error {
 			"Failed to manage monitoring system. Reason: %v",
 			err,
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		return nil
 	}
 
@@ -178,7 +178,7 @@ func (c *Controller) create(db *api.PerconaXtraDB) error {
 			"Failed to manage monitoring system. Reason: %v",
 			err,
 		)
-		log.Errorln(err)
+		klog.Errorln(err)
 		return nil
 	}
 
@@ -189,14 +189,14 @@ func (c *Controller) halt(db *api.PerconaXtraDB) error {
 	if db.Spec.Halted && db.Spec.TerminationPolicy != api.TerminationPolicyHalt {
 		return errors.New("can't halt db. 'spec.terminationPolicy' is not 'Halt'")
 	}
-	log.Infof("Halting PerconaXtraDB %v/%v", db.Namespace, db.Name)
+	klog.Infof("Halting PerconaXtraDB %v/%v", db.Namespace, db.Name)
 	if err := c.haltDatabase(db); err != nil {
 		return err
 	}
 	if err := c.waitUntilPaused(db); err != nil {
 		return err
 	}
-	log.Infof("update status of PerconaXtraDB %v/%v to Halted.", db.Namespace, db.Name)
+	klog.Infof("update status of PerconaXtraDB %v/%v to Halted.", db.Namespace, db.Name)
 	if _, err := util.UpdatePerconaXtraDBStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PerconaXtraDBStatus) (types.UID, *api.PerconaXtraDBStatus) {
 		in.Phase = api.DatabasePhaseHalted
 		in.ObservedGeneration = db.Generation
@@ -225,7 +225,7 @@ func (c *Controller) terminate(db *api.PerconaXtraDB) error {
 
 	if db.Spec.Monitor != nil {
 		if err := c.deleteMonitor(db); err != nil {
-			log.Errorln(err)
+			klog.Errorln(err)
 			return nil
 		}
 	}

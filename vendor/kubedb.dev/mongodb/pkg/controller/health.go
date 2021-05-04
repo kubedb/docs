@@ -25,13 +25,13 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 
-	"github.com/golang/glog"
 	"go.mongodb.org/mongo-driver/mongo"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 )
 
@@ -45,7 +45,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 	go wait.Until(func() {
 		dbList, err := c.mgLister.MongoDBs(core.NamespaceAll).List(labels.Everything())
 		if err != nil {
-			glog.Errorf("Failed to list MongoDB objects with: %s", err.Error())
+			klog.Errorf("Failed to list MongoDB objects with: %s", err.Error())
 			return
 		}
 
@@ -79,7 +79,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 					defer func() {
 						err = dbClient.Disconnect(context.TODO())
 						if err != nil {
-							glog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
+							klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
 						}
 					}()
 				} else {
@@ -95,7 +95,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 					defer func() {
 						err = configSvrClient.Disconnect(context.TODO())
 						if err != nil {
-							glog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
+							klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
 						}
 					}()
 
@@ -114,13 +114,13 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 							defer func() {
 								err = client.Disconnect(context.TODO())
 								if err != nil {
-									glog.Errorf("Failed to disconnect client for shard %s/%s. error: %v", db.Namespace, db.Name, err)
+									klog.Errorf("Failed to disconnect client for shard %s/%s. error: %v", db.Namespace, db.Name, err)
 								}
 							}()
 							err = client.Ping(context.TODO(), nil)
 							if err != nil {
 								shardPingErrors[i] = err
-								glog.Errorf("Failed to ping shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, err.Error())
+								klog.Errorf("Failed to ping shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, err.Error())
 								// Since the get status failed, skip remaining operations.
 								return
 							}
@@ -139,7 +139,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 					defer func() {
 						err = mongosClient.Disconnect(context.TODO())
 						if err != nil {
-							glog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
+							klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
 						}
 					}()
 				}
@@ -166,7 +166,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 					metav1.UpdateOptions{},
 				)
 				if err != nil {
-					glog.Errorf("Failed to update status for MongoDB: %s/%s", db.Namespace, db.Name)
+					klog.Errorf("Failed to update status for MongoDB: %s/%s", db.Namespace, db.Name)
 					// Since condition update failed, skip remaining operations.
 					return
 				}
@@ -175,7 +175,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 					// Update to "Ready" condition to "true" only if the database ping is successful.
 					err = dbClient.Ping(context.TODO(), nil)
 					if err != nil {
-						glog.Errorf("Failed to ping database for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+						klog.Errorf("Failed to ping database for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
 						// Since the get status failed, skip remaining operations.
 						return
 					}
@@ -184,7 +184,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 				} else {
 					for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
 						if shardPingErrors[i] != nil {
-							glog.Errorf("Failed to ping shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, shardPingErrors[i].Error())
+							klog.Errorf("Failed to ping shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, shardPingErrors[i].Error())
 							// Since the get status failed, skip remaining operations.
 							return
 						}
@@ -193,14 +193,14 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 					// Update to "Ready" condition to "true" only if the config server and shard ping is successful.
 					err = configSvrClient.Ping(context.TODO(), nil)
 					if err != nil {
-						glog.Errorf("Failed to ping config server for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+						klog.Errorf("Failed to ping config server for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
 						// Since the get status failed, skip remaining operations.
 						return
 					}
 
 					err = mongosClient.Ping(context.TODO(), nil)
 					if err != nil {
-						glog.Errorf("Failed to ping mongos for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+						klog.Errorf("Failed to ping mongos for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
 						// Since the get status failed, skip remaining operations.
 						return
 					}
@@ -215,7 +215,7 @@ func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
 
 	// will wait here until stopCh is closed.
 	<-stopCh
-	glog.Info("Shutting down MongoDB health checker...")
+	klog.Info("Shutting down MongoDB health checker...")
 }
 
 func (c *Controller) updateErrorAcceptingConnections(db *api.MongoDB, connectionErr error) {
@@ -245,7 +245,7 @@ func (c *Controller) updateErrorAcceptingConnections(db *api.MongoDB, connection
 		metav1.UpdateOptions{},
 	)
 	if err != nil {
-		glog.Errorf("Failed to update status for MongoDB: %s/%s", db.Namespace, db.Name)
+		klog.Errorf("Failed to update status for MongoDB: %s/%s", db.Namespace, db.Name)
 	}
 }
 
@@ -268,6 +268,6 @@ func (c *Controller) updateDatabaseReady(db *api.MongoDB) {
 		metav1.UpdateOptions{},
 	)
 	if err != nil {
-		glog.Errorf("Failed to update status for MongoDB: %s/%s", db.Namespace, db.Name)
+		klog.Errorf("Failed to update status for MongoDB: %s/%s", db.Namespace, db.Name)
 	}
 }

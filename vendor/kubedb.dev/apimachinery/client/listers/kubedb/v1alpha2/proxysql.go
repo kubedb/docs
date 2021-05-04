@@ -27,8 +27,10 @@ import (
 )
 
 // ProxySQLLister helps list ProxySQLs.
+// All objects returned here must be treated as read-only.
 type ProxySQLLister interface {
 	// List lists all ProxySQLs in the indexer.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.ProxySQL, err error)
 	// ProxySQLs returns an object that can list and get ProxySQLs.
 	ProxySQLs(namespace string) ProxySQLNamespaceLister
@@ -59,10 +61,13 @@ func (s *proxySQLLister) ProxySQLs(namespace string) ProxySQLNamespaceLister {
 }
 
 // ProxySQLNamespaceLister helps list and get ProxySQLs.
+// All objects returned here must be treated as read-only.
 type ProxySQLNamespaceLister interface {
 	// List lists all ProxySQLs in the indexer for a given namespace.
+	// Objects returned here must be treated as read-only.
 	List(selector labels.Selector) (ret []*v1alpha2.ProxySQL, err error)
 	// Get retrieves the ProxySQL from the indexer for a given namespace and name.
+	// Objects returned here must be treated as read-only.
 	Get(name string) (*v1alpha2.ProxySQL, error)
 	ProxySQLNamespaceListerExpansion
 }
