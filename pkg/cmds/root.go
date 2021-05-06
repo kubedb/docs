@@ -23,13 +23,12 @@ import (
 	"kubedb.dev/apimachinery/client/clientset/versioned/scheme"
 
 	"github.com/spf13/cobra"
+	"gomodules.xyz/kglog"
 	"gomodules.xyz/x/flags"
-	"gomodules.xyz/x/log/golog"
 	v "gomodules.xyz/x/version"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"kmodules.xyz/client-go/logs"
 	"kmodules.xyz/client-go/tools/cli"
 	appcatscheme "kmodules.xyz/custom-resources/client/clientset/versioned/scheme"
 )
@@ -45,12 +44,12 @@ func NewRootCmd(version string) *cobra.Command {
 
 			utilruntime.Must(scheme.AddToScheme(clientsetscheme.Scheme))
 			utilruntime.Must(appcatscheme.AddToScheme(clientsetscheme.Scheme))
-			cli.LoggerOptions = golog.ParseFlags(c.Flags())
+			cli.LoggerOptions = kglog.GetOptions(c.Flags())
 		},
 	}
 	rootCmd.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 	// ref: https://github.com/kubernetes/kubernetes/issues/17162#issuecomment-225596212
-	logs.ParseFlags()
+	kglog.ParseFlags()
 	rootCmd.PersistentFlags().BoolVar(&cli.EnableAnalytics, "enable-analytics", cli.EnableAnalytics, "Send analytical events to Google Analytics")
 
 	rootCmd.AddCommand(v.NewCmdVersion())

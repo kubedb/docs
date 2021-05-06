@@ -149,7 +149,7 @@ github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 github.com/gogo/protobuf/sortkeys
-# github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+# github.com/golang/glog v0.0.0-20210429001901-424d2337a529
 github.com/golang/glog
 # github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e
 github.com/golang/groupcache/lru
@@ -495,6 +495,8 @@ golang.org/x/text/width
 golang.org/x/time/rate
 # gomodules.xyz/cert v1.2.0
 gomodules.xyz/cert
+# gomodules.xyz/clock v0.0.0-20200817085942-06523dba733f
+gomodules.xyz/clock
 # gomodules.xyz/envsubst v0.1.0
 gomodules.xyz/envsubst
 gomodules.xyz/envsubst/parse
@@ -503,6 +505,9 @@ gomodules.xyz/envsubst/path
 gomodules.xyz/homedir
 # gomodules.xyz/jsonpatch/v2 v2.1.0
 gomodules.xyz/jsonpatch/v2
+# gomodules.xyz/kglog v0.0.1
+## explicit
+gomodules.xyz/kglog
 # gomodules.xyz/password-generator v0.2.7
 gomodules.xyz/password-generator
 # gomodules.xyz/pointer v0.0.0-20201105071923-daf60fa55209
@@ -519,14 +524,15 @@ gomodules.xyz/stow/google
 gomodules.xyz/stow/s3
 # gomodules.xyz/version v0.1.0
 gomodules.xyz/version
-# gomodules.xyz/x v0.0.3
+# gomodules.xyz/wait v0.0.0-20210218105358-639bd9211545
+gomodules.xyz/wait
+# gomodules.xyz/x v0.0.4
 ## explicit
 gomodules.xyz/x/analytics
 gomodules.xyz/x/arrays
 gomodules.xyz/x/crypto/rand
 gomodules.xyz/x/flags
 gomodules.xyz/x/ioutil
-gomodules.xyz/x/log/golog
 gomodules.xyz/x/version
 # google.golang.org/api v0.26.0 => google.golang.org/api v0.20.0
 google.golang.org/api/googleapi
@@ -1198,7 +1204,7 @@ k8s.io/utils/net
 k8s.io/utils/path
 k8s.io/utils/pointer
 k8s.io/utils/trace
-# kmodules.xyz/client-go v0.0.0-20210504024435-1eb80721e9b8
+# kmodules.xyz/client-go v0.0.0-20210505231546-fa4fb8e1d04e
 ## explicit
 kmodules.xyz/client-go
 kmodules.xyz/client-go/admissionregistration/v1beta1
@@ -1212,7 +1218,6 @@ kmodules.xyz/client-go/core/v1
 kmodules.xyz/client-go/discovery
 kmodules.xyz/client-go/dynamic
 kmodules.xyz/client-go/dynamic/conditions
-kmodules.xyz/client-go/logs
 kmodules.xyz/client-go/meta
 kmodules.xyz/client-go/policy/v1beta1
 kmodules.xyz/client-go/rbac/v1
@@ -1254,13 +1259,13 @@ kmodules.xyz/monitoring-agent-api/prometheus/v1
 kmodules.xyz/objectstore-api/api/v1
 # kmodules.xyz/offshoot-api v0.0.0-20210504040651-7951e351f0f5
 kmodules.xyz/offshoot-api/api/v1
-# kmodules.xyz/prober v0.0.0-20210504042421-eca494e828bc
+# kmodules.xyz/prober v0.0.0-20210504215326-2e406706b970
 kmodules.xyz/prober/api/v1
 # kmodules.xyz/webhook-runtime v0.0.0-20210504042742-3a9911e3dcdc
 ## explicit
 kmodules.xyz/webhook-runtime/admission/v1beta1
 kmodules.xyz/webhook-runtime/registry/admissionreview/v1beta1
-# kubedb.dev/apimachinery v0.18.1-0.20210504045738-11d1c3068aa3
+# kubedb.dev/apimachinery v0.18.1-0.20210506003355-e982e5902ad2
 ## explicit
 kubedb.dev/apimachinery/apis
 kubedb.dev/apimachinery/apis/autoscaling
@@ -1303,7 +1308,7 @@ kubedb.dev/apimachinery/pkg/controller/statefulset
 kubedb.dev/apimachinery/pkg/eventer
 kubedb.dev/apimachinery/pkg/phase
 kubedb.dev/apimachinery/pkg/validator
-# kubedb.dev/elasticsearch v0.18.1-0.20210504050836-032550787741
+# kubedb.dev/elasticsearch v0.18.1-0.20210506020822-0aefd5f7355c
 ## explicit
 kubedb.dev/elasticsearch/pkg/admission
 kubedb.dev/elasticsearch/pkg/controller
@@ -1318,39 +1323,39 @@ kubedb.dev/elasticsearch/pkg/lib/heap
 kubedb.dev/elasticsearch/pkg/lib/kernel
 kubedb.dev/elasticsearch/pkg/lib/user
 kubedb.dev/elasticsearch/pkg/util/go-es
-# kubedb.dev/mariadb v0.2.1-0.20210504063233-f510e375f7be
+# kubedb.dev/mariadb v0.2.1-0.20210506021335-b6075e5de825
 ## explicit
 kubedb.dev/mariadb/pkg/admission
 kubedb.dev/mariadb/pkg/controller
-# kubedb.dev/memcached v0.11.1-0.20210504065233-7ffe5c73df98
+# kubedb.dev/memcached v0.11.1-0.20210506021739-236d61089935
 ## explicit
 kubedb.dev/memcached/pkg/admission
 kubedb.dev/memcached/pkg/controller
-# kubedb.dev/mongodb v0.11.1-0.20210504070915-24b7976c96a7
+# kubedb.dev/mongodb v0.11.1-0.20210506022042-426afbfc03ea
 ## explicit
 kubedb.dev/mongodb/pkg/admission
 kubedb.dev/mongodb/pkg/controller
-# kubedb.dev/mysql v0.11.1-0.20210504053553-728fa2995a23
+# kubedb.dev/mysql v0.11.1-0.20210506022604-1014a3937e67
 ## explicit
 kubedb.dev/mysql/pkg/admission
 kubedb.dev/mysql/pkg/controller
-# kubedb.dev/percona-xtradb v0.5.1-0.20210504070002-cc0e270a9941
+# kubedb.dev/percona-xtradb v0.5.1-0.20210506030702-6f23031c3bf5
 ## explicit
 kubedb.dev/percona-xtradb/pkg/admission
 kubedb.dev/percona-xtradb/pkg/controller
-# kubedb.dev/pgbouncer v0.5.1-0.20210504064457-870cf108b07d
+# kubedb.dev/pgbouncer v0.5.1-0.20210506023616-1ed2f88344e7
 ## explicit
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.18.1-0.20210504051808-a4e685d6a56d
+# kubedb.dev/postgres v0.18.1-0.20210506023900-2a910034c2ca
 ## explicit
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller
-# kubedb.dev/proxysql v0.5.1-0.20210504063845-2ca12e48c9c7
+# kubedb.dev/proxysql v0.5.1-0.20210506024444-df2937edf5eb
 ## explicit
 kubedb.dev/proxysql/pkg/admission
 kubedb.dev/proxysql/pkg/controller
-# kubedb.dev/redis v0.11.1-0.20210504052237-71d8ced8d1a1
+# kubedb.dev/redis v0.11.1-0.20210506024733-146b38639265
 ## explicit
 kubedb.dev/redis/pkg/admission
 kubedb.dev/redis/pkg/configure-cluster
@@ -1443,7 +1448,7 @@ sigs.k8s.io/structured-merge-diff/v4/typed
 sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 sigs.k8s.io/yaml
-# stash.appscode.dev/apimachinery v0.13.1-0.20210504044941-15d8c532c990
+# stash.appscode.dev/apimachinery v0.13.1-0.20210505235659-974fc12c7593
 stash.appscode.dev/apimachinery/apis
 stash.appscode.dev/apimachinery/apis/repositories
 stash.appscode.dev/apimachinery/apis/repositories/v1alpha1

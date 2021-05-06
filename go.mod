@@ -8,28 +8,29 @@ require (
 	github.com/spf13/pflag v1.0.5
 	go.bytebuilders.dev/license-verifier v0.9.1
 	go.bytebuilders.dev/license-verifier/kubernetes v0.9.1
+	gomodules.xyz/kglog v0.0.1
 	gomodules.xyz/runtime v0.2.0
-	gomodules.xyz/x v0.0.3
+	gomodules.xyz/x v0.0.4
 	k8s.io/api v0.21.0
 	k8s.io/apiextensions-apiserver v0.21.0
 	k8s.io/apimachinery v0.21.0
 	k8s.io/apiserver v0.21.0
 	k8s.io/client-go v0.21.0
 	k8s.io/klog/v2 v2.8.0
-	kmodules.xyz/client-go v0.0.0-20210504024435-1eb80721e9b8
+	kmodules.xyz/client-go v0.0.0-20210505231546-fa4fb8e1d04e
 	kmodules.xyz/custom-resources v0.0.0-20210504034124-54c54fcdb690
 	kmodules.xyz/webhook-runtime v0.0.0-20210504042742-3a9911e3dcdc
-	kubedb.dev/apimachinery v0.18.1-0.20210504045738-11d1c3068aa3
-	kubedb.dev/elasticsearch v0.18.1-0.20210504050836-032550787741
-	kubedb.dev/mariadb v0.2.1-0.20210504063233-f510e375f7be
-	kubedb.dev/memcached v0.11.1-0.20210504065233-7ffe5c73df98
-	kubedb.dev/mongodb v0.11.1-0.20210504070915-24b7976c96a7
-	kubedb.dev/mysql v0.11.1-0.20210504053553-728fa2995a23
-	kubedb.dev/percona-xtradb v0.5.1-0.20210504070002-cc0e270a9941
-	kubedb.dev/pgbouncer v0.5.1-0.20210504064457-870cf108b07d
-	kubedb.dev/postgres v0.18.1-0.20210504051808-a4e685d6a56d
-	kubedb.dev/proxysql v0.5.1-0.20210504063845-2ca12e48c9c7
-	kubedb.dev/redis v0.11.1-0.20210504052237-71d8ced8d1a1
+	kubedb.dev/apimachinery v0.18.1-0.20210506003355-e982e5902ad2
+	kubedb.dev/elasticsearch v0.18.1-0.20210506020822-0aefd5f7355c
+	kubedb.dev/mariadb v0.2.1-0.20210506021335-b6075e5de825
+	kubedb.dev/memcached v0.11.1-0.20210506021739-236d61089935
+	kubedb.dev/mongodb v0.11.1-0.20210506022042-426afbfc03ea
+	kubedb.dev/mysql v0.11.1-0.20210506022604-1014a3937e67
+	kubedb.dev/percona-xtradb v0.5.1-0.20210506030702-6f23031c3bf5
+	kubedb.dev/pgbouncer v0.5.1-0.20210506023616-1ed2f88344e7
+	kubedb.dev/postgres v0.18.1-0.20210506023900-2a910034c2ca
+	kubedb.dev/proxysql v0.5.1-0.20210506024444-df2937edf5eb
+	kubedb.dev/redis v0.11.1-0.20210506024733-146b38639265
 )
 
 replace go.mongodb.org/mongo-driver => github.com/appscode/mongo-go-driver v1.4.0-beta2.0.20210223075318-951c8933c59c

@@ -23,7 +23,7 @@ import (
 	kubedbinformers "kubedb.dev/apimachinery/client/informers/externalversions"
 
 	cmInformers "github.com/jetstack/cert-manager/pkg/client/informers/externalversions"
-	"gomodules.xyz/x/log/golog"
+	"gomodules.xyz/kglog"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	externalInformers "k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -89,7 +89,7 @@ type Config struct {
 	ReadinessProbeInterval  time.Duration
 	MaxNumRequeues          int
 	NumThreads              int
-	LoggerOptions           golog.Options
+	LoggerOptions           kglog.Options
 	EnableAnalytics         bool
 	AnalyticsClientID       string
 	WatchNamespace          string
