@@ -20,8 +20,10 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
@@ -37,8 +39,6 @@ import (
 type ESClient interface {
 	ClusterStatus() (string, error)
 }
-
-var response map[string]interface{}
 
 func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, esVersion, url string) (ESClient, error) {
 	var username, password string
@@ -72,7 +72,12 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, esVersion,
 			Username:          username,
 			Password:          password,
 			EnableDebugLogger: true,
+			DisableRetry:      true,
 			Transport: &http.Transport{
+				IdleConnTimeout: 3 * time.Second,
+				DialContext: (&net.Dialer{
+					Timeout: 30 * time.Second,
+				}).DialContext,
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: true,
 					MaxVersion:         tls.VersionTLS12,
@@ -90,6 +95,8 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, esVersion,
 		if err != nil {
 			return nil, err
 		}
+		defer res.Body.Close()
+
 		if res.IsError() {
 			return nil, fmt.Errorf("health check failed with status code: %d", res.StatusCode)
 		}
@@ -102,7 +109,12 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, esVersion,
 			Username:          username,
 			Password:          password,
 			EnableDebugLogger: true,
+			DisableRetry:      true,
 			Transport: &http.Transport{
+				IdleConnTimeout: 3 * time.Second,
+				DialContext: (&net.Dialer{
+					Timeout: 30 * time.Second,
+				}).DialContext,
 				TLSClientConfig: &tls.Config{
 					InsecureSkipVerify: true,
 					MaxVersion:         tls.VersionTLS12,
@@ -120,6 +132,8 @@ func GetElasticClient(kc kubernetes.Interface, db *api.Elasticsearch, esVersion,
 		if err != nil {
 			return nil, err
 		}
+		defer res.Body.Close()
+
 		if res.IsError() {
 			return nil, fmt.Errorf("health check failed with status code: %d", res.StatusCode)
 		}

@@ -14,11 +14,11 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/event"
-	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/description"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/session"
 )
 
@@ -30,7 +30,6 @@ type Count struct {
 	clock          *session.ClusterClock
 	collection     string
 	monitor        *event.CommandMonitor
-	crypt          *driver.Crypt
 	database       string
 	deployment     driver.Deployment
 	readConcern    *readconcern.ReadConcern
@@ -38,7 +37,6 @@ type Count struct {
 	selector       description.ServerSelector
 	retry          *driver.RetryMode
 	result         CountResult
-	serverAPI      *driver.ServerAPIOptions
 }
 
 type CountResult struct {
@@ -52,41 +50,17 @@ func buildCountResult(response bsoncore.Document, srvr driver.Server) (CountResu
 		return CountResult{}, err
 	}
 	cr := CountResult{}
-elementLoop:
 	for _, element := range elements {
 		switch element.Key() {
-		case "n": // for count using original command
+		case "n":
 			var ok bool
 			cr.N, ok = element.Value().AsInt64OK()
 			if !ok {
-				err = fmt.Errorf("response field 'n' is type int64, but received BSON type %s",
-					element.Value().Type)
-				break elementLoop
-			}
-		case "cursor": // for count using aggregate with $collStats
-			firstBatch, err := element.Value().Document().LookupErr("firstBatch")
-			if err != nil {
-				break elementLoop
-			}
-
-			// get count value from first batch
-			element = firstBatch.Array().Index(0)
-			count, err := element.Value().Document().LookupErr("n")
-			if err != nil {
-				break elementLoop
-			}
-
-			// use count as Int64 for result
-			var ok bool
-			cr.N, ok = count.AsInt64OK()
-			if !ok {
-				err = fmt.Errorf("response field 'n' is type int64, but received BSON type %s",
-					element.Value().Type)
-				break elementLoop
+				err = fmt.Errorf("response field 'n' is type int64, but received BSON type %s", element.Value().Type)
 			}
 		}
 	}
-	return cr, err
+	return cr, nil
 }
 
 // NewCount constructs and returns a new Count.
@@ -97,7 +71,7 @@ func NewCount() *Count {
 // Result returns the result of executing this operation.
 func (c *Count) Result() CountResult { return c.result }
 
-func (c *Count) processResponse(response bsoncore.Document, srvr driver.Server, desc description.Server, _ int) error {
+func (c *Count) processResponse(response bsoncore.Document, srvr driver.Server, desc description.Server) error {
 	var err error
 	c.result, err = buildCountResult(response, srvr)
 	return err
@@ -109,7 +83,7 @@ func (c *Count) Execute(ctx context.Context) error {
 		return errors.New("the Count operation must have a Deployment set before Execute can be called")
 	}
 
-	err := driver.Operation{
+	return driver.Operation{
 		CommandFn:         c.command,
 		ProcessResponseFn: c.processResponse,
 		RetryMode:         c.retry,
@@ -117,62 +91,22 @@ func (c *Count) Execute(ctx context.Context) error {
 		Client:            c.session,
 		Clock:             c.clock,
 		CommandMonitor:    c.monitor,
-		Crypt:             c.crypt,
 		Database:          c.database,
 		Deployment:        c.deployment,
 		ReadConcern:       c.readConcern,
 		ReadPreference:    c.readPreference,
 		Selector:          c.selector,
-		ServerAPI:         c.serverAPI,
 	}.Execute(ctx, nil)
 
-	// Swallow error if NamespaceNotFound(26) is returned from aggregate on non-existent namespace
-	if err != nil {
-		dErr, ok := err.(driver.Error)
-		if ok && dErr.Code == 26 {
-			err = nil
-		}
-	}
-	return err
 }
 
 func (c *Count) command(dst []byte, desc description.SelectedServer) ([]byte, error) {
-	switch {
-	case desc.WireVersion.Max < 12: // If wire version < 12 (4.9.0), use count command
-		dst = bsoncore.AppendStringElement(dst, "count", c.collection)
-		if c.query != nil {
-			dst = bsoncore.AppendDocumentElement(dst, "query", c.query)
-		}
-	default: // If wire version >= 12 (4.9.0), use aggregate with $collStats
-		dst = bsoncore.AppendStringElement(dst, "aggregate", c.collection)
-		var idx int32
-		idx, dst = bsoncore.AppendDocumentElementStart(dst, "cursor")
-		dst, _ = bsoncore.AppendDocumentEnd(dst, idx)
-		if c.query != nil {
-			return nil, fmt.Errorf("'query' cannot be set on Count against servers at or above 4.9.0")
-		}
-
-		collStatsStage := bsoncore.NewDocumentBuilder().
-			AppendDocument("$collStats", bsoncore.NewDocumentBuilder().
-				AppendDocument("count", bsoncore.NewDocumentBuilder().Build()).
-				Build()).
-			Build()
-		groupStage := bsoncore.NewDocumentBuilder().
-			AppendDocument("$group", bsoncore.NewDocumentBuilder().
-				AppendInt64("_id", 1).
-				AppendDocument("n", bsoncore.NewDocumentBuilder().
-					AppendString("$sum", "$count").Build()).
-				Build()).
-			Build()
-		countPipeline := bsoncore.NewArrayBuilder().
-			AppendDocument(collStatsStage).
-			AppendDocument(groupStage).
-			Build()
-		dst = bsoncore.AppendArrayElement(dst, "pipeline", countPipeline)
-	}
-
+	dst = bsoncore.AppendStringElement(dst, "count", c.collection)
 	if c.maxTimeMS != nil {
 		dst = bsoncore.AppendInt64Element(dst, "maxTimeMS", *c.maxTimeMS)
+	}
+	if c.query != nil {
+		dst = bsoncore.AppendDocumentElement(dst, "query", c.query)
 	}
 	return dst, nil
 }
@@ -237,16 +171,6 @@ func (c *Count) CommandMonitor(monitor *event.CommandMonitor) *Count {
 	return c
 }
 
-// Crypt sets the Crypt object to use for automatic encryption and decryption.
-func (c *Count) Crypt(crypt *driver.Crypt) *Count {
-	if c == nil {
-		c = new(Count)
-	}
-
-	c.crypt = crypt
-	return c
-}
-
 // Database sets the database to run this operation against.
 func (c *Count) Database(database string) *Count {
 	if c == nil {
@@ -305,15 +229,5 @@ func (c *Count) Retry(retry driver.RetryMode) *Count {
 	}
 
 	c.retry = &retry
-	return c
-}
-
-// ServerAPI sets the server API version for this operation.
-func (c *Count) ServerAPI(serverAPI *driver.ServerAPIOptions) *Count {
-	if c == nil {
-		c = new(Count)
-	}
-
-	c.serverAPI = serverAPI
 	return c
 }

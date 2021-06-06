@@ -166,7 +166,7 @@ func (c *Controller) ensureStatsService(db *api.PgBouncer) (kutil.VerbType, erro
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	} else if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

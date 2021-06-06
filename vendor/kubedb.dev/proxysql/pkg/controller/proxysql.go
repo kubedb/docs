@@ -36,7 +36,7 @@ import (
 
 func (c *Controller) create(db *api.ProxySQL) error {
 	if err := validator.ValidateProxySQL(c.Client, c.DBClient, db, true); err != nil {
-		c.recorder.Event(
+		c.Recorder.Event(
 			db,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -90,14 +90,14 @@ func (c *Controller) create(db *api.ProxySQL) error {
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created ProxySQL",
 		)
 	} else if vt1 == kutil.VerbPatched || vt2 == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -123,7 +123,7 @@ func (c *Controller) create(db *api.ProxySQL) error {
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(db); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -135,7 +135,7 @@ func (c *Controller) create(db *api.ProxySQL) error {
 	}
 
 	if err := c.manageMonitor(db); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,

@@ -14,10 +14,10 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/event"
-	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/description"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/session"
 )
 
@@ -29,13 +29,11 @@ type DropIndexes struct {
 	clock        *session.ClusterClock
 	collection   string
 	monitor      *event.CommandMonitor
-	crypt        *driver.Crypt
 	database     string
 	deployment   driver.Deployment
 	selector     description.ServerSelector
 	writeConcern *writeconcern.WriteConcern
 	result       DropIndexesResult
-	serverAPI    *driver.ServerAPIOptions
 }
 
 type DropIndexesResult struct {
@@ -72,7 +70,7 @@ func NewDropIndexes(index string) *DropIndexes {
 // Result returns the result of executing this operation.
 func (di *DropIndexes) Result() DropIndexesResult { return di.result }
 
-func (di *DropIndexes) processResponse(response bsoncore.Document, srvr driver.Server, desc description.Server, _ int) error {
+func (di *DropIndexes) processResponse(response bsoncore.Document, srvr driver.Server, desc description.Server) error {
 	var err error
 	di.result, err = buildDropIndexesResult(response, srvr)
 	return err
@@ -90,12 +88,10 @@ func (di *DropIndexes) Execute(ctx context.Context) error {
 		Client:            di.session,
 		Clock:             di.clock,
 		CommandMonitor:    di.monitor,
-		Crypt:             di.crypt,
 		Database:          di.database,
 		Deployment:        di.deployment,
 		Selector:          di.selector,
 		WriteConcern:      di.writeConcern,
-		ServerAPI:         di.serverAPI,
 	}.Execute(ctx, nil)
 
 }
@@ -172,16 +168,6 @@ func (di *DropIndexes) CommandMonitor(monitor *event.CommandMonitor) *DropIndexe
 	return di
 }
 
-// Crypt sets the Crypt object to use for automatic encryption and decryption.
-func (di *DropIndexes) Crypt(crypt *driver.Crypt) *DropIndexes {
-	if di == nil {
-		di = new(DropIndexes)
-	}
-
-	di.crypt = crypt
-	return di
-}
-
 // Database sets the database to run this operation against.
 func (di *DropIndexes) Database(database string) *DropIndexes {
 	if di == nil {
@@ -219,15 +205,5 @@ func (di *DropIndexes) WriteConcern(writeConcern *writeconcern.WriteConcern) *Dr
 	}
 
 	di.writeConcern = writeConcern
-	return di
-}
-
-// ServerAPI sets the server API version for this operation.
-func (di *DropIndexes) ServerAPI(serverAPI *driver.ServerAPIOptions) *DropIndexes {
-	if di == nil {
-		di = new(DropIndexes)
-	}
-
-	di.serverAPI = serverAPI
 	return di
 }

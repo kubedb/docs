@@ -17,7 +17,6 @@ import (
 	"strings"
 	"time"
 
-	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/auth"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
@@ -32,10 +31,8 @@ type config struct {
 	replicaSetName         string
 	seedList               []string
 	serverOpts             []ServerOption
-	cs                     connstring.ConnString // This must not be used for any logic in topology.Topology.
-	uri                    string
+	cs                     connstring.ConnString
 	serverSelectionTimeout time.Duration
-	serverMonitor          *event.ServerMonitor
 }
 
 func newConfig(opts ...Option) (*config, error) {
@@ -67,10 +64,11 @@ func WithConnString(fn func(connstring.ConnString) connstring.ConnString) Option
 		var connOpts []ConnectionOption
 
 		if cs.AppName != "" {
-			c.serverOpts = append(c.serverOpts, WithServerAppName(func(string) string { return cs.AppName }))
+			connOpts = append(connOpts, WithAppName(func(string) string { return cs.AppName }))
 		}
 
-		if cs.Connect == connstring.SingleConnect || (cs.DirectConnectionSet && cs.DirectConnection) {
+		switch cs.Connect {
+		case connstring.SingleConnect:
 			c.mode = SingleMode
 		}
 
@@ -207,14 +205,9 @@ func WithConnString(fn func(connstring.ConnString) connstring.ConnString) Option
 			}))
 
 			for _, comp := range cs.Compressors {
-				switch comp {
-				case "zlib":
+				if comp == "zlib" {
 					connOpts = append(connOpts, WithZlibLevel(func(level *int) *int {
 						return &cs.ZlibLevel
-					}))
-				case "zstd":
-					connOpts = append(connOpts, WithZstdLevel(func(level *int) *int {
-						return &cs.ZstdLevel
 					}))
 				}
 			}
@@ -272,22 +265,6 @@ func WithServerOptions(fn func(...ServerOption) []ServerOption) Option {
 func WithServerSelectionTimeout(fn func(time.Duration) time.Duration) Option {
 	return func(cfg *config) error {
 		cfg.serverSelectionTimeout = fn(cfg.serverSelectionTimeout)
-		return nil
-	}
-}
-
-// WithTopologyServerMonitor configures the monitor for all SDAM events
-func WithTopologyServerMonitor(fn func(*event.ServerMonitor) *event.ServerMonitor) Option {
-	return func(cfg *config) error {
-		cfg.serverMonitor = fn(cfg.serverMonitor)
-		return nil
-	}
-}
-
-// WithURI specifies the URI that was used to create the topology.
-func WithURI(fn func(string) string) Option {
-	return func(cfg *config) error {
-		cfg.uri = fn(cfg.uri)
 		return nil
 	}
 }

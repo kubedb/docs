@@ -40,6 +40,9 @@ func (c *Controller) initWatcher() {
 	c.myQueue = queue.New("MySQL", c.MaxNumRequeues, c.NumThreads, c.runMySQL)
 	c.myLister = c.KubedbInformerFactory.Kubedb().V1alpha2().MySQLs().Lister()
 	c.myInformer.AddEventHandler(queue.NewChangeHandler(c.myQueue.GetQueue()))
+	if c.Auditor != nil {
+		c.myInformer.AddEventHandler(c.Auditor)
+	}
 }
 
 func (c *Controller) runMySQL(key string) error {

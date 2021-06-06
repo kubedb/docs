@@ -31,6 +31,7 @@ import (
 	"github.com/fatih/structs"
 	"github.com/pkg/errors"
 	"gomodules.xyz/envsubst"
+	"gomodules.xyz/flags"
 	"gomodules.xyz/pointer"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -861,7 +862,7 @@ func (c *Reconciler) ensureStatefulSet(db *api.MongoDB, opts workloadOptions) (*
 					Name:            api.ReplicationModeDetectorContainerName,
 					Image:           mongodbVersion.Spec.ReplicationModeDetector.Image,
 					ImagePullPolicy: core.PullIfNotPresent,
-					Args:            append([]string{"run", fmt.Sprintf("--db-name=%s", db.Name), fmt.Sprintf("--db-kind=%s", api.ResourceKindMongoDB)}, c.LoggerOptions.ToFlags()...),
+					Args:            append([]string{"run", fmt.Sprintf("--db-name=%s", db.Name), fmt.Sprintf("--db-kind=%s", api.ResourceKindMongoDB)}, flags.LoggerOptions.ToFlags()...),
 				}
 
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, replicationModeDetector)

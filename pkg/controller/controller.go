@@ -35,15 +35,15 @@ import (
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/restmapper"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/discovery"
 	meta_util "kmodules.xyz/client-go/meta"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
@@ -81,6 +81,8 @@ func New(
 	opt amc.Config,
 	topology *core_util.Topology,
 	recorder record.EventRecorder,
+	mapper discovery.ResourceMapper,
+	auditor cache.ResourceEventHandler,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
@@ -91,8 +93,9 @@ func New(
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
 			ClusterTopology:  topology,
-			Mapper:           restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(client.Discovery())),
 			Recorder:         recorder,
+			Mapper:           mapper,
+			Auditor:          auditor,
 		},
 		Config:     opt,
 		promClient: promClient,

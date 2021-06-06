@@ -34,6 +34,9 @@ func (c *Controller) initWatcher() {
 	c.proxysqlQueue = queue.New("ProxySQL", c.MaxNumRequeues, c.NumThreads, c.runProxySQL)
 	c.proxysqlLister = c.KubedbInformerFactory.Kubedb().V1alpha2().ProxySQLs().Lister()
 	c.proxysqlInformer.AddEventHandler(queue.NewChangeHandler(c.proxysqlQueue.GetQueue()))
+	if c.Auditor != nil {
+		c.proxysqlInformer.AddEventHandler(c.Auditor)
+	}
 }
 
 func (c *Controller) runProxySQL(key string) error {

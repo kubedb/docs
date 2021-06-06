@@ -95,7 +95,6 @@ func (s *ExtraOptions) ApplyTo(cfg *controller.OperatorConfig) error {
 
 	cfg.EnableAnalytics = cli.EnableAnalytics
 	cfg.AnalyticsClientID = cli.AnalyticsClientID
-	cfg.LoggerOptions = cli.LoggerOptions
 
 	cfg.ClientConfig.QPS = float32(s.QPS)
 	cfg.ClientConfig.Burst = s.Burst

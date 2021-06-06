@@ -12,10 +12,10 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/description"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/uuid"
 )
 
@@ -49,35 +49,17 @@ const (
 	Implicit
 )
 
-// TransactionState indicates the state of the transactions FSM.
-type TransactionState uint8
+// State indicates the state of the FSM.
+type state uint8
 
 // Client Session states
 const (
-	None TransactionState = iota
+	None state = iota
 	Starting
 	InProgress
 	Committed
 	Aborted
 )
-
-// String implements the fmt.Stringer interface.
-func (s TransactionState) String() string {
-	switch s {
-	case None:
-		return "none"
-	case Starting:
-		return "starting"
-	case InProgress:
-		return "in progress"
-	case Committed:
-		return "committed"
-	case Aborted:
-		return "aborted"
-	default:
-		return "unknown"
-	}
-}
 
 // Client is a session for clients to run commands.
 type Client struct {
@@ -107,10 +89,10 @@ type Client struct {
 	transactionWc            *writeconcern.WriteConcern
 	transactionMaxCommitTime *time.Duration
 
-	pool             *Pool
-	TransactionState TransactionState
-	PinnedServer     *description.Server
-	RecoveryToken    bson.Raw
+	pool          *Pool
+	state         state
+	PinnedServer  *description.Server
+	RecoveryToken bson.Raw
 }
 
 func getClusterTime(clusterTime bson.Raw) (uint32, uint32) {
@@ -214,9 +196,8 @@ func (c *Client) AdvanceOperationTime(opTime *primitive.Timestamp) error {
 	return nil
 }
 
-// UpdateUseTime sets the session's last used time to the current time. This must be called whenever the session is
-// used to send a command to the server to ensure that the session is not prematurely marked expired in the driver's
-// session pool. If the session has already been ended, this method will return ErrSessionEnded.
+// UpdateUseTime updates the session's last used time.
+// Must be called whenver this session is used to send a command to the server.
 func (c *Client) UpdateUseTime() error {
 	if c.Terminated {
 		return ErrSessionEnded
@@ -260,29 +241,29 @@ func (c *Client) EndSession() {
 
 // TransactionInProgress returns true if the client session is in an active transaction.
 func (c *Client) TransactionInProgress() bool {
-	return c.TransactionState == InProgress
+	return c.state == InProgress
 }
 
 // TransactionStarting returns true if the client session is starting a transaction.
 func (c *Client) TransactionStarting() bool {
-	return c.TransactionState == Starting
+	return c.state == Starting
 }
 
 // TransactionRunning returns true if the client session has started the transaction
 // and it hasn't been committed or aborted
 func (c *Client) TransactionRunning() bool {
-	return c != nil && (c.TransactionState == Starting || c.TransactionState == InProgress)
+	return c != nil && (c.state == Starting || c.state == InProgress)
 }
 
 // TransactionCommitted returns true of the client session just committed a transaciton.
 func (c *Client) TransactionCommitted() bool {
-	return c.TransactionState == Committed
+	return c.state == Committed
 }
 
 // CheckStartTransaction checks to see if allowed to start transaction and returns
 // an error if not allowed
 func (c *Client) CheckStartTransaction() error {
-	if c.TransactionState == InProgress || c.TransactionState == Starting {
+	if c.state == InProgress || c.state == Starting {
 		return ErrTransactInProgress
 	}
 	return nil
@@ -327,7 +308,7 @@ func (c *Client) StartTransaction(opts *TransactionOptions) error {
 		return ErrUnackWCUnsupported
 	}
 
-	c.TransactionState = Starting
+	c.state = Starting
 	c.PinnedServer = nil
 	return nil
 }
@@ -335,9 +316,9 @@ func (c *Client) StartTransaction(opts *TransactionOptions) error {
 // CheckCommitTransaction checks to see if allowed to commit transaction and returns
 // an error if not allowed.
 func (c *Client) CheckCommitTransaction() error {
-	if c.TransactionState == None {
+	if c.state == None {
 		return ErrNoTransactStarted
-	} else if c.TransactionState == Aborted {
+	} else if c.state == Aborted {
 		return ErrCommitAfterAbort
 	}
 	return nil
@@ -350,7 +331,7 @@ func (c *Client) CommitTransaction() error {
 	if err != nil {
 		return err
 	}
-	c.TransactionState = Committed
+	c.state = Committed
 	return nil
 }
 
@@ -369,11 +350,11 @@ func (c *Client) UpdateCommitTransactionWriteConcern() {
 // CheckAbortTransaction checks to see if allowed to abort transaction and returns
 // an error if not allowed.
 func (c *Client) CheckAbortTransaction() error {
-	if c.TransactionState == None {
+	if c.state == None {
 		return ErrNoTransactStarted
-	} else if c.TransactionState == Committed {
+	} else if c.state == Committed {
 		return ErrAbortAfterCommit
-	} else if c.TransactionState == Aborted {
+	} else if c.state == Aborted {
 		return ErrAbortTwice
 	}
 	return nil
@@ -386,7 +367,7 @@ func (c *Client) AbortTransaction() error {
 	if err != nil {
 		return err
 	}
-	c.TransactionState = Aborted
+	c.state = Aborted
 	c.clearTransactionOpts()
 	return nil
 }
@@ -397,15 +378,15 @@ func (c *Client) ApplyCommand(desc description.Server) {
 		// Do not change state if committing after already committed
 		return
 	}
-	if c.TransactionState == Starting {
-		c.TransactionState = InProgress
+	if c.state == Starting {
+		c.state = InProgress
 		// If this is in a transaction and the server is a mongos, pin it
 		if desc.Kind == description.Mongos {
 			c.PinnedServer = &desc
 		}
-	} else if c.TransactionState == Committed || c.TransactionState == Aborted {
+	} else if c.state == Committed || c.state == Aborted {
 		c.clearTransactionOpts()
-		c.TransactionState = None
+		c.state = None
 	}
 }
 

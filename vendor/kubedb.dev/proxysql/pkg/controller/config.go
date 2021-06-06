@@ -19,13 +19,14 @@ package controller
 import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amc "kubedb.dev/apimachinery/pkg/controller"
-	"kubedb.dev/apimachinery/pkg/eventer"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	auditlib "go.bytebuilders.dev/audit/lib"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/record"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/discovery"
 )
@@ -45,6 +46,7 @@ type OperatorConfig struct {
 	DBClient      cs.Interface
 	DynamicClient dynamic.Interface
 	PromClient    pcm.MonitoringV1Interface
+	Recorder      record.EventRecorder
 }
 
 func NewOperatorConfig(clientConfig *rest.Config) *OperatorConfig {
@@ -58,7 +60,16 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 
-	recorder := eventer.NewEventRecorder(c.KubeClient, "ProxySQL operator")
+	// audit event publisher
+	natscfg, err := auditlib.NewNatsConfig(c.KubeClient.CoreV1().Namespaces(), c.LicenseFile)
+	if err != nil {
+		return nil, err
+	}
+	mapper := discovery.NewResourceMapper(discovery.NewRestMapper(c.KubeClient.Discovery()))
+	fn := auditlib.BillingEventCreator{
+		Mapper:    mapper,
+		LicenseID: natscfg.LicenseID,
+	}
 
 	ctrl := New(
 		c.ClientConfig,
@@ -68,7 +79,9 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.DynamicClient,
 		c.PromClient,
 		c.Config,
-		recorder,
+		c.Recorder,
+		mapper,
+		auditlib.NewEventPublisher(natscfg, mapper, fn.CreateEvent),
 	)
 
 	if err := ctrl.EnsureCustomResourceDefinitions(); err != nil {

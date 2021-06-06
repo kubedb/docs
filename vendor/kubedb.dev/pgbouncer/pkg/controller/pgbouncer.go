@@ -116,7 +116,7 @@ func (c *Controller) syncPgBouncer(db *api.PgBouncer) error {
 	}
 
 	if err := c.manageMonitor(db); err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToCreate,
@@ -137,7 +137,7 @@ func (c *Controller) syncPgBouncer(db *api.PgBouncer) error {
 
 func (c *Controller) manageValidation(db *api.PgBouncer) error {
 	if err := validator.ValidatePgBouncer(c.Client, c.DBClient, db, true); err != nil {
-		c.recorder.Event(
+		c.Recorder.Event(
 			db,
 			core.EventTypeWarning,
 			eventer.EventReasonInvalid,
@@ -151,7 +151,7 @@ func (c *Controller) manageValidation(db *api.PgBouncer) error {
 	if db.Spec.UserListSecretRef != nil && db.Spec.UserListSecretRef.Name != "" {
 		if db.Spec.ConnectionPool != nil && db.Spec.ConnectionPool.AuthType != "any" {
 			if _, err := c.Client.CoreV1().Secrets(db.GetNamespace()).Get(context.TODO(), db.Spec.UserListSecretRef.Name, metav1.GetOptions{}); err != nil {
-				c.recorder.Eventf(
+				c.Recorder.Eventf(
 					db,
 					core.EventTypeWarning,
 					"UserListMissing",
@@ -202,14 +202,14 @@ func (c *Controller) syncAuthSecret(db *api.PgBouncer) error {
 	}
 
 	if sVerb == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created PgBouncer Fallback Secret",
 		)
 	} else if sVerb == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -230,14 +230,14 @@ func (c *Controller) manageSecret(db *api.PgBouncer) error {
 	}
 
 	if secretVerb == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created PgBouncer secret",
 		)
 	} else if secretVerb == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -264,14 +264,14 @@ func (c *Controller) manageStatefulSet(db *api.PgBouncer) error {
 		return err
 	}
 	if statefulSetVerb == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created PgBouncer statefulset",
 		)
 	} else if statefulSetVerb == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -290,7 +290,7 @@ func (c *Controller) ensureService(db *api.PgBouncer) error {
 		return err
 	}
 	if vt != kutil.VerbUnchanged {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
@@ -310,14 +310,14 @@ func (c *Controller) syncStatService(db *api.PgBouncer) error {
 		return err
 	}
 	if statServiceVerb == kutil.VerbCreated {
-		c.recorder.Event(
+		c.Recorder.Event(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,
 			"Successfully created Stat Service",
 		)
 	} else if statServiceVerb == kutil.VerbPatched {
-		c.recorder.Event(
+		c.Recorder.Event(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

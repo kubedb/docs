@@ -14,12 +14,12 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"go.mongodb.org/mongo-driver/event"
-	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/description"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/session"
 )
 
@@ -44,8 +44,6 @@ type Aggregate struct {
 	retry                    *driver.RetryMode
 	selector                 description.ServerSelector
 	writeConcern             *writeconcern.WriteConcern
-	crypt                    *driver.Crypt
-	serverAPI                *driver.ServerAPIOptions
 
 	result driver.CursorResponse
 }
@@ -63,7 +61,6 @@ func (a *Aggregate) Result(opts driver.CursorOptions) (*driver.BatchCursor, erro
 	clientSession := a.session
 
 	clock := a.clock
-	opts.ServerAPI = a.serverAPI
 	return driver.NewBatchCursor(a.result, clientSession, clock, opts)
 }
 
@@ -71,7 +68,7 @@ func (a *Aggregate) ResultCursorResponse() driver.CursorResponse {
 	return a.result
 }
 
-func (a *Aggregate) processResponse(response bsoncore.Document, srvr driver.Server, desc description.Server, currIndex int) error {
+func (a *Aggregate) processResponse(response bsoncore.Document, srvr driver.Server, desc description.Server) error {
 	var err error
 
 	a.result, err = driver.NewCursorResponse(response, srvr, desc)
@@ -100,9 +97,7 @@ func (a *Aggregate) Execute(ctx context.Context) error {
 		RetryMode:                      a.retry,
 		Selector:                       a.selector,
 		WriteConcern:                   a.writeConcern,
-		Crypt:                          a.crypt,
 		MinimumWriteConcernWireVersion: 5,
-		ServerAPI:                      a.serverAPI,
 	}.Execute(ctx, nil)
 
 }
@@ -344,25 +339,5 @@ func (a *Aggregate) Retry(retry driver.RetryMode) *Aggregate {
 	}
 
 	a.retry = &retry
-	return a
-}
-
-// Crypt sets the Crypt object to use for automatic encryption and decryption.
-func (a *Aggregate) Crypt(crypt *driver.Crypt) *Aggregate {
-	if a == nil {
-		a = new(Aggregate)
-	}
-
-	a.crypt = crypt
-	return a
-}
-
-// ServerAPI sets the server API version for this operation.
-func (a *Aggregate) ServerAPI(serverAPI *driver.ServerAPIOptions) *Aggregate {
-	if a == nil {
-		a = new(Aggregate)
-	}
-
-	a.serverAPI = serverAPI
 	return a
 }

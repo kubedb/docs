@@ -15,28 +15,25 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/event"
-	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/description"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/session"
 )
 
 // ListDatabases performs a listDatabases operation.
 type ListDatabases struct {
-	filter              bsoncore.Document
-	authorizedDatabases *bool
-	nameOnly            *bool
-	session             *session.Client
-	clock               *session.ClusterClock
-	monitor             *event.CommandMonitor
-	database            string
-	deployment          driver.Deployment
-	readPreference      *readpref.ReadPref
-	retry               *driver.RetryMode
-	selector            description.ServerSelector
-	crypt               *driver.Crypt
-	serverAPI           *driver.ServerAPIOptions
+	filter         bsoncore.Document
+	nameOnly       *bool
+	session        *session.Client
+	clock          *session.ClusterClock
+	monitor        *event.CommandMonitor
+	database       string
+	deployment     driver.Deployment
+	readPreference *readpref.ReadPref
+	retry          *driver.RetryMode
+	selector       description.ServerSelector
 
 	result ListDatabasesResult
 }
@@ -144,7 +141,7 @@ func NewListDatabases(filter bsoncore.Document) *ListDatabases {
 // Result returns the result of executing this operation.
 func (ld *ListDatabases) Result() ListDatabasesResult { return ld.result }
 
-func (ld *ListDatabases) processResponse(response bsoncore.Document, srvr driver.Server, desc description.Server, _ int) error {
+func (ld *ListDatabases) processResponse(response bsoncore.Document, srvr driver.Server, desc description.Server) error {
 	var err error
 
 	ld.result, err = buildListDatabasesResult(response, srvr)
@@ -171,8 +168,6 @@ func (ld *ListDatabases) Execute(ctx context.Context) error {
 		RetryMode:      ld.retry,
 		Type:           driver.Read,
 		Selector:       ld.selector,
-		Crypt:          ld.crypt,
-		ServerAPI:      ld.serverAPI,
 	}.Execute(ctx, nil)
 
 }
@@ -186,10 +181,6 @@ func (ld *ListDatabases) command(dst []byte, desc description.SelectedServer) ([
 	if ld.nameOnly != nil {
 
 		dst = bsoncore.AppendBooleanElement(dst, "nameOnly", *ld.nameOnly)
-	}
-	if ld.authorizedDatabases != nil {
-
-		dst = bsoncore.AppendBooleanElement(dst, "authorizedDatabases", *ld.authorizedDatabases)
 	}
 
 	return dst, nil
@@ -212,16 +203,6 @@ func (ld *ListDatabases) NameOnly(nameOnly bool) *ListDatabases {
 	}
 
 	ld.nameOnly = &nameOnly
-	return ld
-}
-
-// AuthorizedDatabases specifies whether to only return databases which the user is authorized to use."
-func (ld *ListDatabases) AuthorizedDatabases(authorizedDatabases bool) *ListDatabases {
-	if ld == nil {
-		ld = new(ListDatabases)
-	}
-
-	ld.authorizedDatabases = &authorizedDatabases
 	return ld
 }
 
@@ -303,25 +284,5 @@ func (ld *ListDatabases) Retry(retry driver.RetryMode) *ListDatabases {
 	}
 
 	ld.retry = &retry
-	return ld
-}
-
-// Crypt sets the Crypt object to use for automatic encryption and decryption.
-func (ld *ListDatabases) Crypt(crypt *driver.Crypt) *ListDatabases {
-	if ld == nil {
-		ld = new(ListDatabases)
-	}
-
-	ld.crypt = crypt
-	return ld
-}
-
-// ServerAPI sets the server API version for this operation.
-func (ld *ListDatabases) ServerAPI(serverAPI *driver.ServerAPIOptions) *ListDatabases {
-	if ld == nil {
-		ld = new(ListDatabases)
-	}
-
-	ld.serverAPI = serverAPI
 	return ld
 }

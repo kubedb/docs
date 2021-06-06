@@ -23,10 +23,8 @@ import (
 	kubedbinformers "kubedb.dev/apimachinery/client/informers/externalversions"
 
 	cmInformers "github.com/jetstack/cert-manager/pkg/client/informers/externalversions"
-	"gomodules.xyz/kglog"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	externalInformers "k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
@@ -36,6 +34,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/discovery"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 	appcat_in "kmodules.xyz/custom-resources/client/informers/externalversions"
@@ -60,9 +59,11 @@ type Controller struct {
 	ClusterTopology *core_util.Topology
 	// RESTMapper allows clients to map resources to kind, and map kind and version
 	// to interfaces for manipulating those objects.
-	Mapper meta.RESTMapper
+	Mapper discovery.ResourceMapper
 	// Event Recorder
 	Recorder record.EventRecorder
+	// Audit Event Publisher
+	Auditor cache.ResourceEventHandler
 }
 
 type Config struct {
@@ -89,7 +90,6 @@ type Config struct {
 	ReadinessProbeInterval  time.Duration
 	MaxNumRequeues          int
 	NumThreads              int
-	LoggerOptions           kglog.Options
 	EnableAnalytics         bool
 	AnalyticsClientID       string
 	WatchNamespace          string

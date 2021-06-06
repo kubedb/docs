@@ -43,6 +43,7 @@ import (
 	"k8s.io/klog/v2"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/apiextensions"
+	"kmodules.xyz/client-go/discovery"
 	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -74,6 +75,8 @@ func New(
 	promClient pcm.MonitoringV1Interface,
 	opt amc.Config,
 	recorder record.EventRecorder,
+	mapper discovery.ResourceMapper,
+	auditor cache.ResourceEventHandler,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
@@ -84,6 +87,8 @@ func New(
 			DynamicClient:    dynamicClient,
 			AppCatalogClient: appCatalogClient,
 			Recorder:         recorder,
+			Mapper:           mapper,
+			Auditor:          auditor,
 		},
 		Config:     opt,
 		promClient: promClient,

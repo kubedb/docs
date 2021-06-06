@@ -14,10 +14,10 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/event"
-	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/description"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/session"
 )
 
@@ -30,14 +30,12 @@ type Insert struct {
 	clock                    *session.ClusterClock
 	collection               string
 	monitor                  *event.CommandMonitor
-	crypt                    *driver.Crypt
 	database                 string
 	deployment               driver.Deployment
 	selector                 description.ServerSelector
 	writeConcern             *writeconcern.WriteConcern
 	retry                    *driver.RetryMode
 	result                   InsertResult
-	serverAPI                *driver.ServerAPIOptions
 }
 
 type InsertResult struct {
@@ -74,9 +72,9 @@ func NewInsert(documents ...bsoncore.Document) *Insert {
 // Result returns the result of executing this operation.
 func (i *Insert) Result() InsertResult { return i.result }
 
-func (i *Insert) processResponse(response bsoncore.Document, srvr driver.Server, desc description.Server, insert int) error {
-	ir, err := buildInsertResult(response, srvr)
-	i.result.N += ir.N
+func (i *Insert) processResponse(response bsoncore.Document, srvr driver.Server, desc description.Server) error {
+	var err error
+	i.result, err = buildInsertResult(response, srvr)
 	return err
 }
 
@@ -100,12 +98,10 @@ func (i *Insert) Execute(ctx context.Context) error {
 		Client:            i.session,
 		Clock:             i.clock,
 		CommandMonitor:    i.monitor,
-		Crypt:             i.crypt,
 		Database:          i.database,
 		Deployment:        i.deployment,
 		Selector:          i.selector,
 		WriteConcern:      i.writeConcern,
-		ServerAPI:         i.serverAPI,
 	}.Execute(ctx, nil)
 
 }
@@ -194,16 +190,6 @@ func (i *Insert) CommandMonitor(monitor *event.CommandMonitor) *Insert {
 	return i
 }
 
-// Crypt sets the Crypt object to use for automatic encryption and decryption.
-func (i *Insert) Crypt(crypt *driver.Crypt) *Insert {
-	if i == nil {
-		i = new(Insert)
-	}
-
-	i.crypt = crypt
-	return i
-}
-
 // Database sets the database to run this operation against.
 func (i *Insert) Database(database string) *Insert {
 	if i == nil {
@@ -252,15 +238,5 @@ func (i *Insert) Retry(retry driver.RetryMode) *Insert {
 	}
 
 	i.retry = &retry
-	return i
-}
-
-// ServerAPI sets the server API version for this operation.
-func (i *Insert) ServerAPI(serverAPI *driver.ServerAPIOptions) *Insert {
-	if i == nil {
-		i = new(Insert)
-	}
-
-	i.serverAPI = serverAPI
 	return i
 }
