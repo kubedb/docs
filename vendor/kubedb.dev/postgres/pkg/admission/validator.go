@@ -31,7 +31,7 @@ import (
 	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
 	"gomodules.xyz/sets"
-	"gomodules.xyz/version"
+	"github.com/Masterminds/semver/v3"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -304,7 +304,7 @@ func preconditionFailedError() error {
 }
 
 func checkScramAuthMethodSupport(v string) (bool, error) {
-	pgVersion, err := version.NewVersion(v)
+	pgVersion, err := semver.NewVersion(v)
 	if err != nil {
 		return false, err
 	}

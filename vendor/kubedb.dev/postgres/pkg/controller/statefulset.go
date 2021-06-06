@@ -27,7 +27,7 @@ import (
 
 	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
-	"gomodules.xyz/version"
+	"github.com/Masterminds/semver/v3"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -62,8 +62,8 @@ const (
 	SERVER_KEY               = "server.key"
 )
 
-func getMajorPgVersion(postgresVersion *catalog.PostgresVersion) (int64, error) {
-	ver, err := version.NewVersion(postgresVersion.Spec.Version)
+func getMajorPgVersion(postgresVersion *catalog.PostgresVersion) (uint64, error) {
+	ver, err := semver.NewVersion(postgresVersion.Spec.Version)
 	if err != nil {
 		return 0, errors.Wrap(err, "Failed to get postgres major.")
 	}

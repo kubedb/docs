@@ -547,8 +547,6 @@ gomodules.xyz/stow
 gomodules.xyz/stow/azure
 gomodules.xyz/stow/google
 gomodules.xyz/stow/s3
-# gomodules.xyz/version v0.1.0
-gomodules.xyz/version
 # gomodules.xyz/wait v0.0.0-20210218105358-639bd9211545
 gomodules.xyz/wait
 # gomodules.xyz/x v0.0.5
@@ -1388,7 +1386,7 @@ kubedb.dev/percona-xtradb/pkg/controller
 ## explicit
 kubedb.dev/pgbouncer/pkg/admission
 kubedb.dev/pgbouncer/pkg/controller
-# kubedb.dev/postgres v0.18.1-0.20210606085722-906c678ec331
+# kubedb.dev/postgres v0.18.1-0.20210606125150-8d4bf26b23ef
 ## explicit
 kubedb.dev/postgres/pkg/admission
 kubedb.dev/postgres/pkg/controller

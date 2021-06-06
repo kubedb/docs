@@ -1151,7 +1151,6 @@ gomodules.xyz/sets v0.0.0-20210218105342-2efe2fb519a2 h1:JhyydLTz2aE09lMNheZHt6F
 gomodules.xyz/sets v0.0.0-20210218105342-2efe2fb519a2/go.mod h1:jKgNp01/iDs+svOWXaPk5cKP3VXy0mWUoTF/ore+aMc=
 gomodules.xyz/stow v0.2.4 h1:TwsLIE8OAN3hkUR45CJwbJEoqYzWv33yuuq++ZkYdyo=
 gomodules.xyz/stow v0.2.4/go.mod h1:aAgUEHyZ+4nKznyVupMMkP0JX9MXW1ZRrbRGaclp3E0=
-gomodules.xyz/version v0.1.0 h1:inGItCg/egI0jPMeIE0SQkiDIJaodOMoCrxYqasQLR0=
 gomodules.xyz/version v0.1.0/go.mod h1:Y8xuV02mL/45psyPKG3NCVOwvAOy6T5Kx0l3rCjKSjU=
 gomodules.xyz/wait v0.0.0-20210218105358-639bd9211545 h1:iiD24jN1H8PzliVe1igIzYsx8+VmbXG12y9UUSupUJU=
 gomodules.xyz/wait v0.0.0-20210218105358-639bd9211545/go.mod h1:g/epKzZQuCqgvhzhaoG4cSBNGHqnOrhFR4Q7szDJ1JM=
@@ -1322,8 +1321,8 @@ kubedb.dev/percona-xtradb v0.5.1-0.20210606103349-3e85edb210ed h1:QKgoOHvbbkGccS
 kubedb.dev/percona-xtradb v0.5.1-0.20210606103349-3e85edb210ed/go.mod h1:2iyJLwoc912bshCsX5S/GRkAVOq6mQTD+nDI+7/+KGw=
 kubedb.dev/pgbouncer v0.5.1-0.20210606110839-4e3f115d7e54 h1:CDBmj+NR/Tsvf95xpUL7Qsit6hKGR/XIitRe5TyuB6k=
 kubedb.dev/pgbouncer v0.5.1-0.20210606110839-4e3f115d7e54/go.mod h1:QK6CDX1eay/v4R2yQGxL32XOJ7iNZCVZIfAycXoIMWw=
-kubedb.dev/postgres v0.18.1-0.20210606085722-906c678ec331 h1:756bDh4AjXFP+lt8UL0ERzMHPtNYpulU61iwwkSoXxA=
-kubedb.dev/postgres v0.18.1-0.20210606085722-906c678ec331/go.mod h1:liEIxoFOh9YCW4zzQ46zF9DmBHxWLDNzqqWmY/q+jXo=
+kubedb.dev/postgres v0.18.1-0.20210606125150-8d4bf26b23ef h1:PJVBmWwftUo90jhVn+VqKQchHB45TLoL7uENB0zBkJ4=
+kubedb.dev/postgres v0.18.1-0.20210606125150-8d4bf26b23ef/go.mod h1:DDQF1DNVzHhU8iLmlkeqWfDXeg/grA7nFvHb0lEnqZ0=
 kubedb.dev/proxysql v0.5.1-0.20210606110558-6e6c9ba10d91 h1:8pp1z3dFBilBlzdc2+Y3ukFyL/G0Nd+okurF+5xbBSs=
 kubedb.dev/proxysql v0.5.1-0.20210606110558-6e6c9ba10d91/go.mod h1:Rh4q1cWHiuv37do3ENrEiq73jNWYFwu2gl+clDrmq+o=
 kubedb.dev/redis v0.11.1-0.20210606101545-9d5d90a9fe48 h1:A+xvly0wubdYqn/aEYzEDblNtcijHoxSjgEckSbx/2Y=

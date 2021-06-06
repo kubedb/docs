@@ -31,7 +31,7 @@ require (
 	kubedb.dev/mysql v0.11.1-0.20210606111823-dc6f6ea563ad
 	kubedb.dev/percona-xtradb v0.5.1-0.20210606103349-3e85edb210ed
 	kubedb.dev/pgbouncer v0.5.1-0.20210606110839-4e3f115d7e54
-	kubedb.dev/postgres v0.18.1-0.20210606085722-906c678ec331
+	kubedb.dev/postgres v0.18.1-0.20210606125150-8d4bf26b23ef
 	kubedb.dev/proxysql v0.5.1-0.20210606110558-6e6c9ba10d91
 	kubedb.dev/redis v0.11.1-0.20210606101545-9d5d90a9fe48
 )
