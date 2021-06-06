@@ -35,6 +35,9 @@ func (c *Controller) initWatcher() {
 	c.mcQueue = queue.New("Memcached", c.MaxNumRequeues, c.NumThreads, c.runMemcached)
 	c.mcLister = c.KubedbInformerFactory.Kubedb().V1alpha2().Memcacheds().Lister()
 	c.mcInformer.AddEventHandler(queue.NewChangeHandler(c.mcQueue.GetQueue()))
+	if c.Auditor != nil {
+		c.mcInformer.AddEventHandler(c.Auditor)
+	}
 }
 
 func (c *Controller) runMemcached(key string) error {

@@ -69,31 +69,42 @@ func generatePasswordHash(password string) (string, error) {
 
 // Compare two internalUserConfig file.
 // Returns true if the configurations are same.
-func InUserConfigCompareEqual(x string, y string) (bool, error) {
-	X := make(map[string]api.ElasticsearchUserSpec)
-	Y := make(map[string]api.ElasticsearchUserSpec)
-
-	err := yaml.Unmarshal([]byte(x), X)
-	if err != nil {
-		return false, errors.Wrap(err, "failed to Unmarshal X")
+func InUserConfigCompareEqual(X map[string]api.ElasticsearchUserSpec, Y map[string]api.ElasticsearchUserSpec) (bool, error) {
+	// Ignore hash values, cause it varies.
+	// Ignore secretName, cause the config file doesn't have it.
+	cX := DeepCopyMap(X)
+	cY := DeepCopyMap(Y)
+	for key, value := range cX {
+		valueCopy := value
+		valueCopy.Hash = ""
+		valueCopy.SecretName = ""
+		cX[key] = valueCopy
+	}
+	for key, value := range cY {
+		valueCopy := value
+		valueCopy.Hash = ""
+		valueCopy.SecretName = ""
+		cY[key] = valueCopy
 	}
 
-	err = yaml.Unmarshal([]byte(y), Y)
+	return cmp.Equal(cX, cY), nil
+}
+
+func ParseInUserConfig(config string) (map[string]api.ElasticsearchUserSpec, error) {
+	c := make(map[string]api.ElasticsearchUserSpec)
+	err := yaml.Unmarshal([]byte(config), c)
 	if err != nil {
-		return false, errors.Wrap(err, "failed to Unmarshal Y")
+		return nil, errors.Wrap(err, "failed to Unmarshal config")
 	}
 
-	// Ignore hash values, cause it varies
+	return c, nil
+}
+
+func DeepCopyMap(X map[string]api.ElasticsearchUserSpec) map[string]api.ElasticsearchUserSpec {
+	c := make(map[string]api.ElasticsearchUserSpec)
 	for key, value := range X {
-		valueCopy := value
-		valueCopy.Hash = ""
-		X[key] = valueCopy
-	}
-	for key, value := range Y {
-		valueCopy := value
-		valueCopy.Hash = ""
-		Y[key] = valueCopy
+		c[key] = value
 	}
 
-	return cmp.Equal(X, Y), nil
+	return c
 }

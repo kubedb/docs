@@ -35,16 +35,15 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/apiextensions"
+	"kmodules.xyz/client-go/discovery"
 	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/queue"
 )
@@ -55,8 +54,6 @@ type Controller struct {
 
 	// Prometheus client
 	promClient pcm.MonitoringV1Interface
-	// Event Recorder
-	recorder record.EventRecorder
 	// labelselector for event-handler of Snapshot, Dormant and Job
 	selector labels.Selector
 
@@ -75,6 +72,8 @@ func New(
 	promClient pcm.MonitoringV1Interface,
 	opt amc.Config,
 	recorder record.EventRecorder,
+	mapper discovery.ResourceMapper,
+	auditor cache.ResourceEventHandler,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
@@ -83,11 +82,12 @@ func New(
 			DBClient:      extClient,
 			CRDClient:     crdClient,
 			DynamicClient: dynamicClient,
-			Mapper:        restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(client.Discovery())),
+			Recorder:      recorder,
+			Mapper:        mapper,
+			Auditor:       auditor,
 		},
 		Config:     opt,
 		promClient: promClient,
-		recorder:   recorder,
 		selector: labels.SelectorFromSet(map[string]string{
 			meta_util.NameLabelKey:      api.ProxySQL{}.ResourceFQN(),
 			meta_util.ManagedByLabelKey: kubedb.GroupName,
@@ -163,7 +163,7 @@ func (c *Controller) StartAndRunControllers(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) pushFailureEvent(db *api.ProxySQL, reason string) {
-	c.recorder.Eventf(
+	c.Recorder.Eventf(
 		db,
 		core.EventTypeWarning,
 		eventer.EventReasonFailedToStart,
@@ -179,7 +179,7 @@ func (c *Controller) pushFailureEvent(db *api.ProxySQL, reason string) {
 	}, metav1.UpdateOptions{})
 
 	if err != nil {
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			db,
 			core.EventTypeWarning,
 			eventer.EventReasonFailedToUpdate,

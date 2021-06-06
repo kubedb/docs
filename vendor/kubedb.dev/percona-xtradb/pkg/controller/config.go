@@ -22,6 +22,7 @@ import (
 	amc "kubedb.dev/apimachinery/pkg/controller"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	auditlib "go.bytebuilders.dev/audit/lib"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -57,6 +58,17 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 
+	// audit event publisher
+	natscfg, err := auditlib.NewNatsConfig(c.KubeClient.CoreV1().Namespaces(), c.LicenseFile)
+	if err != nil {
+		return nil, err
+	}
+	mapper := discovery.NewResourceMapper(discovery.NewRestMapper(c.KubeClient.Discovery()))
+	fn := auditlib.BillingEventCreator{
+		Mapper:    mapper,
+		LicenseID: natscfg.LicenseID,
+	}
+
 	ctrl := New(
 		c.ClientConfig,
 		c.KubeClient,
@@ -67,6 +79,8 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		c.PromClient,
 		c.Config,
 		c.Recorder,
+		mapper,
+		auditlib.NewEventPublisher(natscfg, mapper, fn.CreateEvent),
 	)
 
 	if err := ctrl.EnsureCustomResourceDefinitions(); err != nil {

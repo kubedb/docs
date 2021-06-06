@@ -42,6 +42,9 @@ func (c *Controller) initWatcher() {
 	c.mgQueue = queue.New("MongoDB", c.MaxNumRequeues, c.NumThreads, c.runMongoDB)
 	c.mgLister = c.KubedbInformerFactory.Kubedb().V1alpha2().MongoDBs().Lister()
 	c.mgInformer.AddEventHandler(queue.NewChangeHandler(c.mgQueue.GetQueue()))
+	if c.Auditor != nil {
+		c.mgInformer.AddEventHandler(c.Auditor)
+	}
 
 	c.mgStsInformer = c.KubeInformerFactory.Apps().V1().StatefulSets().Informer()
 }

@@ -354,7 +354,7 @@ func (c *Controller) ensureStatefulSet(db *api.ProxySQL, opts workloadOptions) (
 		if err := c.checkStatefulSetPodStatus(statefulSet); err != nil {
 			return kutil.VerbUnchanged, err
 		}
-		c.recorder.Eventf(
+		c.Recorder.Eventf(
 			db,
 			core.EventTypeNormal,
 			eventer.EventReasonSuccessful,

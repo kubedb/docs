@@ -41,6 +41,9 @@ func (c *Controller) initWatcher() {
 	c.esLister = c.KubedbInformerFactory.Kubedb().V1alpha2().Elasticsearches().Lister()
 	c.esVersionLister = c.KubedbInformerFactory.Catalog().V1alpha1().ElasticsearchVersions().Lister()
 	c.esInformer.AddEventHandler(queue.NewChangeHandler(c.esQueue.GetQueue()))
+	if c.Auditor != nil {
+		c.esInformer.AddEventHandler(c.Auditor)
+	}
 }
 
 func (c *Controller) runElasticsearch(key string) error {

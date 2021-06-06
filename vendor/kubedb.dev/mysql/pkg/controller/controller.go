@@ -31,17 +31,16 @@ import (
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	"k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	"kmodules.xyz/client-go/apiextensions"
 	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/discovery"
 	meta_util "kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/queue"
 	appcat "kmodules.xyz/custom-resources/apis/appcatalog/v1alpha1"
@@ -75,6 +74,8 @@ func New(
 	opt amc.Config,
 	topology *core_util.Topology,
 	recorder record.EventRecorder,
+	mapper discovery.ResourceMapper,
+	auditor cache.ResourceEventHandler,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
@@ -84,9 +85,10 @@ func New(
 			CRDClient:        crdClient,
 			DynamicClient:    dc,
 			AppCatalogClient: appCatalogClient,
-			Mapper:           restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(client.Discovery())),
 			ClusterTopology:  topology,
 			Recorder:         recorder,
+			Mapper:           mapper,
+			Auditor:          auditor,
 		},
 		Config:     opt,
 		promClient: promClient,

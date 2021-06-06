@@ -8,15 +8,12 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	"go.mongodb.org/mongo-driver/mongo/address"
-	"go.mongodb.org/mongo-driver/mongo/description"
-	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/address"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/description"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/operation"
-	"go.mongodb.org/mongo-driver/x/mongo/driver/session"
 )
 
 // AuthenticatorFactory constructs an authenticator.
@@ -32,7 +29,6 @@ func init() {
 	RegisterAuthenticatorFactory(PLAIN, newPlainAuthenticator)
 	RegisterAuthenticatorFactory(GSSAPI, newGSSAPIAuthenticator)
 	RegisterAuthenticatorFactory(MongoDBX509, newMongoDBX509Authenticator)
-	RegisterAuthenticatorFactory(MongoDBAWS, newMongoDBAWSAuthenticator)
 }
 
 // CreateAuthenticator creates an authenticator.
@@ -58,57 +54,28 @@ type HandshakeOptions struct {
 	Compressors           []string
 	DBUser                string
 	PerformAuthentication func(description.Server) bool
-	ClusterClock          *session.ClusterClock
-	ServerAPI             *driver.ServerAPIOptions
 }
 
 type authHandshaker struct {
 	wrapped driver.Handshaker
 	options *HandshakeOptions
-
-	handshakeInfo driver.HandshakeInformation
-	conversation  SpeculativeConversation
 }
 
-var _ driver.Handshaker = (*authHandshaker)(nil)
-
-// GetHandshakeInformation performs the initial MongoDB handshake to retrieve the required information for the provided
-// connection.
-func (ah *authHandshaker) GetHandshakeInformation(ctx context.Context, addr address.Address, conn driver.Connection) (driver.HandshakeInformation, error) {
+// GetDescription performs an isMaster to retrieve the initial description for conn.
+func (ah *authHandshaker) GetDescription(ctx context.Context, addr address.Address, conn driver.Connection) (description.Server, error) {
 	if ah.wrapped != nil {
-		return ah.wrapped.GetHandshakeInformation(ctx, addr, conn)
+		return ah.wrapped.GetDescription(ctx, addr, conn)
 	}
 
-	op := operation.NewIsMaster().
+	desc, err := operation.NewIsMaster().
 		AppName(ah.options.AppName).
 		Compressors(ah.options.Compressors).
 		SASLSupportedMechs(ah.options.DBUser).
-		ClusterClock(ah.options.ClusterClock).
-		ServerAPI(ah.options.ServerAPI)
-
-	if ah.options.Authenticator != nil {
-		if speculativeAuth, ok := ah.options.Authenticator.(SpeculativeAuthenticator); ok {
-			var err error
-			ah.conversation, err = speculativeAuth.CreateSpeculativeConversation()
-			if err != nil {
-				return driver.HandshakeInformation{}, newAuthError("failed to create conversation", err)
-			}
-
-			firstMsg, err := ah.conversation.FirstMessage()
-			if err != nil {
-				return driver.HandshakeInformation{}, newAuthError("failed to create speculative authentication message", err)
-			}
-
-			op = op.SpeculativeAuthenticate(firstMsg)
-		}
-	}
-
-	var err error
-	ah.handshakeInfo, err = op.GetHandshakeInformation(ctx, addr, conn)
+		GetDescription(ctx, addr, conn)
 	if err != nil {
-		return driver.HandshakeInformation{}, newAuthError("handshake failure", err)
+		return description.Server{}, newAuthError("handshake failure", err)
 	}
-	return ah.handshakeInfo, nil
+	return desc, nil
 }
 
 // FinishHandshake performs authentication for conn if necessary.
@@ -116,22 +83,16 @@ func (ah *authHandshaker) FinishHandshake(ctx context.Context, conn driver.Conne
 	performAuth := ah.options.PerformAuthentication
 	if performAuth == nil {
 		performAuth = func(serv description.Server) bool {
-			// Authentication is possible against all server types except arbiters
-			return serv.Kind != description.RSArbiter
+			return serv.Kind == description.RSPrimary ||
+				serv.Kind == description.RSSecondary ||
+				serv.Kind == description.Mongos ||
+				serv.Kind == description.Standalone
 		}
 	}
-
 	desc := conn.Description()
 	if performAuth(desc) && ah.options.Authenticator != nil {
-		cfg := &Config{
-			Description:   desc,
-			Connection:    conn,
-			ClusterClock:  ah.options.ClusterClock,
-			HandshakeInfo: ah.handshakeInfo,
-			ServerAPI:     ah.options.ServerAPI,
-		}
-
-		if err := ah.authenticate(ctx, cfg); err != nil {
+		err := ah.options.Authenticator.Auth(ctx, desc, conn)
+		if err != nil {
 			return newAuthError("auth error", err)
 		}
 	}
@@ -142,22 +103,6 @@ func (ah *authHandshaker) FinishHandshake(ctx context.Context, conn driver.Conne
 	return ah.wrapped.FinishHandshake(ctx, conn)
 }
 
-func (ah *authHandshaker) authenticate(ctx context.Context, cfg *Config) error {
-	// If the initial isMaster reply included a response to the speculative authentication attempt, we only need to
-	// conduct the remainder of the conversation.
-	if speculativeResponse := ah.handshakeInfo.SpeculativeAuthenticate; speculativeResponse != nil {
-		// Defensively ensure that the server did not include a response if speculative auth was not attempted.
-		if ah.conversation == nil {
-			return errors.New("speculative auth was not attempted but the server included a response")
-		}
-		return ah.conversation.Finish(ctx, cfg, bsoncore.Document(speculativeResponse))
-	}
-
-	// If the server does not support speculative authentication or the first attempt was not successful, we need to
-	// perform authentication from scratch.
-	return ah.options.Authenticator.Auth(ctx, cfg)
-}
-
 // Handshaker creates a connection handshaker for the given authenticator.
 func Handshaker(h driver.Handshaker, options *HandshakeOptions) driver.Handshaker {
 	return &authHandshaker{
@@ -166,19 +111,10 @@ func Handshaker(h driver.Handshaker, options *HandshakeOptions) driver.Handshake
 	}
 }
 
-// Config holds the information necessary to perform an authentication attempt.
-type Config struct {
-	Description   description.Server
-	Connection    driver.Connection
-	ClusterClock  *session.ClusterClock
-	HandshakeInfo driver.HandshakeInformation
-	ServerAPI     *driver.ServerAPIOptions
-}
-
 // Authenticator handles authenticating a connection.
 type Authenticator interface {
 	// Auth authenticates the connection.
-	Auth(context.Context, *Config) error
+	Auth(context.Context, description.Server, driver.Connection) error
 }
 
 func newAuthError(msg string, inner error) error {
@@ -210,11 +146,6 @@ func (e *Error) Error() string {
 
 // Inner returns the wrapped error.
 func (e *Error) Inner() error {
-	return e.inner
-}
-
-// Unwrap returns the underlying error.
-func (e *Error) Unwrap() error {
 	return e.inner
 }
 

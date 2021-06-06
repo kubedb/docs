@@ -21,12 +21,11 @@ import (
 
 	"fmt"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/event"
-	"go.mongodb.org/mongo-driver/mongo/address"
-	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/address"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/description"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/dns"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/session"
 )
 
 // ErrSubscribeAfterClosed is returned when a user attempts to subscribe to a
@@ -66,14 +65,14 @@ type Topology struct {
 
 	done chan struct{}
 
-	pollingRequired   bool
 	pollingDone       chan struct{}
 	pollingwg         sync.WaitGroup
 	rescanSRVInterval time.Duration
 	pollHeartbeatTime atomic.Value // holds a bool
 
-	updateCallback updateTopologyCallback
-	fsm            *fsm
+	fsm *fsm
+
+	SessionPool *session.Pool
 
 	// This should really be encapsulated into it's own type. This will likely
 	// require a redesign so we can share a minimum of data between the
@@ -90,23 +89,6 @@ type Topology struct {
 	serversLock   sync.Mutex
 	serversClosed bool
 	servers       map[address.Address]*Server
-
-	id primitive.ObjectID
-}
-
-var _ driver.Deployment = &Topology{}
-var _ driver.Subscriber = &Topology{}
-
-type serverSelectionState struct {
-	selector    description.ServerSelector
-	timeoutChan <-chan time.Time
-}
-
-func newServerSelectionState(selector description.ServerSelector, timeoutChan <-chan time.Time) serverSelectionState {
-	return serverSelectionState{
-		selector:    selector,
-		timeoutChan: timeoutChan,
-	}
 }
 
 // New creates a new topology.
@@ -125,18 +107,17 @@ func New(opts ...Option) (*Topology, error) {
 		subscribers:       make(map[uint64]chan description.Topology),
 		servers:           make(map[address.Address]*Server),
 		dnsResolver:       dns.DefaultResolver,
-		id:                primitive.NewObjectID(),
 	}
 	t.desc.Store(description.Topology{})
-	t.updateCallback = func(desc description.Server) description.Server {
-		return t.apply(context.TODO(), desc)
+
+	if cfg.replicaSetName != "" {
+		t.fsm.SetName = cfg.replicaSetName
+		t.fsm.Kind = description.ReplicaSetNoPrimary
 	}
 
-	if t.cfg.uri != "" {
-		t.pollingRequired = strings.HasPrefix(t.cfg.uri, "mongodb+srv://")
+	if cfg.mode == SingleMode {
+		t.fsm.Kind = description.Single
 	}
-
-	t.publishTopologyOpeningEvent()
 
 	return t, nil
 }
@@ -151,42 +132,14 @@ func (t *Topology) Connect() error {
 	t.desc.Store(description.Topology{})
 	var err error
 	t.serversLock.Lock()
-
-	// A replica set name sets the initial topology type to ReplicaSetNoPrimary unless a direct connection is also
-	// specified, in which case the initial type is Single.
-	if t.cfg.replicaSetName != "" {
-		t.fsm.SetName = t.cfg.replicaSetName
-		t.fsm.Kind = description.ReplicaSetNoPrimary
-	}
-
-	// A direct connection unconditionally sets the topology type to Single.
-	if t.cfg.mode == SingleMode {
-		t.fsm.Kind = description.Single
-	}
-
 	for _, a := range t.cfg.seedList {
 		addr := address.Address(a).Canonicalize()
-		t.fsm.Servers = append(t.fsm.Servers, description.NewDefaultServer(addr))
-	}
-
-	// store new description
-	newDesc := description.Topology{
-		Kind:                  t.fsm.Kind,
-		Servers:               t.fsm.Servers,
-		SessionTimeoutMinutes: t.fsm.SessionTimeoutMinutes,
-	}
-	t.desc.Store(newDesc)
-	t.publishTopologyDescriptionChangedEvent(description.Topology{}, t.fsm.Topology)
-	for _, a := range t.cfg.seedList {
-		addr := address.Address(a).Canonicalize()
+		t.fsm.Servers = append(t.fsm.Servers, description.Server{Addr: addr})
 		err = t.addServer(addr)
-		if err != nil {
-			return err
-		}
 	}
 	t.serversLock.Unlock()
 
-	if t.pollingRequired {
+	if srvPollingRequired(t.cfg.cs.Original) {
 		go t.pollSRVRecords()
 		t.pollingwg.Add(1)
 	}
@@ -194,7 +147,11 @@ func (t *Topology) Connect() error {
 	t.subscriptionsClosed = false // explicitly set in case topology was disconnected and then reconnected
 
 	atomic.StoreInt32(&t.connectionstate, connected)
-	return nil
+
+	// After connection, make a subscription to keep the pool updated
+	sub, err := t.Subscribe()
+	t.SessionPool = session.NewPool(sub.C)
+	return err
 }
 
 // Disconnect closes the topology. It stops the monitoring thread and
@@ -214,7 +171,6 @@ func (t *Topology) Disconnect(ctx context.Context) error {
 
 	for _, server := range servers {
 		_ = server.Disconnect(ctx)
-		t.publishServerClosedEvent(server.address)
 	}
 
 	t.subLock.Lock()
@@ -225,7 +181,7 @@ func (t *Topology) Disconnect(ctx context.Context) error {
 	t.subscriptionsClosed = true
 	t.subLock.Unlock()
 
-	if t.pollingRequired {
+	if srvPollingRequired(t.cfg.cs.Original) {
 		t.pollingDone <- struct{}{}
 		t.pollingwg.Wait()
 	}
@@ -233,8 +189,11 @@ func (t *Topology) Disconnect(ctx context.Context) error {
 	t.desc.Store(description.Topology{})
 
 	atomic.StoreInt32(&t.connectionstate, disconnected)
-	t.publishTopologyClosedEvent()
 	return nil
+}
+
+func srvPollingRequired(connstr string) bool {
+	return strings.HasPrefix(connstr, "mongodb+srv://")
 }
 
 // Description returns a description of the topology.
@@ -252,8 +211,7 @@ func (t *Topology) Kind() description.TopologyKind { return t.Description().Kind
 // Subscribe returns a Subscription on which all updated description.Topologys
 // will be sent. The channel of the subscription will have a buffer size of one,
 // and will be pre-populated with the current description.Topology.
-// Subscribe implements the driver.Subscriber interface.
-func (t *Topology) Subscribe() (*driver.Subscription, error) {
+func (t *Topology) Subscribe() (*Subscription, error) {
 	if atomic.LoadInt32(&t.connectionstate) != connected {
 		return nil, errors.New("cannot subscribe to Topology that is not connected")
 	}
@@ -273,30 +231,11 @@ func (t *Topology) Subscribe() (*driver.Subscription, error) {
 	t.subscribers[id] = ch
 	t.currentSubscriberID++
 
-	return &driver.Subscription{
-		Updates: ch,
-		ID:      id,
+	return &Subscription{
+		C:  ch,
+		t:  t,
+		id: id,
 	}, nil
-}
-
-// Unsubscribe unsubscribes the given subscription from the topology and closes the subscription channel.
-// Unsubscribe implements the driver.Subscriber interface.
-func (t *Topology) Unsubscribe(sub *driver.Subscription) error {
-	t.subLock.Lock()
-	defer t.subLock.Unlock()
-
-	if t.subscriptionsClosed {
-		return nil
-	}
-
-	ch, ok := t.subscribers[sub.ID]
-	if !ok {
-		return nil
-	}
-
-	close(ch)
-	delete(t.subscribers, sub.ID)
-	return nil
 }
 
 // RequestImmediateCheck will send heartbeats to all the servers in the
@@ -310,6 +249,16 @@ func (t *Topology) RequestImmediateCheck() {
 		server.RequestImmediateCheck()
 	}
 	t.serversLock.Unlock()
+}
+
+// SupportsSessions returns true if the topology supports sessions.
+func (t *Topology) SupportsSessions() bool {
+	return t.Description().SessionTimeoutMinutes != 0 && t.Description().Kind != description.Single
+}
+
+// SupportsRetryWrites returns true if the topology supports retryable writes, which it does if it supports sessions.
+func (t *Topology) SupportsRetryWrites() bool {
+	return t.SupportsSessions()
 }
 
 // SelectServer selects a server with given a selector. SelectServer complies with the
@@ -327,39 +276,16 @@ func (t *Topology) SelectServer(ctx context.Context, ss description.ServerSelect
 		defer ssTimeout.Stop()
 	}
 
-	var doneOnce bool
-	var sub *driver.Subscription
-	selectionState := newServerSelectionState(ss, ssTimeoutCh)
+	sub, err := t.Subscribe()
+	if err != nil {
+		return nil, err
+	}
+	defer sub.Unsubscribe()
+
 	for {
-		var suitable []description.Server
-		var selectErr error
-
-		if !doneOnce {
-			// for the first pass, select a server from the current description.
-			// this improves selection speed for up-to-date topology descriptions.
-			suitable, selectErr = t.selectServerFromDescription(t.Description(), selectionState)
-			doneOnce = true
-		} else {
-			// if the first pass didn't select a server, the previous description did not contain a suitable server, so
-			// we subscribe to the topology and attempt to obtain a server from that subscription
-			if sub == nil {
-				var err error
-				sub, err = t.Subscribe()
-				if err != nil {
-					return nil, err
-				}
-				defer t.Unsubscribe(sub)
-			}
-
-			suitable, selectErr = t.selectServerFromSubscription(ctx, sub.Updates, selectionState)
-		}
-		if selectErr != nil {
-			return nil, selectErr
-		}
-
-		if len(suitable) == 0 {
-			// try again if there are no servers available
-			continue
+		suitable, err := t.selectServer(ctx, sub.C, ss, ssTimeoutCh)
+		if err != nil {
+			return nil, err
 		}
 
 		selected := suitable[rand.Intn(len(suitable))]
@@ -397,11 +323,10 @@ func (t *Topology) SelectServerLegacy(ctx context.Context, ss description.Server
 	if err != nil {
 		return nil, err
 	}
-	defer t.Unsubscribe(sub)
+	defer sub.Unsubscribe()
 
-	selectionState := newServerSelectionState(ss, ssTimeoutCh)
 	for {
-		suitable, err := t.selectServerFromSubscription(ctx, sub.Updates, selectionState)
+		suitable, err := t.selectServer(ctx, sub.C, ss, ssTimeoutCh)
 		if err != nil {
 			return nil, err
 		}
@@ -442,57 +367,41 @@ func (t *Topology) FindServer(selected description.Server) (*SelectedServer, err
 	}, nil
 }
 
-// selectServerFromSubscription loops until a topology description is available for server selection. It returns
-// when the given context expires, server selection timeout is reached, or a description containing a selectable
-// server is available.
-func (t *Topology) selectServerFromSubscription(ctx context.Context, subscriptionCh <-chan description.Topology,
-	selectionState serverSelectionState) ([]description.Server, error) {
+func wrapServerSelectionError(err error, t *Topology) error {
+	return fmt.Errorf("server selection error: %v\ncurrent topology: %s", err, t.String())
+}
 
-	current := t.Description()
+// selectServer is the core piece of server selection. It handles getting
+// topology descriptions and running sever selection on those descriptions.
+func (t *Topology) selectServer(ctx context.Context, subscriptionCh <-chan description.Topology, ss description.ServerSelector, timeoutCh <-chan time.Time) ([]description.Server, error) {
+	var current description.Topology
 	for {
 		select {
 		case <-ctx.Done():
-			return nil, ServerSelectionError{Wrapped: ctx.Err(), Desc: current}
-		case <-selectionState.timeoutChan:
-			return nil, ServerSelectionError{Wrapped: ErrServerSelectionTimeout, Desc: current}
+			return nil, ctx.Err()
+		case <-timeoutCh:
+			return nil, wrapServerSelectionError(ErrServerSelectionTimeout, t)
 		case current = <-subscriptionCh:
 		}
 
-		suitable, err := t.selectServerFromDescription(current, selectionState)
+		var allowed []description.Server
+		for _, s := range current.Servers {
+			if s.Kind != description.Unknown {
+				allowed = append(allowed, s)
+			}
+		}
+
+		suitable, err := ss.SelectServer(current, allowed)
 		if err != nil {
-			return nil, err
+			return nil, wrapServerSelectionError(err, t)
 		}
 
 		if len(suitable) > 0 {
 			return suitable, nil
 		}
+
 		t.RequestImmediateCheck()
 	}
-}
-
-// selectServerFromDescription process the given topology description and returns a slice of suitable servers.
-func (t *Topology) selectServerFromDescription(desc description.Topology,
-	selectionState serverSelectionState) ([]description.Server, error) {
-
-	// Unlike selectServerFromSubscription, this code path does not check ctx.Done or selectionState.timeoutChan because
-	// selecting a server from a description is not a blocking operation.
-
-	if desc.CompatibilityErr != nil {
-		return nil, desc.CompatibilityErr
-	}
-
-	var allowed []description.Server
-	for _, s := range desc.Servers {
-		if s.Kind != description.Unknown {
-			allowed = append(allowed, s)
-		}
-	}
-
-	suitable, err := selectionState.selector.SelectServer(desc, allowed)
-	if err != nil {
-		return nil, ServerSelectionError{Wrapped: err, Desc: desc}
-	}
-	return suitable, nil
 }
 
 func (t *Topology) pollSRVRecords() {
@@ -513,7 +422,7 @@ func (t *Topology) pollSRVRecords() {
 	}()
 
 	// remove the scheme
-	uri := t.cfg.uri[14:]
+	uri := t.cfg.cs.Original[14:]
 	hosts := uri
 	if idx := strings.IndexAny(uri, "/?@"); idx != -1 {
 		hosts = uri[:idx]
@@ -563,8 +472,7 @@ func (t *Topology) processSRVResults(parsedHosts []string) bool {
 	if t.serversClosed {
 		return false
 	}
-	prev := t.fsm.Topology
-	diff := diffHostList(t.fsm.Topology, parsedHosts)
+	diff := t.fsm.Topology.DiffHostlist(parsedHosts)
 
 	if len(diff.Added) == 0 && len(diff.Removed) == 0 {
 		return true
@@ -583,7 +491,6 @@ func (t *Topology) processSRVResults(parsedHosts []string) bool {
 		}()
 		delete(t.servers, addr)
 		t.fsm.removeServerByAddr(addr)
-		t.publishServerClosedEvent(s.address)
 	}
 	for _, a := range diff.Added {
 		addr := address.Address(a).Canonicalize()
@@ -597,10 +504,6 @@ func (t *Topology) processSRVResults(parsedHosts []string) bool {
 		SessionTimeoutMinutes: t.fsm.SessionTimeoutMinutes,
 	}
 	t.desc.Store(newDesc)
-
-	if !prev.Equal(newDesc) {
-		t.publishTopologyDescriptionChangedEvent(prev, newDesc)
-	}
 
 	t.subLock.Lock()
 	for _, ch := range t.subscribers {
@@ -617,35 +520,24 @@ func (t *Topology) processSRVResults(parsedHosts []string) bool {
 
 }
 
-// apply updates the Topology and its underlying FSM based on the provided server description and returns the server
-// description that should be stored.
-func (t *Topology) apply(ctx context.Context, desc description.Server) description.Server {
+func (t *Topology) apply(ctx context.Context, desc description.Server) {
+	var err error
+
 	t.serversLock.Lock()
 	defer t.serversLock.Unlock()
 
-	ind, ok := t.fsm.findServer(desc.Addr)
-	if t.serversClosed || !ok {
-		return desc
+	if _, ok := t.servers[desc.Addr]; t.serversClosed || !ok {
+		return
 	}
 
 	prev := t.fsm.Topology
-	oldDesc := t.fsm.Servers[ind]
-	if oldDesc.TopologyVersion.CompareToIncoming(desc.TopologyVersion) > 0 {
-		return oldDesc
-	}
 
-	var current description.Topology
-	var err error
-	current, desc, err = t.fsm.apply(desc)
+	current, err := t.fsm.apply(desc)
 	if err != nil {
-		return desc
+		return
 	}
 
-	if !oldDesc.Equal(desc) {
-		t.publishServerDescriptionChangedEvent(oldDesc, desc)
-	}
-
-	diff := diffTopology(prev, current)
+	diff := description.DiffTopology(prev, current)
 
 	for _, removed := range diff.Removed {
 		if s, ok := t.servers[removed.Addr]; ok {
@@ -655,7 +547,6 @@ func (t *Topology) apply(ctx context.Context, desc description.Server) descripti
 				_ = s.Disconnect(cancelCtx)
 			}()
 			delete(t.servers, removed.Addr)
-			t.publishServerClosedEvent(s.address)
 		}
 	}
 
@@ -664,9 +555,6 @@ func (t *Topology) apply(ctx context.Context, desc description.Server) descripti
 	}
 
 	t.desc.Store(current)
-	if !prev.Equal(current) {
-		t.publishTopologyDescriptionChangedEvent(prev, current)
-	}
 
 	t.subLock.Lock()
 	for _, ch := range t.subscribers {
@@ -679,7 +567,6 @@ func (t *Topology) apply(ctx context.Context, desc description.Server) descripti
 	}
 	t.subLock.Unlock()
 
-	return desc
 }
 
 func (t *Topology) addServer(addr address.Address) error {
@@ -687,7 +574,10 @@ func (t *Topology) addServer(addr address.Address) error {
 		return nil
 	}
 
-	svr, err := ConnectServer(addr, t.updateCallback, t.id, t.cfg.serverOpts...)
+	topoFunc := func(desc description.Server) {
+		t.apply(context.TODO(), desc)
+	}
+	svr, err := ConnectServer(addr, topoFunc, t.cfg.serverOpts...)
 	if err != nil {
 		return err
 	}
@@ -700,73 +590,39 @@ func (t *Topology) addServer(addr address.Address) error {
 // String implements the Stringer interface
 func (t *Topology) String() string {
 	desc := t.Description()
-
-	serversStr := ""
+	str := fmt.Sprintf("Type: %s\nServers:\n", desc.Kind)
 	t.serversLock.Lock()
 	defer t.serversLock.Unlock()
 	for _, s := range t.servers {
-		serversStr += "{ " + s.String() + " }, "
+		str += s.String() + "\n"
 	}
-	return fmt.Sprintf("Type: %s, Servers: [%s]", desc.Kind, serversStr)
+	return str
 }
 
-// publishes a ServerDescriptionChangedEvent to indicate the server description has changed
-func (t *Topology) publishServerDescriptionChangedEvent(prev description.Server, current description.Server) {
-	serverDescriptionChanged := &event.ServerDescriptionChangedEvent{
-		Address:             current.Addr,
-		TopologyID:          t.id,
-		PreviousDescription: prev,
-		NewDescription:      current,
-	}
-
-	if t.cfg.serverMonitor != nil && t.cfg.serverMonitor.ServerDescriptionChanged != nil {
-		t.cfg.serverMonitor.ServerDescriptionChanged(serverDescriptionChanged)
-	}
+// Subscription is a subscription to updates to the description of the Topology that created this
+// Subscription.
+type Subscription struct {
+	C  <-chan description.Topology
+	t  *Topology
+	id uint64
 }
 
-// publishes a ServerClosedEvent to indicate the server has closed
-func (t *Topology) publishServerClosedEvent(addr address.Address) {
-	serverClosed := &event.ServerClosedEvent{
-		Address:    addr,
-		TopologyID: t.id,
+// Unsubscribe unsubscribes this Subscription from updates and closes the
+// subscription channel.
+func (s *Subscription) Unsubscribe() error {
+	s.t.subLock.Lock()
+	defer s.t.subLock.Unlock()
+	if s.t.subscriptionsClosed {
+		return nil
 	}
 
-	if t.cfg.serverMonitor != nil && t.cfg.serverMonitor.ServerClosed != nil {
-		t.cfg.serverMonitor.ServerClosed(serverClosed)
-	}
-}
-
-// publishes a TopologyDescriptionChangedEvent to indicate the topology description has changed
-func (t *Topology) publishTopologyDescriptionChangedEvent(prev description.Topology, current description.Topology) {
-	topologyDescriptionChanged := &event.TopologyDescriptionChangedEvent{
-		TopologyID:          t.id,
-		PreviousDescription: prev,
-		NewDescription:      current,
+	ch, ok := s.t.subscribers[s.id]
+	if !ok {
+		return nil
 	}
 
-	if t.cfg.serverMonitor != nil && t.cfg.serverMonitor.TopologyDescriptionChanged != nil {
-		t.cfg.serverMonitor.TopologyDescriptionChanged(topologyDescriptionChanged)
-	}
-}
+	close(ch)
+	delete(s.t.subscribers, s.id)
 
-// publishes a TopologyOpeningEvent to indicate the topology is being initialized
-func (t *Topology) publishTopologyOpeningEvent() {
-	topologyOpening := &event.TopologyOpeningEvent{
-		TopologyID: t.id,
-	}
-
-	if t.cfg.serverMonitor != nil && t.cfg.serverMonitor.TopologyOpening != nil {
-		t.cfg.serverMonitor.TopologyOpening(topologyOpening)
-	}
-}
-
-// publishes a TopologyClosedEvent to indicate the topology has been closed
-func (t *Topology) publishTopologyClosedEvent() {
-	topologyClosed := &event.TopologyClosedEvent{
-		TopologyID: t.id,
-	}
-
-	if t.cfg.serverMonitor != nil && t.cfg.serverMonitor.TopologyClosed != nil {
-		t.cfg.serverMonitor.TopologyClosed(topologyClosed)
-	}
+	return nil
 }

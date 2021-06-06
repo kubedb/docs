@@ -14,10 +14,10 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/event"
-	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/description"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/session"
 )
 
@@ -26,13 +26,11 @@ type DropDatabase struct {
 	session      *session.Client
 	clock        *session.ClusterClock
 	monitor      *event.CommandMonitor
-	crypt        *driver.Crypt
 	database     string
 	deployment   driver.Deployment
 	selector     description.ServerSelector
 	writeConcern *writeconcern.WriteConcern
 	result       DropDatabaseResult
-	serverAPI    *driver.ServerAPIOptions
 }
 
 type DropDatabaseResult struct {
@@ -67,7 +65,7 @@ func NewDropDatabase() *DropDatabase {
 // Result returns the result of executing this operation.
 func (dd *DropDatabase) Result() DropDatabaseResult { return dd.result }
 
-func (dd *DropDatabase) processResponse(response bsoncore.Document, srvr driver.Server, desc description.Server, _ int) error {
+func (dd *DropDatabase) processResponse(response bsoncore.Document, srvr driver.Server, desc description.Server) error {
 	var err error
 	dd.result, err = buildDropDatabaseResult(response, srvr)
 	return err
@@ -85,12 +83,10 @@ func (dd *DropDatabase) Execute(ctx context.Context) error {
 		Client:            dd.session,
 		Clock:             dd.clock,
 		CommandMonitor:    dd.monitor,
-		Crypt:             dd.crypt,
 		Database:          dd.database,
 		Deployment:        dd.deployment,
 		Selector:          dd.selector,
 		WriteConcern:      dd.writeConcern,
-		ServerAPI:         dd.serverAPI,
 	}.Execute(ctx, nil)
 
 }
@@ -131,16 +127,6 @@ func (dd *DropDatabase) CommandMonitor(monitor *event.CommandMonitor) *DropDatab
 	return dd
 }
 
-// Crypt sets the Crypt object to use for automatic encryption and decryption.
-func (dd *DropDatabase) Crypt(crypt *driver.Crypt) *DropDatabase {
-	if dd == nil {
-		dd = new(DropDatabase)
-	}
-
-	dd.crypt = crypt
-	return dd
-}
-
 // Database sets the database to run this operation against.
 func (dd *DropDatabase) Database(database string) *DropDatabase {
 	if dd == nil {
@@ -178,15 +164,5 @@ func (dd *DropDatabase) WriteConcern(writeConcern *writeconcern.WriteConcern) *D
 	}
 
 	dd.writeConcern = writeConcern
-	return dd
-}
-
-// ServerAPI sets the server API version for this operation.
-func (dd *DropDatabase) ServerAPI(serverAPI *driver.ServerAPIOptions) *DropDatabase {
-	if dd == nil {
-		dd = new(DropDatabase)
-	}
-
-	dd.serverAPI = serverAPI
 	return dd
 }

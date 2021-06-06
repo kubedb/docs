@@ -38,6 +38,9 @@ func (c *Controller) initWatcher() {
 	c.pbQueue = queue.New("PgBouncer", c.MaxNumRequeues, c.NumThreads, c.runPgBouncer)
 	c.pbLister = c.KubedbInformerFactory.Kubedb().V1alpha2().PgBouncers().Lister()
 	c.pbInformer.AddEventHandler(queue.NewChangeHandler(c.pbQueue.GetQueue()))
+	if c.Auditor != nil {
+		c.pbInformer.AddEventHandler(c.Auditor)
+	}
 }
 
 func (c *Controller) initAppBindingWatcher() {

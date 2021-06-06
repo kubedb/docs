@@ -40,6 +40,9 @@ func (c *Controller) initWatcher() {
 	c.pgQueue = queue.New("Postgres", c.MaxNumRequeues, c.NumThreads, c.runPostgres)
 	c.pgLister = c.KubedbInformerFactory.Kubedb().V1alpha2().Postgreses().Lister()
 	c.pgInformer.AddEventHandler(queue.NewChangeHandler(c.pgQueue.GetQueue()))
+	if c.Auditor != nil {
+		c.pgInformer.AddEventHandler(c.Auditor)
+	}
 }
 
 func (c *Controller) runPostgres(key string) error {

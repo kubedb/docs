@@ -318,21 +318,21 @@ func (e *Elasticsearch) SetDefaults(esVersion *catalog.ElasticsearchVersion, top
 		if e.Spec.Topology.Ingest.Suffix == "" {
 			e.Spec.Topology.Ingest.Suffix = ElasticsearchIngestNodeSuffix
 		}
-		SetDefaultResourceLimits(&e.Spec.Topology.Ingest.Resources, DefaultResourceLimits)
+		SetDefaultResourceLimits(&e.Spec.Topology.Ingest.Resources, DefaultResources)
 
 		// Default to "data"
 		if e.Spec.Topology.Data.Suffix == "" {
 			e.Spec.Topology.Data.Suffix = ElasticsearchDataNodeSuffix
 		}
-		SetDefaultResourceLimits(&e.Spec.Topology.Data.Resources, DefaultResourceLimits)
+		SetDefaultResourceLimits(&e.Spec.Topology.Data.Resources, DefaultResources)
 
 		// Default to "master"
 		if e.Spec.Topology.Master.Suffix == "" {
 			e.Spec.Topology.Master.Suffix = ElasticsearchMasterNodeSuffix
 		}
-		SetDefaultResourceLimits(&e.Spec.Topology.Master.Resources, DefaultResourceLimits)
+		SetDefaultResourceLimits(&e.Spec.Topology.Master.Resources, DefaultResources)
 	} else {
-		SetDefaultResourceLimits(&e.Spec.PodTemplate.Spec.Resources, DefaultResourceLimits)
+		SetDefaultResourceLimits(&e.Spec.PodTemplate.Spec.Resources, DefaultResources)
 	}
 
 	// set default kernel settings

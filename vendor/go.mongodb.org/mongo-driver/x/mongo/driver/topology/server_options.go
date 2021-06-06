@@ -12,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/event"
-	"go.mongodb.org/mongo-driver/x/mongo/driver"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/session"
 )
 
@@ -28,11 +27,8 @@ type serverConfig struct {
 	maxConns                  uint64
 	minConns                  uint64
 	poolMonitor               *event.PoolMonitor
-	serverMonitor             *event.ServerMonitor
 	connectionPoolMaxIdleTime time.Duration
 	registry                  *bsoncodec.Registry
-	monitoringDisabled        bool
-	serverAPI                 *driver.ServerAPIOptions
 }
 
 func newServerConfig(opts ...ServerOption) (*serverConfig, error) {
@@ -56,13 +52,6 @@ func newServerConfig(opts ...ServerOption) (*serverConfig, error) {
 // ServerOption configures a server.
 type ServerOption func(*serverConfig) error
 
-func withMonitoringDisabled(fn func(bool) bool) ServerOption {
-	return func(cfg *serverConfig) error {
-		cfg.monitoringDisabled = fn(cfg.monitoringDisabled)
-		return nil
-	}
-}
-
 // WithConnectionOptions configures the server's connections.
 func WithConnectionOptions(fn func(...ConnectionOption) []ConnectionOption) ServerOption {
 	return func(cfg *serverConfig) error {
@@ -75,14 +64,6 @@ func WithConnectionOptions(fn func(...ConnectionOption) []ConnectionOption) Serv
 func WithCompressionOptions(fn func(...string) []string) ServerOption {
 	return func(cfg *serverConfig) error {
 		cfg.compressionOpts = fn(cfg.compressionOpts...)
-		return nil
-	}
-}
-
-// WithServerAppName configures the server's application name.
-func WithServerAppName(fn func(string) string) ServerOption {
-	return func(cfg *serverConfig) error {
-		cfg.appname = fn(cfg.appname)
 		return nil
 	}
 }
@@ -105,7 +86,7 @@ func WithHeartbeatTimeout(fn func(time.Duration) time.Duration) ServerOption {
 }
 
 // WithMaxConnections configures the maximum number of connections to allow for
-// a given server. If max is 0, then the default will be math.MaxInt64.
+// a given server. If max is 0, then the default will be 100
 func WithMaxConnections(fn func(uint64) uint64) ServerOption {
 	return func(cfg *serverConfig) error {
 		cfg.maxConns = fn(cfg.maxConns)
@@ -141,14 +122,6 @@ func WithConnectionPoolMonitor(fn func(*event.PoolMonitor) *event.PoolMonitor) S
 	}
 }
 
-// WithServerMonitor configures the monitor for all SDAM events for a server
-func WithServerMonitor(fn func(*event.ServerMonitor) *event.ServerMonitor) ServerOption {
-	return func(cfg *serverConfig) error {
-		cfg.serverMonitor = fn(cfg.serverMonitor)
-		return nil
-	}
-}
-
 // WithClock configures the ClusterClock for the server to use.
 func WithClock(fn func(clock *session.ClusterClock) *session.ClusterClock) ServerOption {
 	return func(cfg *serverConfig) error {
@@ -162,14 +135,6 @@ func WithClock(fn func(clock *session.ClusterClock) *session.ClusterClock) Serve
 func WithRegistry(fn func(*bsoncodec.Registry) *bsoncodec.Registry) ServerOption {
 	return func(cfg *serverConfig) error {
 		cfg.registry = fn(cfg.registry)
-		return nil
-	}
-}
-
-// WithServerAPI configures the server API options for the server to use.
-func WithServerAPI(fn func(serverAPI *driver.ServerAPIOptions) *driver.ServerAPIOptions) ServerOption {
-	return func(cfg *serverConfig) error {
-		cfg.serverAPI = fn(cfg.serverAPI)
 		return nil
 	}
 }

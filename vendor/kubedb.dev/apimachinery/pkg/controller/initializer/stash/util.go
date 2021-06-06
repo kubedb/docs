@@ -249,24 +249,13 @@ func (c *Controller) extractDatabaseInfo(ri *restoreInfo) error {
 	if owner == nil {
 		return fmt.Errorf("failed to extract database information from the target info. Reason: target does not have controlling owner")
 	}
-	gv, err := schema.ParseGroupVersion(owner.APIVersion)
-	if err != nil {
-		return err
-	}
 	ri.do.Name = owner.Name
-	ri.do.GVR = schema.GroupVersionResource{
-		Group:   gv.Group,
-		Version: gv.Version,
-	}
 
-	mapping, err := c.Mapper.RESTMapping(schema.GroupKind{
-		Group: gv.Group,
-		Kind:  owner.Kind,
-	})
+	gvr, err := c.Mapper.GVR(schema.FromAPIVersionAndKind(owner.APIVersion, owner.Kind))
 	if err != nil {
 		return err
 	}
-	ri.do.GVR.Resource = mapping.Resource.Resource
+	ri.do.GVR = gvr
 
 	return nil
 }

@@ -23,7 +23,7 @@ import (
 	"kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 
-	"gomodules.xyz/version"
+	"github.com/Masterminds/semver/v3"
 	core "k8s.io/api/core/v1"
 	dynamic_util "kmodules.xyz/client-go/dynamic"
 )
@@ -31,17 +31,17 @@ import (
 func (c *Reconciler) getTLSArgs(db *api.MongoDB, mgVersion *v1alpha1.MongoDBVersion) ([]string, error) {
 	var sslArgs []string
 	sslMode := string(db.Spec.SSLMode)
-	breakingVer, err := version.NewVersion("4.2")
+	breakingVer, err := semver.NewVersion("4.2")
 	if err != nil {
 		return nil, err
 	}
-	currentVer, err := version.NewVersion(mgVersion.Spec.Version)
+	currentVer, err := semver.NewVersion(mgVersion.Spec.Version)
 	if err != nil {
 		return nil, err
 	}
 
 	//xREF: https://github.com/docker-library/mongo/issues/367
-	if currentVer.GreaterThanOrEqual(breakingVer) {
+	if currentVer.Compare(breakingVer) >= 0 {
 		var tlsMode = sslMode
 		if strings.Contains(sslMode, "SSL") {
 			tlsMode = strings.Replace(sslMode, "SSL", "TLS", 1)

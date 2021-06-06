@@ -6,34 +6,24 @@
 
 package options
 
-// ListCollectionsOptions represents options that can be used to configure a ListCollections operation.
+// ListCollectionsOptions represents all possible options for a listCollections command.
 type ListCollectionsOptions struct {
-	// If true, each collection document will only contain a field for the collection name. The default value is false.
-	NameOnly *bool
-
-	// The maximum number of documents to be included in each batch returned by the server.
-	BatchSize *int32
+	NameOnly *bool // If true, only the collection names will be returned.
 }
 
-// ListCollections creates a new ListCollectionsOptions instance.
+// ListCollections creates a new *ListCollectionsOptions
 func ListCollections() *ListCollectionsOptions {
 	return &ListCollectionsOptions{}
 }
 
-// SetNameOnly sets the value for the NameOnly field.
+// SetNameOnly specifies whether to return only the collection names.
 func (lc *ListCollectionsOptions) SetNameOnly(b bool) *ListCollectionsOptions {
 	lc.NameOnly = &b
 	return lc
 }
 
-// SetBatchSize sets the value for the BatchSize field.
-func (lc *ListCollectionsOptions) SetBatchSize(size int32) *ListCollectionsOptions {
-	lc.BatchSize = &size
-	return lc
-}
-
-// MergeListCollectionsOptions combines the given ListCollectionsOptions instances into a single *ListCollectionsOptions
-// in a last-one-wins fashion.
+// MergeListCollectionsOptions combines the given *ListCollectionsOptions into a single *ListCollectionsOptions in a
+// last one wins fashion.
 func MergeListCollectionsOptions(opts ...*ListCollectionsOptions) *ListCollectionsOptions {
 	lc := ListCollections()
 	for _, opt := range opts {
@@ -42,9 +32,6 @@ func MergeListCollectionsOptions(opts ...*ListCollectionsOptions) *ListCollectio
 		}
 		if opt.NameOnly != nil {
 			lc.NameOnly = opt.NameOnly
-		}
-		if opt.BatchSize != nil {
-			lc.BatchSize = opt.BatchSize
 		}
 	}
 

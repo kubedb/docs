@@ -40,6 +40,9 @@ func (c *Controller) initWatcher() {
 	c.mdQueue = queue.New("MariaDB", c.MaxNumRequeues, c.NumThreads, c.runMariaDB)
 	c.mdLister = c.KubedbInformerFactory.Kubedb().V1alpha2().MariaDBs().Lister()
 	c.mdInformer.AddEventHandler(queue.NewChangeHandler(c.mdQueue.GetQueue()))
+	if c.Auditor != nil {
+		c.mdInformer.AddEventHandler(c.Auditor)
+	}
 }
 
 func (c *Controller) initSecretWatcher() {

@@ -27,9 +27,9 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
 	"gomodules.xyz/sets"
-	"gomodules.xyz/version"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -246,12 +246,12 @@ func ValidateMariaDB(client kubernetes.Interface, extClient cs.Interface, db *ap
 		}
 	}
 
-	curVersion, err := version.NewVersion(dbVersion.Spec.Version)
+	curVersion, err := semver.NewVersion(dbVersion.Spec.Version)
 	if err != nil {
 		return fmt.Errorf(`unable to parse spec.version`)
 	}
 
-	supportedVersion, err := version.NewVersion("10.5.2")
+	supportedVersion, err := semver.NewVersion("10.5.2")
 	if err != nil {
 		return fmt.Errorf(`unable to parse spec.version`)
 	}

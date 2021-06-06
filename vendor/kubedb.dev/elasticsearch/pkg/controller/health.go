@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
@@ -30,7 +31,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 )
@@ -43,67 +43,47 @@ func (c *Controller) RunHealthChecker(stopCh <-chan struct{}) {
 
 func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 	klog.Info("Starting Elasticsearch health checker...")
-
-	go wait.Until(func() {
-		dbList, err := c.esLister.Elasticsearches(core.NamespaceAll).List(labels.Everything())
-		if err != nil {
-			klog.Errorf("Failed to list Elasticsearch objects with: %s", err.Error())
+	for {
+		select {
+		case <-stopCh:
+			klog.Info("Shutting down Elasticsearch health checker...")
 			return
+		default:
+			c.CheckElasticsearchHealthOnce()
+			time.Sleep(api.HealthCheckInterval)
+		}
+	}
+}
+
+func (c *Controller) CheckElasticsearchHealthOnce() {
+	dbList, err := c.esLister.Elasticsearches(core.NamespaceAll).List(labels.Everything())
+	if err != nil {
+		klog.Errorf("Failed to list Elasticsearch objects with: %s", err.Error())
+		return
+	}
+
+	var wg sync.WaitGroup
+	for idx := range dbList {
+		db := dbList[idx]
+
+		// If the DB object is deleted or halted, no need to perform health check.
+		if db.DeletionTimestamp != nil || db.Spec.Halted {
+			continue
 		}
 
-		var wg sync.WaitGroup
-		for idx := range dbList {
-			db := dbList[idx]
+		wg.Add(1)
+		go func(db *api.Elasticsearch) {
+			defer func() {
+				wg.Done()
+			}()
 
-			wg.Add(1)
-			go func() {
-				defer func() {
-					wg.Done()
-				}()
-
-				// Create database client
-				dbClient, err := c.GetElasticsearchClient(db)
-				if err != nil {
-					klog.Warningf("The Elasticsearch: %s/%s client is not ready with %s", db.Namespace, db.Name, err.Error())
-					// Since the client was unable to connect the database,
-					// update "AcceptingConnection" to "false".
-					// update "Ready" to "false"
-					_, err = util.UpdateElasticsearchStatus(
-						context.TODO(),
-						c.DBClient.KubedbV1alpha2(),
-						db.ObjectMeta,
-						func(in *api.ElasticsearchStatus) (types.UID, *api.ElasticsearchStatus) {
-							in.Conditions = kmapi.SetCondition(in.Conditions,
-								kmapi.Condition{
-									Type:               api.DatabaseAcceptingConnection,
-									Status:             core.ConditionFalse,
-									Reason:             api.DatabaseNotAcceptingConnectionRequest,
-									ObservedGeneration: db.Generation,
-									Message:            fmt.Sprintf("The Elasticsearch: %s/%s is not accepting client requests.", db.Namespace, db.Name),
-								})
-							in.Conditions = kmapi.SetCondition(in.Conditions,
-								kmapi.Condition{
-									Type:               api.DatabaseReady,
-									Status:             core.ConditionFalse,
-									Reason:             api.ReadinessCheckFailed,
-									ObservedGeneration: db.Generation,
-									Message:            fmt.Sprintf("The Elasticsearch: %s/%s is not ready.", db.Namespace, db.Name),
-								})
-							return db.UID, in
-						},
-						metav1.UpdateOptions{},
-					)
-					if err != nil {
-						klog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
-					}
-					// Since the client isn't created, skip rest operations.
-					return
-				}
-
-				// While creating the client, we perform a health check along with it.
-				// If the client is created without any error,
-				// the database is accepting connection.
-				// Update "AcceptingConnection" to "true".
+			// Create database client
+			dbClient, err := c.GetElasticsearchClient(db)
+			if err != nil {
+				klog.Warningf("The Elasticsearch: %s/%s client is not ready with %s", db.Namespace, db.Name, err.Error())
+				// Since the client was unable to connect the database,
+				// update "AcceptingConnection" to "false".
+				// update "Ready" to "false"
 				_, err = util.UpdateElasticsearchStatus(
 					context.TODO(),
 					c.DBClient.KubedbV1alpha2(),
@@ -112,10 +92,18 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 						in.Conditions = kmapi.SetCondition(in.Conditions,
 							kmapi.Condition{
 								Type:               api.DatabaseAcceptingConnection,
-								Status:             core.ConditionTrue,
-								Reason:             api.DatabaseAcceptingConnectionRequest,
+								Status:             core.ConditionFalse,
+								Reason:             api.DatabaseNotAcceptingConnectionRequest,
 								ObservedGeneration: db.Generation,
-								Message:            fmt.Sprintf("The Elasticsearch: %s/%s is accepting client requests.", db.Namespace, db.Name),
+								Message:            fmt.Sprintf("The Elasticsearch: %s/%s is not accepting client requests.", db.Namespace, db.Name),
+							})
+						in.Conditions = kmapi.SetCondition(in.Conditions,
+							kmapi.Condition{
+								Type:               api.DatabaseReady,
+								Status:             core.ConditionFalse,
+								Reason:             api.ReadinessCheckFailed,
+								ObservedGeneration: db.Generation,
+								Message:            fmt.Sprintf("The Elasticsearch: %s/%s is not ready.", db.Namespace, db.Name),
 							})
 						return db.UID, in
 					},
@@ -123,78 +111,103 @@ func (c *Controller) CheckElasticsearchHealth(stopCh <-chan struct{}) {
 				)
 				if err != nil {
 					klog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
-					// Since condition update failed, skip remaining operations.
-					return
 				}
+				// Since the client isn't created, skip rest operations.
+				return
+			}
 
-				// Get database status, could be red, green or yellow.
-				status, err := dbClient.ClusterStatus()
+			// While creating the client, we perform a health check along with it.
+			// If the client is created without any error,
+			// the database is accepting connection.
+			// Update "AcceptingConnection" to "true".
+			_, err = util.UpdateElasticsearchStatus(
+				context.TODO(),
+				c.DBClient.KubedbV1alpha2(),
+				db.ObjectMeta,
+				func(in *api.ElasticsearchStatus) (types.UID, *api.ElasticsearchStatus) {
+					in.Conditions = kmapi.SetCondition(in.Conditions,
+						kmapi.Condition{
+							Type:               api.DatabaseAcceptingConnection,
+							Status:             core.ConditionTrue,
+							Reason:             api.DatabaseAcceptingConnectionRequest,
+							ObservedGeneration: db.Generation,
+							Message:            fmt.Sprintf("The Elasticsearch: %s/%s is accepting client requests.", db.Namespace, db.Name),
+						})
+					return db.UID, in
+				},
+				metav1.UpdateOptions{},
+			)
+			if err != nil {
+				klog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
+				// Since condition update failed, skip remaining operations.
+				return
+			}
+
+			// Get database status, could be red, green or yellow.
+			status, err := dbClient.ClusterStatus()
+			if err != nil {
+				klog.Errorf("Failed to get cluster status for Elasticsearch: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+				// Since the get status failed, skip remaining operations.
+				return
+			}
+
+			// Update to "Ready" condition to "true" only if the status is "green".
+			// For standalone data node cluster (could be combined/topology), consider status "yellow".
+			// check if:
+			//	( status == green ) || ( status == yellow && (standalone-data-topology || standalone-data-combined))
+			if status == api.ElasticsearchStatusGreen ||
+				(status == api.ElasticsearchStatusYellow &&
+					((db.Spec.Topology != nil && db.Spec.Topology.Data.Replicas != nil && *db.Spec.Topology.Data.Replicas == int32(1)) ||
+						(db.Spec.Topology == nil && db.Spec.Replicas != nil && *db.Spec.Replicas == int32(1)))) {
+				// Update "Ready" to "true".
+				_, err = util.UpdateElasticsearchStatus(
+					context.TODO(),
+					c.DBClient.KubedbV1alpha2(),
+					db.ObjectMeta,
+					func(in *api.ElasticsearchStatus) (types.UID, *api.ElasticsearchStatus) {
+						in.Conditions = kmapi.SetCondition(in.Conditions,
+							kmapi.Condition{
+								Type:               api.DatabaseReady,
+								Status:             core.ConditionTrue,
+								Reason:             api.ReadinessCheckSucceeded,
+								ObservedGeneration: db.Generation,
+								Message:            fmt.Sprintf("The Elasticsearch: %s/%s is ready.", db.Namespace, db.Name),
+							})
+						return db.UID, in
+					},
+					metav1.UpdateOptions{},
+				)
 				if err != nil {
-					klog.Errorf("Failed to get cluster status for Elasticsearch: %s/%s with: %s", db.Namespace, db.Name, err.Error())
-					// Since the get status failed, skip remaining operations.
-					return
+					klog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
 				}
-
-				// Update to "Ready" condition to "true" only if the status is "green".
-				// For standalone data node cluster (could be combined/topology), consider status "yellow".
-				// check if:
-				//	( status == green ) || ( status == yellow && (standalone-data-topology || standalone-data-combined))
-				if status == api.ElasticsearchStatusGreen ||
-					(status == api.ElasticsearchStatusYellow &&
-						((db.Spec.Topology != nil && db.Spec.Topology.Data.Replicas != nil && *db.Spec.Topology.Data.Replicas == int32(1)) ||
-							(db.Spec.Topology == nil && db.Spec.Replicas != nil && *db.Spec.Replicas == int32(1)))) {
-					// Update "Ready" to "true".
-					_, err = util.UpdateElasticsearchStatus(
-						context.TODO(),
-						c.DBClient.KubedbV1alpha2(),
-						db.ObjectMeta,
-						func(in *api.ElasticsearchStatus) (types.UID, *api.ElasticsearchStatus) {
-							in.Conditions = kmapi.SetCondition(in.Conditions,
-								kmapi.Condition{
-									Type:               api.DatabaseReady,
-									Status:             core.ConditionTrue,
-									Reason:             api.ReadinessCheckSucceeded,
-									ObservedGeneration: db.Generation,
-									Message:            fmt.Sprintf("The Elasticsearch: %s/%s is ready.", db.Namespace, db.Name),
-								})
-							return db.UID, in
-						},
-						metav1.UpdateOptions{},
-					)
-					if err != nil {
-						klog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
-					}
-				} else {
-					// Update "Ready" to "false".
-					_, err = util.UpdateElasticsearchStatus(
-						context.TODO(),
-						c.DBClient.KubedbV1alpha2(),
-						db.ObjectMeta,
-						func(in *api.ElasticsearchStatus) (types.UID, *api.ElasticsearchStatus) {
-							in.Conditions = kmapi.SetCondition(in.Conditions,
-								kmapi.Condition{
-									Type:               api.DatabaseReady,
-									Status:             core.ConditionFalse,
-									Reason:             api.ReadinessCheckFailed,
-									ObservedGeneration: db.Generation,
-									Message:            fmt.Sprintf("The Elasticsearch: %s/%s is not ready with cluster status: %s", db.Namespace, db.Name, status),
-								})
-							return db.UID, in
-						},
-						metav1.UpdateOptions{},
-					)
-					if err != nil {
-						klog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
-					}
+			} else {
+				// Update "Ready" to "false".
+				_, err = util.UpdateElasticsearchStatus(
+					context.TODO(),
+					c.DBClient.KubedbV1alpha2(),
+					db.ObjectMeta,
+					func(in *api.ElasticsearchStatus) (types.UID, *api.ElasticsearchStatus) {
+						in.Conditions = kmapi.SetCondition(in.Conditions,
+							kmapi.Condition{
+								Type:               api.DatabaseReady,
+								Status:             core.ConditionFalse,
+								Reason:             api.ReadinessCheckFailed,
+								ObservedGeneration: db.Generation,
+								Message:            fmt.Sprintf("The Elasticsearch: %s/%s is not ready with cluster status: %s", db.Namespace, db.Name, status),
+							})
+						return db.UID, in
+					},
+					metav1.UpdateOptions{},
+				)
+				if err != nil {
+					klog.Errorf("Failed to update status for Elasticsearch: %s/%s with %s", db.Namespace, db.Name, err.Error())
 				}
-			}()
-		}
-		wg.Wait()
-	}, c.ReadinessProbeInterval, stopCh)
+			}
+		}(db)
+	}
 
-	// will wait here until stopCh is closed.
-	<-stopCh
-	klog.Info("Shutting down Elasticsearch health checker...")
+	// Wait until all go-routine complete executions
+	wg.Wait()
 }
 
 func (c *Controller) GetElasticsearchClient(db *api.Elasticsearch) (go_es.ESClient, error) {

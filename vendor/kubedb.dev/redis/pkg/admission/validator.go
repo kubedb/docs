@@ -27,9 +27,9 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
 	"gomodules.xyz/sets"
-	version "gomodules.xyz/version"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -274,7 +274,7 @@ func preconditionFailedError() error {
 }
 
 func checkTLSSupport(v string) (bool, error) {
-	rdVersion, err := version.NewVersion(v)
+	rdVersion, err := semver.NewVersion(v)
 	if err != nil {
 		return false, err
 	}

@@ -26,7 +26,8 @@ import (
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
-	"github.com/coreos/go-semver/semver"
+	"github.com/Masterminds/semver/v3"
+	"gomodules.xyz/flags"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -161,7 +162,7 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 						"run",
 						fmt.Sprintf("--db-name=%s", db.Name),
 						fmt.Sprintf("--db-kind=%s", api.ResourceKindMySQL),
-					}, c.LoggerOptions.ToFlags()...),
+					}, flags.LoggerOptions.ToFlags()...),
 				}
 
 				in.Spec.Template.Spec.Containers = core_util.UpsertContainer(in.Spec.Template.Spec.Containers, replicationModeDetector)
@@ -192,9 +193,9 @@ func (c *Controller) createOrPatchStatefulSet(db *api.MySQL, stsName string) (*a
 					specArgs["loose-group_replication_recovery_ssl_cert"] = certFile
 					specArgs["loose-group_replication_recovery_ssl_key"] = keyFile
 
-					refVersion := semver.New("8.0.17")
-					curVersion := semver.New(mysqlVersion.Spec.Version)
-					if curVersion.Compare(*refVersion) != -1 {
+					refVersion := semver.MustParse("8.0.17")
+					curVersion := semver.MustParse(mysqlVersion.Spec.Version)
+					if curVersion.Compare(refVersion) != -1 {
 						// https://dev.mysql.com/doc/refman/8.0/en/clone-plugin-remote.html
 						specArgs["loose-clone_ssl_ca"] = caFile
 						specArgs["loose-clone_ssl_cert"] = certFile
@@ -776,9 +777,9 @@ func recommendedArgs(db *api.MySQL, myVersion *v1alpha1.MySQLVersion) map[string
 	// allocate rest of the memory for group replication cache size
 	// https://dev.mysql.com/doc/refman/8.0/en/group-replication-options.html#sysvar_group_replication_message_cache_size
 	// recommended minimum loose-group-replication-message-cache-size is 128mb=134217728byte from version 8.0.21
-	refVersion := semver.New("8.0.21")
-	curVersion := semver.New(myVersion.Spec.Version)
-	if curVersion.Compare(*refVersion) != -1 {
+	refVersion := semver.MustParse("8.0.21")
+	curVersion := semver.MustParse(myVersion.Spec.Version)
+	if curVersion.Compare(refVersion) != -1 {
 		recommendedArgs["loose-group-replication-message-cache-size"] = fmt.Sprintf("%d", allocableBytes-innoDBPoolSize)
 	}
 
@@ -786,9 +787,9 @@ func recommendedArgs(db *api.MySQL, myVersion *v1alpha1.MySQLVersion) map[string
 	// Possible removals happen at startup and when the binary log is flushed
 	// https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_expire_logs_seconds
 	// https://mydbops.wordpress.com/2017/04/13/binlog-expiry-now-in-seconds-mysql-8-0/
-	refVersion = semver.New("8.0.1")
-	curVersion = semver.New(myVersion.Spec.Version)
-	if curVersion.Compare(*refVersion) != -1 {
+	refVersion = semver.MustParse("8.0.1")
+	curVersion = semver.MustParse(myVersion.Spec.Version)
+	if curVersion.Compare(refVersion) != -1 {
 		recommendedArgs["binlog-expire-logs-seconds"] = fmt.Sprintf("%d", 3*24*60*60) // 3 days
 	} else {
 		recommendedArgs["expire-logs-days"] = fmt.Sprintf("%d", 3) // 3 days

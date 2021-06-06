@@ -36,11 +36,15 @@ func (es *ESClientV7) ClusterStatus() (string, error) {
 	}
 	defer res.Body.Close()
 
+	response := make(map[string]interface{})
 	if err2 := json.NewDecoder(res.Body).Decode(&response); err2 != nil {
 		return "", errors.Wrap(err2, "failed to parse the response body")
 	}
 	if value, ok := response["status"]; ok {
-		return value.(string), nil
+		if strValue, ok := value.(string); ok {
+			return strValue, nil
+		}
+		return "", errors.New("failed to convert response to string")
 	}
 	return "", errors.New("status is missing")
 }
