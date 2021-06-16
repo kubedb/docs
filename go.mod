@@ -20,7 +20,7 @@ require (
 	k8s.io/apiserver v0.21.0
 	k8s.io/client-go v0.21.0
 	k8s.io/klog/v2 v2.8.0
-	kmodules.xyz/client-go v0.0.0-20210605021217-cabaee7b953e
+	kmodules.xyz/client-go v0.0.0-20210614094429-affdb80e35c8
 	kmodules.xyz/custom-resources v0.0.0-20210605111625-741fcb992541
 	kmodules.xyz/webhook-runtime v0.0.0-20210504042742-3a9911e3dcdc
 	kubedb.dev/apimachinery v0.18.1-0.20210606081947-27cc118e5a02
