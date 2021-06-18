@@ -71,6 +71,10 @@ func (agent *PrometheusOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.A
 		return kutil.VerbUnchanged, errors.New("no port found in stats service")
 	}
 
+	if new.Prometheus.ServiceMonitor == nil {
+		return kutil.VerbUnchanged, errors.New("serviceMonitor spec is empty")
+	}
+
 	smMeta := metav1.ObjectMeta{
 		Name:      sp.ServiceMonitorName(),
 		Namespace: sp.GetNamespace(),

@@ -31,6 +31,9 @@ import (
 )
 
 func (es *Elasticsearch) EnsureAuthSecret() error {
+	if es.db.Spec.DisableSecurity {
+		return nil
+	}
 	authSecret := es.db.Spec.AuthSecret
 	if authSecret == nil {
 		var err error

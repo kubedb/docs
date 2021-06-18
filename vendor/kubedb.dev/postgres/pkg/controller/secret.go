@@ -38,7 +38,7 @@ const (
 	EnvPostgresPassword = "POSTGRES_PASSWORD"
 )
 
-func (c *Controller) ensureAuthSecret(db *api.Postgres) error {
+func (c *Reconciler) ensureAuthSecret(db *api.Postgres) error {
 	authSecret := db.Spec.AuthSecret
 	if authSecret == nil {
 		var err error
@@ -58,7 +58,7 @@ func (c *Controller) ensureAuthSecret(db *api.Postgres) error {
 	return c.upgradeAuthSecret(db)
 }
 
-func (c *Controller) findAuthSecret(db *api.Postgres) (*core.Secret, error) {
+func (c *Reconciler) findAuthSecret(db *api.Postgres) (*core.Secret, error) {
 	name := db.OffshootName() + "-auth"
 
 	secret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), name, metav1.GetOptions{})
@@ -77,7 +77,7 @@ func (c *Controller) findAuthSecret(db *api.Postgres) (*core.Secret, error) {
 	return secret, nil
 }
 
-func (c *Controller) createAuthSecret(db *api.Postgres) (*core.LocalObjectReference, error) {
+func (c *Reconciler) createAuthSecret(db *api.Postgres) (*core.LocalObjectReference, error) {
 	databaseSecret, err := c.findAuthSecret(db)
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func (c *Controller) createAuthSecret(db *api.Postgres) (*core.LocalObjectRefere
 
 // This is done to fix 0.8.0 -> 0.9.0 upgrade due to
 // https://github.com/kubedb/postgres/pull/179/files#diff-10ddaf307bbebafda149db10a28b9c24R20 commit
-func (c *Controller) upgradeAuthSecret(db *api.Postgres) error {
+func (c *Reconciler) upgradeAuthSecret(db *api.Postgres) error {
 	meta := metav1.ObjectMeta{
 		Name:      db.Spec.AuthSecret.Name,
 		Namespace: db.Namespace,
@@ -158,6 +158,24 @@ func (c *Controller) GetPostgresSecrets(db *api.Postgres) []string {
 			db.GetCertSecretName(api.PostgresClientCert),
 			db.GetCertSecretName(api.PostgresMetricsExporterCert),
 		}
+	}
+	return nil
+}
+func (r *Reconciler) RequiredCertSecretNames(db *api.Postgres) []string {
+	// wait for  Certificates secrets
+	if db.Spec.TLS != nil {
+
+		var sNames []string
+		// server certificate
+		sNames = append(sNames, db.GetCertSecretName(api.PostgresServerCert))
+		// client certificate
+		sNames = append(sNames, db.GetCertSecretName(api.PostgresClientCert))
+		// metrics exporter certificate, if monitoring is enabled
+		if db.Spec.Monitor != nil {
+			// monitor certificate
+			sNames = append(sNames, db.GetCertSecretName(api.PostgresMetricsExporterCert))
+		}
+		return sNames
 	}
 	return nil
 }

@@ -31,5 +31,12 @@ type ElasticsearchInterface interface {
 	EnsureIngestNodes() (kutil.VerbType, error)
 	EnsureDataNodes() (kutil.VerbType, error)
 	EnsureCombinedNode() (kutil.VerbType, error)
+	EnsureDataContentNode() (kutil.VerbType, error)
+	EnsureDataHotNode() (kutil.VerbType, error)
+	EnsureDataWarmNode() (kutil.VerbType, error)
+	EnsureDataColdNode() (kutil.VerbType, error)
+	EnsureDataFrozenNode() (kutil.VerbType, error)
+	EnsureMLNode() (kutil.VerbType, error)
+	EnsureTransformNode() (kutil.VerbType, error)
 	RequiredCertSecretNames() []string
 }

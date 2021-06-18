@@ -36,7 +36,7 @@ import (
 	mona "kmodules.xyz/monitoring-agent-api/api/v1"
 )
 
-func (c *Controller) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) {
+func (c *Reconciler) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) {
 	dbVersion, err := c.DBClient.CatalogV1alpha1().MariaDBVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
 	if err != nil {
 		return kutil.VerbUnchanged, err
@@ -85,7 +85,7 @@ func (c *Controller) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 			in = upsertSharedScriptsVolume(in)
 
 			if db.Spec.ConfigSecret != nil {
-				in.Spec.Template = upsertCustomConfig(in.Spec.Template, db.Spec.ConfigSecret)
+				in.Spec.Template = upsertCustomConfig(in.Spec.Template, db.Spec.ConfigSecret, db.IsCluster())
 			}
 
 			in.Spec.Template.Spec.NodeSelector = db.Spec.PodTemplate.Spec.NodeSelector
@@ -134,19 +134,26 @@ func (c *Controller) ensureStatefulSet(db *api.MariaDB) (kutil.VerbType, error) 
 }
 
 func upsertCustomConfig(
-	template core.PodTemplateSpec, configSecret *core.LocalObjectReference) core.PodTemplateSpec {
+	template core.PodTemplateSpec, configSecret *core.LocalObjectReference, isCluster bool) core.PodTemplateSpec {
 	for i, container := range template.Spec.Containers {
 		if container.Name == api.ResourceSingularMariaDB {
-			configVolumeMount := core.VolumeMount{
-				Name:      "custom-config",
-				MountPath: "/etc/mysql/conf.d",
+			var configVolumeMount core.VolumeMount
+			var customConfigMountPath string
+			if isCluster {
+				customConfigMountPath = api.MariaDBClusterCustomConfigMountPath
+			} else {
+				customConfigMountPath = api.MariaDBCustomConfigMountPath
+			}
+			configVolumeMount = core.VolumeMount{
+				Name:      api.MariaDBCustomConfigVolumeName,
+				MountPath: customConfigMountPath,
 			}
 			volumeMounts := container.VolumeMounts
 			volumeMounts = core_util.UpsertVolumeMount(volumeMounts, configVolumeMount)
 			template.Spec.Containers[i].VolumeMounts = volumeMounts
 
 			configVolume := core.Volume{
-				Name: "custom-config",
+				Name: api.MariaDBCustomConfigVolumeName,
 				VolumeSource: core.VolumeSource{
 					Secret: &core.SecretVolumeSource{
 						SecretName: configSecret.Name,
@@ -167,41 +174,18 @@ func getInitContainers(statefulSet *apps.StatefulSet, dbVersion *v1alpha1.MariaD
 	statefulSet.Spec.Template.Spec.InitContainers = core_util.UpsertContainer(
 		statefulSet.Spec.Template.Spec.InitContainers,
 		core.Container{
-			Name:            "mariadb-init",
+			Name:            api.MariaDBInitContainerName,
 			Image:           dbVersion.Spec.InitContainer.Image,
 			ImagePullPolicy: core.PullIfNotPresent,
 			VolumeMounts: []core.VolumeMount{
 				{
-					Name:      "data",
-					MountPath: "/var/lib/mysql",
+					Name:      api.DefaultVolumeClaimTemplateName,
+					MountPath: api.MariaDBDataMountPath,
 				},
 			},
 		})
 	return statefulSet.Spec.Template.Spec.InitContainers
 }
-
-//func lostAndFoundCleaner(db *api.MariaDB, dbVersion *v1alpha1.MariaDBVersion) []core.Container {
-//	return []core.Container{
-//		{
-//			Name:            "remove-lost-found",
-//			Image:           dbVersion.Spec.InitContainer.Image,
-//			ImagePullPolicy: core.PullIfNotPresent,
-//			Command: []string{
-//				"rm",
-//				"-rf",
-//				"/var/lib/mysql/lost+found",
-//			},
-//			VolumeMounts: []core.VolumeMount{
-//				{
-//					Name:      "data",
-//					MountPath: api.MariaDBDataMountPath,
-//				},
-//			},
-//			Resources: db.Spec.PodTemplate.Spec.Resources,
-//		},
-//	}
-//
-//}
 
 func mariaDBContainer(db *api.MariaDB, dbVersion *v1alpha1.MariaDBVersion) core.Container {
 	return core.Container{
@@ -368,7 +352,7 @@ func upsertVolumes(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.Statefu
 	for i, container := range statefulSet.Spec.Template.Spec.Containers {
 		if container.Name == api.ResourceSingularMariaDB {
 			statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts = core_util.UpsertVolumeMount(statefulSet.Spec.Template.Spec.Containers[i].VolumeMounts, core.VolumeMount{
-				Name:      "data",
+				Name:      api.DefaultVolumeClaimTemplateName,
 				MountPath: api.MariaDBDataMountPath,
 			})
 			pvcSpec := db.Spec.Storage
@@ -380,7 +364,7 @@ func upsertVolumes(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.Statefu
 					}
 				}
 				statefulSet.Spec.Template.Spec.Volumes = core_util.UpsertVolume(statefulSet.Spec.Template.Spec.Volumes, core.Volume{
-					Name: "data",
+					Name: api.DefaultVolumeClaimTemplateName,
 					VolumeSource: core.VolumeSource{
 						EmptyDir: &ed,
 					},
@@ -395,7 +379,7 @@ func upsertVolumes(statefulSet *apps.StatefulSet, db *api.MariaDB) *apps.Statefu
 
 				claim := core.PersistentVolumeClaim{
 					ObjectMeta: metav1.ObjectMeta{
-						Name: "data",
+						Name: api.DefaultVolumeClaimTemplateName,
 					},
 					Spec: *pvcSpec,
 				}

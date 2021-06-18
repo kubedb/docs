@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
@@ -32,7 +33,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 )
@@ -44,86 +44,102 @@ func (c *Controller) RunHealthChecker(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) CheckRedisHealth(stopCh <-chan struct{}) {
-	go wait.Until(func() {
-		dbList, err := c.rdLister.Redises(core.NamespaceAll).List(labels.Everything())
-		if err != nil {
-			klog.Errorf("Failed to list Redis objects with: %s", err.Error())
-			return
+	klog.Info("Starting Redis health checker...")
+	for {
+		select {
+		case <-stopCh:
+			klog.Info("Shutting down Redis health checker...")
+			break
+		default:
+			c.CheckRedisHealthOnce()
+			time.Sleep(api.HealthCheckInterval)
+		}
+	}
+}
+
+func (c *Controller) CheckRedisHealthOnce() {
+	dbList, err := c.rdLister.Redises(core.NamespaceAll).List(labels.Everything())
+	if err != nil {
+		klog.Errorf("Failed to list Redis objects with: %s", err.Error())
+		return
+	}
+
+	var wg sync.WaitGroup
+	for idx := range dbList {
+		db := dbList[idx]
+		if db.DeletionTimestamp != nil || db.Spec.Halted {
+			continue
 		}
 
-		var wg sync.WaitGroup
-		for idx := range dbList {
-			db := dbList[idx]
-			if db.DeletionTimestamp != nil {
-				continue
+		wg.Add(1)
+		go func(db *api.Redis) {
+			defer func() {
+				wg.Done()
+			}()
+
+			client, err := c.getRedisClient(db)
+			if err != nil {
+				klog.Errorf("Failed to get redis client for Redis: %s/%s error: %s", db.Namespace, db.Name, err.Error())
+				// Since the client was unable to connect the database,
+				// update "AcceptingConnection" to "false".
+				// update "Ready" to "false"
+				c.updateErrorAcceptingConnections(db, err)
+				// Since the client isn't created, skip rest operations.
+				return
+			}
+			defer client.Close()
+
+			// If the client was created without any error,
+			// the database is accepting connection.
+			// Update "AcceptingConnection" to "true".
+			_, err = util.UpdateRedisStatus(
+				context.TODO(),
+				c.DBClient.KubedbV1alpha2(),
+				db.ObjectMeta,
+				func(in *api.RedisStatus) (types.UID, *api.RedisStatus) {
+					in.Conditions = kmapi.SetCondition(in.Conditions,
+						kmapi.Condition{
+							Type:               api.DatabaseAcceptingConnection,
+							Status:             core.ConditionTrue,
+							Reason:             api.DatabaseAcceptingConnectionRequest,
+							ObservedGeneration: db.Generation,
+							Message:            fmt.Sprintf("The Redis: %s/%s is accepting client requests.", db.Namespace, db.Name),
+						})
+					return db.UID, in
+				},
+				metav1.UpdateOptions{},
+			)
+			if err != nil {
+				klog.Errorf("Failed to update status for Redis: %s/%s", db.Namespace, db.Name)
+				// Since condition update failed, skip remaining operations.
+				return
 			}
 
-			wg.Add(1)
-			go func() {
-				defer func() {
-					wg.Done()
-				}()
+			pingResult, err := client.Ping().Result()
+			if err != nil {
+				c.updateDatabaseNotReady(db)
+				klog.Errorf("Failed to ping the database: %s/%s error: %s", db.Namespace, db.Name, err.Error())
+				return
+			} else if !strings.Contains(pingResult, "PONG") {
+				c.updateDatabaseNotReady(db)
+				klog.Errorf("Ping returned unexpected reply for the database: %s/%s reply: %s", db.Namespace, db.Name, pingResult)
+				return
+			}
 
-				client, err := c.getRedisClient(db)
-				if err != nil {
-					klog.Errorf("Failed to get redis client for Redis: %s/%s error: %s", db.Namespace, db.Name, err.Error())
-					// Since the client was unable to connect the database,
-					// update "AcceptingConnection" to "false".
-					// update "Ready" to "false"
-					c.updateErrorAcceptingConnections(db, err)
-					// Since the client isn't created, skip rest operations.
-					return
-				}
-				// If the client was created without any error,
-				// the database is accepting connection.
-				// Update "AcceptingConnection" to "true".
-				_, err = util.UpdateRedisStatus(
-					context.TODO(),
-					c.DBClient.KubedbV1alpha2(),
-					db.ObjectMeta,
-					func(in *api.RedisStatus) (types.UID, *api.RedisStatus) {
-						in.Conditions = kmapi.SetCondition(in.Conditions,
-							kmapi.Condition{
-								Type:               api.DatabaseAcceptingConnection,
-								Status:             core.ConditionTrue,
-								Reason:             api.DatabaseAcceptingConnectionRequest,
-								ObservedGeneration: db.Generation,
-								Message:            fmt.Sprintf("The Redis: %s/%s is accepting client requests.", db.Namespace, db.Name),
-							})
-						return db.UID, in
-					},
-					metav1.UpdateOptions{},
-				)
-				if err != nil {
-					klog.Errorf("Failed to update status for Redis: %s/%s", db.Namespace, db.Name)
-					// Since condition update failed, skip remaining operations.
-					return
-				}
+			c.updateDatabaseReady(db)
+		}(db)
+	}
+	// Wait until all go-routine complete executions
+	wg.Wait()
 
-				pingResult, err := client.Ping().Result()
-				if err != nil {
-					c.updateDatabaseNotReady(db)
-					klog.Errorf("Failed to ping the database: %s/%s error: %s", db.Namespace, db.Name, err.Error())
-					return
-				} else if !strings.Contains(pingResult, "PONG") {
-					c.updateDatabaseNotReady(db)
-					klog.Errorf("Ping returned unexpected reply for the database: %s/%s reply: %s", db.Namespace, db.Name, pingResult)
-					return
-				}
-
-				c.updateDatabaseReady(db)
-			}()
-		}
-	}, c.ReadinessProbeInterval, stopCh)
-
-	// will wait here until stopCh is closed.
-	<-stopCh
-	klog.Info("Shutting down Redis health checker...")
 }
 
 func (c *Controller) getRedisClient(db *api.Redis) (*rd.Client, error) {
 	rdOpts := &rd.Options{
-		Addr: db.Address(),
+		DialTimeout: 15 * time.Second,
+		IdleTimeout: 3 * time.Second,
+		PoolSize:    1,
+		Addr:        db.Address(),
 	}
 	if db.Spec.TLS != nil {
 		sec, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), db.CertificateName(api.RedisClientCert), metav1.GetOptions{})

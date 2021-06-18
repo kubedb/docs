@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 
+	auditlib "go.bytebuilders.dev/audit/lib"
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
@@ -73,7 +74,7 @@ func New(
 	opt amc.Config,
 	recorder record.EventRecorder,
 	mapper discovery.ResourceMapper,
-	auditor cache.ResourceEventHandler,
+	auditor *auditlib.EventPublisher,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{

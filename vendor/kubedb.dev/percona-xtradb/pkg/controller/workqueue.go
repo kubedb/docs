@@ -32,11 +32,11 @@ import (
 
 func (c *Controller) initWatcher() {
 	c.pxInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().PerconaXtraDBs().Informer()
-	c.pxQueue = queue.New("PerconaXtraDB", c.MaxNumRequeues, c.NumThreads, c.runPerconaXtraDB)
+	c.pxQueue = queue.New(api.ResourceKindPerconaXtraDB, c.MaxNumRequeues, c.NumThreads, c.runPerconaXtraDB)
 	c.pxLister = c.KubedbInformerFactory.Kubedb().V1alpha2().PerconaXtraDBs().Lister()
 	c.pxInformer.AddEventHandler(queue.NewChangeHandler(c.pxQueue.GetQueue()))
 	if c.Auditor != nil {
-		c.pxInformer.AddEventHandler(c.Auditor)
+		c.pxInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindPerconaXtraDB)))
 	}
 }
 

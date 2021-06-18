@@ -17,6 +17,8 @@ limitations under the License.
 package controller
 
 import (
+	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
+
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"kmodules.xyz/client-go/tools/queue"
@@ -35,11 +37,11 @@ const (
 
 func (c *Controller) initWatcher() {
 	c.pbInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().PgBouncers().Informer()
-	c.pbQueue = queue.New("PgBouncer", c.MaxNumRequeues, c.NumThreads, c.runPgBouncer)
+	c.pbQueue = queue.New(api.ResourceKindPgBouncer, c.MaxNumRequeues, c.NumThreads, c.runPgBouncer)
 	c.pbLister = c.KubedbInformerFactory.Kubedb().V1alpha2().PgBouncers().Lister()
 	c.pbInformer.AddEventHandler(queue.NewChangeHandler(c.pbQueue.GetQueue()))
 	if c.Auditor != nil {
-		c.pbInformer.AddEventHandler(c.Auditor)
+		c.pbInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindPgBouncer)))
 	}
 }
 

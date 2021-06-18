@@ -37,11 +37,11 @@ import (
 
 func (c *Controller) initWatcher() {
 	c.mdInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().MariaDBs().Informer()
-	c.mdQueue = queue.New("MariaDB", c.MaxNumRequeues, c.NumThreads, c.runMariaDB)
+	c.mdQueue = queue.New(api.ResourceKindMariaDB, c.MaxNumRequeues, c.NumThreads, c.runMariaDB)
 	c.mdLister = c.KubedbInformerFactory.Kubedb().V1alpha2().MariaDBs().Lister()
 	c.mdInformer.AddEventHandler(queue.NewChangeHandler(c.mdQueue.GetQueue()))
 	if c.Auditor != nil {
-		c.mdInformer.AddEventHandler(c.Auditor)
+		c.mdInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindMariaDB)))
 	}
 }
 
@@ -49,14 +49,14 @@ func (c *Controller) initSecretWatcher() {
 	c.SecretInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
 			if secret, ok := obj.(*core.Secret); ok {
-				if key := c.mariaDBForSecret(secret); key != "" {
+				if key := mariaDBForSecret(secret); key != "" {
 					queue.Enqueue(c.mdQueue.GetQueue(), key)
 				}
 			}
 		},
 		UpdateFunc: func(oldObj interface{}, newObj interface{}) {
 			if secret, ok := newObj.(*core.Secret); ok {
-				if key := c.mariaDBForSecret(secret); key != "" {
+				if key := mariaDBForSecret(secret); key != "" {
 					queue.Enqueue(c.mdQueue.GetQueue(), key)
 				}
 			}

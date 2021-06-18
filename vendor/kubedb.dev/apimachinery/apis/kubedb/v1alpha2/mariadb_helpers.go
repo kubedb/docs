@@ -276,3 +276,7 @@ func (m *MariaDB) ReplicasAreReady(lister appslister.StatefulSetLister) (bool, s
 	expectedItems := 1
 	return checkReplicas(lister.StatefulSets(m.Namespace), labels.SelectorFromSet(m.OffshootLabels()), expectedItems)
 }
+
+func (m *MariaDB) InlineConfigSecretName() string {
+	return meta_util.NameWithSuffix(m.Name, "inline")
+}

@@ -29,6 +29,7 @@ import (
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	auditlib "go.bytebuilders.dev/audit/lib"
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -83,7 +84,7 @@ func New(
 	topology *core_util.Topology,
 	recorder record.EventRecorder,
 	mapper discovery.ResourceMapper,
-	auditor cache.ResourceEventHandler,
+	auditor *auditlib.EventPublisher,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{

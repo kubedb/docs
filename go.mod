@@ -8,32 +8,32 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/xdg/scram v1.0.3 // indirect
 	github.com/xdg/stringprep v1.0.3 // indirect
-	go.bytebuilders.dev/audit v0.0.0-20210606035915-e588bc9c711d
+	go.bytebuilders.dev/audit v0.0.7
 	go.bytebuilders.dev/license-verifier v0.9.2
 	go.bytebuilders.dev/license-verifier/kubernetes v0.9.2
 	gomodules.xyz/logs v0.0.2
 	gomodules.xyz/runtime v0.2.0
 	gomodules.xyz/x v0.0.5
-	k8s.io/api v0.21.0
-	k8s.io/apiextensions-apiserver v0.21.0
-	k8s.io/apimachinery v0.21.0
-	k8s.io/apiserver v0.21.0
-	k8s.io/client-go v0.21.0
+	k8s.io/api v0.21.1
+	k8s.io/apiextensions-apiserver v0.21.1
+	k8s.io/apimachinery v0.21.1
+	k8s.io/apiserver v0.21.1
+	k8s.io/client-go v0.21.1
 	k8s.io/klog/v2 v2.8.0
-	kmodules.xyz/client-go v0.0.0-20210614094429-affdb80e35c8
-	kmodules.xyz/custom-resources v0.0.0-20210605111625-741fcb992541
-	kmodules.xyz/webhook-runtime v0.0.0-20210504042742-3a9911e3dcdc
-	kubedb.dev/apimachinery v0.18.1-0.20210606081947-27cc118e5a02
-	kubedb.dev/elasticsearch v0.18.1-0.20210606092937-8319ba70de3c
-	kubedb.dev/mariadb v0.2.1-0.20210606102229-fc9046c3752a
-	kubedb.dev/memcached v0.11.1-0.20210606113139-a488844633d6
-	kubedb.dev/mongodb v0.11.1-0.20210606085532-c6c4b38066be
-	kubedb.dev/mysql v0.11.1-0.20210606111823-dc6f6ea563ad
-	kubedb.dev/percona-xtradb v0.5.1-0.20210606103349-3e85edb210ed
-	kubedb.dev/pgbouncer v0.5.1-0.20210606110839-4e3f115d7e54
-	kubedb.dev/postgres v0.18.1-0.20210606125150-8d4bf26b23ef
-	kubedb.dev/proxysql v0.5.1-0.20210606110558-6e6c9ba10d91
-	kubedb.dev/redis v0.11.1-0.20210606101545-9d5d90a9fe48
+	kmodules.xyz/client-go v0.0.0-20210617233340-13d22e91512b
+	kmodules.xyz/custom-resources v0.0.0-20210618003440-c6bb400da153
+	kmodules.xyz/webhook-runtime v0.0.0-20210618013329-0accb929102b
+	kubedb.dev/apimachinery v0.18.1-0.20210618122709-e98fb31f5dfb
+	kubedb.dev/elasticsearch v0.18.1-0.20210618173352-630d6940bdcb
+	kubedb.dev/mariadb v0.2.1-0.20210618154452-0ad0022cf8bb
+	kubedb.dev/memcached v0.11.1-0.20210618163108-213807d5523b
+	kubedb.dev/mongodb v0.11.1-0.20210618170332-dbf5cd161984
+	kubedb.dev/mysql v0.11.1-0.20210618165327-ab601a281dce
+	kubedb.dev/percona-xtradb v0.5.1-0.20210618170000-f163f6379738
+	kubedb.dev/pgbouncer v0.5.1-0.20210618173301-bc6428cdc865
+	kubedb.dev/postgres v0.18.1-0.20210618173322-9496dadf1978
+	kubedb.dev/proxysql v0.5.1-0.20210618174015-9770fa0dbdd9
+	kubedb.dev/redis v0.11.1-0.20210618173714-5a5ec3186b73
 )
 
 replace bitbucket.org/ww/goautoneg => gomodules.xyz/goautoneg v0.0.0-20120707110453-a547fc61f48d
@@ -120,21 +120,21 @@ replace google.golang.org/grpc => google.golang.org/grpc v1.27.1
 
 replace helm.sh/helm/v3 => github.com/kubepack/helm/v3 v3.1.0-rc.1.0.20210503022716-7e2d4913a125
 
-replace k8s.io/api => k8s.io/api v0.21.0
+replace k8s.io/api => k8s.io/api v0.21.1
 
-replace k8s.io/apimachinery => github.com/kmodules/apimachinery v0.21.1-rc.0.0.20210405112358-ad4c2289ba4c
+replace k8s.io/apimachinery => github.com/kmodules/apimachinery v0.21.2-rc.0.0.20210617231004-332981b97d2d
 
-replace k8s.io/apiserver => github.com/kmodules/apiserver v0.21.1-0.20210525165825-102cf43e00fa
+replace k8s.io/apiserver => github.com/kmodules/apiserver v0.21.2-0.20210617231348-daadbf0c8d5e
 
-replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.21.0
+replace k8s.io/cli-runtime => k8s.io/cli-runtime v0.21.1
 
-replace k8s.io/client-go => k8s.io/client-go v0.21.0
+replace k8s.io/client-go => k8s.io/client-go v0.21.1
 
-replace k8s.io/component-base => k8s.io/component-base v0.21.0
+replace k8s.io/component-base => k8s.io/component-base v0.21.1
 
 replace k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20210305001622-591a79e4bda7
 
-replace k8s.io/kubernetes => github.com/kmodules/kubernetes v1.22.0-alpha.0.0.20210427080452-22d2e66bae50
+replace k8s.io/kubernetes => github.com/kmodules/kubernetes v1.22.0-alpha.0.0.20210617232219-a432af45d932
 
 replace k8s.io/utils => k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 

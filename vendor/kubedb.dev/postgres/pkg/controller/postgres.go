@@ -49,17 +49,6 @@ func (c *Controller) create(db *api.Postgres) error {
 		return nil // user error so just record error and don't retry.
 	}
 
-	//if db.Status.Phase == "" {
-	//	pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) (types.UID, *api.PostgresStatus) {
-	//		in.Phase = api.DatabasePhaseProvisioning
-	//		return db.UID, in
-	//	}, metav1.UpdateOptions{})
-	//	if err != nil {
-	//		return err
-	//	}
-	//	db.Status = pg.Status
-	//}
-
 	// ensure Governing Service
 	if err := c.ensureGoverningService(db); err != nil {
 		return fmt.Errorf(`failed to create governing Service for : "%v/%v". Reason: %v`, db.Namespace, db.Name, err)
@@ -70,32 +59,24 @@ func (c *Controller) create(db *api.Postgres) error {
 	if err != nil {
 		return err
 	}
-	// wait for  Certificates secrets
-	if db.Spec.TLS != nil {
-		ok, err := dynamic_util.ResourcesExists(
-			c.DynamicClient,
-			core.SchemeGroupVersion.WithResource("secrets"),
-			db.Namespace,
-			db.GetCertSecretName(api.PostgresServerCert),
-			db.GetCertSecretName(api.PostgresClientCert),
-			db.GetCertSecretName(api.PostgresMetricsExporterCert),
-		)
-		if err != nil {
-			return err
-		}
-		if !ok {
-			klog.Infof("wait for all certificate secrets for Postgres %s/%s", db.Namespace, db.Name)
-			return nil
-		}
+	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
+	if err := c.ensureDatabaseRBAC(db); err != nil {
+		return err
 	}
-	// ensure database StatefulSet
-	postgresVersion, err := c.DBClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+
+	// ensure secret and statefulSet with calling reconcileNodes
+	reconciler := NewReconciler(c.Config, c.Controller)
+	db, vt2, err := reconciler.ReconcileNodes(db)
 	if err != nil {
 		return err
 	}
-	vt2, err := c.ensurePostgresNode(db, postgresVersion)
-	if err != nil {
-		return err
+
+	// If both err==nil & db == nil,
+	// the object was dropped from the work-queue, to process later.
+	// return nil.
+	// example: like certsecrets haven't created yet. so we need to wait
+	if db == nil {
+		return nil
 	}
 
 	if vt1 == kutil.VerbCreated && vt2 == kutil.VerbCreated {
@@ -113,7 +94,11 @@ func (c *Controller) create(db *api.Postgres) error {
 			"Successfully patched Postgres",
 		)
 	}
-
+	// get postgres version
+	postgresVersion, err := c.DBClient.CatalogV1alpha1().PostgresVersions().Get(context.TODO(), string(db.Spec.Version), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
 	// ensure appbinding before ensuring Restic scheduler and restore
 	_, err = c.ensureAppBinding(db, postgresVersion)
 	if err != nil {
@@ -137,16 +122,6 @@ func (c *Controller) create(db *api.Postgres) error {
 			return nil
 		}
 	}
-
-	pg, err := util.UpdatePostgresStatus(context.TODO(), c.DBClient.KubedbV1alpha2(), db.ObjectMeta, func(in *api.PostgresStatus) (types.UID, *api.PostgresStatus) {
-		in.Phase = api.DatabasePhaseReady
-		in.ObservedGeneration = db.Generation
-		return db.UID, in
-	}, metav1.UpdateOptions{})
-	if err != nil {
-		return err
-	}
-	db.Status = pg.Status
 
 	// ensure StatsService for desired monitoring
 	if _, err := c.ensureStatsService(db); err != nil {
@@ -222,21 +197,12 @@ func (c *Controller) create(db *api.Postgres) error {
 	return nil
 }
 
-func (c *Controller) ensurePostgresNode(db *api.Postgres, postgresVersion *catalog.PostgresVersion) (kutil.VerbType, error) {
+func (r *Reconciler) ensurePostgresNode(db *api.Postgres, postgresVersion *catalog.PostgresVersion) (kutil.VerbType, error) {
 	var err error
-
-	if err = c.ensureAuthSecret(db); err != nil {
+	if err = r.ensureValidUserForPostgreSQL(db); err != nil {
 		return kutil.VerbUnchanged, err
 	}
-
-	// Ensure Service account, role, rolebinding, and PSP for database statefulsets
-	if err := c.ensureDatabaseRBAC(db); err != nil {
-		return kutil.VerbUnchanged, err
-	}
-	if err = c.ensureValidUserForPostgreSQL(db); err != nil {
-		return kutil.VerbUnchanged, err
-	}
-	vt, err := c.ensureCombinedNode(db, postgresVersion)
+	vt, err := r.ensureCombinedNode(db, postgresVersion)
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}

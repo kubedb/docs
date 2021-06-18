@@ -1214,21 +1214,18 @@ func getExporterContainer(db *api.MongoDB, mongodbVersion *v1alpha1.MongoDBVersi
 		metricsPath = fmt.Sprintf("--web.telemetry-path=%v", db.StatsService().Path())
 	}
 
-	args := append([]string{
-		"--mongodb.uri=mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@localhost:27017/admin",
-		fmt.Sprintf("--web.listen-address=:%d", db.Spec.Monitor.Prometheus.Exporter.Port),
-		metricsPath,
-	}, db.Spec.Monitor.Prometheus.Exporter.Args...)
-
+	uri := "--mongodb.uri=mongodb://$(MONGO_INITDB_ROOT_USERNAME):$(MONGO_INITDB_ROOT_PASSWORD)@localhost:27017/admin"
 	if db.Spec.SSLMode != api.SSLModeDisabled && db.Spec.TLS != nil {
 		clientPEM := fmt.Sprintf("%s/%s", api.MongoCertDirectory, api.MongoClientFileName)
 		clientCA := fmt.Sprintf("%s/%s", api.MongoCertDirectory, api.TLSCACertFileName)
-		args = append(args, "--mongodb.tls")
-		args = append(args, "--mongodb.tls-ca")
-		args = append(args, clientCA)
-		args = append(args, "--mongodb.tls-cert")
-		args = append(args, clientPEM)
+		uri = fmt.Sprintf("%s?tls=true&tlsCAFile=%v&tlsCertificateKeyFile=%v", uri, clientCA, clientPEM)
 	}
+
+	args := append([]string{
+		uri,
+		fmt.Sprintf("--web.listen-address=:%d", db.Spec.Monitor.Prometheus.Exporter.Port),
+		metricsPath,
+	}, db.Spec.Monitor.Prometheus.Exporter.Args...)
 
 	return core.Container{
 		Name:  api.ContainerExporterName,

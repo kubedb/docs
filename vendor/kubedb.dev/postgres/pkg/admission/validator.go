@@ -28,10 +28,10 @@ import (
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
 	amv "kubedb.dev/apimachinery/pkg/validator"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
 	"gomodules.xyz/sets"
-	"github.com/Masterminds/semver/v3"
 	admission "k8s.io/api/admission/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -290,7 +290,6 @@ var preconditionSpecFields = sets.NewString(
 	"spec.streaming",
 	"spec.databaseSecret",
 	"spec.storageType",
-	"spec.storage",
 )
 
 func preconditionFailedError() error {

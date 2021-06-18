@@ -336,7 +336,7 @@ func (es *Elasticsearch) getVolumes(esNode *api.ElasticsearchNode, nodeRole stri
 	if es.db.Spec.Monitor != nil &&
 		es.db.Spec.Monitor.Agent.Vendor() == mona.VendorPrometheus &&
 		es.db.Spec.EnableSSL &&
-		nodeRole == api.ElasticsearchNodeRoleIngest {
+		nodeRole == string(api.ElasticsearchNodeRoleTypeIngest) {
 		volumes = core_util.UpsertVolume(volumes, core.Volume{
 			Name: es.db.CertSecretVolumeName(api.ElasticsearchMetricsExporterCert),
 			VolumeSource: core.VolumeSource{
@@ -443,7 +443,7 @@ func (es *Elasticsearch) getContainers(esNode *api.ElasticsearchNode, nodeRole s
 	// upsert metrics exporter sidecar for monitoring purpose.
 	// add monitoring sidecar only for ingest nodes.
 	var err error
-	if es.db.Spec.Monitor != nil && nodeRole == api.ElasticsearchNodeRoleIngest {
+	if es.db.Spec.Monitor != nil && nodeRole == string(api.ElasticsearchNodeRoleTypeIngest) {
 		containers, err = es.upsertMonitoringContainer(containers)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get monitoring container")
@@ -565,29 +565,34 @@ func (es *Elasticsearch) upsertContainerEnv(envList []core.EnvVar) []core.EnvVar
 			Name:  "network.host",
 			Value: "0.0.0.0",
 		},
-		{
-			Name: "ELASTIC_USER",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: es.db.Spec.AuthSecret.Name,
-					},
-					Key: core.BasicAuthUsernameKey,
-				},
-			},
-		},
-		{
-			Name: "ELASTIC_PASSWORD",
-			ValueFrom: &core.EnvVarSource{
-				SecretKeyRef: &core.SecretKeySelector{
-					LocalObjectReference: core.LocalObjectReference{
-						Name: es.db.Spec.AuthSecret.Name,
-					},
-					Key: core.BasicAuthPasswordKey,
-				},
-			},
-		},
 	}...)
+
+	if !es.db.Spec.DisableSecurity {
+		envList = core_util.UpsertEnvVars(envList, []core.EnvVar{
+			{
+				Name: "ELASTIC_USER",
+				ValueFrom: &core.EnvVarSource{
+					SecretKeyRef: &core.SecretKeySelector{
+						LocalObjectReference: core.LocalObjectReference{
+							Name: es.db.Spec.AuthSecret.Name,
+						},
+						Key: core.BasicAuthUsernameKey,
+					},
+				},
+			},
+			{
+				Name: "ELASTIC_PASSWORD",
+				ValueFrom: &core.EnvVarSource{
+					SecretKeyRef: &core.SecretKeySelector{
+						LocalObjectReference: core.LocalObjectReference{
+							Name: es.db.Spec.AuthSecret.Name,
+						},
+						Key: core.BasicAuthPasswordKey,
+					},
+				},
+			},
+		}...)
+	}
 
 	if strings.HasPrefix(es.esVersion.Spec.Version, "7.") {
 		envList = core_util.UpsertEnvVars(envList, core.EnvVar{

@@ -125,7 +125,7 @@ func (c *Controller) createService(db *api.Elasticsearch) (kutil.VerbType, error
 		in.Annotations = svcTemplate.Annotations
 
 		in.Spec.Selector = db.OffshootSelectors()
-		in.Spec.Selector[api.ElasticsearchNodeRoleIngest] = api.ElasticsearchNodeRoleSet
+		in.Spec.Selector[db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeIngest)] = api.ElasticsearchNodeRoleSet
 		in.Spec.Ports = ofst.PatchServicePorts(
 			core_util.MergeServicePorts(in.Spec.Ports, []core.ServicePort{
 				{
@@ -172,7 +172,7 @@ func (c *Controller) createMasterDiscoveryService(db *api.Elasticsearch) (kutil.
 		in.Spec.ClusterIP = core.ClusterIPNone
 		// create pod dns records
 		in.Spec.Selector = db.OffshootSelectors()
-		in.Spec.Selector[api.ElasticsearchNodeRoleMaster] = api.ElasticsearchNodeRoleSet
+		in.Spec.Selector[db.NodeRoleSpecificLabelKey(api.ElasticsearchNodeRoleTypeMaster)] = api.ElasticsearchNodeRoleSet
 		// TODO: Uncomment if needed
 		// in.Spec.PublishNotReadyAddresses = true
 		// create SRV records with pod DNS name as service provider

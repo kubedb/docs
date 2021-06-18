@@ -37,12 +37,12 @@ import (
 
 func (c *Controller) initWatcher() {
 	c.esInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().Elasticsearches().Informer()
-	c.esQueue = queue.New("Elasticsearch", c.MaxNumRequeues, c.NumThreads, c.runElasticsearch)
+	c.esQueue = queue.New(api.ResourceKindElasticsearch, c.MaxNumRequeues, c.NumThreads, c.runElasticsearch)
 	c.esLister = c.KubedbInformerFactory.Kubedb().V1alpha2().Elasticsearches().Lister()
 	c.esVersionLister = c.KubedbInformerFactory.Catalog().V1alpha1().ElasticsearchVersions().Lister()
 	c.esInformer.AddEventHandler(queue.NewChangeHandler(c.esQueue.GetQueue()))
 	if c.Auditor != nil {
-		c.esInformer.AddEventHandler(c.Auditor)
+		c.esInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindElasticsearch)))
 	}
 }
 

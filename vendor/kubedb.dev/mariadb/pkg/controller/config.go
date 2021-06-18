@@ -34,6 +34,7 @@ import (
 	reg_util "kmodules.xyz/client-go/admissionregistration/v1beta1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/discovery"
+	"kmodules.xyz/client-go/tools/cli"
 	appcat_cs "kmodules.xyz/custom-resources/client/clientset/versioned"
 )
 
@@ -67,15 +68,21 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		return nil, err
 	}
 
-	// audit event publisher
-	natscfg, err := auditlib.NewNatsConfig(c.KubeClient.CoreV1().Namespaces(), c.LicenseFile)
+	mapper, err := discovery.NewDynamicResourceMapper(c.ClientConfig)
 	if err != nil {
 		return nil, err
 	}
-	mapper := discovery.NewResourceMapper(discovery.NewRestMapper(c.KubeClient.Discovery()))
-	fn := auditlib.BillingEventCreator{
-		Mapper:    mapper,
-		LicenseID: natscfg.LicenseID,
+
+	// audit event publisher
+	// WARNING: https://stackoverflow.com/a/46275411/244009
+	var auditor *auditlib.EventPublisher
+	if c.LicenseFile != "" && cli.EnableAnalytics {
+		fn := auditlib.BillingEventCreator{
+			Mapper: mapper,
+		}
+		auditor = auditlib.NewResilientEventPublisher(func() (*auditlib.NatsConfig, error) {
+			return auditlib.NewNatsConfig(c.KubeClient.CoreV1().Namespaces(), c.LicenseFile)
+		}, mapper, fn.CreateEvent)
 	}
 
 	ctrl := New(
@@ -90,7 +97,7 @@ func (c *OperatorConfig) New() (*Controller, error) {
 		topology,
 		c.Recorder,
 		mapper,
-		auditlib.NewEventPublisher(natscfg, mapper, fn.CreateEvent),
+		auditor,
 	)
 
 	if err := ctrl.EnsureCustomResourceDefinitions(); err != nil {

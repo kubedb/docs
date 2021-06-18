@@ -31,11 +31,11 @@ import (
 
 func (c *Controller) initWatcher() {
 	c.proxysqlInformer = c.KubedbInformerFactory.Kubedb().V1alpha2().ProxySQLs().Informer()
-	c.proxysqlQueue = queue.New("ProxySQL", c.MaxNumRequeues, c.NumThreads, c.runProxySQL)
+	c.proxysqlQueue = queue.New(api.ResourceKindProxySQL, c.MaxNumRequeues, c.NumThreads, c.runProxySQL)
 	c.proxysqlLister = c.KubedbInformerFactory.Kubedb().V1alpha2().ProxySQLs().Lister()
 	c.proxysqlInformer.AddEventHandler(queue.NewChangeHandler(c.proxysqlQueue.GetQueue()))
 	if c.Auditor != nil {
-		c.proxysqlInformer.AddEventHandler(c.Auditor)
+		c.proxysqlInformer.AddEventHandler(c.Auditor.ForGVK(api.SchemeGroupVersion.WithKind(api.ResourceKindProxySQL)))
 	}
 }
 

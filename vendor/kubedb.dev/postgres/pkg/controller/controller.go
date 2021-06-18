@@ -17,23 +17,20 @@ limitations under the License.
 package controller
 
 import (
-	"context"
-
 	catalog "kubedb.dev/apimachinery/apis/catalog/v1alpha1"
 	"kubedb.dev/apimachinery/apis/kubedb"
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	cs "kubedb.dev/apimachinery/client/clientset/versioned"
-	kutildb "kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
 	api_listers "kubedb.dev/apimachinery/client/listers/kubedb/v1alpha2"
 	amc "kubedb.dev/apimachinery/pkg/controller"
 	"kubedb.dev/apimachinery/pkg/controller/initializer/stash"
 	"kubedb.dev/apimachinery/pkg/eventer"
 
 	pcm "github.com/prometheus-operator/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	auditlib "go.bytebuilders.dev/audit/lib"
 	core "k8s.io/api/core/v1"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -78,7 +75,7 @@ func New(
 	topology *core_util.Topology,
 	recorder record.EventRecorder,
 	mapper discovery.ResourceMapper,
-	auditor cache.ResourceEventHandler,
+	auditor *auditlib.EventPublisher,
 ) *Controller {
 	return &Controller{
 		Controller: &amc.Controller{
@@ -190,25 +187,4 @@ func (c *Controller) pushFailureEvent(db *api.Postgres, reason string) {
 		db.Name,
 		reason,
 	)
-
-	pg, err := kutildb.UpdatePostgresStatus(
-		context.TODO(),
-		c.DBClient.KubedbV1alpha2(),
-		db.ObjectMeta,
-		func(in *api.PostgresStatus) (types.UID, *api.PostgresStatus) {
-			in.Phase = api.DatabasePhaseNotReady
-			in.ObservedGeneration = db.Generation
-			return db.UID, in
-		},
-		metav1.UpdateOptions{},
-	)
-	if err != nil {
-		c.Recorder.Eventf(
-			db,
-			core.EventTypeWarning,
-			eventer.EventReasonFailedToUpdate,
-			err.Error(),
-		)
-	}
-	db.Status = pg.Status
 }

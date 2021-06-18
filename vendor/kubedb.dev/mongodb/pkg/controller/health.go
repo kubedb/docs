@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	api "kubedb.dev/apimachinery/apis/kubedb/v1alpha2"
 	"kubedb.dev/apimachinery/client/clientset/versioned/typed/kubedb/v1alpha2/util"
@@ -30,7 +31,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	kmapi "kmodules.xyz/client-go/api/v1"
 )
@@ -42,180 +42,192 @@ func (c *Controller) RunHealthChecker(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) CheckMongoDBHealth(stopCh <-chan struct{}) {
-	go wait.Until(func() {
-		dbList, err := c.mgLister.MongoDBs(core.NamespaceAll).List(labels.Everything())
-		if err != nil {
-			klog.Errorf("Failed to list MongoDB objects with: %s", err.Error())
-			return
+	klog.Info("Starting MongoDB health checker...")
+	for {
+		select {
+		case <-stopCh:
+			klog.Info("Shutting down MongoDB health checker...")
+			break
+		default:
+			c.CheckMongoDBHealthOnce()
+			time.Sleep(api.HealthCheckInterval)
+		}
+	}
+}
+
+func (c *Controller) CheckMongoDBHealthOnce() {
+	dbList, err := c.mgLister.MongoDBs(core.NamespaceAll).List(labels.Everything())
+	if err != nil {
+		klog.Errorf("Failed to list MongoDB objects with: %s", err.Error())
+		return
+	}
+
+	var wg sync.WaitGroup
+	for idx := range dbList {
+		db := dbList[idx]
+
+		if db.DeletionTimestamp != nil || db.Spec.Halted {
+			continue
 		}
 
-		var wg sync.WaitGroup
-		for idx := range dbList {
-			db := dbList[idx]
+		wg.Add(1)
+		go func() {
+			defer func() {
+				wg.Done()
+			}()
+			var err error
+			var dbClient, configSvrClient, mongosClient *mongo.Client
+			var shardPingErrors []error
 
-			if db.DeletionTimestamp != nil {
-				continue
-			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+			defer cancel()
 
-			wg.Add(1)
-			go func() {
-				defer func() {
-					wg.Done()
-				}()
-				var err error
-				var dbClient, configSvrClient, mongosClient *mongo.Client
-				var shardPingErrors []error
-				// Create database client
-				if db.Spec.ShardTopology == nil {
-					dbClient, err = c.GetMongoClient(db, strings.Join(db.Hosts(), ","), db.RepSetName())
-					if err != nil {
-						// Since the client was unable to connect the database,
-						// update "AcceptingConnection" to "false".
-						// update "Ready" to "false"
-						c.updateErrorAcceptingConnections(db, err)
-						// Since the client isn't created, skip rest operations.
-						return
-					}
-					defer func() {
-						err = dbClient.Disconnect(context.TODO())
-						if err != nil {
-							klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
-						}
-					}()
-				} else {
-					configSvrClient, err = c.GetMongoClient(db, strings.Join(db.ConfigSvrHosts(), ","), db.ConfigSvrRepSetName())
-					if err != nil {
-						// Since the client was unable to connect to the config server,
-						// update "AcceptingConnection" to "false".
-						// update "Ready" to "false"
-						c.updateErrorAcceptingConnections(db, err)
-						// Since the client isn't created, skip rest operations.
-						return
-					}
-					defer func() {
-						err = configSvrClient.Disconnect(context.TODO())
-						if err != nil {
-							klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
-						}
-					}()
-
-					shardPingErrors = make([]error, db.Spec.ShardTopology.Shard.Shards)
-					for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
-						shardClient, err := c.GetMongoClient(db, strings.Join(db.ShardHosts(i), ","), db.ShardRepSetName(i))
-						if err != nil {
-							// Since the client was unable to connect to the shard nodes,
-							// update "AcceptingConnection" to "false".
-							// update "Ready" to "false"
-							c.updateErrorAcceptingConnections(db, err)
-							// Since the client isn't created, skip rest operations.
-							return
-						}
-						func(client *mongo.Client) {
-							defer func() {
-								err = client.Disconnect(context.TODO())
-								if err != nil {
-									klog.Errorf("Failed to disconnect client for shard %s/%s. error: %v", db.Namespace, db.Name, err)
-								}
-							}()
-							err = client.Ping(context.TODO(), nil)
-							if err != nil {
-								shardPingErrors[i] = err
-								klog.Errorf("Failed to ping shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, err.Error())
-								// Since the get status failed, skip remaining operations.
-								return
-							}
-						}(shardClient)
-					}
-
-					mongosClient, err = c.GetMongoClient(db, strings.Join(db.MongosHosts(), ","), "")
-					if err != nil {
-						// Since the client was unable to connect to the mongos,
-						// update "AcceptingConnection" to "false".
-						// update "Ready" to "false"
-						c.updateErrorAcceptingConnections(db, err)
-						// Since the client isn't created, skip rest operations.
-						return
-					}
-					defer func() {
-						err = mongosClient.Disconnect(context.TODO())
-						if err != nil {
-							klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
-						}
-					}()
-				}
-
-				// While creating the client, we perform a health check along with it.
-				// If the client is created without any error,
-				// the database is accepting connection.
-				// Update "AcceptingConnection" to "true".
-				_, err = util.UpdateMongoDBStatus(
-					context.TODO(),
-					c.DBClient.KubedbV1alpha2(),
-					db.ObjectMeta,
-					func(in *api.MongoDBStatus) (types.UID, *api.MongoDBStatus) {
-						in.Conditions = kmapi.SetCondition(in.Conditions,
-							kmapi.Condition{
-								Type:               api.DatabaseAcceptingConnection,
-								Status:             core.ConditionTrue,
-								Reason:             api.DatabaseAcceptingConnectionRequest,
-								ObservedGeneration: db.Generation,
-								Message:            fmt.Sprintf("The MongoDB: %s/%s is accepting client requests.", db.Namespace, db.Name),
-							})
-						return db.UID, in
-					},
-					metav1.UpdateOptions{},
-				)
+			// Create database client
+			if db.Spec.ShardTopology == nil {
+				dbClient, err = c.GetMongoClient(ctx, db, strings.Join(db.Hosts(), ","), db.RepSetName())
 				if err != nil {
-					klog.Errorf("Failed to update status for MongoDB: %s/%s", db.Namespace, db.Name)
-					// Since condition update failed, skip remaining operations.
+					// Since the client was unable to connect the database,
+					// update "AcceptingConnection" to "false".
+					// update "Ready" to "false"
+					c.updateErrorAcceptingConnections(db, err)
+					// Since the client isn't created, skip rest operations.
 					return
 				}
-
-				if db.Spec.ShardTopology == nil {
-					// Update to "Ready" condition to "true" only if the database ping is successful.
-					err = dbClient.Ping(context.TODO(), nil)
+				defer func() {
+					err = dbClient.Disconnect(ctx)
 					if err != nil {
-						klog.Errorf("Failed to ping database for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
-						// Since the get status failed, skip remaining operations.
+						klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
+					}
+				}()
+			} else {
+				configSvrClient, err = c.GetMongoClient(ctx, db, strings.Join(db.ConfigSvrHosts(), ","), db.ConfigSvrRepSetName())
+				if err != nil {
+					// Since the client was unable to connect to the config server,
+					// update "AcceptingConnection" to "false".
+					// update "Ready" to "false"
+					c.updateErrorAcceptingConnections(db, err)
+					// Since the client isn't created, skip rest operations.
+					return
+				}
+				defer func() {
+					err = configSvrClient.Disconnect(ctx)
+					if err != nil {
+						klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
+					}
+				}()
+
+				shardPingErrors = make([]error, db.Spec.ShardTopology.Shard.Shards)
+				for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
+					shardClient, err := c.GetMongoClient(ctx, db, strings.Join(db.ShardHosts(i), ","), db.ShardRepSetName(i))
+					if err != nil {
+						// Since the client was unable to connect to the shard nodes,
+						// update "AcceptingConnection" to "false".
+						// update "Ready" to "false"
+						c.updateErrorAcceptingConnections(db, err)
+						// Since the client isn't created, skip rest operations.
 						return
 					}
-
-					c.updateDatabaseReady(db)
-				} else {
-					for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
-						if shardPingErrors[i] != nil {
-							klog.Errorf("Failed to ping shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, shardPingErrors[i].Error())
+					func(client *mongo.Client) {
+						defer func() {
+							err = client.Disconnect(ctx)
+							if err != nil {
+								klog.Errorf("Failed to disconnect client for shard %s/%s. error: %v", db.Namespace, db.Name, err)
+							}
+						}()
+						err = client.Ping(ctx, nil)
+						if err != nil {
+							shardPingErrors[i] = err
+							klog.Errorf("Failed to ping shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, err.Error())
 							// Since the get status failed, skip remaining operations.
 							return
 						}
-					}
-
-					// Update to "Ready" condition to "true" only if the config server and shard ping is successful.
-					err = configSvrClient.Ping(context.TODO(), nil)
-					if err != nil {
-						klog.Errorf("Failed to ping config server for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
-						// Since the get status failed, skip remaining operations.
-						return
-					}
-
-					err = mongosClient.Ping(context.TODO(), nil)
-					if err != nil {
-						klog.Errorf("Failed to ping mongos for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
-						// Since the get status failed, skip remaining operations.
-						return
-					}
-
-					c.updateDatabaseReady(db)
+					}(shardClient)
 				}
-			}()
-		}
 
-		wg.Wait()
-	}, c.ReadinessProbeInterval, stopCh)
+				mongosClient, err = c.GetMongoClient(ctx, db, strings.Join(db.MongosHosts(), ","), "")
+				if err != nil {
+					// Since the client was unable to connect to the mongos,
+					// update "AcceptingConnection" to "false".
+					// update "Ready" to "false"
+					c.updateErrorAcceptingConnections(db, err)
+					// Since the client isn't created, skip rest operations.
+					return
+				}
+				defer func() {
+					err = mongosClient.Disconnect(ctx)
+					if err != nil {
+						klog.Errorf("Failed to disconnect client for mongodb %s/%s. error: %v", db.Namespace, db.Name, err)
+					}
+				}()
+			}
 
-	// will wait here until stopCh is closed.
-	<-stopCh
-	klog.Info("Shutting down MongoDB health checker...")
+			// While creating the client, we perform a health check along with it.
+			// If the client is created without any error,
+			// the database is accepting connection.
+			// Update "AcceptingConnection" to "true".
+			_, err = util.UpdateMongoDBStatus(
+				ctx,
+				c.DBClient.KubedbV1alpha2(),
+				db.ObjectMeta,
+				func(in *api.MongoDBStatus) (types.UID, *api.MongoDBStatus) {
+					in.Conditions = kmapi.SetCondition(in.Conditions,
+						kmapi.Condition{
+							Type:               api.DatabaseAcceptingConnection,
+							Status:             core.ConditionTrue,
+							Reason:             api.DatabaseAcceptingConnectionRequest,
+							ObservedGeneration: db.Generation,
+							Message:            fmt.Sprintf("The MongoDB: %s/%s is accepting client requests.", db.Namespace, db.Name),
+						})
+					return db.UID, in
+				},
+				metav1.UpdateOptions{},
+			)
+			if err != nil {
+				klog.Errorf("Failed to update status for MongoDB: %s/%s", db.Namespace, db.Name)
+				// Since condition update failed, skip remaining operations.
+				return
+			}
+
+			if db.Spec.ShardTopology == nil {
+				// Update to "Ready" condition to "true" only if the database ping is successful.
+				err = dbClient.Ping(ctx, nil)
+				if err != nil {
+					klog.Errorf("Failed to ping database for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+					// Since the get status failed, skip remaining operations.
+					return
+				}
+
+				c.updateDatabaseReady(db)
+			} else {
+				for i := int32(0); i < db.Spec.ShardTopology.Shard.Shards; i++ {
+					if shardPingErrors[i] != nil {
+						klog.Errorf("Failed to ping shard%d for MongoDB: %s/%s with: %s", i, db.Namespace, db.Name, shardPingErrors[i].Error())
+						// Since the get status failed, skip remaining operations.
+						return
+					}
+				}
+
+				// Update to "Ready" condition to "true" only if the config server and shard ping is successful.
+				err = configSvrClient.Ping(ctx, nil)
+				if err != nil {
+					klog.Errorf("Failed to ping config server for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+					// Since the get status failed, skip remaining operations.
+					return
+				}
+
+				err = mongosClient.Ping(ctx, nil)
+				if err != nil {
+					klog.Errorf("Failed to ping mongos for MongoDB: %s/%s with: %s", db.Namespace, db.Name, err.Error())
+					// Since the get status failed, skip remaining operations.
+					return
+				}
+
+				c.updateDatabaseReady(db)
+			}
+		}()
+	}
+
+	wg.Wait()
 }
 
 func (c *Controller) updateErrorAcceptingConnections(db *api.MongoDB, connectionErr error) {

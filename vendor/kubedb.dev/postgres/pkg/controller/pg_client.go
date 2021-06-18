@@ -29,8 +29,8 @@ import (
 	"kmodules.xyz/client-go/tools/certholder"
 )
 
-func (c *Controller) GetPostgresClient(db *api.Postgres, dnsName string, port int32) (*xorm.Engine, error) {
-	user, pass, err := c.GetPostgresAuthCredentials(db)
+func (c *Controller) GetPostgresClient(ctx context.Context, db *api.Postgres, dnsName string, port int32) (*xorm.Engine, error) {
+	user, pass, err := c.GetPostgresAuthCredentials(ctx, db)
 	if err != nil {
 		return nil, fmt.Errorf("DB basic auth is not found for PostgreSQL %v/%v", db.Namespace, db.Name)
 	}
@@ -46,7 +46,7 @@ func (c *Controller) GetPostgresClient(db *api.Postgres, dnsName string, port in
 	if db.Spec.TLS != nil {
 		secretName := db.GetCertSecretName(api.PostgresClientCert)
 
-		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(context.TODO(), secretName, metav1.GetOptions{})
+		certSecret, err := c.Client.CoreV1().Secrets(db.Namespace).Get(ctx, secretName, metav1.GetOptions{})
 
 		if err != nil {
 			klog.Error(err, "failed to get certificate secret.", secretName)
@@ -60,13 +60,18 @@ func (c *Controller) GetPostgresClient(db *api.Postgres, dnsName string, port in
 			return nil, err
 		}
 		if db.Spec.ClientAuthMode == api.ClientAuthModeCert {
-			cnnstr = fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=postgres sslmode=%s sslrootcert=%s sslcert=%s sslkey=%s", user, pass, dnsName, port, sslMode, paths.CACert, paths.Cert, paths.Key)
+			cnnstr = fmt.Sprintf("user=%s password=%s host=%s port=%d connect_timeout=15 dbname=postgres sslmode=%s sslrootcert=%s sslcert=%s sslkey=%s", user, pass, dnsName, port, sslMode, paths.CACert, paths.Cert, paths.Key)
 		} else {
-			cnnstr = fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=postgres sslmode=%s sslrootcert=%s", user, pass, dnsName, port, sslMode, paths.CACert)
+			cnnstr = fmt.Sprintf("user=%s password=%s host=%s port=%d connect_timeout=15 dbname=postgres sslmode=%s sslrootcert=%s", user, pass, dnsName, port, sslMode, paths.CACert)
 		}
 	} else {
-		cnnstr = fmt.Sprintf("user=%s password=%s host=%s port=%d dbname=postgres sslmode=%s", user, pass, dnsName, port, sslMode)
+		cnnstr = fmt.Sprintf("user=%s password=%s host=%s port=%d connect_timeout=15 dbname=postgres sslmode=%s", user, pass, dnsName, port, sslMode)
 	}
 
-	return xorm.NewEngine("postgres", cnnstr)
+	eng, err := xorm.NewEngine("postgres", cnnstr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create xorm engine")
+	}
+	eng.SetDefaultContext(ctx)
+	return eng, nil
 }

@@ -23,6 +23,7 @@ import (
 	kubedbinformers "kubedb.dev/apimachinery/client/informers/externalversions"
 
 	cmInformers "github.com/jetstack/cert-manager/pkg/client/informers/externalversions"
+	auditlib "go.bytebuilders.dev/audit/lib"
 	crd_cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	externalInformers "k8s.io/apiextensions-apiserver/pkg/client/informers/externalversions"
 	"k8s.io/client-go/dynamic"
@@ -63,7 +64,7 @@ type Controller struct {
 	// Event Recorder
 	Recorder record.EventRecorder
 	// Audit Event Publisher
-	Auditor cache.ResourceEventHandler
+	Auditor *auditlib.EventPublisher
 }
 
 type Config struct {
